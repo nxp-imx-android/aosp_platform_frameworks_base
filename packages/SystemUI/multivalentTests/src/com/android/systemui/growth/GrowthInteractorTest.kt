@@ -28,6 +28,7 @@ import com.android.systemui.broadcast.mockBroadcastSender
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
@@ -40,6 +41,7 @@ import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Test
@@ -51,7 +53,6 @@ import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.capture
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 
@@ -64,8 +65,7 @@ class GrowthInteractorTest : SysuiTestCase() {
     private val broadcastSender by lazy { kosmos.mockBroadcastSender }
     private lateinit var underTest: GrowthInteractor
 
-    @Captor
-    private lateinit var intentArgumentCaptor: ArgumentCaptor<Intent>
+    @Captor private lateinit var intentArgumentCaptor: ArgumentCaptor<Intent>
 
     @Before
     fun setUp() {
@@ -76,63 +76,114 @@ class GrowthInteractorTest : SysuiTestCase() {
     @Test
     fun onDeviceEnteredDirectly_sendBroadcast_withAllConfigs() =
         kosmos.runTest {
-            overrideResources()
+            overrideResources(GROWTH_APP_PACKAGE_NAME, GROWTH_RECEIVER_CLASS_NAME)
             underTest = kosmos.growthInteractor
             underTest.activateIn(kosmos.testScope)
             setDeviceEntered()
+            advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
+            runCurrent()
 
-            verify(broadcastSender, times(1))
-                .sendBroadcast(capture(intentArgumentCaptor), eq(GROWTH_RECEIVER_PERMISSION))
+            verify(broadcastSender, times(1)).sendBroadcast(capture(intentArgumentCaptor))
             assertThat(intentArgumentCaptor.value.action)
                 .isEqualTo(GrowthInteractor.ACTION_DEVICE_ENTERED_DIRECTLY)
-            assertThat(intentArgumentCaptor.value.`package`).isEqualTo(GROWTH_APP_PACKAGE_NAME)
+            assertThat(intentArgumentCaptor.value.`package`).isNull()
+            assertThat(intentArgumentCaptor.value.component?.packageName)
+                .isEqualTo(GROWTH_APP_PACKAGE_NAME)
             assertThat(intentArgumentCaptor.value.component?.className)
                 .isEqualTo(GROWTH_RECEIVER_CLASS_NAME)
         }
 
     @Test
-    fun onDeviceEnteredDirectly_sendBroadcast_withEmptyConfigs() =
+    fun onDeviceEnteredDirectly_sendBroadcast_withEmptyPackageName() =
         kosmos.runTest {
-            overrideResourcesWithEmptyValues()
+            overrideResources("", GROWTH_RECEIVER_CLASS_NAME)
             underTest = kosmos.growthInteractor
             underTest.activateIn(kosmos.testScope)
             setDeviceEntered()
+            advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
+            runCurrent()
 
-            verify(broadcastSender, times(1))
-                .sendBroadcast(capture(intentArgumentCaptor))
+            verify(broadcastSender, times(1)).sendBroadcast(capture(intentArgumentCaptor))
             assertThat(intentArgumentCaptor.value.action)
                 .isEqualTo(GrowthInteractor.ACTION_DEVICE_ENTERED_DIRECTLY)
             assertThat(intentArgumentCaptor.value.`package`).isNull()
-            assertThat(intentArgumentCaptor.value.component)
-                .isNull()
+            assertThat(intentArgumentCaptor.value.component).isNull()
         }
 
     @Test
-    fun onDeviceNotEnteredDirectly_doNotSendBroadcast() =
+    fun onDeviceEnteredDirectly_sendBroadcast_withEmptyReceiverClassName() =
         kosmos.runTest {
+            overrideResources(GROWTH_APP_PACKAGE_NAME, "")
+            underTest = kosmos.growthInteractor
+            underTest.activateIn(kosmos.testScope)
             setDeviceEntered()
+            advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
+            runCurrent()
+
+            verify(broadcastSender, times(1)).sendBroadcast(capture(intentArgumentCaptor))
+            assertThat(intentArgumentCaptor.value.action)
+                .isEqualTo(GrowthInteractor.ACTION_DEVICE_ENTERED_DIRECTLY)
+            assertThat(intentArgumentCaptor.value.`package`).isNull()
+            assertThat(intentArgumentCaptor.value.component).isNull()
+        }
+
+    @Test
+    fun onDeviceEnteredDirectly_sendBroadcast_withEmptyConfigs() =
+        kosmos.runTest {
+            overrideResources("", "")
+            underTest = kosmos.growthInteractor
+            underTest.activateIn(kosmos.testScope)
+            setDeviceEntered()
+            advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
+            runCurrent()
+
+            verify(broadcastSender, times(1)).sendBroadcast(capture(intentArgumentCaptor))
+            assertThat(intentArgumentCaptor.value.action)
+                .isEqualTo(GrowthInteractor.ACTION_DEVICE_ENTERED_DIRECTLY)
+            assertThat(intentArgumentCaptor.value.`package`).isNull()
+            assertThat(intentArgumentCaptor.value.component).isNull()
+        }
+
+    @Test
+    fun onDeviceNotEnteredDirectly_doNotSendBroadcast_onLockscreen() =
+        kosmos.runTest {
+            overrideResources(GROWTH_APP_PACKAGE_NAME, GROWTH_RECEIVER_CLASS_NAME)
+            setDeviceEntered()
+            advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
             clearInvocations(broadcastSender)
 
             setScene(Scenes.Lockscreen)
+            advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
             verify(broadcastSender, never()).sendBroadcast(any(), any())
         }
 
-    private fun overrideResources() {
-        overrideResource(R.string.config_growthAppPackageName, GROWTH_APP_PACKAGE_NAME)
-        overrideResource(R.string.config_growthReceiverClassName, GROWTH_RECEIVER_CLASS_NAME)
-        overrideResource(R.string.config_growthReceiverPermission, GROWTH_RECEIVER_PERMISSION)
-    }
+    @Test
+    fun onDeviceEnteredDirectly_doNotSendBroadcast_lockedBeforeDelay() =
+        kosmos.runTest {
+            overrideResources(GROWTH_APP_PACKAGE_NAME, GROWTH_RECEIVER_CLASS_NAME)
+            underTest = kosmos.growthInteractor
+            underTest.activateIn(kosmos.testScope)
+            setDeviceEntered()
+            advanceTimeBy(DURATION_50_MILLIS)
+            runCurrent()
+            verify(broadcastSender, never()).sendBroadcast(any(), any())
 
-    private fun overrideResourcesWithEmptyValues() {
-        overrideResource(R.string.config_growthAppPackageName, "")
-        overrideResource(R.string.config_growthReceiverClassName, "")
-        overrideResource(R.string.config_growthReceiverPermission, "")
+            setScene(Scenes.Lockscreen)
+            advanceTimeBy(GROWTH_BROADCAST_DELAY.plus(DURATION_50_MILLIS))
+            runCurrent()
+            verify(broadcastSender, never()).sendBroadcast(any(), any())
+        }
+
+    private fun overrideResources(packageName: String, receiverClassName: String) {
+        overrideResource(R.string.config_growthAppPackageName, packageName)
+        overrideResource(R.string.config_growthReceiverClassName, receiverClassName)
+        overrideResource(R.integer.config_growthBroadcastDelayMillis, DELAY_200_MILLIS)
     }
 
     private suspend fun Kosmos.setDeviceEntered() {
         val currentScene by collectLastValue(kosmos.sceneInteractor.currentScene)
         val isDeviceEnteredDirectly by
-        collectLastValue(kosmos.deviceEntryInteractor.isDeviceEnteredDirectly)
+            collectLastValue(kosmos.deviceEntryInteractor.isDeviceEnteredDirectly)
         assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
         assertThat(isDeviceEnteredDirectly).isFalse()
 
@@ -155,7 +206,8 @@ class GrowthInteractorTest : SysuiTestCase() {
     companion object {
         private const val GROWTH_APP_PACKAGE_NAME = "com.android.systemui.growth"
         private const val GROWTH_RECEIVER_CLASS_NAME = "com.android.systemui.growth.GrowthReceiver"
-        private const val GROWTH_RECEIVER_PERMISSION =
-            "com.android.systemui.growth.permission.SEND_BROADCAST"
+        private const val DELAY_200_MILLIS = 200
+        private val GROWTH_BROADCAST_DELAY = DELAY_200_MILLIS.milliseconds
+        private val DURATION_50_MILLIS = 50.milliseconds
     }
 }
