@@ -101,10 +101,10 @@ import java.util.stream.Collectors;
 /**
  * Responsible for initializing and the environment.
  */
-public class RavenwoodRuntimeEnvironmentController {
+public class RavenwoodDriver {
     private static final String TAG = com.android.ravenwood.common.RavenwoodCommonUtils.TAG;
 
-    private RavenwoodRuntimeEnvironmentController() {
+    private RavenwoodDriver() {
     }
 
     private static final PrintStream sStdOut = System.out;
@@ -277,7 +277,7 @@ public class RavenwoodRuntimeEnvironmentController {
 
         if (ENABLE_UNCAUGHT_EXCEPTION_DETECTION) {
             Thread.setDefaultUncaughtExceptionHandler(
-                    RavenwoodRuntimeEnvironmentController::onUncaughtException);
+                    RavenwoodDriver::onUncaughtException);
         }
 
         // Some process-wide initialization:
@@ -365,7 +365,7 @@ public class RavenwoodRuntimeEnvironmentController {
         final var main = new HandlerThread(MAIN_THREAD_NAME);
         sMainThread = main;
         main.start();
-        Looper_ravenwood.sDispatcher = RavenwoodRuntimeEnvironmentController::dispatchMessage;
+        Looper_ravenwood.sDispatcher = RavenwoodDriver::dispatchMessage;
         Looper.setMainLooperForTest(main.getLooper());
 
         final boolean isSelfInstrumenting =
@@ -524,7 +524,7 @@ public class RavenwoodRuntimeEnvironmentController {
         cancelTimeout();
 
         sPendingTimeout = sTimeoutExecutor.schedule(
-                RavenwoodRuntimeEnvironmentController::onTestTimedOut,
+                RavenwoodDriver::onTestTimedOut,
                 TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
     }
 
@@ -585,7 +585,7 @@ public class RavenwoodRuntimeEnvironmentController {
                 emptyPaths, emptyPaths, emptyPaths,
                 emptyPaths, null, null,
                 new DisplayAdjustments().getCompatibilityInfo(),
-                RavenwoodRuntimeEnvironmentController.class.getClassLoader(), null);
+                RavenwoodDriver.class.getClassLoader(), null);
 
         assertNotNull(ret);
 

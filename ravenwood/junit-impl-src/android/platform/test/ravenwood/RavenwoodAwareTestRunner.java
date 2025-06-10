@@ -109,7 +109,7 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
      * Constructor.
      */
     public RavenwoodAwareTestRunner(Class<?> testClass) {
-        RavenwoodRuntimeEnvironmentController.globalInitOnce();
+        RavenwoodDriver.globalInitOnce();
         mTestJavaClass = testClass;
 
         /*
