@@ -11365,6 +11365,7 @@ package android.content {
     field public static final String SYSTEM_HEALTH_SERVICE = "systemhealth";
     field public static final String TELECOM_SERVICE = "telecom";
     field public static final String TELEPHONY_IMS_SERVICE = "telephony_ims";
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_phone_number_parsing_api") public static final String TELEPHONY_PHONE_NUMBER_SERVICE = "telephony_phone_number";
     field public static final String TELEPHONY_SERVICE = "phone";
     field public static final String TELEPHONY_SUBSCRIPTION_SERVICE = "telephony_subscription_service";
     field public static final String TETHERING_SERVICE = "tethering";
