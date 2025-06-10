@@ -336,27 +336,6 @@ public final class InputManager {
     }
 
     /**
-     * Gets an instance of the input manager.
-     *
-     *  Warning: The usage of this method is not supported!
-     *
-     *  @return The input manager instance.
-     *  Use {@link Context#getSystemService(Class)}
-     *  to obtain the InputManager instance.
-     *
-     * TODO (b/277717573): Soft remove this API in version V.
-     * TODO (b/277039664): Migrate app usage off this API.
-     *
-     * @hide
-     */
-    @Deprecated
-    @UnsupportedAppUsage
-    public static InputManager getInstance() {
-        return Objects.requireNonNull(ActivityThread.currentApplication())
-                .getSystemService(InputManager.class);
-    }
-
-    /**
      * Get the current VelocityTracker strategy.
      * @hide
      */
