@@ -29,6 +29,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.util.MathUtils.lerp
 import android.util.TypedValue
+import android.view.MotionEvent
 import android.view.View
 import android.view.View.MeasureSpec.EXACTLY
 import android.view.animation.Interpolator
@@ -36,6 +37,7 @@ import android.view.animation.PathInterpolator
 import android.widget.TextView
 import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
+import com.android.systemui.Flags.clockFidgetAnimation
 import com.android.systemui.animation.AxisDefinition
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.animation.TextAnimator
@@ -203,6 +205,17 @@ open class SimpleDigitalClockTextView(
     var measuredBaseline = 0
     var lockscreenColor = Color.WHITE
     var aodColor = Color.WHITE
+
+    override fun onTouchEvent(evt: MotionEvent): Boolean {
+        if (super.onTouchEvent(evt)) return true
+
+        if (clockFidgetAnimation() && evt.action == MotionEvent.ACTION_UP) {
+            (parent as? FlexClockView)?.animateFidget(evt.x, evt.y) ?: animateFidget(evt.x, evt.y)
+            return true
+        }
+
+        return false
+    }
 
     private val animatorListener =
         object : TextAnimatorListener {
