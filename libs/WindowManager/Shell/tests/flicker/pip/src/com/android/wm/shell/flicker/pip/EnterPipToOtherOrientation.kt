@@ -29,6 +29,7 @@ import android.tools.helpers.WindowUtils
 import android.tools.traces.component.ComponentNameMatcher
 import android.view.WindowManagerGlobal
 import androidx.test.filters.FlakyTest
+import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.entireScreenCovered
 import com.android.server.wm.flicker.helpers.FixedOrientationAppHelper
 import com.android.server.wm.flicker.helpers.PipAppHelper
@@ -68,6 +69,7 @@ import java.lang.AssertionError
  *        apps are running before setup
  * ```
  */
+@RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.rotation
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDevice
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.flicker.assertions.FlickerTest
@@ -39,6 +40,7 @@ import org.junit.runners.Parameterized
 /**
  * Test opening an app over lockscreen with rotation change using seamless rotations.
  */
+@RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

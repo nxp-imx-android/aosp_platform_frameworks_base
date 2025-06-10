@@ -24,8 +24,6 @@ import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
 import android.tools.flicker.legacy.LegacyFlickerTestFactory
 import android.tools.flicker.rules.RemoveAllTasksButHomeRule
-import android.tools.flicker.subject.layers.LayersTraceSubject
-import android.tools.traces.component.ComponentNameMatcher
 import android.view.KeyEvent
 import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice

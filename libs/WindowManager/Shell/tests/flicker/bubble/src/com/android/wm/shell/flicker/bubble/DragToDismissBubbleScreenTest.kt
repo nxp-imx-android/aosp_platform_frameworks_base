@@ -26,6 +26,7 @@ import android.tools.flicker.subject.layers.LayersTraceSubject
 import android.tools.traces.component.ComponentNameMatcher
 import android.util.DisplayMetrics
 import android.view.WindowManager
+import androidx.test.filters.RequiresDevice
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Until
 import org.junit.Test
@@ -42,6 +43,7 @@ import org.junit.runners.Parameterized
  *     Dismiss a bubble notification
  * ```
  */
+@RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class DragToDismissBubbleScreenTest(flicker: LegacyFlickerTest) : BaseBubbleScreen(flicker) {

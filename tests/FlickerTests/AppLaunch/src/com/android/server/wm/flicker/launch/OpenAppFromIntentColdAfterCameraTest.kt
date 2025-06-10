@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker.launch
 
+import android.platform.test.annotations.RequiresDevice
 import android.tools.device.apphelpers.CameraAppHelper
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
@@ -34,6 +35,7 @@ import org.junit.runners.Parameterized
  *
  * Notes: Some default assertions are inherited [OpenAppTransition]
  */
+@RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.ime
 
 import android.platform.test.annotations.PlatinumTest
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDevice
 import android.tools.Rotation
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
@@ -36,6 +37,7 @@ import org.junit.runners.Parameterized
  * Test IME window closing to home transitions.
  * To run this test: `atest FlickerTestsIme:CloseImeOnGoHomeTest`
  */
+@RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

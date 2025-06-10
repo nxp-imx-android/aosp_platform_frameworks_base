@@ -22,11 +22,13 @@ import android.tools.flicker.annotation.FlickerConfigProvider
 import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.junit.FlickerServiceJUnit4ClassRunner
+import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.flicker.DesktopModeFlickerScenarios.Companion.EXIT_DESKTOP_FROM_KEYBOARD_SHORTCUT
 import com.android.wm.shell.scenarios.ExitDesktopFromKeyboardShortcut
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@RequiresDevice
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
 class ExitDesktopToFullScreenWithKeyboardShortcut : ExitDesktopFromKeyboardShortcut() {
     @ExpectedScenarios(["EXIT_DESKTOP_FROM_KEYBOARD_SHORTCUT"])

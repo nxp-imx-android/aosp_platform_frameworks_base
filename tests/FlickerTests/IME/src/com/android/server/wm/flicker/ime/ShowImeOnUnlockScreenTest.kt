@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.ime
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDevice
 import android.platform.test.rule.UnlockScreenRule
 import android.tools.Rotation
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -38,6 +39,7 @@ import org.junit.runners.Parameterized
  * Test IME window closing on lock and opening on screen unlock.
  * To run this test: `atest FlickerTestsIme:ShowImeOnUnlockScreenTest`
  */
+@RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

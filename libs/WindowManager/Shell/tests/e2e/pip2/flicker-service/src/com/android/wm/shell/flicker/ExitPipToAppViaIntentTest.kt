@@ -17,6 +17,7 @@
 package com.android.wm.shell.flicker
 
 import android.app.Instrumentation
+import android.platform.test.annotations.RequiresDevice
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.flicker.FlickerConfig
@@ -52,6 +53,7 @@ import org.junit.runner.RunWith
  *     Expand [pipApp] app to full screen via an intent
  * ```
  */
+@RequiresDevice
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
 class ExitPipToAppViaIntentTest {
     val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()

@@ -22,11 +22,13 @@ import android.tools.flicker.annotation.FlickerConfigProvider
 import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.junit.FlickerServiceJUnit4ClassRunner
+import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.flicker.DesktopModeFlickerScenarios.Companion.MINIMIZE_AUTO_PIP_APP
 import com.android.wm.shell.scenarios.MinimizeAutoPipAppWindow
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@RequiresDevice
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
 class MinimizeAutoPipAppWindow : MinimizeAutoPipAppWindow() {
     @ExpectedScenarios(["MINIMIZE_AUTO_PIP_APP"])
