@@ -17,6 +17,7 @@
 package com.android.printspooler.stats
 
 import android.os.Handler
+import android.print.PrintAttributes
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.Semaphore
@@ -59,6 +60,90 @@ open class StatsAsyncLoggerTest {
     @After
     fun teardown() {
         StatsAsyncLogger.stopLogging()
+    }
+
+    @Test
+    fun printerDiscoverySuccessfullyLoggedTest() {
+        val logWrapperInOrder = inOrder(mStatsLogWrapper)
+        val handlerInOrder = inOrder(mHandler)
+        val semaphoreInOrder = inOrder(mSemaphore)
+        val timeCaptor = argumentCaptor<Long>()
+        val runnableCaptor = argumentCaptor<Runnable>()
+
+        StatsAsyncLogger.startLogging()
+        StatsAsyncLogger.testSetSemaphore(mSemaphore)
+        StatsAsyncLogger.testSetHandler(mHandler)
+        StatsAsyncLogger.testSetStatsLogWrapper(mStatsLogWrapper)
+
+        // "foo" printer service: Generally arbitrary arguments focusing more on creating non-empty
+        // lists.
+        val printServiceFoo = 42
+        val colorsMaskFoo =
+            (PrintAttributes.COLOR_MODE_COLOR or PrintAttributes.COLOR_MODE_MONOCHROME)
+        val supportedMediaSizesFoo =
+            setOf<PrintAttributes.MediaSize>(
+                PrintAttributes.MediaSize.NA_LETTER,
+                PrintAttributes.MediaSize.JPN_HAGAKI,
+            )
+        val duplexModeMaskFoo =
+            (PrintAttributes.DUPLEX_MODE_LONG_EDGE or PrintAttributes.DUPLEX_MODE_SHORT_EDGE)
+
+        assertThat(
+                StatsAsyncLogger.PrinterDiscovery(
+                    printServiceFoo,
+                    colorsMaskFoo,
+                    duplexModeMaskFoo,
+                    supportedMediaSizesFoo,
+                )
+            )
+            .isTrue()
+
+        // "bar" printer service: Generally arbitrary arguments focusing more on empty/default
+        // values.
+        val printServiceBar = 1337
+        assertThat(StatsAsyncLogger.PrinterDiscovery(printServiceBar, 0, 0, setOf())).isTrue()
+
+        handlerInOrder
+            .verify(mHandler, times(2))
+            .postAtTime(runnableCaptor.capture(), timeCaptor.capture())
+        handlerInOrder.verifyNoMoreInteractions()
+
+        // Validate delay args
+        val firstTime = timeCaptor.firstValue
+        val secondTime = timeCaptor.secondValue
+        assertThat(secondTime - firstTime)
+            .isAtLeast(StatsAsyncLogger.EVENT_REPORTED_MIN_INTERVAL.inWholeMilliseconds)
+        assertThat(secondTime - firstTime)
+            .isAtMost(2 * StatsAsyncLogger.EVENT_REPORTED_MIN_INTERVAL.inWholeMilliseconds)
+
+        // Validate Runnable logic
+        runnableCaptor.firstValue.run()
+        runnableCaptor.secondValue.run()
+        logWrapperInOrder
+            .verify(mStatsLogWrapper)
+            .internalPrinterDiscovery(
+                printServiceFoo,
+                setOf(
+                    StatsAsyncLogger.InternalColorModePrinterDiscoveryEvent.COLOR,
+                    StatsAsyncLogger.InternalColorModePrinterDiscoveryEvent.MONOCHROME,
+                ),
+                setOf(
+                    StatsAsyncLogger.InternalMediaSizePrinterDiscoveryEvent.NA_LETTER,
+                    StatsAsyncLogger.InternalMediaSizePrinterDiscoveryEvent.JPN_HAGAKI,
+                ),
+                setOf(
+                    StatsAsyncLogger.InternalDuplexModePrinterDiscoveryEvent.LONG_EDGE,
+                    StatsAsyncLogger.InternalDuplexModePrinterDiscoveryEvent.SHORT_EDGE,
+                ),
+            )
+        logWrapperInOrder
+            .verify(mStatsLogWrapper)
+            .internalPrinterDiscovery(printServiceBar, setOf(), setOf(), setOf())
+        logWrapperInOrder.verifyNoMoreInteractions()
+
+        // Validate Semaphore logic
+        semaphoreInOrder.verify(mSemaphore, times(2)).tryAcquire()
+        semaphoreInOrder.verify(mSemaphore, times(2)).release()
     }
 
     @Test
@@ -155,6 +240,7 @@ open class StatsAsyncLoggerTest {
         // Arbitrary Arguments
         assertThat(StatsAsyncLogger.AdvancedOptionsUiLaunched(42)).isFalse()
         assertThat(StatsAsyncLogger.MainPrintUiLaunched(setOf(1, 2, 3), 42)).isFalse()
+        assertThat(StatsAsyncLogger.PrinterDiscovery(1337, 0, 0, setOf())).isFalse()
         verifyNoInteractions(mHandler)
     }
 
@@ -168,7 +254,8 @@ open class StatsAsyncLoggerTest {
         // Arbitrary Arguments
         assertThat(StatsAsyncLogger.AdvancedOptionsUiLaunched(42)).isFalse()
         assertThat(StatsAsyncLogger.MainPrintUiLaunched(setOf(1, 2, 3), 42)).isFalse()
-        verify(mSemaphore, times(2)).release()
+        assertThat(StatsAsyncLogger.PrinterDiscovery(1337, 0, 0, setOf())).isFalse()
+        verify(mSemaphore, times(3)).release()
     }
 
     @Test
@@ -201,6 +288,7 @@ open class StatsAsyncLoggerTest {
         // Arbitrary Arguments
         assertThat(StatsAsyncLogger.AdvancedOptionsUiLaunched(42)).isFalse()
         assertThat(StatsAsyncLogger.MainPrintUiLaunched(setOf(1, 2, 3), 42)).isFalse()
+        assertThat(StatsAsyncLogger.PrinterDiscovery(1337, 0, 0, setOf())).isFalse()
         verifyNoInteractions(mHandler)
         verifyNoInteractions(mSemaphore)
         verifyNoInteractions(mStatsLogWrapper)

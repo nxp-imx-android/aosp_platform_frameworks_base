@@ -2663,6 +2663,31 @@ public class PrintActivity extends Activity implements RemotePrintDocument.Updat
                 }
             }
 
+            if (Flags.printingTelemetry()) {
+                for (final PrinterInfo printer : newPrintersMap.values()) {
+                    final PrinterCapabilitiesInfo caps = printer.getCapabilities();
+                    int colorModesMask = 0;
+                    int duplexModesMask = 0;
+                    Set<MediaSize> mediaSizes = new HashSet<>();
+                    if (caps != null) {
+                        colorModesMask = caps.getColorModes();
+                        duplexModesMask = caps.getDuplexModes();
+                        mediaSizes = new HashSet<>(caps.getMediaSizes());
+                    }
+                    final String serviceName = printer.getId().getServiceName().getPackageName();
+                    try {
+                        final int serviceUId =
+                                getPackageManager().getApplicationInfo(serviceName, 0).uid;
+                        StatsAsyncLogger.INSTANCE
+                                .PrinterDiscovery(serviceUId,
+                                                  colorModesMask,
+                                                  duplexModesMask,
+                                                  mediaSizes);
+                    } catch (NameNotFoundException e) {
+                        Log.e(LOG_TAG, "Failed to get uid for service");
+                    }
+                }
+            }
             // Add the rest of the new printers, i.e. what is left.
             addPrinters(newPrinterHolders, newPrintersMap.values());
 
