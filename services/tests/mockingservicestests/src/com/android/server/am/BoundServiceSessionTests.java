@@ -16,7 +16,6 @@
 
 package com.android.server.am;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 
 import static org.junit.Assert.assertEquals;
@@ -27,18 +26,10 @@ import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
-import android.os.Handler;
 import android.platform.test.annotations.Presubmit;
 
-import com.android.internal.os.BackgroundThread;
-import com.android.modules.utils.testing.ExtendedMockitoRule;
-
-import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.quality.Strictness;
 
 import java.lang.ref.WeakReference;
 import java.util.function.BiConsumer;
@@ -53,25 +44,8 @@ import java.util.function.BiConsumer;
 public class BoundServiceSessionTests {
     private static final String TEST_DEBUG_NAME = "test_bound_service_session";
 
-    @Rule
-    public final ExtendedMockitoRule mExtendedMockitoRule = new ExtendedMockitoRule.Builder(this)
-            .setStrictness(Strictness.WARN)
-            .mockStatic(BackgroundThread.class)
-            .build();
-
     private final ConnectionRecord mMockConnectionRecord = mock(ConnectionRecord.class);
     private final BiConsumer<ConnectionRecord, Boolean> mMockConsumer = mock(BiConsumer.class);
-
-    @Before
-    public void stubHandler() {
-        final Handler syncHandler = mock(Handler.class);
-        when(syncHandler.post(any(Runnable.class))).thenAnswer(inv -> {
-            final Runnable r = inv.getArgument(0);
-            r.run();
-            return true;
-        });
-        doReturn(syncHandler).when(() -> BackgroundThread.getHandler());
-    }
 
     private BoundServiceSession getNewBoundServiceSessionForTest() {
         return new BoundServiceSession(mMockConsumer, new WeakReference<>(mMockConnectionRecord),
