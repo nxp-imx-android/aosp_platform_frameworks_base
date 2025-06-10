@@ -102,7 +102,12 @@ constructor(
                 ambientCueInteractor.actions.map { actions ->
                     actions.map { action ->
                         ActionViewModel(
-                            icon = action.icon,
+                            icon =
+                                IconViewModel(
+                                    drawable = action.icon.drawable,
+                                    iconId = action.icon.iconId,
+                                    repeated = false,
+                                ),
                             label = action.label,
                             attribution = action.attribution,
                             onClick = {

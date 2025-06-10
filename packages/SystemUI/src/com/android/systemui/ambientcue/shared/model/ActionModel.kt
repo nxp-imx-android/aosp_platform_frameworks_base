@@ -20,7 +20,7 @@ import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.graphics.drawable.Drawable
 
 data class ActionModel(
-    val icon: Drawable,
+    val icon: IconModel,
     val label: String,
     val attribution: String?,
     val onPerformAction: () -> Unit,
@@ -29,3 +29,5 @@ data class ActionModel(
     val taskId: Int = INVALID_TASK_ID,
     val actionType: String? = null,
 )
+
+data class IconModel(val drawable: Drawable, val iconId: String)

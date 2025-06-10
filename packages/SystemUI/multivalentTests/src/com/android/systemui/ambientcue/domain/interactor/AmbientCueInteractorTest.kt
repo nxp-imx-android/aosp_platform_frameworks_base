@@ -23,6 +23,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambientcue.data.repository.ambientCueRepository
 import com.android.systemui.ambientcue.data.repository.fake
 import com.android.systemui.ambientcue.shared.model.ActionModel
+import com.android.systemui.ambientcue.shared.model.IconModel
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.res.R
@@ -60,9 +61,12 @@ class AmbientCueInteractorTest : SysuiTestCase() {
                 listOf(
                     ActionModel(
                         icon =
-                            applicationContext.resources.getDrawable(
-                                R.drawable.ic_content_paste_spark,
-                                applicationContext.theme,
+                            IconModel(
+                                applicationContext.resources.getDrawable(
+                                    R.drawable.ic_content_paste_spark,
+                                    applicationContext.theme,
+                                ),
+                                "test.icon",
                             ),
                         label = "Sunday Morning",
                         attribution = null,
