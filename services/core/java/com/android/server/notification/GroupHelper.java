@@ -764,6 +764,15 @@ public class GroupHelper {
                     }
                     updateAggregateAppGroup(fullAggregateGroupKey, sbn.getKey(), true, 0);
                 }
+            } else if (record.getGroupKey().equals(fullAggregateGroupKey.toString())
+                        && isAggregatedGroup(record)
+                        && aggregatedNotificationsAttrs.isEmpty()) {
+                // Remove autogroup summary if posted after all children were canceled
+                if (DEBUG) {
+                    Slog.i(TAG, "Aggregate group is empty: " + fullAggregateGroupKey);
+                }
+                mCallback.removeAutoGroupSummary(userId, pkgName, fullAggregateGroupKey.toString());
+                mAggregatedNotifications.remove(fullAggregateGroupKey);
             }
         }
         return wasUnAggregated;

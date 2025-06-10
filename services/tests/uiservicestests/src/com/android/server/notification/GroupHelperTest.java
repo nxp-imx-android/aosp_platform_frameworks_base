@@ -16,6 +16,7 @@
 package com.android.server.notification;
 
 import static android.app.Notification.COLOR_DEFAULT;
+import static android.app.Notification.FLAG_AUTOGROUP_SUMMARY;
 import static android.app.Notification.FLAG_AUTO_CANCEL;
 import static android.app.Notification.FLAG_BUBBLE;
 import static android.app.Notification.FLAG_CAN_COLORIZE;
@@ -927,6 +928,26 @@ public class GroupHelperTest extends UiServiceTestCase {
                 eq(getNotificationAttributes(BASE_FLAGS)));
         verify(mCallback, never()).addAutoGroupSummary(anyInt(), anyString(), anyString(),
                 anyString(), anyInt(), any());
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_FORCE_GROUPING)
+    public void testPostedAutogroupSummaryCanceled_ifAutogroupEmpty() {
+        final String pkg = "package";
+        final String groupName = AGGREGATE_GROUP_KEY + "AlertingSection";
+        final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg, groupName,
+                UserHandle.SYSTEM.getIdentifier());
+        StatusBarNotification sbn = getSbn(pkg, 0, "0", UserHandle.SYSTEM, groupName);
+        sbn.getNotification().flags |= FLAG_AUTOGROUP_SUMMARY;
+        NotificationRecord autogroupSummary = getNotificationRecord(sbn);
+        mGroupHelper.onNotificationPosted(autogroupSummary, false);
+
+        verify(mCallback, times(1)).removeAutoGroupSummary(anyInt(), eq(pkg),
+                eq(expectedGroupKey));
+        verify(mCallback, never()).addAutoGroupSummary(anyInt(), anyString(), anyString(),
+                anyString(), anyInt(), any());
+        verify(mCallback, never()).addAutoGroup(anyString(), anyString(), anyBoolean());
+        verify(mCallback, never()).removeAutoGroup(anyString());
     }
 
     @Test
