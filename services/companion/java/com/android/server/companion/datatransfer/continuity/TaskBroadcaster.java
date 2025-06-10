@@ -19,6 +19,7 @@ package com.android.server.companion.datatransfer.continuity;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 
 import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ActivityTaskManager;
 import android.app.TaskStackListener;
 import android.companion.AssociationInfo;
@@ -32,6 +33,7 @@ import com.android.server.companion.datatransfer.continuity.connectivity.Connect
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
@@ -140,6 +142,15 @@ class TaskBroadcaster
 
         RemoteTaskRemovedMessage taskRemovedMessage = new RemoteTaskRemovedMessage(taskId);
         sendMessageToAllConnectedAssociations(taskRemovedMessage);
+    }
+
+    @Override
+    public void onTaskMovedToFront(RunningTaskInfo taskInfo) throws RemoteException {
+        Slog.v(TAG, "onTaskMovedToFront: taskId=" + taskInfo.taskId);
+
+        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(taskInfo);
+        RemoteTaskUpdatedMessage taskUpdatedMessage = new RemoteTaskUpdatedMessage(remoteTaskInfo);
+        sendMessageToAllConnectedAssociations(taskUpdatedMessage);
     }
 
     private void sendDeviceConnectedMessage(int associationId) {

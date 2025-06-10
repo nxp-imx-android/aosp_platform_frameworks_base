@@ -28,6 +28,7 @@ import static com.android.server.companion.datatransfer.continuity.TaskContinuit
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createRunningTaskInfo;
 
 import android.app.ActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.app.ActivityTaskManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -37,6 +38,7 @@ import android.companion.IOnTransportsChangedListener;
 import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
 import android.companion.AssociationInfo;
+import android.companion.datatransfer.continuity.RemoteTask;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
@@ -47,7 +49,9 @@ import com.android.server.companion.datatransfer.continuity.connectivity.Connect
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
 
 import org.junit.Before;
@@ -240,4 +244,36 @@ public class TaskBroadcasterTest {
                 (RemoteTaskRemovedMessage) taskContinuityMessage.getData();
         assertThat(remoteTaskRemovedMessage.taskId()).isEqualTo(taskId);
     }
+
+    @Test
+    public void testOnTaskMovedToFront_sendsMessageToAllAssociations() throws Exception {
+        // Setup
+        int associationId = 1;
+        String associationName = "name1";
+        when(mMockConnectedAssociationStore.getConnectedAssociations())
+            .thenReturn(List.of(createAssociationInfo(associationId, associationName)));
+        mTaskBroadcaster.startBroadcasting();
+
+        // Simulate a task being moved to front.
+        int taskId = 1;
+        String taskLabel = "newTask";
+        ActivityManager.RunningTaskInfo taskInfo = createRunningTaskInfo(taskId, taskLabel, 0);
+        mTaskBroadcaster.onTaskMovedToFront(taskInfo);
+
+        // Verify sendMessage is called for each association.
+        ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
+        verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
+            eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
+            messageCaptor.capture(),
+            eq(new int[] {1}));
+        TaskContinuityMessage actualMessage = new TaskContinuityMessage(messageCaptor.getValue());
+        assertThat(actualMessage.getData()).isInstanceOf(RemoteTaskUpdatedMessage.class);
+        RemoteTaskUpdatedMessage remoteTaskUpdated
+            = (RemoteTaskUpdatedMessage) actualMessage.getData();
+
+        RemoteTask expectedTask = new RemoteTaskInfo(taskInfo)
+            .toRemoteTask(associationId, associationName);
+        assertThat(remoteTaskUpdated.getTask().getId()).isEqualTo(expectedTask.getId());
+    }
+
 }
