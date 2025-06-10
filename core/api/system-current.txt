@@ -5234,12 +5234,22 @@ package android.hardware.camera2.extension {
     method @NonNull public abstract java.util.List<android.hardware.camera2.CaptureRequest.Key> getAvailableCaptureRequestKeys(@NonNull String);
     method @NonNull public abstract java.util.List<android.hardware.camera2.CaptureResult.Key> getAvailableCaptureResultKeys(@NonNull String);
     method @NonNull public abstract java.util.List<android.util.Pair<android.hardware.camera2.CameraCharacteristics.Key,java.lang.Object>> getAvailableCharacteristicsKeyValues();
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") @Nullable public android.util.Range<java.lang.Long> getEstimatedCaptureLatencyRangeMillis(@NonNull android.util.Size, int);
     method public long getMetadataVendorId(@NonNull String);
     method @NonNull public abstract android.hardware.camera2.extension.SessionProcessor getSessionProcessor();
     method @NonNull public abstract java.util.Map<java.lang.Integer,java.util.List<android.util.Size>> getSupportedCaptureOutputResolutions(@NonNull String);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") @NonNull public java.util.Map<java.lang.Integer,java.util.List<android.util.Size>> getSupportedPostviewOutputResolutions(@NonNull android.util.Size);
     method @NonNull public abstract java.util.Map<java.lang.Integer,java.util.List<android.util.Size>> getSupportedPreviewOutputResolutions(@NonNull String);
     method public abstract void initialize(@NonNull String, @NonNull android.hardware.camera2.extension.CharacteristicsMap);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public boolean isCaptureProcessProgressAvailable();
     method public abstract boolean isExtensionAvailable(@NonNull String, @NonNull android.hardware.camera2.extension.CharacteristicsMap);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public boolean isPostviewAvailable();
+  }
+
+  @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public final class CameraConfiguration {
+    method @NonNull public android.hardware.camera2.extension.CameraOutputSurface getPostViewOutputSurface();
+    method @NonNull public android.hardware.camera2.extension.CameraOutputSurface getPreviewOutputSurface();
+    method @NonNull public android.hardware.camera2.extension.CameraOutputSurface getStillCaptureOutputSurface();
   }
 
   public abstract class CameraExtensionService extends android.app.Service {
@@ -5300,11 +5310,14 @@ package android.hardware.camera2.extension {
   public abstract class SessionProcessor {
     ctor public SessionProcessor();
     method public abstract void deInitSession(@NonNull android.os.IBinder);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") @Nullable public android.util.Pair<java.lang.Long,java.lang.Long> getRealtimeStillCaptureLatency();
     method @NonNull public abstract android.hardware.camera2.extension.ExtensionConfiguration initSession(@NonNull android.os.IBinder, @NonNull String, @NonNull android.hardware.camera2.extension.CharacteristicsMap, @NonNull android.hardware.camera2.extension.CameraOutputSurface, @NonNull android.hardware.camera2.extension.CameraOutputSurface);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") @NonNull public android.hardware.camera2.extension.ExtensionConfiguration initSession(@NonNull android.os.IBinder, @NonNull String, @NonNull android.hardware.camera2.extension.CharacteristicsMap, @NonNull android.hardware.camera2.extension.CameraConfiguration);
     method public abstract void onCaptureSessionEnd();
     method public abstract void onCaptureSessionStart(@NonNull android.hardware.camera2.extension.RequestProcessor, @NonNull String);
     method public abstract void setParameters(@NonNull android.hardware.camera2.CaptureRequest);
     method public abstract int startMultiFrameCapture(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.extension.SessionProcessor.CaptureCallback);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public int startMultiFrameCapture(boolean, @NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.extension.SessionProcessor.CaptureCallback);
     method public abstract int startRepeating(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.extension.SessionProcessor.CaptureCallback);
     method public abstract int startTrigger(@NonNull android.hardware.camera2.CaptureRequest, @NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.extension.SessionProcessor.CaptureCallback);
     method public abstract void stopRepeating();
@@ -5313,6 +5326,7 @@ package android.hardware.camera2.extension {
   public static interface SessionProcessor.CaptureCallback {
     method public void onCaptureCompleted(long, int, @NonNull java.util.Map<android.hardware.camera2.CaptureResult.Key,java.lang.Object>);
     method public void onCaptureFailed(int, int);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public default void onCaptureProcessProgressUpdated(@IntRange(from=0, to=100) int);
     method public void onCaptureProcessStarted(int);
     method public void onCaptureSequenceAborted(int);
     method public void onCaptureSequenceCompleted(int);
