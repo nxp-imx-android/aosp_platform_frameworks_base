@@ -1,5 +1,5 @@
 {
-  "wm-devices": [
+  "wm": [
     {
       "name": "FlickerTestsAppLaunch-CatchAll"
     },
