@@ -28,6 +28,11 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.res.R
 import dagger.Lazy
 import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** Interactor to communicate with the growth app. */
 @SysUISingleton
@@ -38,30 +43,39 @@ constructor(
     private val deviceEntryInteractor: Lazy<DeviceEntryInteractor>,
     private val broadcastSender: BroadcastSender,
 ) : ExclusiveActivatable() {
-    private val growthAppPackageName =
-        resources.getString(R.string.config_growthAppPackageName)
+    private val growthAppPackageName = resources.getString(R.string.config_growthAppPackageName)
     private val growthReceiverClassName =
         resources.getString(R.string.config_growthReceiverClassName)
-    private val growthReceiverPermission =
-        resources.getString(R.string.config_growthReceiverPermission)
+    private val growthBroadcastDelayMillis =
+        resources.getInteger(R.integer.config_growthBroadcastDelayMillis)
+
+    private var sendBroadcastJob: Job? = null
 
     override suspend fun onActivated(): Nothing {
         deviceEntryInteractor.get().isDeviceEnteredDirectly.collect {
-            if (it) {
-                // Broadcast the device entered event to the growth app.
-                val intent = Intent().apply { setAction(ACTION_DEVICE_ENTERED_DIRECTLY) }
-                if (growthAppPackageName.isNotEmpty() && growthReceiverClassName.isNotEmpty()) {
-                    intent.setPackage(growthAppPackageName)
-                    intent.setComponent(ComponentName(growthAppPackageName, growthReceiverClassName))
-                }
+            // Cancel any existing job before launching a new one.
+            sendBroadcastJob?.cancel()
+            sendBroadcastJob = null
 
-                if (growthReceiverPermission.isNotEmpty()) {
-                    broadcastSender.sendBroadcast(intent, growthReceiverPermission)
-                } else {
-                    broadcastSender.sendBroadcast(intent)
+            if (it) {
+                // Launch the delayed task.
+                sendBroadcastJob = coroutineScope {
+                    launch {
+                        delay(growthBroadcastDelayMillis.toLong())
+                        sendBroadcast()
+                    }
                 }
             }
         }
+    }
+
+    private suspend fun sendBroadcast() {
+        // Broadcast the device entered event.
+        val intent = Intent().apply { setAction(ACTION_DEVICE_ENTERED_DIRECTLY) }
+        if (growthAppPackageName.isNotEmpty() && growthReceiverClassName.isNotEmpty()) {
+            intent.setComponent(ComponentName(growthAppPackageName, growthReceiverClassName))
+        }
+        broadcastSender.sendBroadcast(intent)
     }
 
     companion object {
