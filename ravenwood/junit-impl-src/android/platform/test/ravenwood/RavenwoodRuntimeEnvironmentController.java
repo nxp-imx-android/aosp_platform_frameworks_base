@@ -59,7 +59,7 @@ import android.os.Process_ravenwood;
 import android.os.ServiceManager;
 import android.os.ServiceManager.ServiceNotFoundException;
 import android.os.SystemProperties;
-import android.provider.DeviceConfig_host;
+import android.provider.DeviceConfig_ravenwood;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.util.Log;
@@ -483,7 +483,7 @@ public class RavenwoodRuntimeEnvironmentController {
         // Reset some global state
         UiAutomation_ravenwood.reset();
         Process_ravenwood.reset();
-        DeviceConfig_host.reset();
+        DeviceConfig_ravenwood.reset();
         Binder.restoreCallingIdentity(sCallingIdentity);
 
         SystemProperties.clearChangeCallbacksForTest();

@@ -16,11 +16,11 @@
 package android.util;
 
 import android.annotation.Nullable;
+import android.os.Process;
 import android.util.Log.Level;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.os.RuntimeInit;
-import com.android.ravenwood.RavenwoodRuntimeNative;
 
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
@@ -180,14 +180,13 @@ public class Log_ravenwood {
      */
     private static volatile int sPid = 0;
 
-    private static ThreadLocal<Integer> sTid =
-            ThreadLocal.withInitial(RavenwoodRuntimeNative::gettid);
+    private static ThreadLocal<Integer> sTid = ThreadLocal.withInitial(Process::myTid);
 
     /**
      * Call it when {@link RavenwoodRuntimeNative} is usable.
      */
     public static void onRavenwoodRuntimeNativeReady() {
-        sPid = RavenwoodRuntimeNative.getpid();
+        sPid = Process.myPid();
     }
 
     private static int getPid() {

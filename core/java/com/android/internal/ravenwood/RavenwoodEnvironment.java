@@ -33,7 +33,7 @@ import android.ravenwood.annotation.RavenwoodReplace;
  * is mostly redundant. Clean it up.
  */
 @RavenwoodKeepWholeClass
-@RavenwoodRedirectionClass("RavenwoodEnvironment_host")
+@RavenwoodRedirectionClass("RavenwoodEnvironment_ravenwood")
 public final class RavenwoodEnvironment {
     public static final String TAG = "RavenwoodEnvironment";
 
