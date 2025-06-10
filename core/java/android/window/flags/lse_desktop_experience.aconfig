@@ -1299,6 +1299,17 @@ flag {
 }
 
 flag {
+    name: "handle_incompatible_tasks_in_desktop_launch_params"
+    namespace: "lse_desktop_experience"
+    description: "Forces incompatible tasks opening in desktop to be fullscreen via the desktop /n"
+                 "mode launch params modifier."
+    bug: "423860499"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "include_top_transparent_fullscreen_task_in_desktop_heuristic"
     namespace: "lse_desktop_experience"
     description: "Whether to include any top transparent fullscreen task launched in desktop /n"
