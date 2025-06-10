@@ -43,6 +43,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.hardware.biometrics.AuthenticationStateListener;
+import android.hardware.biometrics.BiometricEnrollmentStatusInternal;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.IBiometricEnabledOnKeyguardCallback;
 import android.hardware.biometrics.IBiometricService;
@@ -526,7 +527,7 @@ public class AuthServiceTest {
         setInternalAndTestBiometricPermissions(mContext, true /* hasPermission */);
         List<FaceSensorPropertiesInternal> faceProps = List.of(new FaceSensorPropertiesInternal(
                 0 /* id */,
-                FaceSensorProperties.STRENGTH_STRONG,
+                FaceSensorProperties.STRENGTH_CONVENIENCE,
                 1 /* maxTemplatesAllowed */,
                 new ArrayList<>() /* componentInfo */,
                 FaceSensorProperties.TYPE_UNKNOWN,
@@ -548,9 +549,17 @@ public class AuthServiceTest {
         mAuthService = new AuthService(mContext, mInjector);
         mAuthService.onStart();
 
-        mAuthService.mImpl.getEnrollmentStatusList(TEST_OP_PACKAGE_NAME);
+        final List<BiometricEnrollmentStatusInternal> statusList =
+                mAuthService.mImpl.getEnrollmentStatusList(TEST_OP_PACKAGE_NAME);
 
         waitForIdle();
+        assertEquals(BiometricManager.Authenticators.BIOMETRIC_STRONG, statusList.get(
+                0).getStatus().getStrength());
+        assertEquals(BiometricManager.Authenticators.BIOMETRIC_CONVENIENCE, statusList.get(
+                1).getStatus().getStrength());
+
+        //getStatus().getEnrollmentCount() is tested in BiometricSimpleTests.
+
         verify(mFaceService).getEnrolledFaces(eq(0), eq(mUserId), eq(TEST_OP_PACKAGE_NAME));
         verify(mFingerprintService).getEnrolledFingerprints(eq(mUserId), eq(TEST_OP_PACKAGE_NAME),
                 eq("tag"));
