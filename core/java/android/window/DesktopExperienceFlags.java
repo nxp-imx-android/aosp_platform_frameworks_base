@@ -208,6 +208,9 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS),
     ENABLE_TASKBAR_RECENT_TASKS_THROTTLE_BUGFIX(Flags::enableTaskbarRecentTasksThrottleBugfix,
             true, Flags.FLAG_ENABLE_TASKBAR_RECENT_TASKS_THROTTLE_BUGFIX),
+    ENABLE_TASKBAR_RUNNING_TASKS_IN_SPLITSCREEN_SELECT_BUGFIX(
+            Flags::taskbarRunningTasksInSplitscreenSelect, false,
+            Flags.FLAG_TASKBAR_RUNNING_TASKS_IN_SPLITSCREEN_SELECT),
     ENABLE_TILE_RESIZING(Flags::enableTileResizing, true, Flags.FLAG_ENABLE_TILE_RESIZING),
     ENABLE_WINDOWING_TASK_STACK_ORDER_BUGFIX(
             Flags::enableWindowingTaskStackOrderBugfix, true,
