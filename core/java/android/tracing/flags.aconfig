@@ -71,3 +71,11 @@ flag {
     is_fixed_read_only: true
     bug: "410517697"
 }
+
+flag {
+    name: "sysui_large_perfetto_shmem_buffer"
+    namespace: "windowing_tools"
+    description: "Large perfetto shmem buffer in sysui"
+    is_fixed_read_only: true
+    bug: "420587648"
+}
