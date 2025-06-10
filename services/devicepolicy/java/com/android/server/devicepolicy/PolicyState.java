@@ -148,9 +148,12 @@ final class PolicyState<V> {
                 new LinkedHashMap<>(globalPoliciesSetByAdmins);
         mergedPolicies.putAll(mPoliciesSetByAdmins);
 
-        PolicyValue<V> resolvedPolicy = mPolicyDefinition.resolvePolicy(mergedPolicies);
-        boolean policyChanged = !Objects.equals(resolvedPolicy, mCurrentResolvedPolicy);
-        mCurrentResolvedPolicy = resolvedPolicy;
+        ResolvedPolicy<V> resolvedPolicy = mPolicyDefinition.resolvePolicy(
+                mergedPolicies);
+        PolicyValue<V> resolvedPolicyValue =
+                resolvedPolicy == null ? null : resolvedPolicy.getResolvedPolicyValue();
+        boolean policyChanged = !Objects.equals(resolvedPolicyValue, mCurrentResolvedPolicy);
+        mCurrentResolvedPolicy = resolvedPolicyValue;
 
         return policyChanged;
     }
@@ -165,9 +168,12 @@ final class PolicyState<V> {
         if (mPolicyDefinition.isNonCoexistablePolicy()) {
             return false;
         }
-        PolicyValue<V> resolvedPolicy = mPolicyDefinition.resolvePolicy(mPoliciesSetByAdmins);
-        boolean policyChanged = !Objects.equals(resolvedPolicy, mCurrentResolvedPolicy);
-        mCurrentResolvedPolicy = resolvedPolicy;
+        ResolvedPolicy<V> resolvedPolicy = mPolicyDefinition.resolvePolicy(
+                mPoliciesSetByAdmins);
+        PolicyValue<V> resolvedPolicyValue =
+                resolvedPolicy == null ? null : resolvedPolicy.getResolvedPolicyValue();
+        boolean policyChanged = !Objects.equals(resolvedPolicyValue, mCurrentResolvedPolicy);
+        mCurrentResolvedPolicy = resolvedPolicyValue;
 
         return policyChanged;
     }

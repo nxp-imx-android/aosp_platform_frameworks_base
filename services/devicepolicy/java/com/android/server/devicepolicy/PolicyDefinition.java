@@ -616,7 +616,8 @@ final class PolicyDefinition<V> {
     }
 
     @Nullable
-    PolicyValue<V> resolvePolicy(LinkedHashMap<EnforcingAdmin, PolicyValue<V>> adminsPolicy) {
+    ResolvedPolicy<V> resolvePolicy(
+            LinkedHashMap<EnforcingAdmin, PolicyValue<V>> adminsPolicy) {
         return mResolutionMechanism.resolve(adminsPolicy);
     }
 
