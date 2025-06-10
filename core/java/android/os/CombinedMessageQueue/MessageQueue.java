@@ -2608,6 +2608,8 @@ public final class MessageQueue {
         private volatile boolean mRemovedFromStackValue;
         static {
             try {
+                // We need to use VarHandle rather than java.util.concurrent.atomic.*
+                // for performance reasons. See: b/421437036
                 MethodHandles.Lookup l = MethodHandles.lookup();
                 sRemovedFromStack = l.findVarHandle(MessageQueue.MessageNode.class,
                         "mRemovedFromStackValue", boolean.class);
@@ -2681,6 +2683,8 @@ public final class MessageQueue {
 
     static {
         try {
+            // We need to use VarHandle rather than java.util.concurrent.atomic.*
+            // for performance reasons. See: b/421437036
             MethodHandles.Lookup l = MethodHandles.lookup();
             sState = l.findVarHandle(MessageQueue.class, "mStateValue",
                     MessageQueue.StackNode.class);
@@ -2803,6 +2807,8 @@ public final class MessageQueue {
         private volatile long mCountsValue = 0;
         static {
             try {
+                // We need to use VarHandle rather than java.util.concurrent.atomic.*
+                // for performance reasons. See: b/421437036
                 MethodHandles.Lookup l = MethodHandles.lookup();
                 sCounts = l.findVarHandle(MessageQueue.MessageCounts.class, "mCountsValue",
                         long.class);
