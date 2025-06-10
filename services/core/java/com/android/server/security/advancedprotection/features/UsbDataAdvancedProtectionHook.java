@@ -368,13 +368,20 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 && mKeyguardManager.isKeyguardLocked()
                 && usbPortIsConnectedWithDataDisabled(portStatus)) {
 
+            String notificationTitle;
             String notificationBody;
             if (mReplugRequiredUponEnable) {
+              notificationTitle =
+                        mContext.getString(
+                                R.string.usb_apm_usb_plugged_in_when_locked_replug_notification_title);
                 notificationBody =
                         mContext.getString(
                                 R.string
                                         .usb_apm_usb_plugged_in_for_power_brick_replug_notification_text);
             } else {
+              notificationTitle =
+                        mContext.getString(
+                                R.string.usb_apm_usb_plugged_in_when_locked_notification_title);
                 notificationBody =
                         mContext.getString(
                                 R.string.usb_apm_usb_plugged_in_for_power_brick_notification_text);
@@ -383,8 +390,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             Intent silenceIntent = new Intent(ACTION_SILENCE_NOTIFICATION);
             silenceIntent.putExtra(EXTRA_SILENCE_POWER_NOTIFICATION, true);
             sendNotification(
-                    mContext.getString(
-                            R.string.usb_apm_usb_plugged_in_when_locked_notification_title),
+                    notificationTitle,
                     notificationBody,
                     PendingIntent.getBroadcast(
                             mContext, 0, silenceIntent, PendingIntent.FLAG_IMMUTABLE));
@@ -396,13 +402,20 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private void sendPowerAndDataNotificationIfDeviceLocked(UsbPortStatus portStatus) {
         if (mSilencePowerNotification && mSilenceDataNotification) return;
         if (mKeyguardManager.isKeyguardLocked() && usbPortIsConnectedWithDataDisabled(portStatus)) {
+            String notificationTitle;
             String notificationBody;
             if (mReplugRequiredUponEnable) {
+              notificationTitle =
+                        mContext.getString(
+                                R.string.usb_apm_usb_plugged_in_when_locked_replug_notification_title);
                 notificationBody =
                         mContext.getString(
                                 R.string
                                         .usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text);
             } else {
+                notificationTitle =
+                        mContext.getString(
+                                R.string.usb_apm_usb_plugged_in_when_locked_notification_title);
                 notificationBody =
                         mContext.getString(
                                 R.string
@@ -413,8 +426,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             silenceIntent.putExtra(EXTRA_SILENCE_DATA_NOTIFICATION, true);
             silenceIntent.putExtra(EXTRA_SILENCE_POWER_NOTIFICATION, true);
             sendNotification(
-                    mContext.getString(
-                            R.string.usb_apm_usb_plugged_in_when_locked_notification_title),
+                    notificationTitle,
                     notificationBody,
                     PendingIntent.getBroadcast(
                             mContext, 0, silenceIntent, PendingIntent.FLAG_IMMUTABLE));
@@ -428,13 +440,20 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
                 && mKeyguardManager.isKeyguardLocked()
                 && usbPortIsConnectedWithDataDisabled(portStatus)) {
 
+            String notificationTitle;
             String notificationBody;
             if (mReplugRequiredUponEnable) {
+              notificationTitle =
+                        mContext.getString(
+                                R.string.usb_apm_usb_plugged_in_when_locked_replug_notification_title);
                 notificationBody =
                         mContext.getString(
                                 R.string
                                         .usb_apm_usb_plugged_in_when_locked_replug_notification_text);
             } else {
+                notificationTitle =
+                        mContext.getString(
+                                R.string.usb_apm_usb_plugged_in_when_locked_notification_title);
                 notificationBody =
                         mContext.getString(
                                 R.string.usb_apm_usb_plugged_in_when_locked_notification_text);
@@ -443,8 +462,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
             Intent silenceIntent = new Intent(ACTION_SILENCE_NOTIFICATION);
             silenceIntent.putExtra(EXTRA_SILENCE_DATA_NOTIFICATION, true);
             sendNotification(
-                    mContext.getString(
-                            R.string.usb_apm_usb_plugged_in_when_locked_notification_title),
+                    notificationTitle,
                     notificationBody,
                     PendingIntent.getBroadcast(
                             mContext, 0, silenceIntent, PendingIntent.FLAG_IMMUTABLE));
