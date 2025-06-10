@@ -188,7 +188,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
                     if (paused) {
                         cancelPendingClick();
                         if (mActiveClickType == AUTOCLICK_TYPE_SCROLL) {
-                            exitScrollMode();
+                            if (mAutoclickScrollPanel != null) {
+                                mAutoclickScrollPanel.hide();
+                            }
+                            stopContinuousScroll();
                         }
                     }
                 }
