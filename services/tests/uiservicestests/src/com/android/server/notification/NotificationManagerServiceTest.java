@@ -218,6 +218,7 @@ import android.app.INotificationManager;
 import android.app.ITransientNotification;
 import android.app.IUriGrantsManager;
 import android.app.Notification;
+import android.app.Notification.Action;
 import android.app.Notification.MessagingStyle.Message;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
@@ -309,7 +310,10 @@ import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
 import android.testing.TestablePermissions;
 import android.testing.TestableResources;
+import android.text.Annotation;
 import android.text.Html;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
@@ -1172,6 +1176,10 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     private NotificationRecord generateNotificationRecord(NotificationChannel channel,
             Notification.TvExtender extender) {
+        return generateNotificationRecord(channel, extender, null);
+    }
+      private NotificationRecord generateNotificationRecord(NotificationChannel channel,
+            Notification.TvExtender extender, Action action) {
         if (channel == null) {
             channel = mTestNotificationChannel;
         }
@@ -1181,6 +1189,9 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 .addAction(new Notification.Action.Builder(null, "test", mActivityIntent).build())
                 .addAction(new Notification.Action.Builder(
                         null, "test", mActivityIntentImmutable).build());
+        if (action != null) {
+            nb.addAction(action);
+        }
         if (extender != null) {
             nb.extend(extender);
         }
@@ -10205,7 +10216,8 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
 
     @Test
     @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
-    public void testOnNotificationSmartReplySent() {
+    public void
+            testOnNotificationSmartReplySent_isSmartReply_hasSmartReplyAndSendsSmartReplyLogs() {
         final int replyIndex = 2;
         final String reply = "Hello";
         final boolean modifiedBeforeSending = true;
@@ -10224,6 +10236,43 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertEquals(NotificationRecordLogger.NotificationEvent.NOTIFICATION_SMART_REPLIED,
                 mNotificationRecordLogger.event(0));
         // Check that r.recordSmartReplied was called.
+        assertThat(r.getSbn().getNotification().flags & FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY)
+                .isGreaterThan(0);
+        assertThat(r.getStats().hasSmartReplied()).isTrue();
+    }
+
+    @Test
+    @EnableFlags(android.app.Flags.FLAG_LIFETIME_EXTENSION_REFACTOR)
+    public void testOnNotificationSmartReplySent_isAnimatedReply_sendsAnimatedReplyLogs() {
+        final int replyIndex = 0;
+        final String reply = "Hello";
+        final boolean modifiedBeforeSending = true;
+        final boolean generatedByAssistant = true;
+        final SpannableStringBuilder animatedReplyString = new SpannableStringBuilder(reply);
+        final Annotation animatedReplyAnnotation = new Annotation("isAnimatedReply", "1");
+        final ArrayList<CharSequence> smartReplies = new ArrayList<>();
+        animatedReplyString.setSpan(
+                animatedReplyAnnotation,
+                0,
+                reply.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        smartReplies.add(animatedReplyString);
+        NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
+        r.setSuggestionsGeneratedByAssistant(generatedByAssistant);
+        r.setSmartReplies(smartReplies);
+        mService.addNotification(r);
+
+        mService.mNotificationDelegate.onNotificationSmartReplySent(
+                r.getKey(), replyIndex, reply, NOTIFICATION_LOCATION_UNKNOWN,
+                modifiedBeforeSending);
+
+        verify(mAssistants).notifyAssistantSuggestedReplySent(
+                eq(r.getSbn()), eq(FLAG_FILTER_TYPE_ALERTING), eq(reply), eq(generatedByAssistant));
+        assertEquals(2, mNotificationRecordLogger.numCalls());
+        assertEquals(NotificationRecordLogger.NotificationEvent.NOTIFICATION_ANIMATED_REPLIED,
+                mNotificationRecordLogger.event(0));
+        assertEquals(NotificationRecordLogger.NotificationEvent.NOTIFICATION_SMART_REPLIED,
+                mNotificationRecordLogger.event(1));
         assertThat(r.getSbn().getNotification().flags & FLAG_LIFETIME_EXTENDED_BY_DIRECT_REPLY)
                 .isGreaterThan(0);
         assertThat(r.getStats().hasSmartReplied()).isTrue();
@@ -10282,7 +10331,7 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void testOnNotificationActionClick() {
+    public void testOnNotificationActionClick_isNotificationAction_sendsNotificationActionLogs() {
         final int actionIndex = 2;
         final Notification.Action action =
                 new Notification.Action.Builder(null, "text", mActivityIntent).build();
@@ -10302,6 +10351,32 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         assertEquals(1, mNotificationRecordLogger.numCalls());
         assertEquals(
                 NotificationRecordLogger.NotificationEvent.NOTIFICATION_ACTION_CLICKED_2,
+                mNotificationRecordLogger.event(0));
+    }
+
+    @Test
+    public void testOnNotificationActionClick_isAnimatedAction_sendsAnimatedActionLogs() {
+        final int actionIndex = 2;
+        final Bundle bundle = new Bundle();
+        bundle.putBoolean(Notification.Action.EXTRA_IS_ANIMATED, true);
+        final Notification.Action action =
+                new Notification.Action.Builder(null, "text", mActivityIntent)
+            .addExtras(bundle).build();
+        final boolean generatedByAssistant = false;
+        NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
+        NotificationVisibility notificationVisibility =
+                NotificationVisibility.obtain(r.getKey(), 1, 2, true);
+
+        mService.addNotification(r);
+        mService.mNotificationDelegate.onNotificationActionClick(
+                10, 10, r.getKey(), actionIndex, action, notificationVisibility,
+                generatedByAssistant);
+
+        verify(mAssistants).notifyAssistantActionClicked(
+                eq(r), eq(action), eq(generatedByAssistant));
+        assertEquals(1, mNotificationRecordLogger.numCalls());
+        assertEquals(
+                NotificationRecordLogger.NotificationEvent.NOTIFICATION_ANIMATED_ACTION_CLICKED_2,
                 mNotificationRecordLogger.event(0));
     }
 
@@ -10451,7 +10526,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 mNotificationRecordLogger.event(0));
     }
 
-
     @Test
     public void testLogSmartSuggestionsVisible_triggerOnExpandAndVisible() {
         NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
@@ -10491,6 +10565,102 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
                 new NotificationVisibility[0]);
 
         assertEquals(0, mService.countLogSmartSuggestionsVisible);
+    }
+
+    @Test
+    public void testLogSmartSuggestionsVisible_hasAnimatedReply_triggersAnimatedReplyLogs() {
+        final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
+        final SpannableStringBuilder animatedReplyString =
+            new SpannableStringBuilder("smart reply");
+        final Annotation animatedReplyAnnotation = new Annotation("isAnimatedReply", "1");
+        final ArrayList<CharSequence> smartReplies = new ArrayList<>();
+        animatedReplyString.setSpan(
+                animatedReplyAnnotation,
+                0,
+                animatedReplyString.length(),
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        smartReplies.add(animatedReplyString);
+        r.setNumSmartRepliesAdded(1);
+        r.setSmartReplies(smartReplies);
+        mService.addNotification(r);
+
+        mService.mNotificationDelegate.onNotificationExpansionChanged(r.getKey(), false, true,
+                NOTIFICATION_LOCATION_UNKNOWN);
+        NotificationVisibility[] notificationVisibility = new NotificationVisibility[] {
+                NotificationVisibility.obtain(r.getKey(), 0, 0, true)
+        };
+        mService.mNotificationDelegate.onNotificationVisibilityChanged(notificationVisibility,
+                new NotificationVisibility[0]);
+
+        assertEquals(3, mNotificationRecordLogger.numCalls());
+        assertEquals(NotificationRecordLogger.NotificationEvent
+                .NOTIFICATION_ANIMATED_REPLY_VISIBLE, mNotificationRecordLogger.event(1));
+    }
+
+    @Test
+    public void
+        testLogSmartSuggestionsVisible_withoutSmartReplies_notTriggerAnimatedReplyLogs() {
+        final NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
+        r.setNumSmartRepliesAdded(1);
+        r.setSmartReplies(new ArrayList<>());
+        mService.addNotification(r);
+
+        mService.mNotificationDelegate.onNotificationExpansionChanged(r.getKey(), false, true,
+                NOTIFICATION_LOCATION_UNKNOWN);
+        NotificationVisibility[] notificationVisibility = new NotificationVisibility[] {
+                NotificationVisibility.obtain(r.getKey(), 0, 0, true)
+        };
+        mService.mNotificationDelegate.onNotificationVisibilityChanged(notificationVisibility,
+                new NotificationVisibility[0]);
+
+        assertEquals(2, mNotificationRecordLogger.numCalls());
+        assertNotEquals(NotificationRecordLogger.NotificationEvent
+                .NOTIFICATION_ANIMATED_REPLY_VISIBLE, mNotificationRecordLogger.event(1));
+    }
+
+    @Test
+    public void testLogSmartSuggestionsVisible_hasAnimatedAction_triggersAnimatedActionLogs() {
+        final Bundle bundle = new Bundle();
+        bundle.putBoolean(Notification.Action.EXTRA_IS_ANIMATED, true);
+        final Notification.Action action =
+                new Notification.Action.Builder(null, "text", mActivityIntent)
+                .addExtras(bundle).build();
+        final NotificationRecord r =
+            generateNotificationRecord(mTestNotificationChannel, null, action);
+        r.setNumSmartActionsAdded(1);
+        mService.addNotification(r);
+
+        mService.mNotificationDelegate.onNotificationExpansionChanged(r.getKey(), false, true,
+                NOTIFICATION_LOCATION_UNKNOWN);
+        NotificationVisibility[] notificationVisibility = new NotificationVisibility[] {
+                NotificationVisibility.obtain(r.getKey(), 0, 0, true)
+        };
+        mService.mNotificationDelegate.onNotificationVisibilityChanged(notificationVisibility,
+                new NotificationVisibility[0]);
+
+        assertEquals(3, mNotificationRecordLogger.numCalls());
+        assertEquals(NotificationRecordLogger.NotificationEvent
+                .NOTIFICATION_ANIMATED_ACTION_VISIBLE, mNotificationRecordLogger.event(1));
+    }
+
+    @Test
+    public void
+        testLogSmartSuggestionsVisible_withoutActionExtra_notTriggerAnimatedActionLogs() {
+        NotificationRecord r = generateNotificationRecord(mTestNotificationChannel);
+        r.setNumSmartActionsAdded(1);
+        mService.addNotification(r);
+
+        mService.mNotificationDelegate.onNotificationExpansionChanged(r.getKey(), false, true,
+                NOTIFICATION_LOCATION_UNKNOWN);
+        NotificationVisibility[] notificationVisibility = new NotificationVisibility[] {
+                NotificationVisibility.obtain(r.getKey(), 0, 0, true)
+        };
+        mService.mNotificationDelegate.onNotificationVisibilityChanged(notificationVisibility,
+                new NotificationVisibility[0]);
+
+        assertEquals(2, mNotificationRecordLogger.numCalls());
+        assertNotEquals(NotificationRecordLogger.NotificationEvent
+                .NOTIFICATION_ANIMATED_ACTION_VISIBLE, mNotificationRecordLogger.event(1));
     }
 
     @Test

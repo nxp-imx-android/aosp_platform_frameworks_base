@@ -224,6 +224,7 @@ import android.app.ITransientNotification;
 import android.app.ITransientNotificationCallback;
 import android.app.IUriGrantsManager;
 import android.app.Notification;
+import android.app.Notification.Action;
 import android.app.Notification.MessagingStyle;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
@@ -351,6 +352,8 @@ import android.view.Display;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.RemoteViews;
 import android.widget.Toast;
+import android.text.Spanned;
+import android.text.Annotation;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -1434,6 +1437,11 @@ public class NotificationManagerService extends SystemService {
                     return;
                 }
                 final long now = System.currentTimeMillis();
+                boolean isAnimatedAction = false;
+                if (action != null && action.getExtras() != null) {
+                    isAnimatedAction = action.getExtras()
+                    .getBoolean(Notification.Action.EXTRA_IS_ANIMATED, false);
+                }
                 MetricsLogger.action(r.getLogMaker(now)
                         .setCategory(MetricsEvent.NOTIFICATION_ITEM_ACTION)
                         .setType(MetricsEvent.TYPE_ACTION)
@@ -1449,7 +1457,8 @@ public class NotificationManagerService extends SystemService {
                                 nv.location.toMetricsEventEnum()));
                 mNotificationRecordLogger.log(
                         NotificationRecordLogger.NotificationEvent.fromAction(actionIndex,
-                                generatedByAssistant, action.isContextual()), r);
+                                generatedByAssistant, action.isContextual(),
+                                isAnimatedAction), r);
                 EventLogTags.writeNotificationActionClicked(key,
                         action.actionIntent.getTarget().toString(),
                         action.actionIntent.getIntent().toString(), actionIndex,
@@ -1747,6 +1756,13 @@ public class NotificationManagerService extends SystemService {
                                     MetricsEvent.NOTIFICATION_SMART_REPLY_MODIFIED_BEFORE_SENDING,
                                     modifiedBeforeSending ? 1 : 0);
                     mMetricsLogger.write(logMaker);
+                    if (r.getSmartReplies() != null
+                            && r.getSmartReplies().size() > replyIndex
+                            && isAnimatedReply(r.getSmartReplies().get(replyIndex))) {
+                        mNotificationRecordLogger.log(
+                                NotificationRecordLogger.NotificationEvent
+                                    .NOTIFICATION_ANIMATED_REPLIED, r);
+                    }
                     mNotificationRecordLogger.log(
                             NotificationRecordLogger.NotificationEvent.NOTIFICATION_SMART_REPLIED,
                             r);
@@ -1967,6 +1983,22 @@ public class NotificationManagerService extends SystemService {
                 notificationUpdate);
     }
 
+    private static boolean isAnimatedReply(CharSequence reply) {
+        if (reply instanceof Spanned) {
+            Spanned spanned = (Spanned) reply;
+            Annotation[] annotations = spanned.getSpans(0, reply.length(), Annotation.class);
+            if (annotations != null) { // Add null check
+                for (Annotation annotation : annotations) {
+                    if ("isAnimatedReply".equals(annotation.getKey())
+                            && "1".equals(annotation.getValue())) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     @VisibleForTesting
     void unclassifyNotification(final String key) {
         if (!(notificationClassificationUi() && notificationRegroupOnClassification())) {
@@ -2134,6 +2166,8 @@ public class NotificationManagerService extends SystemService {
         // then log that the user has seen them.
         if ((r.getNumSmartRepliesAdded() > 0 || r.getNumSmartActionsAdded() > 0)
                 && !r.hasSeenSmartReplies()) {
+            boolean isAnimatedReply = false;
+            boolean isAnimatedAction = false;
             r.setSeenSmartReplies(true);
             LogMaker logMaker = r.getLogMaker()
                     .setCategory(MetricsEvent.SMART_REPLY_VISIBLE)
@@ -2151,6 +2185,39 @@ public class NotificationManagerService extends SystemService {
                             MetricsEvent.NOTIFICATION_SMART_REPLY_EDIT_BEFORE_SENDING,
                             r.getEditChoicesBeforeSending() ? 1 : 0);
             mMetricsLogger.write(logMaker);
+            // TODO (b/421296838): notification metrics log not accurate.
+            if (r.getSmartReplies() != null) {
+                for (CharSequence reply : r.getSmartReplies()) {
+                    if (isAnimatedReply(reply)) {
+                        isAnimatedReply = true;
+                        break;
+                    }
+                }
+            }
+            if (r.getNotification() != null && r.getNotification().actions != null) {
+                for (int actionIndex = 0;
+                        actionIndex < r.getNotification().actions.length;
+                        actionIndex++) {
+                    Action action = r.getNotification().actions[actionIndex];
+                    if (action != null
+                            && action.getExtras() != null
+                            && action.getExtras()
+                                    .getBoolean(Notification.Action.EXTRA_IS_ANIMATED, false)) {
+                        isAnimatedAction = true;
+                        break;
+                    }
+                }
+            }
+            if (isAnimatedReply) {
+                mNotificationRecordLogger.log(
+                        NotificationRecordLogger.NotificationEvent
+                            .NOTIFICATION_ANIMATED_REPLY_VISIBLE, r);
+            }
+            if (isAnimatedAction) {
+              mNotificationRecordLogger.log(
+                        NotificationRecordLogger.NotificationEvent
+                            .NOTIFICATION_ANIMATED_ACTION_VISIBLE, r);
+            }
             mNotificationRecordLogger.log(
                     NotificationRecordLogger.NotificationEvent.NOTIFICATION_SMART_REPLY_VISIBLE,
                     r);
