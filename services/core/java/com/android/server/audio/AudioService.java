@@ -4675,6 +4675,11 @@ public class AudioService extends IAudioService.Stub
                     TAG + ".onSetStreamVolume", false /*external*/);
         }
         setStreamVolumeInt(stream, index, device, false, caller, hasModifyAudioSettings);
+        // setting volume from Hdmi-CEC system audio, skip unmuting the stream being modified and
+        // the aliased streams.
+        if ((flags & AudioManager.FLAG_HDMI_SYSTEM_AUDIO_VOLUME) != 0) {
+            return;
+        }
         // setting non-zero volume for a muted stream unmutes the stream and vice versa
         // except for BT SCO stream where only explicit mute is allowed to comply to BT requirements
         if (!isStreamBluetoothSco(streamType) && canChangeMute) {
