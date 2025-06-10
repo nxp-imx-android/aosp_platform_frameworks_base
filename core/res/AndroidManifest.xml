@@ -5213,7 +5213,7 @@
 
     <!-- This permission protects a content provider within home/launcher applications, enabling management of home screen metadata such as shortcut placement, launch intents, and labels. -->
     <!-- @FlaggedApi(android.provider.Flags.FLAG_LAUNCHER_DATA_ACCESS) -->
-    <permission android:name="android.permission.LAUNCHER_DATA_ACCESS"
+    <permission android:name="android.permission.ACCESS_LAUNCHER_DATA"
       android:protectionLevel="signatureOrSystem"
       android:featureFlag="android.provider.launcher_data_access" />
 
