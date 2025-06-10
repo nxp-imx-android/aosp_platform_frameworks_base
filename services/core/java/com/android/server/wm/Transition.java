@@ -2947,7 +2947,9 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 continue;
             }
             // The level of transition target should be at least window token.
-            if (wc.asWindowState() != null) continue;
+            if (wc.asWindowState() != null) {
+                continue;
+            }
 
             final ChangeInfo changeInfo = changes.get(wc);
             // Reject no-ops

@@ -3082,6 +3082,9 @@ class DesktopTasksController(
         val options = createNewWindowOptions(callingTaskInfo, deskId)
         when (options.launchWindowingMode) {
             WINDOWING_MODE_MULTI_WINDOW -> {
+                val wct = WindowContainerTransaction()
+                wct.setWindowingMode(callingTaskInfo.token, WINDOWING_MODE_UNDEFINED)
+                    .setBounds(callingTaskInfo.token, Rect())
                 val splitPosition =
                     splitScreenController.determineNewInstancePosition(callingTaskInfo)
                 // TODO(b/349828130) currently pass in index_undefined until we can revisit these
@@ -3097,6 +3100,7 @@ class DesktopTasksController(
                     splitPosition,
                     options.toBundle(),
                     /* hideTaskToken= */ null,
+                    wct,
                     /* forceLaunchNewTask= */ true,
                     splitIndex,
                     if (ENABLE_NON_DEFAULT_DISPLAY_SPLIT.isTrue) callingTaskInfo.displayId

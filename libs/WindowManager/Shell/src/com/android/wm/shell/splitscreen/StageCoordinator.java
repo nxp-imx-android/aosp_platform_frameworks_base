@@ -848,12 +848,16 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
      */
     void startIntent(PendingIntent intent, Intent fillInIntent, @SplitPosition int position,
             @Nullable Bundle options, @Nullable WindowContainerToken hideTaskToken,
-            @SplitIndex int index, int displayId) {
+            @Nullable WindowContainerTransaction transaction, @SplitIndex int index,
+            int displayId) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "startIntent: intent=%s position=%d", intent.getIntent(),
                 position);
         mSplitRequest = new SplitRequest(intent.getIntent(), position);
 
         final WindowContainerTransaction wct = new WindowContainerTransaction();
+        if (transaction != null) {
+            wct.merge(transaction, true);
+        }
         options = enableFlexibleSplit()
                 ? resolveStartStageForIndex(options, null /*wct*/, index)
                 : resolveStartStage(STAGE_TYPE_UNDEFINED, position, options, null /* wct */);
