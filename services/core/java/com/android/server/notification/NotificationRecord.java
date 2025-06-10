@@ -687,6 +687,7 @@ public final class NotificationRecord {
             case Notification.EXTRA_SUBSTITUTE_APP_NAME:
             case Notification.EXTRA_TEMPLATE:
             case "android.support.v4.app.extra.COMPAT_TEMPLATE":
+            case "androidx.core.app.extra.COMPAT_TEMPLATE":
                 return false;
             default:
                 return true;
