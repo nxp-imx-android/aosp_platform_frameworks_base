@@ -3289,7 +3289,7 @@ public class UserManagerService extends IUserManager.Stub {
 
     /** Called by PackageManagerService */
     public boolean exists(@UserIdInt int userId) {
-        return mLocalService.exists(userId);
+        return userId == UserHandle.USER_SYSTEM || mLocalService.exists(userId);
     }
 
     /**
