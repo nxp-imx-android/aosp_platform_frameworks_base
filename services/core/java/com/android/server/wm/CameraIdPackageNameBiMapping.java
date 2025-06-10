@@ -63,7 +63,8 @@ final class CameraIdPackageNameBiMapping {
     }
 
     @NonNull
-    String getSummaryForDisplayRotationHistoryRecord() {
+    @Override
+    public String toString() {
         return "{ mPackageToCameraIdMap=" + mPackageToCameraIdMap + " }";
     }
 
