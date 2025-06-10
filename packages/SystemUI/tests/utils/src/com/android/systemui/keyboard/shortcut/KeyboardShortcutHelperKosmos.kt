@@ -29,6 +29,7 @@ import com.android.systemui.keyboard.shortcut.data.repository.AppsShortcutCatego
 import com.android.systemui.keyboard.shortcut.data.repository.CustomInputGesturesRepository
 import com.android.systemui.keyboard.shortcut.data.repository.CustomShortcutCategoriesRepository
 import com.android.systemui.keyboard.shortcut.data.repository.DefaultShortcutCategoriesRepository
+import com.android.systemui.keyboard.shortcut.data.repository.FakeShortcutCategoriesRepository
 import com.android.systemui.keyboard.shortcut.data.repository.InputGestureDataAdapter
 import com.android.systemui.keyboard.shortcut.data.repository.InputGestureMaps
 import com.android.systemui.keyboard.shortcut.data.repository.ShortcutCategoriesRepository
@@ -103,7 +104,7 @@ val Kosmos.shortcutCategoriesUtils by
         )
     }
 
-val Kosmos.defaultShortcutCategoriesRepository by
+var Kosmos.defaultShortcutCategoriesRepository: ShortcutCategoriesRepository by
     Kosmos.Fixture {
         DefaultShortcutCategoriesRepository(
             applicationCoroutineScope,
@@ -146,7 +147,7 @@ val Kosmos.appLaunchDataRepository by
         )
     }
 
-val Kosmos.customShortcutCategoriesRepository by
+var Kosmos.customShortcutCategoriesRepository: ShortcutCategoriesRepository by
     Kosmos.Fixture {
         CustomShortcutCategoriesRepository(
             shortcutHelperInputDeviceRepository,
@@ -248,7 +249,7 @@ val Kosmos.shortcutCustomizationDialogStarterFactory by
 val Kosmos.shortcutCustomizationInteractor by
     Kosmos.Fixture {
         ShortcutCustomizationInteractor(
-            customShortcutCategoriesRepository,
+            customShortcutCategoriesRepository as CustomShortcutCategoriesRepository,
             shortcutHelperCustomizationModeRepository,
         )
     }
@@ -276,3 +277,9 @@ val Kosmos.userVisibleAppsRepository by
             fakeLauncherApps.launcherApps,
         )
     }
+
+val Kosmos.fakeDefaultShortcutCategoriesRepository by
+    Kosmos.Fixture { FakeShortcutCategoriesRepository(shortcutHelperStateRepository) }
+
+val Kosmos.fakeCustomShortcutCategoriesRepository by
+    Kosmos.Fixture { FakeShortcutCategoriesRepository(shortcutHelperStateRepository) }
