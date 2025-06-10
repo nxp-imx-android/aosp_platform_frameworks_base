@@ -3195,8 +3195,11 @@ public class BubbleController implements ConfigurationChangeListener,
             executeRemoteCallWithTaskPermission(
                     mController,
                     "showExpandedView",
-                    (controller) -> {
-                        if (mLayerView != null) {
+                    controller -> {
+                        // launcher is requesting to show the expanded view in response to sysui
+                        // sending an expand signal. check that we didn't already collapse between
+                        // these 2 events.
+                        if (mLayerView != null && mBubbleData.isExpanded()) {
                             showExpandedViewForBubbleBar();
                         }
                     });
