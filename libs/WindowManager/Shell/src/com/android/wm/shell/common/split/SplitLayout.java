@@ -1662,8 +1662,11 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         }
 
         private void onProgress(float progress) {
-            mDimValue1 = getProgressValue(mLastDim1, mTargetDim1, progress);
-            mDimValue2 = getProgressValue(mLastDim2, mTargetDim2, progress);
+            if (!mSplitState.currentStateHasOffscreenApps()) {
+                // Update dim during onImePositionChanged.
+                mDimValue1 = getProgressValue(mLastDim1, mTargetDim1, progress);
+                mDimValue2 = getProgressValue(mLastDim2, mTargetDim2, progress);
+            }
             mYOffsetForIme =
                     (int) getProgressValue((float) mLastYOffset, (float) mTargetYOffset, progress);
         }
