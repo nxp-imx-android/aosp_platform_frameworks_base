@@ -328,7 +328,17 @@ public final class Call {
      */
     @FlaggedApi(Flags.FLAG_IS_USING_VIDEO_RINGBACK)
     public static final String EXTRA_IS_USING_VIDEO_RINGBACK =
-                      "android.telecom.extra.IS_USING_VIDEO_RINGBACK";
+            "android.telecom.extra.IS_USING_VIDEO_RINGBACK";
+
+    /**
+     * Boolean indicating that the call is a unidirectional
+     * video service call. {@link Connection#setExtras(Bundle)} or
+     * {@link Connection#putExtras(Bundle)} should be used to notify
+     * Telecom this extra has been set.
+     */
+    @FlaggedApi(Flags.FLAG_IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE)
+    public static final String EXTRA_IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE =
+            "android.telecom.extra.IS_USING_UNIDIRECTIONAL_VIDEO_SERVICE";
 
     /**
      * Reject reason used with {@link #reject(int)} to indicate that the user is rejecting this

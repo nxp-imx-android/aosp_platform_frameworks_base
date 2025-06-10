@@ -44587,6 +44587,7 @@ package android.telephony {
     field public static final String KEY_SUPPORTS_DEVICE_TO_DEVICE_COMMUNICATION_USING_DTMF_BOOL = "supports_device_to_device_communication_using_dtmf_bool";
     field public static final String KEY_SUPPORTS_DEVICE_TO_DEVICE_COMMUNICATION_USING_RTP_BOOL = "supports_device_to_device_communication_using_rtp_bool";
     field public static final String KEY_SUPPORTS_SDP_NEGOTIATION_OF_D2D_RTP_HEADER_EXTENSIONS_BOOL = "supports_sdp_negotiation_of_d2d_rtp_header_extensions_bool";
+    field @FlaggedApi("com.android.server.telecom.flags.is_using_unidirectional_video_service") public static final String KEY_SUPPORTS_UNIDIRECTIONAL_VIDEO_SERVICE_BOOL = "supports_unidirectional_video_service_bool";
     field @FlaggedApi("com.android.server.telecom.flags.is_using_video_ringback") public static final String KEY_SUPPORTS_VIDEO_RINGBACK_BOOL = "supports_video_back_tone_bool";
     field public static final String KEY_SUPPORT_3GPP_CALL_FORWARDING_WHILE_ROAMING_BOOL = "support_3gpp_call_forwarding_while_roaming_bool";
     field public static final String KEY_SUPPORT_ADD_CONFERENCE_PARTICIPANTS_BOOL = "support_add_conference_participants_bool";
