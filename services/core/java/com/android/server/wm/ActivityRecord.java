@@ -3655,7 +3655,10 @@ final class ActivityRecord extends WindowToken {
             }
 
             finishActivityResults(resultCode, resultData, resultGrants);
-
+            final boolean wasVisibleRequested = mVisibleRequested;
+            if (mVisibleRequested) {
+                setVisibility(false);
+            }
             if (isState(RESUMED)) {
                 if (endTask) {
                     mAtmService.getTaskChangeNotificationController().notifyTaskRemovalStarted(
@@ -3669,8 +3672,6 @@ final class ActivityRecord extends WindowToken {
                     Slog.v(TAG_TRANSITION, "Prepare close transition: finishing " + this);
                 }
 
-                // Tell window manager to prepare for this one to be removed.
-                setVisibility(false);
                 // Propagate the last IME visibility in the same task, so the IME can show
                 // automatically if the next activity has a focused editable view.
                 if (mLastImeShown) {
@@ -3693,10 +3694,9 @@ final class ActivityRecord extends WindowToken {
                     mAtmService.getLockTaskController().clearLockedTask(task);
                 }
             } else if (!isState(PAUSING)) {
-                if (mVisibleRequested) {
+                if (wasVisibleRequested) {
                     // Prepare and execute close transition.
                     if (mTransitionController.isShellTransitionsEnabled()) {
-                        setVisibility(false);
                         if (newTransition != null) {
                             // This is a transition specifically for this close operation, so set
                             // ready now.
