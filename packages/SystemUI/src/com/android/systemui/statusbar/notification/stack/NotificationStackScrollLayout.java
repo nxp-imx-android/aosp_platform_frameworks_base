@@ -1553,6 +1553,9 @@ public class NotificationStackScrollLayout
                     canClip = notifParent.isGroupExpanded()
                             && !notifParent.isGroupExpansionChanging();
                 }
+                if (row.isBackgroundOpaque()) {
+                    canClip = false;
+                }
                 // handle the notGoneIndex for the children as well
                 List<ExpandableNotificationRow> children = row.getAttachedChildren();
                 if (row.isSummaryWithChildren() && children != null) {
