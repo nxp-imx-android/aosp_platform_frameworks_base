@@ -49,6 +49,7 @@ import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.IInterface;
 import android.os.PersistableBundle;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
@@ -390,7 +391,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     @NonNull
-    private List<ISupervisionListener> getSupervisionAppServiceListeners(@UserIdInt int userId) {
+    private List<ISupervisionListener> getSupervisionAppServiceListeners(@UserIdInt int userId,
+            @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
         ArrayList<ISupervisionListener> listeners = new ArrayList<>();
         if (!Flags.enableSupervisionAppService()) {
             return listeners;
@@ -401,8 +403,10 @@ public class SupervisionService extends ISupervisionManager.Stub {
             String targetPackage = conn.getFinder().getTargetPackage(userId);
             ISupervisionListener binder = (ISupervisionListener) conn.getServiceBinder();
             if (binder == null) {
-                Slogf.w(SupervisionLog.TAG,
-                        "Failed to bind to SupervisionAppService for %s", targetPackage);
+                Slogf.d(SupervisionLog.TAG,
+                        "Failed to bind to SupervisionAppService for %s now", targetPackage);
+
+                dispatchSupervisionAppServiceWhenConnected(conn, action);
                 continue;
             }
 
@@ -417,7 +421,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         ArrayList<ISupervisionListener> listeners = new ArrayList<>();
 
         // Add SupervisionAppServices listeners before the platform listeners.
-        listeners.addAll(getSupervisionAppServiceListeners(userId));
+        listeners.addAll(getSupervisionAppServiceListeners(userId, action));
 
         synchronized (getLockObject()) {
             mSupervisionListeners.forEach((binder, record) -> {
@@ -437,6 +441,36 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 && dpmi != null && supervisionAppPackage != null) {
             dpmi.removePoliciesForAdmins(supervisionAppPackage, userId);
         }
+    }
+
+    private void dispatchSupervisionAppServiceWhenConnected(
+            AppServiceConnection conn,
+            @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
+        // This listener will be notified when the connection changes.
+        AppServiceConnection.ConnectionStatusListener connectionListener =
+                new AppServiceConnection.ConnectionStatusListener() {
+            @Override
+            public void onConnected(@NonNull AppServiceConnection connection,
+                    @NonNull IInterface service) {
+                try {
+                    ISupervisionListener binder = (ISupervisionListener) service;
+                    Binder.withCleanCallingIdentity(() -> action.accept(binder));
+                } finally {
+                    connection.removeConnectionStatusListener(this);
+                }
+            }
+
+            @Override
+            public void onDisconnected(@NonNull AppServiceConnection connection) {
+                connection.removeConnectionStatusListener(this);
+            }
+
+            @Override
+            public void onBinderDied(@NonNull AppServiceConnection connection) {
+                connection.removeConnectionStatusListener(this);
+            }
+        };
+        conn.addConnectionStatusListener(connectionListener);
     }
 
     /**

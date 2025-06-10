@@ -54,7 +54,7 @@ public class CarrierMessagingClientServiceFinder
     }
 
     @Override
-    protected boolean isEnabled(AppBindingConstants constants) {
+    protected boolean isEnabled(AppBindingConstants constants, int userId) {
         return constants.SMS_SERVICE_ENABLED
                 && mContext.getResources().getBoolean(R.bool.config_useSmsAppService);
     }
