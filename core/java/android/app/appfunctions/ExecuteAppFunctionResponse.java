@@ -127,7 +127,9 @@ public final class ExecuteAppFunctionResponse implements Parcelable {
      * @param resultDocument The return value of the executed function.
      * @param extras The additional metadata for this function execution response.
      * @param uriGrants The list of {@link AppFunctionUriGrant} to which
-     *     the caller of this app function execution should have temporary access granted.
+     *     the caller of this app function execution should have temporary access granted. These
+     *     grants typically persist until the device reboots. Uri owner could consider clearing
+     *     data associated with these URIs after a reboot.
      */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     public ExecuteAppFunctionResponse(

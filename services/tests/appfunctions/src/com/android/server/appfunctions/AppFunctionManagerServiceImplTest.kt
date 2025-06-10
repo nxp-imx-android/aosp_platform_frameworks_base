@@ -16,6 +16,7 @@
 
 package com.android.server.appfunctions
 
+import android.app.IUriGrantsManager
 import android.app.appfunctions.AppFunctionAccessServiceInterface
 import android.app.appfunctions.flags.Flags
 import android.content.Context
@@ -27,6 +28,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
+import com.android.server.uri.UriGrantsManagerInternal
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Ignore
@@ -47,8 +49,13 @@ class AppFunctionManagerServiceImplTest {
     private val context: Context
         get() = ApplicationProvider.getApplicationContext()
 
-    private val serviceImpl = AppFunctionManagerServiceImpl(context, mock<PackageManagerInternal>(),
-        mock<AppFunctionAccessServiceInterface>())
+    private val serviceImpl = AppFunctionManagerServiceImpl(
+        context,
+        mock<PackageManagerInternal>(),
+        mock<AppFunctionAccessServiceInterface>(),
+        mock<IUriGrantsManager>(),
+        mock<UriGrantsManagerInternal>()
+    )
 
     @Test
     fun testGetLockForPackage_samePackage() {
