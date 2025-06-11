@@ -334,7 +334,19 @@ interface NotificationRecordLogger {
         @UiEvent(doc = "Notification was force autogrouped.")
         NOTIFICATION_FORCE_GROUP(1843),
         @UiEvent(doc = "Notification summary was force autogrouped.")
-        NOTIFICATION_FORCE_GROUP_SUMMARY(1844);
+        NOTIFICATION_FORCE_GROUP_SUMMARY(1844),
+        @UiEvent(doc = "Notification animated reply was used.")
+        NOTIFICATION_ANIMATED_REPLIED(2331),
+        @UiEvent(doc = "Notification animated reply was visible.")
+        NOTIFICATION_ANIMATED_REPLY_VISIBLE(2332),
+        @UiEvent(doc = "App-generated animated notification action at position 0 was clicked.")
+        NOTIFICATION_ANIMATED_ACTION_CLICKED_0(2333),
+        @UiEvent(doc = "App-generated animated notification action at position 1 was clicked.")
+        NOTIFICATION_ANIMATED_ACTION_CLICKED_1(2334),
+        @UiEvent(doc = "App-generated animated notification action at position 2 was clicked.")
+        NOTIFICATION_ANIMATED_ACTION_CLICKED_2(2335),
+        @UiEvent(doc = "Notification animated action was visible.")
+        NOTIFICATION_ANIMATED_ACTION_VISIBLE(2336);
 
         private final int mId;
         NotificationEvent(int id) {
@@ -354,9 +366,24 @@ interface NotificationRecordLogger {
             return expanded ? NOTIFICATION_DETAIL_OPEN_SYSTEM : NOTIFICATION_DETAIL_CLOSE_SYSTEM;
         }
         public static NotificationEvent fromAction(int index, boolean isAssistant,
-                boolean isContextual) {
+                boolean isContextual, boolean isAnimatedAction) {
             if (index < 0 || index > 2) {
                 return NOTIFICATION_ACTION_CLICKED;
+            }
+           if (isAnimatedAction) {
+                NotificationEvent event = NOTIFICATION_ANIMATED_ACTION_CLICKED_0;
+                switch (index) {
+                    case 0 -> {
+                        event = NOTIFICATION_ANIMATED_ACTION_CLICKED_0;
+                    }
+                    case 1 -> {
+                        event = NOTIFICATION_ANIMATED_ACTION_CLICKED_1;
+                    }
+                    case 2 -> {
+                        event = NOTIFICATION_ANIMATED_ACTION_CLICKED_2;
+                    }
+                }
+                return event;
             }
             if (isAssistant) {  // Assistant actions are contextual by definition
                 return NotificationEvent.values()[
