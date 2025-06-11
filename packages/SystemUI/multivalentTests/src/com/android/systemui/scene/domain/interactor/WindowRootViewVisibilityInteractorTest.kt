@@ -68,7 +68,6 @@ import platform.test.runner.parameterized.Parameters
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
-@android.platform.test.annotations.EnabledOnRavenwood
 class WindowRootViewVisibilityInteractorTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val kosmos = testKosmos()
