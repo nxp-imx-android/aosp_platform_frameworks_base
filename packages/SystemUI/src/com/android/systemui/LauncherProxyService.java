@@ -39,7 +39,6 @@ import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_V
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_WAKEFULNESS_TRANSITION;
 import static com.android.systemui.shared.system.QuickStepContract.addInterface;
 import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
-import static com.android.window.flags.Flags.predictiveBackThreeButtonNav;
 
 import android.annotation.FloatRange;
 import android.annotation.Nullable;
@@ -346,8 +345,7 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         @Override
         public void onBackEvent(@Nullable KeyEvent keyEvent) throws RemoteException {
             final int displayId = keyEvent == null ? INVALID_DISPLAY : keyEvent.getDisplayId();
-            if (predictiveBackThreeButtonNav() && predictiveBackSwipeEdgeNoneApi()
-                    && mBackAnimation != null && keyEvent != null) {
+            if (predictiveBackSwipeEdgeNoneApi() && mBackAnimation != null && keyEvent != null) {
                 mBackAnimation.setTriggerBack(!keyEvent.isCanceled());
                 mBackAnimation.onBackMotion(/* touchX */ 0, /* touchY */ 0, keyEvent.getAction(),
                         EDGE_NONE, displayId);

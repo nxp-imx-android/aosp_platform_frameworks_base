@@ -310,13 +310,6 @@ flag {
 }
 
 flag {
-    name: "predictive_back_three_button_nav"
-    namespace: "systemui"
-    description: "Enable Predictive Back Animation for 3-button-nav"
-    bug: "373544911"
-}
-
-flag {
     name: "remove_depart_target_from_motion"
     namespace: "windowing_frontend"
     description: "Remove DepartingAnimationTarget from BackMotionEvent"
