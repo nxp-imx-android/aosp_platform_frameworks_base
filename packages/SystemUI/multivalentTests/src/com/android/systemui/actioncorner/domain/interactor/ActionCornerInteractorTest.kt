@@ -35,6 +35,9 @@ import com.android.systemui.actioncorner.data.model.ActionCornerRegion.BOTTOM_RI
 import com.android.systemui.actioncorner.data.model.ActionCornerState.ActiveActionCorner
 import com.android.systemui.actioncorner.data.repository.ActionCornerSettingRepository
 import com.android.systemui.actioncorner.data.repository.FakeActionCornerRepository
+import com.android.systemui.keyguard.domain.interactor.windowManagerLockscreenVisibilityInteractor
+import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.runTest
@@ -42,6 +45,9 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
+import com.android.systemui.scene.data.repository.Idle
+import com.android.systemui.scene.data.repository.setTransition
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.HOME
 import com.android.systemui.shared.system.actioncorner.ActionCornerConstants.OVERVIEW
 import com.android.systemui.statusbar.CommandQueue
@@ -75,6 +81,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
             launcherProxyService,
             actionCornerSettingRepository,
             fakeUserSetupRepository,
+            windowManagerLockscreenVisibilityInteractor,
             commandQueue,
         )
     }
@@ -87,7 +94,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
 
     @Test
     fun bottomLeftCornerActivated_overviewActionConfigured_notifyLauncherOfOverviewAction() =
-        kosmos.runTest {
+        unlockScreenAndRunTest {
             settingsRepository.setInt(
                 ACTION_CORNER_BOTTOM_LEFT_ACTION,
                 ACTION_CORNER_ACTION_OVERVIEW,
@@ -98,7 +105,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
 
     @Test
     fun bottomRightCornerActivated_homeActionConfigured_notifyLauncherOfHomeAction() =
-        kosmos.runTest {
+        unlockScreenAndRunTest {
             settingsRepository.setInt(ACTION_CORNER_BOTTOM_RIGHT_ACTION, ACTION_CORNER_ACTION_HOME)
             actionCornerRepository.addState(ActiveActionCorner(BOTTOM_RIGHT, DEFAULT_DISPLAY))
             verify(launcherProxyService).onActionCornerActivated(HOME, DEFAULT_DISPLAY)
@@ -106,7 +113,7 @@ class ActionCornerInteractorTest : SysuiTestCase() {
 
     @Test
     fun topLeftCornerActivated_notificationsActionConfigured_toggleNotificationShade() =
-        kosmos.runTest {
+        unlockScreenAndRunTest {
             settingsRepository.setInt(
                 ACTION_CORNER_TOP_LEFT_ACTION,
                 ACTION_CORNER_ACTION_NOTIFICATIONS,
@@ -120,23 +127,22 @@ class ActionCornerInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun topRightCornerActivated_qsActionConfigured_toggleQsPanel() =
-        kosmos.runTest {
-            settingsRepository.setInt(
-                ACTION_CORNER_TOP_RIGHT_ACTION,
-                ACTION_CORNER_ACTION_QUICK_SETTINGS,
-            )
+    fun topRightCornerActivated_qsActionConfigured_toggleQsPanel() = unlockScreenAndRunTest {
+        settingsRepository.setInt(
+            ACTION_CORNER_TOP_RIGHT_ACTION,
+            ACTION_CORNER_ACTION_QUICK_SETTINGS,
+        )
 
-            actionCornerRepository.addState(
-                ActiveActionCorner(ActionCornerRegion.TOP_RIGHT, DEFAULT_DISPLAY)
-            )
+        actionCornerRepository.addState(
+            ActiveActionCorner(ActionCornerRegion.TOP_RIGHT, DEFAULT_DISPLAY)
+        )
 
-            verify(commandQueue).toggleQuickSettingsPanel()
-        }
+        verify(commandQueue).toggleQuickSettingsPanel()
+    }
 
     @Test
     fun userNotSetUp_overviewActionConfigured_actionCornerActivated_actionNotTriggered() =
-        kosmos.runTest {
+        unlockScreenAndRunTest {
             settingsRepository.setInt(
                 ACTION_CORNER_BOTTOM_LEFT_ACTION,
                 ACTION_CORNER_ACTION_OVERVIEW,
@@ -144,5 +150,28 @@ class ActionCornerInteractorTest : SysuiTestCase() {
             fakeUserSetupRepository.setUserSetUp(false)
             actionCornerRepository.addState(ActiveActionCorner(BOTTOM_LEFT, DEFAULT_DISPLAY))
             verify(launcherProxyService, never()).onActionCornerActivated(OVERVIEW, DEFAULT_DISPLAY)
+        }
+
+    @Test
+    fun lockscreenVisible_overviewActionConfigured_actionCornerActivated_actionNotTriggered() =
+        kosmos.runTest {
+            // We are in lockscreen by default
+            settingsRepository.setInt(
+                ACTION_CORNER_BOTTOM_LEFT_ACTION,
+                ACTION_CORNER_ACTION_OVERVIEW,
+            )
+
+            actionCornerRepository.addState(ActiveActionCorner(BOTTOM_LEFT, DEFAULT_DISPLAY))
+            verify(launcherProxyService, never()).onActionCornerActivated(OVERVIEW, DEFAULT_DISPLAY)
+        }
+
+    private fun unlockScreenAndRunTest(testBody: suspend Kosmos.() -> Unit) =
+        kosmos.runTest {
+            setTransition(
+                sceneTransition = Idle(Scenes.Gone),
+                stateTransition =
+                    TransitionStep(from = KeyguardState.LOCKSCREEN, to = KeyguardState.GONE),
+            )
+            testBody()
         }
 }
