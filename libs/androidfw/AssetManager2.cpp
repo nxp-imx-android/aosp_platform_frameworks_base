@@ -1300,8 +1300,6 @@ base::expected<const ResolvedBag*, NullOrIOError> AssetManager2::GetBag(
 
       new_entry->cookie = entry->cookie;
       new_entry->key = new_key;
-      new_entry->key_pool = nullptr;
-      new_entry->type_pool = nullptr;
       new_entry->style = resid;
       new_entry->value.copyFrom_dtoh(map_entry->value);
       status_t err = entry->dynamic_ref_table->lookupResourceValue(&new_entry->value);
@@ -1372,8 +1370,6 @@ base::expected<const ResolvedBag*, NullOrIOError> AssetManager2::GetBag(
       // or is equal to the parent (overrides).
       new_entry->cookie = entry->cookie;
       new_entry->key = child_key;
-      new_entry->key_pool = nullptr;
-      new_entry->type_pool = nullptr;
       new_entry->value.copyFrom_dtoh(map_entry->value);
       new_entry->style = resid;
       status_t err = entry->dynamic_ref_table->lookupResourceValue(&new_entry->value);
@@ -1415,8 +1411,6 @@ base::expected<const ResolvedBag*, NullOrIOError> AssetManager2::GetBag(
     }
     new_entry->cookie = entry->cookie;
     new_entry->key = new_key;
-    new_entry->key_pool = nullptr;
-    new_entry->type_pool = nullptr;
     new_entry->value.copyFrom_dtoh(map_entry->value);
     new_entry->style = resid;
     status_t err = entry->dynamic_ref_table->lookupResourceValue(&new_entry->value);

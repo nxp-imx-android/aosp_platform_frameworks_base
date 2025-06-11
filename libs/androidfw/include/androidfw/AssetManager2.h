@@ -59,9 +59,6 @@ struct ResolvedBag {
 
     // Which ApkAssets this entry came from.
     ApkAssetsCookie cookie;
-
-    ResStringPool* key_pool;
-    ResStringPool* type_pool;
   };
 
   // Denotes the configuration axis that this bag varies with.
