@@ -26,6 +26,7 @@ data class Shortcut(
     val className: String = "",
 ) {
     val containsCustomShortcutCommands: Boolean = commands.any { it.isCustom }
+    val containsDefaultShortcutCommands: Boolean = commands.any { !it.isCustom }
 }
 
 class ShortcutBuilder(private val label: String) {

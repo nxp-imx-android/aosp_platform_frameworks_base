@@ -36,6 +36,7 @@ import com.android.systemui.keyboard.shortcut.defaultShortcutCategoriesRepositor
 import com.android.systemui.keyboard.shortcut.fakeCustomShortcutCategoriesRepository
 import com.android.systemui.keyboard.shortcut.fakeDefaultShortcutCategoriesRepository
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategory
+import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.CurrentApp
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.MultiTasking
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.System
@@ -46,6 +47,7 @@ import com.android.systemui.keyboard.shortcut.shortcutHelperViewModel
 import com.android.systemui.keyboard.shortcut.ui.model.IconSource
 import com.android.systemui.keyboard.shortcut.ui.model.ShortcutCategoryUi
 import com.android.systemui.keyboard.shortcut.ui.model.ShortcutsUiState
+import com.android.systemui.keyboard.shortcut.ui.viewmodel.ShortcutHelperViewModel.Companion.EXTENDED_APPS_SHORTCUT_CUSTOMIZATION_LIMIT
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.model.sysUiState
@@ -468,6 +470,78 @@ class ShortcutHelperViewModelTest : SysuiTestCase() {
         }
     }
 
+    @Test
+    fun allowExtendedAppShortcutsCustomization_true_WhenExtraAppsShortcutsCustomizedIsBelowLimit() {
+        testScope.runTest {
+            setupShortcutHelperWithExtendedAppsShortcutCustomizations(
+                numberOfDefaultAppsShortcuts = 3,
+                numberOfCustomShortcutsForDefaultApps = 3,
+                numberOfCustomShortcutsForExtendedApps = 3,
+            )
+
+            underTest.toggleCustomizationMode(true)
+            val uiState by collectLastValue(underTest.shortcutsUiState)
+
+            val activeUiState = uiState as ShortcutsUiState.Active
+
+            assertThat(activeUiState.allowExtendedAppShortcutsCustomization).isTrue()
+        }
+    }
+
+    @Test
+    fun allowExtendedAppShortcutsCustomization_false_WhenExtraAppsShortcutsCustomizedIsAtLimit() {
+        testScope.runTest {
+            setupShortcutHelperWithExtendedAppsShortcutCustomizations(
+                numberOfDefaultAppsShortcuts = 3,
+                numberOfCustomShortcutsForDefaultApps = 3,
+                numberOfCustomShortcutsForExtendedApps = EXTENDED_APPS_SHORTCUT_CUSTOMIZATION_LIMIT,
+            )
+
+            underTest.toggleCustomizationMode(true)
+            val uiState by collectLastValue(underTest.shortcutsUiState)
+
+            val activeUiState = uiState as ShortcutsUiState.Active
+
+            assertThat(activeUiState.allowExtendedAppShortcutsCustomization).isFalse()
+        }
+    }
+
+    @Test
+    fun allowExtendedAppShortcutsCustomization_false_WhenExtraAppsShortcutsCustomizedIsAboveLimit() {
+        testScope.runTest {
+            setupShortcutHelperWithExtendedAppsShortcutCustomizations(
+                numberOfDefaultAppsShortcuts = 3,
+                numberOfCustomShortcutsForDefaultApps = 3,
+                numberOfCustomShortcutsForExtendedApps =
+                    EXTENDED_APPS_SHORTCUT_CUSTOMIZATION_LIMIT + 3,
+            )
+
+            underTest.toggleCustomizationMode(true)
+            val uiState by collectLastValue(underTest.shortcutsUiState)
+
+            val activeUiState = uiState as ShortcutsUiState.Active
+
+            assertThat(activeUiState.allowExtendedAppShortcutsCustomization).isFalse()
+        }
+    }
+
+    private fun setupShortcutHelperWithExtendedAppsShortcutCustomizations(
+        numberOfDefaultAppsShortcuts: Int,
+        numberOfCustomShortcutsForDefaultApps: Int,
+        numberOfCustomShortcutsForExtendedApps: Int,
+    ) {
+        testHelper.showFromActivity()
+        fakeDefaultShortcutCategoriesRepository.setShortcutCategories(
+            buildAppShortcutsCategory(numberOfDefaultAppsShortcuts)
+        )
+        fakeCustomShortcutCategoriesRepository.setShortcutCategories(
+            buildAppShortcutsCategory(
+                numberOfCustomShortcutsForDefaultApps,
+                numberOfCustomShortcutsForExtendedApps,
+            )
+        )
+    }
+
     private fun openHelperAndSearchForFooString() {
         testHelper.showFromActivity()
         underTest.onSearchQueryChanged("foo")
@@ -486,6 +560,18 @@ class ShortcutHelperViewModelTest : SysuiTestCase() {
         ShortcutSubCategory(
             label = subCategoryLabel,
             shortcuts = shortcutLabels.map { simpleShortcut(it, isCustomShortcut) },
+        )
+
+    private fun subCategoryWithShortcutLabels(
+        defaultShortcutLabels: List<String>,
+        customShortcutLabels: List<String>,
+        subCategoryLabel: String = FIRST_SIMPLE_GROUP_LABEL,
+    ) =
+        ShortcutSubCategory(
+            label = subCategoryLabel,
+            shortcuts =
+                defaultShortcutLabels.map { simpleShortcut(it) } +
+                    customShortcutLabels.map { simpleShortcut(it, isCustom = true) },
         )
 
     private fun setShortcutsCategoriesForSearchQuery() {
@@ -515,6 +601,19 @@ class ShortcutHelperViewModelTest : SysuiTestCase() {
             }
             contentDescription { "$label, Press key Ctrl plus A" }
         }
+
+    private fun buildAppShortcutsCategory(
+        numberOfDefaultAppsShortcuts: Int = 0,
+        numberOfCustomAppsShortcuts: Int = 0,
+    ): ShortcutCategory {
+        val defaultAppLabels = (1..numberOfDefaultAppsShortcuts).map { "default app $it" }
+        val customAppLabels = (1..numberOfCustomAppsShortcuts).map { "custom app $it" }
+
+        return ShortcutCategory(
+            type = ShortcutCategoryType.AppCategories,
+            subCategories = listOf(subCategoryWithShortcutLabels(defaultAppLabels, customAppLabels)),
+        )
+    }
 
     private companion object {
         const val FIRST_SIMPLE_GROUP_LABEL = "simple group 1"
