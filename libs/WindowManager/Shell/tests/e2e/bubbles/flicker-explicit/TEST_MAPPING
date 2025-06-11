@@ -13,7 +13,13 @@
       "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaBubbleMenuTest"
     },
     {
+      "name": "WMShellExplicitFlickerTestsBubbles-EnterBubbleWithImeViaBubbleMenuTest"
+    },
+    {
       "name": "WMShellExplicitFlickerTestsBubbles-ExpandBubbleViaBubbleStackTest"
+    },
+    {
+      "name": "WMShellExplicitFlickerTestsBubbles-ExpandBubbleWithImeViaBubbleBarTest"
     }
   ]
 }

@@ -21,11 +21,11 @@ import androidx.test.filters.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsEnabled
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.wm.shell.Flags
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleStackAlwaysVisibleTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesNotExpandedTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
-import com.android.wm.shell.flicker.bubbles.utils.collapseBubbleViaBackKey
+import com.android.wm.shell.flicker.bubbles.utils.collapseBubbleAppViaBackKey
 import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.setUpBeforeTransition
 import org.junit.ClassRule
@@ -35,23 +35,23 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 
 /**
- * Test collapse bubble via clicking back key.
+ * Test collapse bubble app via clicking back key.
  *
  * To run this test: `atest WMShellExplicitFlickerTestsBubbles:CollapseBubbleViaBackTest`
  *
  * Pre-steps:
  * ```
- *     Launch [simpleApp] into bubble
+ *     Launch [testApp] into bubble
  * ```
  *
  * Actions:
  * ```
- *     Collapse bubble via back key
+ *     Collapse bubbled [testApp] via back key
  * ```
  *
  * Verified tests:
  * - [BubbleFlickerTestBase]
- * - [BubbleStackAlwaysVisibleTestCases]
+ * - [BubbleAlwaysVisibleTestCases]
  * - [BubbleAppBecomesNotExpandedTestCases]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
@@ -59,9 +59,9 @@ import org.junit.runners.MethodSorters
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class CollapseBubbleViaBackTest :
+class CollapseBubbleAppViaBackTest :
     BubbleFlickerTestBase(),
-    BubbleStackAlwaysVisibleTestCases,
+    BubbleAlwaysVisibleTestCases,
     BubbleAppBecomesNotExpandedTestCases
 {
     companion object : FlickerPropertyInitializer() {
@@ -73,7 +73,7 @@ class CollapseBubbleViaBackTest :
                 setUpBeforeTransition(instrumentation, wmHelper)
                 launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
             },
-            transition = { collapseBubbleViaBackKey(testApp, tapl, wmHelper) },
+            transition = { collapseBubbleAppViaBackKey(testApp, tapl, wmHelper) },
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
     }

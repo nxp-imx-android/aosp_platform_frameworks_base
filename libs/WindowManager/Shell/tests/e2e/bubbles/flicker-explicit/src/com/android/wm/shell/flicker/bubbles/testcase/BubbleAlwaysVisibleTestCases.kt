@@ -24,7 +24,7 @@ import org.junit.Test
  * The test cases to check whether both window and layer that [BUBBLE] stack is attached are
  * visible during the transition.
  */
-interface BubbleStackAlwaysVisibleTestCases : BubbleFlickerSubjects {
+interface BubbleAlwaysVisibleTestCases : BubbleFlickerSubjects {
 
     /**
      * Verifies the bubble window is always visible.

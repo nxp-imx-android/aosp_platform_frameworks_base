@@ -28,9 +28,11 @@ import android.tools.io.Reader
 import android.tools.traces.ConditionsFactory
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import android.tools.traces.monitors.PerfettoTraceMonitor
+import android.tools.traces.monitors.ScreenRecorder
 import android.tools.traces.monitors.events.EventLogMonitor
 import android.tools.traces.monitors.withTracing
 import android.tools.traces.parsers.WindowManagerStateHelper
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
@@ -63,6 +65,7 @@ fun setUpBeforeTransition(instrumentation: Instrumentation, wmHelper: WindowMana
 fun runTransitionWithTrace(transition: () -> Unit): Reader =
     withTracing(
         traceMonitors = listOf(
+            ScreenRecorder(InstrumentationRegistry.getInstrumentation().targetContext),
             PerfettoTraceMonitor.newBuilder()
                 .enableTransitionsTrace()
                 .enableLayersTrace()
@@ -90,45 +93,80 @@ fun launchBubbleViaBubbleMenu(
     // Open the bubble menu and click.
     simpleAppIcon.openMenu().bubbleMenuItem.click()
 
-    waitAndAssertBubbleInExpandedState(testApp, wmHelper)
+    waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
 }
 
 /**
- * Launches [testApp] into bubble via clicking bubble menu.
+ * Collapses the bubble app [testApp] via back key
  *
- * @param testApp the test app to launch into bubble
+ * @param testApp the bubble app to collapse
  * @param tapl the [LauncherInstrumentation]
  * @param wmHelper the [WindowManagerStateHelper]
  */
-fun collapseBubbleViaBackKey(
+fun collapseBubbleAppViaBackKey(
     testApp: StandardAppHelper,
     tapl: LauncherInstrumentation,
     wmHelper: WindowManagerStateHelper,
 ) {
     // Ensure Bubble is in expanded state.
-    waitAndAssertBubbleInExpandedState(testApp, wmHelper)
+    waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
 
     // Press back key to collapse bubble
     tapl.pressBack()
 
-    waitAndAssertBubbleInCollapseState(wmHelper)
+    waitAndAssertBubbleAppInCollapseState(wmHelper)
 }
 
-fun expandBubbleViaTapOnBubbleStack(
+/**
+ * Expands the bubble app [testApp], which is previously collapsed via tapping on bubble stack.
+ *
+ * @param testApp the bubble app to expand
+ * @param uiDevice the UI automator to get the bubble view [UiObject2]
+ * @param wmHelper the [WindowManagerStateHelper]
+ */
+fun expandBubbleAppViaTapOnBubbleStack(
     uiDevice: UiDevice,
     testApp: StandardAppHelper,
     wmHelper: WindowManagerStateHelper,
 ) {
     // Ensure Bubble is in collapse state.
-    waitAndAssertBubbleInCollapseState(wmHelper)
+    waitAndAssertBubbleAppInCollapseState(wmHelper)
 
     // Click bubble to expand
-    uiDevice.bubble?.click() ?: error("Can't find bubble view")
+    uiDevice.bubbleIcon?.click() ?: error("Can't find bubble view")
 
-    waitAndAssertBubbleInExpandedState(testApp, wmHelper)
+    waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
 }
 
-fun dismissBubbleViaBubbleView(uiDevice: UiDevice, wmHelper: WindowManagerStateHelper) {
+/**
+ * Expands the bubble app [testApp], which is previously collapsed via tapping on bubble bar.
+ * Note that this method only works on device with bubble bar.
+ *
+ * @param testApp the bubble app to expand
+ * @param uiDevice the UI automator to get the bubble bar [UiObject2]
+ * @param wmHelper the [WindowManagerStateHelper]
+ */
+fun expandBubbleAppViaBubbleBar(
+    uiDevice: UiDevice,
+    testApp: StandardAppHelper,
+    wmHelper: WindowManagerStateHelper,
+) {
+    // Ensure Bubble is in collapse state.
+    waitAndAssertBubbleAppInCollapseState(wmHelper)
+
+    // Click bubble bar to expand
+    uiDevice.bubbleBar?.click() ?: error("Can't find bubble bar")
+
+    waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
+}
+
+/**
+ * Dismisses the bubble app via dragging the bubble to dismiss view.
+ *
+ * @param uiDevice the UI automator to get the bubble view [UiObject2]
+ * @param wmHelper the [WindowManagerStateHelper]
+ */
+fun dismissBubbleAppViaBubbleView(uiDevice: UiDevice, wmHelper: WindowManagerStateHelper) {
     // Checks bubble is showing.
     wmHelper
         .StateSyncBuilder()
@@ -137,8 +175,8 @@ fun dismissBubbleViaBubbleView(uiDevice: UiDevice, wmHelper: WindowManagerStateH
         .withBubbleShown()
         .waitForAndVerify()
 
-    // Drag the bubble to the position of dismiss view to dismiss bubble.
-    uiDevice.bubble?.run {
+    // Drag the bubble icon to the position of dismiss view to dismiss bubble app.
+    uiDevice.bubbleIcon?.run {
         drag(Point(uiDevice.displayWidth / 2, uiDevice.displayHeight), 1000)
     }
 
@@ -151,7 +189,7 @@ fun dismissBubbleViaBubbleView(uiDevice: UiDevice, wmHelper: WindowManagerStateH
         .waitForAndVerify()
 }
 
-private fun waitAndAssertBubbleInExpandedState(
+private fun waitAndAssertBubbleAppInExpandedState(
     testApp: StandardAppHelper,
     wmHelper: WindowManagerStateHelper,
 ) {
@@ -164,7 +202,7 @@ private fun waitAndAssertBubbleInExpandedState(
         .waitForAndVerify()
 }
 
-private fun waitAndAssertBubbleInCollapseState(wmHelper: WindowManagerStateHelper) {
+private fun waitAndAssertBubbleAppInCollapseState(wmHelper: WindowManagerStateHelper) {
     wmHelper
         .StateSyncBuilder()
         .add(ConditionsFactory.isWMStateComplete())
@@ -174,12 +212,19 @@ private fun waitAndAssertBubbleInCollapseState(wmHelper: WindowManagerStateHelpe
         .waitForAndVerify()
 }
 
-private val UiDevice.bubble: UiObject2?
+private val UiDevice.bubbleIcon: UiObject2?
     get() = wait(Until.findObject(sysUiSelector(RES_ID_BUBBLE_VIEW)), FIND_OBJECT_TIMEOUT)
+
+private val UiDevice.bubbleBar: UiObject2?
+    get() = wait(Until.findObject(launcherSelector(RES_ID_BUBBLE_BAR)), FIND_OBJECT_TIMEOUT)
 
 private fun sysUiSelector(resourcesId: String): BySelector =
     By.pkg(SYSUI_PACKAGE).res(SYSUI_PACKAGE, resourcesId)
 
+private fun UiDevice.launcherSelector(resourcesId: String): BySelector =
+    By.pkg(launcherPackageName).res(launcherPackageName, resourcesId)
+
 private const val FIND_OBJECT_TIMEOUT = 4000L
 private const val SYSUI_PACKAGE = "com.android.systemui"
 private const val RES_ID_BUBBLE_VIEW = "bubble_view"
+private const val RES_ID_BUBBLE_BAR = "taskbar_bubbles"
