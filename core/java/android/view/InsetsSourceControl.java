@@ -19,9 +19,9 @@ package android.view;
 import static android.graphics.PointProto.X;
 import static android.graphics.PointProto.Y;
 import static android.util.SequenceUtils.getInitSeq;
-import static android.view.InsetsSourceControlProto.LEASH;
-import static android.view.InsetsSourceControlProto.POSITION;
-import static android.view.InsetsSourceControlProto.TYPE_NUMBER;
+import static android.internal.perfetto.protos.Insetssourcecontrol.InsetsSourceControlProto.LEASH;
+import static android.internal.perfetto.protos.Insetssourcecontrol.InsetsSourceControlProto.POSITION;
+import static android.internal.perfetto.protos.Insetssourcecontrol.InsetsSourceControlProto.TYPE_NUMBER;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;

@@ -22,9 +22,9 @@ import static android.graphics.Matrix.MSKEW_X;
 import static android.graphics.Matrix.MSKEW_Y;
 import static android.graphics.Matrix.MTRANS_X;
 import static android.graphics.Matrix.MTRANS_Y;
-import static android.view.SurfaceControlProto.HASH_CODE;
-import static android.view.SurfaceControlProto.LAYER_ID;
-import static android.view.SurfaceControlProto.NAME;
+import static android.internal.perfetto.protos.Surfacecontrol.SurfaceControlProto.HASH_CODE;
+import static android.internal.perfetto.protos.Surfacecontrol.SurfaceControlProto.LAYER_ID;
+import static android.internal.perfetto.protos.Surfacecontrol.SurfaceControlProto.NAME;
 
 import android.Manifest;
 import android.annotation.CallbackExecutor;
@@ -1719,7 +1719,7 @@ public final class SurfaceControl implements Parcelable {
 
     /**
      * Write to a protocol buffer output stream. Protocol buffer message definition is at {@link
-     * android.view.SurfaceControlProto}.
+     * android.internal.perfetto.protos.Surfacecontrol.SurfaceControlProto}.
      *
      * @param proto Stream to write the SurfaceControl object to.
      * @param fieldId Field Id of the SurfaceControl as defined in the parent message.
