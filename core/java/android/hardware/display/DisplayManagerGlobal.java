@@ -1900,10 +1900,6 @@ public final class DisplayManagerGlobal {
 
     private long mapPrivateEventFlags(@DisplayManager.PrivateEventType long privateEventFlags) {
         long baseEventMask = 0;
-        if ((privateEventFlags & DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS) != 0) {
-            baseEventMask |= INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED;
-        }
-
         if ((privateEventFlags & DisplayManager.PRIVATE_EVENT_TYPE_HDR_SDR_RATIO_CHANGED) != 0) {
             baseEventMask |= INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED;
         }
@@ -1944,6 +1940,10 @@ public final class DisplayManagerGlobal {
             if ((eventFlags & DisplayManager.EVENT_TYPE_DISPLAY_STATE) != 0) {
                 baseEventMask |= INTERNAL_EVENT_FLAG_DISPLAY_STATE;
             }
+        }
+
+        if ((eventFlags & DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS) != 0) {
+            baseEventMask |= INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED;
         }
 
         return baseEventMask;

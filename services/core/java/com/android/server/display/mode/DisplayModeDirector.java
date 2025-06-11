@@ -2123,8 +2123,8 @@ public class DisplayModeDirector {
 
         private void registerDisplayListener() {
             mInjector.registerDisplayListener(this, mHandler,
-                    DisplayManager.EVENT_TYPE_DISPLAY_CHANGED,
-                    DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS);
+                    DisplayManager.EVENT_TYPE_DISPLAY_CHANGED
+                            | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS);
         }
 
         private void setLoggingEnabled(boolean loggingEnabled) {
@@ -2919,8 +2919,8 @@ public class DisplayModeDirector {
             }
             mDisplayManagerInternal = mInjector.getDisplayManagerInternal();
             mInjector.registerDisplayListener(this, mHandler,
-                    DisplayManager.EVENT_TYPE_DISPLAY_REMOVED,
-                    DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS);
+                    DisplayManager.EVENT_TYPE_DISPLAY_REMOVED
+                            | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS);
         }
 
         /**
