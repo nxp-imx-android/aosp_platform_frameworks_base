@@ -403,8 +403,11 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
             return null;
         }).when(mAtm.mAmInternal).addPendingTopUid(anyInt(), anyInt(), any());
         clearInvocations(mAtm);
+        spyOn(activity1.app);
         activity1.moveFocusableActivityToTop("test");
         assertEquals(activity1.getUid(), pendingTopUid[0]);
+        verify(activity1.app).updateProcessInfo(false /* updateServiceConnectionActivities */,
+                true /* activityChange */, false /* updateOomAdj */, true /* addPendingTopUid */);
         verify(mAtm).updateOomAdj();
         verify(mAtm).setLastResumedActivityUncheckLocked(any(), eq("test"));
     }
