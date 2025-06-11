@@ -1277,14 +1277,6 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             return false;
         }
 
-        if (DesktopExperienceFlags.ENABLE_MIRROR_DISPLAY_NO_ACTIVITY.isTrue()) {
-            if (!displayContent.mDisplay.canHostTasks()) {
-                Slog.w(TAG, "Launch on display check: activity launch is not allowed on a "
-                        + "display that cannot host tasks");
-                return false;
-            }
-        }
-
         // Check if the caller has enough privileges to embed activities and launch to private
         // displays.
         final int startAnyPerm = mService.checkPermission(INTERNAL_SYSTEM_WINDOW, callingPid,
