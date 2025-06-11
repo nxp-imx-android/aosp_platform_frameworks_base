@@ -193,6 +193,28 @@ public class FloatingRotationButton implements RotationButton {
     }
 
     @Override
+    public void onDestroy() {
+        setRotationButtonController(null);
+        setOnClickListener(null);
+        setOnHoverListener(null);
+        setUpdatesCallback(null);
+
+        if (mKeyButtonContainer.isAttachedToWindow()) {
+            mWindowManager.removeViewImmediate(mKeyButtonContainer);
+        }
+
+        mKeyButtonView.animate().cancel();
+        mAnimatedDrawable.stop();
+        mKeyButtonView.setImageDrawable(null);
+        // Calling AnimatedDrawable#stop() and ImageView.setImageDrawable(null) above will not let
+        // RenderThread clear ref to view (via AnimatedVectorDrawable$VectorDrawableAnimatorRT)
+        // quick enough for LeakCanary to ignore the leak. To mute LeakCanary, a workaround is to
+        // clear the mKeyButtonView.mParent so that LeakCanary won't complain the leak on
+        // mKeyButtonContainer.
+        mKeyButtonContainer.removeView(mKeyButtonView);
+    }
+
+    @Override
     public boolean isVisible() {
         return mIsShowing;
     }
