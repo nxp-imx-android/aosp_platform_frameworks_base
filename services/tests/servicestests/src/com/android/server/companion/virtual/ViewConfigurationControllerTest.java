@@ -136,9 +136,9 @@ public class ViewConfigurationControllerTest {
                 .setDoubleTapTimeoutDuration(Duration.ofMillis(10L))
                 .setDoubleTapMinTimeDuration(Duration.ofMillis(10L))
                 .setScrollFriction(10f)
-                .setMinimumFlingVelocityDpPerSecond(10f)
-                .setMaximumFlingVelocityDpPerSecond(10f)
-                .setTouchSlopDp(10f)
+                .setMinimumFlingVelocityPixelsPerSecond(10)
+                .setMaximumFlingVelocityPixelsPerSecond(10)
+                .setTouchSlopPixels(10)
                 .build();
     }
 

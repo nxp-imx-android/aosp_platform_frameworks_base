@@ -3522,12 +3522,12 @@ package android.companion.virtual {
     method @NonNull public java.time.Duration getDoubleTapMinTimeDuration();
     method @NonNull public java.time.Duration getDoubleTapTimeoutDuration();
     method @NonNull public java.time.Duration getLongPressTimeoutDuration();
-    method @FloatRange(from=0) public float getMaximumFlingVelocityDpPerSecond();
-    method @FloatRange(from=0) public float getMinimumFlingVelocityDpPerSecond();
+    method @IntRange(from=0) public int getMaximumFlingVelocityPixelsPerSecond();
+    method @IntRange(from=0) public int getMinimumFlingVelocityPixelsPerSecond();
     method @NonNull public java.time.Duration getMultiPressTimeoutDuration();
     method @FloatRange(from=0) public float getScrollFriction();
     method @NonNull public java.time.Duration getTapTimeoutDuration();
-    method @FloatRange(from=0) public float getTouchSlopDp();
+    method @IntRange(from=0) public int getTouchSlopPixels();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.ViewConfigurationParams> CREATOR;
   }
@@ -3538,12 +3538,12 @@ package android.companion.virtual {
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setDoubleTapMinTimeDuration(@NonNull java.time.Duration);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setDoubleTapTimeoutDuration(@NonNull java.time.Duration);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setLongPressTimeoutDuration(@NonNull java.time.Duration);
-    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMaximumFlingVelocityDpPerSecond(@FloatRange(from=0) float);
-    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMinimumFlingVelocityDpPerSecond(@FloatRange(from=0) float);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMaximumFlingVelocityPixelsPerSecond(@IntRange(from=0) int);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMinimumFlingVelocityPixelsPerSecond(@IntRange(from=0) int);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setMultiPressTimeoutDuration(@NonNull java.time.Duration);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setScrollFriction(@FloatRange(from=0) float);
     method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setTapTimeoutDuration(@NonNull java.time.Duration);
-    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setTouchSlopDp(@FloatRange(from=0) float);
+    method @NonNull public android.companion.virtual.ViewConfigurationParams.Builder setTouchSlopPixels(@IntRange(from=0) int);
   }
 
   public final class VirtualDevice implements android.os.Parcelable {

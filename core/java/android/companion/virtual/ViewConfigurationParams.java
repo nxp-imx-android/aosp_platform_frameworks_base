@@ -18,6 +18,7 @@ package android.companion.virtual;
 
 import android.annotation.FlaggedApi;
 import android.annotation.FloatRange;
+import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.SystemApi;
 import android.companion.virtualdevice.flags.Flags;
@@ -44,9 +45,9 @@ public final class ViewConfigurationParams implements Parcelable {
      */
     public static final int INVALID_VALUE = -1;
 
-    private final float mTouchSlopDp;
-    private final float mMinimumFlingVelocityDpPerSecond;
-    private final float mMaximumFlingVelocityDpPerSecond;
+    private final int mTouchSlopPixels;
+    private final int mMinimumFlingVelocityPixelsPerSecond;
+    private final int mMaximumFlingVelocityPixelsPerSecond;
     private final float mScrollFriction;
     private final int mTapTimeoutMillis;
     private final int mDoubleTapTimeoutMillis;
@@ -54,13 +55,13 @@ public final class ViewConfigurationParams implements Parcelable {
     private final int mLongPressTimeoutMillis;
     private final int mMultiPressTimeoutMillis;
 
-    private ViewConfigurationParams(float touchSlopDp, float minimumFlingVelocityDpPerSecond,
-            float maximumFlingVelocityDpPerSecond, float scrollFriction, int tapTimeoutMillis,
-            int doubleTapTimeoutMillis, int doubleTapMinTimeMillis, int longPressTimeoutMillis,
-            int multiPressTimeoutMillis) {
-        mTouchSlopDp = touchSlopDp;
-        mMinimumFlingVelocityDpPerSecond = minimumFlingVelocityDpPerSecond;
-        mMaximumFlingVelocityDpPerSecond = maximumFlingVelocityDpPerSecond;
+    private ViewConfigurationParams(int touchSlopPixels,
+            int minimumFlingVelocityPixelsPerSecond, int maximumFlingVelocityPixelsPerSecond,
+            float scrollFriction, int tapTimeoutMillis, int doubleTapTimeoutMillis,
+            int doubleTapMinTimeMillis, int longPressTimeoutMillis, int multiPressTimeoutMillis) {
+        mTouchSlopPixels = touchSlopPixels;
+        mMinimumFlingVelocityPixelsPerSecond = minimumFlingVelocityPixelsPerSecond;
+        mMaximumFlingVelocityPixelsPerSecond = maximumFlingVelocityPixelsPerSecond;
         mScrollFriction = scrollFriction;
         mTapTimeoutMillis = tapTimeoutMillis;
         mDoubleTapTimeoutMillis = doubleTapTimeoutMillis;
@@ -70,9 +71,9 @@ public final class ViewConfigurationParams implements Parcelable {
     }
 
     private ViewConfigurationParams(Parcel in) {
-        mTouchSlopDp = in.readFloat();
-        mMinimumFlingVelocityDpPerSecond = in.readFloat();
-        mMaximumFlingVelocityDpPerSecond = in.readFloat();
+        mTouchSlopPixels = in.readInt();
+        mMinimumFlingVelocityPixelsPerSecond = in.readInt();
+        mMaximumFlingVelocityPixelsPerSecond = in.readInt();
         mScrollFriction = in.readFloat();
         mTapTimeoutMillis = in.readInt();
         mDoubleTapTimeoutMillis = in.readInt();
@@ -88,9 +89,9 @@ public final class ViewConfigurationParams implements Parcelable {
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
-        dest.writeFloat(mTouchSlopDp);
-        dest.writeFloat(mMinimumFlingVelocityDpPerSecond);
-        dest.writeFloat(mMaximumFlingVelocityDpPerSecond);
+        dest.writeInt(mTouchSlopPixels);
+        dest.writeInt(mMinimumFlingVelocityPixelsPerSecond);
+        dest.writeInt(mMaximumFlingVelocityPixelsPerSecond);
         dest.writeFloat(mScrollFriction);
         dest.writeInt(mTapTimeoutMillis);
         dest.writeInt(mDoubleTapTimeoutMillis);
@@ -103,11 +104,9 @@ public final class ViewConfigurationParams implements Parcelable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof ViewConfigurationParams that)) return false;
-        return Float.compare(mTouchSlopDp, that.mTouchSlopDp) == 0
-                && Float.compare(mMinimumFlingVelocityDpPerSecond,
-                    that.mMinimumFlingVelocityDpPerSecond) == 0
-                && Float.compare(mMaximumFlingVelocityDpPerSecond,
-                    that.mMaximumFlingVelocityDpPerSecond) == 0
+        return mTouchSlopPixels == that.mTouchSlopPixels
+                && mMinimumFlingVelocityPixelsPerSecond == that.mMinimumFlingVelocityPixelsPerSecond
+                && mMaximumFlingVelocityPixelsPerSecond == that.mMaximumFlingVelocityPixelsPerSecond
                 && Float.compare(mScrollFriction, that.mScrollFriction) == 0
                 && mTapTimeoutMillis == that.mTapTimeoutMillis
                 && mDoubleTapTimeoutMillis == that.mDoubleTapTimeoutMillis
@@ -118,8 +117,8 @@ public final class ViewConfigurationParams implements Parcelable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(mTouchSlopDp, mMinimumFlingVelocityDpPerSecond,
-                mMaximumFlingVelocityDpPerSecond, mScrollFriction, mTapTimeoutMillis,
+        return Objects.hash(mTouchSlopPixels, mMinimumFlingVelocityPixelsPerSecond,
+                mMaximumFlingVelocityPixelsPerSecond, mScrollFriction, mTapTimeoutMillis,
                 mDoubleTapTimeoutMillis, mDoubleTapMinTimeMillis, mLongPressTimeoutMillis,
                 mMultiPressTimeoutMillis);
     }
@@ -128,9 +127,9 @@ public final class ViewConfigurationParams implements Parcelable {
     @NonNull
     public String toString() {
         return "ViewConfigurationParams("
-                + "mTouchSlopDp=" + mTouchSlopDp
-                + ", mMinimumFlingVelocityDpPerSecond=" + mMinimumFlingVelocityDpPerSecond
-                + ", mMaximumFlingVelocityDpPerSecond=" + mMaximumFlingVelocityDpPerSecond
+                + "mTouchSlopPixels=" + mTouchSlopPixels
+                + ", mMinimumFlingVelocityPixelsPerSecond=" + mMinimumFlingVelocityPixelsPerSecond
+                + ", mMaximumFlingVelocityPixelsPerSecond=" + mMaximumFlingVelocityPixelsPerSecond
                 + ", mScrollFriction=" + mScrollFriction
                 + ", mTapTimeoutMillis=" + mTapTimeoutMillis
                 + ", mDoubleTapTimeoutMillis=" + mDoubleTapTimeoutMillis
@@ -141,33 +140,33 @@ public final class ViewConfigurationParams implements Parcelable {
     }
 
     /**
-     * Returns the touch slop in density independent pixels (dp).
+     * Returns the touch slop in pixels.
      *
      * @see ViewConfiguration#getScaledTouchSlop()
      */
-    @FloatRange(from = 0)
-    public float getTouchSlopDp() {
-        return mTouchSlopDp;
+    @IntRange(from = 0)
+    public int getTouchSlopPixels() {
+        return mTouchSlopPixels;
     }
 
     /**
-     * Returns the minimum fling velocity in density independent pixels (dp) per second.
+     * Returns the minimum fling velocity in pixels per second.
      *
      * @see ViewConfiguration#getScaledMinimumFlingVelocity()
      */
-    @FloatRange(from = 0)
-    public float getMinimumFlingVelocityDpPerSecond() {
-        return mMinimumFlingVelocityDpPerSecond;
+    @IntRange(from = 0)
+    public int getMinimumFlingVelocityPixelsPerSecond() {
+        return mMinimumFlingVelocityPixelsPerSecond;
     }
 
     /**
-     * Returns the maximum fling velocity in density independent pixels (dp) per second.
+     * Returns the maximum fling velocity in pixels per second.
      *
      * @see ViewConfiguration#getScaledMaximumFlingVelocity()
      */
-    @FloatRange(from = 0)
-    public float getMaximumFlingVelocityDpPerSecond() {
-        return mMaximumFlingVelocityDpPerSecond;
+    @IntRange(from = 0)
+    public int getMaximumFlingVelocityPixelsPerSecond() {
+        return mMaximumFlingVelocityPixelsPerSecond;
     }
 
     /**
@@ -244,9 +243,9 @@ public final class ViewConfigurationParams implements Parcelable {
     @FlaggedApi(Flags.FLAG_VIEWCONFIGURATION_APIS)
     public static final class Builder {
 
-        private float mTouchSlopDp = INVALID_VALUE;
-        private float mMinimumFlingVelocityDpPerSecond = INVALID_VALUE;
-        private float mMaximumFlingVelocityDpPerSecond = INVALID_VALUE;
+        private int mTouchSlopPixels = INVALID_VALUE;
+        private int mMinimumFlingVelocityPixelsPerSecond = INVALID_VALUE;
+        private int mMaximumFlingVelocityPixelsPerSecond = INVALID_VALUE;
         private float mScrollFriction = INVALID_VALUE;
         private int mTapTimeoutMillis = INVALID_VALUE;
         private int mDoubleTapTimeoutMillis = INVALID_VALUE;
@@ -255,57 +254,55 @@ public final class ViewConfigurationParams implements Parcelable {
         private int mMultiPressTimeoutMillis = INVALID_VALUE;
 
         /**
-         * Sets the touch slop in density independent pixels (dp). When this is set,
-         * {@link ViewConfiguration#getScaledTouchSlop()} would return this value multiplied by
-         * the display density for any context associated with the virtual device.
+         * Sets the touch slop in pixels. When this is set,
+         * {@link ViewConfiguration#getScaledTouchSlop()} would return this value for any context
+         * associated with the virtual device.
          *
          * @throws IllegalArgumentException if the value is negative.
          * @see ViewConfiguration#getScaledTouchSlop()
          */
         @NonNull
-        public Builder setTouchSlopDp(@FloatRange(from = 0) float touchSlopDp) {
-            if (touchSlopDp < 0) {
+        public Builder setTouchSlopPixels(@IntRange(from = 0) int touchSlopPixels) {
+            if (touchSlopPixels < 0) {
                 throw new IllegalArgumentException("Touch slop cannot be negative");
             }
-            mTouchSlopDp = touchSlopDp;
+            mTouchSlopPixels = touchSlopPixels;
             return this;
         }
 
         /**
-         * Sets the minimum fling velocity in density independent pixels (dp) per second. When
-         * this is set, {@link ViewConfiguration#getScaledMinimumFlingVelocity()} would return this
-         * value multiplied by the display density for any context associated with the virtual
-         * device.
+         * Sets the minimum fling velocity in pixels per second. When this is set,
+         * {@link ViewConfiguration#getScaledMinimumFlingVelocity()} would return this value for
+         * any context associated with the virtual device.
          *
          * @throws IllegalArgumentException if the value is negative.
          * @see ViewConfiguration#getScaledMinimumFlingVelocity()
          */
         @NonNull
-        public Builder setMinimumFlingVelocityDpPerSecond(
-                @FloatRange(from = 0) float minimumFlingVelocityDpPerSecond) {
-            if (minimumFlingVelocityDpPerSecond < 0) {
-                throw new IllegalArgumentException("Minimum ling velocity cannot be negative");
+        public Builder setMinimumFlingVelocityPixelsPerSecond(
+                @IntRange(from = 0) int minimumFlingVelocityPixelsPerSecond) {
+            if (minimumFlingVelocityPixelsPerSecond < 0) {
+                throw new IllegalArgumentException("Minimum fling velocity cannot be negative");
             }
-            mMinimumFlingVelocityDpPerSecond = minimumFlingVelocityDpPerSecond;
+            mMinimumFlingVelocityPixelsPerSecond = minimumFlingVelocityPixelsPerSecond;
             return this;
         }
 
         /**
-         * Sets the maximum fling velocity in density independent pixels (dp) per second. When
-         * this is set, {@link ViewConfiguration#getScaledMaximumFlingVelocity()} would return this
-         * value multiplied by the display density for any context associated with the virtual
-         * device.
+         * Sets the maximum fling velocity in pixels per second. When this is set,
+         * {@link ViewConfiguration#getScaledMaximumFlingVelocity()} would return this value for
+         * any context associated with the virtual device.
          *
          * @throws IllegalArgumentException if the value is negative.
          * @see ViewConfiguration#getScaledMaximumFlingVelocity()
          */
         @NonNull
-        public Builder setMaximumFlingVelocityDpPerSecond(
-                @FloatRange(from = 0) float maximumFlingVelocityDpPerSecond) {
-            if (maximumFlingVelocityDpPerSecond < 0) {
+        public Builder setMaximumFlingVelocityPixelsPerSecond(
+                @IntRange(from = 0) int maximumFlingVelocityPixelsPerSecond) {
+            if (maximumFlingVelocityPixelsPerSecond < 0) {
                 throw new IllegalArgumentException("Maximum fling velocity cannot be negative");
             }
-            mMaximumFlingVelocityDpPerSecond = maximumFlingVelocityDpPerSecond;
+            mMaximumFlingVelocityPixelsPerSecond = maximumFlingVelocityPixelsPerSecond;
             return this;
         }
 
@@ -328,7 +325,7 @@ public final class ViewConfigurationParams implements Parcelable {
          * Sets the tap timeout as {@link Duration}.
          *
          * @throws IllegalArgumentException if the corresponding milliseconds value is negative, or
-         * greater than {@link Integer#MAX_VALUE}.
+         *                                  greater than {@link Integer#MAX_VALUE}.
          * @see ViewConfiguration#getTapTimeoutMillis()
          */
         @NonNull
@@ -350,7 +347,7 @@ public final class ViewConfigurationParams implements Parcelable {
          * Sets the double tap timeout as {@link Duration}.
          *
          * @throws IllegalArgumentException if the corresponding milliseconds value is negative, or
-         * greater than {@link Integer#MAX_VALUE}.
+         *                                  greater than {@link Integer#MAX_VALUE}.
          * @see ViewConfiguration#getDoubleTapTimeoutMillis()
          */
         @NonNull
@@ -372,7 +369,7 @@ public final class ViewConfigurationParams implements Parcelable {
          * Sets the double tap minimum time as {@link Duration}.
          *
          * @throws IllegalArgumentException if the corresponding milliseconds value is negative, or
-         * greater than {@link Integer#MAX_VALUE}.
+         *                                  greater than {@link Integer#MAX_VALUE}.
          */
         @NonNull
         public Builder setDoubleTapMinTimeDuration(@NonNull Duration duration) {
@@ -393,7 +390,7 @@ public final class ViewConfigurationParams implements Parcelable {
          * Sets the long press timeout as {@link Duration}.
          *
          * @throws IllegalArgumentException if the corresponding milliseconds value is negative, or
-         * greater than {@link Integer#MAX_VALUE}.
+         *                                  greater than {@link Integer#MAX_VALUE}.
          */
         @NonNull
         public Builder setLongPressTimeoutDuration(@NonNull Duration duration) {
@@ -414,7 +411,7 @@ public final class ViewConfigurationParams implements Parcelable {
          * Sets the multi press timeout as {@link Duration}.
          *
          * @throws IllegalArgumentException if the corresponding milliseconds value is negative, or
-         * greater than {@link Integer#MAX_VALUE}.
+         *                                  greater than {@link Integer#MAX_VALUE}.
          */
         @NonNull
         public Builder setMultiPressTimeoutDuration(@NonNull Duration duration) {
@@ -439,9 +436,9 @@ public final class ViewConfigurationParams implements Parcelable {
          */
         @NonNull
         public ViewConfigurationParams build() {
-            if (mTouchSlopDp == INVALID_VALUE
-                    && mMinimumFlingVelocityDpPerSecond == INVALID_VALUE
-                    && mMaximumFlingVelocityDpPerSecond == INVALID_VALUE
+            if (mTouchSlopPixels == INVALID_VALUE
+                    && mMinimumFlingVelocityPixelsPerSecond == INVALID_VALUE
+                    && mMaximumFlingVelocityPixelsPerSecond == INVALID_VALUE
                     && mScrollFriction == INVALID_VALUE
                     && mTapTimeoutMillis == INVALID_VALUE
                     && mDoubleTapTimeoutMillis == INVALID_VALUE
@@ -450,14 +447,16 @@ public final class ViewConfigurationParams implements Parcelable {
                     && mMultiPressTimeoutMillis == INVALID_VALUE) {
                 throw new IllegalArgumentException("None of the parameters are set");
             }
-            if (mMinimumFlingVelocityDpPerSecond != INVALID_VALUE
-                    && mMaximumFlingVelocityDpPerSecond != INVALID_VALUE
-                    && mMinimumFlingVelocityDpPerSecond > mMaximumFlingVelocityDpPerSecond) {
+            if (mMinimumFlingVelocityPixelsPerSecond != INVALID_VALUE
+                    && mMaximumFlingVelocityPixelsPerSecond != INVALID_VALUE
+                    && mMinimumFlingVelocityPixelsPerSecond
+                    > mMaximumFlingVelocityPixelsPerSecond) {
                 throw new IllegalArgumentException(
                         "Minimum fling velocity cannot be greater than the maximum fling velocity");
             }
-            return new ViewConfigurationParams(mTouchSlopDp, mMinimumFlingVelocityDpPerSecond,
-                    mMaximumFlingVelocityDpPerSecond, mScrollFriction, mTapTimeoutMillis,
+            return new ViewConfigurationParams(mTouchSlopPixels,
+                    mMinimumFlingVelocityPixelsPerSecond,
+                    mMaximumFlingVelocityPixelsPerSecond, mScrollFriction, mTapTimeoutMillis,
                     mDoubleTapTimeoutMillis, mDoubleTapMinTimeMillis, mLongPressTimeoutMillis,
                     mMultiPressTimeoutMillis);
         }
