@@ -726,6 +726,16 @@ flag {
 }
 
 flag {
+    name: "screenshot_force_shutter_sound"
+    namespace: "systemui"
+    description: "Force screenshot sound when camera sound is forced and camera is open"
+    bug: "411503333"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "screenshot_action_dismiss_system_windows"
     namespace: "systemui"
     description: "Dismiss existing system windows when starting action from screenshot UI"
