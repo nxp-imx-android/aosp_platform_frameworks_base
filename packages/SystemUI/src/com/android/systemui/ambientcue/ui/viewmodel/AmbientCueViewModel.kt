@@ -64,8 +64,15 @@ constructor(
             source = ambientCueInteractor.isImeVisible,
         )
 
+    private val isOccludedBySystemUi: Boolean by
+        hydrator.hydratedStateOf(
+            traceName = "isOccludedBySystemUi",
+            initialValue = false,
+            source = ambientCueInteractor.isOccludedBySystemUi,
+        )
+
     val isVisible: Boolean
-        get() = isRootViewAttached && !isImeVisible
+        get() = isRootViewAttached && !isImeVisible && !isOccludedBySystemUi
 
     var isExpanded: Boolean by mutableStateOf(false)
         private set
