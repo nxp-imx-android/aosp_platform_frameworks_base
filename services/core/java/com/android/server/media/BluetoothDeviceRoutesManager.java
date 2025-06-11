@@ -91,39 +91,37 @@ import java.util.stream.Collectors;
     private final Context mContext;
     @NonNull private final Handler mHandler;
     @NonNull private final BluetoothAdapter mBluetoothAdapter;
-    @NonNull private final BluetoothRoutesUpdatedListener mListener;
+    @NonNull private BluetoothRoutesUpdatedListener mListener;
     @NonNull
     private final BluetoothProfileMonitor mBluetoothProfileMonitor;
 
     BluetoothDeviceRoutesManager(
             @NonNull Context context,
-            @NonNull Handler handler,
             @NonNull Looper looper,
-            @NonNull BluetoothAdapter bluetoothAdapter,
-            @NonNull BluetoothRoutesUpdatedListener listener) {
+            @NonNull BluetoothAdapter bluetoothAdapter) {
         this(
                 context,
-                handler,
+                looper,
                 bluetoothAdapter,
-                new BluetoothProfileMonitor(context, looper, bluetoothAdapter),
-                listener);
+                new BluetoothProfileMonitor(context, looper, bluetoothAdapter));
     }
 
     @VisibleForTesting
     BluetoothDeviceRoutesManager(
             @NonNull Context context,
-            @NonNull Handler handler,
+            @NonNull Looper looper,
             @NonNull BluetoothAdapter bluetoothAdapter,
-            @NonNull BluetoothProfileMonitor bluetoothProfileMonitor,
-            @NonNull BluetoothRoutesUpdatedListener listener) {
+            @NonNull BluetoothProfileMonitor bluetoothProfileMonitor) {
         mContext = Objects.requireNonNull(context);
-        mHandler = handler;
+        mHandler = new Handler(Objects.requireNonNull(looper));
         mBluetoothAdapter = Objects.requireNonNull(bluetoothAdapter);
         mBluetoothProfileMonitor = Objects.requireNonNull(bluetoothProfileMonitor);
-        mListener = Objects.requireNonNull(listener);
+        // no-op listener, will be overrode in start()
+        mListener = () -> {};
     }
 
-    public void start(UserHandle user) {
+    public void start(UserHandle user, @NonNull BluetoothRoutesUpdatedListener listener) {
+        mListener = listener;
         mBluetoothProfileMonitor.start();
 
         IntentFilter adapterStateChangedIntentFilter = new IntentFilter();
@@ -346,6 +344,7 @@ import java.util.stream.Collectors;
         }
         return deviceName;
     }
+
     private SparseBooleanArray getConnectedProfiles(@NonNull BluetoothDevice device) {
         SparseBooleanArray connectedProfiles = new SparseBooleanArray();
         if (mBluetoothProfileMonitor.isProfileSupported(BluetoothProfile.A2DP, device)) {

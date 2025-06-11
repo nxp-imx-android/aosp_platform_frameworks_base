@@ -50,6 +50,7 @@ import android.util.SparseArray;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -171,6 +172,26 @@ import java.util.concurrent.CopyOnWriteArrayList;
             @NonNull Looper looper,
             @NonNull AudioProductStrategy strategyForMedia,
             @NonNull BluetoothAdapter btAdapter) {
+        this(
+                context,
+                audioManager,
+                looper,
+                strategyForMedia,
+                new BluetoothDeviceRoutesManager(context, looper, btAdapter));
+    }
+
+    @RequiresPermission(
+            anyOf = {
+                Manifest.permission.MODIFY_AUDIO_ROUTING,
+                Manifest.permission.QUERY_AUDIO_STATE
+            })
+    @VisibleForTesting
+    /* package */ AudioManagerRouteController(
+            @NonNull Context context,
+            @NonNull AudioManager audioManager,
+            @NonNull Looper looper,
+            @NonNull AudioProductStrategy strategyForMedia,
+            @NonNull BluetoothDeviceRoutesManager bluetoothDeviceRoutesManager) {
         mContext = Objects.requireNonNull(context);
         mAudioManager = Objects.requireNonNull(audioManager);
         mHandler = new Handler(Objects.requireNonNull(looper));
@@ -182,13 +203,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
         mBuiltInSpeakerSuitabilityStatus =
                 DeviceRouteController.getBuiltInSpeakerSuitabilityStatus(mContext);
 
-        mBluetoothRouteController =
-                new BluetoothDeviceRoutesManager(
-                        mContext,
-                        mHandler,
-                        looper,
-                        btAdapter,
-                        this::rebuildAvailableRoutesAndNotify);
+        mBluetoothRouteController = Objects.requireNonNull(bluetoothDeviceRoutesManager);
         // Just build routes but don't notify. The caller may not expect the listener to be invoked
         // before this constructor has finished executing.
         rebuildAvailableRoutes();
@@ -220,7 +235,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
         mBluetoothRouteController.start(
                 com.android.media.flags.Flags.enableUseOfSingletonAudioManagerRouteController()
                         ? UserHandle.SYSTEM
-                        : mUser);
+                        : mUser,
+                this::rebuildAvailableRoutesAndNotify);
         mAudioManager.registerAudioDeviceCallback(mAudioDeviceCallback, mHandler);
         mAudioManager.addOnDevicesForAttributesChangedListener(
                 AudioRoutingUtils.ATTRIBUTES_MEDIA,
