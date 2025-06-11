@@ -233,8 +233,10 @@ public class HdmiCecLocalDeviceTv extends HdmiCecLocalDevice {
                     }
                 }
             }), true);
-        } else {
+        } else if (!bufferedActiveSource.isEmpty()) {
             addCecDeviceForBufferedActiveSource(bufferedActiveSource.get(0));
+        } else if (!bufferedActiveSourceFromService.isEmpty()) {
+            addCecDeviceForBufferedActiveSource(bufferedActiveSourceFromService.get(0));
         }
     }
 
