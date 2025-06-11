@@ -38,6 +38,7 @@ import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskI
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -190,10 +191,14 @@ class TaskBroadcaster
                 .setData(data)
                 .build();
 
-        mCompanionDeviceManager.sendMessage(
-            CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY,
-            message.toBytes(),
-            new int[] {associationId});
+        try {
+            mCompanionDeviceManager.sendMessage(
+                CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY,
+                message.toBytes(),
+                new int[] {associationId});
+        } catch (IOException e) {
+            Slog.e(TAG, "Failed to send message to device " + associationId, e);
+        }
     }
 
     private void sendMessageToAllConnectedAssociations(
