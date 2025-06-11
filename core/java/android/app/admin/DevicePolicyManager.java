@@ -12720,6 +12720,50 @@ public class DevicePolicyManager {
         return null;
     }
 
+
+    /**
+     * Returns information about {@link EnforcingAdmin}s that are currently enforcing a specific
+     * device policy for a given user.
+     *
+     * <p>The list includes only those admins whose set policy value is the one actively
+     * applied on the device after policy resolution (i.e., considering policies from all
+     * relevant admins). If no admin enforces the policy for the user, returns an empty list.
+     *
+     * <p><strong>Note:</strong> This method does not support policies that require additional
+     * parameters when being set (e.g., policies that take a package name as an argument).
+     * Attempting to query such policies will result in an {@link IllegalArgumentException}.
+     *
+     * @param policyIdentifier The identifier for the device policy. This must be one of the
+     *                         constants defined in {@link DevicePolicyIdentifiers}. For user
+     *                         restrictions, use
+     *                         {@link DevicePolicyIdentifiers#getIdentifierForUserRestriction}
+     *                         to obtain the correct identifier.
+     * @param userId           The identifier of the user for whom to retrieve the enforcing admins.
+     * @return {@link PolicyEnforcementInfo} that contains the list of {@link EnforcingAdmin}
+     *         objects, or an empty list if no admin is enforcing the policy for the specified user.
+     * @throws IllegalArgumentException if {@code devicePolicyIdentifier} is not a recognized policy
+     *         identifier or if it corresponds to a policy that requires additional parameters for
+     *         its enforcement.
+     * @hide
+     */
+    @RequiresPermission(QUERY_ADMIN_POLICY)
+    @NonNull
+    public PolicyEnforcementInfo getEnforcingAdminsForPolicy(
+            @NonNull String policyIdentifier, int userId) {
+        Objects.requireNonNull(policyIdentifier, "devicePolicyIdentifier can't be null");
+
+        if (mService != null) {
+            try {
+                return new PolicyEnforcementInfo(
+                        mService.getEnforcingAdminsForPolicy(policyIdentifier, userId));
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+
+        return new PolicyEnforcementInfo(Collections.emptyList());
+    }
+
     /**
      * Hide or unhide packages. When a package is hidden it is unavailable for use, but the data and
      * actual package file remain. This function can be called by a device owner, profile owner, or
