@@ -3457,6 +3457,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         lockWP.primaryColors = sysWP.primaryColors;
         lockWP.mWallpaperDimAmount = sysWP.mWallpaperDimAmount;
         lockWP.mWhich = FLAG_LOCK;
+        lockWP.connection = sysWP.connection;
 
         // Migrate the bitmap files outright; no need to copy
         try {
