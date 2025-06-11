@@ -31,6 +31,7 @@ import java.util.Arrays;
  * A min-heap of Message objects. Used by MessageQueue.
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class MessageHeap {
     static final int INITIAL_SIZE = 16;
     static final boolean DEBUG = false;
