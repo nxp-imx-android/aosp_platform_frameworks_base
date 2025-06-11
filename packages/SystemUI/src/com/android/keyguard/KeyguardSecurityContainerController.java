@@ -74,6 +74,7 @@ import com.android.settingslib.utils.ThreadUtils;
 import com.android.systemui.Flags;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.biometrics.FaceAuthAccessibilityDelegate;
+import com.android.systemui.bouncer.domain.interactor.BouncerInteractor;
 import com.android.systemui.bouncer.domain.interactor.BouncerMessageInteractor;
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor;
 import com.android.systemui.classifier.FalsingA11yDelegate;
@@ -437,6 +438,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
     private final Provider<JavaAdapter> mJavaAdapter;
     private final DeviceProvisionedController mDeviceProvisionedController;
     private final Lazy<PrimaryBouncerInteractor> mPrimaryBouncerInteractor;
+    private final Lazy<BouncerInteractor> mBouncerInteractor;
     private final Executor mBgExecutor;
     @Nullable
     private Job mSceneTransitionCollectionJob;
@@ -474,7 +476,8 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
             Lazy<PrimaryBouncerInteractor> primaryBouncerInteractor,
             @Background Executor bgExecutor,
             Provider<DeviceEntryInteractor> deviceEntryInteractor,
-            Lazy<WindowRootViewBlurInteractor> rootViewBlurInteractorProvider
+            Lazy<WindowRootViewBlurInteractor> rootViewBlurInteractorProvider,
+            Lazy<BouncerInteractor> bouncerInteractor
     ) {
         super(view);
         mRootViewBlurInteractor = rootViewBlurInteractorProvider;
@@ -510,6 +513,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
         mPrimaryBouncerInteractor = primaryBouncerInteractor;
         mDevicePolicyManager = devicePolicyManager;
         mBgExecutor = bgExecutor;
+        mBouncerInteractor = bouncerInteractor;
     }
 
     @Override
@@ -1173,7 +1177,7 @@ public class KeyguardSecurityContainerController extends ViewController<Keyguard
                         String msg = getContext().getString(R.string.keyguard_unlock_to_continue);
                         showMessage(msg, /* colorState= */ null, /* animated= */ true);
                         mBouncerMessageInteractor.setUnlockToContinueMessage(msg);
-                }, mFalsingA11yDelegate);
+                }, mFalsingA11yDelegate, mBouncerInteractor.get());
     }
 
     public void reportFailedUnlockAttempt(int userId, int timeoutMs) {
