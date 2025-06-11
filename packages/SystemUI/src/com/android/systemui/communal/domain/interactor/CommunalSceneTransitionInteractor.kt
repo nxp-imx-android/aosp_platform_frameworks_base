@@ -102,7 +102,10 @@ constructor(
                 powerInteractor.isAsleep,
                 keyguardInteractor.isDreamingWithOverlay,
                 keyguardInteractor.isKeyguardOccluded,
-                keyguardInteractor.isKeyguardGoingAway,
+                // This flow doesn't emit immediately after OOBE until the first time keyguard is
+                // going away. Emit false here on start to avoid blocking emitting the next
+                // keyguard state. See b/423563289.
+                keyguardInteractor.isKeyguardGoingAway.onStart { emit(false) },
                 keyguardInteractor.isKeyguardShowing,
             ) { asleep, dreaming, occluded, keyguardGoingAway, keyguardShowing ->
                 if (asleep) {
