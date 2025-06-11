@@ -1438,7 +1438,7 @@ constructor(
         )
 
         val tx: SurfaceControl.Transaction = transactionSupplier.get()
-        PhysicsAnimator.getInstance(startBounds)
+        PhysicsAnimator.getInstance(Rect(startBounds))
             .spring(
                 FloatProperties.RECT_X,
                 endBounds.left.toFloat(),
