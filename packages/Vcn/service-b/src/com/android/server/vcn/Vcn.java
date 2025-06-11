@@ -677,6 +677,7 @@ public class Vcn extends Handler {
         return new NetworkScore.Builder()
                 .setLegacyInt(VCN_LEGACY_SCORE_INT)
                 .setTransportPrimary(true)
+                .setVcn(true)
                 .build();
     }
 
