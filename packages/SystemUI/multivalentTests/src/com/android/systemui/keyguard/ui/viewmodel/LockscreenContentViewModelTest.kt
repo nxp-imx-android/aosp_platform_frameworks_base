@@ -181,6 +181,7 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
     @Test
     fun isContentVisible_whenOccluded_notVisible_evenIfShadeShown() =
         kosmos.runTest {
+            enableSingleShade()
             keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true, null)
             fakeKeyguardTransitionRepository.transitionTo(
                 KeyguardState.LOCKSCREEN,
@@ -212,6 +213,7 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
     @Test
     fun isContentVisible_whenOccluded_notVisibleInOccluded_visibleInAod() =
         kosmos.runTest {
+            enableSingleShade()
             keyguardOcclusionRepository.setShowWhenLockedActivityInfo(true, null)
             fakeKeyguardTransitionRepository.transitionTo(
                 from = KeyguardState.LOCKSCREEN,
