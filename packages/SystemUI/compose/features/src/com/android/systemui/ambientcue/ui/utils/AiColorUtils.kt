@@ -29,6 +29,6 @@ object AiColorUtils {
         if (chroma <= 3) {
             return color
         }
-        return ColorUtils.M3HCTToColor(outColor[0], 120f, outColor[2])
+        return ColorUtils.M3HCTToColor(outColor[0], 70f, outColor[2])
     }
 }
