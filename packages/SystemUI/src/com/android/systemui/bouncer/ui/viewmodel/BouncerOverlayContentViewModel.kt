@@ -134,14 +134,6 @@ constructor(
      */
     val isOneHandedModeSupported: StateFlow<Boolean> = _isOneHandedModeSupported.asStateFlow()
 
-    /**
-     * Whether swap of layout columns on double click should be disabled to improve interaction on
-     * large-screen form factor, e.g. desktop, kiosk
-     */
-    private val disableDoubleClickSwap =
-        Flags.disableDoubleClickSwapOnBouncer() &&
-            bouncerInteractor.isImproveLargeScreenInteractionEnabled
-
     private val _isInputPreferredOnLeftSide = MutableStateFlow(false)
     val isInputPreferredOnLeftSide = _isInputPreferredOnLeftSide.asStateFlow()
 
@@ -224,34 +216,30 @@ constructor(
 
             launch { actionButtonInteractor.actionButton.collect { _actionButton.value = it } }
 
-            if (!disableDoubleClickSwap) {
-                launch {
-                    combine(
-                            bouncerInteractor.isOneHandedModeSupported,
-                            bouncerInteractor.lastRecordedLockscreenTouchPosition,
-                            ::Pair,
-                        )
-                        .collect { (isOneHandedModeSupported, lastRecordedNotificationTouchPosition)
-                            ->
-                            _isOneHandedModeSupported.value = isOneHandedModeSupported
-                            if (
-                                isOneHandedModeSupported &&
-                                    lastRecordedNotificationTouchPosition != null
-                            ) {
-                                bouncerInteractor.setPreferredBouncerInputSide(
-                                    if (
-                                        lastRecordedNotificationTouchPosition <
-                                            applicationContext.resources.displayMetrics
-                                                .widthPixels / 2
-                                    ) {
-                                        BouncerInputSide.LEFT
-                                    } else {
-                                        BouncerInputSide.RIGHT
-                                    }
-                                )
-                            }
+            launch {
+                combine(
+                        bouncerInteractor.isOneHandedModeSupported,
+                        bouncerInteractor.lastRecordedLockscreenTouchPosition,
+                        ::Pair,
+                    )
+                    .collect { (isOneHandedModeSupported, lastRecordedNotificationTouchPosition) ->
+                        _isOneHandedModeSupported.value = isOneHandedModeSupported
+                        if (
+                            isOneHandedModeSupported &&
+                                lastRecordedNotificationTouchPosition != null
+                        ) {
+                            bouncerInteractor.setPreferredBouncerInputSide(
+                                if (
+                                    lastRecordedNotificationTouchPosition <
+                                        applicationContext.resources.displayMetrics.widthPixels / 2
+                                ) {
+                                    BouncerInputSide.LEFT
+                                } else {
+                                    BouncerInputSide.RIGHT
+                                }
+                            )
                         }
-                }
+                    }
             }
 
             launch {
@@ -397,6 +385,11 @@ constructor(
      * input UI is not present.
      */
     fun onDoubleTap(wasEventOnNonInputHalfOfScreen: Boolean) {
+        // Swap of layout columns on double click should be disabled to improve interaction on
+        // large-screen form factor, e.g. desktop, kiosk
+        val disableDoubleClickSwap =
+            Flags.disableDoubleClickSwapOnBouncer() &&
+                bouncerInteractor.isImproveLargeScreenInteractionEnabled
         if (disableDoubleClickSwap) return
         if (!wasEventOnNonInputHalfOfScreen) return
         if (_isInputPreferredOnLeftSide.value) {
