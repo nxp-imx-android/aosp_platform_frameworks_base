@@ -21,6 +21,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Binder;
+import android.os.Handler;
+import android.os.HandlerExecutor;
 import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.RemoteException;
@@ -35,6 +37,7 @@ import androidx.annotation.NonNull;
 import com.android.internal.R;
 import com.android.server.LocalServices;
 import com.android.server.SystemService;
+import com.android.server.biometrics.BiometricHandlerProvider;
 
 import java.util.function.Function;
 
@@ -52,13 +55,15 @@ public class WatchRangingService implements WatchRangingServiceInternal {
     private final String mProximityProviderServicePackageName;
     private final String mProximityProviderServiceClassName;
     private final Function<IBinder, IProximityProviderService> mProximityProviderServiceFunction;
+    private final Handler mHandler;
     private ServiceConnection mProximityProviderServiceConnection;
     private CancellationSignalForWatchRanging mCancellationSignalForWatchRanging;
     private IProximityProviderService mProximityProviderService;
 
     WatchRangingService(@NonNull Context context, @NonNull Function<IBinder,
-            IProximityProviderService> proximityProviderServiceFunction) {
+            IProximityProviderService> proximityProviderServiceFunction, @NonNull Handler handler) {
         mContext = context;
+        mHandler = handler;
         mProximityProviderServiceFunction = proximityProviderServiceFunction;
         mProximityProviderServicePackageName = mContext.getString(
                 R.string.proximity_provider_service_package_name);
@@ -73,15 +78,18 @@ public class WatchRangingService implements WatchRangingServiceInternal {
      * @param proximityResultCallback callback to receive watch ranging results
      */
     @Override
-    public synchronized void startWatchRangingForIdentityCheck(long authenticationRequestId,
+    public void startWatchRangingForIdentityCheck(long authenticationRequestId,
             @NonNull IProximityResultCallback proximityResultCallback) {
-        if (mCancellationSignalForWatchRanging == null) {
-            bindAndStartWatchRanging(authenticationRequestId, proximityResultCallback);
-        } else {
-            Slog.e(TAG, "Watch ranging requested but previous request was not cancelled");
-            cancelWatchRangingForRequestId(0 /* authenticationRequestId */);
-            bindAndStartWatchRanging(authenticationRequestId, proximityResultCallback);
-        }
+        mHandler.post(() -> {
+            if (mCancellationSignalForWatchRanging == null) {
+                bindAndStartWatchRanging(authenticationRequestId, proximityResultCallback);
+            } else {
+                Slog.e(TAG, "Watch ranging requested but previous request was not cancelled."
+                        + "This is a bug.");
+                cancelWatchRangingForRequestId(0 /* authenticationRequestId */);
+                bindAndStartWatchRanging(authenticationRequestId, proximityResultCallback);
+            }
+        });
     }
 
     /**
@@ -90,29 +98,35 @@ public class WatchRangingService implements WatchRangingServiceInternal {
      * @param authenticationRequestId request id for authentication session
      */
     @Override
-    public synchronized void cancelWatchRangingForRequestId(long authenticationRequestId) {
-        if (mCancellationSignalForWatchRanging != null) {
-            final long currentAuthenticationRequestId =
-                    mCancellationSignalForWatchRanging.getAuthenticationRequestId();
-            final boolean requestIdsMatch = authenticationRequestId == 0
-                    || currentAuthenticationRequestId == authenticationRequestId;
-            if (requestIdsMatch) {
-                try {
-                    mCancellationSignalForWatchRanging.cancel();
-                } catch (RemoteException e) {
-                    Slog.d(TAG, "Couldn't cancel watch ranging " + e);
+    public void cancelWatchRangingForRequestId(long authenticationRequestId) {
+        mHandler.post(() -> {
+            if (mCancellationSignalForWatchRanging != null) {
+                final long currentAuthenticationRequestId =
+                        mCancellationSignalForWatchRanging.getAuthenticationRequestId();
+                final boolean requestIdsMatch = authenticationRequestId == 0
+                        || currentAuthenticationRequestId == authenticationRequestId;
+                if (requestIdsMatch) {
+                    try {
+                        mCancellationSignalForWatchRanging.cancel();
+                    } catch (RemoteException e) {
+                        Slog.d(TAG, "Couldn't cancel watch ranging " + e);
+                    }
+                    mCancellationSignalForWatchRanging = null;
+                    unbindProximityProviderService();
+                } else {
+                    Slog.e(TAG, "Watch ranging cancellation requested "
+                            + "but auth request ID does not match");
                 }
-                mCancellationSignalForWatchRanging = null;
-                if (mProximityProviderServiceConnection != null) {
-                    mContext.unbindService(mProximityProviderServiceConnection);
-                    mProximityProviderServiceConnection = null;
-                }
-                mProximityProviderService = null;
-            } else {
-                Slog.e(TAG, "Watch ranging cancellation requested "
-                        + "but auth request ID does not match");
             }
+        });
+    }
+
+    private void unbindProximityProviderService() {
+        if (mProximityProviderServiceConnection != null) {
+            mContext.unbindService(mProximityProviderServiceConnection);
+            mProximityProviderServiceConnection = null;
         }
+        mProximityProviderService = null;
     }
 
     private void start() {
@@ -127,6 +141,7 @@ public class WatchRangingService implements WatchRangingServiceInternal {
             public void onServiceConnected(ComponentName name, IBinder service) {
                 if (service == null) {
                     Slog.d(TAG, "No service found for proximity provider.");
+                    onError(proximityResultCallback, ProximityResultCode.NO_ASSOCIATED_DEVICE);
                     return;
                 }
                 mProximityProviderService = mProximityProviderServiceFunction.apply(service);
@@ -136,19 +151,19 @@ public class WatchRangingService implements WatchRangingServiceInternal {
                 }
                 final ICancellationSignal cancellationSignal =
                         anyWatchNearby(mProximityProviderService, proximityResultCallback);
-                mCancellationSignalForWatchRanging = new CancellationSignalForWatchRanging(
-                        authenticationRequestId, cancellationSignal);
+                if (cancellationSignal != null) {
+                    mCancellationSignalForWatchRanging = new CancellationSignalForWatchRanging(
+                            authenticationRequestId, cancellationSignal);
+                } else {
+                    onError(proximityResultCallback, ProximityResultCode.NO_ASSOCIATED_DEVICE);
+                    unbindProximityProviderService();
+                }
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
-                try {
-                    Slog.e(TAG, "Proximity provider service disconnected");
-                    proximityResultCallback.onError(ProximityResultCode.NO_RANGING_RESULT);
-                } catch (RemoteException e) {
-                    Slog.e(TAG, "Remote exception thrown when trying to invoke"
-                            + " proximity result callback.");
-                }
+                Slog.e(TAG, "Proximity provider service disconnected");
+                onError(proximityResultCallback, ProximityResultCode.NO_RANGING_RESULT);
             }
         };
 
@@ -156,22 +171,33 @@ public class WatchRangingService implements WatchRangingServiceInternal {
                 .setClassName(mProximityProviderServicePackageName,
                         mProximityProviderServiceClassName);
         final boolean bindSuccessful =
-                mContext.bindService(intent, mProximityProviderServiceConnection,
-                        Context.BIND_IMPORTANT | Context.BIND_AUTO_CREATE);
+                mContext.bindService(intent,
+                        Context.BIND_IMPORTANT | Context.BIND_AUTO_CREATE /* flags */,
+                        new HandlerExecutor(mHandler),
+                        mProximityProviderServiceConnection);
 
         if (!bindSuccessful) {
             Slog.d(TAG, "Couldn't find service for ProximityProviderService");
+            onError(proximityResultCallback, ProximityResultCode.NO_ASSOCIATED_DEVICE);
         }
     }
 
-    private ICancellationSignal anyWatchNearby(
-            IProximityProviderService proximityProviderService,
+    private void onError(IProximityResultCallback proximityResultCallback,
+            @ProximityResultCode int errorCode) {
+        try {
+            proximityResultCallback.onError(errorCode);
+        } catch (RemoteException e) {
+            Slog.e(TAG, "Remote exception thrown when trying to invoke"
+                    + " proximity result callback. Error code: " + errorCode);
+        }
+    }
+
+    private ICancellationSignal anyWatchNearby(IProximityProviderService proximityProviderService,
             IProximityResultCallback proximityResultCallback) {
         final RangingParams rangingParams = new RangingParams.Builder()
                 .build();
         try {
-            return proximityProviderService.anyWatchNearby(rangingParams,
-                    proximityResultCallback);
+            return proximityProviderService.anyWatchNearby(rangingParams, proximityResultCallback);
         } catch (RemoteException e) {
             Slog.e(TAG, "Remote exception thrown when trying to start watch ranging " + e);
         }
@@ -187,7 +213,8 @@ public class WatchRangingService implements WatchRangingServiceInternal {
         public Lifecycle(@android.annotation.NonNull Context context) {
             super(context);
             mService = new WatchRangingService(context, (service) ->
-                    IProximityProviderService.Stub.asInterface(Binder.allowBlocking(service)));
+                    IProximityProviderService.Stub.asInterface(Binder.allowBlocking(service)),
+                    BiometricHandlerProvider.getInstance().getBiometricCallbackHandler());
         }
 
         @Override
@@ -203,7 +230,7 @@ public class WatchRangingService implements WatchRangingServiceInternal {
         private final ICancellationSignal mCancellationSignal;
 
         CancellationSignalForWatchRanging(long authenticationRequestId,
-                ICancellationSignal cancellationSignal) {
+                @NonNull ICancellationSignal cancellationSignal) {
             mAuthenticationRequestId = authenticationRequestId;
             mCancellationSignal = cancellationSignal;
         }
