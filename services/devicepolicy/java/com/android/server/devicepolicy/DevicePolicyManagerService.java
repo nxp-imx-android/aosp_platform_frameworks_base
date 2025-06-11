@@ -337,6 +337,7 @@ import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyCache;
 import android.app.admin.DevicePolicyDrawableResource;
 import android.app.admin.DevicePolicyEventLogger;
+import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManager.AppFunctionsPolicy;
 import android.app.admin.DevicePolicyManager.DeviceOwnerType;
@@ -16846,8 +16847,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         Preconditions.checkCallAuthorization(canQueryAdminPolicy(getCallerIdentity()));
 
         return Binder.withCleanCallingIdentity(() -> {
-
-            // TODO(b/414733570): Handle legacy policies that are not stored in DPE first.
+            if (PolicyDefinition.LEGACY_POLICIES.contains(policyIdentifier)) {
+                android.app.admin.EnforcingAdmin legacyAdmin =
+                        getEnforcingAdminForLegacyPolicies(policyIdentifier, userId);
+                if (legacyAdmin == null) {
+                    return Collections.emptyList();
+                }
+                return Collections.singletonList(legacyAdmin);
+            }
 
             PolicyDefinition<?> policyDefinition =
                     PolicyDefinition.getPolicyDefinitionForIdentifier(policyIdentifier);
@@ -16882,6 +16889,56 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             return admins.stream().map(EnforcingAdmin::getParcelableAdmin).toList();
         });
     }
+
+    /**
+     * Checks for legacy policies that are stored in {@link ActiveAdmin} and returns the enforcing
+     * admin encapsulated in {@link android.app.admin.EnforcingAdmin}.
+     * If the policy is not enforced, returns {@code null}.
+     */
+    @Nullable
+    private android.app.admin.EnforcingAdmin getEnforcingAdminForLegacyPolicies(String identifier,
+            int userId) {
+        ActiveAdmin admin = null;
+        switch (identifier) {
+            case DevicePolicyIdentifiers.MANAGED_PROFILE_CALLER_ID_ACCESS_POLICY:
+                if (getCrossProfileCallerIdDisabledForUser(userId)) {
+                    synchronized (getLockObject()) {
+                        // If the policy is set, only PO can set it.
+                        admin = getProfileOwnerAdminLocked(userId);
+                    }
+                }
+                break;
+            case DevicePolicyIdentifiers.MANAGED_PROFILE_CONTACTS_ACCESS_POLICY:
+                if (getCrossProfileContactsSearchDisabledForUser(userId)) {
+                    synchronized (getLockObject()) {
+                        // If the policy is set, only PO can set it.
+                        admin = getProfileOwnerAdminLocked(userId);
+                    }
+                }
+                break;
+            case DevicePolicyIdentifiers.MAX_TIME_TO_LOCK_POLICY:
+                // Return the strictest policy across all participating admins.
+                final List<ActiveAdmin> admins = getActiveAdminsForLockscreenPoliciesLocked(userId);
+                long time = Long.MAX_VALUE;
+                for (final ActiveAdmin activeAdmin : admins) {
+                    if (activeAdmin.maximumTimeToUnlock > 0
+                            && activeAdmin.maximumTimeToUnlock < time) {
+                        time = activeAdmin.maximumTimeToUnlock;
+                        admin = activeAdmin;
+                    }
+                }
+                break;
+            default:
+                throw new IllegalArgumentException(
+                        "Legacy policy " + identifier + " is not handled.");
+        }
+        if (admin != null) {
+            return EnforcingAdmin.createEnterpriseEnforcingAdmin(admin.info.getComponent(),
+                    admin.getUserHandle().getIdentifier()).getParcelableAdmin();
+        }
+        return null;
+    }
+
 
     private boolean isUserRestrictionPolicyEnforcedBySystem(
             PolicyDefinition<?> policyDefinition, int userId) {

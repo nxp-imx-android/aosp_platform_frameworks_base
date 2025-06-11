@@ -378,6 +378,12 @@ final class PolicyDefinition<V> {
             PolicyEnforcerCallbacks::setAutoTimePolicy,
             new IntegerPolicySerializer());
 
+    // The policies that are not yet supported by DevicePolicyEngine, thus don't have definition.
+    static final Set<String> LEGACY_POLICIES = Set.of(
+            DevicePolicyIdentifiers.MANAGED_PROFILE_CALLER_ID_ACCESS_POLICY,
+            DevicePolicyIdentifiers.MANAGED_PROFILE_CONTACTS_ACCESS_POLICY,
+            DevicePolicyIdentifiers.MAX_TIME_TO_LOCK_POLICY);
+
     private static final Map<String, PolicyDefinition<?>> POLICY_DEFINITIONS = new HashMap<>();
     private static Map<String, Integer> USER_RESTRICTION_FLAGS = new HashMap<>();
 
@@ -552,6 +558,14 @@ final class PolicyDefinition<V> {
         GENERIC_POLICY_DEFINITIONS.add(GENERIC_APPLICATION_RESTRICTIONS);
         GENERIC_POLICY_DEFINITIONS.add(GENERIC_APPLICATION_HIDDEN);
         GENERIC_POLICY_DEFINITIONS.add(GENERIC_ACCOUNT_MANAGEMENT_DISABLED);
+
+        for (String legacyPolicy: LEGACY_POLICIES) {
+            if (POLICY_DEFINITIONS.containsKey(legacyPolicy)) {
+                throw new IllegalStateException("Policy with identifier (" + legacyPolicy
+                        + ") is already defined as legacy policy. Remove it from LEGACY_POLICIES "
+                        + "before adding a definition.");
+            }
+        }
     }
 
     private final PolicyKey mPolicyKey;
