@@ -2198,6 +2198,7 @@ class SceneContainerStartableTest : SysuiTestCase() {
             prepareState()
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
             underTest.start()
+            runCurrent()
 
             fakeBiometricSettingsRepository.setIsFaceAuthEnrolledAndEnabled(true)
             fakeBiometricSettingsRepository.setIsUserInLockdown(true)
