@@ -246,6 +246,10 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
         }
 
         mChainIdOffset = mShortIntervalHistoryHelper.getLargestAttributionChainId();
+
+        // Set up listener for quantization, op flags or app ops list config for testing
+        DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_PRIVACY,
+                AsyncTask.THREAD_POOL_EXECUTOR, this::setHistoryParameters);
         // Set up a listener to refresh history mode for testing.
         final Uri uri = Settings.Global.getUriFor(Settings.Global.APPOP_HISTORY_PARAMETERS);
         resolver.registerContentObserver(uri, false, new ContentObserver(
@@ -331,9 +335,6 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             mShortIntervalAppOpsArray = getShortIntervalAppOpsList();
         }
         Arrays.sort(mShortIntervalAppOpsArray);
-
-        DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_PRIVACY,
-                AsyncTask.THREAD_POOL_EXECUTOR, this::setHistoryParameters);
     }
 
     /**
