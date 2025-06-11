@@ -26,6 +26,7 @@ import android.os.Handler
 import android.service.notification.NotificationListenerService.Ranking
 import android.service.notification.NotificationListenerService.RankingMap
 import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextUtils
 import android.text.style.ImageSpan
@@ -91,22 +92,10 @@ constructor(
                         ImageSpan(it, ImageSpan.ALIGN_CENTER)
                     }
                 val decoratedSummary =
-                    SpannableString("x " + entry.ranking.summarization).apply {
-                        setSpan(
-                            /* what = */ imageSpan,
-                            /* start = */ 0,
-                            /* end = */ 1,
-                            /* flags = */ Spanned.SPAN_INCLUSIVE_EXCLUSIVE,
-                        )
-                        entry.ranking.summarization?.let {
-                            setSpan(
-                                /* what = */ StyleSpan(Typeface.ITALIC),
-                                /* start = */ 2,
-                                /* end = */ it.length + 2,
-                                /* flags = */ Spanned.SPAN_EXCLUSIVE_INCLUSIVE,
-                            )
-                        }
-                    }
+                    SpannableStringBuilder()
+                        .append("  ", imageSpan, 0)
+                        .append(" ")
+                        .append(SpannableString(entry.ranking.summarization))
                 entry.sbn.notification.extras.putCharSequence(
                     EXTRA_SUMMARIZED_CONTENT,
                     decoratedSummary,
