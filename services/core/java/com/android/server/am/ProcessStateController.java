@@ -27,6 +27,7 @@ import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.content.Context;
 import android.content.pm.ServiceInfo;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManagerInternal;
 import android.util.Slog;
@@ -57,13 +58,14 @@ public class ProcessStateController {
             CachedAppOptimizer cachedAppOptimizer, OomAdjuster.Injector oomAdjInjector) {
         mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
                 mGlobalState, cachedAppOptimizer, oomAdjInjector);
-        mServiceBinderCallUpdater = (cr, hasOngoingCalls) -> {
+        final Handler serviceHandler = new Handler(handlerThread.getLooper());
+        mServiceBinderCallUpdater = (cr, hasOngoingCalls) -> serviceHandler.post(() -> {
             synchronized (ams) {
                 if (cr.setOngoingCalls(hasOngoingCalls)) {
                     runUpdate(cr.binding.client, OOM_ADJ_REASON_SERVICE_BINDER_CALL);
                 }
             }
-        };
+        });
     }
 
     /**

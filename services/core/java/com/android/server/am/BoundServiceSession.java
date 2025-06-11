@@ -17,7 +17,6 @@
 package com.android.server.am;
 
 import android.app.IBinderSession;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.Trace;
 import android.util.ArrayMap;
@@ -26,7 +25,6 @@ import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.IntPair;
 
 import java.lang.ref.WeakReference;
@@ -48,7 +46,6 @@ public class BoundServiceSession implements IBinderSession {
     // for when we enable a BinderProxy pointing to this from outside of the system process.
     private final WeakReference<ConnectionRecord> mConnection;
     private final BiConsumer<ConnectionRecord, Boolean> mProcessStateUpdater;
-    private final Handler mBackgroundHandler;
     private final String mDebugName;
 
     @VisibleForTesting
@@ -61,7 +58,6 @@ public class BoundServiceSession implements IBinderSession {
 
     BoundServiceSession(BiConsumer<ConnectionRecord, Boolean> processStateUpdater,
             WeakReference<ConnectionRecord> weakCr, String debugName) {
-        mBackgroundHandler = BackgroundThread.getHandler();
         mProcessStateUpdater = processStateUpdater;
         mConnection = weakCr;
         mDebugName = debugName;
@@ -87,7 +83,7 @@ public class BoundServiceSession implements IBinderSession {
                     + " already gone. Possibly the service has unbound.");
             return;
         }
-        mBackgroundHandler.post(() -> mProcessStateUpdater.accept(strongCr, mTotal > 0));
+        mProcessStateUpdater.accept(strongCr, mTotal > 0);
     }
 
     private void logTraceInstant(String message) {
