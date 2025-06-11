@@ -19,6 +19,7 @@ package com.android.server.am;
 import android.app.IBinderSession;
 import android.os.IBinder;
 import android.os.Trace;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.ArrayMap;
 import android.util.IndentingPrintWriter;
 import android.util.Slog;
@@ -35,6 +36,7 @@ import java.util.function.BiConsumer;
  * is used to facilitate important binder calls to a bound remote service hosted by a process that
  * is eligible to get frozen by {@link ProcessStateController}.
  */
+@RavenwoodKeepWholeClass
 public class BoundServiceSession implements IBinderSession {
     private static final String TAG = BoundServiceSession.class.getSimpleName();
     private static final int MAGIC_ID = 0xFBD_5E55;

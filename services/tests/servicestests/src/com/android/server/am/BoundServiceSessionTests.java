@@ -16,8 +16,6 @@
 
 package com.android.server.am;
 
-import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,6 +23,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import android.platform.test.annotations.Presubmit;
@@ -38,17 +37,20 @@ import java.util.function.BiConsumer;
  * Test class for {@link BoundServiceSession}.
  *
  * Build/Install/Run:
- *  atest FrameworksMockingServicesTests:BoundServiceSessionTests
+ *  atest FrameworksServicesTests:BoundServiceSessionTests
+ * Or
+ *  atest FrameworksServicesTestsRavenwood_ProcessStateController
  */
 @Presubmit
 public class BoundServiceSessionTests {
     private static final String TEST_DEBUG_NAME = "test_bound_service_session";
 
-    private final ConnectionRecord mMockConnectionRecord = mock(ConnectionRecord.class);
+    private final ConnectionRecord mEmptyConnectionRecord = new ConnectionRecord(null, null, null,
+            0, 0, null, 0, null, null, null);
     private final BiConsumer<ConnectionRecord, Boolean> mMockConsumer = mock(BiConsumer.class);
 
     private BoundServiceSession getNewBoundServiceSessionForTest() {
-        return new BoundServiceSession(mMockConsumer, new WeakReference<>(mMockConnectionRecord),
+        return new BoundServiceSession(mMockConsumer, new WeakReference<>(mEmptyConnectionRecord),
                 TEST_DEBUG_NAME);
     }
 
@@ -137,7 +139,7 @@ public class BoundServiceSessionTests {
 
         session.binderTransactionStarting("test");
         assertEquals(1, session.mTotal);
-        verify(mMockConsumer).accept(mMockConnectionRecord, true);
+        verify(mMockConsumer).accept(mEmptyConnectionRecord, true);
 
         session.binderTransactionStarting("test");
         session.binderTransactionStarting("test");
@@ -166,7 +168,7 @@ public class BoundServiceSessionTests {
 
         session.binderTransactionCompleted(token);
         assertEquals(0, session.mTotal);
-        verify(mMockConsumer).accept(mMockConnectionRecord, false);
+        verify(mMockConsumer).accept(mEmptyConnectionRecord, false);
     }
 
     @Test
@@ -182,7 +184,7 @@ public class BoundServiceSessionTests {
 
         session.binderTransactionCompleted(-1);
         assertEquals(0, session.mTotal);
-        verify(mMockConsumer).accept(mMockConnectionRecord, false);
+        verify(mMockConsumer).accept(mEmptyConnectionRecord, false);
     }
 
     @Test
