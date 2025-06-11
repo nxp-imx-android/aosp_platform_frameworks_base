@@ -151,10 +151,9 @@ public class TelephonyFrameworkInitializer {
                         ? new SatelliteManager(context) : null
         );
 
-        // TODO: Do the following after mainline is released to the release branch.
-        /*if (Flags.enablePhoneNumberParsingApi()) {
+        if (Flags.enablePhoneNumberParsingApi()) {
             TelephonyServicesInitializer.registerServiceWrappers();
-        }*/
+        }
     }
 
     /**
