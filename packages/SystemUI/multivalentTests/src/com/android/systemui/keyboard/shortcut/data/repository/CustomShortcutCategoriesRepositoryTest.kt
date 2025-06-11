@@ -92,7 +92,8 @@ class CustomShortcutCategoriesRepositoryTest : SysuiTestCase() {
     private val inputManager = kosmos.fakeInputManager.inputManager
     private val testScope = kosmos.testScope
     private val helper = kosmos.shortcutHelperTestHelper
-    private val repo = kosmos.customShortcutCategoriesRepository
+    private val repo =
+        kosmos.customShortcutCategoriesRepository as CustomShortcutCategoriesRepository
 
     @Before
     fun setup() {
