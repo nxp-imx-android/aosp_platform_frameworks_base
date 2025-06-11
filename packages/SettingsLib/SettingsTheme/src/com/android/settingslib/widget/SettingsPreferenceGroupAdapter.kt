@@ -95,8 +95,27 @@ open class SettingsPreferenceGroupAdapter(preferenceGroup: PreferenceGroup) :
         val oldList = ArrayList(mRoundCornerMappingList)
         mRoundCornerMappingList = ArrayList()
         mappingPreferenceGroup(mRoundCornerMappingList, mPreferenceGroup)
+
         if (mRoundCornerMappingList != oldList) {
-            notifyDataSetChanged()
+            notifyOnlyChangedItems(oldList, mRoundCornerMappingList)
+        }
+    }
+
+    /** Notify any registered observers if the new list's items changed. */
+    private fun notifyOnlyChangedItems(oldList: ArrayList<Int>, newList: ArrayList<Int>) {
+        val minLength = minOf(oldList.size, newList.size)
+
+        for (position in 0 until minLength) {
+            if (oldList[position] != newList[position]) {
+                notifyItemChanged(position)
+            }
+        }
+
+        // If the remaining items are from the new list, notify about all of them
+        val remainingItems = newList.size - minLength
+
+        if (remainingItems > 0) {
+            notifyItemRangeChanged(minLength, remainingItems)
         }
     }
 
