@@ -16,7 +16,6 @@
 
 package com.android.server.wm.flicker.launch
 
-import android.os.SystemClock
 import android.platform.test.annotations.Postsubmit
 import android.tools.device.apphelpers.CameraAppHelper
 import android.tools.device.apphelpers.StandardAppHelper
@@ -28,6 +27,7 @@ import android.tools.flicker.rules.RemoveAllTasksButHomeRule
 import android.tools.flicker.subject.layers.LayersTraceSubject
 import android.tools.traces.component.ComponentNameMatcher
 import android.view.KeyEvent
+import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.setRotation
 import com.android.server.wm.flicker.launch.common.OpenAppFromLauncherTransition
@@ -63,6 +63,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@FlakyTest(bugId = 420408933)
 class OpenCameraFromHomeOnDoubleClickPowerButtonTest(flicker: LegacyFlickerTest) :
     OpenAppFromLauncherTransition(flicker) {
     private val cameraApp = CameraAppHelper(instrumentation)
@@ -77,7 +78,6 @@ class OpenCameraFromHomeOnDoubleClickPowerButtonTest(flicker: LegacyFlickerTest)
             }
             transitions {
                 device.pressKeyCode(KeyEvent.KEYCODE_POWER)
-                SystemClock.sleep(100)
                 device.pressKeyCode(KeyEvent.KEYCODE_POWER)
                 wmHelper.StateSyncBuilder().withWindowSurfaceAppeared(cameraApp).waitForAndVerify()
             }
