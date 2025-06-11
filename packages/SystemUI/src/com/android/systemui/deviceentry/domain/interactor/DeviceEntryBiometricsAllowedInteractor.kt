@@ -54,7 +54,7 @@ constructor(
      */
     val isFaceLockedOut: StateFlow<Boolean> = deviceEntryFaceAuthInteractor.isLockedOut
 
-    private val isStrongFaceAuth: StateFlow<Boolean> =
+    val isStrongFaceAuth: StateFlow<Boolean> =
         facePropertyRepository.sensorInfo
             .map { it?.strength == SensorStrength.STRONG }
             .stateIn(
