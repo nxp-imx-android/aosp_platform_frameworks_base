@@ -36,6 +36,7 @@ import static android.Manifest.permission.WRITE_SECURE_SETTINGS;
 import android.annotation.Nullable;
 import android.os.RemoteException;
 import android.os.Trace;
+import android.os.Process;
 import android.os.UserHandle;
 import android.util.ArraySet;
 import android.util.IntArray;
@@ -69,6 +70,13 @@ public class AudioServerPermissionProvider {
 
     static final byte[] HDS_PERMS = new byte[] {PermissionEnum.CAPTURE_AUDIO_HOTWORD,
             PermissionEnum.CAPTURE_AUDIO_OUTPUT, PermissionEnum.RECORD_AUDIO};
+
+    // Some non-package uids are statically assigned permissions. Since these uids don't show up as
+    // installed packages (as they correspond to native services), explicitly enumerate them.
+    // (see frameworks/base/data/etc/platform.xml)
+    // Note, we exclude system (1000) and AID_AUDIOSERVER (1041), as the permission model grants
+    // them all audio permissions
+    static final int[] NONPACKAGE_UIDS = new int[] { Process.MEDIA_UID, Process.CAMERASERVER_UID, };
 
     static {
         MONITORED_PERMS[PermissionEnum.RECORD_AUDIO] = RECORD_AUDIO;
@@ -327,8 +335,19 @@ public class AudioServerPermissionProvider {
     /** Return all uids (not app-ids) which currently hold a given permission. Not app-op aware */
     private int[] getUidsHoldingPerm(int perm) {
         IntArray acc = new IntArray();
+        final IntArray appIds = new IntArray(mPackageMap.size() + NONPACKAGE_UIDS.length);
+        for (int appId : NONPACKAGE_UIDS) {
+            if (!mPackageMap.containsKey(appId)) {
+                appIds.add(appId);
+            }
+        }
+        for (int appId : mPackageMap.keySet()) {
+            appIds.add(appId);
+        }
+
         for (int userId : mUserIdSupplier.get()) {
-            for (int appId : mPackageMap.keySet()) {
+            for (int i = 0; i < appIds.size(); i++) {
+                int appId = appIds.get(i);
                 int uid = UserHandle.getUid(userId, appId);
                 if (mPermissionPredicate.test(uid, MONITORED_PERMS[perm])) {
                     acc.add(uid);
