@@ -140,12 +140,16 @@ public class IllustrationPreference extends Preference implements GroupSectionDi
 
         boolean isExpressive = SettingsThemeHelper.isExpressiveTheme(getContext());
         if (backgroundView != null) {
-            backgroundView.setVisibility(
-                    isExpressive || mIsTablet ? View.GONE : View.VISIBLE);
+            // Setting visibility to INVISIBLE instead of GONE to prevent unnecessary layout
+            // recalculations and redraws when dealing with dynamic set image.
+            backgroundView.setVisibility(isExpressive
+                    ? View.INVISIBLE : (mIsTablet ? View.GONE : View.VISIBLE));
         }
         if (backgroundViewTablet != null) {
-            backgroundViewTablet.setVisibility(
-                    isExpressive || !mIsTablet ? View.GONE : View.VISIBLE);
+            // Setting visibility to INVISIBLE instead of GONE to prevent unnecessary layout
+            // recalculations and redraws when dealing with dynamic set image.
+            backgroundViewTablet.setVisibility(isExpressive
+                    ? View.INVISIBLE : (!mIsTablet ? View.GONE : View.VISIBLE));
         }
         if (mIsTablet) {
             backgroundView = backgroundViewTablet;
