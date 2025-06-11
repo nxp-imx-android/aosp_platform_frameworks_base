@@ -476,13 +476,14 @@ public class ConversationLayout extends FrameLayout
         if (!TextUtils.isEmpty(mSummarizedContent) && mIsCollapsed) {
             Notification.MessagingStyle.Message summary =
                     new Notification.MessagingStyle.Message(mSummarizedContent,  0, "");
-            newMessagingMessages = createMessages(List.of(summary), false, usePrecomputedText);
+            newMessagingMessages =
+                    createMessages(List.of(summary), false, usePrecomputedText, true);
         } else {
             newMessagingMessages =
-                    createMessages(newMessages, /* isHistoric= */false, usePrecomputedText);
+                    createMessages(newMessages, /* isHistoric= */false, usePrecomputedText, false);
         }
-        final List<MessagingMessage> newHistoricMessagingMessages =
-                createMessages(newHistoricMessages, /* isHistoric= */true, usePrecomputedText);
+        final List<MessagingMessage> newHistoricMessagingMessages = createMessages(
+                newHistoricMessages, /* isHistoric= */ true, usePrecomputedText, false);
 
         // Add our new MessagingMessages to groups
         List<List<MessagingMessage>> groups = new ArrayList<>();
@@ -1447,14 +1448,14 @@ public class ConversationLayout extends FrameLayout
      */
     private List<MessagingMessage> createMessages(
             List<Notification.MessagingStyle.Message> newMessages, boolean isHistoric,
-            boolean usePrecomputedText) {
+            boolean usePrecomputedText, boolean useItalics) {
         List<MessagingMessage> result = new ArrayList<>();
         for (int i = 0; i < newMessages.size(); i++) {
             Notification.MessagingStyle.Message m = newMessages.get(i);
             MessagingMessage message = findAndRemoveMatchingMessage(m);
             if (message == null) {
                 message = MessagingMessage.createMessage(this, m,
-                        mImageResolver, usePrecomputedText);
+                        mImageResolver, usePrecomputedText, useItalics);
             }
             message.setIsHistoric(isHistoric);
             result.add(message);
