@@ -98,7 +98,6 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_FIT_INSETS_CO
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_DECOR_VIEW_VISIBILITY;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_INSET_PARENT_FRAME_BY_IME;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_LAYOUT_SIZE_EXTENDED_BY_CUTOUT;
-import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OPTIMIZE_MEASURE;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OVERRIDE_LAYOUT_IN_DISPLAY_CUTOUT_MODE;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
@@ -3491,17 +3490,6 @@ public final class ViewRootImpl implements ViewParent,
                 || lp.type == TYPE_VOLUME_OVERLAY;
     }
 
-    /**
-     * @return {@code true} if we should reduce unnecessary measure for the window.
-     * TODO(b/260382739): Apply this to all windows.
-     */
-    private static boolean shouldOptimizeMeasure(final WindowManager.LayoutParams lp) {
-        if (com.android.window.flags.Flags.reduceUnnecessaryMeasure()) {
-            return true;
-        }
-        return (lp.privateFlags & PRIVATE_FLAG_OPTIMIZE_MEASURE) != 0;
-    }
-
     private Rect getWindowBoundsInsetSystemBars() {
         final Rect bounds = new Rect(
                 mContext.getResources().getConfiguration().windowConfiguration.getBounds());
@@ -3566,7 +3554,6 @@ public final class ViewRootImpl implements ViewParent,
         mAppVisibilityChanged = false;
         final boolean viewUserVisibilityChanged = !mFirst &&
                 ((mViewVisibility == View.VISIBLE) != (viewVisibility == View.VISIBLE));
-        final boolean shouldOptimizeMeasure = shouldOptimizeMeasure(lp);
 
         WindowManager.LayoutParams params = null;
         Rect frame = mWinFrame;
@@ -3691,7 +3678,7 @@ public final class ViewRootImpl implements ViewParent,
 
             // Ask host how big it wants to be
             windowSizeMayChange |= measureHierarchy(host, lp, mView.getContext().getResources(),
-                    desiredWindowWidth, desiredWindowHeight, shouldOptimizeMeasure);
+                    desiredWindowWidth, desiredWindowHeight, true /* forRootSizeOnly */);
         }
 
         if (collectViewAttributes()) {
@@ -3732,7 +3719,7 @@ public final class ViewRootImpl implements ViewParent,
                 // change due to fitting system windows, which can happen a lot.
                 windowSizeMayChange |= measureHierarchy(host, lp,
                         mView.getContext().getResources(), desiredWindowWidth, desiredWindowHeight,
-                        shouldOptimizeMeasure);
+                        true /* forRootSizeOnly */);
             }
         }
 
