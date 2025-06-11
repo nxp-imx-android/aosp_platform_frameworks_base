@@ -91,6 +91,7 @@ __END_DECLS
 // Internal extension to AndroidBitmapFormat.
 enum {
     ANDROID_BITMAP_FORMAT_BGRA_8888 = 5,
+    ANDROID_BITMAP_FORMAT_BGRA_1010102 = 6,
 };
 
 namespace android {
