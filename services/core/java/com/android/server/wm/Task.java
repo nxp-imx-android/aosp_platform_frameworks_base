@@ -5245,29 +5245,60 @@ class Task extends TaskFragment {
                     someActivityResumed = resumeTopActivityInnerLocked(prev, options, deferPause);
                 }
             } else {
-                int idx = mChildren.size() - 1;
-                while (idx >= 0) {
-                    final Task child = (Task) getChildAt(idx--);
-                    if (!child.isTopActivityFocusable()) {
-                        continue;
-                    }
-                    if (child.getVisibility(null /* starting */)
-                            != TASK_FRAGMENT_VISIBILITY_VISIBLE) {
-                        if (child.topRunningActivity() == null) {
-                            // Skip the task if no running activity and continue resuming next task.
+                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue()) {
+                    // Find visible tasks top-to-bottom.
+                    final List<Task> tasksToResumeTopToBottom = new ArrayList<>();
+                    for (int i = mChildren.size() - 1; i >= 0; i--) {
+                        final Task child = (Task) getChildAt(i);
+                        if (!child.isTopActivityFocusable()) {
                             continue;
                         }
-                        // Otherwise, assuming everything behind this task should also be invisible.
-                        break;
+                        if (child.getVisibility(null /* starting */)
+                                != TASK_FRAGMENT_VISIBILITY_VISIBLE) {
+                            if (child.topRunningActivity() == null) {
+                                // Skip the task if no running activity and continue resuming next
+                                // task.
+                                continue;
+                            }
+                            // Otherwise, assuming everything behind this task should also be
+                            // invisible.
+                            break;
+                        }
+                        tasksToResumeTopToBottom.add(child);
                     }
+                    // Resume them bottom-to-top, so Z order is preserved.
+                    for (int i = tasksToResumeTopToBottom.size() - 1; i >= 0; i--) {
+                        final Task child = tasksToResumeTopToBottom.get(i);
+                        someActivityResumed |= child.resumeTopActivityUncheckedLocked(prev,
+                                options, deferPause);
+                    }
+                } else {
+                    int idx = mChildren.size() - 1;
+                    while (idx >= 0) {
+                        final Task child = (Task) getChildAt(idx--);
+                        if (!child.isTopActivityFocusable()) {
+                            continue;
+                        }
+                        if (child.getVisibility(null /* starting */)
+                                != TASK_FRAGMENT_VISIBILITY_VISIBLE) {
+                            if (child.topRunningActivity() == null) {
+                                // Skip the task if no running activity and continue resuming next
+                                // task.
+                                continue;
+                            }
+                            // Otherwise, assuming everything behind this task should also be
+                            // invisible.
+                            break;
+                        }
 
-                    someActivityResumed |= child.resumeTopActivityUncheckedLocked(prev, options,
-                            deferPause);
-                    // Doing so in order to prevent IndexOOB since hierarchy might changes while
-                    // resuming activities, for example dismissing split-screen while starting
-                    // non-resizeable activity.
-                    if (idx >= mChildren.size()) {
-                        idx = mChildren.size() - 1;
+                        someActivityResumed |= child.resumeTopActivityUncheckedLocked(prev, options,
+                                deferPause);
+                        // Doing so in order to prevent IndexOOB since hierarchy might changes while
+                        // resuming activities, for example dismissing split-screen while starting
+                        // non-resizeable activity.
+                        if (idx >= mChildren.size()) {
+                            idx = mChildren.size() - 1;
+                        }
                     }
                 }
             }
