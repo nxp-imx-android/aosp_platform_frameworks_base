@@ -26,7 +26,6 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.UserHandle
-import android.os.UserManager
 import android.util.Log
 import com.android.internal.R
 import com.android.launcher3.icons.BaseIconFactory
@@ -34,6 +33,7 @@ import com.android.launcher3.icons.BaseIconFactory.IconOptions
 import com.android.launcher3.icons.BitmapInfo
 import com.android.launcher3.icons.mono.MonoIconThemeController
 import com.android.launcher3.util.UserIconInfo
+import com.android.settingslib.Utils
 import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
@@ -217,7 +217,7 @@ constructor(
 
     private fun iconOptions(userHandle: UserHandle, allowProfileBadge: Boolean): IconOptions {
         return IconOptions().apply {
-            setUser(userIconInfo(userHandle, allowProfileBadge))
+            setUser(userIconInfo(userHandle, allowProfileBadge = allowProfileBadge))
             setBitmapGenerationMode(BaseIconFactory.MODE_HARDWARE)
             // This color will not be used, but we're just setting it so that the icon factory
             // doesn't try to extract colors from our bitmap (since it won't work, given it's a
@@ -226,20 +226,14 @@ constructor(
         }
     }
 
-    private fun userIconInfo(userHandle: UserHandle, allowProfileBadge: Boolean): UserIconInfo {
-        // TODO(b/423033161): use the correct badge for the type of managed profile
-        val withWorkProfileBadge =
-            if (allowProfileBadge) {
-                val userManager = sysuiContext.getSystemService(UserManager::class.java)
-                userManager?.isManagedProfile(userHandle.identifier) == true
-            } else {
-                false
-            }
-        return UserIconInfo(
-            userHandle,
-            if (withWorkProfileBadge) UserIconInfo.TYPE_WORK else UserIconInfo.TYPE_MAIN,
-        )
-    }
+    private fun userIconInfo(userHandle: UserHandle, allowProfileBadge: Boolean): UserIconInfo =
+        if (allowProfileBadge) {
+            // Look up the user to determine if it is a profile, and if so which badge to use
+            Utils.fetchUserIconInfo(sysuiContext, userHandle)
+        } else {
+            // For a main user the IconFactory does not add a badge
+            UserIconInfo(/* user= */ userHandle, /* type= */ UserIconInfo.TYPE_MAIN)
+        }
 
     override fun purgeCache(wantedPackages: Collection<String>) {
         standardCache.purgeCache(wantedPackages)
