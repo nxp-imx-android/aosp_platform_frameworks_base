@@ -15,7 +15,7 @@
  */
 
 package android.companion.virtual.camera;
-
+import android.hardware.camera2.CaptureRequest;
 import android.view.Surface;
 
 /**
@@ -24,7 +24,7 @@ import android.view.Surface;
  *
  * @hide
  */
-interface IVirtualCameraCallback {
+oneway interface IVirtualCameraCallback {
 
     /**
      * Called when the client application calls
@@ -38,7 +38,7 @@ interface IVirtualCameraCallback {
      * android.hardware.camera2.CameraCaptureSession.StateCallback#onConfigured(CameraCaptureSession)}
      * is called.
      */
-    oneway void onOpenCamera();
+    void onOpenCamera();
 
     /**
      * Called when one of the requested stream has been configured by the virtual camera service and
@@ -50,8 +50,8 @@ interface IVirtualCameraCallback {
      * @param height The height of the surface
      * @param format The pixel format of the surface
      */
-    oneway void onStreamConfigured(int streamId, in Surface surface, int width, int height,
-            int format);
+    void onStreamConfigured(int streamId, in Surface surface, int width, int height,
+        int format);
 
     /**
      * The client application is requesting a camera frame for the given streamId and frameId.
@@ -64,8 +64,12 @@ interface IVirtualCameraCallback {
      *     streamId that was given in {@link #onStreamConfigured(int, Surface, int, int, int)}
      * @param frameId The frameId that is being requested. Each request will have a different
      *     frameId, that will be increasing for each call with a particular streamId.
+     * @param captureRequest The capture request metadata provided by the app in association with
+     *     the requested {@code frameId}. This is {@code null} id per frame camera metadata is not
+     *     enabled or if unchanged from the previous frame.
      */
-    oneway void onProcessCaptureRequest(int streamId, long frameId);
+    void onProcessCaptureRequest(int streamId, long frameId,
+        in @nullable CaptureRequest captureRequest);
 
     /**
      * The stream previously configured when
@@ -75,5 +79,5 @@ interface IVirtualCameraCallback {
      *
      * @param streamId The id of the stream that was closed.
      */
-    oneway void onStreamClosed(int streamId);
+    void onStreamClosed(int streamId);
 }

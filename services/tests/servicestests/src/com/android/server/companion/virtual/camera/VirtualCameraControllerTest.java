@@ -51,6 +51,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.os.Handler;
 import android.os.HandlerExecutor;
 import android.os.Looper;
+import android.os.RemoteException;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
@@ -333,21 +334,8 @@ public class VirtualCameraControllerTest {
                 .setCameraCharacteristics(characteristics)
                 .build();
 
-        VirtualCameraConfiguration originalConfig = getServiceCameraConfiguration(config);
-
-        mVirtualCameraController.registerCamera(config, AttributionSource.myAttributionSource());
-
-        ArgumentCaptor<VirtualCameraConfiguration> configurationCaptor =
-                ArgumentCaptor.forClass(VirtualCameraConfiguration.class);
-        ArgumentCaptor<Integer> deviceIdCaptor = ArgumentCaptor.forClass(Integer.class);
-        verify(mVirtualCameraServiceMock).registerCamera(any(), configurationCaptor.capture(),
-                deviceIdCaptor.capture());
-        assertThat(deviceIdCaptor.getValue()).isEqualTo(DEVICE_ID);
-        VirtualCameraConfiguration virtualCameraConfiguration = configurationCaptor.getValue();
-        assertThat(virtualCameraConfiguration.supportedStreamConfigs.length).isEqualTo(1);
-        assertVirtualCameraConfigurationWithCharacteristics(virtualCameraConfiguration,
-                CAMERA_WIDTH_1, CAMERA_HEIGHT_1, CAMERA_FORMAT_1, CAMERA_MAX_FPS_1,
-                originalConfig.cameraCharacteristics);
+        verifyRegisterCameraWithCharacteristicsConfig(config, DEVICE_ID, CAMERA_WIDTH_1,
+                CAMERA_HEIGHT_1, CAMERA_FORMAT_1, CAMERA_MAX_FPS_1);
     }
 
     @Test
@@ -369,6 +357,71 @@ public class VirtualCameraControllerTest {
         mVirtualCameraController.unregisterCamera(config);
 
         verify(mVirtualCameraServiceMock).unregisterCamera(any());
+    }
+
+    @Parameters(method = "getAllLensFacingDirections")
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
+    public void registerCameraWithPerFrameMetadata_registersCamera(int lensFacing)
+            throws Exception {
+        VirtualCameraConfig config = new VirtualCameraConfig.Builder(CAMERA_NAME_1)
+                .addStreamConfig(CAMERA_WIDTH_1, CAMERA_HEIGHT_1, CAMERA_FORMAT_1, CAMERA_MAX_FPS_1)
+                .setVirtualCameraCallback(mCallbackHandler, mVirtualCameraCallbackMock)
+                .setSensorOrientation(CAMERA_SENSOR_ORIENTATION_1)
+                .setLensFacing(lensFacing)
+                .build();
+        mVirtualCameraController.registerCamera(config, AttributionSource.myAttributionSource());
+
+        ArgumentCaptor<VirtualCameraConfiguration> configurationCaptor =
+                ArgumentCaptor.forClass(VirtualCameraConfiguration.class);
+        ArgumentCaptor<Integer> deviceIdCaptor = ArgumentCaptor.forClass(Integer.class);
+        verify(mVirtualCameraServiceMock).registerCamera(any(), configurationCaptor.capture(),
+                deviceIdCaptor.capture());
+        assertThat(deviceIdCaptor.getValue()).isEqualTo(DEVICE_ID);
+        VirtualCameraConfiguration virtualCameraConfiguration = configurationCaptor.getValue();
+        assertThat(virtualCameraConfiguration.supportedStreamConfigs.length).isEqualTo(1);
+        assertVirtualCameraConfiguration(virtualCameraConfiguration, CAMERA_WIDTH_1,
+                CAMERA_HEIGHT_1, CAMERA_FORMAT_1, CAMERA_MAX_FPS_1, CAMERA_SENSOR_ORIENTATION_1,
+                lensFacing);
+    }
+
+    @Parameters(method = "getAllLensFacingDirections")
+    @Test
+    @EnableFlags(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
+    public void registerCameraWithCharacteristicsAndPerFrameMetadata_registersCamera(int lensFacing)
+            throws Exception {
+        CameraCharacteristics characteristics = new CameraCharacteristicsBuilder()
+                .set(CameraCharacteristics.SENSOR_ORIENTATION, CAMERA_SENSOR_ORIENTATION_1)
+                .set(CameraCharacteristics.LENS_FACING, lensFacing)
+                .build();
+
+        VirtualCameraConfig config = new VirtualCameraConfig.Builder(CAMERA_NAME_1)
+                .addStreamConfig(CAMERA_WIDTH_1, CAMERA_HEIGHT_1, CAMERA_FORMAT_1, CAMERA_MAX_FPS_1)
+                .setVirtualCameraCallback(mCallbackHandler, mVirtualCameraCallbackMock)
+                .setCameraCharacteristics(characteristics)
+                .setPerFrameCameraMetadataEnabled(true)
+                .build();
+
+        verifyRegisterCameraWithCharacteristicsConfig(config, DEVICE_ID, CAMERA_WIDTH_1,
+                CAMERA_HEIGHT_1, CAMERA_FORMAT_1, CAMERA_MAX_FPS_1);
+    }
+
+    private void verifyRegisterCameraWithCharacteristicsConfig(VirtualCameraConfig config,
+            int deviceId, int width, int height, int format, int maxFps) throws RemoteException {
+        VirtualCameraConfiguration originalConfig = getServiceCameraConfiguration(config);
+
+        mVirtualCameraController.registerCamera(config, AttributionSource.myAttributionSource());
+
+        ArgumentCaptor<VirtualCameraConfiguration> configurationCaptor =
+                ArgumentCaptor.forClass(VirtualCameraConfiguration.class);
+        ArgumentCaptor<Integer> deviceIdCaptor = ArgumentCaptor.forClass(Integer.class);
+        verify(mVirtualCameraServiceMock).registerCamera(any(), configurationCaptor.capture(),
+                deviceIdCaptor.capture());
+        assertThat(deviceIdCaptor.getValue()).isEqualTo(deviceId);
+        VirtualCameraConfiguration virtualCameraConfiguration = configurationCaptor.getValue();
+        assertThat(virtualCameraConfiguration.supportedStreamConfigs.length).isEqualTo(1);
+        assertVirtualCameraConfigurationWithCharacteristics(virtualCameraConfiguration,
+                width, height, format, maxFps, originalConfig.cameraCharacteristics);
     }
 
     @SuppressWarnings("unused") // Parameter for parametrized tests

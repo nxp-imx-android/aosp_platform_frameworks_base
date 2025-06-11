@@ -3744,6 +3744,8 @@ package android.companion.virtual.camera {
   public interface VirtualCameraCallback {
     method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_on_open") public default void onOpenCamera();
     method public default void onProcessCaptureRequest(int, long);
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public default void onProcessCaptureRequest(int, long, @Nullable android.hardware.camera2.CaptureRequest);
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public default void onSessionConfigured(@NonNull android.hardware.camera2.params.SessionConfiguration, @Nullable java.util.function.ObjLongConsumer<android.hardware.camera2.CaptureResult>);
     method public void onStreamClosed(int);
     method public void onStreamConfigured(int, @NonNull android.view.Surface, @IntRange(from=1) int, @IntRange(from=1) int, int);
   }
