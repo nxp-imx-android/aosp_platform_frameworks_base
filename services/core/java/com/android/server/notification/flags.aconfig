@@ -171,6 +171,13 @@ flag {
 }
 
 flag {
+  name: "strict_zen_rule_component_validation"
+  namespace: "systemui"
+  description: "Properly validate both CPS and configActivity in both add and update paths"
+  bug: "420605963"
+}
+
+flag {
   name: "managed_services_concurrent_multiuser"
   namespace: "systemui"
   description: "Enables ManagedServices to support Concurrent multi user environment"
