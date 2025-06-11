@@ -26,6 +26,7 @@ import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
 import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX;
+import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_SPLITSCREEN_TRANSITION_BUGFIX;
 import static com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_PIP2;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION;
@@ -261,6 +262,23 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         mMainExecutor.flushAll();
 
         assertThat(listener.getState()).isEqualTo(TRANSITION_STATE_ANIMATING);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_DESKTOP_SPLITSCREEN_TRANSITION_BUGFIX)
+    public void testStartAnimation_hidesHomeTask() {
+        final IBinder transition = startRecentsTransition(/* synthetic= */ false);
+        RecentsTransitionHandler.RecentsController controller =
+                mRecentsTransitionHandler.findController(transition);
+        SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        SurfaceControl homeLeash = new SurfaceControl();
+
+        mRecentsTransitionHandler.startAnimation(
+                transition, createTransitionInfo(homeLeash), startT, new StubTransaction(),
+                mock(Transitions.TransitionFinishCallback.class));
+        mMainExecutor.flushAll();
+
+        verify(startT).hide(controller.getLeashMapForTesting().get(homeLeash));
     }
 
     @Test
@@ -640,6 +658,10 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     }
 
     private TransitionInfo createTransitionInfo() {
+        return createTransitionInfo(new SurfaceControl());
+    }
+
+    private TransitionInfo createTransitionInfo(SurfaceControl homeLeash) {
         final ActivityManager.RunningTaskInfo homeTask = new TestRunningTaskInfoBuilder()
                 .setTopActivityType(ACTIVITY_TYPE_HOME)
                 .build();
@@ -647,7 +669,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 .setTopActivityType(ACTIVITY_TYPE_STANDARD)
                 .build();
         final TransitionInfo.Change homeChange = new TransitionInfo.Change(
-                homeTask.token, new SurfaceControl());
+                homeTask.token, homeLeash);
         homeChange.setMode(TRANSIT_TO_FRONT);
         homeChange.setTaskInfo(homeTask);
         final TransitionInfo.Change appChange = new TransitionInfo.Change(
