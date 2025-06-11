@@ -21,7 +21,6 @@ import android.content.pm.PackageManager
 import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
-import android.platform.test.annotations.EnabledOnRavenwood
 import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -49,7 +48,6 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
 @SmallTest
-@EnabledOnRavenwood
 @RunWith(AndroidJUnit4::class)
 class FlashlightTileDataInteractorTest : SysuiTestCase() {
     private val kosmos = testKosmos()

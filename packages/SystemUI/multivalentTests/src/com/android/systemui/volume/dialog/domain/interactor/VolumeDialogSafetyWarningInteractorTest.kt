@@ -39,7 +39,6 @@ import org.junit.runner.RunWith
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @TestableLooper.RunWithLooper
-@android.platform.test.annotations.EnabledOnRavenwood
 class VolumeDialogSafetyWarningInteractorTest : SysuiTestCase() {
 
     private val kosmos: Kosmos = testKosmos()

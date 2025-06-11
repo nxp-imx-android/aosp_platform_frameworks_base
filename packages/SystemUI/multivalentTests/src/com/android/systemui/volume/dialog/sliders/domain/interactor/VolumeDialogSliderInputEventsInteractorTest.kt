@@ -41,7 +41,6 @@ private val volumeDialogTimeout = 3.seconds
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-@android.platform.test.annotations.EnabledOnRavenwood
 class VolumeDialogSliderInputEventsInteractorTest : SysuiTestCase() {
 
     private val kosmos =
