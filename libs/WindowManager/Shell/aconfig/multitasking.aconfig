@@ -255,3 +255,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_bubble_bar_to_floating_transition"
+    namespace: "multitasking"
+    description: "Enable transitioning from bubble bar to floating when folding"
+    bug: "380105874"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
