@@ -5674,6 +5674,7 @@ final class ActivityRecord extends WindowToken {
                 // state. Updating the PAUSED usage state in that case, since the Activity will be
                 // STOPPED while cycled through the PAUSED state.
                 if (prevState == RESUMED) {
+                    mAtmService.updateBatteryStats(this, false);
                     mAtmService.updateActivityUsageStats(this, Event.ACTIVITY_PAUSED);
                 }
                 break;
