@@ -1029,8 +1029,9 @@ static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, j
     p.writeInt32(bitmap.rowBytes());
     p.writeInt32(density);
     p.writeInt64(id);
+    const uint64_t parcel_id = getParcelId();
+    p.writeInt64(parcel_id);
 
-    uint64_t parcel_id = getParcelId();
     if (id != UNDEFINED_BITMAP_ID) {
         traceSliceBeginWithGlobalFlow("Bitmap_writeToParcel", id, bitmap.computeByteSize(),
                                       bitmap.width(), bitmap.height(), density, -1,
@@ -1044,7 +1045,6 @@ static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, j
     binder_status_t status;
     int fd = bitmapWrapper->bitmap().getAshmemFd();
     if (fd >= 0 && p.allowFds() && bitmap.isImmutable()) {
-        p.writeInt64(parcel_id);
 #if DEBUG_PARCEL
         ALOGD("Bitmap.writeToParcel: transferring immutable bitmap's ashmem fd as "
               "immutable blob (fds %s)",
@@ -1065,7 +1065,6 @@ static jboolean Bitmap_writeToParcel(JNIEnv* env, jobject, jlong bitmapHandle, j
     ALOGD("Bitmap.writeToParcel: copying bitmap into new blob (fds %s)",
           p.allowFds() ? "allowed" : "forbidden");
 #endif
-    p.writeInt64(0Ull);
     status = writeBlob(p.get(), id, bitmap, !asMutable);
     if (status) {
         doThrowRE(env, "Could not copy bitmap to parcel blob.");
