@@ -16,9 +16,11 @@
 package com.android.ravenwoodtest.coretest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import android.app.ActivityThread;
 import android.content.Context;
+import android.platform.test.annotations.DisabledOnRavenwood;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -30,8 +32,14 @@ public class RavenwoodActivityThreadTest {
 
     @Test
     public void testActivityThreadCurrentSystemContext() {
-        assertEquals(ActivityThread.currentSystemContext().getPackageName(),
-                sContext.getPackageName());
+        assertNotNull(ActivityThread.currentSystemContext());
+    }
+
+    @Test
+    @DisabledOnRavenwood(
+            reason = "ravenwood just returns a package context as system context for now")
+    public void testActivityThreadCurrentSystemContextPackage() {
+        assertEquals("android", ActivityThread.currentSystemContext().getPackageName());
     }
 
     @Test
