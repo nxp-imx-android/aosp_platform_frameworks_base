@@ -15,6 +15,9 @@
  */
 package com.android.server.wm;
 
+import static android.app.ActivityTaskManager.INVALID_TASK_ID;
+import static android.os.Process.INVALID_PID;
+
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 
@@ -51,54 +54,74 @@ class AppCompatCameraStateStrategyForPackage implements AppCompatCameraStateStra
     }
 
     @Override
-    public void trackOnCameraOpened(@NonNull String cameraId) {
+    @NonNull
+    public CameraAppInfo trackOnCameraOpened(@NonNull String cameraId,
+            @NonNull String packageName) {
         mScheduledToBeRemovedCameraIdSet.remove(cameraId);
         mScheduledCompatModeUpdateCameraIdSet.add(cameraId);
+        return createCameraAppInfo(cameraId, packageName);
     }
 
     @Override
-    public void notifyPolicyCameraOpenedIfNeeded(@NonNull String cameraId,
-            @NonNull String packageName, @NonNull AppCompatCameraStatePolicy policy) {
-        if (!mScheduledCompatModeUpdateCameraIdSet.remove(cameraId)) {
+    public void notifyPolicyCameraOpenedIfNeeded(@NonNull CameraAppInfo cameraAppInfo,
+            @NonNull AppCompatCameraStatePolicy policy) {
+        if (!mScheduledCompatModeUpdateCameraIdSet.remove(cameraAppInfo.mCameraId)) {
             // Camera compat mode update has happened already or was cancelled
             // because camera was closed.
             return;
         }
-        mCameraIdPackageBiMapping.put(packageName, cameraId);
         // If there are multiple activities of the same package name and none of
         // them are the top running activity, we do not apply treatment (rather than
         // guessing and applying it to the wrong activity).
-        final ActivityRecord cameraActivity = findUniqueActivityWithPackageName(packageName);
-        if (cameraActivity == null) {
+        final ActivityRecord cameraActivity = cameraAppInfo.mPackageName == null ? null
+                : findUniqueActivityWithPackageName(cameraAppInfo.mPackageName);
+        final Task task = cameraActivity == null ? null : cameraActivity.getTask();
+        final WindowProcessController app = cameraActivity == null ? null : cameraActivity.app;
+        if (cameraActivity == null || task == null || app == null) {
             // If camera is active, activity, task and app process must exist. No need to notify
             // listeners or track the package otherwise.
             return;
         }
-        policy.onCameraOpened(cameraActivity);
+        mCameraIdPackageBiMapping.put(cameraAppInfo.mPackageName, cameraAppInfo.mCameraId);
+        policy.onCameraOpened(app, task);
     }
 
+    /**
+     * @return CameraAppInfo of the app which opened camera with given cameraId.
+     */
     @Override
-    public void trackOnCameraClosed(@NonNull String cameraId) {
+    @NonNull
+    public CameraAppInfo trackOnCameraClosed(@NonNull String cameraId) {
         mScheduledToBeRemovedCameraIdSet.add(cameraId);
         // No need to update window size for this camera if it's already closed.
         mScheduledCompatModeUpdateCameraIdSet.remove(cameraId);
+        final String packageName =
+                mCameraIdPackageBiMapping.getPackageNameForCameraId(cameraId);
+        return createCameraAppInfo(cameraId, packageName);
     }
 
     @Override
-    public boolean notifyPolicyCameraClosedIfNeeded(@NonNull String cameraId,
+    public boolean notifyPolicyCameraClosedIfNeeded(@NonNull CameraAppInfo cameraAppInfo,
             @NonNull AppCompatCameraStatePolicy policy) {
-        if (!mScheduledToBeRemovedCameraIdSet.remove(cameraId)) {
+        if (!mScheduledToBeRemovedCameraIdSet.remove(cameraAppInfo.mCameraId)) {
             // Already reconnected to this camera, no need to clean up.
             return true;
         }
-        final boolean canClose = policy.canCameraBeClosed(cameraId);
+        final String packageName =
+                mCameraIdPackageBiMapping.getPackageNameForCameraId(cameraAppInfo.mCameraId);
+        final ActivityRecord activity = packageName == null ? null
+                : findUniqueActivityWithPackageName(packageName);
+        final Task task = activity == null ? null : activity.getTask();
+        final WindowProcessController app = activity == null ? null : activity.app;
+        final boolean canClose = task == null || policy.canCameraBeClosed(
+                cameraAppInfo.mCameraId, task);
         if (canClose) {
             // Finish cleaning up.
-            mCameraIdPackageBiMapping.removeCameraId(cameraId);
-            policy.onCameraClosed();
+            mCameraIdPackageBiMapping.removeCameraId(cameraAppInfo.mCameraId);
+            policy.onCameraClosed(app, task);
             return true;
         } else {
-            mScheduledToBeRemovedCameraIdSet.add(cameraId);
+            mScheduledToBeRemovedCameraIdSet.add(cameraAppInfo.mCameraId);
             // Not ready to process closure yet - the camera activity might be refreshing.
             // Try again later.
             return false;
@@ -162,5 +185,19 @@ class AppCompatCameraStateStrategyForPackage implements AppCompatCameraStateStra
     @Override
     public String toString() {
         return "CameraIdPackageNameBiMapping=" + mCameraIdPackageBiMapping.toString();
+    }
+
+    @NonNull
+    private CameraAppInfo createCameraAppInfo(@NonNull String cameraId,
+            @Nullable String packageName) {
+        final ActivityRecord cameraActivity = packageName == null ? null
+                : findUniqueActivityWithPackageName(packageName);
+        final Task cameraTask = cameraActivity == null ? null : cameraActivity.getTask();
+        final WindowProcessController cameraApp = cameraActivity == null ? null
+                : cameraActivity.app;
+        return new CameraAppInfo(cameraId,
+                cameraApp == null ? INVALID_PID : cameraApp.getPid(),
+                cameraTask == null ? INVALID_TASK_ID : cameraTask.mTaskId,
+                packageName);
     }
 }

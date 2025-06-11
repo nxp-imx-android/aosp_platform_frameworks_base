@@ -17,6 +17,8 @@
 package com.android.server.wm;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -175,8 +177,8 @@ public class AppCompatCameraStateSourceTests extends WindowTestsBase {
 
             mSourceUnderTest = new AppCompatCameraStateSource();
 
-            doReturn(true).when(mCanClosePolicy).canCameraBeClosed(CAMERA_ID);
-            doReturn(false).when(mCannotClosePolicy).canCameraBeClosed(CAMERA_ID);
+            doReturn(true).when(mCanClosePolicy).canCameraBeClosed(eq(CAMERA_ID), any());
+            doReturn(false).when(mCannotClosePolicy).canCameraBeClosed(eq(CAMERA_ID), any());
 
             activity().createActivityWithComponent();
         }
@@ -190,25 +192,26 @@ public class AppCompatCameraStateSourceTests extends WindowTestsBase {
         }
 
         private void callCameraOpened() {
-            mSourceUnderTest.onCameraOpened(activity().top());
+            mSourceUnderTest.onCameraOpened(activity().top().app, activity().top().getTask());
         }
 
         private void callCameraClosed() {
-            mSourceUnderTest.onCameraClosed();
+            mSourceUnderTest.onCameraClosed(activity().top().app, activity().top().getTask());
         }
 
         private void checkPolicyCameraOpenedCalled(boolean canClosePolicy, int times) {
-            verify(getPolicy(canClosePolicy), times(times))
-                    .onCameraOpened(activity().top());
+            verify(getPolicy(canClosePolicy), times(times)).onCameraOpened(activity().top().app,
+                    activity().top().getTask());
         }
 
         private void checkCanCameraBeClosed(boolean expected) {
-            assertEquals(expected, mSourceUnderTest.canCameraBeClosed(CAMERA_ID));
+            assertEquals(expected, mSourceUnderTest.canCameraBeClosed(CAMERA_ID,
+                    activity().top().getTask()));
         }
 
         private void checkPolicyCameraClosedCalled(boolean canClosePolicy, int times) {
             verify(canClosePolicy ? mCanClosePolicy : mCannotClosePolicy, times(times))
-                    .onCameraClosed();
+                    .onCameraClosed(activity().top().app, activity().top().getTask());
         }
 
         private AppCompatCameraStatePolicy getPolicy(boolean canClose) {

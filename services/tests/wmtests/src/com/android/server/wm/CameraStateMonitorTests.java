@@ -16,6 +16,8 @@
 
 package com.android.server.wm;
 
+import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
+
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
@@ -136,8 +138,8 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
     private static class CameraStateMonitorRobotTests extends AppCompatRobotBase {
         private final WindowTestsBase mWindowTestsBase;
 
-        // Simulates a policy which will react to the change on a particular activity - for
-        // example put the activity in a camera compat mode.
+        // Simulates a policy which will react to the change on a particular activity - for example
+        // put the activity in a camera compat mode.
         private FakeAppCompatCameraStatePolicy mFakePolicyCanClose;
         // Simulates a policy which for some reason cannot process `onCameraClosed` event once it
         // first arrives - this means that the update needs to be postponed.
@@ -172,6 +174,10 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
         @Override
         void onPostActivityCreation(@NonNull ActivityRecord activity) {
             super.onPostActivityCreation(activity);
+
+            final WindowState win = mWindowTestsBase.newWindowBuilder("app1",
+                    TYPE_APPLICATION).setWindowToken(activity).build();
+
             setupCameraManager();
             setupHandler();
             setupMockApplicationThread();
@@ -245,9 +251,8 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
         }
 
         private void checkCameraRegisteresAsOpenedForCanClosePolicy(boolean expectedIsOpened) {
-            assertEquals(expectedIsOpened, activity().top().getDisplayContent()
-                    .mAppCompatCameraPolicy.mCameraStateMonitor.isCameraRunningForActivity(
-                            activity().top()));
+            assertEquals(expectedIsOpened, getCameraStateMonitor().isCameraRunningForActivity(
+                    activity().top()));
         }
 
         private void checkCameraOpenedCalledForCanClosePolicy(int times) {
