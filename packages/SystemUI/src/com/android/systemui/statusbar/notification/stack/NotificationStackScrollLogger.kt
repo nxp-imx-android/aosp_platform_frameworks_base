@@ -233,6 +233,76 @@ constructor(
             { "setMaxDisplayedNotifications: $int1" },
         )
     }
+
+    fun logAddSwipedOutView(loggingKey: String, clearAllInProgress: Boolean) {
+        notificationRenderBuffer.log(
+            TAG,
+            INFO,
+            {
+                str1 = loggingKey
+                bool1 = clearAllInProgress
+            },
+            { "addSwipedOutView from NSSL: childKey = $str1 -- clearAllInProgress:$bool1" },
+        )
+    }
+
+    fun logOnChildDismissed(loggingKey: String, clearAllInProgress: Boolean) {
+        notificationRenderBuffer.log(
+            TAG,
+            INFO,
+            {
+                str1 = loggingKey
+                bool1 = clearAllInProgress
+            },
+            { "onChildDismissed from NSSL: childKey = $str1 -- clearAllInProgress:$bool1" },
+        )
+    }
+
+    fun logOnSwipeBegin(loggingKey: String, reason: String, clearAllInProgress: Boolean) {
+        notificationRenderBuffer.log(
+            TAG,
+            INFO,
+            {
+                str1 = loggingKey
+                str2 = reason
+                bool1 = clearAllInProgress
+            },
+            { "onSwipeBegin from $str2: childKey = $str1 -- clearAllInProgress:$bool1" },
+        )
+    }
+
+    fun logOnSwipeEnd(loggingKey: String, reason: String, clearAllInProgress: Boolean) {
+        notificationRenderBuffer.log(
+            TAG,
+            INFO,
+            {
+                str1 = loggingKey
+                str2 = reason
+                bool1 = clearAllInProgress
+            },
+            { "onSwipeEnd from $str2: childKey = $str1 -- clearAllInProgress:$bool1" },
+        )
+    }
+
+    fun logOnChildNotDismissed(
+        loggingKey: String,
+        animationCancelled: Boolean,
+        viewWasRemoved: Boolean,
+    ) {
+        notificationRenderBuffer.log(
+            TAG,
+            INFO,
+            {
+                str1 = loggingKey
+                bool1 = animationCancelled
+                bool2 = viewWasRemoved
+            },
+            {
+                "onChildNotDismissed (ERROR) childKey = $str1 " +
+                    "-- animationCancelled:$bool1 -- viewWasRemoved:$bool2"
+            },
+        )
+    }
 }
 
 private const val TAG = "NotificationStackScroll"
