@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#undef ANDROID_UTILS_REF_BASE_DISABLE_IMPLICIT_CONSTRUCTION // TODO:remove this and fix code
 
 #define LOG_TAG "ScreenCapture"
 // #define LOG_NDEBUG 0
@@ -37,6 +36,7 @@
 namespace android {
 
 using gui::CaptureArgs;
+using gui::IScreenCaptureListener;
 
 static struct {
     jfieldID pixelFormat;
@@ -216,8 +216,7 @@ static jint nativeCaptureDisplay(JNIEnv* env, jclass clazz, jobject displayCaptu
         return BAD_VALUE;
     }
 
-    sp<gui::IScreenCaptureListener> captureListener =
-            reinterpret_cast<gui::IScreenCaptureListener*>(screenCaptureListenerObject);
+    auto captureListener = SpFromRawPtr<IScreenCaptureListener>(screenCaptureListenerObject);
     return ScreenshotClient::captureDisplay(captureArgs, captureListener);
 }
 
@@ -236,8 +235,7 @@ static jint nativeCaptureLayers(JNIEnv* env, jclass clazz, jobject layerCaptureA
     layerCaptureArgs.childrenOnly =
             env->GetBooleanField(layerCaptureArgsObject, gLayerCaptureArgsClassInfo.childrenOnly);
 
-    sp<gui::IScreenCaptureListener> captureListener =
-            reinterpret_cast<gui::IScreenCaptureListener*>(screenCaptureListenerObject);
+    auto captureListener = SpFromRawPtr<IScreenCaptureListener>(screenCaptureListenerObject);
     return ScreenshotClient::captureLayers(layerCaptureArgs, captureListener, sync);
 }
 
