@@ -21,6 +21,8 @@ import android.graphics.FrameInfo;
 import android.os.Build;
 import android.os.Looper;
 import android.os.MessageQueue;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -42,6 +44,7 @@ import java.lang.ref.WeakReference;
  * @hide
  */
 @WeaklyReferencedCallback
+@RavenwoodKeepPartialClass
 public abstract class DisplayEventReceiver {
 
     /**
@@ -153,6 +156,7 @@ public abstract class DisplayEventReceiver {
      *
      * @hide
      */
+    @RavenwoodKeepWholeClass
     public static final class VsyncEventData {
         // The max capacity of frame timeline choices.
         // Must be in sync with VsyncEventData::kFrameTimelinesCapacity in
