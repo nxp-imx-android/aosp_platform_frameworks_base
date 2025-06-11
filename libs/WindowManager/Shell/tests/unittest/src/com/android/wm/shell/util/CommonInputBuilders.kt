@@ -17,10 +17,12 @@
 package com.android.wm.shell.util
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.content.ComponentName
 import android.graphics.Point
 import android.graphics.Rect
 import android.view.SurfaceControl
 import android.window.ActivityTransitionInfo
+import android.window.AppCompatTransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.WindowContainerToken
 import org.mockito.kotlin.mock
@@ -33,6 +35,22 @@ interface TestInputBuilder<T> {
 }
 
 /**
+ * Base class for Test Contexts requiring a [Change] object.
+ */
+open class BaseChangeTestContext {
+
+    protected lateinit var inputObject: Change
+
+    fun inputChange(builder: ChangeTestInputBuilder.() -> Unit): Change {
+        val inputFactoryObj = ChangeTestInputBuilder()
+        inputFactoryObj.builder()
+        return inputFactoryObj.build().apply {
+            inputObject = this
+        }
+    }
+}
+
+/**
  * [InputBuilder] that helps in the creation of a [Change] object for testing.
  */
 class ChangeTestInputBuilder : TestInputBuilder<Change> {
@@ -41,12 +59,12 @@ class ChangeTestInputBuilder : TestInputBuilder<Change> {
     private val inputParams = InputParams()
     var endAbsBounds: Rect? = null
     var endRelOffset: Point? = null
-    var activityTransitionInfo: ActivityTransitionInfo? = null
 
     data class InputParams(
         var token: WindowContainerToken = mock<WindowContainerToken>(),
         var leash: SurfaceControl = mock<SurfaceControl>(),
-        var taskInfo: RunningTaskInfo? = null
+        var taskInfo: RunningTaskInfo? = null,
+        var activityTransitionInfo: ActivityTransitionInfo? = null
     )
 
     fun token(
@@ -76,6 +94,16 @@ class ChangeTestInputBuilder : TestInputBuilder<Change> {
         }
     }
 
+    fun activityTransitionInfo(
+        builder: ActivityTransitionInfoTestInputBuilder.() -> Unit
+    ): ActivityTransitionInfo {
+        val binderObj = ActivityTransitionInfoTestInputBuilder()
+        binderObj.builder()
+        return binderObj.build().apply {
+            inputParams.activityTransitionInfo = this
+        }
+    }
+
     override fun build(): Change {
         return Change(
             inputParams.token,
@@ -88,9 +116,58 @@ class ChangeTestInputBuilder : TestInputBuilder<Change> {
             this@ChangeTestInputBuilder.endRelOffset?.let {
                 this@apply.endRelOffset.set(endRelOffset)
             }
-            activityTransitionInfo = this@ChangeTestInputBuilder.activityTransitionInfo
+            activityTransitionInfo = inputParams.activityTransitionInfo
         }
     }
+}
+
+// [TestInputBuilder] for a [ActivityTransitionInfo]
+class ActivityTransitionInfoTestInputBuilder : TestInputBuilder<ActivityTransitionInfo> {
+
+    var componentName: ComponentName = ComponentName("", "")
+    var taskId: Int = -1
+    var appCompatTransitionInfo: AppCompatTransitionInfo? = null
+
+    fun componentName(
+        builder: ComponentNameTestInputBuilder.() -> Unit
+    ): ComponentName {
+        val binderObj = ComponentNameTestInputBuilder()
+        binderObj.builder()
+        return binderObj.build().apply {
+            componentName = this
+        }
+    }
+
+    fun appCompatTransitionInfo(
+        builder: AppCompatTransitionInfoTestInputBuilder.() -> Unit
+    ): AppCompatTransitionInfo {
+        val binderObj = AppCompatTransitionInfoTestInputBuilder()
+        binderObj.builder()
+        return binderObj.build().apply {
+            appCompatTransitionInfo = this
+        }
+    }
+
+    override fun build(): ActivityTransitionInfo =
+        ActivityTransitionInfo(componentName, taskId, appCompatTransitionInfo)
+}
+
+// [TestInputBuilder] for a [AppCompatTransitionInfo]
+class AppCompatTransitionInfoTestInputBuilder : TestInputBuilder<AppCompatTransitionInfo> {
+
+    var letterboxBounds: Rect = Rect()
+
+    override fun build(): AppCompatTransitionInfo =
+        AppCompatTransitionInfo(letterboxBounds)
+}
+
+// [TestInputBuilder] for a [ComponentName]
+class ComponentNameTestInputBuilder : TestInputBuilder<ComponentName> {
+
+    var packageName: String = ""
+    var className: String = ""
+
+    override fun build(): ComponentName = ComponentName(packageName, className)
 }
 
 // [TestInputBuilder] for a [WindowContainerToken]
