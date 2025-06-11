@@ -3077,13 +3077,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 // registration in DisplayContent#onParentChanged at DisplayContent initialization.
                 final DisplayContent dc = mRoot.getDisplayContent(displayId);
                 if (dc == null) {
-                    if (callingPid != MY_PID) {
-                        throw new IllegalArgumentException(
-                                "attachWindowContextToDisplayContent: trying to attach to a"
-                                        + " non-existing display:" + displayId);
-                    }
-                    // Early return if this method is invoked from system process.
-                    // See above comments for more detail.
+                    ProtoLog.w(WM_ERROR, "attachWindowContextToDisplayContent: trying"
+                            + " to attach to a non-existing display:" + displayId);
                     return null;
                 }
                 mWindowContextListenerController.registerWindowContainerListener(wpc, clientToken,
