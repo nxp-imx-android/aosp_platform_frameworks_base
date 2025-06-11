@@ -181,8 +181,8 @@ class AppListRepositoryImpl(
     override suspend fun loadAndMaybeExcludeSystemApps(userId: Int, excludeSystemApp: Boolean) =
         coroutineScope {
             val loadAppsDeferred = async { loadApps(userId) }
-            val homeOrLauncherPackages = loadHomeOrLauncherPackages(userId)
             if (excludeSystemApp) {
+                val homeOrLauncherPackages = loadHomeOrLauncherPackages(userId)
                 loadAppsDeferred.await().filter { app -> !isSystemApp(app, homeOrLauncherPackages) }
             } else {
                 loadAppsDeferred.await()

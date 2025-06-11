@@ -18,6 +18,8 @@ package com.android.server.companion.datatransfer.continuity.messages;
 
 import android.util.proto.ProtoOutputStream;
 
+import java.io.IOException;
+
 /**
  * Represents a possible type for the "data" field on the
  * {@link TaskContinuityMessage} proto. This interface may be implemented by
@@ -34,6 +36,6 @@ public interface TaskContinuityMessageData {
     /**
      * Writes this object to a proto output stream.
      */
-    void writeToProto(ProtoOutputStream pos);
+    void writeToProto(ProtoOutputStream pos) throws IOException;
 
 }

@@ -420,7 +420,6 @@ public class MediaProjectionStopControllerTest {
         doReturn(mAppInfo).when(mPackageManager).getApplicationInfoAsUser(Mockito.isNull(),
                 any(ApplicationInfoFlags.class), any(UserHandle.class));
         return mService.createProjectionInternal(UID, packageName,
-                MediaProjectionManager.TYPE_SCREEN_CAPTURE, false, mContext.getUser(),
-                INVALID_DISPLAY);
+                MediaProjectionManager.TYPE_SCREEN_CAPTURE, false, INVALID_DISPLAY);
     }
 }

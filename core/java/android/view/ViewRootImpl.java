@@ -60,22 +60,22 @@ import static android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
 import static android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
 import static android.view.View.SYSTEM_UI_FLAG_LOW_PROFILE;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
-import static android.view.ViewRootImplProto.ADDED;
-import static android.view.ViewRootImplProto.APP_VISIBLE;
-import static android.view.ViewRootImplProto.CUR_SCROLL_Y;
-import static android.view.ViewRootImplProto.DISPLAY_ID;
-import static android.view.ViewRootImplProto.HEIGHT;
-import static android.view.ViewRootImplProto.IS_ANIMATING;
-import static android.view.ViewRootImplProto.IS_DRAWING;
-import static android.view.ViewRootImplProto.LAST_WINDOW_INSETS;
-import static android.view.ViewRootImplProto.REMOVED;
-import static android.view.ViewRootImplProto.SCROLL_Y;
-import static android.view.ViewRootImplProto.SOFT_INPUT_MODE;
-import static android.view.ViewRootImplProto.VIEW;
-import static android.view.ViewRootImplProto.VISIBLE_RECT;
-import static android.view.ViewRootImplProto.WIDTH;
-import static android.view.ViewRootImplProto.WINDOW_ATTRIBUTES;
-import static android.view.ViewRootImplProto.WIN_FRAME;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.ADDED;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.APP_VISIBLE;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.CUR_SCROLL_Y;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.DISPLAY_ID;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.HEIGHT;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.IS_ANIMATING;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.IS_DRAWING;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.LAST_WINDOW_INSETS;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.REMOVED;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.SCROLL_Y;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.SOFT_INPUT_MODE;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.VIEW;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.VISIBLE_RECT;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.WIDTH;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.WINDOW_ATTRIBUTES;
+import static android.internal.perfetto.protos.Viewrootimpl.ViewRootImplProto.WIN_FRAME;
 import static android.view.ViewTreeObserver.InternalInsetsInfo.TOUCHABLE_INSETS_REGION;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS;
 import static android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS;
@@ -98,7 +98,6 @@ import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_FIT_INSETS_CO
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_FORCE_DECOR_VIEW_VISIBILITY;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_INSET_PARENT_FRAME_BY_IME;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_LAYOUT_SIZE_EXTENDED_BY_CUTOUT;
-import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OPTIMIZE_MEASURE;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_OVERRIDE_LAYOUT_IN_DISPLAY_CUTOUT_MODE;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_SYSTEM_APPLICATION_OVERLAY;
 import static android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
@@ -126,8 +125,8 @@ import static android.view.flags.Flags.toolkitFrameRateTouchBoost25q1;
 import static android.view.flags.Flags.toolkitInitialTouchBoost;
 import static android.view.flags.Flags.toolkitMetricsForFrameRateDecision;
 import static android.view.flags.Flags.toolkitSetFrameRateReadOnly;
-import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.IME_FOCUS_CONTROLLER;
-import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.INSETS_CONTROLLER;
+import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.IME_FOCUS_CONTROLLER;
+import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.INSETS_CONTROLLER;
 import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_CONSUMPTION;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
@@ -3491,17 +3490,6 @@ public final class ViewRootImpl implements ViewParent,
                 || lp.type == TYPE_VOLUME_OVERLAY;
     }
 
-    /**
-     * @return {@code true} if we should reduce unnecessary measure for the window.
-     * TODO(b/260382739): Apply this to all windows.
-     */
-    private static boolean shouldOptimizeMeasure(final WindowManager.LayoutParams lp) {
-        if (com.android.window.flags.Flags.reduceUnnecessaryMeasure()) {
-            return true;
-        }
-        return (lp.privateFlags & PRIVATE_FLAG_OPTIMIZE_MEASURE) != 0;
-    }
-
     private Rect getWindowBoundsInsetSystemBars() {
         final Rect bounds = new Rect(
                 mContext.getResources().getConfiguration().windowConfiguration.getBounds());
@@ -3566,7 +3554,6 @@ public final class ViewRootImpl implements ViewParent,
         mAppVisibilityChanged = false;
         final boolean viewUserVisibilityChanged = !mFirst &&
                 ((mViewVisibility == View.VISIBLE) != (viewVisibility == View.VISIBLE));
-        final boolean shouldOptimizeMeasure = shouldOptimizeMeasure(lp);
 
         WindowManager.LayoutParams params = null;
         Rect frame = mWinFrame;
@@ -3691,7 +3678,7 @@ public final class ViewRootImpl implements ViewParent,
 
             // Ask host how big it wants to be
             windowSizeMayChange |= measureHierarchy(host, lp, mView.getContext().getResources(),
-                    desiredWindowWidth, desiredWindowHeight, shouldOptimizeMeasure);
+                    desiredWindowWidth, desiredWindowHeight, true /* forRootSizeOnly */);
         }
 
         if (collectViewAttributes()) {
@@ -3732,7 +3719,7 @@ public final class ViewRootImpl implements ViewParent,
                 // change due to fitting system windows, which can happen a lot.
                 windowSizeMayChange |= measureHierarchy(host, lp,
                         mView.getContext().getResources(), desiredWindowWidth, desiredWindowHeight,
-                        shouldOptimizeMeasure);
+                        true /* forRootSizeOnly */);
             }
         }
 

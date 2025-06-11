@@ -782,9 +782,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         verify(mMediaSwitchingController).addDeviceToPlayMedia(mMediaDevice2);
     }
 
-    @DisableFlags(Flags.FLAG_DISABLE_TRANSFER_WHEN_APPS_DO_NOT_SUPPORT)
     @Test
-    public void clickFullItemOfSelectableDevice_flagOff_hasListingPreference_verifyConnectDevice() {
+    public void clickFullItemOfSelectableDevice_hasListingPreference_verifyConnectDevice() {
         List<MediaDevice> mediaDevices = new ArrayList<>();
         mediaDevices.add(mMediaDevice2);
         when(mMediaDevice2.hasRouteListingPreferenceItem()).thenReturn(true);
@@ -805,32 +804,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         verify(mMediaSwitchingController).connectDevice(mMediaDevice2);
     }
 
-    @EnableFlags(Flags.FLAG_DISABLE_TRANSFER_WHEN_APPS_DO_NOT_SUPPORT)
     @Test
-    public void clickFullItemOfSelectableDevice_flagOn_hasListingPreference_verifyConnectDevice() {
-        List<MediaDevice> mediaDevices = new ArrayList<>();
-        mediaDevices.add(mMediaDevice2);
-        when(mMediaDevice2.hasRouteListingPreferenceItem()).thenReturn(true);
-        when(mMediaSwitchingController.getSelectableMediaDevice()).thenReturn(mediaDevices);
-        when(mMediaSwitchingController.getTransferableMediaDevices()).thenReturn(List.of());
-        when(mMediaSwitchingController.isCurrentOutputDeviceHasSessionOngoing()).thenReturn(false);
-        mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
-
-        assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
-        assertThat(mViewHolder.mTitleText.getAlpha())
-                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
-        assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
-
-        mViewHolder.mContainerLayout.performClick();
-
-        verify(mMediaSwitchingController).connectDevice(mMediaDevice2);
-    }
-
-    @DisableFlags(Flags.FLAG_DISABLE_TRANSFER_WHEN_APPS_DO_NOT_SUPPORT)
-    @Test
-    public void clickFullItemOfSelectableDevice_flagOff_isTransferable_verifyConnectDevice() {
+    public void clickFullItemOfSelectableDevice_isTransferable_verifyConnectDevice() {
         List<MediaDevice> mediaDevices = new ArrayList<>();
         mediaDevices.add(mMediaDevice2);
         when(mMediaDevice2.hasRouteListingPreferenceItem()).thenReturn(false);
@@ -851,55 +826,8 @@ public class MediaOutputAdapterLegacyTest extends SysuiTestCase {
         verify(mMediaSwitchingController).connectDevice(mMediaDevice2);
     }
 
-    @EnableFlags(Flags.FLAG_DISABLE_TRANSFER_WHEN_APPS_DO_NOT_SUPPORT)
     @Test
-    public void clickFullItemOfSelectableDevice_flagOn_isTransferable_verifyConnectDevice() {
-        List<MediaDevice> mediaDevices = new ArrayList<>();
-        mediaDevices.add(mMediaDevice2);
-        when(mMediaDevice2.hasRouteListingPreferenceItem()).thenReturn(false);
-        when(mMediaSwitchingController.getSelectableMediaDevice()).thenReturn(mediaDevices);
-        when(mMediaSwitchingController.getTransferableMediaDevices()).thenReturn(mediaDevices);
-        when(mMediaSwitchingController.isCurrentOutputDeviceHasSessionOngoing()).thenReturn(false);
-        mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
-
-        assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
-        assertThat(mViewHolder.mTitleText.getAlpha())
-                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
-        assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
-
-        mViewHolder.mContainerLayout.performClick();
-
-        verify(mMediaSwitchingController).connectDevice(mMediaDevice2);
-    }
-
-    @DisableFlags(Flags.FLAG_DISABLE_TRANSFER_WHEN_APPS_DO_NOT_SUPPORT)
-    @Test
-    public void clickFullItemOfSelectableDevice_flagOff_notTransferable_verifyConnectDevice() {
-        List<MediaDevice> mediaDevices = new ArrayList<>();
-        mediaDevices.add(mMediaDevice2);
-        when(mMediaDevice2.hasRouteListingPreferenceItem()).thenReturn(false);
-        when(mMediaSwitchingController.getSelectableMediaDevice()).thenReturn(mediaDevices);
-        when(mMediaSwitchingController.getTransferableMediaDevices()).thenReturn(List.of());
-        when(mMediaSwitchingController.isCurrentOutputDeviceHasSessionOngoing()).thenReturn(false);
-        mMediaOutputAdapter.onBindViewHolder(mViewHolder, 1);
-
-        assertThat(mViewHolder.mCheckBox.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(mViewHolder.mTitleText.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(mViewHolder.mTitleText.getText().toString()).isEqualTo(TEST_DEVICE_NAME_2);
-        assertThat(mViewHolder.mTitleText.getAlpha())
-                .isEqualTo(MediaOutputAdapterLegacy.DEVICE_ACTIVE_ALPHA);
-        assertThat(mViewHolder.mContainerLayout.isFocusable()).isTrue();
-
-        mViewHolder.mContainerLayout.performClick();
-
-        verify(mMediaSwitchingController).connectDevice(mMediaDevice2);
-    }
-
-    @EnableFlags(Flags.FLAG_DISABLE_TRANSFER_WHEN_APPS_DO_NOT_SUPPORT)
-    @Test
-    public void clickFullItemOfSelectableDevice_flagOn_notTransferable_verifyNotConnectDevice() {
+    public void clickFullItemOfSelectableDevice_notTransferable_verifyNotConnectDevice() {
         List<MediaDevice> mediaDevices = new ArrayList<>();
         mediaDevices.add(mMediaDevice2);
         when(mMediaDevice2.hasRouteListingPreferenceItem()).thenReturn(false);

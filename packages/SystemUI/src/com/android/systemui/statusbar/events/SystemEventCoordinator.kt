@@ -27,7 +27,7 @@ import com.android.systemui.privacy.PrivacyChipBuilder
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyItemController
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.featurepods.vc.domain.interactor.AvControlsChipInteractor
+import com.android.systemui.statusbar.featurepods.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject

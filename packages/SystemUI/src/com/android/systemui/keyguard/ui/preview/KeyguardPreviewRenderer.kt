@@ -242,9 +242,16 @@ constructor(
         if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
             when (clockSize) {
                 ClockSizeSetting.DYNAMIC -> {
-                    largeDateView?.post {
-                        smallDateView?.visibility = View.GONE
-                        largeDateView?.visibility = View.VISIBLE
+                    if (clockViewModel.shouldSmallDateWeatherBeBelowLargeClock()) {
+                        largeDateView?.post {
+                            smallDateView?.visibility = View.GONE
+                            largeDateView?.visibility = View.VISIBLE
+                        }
+                    } else {
+                        largeDateView?.post {
+                            smallDateView?.visibility = View.VISIBLE
+                            largeDateView?.visibility = View.GONE
+                        }
                     }
                 }
 
@@ -306,62 +313,13 @@ constructor(
             val cs = ConstraintSet()
             cs.clone(parentView)
             cs.apply {
-                val largeClockViewId = ClockViewIds.LOCKSCREEN_CLOCK_VIEW_LARGE
-                val smallClockViewId = ClockViewIds.LOCKSCREEN_CLOCK_VIEW_SMALL
                 largeDateView =
                     lockscreenSmartspaceController
                         .buildAndConnectDateView(parentView, true)
-                        ?.also { view ->
-                            constrainWidth(view.id, ConstraintSet.WRAP_CONTENT)
-                            constrainHeight(view.id, ConstraintSet.WRAP_CONTENT)
-                            connect(view.id, START, largeClockViewId, START)
-                            connect(view.id, ConstraintSet.END, largeClockViewId, ConstraintSet.END)
-                            connect(
-                                view.id,
-                                TOP,
-                                largeClockViewId,
-                                ConstraintSet.BOTTOM,
-                                smartspaceViewModel.getDateWeatherEndPadding(previewContext),
-                            )
-                        }
+
                 smallDateView =
                     lockscreenSmartspaceController
                         .buildAndConnectDateView(parentView, false)
-                        ?.also { view ->
-                            constrainWidth(view.id, ConstraintSet.WRAP_CONTENT)
-                            constrainHeight(view.id, ConstraintSet.WRAP_CONTENT)
-                            if (clockViewModel.shouldSmallDateWeatherBeBelowSmallClock()) {
-                                (view as? LinearLayout)?.orientation = LinearLayout.HORIZONTAL
-                                connect(view.id, START, smallClockViewId, START)
-                                connect(
-                                    view.id,
-                                    TOP,
-                                    smallClockViewId,
-                                    ConstraintSet.BOTTOM,
-                                    context.resources.getDimensionPixelSize(
-                                        R.dimen.smartspace_padding_vertical
-                                    ),
-                                )
-                            } else {
-                                (view as? LinearLayout)?.orientation = LinearLayout.VERTICAL
-                                connect(
-                                    view.id,
-                                    START,
-                                    smallClockViewId,
-                                    ConstraintSet.END,
-                                    previewContext.resources.getDimensionPixelSize(
-                                        R.dimen.smartspace_padding_horizontal
-                                    ),
-                                )
-                                connect(view.id, TOP, smallClockViewId, TOP)
-                                connect(
-                                    view.id,
-                                    ConstraintSet.BOTTOM,
-                                    smallClockViewId,
-                                    ConstraintSet.BOTTOM,
-                                )
-                            }
-                        }
                 parentView.addView(largeDateView)
                 parentView.addView(smallDateView)
             }
@@ -415,7 +373,11 @@ constructor(
             setUpClock(previewContext, rootView)
             if (com.android.systemui.shared.Flags.clockReactiveSmartspaceLayout()) {
                 setUpSmartspace(previewContext, keyguardRootView)
-                KeyguardPreviewSmartspaceViewBinder.bind(keyguardRootView, smartspaceViewModel)
+                KeyguardPreviewSmartspaceViewBinder.bind(
+                    keyguardRootView,
+                    smartspaceViewModel,
+                    previewViewModel,
+                )
             }
             KeyguardPreviewClockViewBinder.bind(
                 keyguardRootView,

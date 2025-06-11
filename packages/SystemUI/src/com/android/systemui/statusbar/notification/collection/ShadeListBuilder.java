@@ -733,7 +733,7 @@ public class ShadeListBuilder implements Dumpable, PipelineDumpable {
     }
 
     @Nullable
-    private BundleEntry getBundleEntry(String id) {
+    BundleEntry getBundleEntry(String id) {
         BundleEntry be = mIdToBundleEntry.get(id);
         if (be == null) {
             debugBundleLog(TAG, () -> "BundleEntry not found for bundleId: " + id);

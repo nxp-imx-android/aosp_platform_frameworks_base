@@ -16,9 +16,11 @@
 
 package com.android.server.permission.access.appfunction
 
+import android.Manifest.permission.EXECUTE_APP_FUNCTIONS
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_ALL
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_OTHER
 import android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_USER
+import android.app.appfunctions.AppFunctionService
 import android.content.pm.SignedPackage
 import android.os.UserHandle
 import android.util.Slog
@@ -32,6 +34,7 @@ import com.android.server.permission.access.MutateStateScope
 import com.android.server.permission.access.SchemePolicy
 import com.android.server.permission.access.UidUri
 import com.android.server.permission.access.WriteMode
+import com.android.server.permission.access.collection.*
 import com.android.server.permission.access.immutable.*
 import com.android.server.permission.access.util.andInv
 import com.android.server.permission.access.util.hasAnyBit
@@ -129,6 +132,54 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
             "When setting ${flagPrefix}_GRANTED/DENIED, the opposing flag must also be in the mask"
         }
     }
+
+    fun GetStateScope.getAgents(userId: Int): List<String> = buildList {
+        state.externalState.packageStates.forEach { packageName, packageState ->
+            if (isInstalledForUser(packageState, userId) && isValidAgent(packageState, userId)) {
+                this += packageName
+            }
+        }
+    }
+
+    fun GetStateScope.getTargets(userId: Int): List<String> = buildList {
+        state.externalState.packageStates.forEach { packageName, packageState ->
+            if (isValidTarget(packageState, userId)) {
+                this += packageName
+            }
+        }
+    }
+
+    private fun isValidAgent(packageState: PackageState, userId: Int): Boolean {
+        if (!isInstalledForUser(packageState, userId)) {
+            return false
+        }
+
+        if (
+            packageState.androidPackage?.requestedPermissions?.contains(EXECUTE_APP_FUNCTIONS) !=
+                true
+        ) {
+            return false
+        }
+
+        return true
+    }
+
+    private fun isValidTarget(packageState: PackageState, userId: Int): Boolean {
+        if (!isInstalledForUser(packageState, userId)) {
+            return false
+        }
+
+        return packageState.androidPackage?.services?.anyIndexed { _, service ->
+            service.intents.anyIndexed { _, intent ->
+                intent.intentFilter.hasAction(AppFunctionService.SERVICE_INTERFACE) &&
+                    intent.intentFilter.countDataSchemes() == 0 &&
+                    intent.intentFilter.countDataTypes() == 0
+            }
+        } == true
+    }
+
+    private inline fun isInstalledForUser(packageState: PackageState, userId: Int) =
+        packageState.getUserStateOrDefault(userId).isInstalled
 
     override fun MutateStateScope.onAgentAllowlistChanged(agentAllowlist: List<SignedPackage>) {
         // TODO b/416661798: implement when allowlist is implemented

@@ -154,7 +154,7 @@ public:
 
     static void disableVsync();
 
-    static void preload();
+    static int preload();
 
     static void setRtAnimationsEnabled(bool enabled);
 

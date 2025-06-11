@@ -61,6 +61,10 @@ interface PreferenceMetadata {
     /** Preference key. */
     val key: String
 
+    /** Preference key when attached to preference hierarchy. */
+    val bindingKey: String
+        get() = key
+
     /**
      * Preference title resource id.
      *

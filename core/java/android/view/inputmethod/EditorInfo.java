@@ -17,12 +17,12 @@
 package android.view.inputmethod;
 
 import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
-import static android.view.inputmethod.EditorInfoProto.FIELD_ID;
-import static android.view.inputmethod.EditorInfoProto.IME_OPTIONS;
-import static android.view.inputmethod.EditorInfoProto.INPUT_TYPE;
-import static android.view.inputmethod.EditorInfoProto.PACKAGE_NAME;
-import static android.view.inputmethod.EditorInfoProto.PRIVATE_IME_OPTIONS;
-import static android.view.inputmethod.EditorInfoProto.TARGET_INPUT_METHOD_USER_ID;
+import static android.internal.perfetto.protos.Editorinfo.EditorInfoProto.FIELD_ID;
+import static android.internal.perfetto.protos.Editorinfo.EditorInfoProto.IME_OPTIONS;
+import static android.internal.perfetto.protos.Editorinfo.EditorInfoProto.INPUT_TYPE;
+import static android.internal.perfetto.protos.Editorinfo.EditorInfoProto.PACKAGE_NAME;
+import static android.internal.perfetto.protos.Editorinfo.EditorInfoProto.PRIVATE_IME_OPTIONS;
+import static android.internal.perfetto.protos.Editorinfo.EditorInfoProto.TARGET_INPUT_METHOD_USER_ID;
 import static android.view.inputmethod.Flags.FLAG_EDITORINFO_HANDWRITING_ENABLED;
 import static android.view.inputmethod.Flags.FLAG_PUBLIC_AUTOFILL_ID_IN_EDITORINFO;
 

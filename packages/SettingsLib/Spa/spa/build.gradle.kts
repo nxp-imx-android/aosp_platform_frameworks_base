@@ -62,8 +62,8 @@ dependencies {
     api("androidx.window:window:1.5.0-alpha02")
     api("com.github.PhilJay:MPAndroidChart:v3.1.0-alpha") // external/MPAndroidChart
     api("com.google.android.material:material:1.13.0-alpha13") // prebuilts/sdk/current/extras/material-design-x
+    api("com.airbnb.android:lottie-compose:6.5.2") // external/lottie
     debugApi("androidx.compose.ui:ui-tooling:$jetpackComposeVersion")
-    implementation("com.airbnb.android:lottie-compose:6.5.2") // external/lottie
 
     androidTestImplementation(project(":Spa:testutils"))
     androidTestImplementation(libs.dexmaker.mockito)

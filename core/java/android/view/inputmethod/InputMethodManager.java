@@ -21,18 +21,18 @@ import static android.view.inputmethod.Flags.FLAG_HOME_SCREEN_HANDWRITING_DELEGA
 import static android.view.inputmethod.Flags.initiationWithoutInputConnection;
 import static android.view.inputmethod.InputConnection.CURSOR_UPDATE_IMMEDIATE;
 import static android.view.inputmethod.InputConnection.CURSOR_UPDATE_MONITOR;
-import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.DISPLAY_ID;
-import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.EDITOR_INFO;
-import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.INPUT_CONNECTION;
-import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.INPUT_CONNECTION_CALL;
-import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.INPUT_METHOD_MANAGER;
-import static android.view.inputmethod.InputMethodEditorTraceProto.InputMethodClientsTraceProto.ClientSideProto.VIEW_ROOT_IMPL;
-import static android.view.inputmethod.InputMethodManagerProto.ACTIVE;
-import static android.view.inputmethod.InputMethodManagerProto.CUR_ID;
-import static android.view.inputmethod.InputMethodManagerProto.FULLSCREEN_MODE;
-import static android.view.inputmethod.InputMethodManagerProto.NEXT_SERVED_VIEW;
-import static android.view.inputmethod.InputMethodManagerProto.SERVED_CONNECTING;
-import static android.view.inputmethod.InputMethodManagerProto.SERVED_VIEW;
+import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.DISPLAY_ID;
+import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.EDITOR_INFO;
+import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.INPUT_CONNECTION;
+import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.INPUT_CONNECTION_CALL;
+import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.INPUT_METHOD_MANAGER;
+import static android.internal.perfetto.protos.Inputmethodeditor.InputMethodClientsTraceProto.ClientSideProto.VIEW_ROOT_IMPL;
+import static android.internal.perfetto.protos.Inputmethodmanager.InputMethodManagerProto.ACTIVE;
+import static android.internal.perfetto.protos.Inputmethodmanager.InputMethodManagerProto.CUR_ID;
+import static android.internal.perfetto.protos.Inputmethodmanager.InputMethodManagerProto.FULLSCREEN_MODE;
+import static android.internal.perfetto.protos.Inputmethodmanager.InputMethodManagerProto.NEXT_SERVED_VIEW;
+import static android.internal.perfetto.protos.Inputmethodmanager.InputMethodManagerProto.SERVED_CONNECTING;
+import static android.internal.perfetto.protos.Inputmethodmanager.InputMethodManagerProto.SERVED_VIEW;
 
 import static com.android.internal.inputmethod.StartInputReason.BOUND_TO_IMMS;
 

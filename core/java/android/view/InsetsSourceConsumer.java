@@ -19,13 +19,13 @@ package android.view;
 import static android.view.InsetsController.ANIMATION_TYPE_NONE;
 import static android.view.InsetsController.AnimationType;
 import static android.view.InsetsController.DEBUG;
-import static android.view.InsetsSourceConsumerProto.ANIMATION_STATE;
-import static android.view.InsetsSourceConsumerProto.HAS_WINDOW_FOCUS;
-import static android.view.InsetsSourceConsumerProto.IS_REQUESTED_VISIBLE;
-import static android.view.InsetsSourceConsumerProto.PENDING_FRAME;
-import static android.view.InsetsSourceConsumerProto.PENDING_VISIBLE_FRAME;
-import static android.view.InsetsSourceConsumerProto.SOURCE_CONTROL;
-import static android.view.InsetsSourceConsumerProto.TYPE_NUMBER;
+import static android.internal.perfetto.protos.Insetssourceconsumer.InsetsSourceConsumerProto.ANIMATION_STATE;
+import static android.internal.perfetto.protos.Insetssourceconsumer.InsetsSourceConsumerProto.HAS_WINDOW_FOCUS;
+import static android.internal.perfetto.protos.Insetssourceconsumer.InsetsSourceConsumerProto.IS_REQUESTED_VISIBLE;
+import static android.internal.perfetto.protos.Insetssourceconsumer.InsetsSourceConsumerProto.PENDING_FRAME;
+import static android.internal.perfetto.protos.Insetssourceconsumer.InsetsSourceConsumerProto.PENDING_VISIBLE_FRAME;
+import static android.internal.perfetto.protos.Insetssourceconsumer.InsetsSourceConsumerProto.SOURCE_CONTROL;
+import static android.internal.perfetto.protos.Insetssourceconsumer.InsetsSourceConsumerProto.TYPE_NUMBER;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 

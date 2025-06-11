@@ -267,6 +267,12 @@ constructor(
         return true
     }
 
+    /**
+     * Returns true if the package is a system app.
+     *
+     * <p>TODO(b/422799135): refactor isSystemApp() and isBackgroundApp(). Before this is fixed,
+     * make sure to update PermissionUsageHelper when changing this method.
+     */
     private fun isSystemApp(item: AppOpItem): Boolean {
         val user = UserHandle.getUserHandleForUid(item.uid)
 
@@ -299,6 +305,12 @@ constructor(
         }
     }
 
+    /**
+     * Returns true if it is a background app
+     *
+     * <p>TODO(b/422799135): refactor isSystemApp() and isBackgroundApp(). Before this is fixed,
+     * make sure to update PermissionUsageHelper when changing this method.
+     */
     private fun isBackgroundApp(item: AppOpItem): Boolean {
         for (processInfo in activityManager.runningAppProcesses) {
             if (processInfo.uid == item.uid) {

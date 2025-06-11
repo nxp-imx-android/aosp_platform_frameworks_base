@@ -71,7 +71,7 @@ public class RavenwoodMainThreadTest {
      * runOnMainThreadSync() should report back the inner exception, if any.
      *
      * Note this test does _not_ involves "recoverable exception" check in
-     * RavenwoodRuntimeEnvironmentController because the exception is caught in side the
+     * RavenwoodDriver because the exception is caught in side the
      * Runnable that's executed on the main handler. This purely tests runOnMainThreadSync()'s
      * exception propagation.
      */

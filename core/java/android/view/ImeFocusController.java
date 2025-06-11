@@ -16,7 +16,7 @@
 
 package android.view;
 
-import static android.view.ImeFocusControllerProto.HAS_IME_FOCUS;
+import static android.internal.perfetto.protos.Imefocuscontroller.ImeFocusControllerProto.HAS_IME_FOCUS;
 
 import android.annotation.AnyThread;
 import android.annotation.NonNull;

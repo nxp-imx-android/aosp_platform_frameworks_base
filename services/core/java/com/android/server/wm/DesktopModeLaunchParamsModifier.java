@@ -40,11 +40,13 @@ import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.policy.DesktopModeCompatPolicy;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.protolog.WmProtoLogGroups;
 import com.android.server.wm.LaunchParamsController.LaunchParamsModifier;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The class that defines default launch params for tasks in desktop mode
@@ -52,13 +54,20 @@ import java.util.Objects;
 class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
     private StringBuilder mLogBuilder;
 
-    @NonNull private final Context mContext;
-    @NonNull private final ActivityTaskSupervisor mSupervisor;
+    @NonNull
+    private final Context mContext;
+    @NonNull
+    private final ActivityTaskSupervisor mSupervisor;
+
+    @NonNull
+    private final DesktopModeCompatPolicy mDesktopModeCompatPolicy;
 
     DesktopModeLaunchParamsModifier(@NonNull Context context,
-            @NonNull ActivityTaskSupervisor supervisor) {
+            @NonNull ActivityTaskSupervisor supervisor,
+            @NonNull DesktopModeCompatPolicy desktopCompatModePolicy) {
         mContext = context;
         mSupervisor = supervisor;
+        mDesktopModeCompatPolicy = desktopCompatModePolicy;
     }
 
     @Override
@@ -100,7 +109,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 || suggestedDisplayArea.getTopMostVisibleFreeformActivity() != null;
         if (ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue() && task == null
                 && (isRequestingFreeformWindowMode(null, options, currentParams)
-                    || inDesktopMode)) {
+                || inDesktopMode)) {
             if (options != null) {
                 final int windowingMode = options.getLaunchWindowingMode();
                 if (windowingMode == WINDOWING_MODE_FREEFORM) {
@@ -130,6 +139,23 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                 .isTrue() && requestFullscreen) {
             appendLog("respecting fullscreen activity option, skipping");
             return RESULT_SKIP;
+        }
+
+        if (DesktopExperienceFlags.HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS.isTrue()
+                && activity != null) {
+            final boolean isActivityStackTransparent = !task.forAllActivities(r ->
+                    (r.occludesParent())) && !activity.occludesParent();
+            final AtomicInteger numActivities = new AtomicInteger(1);
+            task.forAllActivities((r) -> {
+                numActivities.incrementAndGet();
+            });
+            if (mDesktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
+                    activity.mActivityComponent, activity.isNoDisplay(), isActivityStackTransparent,
+                    numActivities.get(), task.getUserId(), activity.info)) {
+                appendLog("activity exempt from desktop, launching in fullscreen");
+                outParams.mWindowingMode = WINDOWING_MODE_FULLSCREEN;
+                return RESULT_DONE;
+            }
         }
 
         final Task organizerTask = task.getCreatedByOrganizerTask();
@@ -259,7 +285,9 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         //  activity will also enter desktop mode. On this same relationship, we can also assume
         //  if there are not visible freeform tasks but a freeform activity is now launching, it
         //  will force the device into desktop mode.
-        return (task.getDisplayContent().getTopMostFreeformActivity() != null
+        final Task visibleFreeformTask = task.getDisplayContent().getTask(
+                t -> t.inFreeformWindowingMode() && t.isVisibleRequested());
+        return (visibleFreeformTask != null
                     && checkSourceWindowModesCompatible(task, options, currentParams))
                 || isRequestingFreeformWindowMode(task, options, currentParams);
     }
@@ -329,7 +357,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
      */
     private boolean isClosingExitingInstance(int intentFlags) {
         return (intentFlags & FLAG_ACTIVITY_CLEAR_TASK) != 0
-            || (intentFlags & FLAG_ACTIVITY_MULTIPLE_TASK) == 0;
+                || (intentFlags & FLAG_ACTIVITY_MULTIPLE_TASK) == 0;
     }
 
     private void initLogBuilder(int phase, Task task, ActivityRecord activity) {

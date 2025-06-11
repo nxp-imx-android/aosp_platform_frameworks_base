@@ -1041,12 +1041,7 @@ public final class BatteryService extends SystemService {
         final Intent fgIntent = new Intent(intent);
         fgIntent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
         fgIntent.setPackage(sSystemUiPackage);
-        if (com.android.server.flags.Flags.pkgTargetedBatteryChangedNotSticky()) {
-            context.sendBroadcastAsUser(fgIntent, UserHandle.ALL, null, options);
-        } else {
-            ActivityManager.broadcastStickyIntent(fgIntent, AppOpsManager.OP_NONE,
-                    options, UserHandle.USER_ALL);
-        }
+        context.sendBroadcastAsUser(fgIntent, UserHandle.ALL, null, options);
 
         ActivityManager.broadcastStickyIntent(intent, new String[] {sSystemUiPackage},
                 AppOpsManager.OP_NONE, options, UserHandle.USER_ALL);

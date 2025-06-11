@@ -1421,7 +1421,9 @@ public class HardwareRenderer {
             if (mInitialized) return;
             mInitialized = true;
 
-            initSched(renderProxy);
+            if (!android.app.Flags.earlyRenderThreadPriorityBoost()) {
+                initSched(renderProxy);
+            }
             initGraphicsStats();
         }
 
@@ -1565,9 +1567,11 @@ public class HardwareRenderer {
      * its first frame adds directly to user-visible app launch latency.
      *
      * Should only be called after GraphicsEnvironment.chooseDriver().
+     *
+     * @return the tid of the RenderThread.
      * @hide
      */
-    public static native void preload();
+    public static native int preload();
 
     /**
      * Initialize the Buffer Allocator singleton

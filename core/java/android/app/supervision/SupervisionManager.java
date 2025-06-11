@@ -69,7 +69,7 @@ public class SupervisionManager {
          * @param userId Int ID of the user for whom supervision was enabled.
          * @hide
          */
-        public abstract void onSupervisionEnabled(@UserIdInt int userId);
+        public void onSupervisionEnabled(@UserIdInt int userId) {}
 
         /**
          * Called after supervision has been enabled for a given user.
@@ -77,7 +77,7 @@ public class SupervisionManager {
          * @param userId Int ID of the user for whom supervision was enabled.
          * @hide
          */
-        public abstract void onSupervisionDisabled(@UserIdInt int userId);
+        public void onSupervisionDisabled(@UserIdInt int userId) {}
     }
 
     private final Context mContext;

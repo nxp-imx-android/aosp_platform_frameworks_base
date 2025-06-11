@@ -115,7 +115,6 @@ interface OngoingActivityChipViewModel {
                 // The notification pipeline needs everything to run on the main thread, so keep
                 // this event on the main thread.
                 applicationScope.launch {
-                    // TODO(b/364653005): Move accessibility focus to the HUN when chip is tapped.
                     notifChipsInteractor.onPromotedNotificationChipTapped(notificationKey)
                 }
             }

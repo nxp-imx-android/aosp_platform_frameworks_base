@@ -24,7 +24,8 @@
     android:layout_gravity="center_horizontal"
     android:background="@drawable/accessibility_autoclick_type_panel_rounded_background"
     android:orientation="vertical"
-    android:padding="8dp">
+    android:paddingVertical="8dp"
+    android:paddingHorizontal="16dp">
 
     <LinearLayout
         android:id="@+id/accessibility_autoclick_button_group_container"

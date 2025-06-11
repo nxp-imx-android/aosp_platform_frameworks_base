@@ -418,10 +418,7 @@ public class DisplayPolicyTests extends WindowTestsBase {
         currentInsetsState.addSource(prevSource);
         currentInsetsState = mDisplayContent.getInsetsPolicy().adjustInsetsForWindow(
                 win, currentInsetsState);
-        if (com.android.window.flags.Flags.useCachedInsetsForDisplaySwitch()) {
-            assertEquals(prevInsetsState.peekSource(insetsId),
-                    currentInsetsState.peekSource(insetsId));
-        }
+        assertEquals(prevInsetsState.peekSource(insetsId), currentInsetsState.peekSource(insetsId));
 
         // If screen is not fully turned on, then the cache should be preserved.
         displayPolicy.screenTurnedOff(false /* acquireSleepToken */);

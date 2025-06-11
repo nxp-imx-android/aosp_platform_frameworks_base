@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.vc
+package com.android.systemui.statusbar.featurepods.av
 
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.statusbar.featurepods.vc.domain.interactor.AvControlsChipInteractor
-import com.android.systemui.statusbar.featurepods.vc.domain.interactor.AvControlsChipInteractorImpl
+import com.android.systemui.statusbar.featurepods.av.domain.interactor.AvControlsChipInteractor
+import com.android.systemui.statusbar.featurepods.av.domain.interactor.AvControlsChipInteractorImpl
 import dagger.Binds
 import dagger.Module
 

@@ -188,7 +188,10 @@ public class AutoclickController extends BaseEventStreamTransformation {
                     if (paused) {
                         cancelPendingClick();
                         if (mActiveClickType == AUTOCLICK_TYPE_SCROLL) {
-                            exitScrollMode();
+                            if (mAutoclickScrollPanel != null) {
+                                mAutoclickScrollPanel.hide();
+                            }
+                            stopContinuousScroll();
                         }
                     }
                 }
@@ -1390,6 +1393,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                             mLastMotionEvent.getFlags());
             MotionEvent pressEvent = MotionEvent.obtain(downEvent);
             pressEvent.setAction(MotionEvent.ACTION_BUTTON_PRESS);
+            pressEvent.setActionButton(BUTTON_PRIMARY);
             AutoclickController.super.onMotionEvent(downEvent, downEvent,
                     mEventPolicyFlags);
             downEvent.recycle();
@@ -1421,6 +1425,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                             /* edgeFlags= */ 0,
                             mLastMotionEvent.getSource(),
                             mLastMotionEvent.getFlags());
+            releaseEvent.setActionButton(BUTTON_PRIMARY);
             MotionEvent upEvent = MotionEvent.obtain(releaseEvent);
             upEvent.setAction(MotionEvent.ACTION_UP);
             AutoclickController.super.onMotionEvent(releaseEvent, releaseEvent,

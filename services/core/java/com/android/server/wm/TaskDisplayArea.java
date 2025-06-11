@@ -153,8 +153,6 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
      */
     private final boolean mCanHostHomeTask;
 
-    private final Configuration mTempConfiguration = new Configuration();
-
     /**
      * @param createdByOrganizer    whether this TaskDisplayArea is created by a
      *                              {@link android.window.WindowOrganizer}.
@@ -1786,14 +1784,6 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
 
     void clearPreferredTopFocusableRootTask() {
         mPreferredTopFocusableRootTask = null;
-    }
-
-    @Override
-    public void setWindowingMode(int windowingMode) {
-        mTempConfiguration.setTo(getRequestedOverrideConfiguration());
-        WindowConfiguration tempRequestWindowConfiguration = mTempConfiguration.windowConfiguration;
-        tempRequestWindowConfiguration.setWindowingMode(windowingMode);
-        onRequestedOverrideConfigurationChanged(mTempConfiguration);
     }
 
     @Override

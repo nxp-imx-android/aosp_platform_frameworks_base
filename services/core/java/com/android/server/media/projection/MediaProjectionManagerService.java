@@ -663,15 +663,14 @@ public final class MediaProjectionManagerService extends SystemService
             String packageName,
             int type,
             boolean isPermanentGrant,
-            UserHandle callingUser,
             int displayId) {
         MediaProjection projection;
         ApplicationInfo ai;
         try {
             ai = mPackageManager.getApplicationInfoAsUser(packageName, ApplicationInfoFlags.of(0),
-                    callingUser);
+                    UserHandle.getUserHandleForUid(uid));
         } catch (NameNotFoundException e) {
-            throw new IllegalArgumentException("No package matching :" + packageName);
+            throw new IllegalArgumentException("No package matching: " + packageName);
         }
         final long callingToken = Binder.clearCallingIdentity();
         try {
@@ -813,9 +812,15 @@ public final class MediaProjectionManagerService extends SystemService
             if (packageName == null || packageName.isEmpty()) {
                 throw new IllegalArgumentException("package name must not be empty");
             }
-            final UserHandle callingUser = Binder.getCallingUserHandle();
+            // If the package UID and calling UID don't belong to the same user, we need to use the
+            // package UID for lookups - but only if the caller has the appropriate permission.
+            if (UserHandle.getUserId(processUid) != UserHandle.getCallingUserId()) {
+                mContext.enforceCallingOrSelfPermission(
+                        android.Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+                        "createProjection");
+            }
             return createProjectionInternal(
-                    processUid, packageName, type, isPermanentGrant, callingUser, displayId);
+                    processUid, packageName, type, isPermanentGrant, displayId);
         }
 
         @Override // Binder call

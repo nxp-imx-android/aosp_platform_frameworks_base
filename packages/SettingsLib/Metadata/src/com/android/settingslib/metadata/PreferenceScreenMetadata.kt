@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.Flow
  * For parameterized preference screen that relies on additional information (e.g. package name,
  * language code) to build its content, the subclass must:
  * - override [arguments] in constructor
+ * - override [bindingKey] to distinguish the preferences on the preference hierarchy
  * - add a static method `fun parameters(context: Context): Flow<Bundle>` (context is optional) to
  *   provide all possible arguments
  */
@@ -115,14 +116,23 @@ interface PreferenceScreenMetadata : PreferenceGroup {
     fun getLaunchIntent(context: Context, metadata: PreferenceMetadata?): Intent? = null
 }
 
-/** Generator of [PreferenceHierarchy] based on given type. */
+/**
+ * Generator of [PreferenceHierarchy] based on given type.
+ *
+ * This interface should be used together with [PreferenceScreenMetadata] and
+ * [PreferenceScreenMetadata.getPreferenceHierarchy] should return [generatePreferenceHierarchy]
+ * with default preference hierarchy type.
+ *
+ * The UI framework could leverage [PreferenceLifecycleContext.switchPreferenceHierarchy] to switch
+ * preference hierarchy with given type.
+ */
 interface PreferenceHierarchyGenerator<T> {
 
     /** Generates [PreferenceHierarchy] with given type. */
     fun generatePreferenceHierarchy(
         context: Context,
         coroutineScope: CoroutineScope,
-        type: T,
+        hierarchyType: T,
     ): PreferenceHierarchy
 }
 

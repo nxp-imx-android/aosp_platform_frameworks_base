@@ -416,8 +416,16 @@ public class Cuj {
      */
     public static final int CUJ_WEAR_NOTIFICATION_TRAY_OPEN = 137;
 
+    /**
+     * Tracking when notification shade window gets moved between displays
+     *
+     * <p>Tracking starts when the notification shade starts to move to a new display, and ends
+     * when the notification shade is fully expanded in the new display.
+     */
+    public static final int CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE = 138;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_WEAR_NOTIFICATION_TRAY_OPEN;
+    @VisibleForTesting static final int LAST_CUJ = CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE;
 
     /** @hide */
     @IntDef({
@@ -546,8 +554,8 @@ public class Cuj {
             CUJ_WEAR_CAROUSEL_FLING_JANK,
             CUJ_WEAR_CAROUSEL_SWIPE_JANK,
             CUJ_WEAR_QSS_TRAY_OPEN,
-            CUJ_WEAR_NOTIFICATION_TRAY_OPEN
-
+            CUJ_WEAR_NOTIFICATION_TRAY_OPEN,
+            CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -687,6 +695,7 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_CAROUSEL_SWIPE_JANK] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_CAROUSEL_SWIPE_JANK;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_QSS_TRAY_OPEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_QSS_TRAY_OPEN;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_NOTIFICATION_TRAY_OPEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_NOTIFICATION_TRAY_OPEN;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE;
     }
 
     private Cuj() {
@@ -957,6 +966,8 @@ public class Cuj {
                 return "WEAR_QSS_TRAY_OPEN";
             case CUJ_WEAR_NOTIFICATION_TRAY_OPEN:
                 return "WEAR_NOTIFICATION_TRAY_OPEN";
+            case CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE:
+                return "DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE";
         }
         return "UNKNOWN";
     }

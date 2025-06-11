@@ -19,8 +19,10 @@ package com.android.systemui.statusbar.phone.ongoingcall.domain.interactor
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.CoreStartable
 import com.android.systemui.activity.data.repository.ActivityManagerRepository
+import com.android.systemui.ambient.statusbar.shared.flag.OngoingActivityChipsOnDream
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
@@ -63,6 +65,7 @@ constructor(
     private val statusBarWindowControllerStore: StatusBarWindowControllerStore,
     private val swipeStatusBarAwayGestureHandler: SwipeStatusBarAwayGestureHandler,
     activeNotificationsInteractor: ActiveNotificationsInteractor,
+    keyguardInteractor: KeyguardInteractor,
     @OngoingCallLog private val logBuffer: LogBuffer,
 ) : CoreStartable {
     private val logger = Logger(logBuffer, TAG)
@@ -86,9 +89,16 @@ constructor(
     // TODO(b/400720280): maybe put this inside [OngoingCallModel].
     @VisibleForTesting
     val isStatusBarRequiredForOngoingCall =
-        combine(ongoingCallState, isChipSwipedAway) { callState, chipSwipedAway ->
-            // Don't force-show the status bar if the user has already swiped it away.
-            callState.willCallChipBeVisible() && !chipSwipedAway
+        combine(ongoingCallState, isChipSwipedAway, keyguardInteractor.isDreamingWithOverlay) {
+            callState,
+            chipSwipedAway,
+            isDreamingWithOverlay ->
+            callState.willCallChipBeVisible() &&
+                // Don't force-show the status bar if the user has already swiped it away.
+                !chipSwipedAway &&
+                // Don't force-show the status bar if currently dreaming with overlay, as the
+                // overlay render its own status bar
+                !(OngoingActivityChipsOnDream.isEnabled && isDreamingWithOverlay)
         }
 
     // TODO(b/400720280): maybe put this inside [OngoingCallModel].

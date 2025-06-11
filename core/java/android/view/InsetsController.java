@@ -17,8 +17,8 @@
 package android.view;
 
 import static android.os.Trace.TRACE_TAG_VIEW;
-import static android.view.InsetsControllerProto.CONTROL;
-import static android.view.InsetsControllerProto.STATE;
+import static android.internal.perfetto.protos.Insetscontroller.InsetsControllerProto.CONTROL;
+import static android.internal.perfetto.protos.Insetscontroller.InsetsControllerProto.STATE;
 import static android.view.InsetsSource.ID_IME;
 import static android.view.InsetsSource.ID_IME_CAPTION_BAR;
 import static android.view.ViewProtoLogGroups.IME_INSETS_CONTROLLER;

@@ -93,7 +93,6 @@ import com.android.systemui.Dumpable;
 import com.android.systemui.ExpandHelper;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.Flags;
-import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
@@ -348,7 +347,6 @@ public class NotificationStackScrollLayout
     };
     private NotificationStackScrollLogger mLogger;
     private Runnable mResetUserExpandedStatesRunnable;
-    private ActivityStarter mActivityStarter;
     private final int[] mTempInt2 = new int[2];
     private final float[] mTempFloat2 = new float[2];
     private final HashSet<Runnable> mAnimationFinishedRunnables = new HashSet<>();
@@ -5124,10 +5122,6 @@ public class NotificationStackScrollLayout
 
     public void setResetUserExpandedStatesRunnable(Runnable runnable) {
         this.mResetUserExpandedStatesRunnable = runnable;
-    }
-
-    public void setActivityStarter(ActivityStarter activityStarter) {
-        mActivityStarter = activityStarter;
     }
 
     void requestAnimateEverything() {

@@ -33,6 +33,7 @@ oneway interface IImsRegistrationCallback {
    void onRegistered(in ImsRegistrationAttributes attr);
    void onRegistering(in ImsRegistrationAttributes attr);
    void onDeregistered(in ImsReasonInfo info, int suggestedAction, int imsRadioTech);
+   void onDeregisteredWithTime(in ImsReasonInfo info, int suggestedAction, int imsRadioTech, int throttlingTimeSec);
    void onDeregisteredWithDetails(in ImsReasonInfo info, int suggestedAction, int imsRadioTech, in SipDetails detail);
    void onTechnologyChangeFailed(int imsRadioTech, in ImsReasonInfo info);
    void onSubscriberAssociatedUriChanged(in Uri[] uris);

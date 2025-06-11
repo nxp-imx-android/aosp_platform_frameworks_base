@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.vc.ui.compose
+package com.android.systemui.statusbar.featurepods.av.ui.compose
 
 import androidx.compose.runtime.Composable
 

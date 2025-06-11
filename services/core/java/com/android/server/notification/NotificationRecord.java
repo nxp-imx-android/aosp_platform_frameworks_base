@@ -32,6 +32,7 @@ import android.app.Flags;
 import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Person;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -227,6 +228,12 @@ public final class NotificationRecord {
     // If this notification was unclassified, whether the notification's original group summary
     // was present at the time of unclassification.
     private boolean mHadGroupSummaryWhenUnclassified = false;
+
+    // If this notification was classified into a bundle, this value stores the visibility of the
+    // original channel associated with this notification. If the original channel is set to be
+    // secret, that information should override any more generous visibility settings on the newly
+    // assigned bundle.
+    private int mOriginalChannelVisibility = NotificationManager.VISIBILITY_NO_OVERRIDE;
 
     public NotificationRecord(Context context, StatusBarNotification sbn,
             NotificationChannel channel) {
@@ -809,6 +816,8 @@ public final class NotificationRecord {
                 }
                 if (android.service.notification.Flags.notificationClassification()) {
                     if (signals.containsKey(Adjustment.KEY_TYPE)) {
+                        // Store original channel visibility before re-assigning channel
+                        setOriginalChannelVisibility(mChannel.getLockscreenVisibility());
                         updateNotificationChannel(signals.getParcelable(Adjustment.KEY_TYPE,
                                 NotificationChannel.class));
                         EventLogTags.writeNotificationAdjusted(getKey(),
@@ -816,6 +825,8 @@ public final class NotificationRecord {
                                 mChannel.getId());
                     }
                     if (signals.containsKey(Adjustment.KEY_UNCLASSIFY)) {
+                        // reset original channel visibility as we're returning to the original
+                        setOriginalChannelVisibility(NotificationManager.VISIBILITY_NO_OVERRIDE);
                         updateNotificationChannel(signals.getParcelable(Adjustment.KEY_UNCLASSIFY,
                                 NotificationChannel.class));
                         EventLogTags.writeNotificationAdjusted(getKey(),
@@ -1673,6 +1684,14 @@ public final class NotificationRecord {
 
     public void setHadGroupSummaryWhenUnclassified(boolean exists) {
         mHadGroupSummaryWhenUnclassified = exists;
+    }
+
+    public int getOriginalChannelVisibility() {
+        return mOriginalChannelVisibility;
+    }
+
+    public void setOriginalChannelVisibility(int visibility) {
+        mOriginalChannelVisibility = visibility;
     }
 
     /**

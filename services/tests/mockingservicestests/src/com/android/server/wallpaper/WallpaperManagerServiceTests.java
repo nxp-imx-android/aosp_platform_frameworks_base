@@ -1187,11 +1187,13 @@ public class WallpaperManagerServiceTests {
         assertThat(mService.mLastLockWallpaper).isNull();
     }
 
-    // Test setWallpaperComponent on multiple displays.
-    // GIVEN 3 displays, 0, 2, 3, the new wallpaper is only compatible for display 0 and 3 but not
-    // 2.
+    // Test setWallpaperComponent on multiple displays:
+    // GIVEN TEST_WALLPAPER_COMPONENT, a live wallpaper for lock screen that supports all displays
+    // GIVEN a static wallpaper for the home screen.
+    // GIVEN 3 displays, 0, 2, 3, the static wallpaper is only compatible for display 0 and 3 but
+    // not 2.
     // WHEN two different wallpapers set for system and lock via setWallpaperComponent.
-    // THEN there are two connections in mLastWallpaper, two connection in mLastLockWallpaper and
+    // THEN there are two connections in mLastWallpaper, three connection in mLastLockWallpaper and
     // one connection in mFallbackWallpaper.
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
@@ -1231,6 +1233,55 @@ public class WallpaperManagerServiceTests {
                 .isTrue();
         assertThat(mService.mLastLockWallpaper.connection.containsDisplay(incompatibleDisplayId))
                 .isTrue();
+        assertThat(mService.mFallbackWallpaper.connection.containsDisplay(DEFAULT_DISPLAY))
+                .isFalse();
+        assertThat(mService.mFallbackWallpaper.connection.containsDisplay(compatibleDisplayId))
+                .isFalse();
+        assertThat(mService.mFallbackWallpaper.connection.containsDisplay(incompatibleDisplayId))
+                .isTrue();
+    }
+
+    // Test setWallpaperComponent on multiple displays: from static system + lock to static system.
+    // GIVEN 3 displays, 0, 2, 3, the static wallpaper is only compatible for display 0 and 3 but
+    // not 2.
+    // WHEN two static wallpapers set for system and lock via setWallpaperComponent.
+    // THEN there are two connections in mLastWallpaper, two connection in mLastLockWallpaper and
+    // one connection in mFallbackWallpaper.
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_CONNECTED_DISPLAYS_WALLPAPER)
+    public void setWallpaperComponent_staticSystemAndLockToSystemWallpapers_multiDisplays_shouldHaveExpectedConnections() {
+        Resources resources = sContext.getResources();
+        spyOn(resources);
+        doReturn(true).when(resources).getBoolean(
+                R.bool.config_isLiveWallpaperSupportedInDesktopExperience);
+        final int incompatibleDisplayId = 2;
+        final int compatibleDisplayId = 3;
+        setUpDisplays(Map.of(
+                DEFAULT_DISPLAY, true,
+                incompatibleDisplayId, false,
+                compatibleDisplayId, true));
+        final int testUserId = USER_SYSTEM;
+        mService.switchUser(testUserId, null);
+        mService.setWallpaperComponent(sImageWallpaperComponentName, sContext.getOpPackageName(),
+                FLAG_SYSTEM | FLAG_LOCK, testUserId);
+        mService.setWallpaperComponent(sImageWallpaperComponentName, sContext.getOpPackageName(),
+                FLAG_SYSTEM, testUserId);
+
+        verifyLastWallpaperData(testUserId, sImageWallpaperComponentName);
+        verifyLastLockWallpaperData(testUserId, sImageWallpaperComponentName);
+        verifyCurrentSystemData(testUserId);
+
+        assertThat(mService.mLastWallpaper.connection.containsDisplay(DEFAULT_DISPLAY)).isTrue();
+        assertThat(mService.mLastWallpaper.connection.containsDisplay(compatibleDisplayId))
+                .isTrue();
+        assertThat(mService.mLastWallpaper.connection.containsDisplay(incompatibleDisplayId))
+                .isFalse();
+        assertThat(mService.mLastLockWallpaper.connection.containsDisplay(DEFAULT_DISPLAY))
+                .isTrue();
+        assertThat(mService.mLastLockWallpaper.connection.containsDisplay(compatibleDisplayId))
+                .isTrue();
+        assertThat(mService.mLastLockWallpaper.connection.containsDisplay(incompatibleDisplayId))
+                .isFalse();
         assertThat(mService.mFallbackWallpaper.connection.containsDisplay(DEFAULT_DISPLAY))
                 .isFalse();
         assertThat(mService.mFallbackWallpaper.connection.containsDisplay(compatibleDisplayId))

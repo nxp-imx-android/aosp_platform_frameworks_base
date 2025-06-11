@@ -34,6 +34,7 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.impl.CameraMetadataNative;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.ArraySet;
@@ -43,6 +44,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.function.ObjLongConsumer;
 
 /**
  * Configuration to create a new {@link VirtualCamera}.
@@ -128,7 +130,8 @@ public final class VirtualCameraConfig implements Parcelable {
         mCallback =
                 new VirtualCameraCallbackInternal(
                         requireNonNull(callback, "Missing callback"),
-                        requireNonNull(executor, "Missing callback executor"));
+                        requireNonNull(executor, "Missing callback executor"),
+                        perFrameCameraMetadataEnabled);
         mSensorOrientation = sensorOrientation;
         mPerFrameCameraMetadataEnabled = perFrameCameraMetadataEnabled;
         mCameraCharacteristics = cameraCharacteristics;
@@ -383,24 +386,22 @@ public final class VirtualCameraConfig implements Parcelable {
             return this;
         }
 
-        // TODO: b/371167033 - update docs and add links to
-        //  onSessionConfigured, onProcessCaptureRequest, CaptureResultConsumer
         /**
-         * Declares that the virtual camera owner wants to receive and provide
-         * {@link CaptureRequest} and {@link CaptureResult} for every frame.
+         * Declares that the virtual camera owner wants to receive {@link CaptureRequest} and
+         * can provide {@link CaptureResult} for every frame.
          *
-         * <p>This changes what methods from the {@link VirtualCameraCallback} are called.
-         * When enabled,
+         * <p>This changes which {@link VirtualCameraCallback} methods are called. When enabled,
          * {@link VirtualCameraCallback#onProcessCaptureRequest(int, long, CaptureRequest)}
-         * is called and a non null {@link CaptureResultConsumer} is received in
-         * {@link VirtualCameraCallback#onSessionConfigured(SessionConfiguration, CaptureResultConsumer)}.
-         * When set, the virtual camera expects the {@link CaptureResult} to be passed for each
-         * frame.
+         * is called and a {@code Consumer} is received in
+         * {@link VirtualCameraCallback#onSessionConfigured(SessionConfiguration, ObjLongConsumer)}.
+         * The {@code Consumer} takes the {@link CaptureResult} and the timestamp (as {@code long})
+         * for its parameters.
          *
-         * @param perFrameCameraMetadataEnabled if camera metadata is handled for each frame
-         * @see onSessionConfigured
-         * @see onProcessCaptureRequest
-         * @see CaptureResultConsumer
+         * @param perFrameCameraMetadataEnabled if set camera metadata is handled for each frame
+         *
+         * @see VirtualCameraCallback#onSessionConfigured
+         * @see VirtualCameraCallback#onProcessCaptureRequest(int, long)
+         * @see VirtualCameraCallback#onProcessCaptureRequest(int, long, CaptureRequest)
          */
         @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
         @NonNull
@@ -472,12 +473,16 @@ public final class VirtualCameraConfig implements Parcelable {
 
         private final VirtualCameraCallback mCallback;
         private final Executor mExecutor;
+        private final boolean mPerFrameCameraMetadataEnabled;
 
-        private VirtualCameraCallbackInternal(VirtualCameraCallback callback, Executor executor) {
+        private VirtualCameraCallbackInternal(VirtualCameraCallback callback, Executor executor,
+                boolean perFrameCameraMetadataEnabled) {
             mCallback = callback;
             mExecutor = executor;
+            mPerFrameCameraMetadataEnabled = perFrameCameraMetadataEnabled;
         }
 
+        @Override
         public void onOpenCamera() {
             if (Flags.virtualCameraOnOpen()) {
                 mExecutor.execute(mCallback::onOpenCamera);
@@ -492,8 +497,14 @@ public final class VirtualCameraConfig implements Parcelable {
         }
 
         @Override
-        public void onProcessCaptureRequest(int streamId, long frameId) {
-            mExecutor.execute(() -> mCallback.onProcessCaptureRequest(streamId, frameId));
+        public void onProcessCaptureRequest(int streamId, long frameId,
+                CaptureRequest captureRequest) {
+            if (Flags.virtualCameraMetadata() && mPerFrameCameraMetadataEnabled) {
+                mExecutor.execute(
+                        () -> mCallback.onProcessCaptureRequest(streamId, frameId, captureRequest));
+            } else {
+                mExecutor.execute(() -> mCallback.onProcessCaptureRequest(streamId, frameId));
+            }
         }
 
         @Override

@@ -659,8 +659,8 @@ constructor(
     }
 
     private fun restartSecondaryService(@UserIdInt userId: Int) {
-        // Do not start service for user that is marked for deletion.
-        if (!manager.aliveUsers.map { it.id }.contains(userId)) {
+        // Do not start service for user that isn't running
+        if (!manager.isUserRunning(userId)) {
             return
         }
 

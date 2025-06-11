@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.first
 class ShadeDisplaysWaitInteractor
 @Inject
 constructor(
+    private val shadeInteractor: ShadeInteractor,
     private val choreographerUtils: ChoreographerUtils,
     private val shadeRootView: WindowRootView,
     private val notificationRebindingTracker: NotificationRebindingTracker,
@@ -78,6 +79,18 @@ constructor(
         // happened synchronously when the new configuration was received by ViewConfigCoordinator.
         t.traceAsync("$logKey#waiting for notifications rebinding to finish") {
             notificationRebindingTracker.rebindingInProgressCount.first { it == 0 }
+        }
+    }
+
+    /**
+     * Waits for shade to be expanded, indicated by expansion float (1 for expanded, 0 for closed
+     * with range of float in between for intermediate levels of opening).
+     *
+     * The caller is supposed to wrap this with [withTimeout], if needed.
+     */
+    suspend fun waitForShadeExpanded(logKey: String) {
+        t.traceAsync("$logKey#waiting for shade to be fully expanded") {
+            shadeInteractor.anyExpansion.first { it == 1f }
         }
     }
 }

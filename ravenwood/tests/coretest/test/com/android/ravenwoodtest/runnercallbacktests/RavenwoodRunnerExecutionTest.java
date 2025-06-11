@@ -22,7 +22,7 @@ import static org.junit.Assert.fail;
 import android.os.Handler;
 import android.os.Looper;
 import android.platform.test.annotations.NoRavenizer;
-import android.platform.test.ravenwood.RavenwoodRuntimeEnvironmentController;
+import android.platform.test.ravenwood.RavenwoodDriver;
 import android.platform.test.ravenwood.RavenwoodUtils;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -44,19 +44,19 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
     /** Save the TOLERATE_* flags and set them to false. */
     private static void initTolerateFlags() {
         sOrigTolerateUnhandledAsserts =
-                RavenwoodRuntimeEnvironmentController.TOLERATE_UNHANDLED_ASSERTS;
+                RavenwoodDriver.TOLERATE_UNHANDLED_ASSERTS;
         sOrigTolerateUnhandledExceptions =
-                RavenwoodRuntimeEnvironmentController.TOLERATE_UNHANDLED_EXCEPTIONS;
+                RavenwoodDriver.TOLERATE_UNHANDLED_EXCEPTIONS;
 
-        RavenwoodRuntimeEnvironmentController.TOLERATE_UNHANDLED_ASSERTS = false;
-        RavenwoodRuntimeEnvironmentController.TOLERATE_UNHANDLED_EXCEPTIONS = false;
+        RavenwoodDriver.TOLERATE_UNHANDLED_ASSERTS = false;
+        RavenwoodDriver.TOLERATE_UNHANDLED_EXCEPTIONS = false;
     }
 
     /** Restore the original TOLERATE_* flags. */
     private static void restoreTolerateFlags() {
-        RavenwoodRuntimeEnvironmentController.TOLERATE_UNHANDLED_ASSERTS =
+        RavenwoodDriver.TOLERATE_UNHANDLED_ASSERTS =
                 sOrigTolerateUnhandledAsserts;
-        RavenwoodRuntimeEnvironmentController.TOLERATE_UNHANDLED_EXCEPTIONS =
+        RavenwoodDriver.TOLERATE_UNHANDLED_EXCEPTIONS =
                 sOrigTolerateUnhandledExceptions;
     }
 
@@ -89,7 +89,7 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
             initTolerateFlags();
 
             // Comment it out to test the false case.
-            RavenwoodRuntimeEnvironmentController.TOLERATE_UNHANDLED_ASSERTS = true;
+            RavenwoodDriver.TOLERATE_UNHANDLED_ASSERTS = true;
         }
 
         @AfterClass
@@ -103,7 +103,7 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
             h.post(() -> fail("failed on the man thread"));
 
             // If the flag isn't set to true, then the looper would be dead, so don't do it.
-            if (RavenwoodRuntimeEnvironmentController.TOLERATE_UNHANDLED_ASSERTS) {
+            if (RavenwoodDriver.TOLERATE_UNHANDLED_ASSERTS) {
                 InstrumentationRegistry.getInstrumentation().waitForIdleSync();
                 ensureMainThreadAlive();
             } else {
@@ -136,7 +136,7 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
             initTolerateFlags();
 
             // Comment it out to test the false case.
-            RavenwoodRuntimeEnvironmentController.TOLERATE_UNHANDLED_EXCEPTIONS = true;
+            RavenwoodDriver.TOLERATE_UNHANDLED_EXCEPTIONS = true;
         }
 
         @AfterClass
@@ -152,7 +152,7 @@ public class RavenwoodRunnerExecutionTest extends RavenwoodRunnerTestBase {
             });
 
             // If the flag isn't set to true, then the looper would be dead, so don't do it.
-            if (RavenwoodRuntimeEnvironmentController.TOLERATE_UNHANDLED_EXCEPTIONS) {
+            if (RavenwoodDriver.TOLERATE_UNHANDLED_EXCEPTIONS) {
                 InstrumentationRegistry.getInstrumentation().waitForIdleSync();
                 ensureMainThreadAlive();
             } else {

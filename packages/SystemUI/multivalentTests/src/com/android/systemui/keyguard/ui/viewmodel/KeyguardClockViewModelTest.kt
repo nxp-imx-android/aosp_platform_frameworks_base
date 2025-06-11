@@ -285,6 +285,15 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
         }
 
     @Test
+    @DisableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
+    fun dateWeatherBelowLargeClock_smartspacelayoutflag_off_false() =
+        testScope.runTest {
+            val result by collectLastValue(underTest.shouldDateWeatherBeBelowLargeClock)
+
+            assertThat(result).isFalse()
+        }
+
+    @Test
     @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
     fun dateWeatherBelowSmallClock_defaultFontAndDisplaySize_shadeLayoutNotWide_false() =
         testScope.runTest {
@@ -297,6 +306,72 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
             val result by collectLastValue(underTest.shouldDateWeatherBeBelowSmallClock)
 
             assertThat(result).isFalse()
+        }
+
+    @Test
+    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
+    fun dateWeatherBelowLargeClock_variousFontAndDisplaySize_true() =
+        testScope.runTest {
+            mockConfiguration.fontScale = 1.0f
+            mockConfiguration.screenWidthDp = 347
+            val result1 by collectLastValue(underTest.shouldDateWeatherBeBelowLargeClock)
+            assertThat(result1).isTrue()
+
+            mockConfiguration.fontScale = 1.2f
+            mockConfiguration.screenWidthDp = 347
+            val result2 by collectLastValue(underTest.shouldDateWeatherBeBelowLargeClock)
+            assertThat(result2).isTrue()
+
+            mockConfiguration.fontScale = 1.7f
+            mockConfiguration.screenWidthDp = 412
+            val result3 by collectLastValue(underTest.shouldDateWeatherBeBelowLargeClock)
+            assertThat(result3).isTrue()
+        }
+
+    @Test
+    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
+    fun dateWeatherBelowLargeClock_variousFontAndDisplaySize_false() =
+        testScope.runTest {
+            kosmos.shadeRepository.setShadeLayoutWide(false)
+            mockConfiguration.fontScale = 1.0f
+            mockConfiguration.screenWidthDp = 310
+            val result1 by collectLastValue(underTest.shouldDateWeatherBeBelowLargeClock)
+            assertThat(result1).isFalse()
+
+            mockConfiguration.fontScale = 1.5f
+            mockConfiguration.screenWidthDp = 347
+            val result2 by collectLastValue(underTest.shouldDateWeatherBeBelowLargeClock)
+            assertThat(result2).isFalse()
+
+            mockConfiguration.fontScale = 2.0f
+            mockConfiguration.screenWidthDp = 411
+            val result3 by collectLastValue(underTest.shouldDateWeatherBeBelowLargeClock)
+            assertThat(result3).isFalse()
+        }
+
+    @Test
+    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
+    fun dateWeatherBelowSmallClock_numberOverlapClock_variousFontAndDisplaySize_true() =
+        testScope.runTest {
+            config = ClockConfig("DIGITAL_CLOCK_NUMBEROVERLAP", "Test", "")
+            kosmos.fakeKeyguardClockRepository.setCurrentClock(clockController)
+            kosmos.shadeRepository.setShadeLayoutWide(false)
+            mockConfiguration.fontScale = 0.85f
+            mockConfiguration.screenWidthDp = 376
+            val result3 by collectLastValue(underTest.shouldDateWeatherBeBelowSmallClock)
+            assertThat(result3).isTrue()
+        }
+
+    @Test
+    @EnableFlags(com.android.systemui.shared.Flags.FLAG_CLOCK_REACTIVE_SMARTSPACE_LAYOUT)
+    fun dateWeatherBelowLargeClock_metroClock_variousFontAndDisplaySize_false() =
+        testScope.runTest {
+            config = ClockConfig("DIGITAL_CLOCK_METRO", "Test", "")
+            kosmos.fakeKeyguardClockRepository.setCurrentClock(clockController)
+            mockConfiguration.fontScale = 0.85f
+            mockConfiguration.screenWidthDp = 375
+            val result3 by collectLastValue(underTest.shouldDateWeatherBeBelowLargeClock)
+            assertThat(result3).isFalse()
         }
 
     @Test

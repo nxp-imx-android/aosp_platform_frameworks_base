@@ -15,6 +15,8 @@
  */
 package com.android.server.wm;
 
+import android.annotation.Nullable;
+
 import androidx.annotation.NonNull;
 
 /** Fake {@link AppCompatCameraStatePolicy} for testing. */
@@ -37,12 +39,12 @@ public class FakeAppCompatCameraStatePolicy implements AppCompatCameraStatePolic
     }
 
     @Override
-    public void onCameraOpened(@NonNull ActivityRecord cameraActivity) {
+    public void onCameraOpened(@NonNull WindowProcessController appProcess, @NonNull Task task) {
         mOnCameraOpenedCounter++;
     }
 
     @Override
-    public boolean canCameraBeClosed(@NonNull String cameraId) {
+    public boolean canCameraBeClosed(@NonNull String cameraId, @NonNull Task task) {
         mCheckCanCloseCounter++;
         final boolean returnValue = mCheckCanCloseReturnValue;
         // If false, return false only the first time, so it doesn't fall in the infinite retry
@@ -52,7 +54,7 @@ public class FakeAppCompatCameraStatePolicy implements AppCompatCameraStatePolic
     }
 
     @Override
-    public void onCameraClosed() {
+    public void onCameraClosed(@Nullable WindowProcessController appProcess, @Nullable Task task) {
         mOnCameraClosedCounter++;
     }
 }

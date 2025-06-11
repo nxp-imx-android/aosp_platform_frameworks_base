@@ -12,14 +12,40 @@
     { "name": "RavenwoodBivalentInstTest_self_inst_device" },
     { "name": "RavenwoodUiTest_device" },
 
-    // The sysui tests should match vendor/unbundled_google/packages/SystemUIGoogle/TEST_MAPPING
+    // The follwoing sysui tests should match these in this file:
+    //     vendor/unbundled_google/packages/SystemUIGoogle/TEST_MAPPING
+    // The reason why we have the SysUI device tests here is that, previously, when
+    // these tests  still used RavenwoodRule (which used to be required for
+    // @DisabledOnRavenwood to work), a change to Ravenwood accidentally broke
+    // their device side tests.
+    // Now, they no longer have a RavenwoodRule, but they still use
+    // RavenwoodRule.isOnRavenwood and the ravenwood stub is still linked against Ravenwood
+    // jars, so for now, we'll keep them here.
+    // When we think things get stable enough and presubmit time becomes too much because of them,
+    // we can consider deleting them.
     {
-      "name": "SystemUIGoogleTests"
+      "name": "SystemUIGoogleTests",
+      "options": [
+        {
+          "exclude-annotation": "org.junit.Ignore"
+        },
+        {
+          "exclude-annotation": "androidx.test.filters.FlakyTest"
+        }
+      ]
     }
   ],
   "presubmit-large": [
     {
-      "name": "SystemUITests"
+      "name": "SystemUITests",
+      "options": [
+        {
+          "exclude-annotation": "androidx.test.filters.FlakyTest"
+        },
+        {
+          "exclude-annotation": "org.junit.Ignore"
+        }
+      ]
     }
   ],
   "ravenwood-presubmit": [

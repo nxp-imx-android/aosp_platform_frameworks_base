@@ -52,7 +52,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastForEachReversed
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMaxOfOrDefault
 import androidx.compose.ui.util.fastSumBy
@@ -304,7 +304,7 @@ private fun HalfOverlappingReversedRow(
         layout(constraints.constrainWidth(width), constraints.constrainHeight(childHeight)) {
             // Start in the middle of the right-most placeable
             var currentXPosition = placeables.fastSumBy { it.width / 2 }
-            placeables.fastForEach { placeable ->
+            placeables.fastForEachReversed { placeable ->
                 currentXPosition -= placeable.width / 2
                 placeable.placeRelative(x = currentXPosition, y = 0)
             }

@@ -22,12 +22,12 @@ import android.annotation.NonNull;
  *
  * <p>{@link AppCompatCameraStateStrategy} implementations should track which apps hold the camera
  * access, and any ongoing camera state changes changes. 'track' methods should always be called
- * before appropriate 'maybeNotify' methods for the same task-cameraId pair, but the order of
+ * before appropriate 'notifyPolicy' methods for the same task-cameraId pair, but the order of
  * open/close can vary, for example due to built-in delays from the caller.
  */
 interface AppCompatCameraStateStrategy {
     /**
-     * Allows saving cameraId, to be processed later on
+     * Allows saving information: task, process, cameraId, to be processed later on
      * {@link AppCompatCameraStateStrategy#notifyPolicyCameraOpenedIfNeeded} after a delay.
      *
      * <p>The {@link AppCompatCameraStateStrategy} should track which camera operations have been
@@ -36,18 +36,21 @@ interface AppCompatCameraStateStrategy {
      * processed. Examples of quickly closing and opening the camera: activity relaunch due to
      * configuration change, switching front/back cameras, new app requesting camera and taking the
      * access rights away from the existing camera app.
+     *
+     * @return CameraAppInfo of the app which opened the camera with given cameraId.
      */
-    void trackOnCameraOpened(@NonNull String cameraId);
+    @NonNull
+    CameraAppInfo trackOnCameraOpened(@NonNull String cameraId, @NonNull String packageName);
 
     /**
      * Processes camera opened signal, and if the change is relevant for {@link
      * AppCompatCameraStatePolicy} calls {@link AppCompatCameraStatePolicy#onCameraOpened}.
      */
-    void notifyPolicyCameraOpenedIfNeeded(@NonNull String cameraId, @NonNull String packageName,
+    void notifyPolicyCameraOpenedIfNeeded(@NonNull CameraAppInfo cameraAppInfo,
             @NonNull AppCompatCameraStatePolicy policy);
 
     /**
-     * Allows saving cameraId to be processed later on
+     * Allows saving information: task, process, cameraId, to be processed later on
      * {@link AppCompatCameraStateStrategy#notifyPolicyCameraClosedIfNeeded} after a delay.
      *
      * <p>The {@link AppCompatCameraStateStrategy} should track which camera operations have been
@@ -56,8 +59,11 @@ interface AppCompatCameraStateStrategy {
      * processed. Examples of quickly closing and opening the camera: activity relaunch due to
      * configuration change, switching front/back cameras, new app requesting camera and taking the
      * access rights away from the existing camera app.
+     *
+     * @return CameraAppInfo of the app which closed the camera with given cameraId.
      */
-    void trackOnCameraClosed(@NonNull String cameraId);
+    @NonNull
+    CameraAppInfo trackOnCameraClosed(@NonNull String cameraId);
 
 
     /**
@@ -67,7 +73,7 @@ interface AppCompatCameraStateStrategy {
      * @return true if policies were able to handle the camera closed event, or false if it needs to
      * be rescheduled.
      */
-    boolean notifyPolicyCameraClosedIfNeeded(@NonNull String cameraId,
+    boolean notifyPolicyCameraClosedIfNeeded(@NonNull CameraAppInfo cameraAppInfo,
             @NonNull AppCompatCameraStatePolicy policy);
 
     /** Returns whether a given activity holds any camera opened. */

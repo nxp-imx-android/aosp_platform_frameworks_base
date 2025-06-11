@@ -776,6 +776,10 @@ public class SystemSensorManager extends SensorManager {
             }
             type = SensorDirectChannel.TYPE_MEMORY_FILE;
         } else if (hardwareBuffer != null) {
+            if (deviceId != DEVICE_ID_DEFAULT) {
+                throw new UnsupportedOperationException(
+                        "HardwareBuffer direct channel is only supported for default device");
+            }
             if (hardwareBuffer.getFormat() != HardwareBuffer.BLOB) {
                 throw new IllegalArgumentException("Format of HardwareBuffer must be BLOB");
             }

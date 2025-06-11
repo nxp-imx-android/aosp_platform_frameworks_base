@@ -41,17 +41,6 @@ flag {
 }
 
 flag {
-  name: "use_cached_insets_for_display_switch"
-  namespace: "windowing_frontend"
-  description: "Reduce intermediate insets changes for display switch"
-  bug: "266197298"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
   name: "enforce_edge_to_edge"
   is_exported: true
   namespace: "windowing_frontend"
@@ -145,6 +134,17 @@ flag {
 }
 
 flag {
+  name: "bg_priority_for_occluded_freeform_tasks"
+  namespace: "windowing_frontend"
+  description: "Background priority for occluded freeform tasks"
+  bug: "325594711"
+  is_fixed_read_only: true
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "fifo_priority_for_major_ui_processes"
   namespace: "windowing_frontend"
   description: "Use realtime priority for SystemUI and launcher"
@@ -218,17 +218,6 @@ flag {
 }
 
 flag {
-  name: "scheduling_for_notification_shade"
-  namespace: "windowing_frontend"
-  description: "Demote top-app when notification shade is expanded"
-  bug: "362467878"
-  is_fixed_read_only: true
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "release_snapshot_aggressively"
     namespace: "windowing_frontend"
     description: "Actively release task snapshot memory"
@@ -241,17 +230,6 @@ flag {
   namespace: "windowing_frontend"
   description: "Run AnimatorListener#onAnimationEnd on next frame for SystemUI"
   bug: "300035126"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
-  name: "reduce_unnecessary_measure"
-  namespace: "windowing_frontend"
-  description: "Skip measuring view hierarchy if the size is known"
-  bug: "260382739"
-  is_fixed_read_only: true
   metadata {
     purpose: PURPOSE_BUGFIX
   }

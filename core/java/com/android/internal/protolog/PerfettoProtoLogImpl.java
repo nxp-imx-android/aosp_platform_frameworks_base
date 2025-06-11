@@ -62,6 +62,7 @@ import android.util.Log;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.IProtoLogConfigurationService.RegisterClientArgs;
 import com.android.internal.protolog.ProtoLogDataSource.Instance.TracingFlushCallback;
@@ -102,9 +103,14 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     @NonNull
     protected final ProtoLogDataSource mDataSource;
     @Nullable
-    protected final IProtoLogConfigurationService mConfigurationService;
+    private final IProtoLogConfigurationService mConfigurationService;
+
     @NonNull
-    protected final TreeMap<String, IProtoLogGroup> mLogGroups = new TreeMap<>();
+    private final Object mLogGroupsLock = new Object();
+
+    @GuardedBy("mLogGroupsLock")
+    @NonNull
+    private final TreeMap<String, IProtoLogGroup> mLogGroups = new TreeMap<>();
     @NonNull
     private final ProtoLogCacheUpdater mCacheUpdater;
 
@@ -182,7 +188,13 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         Producer.init(InitArguments.DEFAULTS);
 
         if (android.tracing.Flags.clientSideProtoLogging() && mConfigurationService != null) {
-            connectToConfigurationServiceAsync();
+            synchronized (mLogGroupsLock) {
+                // Get the values on the main thread instead of the background worker thread because
+                // if we register more groups in the future this might happen before the task
+                // executes on the background thread leading to double registration of groups.
+                final var groups = mLogGroups.values().toArray(new IProtoLogGroup[0]);
+                connectToConfigurationServiceAsync(groups);
+            }
         }
 
         mDataSource.registerOnStartCallback(this);
@@ -195,6 +207,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         registerGroupsLocally(groups);
 
         if (mConfigurationService != null) {
+            // Because this will execute with a slight delay it means that we might be in sync with
+            // the main log to logcat configuration immediately, but will be eventually.
             registerGroupsWithConfigurationServiceAsync(groups);
         } else {
             Log.w(LOG_TAG, "Missing configuration service... Not registering groups with it.");
@@ -223,22 +237,22 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         return null;
     }
 
-    private void connectToConfigurationServiceAsync() {
+    private void connectToConfigurationServiceAsync(@NonNull IProtoLogGroup... groups) {
         Objects.requireNonNull(mConfigurationService,
                 "A null ProtoLog Configuration Service was provided!");
 
         mBackgroundHandler.post(() -> {
             try {
                 var args = createConfigurationServiceRegisterClientArgs();
+                args.groups = new String[groups.length];
+                args.groupsDefaultLogcatStatus = new boolean[groups.length];
 
-                args.groups = new String[mLogGroups.size()];
-                args.groupsDefaultLogcatStatus = new boolean[mLogGroups.size()];
-
-                var groups = mLogGroups.values().stream().toList();
-                for (var i = 0; i < groups.size(); i++) {
-                    var group = groups.get(i);
-                    args.groups[i] = group.name();
-                    args.groupsDefaultLogcatStatus[i] = group.isLogToLogcat();
+                synchronized (mLogGroupsLock) {
+                    for (var i = 0; i < groups.length; i++) {
+                        var group = groups[i];
+                        args.groups[i] = group.name();
+                        args.groupsDefaultLogcatStatus[i] = group.isLogToLogcat();
+                    }
                 }
 
                 mConfigurationService.registerClient(this, args);
@@ -405,20 +419,24 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     @Override
     @NonNull
     public List<IProtoLogGroup> getRegisteredGroups() {
-        return List.copyOf(mLogGroups.values());
+        synchronized (mLogGroupsLock) {
+            return List.copyOf(mLogGroups.values());
+        }
     }
 
     private void registerGroupsLocally(@NonNull IProtoLogGroup[] protoLogGroups) {
-        // Verify we don't have id collisions, if we do we want to know as soon as possible and
-        // we might want to manually specify an id for the group with a collision
-        IProtoLogGroup[] allGroups = Stream.concat(
-                mLogGroups.values().stream(),
-                Arrays.stream(protoLogGroups)
-        ).toArray(IProtoLogGroup[]::new);
-        verifyNoCollisionsOrDuplicates(allGroups);
+        synchronized (mLogGroupsLock) {
+            // Verify we don't have id collisions, if we do we want to know as soon as possible and
+            // we might want to manually specify an id for the group with a collision
+            IProtoLogGroup[] allGroups = Stream.concat(
+                    mLogGroups.values().stream(),
+                    Arrays.stream(protoLogGroups)
+            ).toArray(IProtoLogGroup[]::new);
+            verifyNoCollisionsOrDuplicates(allGroups);
 
-        for (IProtoLogGroup protoLogGroup : protoLogGroups) {
-            mLogGroups.put(protoLogGroup.name(), protoLogGroup);
+            for (IProtoLogGroup protoLogGroup : protoLogGroups) {
+                mLogGroups.put(protoLogGroup.name(), protoLogGroup);
+            }
         }
     }
 
@@ -823,12 +841,14 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
     }
 
     protected boolean validateGroups(@NonNull ILogger logger, @NonNull String[] groups) {
-        for (int i = 0; i < groups.length; i++) {
-            String group = groups[i];
-            IProtoLogGroup g = mLogGroups.get(group);
-            if (g == null) {
-                logger.log("No IProtoLogGroup named " + group);
-                return false;
+        synchronized (mLogGroupsLock) {
+            for (int i = 0; i < groups.length; i++) {
+                String group = groups[i];
+                IProtoLogGroup g = mLogGroups.get(group);
+                if (g == null) {
+                    logger.log("No IProtoLogGroup named " + group);
+                    return false;
+                }
             }
         }
         return true;
@@ -839,13 +859,15 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             return -1;
         }
 
-        for (int i = 0; i < groups.length; i++) {
-            String group = groups[i];
-            IProtoLogGroup g = mLogGroups.get(group);
-            if (g != null) {
-                g.setLogToLogcat(value);
-            } else {
-                throw new RuntimeException("No IProtoLogGroup named " + group);
+        synchronized (mLogGroupsLock) {
+            for (int i = 0; i < groups.length; i++) {
+                String group = groups[i];
+                IProtoLogGroup g = mLogGroups.get(group);
+                if (g != null) {
+                    g.setLogToLogcat(value);
+                } else {
+                    throw new RuntimeException("No IProtoLogGroup named " + group);
+                }
             }
         }
 

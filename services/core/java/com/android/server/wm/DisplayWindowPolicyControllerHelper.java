@@ -21,7 +21,6 @@ import static android.content.pm.ActivityInfo.FLAG_CAN_DISPLAY_ON_REMOTE_DEVICES
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.WindowConfiguration;
-import android.companion.virtualdevice.flags.Flags;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -129,9 +128,6 @@ class DisplayWindowPolicyControllerHelper {
     }
 
     private boolean launchAllowedByDisplayPolicy(ActivityInfo aInfo) {
-        if (!Flags.enforceRemoteDeviceOptOutOnAllVirtualDisplays()) {
-            return true;
-        }
         int displayType = mDisplayContent.getDisplay().getType();
         if (displayType != Display.TYPE_VIRTUAL && displayType != Display.TYPE_WIFI) {
             return true;

@@ -198,6 +198,7 @@ private fun ActiveShortcutHelper(
             shortcutsUiState.isCustomizationModeEnabled,
             onCustomizationModeToggled,
             shortcutsUiState.isExtendedAppCategoryFlagEnabled,
+            shortcutsUiState.allowExtendedAppShortcutsCustomization,
             modifier,
             onShortcutCustomizationRequested,
         )
@@ -392,6 +393,7 @@ private fun ShortcutHelperTwoPane(
     isCustomizationModeEnabled: Boolean,
     onCustomizationModeToggled: (isCustomizing: Boolean) -> Unit,
     isExtendedAppCategoryFlagEnabled: Boolean,
+    allowExtendedAppShortcutsCustomization: Boolean,
     modifier: Modifier = Modifier,
     onShortcutCustomizationRequested: (ShortcutCustomizationRequestInfo) -> Unit = {},
 ) {
@@ -442,8 +444,9 @@ private fun ShortcutHelperTwoPane(
                 selectedCategory,
                 isCustomizing = isCustomizationModeEnabled,
                 isExtendedAppCategoryFlagEnabled,
+                allowExtendedAppShortcutsCustomization,
                 Modifier.fillMaxSize().padding(top = 8.dp).semantics { isTraversalGroup = true },
-                onShortcutCustomizationRequested = onShortcutCustomizationRequested,
+                onShortcutCustomizationRequested,
             )
         }
     }
@@ -514,6 +517,7 @@ private fun EndSidePanel(
     category: ShortcutCategoryUi?,
     isCustomizing: Boolean,
     isExtendedAppCategoryFlagEnabled: Boolean,
+    allowExtendedAppShortcutsCustomization: Boolean,
     modifier: Modifier = Modifier,
     onShortcutCustomizationRequested: (ShortcutCustomizationRequestInfo) -> Unit = {},
 ) {
@@ -549,13 +553,15 @@ private fun EndSidePanel(
                             onShortcutCustomizationRequested(requestInfo)
                     }
                 },
+                allowExtendedAppShortcutsCustomization = allowExtendedAppShortcutsCustomization,
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
         if (
             category.type == ShortcutCategoryType.AppCategories &&
                 !isCustomizationModeEnabled &&
-                isExtendedAppCategoryFlagEnabled
+                isExtendedAppCategoryFlagEnabled &&
+                allowExtendedAppShortcutsCustomization
         ) {
             item {
                 ShortcutHelperButton(
@@ -595,6 +601,7 @@ private fun SubCategoryContainerDualPane(
     subCategory: ShortcutSubCategory,
     isCustomizing: Boolean,
     onShortcutCustomizationRequested: (ShortcutCustomizationRequestInfo) -> Unit,
+    allowExtendedAppShortcutsCustomization: Boolean,
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -632,6 +639,7 @@ private fun SubCategoryContainerDualPane(
                                 onShortcutCustomizationRequested(requestInfo)
                         }
                     },
+                    allowExtendedAppShortcutsCustomization = allowExtendedAppShortcutsCustomization,
                 )
             }
         }
@@ -652,6 +660,7 @@ private fun Shortcut(
     modifier: Modifier,
     searchQuery: String,
     shortcut: ShortcutModel,
+    allowExtendedAppShortcutsCustomization: Boolean = true,
     isCustomizing: Boolean = false,
     onShortcutCustomizationRequested: (ShortcutCustomizationRequestInfo) -> Unit = {},
 ) {
@@ -692,6 +701,7 @@ private fun Shortcut(
             modifier = Modifier.weight(.666f).semantics { hideFromAccessibility() },
             shortcut = shortcut,
             isCustomizing = isCustomizing,
+            allowExtendedAppShortcutsCustomization = allowExtendedAppShortcutsCustomization,
             onAddShortcutRequested = {
                 onShortcutCustomizationRequested(
                     ShortcutCustomizationRequestInfo.SingleShortcutCustomization.Add(
@@ -740,6 +750,7 @@ private fun ShortcutKeyCombinations(
     modifier: Modifier = Modifier,
     shortcut: ShortcutModel,
     isCustomizing: Boolean = false,
+    allowExtendedAppShortcutsCustomization: Boolean,
     onAddShortcutRequested: () -> Unit = {},
     onDeleteShortcutRequested: () -> Unit = {},
 ) {
@@ -761,7 +772,9 @@ private fun ShortcutKeyCombinations(
         AnimatedVisibility(visible = isCustomizing) {
             if (shortcut.containsCustomShortcutCommands) {
                 DeleteShortcutButton(onDeleteShortcutRequested)
-            } else {
+            } else if (
+                shortcut.containsDefaultShortcutCommands || allowExtendedAppShortcutsCustomization
+            ) {
                 AddShortcutButton(onAddShortcutRequested)
             }
         }

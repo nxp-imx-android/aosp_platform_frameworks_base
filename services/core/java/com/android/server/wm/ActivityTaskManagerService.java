@@ -3757,16 +3757,13 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     mDemoteTopAppReasons |= DEMOTE_TOP_REASON_DURING_UNLOCKING;
                 }
 
-                boolean foundResumed = false;
+                final boolean wasNoResumed = mTopApp == null || !mTopApp.hasResumedActivity();
                 for (int i = mRootWindowContainer.getChildCount() - 1; i >= 0; i--) {
                     final DisplayContent dc = mRootWindowContainer.getChildAt(i);
-                    final boolean wasNoResumed = dc.mFocusedApp == null
-                            || !dc.mFocusedApp.isState(RESUMED);
                     mKeyguardController.keyguardGoingAway(dc.mDisplayId, flags);
-                    if (wasNoResumed && dc.mFocusedApp != null && dc.mFocusedApp.isState(RESUMED)) {
-                        foundResumed = true;
-                    }
                 }
+                final boolean foundResumed = wasNoResumed
+                        && mTopApp != null && mTopApp.hasResumedActivity();
                 if (isPowerModePreApplied && !foundResumed) {
                     endPowerMode(POWER_MODE_REASON_START_ACTIVITY);
                 }

@@ -1037,6 +1037,9 @@
     <!-- Permission required to test mouse movement on display -->
     <uses-permission android:name="android.permission.SET_POINTER_SPEED" />
 
+    <!-- Permission required for CTS test - CtsAppFunctionTestCases -->
+    <uses-permission android:name="android.permission.MANAGE_APP_FUNCTION_ACCESS" />
+
     <!-- Permissions required for integration test - InputTest -->
     <uses-permission android:name="android.permission.LISTEN_FOR_KEY_ACTIVITY" />
 

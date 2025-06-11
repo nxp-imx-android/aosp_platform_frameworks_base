@@ -29,6 +29,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Process;
 import android.os.Trace;
+import android.tracing.perfetto.InitArguments;
 import android.util.Log;
 import android.util.TimingsTraceLog;
 import android.view.SurfaceControl;
@@ -84,6 +85,14 @@ public class SystemUIApplication extends Application implements
     public SystemUIApplication() {
         super();
         if (!isSubprocess()) {
+            if (android.tracing.Flags.sysuiLargePerfettoShmemBuffer()) {
+                // Explicitly initialize a 512 KB shmem buffer for Perfetto producers (b/420587648).
+                // This increases the Perfetto's shmem buffer from default size (256 KB) to 512 KB,
+                // thus avoiding crashes or packet loss caused by shmem chunks exhaustion when too
+                // many threads are tracing data.
+                android.tracing.perfetto.Producer.init(new InitArguments(
+                        InitArguments.PERFETTO_BACKEND_SYSTEM, 512));
+            }
             Trace.registerWithPerfetto();
         }
         Log.v(TAG, "SystemUIApplication constructed.");

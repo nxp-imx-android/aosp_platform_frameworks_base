@@ -173,6 +173,18 @@ object KeyguardClockViewBinder {
                                 )
                             }
                         }
+
+                        launch("$TAG#clockViewModel.shouldDateWeatherBeBelowLargeClock") {
+                            viewModel.shouldDateWeatherBeBelowLargeClock.collect {
+                                blueprintInteractor.refreshBlueprint(
+                                    Config(
+                                        Type.SmartspaceVisibility,
+                                        checkPriority = false,
+                                        terminatePrevious = false,
+                                    )
+                                )
+                            }
+                        }
                     }
                 }
             }

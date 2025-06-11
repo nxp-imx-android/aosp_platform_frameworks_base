@@ -132,7 +132,6 @@ constructor(
                     LogLevel.INFO,
                     {
                         str1 = call.logName
-                        // TODO(b/364653005): Log other information for notification chips.
                         str2 = notifs.map { it.logName }.toString()
                     },
                     { "... > Call=$str1 > Notifs=$str2" },
@@ -377,7 +376,6 @@ constructor(
     val visibleChipsWithBounds: Flow<Map<String, RectF>> =
         if (StatusBarChipToHunAnimation.isEnabled) {
             combine(visibleChipKeys, chipBounds) { keys, chipBounds ->
-                    // TODO: Test chip w/o bounds isn't returned
                     // TODO(b/393369891): Should we provide the placeholder bounds as a backup and
                     // make those bounds public so that [NotificationStackScrollLayout] can do a
                     // good default animation for chips even if we couldn't fetch the bounds for

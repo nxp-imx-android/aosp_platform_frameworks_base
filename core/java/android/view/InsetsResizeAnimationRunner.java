@@ -16,14 +16,14 @@
 
 package android.view;
 
-import static android.view.InsetsAnimationControlImplProto.CURRENT_ALPHA;
-import static android.view.InsetsAnimationControlImplProto.IS_CANCELLED;
-import static android.view.InsetsAnimationControlImplProto.IS_FINISHED;
-import static android.view.InsetsAnimationControlImplProto.PENDING_ALPHA;
-import static android.view.InsetsAnimationControlImplProto.PENDING_FRACTION;
-import static android.view.InsetsAnimationControlImplProto.PENDING_INSETS;
-import static android.view.InsetsAnimationControlImplProto.SHOWN_ON_FINISH;
-import static android.view.InsetsAnimationControlImplProto.TMP_MATRIX;
+import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.CURRENT_ALPHA;
+import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.IS_CANCELLED;
+import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.IS_FINISHED;
+import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.PENDING_ALPHA;
+import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.PENDING_FRACTION;
+import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.PENDING_INSETS;
+import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.SHOWN_ON_FINISH;
+import static android.internal.perfetto.protos.Insetsanimationcontrolimpl.InsetsAnimationControlImplProto.TMP_MATRIX;
 import static android.view.InsetsController.ANIMATION_TYPE_RESIZE;
 
 import android.animation.Animator;

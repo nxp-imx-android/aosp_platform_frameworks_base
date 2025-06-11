@@ -16,10 +16,10 @@
 
 package com.android.systemui.media.dialog;
 
+import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_GO_TO_APP;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_NONE;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER;
-import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
@@ -234,8 +234,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
                         connectionState = ConnectionState.CONNECTED;
                     } else { // disconnected
                         if (isSelectable) { // groupable device
-                            if (!Flags.disableTransferWhenAppsDoNotSupport() || isTransferable
-                                    || hasRouteListingPreferenceItem) {
+                            if (isTransferable || hasRouteListingPreferenceItem) {
                                 clickListener = v -> onItemClick(v, device);
                             }
                         } else {

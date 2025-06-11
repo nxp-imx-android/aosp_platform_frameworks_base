@@ -49,6 +49,8 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.statusbar.phone.dozeScrimController
 import com.android.systemui.statusbar.phone.screenOffAnimationController
 import com.android.systemui.statusbar.policy.DevicePostureController.DEVICE_POSTURE_OPENED
@@ -302,8 +304,9 @@ class DeviceEntrySourceInteractorTest : SysuiTestCase() {
     @Test
     fun deviceEntryFromFaceUnlockOnShade_bypassAvailable_sceneContainerEnabled() =
         kosmos.runTest {
+            val shadeMode by collectLastValue(shadeModeInteractor.shadeMode)
             enableSingleShade()
-            runCurrent()
+            assertThat(shadeMode).isEqualTo(ShadeMode.Single)
             configureKeyguardBypass(isBypassAvailable = true)
             val deviceEntryFromBiometricSource by
                 collectLastValue(underTest.deviceEntryFromBiometricSource)

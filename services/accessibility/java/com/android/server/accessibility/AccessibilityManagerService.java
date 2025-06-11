@@ -1088,18 +1088,13 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     private void registerBroadcastReceivers() {
         // package changes
         mPackageMonitor = new ManagerPackageMonitor(this);
-        final Looper packageMonitorLooper;
-        if (Flags.packageMonitorDedicatedThread()) {
-            // Use a dedicated thread because the default BackgroundThread used by PackageMonitor
-            // is shared by other components and can get busy, causing a delay and eventual ANR when
-            // responding to broadcasts sent to this PackageMonitor.
-            HandlerThread packageMonitorThread = new HandlerThread(LOG_TAG + " PackageMonitor",
-                    Process.THREAD_PRIORITY_BACKGROUND);
-            packageMonitorThread.start();
-            packageMonitorLooper = packageMonitorThread.getLooper();
-        } else {
-            packageMonitorLooper = null;
-        }
+        // Use a dedicated thread because the default BackgroundThread used by PackageMonitor
+        // is shared by other components and can get busy, causing a delay and eventual ANR when
+        // responding to broadcasts sent to this PackageMonitor.
+        HandlerThread packageMonitorThread = new HandlerThread(LOG_TAG + " PackageMonitor",
+                Process.THREAD_PRIORITY_BACKGROUND);
+        packageMonitorThread.start();
+        final Looper packageMonitorLooper = packageMonitorThread.getLooper();
         mPackageMonitor.register(mContext, packageMonitorLooper,  UserHandle.ALL, true);
 
         // user change and unlock

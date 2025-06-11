@@ -92,6 +92,16 @@ flag {
 }
 
 flag {
+    name: "enable_camera_compat_external_display_rotation_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Whether to use primary display rotation when sandboxing rotation for camera compatibility."
+    bug: "276432441"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_camera_compat_for_desktop_windowing"
     namespace: "lse_desktop_experience"
     description: "Whether to apply Camera Compat treatment to fixed-orientation apps in desktop windowing mode"
@@ -1299,6 +1309,17 @@ flag {
 }
 
 flag {
+    name: "handle_incompatible_tasks_in_desktop_launch_params"
+    namespace: "lse_desktop_experience"
+    description: "Forces incompatible tasks opening in desktop to be fullscreen via the desktop /n"
+                 "mode launch params modifier."
+    bug: "423860499"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "include_top_transparent_fullscreen_task_in_desktop_heuristic"
     namespace: "lse_desktop_experience"
     description: "Whether to include any top transparent fullscreen task launched in desktop /n"
@@ -1353,6 +1374,16 @@ flag {
     description: "Preserve the orientation and aspect ratio of task if it was previously in /n"
                  "recents with a running activity."
     bug: "405141594"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "remove_desk_on_last_task_removal"
+    namespace: "lse_desktop_experience"
+    description: "Removes the desk when its last task is removed in touch-first displays"
+    bug: "414845396"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
@@ -1447,4 +1478,15 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "taskbar_running_tasks_in_splitscreen_select"
+    namespace: "lse_desktop_experience"
+    description: "Enables bugfix to fix recent task icons behavior in taskbar during split screen selection."
+    bug: "393513479"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
 # go/keep-sorted end

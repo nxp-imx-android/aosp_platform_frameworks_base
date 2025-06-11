@@ -319,6 +319,12 @@ object TestShortcuts {
             )
             .apply { packageName = standardPackageName1 }
 
+    private val standardAppSubCategory1 =
+        ShortcutSubCategory(
+            standardAppGroup1.label!!.toString(),
+            listOf(standardShortcut1, standardShortcut2, standardShortcut3),
+        )
+
     private val standardSystemAppSubcategoryWithCustomHomeShortcut =
         ShortcutSubCategory("System controls", listOf(customGoHomeShortcut))
 
@@ -396,6 +402,11 @@ object TestShortcuts {
         )
 
     val currentAppGroups = listOf(standardAppGroup1)
+    val currentAppCategory =
+        ShortcutCategory(
+            type = ShortcutCategoryType.CurrentApp(standardAppGroup1.packageName.toString()),
+            subCategories = listOf(standardAppSubCategory1),
+        )
     val currentAppPackageName = standardPackageName1
 
     val systemGroups = listOf(standardGroup3, standardGroup2, standardGroup1)

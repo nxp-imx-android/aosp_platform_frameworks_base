@@ -17,10 +17,10 @@
 package com.android.server.inputmethod;
 
 import static android.accessibilityservice.AccessibilityService.SHOW_MODE_HIDDEN;
-import static android.server.inputmethod.InputMethodManagerServiceProto.ACCESSIBILITY_REQUESTING_NO_SOFT_KEYBOARD;
-import static android.server.inputmethod.InputMethodManagerServiceProto.INPUT_SHOWN;
-import static android.server.inputmethod.InputMethodManagerServiceProto.SHOW_EXPLICITLY_REQUESTED;
-import static android.server.inputmethod.InputMethodManagerServiceProto.SHOW_FORCED;
+import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.ACCESSIBILITY_REQUESTING_NO_SOFT_KEYBOARD;
+import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.INPUT_SHOWN;
+import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.SHOW_EXPLICITLY_REQUESTED;
+import static android.internal.perfetto.protos.Inputmethodmanagerservice.InputMethodManagerServiceProto.SHOW_FORCED;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.INVALID_DISPLAY;
 import static android.view.MotionEvent.TOOL_TYPE_UNKNOWN;

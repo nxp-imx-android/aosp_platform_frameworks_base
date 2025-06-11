@@ -51,11 +51,21 @@ public class AppCompatCameraStateStrategyForPackageTests extends WindowTestsBase
 
     @Test
     @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_TRACK_TASK_AND_APP_BUGFIX)
+    public void testTrackCameraOpened_returnsCorrectCameraAppInfo() {
+        runTestScenario((robot) -> {
+            robot.addPolicyThatCanClose();
+
+            robot.assertCorrectCameraAppInfoOnCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+        });
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_TRACK_TASK_AND_APP_BUGFIX)
     public void testTrackCameraOpened_cameraNotYetOpened() {
         runTestScenario((robot) -> {
             robot.addPolicyThatCanClose();
 
-            robot.trackCameraOpened(CAMERA_ID_1);
+            robot.assertCorrectCameraAppInfoOnCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
             robot.checkIsCameraOpened(false);
             robot.checkCameraOpenedCalledForCanClosePolicy(0);
@@ -67,9 +77,9 @@ public class AppCompatCameraStateStrategyForPackageTests extends WindowTestsBase
     public void testOnCameraOpened_notifiesPolicy() {
         runTestScenario((robot) -> {
             robot.addPolicyThatCanClose();
-            robot.trackCameraOpened(CAMERA_ID_1);
+            robot.assertCorrectCameraAppInfoOnCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.maybeNotifyPolicyCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+            robot.maybeNotifyPolicyCameraOpened(CAMERA_ID_1);
 
             robot.checkCameraOpenedCalledForCanClosePolicy(1);
         });
@@ -80,11 +90,24 @@ public class AppCompatCameraStateStrategyForPackageTests extends WindowTestsBase
     public void testOnCameraOpened_cameraIsOpened() {
         runTestScenario((robot) -> {
             robot.addPolicyThatCanClose();
-            robot.trackCameraOpened(CAMERA_ID_1);
+            robot.assertCorrectCameraAppInfoOnCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
 
-            robot.maybeNotifyPolicyCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+            robot.maybeNotifyPolicyCameraOpened(CAMERA_ID_1);
 
             robot.checkIsCameraOpened(true);
+        });
+    }
+
+    @Test
+    @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_TRACK_TASK_AND_APP_BUGFIX)
+    public void testTrackCameraClosed_returnsCorrectCameraAppInfo() {
+        runTestScenario((robot) -> {
+            robot.addPolicyThatCanClose();
+            robot.assertCorrectCameraAppInfoOnCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+
+            robot.maybeNotifyPolicyCameraOpened(CAMERA_ID_1);
+
+            robot.assertCorrectCameraAppInfoOnCameraClosed(CAMERA_ID_1);
         });
     }
 
@@ -93,10 +116,10 @@ public class AppCompatCameraStateStrategyForPackageTests extends WindowTestsBase
     public void testOnCameraClosed_policyCanCloseCamera_cameraIsClosed() {
         runTestScenario((robot) -> {
             robot.addPolicyThatCanClose();
-            robot.trackCameraOpened(CAMERA_ID_1);
-            robot.maybeNotifyPolicyCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+            robot.assertCorrectCameraAppInfoOnCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+            robot.maybeNotifyPolicyCameraOpened(CAMERA_ID_1);
 
-            robot.trackCameraClosed(CAMERA_ID_1);
+            robot.assertCorrectCameraAppInfoOnCameraClosed(CAMERA_ID_1);
 
             robot.assertReportsCloseStatusOnCameraClose(CAMERA_ID_1);
         });
@@ -107,10 +130,10 @@ public class AppCompatCameraStateStrategyForPackageTests extends WindowTestsBase
     public void testOnCameraClosed_activityCannotCloseCamera_returnsCorrectStatus() {
         runTestScenario((robot) -> {
             robot.addPolicyThatCannotCloseOnce();
-            robot.trackCameraOpened(CAMERA_ID_1);
-            robot.maybeNotifyPolicyCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+            robot.assertCorrectCameraAppInfoOnCameraOpened(CAMERA_ID_1, TEST_PACKAGE_1);
+            robot.maybeNotifyPolicyCameraOpened(CAMERA_ID_1);
 
-            robot.trackCameraClosed(CAMERA_ID_1);
+            robot.assertCorrectCameraAppInfoOnCameraClosed(CAMERA_ID_1);
 
             robot.assertReportsCloseStatusOnCameraClose(CAMERA_ID_1);
         });
@@ -177,6 +200,23 @@ public class AppCompatCameraStateStrategyForPackageTests extends WindowTestsBase
                     .mAppCompatCameraPolicy.mCameraStateMonitor.mAppCompatCameraStatePolicy;
         }
 
+        void assertCorrectCameraAppInfoOnCameraOpened(@NonNull String cameraId,
+                @NonNull String packageName) {
+            final CameraAppInfo cameraAppInfo = trackCameraOpened(cameraId, packageName);
+            assertEquals(cameraId, cameraAppInfo.mCameraId);
+            assertEquals(packageName, cameraAppInfo.mPackageName);
+            assertEquals(activity().top().getTask().mTaskId, cameraAppInfo.mTaskId);
+            assertEquals(activity().top().app.getPid(), cameraAppInfo.mPid);
+        }
+
+        void assertCorrectCameraAppInfoOnCameraClosed(@NonNull String cameraId) {
+            final CameraAppInfo cameraAppInfo = trackCameraClosed(cameraId);
+            assertEquals(cameraId, cameraAppInfo.mCameraId);
+            assertEquals(activity().top().packageName, cameraAppInfo.mPackageName);
+            assertEquals(activity().top().getTask().mTaskId, cameraAppInfo.mTaskId);
+            assertEquals(activity().top().app.getPid(), cameraAppInfo.mPid);
+        }
+
         void checkIsCameraOpened(boolean expectedIsOpened) {
             assertEquals(expectedIsOpened, getCameraStateMonitor().mAppCompatCameraStateStrategy
                     .isCameraRunningForActivity(activity().top()));
@@ -187,42 +227,60 @@ public class AppCompatCameraStateStrategyForPackageTests extends WindowTestsBase
         }
 
         void assertReportsCloseStatusOnCameraClose(@NonNull String cameraId) {
+            assertReportsCloseStatusOnCameraClose(getExpectedCameraAppInfo(cameraId));
+        }
+
+        void assertReportsCloseStatusOnCameraClose(@NonNull CameraAppInfo cameraAppInfo) {
             for (FakeAppCompatCameraStatePolicy policy : mRegisteredPolicies) {
                 boolean simulateCannotClose = policy == mFakePolicyCannotCloseOnce;
-                assertEquals(!simulateCannotClose, notifyPolicyCameraClosedIfNeeded(cameraId,
+                assertEquals(!simulateCannotClose, notifyPolicyCameraClosedIfNeeded(cameraAppInfo,
                         simulateCannotClose ? mFakePolicyCannotCloseOnce : mFakePolicyCanClose));
             }
         }
 
-        private void trackCameraOpened(@NonNull String cameraId) {
-            activity().displayContent().mAppCompatCameraPolicy.mCameraStateMonitor
-                    .mAppCompatCameraStateStrategy.trackOnCameraOpened(cameraId);
+        private CameraAppInfo trackCameraOpened(@NonNull String cameraId,
+                @NonNull String packageName) {
+            return activity().displayContent().mAppCompatCameraPolicy.mCameraStateMonitor
+                    .mAppCompatCameraStateStrategy.trackOnCameraOpened(cameraId, packageName);
         }
 
-        private void maybeNotifyPolicyCameraOpened(@NonNull String cameraId,
-                @NonNull String packageName) {
+        private void maybeNotifyPolicyCameraOpened(@NonNull String cameraId) {
             for (FakeAppCompatCameraStatePolicy policy : mRegisteredPolicies) {
-                notifyPolicyCameraOpenedIfNeeded(cameraId, packageName, policy);
+                notifyPolicyCameraOpenedIfNeeded(getExpectedCameraAppInfo(cameraId), policy);
             }
         }
 
-        private void notifyPolicyCameraOpenedIfNeeded(@NonNull String cameraId,
-                @NonNull String packageName, @NonNull AppCompatCameraStatePolicy policy) {
+        private void notifyPolicyCameraOpenedIfNeeded(@NonNull CameraAppInfo cameraAppInfo,
+                @NonNull AppCompatCameraStatePolicy policy) {
             activity().displayContent().mAppCompatCameraPolicy.mCameraStateMonitor
-                    .mAppCompatCameraStateStrategy.notifyPolicyCameraOpenedIfNeeded(cameraId,
-                            packageName, policy);
+                    .mAppCompatCameraStateStrategy.notifyPolicyCameraOpenedIfNeeded(cameraAppInfo,
+                            policy);
         }
 
-        private void trackCameraClosed(@NonNull String cameraId) {
-            activity().displayContent().mAppCompatCameraPolicy.mCameraStateMonitor
+        private CameraAppInfo trackCameraClosed(@NonNull String cameraId) {
+            return activity().displayContent().mAppCompatCameraPolicy.mCameraStateMonitor
                     .mAppCompatCameraStateStrategy.trackOnCameraClosed(cameraId);
         }
 
-        boolean notifyPolicyCameraClosedIfNeeded(@NonNull String cameraId,
+        private void notifyPolicyCameraClosedIfNeeded(@NonNull String cameraId) {
+            for (FakeAppCompatCameraStatePolicy policy : mRegisteredPolicies) {
+                notifyPolicyCameraClosedIfNeeded(getExpectedCameraAppInfo(cameraId),
+                        policy);
+            }
+        }
+
+        boolean notifyPolicyCameraClosedIfNeeded(@NonNull CameraAppInfo cameraAppInfo,
                 @NonNull AppCompatCameraStatePolicy policy) {
             return activity().displayContent().mAppCompatCameraPolicy.mCameraStateMonitor
-                    .mAppCompatCameraStateStrategy.notifyPolicyCameraClosedIfNeeded(cameraId,
+                    .mAppCompatCameraStateStrategy.notifyPolicyCameraClosedIfNeeded(cameraAppInfo,
                             policy);
+        }
+
+        private CameraAppInfo getExpectedCameraAppInfo(@NonNull String cameraId) {
+            return new CameraAppInfo(cameraId,
+                    activity().top().app.getPid(),
+                    activity().top().getTask().mTaskId,
+                    activity().top().packageName);
         }
 
         private CameraStateMonitor getCameraStateMonitor() {

@@ -17,12 +17,16 @@
 package com.android.systemui.statusbar.phone.ongoingcall.domain.interactor
 
 import android.app.PendingIntent
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.activity.data.repository.activityManagerRepository
 import com.android.systemui.activity.data.repository.fake
+import com.android.systemui.ambient.statusbar.shared.flag.OngoingActivityChipsOnDream
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -339,6 +343,62 @@ class OngoingCallInteractorTest : SysuiTestCase() {
             underTest.onStatusBarSwiped()
 
             // Verify status bar is no longer required
+            assertThat(requiresStatusBarVisibleInRepository).isFalse()
+            assertThat(requiresStatusBarVisibleInWindowController).isFalse()
+        }
+
+    @DisableFlags(OngoingActivityChipsOnDream.FLAG_NAME)
+    @Test
+    fun ongoingCallNotificationAndDreaming_flagDisabled_setsRequiresStatusBarVisibleTrue() =
+        kosmos.runTest {
+            val isStatusBarRequired by collectLastValue(underTest.isStatusBarRequiredForOngoingCall)
+            val requiresStatusBarVisibleInRepository by
+                collectLastValue(
+                    kosmos.fakeStatusBarModeRepository.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
+                )
+            val requiresStatusBarVisibleInWindowController by
+                collectLastValue(
+                    kosmos.fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
+                )
+            addOngoingCallState()
+
+            assertThat(isStatusBarRequired).isTrue()
+            assertThat(requiresStatusBarVisibleInRepository).isTrue()
+            assertThat(requiresStatusBarVisibleInWindowController).isTrue()
+
+            kosmos.fakeKeyguardRepository.setDreamingWithOverlay(true)
+
+            assertThat(isStatusBarRequired).isTrue()
+            assertThat(requiresStatusBarVisibleInRepository).isTrue()
+            assertThat(requiresStatusBarVisibleInWindowController).isTrue()
+        }
+
+    @EnableFlags(OngoingActivityChipsOnDream.FLAG_NAME)
+    @Test
+    fun ongoingCallNotificationAndDreaming_flagEnabled_setsRequiresStatusBarVisibleFalse() =
+        kosmos.runTest {
+            val isStatusBarRequired by collectLastValue(underTest.isStatusBarRequiredForOngoingCall)
+            val requiresStatusBarVisibleInRepository by
+                collectLastValue(
+                    kosmos.fakeStatusBarModeRepository.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
+                )
+            val requiresStatusBarVisibleInWindowController by
+                collectLastValue(
+                    kosmos.fakeStatusBarWindowControllerStore.defaultDisplay
+                        .ongoingProcessRequiresStatusBarVisible
+                )
+            addOngoingCallState()
+
+            assertThat(isStatusBarRequired).isTrue()
+            assertThat(requiresStatusBarVisibleInRepository).isTrue()
+            assertThat(requiresStatusBarVisibleInWindowController).isTrue()
+
+            kosmos.fakeKeyguardRepository.setDreamingWithOverlay(true)
+
+            assertThat(isStatusBarRequired).isFalse()
             assertThat(requiresStatusBarVisibleInRepository).isFalse()
             assertThat(requiresStatusBarVisibleInWindowController).isFalse()
         }

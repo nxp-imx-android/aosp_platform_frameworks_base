@@ -19,6 +19,7 @@ package android.app;
 import static android.app.ActivityManager.PROCESS_STATE_UNKNOWN;
 import static android.app.ConfigurationController.createNewConfigAndUpdateIfNotNull;
 import static android.app.Flags.skipBgMemTrimOnFgApp;
+import static android.app.Flags.earlyRenderThreadPriorityBoost;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.app.servertransaction.ActivityLifecycleItem.ON_CREATE;
@@ -4494,7 +4495,19 @@ public final class ActivityThread extends ClientTransactionHandler
         // Initialize before creating the activity
         if (ThreadedRenderer.sRendererEnabled
                 && (r.activityInfo.flags & ActivityInfo.FLAG_HARDWARE_ACCELERATED) != 0) {
-            HardwareRenderer.preload();
+            if (earlyRenderThreadPriorityBoost()) {
+                final int tid = HardwareRenderer.preload();
+                // Adjust the RenderThread priority as soon as it's created.
+                if (tid > 0) {
+                    try {
+                        ActivityManager.getService().setRenderThread(tid);
+                    } catch (Throwable t) {
+                        Log.w(TAG, "Failed to set scheduler for RenderThread", t);
+                    }
+                }
+            } else {
+                HardwareRenderer.preload();
+            }
         }
         WindowManagerGlobal.initialize();
 

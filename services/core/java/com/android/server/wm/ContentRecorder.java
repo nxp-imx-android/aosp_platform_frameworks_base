@@ -28,6 +28,7 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_CONTENT_RE
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.WindowConfiguration;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -39,11 +40,11 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.view.ContentRecordingSession;
 import android.view.ContentRecordingSession.RecordContent;
-import android.view.WindowManager;
-import android.window.DesktopExperienceFlags;
 import android.view.Display;
 import android.view.DisplayInfo;
 import android.view.SurfaceControl;
+import android.view.WindowManager;
+import android.window.DesktopExperienceFlags;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
@@ -60,10 +61,10 @@ final class ContentRecorder implements WindowContainerListener {
     /**
      * Maximum acceptable anisotropy for the output image.
      *
-     * Necessary to avoid unnecessary scaling when the anisotropy is almost the same, as it is not
-     * exact anyway. For external displays, we expect an anisoptry of about 2% even if the pixels
-     * are, in fact, square due to the imprecision of the display's actual size (rounded to the
-     * nearest cm).
+     * <p>Necessary to avoid unnecessary scaling when the anisotropy is almost the same, as it is
+     * not exact anyway. For external displays, we expect an anisotropy of about 2% even if the
+     * pixels are, in fact, square due to the imprecision of the display's actual size (rounded to
+     * the nearest cm).
      */
     private static final float MAX_ANISOTROPY = 0.025f;
 
@@ -73,34 +74,40 @@ final class ContentRecorder implements WindowContainerListener {
     @NonNull
     private final DisplayContent mDisplayContent;
 
-    @Nullable private final MediaProjectionManagerWrapper mMediaProjectionManager;
+    @NonNull
+    private final MediaProjectionManagerWrapper mMediaProjectionManager;
 
     /**
      * The session for content recording, or null if this DisplayContent is not being used for
      * recording.
      */
+    @Nullable
     private ContentRecordingSession mContentRecordingSession = null;
 
     /**
      * The WindowContainer for the level of the hierarchy to record.
      */
-    @Nullable private WindowContainer mRecordedWindowContainer = null;
+    @Nullable
+    private WindowContainer<?> mRecordedWindowContainer = null;
 
     /**
      * The surface for recording the contents of this hierarchy, or null if content recording is
      * temporarily disabled.
      */
-    @Nullable private SurfaceControl mRecordedSurface = null;
+    @Nullable
+    private SurfaceControl mRecordedSurface = null;
 
     /**
      * The last bounds of the region to record.
      */
-    @Nullable private Rect mLastRecordedBounds = null;
+    @Nullable
+    private Rect mLastRecordedBounds = null;
 
     /**
      * The last size of the surface mirrored out to.
      */
-    @Nullable private Point mLastConsumingSurfaceSize = new Point(0, 0);
+    @NonNull
+    private final Point mLastConsumingSurfaceSize = new Point(0, 0);
 
     /**
      * The last configuration orientation.
@@ -108,6 +115,7 @@ final class ContentRecorder implements WindowContainerListener {
     @Configuration.Orientation
     private int mLastOrientation = ORIENTATION_UNDEFINED;
 
+    @WindowConfiguration.WindowingMode
     private int mLastWindowingMode = WINDOWING_MODE_UNDEFINED;
 
     private final boolean mCorrectForAnisotropicPixels;
@@ -152,7 +160,7 @@ final class ContentRecorder implements WindowContainerListener {
      * Start recording if this DisplayContent no longer has content. Pause recording if it now
      * has content or the display is not on.
      */
-    @VisibleForTesting void updateRecording() {
+    void updateRecording() {
         if (isCurrentlyRecording() && (mDisplayContent.getLastHasContent()
                 || mDisplayContent.getDisplayInfo().state == Display.STATE_OFF)) {
             pauseRecording();
@@ -171,8 +179,8 @@ final class ContentRecorder implements WindowContainerListener {
      * Handle a configuration change on the display content, and resize recording if needed.
      * @param lastOrientation the prior orientation of the configuration
      */
-    void onConfigurationChanged(
-            @Configuration.Orientation int lastOrientation, int lastWindowingMode) {
+    void onConfigurationChanged(@Configuration.Orientation int lastOrientation,
+            @WindowConfiguration.WindowingMode int lastWindowingMode) {
         // Update surface for MediaProjection, if this DisplayContent is being used for recording.
         if (!isCurrentlyRecording() || mLastRecordedBounds == null) {
             return;
@@ -318,9 +326,7 @@ final class ContentRecorder implements WindowContainerListener {
         ProtoLog.v(WM_DEBUG_CONTENT_RECORDING,
                 "Content Recording: Stop MediaProjection on virtual display %d",
                 mDisplayContent.getDisplayId());
-        if (mMediaProjectionManager != null) {
-            mMediaProjectionManager.stopActiveProjection(stopReason);
-        }
+        mMediaProjectionManager.stopActiveProjection(stopReason);
     }
 
     /**
@@ -465,7 +471,7 @@ final class ContentRecorder implements WindowContainerListener {
     }
 
     @Nullable
-    private SurfaceControl findOwnerTopOverlayWindow(WindowContainer recordedWindowContainer) {
+    private SurfaceControl findOwnerTopOverlayWindow(WindowContainer<?> recordedWindowContainer) {
         if (!com.android.media.projection.flags.Flags.recordingOverlay()) {
             return null;
         }
@@ -479,10 +485,10 @@ final class ContentRecorder implements WindowContainerListener {
         // If recording below overlay, find the overlay window with the same owner uid as the
         // recording session to stop mirroring at that surface.
         // Perform a breadth-first search to find the overlay window.
-        Queue<WindowContainer<WindowContainer>> toSearch = new LinkedList<>();
+        final Queue<WindowContainer<?>> toSearch = new LinkedList<>();
         toSearch.add(recordedWindowContainer);
         while (!toSearch.isEmpty()) {
-            WindowContainer<WindowContainer> wc = toSearch.poll();
+            final WindowContainer<?> wc = toSearch.poll();
             if (wc != null && wc.getWindow() != null
                     && wc.getWindowType() == WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
                     && wc.getWindow().mOwnerUid
@@ -490,7 +496,7 @@ final class ContentRecorder implements WindowContainerListener {
                 return wc.getSurfaceControl();
             }
 
-            for (WindowContainer child : wc.mChildren) {
+            for (WindowContainer<?> child : wc.mChildren) {
                 toSearch.add(child);
             }
         }
@@ -507,8 +513,9 @@ final class ContentRecorder implements WindowContainerListener {
      * error is logged and any cleanup is handled.
      */
     @Nullable
-    private WindowContainer retrieveRecordedWindowContainer() {
-        @RecordContent final int contentToRecord = mContentRecordingSession.getContentToRecord();
+    private WindowContainer<?> retrieveRecordedWindowContainer() {
+        @RecordContent
+        final int contentToRecord = mContentRecordingSession.getContentToRecord();
         final IBinder tokenToRecord = mContentRecordingSession.getTokenToRecord();
         switch (contentToRecord) {
             case RECORD_CONTENT_DISPLAY:
@@ -532,7 +539,7 @@ final class ContentRecorder implements WindowContainerListener {
             case RECORD_CONTENT_TASK:
                 // Given the WindowToken of the region to record, retrieve the associated
                 // SurfaceControl.
-                final WindowContainer wc = tokenToRecord != null
+                final WindowContainer<?> wc = tokenToRecord != null
                         ? WindowContainer.fromBinder(tokenToRecord) : null;
                 if (wc == null) {
                     handleStartRecordingFailed();
@@ -625,8 +632,9 @@ final class ContentRecorder implements WindowContainerListener {
      * @param surfaceSize           the default size of the surface to write the display area
      *                              content to
      */
-    @VisibleForTesting void updateMirroredSurface(SurfaceControl.Transaction transaction,
-            Rect recordedContentBounds, Point surfaceSize) {
+    @VisibleForTesting
+    void updateMirroredSurface(@NonNull SurfaceControl.Transaction transaction,
+            @NonNull Rect recordedContentBounds, @NonNull Point surfaceSize) {
 
         DisplayInfo inputDisplayInfo = mRecordedWindowContainer.mDisplayContent.getDisplayInfo();
         DisplayInfo outputDisplayInfo = mDisplayContent.getDisplayInfo();
@@ -727,7 +735,7 @@ final class ContentRecorder implements WindowContainerListener {
     // WindowContainerListener
     @Override
     public void onMergedOverrideConfigurationChanged(
-            Configuration mergedOverrideConfiguration) {
+            @NonNull Configuration mergedOverrideConfiguration) {
         WindowContainerListener.super.onMergedOverrideConfigurationChanged(
                 mergedOverrideConfiguration);
         onConfigurationChanged(mLastOrientation, mLastWindowingMode);
@@ -753,18 +761,22 @@ final class ContentRecorder implements WindowContainerListener {
         }
     }
 
-    @VisibleForTesting interface MediaProjectionManagerWrapper {
+    @VisibleForTesting
+    interface MediaProjectionManagerWrapper {
         void stopActiveProjection(@StopReason int stopReason);
         void notifyActiveProjectionCapturedContentVisibilityChanged(boolean isVisible);
-        void notifyWindowingModeChanged(int contentToRecord, int targetUid, int windowingMode);
-        void notifyCaptureBoundsChanged(int contentToRecord, int targetUid, Rect captureBounds);
+        void notifyWindowingModeChanged(@RecordContent int contentToRecord, int targetUid,
+                @WindowConfiguration.WindowingMode int windowingMode);
+        void notifyCaptureBoundsChanged(@RecordContent int contentToRecord, int targetUid,
+                @NonNull Rect captureBounds);
     }
 
     private static final class RemoteMediaProjectionManagerWrapper implements
             MediaProjectionManagerWrapper {
 
         private final int mDisplayId;
-        @Nullable private IMediaProjectionManager mIMediaProjectionManager = null;
+        @Nullable
+        private IMediaProjectionManager mIMediaProjectionManager = null;
 
         RemoteMediaProjectionManagerWrapper(int displayId) {
             mDisplayId = displayId;
@@ -807,8 +819,8 @@ final class ContentRecorder implements WindowContainerListener {
         }
 
         @Override
-        public void notifyWindowingModeChanged(int contentToRecord, int targetUid,
-                int windowingMode) {
+        public void notifyWindowingModeChanged(@RecordContent int contentToRecord, int targetUid,
+                @WindowConfiguration.WindowingMode int windowingMode) {
             fetchMediaProjectionManager();
             if (mIMediaProjectionManager == null) {
                 return;
@@ -823,8 +835,8 @@ final class ContentRecorder implements WindowContainerListener {
         }
 
         @Override
-        public void notifyCaptureBoundsChanged(int contentToRecord, int targetUid,
-                Rect captureBounds) {
+        public void notifyCaptureBoundsChanged(@RecordContent int contentToRecord, int targetUid,
+                @NonNull Rect captureBounds) {
             fetchMediaProjectionManager();
             if (mIMediaProjectionManager == null) {
                 return;

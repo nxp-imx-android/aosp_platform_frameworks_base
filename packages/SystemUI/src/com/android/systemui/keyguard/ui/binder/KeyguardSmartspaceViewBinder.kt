@@ -101,7 +101,7 @@ object KeyguardSmartspaceViewBinder {
 
                     launch("$TAG#smartspaceViewModel.isLargeClockVisible") {
                         clockViewModel.isLargeClockVisible.collect { isLargeClock ->
-                            if (isLargeClock) {
+                            if (isLargeClock && clockViewModel.shouldDateWeatherBeBelowLargeClock.value) {
                                 // hide small clock date/weather
                                 keyguardRootView.findViewById<View>(smallViewId)?.let {
                                     it.visibility = View.GONE
@@ -129,7 +129,7 @@ object KeyguardSmartspaceViewBinder {
                                 ::Pair,
                             )
                             .collect { (isLargeClock, clockBounds) ->
-                                val viewId = if (isLargeClock) smallViewId else largeViewId
+                                val viewId = if (isLargeClock && clockViewModel.shouldDateWeatherBeBelowLargeClock.value) smallViewId else largeViewId
                                 keyguardRootView.findViewById<View>(viewId)?.let {
                                     it.visibility = View.GONE
                                 }

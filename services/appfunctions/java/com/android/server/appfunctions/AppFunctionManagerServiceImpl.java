@@ -528,16 +528,6 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     @Override
-    public boolean checkAppFunctionAccess(String agentPackageName, int agentUserId,
-            String targetPackageName, int targetUserId) throws RemoteException {
-        if (!accessCheckFlagsEnabled()) {
-            return false;
-        }
-        return mAppFunctionAccessService.checkAppFunctionAccess(agentPackageName, agentUserId,
-                targetPackageName, targetUserId);
-    }
-
-    @Override
     public int getAppFunctionAccessFlags(String agentPackageName, int agentUserId,
             String targetPackageName, int targetUserId) throws RemoteException {
         if (!accessCheckFlagsEnabled()) {
@@ -563,8 +553,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return;
         }
-        // TODO: Call mAppFunctionAccessService.revokeSelfAppFunctionAccess(targetPackageName)
-        // when ag/33428645 is in.
+        mAppFunctionAccessService.revokeSelfAppFunctionAccess(targetPackageName);
     }
 
     @Override
@@ -576,6 +565,23 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         return mAppFunctionAccessService.getAppFunctionAccessRequestState(agentPackageName,
                 agentUserId, targetPackageName, targetUserId);
+    }
+
+    @Override
+    public List<String> getValidAgents(int userId) throws RemoteException {
+        if (!accessCheckFlagsEnabled()) {
+            return List.of();
+        }
+        return mAppFunctionAccessService.getValidAgents(userId);
+    }
+
+    @Override
+    public List<String> getValidTargets(int userId) throws RemoteException {
+        if (!accessCheckFlagsEnabled()) {
+            return List.of();
+        }
+        return mAppFunctionAccessService
+                .getValidTargets(userId);
     }
 
     private boolean accessCheckFlagsEnabled() {

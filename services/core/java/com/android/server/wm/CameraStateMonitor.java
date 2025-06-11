@@ -26,6 +26,7 @@ import android.os.Handler;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
+import com.android.window.flags.Flags;
 
 /**
  * Class that listens to camera open/closed signals, keeps track of the current apps using camera,
@@ -92,7 +93,9 @@ class CameraStateMonitor {
         mAppCompatCameraStatePolicy = appCompatCameraStatePolicy;
         mWmService = displayContent.mWmService;
         mCameraManager = mWmService.mContext.getSystemService(CameraManager.class);
-        mAppCompatCameraStateStrategy = new AppCompatCameraStateStrategyForPackage(displayContent);
+        mAppCompatCameraStateStrategy = Flags.enableCameraCompatTrackTaskAndAppBugfix()
+                ? new AppCompatCameraStateStrategyForTask(displayContent)
+                : new AppCompatCameraStateStrategyForPackage(displayContent);
     }
 
     /** Starts listening to camera opened/closed signals. */
@@ -130,15 +133,16 @@ class CameraStateMonitor {
         ProtoLog.v(WM_DEBUG_STATES,
                 "Display id=%d is notified that Camera %s is open for package %s",
                 mDisplayContent.mDisplayId, cameraId, packageName);
-        mAppCompatCameraStateStrategy.trackOnCameraOpened(cameraId);
+        final CameraAppInfo cameraAppInfo = mAppCompatCameraStateStrategy.trackOnCameraOpened(
+                cameraId, packageName);
         mHandler.postDelayed(() -> {
             synchronized (mWmService.mGlobalLock) {
-                notifyCameraOpenedInternal(cameraId, packageName);
+                notifyCameraOpenedInternal(cameraAppInfo);
             }}, CAMERA_OPENED_LETTERBOX_UPDATE_DELAY_MS);
     }
 
-    private void notifyCameraOpenedInternal(@NonNull String cameraId, @NonNull String packageName) {
-        mAppCompatCameraStateStrategy.notifyPolicyCameraOpenedIfNeeded(cameraId, packageName,
+    private void notifyCameraOpenedInternal(@NonNull CameraAppInfo cameraAppInfo) {
+        mAppCompatCameraStateStrategy.notifyPolicyCameraOpenedIfNeeded(cameraAppInfo,
                 mAppCompatCameraStatePolicy);
     }
 
@@ -170,20 +174,21 @@ class CameraStateMonitor {
     // Delay is needed to avoid rotation flickering when an app is flipping between front and
     // rear cameras, when size compat mode is restarted or activity is being refreshed.
     private void scheduleRemoveCameraId(@NonNull String cameraId) {
-        mAppCompatCameraStateStrategy.trackOnCameraClosed(cameraId);
+        final CameraAppInfo cameraAppInfo =
+                mAppCompatCameraStateStrategy.trackOnCameraClosed(cameraId);
         mHandler.postDelayed(() ->  {
             synchronized (mWmService.mGlobalLock) {
-                removeCameraId(cameraId);
+                removeCameraId(cameraAppInfo);
             }}, CAMERA_CLOSED_LETTERBOX_UPDATE_DELAY_MS);
     }
 
-    private void removeCameraId(@NonNull String cameraId) {
+    private void removeCameraId(@NonNull CameraAppInfo cameraAppInfo) {
         final boolean completed = mAppCompatCameraStateStrategy.notifyPolicyCameraClosedIfNeeded(
-                cameraId, mAppCompatCameraStatePolicy);
+                cameraAppInfo, mAppCompatCameraStatePolicy);
         if (!completed) {
             // Not ready to process closure yet - the camera activity might be refreshing.
             // Try again later.
-            scheduleRemoveCameraId(cameraId);
+            scheduleRemoveCameraId(cameraAppInfo.mCameraId);
         }
     }
 

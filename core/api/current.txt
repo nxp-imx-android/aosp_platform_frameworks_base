@@ -14,6 +14,7 @@ package android {
     field public static final String ACCESS_COARSE_LOCATION = "android.permission.ACCESS_COARSE_LOCATION";
     field public static final String ACCESS_FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATION";
     field @FlaggedApi("android.multiuser.enable_permission_to_access_hidden_profiles") public static final String ACCESS_HIDDEN_PROFILES = "android.permission.ACCESS_HIDDEN_PROFILES";
+    field @FlaggedApi("android.provider.launcher_data_access") public static final String ACCESS_LAUNCHER_DATA = "android.permission.ACCESS_LAUNCHER_DATA";
     field public static final String ACCESS_LOCATION_EXTRA_COMMANDS = "android.permission.ACCESS_LOCATION_EXTRA_COMMANDS";
     field public static final String ACCESS_MEDIA_LOCATION = "android.permission.ACCESS_MEDIA_LOCATION";
     field public static final String ACCESS_NETWORK_STATE = "android.permission.ACCESS_NETWORK_STATE";
@@ -135,7 +136,6 @@ package android {
     field public static final String INTERACT_ACROSS_PROFILES = "android.permission.INTERACT_ACROSS_PROFILES";
     field public static final String INTERNET = "android.permission.INTERNET";
     field public static final String KILL_BACKGROUND_PROCESSES = "android.permission.KILL_BACKGROUND_PROCESSES";
-    field @FlaggedApi("android.provider.launcher_data_access") public static final String LAUNCHER_DATA_ACCESS = "android.permission.LAUNCHER_DATA_ACCESS";
     field public static final String LAUNCH_CAPTURE_CONTENT_ACTIVITY_FOR_NOTE = "android.permission.LAUNCH_CAPTURE_CONTENT_ACTIVITY_FOR_NOTE";
     field public static final String LAUNCH_MULTI_PANE_SETTINGS_DEEP_LINK = "android.permission.LAUNCH_MULTI_PANE_SETTINGS_DEEP_LINK";
     field public static final String LOADER_USAGE_STATS = "android.permission.LOADER_USAGE_STATS";
@@ -9093,8 +9093,10 @@ package android.app.appfunctions {
 
   @FlaggedApi("android.app.appfunctions.flags.enable_app_function_manager") public final class AppFunctionManager {
     method @RequiresPermission(value=android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional=true) public void executeAppFunction(@NonNull android.app.appfunctions.ExecuteAppFunctionRequest, @NonNull java.util.concurrent.Executor, @NonNull android.os.CancellationSignal, @NonNull android.os.OutcomeReceiver<android.app.appfunctions.ExecuteAppFunctionResponse,android.app.appfunctions.AppFunctionException>);
+    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public int getSelfAppFunctionAccessRequestState(@NonNull String);
     method @RequiresPermission(value=android.Manifest.permission.EXECUTE_APP_FUNCTIONS, conditional=true) public void isAppFunctionEnabled(@NonNull String, @NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
     method public void isAppFunctionEnabled(@NonNull String, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Boolean,java.lang.Exception>);
+    method @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public void revokeSelfAppFunctionAccess(@NonNull String);
     method public void setAppFunctionEnabled(@NonNull String, int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,java.lang.Exception>);
     field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_DENIED = 1; // 0x1
     field @FlaggedApi("android.permission.flags.app_function_access_api_enabled") public static final int ACCESS_REQUEST_STATE_GRANTED = 0; // 0x0
@@ -9460,6 +9462,7 @@ package android.app.job {
   public class JobInfo implements android.os.Parcelable {
     method public int describeContents();
     method public int getBackoffPolicy();
+    method @FlaggedApi("android.app.job.job_category_apis") public int getCategory();
     method @Nullable public android.content.ClipData getClipData();
     method public int getClipGrantFlags();
     method @FlaggedApi("android.app.job.job_debug_info_apis") @NonNull public java.util.Set<java.lang.String> getDebugTags();
@@ -9521,7 +9524,6 @@ package android.app.job {
     method @FlaggedApi("android.app.job.job_debug_info_apis") @NonNull public android.app.job.JobInfo.Builder addDebugTag(@NonNull String);
     method public android.app.job.JobInfo.Builder addTriggerContentUri(@NonNull android.app.job.JobInfo.TriggerContentUri);
     method public android.app.job.JobInfo build();
-    method @FlaggedApi("android.app.job.job_category_apis") public int getCategory();
     method @FlaggedApi("android.app.job.job_debug_info_apis") @NonNull public android.app.job.JobInfo.Builder removeDebugTag(@NonNull String);
     method public android.app.job.JobInfo.Builder setBackoffCriteria(long, int);
     method @FlaggedApi("android.app.job.job_category_apis") @NonNull public android.app.job.JobInfo.Builder setCategory(int);
@@ -42637,19 +42639,19 @@ package android.service.notification {
     method public final android.service.notification.StatusBarNotification[] getSnoozedNotifications();
     method public final void migrateNotificationFilter(int, @Nullable java.util.List<java.lang.String>);
     method public android.os.IBinder onBind(android.content.Intent);
-    method @UiThread public void onInterruptionFilterChanged(int);
-    method @UiThread public void onListenerConnected();
-    method @UiThread public void onListenerDisconnected();
-    method @UiThread public void onListenerHintsChanged(int);
-    method @UiThread public void onNotificationChannelGroupModified(String, android.os.UserHandle, android.app.NotificationChannelGroup, int);
-    method @UiThread public void onNotificationChannelModified(String, android.os.UserHandle, android.app.NotificationChannel, int);
-    method @UiThread public void onNotificationPosted(android.service.notification.StatusBarNotification);
-    method @UiThread public void onNotificationPosted(android.service.notification.StatusBarNotification, android.service.notification.NotificationListenerService.RankingMap);
-    method @UiThread public void onNotificationRankingUpdate(android.service.notification.NotificationListenerService.RankingMap);
-    method @UiThread public void onNotificationRemoved(android.service.notification.StatusBarNotification);
-    method @UiThread public void onNotificationRemoved(android.service.notification.StatusBarNotification, android.service.notification.NotificationListenerService.RankingMap);
-    method @UiThread public void onNotificationRemoved(android.service.notification.StatusBarNotification, android.service.notification.NotificationListenerService.RankingMap, int);
-    method @UiThread public void onSilentStatusBarIconsVisibilityChanged(boolean);
+    method @MainThread public void onInterruptionFilterChanged(int);
+    method @MainThread public void onListenerConnected();
+    method @MainThread public void onListenerDisconnected();
+    method @MainThread public void onListenerHintsChanged(int);
+    method @MainThread public void onNotificationChannelGroupModified(String, android.os.UserHandle, android.app.NotificationChannelGroup, int);
+    method @MainThread public void onNotificationChannelModified(String, android.os.UserHandle, android.app.NotificationChannel, int);
+    method @MainThread public void onNotificationPosted(android.service.notification.StatusBarNotification);
+    method @MainThread public void onNotificationPosted(android.service.notification.StatusBarNotification, android.service.notification.NotificationListenerService.RankingMap);
+    method @MainThread public void onNotificationRankingUpdate(android.service.notification.NotificationListenerService.RankingMap);
+    method @MainThread public void onNotificationRemoved(android.service.notification.StatusBarNotification);
+    method @MainThread public void onNotificationRemoved(android.service.notification.StatusBarNotification, android.service.notification.NotificationListenerService.RankingMap);
+    method @MainThread public void onNotificationRemoved(android.service.notification.StatusBarNotification, android.service.notification.NotificationListenerService.RankingMap, int);
+    method @MainThread public void onSilentStatusBarIconsVisibilityChanged(boolean);
     method public final void requestInterruptionFilter(int);
     method public final void requestListenerHints(int);
     method public static void requestRebind(android.content.ComponentName);

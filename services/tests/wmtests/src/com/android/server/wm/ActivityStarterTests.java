@@ -95,7 +95,6 @@ import android.graphics.Rect;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.provider.DeviceConfig;
@@ -988,8 +987,6 @@ public class ActivityStarterTests extends WindowTestsBase {
      * This test ensures that activity launch on an insecure secondary display is disallowed if the
      * activity opted out from showing on remote devices.
      */
-    @EnableFlags(android.companion.virtualdevice.flags.Flags
-            .FLAG_ENFORCE_REMOTE_DEVICE_OPT_OUT_ON_ALL_VIRTUAL_DISPLAYS)
     @Test
     public void testStartOptedOutActivityOnInsecureVirtualDisplay() {
         final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK,
@@ -1033,8 +1030,6 @@ public class ActivityStarterTests extends WindowTestsBase {
      * This test ensures that activity launch on a secure secondary display is allowed event if the
      * activity opted out from showing on remote devices.
      */
-    @EnableFlags(android.companion.virtualdevice.flags.Flags
-            .FLAG_ENFORCE_REMOTE_DEVICE_OPT_OUT_ON_ALL_VIRTUAL_DISPLAYS)
     @Test
     public void testStartOptedOutActivityOnSecureVirtualDisplay() {
         final ActivityStarter starter = prepareStarter(FLAG_ACTIVITY_NEW_TASK,

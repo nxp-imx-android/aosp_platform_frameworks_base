@@ -25,6 +25,10 @@ import android.os.IInterface;
 
 import com.android.server.am.PersistentConnection;
 import com.android.server.appbinding.finders.AppServiceFinder;
+import com.android.server.utils.Slogf;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Establishes a persistent connection to a given service component for a given user
@@ -35,6 +39,19 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
     public static final String TAG = "AppServiceConnection";
     private final AppBindingConstants mConstants;
     private final AppServiceFinder mFinder;
+
+    /**
+     * Listener for connection status updates
+     * TODO: Refactor this (b/423644620)
+     */
+    public interface ConnectionStatusListener {
+        void onConnected(@NonNull AppServiceConnection connection, @NonNull IInterface service);
+        void onDisconnected(@NonNull AppServiceConnection connection);
+        void onBinderDied(@NonNull AppServiceConnection connection);
+    }
+
+    private final List<ConnectionStatusListener> mConnectionListeners =
+            new CopyOnWriteArrayList<>();
 
     AppServiceConnection(Context context, int userId, AppBindingConstants constants,
             Handler handler, AppServiceFinder finder,
@@ -55,10 +72,41 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
 
     @Override
     protected IInterface asInterface(IBinder obj) {
-        return mFinder.asInterface(obj);
+        final IInterface service = mFinder.asInterface(obj);
+
+        if (service != null) {
+            // Notify all listeners.
+            Slogf.d(TAG, "Service for %s is connected. Notifying listeners.",
+                    getComponentName());
+            for (ConnectionStatusListener listener : mConnectionListeners) {
+                listener.onConnected(this, service);
+            }
+        } else {
+            Slogf.w(TAG, "Service for %s is null.", getComponentName());
+        }
+        return service;
     }
 
     public AppServiceFinder getFinder() {
         return mFinder;
+    }
+
+    /**
+     * Adds a listener to be notified of connection changes.
+     * If service is already connected, notify immediately.
+     */
+    public void addConnectionStatusListener(@NonNull ConnectionStatusListener listener) {
+        mConnectionListeners.add(listener);
+        final IInterface service = getServiceBinder();
+        if (isConnected() && service != null) {
+            listener.onConnected(this, service);
+        }
+    }
+
+    /**
+     * Removes an existing listener.
+     */
+    public void removeConnectionStatusListener(@NonNull ConnectionStatusListener listener) {
+        mConnectionListeners.remove(listener);
     }
 }

@@ -21,9 +21,11 @@ import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.hardware.display.VirtualDisplayConfig
 import android.os.UserHandle
+import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.testing.TestableLooper
 import android.view.View
+import android.view.WindowManager.LayoutParams.TYPE_STATUS_BAR
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -33,6 +35,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor
+import com.android.systemui.display.data.repository.FakeDisplayWindowPropertiesRepository
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.mediaprojection.appselector.MediaProjectionAppSelectorActivity
 import com.android.systemui.mediaprojection.permission.ENTIRE_SCREEN
@@ -40,6 +43,7 @@ import com.android.systemui.mediaprojection.permission.SINGLE_APP
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserContextProvider
+import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
 import com.android.systemui.util.mockito.argumentCaptor
@@ -67,8 +71,11 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
     @Mock private lateinit var userContextProvider: UserContextProvider
     @Mock private lateinit var onStartRecordingClicked: Runnable
     @Mock private lateinit var mediaProjectionMetricsLogger: MediaProjectionMetricsLogger
+    private val fakeDisplayWindowPropertiesRepository =
+        FakeDisplayWindowPropertiesRepository(context)
 
     private lateinit var dialog: SystemUIDialog
+    private lateinit var underTest: ScreenRecordPermissionDialogDelegate
 
     @Before
     fun setUp() {
@@ -83,7 +90,7 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
                 Dependency.get(DialogTransitionAnimator::class.java),
             )
 
-        val delegate =
+        underTest =
             ScreenRecordPermissionDialogDelegate(
                 UserHandle.of(0),
                 TEST_HOST_UID,
@@ -95,8 +102,9 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
                 systemUIDialogFactory,
                 context,
                 context.getSystemService(DisplayManager::class.java)!!,
+                fakeDisplayWindowPropertiesRepository,
             )
-        dialog = delegate.createDialog()
+        dialog = underTest.createDialog()
     }
 
     @After
@@ -251,6 +259,33 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
             assertWithMessage("A Virtual Display was shown in the list of display to record")
                 .that(virtualDisplayAvailable)
                 .isFalse()
+        } finally {
+            virtualDisplay?.release()
+        }
+    }
+
+    @Test
+    @EnableFlags(ShadeWindowGoesAround.FLAG_NAME)
+    fun createDialog_usesDisplayContextInsteadOfDefaultOne() {
+        val shadeContext = context
+        val displayManager = context.getSystemService(DisplayManager::class.java)!!
+        var virtualDisplay: VirtualDisplay? = null
+        try {
+            virtualDisplay =
+                displayManager.createVirtualDisplay(
+                    VirtualDisplayConfig.Builder("virtual display", 1, 1, 160).build()
+                )!!
+            val displayContext = context.createDisplayContext(virtualDisplay.display)
+            fakeDisplayWindowPropertiesRepository.insertForContext(
+                displayId = virtualDisplay.display.displayId,
+                TYPE_STATUS_BAR,
+                displayContext,
+            )
+            shadeContext.display = virtualDisplay.display
+
+            dialog = underTest.createDialog()
+
+            assertThat(dialog.context.displayId).isEqualTo(virtualDisplay.display.displayId)
         } finally {
             virtualDisplay?.release()
         }

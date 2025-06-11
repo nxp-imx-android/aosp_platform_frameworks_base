@@ -44,7 +44,7 @@ public record RemoteTaskRemovedMessage(int taskId) implements TaskContinuityMess
     }
 
     @Override
-    public void writeToProto(ProtoOutputStream pos) {
+    public void writeToProto(ProtoOutputStream pos) throws IOException {
         pos.write(
             android.companion.RemoteTaskRemovedMessage.TASK_ID,
             taskId());

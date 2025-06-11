@@ -453,7 +453,6 @@ public class MediaProjectionManagerServiceTest {
                         PACKAGE_NAME + "foo",
                         TYPE_MIRRORING,
                         /* isPermanentGrant= */ true,
-                        UserHandle.CURRENT,
                         Display.DEFAULT_DISPLAY);
 
         assertThat(secondProjection).isNotNull();
@@ -1250,7 +1249,6 @@ public class MediaProjectionManagerServiceTest {
                         PACKAGE_NAME,
                         TYPE_SCREEN_CAPTURE,
                         /* isPermanentGrant= */ false,
-                        UserHandle.CURRENT,
                         DEFAULT_DISPLAY);
 
         doReturn(AppOpsManager.MODE_DEFAULT).when(mAppOpsManager).unsafeCheckOpRawNoThrow(
@@ -1276,7 +1274,6 @@ public class MediaProjectionManagerServiceTest {
                         PACKAGE_NAME,
                         TYPE_SCREEN_CAPTURE,
                         /* isPermanentGrant= */ false,
-                        UserHandle.CURRENT,
                         DEFAULT_DISPLAY);
 
         doReturn(AppOpsManager.MODE_DEFAULT).when(mAppOpsManager).unsafeCheckOpRawNoThrow(
@@ -1308,7 +1305,6 @@ public class MediaProjectionManagerServiceTest {
                         packageName,
                         TYPE_SCREEN_CAPTURE,
                         /* isPermanentGrant= */ false,
-                        UserHandle.CURRENT,
                         DEFAULT_DISPLAY);
         projection.setRecordingOverlay(true);
 
@@ -1341,7 +1337,6 @@ public class MediaProjectionManagerServiceTest {
                         PACKAGE_NAME,
                         TYPE_SCREEN_CAPTURE,
                         /* isPermanentGrant= */ false,
-                        UserHandle.CURRENT,
                         DEFAULT_DISPLAY);
 
         doReturn(AppOpsManager.MODE_DEFAULT).when(mAppOpsManager).unsafeCheckOpRawNoThrow(
@@ -1367,7 +1362,6 @@ public class MediaProjectionManagerServiceTest {
                         PACKAGE_NAME,
                         TYPE_SCREEN_CAPTURE,
                         /* isPermanentGrant= */ false,
-                        UserHandle.CURRENT,
                         DEFAULT_DISPLAY);
 
         // Start MediaProjection from a different UID
@@ -1396,7 +1390,6 @@ public class MediaProjectionManagerServiceTest {
                 PACKAGE_NAME,
                 TYPE_MIRRORING,
                 /* isPermanentGrant= */ false,
-                UserHandle.CURRENT,
                 displayId);
     }
 

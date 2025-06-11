@@ -25,6 +25,7 @@ import com.android.systemui.statusbar.notification.row.notificationRebindingTrac
 
 val Kosmos.shadeDisplaysWaitInteractor by Fixture {
     ShadeDisplaysWaitInteractor(
+        shadeInteractor,
         fakeChoreographerUtils,
         mockShadeRootView,
         notificationRebindingTracker,

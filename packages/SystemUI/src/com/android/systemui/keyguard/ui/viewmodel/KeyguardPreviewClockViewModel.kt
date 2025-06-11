@@ -67,4 +67,7 @@ constructor(
 
     fun shouldSmallDateWeatherBeBelowSmallClock() =
         keyguardClockViewModel.shouldDateWeatherBeBelowSmallClock.value
+
+    fun shouldSmallDateWeatherBeBelowLargeClock() =
+        keyguardClockViewModel.shouldDateWeatherBeBelowLargeClock.value
 }

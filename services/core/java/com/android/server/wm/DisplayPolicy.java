@@ -2332,16 +2332,11 @@ public class DisplayPolicy {
         mCachedDecorInsets.mPreserveId = DecorInsets.Cache.ID_UPDATING_CONFIG;
         // Cache the current insets.
         mCachedDecorInsets.mDecorInsets.setTo(mDecorInsets);
-        if (com.android.window.flags.Flags.useCachedInsetsForDisplaySwitch()) {
-            mCachedDecorInsets.mRegularBarsInsets = DecorInsets.Cache.copyRegularBarInsets(
-                    mDisplayContent.mDisplayFrames.mInsetsState);
-            mCachedDecorInsets.mRotation = mDisplayContent.mDisplayFrames.mRotation;
-            mCachedDecorInsets.mPrivacyIndicatorBounds =
-                    mDisplayContent.mCurrentPrivacyIndicatorBounds;
-        } else {
-            mCachedDecorInsets.mRegularBarsInsets = null;
-            mCachedDecorInsets.mPrivacyIndicatorBounds = null;
-        }
+        mCachedDecorInsets.mRegularBarsInsets = DecorInsets.Cache.copyRegularBarInsets(
+                mDisplayContent.mDisplayFrames.mInsetsState);
+        mCachedDecorInsets.mRotation = mDisplayContent.mDisplayFrames.mRotation;
+        mCachedDecorInsets.mPrivacyIndicatorBounds = mDisplayContent.mCurrentPrivacyIndicatorBounds;
+
         // Switch current to previous cache.
         if (prevCache != null) {
             mDecorInsets.setTo(prevCache);

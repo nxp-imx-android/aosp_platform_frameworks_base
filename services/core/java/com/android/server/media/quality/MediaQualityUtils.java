@@ -1346,7 +1346,7 @@ public final class MediaQualityUtils {
             }
             params.remove(SoundQuality.PARAMETER_DIALOGUE_ENHANCER);
         }
-        if (params.containsKey(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING)) {
+        if (params.getBoolean(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING)) {
             DolbyAudioProcessing dab = new DolbyAudioProcessing();
             if (params.containsKey(SoundQuality.PARAMETER_DOLBY_AUDIO_PROCESSING_SOUND_MODE)) {
                 String dolbySoundModeString = params.getString(
@@ -1403,7 +1403,7 @@ public final class MediaQualityUtils {
             soundParams.add(SoundParameter.dolbyAudioProcessing(dab));
         }
 
-        if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X)) {
+        if (params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X)) {
             DtsVirtualX dts = new DtsVirtualX();
             if (params.containsKey(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TBHDX)) {
                 dts.tbHdx = params.getBoolean(SoundQuality.PARAMETER_DTS_VIRTUAL_X_TBHDX);

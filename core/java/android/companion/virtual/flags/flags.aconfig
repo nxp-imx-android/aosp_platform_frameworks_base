@@ -35,13 +35,6 @@ flag {
 }
 
 flag {
-     namespace: "virtual_devices"
-     name: "enforce_remote_device_opt_out_on_all_virtual_displays"
-     description: "Respect canDisplayOnRemoteDevices on all virtual displays"
-     bug: "338973239"
-}
-
-flag {
     namespace: "virtual_devices"
     name: "virtual_display_rotation_api"
     description: "API for on-demand rotation of virtual displays"
@@ -147,13 +140,6 @@ flag {
     metadata {
         purpose: PURPOSE_BUGFIX
     }
-}
-
-flag {
-    name: "vdm_settings"
-    namespace: "virtual_devices"
-    description: "Show virtual devices in Settings"
-    bug: "338974320"
 }
 
 flag {

@@ -16,6 +16,7 @@
 
 package android.app.appfunctions;
 
+import static android.Manifest.permission.MANAGE_APP_FUNCTION_ACCESS;
 import static android.app.appfunctions.AppFunctionException.ERROR_SYSTEM_ERROR;
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
 import static android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_UI_ENABLED;
@@ -29,6 +30,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SdkConstant;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
+import android.annotation.TestApi;
 import android.annotation.UserHandleAware;
 import android.app.appfunctions.AppFunctionManagerHelper.AppFunctionNotFoundException;
 import android.app.appsearch.AppSearchManager;
@@ -43,6 +45,7 @@ import android.permission.flags.Flags;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -258,12 +261,14 @@ public final class AppFunctionManager {
      * All USER flags
      * @hide
      */
+    @TestApi
     public static final int ACCESS_FLAG_MASK_USER =
             ACCESS_FLAG_USER_GRANTED | ACCESS_FLAG_USER_DENIED;
     /**
      * All OTHER flags
      * @hide
      */
+    @TestApi
     public static final int ACCESS_FLAG_MASK_OTHER =
             ACCESS_FLAG_OTHER_GRANTED | ACCESS_FLAG_OTHER_DENIED;
 
@@ -271,6 +276,7 @@ public final class AppFunctionManager {
      * All access flags
      * @hide
      */
+    @TestApi
     public static final int
             ACCESS_FLAG_MASK_ALL = ACCESS_FLAG_PREGRANTED | ACCESS_FLAG_OTHER_GRANTED
             | ACCESS_FLAG_OTHER_DENIED | ACCESS_FLAG_USER_GRANTED | ACCESS_FLAG_USER_DENIED;
@@ -526,6 +532,152 @@ public final class AppFunctionManager {
                 functionIdentifier, targetPackage, appSearchManager, executor,
                 callbackWithExceptionInterceptor);
 
+    }
+
+    /**
+     * Checks whether the given agent has access to app functions of the given target app, or if
+     * the access is not {@link #getSelfAppFunctionAccessRequestState valid}. Requires the
+     * {@link Manifest.permission.MANAGE_APP_FUNCTION_ACCESS} permission if the
+     * {@param agentPackageName} is not the calling app.
+     *
+     * @param agentPackageName  The package name of the agent
+     * @param targetPackageName The package name of the target
+     * @return The state of the access, one of {@link #ACCESS_REQUEST_STATE_GRANTED},
+     * {@link #ACCESS_REQUEST_STATE_DENIED}, or {@link #ACCESS_REQUEST_STATE_UNREQUESTABLE}
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @RequiresPermission(value = MANAGE_APP_FUNCTION_ACCESS, conditional = true)
+    @AppFunctionAccessState
+    public int getAppFunctionAccessRequestState(@NonNull String agentPackageName,
+            @NonNull String targetPackageName) {
+        try {
+            return mService.getAppFunctionAccessRequestState(agentPackageName,
+                    mContext.getUserId(), targetPackageName, mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Checks whether the calling app has access to app functions of the given target app,
+     * for the given users, or if the access is invalid (not able to be requested). An access is
+     * valid if:
+     * 1. The agent (calling app) and target apps are both installed, and the agent has visibility
+     * of the target.
+     * 2. The agent has the {@link Manifest.permission.EXECUTE_APP_FUNCTIONS} permission granted.
+     * 3. The agent is allowlisted by the system.
+     * 4. The target has an AppFunctionService.
+     * @param targetPackageName The package name of the target
+     * @return The state of the access, one of {@link #ACCESS_REQUEST_STATE_GRANTED},
+     * {@link #ACCESS_REQUEST_STATE_DENIED}, or {@link #ACCESS_REQUEST_STATE_UNREQUESTABLE}
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @AppFunctionAccessState
+    public int getSelfAppFunctionAccessRequestState(@NonNull String targetPackageName) {
+        return getAppFunctionAccessRequestState(mContext.getOpPackageName(), targetPackageName);
+    }
+
+    /**
+     * Get the access flags for a given agent and target. These flags include extra information
+     * about the access state (whether it is pregranted, if the user has set state, etc.). Returns
+     * 0 if the access is not {@link #getSelfAppFunctionAccessRequestState valid}.
+     *
+     * @param agentPackageName  The package name of the agent
+     * @param targetPackageName The package name of the target
+     * @return The flags for the given agent and target app, or 0 if the combination is not valid
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    @AppFunctionAccessFlags
+    public int getAppFunctionAccessFlags(@NonNull String agentPackageName,
+            @NonNull String targetPackageName) {
+        try {
+            return mService.getAppFunctionAccessFlags(agentPackageName,
+                    mContext.getUserId(), targetPackageName, mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Updates the access flags for the given agent and target. If the access is not
+     * {@link #getSelfAppFunctionAccessRequestState valid}, this method is a no-op.
+     *
+     * @param agentPackageName  The package name of the agent
+     * @param targetPackageName The package name of the target
+     * @param flagMask          The mask determining which flag values will be changed
+     * @param flags             The flag values to be changed
+     * @throws IllegalArgumentException if an invalid flag is specified, opposing flags (e.g.
+     * USER_GRANTED and USER_DENIED) are set together, or a flag with an opposite is set, without
+     * its opposite being explicitly cleared (via being included in the flag mask, but not the flag
+     * set).
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public void updateAppFunctionAccessFlags(@NonNull String agentPackageName,
+            @NonNull String targetPackageName, @AppFunctionAccessFlags int flagMask,
+            @AppFunctionAccessFlags int flags) {
+        try {
+            mService.updateAppFunctionAccessFlags(agentPackageName,
+                    mContext.getUserId(), targetPackageName, mContext.getUserId(),
+                    flagMask, flags);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Revoke the App Function access for the calling app and the given target
+     * @param targetPackageName The app whose AppFunctionService the calling app should lose access
+     *                          to.
+     */
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public void revokeSelfAppFunctionAccess(@NonNull String targetPackageName) {
+        try {
+            mService.revokeSelfAppFunctionAccess(targetPackageName);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+
+    /**
+     * Gets all {@link #getSelfAppFunctionAccessRequestState valid} agents.
+     * @return A list of all valid agent package names
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public @NonNull List<String> getValidAgents() {
+        try {
+            return mService.getValidAgents(mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Gets all {@link #getSelfAppFunctionAccessRequestState valid} target apps.
+     * @return A list of all target app package names in the current user that the agent can
+     * request access for
+     * @hide
+     */
+    @SystemApi
+    @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
+    @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
+    public @NonNull List<String> getValidTargets() {
+        try {
+            return mService.getValidTargets(mContext.getUserId());
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     private static class CallbackWrapper extends IAppFunctionEnabledCallback.Stub {
