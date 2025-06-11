@@ -50,6 +50,8 @@ abstract class CloseAllAppsWithBackNavigation(
     private val mailApp = DesktopModeAppHelper(MailAppHelper(instrumentation))
     private val nonResizeableApp = DesktopModeAppHelper(NonResizeableAppHelper(instrumentation))
 
+    val appsInZOrder: ArrayList<DesktopModeAppHelper> = ArrayList()
+
     @Rule @JvmField val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, rotation)
 
     @Before
@@ -59,11 +61,19 @@ abstract class CloseAllAppsWithBackNavigation(
                 .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
         )
         Assume.assumeTrue(Flags.enableDesktopWindowingBackNavigation())
+        Assume.assumeTrue(Flags.enableEmptyDeskOnMinimize())
         tapl.setEnableRotation(true)
         tapl.setExpectedRotation(rotation.value)
+
+        // Set up apps
         testApp.enterDesktopMode(wmHelper, device)
+        appsInZOrder.add(testApp)
+
         mailApp.launchViaIntent(wmHelper)
+        appsInZOrder.add( mailApp)
+
         nonResizeableApp.launchViaIntent(wmHelper)
+        appsInZOrder.add(nonResizeableApp)
     }
 
     @Test
