@@ -19,7 +19,6 @@ import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.StatusBarState
 import com.android.systemui.statusbar.SysuiStatusBarStateController
-import com.android.systemui.statusbar.notification.collection.ListEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider
@@ -201,19 +200,13 @@ constructor(
 
     private fun shouldHideIfEntrySilent(entry: PipelineEntry): Boolean =
         when {
-            // TODO(b/410825977): The bundle classifier clobbers the channel that the notification
-            //  was posted to, and so we don't know whether any child of a bundle is SECRET. For now
-            //  treat all bundles as SECRET.
-            entry !is ListEntry -> true
             // Show if explicitly high priority (not hidden)
             highPriorityProvider.isExplicitlyHighPriority(entry) -> false
             // Ambient notifications are hidden always from lock screen
-            entry.representativeEntry?.isAmbient == true -> true
+            entry.asListEntry()?.representativeEntry?.isAmbient == true -> true
             // [Now notification is silent]
-            // Hide regardless of parent priority if user wants silent notifs hidden
+            // Always hide if user wants silent notifs hidden
             hideSilentNotificationsOnLockscreen -> true
-            // Parent priority is high enough to be shown on the lockscreen, do not hide.
-            entry.parent?.let(::shouldHideIfEntrySilent) == false -> false
             // Show when silent notifications are allowed on lockscreen
             else -> false
         }
@@ -244,8 +237,7 @@ constructor(
         // ranking.lockscreenVisibilityOverride contains possibly out of date DPC and Setting
         // info, and NotificationLockscreenUserManagerImpl is already listening for updates
         // to those
-        return entry.ranking.channel != null &&
-            entry.ranking.channel.lockscreenVisibility == VISIBILITY_SECRET
+        return entry.ranking.channel?.lockscreenVisibility == VISIBILITY_SECRET
     }
 
     override fun dump(pw: PrintWriter, args: Array<out String>) =

@@ -168,6 +168,7 @@ import static android.service.notification.NotificationListenerService.REASON_US
 import static android.service.notification.NotificationListenerService.Ranking.RANKING_DEMOTED;
 import static android.service.notification.NotificationListenerService.Ranking.RANKING_PROMOTED;
 import static android.service.notification.NotificationListenerService.Ranking.RANKING_UNCHANGED;
+import static android.service.notification.NotificationListenerService.Ranking.VISIBILITY_NO_OVERRIDE;
 import static android.service.notification.NotificationListenerService.TRIM_FULL;
 import static android.service.notification.NotificationListenerService.TRIM_LIGHT;
 import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
@@ -12226,6 +12227,21 @@ public class NotificationManagerService extends SystemService {
                     smartReplies = null;
                 }
             }
+            NotificationChannel effectiveChannel = record.getChannel().copy();
+            if (notificationClassificationUi()) {
+                // special handling for a notification's channel visibility when bundled: if the
+                // notification's original channel had a more strict visibility than the current
+                // channel, or if the current channel has an unspecified visibility, patch that
+                // original visibility into the channel stored in Ranking.
+                if (record.getOriginalChannelVisibility() != VISIBILITY_NO_OVERRIDE) {
+                    int currentChannelVis = record.getChannel().getLockscreenVisibility();
+                    if (currentChannelVis == VISIBILITY_NO_OVERRIDE
+                            || record.getOriginalChannelVisibility() < currentChannelVis) {
+                        effectiveChannel.setLockscreenVisibility(
+                                record.getOriginalChannelVisibility());
+                    }
+                }
+            }
             ranking.populate(
                     key,
                     rankings.size(),
@@ -12235,7 +12251,7 @@ public class NotificationManagerService extends SystemService {
                     record.getImportance(),
                     record.getImportanceExplanation(),
                     record.getSbn().getOverrideGroupKey(),
-                    record.getChannel(),
+                    effectiveChannel,
                     record.getPeopleOverride(),
                     record.getSnoozeCriteria(),
                     record.canShowBadge(),
