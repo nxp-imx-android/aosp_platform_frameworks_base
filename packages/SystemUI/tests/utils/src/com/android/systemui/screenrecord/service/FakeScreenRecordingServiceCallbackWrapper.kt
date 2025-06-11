@@ -16,6 +16,8 @@
 
 package com.android.systemui.screenrecord.service
 
+import android.graphics.drawable.Icon
+import android.net.Uri
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,11 +38,18 @@ class FakeScreenRecordingServiceCallbackWrapper(private val real: IScreenRecordi
         real.onRecordingInterrupted(userId, reason)
     }
 
+    override fun onRecordingSaved(recordingUri: Uri, thumbnail: Icon) {
+        _status.value = RecordingStatus.Saved(recordingUri = recordingUri, thumbnail = thumbnail)
+        real.onRecordingSaved(recordingUri, thumbnail)
+    }
+
     sealed interface RecordingStatus {
 
         data object Initial : RecordingStatus
 
         data object Started : RecordingStatus
+
+        data class Saved(val recordingUri: Uri, val thumbnail: Icon) : RecordingStatus
 
         data class Interrupted(val userId: Int, val reason: Int) : RecordingStatus
     }
