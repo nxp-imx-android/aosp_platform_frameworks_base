@@ -47,7 +47,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApexStagedEvent;
-import android.content.pm.Flags;
 import android.content.pm.IPackageManagerNative;
 import android.content.pm.IStagedApexObserver;
 import android.content.pm.PackageManager;
@@ -59,7 +58,6 @@ import android.os.SystemClock;
 import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
-import android.provider.Settings.Global;
 import android.text.TextUtils;
 import android.util.ArraySet;
 import android.util.Log;
@@ -824,16 +822,10 @@ public final class DexOptHelper {
         final PackageSetting ps = installRequest.getScannedPackageSetting();
         final String packageName = ps.getPackageName();
 
-        PackageSetting uncommittedPs = null;
-        if (Flags.improveInstallFreeze()) {
-            uncommittedPs = ps;
-        }
-
         PackageManagerLocal packageManagerLocal =
                 LocalManagerRegistry.getManager(PackageManagerLocal.class);
         try (PackageManagerLocal.FilteredSnapshot snapshot =
-                     PackageManagerLocalImpl.withFilteredSnapshot(packageManagerLocal,
-                uncommittedPs)) {
+                     PackageManagerLocalImpl.withFilteredSnapshot(packageManagerLocal, ps)) {
             boolean ignoreDexoptProfile =
                     (installRequest.getInstallFlags()
                             & PackageManager.INSTALL_IGNORE_DEXOPT_PROFILE)
