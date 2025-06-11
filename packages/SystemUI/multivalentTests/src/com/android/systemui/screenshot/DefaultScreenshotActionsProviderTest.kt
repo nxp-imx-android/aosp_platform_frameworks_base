@@ -45,6 +45,7 @@ import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class DefaultScreenshotActionsProviderTest : SysuiTestCase() {
     private val scheduler = TestCoroutineScheduler()
     private val mainDispatcher = UnconfinedTestDispatcher(scheduler)

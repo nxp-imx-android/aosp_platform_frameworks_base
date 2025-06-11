@@ -30,6 +30,7 @@ import org.junit.runners.model.Statement
  */
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 public class NoUiThreadTestRuleTest : SysuiTestCase() {
 
     class TestStatement : Statement() {

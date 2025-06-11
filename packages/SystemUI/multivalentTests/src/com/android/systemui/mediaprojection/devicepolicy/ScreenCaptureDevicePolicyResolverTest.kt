@@ -84,6 +84,7 @@ abstract class BaseScreenCaptureDevicePolicyResolverTest(private val preconditio
 
 @RunWith(ParameterizedAndroidJunit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class IsAllowedScreenCaptureDevicePolicyResolverTest(
     private val test: IsScreenCaptureAllowedTestCase
 ) : BaseScreenCaptureDevicePolicyResolverTest(test.given) {
@@ -471,6 +472,7 @@ class IsAllowedScreenCaptureDevicePolicyResolverTest(
 
 @RunWith(ParameterizedAndroidJunit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class IsCompletelyNotAllowedScreenCaptureDevicePolicyResolverTest(
     private val test: IsScreenCaptureCompletelyDisabledTestCase
 ) : BaseScreenCaptureDevicePolicyResolverTest(test.given) {
