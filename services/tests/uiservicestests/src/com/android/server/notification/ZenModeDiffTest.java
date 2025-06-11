@@ -76,12 +76,7 @@ public class ZenModeDiffTest extends UiServiceTestCase {
     // version is not included in the diff; manual & automatic rules have special handling;
     // deleted rules are not included in the diff.
     public static final Set<String> ZEN_MODE_CONFIG_EXEMPT_FIELDS =
-            Set.of("version", "manualRule", "automaticRules", "deletedRules",
-                    // TODO: b/368247671 - Delete these exemptions once fields are gone.
-                    "allowAlarms", "allowMedia", "allowSystem", "allowCalls", "allowReminders",
-                    "allowEvents", "allowRepeatCallers", "allowMessages", "allowConversations",
-                    "allowCallsFrom", "allowMessagesFrom", "allowConversationsFrom",
-                    "suppressedVisualEffects");
+            Set.of("version", "manualRule", "automaticRules", "deletedRules");
 
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
