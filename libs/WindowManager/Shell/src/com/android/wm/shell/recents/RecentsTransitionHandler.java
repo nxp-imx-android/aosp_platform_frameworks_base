@@ -1013,7 +1013,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 return;
             }
 
-            if (info.getType() == TRANSIT_REMOVE_PIP && PipFlags.isPip2ExperimentEnabled()) {
+            if (info.getType() == TRANSIT_REMOVE_PIP) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                         "[%d] RecentsController.merge: transit_remove_pip", mInstanceId);
                 // Cancel the merge if transition is removing PiP; PiP is on top of everything else.
