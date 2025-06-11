@@ -258,9 +258,8 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
             mCurrentState.shadeOrQsExpanded = isExpanded;
             apply(mCurrentState);
 
-            final IBinder token;
-            if (com.android.window.flags.Flags.schedulingForNotificationShade()
-                    && (token = mWindowRootView.getWindowToken()) != null) {
+            final IBinder token = mWindowRootView.getWindowToken();
+            if (token != null) {
                 mBackgroundExecutor.execute(() -> {
                     try {
                         WindowManagerGlobal.getWindowManagerService()
