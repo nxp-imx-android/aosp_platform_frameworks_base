@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.row.icon
 
+import android.app.Flags.notificationsRedesignThemedAppIcons
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
@@ -60,7 +61,7 @@ constructor(
         row: ExpandableNotificationRow,
         context: Context,
     ): NotificationIconProvider {
-        val sbn = if (NotificationBundleUi.isEnabled) row.entryAdapter.sbn else row.entryLegacy.sbn
+        val sbn = if (NotificationBundleUi.isEnabled) row.entryAdapter?.sbn else row.entryLegacy.sbn
         if (sbn == null) {
             return object : NotificationIconProvider {
                 override fun shouldShowAppIcon(): Boolean {
@@ -79,11 +80,14 @@ constructor(
                 return shouldShowAppIcon
             }
 
-            override fun getAppIcon(): Drawable {
+            override fun getAppIcon(): Drawable? {
+                val withWorkProfileBadge =
+                    iconStyleProvider.shouldShowWorkProfileBadge(sbn, context)
                 return appIconProvider.getOrFetchAppIcon(
-                    packageName = sbn.packageName,
-                    userHandle = sbn.user,
-                    instanceKey = "LEGACY",
+                    sbn.packageName,
+                    context,
+                    withWorkProfileBadge,
+                    themed = notificationsRedesignThemedAppIcons(),
                 )
             }
         }

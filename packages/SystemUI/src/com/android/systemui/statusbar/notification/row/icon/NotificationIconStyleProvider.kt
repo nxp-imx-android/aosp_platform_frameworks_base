@@ -49,6 +49,12 @@ interface NotificationIconStyleProvider {
     fun shouldShowAppIcon(notification: StatusBarNotification, context: Context): Boolean
 
     /**
+     * Whether the [notification] is coming from a work profile app, and therefore should display
+     * the briefcase badge.
+     */
+    fun shouldShowWorkProfileBadge(notification: StatusBarNotification, context: Context): Boolean
+
+    /**
      * Mark all the entries in the cache that are NOT in [wantedPackages] to be cleared. If they're
      * still not needed on the next call of this method (made after a timeout of 1s, in case they
      * happen more frequently than that), they will be purged. This can be done from any thread.
@@ -102,6 +108,15 @@ constructor(
         }
     }
 
+    override fun shouldShowWorkProfileBadge(
+        notification: StatusBarNotification,
+        context: Context,
+    ): Boolean {
+        val packageContext = notification.getPackageContext(context)
+        // UserManager already caches this, so we don't need to.
+        return userManager.isManagedProfile(packageContext.userId)
+    }
+
     override fun purgeCache(wantedPackages: Collection<String>) {
         cache.purge(wantedPackages)
     }
@@ -125,6 +140,14 @@ class NoOpIconStyleProvider : NotificationIconStyleProvider {
     override fun shouldShowAppIcon(notification: StatusBarNotification, context: Context): Boolean {
         Log.wtf(TAG, "NoOpIconStyleProvider should not be used anywhere.")
         return true
+    }
+
+    override fun shouldShowWorkProfileBadge(
+        notification: StatusBarNotification,
+        context: Context,
+    ): Boolean {
+        Log.wtf(TAG, "NoOpIconStyleProvider should not be used anywhere.")
+        return false
     }
 
     override fun purgeCache(wantedPackages: Collection<String>) {
