@@ -30,15 +30,14 @@ import com.android.settingslib.metadata.PreferenceScreenMetadata
 fun PreferenceScreen.inflatePreferenceHierarchy(
     preferenceBindingFactory: PreferenceBindingFactory,
     hierarchy: PreferenceHierarchy,
+    storages: MutableMap<KeyValueStore, PreferenceDataStore>,
 ) =
-    mutableMapOf<KeyValueStore, PreferenceDataStore>().also {
-        inflatePreferenceHierarchy(
-            hierarchy.metadata as PreferenceScreenMetadata,
-            preferenceBindingFactory,
-            hierarchy,
-            it,
-        )
-    }
+    inflatePreferenceHierarchy(
+        hierarchy.metadata as PreferenceScreenMetadata,
+        preferenceBindingFactory,
+        hierarchy,
+        storages,
+    )
 
 /** Inflates [PreferenceHierarchy] into given [PreferenceGroup] recursively. */
 private fun PreferenceGroup.inflatePreferenceHierarchy(
