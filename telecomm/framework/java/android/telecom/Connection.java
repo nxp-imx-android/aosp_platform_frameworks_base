@@ -132,7 +132,9 @@ public abstract class Connection extends Conferenceable {
             STATE_ACTIVE,
             STATE_HOLDING,
             STATE_DISCONNECTED,
-            STATE_PULLING_CALL
+            STATE_PULLING_CALL,
+            STATE_AUDIO_PROCESSING,
+            STATE_SIMULATED_RINGING
     })
     public @interface ConnectionState {}
 
@@ -183,6 +185,22 @@ public abstract class Connection extends Conferenceable {
      * {@link #CAPABILITY_CAN_PULL_CALL} capability bits are set on the connection.
      */
     public static final int STATE_PULLING_CALL = 7;
+
+    /**
+     * The state of a call that is active with the network, but the audio from the call is
+     * being intercepted by an app on the local device. Telecom does not hold audio focus in this
+     * state, and the call will be invisible to the user except for a persistent notification.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    public static final int STATE_AUDIO_PROCESSING = 8;
+
+    /**
+     * The state of a call that is being presented to the user after being in
+     * {@link #STATE_AUDIO_PROCESSING}. The call is still active with the network in this case, and
+     * Telecom will hold audio focus and play a ringtone if appropriate.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    public static final int STATE_SIMULATED_RINGING = 9;
 
     /**
      * Indicates that the network could not perform verification.
@@ -2184,6 +2202,8 @@ public abstract class Connection extends Conferenceable {
     // The PhoneAccountHandle associated with this connection.
     private PhoneAccountHandle mPhoneAccountHandle;
     private int mState = STATE_NEW;
+    private int mAudioProcessingUseCase =
+        Flags.enableAudioProcessingUseCase() ? Call.AUDIO_PROCESSING_USE_CASE_UNKNOWN : 0;
     private CallAudioState mCallAudioState;
     private CallEndpoint mCallEndpoint;
     private Uri mAddress;
@@ -2533,6 +2553,10 @@ public abstract class Connection extends Conferenceable {
                 return "NEW";
             case STATE_RINGING:
                 return "RINGING";
+            case STATE_AUDIO_PROCESSING:
+                return "AUDIO_PROCESSING";
+            case STATE_SIMULATED_RINGING:
+                return "SIMULATED_RINGING";
             case STATE_DIALING:
                 return "DIALING";
             case STATE_PULLING_CALL:
@@ -2727,6 +2751,50 @@ public abstract class Connection extends Conferenceable {
         for (Listener l : mListeners) {
             l.onDisconnected(this, disconnectCause);
         }
+    }
+
+    /**
+     * Sets state to audio processing (e.g. the call is active but the audio from the call is being
+     * intercepted by an app on the local device) and the usecase. This is applicable only for an
+     * {@link #PROPERTY_IS_EXTERNAL_CALL}
+     *
+     * @param useCase One of {@link Call.AudioProcessingUseCase} for when the call is in state
+     *     {@link #STATE_AUDIO_PROCESSING}
+     * @throws IllegalStateException if called on a non-external call.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    public final void setAudioProcessing(@Call.AudioProcessingUseCase int useCase) {
+        checkImmutable();
+        if ((mConnectionProperties & PROPERTY_IS_EXTERNAL_CALL) != PROPERTY_IS_EXTERNAL_CALL) {
+            throw new IllegalStateException("Not an externall call.");
+        }
+        setState(STATE_AUDIO_PROCESSING);
+        mAudioProcessingUseCase = useCase;
+    }
+
+    /**
+     * @return The audio processing use case of the call when the state is in
+     *     {@link #STATE_AUDIO_PROCESSING}
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    public final int getAudioProcessingUseCase() {
+        return mAudioProcessingUseCase;
+    }
+
+    /**
+     * Sets state to simulated ringing where its presented to the user after being in
+     * {@link #STATE_AUDIO_PROCESSING}. This is applicable only for an
+     * {@link #PROPERTY_IS_EXTERNAL_CALL}
+     *
+     * @throws IllegalStateException if the call is non-external.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    public final void setSimulatedRinging() {
+        checkImmutable();
+        if ((mConnectionProperties & PROPERTY_IS_EXTERNAL_CALL) != PROPERTY_IS_EXTERNAL_CALL) {
+            throw new IllegalStateException("Not an externall call.");
+        }
+        setState(STATE_SIMULATED_RINGING);
     }
 
     /**
