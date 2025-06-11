@@ -1,6 +1,17 @@
 package: "com.android.server.stats"
 container: "system"
 
+# This flag exists as the statsd counterpart to com.android.net.flags.netstats_transport_type,
+# which is only available in the Connectivity module. This flag should not be enabled without first
+# enabling the com.android.net.flags.netstats_transport_type flag.
+flag {
+    name: "netstats_use_transport_type"
+    namespace: "statsd"
+    description: "Use NetworkTemplate#setTransportType API instead of matchers"
+    bug: "420531377"
+    is_fixed_read_only: true
+}
+
 # Note: To ensure compatibility across all release configurations, initiate the ramp-up process
 # only after the 'com.android.net.flags.netstats_add_entries' flag has been fully deployed.
 # This flag provides the necessary API from the Connectivity module.
