@@ -39,6 +39,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
     public static final String TAG = "AppServiceConnection";
     private final AppBindingConstants mConstants;
     private final AppServiceFinder mFinder;
+    private final String mPackageName;
 
     /**
      * Listener for connection status updates
@@ -54,7 +55,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
             new CopyOnWriteArrayList<>();
 
     AppServiceConnection(Context context, int userId, AppBindingConstants constants,
-            Handler handler, AppServiceFinder finder,
+            Handler handler, AppServiceFinder finder, String packageName,
             @NonNull ComponentName componentName) {
         super(TAG, context, handler, userId, componentName,
                 constants.SERVICE_RECONNECT_BACKOFF_SEC,
@@ -63,6 +64,7 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
                 constants.SERVICE_STABLE_CONNECTION_THRESHOLD_SEC);
         mFinder = finder;
         mConstants = constants;
+        mPackageName = packageName;
     }
 
     @Override
@@ -76,8 +78,8 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
 
         if (service != null) {
             // Notify all listeners.
-            Slogf.d(TAG, "Service for %s is connected. Notifying listeners.",
-                    getComponentName());
+            Slogf.d(TAG, "Service for %s is connected. Notifying %s listeners.",
+                    getComponentName(), mConnectionListeners.size());
             for (ConnectionStatusListener listener : mConnectionListeners) {
                 listener.onConnected(this, service);
             }
@@ -89,6 +91,10 @@ public class AppServiceConnection extends PersistentConnection<IInterface> {
 
     public AppServiceFinder getFinder() {
         return mFinder;
+    }
+
+    public String getPackageName() {
+        return mPackageName;
     }
 
     /**

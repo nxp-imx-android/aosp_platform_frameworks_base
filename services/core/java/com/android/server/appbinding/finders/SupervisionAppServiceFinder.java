@@ -35,6 +35,8 @@ import com.android.internal.util.CollectionUtils;
 import com.android.server.LocalServices;
 import com.android.server.appbinding.AppBindingConstants;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 /** Finds the @{link SupervisionAppService} implementation within the supervision app. */
@@ -77,11 +79,22 @@ public class SupervisionAppServiceFinder
 
     @Nullable
     @Override
+    @Deprecated
     public String getTargetPackage(int userId) {
         final String ret =
                 CollectionUtils.firstOrNull(
                         mRoleManager.getRoleHoldersAsUser(
                                 RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId)));
+        return ret;
+    }
+
+    @Override
+    public Set<String> getTargetPackages(int userId) {
+        final Set<String> ret = new HashSet<>();
+        ret.addAll(mRoleManager.getRoleHoldersAsUser(
+                RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId)));
+        ret.addAll(mRoleManager.getRoleHoldersAsUser(
+                RoleManager.ROLE_SUPERVISION, UserHandle.of(userId)));
         return ret;
     }
 
