@@ -16,7 +16,6 @@
 
 package com.android.systemui.volume.dialog.domain.interactor
 
-import android.content.applicationContext
 import com.android.systemui.accessibility.data.repository.accessibilityRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
@@ -29,7 +28,6 @@ import com.android.systemui.volume.dialog.utils.volumeTracer
 val Kosmos.volumeDialogVisibilityInteractor by
     Kosmos.Fixture {
         VolumeDialogVisibilityInteractor(
-            applicationContext,
             applicationCoroutineScope,
             volumeDialogCallbacksInteractor,
             volumeDialogStateInteractor,
@@ -39,5 +37,6 @@ val Kosmos.volumeDialogVisibilityInteractor by
             volumeDialogController,
             secureSettingsRepository,
             shadeInteractor,
+            desktopAudioTileDetailsFeatureInteractor,
         )
     }
