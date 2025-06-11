@@ -36,31 +36,30 @@ import com.airbnb.lottie.compose.rememberLottieDynamicProperty
 import com.android.settingslib.color.R
 
 @Composable
-fun Lottie(
-    resId: Int,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier,
-    ) {
-        BaseLottie(resId)
-    }
+fun Lottie(resId: Int, modifier: Modifier = Modifier) {
+    Lottie(spec = LottieCompositionSpec.RawRes(resId), modifier = modifier)
+}
+
+@Composable
+fun Lottie(spec: LottieCompositionSpec, modifier: Modifier = Modifier) {
+    Box(modifier = modifier) { BaseLottie(spec) }
 }
 
 object LottieColorUtils {
-    private val DARK_TO_LIGHT_THEME_COLOR_MAP = mapOf(
-        ".grey200" to R.color.settingslib_color_grey800,
-        ".grey600" to R.color.settingslib_color_grey400,
-        ".grey800" to R.color.settingslib_color_grey300,
-        ".grey900" to R.color.settingslib_color_grey50,
-        ".red400" to R.color.settingslib_color_red600,
-        ".black" to android.R.color.white,
-        ".blue400" to R.color.settingslib_color_blue600,
-        ".green400" to R.color.settingslib_color_green600,
-        ".green200" to R.color.settingslib_color_green500,
-        ".red200" to R.color.settingslib_color_red500,
-        ".cream" to R.color.settingslib_color_charcoal
-    )
+    private val DARK_TO_LIGHT_THEME_COLOR_MAP =
+        mapOf(
+            ".grey200" to R.color.settingslib_color_grey800,
+            ".grey600" to R.color.settingslib_color_grey400,
+            ".grey800" to R.color.settingslib_color_grey300,
+            ".grey900" to R.color.settingslib_color_grey50,
+            ".red400" to R.color.settingslib_color_red600,
+            ".black" to android.R.color.white,
+            ".blue400" to R.color.settingslib_color_blue600,
+            ".green400" to R.color.settingslib_color_green600,
+            ".green200" to R.color.settingslib_color_green500,
+            ".red200" to R.color.settingslib_color_red500,
+            ".cream" to R.color.settingslib_color_charcoal,
+        )
 
     @Composable
     private fun getDefaultPropertiesList() =
@@ -68,8 +67,10 @@ object LottieColorUtils {
             val color = colorResource(colorRes).toArgb()
             rememberLottieDynamicProperty(
                 property = LottieProperty.COLOR_FILTER,
-                keyPath = arrayOf("**", key, "**")
-            ){ PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP) }
+                keyPath = arrayOf("**", key, "**"),
+            ) {
+                PorterDuffColorFilter(color, PorterDuff.Mode.SRC_ATOP)
+            }
         }
 
     @Composable
@@ -78,14 +79,10 @@ object LottieColorUtils {
 }
 
 @Composable
-private fun BaseLottie(resId: Int) {
-    val composition by rememberLottieComposition(
-        LottieCompositionSpec.RawRes(resId)
-    )
-    val progress by animateLottieCompositionAsState(
-        composition,
-        iterations = LottieConstants.IterateForever,
-    )
+private fun BaseLottie(spec: LottieCompositionSpec) {
+    val composition by rememberLottieComposition(spec)
+    val progress by
+        animateLottieCompositionAsState(composition, iterations = LottieConstants.IterateForever)
     val isLightMode = !isSystemInDarkTheme()
     LottieAnimation(
         composition = composition,
