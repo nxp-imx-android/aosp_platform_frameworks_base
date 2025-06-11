@@ -1582,6 +1582,10 @@ public abstract class OomAdjuster {
                 // Currently the only case is from freeform apps which are not close to top.
                 schedGroup = SCHED_GROUP_FOREGROUND_WINDOW;
                 mAdjType = "vis-multi-window-activity";
+            } else if ((flags
+                    & WindowProcessController.ACTIVITY_STATE_FLAG_OCCLUDED_FREEFORM) != 0) {
+                schedGroup = SCHED_GROUP_BACKGROUND;
+                mAdjType = "occluded-freeform-activity";
             }
             foregroundActivities = true;
             mHasVisibleActivities = true;

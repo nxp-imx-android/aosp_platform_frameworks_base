@@ -601,6 +601,14 @@ public class MockingOomAdjusterTests {
                 SCHED_GROUP_FOREGROUND_WINDOW);
         assertEquals("vis-multi-window-activity", app.mState.getAdjType());
         assertCpuTime(app);
+
+        doReturn(ACTIVITY_STATE_FLAG_IS_VISIBLE
+                | WindowProcessController.ACTIVITY_STATE_FLAG_OCCLUDED_FREEFORM)
+                .when(wpc).getActivityStateFlags();
+        updateOomAdj(app);
+        assertProcStates(app, PROCESS_STATE_TOP, VISIBLE_APP_ADJ, SCHED_GROUP_BACKGROUND);
+        assertEquals("occluded-freeform-activity", app.mState.getAdjType());
+        assertCpuTime(app);
     }
     @SuppressWarnings("GuardedBy")
     @Test
