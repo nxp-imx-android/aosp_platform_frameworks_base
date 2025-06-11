@@ -68,4 +68,33 @@ open class StatsLogWrapper {
             duplexModes,
         )
     }
+
+    open fun internalPrintJob(
+        @UserIdInt printServiceId: Int,
+        finalState: StatsAsyncLogger.InternalFinalStatePrintJobEvent,
+        colorMode: StatsAsyncLogger.InternalColorModePrintJobEvent,
+        duplexMode: StatsAsyncLogger.InternalDuplexModePrintJobEvent,
+        mediaSize: StatsAsyncLogger.InternalMediaSizePrintJobEvent,
+        docType: StatsAsyncLogger.InternalDocumentTypePrintJobEvent,
+        orientation: StatsAsyncLogger.InternalOrientationPrintJobEvent,
+        horizontalDpi: Int,
+        verticalDpi: Int,
+        savedPdf: Boolean,
+        pageCount: Int,
+    ) {
+        PrintSpoolerStatsLog.write(
+            PrintSpoolerStatsLog.FRAMEWORK_PRINT_JOB,
+            finalState.rawValue,
+            colorMode.rawValue,
+            printServiceId,
+            mediaSize.rawValue,
+            horizontalDpi,
+            verticalDpi,
+            orientation.rawValue,
+            duplexMode.rawValue,
+            docType.rawValue,
+            savedPdf,
+            pageCount,
+        )
+    }
 }
