@@ -77,6 +77,7 @@ class DropTargetManager(
     private fun setupDropTarget(view: View?) {
         if (view == null) return
         if (view.parent != null) container.removeView(view)
+        view.tag = getDropViewTag()
         container.addView(view, 0)
         view.alpha = 0f
 
@@ -206,7 +207,10 @@ class DropTargetManager(
 
     private fun onDropTargetRemoved() {
         val action = onDropTargetsRemovedAction ?: return
-        if ((0 until container.childCount).any { container.getChildAt(it) is DropTargetView }) {
+        if ((0 until container.childCount).any {
+                val childView = container.getChildAt(it)
+                childView is DropTargetView && childView.tag == getDropViewTag()
+            }) {
             return
         }
         onDropTargetsRemovedAction = null
@@ -232,6 +236,8 @@ class DropTargetManager(
             return dragZones.firstOrNull { it.contains(x, y) }
         }
     }
+
+    private fun getDropViewTag(): Int = this.hashCode()
 
     private val DraggedObject.initialLocation: BubbleBarLocation?
         get() =
