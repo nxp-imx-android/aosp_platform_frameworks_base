@@ -544,7 +544,7 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
 
         @Override
         public boolean shouldOnlyMirror() {
-            return mProjection != null || ((mFlags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) != 0);
+            return mProjection != null;
         }
 
         public void setSurfaceLocked(Surface surface) {
