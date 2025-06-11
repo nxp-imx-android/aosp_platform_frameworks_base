@@ -18,22 +18,27 @@ package com.android.server.pm;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.content.pm.UserInfo;
 import android.database.ContentObserver;
 import android.multiuser.Flags;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
 import android.util.Log;
 
+import com.android.internal.R;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.am.ActivityManagerService;
 import com.android.server.utils.Slogf;
 import com.android.server.utils.TimingsTraceAndSlog;
 
+import java.io.PrintWriter;
 import java.util.Arrays;
 
 /**
@@ -48,6 +53,13 @@ public final class HsumBootUserInitializer {
     // the binary too much and they're only called during boot). But if the number of Slogf.d()
     // calls grows too much, we should change it to false.
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+
+    /**
+     * Property used to override (for development purposes, on debuggable builds) the resource
+     * configs used by {@link #designateMainUserOnBoot(Context)}
+     */
+    @VisibleForTesting
+    static final String SYSPROP_DESIGNATE_MAIN_USER = "fw.designate_main_user_on_boot";
 
     private final UserManagerService mUms;
     private final ActivityManagerService mAms;
@@ -78,13 +90,13 @@ public final class HsumBootUserInitializer {
     /** Static factory method for creating a {@link HsumBootUserInitializer} instance. */
     public static @Nullable HsumBootUserInitializer createInstance(UserManagerService ums,
             ActivityManagerService ams, PackageManagerService pms, ContentResolver contentResolver,
-            boolean shouldDesignateMainUser, boolean shouldCreateInitialUser) {
+            Context context) {
 
         if (!UserManager.isHeadlessSystemUserMode()) {
             return null;
         }
         return new HsumBootUserInitializer(ums, ams, pms, contentResolver,
-                shouldDesignateMainUser, shouldCreateInitialUser);
+                designateMainUserOnBoot(context), createInitialUserOnBoot(context));
     }
 
     @VisibleForTesting
@@ -319,6 +331,25 @@ public final class HsumBootUserInitializer {
         }
     }
 
+    /** Called by {@code SystemServer.dump()} */
+    public static void dump(PrintWriter pw, Context context) {
+        var res = context.getResources();
+
+        pw.print("Designate main user on boot: ");
+        pw.println(designateMainUserOnBoot(context));
+        pw.print("  config_designateMainUser: ");
+        pw.print(res.getBoolean(R.bool.config_designateMainUser));
+        pw.print(" config_isMainUserPermanentAdmin: ");
+        pw.print(res.getBoolean(R.bool.config_isMainUserPermanentAdmin));
+        pw.print(" " + SYSPROP_DESIGNATE_MAIN_USER + ": ");
+        pw.println(SystemProperties.get(SYSPROP_DESIGNATE_MAIN_USER, "N/A"));
+
+        pw.print("Create initial user on boot: ");
+        pw.println(createInitialUserOnBoot(context));
+        pw.print("  config_createInitialUser: ");
+        pw.println(res.getBoolean(R.bool.config_createInitialUser));
+    }
+
     private void observeDeviceProvisioning() {
         if (isDeviceProvisioned()) {
             return;
@@ -381,5 +412,26 @@ public final class HsumBootUserInitializer {
         if (!started) {
             Slogf.wtf(TAG, "Failed to start user %d in foreground", bootUserId);
         }
+    }
+
+    // Methods below are used to create the parameters used in the factory method and used to be
+    // defined on SystemServer, but were moved here so they can be unit tested, as SystemServer is
+    // not included on FrameworksMockingServicesTests (and besides, it makes more sense to define
+    // the logic here than on SystemServer itself).
+
+    @VisibleForTesting
+    static boolean designateMainUserOnBoot(Context context) {
+        var res = context.getResources();
+        boolean defaultValue = res.getBoolean(R.bool.config_designateMainUser)
+                || res.getBoolean(R.bool.config_isMainUserPermanentAdmin);
+        if (!Build.isDebuggable()) {
+            return defaultValue;
+        }
+        return SystemProperties.getBoolean(SYSPROP_DESIGNATE_MAIN_USER, defaultValue);
+    }
+
+    @VisibleForTesting
+    static boolean createInitialUserOnBoot(Context context) {
+        return context.getResources().getBoolean(R.bool.config_createInitialUser);
     }
 }
