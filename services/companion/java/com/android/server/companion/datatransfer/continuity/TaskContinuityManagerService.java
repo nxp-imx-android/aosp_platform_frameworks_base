@@ -25,7 +25,9 @@ import android.companion.datatransfer.continuity.RemoteTask;
 import android.content.Context;
 import android.util.Slog;
 
+import com.android.server.companion.datatransfer.continuity.handoff.OutboundHandoffRequestController;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
+import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
@@ -47,6 +49,7 @@ public final class TaskContinuityManagerService extends SystemService {
 
     private static final String TAG = "TaskContinuityManagerService";
 
+    private OutboundHandoffRequestController mOutboundHandoffRequestController;
     private TaskContinuityManagerServiceImpl mTaskContinuityManagerService;
     private TaskBroadcaster mTaskBroadcaster;
     private ConnectedAssociationStore mConnectedAssociationStore;
@@ -63,6 +66,7 @@ public final class TaskContinuityManagerService extends SystemService {
 
         mTaskContinuityMessageReceiver = new TaskContinuityMessageReceiver(context);
         mRemoteTaskStore = new RemoteTaskStore(mConnectedAssociationStore);
+        mOutboundHandoffRequestController = new OutboundHandoffRequestController(context);
     }
 
     @Override
@@ -92,8 +96,10 @@ public final class TaskContinuityManagerService extends SystemService {
             int associationId,
             int remoteTaskId,
             @NonNull IHandoffRequestCallback callback) {
-
-            // TODO: joeantonetti - Implement this method.
+            mOutboundHandoffRequestController.requestHandoff(
+                associationId,
+                remoteTaskId,
+                callback);
         }
     }
 
@@ -118,6 +124,11 @@ public final class TaskContinuityManagerService extends SystemService {
                 mRemoteTaskStore.removeTask(
                     associationId,
                     remoteTaskRemovedMessage.taskId());
+                break;
+            case HandoffRequestResultMessage handoffRequestResultMessage:
+                mOutboundHandoffRequestController.onHandoffRequestResultMessageReceived(
+                    associationId,
+                    handoffRequestResultMessage);
                 break;
             default:
                 Slog.w(TAG, "Received unknown message from device: " + associationId);
