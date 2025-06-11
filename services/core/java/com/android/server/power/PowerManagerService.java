@@ -6375,8 +6375,7 @@ public final class PowerManagerService extends SystemService
         public float getBrightnessConstraint(
                 int displayId, @PowerManager.BrightnessConstraint int constraint) {
             DisplayInfo info = null;
-            if (android.companion.virtualdevice.flags.Flags.displayPowerManagerApis()
-                    && mDisplayManagerInternal != null) {
+            if (mDisplayManagerInternal != null) {
                 info = mDisplayManagerInternal.getDisplayInfo(displayId);
             }
             switch (constraint) {

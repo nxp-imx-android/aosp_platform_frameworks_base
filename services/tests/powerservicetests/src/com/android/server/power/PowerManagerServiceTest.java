@@ -1401,9 +1401,7 @@ public class PowerManagerServiceTest {
                 .isEqualTo(expectedNonDefaultGroupWakefullness);
     }
 
-    @EnableFlags({
-            android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER,
-            android.companion.virtualdevice.flags.Flags.FLAG_DISPLAY_POWER_MANAGER_APIS})
+    @EnableFlags(android.companion.virtualdevice.flags.Flags.FLAG_DEVICE_AWARE_DISPLAY_POWER)
     @Test
     public void getBrightnessConstraint_valuesMatchDisplayInfo() {
         final int displayId = 7;
