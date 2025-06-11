@@ -264,6 +264,7 @@ android.os.CancellationSignal
 android.os.ConditionVariable
 android.os.DeadObjectException
 android.os.DeadSystemException
+android.os.Environment
 android.os.FileUtils
 android.os.Handler
 android.os.HandlerExecutor
