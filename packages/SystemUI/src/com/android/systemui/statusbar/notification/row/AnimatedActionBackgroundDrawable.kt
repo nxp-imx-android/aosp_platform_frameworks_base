@@ -240,7 +240,7 @@ class BaseBackgroundDrawable(
         return if (chroma < 5) {
             color
         } else {
-            ColorUtils.M3HCTToColor(hctColor[0], 120f, hctColor[2])
+            ColorUtils.M3HCTToColor(hctColor[0], 70f, hctColor[2])
         }
     }
 }
