@@ -95,7 +95,7 @@ public class RotationButtonController {
     private final UiEventLogger mUiEventLogger = new UiEventLoggerImpl();
     private final ViewRippler mViewRippler = new ViewRippler();
     private final Supplier<Integer> mWindowRotationProvider;
-    private RotationButton mRotationButton;
+    @Nullable private RotationButton mRotationButton;
 
     private boolean mIsRecentsAnimationRunning;
     private boolean mDocked;
@@ -202,6 +202,17 @@ public class RotationButtonController {
         mRotationButton.setUpdatesCallback(updatesCallback);
     }
 
+    private void clearRotationButton() {
+        if (mRotationButton == null) {
+            return;
+        }
+        mRotationButton.setRotationButtonController(null);
+        mRotationButton.setOnClickListener(null);
+        mRotationButton.setOnHoverListener(null);
+        mRotationButton.setUpdatesCallback(null);
+        mRotationButton = null;
+    }
+
     public Context getContext() {
         return mContext;
     }
@@ -231,6 +242,7 @@ public class RotationButtonController {
      */
     public void onDestroy() {
         unregisterListeners();
+        clearRotationButton();
     }
 
     public void registerListeners(boolean registerRotationWatcher) {
@@ -313,6 +325,8 @@ public class RotationButtonController {
     }
 
     void setRotateSuggestionButtonState(final boolean visible, final boolean force) {
+        if (mRotationButton == null) return;
+
         // At any point the button can become invisible because an a11y service became active.
         // Similarly, a call to make the button visible may be rejected because an a11y service is
         // active. Must account for this.
@@ -373,7 +387,9 @@ public class RotationButtonController {
             fadeOut.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mRotationButton.hide();
+                    if (mRotationButton != null) {
+                        mRotationButton.hide();
+                    }
                 }
             });
 
@@ -383,7 +399,9 @@ public class RotationButtonController {
     }
 
     public void setDarkIntensity(float darkIntensity) {
-        mRotationButton.setDarkIntensity(darkIntensity);
+        if (mRotationButton != null) {
+            mRotationButton.setDarkIntensity(darkIntensity);
+        }
     }
 
     public void setRecentsAnimationRunning(boolean running) {
@@ -412,6 +430,10 @@ public class RotationButtonController {
     }
 
     public void onRotationProposal(int rotation, boolean isValid) {
+        if (mRotationButton == null) {
+            return;
+        }
+
         boolean isUserSetupComplete = Settings.Secure.getInt(mContext.getContentResolver(),
                 Settings.Secure.USER_SETUP_COMPLETE, 0) != 0;
         if (!isUserSetupComplete && OEM_DISALLOW_ROTATION_IN_SUW) {
@@ -485,7 +507,7 @@ public class RotationButtonController {
         }
         // The isVisible check makes the rotation button disappear when we are not locked
         // (e.g. for tabletop auto-rotate).
-        if (isRotationLocked || mRotationButton.isVisible()) {
+        if (isRotationLocked || (mRotationButton != null && mRotationButton.isVisible())) {
             // Do not allow a change in rotation to set user rotation when docked.
             if (shouldOverrideUserLockPrefs(rotation) && isRotationLocked && !mDocked) {
                 setRotationAtAngle(true, rotation, /* caller= */
@@ -524,10 +546,9 @@ public class RotationButtonController {
 
     public void onTaskbarStateChange(boolean visible, boolean stashed) {
         mTaskBarVisible = visible;
-        if (getRotationButton() == null) {
-            return;
+        if (mRotationButton != null) {
+            mRotationButton.onTaskbarStateChanged(visible, stashed);
         }
-        getRotationButton().onTaskbarStateChanged(visible, stashed);
     }
 
     private void showPendingRotationButtonIfNeeded() {
@@ -586,6 +607,7 @@ public class RotationButtonController {
                 "%s\tmDarkIconColor=0x%s", prefix, Integer.toHexString(mDarkIconColor)));
     }
 
+    @Nullable
     public RotationButton getRotationButton() {
         return mRotationButton;
     }
@@ -647,7 +669,7 @@ public class RotationButtonController {
             // Don't reschedule if a hide animator is running
             if (mRotateHideAnimator != null && mRotateHideAnimator.isRunning()) return;
             // Don't reschedule if not visible
-            if (!mRotationButton.isVisible()) return;
+            if (mRotationButton == null || !mRotationButton.isVisible()) return;
         }
 
         // Stop any pending removal
