@@ -36,21 +36,21 @@ import android.util.Half;
 import android.util.Log;
 import android.util.proto.ProtoOutputStream;
 import android.view.ThreadedRenderer;
+
 import com.android.server.am.BitmapDumpProto;
+
 import dalvik.annotation.optimization.CriticalNative;
 
 import libcore.util.NativeAllocationRegistry;
 
-import java.io.IOException;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.WeakHashMap;
 
@@ -386,15 +386,18 @@ public final class Bitmap implements Parcelable {
     }
 
     /**
-     * Free the native object associated with this bitmap, and clear the
-     * reference to the pixel data. This will not free the pixel data synchronously;
-     * it simply allows it to be garbage collected if there are no other references.
-     * The bitmap is marked as "dead", meaning it will throw an exception if
-     * getPixels() or setPixels() is called, and will draw nothing. This operation
-     * cannot be reversed, so it should only be called if you are sure there are no
-     * further uses for the bitmap. This is an advanced call, and normally need
-     * not be called, since the normal GC process will free up this memory when
-     * there are no more references to this bitmap.
+     * Immediately releases the pixel data associated with this Bitmap.
+     *
+     * <p>Call this method to release a Bitmap that is certainly no longer needed, such as with a
+     * Bitmap that was created as an intermediate buffer in a transformation. Calling this
+     * method will release the pixel memory immediately, rather than wait for a future Garbage
+     * Collection.
+     * <p>Avoid calling this method on Bitmaps that were used in a View or that may be referenced
+     * elsewhere, as it may be unsafe.
+     *
+     * <p>After calling this method, any subsequent attempt to access the bitmap's pixel data
+     * (e.g., using {@code getPixels()} or {@code setPixels()}) will throw an exception, and the
+     * bitmap will draw nothing. This operation cannot be reversed.
      */
     public void recycle() {
         if (!mRecycled) {
