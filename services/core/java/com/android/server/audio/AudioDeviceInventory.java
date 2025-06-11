@@ -1027,7 +1027,7 @@ public class AudioDeviceInventory {
                     } else if (switchToAvailable) {
                         // device is not already connected
                         if (btInfo.mVolume != -1) {
-                            mDeviceBroker.postSetVolumeIndexOnDevice(AudioSystem.STREAM_MUSIC,
+                            mDeviceBroker.postSetVolumeIndexOnDevice(AudioSystem.STREAM_DEFAULT,
                                     // convert index to internal representation in VolumeStreamState
                                     btInfo.mVolume * 10, btInfo.mAudioSystemDevice,
                                     "onSetBtActiveDevice");
