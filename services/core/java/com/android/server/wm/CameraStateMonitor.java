@@ -26,6 +26,7 @@ import android.os.Handler;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
+import com.android.window.flags.Flags;
 
 /**
  * Class that listens to camera open/closed signals, keeps track of the current apps using camera,
@@ -92,7 +93,9 @@ class CameraStateMonitor {
         mAppCompatCameraStatePolicy = appCompatCameraStatePolicy;
         mWmService = displayContent.mWmService;
         mCameraManager = mWmService.mContext.getSystemService(CameraManager.class);
-        mAppCompatCameraStateStrategy = new AppCompatCameraStateStrategyForPackage(displayContent);
+        mAppCompatCameraStateStrategy = Flags.enableCameraCompatTrackTaskAndAppBugfix()
+                ? new AppCompatCameraStateStrategyForTask(displayContent)
+                : new AppCompatCameraStateStrategyForPackage(displayContent);
     }
 
     /** Starts listening to camera opened/closed signals. */
