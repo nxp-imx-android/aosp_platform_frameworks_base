@@ -16,6 +16,7 @@
 package com.android.systemui.biometrics
 
 import android.content.packageManager
+import android.content.pm.PackageInfo
 import android.content.res.Configuration
 import android.content.testableContext
 import android.hardware.biometrics.BiometricAuthenticator
@@ -69,6 +70,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
+import org.mockito.Mockito.any
 import org.mockito.Mockito.anyBoolean
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.anyLong
@@ -106,6 +108,8 @@ open class AuthContainerViewTest : SysuiTestCase() {
     fun setup() {
         // Set up default logo icon
         whenever(packageManager.getApplicationIcon(OP_PACKAGE_NAME)).thenReturn(defaultLogoIcon)
+        whenever(packageManager.getPackageInfo(any(String::class.java), anyInt()))
+            .thenReturn(PackageInfo())
         context.setMockPackageManager(packageManager)
     }
 
