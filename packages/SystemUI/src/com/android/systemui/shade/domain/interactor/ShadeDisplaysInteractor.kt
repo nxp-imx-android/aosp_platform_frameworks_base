@@ -29,7 +29,7 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.LogLevel
 import com.android.systemui.shade.ShadeDisplayAware
-import com.android.systemui.shade.ShadeDisplayChangeLatencyTracker
+import com.android.systemui.shade.ShadeDisplayChangePerformanceTracker
 import com.android.systemui.shade.ShadeDisplayLog
 import com.android.systemui.shade.ShadeTraceLogger.logMoveShadeWindowTo
 import com.android.systemui.shade.ShadeTraceLogger.t
@@ -72,7 +72,7 @@ constructor(
     @ShadeDisplayAware private val shadeContext: WindowContext,
     @Background private val bgScope: CoroutineScope,
     @Main private val mainThreadContext: CoroutineContext,
-    private val shadeDisplayChangeLatencyTracker: ShadeDisplayChangeLatencyTracker,
+    private val shadeDisplayChangePerformanceTracker: ShadeDisplayChangePerformanceTracker,
     private val shadeExpandedInteractor: ShadeExpandedStateInteractor,
     private val shadeExpansionIntent: ShadeExpansionIntent,
     private val activeNotificationsInteractor: ActiveNotificationsInteractor,
@@ -142,7 +142,7 @@ constructor(
             withContext(mainThreadContext) {
                 traceReparenting {
                     collapseAndExpandShadeIfNeeded(destinationId) {
-                        shadeDisplayChangeLatencyTracker.onShadeDisplayChanging(destinationId)
+                        shadeDisplayChangePerformanceTracker.onShadeDisplayChanging(destinationId)
                         reparentToDisplayId(id = destinationId)
                     }
                     checkContextDisplayMatchesExpected(destinationId)

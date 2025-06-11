@@ -17,15 +17,19 @@
 package com.android.systemui.shade
 
 import com.android.internal.logging.latencyTracker
+import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.scene.ui.view.mockShadeRootView
 import com.android.systemui.shade.domain.interactor.shadeDisplaysWaitInteractor
 
-val Kosmos.shadeDisplayChangeLatencyTracker by Fixture {
-    ShadeDisplayChangeLatencyTracker(
+val Kosmos.shadeDisplayChangePerformanceTracker by Fixture {
+    ShadeDisplayChangePerformanceTracker(
         latencyTracker,
+        mockShadeRootView,
         testScope.backgroundScope,
+        interactionJankMonitor,
         shadeDisplaysWaitInteractor,
     )
 }
