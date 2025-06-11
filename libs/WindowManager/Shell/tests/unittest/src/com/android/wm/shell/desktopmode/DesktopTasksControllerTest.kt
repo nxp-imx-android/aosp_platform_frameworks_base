@@ -4021,15 +4021,6 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = 2)
         }
 
-        // Create a mock for the target display area: second display
-        val secondDisplayArea = DisplayAreaInfo(MockToken().token(), SECOND_DISPLAY, 0)
-        whenever(rootTaskDisplayAreaOrganizer.getDisplayAreaInfo(SECOND_DISPLAY))
-            .thenReturn(secondDisplayArea)
-
-        // Set up external display content
-        val secondaryDisplay = mock(Display::class.java)
-        whenever(displayController.getDisplay(SECOND_DISPLAY)).thenReturn(secondaryDisplay)
-
         desktopState.overrideDesktopModeSupportPerDisplay[SECOND_DISPLAY] =
             isDesktopModeSupportedOnDestination
 
