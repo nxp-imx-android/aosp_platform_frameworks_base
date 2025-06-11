@@ -1903,7 +1903,22 @@ class DesktopTasksController(
     /** Move task to the next display which can host desktop tasks. */
     fun moveToNextDesktopDisplay(taskId: Int) =
         moveToNextDisplay(taskId) { displayId ->
-            desktopState.isDesktopModeSupportedOnDisplay(displayId)
+            if (!desktopState.isDesktopModeSupportedOnDisplay(displayId)) {
+                logD(
+                    "moveToNextDesktopDisplay: Skip displayId=$displayId as desktop mode " +
+                        "is not supported."
+                )
+                return@moveToNextDisplay false
+            }
+            if (!getFocusedNonDesktopTasks(displayId).isEmpty()) {
+                logD(
+                    "moveToNextDesktopDisplay: Skip displayId=$displayId as the focused " +
+                        "task is not desktop task focused non desktop tasks."
+                )
+                return@moveToNextDisplay false
+            }
+            logD("moveToNextDesktopDisplay: Choose displayId=$displayId for the next display.")
+            return@moveToNextDisplay true
         }
 
     /**
