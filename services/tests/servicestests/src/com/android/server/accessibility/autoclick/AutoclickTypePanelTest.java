@@ -122,39 +122,40 @@ public class AutoclickTypePanelTest {
     }
 
     @Test
-    public void AutoclickTypePanel_initialState_expandedFalse() {
-        assertThat(mAutoclickTypePanel.getExpansionStateForTesting()).isFalse();
-    }
-
-    @Test
-    public void AutoclickTypePanel_initialState_correctButtonVisibility() {
-        // On initialization, only left button is visible.
-        assertThat(mLeftClickButton.getVisibility()).isEqualTo(View.VISIBLE);
-        assertThat(mRightClickButton.getVisibility()).isEqualTo(View.GONE);
-        assertThat(mDoubleClickButton.getVisibility()).isEqualTo(View.GONE);
-        assertThat(mDragButton.getVisibility()).isEqualTo(View.GONE);
-        assertThat(mScrollButton.getVisibility()).isEqualTo(View.GONE);
-        assertThat(mLongPressButton.getVisibility()).isEqualTo(View.GONE);
-        assertThat(mPauseButton.getVisibility()).isEqualTo(View.VISIBLE);
-    }
-
-    @Test
-    public void AutoclickTypePanel_initialState_correctButtonStyle() {
-        verifyButtonHasSelectedStyle(mLeftClickButton);
-    }
-
-    @Test
-    public void togglePanelExpansion_onClick_expandedTrue() {
-        // On clicking left click button, the panel is expanded and all buttons are visible.
-        mLeftClickButton.callOnClick();
-
+    public void autoclickTypePanel_initialState_expandedTrue() {
         assertThat(mAutoclickTypePanel.getExpansionStateForTesting()).isTrue();
+    }
+
+    @Test
+    public void autoclickTypePanel_initialState_correctButtonVisibility() {
+        // On initialization, all buttons are visible.
         assertThat(mLeftClickButton.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mRightClickButton.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mDoubleClickButton.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mDragButton.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mScrollButton.getVisibility()).isEqualTo(View.VISIBLE);
         assertThat(mLongPressButton.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mPauseButton.getVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
+    public void autoclickTypePanel_initialState_correctButtonStyle() {
+        verifyButtonHasSelectedStyle(mLeftClickButton);
+    }
+
+    @Test
+    public void togglePanelExpansion_onClick_expandedTrue() {
+        // On clicking left click button, the panel is collapsed and only left click
+        // button is visible.
+        mLeftClickButton.callOnClick();
+
+        assertThat(mAutoclickTypePanel.getExpansionStateForTesting()).isFalse();
+        assertThat(mLeftClickButton.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mRightClickButton.getVisibility()).isEqualTo(View.GONE);
+        assertThat(mDoubleClickButton.getVisibility()).isEqualTo(View.GONE);
+        assertThat(mDragButton.getVisibility()).isEqualTo(View.GONE);
+        assertThat(mScrollButton.getVisibility()).isEqualTo(View.GONE);
+        assertThat(mLongPressButton.getVisibility()).isEqualTo(View.GONE);
 
         // Pause button is always visible.
         assertThat(mPauseButton.getVisibility()).isEqualTo(View.VISIBLE);
@@ -162,8 +163,7 @@ public class AutoclickTypePanelTest {
 
     @Test
     public void togglePanelExpansion_onClickAgain_expandedFalse() {
-        // By first click, the panel is expanded.
-        mLeftClickButton.callOnClick();
+        // On init, the panel is expanded.
         assertThat(mAutoclickTypePanel.getExpansionStateForTesting()).isTrue();
 
         // Clicks any button in the expanded state, the panel is expected to collapse
@@ -195,9 +195,6 @@ public class AutoclickTypePanelTest {
 
     @Test
     public void togglePanelExpansion_selectButton_correctActiveClickType() {
-        // By first click, the panel is expanded.
-        mLeftClickButton.callOnClick();
-
         // Clicks any button in the expanded state to select a type button.
         mScrollButton.callOnClick();
 
