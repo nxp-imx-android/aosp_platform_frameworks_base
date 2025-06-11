@@ -4283,8 +4283,13 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             }
             updateSurfaceBounds(mSplitLayout, finishT,
                     false /* applyResizingOffset */);
+            final SurfaceControl leash = mSplitLayout.getDividerLeash();
+            if (leash == null || !leash.isValid()) {
+                Slog.w(TAG, "divider leash was released or not be created!");
+                return;
+            }
             // TODO: b/393217881 - replace DEFAULT DISPLAY with the current display id
-            finishT.reparent(mSplitLayout.getDividerLeash(),
+            finishT.reparent(leash,
                     mSplitMultiDisplayHelper.getDisplayRootTaskLeash(DEFAULT_DISPLAY));
             setDividerVisibility(true, finishT);
             return;
