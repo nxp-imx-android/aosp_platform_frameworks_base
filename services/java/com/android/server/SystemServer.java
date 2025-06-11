@@ -940,12 +940,10 @@ public final class SystemServer implements Dumpable {
             SystemServerInitThreadPool tp = SystemServerInitThreadPool.start();
             mDumper.addDumpable(tp);
 
-            if (android.server.Flags.earlySystemConfigInit()) {
-                // SystemConfig init is expensive, so enqueue the work as early as possible to allow
-                // concurrent execution before it's needed (typically by ActivityManagerService).
-                // As native library loading is also expensive, this is a good place to start.
-                startSystemConfigInit(t);
-            }
+            // SystemConfig init is expensive, so enqueue the work as early as possible to allow
+            // concurrent execution before it's needed (typically by ActivityManagerService).
+            // As native library loading is also expensive, this is a good place to start.
+            startSystemConfigInit(t);
 
             // Initialize native services.
             System.loadLibrary("android_servers");
@@ -1192,12 +1190,6 @@ public final class SystemServer implements Dumpable {
         watchdog.start();
         mDumper.addDumpable(watchdog);
         t.traceEnd();
-
-        // Legacy entry point for starting SystemConfig init, only needed if the early init flag is
-        // disabled and we haven't already triggered init before bootstrap services.
-        if (!android.server.Flags.earlySystemConfigInit()) {
-            startSystemConfigInit(t);
-        }
 
         // Orchestrates some ProtoLogging functionality.
         if (android.tracing.Flags.clientSideProtoLogging()) {
