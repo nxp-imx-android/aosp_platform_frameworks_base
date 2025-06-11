@@ -1729,21 +1729,24 @@ public final class Settings {
      * In some cases, a matching Activity may not exist, so ensure you
      * safeguard against this.
      * <p>
+     * This intent is designed to be handled by a system component. To securely launch this intent,
+     * resolve the intent to a system application and verify that its priority is higher than the
+     * default value (0). This prevents other apps from intercepting the intent. If multiple system
+     * applications can handle this intent, the component with the highest priority will be
+     * launched.
+     * <p>
+     * For example:
+     * <pre>
+     * final PackageManager pm = context.getPackageManager();
+     * final Intent intent = new Intent(Settings.ACTION_SYSTEM_UPDATE_SETTINGS);
+     * final List&lt;ResolveInfo&gt; resolveInfos =
+     *         pm.queryIntentActivities(intent, PackageManager.MATCH_SYSTEM_ONLY);
+     * // ... find the ResolveInfo with the highest priority, ensure it's > 0, and launch it.
+     * </pre>
+     * <p>
      * Input: Nothing.
      * <p>
      * Output: Nothing.
-     *
-     * <p>To prevent interception by third-party applications, system settings apps should implement
-     * the system update functionality that must set a priority higher than default value (0).
-     * Example:
-     *
-     * <pre>{@code
-     * <Activity android:name=".MySystemUpdate">
-     *     <intent-filter android:priority="1">
-     *         <action android:name="android.settings.SYSTEM_UPDATE_SETTINGS" />
-     *     </intent-filter>
-     * </Activity>
-     * }</pre>
      */
     @FlaggedApi(Flags.FLAG_EXPOSE_SYSTEM_UPDATE_SETTINGS)
     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
