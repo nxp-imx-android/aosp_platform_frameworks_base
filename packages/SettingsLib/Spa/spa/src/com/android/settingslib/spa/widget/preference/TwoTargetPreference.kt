@@ -41,7 +41,7 @@ import com.android.settingslib.spa.framework.util.wrapOnClickWithLog
 @Composable
 internal fun TwoTargetPreference(
     title: String,
-    summary: () -> String,
+    summary: () -> CharSequence,
     primaryEnabled: () -> Boolean = { true },
     primaryOnClick: (() -> Unit)?,
     icon: @Composable (() -> Unit)? = null,

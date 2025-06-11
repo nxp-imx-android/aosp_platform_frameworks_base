@@ -151,11 +151,11 @@ internal class RestrictedSwitchPreferenceModel(
 
         fun getSummary(
             context: Context,
-            summaryIfNoRestricted: () -> String,
+            summaryIfNoRestricted: () -> CharSequence,
             checkedIfNoRestricted: () -> Boolean?,
             checkedIfBlockedByAdmin: Boolean? = null,
             restrictedModeSupplier: () -> RestrictedMode?,
-        ): () -> String = {
+        ): () -> CharSequence = {
             when (val restrictedMode = restrictedModeSupplier()) {
                 is NoRestricted -> summaryIfNoRestricted()
                 is BaseUserRestricted ->

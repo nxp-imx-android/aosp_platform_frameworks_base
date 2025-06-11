@@ -48,7 +48,7 @@ interface SwitchPreferenceModel {
     /**
      * The summary of this [SwitchPreference].
      */
-    val summary: () -> String
+    val summary: () -> CharSequence
         get() = { "" }
 
     /**
@@ -109,7 +109,7 @@ internal fun SwitchPreference(model: SwitchPreferenceModel, modifier: Modifier) 
 internal fun InternalSwitchPreference(
     title: String,
     modifier: Modifier = Modifier,
-    summary: () -> String = { "" },
+    summary: () -> CharSequence = { "" },
     icon: @Composable (() -> Unit)? = null,
     checked: Boolean?,
     changeable: Boolean = true,

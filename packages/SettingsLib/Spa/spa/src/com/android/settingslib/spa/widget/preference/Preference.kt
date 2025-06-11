@@ -71,7 +71,7 @@ interface PreferenceModel {
     /**
      * The summary of this [Preference].
      */
-    val summary: () -> String
+    val summary: () -> CharSequence
         get() = { "" }
 
     /**
