@@ -63,6 +63,8 @@ class DragToBubbleController(
 
     @VisibleForTesting
     val dragZoneFactory = createDragZoneFactory()
+    @VisibleForTesting
+    var isDropHandled = false
     private var lastDragZone: DragZone? = null
 
     /** Returns the container view in which drop targets are added. */
@@ -73,6 +75,7 @@ class DragToBubbleController(
         if (!BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             return
         }
+        isDropHandled = false
         val draggedObject = LauncherIcon(bubbleBarHasBubbles = true) {}
         val dragZones = dragZoneFactory.createSortedDragZones(draggedObject)
         dropTargetManager.onDragStarted(draggedObject, dragZones)
@@ -91,6 +94,7 @@ class DragToBubbleController(
     /** Called when the item with the [ShortcutInfo] is dropped over the bubble bar drop target. */
     fun onItemDropped(shortcutInfo: ShortcutInfo) {
         val dropLocation = lastDragZone?.getBubbleBarLocation() ?: return
+        isDropHandled = true
         bubbleController.expandStackAndSelectBubble(shortcutInfo, dropLocation)
     }
 
@@ -100,6 +104,7 @@ class DragToBubbleController(
      */
     fun onItemDropped(pendingIntent: PendingIntent, userHandle: UserHandle) {
         val dropLocation = lastDragZone?.getBubbleBarLocation() ?: return
+        isDropHandled = true
         bubbleController.expandStackAndSelectBubble(pendingIntent, userHandle, dropLocation)
     }
 
@@ -135,12 +140,10 @@ class DragToBubbleController(
 
             override fun hasBubbles(): Boolean = bubbleController.hasBubbles()
 
-            override fun animateBubbleBarLocation(bubbleBarLocation: BubbleBarLocation) {
-                bubbleController.animateBubbleBarLocation(bubbleBarLocation)
-            }
-
-            override fun bubbleBarPillowShownAtLocation(bubbleBarLocation: BubbleBarLocation?) {
-                bubbleController.showBubbleBarPinAtLocation(bubbleBarLocation)
+            override fun onDragEnteredLocation(bubbleBarLocation: BubbleBarLocation?) {
+                // if drop was handled, do not need to send signal to launcher
+                if (isDropHandled) return
+                bubbleController.showBubbleBarDropTargetAt(bubbleBarLocation)
             }
         })
 }
