@@ -53,4 +53,7 @@ interface MagneticRowListener {
 
     /** Can the row be dismissed. */
     fun canRowBeDismissed(): Boolean
+
+    /** Get the logging key associated with this [MagneticRowListener] */
+    fun getRowLoggingKey(): String
 }
