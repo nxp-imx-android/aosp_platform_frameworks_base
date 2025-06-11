@@ -1293,6 +1293,7 @@ public final class RemoteSelectionToolbar {
 
                     newMenuItem.groupId = menuItem.groupId;
                     newMenuItem.priority = menuItem.priority;
+                    newMenuItem.itemIndex = menuItem.itemIndex;
 
                     newMenuItem.itemId = android.R.id.paste;
                     newMenuItem.title = context.getString(R.string.paste);
@@ -1305,6 +1306,7 @@ public final class RemoteSelectionToolbar {
 
                     newMenuItem.groupId = menuItem.groupId;
                     newMenuItem.priority = menuItem.priority;
+                    newMenuItem.itemIndex = menuItem.itemIndex;
 
                     newMenuItem.itemId = android.R.id.pasteAsPlainText;
                     newMenuItem.title = context.getString(R.string.paste_as_plain_text);
