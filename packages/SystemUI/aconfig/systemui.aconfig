@@ -2047,3 +2047,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "hub_blurred_by_shade_fix"
+    namespace: "systemui"
+    description: "Fixes the blurring issue on hub after the shade is pulled down slightly."
+    bug: "412261838"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}

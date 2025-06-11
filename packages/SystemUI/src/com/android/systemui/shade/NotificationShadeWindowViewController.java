@@ -17,6 +17,7 @@
 package com.android.systemui.shade;
 
 import static com.android.systemui.Flags.communalShadeTouchHandlingFixes;
+import static com.android.systemui.Flags.hubBlurredByShadeFix;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.DREAMING;
 import static com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN;
 import static com.android.systemui.statusbar.StatusBarState.KEYGUARD;
@@ -155,6 +156,11 @@ public class NotificationShadeWindowViewController implements Dumpable {
      * True if we are in the process of handling an external touch event.
      */
     private boolean mHandlingExternalTouch = false;
+    /**
+     * True if drag down helper intercepted and we're in the dragging process.
+     */
+    private boolean mUseDragDownHelperForTouch = false;
+
     private boolean mIsTrackingBarGesture = false;
     private boolean mIsOcclusionTransitionRunning = false;
     private DisableSubpixelTextTransitionListener mDisableSubpixelTextTransitionListener;
@@ -344,6 +350,13 @@ public class NotificationShadeWindowViewController implements Dumpable {
             if (!mView.dispatchTouchEvent(event)) {
                 return;
             }
+            if (hubBlurredByShadeFix()) {
+                // When the DragDownHelper has already initiated a drag of the shade over the hub,
+                // just send the touch. If onInterceptTouchEvent is called again mid-drag, it can
+                // lead to ACTION_UP being ignored, causing the shade to become stuck.
+                mExternalTouchIntercepted = mUseDragDownHelperForTouch
+                        && mDragDownHelper.isDraggingDown();
+            }
             if (!mExternalTouchIntercepted) {
                 mExternalTouchIntercepted = mView.onInterceptTouchEvent(event);
             }
@@ -363,7 +376,6 @@ public class NotificationShadeWindowViewController implements Dumpable {
         mView.setLayoutInsetsController(mNotificationInsetsController);
         mView.setWindowRootViewKeyEventHandler(mWindowRootViewKeyEventHandler);
         mView.setInteractionEventHandler(new NotificationShadeWindowView.InteractionEventHandler() {
-            boolean mUseDragDownHelperForTouch = false;
             boolean mLastInterceptWasDragDownHelper = false;
 
             @Override
