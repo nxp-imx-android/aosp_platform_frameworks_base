@@ -33,6 +33,8 @@ import android.app.WindowConfiguration.WindowingMode;
 import android.content.pm.ActivityInfo.WindowLayout;
 import android.graphics.Rect;
 
+import com.android.internal.policy.DesktopModeCompatPolicy;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
@@ -67,7 +69,8 @@ class LaunchParamsController {
     void registerDefaultModifiers(ActivityTaskSupervisor supervisor) {
         // {@link TaskLaunchParamsModifier} handles window layout preferences.
         registerModifier(new TaskLaunchParamsModifier(supervisor));
-        registerModifier(new DesktopModeLaunchParamsModifier(mService.mContext, supervisor));
+        registerModifier(new DesktopModeLaunchParamsModifier(mService.mContext, supervisor,
+                new DesktopModeCompatPolicy(mService.mContext)));
     }
 
     /**

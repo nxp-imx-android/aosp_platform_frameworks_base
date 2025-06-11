@@ -38,6 +38,7 @@ import android.window.DesktopModeFlags;
 import android.window.SystemPerformanceHinter;
 
 import com.android.internal.logging.UiEventLogger;
+import com.android.internal.policy.DesktopModeCompatPolicy;
 import com.android.launcher3.icons.IconProvider;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.ProtoLogController;
@@ -121,7 +122,6 @@ import com.android.wm.shell.shared.annotations.ShellMainThread;
 import com.android.wm.shell.shared.annotations.ShellSplashscreenThread;
 import com.android.wm.shell.shared.desktopmode.DesktopConfig;
 import com.android.wm.shell.shared.desktopmode.DesktopConfigImpl;
-import com.android.wm.shell.shared.desktopmode.DesktopModeCompatPolicy;
 import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.shared.desktopmode.DesktopStateImpl;
 import com.android.wm.shell.splitscreen.SplitScreen;

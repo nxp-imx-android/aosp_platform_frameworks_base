@@ -1426,6 +1426,11 @@ class Task extends TaskFragment {
         return (topTask != this && topTask != null) ? topTask.getBaseIntent() : null;
     }
 
+    /** Returns the user id associated with the current task. */
+    int getUserId() {
+        return isLeafTask() ? mUserId : mCurrentUser;
+    }
+
     /**
      * Returns the package name which stands for this task. It is empty string if no activities
      * have been added to this task.
@@ -3400,7 +3405,7 @@ class Task extends TaskFragment {
         info.addLaunchCookie(mLaunchCookie);
         final ActivityRecord top = mTaskSupervisor.mTaskInfoHelper.fillAndReturnTop(this, info);
 
-        info.userId = isLeafTask() ? mUserId : mCurrentUser;
+        info.userId = getUserId();
         info.taskId = mTaskId;
         info.effectiveUid = effectiveUid;
         info.displayId = getDisplayId();
