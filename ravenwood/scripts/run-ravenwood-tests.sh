@@ -204,4 +204,4 @@ if (( ! $build_only )) ; then
     done
 fi
 
-run $dry_run ${ATEST:-atest} $atest_opts "${targets[@]}" "${extra_args[@]}"
+run $dry_run ${ATEST:-atest} --class-level-report $atest_opts "${targets[@]}" "${extra_args[@]}"
