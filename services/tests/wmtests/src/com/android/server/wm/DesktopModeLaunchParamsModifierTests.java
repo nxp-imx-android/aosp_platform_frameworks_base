@@ -197,6 +197,28 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    public void testHomeActivitiesForcedToFullscreenWithoutTask() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final DisplayContent display = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchWindowingMode(WINDOWING_MODE_FREEFORM);
+        options.setLaunchDisplayId(display.mDisplayId);
+        final Task task = new TaskBuilder(mSupervisor).build();
+        final ActivityRecord activity = createActivity(display, SCREEN_ORIENTATION_PORTRAIT,
+                task, /* ignoreOrientationRequest */ true, /* isResizeable */ false,
+                HOME_ACTIVITIES);
+
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(null).setOptions(options)
+                .setActivity(activity).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS)
     public void testHomeActivitiesForcedToFullscreen() {
         setupDesktopModeLaunchParamsModifier();
@@ -210,6 +232,30 @@ public class DesktopModeLaunchParamsModifierTests extends
 
         assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(task).setActivity(
                 activity).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    public void testSystemUIActivitiesForcedToFullscreenWithoutTask() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final DisplayContent display = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchWindowingMode(WINDOWING_MODE_FREEFORM);
+        options.setLaunchDisplayId(display.mDisplayId);
+        final Task task = new TaskBuilder(mSupervisor).build();
+        final ComponentName sysUiComponent = new ComponentName(
+                mContext.getResources().getString(R.string.config_systemUi), "");
+        final ActivityRecord activity = createActivity(display, SCREEN_ORIENTATION_PORTRAIT,
+                task, /* ignoreOrientationRequest */ true, /* isResizeable */ false,
+                sysUiComponent);
+
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(null)
+                .setOptions(options).setActivity(activity).calculate());
         assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
     }
 
@@ -233,6 +279,28 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    public void testTransparentActivitiesWithPlatformSignatureForcedToFullscreenWithoutTask() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final DisplayContent display = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchWindowingMode(WINDOWING_MODE_FREEFORM);
+        options.setLaunchDisplayId(display.mDisplayId);
+        mActivity.setOccludesParent(false);
+        mActivity.info.applicationInfo = new ApplicationInfo();
+        mActivity.info.applicationInfo.privateFlags =
+                ApplicationInfo.PRIVATE_FLAG_SIGNED_WITH_PLATFORM_KEY;
+
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(null).setOptions(options)
+                .calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS)
     public void testTransparentActivitiesWithPlatformSignatureForcedToFullscreen() {
         setupDesktopModeLaunchParamsModifier();
@@ -246,6 +314,28 @@ public class DesktopModeLaunchParamsModifierTests extends
                 ApplicationInfo.PRIVATE_FLAG_SIGNED_WITH_PLATFORM_KEY;
 
         assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(task).calculate());
+        assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS})
+    public void testTransparentActivitiesWithPermissionForcedToFullscreenWithoutTask()
+            throws PackageManager.NameNotFoundException {
+        setupDesktopModeLaunchParamsModifier();
+
+        final DisplayContent display = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS, WINDOWING_MODE_FREEFORM);
+
+        final ActivityOptions options = ActivityOptions.makeBasic();
+        options.setLaunchWindowingMode(WINDOWING_MODE_FREEFORM);
+        options.setLaunchDisplayId(display.mDisplayId);
+        mActivity.setOccludesParent(false);
+        allowOverlayPermissionForAllUsers(
+                new String[]{android.Manifest.permission.SYSTEM_ALERT_WINDOW});
+
+        assertEquals(RESULT_DONE, new CalculateRequestBuilder().setTask(null).setOptions(options)
+                .calculate());
         assertEquals(WINDOWING_MODE_FULLSCREEN, mResult.mWindowingMode);
     }
 
