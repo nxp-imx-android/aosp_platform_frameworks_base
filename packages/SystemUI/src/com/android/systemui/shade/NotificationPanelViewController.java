@@ -1156,19 +1156,21 @@ public final class NotificationPanelViewController implements
     }
 
     private void updateClockAppearance() {
-        mKeyguardClockInteractor.setClockSize(computeDesiredClockSize());
-        updateKeyguardStatusViewAlignment();
+        postToView(() -> {
+            mKeyguardClockInteractor.setClockSize(computeDesiredClockSize());
+            updateKeyguardStatusViewAlignment();
 
-        float darkAmount =
-                mScreenOffAnimationController.shouldExpandNotifications()
-                        ? 1.0f : mInterpolatedDarkAmount;
+            float darkAmount =
+                    mScreenOffAnimationController.shouldExpandNotifications()
+                            ? 1.0f : mInterpolatedDarkAmount;
 
-        mClockPositionAlgorithm.setup(
-                darkAmount, mOverStretchAmount,
-                mKeyguardBypassController.getBypassEnabled(),
-                mQsController.getHeaderHeight(),
-                mSplitShadeEnabled);
-        mClockPositionAlgorithm.run(mClockPositionResult);
+            mClockPositionAlgorithm.setup(
+                    darkAmount, mOverStretchAmount,
+                    mKeyguardBypassController.getBypassEnabled(),
+                    mQsController.getHeaderHeight(),
+                    mSplitShadeEnabled);
+            mClockPositionAlgorithm.run(mClockPositionResult);
+        });
     }
 
     KeyguardClockPositionAlgorithm.Result getClockPositionResult() {
