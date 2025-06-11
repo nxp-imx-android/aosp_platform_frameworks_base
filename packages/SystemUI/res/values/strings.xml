@@ -4397,6 +4397,26 @@
         All Quick Settings tiles will reset to the device’s original settings
     </string>
 
+    <!-- Title of the first time usage tooltip of the "ambientcue" area. [CHAR LIMIT=NONE] -->
+    <string name="ambientcue_first_time_edu_title">
+        Get helpful suggestions
+    </string>
+
+    <!-- Text of the first time usage tooltip of the "ambientcue" area. [CHAR LIMIT=NONE] -->
+    <string name="ambientcue_first_time_edu_text">
+        We use AI to proactively suggest info and actions relevant to what you’re doing on screen
+    </string>
+
+
+    <!-- Description of the icon on the educational tooltip. [CHAR LIMIT=NONE] -->
+    <string name="ambientcue_first_time_edu_icon_description">
+        Icon
+    </string>
+
+    <!-- Tooltip suggesting that user can long press on a suggestion to see data sources. [CHAR LIMIT=NONE] -->
+    <string name="ambientcue_long_press_edu_text">
+        Touch &amp; hold to see how suggestions are generated
+    </string>
 
     <!-- Content of interstitial shown after user revokes app permission to post Live Updates. [CHAR LIMIT=NONE] -->
     <string name="demote_explain_text">

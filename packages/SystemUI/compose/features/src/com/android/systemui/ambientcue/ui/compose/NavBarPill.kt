@@ -29,6 +29,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -87,6 +88,7 @@ fun NavBarPill(
     modifier: Modifier = Modifier,
     visible: Boolean = true,
     expanded: Boolean = false,
+    showEducation: Boolean = false,
     onClick: () -> Unit = {},
     onCloseClick: () -> Unit = {},
 ) {
@@ -151,7 +153,9 @@ fun NavBarPill(
             fontWeight = if (isBoldTextEnabled) FontWeight.Bold else FontWeight.Medium
         )
 
-    Box(
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Bottom,
         modifier =
             modifier.defaultMinSize(minWidth = 412.dp, minHeight = 50.dp).drawBehind {
                 // SmartScrim
@@ -173,8 +177,11 @@ fun NavBarPill(
                         )
                     }
                 }
-            }
+            },
     ) {
+        if (visible && !expanded && showEducation) {
+            FirstTimeEducation(Alignment.CenterHorizontally)
+        }
         Row(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -190,7 +197,6 @@ fun NavBarPill(
                                 1f
                             }
                     }
-                    .align(Alignment.BottomCenter)
                     .padding(bottom = 4.dp),
         ) {
             val closeButtonSize = 28.dp
@@ -244,6 +250,7 @@ fun NavBarPill(
                                 // Expanded chip for single action or MR
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
                                     modifier =
                                         Modifier.padding(end = 3.dp)
                                             .clip(RoundedCornerShape(16.dp))

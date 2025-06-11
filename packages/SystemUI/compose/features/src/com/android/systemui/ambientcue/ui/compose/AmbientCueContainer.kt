@@ -131,6 +131,7 @@ private fun TaskBarAnd3ButtonAmbientCue(
         expanded = expanded,
         horizontalAlignment = Alignment.End,
         onDismiss = { viewModel.collapse() },
+        showEducation = viewModel.showLongPressEducation,
         modifier =
             modifier.graphicsLayer {
                 translationX = screenWidthPx - size.width
@@ -201,6 +202,7 @@ private fun NavBarAmbientCue(
         visible = visible,
         expanded = expanded,
         onDismiss = { viewModel.collapse() },
+        showEducation = viewModel.showLongPressEducation,
         modifier = modifier,
         padding =
             PaddingValues(
@@ -214,6 +216,7 @@ private fun NavBarAmbientCue(
         navBarWidth = navBarWidth,
         visible = visible,
         expanded = expanded,
+        showEducation = viewModel.showFirstTimeEducation,
         modifier = modifier,
         onClick = { viewModel.expand() },
         onCloseClick = { viewModel.hide() },

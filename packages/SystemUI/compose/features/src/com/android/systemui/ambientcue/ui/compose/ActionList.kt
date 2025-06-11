@@ -21,9 +21,15 @@ import android.os.VibrationEffect.Composition.PRIMITIVE_LOW_TICK
 import android.os.VibrationEffect.Composition.PRIMITIVE_THUD
 import android.os.VibrationEffect.Composition.PRIMITIVE_TICK
 import android.os.Vibrator
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
@@ -36,8 +42,11 @@ import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -53,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
@@ -60,8 +70,12 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.android.systemui.ambientcue.ui.compose.modifier.eduBalloon
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
+import com.android.systemui.res.R
 import kotlin.math.abs
 import kotlin.math.max
 import kotlinx.coroutines.flow.drop
@@ -72,6 +86,7 @@ fun ActionList(
     visible: Boolean,
     expanded: Boolean,
     onDismiss: () -> Unit,
+    showEducation: Boolean = false,
     modifier: Modifier = Modifier,
     padding: PaddingValues = PaddingValues(0.dp),
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
@@ -273,6 +288,16 @@ fun ActionList(
         verticalArrangement = Arrangement.spacedBy(columnSpacing, Alignment.Bottom),
         horizontalAlignment = horizontalAlignment,
     ) {
+        if (showEducation && expanded) {
+            AnimatedVisibility(
+                visible = progress == 1f,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut(),
+            ) {
+                EducationTooltip(horizontalAlignment)
+            }
+        }
+
         val childHeights = remember(actions) { MutableList(actions.size) { 0 } }
         actions.forEachIndexed { index, action ->
             val scale by
@@ -315,5 +340,28 @@ fun ActionList(
                         },
             )
         }
+    }
+}
+
+@Composable
+private fun EducationTooltip(horizontalAlignment: Alignment.Horizontal) {
+    val backgroundColor = MaterialTheme.colorScheme.tertiary
+    val foregroundColor = MaterialTheme.colorScheme.onTertiary
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        modifier = Modifier.eduBalloon(backgroundColor, horizontalAlignment),
+    ) {
+        Image(
+            painter = painterResource(R.drawable.ic_ambientcue_hold_tooltip),
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(foregroundColor),
+            modifier = Modifier.size(32.dp),
+        )
+        Text(
+            text = stringResource(R.string.ambientcue_long_press_edu_text),
+            style = MaterialTheme.typography.labelLarge,
+            color = foregroundColor,
+        )
     }
 }

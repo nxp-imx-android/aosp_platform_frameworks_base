@@ -37,6 +37,7 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
+import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -251,6 +252,49 @@ class AmbientCueViewModelTest : SysuiTestCase() {
                 .isInstanceOf(PillStyleViewModel.ShortPillStyle::class.java)
         }
 
+    @Test
+    fun showFirstTimeEducation_expanded_false() =
+        kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
+            initializeIsVisible()
+            assertThat(viewModel.showFirstTimeEducation).isTrue()
+            viewModel.expand()
+            runCurrent()
+            assertThat(viewModel.showFirstTimeEducation).isFalse()
+        }
+
+    @Test
+    fun showFirstTimeEducation_hidden_false() =
+        kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
+            initializeIsVisible()
+            assertThat(viewModel.showFirstTimeEducation).isTrue()
+            viewModel.hide()
+            runCurrent()
+            assertThat(viewModel.showFirstTimeEducation).isFalse()
+        }
+
+    @Test
+    fun showLongPressEducation_in7days() =
+        kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
+            // Shouldn't show immediately
+            initializeIsVisible()
+            assertThat(viewModel.showLongPressEducation).isFalse()
+            viewModel.hide()
+
+            // But would be triggered in 7 days
+            fakeSystemClock.advanceTime(SEVEN_DAYS_MS * 1000000L)
+            initializeIsVisible()
+            assertThat(viewModel.showLongPressEducation).isTrue()
+
+            // And never again
+            viewModel.expand()
+            viewModel.collapse()
+            runCurrent()
+            assertThat(viewModel.showLongPressEducation).isFalse()
+        }
+
     private fun testActions(applicationContext: Context) =
         listOf(
             ActionModel(
@@ -275,5 +319,9 @@ class AmbientCueViewModelTest : SysuiTestCase() {
         ambientCueInteractor.setImeVisible(false)
         ambientCueRepository.fake.updateRootViewAttached()
         runCurrent()
+    }
+
+    private companion object {
+        private const val SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000L
     }
 }
