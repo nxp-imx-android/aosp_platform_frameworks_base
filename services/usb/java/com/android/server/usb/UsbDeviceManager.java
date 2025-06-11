@@ -541,7 +541,12 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
 
         int operationId = sUsbOperationCount.incrementAndGet();
 
-        mAccessoryStrings = nativeGetAccessoryStrings();
+        if (android.hardware.usb.flags.Flags.enableAoaUserspaceImplementation()) {
+            mAccessoryStrings = nativeGetAccessoryStringsFromFfs();
+        } else {
+            mAccessoryStrings = nativeGetAccessoryStrings();
+        }
+
         // don't start accessory mode if our mandatory strings have not been set
         boolean enableAccessory = (mAccessoryStrings != null &&
                 mAccessoryStrings[UsbAccessory.MANUFACTURER_STRING] != null &&
@@ -2761,6 +2766,8 @@ public class UsbDeviceManager implements ActivityTaskManagerInternal.ScreenObser
     }
 
     private native String[] nativeGetAccessoryStrings();
+
+    private native String[] nativeGetAccessoryStringsFromFfs();
 
     private native ParcelFileDescriptor nativeOpenAccessory();
 
