@@ -6508,10 +6508,6 @@
         to match what the apps most likely expect in their requested orientation. -->
     <bool name="config_isCameraCompatSimulateRequestedOrientationTreatmentEnabled">true</bool>
 
-    <!-- Which aspect ratio to use when camera compat treatment is enabled and an activity eligible
-        for treatment is connected to the camera. -->
-    <item name="config_windowManagerCameraCompatAspectRatio" format="float" type="dimen">1.0</item>
-
     <!-- Docking is a uiMode configuration change and will cause activities to relaunch if it's not
          handled. If true, the configuration change will be sent but activities will not be
          relaunched upon docking. Apps with desk resources will behave like normal, since they may

@@ -47,6 +47,8 @@ final class AppCompatConfiguration {
 
     private static final boolean DEFAULT_VALUE_ENABLE_CAMERA_COMPAT_TREATMENT = true;
 
+    private static final float DEFAULT_VALUE_CAMERA_COMPAT_MIN_ASPECT_RATIO = 16 / 9f;
+
     // Whether enabling rotation compat policy for immersive apps that prevents auto
     // rotation into non-optimal screen orientation while in fullscreen. This is needed
     // because immersive apps, such as games, are often not optimized for all
@@ -299,7 +301,7 @@ final class AppCompatConfiguration {
 
     // Which aspect ratio to use when camera compat treatment is enabled and an activity eligible
     // for treatment is connected to the camera.
-    private float mCameraCompatAspectRatio;
+    private float mCameraCompatAspectRatio = DEFAULT_VALUE_CAMERA_COMPAT_MIN_ASPECT_RATIO;
 
     // Whether activity "refresh" in camera compatibility treatment is enabled.
     // See RefreshCallbackItem for context.
@@ -384,8 +386,6 @@ final class AppCompatConfiguration {
         mIsCameraCompatSimulateRequestedOrientationTreatmentEnabled = mContext.getResources()
                 .getBoolean(R.bool
                         .config_isCameraCompatSimulateRequestedOrientationTreatmentEnabled);
-        mCameraCompatAspectRatio = mContext.getResources().getFloat(
-                R.dimen.config_windowManagerCameraCompatAspectRatio);
         mIsPolicyForIgnoringRequestedOrientationEnabled = mContext.getResources().getBoolean(
                 R.bool.config_letterboxIsPolicyForIgnoringRequestedOrientationEnabled);
 
@@ -1363,8 +1363,7 @@ final class AppCompatConfiguration {
      * for treatment is connected to the camera.
      */
     void resetCameraCompatAspectRatio() {
-        mCameraCompatAspectRatio = mContext.getResources().getFloat(R.dimen
-                .config_windowManagerCameraCompatAspectRatio);
+        mCameraCompatAspectRatio = DEFAULT_VALUE_CAMERA_COMPAT_MIN_ASPECT_RATIO;
     }
 
     /**
