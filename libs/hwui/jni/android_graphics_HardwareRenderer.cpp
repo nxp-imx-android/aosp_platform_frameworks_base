@@ -854,8 +854,8 @@ static void android_view_ThreadedRenderer_setForceDark(JNIEnv* env, jobject claz
     proxy->setForceDark(static_cast<ForceDarkType>(type));
 }
 
-static void android_view_ThreadedRenderer_preload(JNIEnv*, jclass) {
-    RenderProxy::preload();
+static int android_view_ThreadedRenderer_preload(JNIEnv*, jclass) {
+    return RenderProxy::preload();
 }
 
 static void android_view_ThreadedRenderer_preInitBufferAllocator(JNIEnv*, jclass) {
@@ -1066,7 +1066,7 @@ static const JNINativeMethod gMethods[] = {
         {"nSetDisplayDensityDpi", "(I)V",
          (void*)android_view_ThreadedRenderer_setDisplayDensityDpi},
         {"nInitDisplayInfo", "(IIFIJJZZZ)V", (void*)android_view_ThreadedRenderer_initDisplayInfo},
-        {"preload", "()V", (void*)android_view_ThreadedRenderer_preload},
+        {"preload", "()I", (void*)android_view_ThreadedRenderer_preload},
         {"preInitBufferAllocator", "()V",
          (void*)android_view_ThreadedRenderer_preInitBufferAllocator},
         {"isWebViewOverlaysEnabled", "()Z",

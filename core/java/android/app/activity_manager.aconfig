@@ -151,3 +151,13 @@ flag {
          purpose: PURPOSE_BUGFIX
      }
 }
+
+flag {
+     namespace: "system_performance"
+     name: "early_render_thread_priority_boost"
+     description: "Boost the render thread priority during preload."
+     bug: "417909658"
+     metadata {
+         purpose: PURPOSE_BUGFIX
+     }
+}
