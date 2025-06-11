@@ -53,13 +53,6 @@ interface IAppFunctionManager {
         in IAppFunctionEnabledCallback callback
     );
 
-    boolean checkAppFunctionAccess(
-        in String agentPackageName,
-        int agentUserId,
-        in String targetPackageName,
-        int targetUserId
-    );
-
     int getAppFunctionAccessRequestState(
         in String agentPackageName,
         int agentUserId,
@@ -84,4 +77,12 @@ interface IAppFunctionManager {
     );
 
     void revokeSelfAppFunctionAccess(in String targetPackageName);
+
+    List<String> getValidAgents(
+        int userId
+    );
+
+    List<String> getValidTargets(
+        int targetUserId
+    );
 }
