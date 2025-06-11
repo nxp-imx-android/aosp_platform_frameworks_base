@@ -169,3 +169,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enhanced_debugging"
+    namespace: "resource_manager"
+    description: "Enable the enhanced debugging features via ProtoLog"
+    bug: "416380441"
+}
