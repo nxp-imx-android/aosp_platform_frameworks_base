@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.vc.shared.model
+package com.android.systemui.statusbar.featurepods.av.shared.model
 
 /**
  * Model used to display a VC/Privacy control chip in the status bar.

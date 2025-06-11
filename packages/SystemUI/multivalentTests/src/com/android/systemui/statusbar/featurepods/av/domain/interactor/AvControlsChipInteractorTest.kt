@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.vc.domain.interactor
+package com.android.systemui.statusbar.featurepods.av.domain.interactor
 
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
@@ -31,8 +31,8 @@ import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.shade.data.repository.fakePrivacyChipRepository
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
-import com.android.systemui.statusbar.featurepods.vc.shared.model.AvControlsChipModel
-import com.android.systemui.statusbar.featurepods.vc.shared.model.SensorActivityModel
+import com.android.systemui.statusbar.featurepods.av.shared.model.AvControlsChipModel
+import com.android.systemui.statusbar.featurepods.av.shared.model.SensorActivityModel
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test

@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.vc.domain.interactor
+package com.android.systemui.statusbar.featurepods.av.domain.interactor
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.shade.data.repository.privacyChipRepository
 import com.android.systemui.statusbar.data.repository.statusBarModeRepository
-import com.android.systemui.statusbar.featurepods.vc.shared.model.AvControlsChipModel
-import com.android.systemui.statusbar.featurepods.vc.shared.model.SensorActivityModel
+import com.android.systemui.statusbar.featurepods.av.shared.model.AvControlsChipModel
+import com.android.systemui.statusbar.featurepods.av.shared.model.SensorActivityModel
 import kotlinx.coroutines.flow.MutableStateFlow
 
 val Kosmos.avControlsChipInteractorImpl: AvControlsChipInteractor by

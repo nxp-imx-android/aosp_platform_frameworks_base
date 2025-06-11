@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.featurepods.vc.shared.model
+package com.android.systemui.statusbar.featurepods.av.shared.model
 
 /** Model that describes which sensors are active */
 sealed class SensorActivityModel {

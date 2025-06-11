@@ -22,7 +22,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor.PendingDisplay
 import com.android.systemui.privacy.PrivacyItemController
-import com.android.systemui.statusbar.featurepods.vc.domain.interactor.AvControlsChipInteractor
+import com.android.systemui.statusbar.featurepods.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.util.mockito.any
 import com.android.systemui.util.time.FakeSystemClock
