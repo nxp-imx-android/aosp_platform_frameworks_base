@@ -164,10 +164,10 @@ fun ActionList(
                     val sidePaddingPx =
                         with(density) { padding.calculateLeftPadding(layoutDirection).toPx() }
                     val radius = size.width - sidePaddingPx * 2f
-                    val minScaleY = minGradientHeightPx / size.height
-                    val scaleY = max(minScaleY, size.height / (radius * 2f) * scrimProgress)
-
                     if (!(radius > 0)) return@drawBehind
+
+                    val minScaleY = minGradientHeightPx / (radius * 2f)
+                    val scaleY = max(minScaleY, size.height / (radius * 2f) * scrimProgress)
 
                     scale(scaleX = 1f, scaleY = scaleY, pivot = Offset(0f, size.height)) {
                         val leftGradientCenter =
