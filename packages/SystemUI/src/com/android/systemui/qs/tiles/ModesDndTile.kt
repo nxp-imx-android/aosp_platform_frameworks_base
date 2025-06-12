@@ -23,10 +23,12 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.coroutineScope
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking
 import com.android.internal.logging.MetricsLogger
+import com.android.systemui.Flags
 import com.android.systemui.animation.Expandable
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -104,8 +106,16 @@ constructor(
 
     override fun newTileState(): BooleanState = BooleanState()
 
-    override fun handleClick(expandable: Expandable?) = runBlocking {
-        userActionInteractor.handleClick()
+    override fun handleClick(expandable: Expandable?) {
+        if (Flags.doNotUseRunBlocking()) {
+            lifecycleScope.launch {
+                userActionInteractor.handleClick()
+            }
+        } else {
+            runBlocking {
+                userActionInteractor.handleClick()
+            }
+        }
     }
 
     override fun getLongClickIntent(): Intent? = userActionInteractor.getSettingsIntent()
