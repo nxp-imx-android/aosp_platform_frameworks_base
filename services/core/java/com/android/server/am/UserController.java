@@ -254,12 +254,16 @@ class UserController implements Handler.Callback {
     /**
      * Maximum number of users we allow to be running at a time, including system user.
      *
-     * <p>This parameter only affects how many background users will be stopped when switching to a
-     * new user. It has no impact on {@link #startUser(int, boolean)} behavior.
+     * <p>This parameter only affects how many background users will be stopped when
+     * switching to, or starting, a new user. It does not prevent starting a user.
      *
-     * <p>Note: Current and system user (and their related profiles) are never stopped when
-     * switching users. Due to that, the actual number of running users can exceed mMaxRunningUsers
-     // TODO(b/310249114): Strongly consider *not* exempting the SYSTEM user's profile.
+     * <p>Note: This is a soft limit; the actual number of running users can exceed mMaxRunningUsers
+     * in several situations. For example: <ul>
+     * <li>The current user and its related profiles are never stopped when switching/starting
+     *     users, even if it has more profiles than mMaxRunningUsers.
+     * <li>If a background user is deemed important (e.g. because it is visible or audible), we may
+     *     abstain from or defer stopping it, even if that causes us to exceed mMaxRunningUsers.
+     * </ul>
      */
     @GuardedBy("mLock")
     private int mMaxRunningUsers;
@@ -423,7 +427,7 @@ class UserController implements Handler.Callback {
     private final SparseIntArray mCompletedEventTypes = new SparseIntArray();
 
     /**
-     * Sets on {@link #setInitialConfig(boolean, int, boolean)}, which is called by
+     * Sets on {@link #setInitialConfig(boolean, int, boolean, int)}, which is called by
      * {@code ActivityManager} when the system is started.
      *
      * <p>It's useful to ignore external operations (i.e., originated outside {@code system_server},
@@ -605,13 +609,21 @@ class UserController implements Handler.Callback {
     }
 
     private void stopExcessRunningUsers() {
+        stopExcessRunningUsers(UserHandle.USER_NULL);
+    }
+
+    private void stopExcessRunningUsers(@CanBeNULL @UserIdInt int exemptedUserId) {
         final ArraySet<Integer> exemptedUsers = new ArraySet<>();
         final ArraySet<Integer> avoidUsers = new ArraySet<>();
+
+        if (exemptedUserId != UserHandle.USER_NULL) {
+            exemptedUsers.add(exemptedUserId);
+        }
 
         final List<UserInfo> users = mInjector.getUserManager().getUsers(true);
         for (int i = 0; i < users.size(); i++) {
             final int userId = users.get(i).id;
-            if (isAlwaysVisibleUser(userId)) {
+            if (isUserVisible(userId)) {
                 exemptedUsers.add(userId);
             } else if (avoidStoppingUserRightNow(userId)) {
                 avoidUsers.add(userId);
@@ -654,7 +666,8 @@ class UserController implements Handler.Callback {
             }
             // allowDelayedLocking set here as stopping user is done without any explicit request
             // from outside.
-            Slogf.i(TAG, "Too many running users (%d). Attempting to stop user %d",
+            Slogf.i(TAG, "%d too many running users (%d total). Attempting to stop user %d.",
+                    currentlyRunningLru.size() - maxRunningUsers,
                     currentlyRunningLru.size(), userId);
             if (stopUsersLU(userId,
                     /* stopProfileRegardlessOfParent= */ false, /* allowDelayedLocking= */ true,
@@ -672,11 +685,17 @@ class UserController implements Handler.Callback {
         int excessUsers = currentlyRunningLru.size() - maxRunningUsers;
         for (int i = 0; excessUsers > 0 && i < candidatesForScheduledStopping.size(); i++) {
             final Integer userId = candidatesForScheduledStopping.get(i);
-            Slogf.i(TAG, "Still %d too many running users. Scheduling to later stop user %d",
+            Slogf.i(TAG, "%d too many running users. Scheduling to later stop user %d.",
                     excessUsers, userId);
             if (rescheduleStopOfBackgroundUser(userId)) {
                 excessUsers--;
             }
+        }
+
+        if (excessUsers > 0) {
+            Slogf.i(TAG, "%d too many running users. We are left in a state exceeding %d "
+                    + "running users, but that's okay because it is a soft limit.",
+                    excessUsers, maxRunningUsers);
         }
     }
 
@@ -1259,8 +1278,9 @@ class UserController implements Handler.Callback {
         if (!stopProfileRegardlessOfParent) {
             final int parentId = mUserProfileGroupIds.get(userId, UserInfo.NO_PROFILE_GROUP_ID);
             if (parentId != UserInfo.NO_PROFILE_GROUP_ID && parentId != userId) {
-                // TODO(b/310249114): Strongly consider *not* exempting the SYSTEM user's profile.
-                if ((UserHandle.USER_SYSTEM == parentId || isCurrentUserLU(parentId))) {
+                if ((!android.multiuser.Flags.stopExcessForBackgroundStarts()
+                        && UserHandle.USER_SYSTEM == parentId)
+                        || isCurrentUserLU(parentId)) {
                     return USER_OP_ERROR_RELATED_USERS_CANNOT_STOP;
                 }
             }
@@ -1702,11 +1722,11 @@ class UserController implements Handler.Callback {
             mLastActiveUsersForDelayedLocking.add(0, userId);
             int totalUnlockedUsers = mStartedUsers.size()
                     + mLastActiveUsersForDelayedLocking.size();
-            // TODO: Decouple the delayed locking flows from mMaxRunningUsers. These users aren't
-            //  running so this calculation shouldn't be based on this parameter. Also note that
-            //  that if these devices ever support background running users (such as profiles), the
-            //  implementation is incorrect since starting such users can cause the max to be
-            //  exceeded.
+            // The delayed locking determination is tangled with mMaxRunningUsers. This is
+            // presumably because the primary point of leaving users unlocked via
+            // mDelayUserDataLocking is so that we can bulk restart them all later. We don't want to
+            // try restarting more of these users than mMaxRunningUsers allows, so we don't leave
+            // more than this many users unlocked.
             if (totalUnlockedUsers > mMaxRunningUsers) { // should lock a user
                 final int userIdToLock = mLastActiveUsersForDelayedLocking.get(
                         mLastActiveUsersForDelayedLocking.size() - 1);
@@ -1870,15 +1890,29 @@ class UserController implements Handler.Callback {
                 profilesToStart.add(user);
             }
         }
-        final int profilesToStartSize = profilesToStart.size();
-        int i = 0;
-        for (; i < profilesToStartSize && i < (getMaxRunningUsers() - 1); ++i) {
-            // NOTE: this method is setting the profiles of the current user - which is always
-            // assigned to the default display
-            startUser(profilesToStart.get(i).id, USER_START_MODE_BACKGROUND_VISIBLE);
-        }
-        if (i < profilesToStartSize) {
-            Slogf.w(TAG, "More profiles than MAX_RUNNING_USERS");
+        if (android.multiuser.Flags.stopExcessForBackgroundStarts()) {
+            final int profilesToStartSize = profilesToStart.size();
+            for (int i = 0; i < profilesToStartSize; ++i) {
+                // NOTE: this method is setting the profiles of the current user - which is always
+                // assigned to the default display
+                startUser(profilesToStart.get(i).id, USER_START_MODE_BACKGROUND_VISIBLE);
+            }
+            final int maxRunningUsers = getMaxRunningUsers();
+            if (profilesToStartSize >= maxRunningUsers) {
+                Slogf.w(TAG, "User %d has more profiles to start (%d) than MAX_RUNNING_USERS would"
+                        + " allow (%d)", currentUserId, profilesToStartSize, maxRunningUsers);
+            }
+        } else {
+            final int profilesToStartSize = profilesToStart.size();
+            int i = 0;
+            for (; i < profilesToStartSize && i < (getMaxRunningUsers() - 1); ++i) {
+                // NOTE: this method is setting the profiles of the current user - which is always
+                // assigned to the default display
+                startUser(profilesToStart.get(i).id, USER_START_MODE_BACKGROUND_VISIBLE);
+            }
+            if (i < profilesToStartSize) {
+                Slogf.w(TAG, "More profiles than MAX_RUNNING_USERS");
+            }
         }
     }
 
@@ -2332,6 +2366,14 @@ class UserController implements Handler.Callback {
             t.traceBegin("finishUserBoot");
             finishUserBoot(uss);
             t.traceEnd();
+            if (android.multiuser.Flags.stopExcessForBackgroundStarts()) {
+                // We're willing to let this background start exceed maxRunningUsers if it's
+                // just an explicitly temporary thing, but otherwise, trim the excess.
+                final boolean shouldStopExcessRunningUsers = autoStopUserInSecs <= 0;
+                if (shouldStopExcessRunningUsers) {
+                    mHandler.post(() -> stopExcessRunningUsers(userId));
+                }
+            }
         }
 
         if (needStart || isSystemUserInHeadlessMode) {
@@ -2718,14 +2760,15 @@ class UserController implements Handler.Callback {
             return false;
         }
         if (UserManager.isVisibleBackgroundUsersEnabled()) {
-            // Feature is not enabled on this device.
+            // Feature is not enabled on this device. Consider enabling it after testing it.
             return false;
         }
         if (userId == UserHandle.USER_SYSTEM) {
             // Never stop system user
             return false;
         }
-        if (isAlwaysVisibleUser(userId)) {
+        if (isUserVisible(userId)) {
+            // User is visible, possibly on a background display or as an alwaysVisibleUser.
             return false;
         }
         synchronized(mLock) {
@@ -3556,10 +3599,12 @@ class UserController implements Handler.Callback {
         return userId == getCurrentOrTargetUserIdLU();
     }
 
-    /** Returns whether the user is always-visible (such as a communal profile). */
-    private boolean isAlwaysVisibleUser(@UserIdInt int userId) {
-        final UserProperties properties = getUserProperties(userId);
-        return properties != null && properties.getAlwaysVisible();
+    /**
+     * Returns whether the user is currently visible, including users visible on a background
+     * display and always-visible users (e.g. the communal profile).
+     */
+    private boolean isUserVisible(@UserIdInt int userId) {
+        return mInjector.getUserManagerInternal().isUserVisible(userId);
     }
 
     int[] getUsers() {
