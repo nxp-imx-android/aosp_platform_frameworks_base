@@ -474,8 +474,7 @@ public class AdbDebuggingManager {
         private NotificationManager mNotificationManager;
         private boolean mAdbNotificationShown;
 
-        private final AdbBroadcastReceiver mBroadcastReceiver =
-                new AdbBroadcastReceiver(mContext, mAdbConnectionInfo);
+        private final AdbNetworkMonitor mAdbNetworkMonitor;
 
         private static final String ADB_NOTIFICATION_CHANNEL_ID_TV = "usbdevicemanager.adb.tv";
 
@@ -605,6 +604,12 @@ public class AdbDebuggingManager {
                 thread.setHandler(this);
             }
             mThread = thread;
+            if (com.android.server.adb.Flags.allowAdbWifiReconnect()) {
+                mAdbNetworkMonitor =
+                        new AdbWifiNetworkMonitor(mContext, mAdbKeyStore::isTrustedNetwork);
+            } else {
+                mAdbNetworkMonitor = new AdbBroadcastReceiver(mContext, mAdbConnectionInfo);
+            }
         }
 
         // Show when at least one device is connected.
@@ -827,8 +832,7 @@ public class AdbDebuggingManager {
                     }
 
                     mAdbConnectionInfo.copy(currentInfo);
-                    mBroadcastReceiver.register();
-
+                    mAdbNetworkMonitor.register();
                     ensureAdbDebuggingThreadAlive();
                     startTLSPortPoller();
                     startAdbdWifi();
@@ -842,7 +846,7 @@ public class AdbDebuggingManager {
                     }
                     mAdbWifiEnabled = false;
                     mAdbConnectionInfo.clear();
-                    mBroadcastReceiver.unregister();
+                    mAdbNetworkMonitor.unregister();
                     stopAdbdWifi();
                     onAdbdWifiServerDisconnected(-1);
                 }
@@ -864,7 +868,7 @@ public class AdbDebuggingManager {
                     }
                     mAdbConnectionInfo.copy(newInfo);
                     Settings.Global.putInt(mContentResolver, Settings.Global.ADB_WIFI_ENABLED, 1);
-                    mBroadcastReceiver.register();
+                    mAdbNetworkMonitor.register();
                     ensureAdbDebuggingThreadAlive();
                     startTLSPortPoller();
                     startAdbdWifi();

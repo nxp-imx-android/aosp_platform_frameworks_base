@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,18 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Slog;
 
-/** Monitors device Wifi and Network status in order to enable/disable ADB Wifi accordingly. */
-public class AdbBroadcastReceiver extends BroadcastReceiver {
+/**
+ * Monitors Wi-Fi state changes to automatically disable ADB over Wi-Fi when the device disconnects
+ * from Wi-Fi.
+ */
+public class AdbBroadcastReceiver extends BroadcastReceiver implements AdbNetworkMonitor {
 
     private static final String TAG = AdbBroadcastReceiver.class.getSimpleName();
 
     private final ContentResolver mContentResolver;
     private final Context mContext;
     private final AdbConnectionInfo mAdbConnectionInfo;
+    private boolean mStarted = false;
 
     AdbBroadcastReceiver(@NonNull Context context, @NonNull AdbConnectionInfo info) {
         mContext = context;
@@ -44,14 +48,24 @@ public class AdbBroadcastReceiver extends BroadcastReceiver {
         mAdbConnectionInfo = info;
     }
 
-    void register() {
+    @Override
+    public void register() {
+        if (mStarted) {
+            return;
+        }
         IntentFilter intentFilter = new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION);
         intentFilter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
         mContext.registerReceiver(this, intentFilter);
+        mStarted = true;
     }
 
-    void unregister() {
+    @Override
+    public void unregister() {
+        if (!mStarted) {
+            return;
+        }
         mContext.unregisterReceiver(this);
+        mStarted = false;
     }
 
     private void disableWifi(String reason) {
