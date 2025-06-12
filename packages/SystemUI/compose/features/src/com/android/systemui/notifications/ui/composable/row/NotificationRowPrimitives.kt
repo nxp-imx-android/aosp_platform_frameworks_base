@@ -19,7 +19,6 @@ package com.android.systemui.notifications.ui.composable.row
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,7 +32,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,8 +66,8 @@ object NotificationRowPrimitives {
 /** The Icon displayed at the start of any notification row. */
 @Composable
 fun BundleIcon(@DrawableRes drawable: Int?, modifier: Modifier = Modifier) {
-    val surfaceColor = notificationElementSurfaceColor()
-    Box(modifier = modifier.size(40.dp).background(color = surfaceColor, shape = CircleShape)) {
+    val iconBackground = notificationProtectionColor()
+    Box(modifier = modifier.size(40.dp).background(color = iconBackground, shape = CircleShape)) {
         if (drawable == null) return@Box
         Image(
             painter = painterResource(drawable),
@@ -115,7 +113,7 @@ fun ContentScope.ExpansionControl(
 
 @Composable
 private fun ContentScope.PillBackground(modifier: Modifier = Modifier) {
-    val surfaceColor = notificationElementSurfaceColor()
+    val surfaceColor = notificationProtectionColor()
     // Needs to be a shared element so it does not overlap while animating
     ElementWithValues(NotificationRowPrimitives.Elements.PillBackground, modifier) {
         Box(
@@ -127,16 +125,6 @@ private fun ContentScope.PillBackground(modifier: Modifier = Modifier) {
                     )
                 }
         )
-    }
-}
-
-@Composable
-@ReadOnlyComposable
-fun notificationElementSurfaceColor(): Color {
-    return if (isSystemInDarkTheme()) {
-        Color.White.copy(alpha = 0.15f)
-    } else {
-        MaterialTheme.colorScheme.surfaceContainerHighest
     }
 }
 
