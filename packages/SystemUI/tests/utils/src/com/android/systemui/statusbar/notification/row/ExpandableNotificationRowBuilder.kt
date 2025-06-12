@@ -114,6 +114,7 @@ import kotlinx.coroutines.test.TestScope
 import org.junit.Assert.assertTrue
 import org.mockito.ArgumentCaptor
 import org.mockito.ArgumentMatchers
+import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.Mockito
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.mock
@@ -318,7 +319,12 @@ class ExpandableNotificationRowBuilder(
     ): NotifRemoteViewsFactoryContainer {
         val iconDrawable = mock<Drawable>()
         whenever(
-                kosmos.mockAppIconProvider.getOrFetchAppIcon(anyOrNull(), anyOrNull(), anyOrNull())
+                kosmos.mockAppIconProvider.getOrFetchAppIcon(
+                    anyOrNull(),
+                    anyOrNull(),
+                    anyBoolean(),
+                    anyBoolean(),
+                )
             )
             .thenReturn(iconDrawable)
 

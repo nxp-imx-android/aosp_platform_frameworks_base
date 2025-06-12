@@ -27,7 +27,6 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import android.util.Log
-import androidx.annotation.VisibleForTesting
 import com.android.internal.R
 import com.android.launcher3.icons.BaseIconFactory
 import com.android.launcher3.icons.BaseIconFactory.IconOptions
@@ -39,9 +38,10 @@ import com.android.systemui.Dumpable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.statusbar.notification.collection.NotifCollectionCache
 import com.android.systemui.util.asIndenting
-import com.android.systemui.util.printSection
 import com.android.systemui.util.time.SystemClock
+import com.android.systemui.util.withIncreasedIndent
 import dagger.Module
 import dagger.Provides
 import java.io.PrintWriter
@@ -58,8 +58,9 @@ interface AppIconProvider {
     @WorkerThread
     fun getOrFetchAppIcon(
         packageName: String,
-        userHandle: UserHandle,
-        instanceKey: String,
+        context: Context,
+        withWorkProfileBadge: Boolean = false,
+        themed: Boolean = false,
     ): Drawable
 
     /**
@@ -75,7 +76,7 @@ interface AppIconProvider {
      */
     @Throws(NameNotFoundException::class)
     @WorkerThread
-    fun getOrFetchSkeletonAppIcon(packageName: String, userHandle: UserHandle): Drawable
+    fun getOrFetchSkeletonAppIcon(packageName: String, context: Context): Drawable
 
     /**
      * Mark all the entries in the cache that are NOT in [wantedPackages] to be cleared. If they're
@@ -97,6 +98,8 @@ constructor(
         dumpManager.registerNormalDumpable(TAG, this)
     }
 
+    // TODO - b/406484337: Rename non-skeleton members to something like "standardWhatever".
+
     private val iconSize: Int
         get() =
             sysuiContext.resources.getDimensionPixelSize(
@@ -110,11 +113,8 @@ constructor(
     private val densityDpi: Int
         get() = sysuiContext.resources.configuration.densityDpi
 
-    private class StandardNotificationIcons(
-        context: Context,
-        fillResIconDpi: Int,
-        iconBitmapSize: Int,
-    ) : BaseIconFactory(context, fillResIconDpi, iconBitmapSize) {
+    private class NotificationIcons(context: Context?, fillResIconDpi: Int, iconBitmapSize: Int) :
+        BaseIconFactory(context, fillResIconDpi, iconBitmapSize) {
 
         init {
             if (notificationsRedesignThemedAppIcons()) {
@@ -135,7 +135,7 @@ constructor(
     }
 
     private class SkeletonNotificationIcons(
-        context: Context,
+        context: Context?,
         fillResIconDpi: Int,
         iconBitmapSize: Int,
     ) : BaseIconFactory(context, fillResIconDpi, iconBitmapSize) {
@@ -150,88 +150,65 @@ constructor(
         }
     }
 
-    private val standardIconFactory: BaseIconFactory
-        get() = StandardNotificationIcons(sysuiContext, densityDpi, iconSize)
+    private val iconFactory: BaseIconFactory
+        get() = NotificationIcons(sysuiContext, densityDpi, iconSize)
 
     private val skeletonIconFactory: BaseIconFactory
         get() = SkeletonNotificationIcons(sysuiContext, densityDpi, iconSize)
 
-    /** Cache of standard-appearance icons as used in the notification row and guts */
-    private val standardCache = AppIconCache(systemClock = systemClock)
+    private val cache = NotifCollectionCache<Drawable>(systemClock = systemClock)
 
-    /** Cache of black and white icons for use on AOD */
-    private val skeletonCache = AppIconCache(systemClock = systemClock)
+    private val skeletonCache = NotifCollectionCache<Drawable>(systemClock = systemClock)
 
     override fun getOrFetchAppIcon(
         packageName: String,
-        userHandle: UserHandle,
-        instanceKey: String,
-    ): Drawable =
-        standardCache.getOrFetchAppIcon(
-            packageName = packageName,
-            userHandle = userHandle,
-            drawableInstanceKey = instanceKey,
-            createDrawable = {
-                it.createIconDrawable(themed = notificationsRedesignThemedAppIcons())
-            },
-        ) {
-            fetchAppIconBitmapInfo(
-                standardIconFactory,
-                packageName,
-                userHandle,
-                allowProfileBadge = true,
-            )
-        }
+        context: Context,
+        withWorkProfileBadge: Boolean,
+        themed: Boolean,
+    ): Drawable {
+        // Add a suffix to distinguish the app installed on the work profile, since the icon will
+        // be different.
+        val key = packageName + if (withWorkProfileBadge) WORK_SUFFIX else ""
 
-    override fun getOrFetchSkeletonAppIcon(packageName: String, userHandle: UserHandle): Drawable =
-        skeletonCache.getOrFetchAppIcon(
-            packageName = packageName,
-            userHandle = null, // these aren't badged, so they don't need to be sharded by user
-            drawableInstanceKey = "SKELETON",
-            createDrawable = { it.createIconDrawable(themed = true) },
-        ) {
-            fetchAppIconBitmapInfo(
-                skeletonIconFactory,
-                packageName,
-                userHandle,
-                allowProfileBadge = false,
-            )
+        return cache.getOrFetch(key) {
+            fetchAppIcon(packageName, context, withWorkProfileBadge, themed)
         }
+    }
+
+    override fun getOrFetchSkeletonAppIcon(packageName: String, context: Context): Drawable {
+        return skeletonCache.getOrFetch(packageName) { fetchSkeletonAppIcon(packageName, context) }
+    }
 
     @WorkerThread
-    private fun fetchAppIconBitmapInfo(
-        iconFactory: BaseIconFactory,
+    private fun fetchAppIcon(
         packageName: String,
-        userHandle: UserHandle,
-        allowProfileBadge: Boolean,
-    ): BitmapInfo {
-        val pm = sysuiContext.packageManager
-        val userId = userHandle.identifier
-        val icon = pm.getApplicationInfoAsUser(packageName, 0, userId).loadUnbadgedIcon(pm)
-        val options = iconOptions(userHandle, allowProfileBadge = allowProfileBadge)
-        return iconFactory.createBadgedIconBitmap(icon, options)
-    }
-
-    @VisibleForTesting
-    fun createAppIconForTest(packageName: String, @UserIconInfo.UserType userType: Int): Drawable {
-        val pm = sysuiContext.packageManager
-        val userHandle = UserHandle.of(pm.userId)
+        context: Context,
+        withWorkProfileBadge: Boolean,
+        themed: Boolean,
+    ): Drawable {
+        val pm = context.packageManager
         val icon = pm.getApplicationInfo(packageName, 0).loadUnbadgedIcon(pm)
-        val options = iconOptions(UserIconInfo(userHandle, userType))
-        val bitmapInfo = standardIconFactory.createBadgedIconBitmap(icon, options)
-        return bitmapInfo.createIconDrawable(themed = false)
+
+        val options = iconOptions(context, withWorkProfileBadge)
+        val badgedIcon = iconFactory.createBadgedIconBitmap(icon, options)
+        val creationFlags = if (themed) BitmapInfo.FLAG_THEMED else 0
+        return badgedIcon.newIcon(sysuiContext, creationFlags).apply { isAnimationEnabled = false }
     }
 
-    private fun BitmapInfo.createIconDrawable(themed: Boolean): Drawable =
-        newIcon(context = sysuiContext, creationFlags = if (themed) BitmapInfo.FLAG_THEMED else 0)
-            .apply { isAnimationEnabled = false }
+    @WorkerThread
+    private fun fetchSkeletonAppIcon(packageName: String, context: Context): Drawable {
+        val pm = context.packageManager
+        val icon = pm.getApplicationInfo(packageName, 0).loadUnbadgedIcon(pm)
 
-    private fun iconOptions(userHandle: UserHandle, allowProfileBadge: Boolean): IconOptions =
-        iconOptions(userIconInfo(userHandle, allowProfileBadge = allowProfileBadge))
+        val options = iconOptions(context, withWorkProfileBadge = false)
+        val badgedIcon = skeletonIconFactory.createBadgedIconBitmap(icon, options)
+        return badgedIcon.newIcon(sysuiContext, BitmapInfo.FLAG_THEMED)
+    }
 
-    private fun iconOptions(userIconInfo: UserIconInfo): IconOptions {
+    private fun iconOptions(context: Context, withWorkProfileBadge: Boolean): IconOptions {
         return IconOptions().apply {
-            setUser(userIconInfo)
+
+            setUser(userIconInfo(context, withWorkProfileBadge))
             setBitmapGenerationMode(BaseIconFactory.MODE_HARDWARE)
             // This color will not be used, but we're just setting it so that the icon factory
             // doesn't try to extract colors from our bitmap (since it won't work, given it's a
@@ -240,28 +217,38 @@ constructor(
         }
     }
 
-    private fun userIconInfo(userHandle: UserHandle, allowProfileBadge: Boolean): UserIconInfo =
-        if (allowProfileBadge) {
-            // Look up the user to determine if it is a profile, and if so which badge to use
-            Utils.fetchUserIconInfo(sysuiContext, userHandle)
-        } else {
-            // For a main user the IconFactory does not add a badge
-            UserIconInfo(/* user= */ userHandle, /* type= */ UserIconInfo.TYPE_MAIN)
-        }
+    private fun userIconInfo(context: Context, withWorkProfileBadge: Boolean): UserIconInfo {
+        val userId = context.userId
+        return UserIconInfo(
+            UserHandle.of(userId),
+            if (withWorkProfileBadge) UserIconInfo.TYPE_WORK else UserIconInfo.TYPE_MAIN,
+        )
+    }
 
     override fun purgeCache(wantedPackages: Collection<String>) {
-        standardCache.purgeCache(wantedPackages)
-        skeletonCache.purgeCache(wantedPackages)
+        // We don't know from the packages if it's the work profile app or not, so let's just keep
+        // both if they're present in the cache.
+        cache.purge(wantedPackages.flatMap { listOf(it, "$it$WORK_SUFFIX") })
+
+        // Skeleton icons don't include profile badges, so we don't need to handle the work profile
+        // suffixes.
+        skeletonCache.purge(wantedPackages)
     }
 
     override fun dump(pwOrig: PrintWriter, args: Array<out String>) {
         val pw = pwOrig.asIndenting()
-        pw.printSection("standard cache") { standardCache.dump(pw, args) }
-        pw.printSection("skeleton cache") { skeletonCache.dump(pw, args) }
-        pw.printSection("icon factory info") {
-            val standardIconFactory = standardIconFactory
-            pw.println("fullResIconDpi = ${standardIconFactory.fullResIconDpi}")
-            pw.println("iconSize = ${standardIconFactory.iconBitmapSize}")
+
+        pw.println("cache information:")
+        pw.withIncreasedIndent { cache.dump(pw, args) }
+
+        pw.println("skeleton cache information:")
+        pw.withIncreasedIndent { skeletonCache.dump(pw, args) }
+
+        val iconFactory = iconFactory
+        pw.println("icon factory information:")
+        pw.withIncreasedIndent {
+            pw.println("fullResIconDpi = ${iconFactory.fullResIconDpi}")
+            pw.println("iconSize = ${iconFactory.iconBitmapSize}")
         }
     }
 
@@ -278,14 +265,15 @@ class NoOpIconProvider : AppIconProvider {
 
     override fun getOrFetchAppIcon(
         packageName: String,
-        userHandle: UserHandle,
-        instanceKey: String,
+        context: Context,
+        withWorkProfileBadge: Boolean,
+        themed: Boolean,
     ): Drawable {
         Log.wtf(TAG, "NoOpIconProvider should not be used anywhere.")
         return ColorDrawable(Color.WHITE)
     }
 
-    override fun getOrFetchSkeletonAppIcon(packageName: String, userHandle: UserHandle): Drawable {
+    override fun getOrFetchSkeletonAppIcon(packageName: String, context: Context): Drawable {
         Log.wtf(TAG, "NoOpIconProvider should not be used anywhere.")
         return ColorDrawable(Color.BLACK)
     }
