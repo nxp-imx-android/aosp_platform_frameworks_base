@@ -6858,21 +6858,22 @@ ul.</string>
 
     <!--  AdvancedProtectionService USB notifications -->
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title">Security &amp; privacy</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title">Advanced Protection for USB</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title">Unlock your screen first</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title">Unlock screen &amp; reconnect</string>
 
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text">Unlock device for data transfer</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text">You may need to unlock and reconnect your device for data transfer</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text">Advanced Protection requires your usual screen unlock for USB data transfers</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text">Advanced Protection requires your usual screen unlock for USB data transfers</string>
 
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text">Unlock device for fast charging and data transferring</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text">You may need to unlock and reconnect your device for fast charging and data transferring</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text">Advanced Protection requires your screen unlock for USB transfer or fast charging</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text">Advanced Protection requires your screen unlock for USB transfer or fast charging</string>
 
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text">Unlock device for fast charging</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text">You may need to unlock and reconnect your device for fast charging</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text">Advanced Protection requires your usual screen unlock for USB fast charging</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text">Advanced Protection requires your usual screen unlock for USB fast charging</string>
 
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text">Silence</string>
 
-    <string name="usb_apm_usb_notification_silenced_title">Notification silenced</string>
-    <string name="usb_apm_usb_notification_silenced_text">Silenced until you restart your device</string>
+    <string name="usb_apm_usb_notification_silenced_title">Notifications silenced</string>
+    <string name="usb_apm_usb_notification_silenced_text">Advanced Protection USB notifications silenced until you restart device</string>
 
     <string name="usb_apm_usb_suspicious_activity_notification_title">Suspicious USB activity</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text">USB data signal has been disabled.</string>
