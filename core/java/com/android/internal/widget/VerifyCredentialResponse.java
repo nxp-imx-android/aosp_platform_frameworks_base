@@ -74,6 +74,8 @@ public final class VerifyCredentialResponse implements Parcelable {
     @Retention(RetentionPolicy.SOURCE)
     @interface ResponseCode {}
 
+    private static final Duration MAX_TIMEOUT = Duration.ofMillis(Integer.MAX_VALUE);
+
     public static final VerifyCredentialResponse OK = new VerifyCredentialResponse.Builder()
             .build();
     public static final VerifyCredentialResponse OTHER_ERROR = fromError(RESPONSE_OTHER_ERROR);
@@ -146,12 +148,30 @@ public final class VerifyCredentialResponse implements Parcelable {
                 0L /* gatekeeperPasswordHandle */);
     }
 
-    /** Like {@link #fromTimeout(int)}, but takes a Duration instead of a raw milliseconds value. */
+    /**
+     * Like {@link #fromTimeout(int)}, but takes a Duration instead of a raw milliseconds value.
+     *
+     * <p>The timeout is clamped to fit in an int. See {@link #timeoutToClampedMillis(Duration)}.
+     */
     public static VerifyCredentialResponse fromTimeout(Duration timeout) {
-        return fromTimeout((int) Math.min(timeout.toMillis(), (long) Integer.MAX_VALUE));
+        return fromTimeout(timeoutToClampedMillis(timeout));
     }
 
-    /** Builds a {@link VerifyCredentialResponse} with {@link RESPONSE_OTHER_ERROR}. */
+    /**
+     * Clamps the given timeout to fit in an int that holds a non-negative milliseconds value.
+     *
+     * <p>A negative timeout should never occur here, since the rate-limiters do not report negative
+     * timeouts. If a negative timeout is seen anyway, fail secure and treat it as possibly intended
+     * to be an unsigned value, i.e. clamp it to MAX_VALUE rather than MIN_VALUE.
+     */
+    private static int timeoutToClampedMillis(Duration timeout) {
+        if (timeout.isNegative() || timeout.compareTo(MAX_TIMEOUT) > 0) {
+            return Integer.MAX_VALUE;
+        }
+        return (int) timeout.toMillis();
+    }
+
+    /** Builds a {@link VerifyCredentialResponse} with {@link #RESPONSE_OTHER_ERROR}. */
     public static VerifyCredentialResponse fromError() {
         return fromError(RESPONSE_OTHER_ERROR);
     }

@@ -825,6 +825,28 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         assertTrue(response.isMatched());
     }
 
+    @Test
+    public void testVerifyCredentialResponseTimeoutClamping() {
+        testTimeoutClamping(Duration.ofMillis(Long.MIN_VALUE), Integer.MAX_VALUE);
+        testTimeoutClamping(Duration.ofMillis(Integer.MIN_VALUE), Integer.MAX_VALUE);
+        testTimeoutClamping(Duration.ofMillis(-100), Integer.MAX_VALUE);
+        testTimeoutClamping(Duration.ofMillis(-1), Integer.MAX_VALUE);
+        testTimeoutClamping(Duration.ofNanos(-1), Integer.MAX_VALUE);
+        testTimeoutClamping(Duration.ZERO, 0);
+        testTimeoutClamping(Duration.ofNanos(1), 0);
+        testTimeoutClamping(Duration.ofMillis(1), 1);
+        testTimeoutClamping(Duration.ofSeconds(1), 1000);
+        testTimeoutClamping(Duration.ofSeconds(1000000), 1000000000);
+        testTimeoutClamping(Duration.ofMillis(Integer.MAX_VALUE), Integer.MAX_VALUE);
+        testTimeoutClamping(Duration.ofMillis((long) Integer.MAX_VALUE + 1), Integer.MAX_VALUE);
+        testTimeoutClamping(Duration.ofMillis(Long.MAX_VALUE), Integer.MAX_VALUE);
+    }
+
+    private void testTimeoutClamping(Duration originalTimeout, int expectedClampedTimeout) {
+        VerifyCredentialResponse response = VerifyCredentialResponse.fromTimeout(originalTimeout);
+        assertEquals(expectedClampedTimeout, response.getTimeout());
+    }
+
     private void checkRecordedFrpNotificationIntent() {
         if (android.security.Flags.frpEnforcement()) {
             Intent savedNotificationIntent = mService.getSavedFrpNotificationIntent();
