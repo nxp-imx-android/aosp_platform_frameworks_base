@@ -272,9 +272,9 @@ static struct {
 static struct {
     jclass clazz;
     jfieldID mNativeObject;
-    jfieldID mName;
     jmethodID ctor;
     jmethodID invokeReleaseCallback;
+    jmethodID assignNativeObject;
 } gSurfaceControlClassInfo;
 
 static struct {
@@ -2527,6 +2527,14 @@ static void nativeNotifyShutdown() {
     SurfaceComposerClient::notifyShutdown();
 }
 
+static jstring nativeGetName(JNIEnv* env, jclass clazz, jlong nativeObject) {
+    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    if (ctrl == nullptr) {
+        return env->NewStringUTF("<null>");
+    }
+    return env->NewStringUTF(ctrl->getName().c_str());
+}
+
 // ----------------------------------------------------------------------------
 
 SurfaceControl* android_view_SurfaceControl_getNativeSurfaceControl(JNIEnv* env,
@@ -2544,12 +2552,9 @@ jobject android_view_SurfaceControl_getJavaSurfaceControl(JNIEnv* env,
                                                           const SurfaceControl& surfaceControl) {
     jobject surfaceControlObj =
             env->NewObject(gSurfaceControlClassInfo.clazz, gSurfaceControlClassInfo.ctor);
-    env->SetLongField(surfaceControlObj, gSurfaceControlClassInfo.mNativeObject,
-                      reinterpret_cast<jlong>(&surfaceControl));
-    env->SetObjectField(surfaceControlObj, gSurfaceControlClassInfo.mName,
-                        ScopedLocalRef<jobject>(env,
-                                                env->NewStringUTF(surfaceControl.getName().c_str()))
-                                .get());
+    jstring callsite = env->NewStringUTF("android_view_SurfaceControl_getJavaSurfaceControl");
+    env->CallVoidMethod(surfaceControlObj, gSurfaceControlClassInfo.assignNativeObject,
+                        reinterpret_cast<jlong>(&surfaceControl), callsite);
     surfaceControl.incStrong((void*)nativeCreate);
     return surfaceControlObj;
 }
@@ -2576,6 +2581,8 @@ static const JNINativeMethod sSurfaceControlMethods[] = {
             (void*)nativeCreate },
     {"nativeReadFromParcel", "(Landroid/os/Parcel;)J",
             (void*)nativeReadFromParcel },
+    {"nativeGetName", "(J)Ljava/lang/String;",
+            (void*)nativeGetName },
     {"nativeCopyFromSurfaceControl", "(J)J" ,
             (void*)nativeCopyFromSurfaceControl },
     {"nativeWriteToParcel", "(JLandroid/os/Parcel;)V",
@@ -3084,12 +3091,13 @@ int register_android_view_SurfaceControl(JNIEnv* env)
     gSurfaceControlClassInfo.clazz = MakeGlobalRefOrDie(env, surfaceControlClazz);
     gSurfaceControlClassInfo.mNativeObject =
             GetFieldIDOrDie(env, gSurfaceControlClassInfo.clazz, "mNativeObject", "J");
-    gSurfaceControlClassInfo.mName =
-            GetFieldIDOrDie(env, gSurfaceControlClassInfo.clazz, "mName", "Ljava/lang/String;");
     gSurfaceControlClassInfo.ctor = GetMethodIDOrDie(env, surfaceControlClazz, "<init>", "()V");
     gSurfaceControlClassInfo.invokeReleaseCallback =
             GetStaticMethodIDOrDie(env, surfaceControlClazz, "invokeReleaseCallback",
                                    "(Ljava/util/function/Consumer;J)V");
+    gSurfaceControlClassInfo.assignNativeObject =
+            GetMethodIDOrDie(env, surfaceControlClazz, "assignNativeObject",
+                             "(JLjava/lang/String;)V");
 
     jclass surfaceTransactionClazz = FindClassOrDie(env, "android/view/SurfaceControl$Transaction");
     gTransactionClassInfo.clazz = MakeGlobalRefOrDie(env, surfaceTransactionClazz);
