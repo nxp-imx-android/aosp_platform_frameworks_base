@@ -35,7 +35,11 @@ public final class BiometricEnrollmentStatus {
     private final int mEnrollmentCount;
 
     /**
-     * @hide
+     * Constructs a new {@link BiometricEnrollmentStatus} object.
+     *
+     * @param strength        The biometric strength type, as defined by
+     *                        {@link BiometricManager.Authenticators.Types}.
+     * @param enrollmentCount The number of biometric currently enrolled.
      */
     public BiometricEnrollmentStatus(@BiometricManager.Authenticators.Types int strength,
             int enrollmentCount) {

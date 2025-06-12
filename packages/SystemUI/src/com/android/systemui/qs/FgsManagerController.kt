@@ -410,6 +410,10 @@ constructor(
                     newChangesSinceDialogWasDismissed = false
                     synchronized(lock) {
                         this.dialog = null
+                        // Adapters keep references to RV they're added to and
+                        // we need to explicitly clear that reference via setAdapter
+                        // to avoid a leak.
+                        recyclerView.adapter = null
                         updateAppItemsLocked()
                     }
                     onDialogDismissedListeners.forEach {

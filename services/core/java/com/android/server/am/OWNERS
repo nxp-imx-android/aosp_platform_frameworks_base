@@ -1,5 +1,6 @@
 # Applications & Processes
 per-file ActivityManager* = file:/ACTIVITY_MANAGER_OWNERS
+per-file ActivityManager* = file:platform/system/zygote:/OWNERS
 per-file ActiveServices.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file ProcessList.java = file:/ACTIVITY_MANAGER_OWNERS
 per-file ActivityThread.java = file:/ACTIVITY_MANAGER_OWNERS
@@ -65,9 +66,6 @@ per-file ActivityManager* = file:/ACTIVITY_SECURITY_OWNERS
 
 # Aconfig Flags
 per-file flags.aconfig = file:/ACTIVITY_MANAGER_OWNERS
-
-# Zygote-related changes
-per-file ActivityManager* = file:/ZYGOTE_OWNERS
 
 # Londoners
 michaelwr@google.com #{LAST_RESORT_SUGGESTION}

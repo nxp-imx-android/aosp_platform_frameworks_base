@@ -46,13 +46,18 @@
         <item name="android:autoSizeTextType">uniform</item>
     </style>
 
+    <style name="Widget.PackageInstaller.Material.ButtonBar" parent="">
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:textAppearance">@android:style/TextAppearance.DeviceDefault.Widget.Button</item>
+    </style>
+
     <style name="Widget.PackageInstaller.Material.WindowTitle" parent="@style/MaterialAlertDialog.Material3.Title.Text">
         <item name="android:textAppearance">@android:style/TextAppearance.DeviceDefault.Headline</item>
         <item name="android:layout_marginTop">4dp</item>
         <item name="android:autoSizeTextType">uniform</item>
     </style>
 
-    <style name="Widget.PackageInstaller.Material.Button" parent="@style/Widget.Material3.Button.TextButton">
+    <style name="Widget.PackageInstaller.Material.Button" parent="@style/Widget.Material3.Button.TextButton.Dialog">
         <item name="android:textColor">?android:attr/colorAccent</item>
         <item name="android:minHeight">@dimen/button_min_height</item>
         <item name="android:layout_marginStart">8dp</item>
@@ -61,7 +66,6 @@
 
     <style name="Widget.PackageInstaller.Material.Button.Colored" parent="@style/Widget.Material3.Button">
         <item name="android:minHeight">@dimen/button_min_height</item>
-        <item name="android:paddingHorizontal">24dp</item>
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:textAppearance">@android:style/TextAppearance.DeviceDefault.Widget.Button</item>
     </style>
@@ -69,6 +73,7 @@
     <style name="Widget.PackageInstaller.Material.Button.Outlined" parent="@style/Widget.Material3.Button.OutlinedButton">
         <item name="android:textColor">?android:attr/colorAccent</item>
         <item name="android:minHeight">@dimen/button_min_height</item>
+        <item name="strokeColor">?attr/colorOutlineVariant</item>
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:textAppearance">@android:style/TextAppearance.DeviceDefault.Widget.Button</item>
     </style>

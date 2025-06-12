@@ -1047,7 +1047,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         private final DragDetector mHandleDragDetector;
         private final DragDetector mHeaderDragDetector;
         private final GestureDetector mGestureDetector;
-        private final int mDisplayId;
         private final Rect mOnDragStartInitialBounds = new Rect();
         private final Rect mCurrentBounds = new Rect();
 
@@ -1083,7 +1082,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             mHeaderDragDetector = new DragDetector(this, APP_HEADER_HOLD_TO_DRAG_DURATION_MS,
                     touchSlop);
             mGestureDetector = new GestureDetector(mContext, this);
-            mDisplayId = taskInfo.displayId;
         }
 
         @Override
@@ -1112,14 +1110,14 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     WindowContainerTransaction wct = new WindowContainerTransaction();
                     final Function1<IBinder, Unit> runOnTransitionStart =
                             mDesktopTasksController.onDesktopWindowClose(
-                                    wct, mDisplayId, decoration.mTaskInfo);
+                                    wct, decoration.mTaskInfo.displayId, decoration.mTaskInfo);
                     final IBinder transition = mTaskOperations.closeTask(mTaskToken, wct);
                     if (transition != null) {
                         runOnTransitionStart.invoke(transition);
                     }
                 }
             } else if (id == R.id.back_button) {
-                mTaskOperations.injectBackKey(mDisplayId);
+                mTaskOperations.injectBackKey(decoration.mTaskInfo.displayId);
             } else if (id == R.id.caption_handle || id == R.id.open_menu_button) {
                 if (id == R.id.caption_handle && !decoration.mTaskInfo.isFreeform()) {
                     // Clicking the App Handle.

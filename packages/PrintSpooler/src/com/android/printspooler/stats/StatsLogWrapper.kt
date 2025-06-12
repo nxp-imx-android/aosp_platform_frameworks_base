@@ -49,4 +49,23 @@ open class StatsLogWrapper {
             printServiceCount,
         )
     }
+
+    open fun internalPrinterDiscovery(
+        @UserIdInt printServiceId: Int,
+        supportedColors: Set<StatsAsyncLogger.InternalColorModePrinterDiscoveryEvent>,
+        supportedSizes: Set<StatsAsyncLogger.InternalMediaSizePrinterDiscoveryEvent>,
+        supportedDuplexModes: Set<StatsAsyncLogger.InternalDuplexModePrinterDiscoveryEvent>,
+    ) {
+        val colorBits = supportedColors.map { it.rawValue }.toIntArray()
+        val mediaSizes = supportedSizes.map { it.rawValue }.toIntArray()
+        val duplexModes = supportedDuplexModes.map { it.rawValue }.toIntArray()
+
+        PrintSpoolerStatsLog.write(
+            PrintSpoolerStatsLog.FRAMEWORK_PRINTER_DISCOVERY,
+            printServiceId,
+            colorBits,
+            mediaSizes,
+            duplexModes,
+        )
+    }
 }

@@ -115,6 +115,7 @@ final class VoiceInteractionSessionConnection implements ServiceConnection,
     final int mCallingUid;
     final Handler mHandler;
     final IActivityTaskManager mActivityTaskManager;
+    final ActivityTaskManagerInternal mActivityTaskManagerInternal;
     final IActivityManager mAm;
     final UriGrantsManagerInternal mUgmInternal;
     final IWindowManager mIWindowManager;
@@ -228,6 +229,7 @@ final class VoiceInteractionSessionConnection implements ServiceConnection,
         mCallingUid = callingUid;
         mHandler = handler;
         mActivityTaskManager = ActivityTaskManager.getService();
+        mActivityTaskManagerInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
         mAm = ActivityManager.getService();
         mUgmInternal = LocalServices.getService(UriGrantsManagerInternal.class);
         mIWindowManager = IWindowManager.Stub.asInterface(
@@ -309,10 +311,16 @@ final class VoiceInteractionSessionConnection implements ServiceConnection,
 
                 // Ensure that the current activity supports assist data
                 boolean isAssistDataAllowed = false;
-                try {
-                    isAssistDataAllowed = mActivityTaskManager.isAssistDataAllowed();
-                } catch (RemoteException e) {
-                    // Should never happen
+                if (com.android.window.flags.Flags.supportGeminiOnMultiDisplay()) {
+                    isAssistDataAllowed =
+                            mActivityTaskManagerInternal.isAssistDataForActivitiesAllowed(
+                                    topActivitiesToken);
+                } else {
+                    try {
+                        isAssistDataAllowed = mActivityTaskManager.isAssistDataAllowed();
+                    } catch (RemoteException e) {
+                        // Should never happen
+                    }
                 }
 
                 // TODO: Refactor to have all assist data allowed checks in one place.
@@ -695,8 +703,7 @@ final class VoiceInteractionSessionConnection implements ServiceConnection,
             Slog.d(TAG, "getTopVisibleActivityInfosLocked");
         }
         List<ActivityAssistInfo> allVisibleActivities =
-                LocalServices.getService(ActivityTaskManagerInternal.class)
-                        .getTopVisibleActivities();
+                mActivityTaskManagerInternal.getTopVisibleActivities();
         if (DEBUG) {
             Slog.d(TAG, "getTopVisibleActivityInfosLocked: allVisibleActivities="
                     + allVisibleActivities);

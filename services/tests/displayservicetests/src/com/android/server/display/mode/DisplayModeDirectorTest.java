@@ -29,6 +29,7 @@ import static android.hardware.display.DisplayManager.DeviceConfig.KEY_REFRESH_R
 
 import static com.android.server.display.TestUtilsKt.createSensor;
 import static com.android.server.display.TestUtilsKt.createSensorEvent;
+import static com.android.server.display.utils.TestUtilsKt.createLastValueAmbientFilter;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -98,6 +99,7 @@ import com.android.server.display.config.RefreshRateData;
 import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.display.mode.DisplayModeDirector.BrightnessObserver;
 import com.android.server.display.mode.DisplayModeDirector.DesiredDisplayModeSpecs;
+import com.android.server.display.utils.AmbientFilter;
 import com.android.server.sensors.SensorManagerInternal;
 import com.android.server.sensors.SensorManagerInternal.ProximityActiveListener;
 import com.android.server.statusbar.StatusBarManagerInternal;
@@ -1587,7 +1589,6 @@ public class DisplayModeDirectorTest {
                         any(Handler.class));
         SensorEventListener sensorListener = listenerCaptor.getValue();
         sensorListener.onSensorChanged(createSensorEvent(lightSensor, 8));
-        waitForIdleSync();
         assertEquals(null, director.getBrightnessObserver().getIdleScreenRefreshRateConfig());
 
         // Configure DDC with idle screen timeout
@@ -1601,19 +1602,16 @@ public class DisplayModeDirectorTest {
 
         // Sensor reads 5 lux
         sensorListener.onSensorChanged(createSensorEvent(lightSensor, 5));
-        waitForIdleSync();
         assertEquals(new SurfaceControl.IdleScreenRefreshRateConfig(-1),
                 director.getBrightnessObserver().getIdleScreenRefreshRateConfig());
 
         // Sensor reads 50 lux
         sensorListener.onSensorChanged(createSensorEvent(lightSensor, 50));
-        waitForIdleSync();
         assertEquals(new IdleScreenRefreshRateConfig(1000),
                 director.getBrightnessObserver().getIdleScreenRefreshRateConfig());
 
         // Sensor reads 200 lux
         sensorListener.onSensorChanged(createSensorEvent(lightSensor, 200));
-        waitForIdleSync();
         assertEquals(new SurfaceControl.IdleScreenRefreshRateConfig(800),
                 director.getBrightnessObserver().getIdleScreenRefreshRateConfig());
     }
@@ -3990,6 +3988,11 @@ public class DisplayModeDirectorTest {
         @Override
         public VotesStatsReporter getVotesStatsReporter() {
             return null;
+        }
+
+        @Override
+        public AmbientFilter getAmbientFilter(Resources res) {
+            return createLastValueAmbientFilter();
         }
 
         protected Display createDisplay(int id) {

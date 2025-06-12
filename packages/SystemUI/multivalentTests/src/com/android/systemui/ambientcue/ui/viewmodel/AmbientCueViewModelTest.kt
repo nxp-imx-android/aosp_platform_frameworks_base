@@ -28,6 +28,7 @@ import com.android.systemui.ambientcue.data.repository.fake
 import com.android.systemui.ambientcue.domain.interactor.ambientCueInteractor
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.ambientcue.shared.model.IconModel
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.runCurrent
@@ -45,6 +46,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 class AmbientCueViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val viewModel = kosmos.ambientCueViewModelFactory.create()
@@ -90,6 +92,30 @@ class AmbientCueViewModelTest : SysuiTestCase() {
 
             ambientCueInteractor.setImeVisible(true)
             ambientCueRepository.fake.updateRootViewAttached()
+            runCurrent()
+
+            assertThat(viewModel.isVisible).isFalse()
+        }
+
+    @Test
+    fun isVisible_isOccludedBySystemUi_true() =
+        kosmos.runTest {
+            initializeIsVisible()
+            assertThat(viewModel.isVisible).isTrue()
+
+            fakeKeyguardRepository.setKeyguardShowing(false)
+            runCurrent()
+
+            assertThat(viewModel.isVisible).isTrue()
+        }
+
+    @Test
+    fun isVisible_isOccludedBySystemUi_false() =
+        kosmos.runTest {
+            initializeIsVisible()
+            assertThat(viewModel.isVisible).isTrue()
+
+            fakeKeyguardRepository.setKeyguardShowing(true)
             runCurrent()
 
             assertThat(viewModel.isVisible).isFalse()

@@ -22,6 +22,7 @@ import static android.app.ActivityManager.START_VOICE_HIDDEN_SESSION;
 import static android.app.ActivityManager.START_VOICE_NOT_ACTIVE_SESSION;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_ASSISTANT;
 import static android.service.voice.VoiceInteractionSession.KEY_SHOW_SESSION_ID;
+import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.server.policy.PhoneWindowManager.SYSTEM_DIALOG_REASON_ASSIST;
 
@@ -279,6 +280,7 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
         final Bundle newArgs = args == null ? new Bundle() : args;
         newArgs.putInt(KEY_SHOW_SESSION_ID, sessionId);
 
+        final int displayId = newArgs.getInt(Intent.EXTRA_ASSIST_DISPLAY_ID, DEFAULT_DISPLAY);
         try {
             if (mService != null) {
                 mService.prepareToShowSession(newArgs, flags);
@@ -304,9 +306,14 @@ class VoiceInteractionManagerServiceImpl implements VoiceInteractionSessionConne
             }
         }
 
-        List<ActivityAssistInfo> allVisibleActivities =
-                LocalServices.getService(ActivityTaskManagerInternal.class)
-                        .getTopVisibleActivities();
+        List<ActivityAssistInfo> allVisibleActivities;
+        if (com.android.window.flags.Flags.supportGeminiOnMultiDisplay()) {
+            allVisibleActivities = LocalServices.getService(ActivityTaskManagerInternal.class)
+                    .getTopVisibleActivities(displayId);
+        } else {
+            allVisibleActivities = LocalServices.getService(ActivityTaskManagerInternal.class)
+                    .getTopVisibleActivities();
+        }
 
         List<ActivityAssistInfo> visibleActivities = null;
         if (activityToken != null) {

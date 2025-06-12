@@ -40,8 +40,7 @@ import java.util.Objects;
 /**
  * Controls the application of {@link ViewConfigurationParams} for a virtual device.
  */
-@VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-public class ViewConfigurationController {
+class ViewConfigurationController {
 
     private static final String TAG = "ViewConfigurationController";
     private static final String FRAMEWORK_PACKAGE_NAME = "android";
@@ -61,14 +60,21 @@ public class ViewConfigurationController {
 
     private final Context mContext;
     private final OverlayManager mOverlayManager;
+    private final SettingsWriter mSettingsWriter;
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
     private OverlayIdentifier mOverlayIdentifier = null;
 
-    public ViewConfigurationController(@NonNull Context context) {
+    ViewConfigurationController(@NonNull Context context) {
+        this(context, Settings.Secure::putInt);
+    }
+
+    @VisibleForTesting
+    ViewConfigurationController(@NonNull Context context, @NonNull SettingsWriter settingsWriter) {
         mContext = Objects.requireNonNull(context);
         mOverlayManager = context.getSystemService(OverlayManager.class);
+        mSettingsWriter = settingsWriter;
     }
 
     /**
@@ -110,12 +116,12 @@ public class ViewConfigurationController {
                 .build();
         OverlayIdentifier overlayIdentifier = overlay.getIdentifier();
         boolean change = false;
-        change |= setResourceDpValue(overlay, TOUCH_SLOP_RESOURCE_NAME,
-                viewConfigurationParams.getTouchSlopDp());
-        change |= setResourceDpValue(overlay, MIN_FLING_VELOCITY_RESOURCE_NAME,
-                viewConfigurationParams.getMinimumFlingVelocityDpPerSecond());
-        change |= setResourceDpValue(overlay, MAX_FLING_VELOCITY_RESOURCE_NAME,
-                viewConfigurationParams.getMaximumFlingVelocityDpPerSecond());
+        change |= setResourcePixelValue(overlay, TOUCH_SLOP_RESOURCE_NAME,
+                viewConfigurationParams.getTouchSlopPixels());
+        change |= setResourcePixelValue(overlay, MIN_FLING_VELOCITY_RESOURCE_NAME,
+                viewConfigurationParams.getMinimumFlingVelocityPixelsPerSecond());
+        change |= setResourcePixelValue(overlay, MAX_FLING_VELOCITY_RESOURCE_NAME,
+                viewConfigurationParams.getMaximumFlingVelocityPixelsPerSecond());
         change |= setResourceFloatValue(overlay, SCROLL_FRICTION_RESOURCE_NAME,
                 viewConfigurationParams.getScrollFriction());
         change |= setResourceIntValue(overlay, TAP_TIMEOUT_RESOURCE_NAME,
@@ -159,18 +165,18 @@ public class ViewConfigurationController {
         ContentResolver contentResolver = deviceContext.getContentResolver();
         Binder.withCleanCallingIdentity(() -> {
             if (!isLongPressTimeoutInvalid) {
-                Settings.Secure.putInt(contentResolver, Settings.Secure.LONG_PRESS_TIMEOUT,
+                mSettingsWriter.writeSettings(contentResolver, Settings.Secure.LONG_PRESS_TIMEOUT,
                         longPressTimeout);
             }
             if (!isMultiPressTimeoutInvalid) {
-                Settings.Secure.putInt(contentResolver, Settings.Secure.MULTI_PRESS_TIMEOUT,
+                mSettingsWriter.writeSettings(contentResolver, Settings.Secure.MULTI_PRESS_TIMEOUT,
                         multiPressTimeout);
             }
         });
     }
 
-    private static boolean setResourceDpValue(@NonNull FabricatedOverlay overlay,
-            @NonNull String resourceName, float value) {
+    private static boolean setResourcePixelValue(@NonNull FabricatedOverlay overlay,
+            @NonNull String resourceName, int value) {
         if (isInvalid(value)) {
             return false;
         }
@@ -180,7 +186,7 @@ public class ViewConfigurationController {
             return false;
         }
 
-        overlay.setResourceValue(resourceName, value, TypedValue.COMPLEX_UNIT_DIP,
+        overlay.setResourceValue(resourceName, (float) value, TypedValue.COMPLEX_UNIT_PX,
                 null /* configuration */);
         return true;
     }
@@ -213,5 +219,11 @@ public class ViewConfigurationController {
 
     private static boolean isInvalid(float value) {
         return value == ViewConfigurationParams.INVALID_VALUE;
+    }
+
+    @VisibleForTesting
+    interface SettingsWriter {
+        void writeSettings(@NonNull ContentResolver contentResolver, @NonNull String key,
+                int value);
     }
 }

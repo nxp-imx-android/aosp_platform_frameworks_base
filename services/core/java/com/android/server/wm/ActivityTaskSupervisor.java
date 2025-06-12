@@ -2908,8 +2908,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
                     // activity from whatever is started from the recents activity, so move
                     // the home root task forward.
                     // TODO (b/115289124): Multi-display supports for recents.
-                    mRootWindowContainer.getDefaultTaskDisplayArea().moveHomeRootTaskToFront(
-                            "startActivityFromRecents");
+                    task.getTaskDisplayArea().moveHomeRootTaskToFront("startActivityFromRecents");
                 }
 
                 // If the user must confirm credentials (e.g. when first launching a work

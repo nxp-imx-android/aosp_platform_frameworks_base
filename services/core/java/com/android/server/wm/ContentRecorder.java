@@ -365,10 +365,11 @@ final class ContentRecorder implements WindowContainerListener {
             return;
         }
 
-        // Recording should not be started on displays that are eligible for hosting tasks.
-        // See android.view.Display#canHostTasks().
+        // Recording should not be started on displays that should show system decorations.
+        // See DisplayWindowSettings#shouldShowSystemDecorsLocked().
         if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
-                && mDisplayContent.mDisplay.canHostTasks()) {
+                && mDisplayContent.mWmService.mDisplayWindowSettings
+                        .shouldShowSystemDecorsLocked(mDisplayContent)) {
             return;
         }
 

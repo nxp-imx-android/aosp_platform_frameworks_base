@@ -265,8 +265,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
             ShadeExpansionChangeEvent(fraction = 1f, expanded = true, tracking = false)
         )
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
-        verify(wallpaperController)
-            .setNotificationShadeZoom(eq(ShadeInterpolation.getNotificationScrimAlpha(0.25f)))
     }
 
     @Test
@@ -277,8 +275,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
             ShadeExpansionChangeEvent(fraction = 1f, expanded = true, tracking = false)
         )
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
-
-        verify(wallpaperController).setNotificationShadeZoom(0f)
     }
 
     @Test
@@ -289,8 +285,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
             ShadeExpansionChangeEvent(fraction = 1f, expanded = true, tracking = false)
         )
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
-
-        verify(wallpaperController).setNotificationShadeZoom(floatThat { it > 0 })
     }
 
     @Test
@@ -305,12 +299,10 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
         notificationShadeDepthController.onPanelExpansionChanged(event)
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
-        inOrder.verify(wallpaperController).setNotificationShadeZoom(floatThat { it > 0 })
 
         enableSplitShade()
         notificationShadeDepthController.onPanelExpansionChanged(event)
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
-        inOrder.verify(wallpaperController).setNotificationShadeZoom(0f)
     }
 
     @Test
@@ -353,14 +345,12 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
         notificationShadeDepthController.transitionToFullShadeProgress = 1f
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
         verify(blurUtils).applyBlur(any(), eq(0), eq(false), anyFloat())
-        verify(wallpaperController).setNotificationShadeZoom(eq(1f))
     }
 
     @Test
     fun updateBlurCallback_setsBlurAndZoom() {
         notificationShadeDepthController.addListener(listener)
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
-        verify(wallpaperController).setNotificationShadeZoom(anyFloat())
         verify(blurUtils).applyBlur(any(), anyInt(), eq(false), anyFloat())
     }
 
@@ -374,8 +364,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
         shadeDisplayRepository.setDisplayId(1) // not default display.
 
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
-
-        verify(wallpaperController).setNotificationShadeZoom(eq(0f))
     }
 
     @Test
@@ -388,8 +376,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
         shadeDisplayRepository.setDisplayId(0) // shade is in default display
 
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
-
-        verify(wallpaperController).setNotificationShadeZoom(floatThat { it != 0f })
     }
 
     @Test
@@ -524,7 +510,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
         verify(notificationShadeWindowController).setBackgroundBlurRadius(eq(0))
-        verify(wallpaperController).setNotificationShadeZoom(eq(0f))
         verify(blurUtils).prepareBlur(any(), eq(0))
         verify(blurUtils).applyBlur(
             eq(viewRootImpl),
@@ -575,7 +560,6 @@ class NotificationShadeDepthControllerTest : SysuiTestCase() {
 
         notificationShadeDepthController.updateBlurCallback.doFrame(0)
         verify(notificationShadeWindowController).setBackgroundBlurRadius(eq(0))
-        verify(wallpaperController).setNotificationShadeZoom(eq(0f))
         verify(windowRootViewBlurInteractor).requestBlurForShade(
             eq(0),
             eq(notificationShadeDepthController.zoomOutAsScale(0f))

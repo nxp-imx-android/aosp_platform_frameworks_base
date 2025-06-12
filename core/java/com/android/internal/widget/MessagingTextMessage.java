@@ -22,6 +22,7 @@ import android.annotation.Nullable;
 import android.annotation.StyleRes;
 import android.app.Notification;
 import android.content.Context;
+import android.graphics.Typeface;
 import android.text.Layout;
 import android.text.PrecomputedText;
 import android.util.AttributeSet;
@@ -82,7 +83,7 @@ public class MessagingTextMessage extends ImageFloatingTextView implements Messa
     }
 
     static MessagingMessage createMessage(IMessagingLayout layout,
-            Notification.MessagingStyle.Message m, boolean usePrecomputedText) {
+            Notification.MessagingStyle.Message m, boolean usePrecomputedText, boolean useItalics) {
         MessagingLinearLayout messagingLinearLayout = layout.getMessagingLinearLayout();
         MessagingTextMessage createdMessage = sInstancePool.acquire();
         if (createdMessage == null) {
@@ -91,6 +92,9 @@ public class MessagingTextMessage extends ImageFloatingTextView implements Messa
                     R.layout.notification_template_messaging_text_message,
                     messagingLinearLayout,
                     false);
+            if (useItalics) {
+                createdMessage.setTypeface(Typeface.DEFAULT, Typeface.ITALIC);
+            }
             createdMessage.addOnLayoutChangeListener(MessagingLayout.MESSAGING_PROPERTY_ANIMATOR);
         }
         createdMessage.setMessage(m, usePrecomputedText);

@@ -30,6 +30,7 @@ import android.tools.flicker.legacy.LegacyFlickerTestFactory
 import android.tools.helpers.FIND_TIMEOUT
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.parsers.toFlickerComponent
+import androidx.test.filters.RequiresDevice
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
@@ -61,6 +62,7 @@ import org.junit.runners.Parameterized
  *     This test only works with Cuttlefish devices.
  * ```
  */
+@RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class RotateImmersiveAppInFullscreenTest(flicker: LegacyFlickerTest) : BaseAppCompat(flicker) {

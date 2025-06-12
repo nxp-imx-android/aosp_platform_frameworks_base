@@ -22,6 +22,7 @@ import android.tools.flicker.annotation.FlickerConfigProvider
 import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.junit.FlickerServiceJUnit4ClassRunner
+import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.flicker.DesktopModeFlickerScenarios.Companion.MINIMIZE_APP
 import com.android.wm.shell.flicker.DesktopModeFlickerScenarios.Companion.MINIMIZE_LAST_APP
 import com.android.wm.shell.scenarios.MinimizeAppWindows
@@ -33,6 +34,7 @@ import org.junit.runner.RunWith
  *
  * Assert that the app windows gets hidden.
  */
+@RequiresDevice
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
 class MinimizeAppsPortrait : MinimizeAppWindows() {
     @ExpectedScenarios(["MINIMIZE_APP", "MINIMIZE_LAST_APP"])

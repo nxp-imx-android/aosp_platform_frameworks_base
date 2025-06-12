@@ -67,6 +67,7 @@ import platform.test.runner.parameterized.Parameters
 @SmallTest
 @RunWithLooper(setAsMainLooper = true)
 @RunWith(ParameterizedAndroidJunit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class InternetTileNewImplTest(flags: FlagsParameterization) : SysuiTestCase() {
     init {
         mSetFlagsRule.setFlagsParameterization(flags)

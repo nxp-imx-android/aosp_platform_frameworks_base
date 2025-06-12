@@ -2038,6 +2038,12 @@ public abstract class ConnectionService extends Service {
                 case Connection.STATE_RINGING:
                     mAdapter.setRinging(id);
                     break;
+                case Connection.STATE_AUDIO_PROCESSING:
+                    mAdapter.setAudioProcessing(id, c.getAudioProcessingUseCase());
+                    break;
+                case Connection.STATE_SIMULATED_RINGING:
+                    mAdapter.setSimulatedRinging(id);
+                    break;
             }
         }
 

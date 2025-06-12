@@ -42,6 +42,7 @@ import android.util.Log;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.server.backup.Flags;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -98,10 +99,15 @@ public class FullBackup {
 
     public static final String FLAG_REQUIRED_CLIENT_SIDE_ENCRYPTION = "clientSideEncryption";
     public static final String FLAG_REQUIRED_DEVICE_TO_DEVICE_TRANSFER = "deviceToDeviceTransfer";
+    public static final String FLAG_REQUIRED_PLATFORM = "platform";
     public static final String FLAG_REQUIRED_FAKE_CLIENT_SIDE_ENCRYPTION =
             "fakeClientSideEncryption";
     private static final String FLAG_DISABLE_IF_NO_ENCRYPTION_CAPABILITIES =
             "disableIfNoEncryptionCapabilities";
+
+    private static final String FLAG_PLATFORM_SPECIFIC_PARAMS_BUNDLE_ID = "bundleId";
+    private static final String FLAG_PLATFORM_SPECIFIC_PARAMS_TEAM_ID = "teamId";
+    private static final String FLAG_PLATFORM_SPECIFIC_PARAMS_CONTENT_VERSION = "contentVersion";
 
     /**
      * When this change is enabled, include / exclude rules specified via {@code
@@ -112,10 +118,15 @@ public class FullBackup {
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.S)
     private static final long IGNORE_FULL_BACKUP_CONTENT_IN_D2D = 180523564L;
 
-    @StringDef({ConfigSection.CLOUD_BACKUP, ConfigSection.DEVICE_TRANSFER})
+    @StringDef({
+        ConfigSection.CLOUD_BACKUP,
+        ConfigSection.DEVICE_TRANSFER,
+        ConfigSection.CROSS_PLATFORM_TRANSFER,
+    })
     @interface ConfigSection {
         String CLOUD_BACKUP = "cloud-backup";
         String DEVICE_TRANSFER = "device-transfer";
+        String CROSS_PLATFORM_TRANSFER = "cross-platform-transfer";
     }
 
     /**
@@ -176,9 +187,16 @@ public class FullBackup {
     }
 
     public static BackupScheme getBackupSchemeForTest(Context context) {
-        BackupScheme testing = new BackupScheme(context, BackupDestination.CLOUD);
+        return getBackupSchemeForTest(context, BackupDestination.CLOUD);
+    }
+
+    /** Returns a BackupScheme for testing only. */
+    public static BackupScheme getBackupSchemeForTest(
+            Context context, @BackupDestination int backupDestination) {
+        BackupScheme testing = new BackupScheme(context, backupDestination);
         testing.mExcludes = new ArraySet();
         testing.mIncludes = new ArrayMap();
+        testing.mPlatformSpecificParams = new ArrayMap();
         return testing;
     }
 
@@ -300,6 +318,7 @@ public class FullBackup {
 
         private static final String TAG_INCLUDE = "include";
         private static final String TAG_EXCLUDE = "exclude";
+        private static final String TAG_PLATFORM_SPECIFIC_PARAMS = "platform-specific-params";
 
         final int mDataExtractionRules;
         final int mFullBackupContent;
@@ -409,6 +428,31 @@ public class FullBackup {
             }
         }
 
+        /** Represents platform specific parameters for cross-platform transfers. */
+        public static class PlatformSpecificParams {
+            private final String mBundleId;
+            private final String mTeamId;
+            private final String mContentVersion;
+
+            public PlatformSpecificParams(String bundleId, String teamId, String contentVersion) {
+                this.mBundleId = bundleId;
+                this.mTeamId = teamId;
+                this.mContentVersion = contentVersion;
+            }
+
+            public String getBundleId() {
+                return mBundleId;
+            }
+
+            public String getTeamId() {
+                return mTeamId;
+            }
+
+            public String getContentVersion() {
+                return mContentVersion;
+            }
+        }
+
         /**
          * A map of domain -> set of pairs (canonical file; required transport flags) in that domain
          * that are to be included if the transport has decared the required flags. We keep track of
@@ -422,6 +466,13 @@ public class FullBackup {
          * ignored and the value should be always set to 0.
          */
         ArraySet<PathWithRequiredFlags> mExcludes;
+
+        /**
+         * A map of platform -> platform specific params. The presence of an entry indicates that
+         * export to and import from that platform is supported. The platform specific params are
+         * used to identify the corresponding app on the other platform.
+         */
+        Map<String, PlatformSpecificParams> mPlatformSpecificParams;
 
         BackupScheme(Context context, @BackupDestination int backupDestination) {
             ApplicationInfo applicationInfo = context.getApplicationInfo();
@@ -594,7 +645,11 @@ public class FullBackup {
                 try (XmlResourceParser parser = getParserForResource(mDataExtractionRules)) {
                     isSectionPresent =
                             parseNewBackupSchemeFromXmlLocked(
-                                    parser, configSection, mExcludes, mIncludes);
+                                    parser,
+                                    configSection,
+                                    mExcludes,
+                                    mIncludes,
+                                    mPlatformSpecificParams);
                 }
                 if (isSectionPresent) {
                     // Found the relevant section in the new config, we will use it.
@@ -640,11 +695,13 @@ public class FullBackup {
                 XmlPullParser parser,
                 @ConfigSection String configSection,
                 Set<PathWithRequiredFlags> excludes,
-                Map<String, Set<PathWithRequiredFlags>> includes)
+                Map<String, Set<PathWithRequiredFlags>> includes,
+                Map<String, PlatformSpecificParams> platformSpecificParams)
                 throws IOException, XmlPullParserException {
             verifyTopLevelTag(parser, "data-extraction-rules");
 
             boolean isSectionPresent = false;
+            String platform = null;
 
             int event;
             while ((event = parser.next()) != XmlPullParser.END_DOCUMENT) {
@@ -654,8 +711,21 @@ public class FullBackup {
 
                 isSectionPresent = true;
 
+                if (Flags.enableCrossPlatformTransfer()
+                        && ConfigSection.CROSS_PLATFORM_TRANSFER.equals(configSection)) {
+                    platform =
+                            parser.getAttributeValue(/* namespace= */ null, FLAG_REQUIRED_PLATFORM);
+                }
+
                 parseRequiredTransportFlags(parser, configSection);
-                parseRules(parser, excludes, includes, Optional.of(0), configSection);
+                parseRules(
+                        parser,
+                        excludes,
+                        includes,
+                        platformSpecificParams,
+                        Optional.of(0),
+                        configSection,
+                        platform);
             }
 
             logParsingResults(excludes, includes);
@@ -683,7 +753,14 @@ public class FullBackup {
                 throws IOException, XmlPullParserException {
             verifyTopLevelTag(parser, "full-backup-content");
 
-            parseRules(parser, excludes, includes, Optional.empty(), "full-backup-content");
+            parseRules(
+                    parser,
+                    excludes,
+                    includes,
+                    /* platformSpecificParamsMap= */ new ArrayMap<>(),
+                    /* maybeRequiredFlags= */ Optional.empty(),
+                    "full-backup-content",
+                    /* platform= */ null);
 
             logParsingResults(excludes, includes);
         }
@@ -718,18 +795,45 @@ public class FullBackup {
                 XmlPullParser parser,
                 Set<PathWithRequiredFlags> excludes,
                 Map<String, Set<PathWithRequiredFlags>> includes,
+                Map<String, PlatformSpecificParams> platformSpecificParamsMap,
                 Optional<Integer> maybeRequiredFlags,
-                String endingTag)
+                String configSection,
+                String platform)
                 throws IOException, XmlPullParserException {
             int event;
             while ((event = parser.next()) != XmlPullParser.END_DOCUMENT
-                    && !parser.getName().equals(endingTag)) {
+                    && !parser.getName().equals(configSection)) {
                 if (event != XmlPullParser.START_TAG) {
                     continue;
                 }
-                validateInnerTagContents(parser);
-                parseIncludeExcludeTag(parser, excludes, includes, maybeRequiredFlags);
+                validateInnerTagContents(parser, configSection);
+
+                if (Flags.enableCrossPlatformTransfer()
+                        && ConfigSection.CROSS_PLATFORM_TRANSFER.equals(configSection)
+                        && parser.getName().equals(TAG_PLATFORM_SPECIFIC_PARAMS)) {
+                    parsePlatformSpecificParamsTag(parser, platform, platformSpecificParamsMap);
+                } else {
+                    parseIncludeExcludeTag(parser, excludes, includes, maybeRequiredFlags);
+                }
             }
+        }
+
+        private void parsePlatformSpecificParamsTag(
+                XmlPullParser parser,
+                String platform,
+                Map<String, PlatformSpecificParams> platformSpecificParamsMap) {
+            if (TextUtils.isEmpty(platform)) {
+                // Ignore the platform specific parameters if platform wasn't specified.
+                return;
+            }
+
+            String bundleId =
+                    parser.getAttributeValue(null, FLAG_PLATFORM_SPECIFIC_PARAMS_BUNDLE_ID);
+            String teamId = parser.getAttributeValue(null, FLAG_PLATFORM_SPECIFIC_PARAMS_TEAM_ID);
+            String contentVersion =
+                    parser.getAttributeValue(null, FLAG_PLATFORM_SPECIFIC_PARAMS_CONTENT_VERSION);
+            platformSpecificParamsMap.put(
+                    platform, new PlatformSpecificParams(bundleId, teamId, contentVersion));
         }
 
         private void parseIncludeExcludeTag(
@@ -1041,32 +1145,49 @@ public class FullBackup {
          * Let's be strict about the type of xml the client can write. If we see anything untoward,
          * throw an XmlPullParserException.
          */
-        private void validateInnerTagContents(XmlPullParser parser) throws XmlPullParserException {
-            if (parser == null) {
+        private void validateInnerTagContents(XmlPullParser parser, String configSection)
+                throws XmlPullParserException {
+            if (parser == null || parser.getName() == null) {
                 return;
             }
-            switch (parser.getName()) {
-                case TAG_INCLUDE:
-                    if (parser.getAttributeCount() > 3) {
-                        throw new XmlPullParserException(
-                                "At most 3 tag attributes allowed for "
-                                        + "\"include\" tag (\"domain\" & \"path\""
-                                        + " & optional \"requiredFlags\").");
-                    }
-                    break;
-                case TAG_EXCLUDE:
-                    if (parser.getAttributeCount() > 2) {
-                        throw new XmlPullParserException(
-                                "At most 2 tag attributes allowed for "
-                                        + "\"exclude\" tag (\"domain\" & \"path\".");
-                    }
-                    break;
-                default:
+
+            if (parser.getName().equals(TAG_INCLUDE)) {
+                if (parser.getAttributeCount() > 3) {
                     throw new XmlPullParserException(
-                            "A valid tag is one of \"<include/>\" or"
-                                    + " \"<exclude/>. You provided \""
+                            "At most 3 tag attributes allowed for "
+                                    + "\"include\" tag (\"domain\" & \"path\""
+                                    + " & optional \"requiredFlags\").");
+                }
+            } else if (parser.getName().equals(TAG_EXCLUDE)) {
+                if (parser.getAttributeCount() > 2) {
+                    throw new XmlPullParserException(
+                            "At most 2 tag attributes allowed for "
+                                    + "\"exclude\" tag (\"domain\" & \"path\".");
+                }
+            } else if (Flags.enableCrossPlatformTransfer()
+                    && configSection.equals(ConfigSection.CROSS_PLATFORM_TRANSFER)
+                    && parser.getName().equals(TAG_PLATFORM_SPECIFIC_PARAMS)) {
+                if (parser.getAttributeCount() > 3) {
+                    throw new XmlPullParserException(
+                            "At most 3 tag attributes allowed for\"platform-specific-params\""
+                                    + " tag (\"bundleId\" & \"teamId\" &"
+                                    + " \"contentVersion\".");
+                }
+            } else {
+                if (Flags.enableCrossPlatformTransfer()
+                        && configSection.equals(ConfigSection.CROSS_PLATFORM_TRANSFER)) {
+                    throw new XmlPullParserException(
+                            "A valid tag is one of \"<include/>\" or \"<exclude/>\" or"
+                                    + " \"<platform-specific-params/>\". You provided \""
                                     + parser.getName()
                                     + "\"");
+                } else {
+                    throw new XmlPullParserException(
+                            "A valid tag is one of \"<include/>\" or \"<exclude/>\". You provided"
+                                    + " \""
+                                    + parser.getName()
+                                    + "\"");
+                }
             }
         }
     }

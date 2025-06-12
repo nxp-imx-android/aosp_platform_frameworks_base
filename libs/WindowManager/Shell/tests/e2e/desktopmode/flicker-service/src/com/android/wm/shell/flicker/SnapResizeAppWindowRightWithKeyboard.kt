@@ -22,6 +22,7 @@ import android.tools.flicker.annotation.FlickerConfigProvider
 import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.junit.FlickerServiceJUnit4ClassRunner
+import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.flicker.DesktopModeFlickerScenarios.Companion.SNAP_RESIZE_RIGHT_WITH_KEYBOARD
 import com.android.wm.shell.scenarios.SnapResizeAppWindowWithKeyboardShortcuts
 import org.junit.Test
@@ -32,6 +33,7 @@ import org.junit.runner.RunWith
  *
  * Assert that the app window fills the right half the display after being snap resized.
  */
+@RequiresDevice
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
 class SnapResizeAppWindowRightWithKeyboard : SnapResizeAppWindowWithKeyboardShortcuts(
     toLeft = false

@@ -16,6 +16,7 @@
 package com.android.server.wm.flicker.ime
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDevice
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -25,7 +26,6 @@ import android.tools.flicker.legacy.LegacyFlickerTestFactory
 import android.tools.flicker.subject.region.RegionSubject
 import android.tools.helpers.WindowUtils
 import android.tools.traces.component.ComponentNameMatcher
-import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.BaseTest
 import com.android.server.wm.flicker.helpers.ImeShownOnAppStartHelper
 import com.android.server.wm.flicker.testapp.ActivityOptions.Ime.Default.ACTION_TOGGLE_ORIENTATION

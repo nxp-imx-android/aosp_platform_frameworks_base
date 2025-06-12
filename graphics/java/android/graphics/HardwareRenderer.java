@@ -34,6 +34,8 @@ import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.Trace;
+import android.ravenwood.annotation.RavenwoodIgnore;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
 import android.util.Log;
 import android.util.TimeUtils;
 import android.view.Display;
@@ -82,7 +84,8 @@ import sun.misc.Cleaner;
  * Failure to do so will cause the render thread to stall on that surface, blocking all
  * HardwareRenderer instances.</p>
  */
-@android.ravenwood.annotation.RavenwoodKeepWholeClass
+@RavenwoodKeepPartialClass(comment =
+        "Hardware graphics not supported. Keeping minimal surface enough for Choreographer")
 public class HardwareRenderer {
     private static final String LOG_TAG = "HardwareRenderer";
 
@@ -1145,6 +1148,7 @@ public class HardwareRenderer {
      *
      * @hide
      */
+    @RavenwoodIgnore
     public static void setFPSDivisor(int divisor) {
         nSetRtAnimationsEnabled(divisor <= 1);
     }

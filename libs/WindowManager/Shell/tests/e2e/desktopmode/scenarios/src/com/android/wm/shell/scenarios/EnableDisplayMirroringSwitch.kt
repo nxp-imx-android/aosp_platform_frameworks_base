@@ -35,12 +35,8 @@ import org.junit.Rule
 import org.junit.Test
 import platform.test.desktop.SimulatedConnectedDisplayTestRule
 
-const val FLAG_CONNECTED_DISPLAY_SETTINGS: String =
-    "com.android.settings.flags.display_topology_pane_in_display_list"
-
 @RequiresFlagsEnabled(
     FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
-    FLAG_CONNECTED_DISPLAY_SETTINGS,
     FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS,
     FLAG_STATUS_BAR_CONNECTED_DISPLAYS
 )

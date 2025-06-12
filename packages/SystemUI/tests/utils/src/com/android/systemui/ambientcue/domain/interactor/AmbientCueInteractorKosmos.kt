@@ -17,7 +17,11 @@
 package com.android.systemui.ambientcue.domain.interactor
 
 import com.android.systemui.ambientcue.data.repository.ambientCueRepository
+import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.shade.domain.interactor.shadeInteractor
 
-val Kosmos.ambientCueInteractor by Fixture { AmbientCueInteractor(ambientCueRepository) }
+val Kosmos.ambientCueInteractor by Fixture {
+    AmbientCueInteractor(ambientCueRepository, shadeInteractor, keyguardInteractor)
+}

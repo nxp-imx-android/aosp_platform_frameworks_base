@@ -172,18 +172,36 @@ run() {
 }
 
 extra_args=()
-if (( $exclude_large_tests && ! $build_only )) ; then
+
+
+# Exclusion filter annotations
+exclude_annos=()
+# Always ignore flaky tests
+exclude_annos+=(
+    "androidx.test.filters.FlakyTest"
+)
+# Maybe ignore large tests
+if (( $exclude_large_tests )) ; then
+    exclude_annos+=(
+        "android.platform.test.annotations.LargeTest"
+        "androidx.test.filters.LargeTest"
+    )
+fi
+
+# Add per-module arguments
+if (( ! $build_only )) ; then
     extra_args+=("--")
 
     # Need to add the following two options for each module.
     # But we can't add it to non-ravenwood tests, so use $all_raven_tests
     # instead of $targets.
     for module in "${all_raven_tests[@]}" ; do
-        extra_args+=(
-            "--module-arg $module:exclude-annotation:android.platform.test.annotations.LargeTest"
-            "--module-arg $module:exclude-annotation:androidx.test.filters.LargeTest"
-            )
+        for anno in "${exclude_annos[@]}" ; do
+            extra_args+=(
+                "--module-arg $module:exclude-annotation:$anno"
+                )
+        done
     done
 fi
 
-run $dry_run ${ATEST:-atest} $atest_opts "${targets[@]}" "${extra_args[@]}"
+run $dry_run ${ATEST:-atest} --class-level-report $atest_opts "${targets[@]}" "${extra_args[@]}"

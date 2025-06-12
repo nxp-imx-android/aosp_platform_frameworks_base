@@ -164,6 +164,32 @@ public final class Call {
     @Retention(RetentionPolicy.SOURCE)
     public @interface CallState {};
 
+    /**  The audio processing use case is unknown. */
+    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    public static final int AUDIO_PROCESSING_USE_CASE_UNKNOWN = 0;
+    /**  The audio processing use case is voice mail. */
+    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    public static final int AUDIO_PROCESSING_USE_CASE_VOICEMAIL = 1;
+    /**  The audio processing is done for spam detection. */
+    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    public static final int AUDIO_PROCESSING_USE_CASE_CALL_SCREENING = 2;
+    /**  The audio processing is done when the user asks to hold. */
+    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    public static final int AUDIO_PROCESSING_USE_CASE_ASK_TO_HOLD = 3;
+
+    /**
+     * @hide
+     */
+    @IntDef(prefix = "AUDIO_PROCESSING_USE_CASE_",
+        value = {
+            AUDIO_PROCESSING_USE_CASE_UNKNOWN,
+            AUDIO_PROCESSING_USE_CASE_VOICEMAIL,
+            AUDIO_PROCESSING_USE_CASE_CALL_SCREENING,
+            AUDIO_PROCESSING_USE_CASE_ASK_TO_HOLD
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface AudioProcessingUseCase {}
+
     /**
      * The key to retrieve the optional {@code PhoneAccount}s Telecom can bundle with its Call
      * extras. Used to pass the phone accounts to display on the front end to the user in order to
@@ -1695,6 +1721,7 @@ public final class Call {
     private RttCall mRttCall;
     private Details mDetails;
     private Bundle mExtras;
+    private int mAudioProcessingUseCase;
 
     /**
      * Obtains the post-dial sequence remaining to be emitted by this {@code Call}, if any.
@@ -1806,13 +1833,46 @@ public final class Call {
      * @see <a href="https://developer.android.com/preview/privacy/foreground-service-types">
      * the Android Developer Site</a> for more information.
      * @hide
+     * @deprecated New {@link Call#enterBackgroundAudioProcessing(int useCase)}.
      */
     @SystemApi
+    @Deprecated
+    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
     public void enterBackgroundAudioProcessing() {
         if (mState != STATE_ACTIVE && mState != STATE_RINGING) {
             throw new IllegalStateException("Call must be active or ringing");
         }
-        mInCallAdapter.enterBackgroundAudioProcessing(mTelecomCallId);
+        mInCallAdapter.enterBackgroundAudioProcessing(mTelecomCallId,
+            AUDIO_PROCESSING_USE_CASE_UNKNOWN);
+    }
+
+    /**
+     * Instructs Telecom to put the call into the background audio processing state.
+     * <p>
+     * This method can be called either when the call is in {@link #STATE_RINGING} or
+     * {@link #STATE_ACTIVE}. After Telecom acknowledges the request by setting the call's state to
+     * {@link #STATE_AUDIO_PROCESSING}, your app may setup the audio paths with the audio stack in
+     * order to capture and play audio on the call stream.
+     * <p>
+     * This method can only be called by the default dialer app.
+     * <p>
+     * Apps built with SDK version {@link android.os.Build.VERSION_CODES#R} or later which are using
+     * the microphone as part of audio processing should specify the foreground service type using
+     * the attribute {@link android.R.attr#foregroundServiceType} in the {@link InCallService}
+     * service element of the app's manifest file.
+     * The {@link ServiceInfo#FOREGROUND_SERVICE_TYPE_MICROPHONE} attribute should be specified.
+     * @see <a href="https://developer.android.com/preview/privacy/foreground-service-types">
+     * the Android Developer Site</a> for more information.
+     * @param useCase the reason that the call is in STATE_AUDIO_PROCESSING.
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    public void enterBackgroundAudioProcessing(int useCase) {
+        if (mState != STATE_ACTIVE && mState != STATE_RINGING) {
+            throw new IllegalStateException("Call must be active or ringing");
+        }
+        mInCallAdapter.enterBackgroundAudioProcessing(mTelecomCallId, useCase);
     }
 
     /**
@@ -1833,6 +1893,21 @@ public final class Call {
             throw new IllegalStateException("Call must in the audio processing state");
         }
         mInCallAdapter.exitBackgroundAudioProcessing(mTelecomCallId, shouldRing);
+    }
+
+    /**
+     * Returns the Audio Processing usecase for of the call. Note: This must be used only when the
+     * Call#getState() is STATE_AUDIO_PROCESSING
+     *
+     * @return the audio processing use case for {@link AudioProcessingUseCase}
+     * @throws IllegalStateException if the call is not in {@link #STATE_AUDIO_PROCESSING}
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_AUDIO_PROCESSING_USE_CASE)
+    public int getAudioProcessingUseCase() {
+        if (mState != STATE_AUDIO_PROCESSING) {
+            throw new IllegalStateException("Call is not in state AUDIO_PROCESSING");
+        }
+        return mAudioProcessingUseCase;
     }
 
     /**
@@ -2376,6 +2451,8 @@ public final class Call {
                 append(mTelecomCallId).
                 append(", state: ").
                 append(stateToString(mState)).
+                append(", audioProcessingUseCase: ").
+                append(mAudioProcessingUseCase).
                 append(", details: ").
                 append(mDetails).
                 append("]").toString();
@@ -2450,6 +2527,9 @@ public final class Call {
         mState = STATE_NEW;
         mCallingPackage = callingPackage;
         mTargetSdkVersion = targetSdkVersion;
+        if (Flags.enableAudioProcessingUseCase()) {
+            mAudioProcessingUseCase = AUDIO_PROCESSING_USE_CASE_UNKNOWN;
+        }
     }
 
     /** {@hide} */
@@ -2461,6 +2541,9 @@ public final class Call {
         mState = state;
         mCallingPackage = callingPackage;
         mTargetSdkVersion = targetSdkVersion;
+        if (Flags.enableAudioProcessingUseCase()) {
+            mAudioProcessingUseCase = AUDIO_PROCESSING_USE_CASE_UNKNOWN;
+        }
     }
 
     /** {@hide} */
@@ -2513,6 +2596,10 @@ public final class Call {
         boolean stateChanged = mState != state;
         if (stateChanged) {
             mState = state;
+        }
+
+        if (state == Call.STATE_AUDIO_PROCESSING) {
+            mAudioProcessingUseCase = parcelableCall.getAudioProcessingUseCase();
         }
 
         String parentId = parcelableCall.getParentCallId();

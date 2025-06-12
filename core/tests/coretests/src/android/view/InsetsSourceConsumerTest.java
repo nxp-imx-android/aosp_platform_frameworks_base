@@ -43,6 +43,7 @@ import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.ImeTracker;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -71,7 +72,7 @@ public class InsetsSourceConsumerTest {
 
     private InsetsSourceConsumer mConsumer;
 
-    private SurfaceSession mSession = new SurfaceSession();
+    private final SurfaceSession mSession = new SurfaceSession();
     private SurfaceControl mLeash;
     private InsetsSource mSpyInsetsSource;
     private boolean mRemoveSurfaceCalled = false;
@@ -103,7 +104,7 @@ public class InsetsSourceConsumerTest {
             mController = new InsetsController(new ViewRootInsetsControllerHost(mViewRoot)) {
                 @Override
                 public void applySurfaceParams(
-                        final SyncRtSurfaceTransactionApplier.SurfaceParams... params) {
+                        @NonNull SyncRtSurfaceTransactionApplier.SurfaceParams... params) {
                     mSurfaceParamsApplied = true;
                 }
             };

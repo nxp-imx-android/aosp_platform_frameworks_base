@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#undef ANDROID_UTILS_REF_BASE_DISABLE_IMPLICIT_CONSTRUCTION // TODO:remove this and fix code
 
 #define LOG_TAG "SurfaceControl"
 #define LOG_NDEBUG 0
@@ -626,16 +625,15 @@ static void nativeSetLayer(JNIEnv* env, jclass clazz, jlong transactionObj,
         jlong nativeObject, jint zorder) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setLayer(ctrl, zorder);
 }
 
 static void nativeSetRelativeLayer(JNIEnv* env, jclass clazz, jlong transactionObj,
         jlong nativeObject,
         jlong relativeToObject, jint zorder) {
-
-    auto ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
-    auto relative = reinterpret_cast<SurfaceControl *>(relativeToObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
+    auto relative = SpFromRawPtr<SurfaceControl>(relativeToObject);
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
     transaction->setRelativeLayer(ctrl, relative, zorder);
 }
@@ -644,7 +642,7 @@ static void nativeSetPosition(JNIEnv* env, jclass clazz, jlong transactionObj,
         jlong nativeObject, jfloat x, jfloat y) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setPosition(ctrl, x, y);
 }
 
@@ -652,14 +650,14 @@ static void nativeSetScale(JNIEnv* env, jclass clazz, jlong transactionObj, jlon
                            jfloat xScale, jfloat yScale) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setMatrix(ctrl, xScale, 0, 0, yScale);
 }
 
 static void nativeSetGeometry(JNIEnv* env, jclass clazz, jlong transactionObj, jlong nativeObject,
         jobject sourceObj, jobject dstObj, jlong orientation) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
 
     Rect source, dst;
     if (sourceObj != NULL) {
@@ -730,15 +728,15 @@ static ReleaseBufferCallback genReleaseCallback(JNIEnv* env, jobject releaseCall
 static void nativeSetBuffer(JNIEnv* env, jclass clazz, jlong transactionObj, jlong nativeObject,
                             jobject bufferObject, jlong fencePtr, jobject releaseCallback) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     sp<GraphicBuffer> graphicBuffer;
     if (bufferObject != nullptr) {
-        graphicBuffer = GraphicBuffer::fromAHardwareBuffer(
-                android_hardware_HardwareBuffer_getNativeHardwareBuffer(env, bufferObject));
+        graphicBuffer = sp<GraphicBuffer>::fromExisting(GraphicBuffer::fromAHardwareBuffer(
+                android_hardware_HardwareBuffer_getNativeHardwareBuffer(env, bufferObject)));
     }
     std::optional<sp<Fence>> optFence = std::nullopt;
     if (fencePtr != 0) {
-        optFence = sp<Fence>{reinterpret_cast<Fence*>(fencePtr)};
+        optFence = SpFromRawPtr<Fence>(fencePtr);
     }
     transaction->setBuffer(ctrl, graphicBuffer, optFence, std::nullopt, 0 /* producerId */,
                            genReleaseCallback(env, releaseCallback));
@@ -746,14 +744,14 @@ static void nativeSetBuffer(JNIEnv* env, jclass clazz, jlong transactionObj, jlo
 
 static void nativeUnsetBuffer(JNIEnv* env, jclass clazz, jlong transactionObj, jlong nativeObject) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->unsetBuffer(ctrl);
 }
 
 static void nativeSetBufferTransform(JNIEnv* env, jclass clazz, jlong transactionObj,
                                      jlong nativeObject, jint transform) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setTransform(ctrl, transform);
     bool transformToInverseDisplay = (NATIVE_WINDOW_TRANSFORM_INVERSE_DISPLAY & transform) ==
             NATIVE_WINDOW_TRANSFORM_INVERSE_DISPLAY;
@@ -763,7 +761,7 @@ static void nativeSetBufferTransform(JNIEnv* env, jclass clazz, jlong transactio
 static void nativeSetDataSpace(JNIEnv* env, jclass clazz, jlong transactionObj, jlong nativeObject,
                                jint dataSpace) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     ui::Dataspace dataspace = static_cast<ui::Dataspace>(dataSpace);
     transaction->setDataspace(ctrl, dataspace);
 }
@@ -772,14 +770,14 @@ static void nativeSetExtendedRangeBrightness(JNIEnv* env, jclass clazz, jlong tr
                                              jlong nativeObject, float currentBufferRatio,
                                              float desiredRatio) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setExtendedRangeBrightness(ctrl, currentBufferRatio, desiredRatio);
 }
 
 static void nativeSetDesiredHdrHeadroom(JNIEnv* env, jclass clazz, jlong transactionObj,
                                         jlong nativeObject, float desiredRatio) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setDesiredHdrHeadroom(ctrl, desiredRatio);
 }
 
@@ -788,7 +786,7 @@ static void nativeSetLuts(JNIEnv* env, jclass clazz, jlong transactionObj, jlong
                           jintArray jdimensionArray, jintArray jsizeArray,
                           jintArray jsamplingKeyArray) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
 
     std::vector<int32_t> offsets;
     std::vector<int32_t> dimensions;
@@ -855,7 +853,7 @@ static void nativeSetLuts(JNIEnv* env, jclass clazz, jlong transactionObj, jlong
 static void nativeSetPictureProfileId(JNIEnv* env, jclass clazz, jlong transactionObj,
                                       jlong surfaceControlObj, jlong pictureProfileId) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const surfaceControl = reinterpret_cast<SurfaceControl*>(surfaceControlObj);
+    auto surfaceControl = SpFromRawPtr<SurfaceControl>(surfaceControlObj);
     PictureProfileHandle handle(pictureProfileId);
     transaction->setPictureProfileHandle(surfaceControl, handle);
 }
@@ -863,21 +861,21 @@ static void nativeSetPictureProfileId(JNIEnv* env, jclass clazz, jlong transacti
 static void nativeSetContentPriority(JNIEnv* env, jclass clazz, jlong transactionObj,
                                      jlong surfaceControlObj, jint priority) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const surfaceControl = reinterpret_cast<SurfaceControl*>(surfaceControlObj);
+    auto surfaceControl = SpFromRawPtr<SurfaceControl>(surfaceControlObj);
     transaction->setContentPriority(surfaceControl, priority);
 }
 
 static void nativeSetCachingHint(JNIEnv* env, jclass clazz, jlong transactionObj,
                                  jlong nativeObject, jint cachingHint) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setCachingHint(ctrl, static_cast<gui::CachingHint>(cachingHint));
 }
 
 static void nativeSetBlurRegions(JNIEnv* env, jclass clazz, jlong transactionObj,
                                  jlong nativeObject, jobjectArray regions, jint regionsLength) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
 
     std::vector<BlurRegion> blurRegionVector;
     const int size = regionsLength;
@@ -918,7 +916,7 @@ static void nativeSetStretchEffect(JNIEnv* env, jclass clazz, jlong transactionO
                                    jfloat childRelativeLeft, jfloat childRelativeTop,
                                    jfloat childRelativeRight, jfloat childRelativeBottom) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    auto* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     auto stretch = StretchEffect{
       .width = width,
       .height = height,
@@ -936,7 +934,7 @@ static void nativeSetEdgeExtensionEffect(JNIEnv* env, jclass clazz, jlong transa
                                          jlong nativeObj, jboolean leftEdge, jboolean rightEdge,
                                          jboolean topEdge, jboolean bottomEdge) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    auto* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObj);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObj);
 
     auto effect = gui::EdgeExtensionParameters();
     effect.extendLeft = leftEdge;
@@ -950,7 +948,7 @@ static void nativeSetFlags(JNIEnv* env, jclass clazz, jlong transactionObj,
         jlong nativeObject, jint flags, jint mask) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setFlags(ctrl, flags, mask);
 }
 
@@ -958,13 +956,13 @@ static void nativeSetFrameRateSelectionPriority(JNIEnv* env, jclass clazz, jlong
         jlong nativeObject, jint priority) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setFrameRateSelectionPriority(ctrl, priority);
 }
 
 static void nativeSetTransparentRegionHint(JNIEnv* env, jclass clazz, jlong transactionObj,
         jlong nativeObject, jobject regionObj) {
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     graphics::RegionIterator iterator(env, regionObj);
     if (!iterator.isValid()) {
         doThrowIAE(env);
@@ -989,7 +987,7 @@ static void nativeSetTransparentRegionHint(JNIEnv* env, jclass clazz, jlong tran
 
 static void nativeSetDamageRegion(JNIEnv* env, jclass clazz, jlong transactionObj,
                                   jlong nativeObject, jobject regionObj) {
-    SurfaceControl* const surfaceControl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto surfaceControl = SpFromRawPtr<SurfaceControl>(nativeObject);
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
     if (regionObj == nullptr) {
@@ -1022,7 +1020,7 @@ static void nativeSetDimmingEnabled(JNIEnv* env, jclass clazz, jlong transaction
                                     jlong nativeObject, jboolean dimmingEnabled) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setDimmingEnabled(ctrl, dimmingEnabled);
 }
 
@@ -1030,7 +1028,7 @@ static void nativeSetAlpha(JNIEnv* env, jclass clazz, jlong transactionObj,
         jlong nativeObject, jfloat alpha) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setAlpha(ctrl, alpha);
 }
 
@@ -1044,7 +1042,7 @@ static void nativeSetInputWindowInfo(JNIEnv* env, jclass clazz, jlong transactio
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
     sp<gui::WindowInfoHandle> info = android_view_InputWindowHandle_getHandle(env, inputWindow);
-    auto ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setInputWindowInfo(ctrl, std::move(info));
 }
 
@@ -1070,14 +1068,14 @@ static void nativeSetMetadata(JNIEnv* env, jclass clazz, jlong transactionObj,
 
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setMetadata(ctrl, id, *parcel);
 }
 
 static void nativeSetColor(JNIEnv* env, jclass clazz, jlong transactionObj,
         jlong nativeObject, jfloatArray fColor) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
 
     float* floatColors = env->GetFloatArrayElements(fColor, 0);
     half3 color(floatColors[0], floatColors[1], floatColors[2]);
@@ -1090,14 +1088,14 @@ static void nativeSetMatrix(JNIEnv* env, jclass clazz, jlong transactionObj,
         jfloat dsdx, jfloat dtdx, jfloat dtdy, jfloat dsdy) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setMatrix(ctrl, dsdx, dtdx, dtdy, dsdy);
 }
 
 static void nativeSetColorTransform(JNIEnv* env, jclass clazz, jlong transactionObj,
         jlong nativeObject, jfloatArray fMatrix, jfloatArray fTranslation) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const surfaceControl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto surfaceControl = SpFromRawPtr<SurfaceControl>(nativeObject);
     float* floatMatrix = env->GetFloatArrayElements(fMatrix, 0);
     mat3 matrix(static_cast<float const*>(floatMatrix));
     env->ReleaseFloatArrayElements(fMatrix, floatMatrix, 0);
@@ -1112,7 +1110,7 @@ static void nativeSetColorTransform(JNIEnv* env, jclass clazz, jlong transaction
 static void nativeSetColorSpaceAgnostic(JNIEnv* env, jclass clazz, jlong transactionObj,
         jlong nativeObject, jboolean agnostic) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const surfaceControl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto surfaceControl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setColorSpaceAgnostic(surfaceControl, agnostic);
 }
 
@@ -1121,7 +1119,7 @@ static void nativeSetWindowCrop(JNIEnv* env, jclass clazz, jlong transactionObj,
         jint l, jint t, jint r, jint b) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     Rect crop(l, t, r, b);
     transaction->setCrop(ctrl, crop);
 }
@@ -1130,7 +1128,7 @@ static void nativeSetCrop(JNIEnv* env, jclass clazz, jlong transactionObj, jlong
                           jfloat l, jfloat t, jfloat r, jfloat b) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     FloatRect crop(l, t, r, b);
     transaction->setCrop(ctrl, crop);
 }
@@ -1139,7 +1137,7 @@ static void nativeSetCornerRadius(JNIEnv* env, jclass clazz, jlong transactionOb
          jlong nativeObject, jfloat cornerRadius) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setCornerRadius(ctrl, cornerRadius);
 }
 
@@ -1147,7 +1145,7 @@ static void nativeSetClientDrawnCornerRadius(JNIEnv* env, jclass clazz, jlong tr
                                              jlong nativeObject, jfloat clientDrawnCornerRadius) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setClientDrawnCornerRadius(ctrl, clientDrawnCornerRadius);
 }
 
@@ -1155,7 +1153,7 @@ static void nativeSetBackgroundBlurRadius(JNIEnv* env, jclass clazz, jlong trans
          jlong nativeObject, jint blurRadius) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setBackgroundBlurRadius(ctrl, blurRadius);
 }
 
@@ -1163,7 +1161,7 @@ static void nativeSetBackgroundBlurScale(JNIEnv* env, jclass clazz, jlong transa
          jlong nativeObject, jfloat blurScale) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setBackgroundBlurScale(ctrl, blurScale);
 }
 
@@ -1171,7 +1169,7 @@ static void nativeSetLayerStack(JNIEnv* env, jclass clazz, jlong transactionObj,
         jlong nativeObject, jint layerStack) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setLayerStack(ctrl, ui::LayerStack::fromValue(layerStack));
 }
 
@@ -1179,7 +1177,7 @@ static void nativeSetShadowRadius(JNIEnv* env, jclass clazz, jlong transactionOb
          jlong nativeObject, jfloat shadowRadius) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    const auto ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    const auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setShadowRadius(ctrl, shadowRadius);
 }
 
@@ -1199,7 +1197,7 @@ static void nativeSetBoxShadowSettings(JNIEnv* env, jclass clazz, jlong transact
     }
 
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    const auto ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    const auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
 
     transaction->setBoxShadowSettings(ctrl, settings);
 }
@@ -1220,7 +1218,7 @@ static void nativeSetBorderSettings(JNIEnv* env, jclass clazz, jlong transaction
     }
 
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    const auto ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    const auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
 
     transaction->setBorderSettings(ctrl, settings);
 }
@@ -1229,7 +1227,7 @@ static void nativeSetTrustedOverlay(JNIEnv* env, jclass clazz, jlong transaction
                                     jlong nativeObject, jint trustedOverlay) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setTrustedOverlay(ctrl, static_cast<gui::TrustedOverlay>(trustedOverlay));
 }
 
@@ -1237,7 +1235,7 @@ static void nativeSetFrameRate(JNIEnv* env, jclass clazz, jlong transactionObj, 
                                jfloat frameRate, jint compatibility, jint changeFrameRateStrategy) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    const auto ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    const auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     // Our compatibility is a Surface.FRAME_RATE_COMPATIBILITY_* value, and
     // Transaction::setFrameRate() takes an ANATIVEWINDOW_FRAME_RATE_COMPATIBILITY_* value. The
     // values are identical though, so no need to convert anything.
@@ -1249,7 +1247,7 @@ static void nativeSetDefaultFrameRateCompatibility(JNIEnv* env, jclass clazz, jl
                                                    jlong nativeObject, jint compatibility) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    const auto ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    const auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
 
     transaction->setDefaultFrameRateCompatibility(ctrl, static_cast<int8_t>(compatibility));
 }
@@ -1258,14 +1256,14 @@ static void nativeSetFrameRateCategory(JNIEnv* env, jclass clazz, jlong transact
                                        jlong nativeObject, jint category,
                                        jboolean smoothSwitchOnly) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    const auto ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    const auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setFrameRateCategory(ctrl, static_cast<int8_t>(category), smoothSwitchOnly);
 }
 
 static void nativeSetFrameRateSelectionStrategy(JNIEnv* env, jclass clazz, jlong transactionObj,
                                                 jlong nativeObject, jint strategy) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    const auto ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    const auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setFrameRateSelectionStrategy(ctrl, static_cast<int8_t>(strategy));
 }
 
@@ -1273,19 +1271,19 @@ static void nativeSetFixedTransformHint(JNIEnv* env, jclass clazz, jlong transac
                                         jlong nativeObject, jint transformHint) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
 
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setFixedTransformHint(ctrl, transformHint);
 }
 
 static void nativeSetDropInputMode(JNIEnv* env, jclass clazz, jlong transactionObj,
                                    jlong nativeObject, jint mode) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     transaction->setDropInputMode(ctrl, static_cast<gui::DropInputMode>(mode));
 }
 
 static void nativeSurfaceFlushJankData(JNIEnv* env, jclass clazz, jlong nativeObject) {
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     SurfaceComposerClient::Transaction::sendSurfaceFlushJankDataTransaction(ctrl);
 }
 
@@ -1297,7 +1295,7 @@ static void nativeSanitize(JNIEnv* env, jclass clazz, jlong transactionObj, jint
 static void nativeSetDestinationFrame(JNIEnv* env, jclass clazz, jlong transactionObj,
                                       jlong nativeObject, jint l, jint t, jint r, jint b) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    SurfaceControl* const ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
     Rect crop(l, t, r, b);
     transaction->setDestinationFrame(ctrl, crop);
 }
@@ -1376,7 +1374,7 @@ static void nativeSetDisplaySurface(JNIEnv* env, jclass clazz,
     sp<IBinder> token(ibinderForJavaObject(env, tokenObj));
     if (token == NULL) return;
     sp<IGraphicBufferProducer> bufferProducer;
-    sp<Surface> sur(reinterpret_cast<Surface *>(nativeSurfaceObject));
+    sp<Surface> sur = SpFromRawPtr<Surface>(nativeSurfaceObject);
     if (sur != NULL) {
         bufferProducer = sur->getIGraphicBufferProducer();
     }
@@ -1994,8 +1992,8 @@ static jboolean nativeGetAnimationFrameStats(JNIEnv* env, jclass clazz, jobject 
 static void nativeReparent(JNIEnv* env, jclass clazz, jlong transactionObj,
         jlong nativeObject,
         jlong newParentObject) {
-    auto ctrl = reinterpret_cast<SurfaceControl *>(nativeObject);
-    auto newParent = reinterpret_cast<SurfaceControl *>(newParentObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
+    auto newParent = SpFromRawPtr<SurfaceControl>(newParentObject);
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
     transaction->reparent(ctrl, newParent);
 }
@@ -2051,14 +2049,14 @@ static jlong nativeReadFromParcel(JNIEnv* env, jclass clazz, jobject parcelObj) 
 }
 
 static jlong nativeCopyFromSurfaceControl(JNIEnv* env, jclass clazz, jlong surfaceControlNativeObj) {
-    sp<SurfaceControl> surface(reinterpret_cast<SurfaceControl *>(surfaceControlNativeObj));
+    auto surface = SpFromRawPtr<SurfaceControl>(surfaceControlNativeObj);
     if (surface == nullptr) {
         return 0;
     }
 
-    sp<SurfaceControl> newSurface = new SurfaceControl(surface);
+    auto newSurface = new SurfaceControl(surface);
     newSurface->incStrong((void *)nativeCreate);
-    return reinterpret_cast<jlong>(newSurface.get());
+    return reinterpret_cast<jlong>(newSurface);
 }
 
 static void nativeWriteToParcel(JNIEnv* env, jclass clazz,
@@ -2267,7 +2265,7 @@ static void nativeSetTrustedPresentationCallback(JNIEnv* env, jclass clazz, jlon
                                                  jlong trustedPresentationCallbackObject,
                                                  jobject trustedPresentationThresholds) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    auto ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
 
     TrustedPresentationThresholds thresholds;
     thresholds.minAlpha = env->GetFloatField(trustedPresentationThresholds,
@@ -2293,7 +2291,7 @@ static void nativeSetTrustedPresentationCallback(JNIEnv* env, jclass clazz, jlon
 static void nativeClearTrustedPresentationCallback(JNIEnv* env, jclass clazz, jlong transactionObj,
                                                    jlong nativeObject) {
     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionObj);
-    auto ctrl = reinterpret_cast<SurfaceControl*>(nativeObject);
+    auto ctrl = SpFromRawPtr<SurfaceControl>(nativeObject);
 
     transaction->clearTrustedPresentationCallback(ctrl);
 }
@@ -2388,7 +2386,7 @@ private:
 
 static jlong nativeCreateJankDataListenerWrapper(JNIEnv* env, jclass clazz,
                                                  jlong nativeSurfaceControl, jobject listener) {
-    sp<SurfaceControl> surface(reinterpret_cast<SurfaceControl *>(nativeSurfaceControl));
+    auto surface = SpFromRawPtr<SurfaceControl>(nativeSurfaceControl);
     if (surface == nullptr) {
         return 0;
     }
@@ -2415,7 +2413,7 @@ static jlong nativeGetJankDataListenerWrapperFinalizer() {
 }
 
 static void nativeFlushJankData(JNIEnv* env, jclass clazz, jlong listener) {
-    sp<JankDataListenerWrapper> wrapper = reinterpret_cast<JankDataListenerWrapper*>(listener);
+    auto wrapper = reinterpret_cast<JankDataListenerWrapper*>(listener);
     if (wrapper == nullptr) {
         return;
     }
@@ -2424,7 +2422,7 @@ static void nativeFlushJankData(JNIEnv* env, jclass clazz, jlong listener) {
 
 static void nativeRemoveJankDataListener(JNIEnv* env, jclass clazz, jlong listener,
                                          jlong afterVsync) {
-    sp<JankDataListenerWrapper> wrapper = reinterpret_cast<JankDataListenerWrapper*>(listener);
+    auto wrapper = reinterpret_cast<JankDataListenerWrapper*>(listener);
     if (wrapper == nullptr) {
         return;
     }
@@ -2437,7 +2435,7 @@ static jint nativeGetGPUContextPriority(JNIEnv* env, jclass clazz) {
 
 static void nativeSetTransformHint(JNIEnv* env, jclass clazz, jlong nativeSurfaceControl,
                                    jint transformHint) {
-    sp<SurfaceControl> surface(reinterpret_cast<SurfaceControl*>(nativeSurfaceControl));
+    auto surface = reinterpret_cast<SurfaceControl*>(nativeSurfaceControl);
     if (surface == nullptr) {
         return;
     }
@@ -2445,13 +2443,12 @@ static void nativeSetTransformHint(JNIEnv* env, jclass clazz, jlong nativeSurfac
 }
 
 static jint nativeGetTransformHint(JNIEnv* env, jclass clazz, jlong nativeSurfaceControl) {
-    sp<SurfaceControl> surface(reinterpret_cast<SurfaceControl*>(nativeSurfaceControl));
+    auto surface = reinterpret_cast<SurfaceControl*>(nativeSurfaceControl);
     return surface->getTransformHint();
 }
 
 static jint nativeGetLayerId(JNIEnv* env, jclass clazz, jlong nativeSurfaceControl) {
-    sp<SurfaceControl> surface(reinterpret_cast<SurfaceControl*>(nativeSurfaceControl));
-
+    auto surface = reinterpret_cast<SurfaceControl*>(nativeSurfaceControl);
     return surface->getLayerId();
 }
 

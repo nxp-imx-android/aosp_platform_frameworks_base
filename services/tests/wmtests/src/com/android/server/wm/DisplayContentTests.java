@@ -912,7 +912,7 @@ public class DisplayContentTests extends WindowTestsBase {
         assertEquals("Visible keyguard must influence device orientation",
                 SCREEN_ORIENTATION_PORTRAIT, mDisplayContent.getOrientation());
 
-        mAtm.mKeyguardController.keyguardGoingAway(appWin.getDisplayId(), 0 /* flags */);
+        mAtm.mKeyguardController.keyguardGoingAway(0 /* flags */);
         assertEquals("Keyguard that is going away must not influence device orientation",
                 SCREEN_ORIENTATION_LANDSCAPE, mDisplayContent.getOrientation());
     }
@@ -2557,7 +2557,7 @@ public class DisplayContentTests extends WindowTestsBase {
         transitions.flush();
 
         // Start unlocking from AOD.
-        keyguard.keyguardGoingAway(displayId, 0x0 /* flags */);
+        keyguard.keyguardGoingAway(0x0 /* flags */);
         assertTrue(keyguardGoingAway.getAsBoolean());
         assertTrue(appVisible.getAsBoolean());
 
@@ -2620,7 +2620,7 @@ public class DisplayContentTests extends WindowTestsBase {
         transitions.flush();
 
         // Start unlocking from AOD.
-        keyguard.keyguardGoingAway(displayId, 0x0 /* flags */);
+        keyguard.keyguardGoingAway(0x0 /* flags */);
         assertTrue(keyguardGoingAway.getAsBoolean());
         assertTrue(appVisible.getAsBoolean());
 

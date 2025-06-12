@@ -135,7 +135,6 @@ import com.android.internal.view.menu.MenuHelper;
 import com.android.internal.view.menu.MenuPresenter;
 import com.android.internal.view.menu.MenuView;
 import com.android.internal.widget.DecorContentParent;
-import com.android.window.flags.Flags;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -473,12 +472,11 @@ public class PhoneWindow extends Window implements MenuBuilder.Callback {
      * whether the app declares style to opt out.
      */
     public static boolean isOptOutEdgeToEdgeEnabled(ApplicationInfo info, boolean local) {
-        final boolean disabled = Flags.disableOptOutEdgeToEdge()
-                && (local
-                        // Calling this doesn't require a permission.
-                        ? CompatChanges.isChangeEnabled(DISABLE_OPT_OUT_EDGE_TO_EDGE)
-                        // Calling this requires permissions.
-                        : info.isChangeEnabled(DISABLE_OPT_OUT_EDGE_TO_EDGE));
+        final boolean disabled = local
+                // Calling this doesn't require a permission.
+                ? CompatChanges.isChangeEnabled(DISABLE_OPT_OUT_EDGE_TO_EDGE)
+                // Calling this requires permissions.
+                : info.isChangeEnabled(DISABLE_OPT_OUT_EDGE_TO_EDGE);
         return !disabled;
     }
 

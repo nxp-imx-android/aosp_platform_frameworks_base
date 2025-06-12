@@ -19,8 +19,10 @@ package com.android.server.companion.virtual;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -35,6 +37,7 @@ import android.content.om.OverlayManagerTransaction;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.provider.Settings;
 import android.testing.AndroidTestingRunner;
 
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -68,8 +71,12 @@ public class ViewConfigurationControllerTest {
     private ViewConfigurationController mViewConfigurationController;
     @Mock
     private OverlayManager mOverlayManagerMock;
+    @Mock
+    private ViewConfigurationController.SettingsWriter mSettingsWriter;
     @Captor
     private ArgumentCaptor<OverlayManagerTransaction> mTransactionArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<String> mSettingsKeyCaptor;
 
     @Before
     public void setUp() throws Exception {
@@ -78,7 +85,7 @@ public class ViewConfigurationControllerTest {
                 InstrumentationRegistry.getInstrumentation().getTargetContext()));
         when(context.getSystemService(OverlayManager.class)).thenReturn(mOverlayManagerMock);
         when(context.createDeviceContext(anyInt())).thenReturn(context);
-        mViewConfigurationController = new ViewConfigurationController(context);
+        mViewConfigurationController = new ViewConfigurationController(context, mSettingsWriter);
     }
 
     @Test
@@ -130,15 +137,25 @@ public class ViewConfigurationControllerTest {
         verifyNoInteractions(mOverlayManagerMock);
     }
 
+    @Test
+    public void applyViewConfigurationParams_writesSettings() throws Exception {
+        mViewConfigurationController.applyViewConfigurationParams(DEVICE_ID,
+                createParamsRequiringSettingsOverride());
+        verify(mSettingsWriter, times(2)).writeSettings(any(), mSettingsKeyCaptor.capture(),
+                anyInt());
+        assertThat(mSettingsKeyCaptor.getAllValues()).containsExactly(
+                Settings.Secure.LONG_PRESS_TIMEOUT, Settings.Secure.MULTI_PRESS_TIMEOUT);
+    }
+
     private static ViewConfigurationParams createParamsRequiringResourceOverlay() {
         return new ViewConfigurationParams.Builder()
                 .setTapTimeoutDuration(Duration.ofMillis(10L))
                 .setDoubleTapTimeoutDuration(Duration.ofMillis(10L))
                 .setDoubleTapMinTimeDuration(Duration.ofMillis(10L))
                 .setScrollFriction(10f)
-                .setMinimumFlingVelocityDpPerSecond(10f)
-                .setMaximumFlingVelocityDpPerSecond(10f)
-                .setTouchSlopDp(10f)
+                .setMinimumFlingVelocityPixelsPerSecond(10)
+                .setMaximumFlingVelocityPixelsPerSecond(10)
+                .setTouchSlopPixels(10)
                 .build();
     }
 

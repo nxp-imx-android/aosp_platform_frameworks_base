@@ -563,9 +563,12 @@ android.util.proto.ProtoStream
 android.util.proto.ProtoUtils
 android.util.proto.WireTypeMismatchException
 
+android.view.animation.AnimationUtils
+android.view.Choreographer
 android.view.ContextThemeWrapper
 android.view.Display
 android.view.DisplayAdjustments
+android.view.DisplayEventReceiver
 android.view.DisplayInfo
 android.view.Gravity
 android.view.InflateException

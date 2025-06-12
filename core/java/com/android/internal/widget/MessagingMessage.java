@@ -35,11 +35,11 @@ public interface MessagingMessage extends MessagingLinearLayout.MessagingChild {
 
     static MessagingMessage createMessage(IMessagingLayout layout,
             Notification.MessagingStyle.Message m, ImageResolver resolver,
-            boolean usePrecomputedText) {
+            boolean usePrecomputedText, boolean useItalics) {
         if (hasImage(m) && !ActivityManager.isLowRamDeviceStatic()) {
             return MessagingImageMessage.createMessage(layout, m, resolver, usePrecomputedText);
         } else {
-            return MessagingTextMessage.createMessage(layout, m, usePrecomputedText);
+            return MessagingTextMessage.createMessage(layout, m, usePrecomputedText, useItalics);
         }
     }
 

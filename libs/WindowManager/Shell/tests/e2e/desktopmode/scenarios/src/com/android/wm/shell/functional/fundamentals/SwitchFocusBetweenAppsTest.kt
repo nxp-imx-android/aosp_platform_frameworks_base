@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.server.display.utils;
+package com.android.wm.shell.functional.fundamentals
 
-public class AmbientFilterStubber extends AmbientFilter {
-    public AmbientFilterStubber() {
-        super(null, 1);
-    }
+import android.platform.test.annotations.Postsubmit
+import android.platform.test.rule.ScreenRecordRule
+import com.android.wm.shell.scenarios.SwitchFocusBetweenApps
+import org.junit.runner.RunWith
+import org.junit.runners.BlockJUnit4ClassRunner
 
-    protected float filter(long time, RollingBuffer buffer) {
-        return 0f;
-    }
-}
+/* Functional test for [SwitchFocusBetweenApps]. */
+@RunWith(BlockJUnit4ClassRunner::class)
+@Postsubmit
+@ScreenRecordRule.ScreenRecord
+class SwitchFocusBetweenAppsTest : SwitchFocusBetweenApps()

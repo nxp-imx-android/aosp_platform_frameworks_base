@@ -19,6 +19,7 @@ package com.android.systemui.shared.rotation;
 import android.annotation.DimenRes;
 import android.annotation.IdRes;
 import android.annotation.LayoutRes;
+import android.annotation.Nullable;
 import android.annotation.StringRes;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
@@ -79,8 +80,8 @@ public class FloatingRotationButton implements RotationButton {
 
     private FloatingRotationButtonPositionCalculator mPositionCalculator;
 
-    private RotationButtonController mRotationButtonController;
-    private RotationButtonUpdatesCallback mUpdatesCallback;
+    @Nullable private RotationButtonController mRotationButtonController;
+    @Nullable private RotationButtonUpdatesCallback mUpdatesCallback;
     private Position mPosition;
 
     public FloatingRotationButton(Context context, @StringRes int contentDescriptionResource,
@@ -132,14 +133,17 @@ public class FloatingRotationButton implements RotationButton {
     }
 
     @Override
-    public void setRotationButtonController(RotationButtonController rotationButtonController) {
+    public void setRotationButtonController(
+            @Nullable RotationButtonController rotationButtonController) {
         mRotationButtonController = rotationButtonController;
-        updateIcon(mRotationButtonController.getLightIconColor(),
-                mRotationButtonController.getDarkIconColor());
+        if (mRotationButtonController != null) {
+            updateIcon(mRotationButtonController.getLightIconColor(),
+                    mRotationButtonController.getDarkIconColor());
+        }
     }
 
     @Override
-    public void setUpdatesCallback(RotationButtonUpdatesCallback updatesCallback) {
+    public void setUpdatesCallback(@Nullable RotationButtonUpdatesCallback updatesCallback) {
         mUpdatesCallback = updatesCallback;
     }
 
@@ -195,9 +199,12 @@ public class FloatingRotationButton implements RotationButton {
 
     @Override
     public void updateIcon(int lightIconColor, int darkIconColor) {
-        mAnimatedDrawable = (AnimatedVectorDrawable) mKeyButtonView.getContext()
-                .getDrawable(mRotationButtonController.getIconResId());
-        mAnimatedDrawable.setBounds(0, 0, mKeyButtonView.getWidth(), mKeyButtonView.getHeight());
+        if (mRotationButtonController != null) {
+            mAnimatedDrawable = (AnimatedVectorDrawable) mKeyButtonView.getContext()
+                    .getDrawable(mRotationButtonController.getIconResId());
+            mAnimatedDrawable.setBounds(
+                    0, 0, mKeyButtonView.getWidth(), mKeyButtonView.getHeight());
+        }
         mKeyButtonView.setImageDrawable(mAnimatedDrawable);
         mKeyButtonView.setColors(lightIconColor, darkIconColor);
     }
@@ -251,8 +258,10 @@ public class FloatingRotationButton implements RotationButton {
             updateDimensionResources();
 
             if (mIsShowing) {
-                updateIcon(mRotationButtonController.getLightIconColor(),
-                        mRotationButtonController.getDarkIconColor());
+                if (mRotationButtonController != null) {
+                    updateIcon(mRotationButtonController.getLightIconColor(),
+                            mRotationButtonController.getDarkIconColor());
+                }
                 final LayoutParams layoutParams = adjustViewPositionAndCreateLayoutParams();
                 mWindowManager.updateViewLayout(mKeyButtonContainer, layoutParams);
                 if (mAnimatedDrawable != null) {

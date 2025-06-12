@@ -244,6 +244,8 @@ class DisplayWindowSettings {
      * Returns {@code true} if either the display is the default display, or the display is allowed
      * to dynamically add/remove system decorations and the system decorations should be shown on it
      * currently.
+     *
+     * Note that the display should not mirror when this returns {@code true}.
      */
     boolean shouldShowSystemDecorsLocked(@NonNull DisplayContent dc) {
         if (dc.getDisplayId() == Display.DEFAULT_DISPLAY) {

@@ -17,13 +17,10 @@
 package com.android.systemui.volume.dialog.domain.interactor
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import com.android.systemui.accessibility.data.repository.AccessibilityRepository
 import com.android.systemui.plugins.VolumeDialogController
-import com.android.systemui.qs.flags.QsDetailedView
-import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.volume.Events
@@ -66,7 +63,6 @@ import kotlinx.coroutines.flow.stateIn
 class VolumeDialogVisibilityInteractor
 @Inject
 constructor(
-    context: Context,
     @VolumeDialogPlugin coroutineScope: CoroutineScope,
     callbacksInteractor: VolumeDialogCallbacksInteractor,
     private val stateInteractor: VolumeDialogStateInteractor,
@@ -76,14 +72,13 @@ constructor(
     private val controller: VolumeDialogController,
     private val secureSettingsRepository: SecureSettingsRepository,
     private val shadeInteractor: ShadeInteractor,
+    desktopAudioTileDetailsFeatureInteractor: DesktopAudioTileDetailsFeatureInteractor,
 ) {
 
     /** @see computeTimeout */
     private val defaultTimeout = 3.seconds
 
-    private val showVolumeSliderInQsShade =
-        QsDetailedView.isEnabled &&
-            context.resources.getBoolean(R.bool.config_enableDesktopAudioTileDetailsView)
+    private val showVolumeSliderInQsShade = desktopAudioTileDetailsFeatureInteractor.isEnabled()
 
     @SuppressLint("SharedFlowCreation")
     private val mutableDismissDialogEvents = MutableSharedFlow<Unit>(extraBufferCapacity = 1)

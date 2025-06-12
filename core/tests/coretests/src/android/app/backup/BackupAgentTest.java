@@ -62,8 +62,7 @@ public class BackupAgentTest {
     @Mock FullBackup.BackupScheme mBackupScheme;
     @Mock Context mContext;
 
-    @Rule
-    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Before
     public void setUp() {
@@ -72,9 +71,9 @@ public class BackupAgentTest {
 
     @Test
     public void testGetIncludeExcludeRules_isNotMigration_returnsRules() throws Exception {
-        PathWithRequiredFlags path = new PathWithRequiredFlags("path", /* requiredFlags */ 0);
-        Map<String, Set<PathWithRequiredFlags>> includePaths = Collections.singletonMap("test",
-                Collections.singleton(path));
+        PathWithRequiredFlags path = new PathWithRequiredFlags("path", /* requiredFlags= */ 0);
+        Map<String, Set<PathWithRequiredFlags>> includePaths =
+                Collections.singletonMap("test", Collections.singleton(path));
         ArraySet<PathWithRequiredFlags> excludePaths = new ArraySet<>();
         excludePaths.add(path);
         IncludeExcludeRules expectedRules = new IncludeExcludeRules(includePaths, excludePaths);
@@ -99,8 +98,8 @@ public class BackupAgentTest {
         BackupAgent agent = new TestFullBackupAgent();
         agent.onCreate(USER_HANDLE, BackupDestination.CLOUD, OperationType.BACKUP);
 
-        assertThat(agent.getBackupRestoreEventLogger().getOperationType()).isEqualTo(
-                OperationType.BACKUP);
+        assertThat(agent.getBackupRestoreEventLogger().getOperationType())
+                .isEqualTo(OperationType.BACKUP);
     }
 
     @Test
@@ -108,8 +107,8 @@ public class BackupAgentTest {
         BackupAgent agent = new TestFullBackupAgent();
         agent.onCreate(USER_HANDLE, BackupDestination.CLOUD, OperationType.RESTORE);
 
-        assertThat(agent.getBackupRestoreEventLogger().getOperationType()).isEqualTo(
-                OperationType.RESTORE);
+        assertThat(agent.getBackupRestoreEventLogger().getOperationType())
+                .isEqualTo(OperationType.RESTORE);
     }
 
     @Test
@@ -119,7 +118,7 @@ public class BackupAgentTest {
         agent.onCreate(USER_HANDLE, BackupDestination.CLOUD, OperationType.BACKUP);
 
         // TestFullBackupAgent logs DATA_TYPE_BACKED_UP when onFullBackup is called.
-        agent.onFullBackup(new FullBackupDataOutput(/* quota = */ 0));
+        agent.onFullBackup(new FullBackupDataOutput(/* quota= */ 0));
 
         assertThat(agent.getBackupRestoreEventLogger().getLoggingResults().get(0).getDataType())
                 .isEqualTo(DATA_TYPE_BACKED_UP);
@@ -130,7 +129,7 @@ public class BackupAgentTest {
         BackupAgent agent = new TestFullBackupAgent();
         agent.onCreate(USER_HANDLE, BackupDestination.CLOUD, OperationType.BACKUP);
 
-        agent.onFullBackup(new FullBackupDataOutput(/* quota = */ 0));
+        agent.onFullBackup(new FullBackupDataOutput(/* quota= */ 0));
         agent.clearBackupRestoreEventLogger();
 
         assertThat(agent.getBackupRestoreEventLogger().getLoggingResults().size()).isEqualTo(0);
@@ -141,12 +140,12 @@ public class BackupAgentTest {
         BackupAgent agent = new TestFullBackupAgent();
         agent.onCreate(USER_HANDLE, BackupDestination.CLOUD, OperationType.BACKUP);
 
-        agent.onFullBackup(new FullBackupDataOutput(/* quota = */ 0));
+        agent.onFullBackup(new FullBackupDataOutput(/* quota= */ 0));
         agent.clearBackupRestoreEventLogger();
-        agent.onFullBackup(new FullBackupDataOutput(/* quota = */ 0));
+        agent.onFullBackup(new FullBackupDataOutput(/* quota= */ 0));
 
-        assertThat(agent.getBackupRestoreEventLogger().getLoggingResults().get(
-                0).getSuccessCount()).isEqualTo(1);
+        assertThat(agent.getBackupRestoreEventLogger().getLoggingResults().get(0).getSuccessCount())
+                .isEqualTo(1);
     }
 
     @Test
@@ -158,13 +157,19 @@ public class BackupAgentTest {
         IBackupAgent agentBinder = (IBackupAgent) agent.onBind();
 
         ParcelFileDescriptor[] pipes = ParcelFileDescriptor.createPipe();
-        FileOutputStream writeSide = new FileOutputStream(
-                pipes[1].getFileDescriptor());
+        FileOutputStream writeSide = new FileOutputStream(pipes[1].getFileDescriptor());
         writeSide.write("Hello".getBytes(StandardCharsets.UTF_8));
 
-        agentBinder.doRestoreFile(pipes[0], /* length= */ 5, BackupAgent.TYPE_FILE,
-                FullBackup.FILES_TREE_TOKEN, /* path= */ "hello_file", /* mode= */
-                0666, /* mtime= */ 12345, /* token= */ 6789, mIBackupManager);
+        agentBinder.doRestoreFile(
+                pipes[0],
+                /* length= */ 5,
+                BackupAgent.TYPE_FILE,
+                FullBackup.FILES_TREE_TOKEN,
+                /* path= */ "hello_file",
+                /* mode= */ 0666,
+                /* mtime= */ 12345,
+                /* token= */ 6789,
+                mIBackupManager);
 
         try (FileInputStream in = new FileInputStream(pipes[0].getFileDescriptor())) {
             assertThat(in.available()).isEqualTo(0);
@@ -182,8 +187,9 @@ public class BackupAgentTest {
 
     private static class TestFullBackupAgent extends BackupAgent {
         @Override
-        public void onBackup(ParcelFileDescriptor oldState, BackupDataOutput data,
-                ParcelFileDescriptor newState) throws IOException {
+        public void onBackup(
+                ParcelFileDescriptor oldState, BackupDataOutput data, ParcelFileDescriptor newState)
+                throws IOException {
             // Left empty as this is a full backup agent.
         }
 
@@ -193,8 +199,9 @@ public class BackupAgentTest {
         }
 
         @Override
-        public void onRestore(BackupDataInput data, int appVersionCode,
-                ParcelFileDescriptor newState) throws IOException {
+        public void onRestore(
+                BackupDataInput data, int appVersionCode, ParcelFileDescriptor newState)
+                throws IOException {
             // Left empty as this is a full backup agent.
         }
     }
@@ -202,8 +209,14 @@ public class BackupAgentTest {
     private static class TestRestoreIgnoringFullBackupAgent extends TestFullBackupAgent {
 
         @Override
-        protected void onRestoreFile(ParcelFileDescriptor data, long size,
-                int type, String domain, String path, long mode, long mtime)
+        protected void onRestoreFile(
+                ParcelFileDescriptor data,
+                long size,
+                int type,
+                String domain,
+                String path,
+                long mode,
+                long mtime)
                 throws IOException {
             // Ignore the file and don't consume any data.
         }

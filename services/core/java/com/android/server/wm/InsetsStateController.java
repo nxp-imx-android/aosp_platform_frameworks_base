@@ -55,24 +55,34 @@ import java.util.function.Consumer;
  */
 class InsetsStateController {
 
+    @NonNull
     private final InsetsState mLastState = new InsetsState();
+    @NonNull
     private final InsetsState mState = new InsetsState();
+    @NonNull
     private final DisplayContent mDisplayContent;
-
+    @NonNull
     private final SparseArray<InsetsSourceProvider> mProviders = new SparseArray<>();
+    @NonNull
     private final SparseLongArray mSurfaceTransactionIds = new SparseLongArray();
+    @NonNull
     private final ArrayMap<InsetsControlTarget, ArrayList<InsetsSourceProvider>>
             mControlTargetProvidersMap = new ArrayMap<>();
+    @NonNull
     private final ArrayMap<InsetsControlTarget, ArrayList<InsetsSourceProvider>>
             mPendingTargetProvidersMap = new ArrayMap<>();
+    @NonNull
     private final SparseArray<InsetsControlTarget> mIdControlTargetMap = new SparseArray<>();
+    @NonNull
     private final SparseArray<InsetsControlTarget> mIdFakeControlTargetMap = new SparseArray<>();
 
+    @NonNull
     private final Consumer<WindowState> mDispatchInsetsChanged = w -> {
         if (w.isReadyToDispatchInsetsState()) {
             w.notifyInsetsChanged();
         }
     };
+
     /**
      * Empty instance of the IME control target, to enable hiding the IME when there is no real
      * control target.
@@ -94,29 +104,33 @@ class InsetsStateController {
         }
     };
 
-    private @InsetsType int mForcedConsumingTypes;
+    @InsetsType
+    private int mForcedConsumingTypes;
 
-    InsetsStateController(DisplayContent displayContent) {
+    InsetsStateController(@NonNull DisplayContent displayContent) {
         mDisplayContent = displayContent;
     }
 
+    @NonNull
     InsetsState getRawInsetsState() {
         return mState;
     }
 
-    @Nullable InsetsSourceControl[] getControlsForDispatch(InsetsControlTarget target) {
+    @Nullable
+    InsetsSourceControl[] getControlsForDispatch(@NonNull InsetsControlTarget target) {
         final ArrayList<InsetsSourceProvider> controlled = mControlTargetProvidersMap.get(target);
         if (controlled == null) {
             return null;
         }
         final int size = controlled.size();
-        final InsetsSourceControl[] result = new InsetsSourceControl[size];
+        final var result = new InsetsSourceControl[size];
         for (int i = 0; i < size; i++) {
             result[i] = controlled.get(i).getControl(target);
         }
         return result;
     }
 
+    @NonNull
     SparseArray<InsetsSourceProvider> getSourceProviders() {
         return mProviders;
     }
@@ -124,6 +138,7 @@ class InsetsStateController {
     /**
      * @return The provider of a specific source ID.
      */
+    @NonNull
     InsetsSourceProvider getOrCreateSourceProvider(int id, @InsetsType int type) {
         InsetsSourceProvider provider = mProviders.get(id);
         if (provider != null) {
@@ -142,6 +157,7 @@ class InsetsStateController {
         return provider;
     }
 
+    @NonNull
     ImeInsetsSourceProvider getImeSourceProvider() {
         return (ImeInsetsSourceProvider) getOrCreateSourceProvider(ID_IME, ime());
     }
@@ -196,11 +212,11 @@ class InsetsStateController {
      * @param notifyInsetsChange {@code true} if the clients should be notified about the change.
      */
     void updateAboveInsetsState(boolean notifyInsetsChange) {
-        final InsetsState aboveInsetsState = new InsetsState();
+        final var aboveInsetsState = new InsetsState();
         aboveInsetsState.set(mState,
                 displayCutout() | systemGestures() | mandatorySystemGestures());
-        final SparseArray<InsetsSource> localInsetsSourcesFromParent = new SparseArray<>();
-        final ArraySet<WindowState> insetsChangedWindows = new ArraySet<>();
+        final var localInsetsSourcesFromParent = new SparseArray<InsetsSource>();
+        final var insetsChangedWindows = new ArraySet<WindowState>();
 
         // This method will iterate on the entire hierarchy in top to bottom z-order manner. The
         // aboveInsetsState will be modified as per the insets provided by the WindowState being
@@ -228,7 +244,7 @@ class InsetsStateController {
         }
     }
 
-    void onRequestedVisibleTypesChanged(InsetsTarget caller, @InsetsType int changedTypes,
+    void onRequestedVisibleTypesChanged(@NonNull InsetsTarget caller, @InsetsType int changedTypes,
             @Nullable ImeTracker.Token statsToken) {
         boolean changed = false;
         for (int i = mProviders.size() - 1; i >= 0; i--) {
@@ -236,8 +252,8 @@ class InsetsStateController {
             final @InsetsType int type = provider.getSource().getType();
             final boolean isImeProvider = type == WindowInsets.Type.ime();
             if ((type & changedTypes) != 0) {
-                changed |= provider.updateClientVisibility(
-                        caller, isImeProvider ? statsToken : null)
+                changed |= provider.updateClientVisibility(caller,
+                        isImeProvider ? statsToken : null)
                         // Fake control target cannot change the client visibility, but it should
                         // change the insets with its newly requested visibility.
                         || (caller == provider.getFakeControlTarget());
@@ -254,7 +270,8 @@ class InsetsStateController {
         }
     }
 
-    @InsetsType int getFakeControllingTypes(InsetsTarget target) {
+    @InsetsType
+    int getFakeControllingTypes(@NonNull InsetsTarget target) {
         @InsetsType int types = 0;
         for (int i = mProviders.size() - 1; i >= 0; i--) {
             final InsetsSourceProvider provider = mProviders.valueAt(i);
@@ -305,19 +322,19 @@ class InsetsStateController {
     }
 
     void notifyControlTargetChanged(@Nullable InsetsControlTarget target,
-            InsetsSourceProvider provider) {
+            @NonNull InsetsSourceProvider provider) {
         onControlTargetChanged(provider, target, false /* fake */);
         notifyPendingInsetsControlChanged();
     }
 
     void notifyControlRevoked(@NonNull InsetsControlTarget previousControlTarget,
-            InsetsSourceProvider provider) {
+            @NonNull InsetsSourceProvider provider) {
         removeFromControlMaps(previousControlTarget, provider, false /* fake */);
         addToPendingControlMaps(previousControlTarget, provider);
         notifyPendingInsetsControlChanged();
     }
 
-    private void onControlTargetChanged(InsetsSourceProvider provider,
+    private void onControlTargetChanged(@NonNull InsetsSourceProvider provider,
             @Nullable InsetsControlTarget target, boolean fake) {
         final InsetsControlTarget lastTarget = fake
                 ? mIdFakeControlTargetMap.get(provider.getSource().getId())
@@ -357,7 +374,7 @@ class InsetsStateController {
     }
 
     private void removeFromControlMaps(@NonNull InsetsControlTarget target,
-            InsetsSourceProvider provider, boolean fake) {
+            @NonNull InsetsSourceProvider provider, boolean fake) {
         final ArrayList<InsetsSourceProvider> array = mControlTargetProvidersMap.get(target);
         if (array == null) {
             return;
@@ -374,7 +391,7 @@ class InsetsStateController {
     }
 
     private void addToControlMaps(@NonNull InsetsControlTarget target,
-            InsetsSourceProvider provider, boolean fake) {
+            @NonNull InsetsSourceProvider provider, boolean fake) {
         final ArrayList<InsetsSourceProvider> array = mControlTargetProvidersMap.computeIfAbsent(
                 target, key -> new ArrayList<>());
         array.add(provider);
@@ -386,18 +403,20 @@ class InsetsStateController {
     }
 
     private void addToPendingControlMaps(@NonNull InsetsControlTarget target,
-            InsetsSourceProvider provider) {
+            @NonNull InsetsSourceProvider provider) {
         final ArrayList<InsetsSourceProvider> array =
                 mPendingTargetProvidersMap.computeIfAbsent(target, key -> new ArrayList<>());
         array.add(provider);
     }
 
-    void notifyControlChanged(@NonNull InsetsControlTarget target, InsetsSourceProvider provider) {
+    void notifyControlChanged(@NonNull InsetsControlTarget target,
+            @NonNull InsetsSourceProvider provider) {
         addToPendingControlMaps(target, provider);
         notifyPendingInsetsControlChanged();
     }
 
-    void notifySurfaceTransactionReady(InsetsSourceProvider provider, long id, boolean ready) {
+    void notifySurfaceTransactionReady(@NonNull InsetsSourceProvider provider, long id,
+            boolean ready) {
         if (ready) {
             mSurfaceTransactionIds.put(provider.getSource().getId(), id);
         } else {
@@ -405,7 +424,7 @@ class InsetsStateController {
         }
     }
 
-    void onAnimatingTypesChanged(InsetsControlTarget target,
+    void onAnimatingTypesChanged(@NonNull InsetsControlTarget target,
             @Nullable ImeTracker.Token statsToken) {
         for (int i = mProviders.size() - 1; i >= 0; i--) {
             final InsetsSourceProvider provider = mProviders.valueAt(i);
@@ -476,7 +495,7 @@ class InsetsStateController {
         mDisplayContent.notifyInsetsChanged(mDispatchInsetsChanged);
     }
 
-    void notifyInsetsChanged(ArraySet<WindowState> changedWindows) {
+    void notifyInsetsChanged(@NonNull ArraySet<WindowState> changedWindows) {
         for (int i = changedWindows.size() - 1; i >= 0; i--) {
             mDispatchInsetsChanged.accept(changedWindows.valueAt(i));
         }
@@ -491,7 +510,7 @@ class InsetsStateController {
         return mPendingTargetProvidersMap.containsKey(target);
     }
 
-    void dump(String prefix, PrintWriter pw) {
+    void dump(@NonNull String prefix, @NonNull PrintWriter pw) {
         pw.println(prefix + "WindowInsetsStateController");
         prefix = prefix + "  ";
         mState.dump(prefix, pw);
@@ -526,7 +545,7 @@ class InsetsStateController {
         }
     }
 
-    void dumpDebug(ProtoOutputStream proto, @WindowTracingLogLevel int logLevel) {
+    void dumpDebug(@NonNull ProtoOutputStream proto, @WindowTracingLogLevel int logLevel) {
         for (int i = mProviders.size() - 1; i >= 0; i--) {
             final InsetsSourceProvider provider = mProviders.valueAt(i);
             provider.dumpDebug(proto,

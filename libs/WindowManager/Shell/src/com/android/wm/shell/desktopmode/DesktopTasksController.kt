@@ -3575,7 +3575,7 @@ class DesktopTasksController(
     }
 
     /** Applies the changes needed to enter fullscreen and clean up the desktop if needed. */
-    private fun addMoveToFullscreenChanges(
+    fun addMoveToFullscreenChanges(
         wct: WindowContainerTransaction,
         taskInfo: TaskInfo,
         willExitDesktop: Boolean,

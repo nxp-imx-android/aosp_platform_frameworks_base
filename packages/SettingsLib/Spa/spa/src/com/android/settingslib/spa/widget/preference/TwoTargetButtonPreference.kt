@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 @Composable
 fun TwoTargetButtonPreference(
     title: String,
-    summary: () -> String,
+    summary: () -> CharSequence,
     icon: @Composable (() -> Unit)? = null,
     onClick: () -> Unit,
     buttonIcon: ImageVector,

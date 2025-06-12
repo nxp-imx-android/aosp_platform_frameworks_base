@@ -3457,6 +3457,8 @@
     <string name="media_output_end_session_dialog_summary">Stop your shared session to move media to another device</string>
     <!-- Button text for stopping session [CHAR LIMIT=60] -->
     <string name="media_output_end_session_dialog_stop">Stop</string>
+    <!-- Button text for stopping sharing [CHAR LIMIT=60] -->
+    <string name="media_output_dialog_button_stop_sharing">Stop sharing</string>
 
 
     <!-- Media Output Broadcast Dialog -->

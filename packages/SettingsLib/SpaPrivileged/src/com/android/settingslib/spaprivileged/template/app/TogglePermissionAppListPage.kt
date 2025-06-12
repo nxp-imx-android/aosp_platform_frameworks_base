@@ -149,7 +149,7 @@ internal class TogglePermissionInternalAppListModel<T : AppRecord>(
     override fun getSummary(option: Int, record: T) = getSummary(record)
 
     @Composable
-    fun getSummary(record: T): () -> String {
+    fun getSummary(record: T): () -> CharSequence {
         val allowed = listModel.isAllowed(record)
         val restrictions =
             listModel.getRestrictions(

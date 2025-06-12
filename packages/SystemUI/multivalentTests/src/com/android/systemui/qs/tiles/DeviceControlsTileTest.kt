@@ -81,6 +81,7 @@ import platform.test.runner.parameterized.Parameters
 @SmallTest
 @RunWith(ParameterizedAndroidJunit4::class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
+@android.platform.test.annotations.EnabledOnRavenwood
 class DeviceControlsTileTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     init {

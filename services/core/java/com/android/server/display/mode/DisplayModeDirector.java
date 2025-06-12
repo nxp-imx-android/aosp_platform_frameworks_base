@@ -2334,7 +2334,7 @@ public class DisplayModeDirector {
 
                 if (lightSensor != null && lightSensor != mLightSensor) {
                     final Resources res = mContext.getResources();
-                    mAmbientFilter = AmbientFilterFactory.createBrightnessFilter(TAG, res);
+                    mAmbientFilter = mInjector.getAmbientFilter(res);
                     mLightSensor = lightSensor;
                 }
             } else {
@@ -3158,6 +3158,8 @@ public class DisplayModeDirector {
 
         @Nullable
         VotesStatsReporter getVotesStatsReporter();
+
+        AmbientFilter getAmbientFilter(Resources res);
     }
 
     @VisibleForTesting
@@ -3300,6 +3302,11 @@ public class DisplayModeDirector {
         public VotesStatsReporter getVotesStatsReporter() {
             // if frame rate override supported, renderRates will be ignored in mode selection
             return new VotesStatsReporter(supportsFrameRateOverride());
+        }
+
+        @Override
+        public AmbientFilter getAmbientFilter(Resources res) {
+            return AmbientFilterFactory.createBrightnessFilter(TAG, res);
         }
 
         private DisplayManager getDisplayManager() {

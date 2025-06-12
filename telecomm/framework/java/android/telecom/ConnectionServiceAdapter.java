@@ -209,6 +209,36 @@ final class ConnectionServiceAdapter implements DeathRecipient {
     }
 
     /**
+     * Sets a call's state to be audio processing.
+     *
+     * @param callId - The unique ID of the call whose state is changing to be audio processing.
+     */
+    void setAudioProcessing(String callId, int useCase) {
+        for (IConnectionServiceAdapter adapter : mAdapters) {
+            try {
+                adapter.setAudioProcessing(callId, Log.getExternalSession(), useCase);
+            } catch (RemoteException e) {
+                Log.e(this, e, "Exception trying to set call to AUDIO_PROCESSING");
+            }
+        }
+    }
+
+    /**
+     * Sets a call's state to be simulated ringing.
+     *
+     * @param callId - The unique ID of the call whose state is changing to be simulated ringing.
+     */
+    void setSimulatedRinging(String callId) {
+        for (IConnectionServiceAdapter adapter : mAdapters) {
+            try {
+                adapter.setSimulatedRinging(callId, Log.getExternalSession());
+            } catch (RemoteException e) {
+                Log.e(this, e, "Exception trying to set call to SIMULATED_RINGING");
+            }
+        }
+    }
+
+    /**
      * Asks Telecom to start or stop a ringback tone for a call.
      *
      * @param callId The unique ID of the call whose ringback is being changed.

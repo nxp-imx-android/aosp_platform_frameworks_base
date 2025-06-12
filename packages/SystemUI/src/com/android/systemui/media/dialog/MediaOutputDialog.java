@@ -16,10 +16,13 @@
 
 package com.android.systemui.media.dialog;
 
-import static com.android.settingslib.flags.Flags.legacyLeAudioSharing;
+import static com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSharing;
 import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
+import static com.android.settingslib.flags.Flags.legacyLeAudioSharing;
 
+import android.annotation.Nullable;
 import android.content.Context;
+import android.media.RoutingSessionInfo;
 import android.os.Bundle;
 import android.util.FeatureFlagUtils;
 import android.view.View;
@@ -106,10 +109,20 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
                     mMediaSwitchingController.isActiveRemoteDevice(
                             mMediaSwitchingController.getCurrentConnectedMediaDevice());
         }
+        // TODO(b/333324985): Remove these code (code under flag legacy_le_audio_sharing) once flag
+        //  enable_le_audio_sharing has reached nextfood.
+        // isBroadcastSupported always returns false when flag legacy_le_audio_sharing is disabled
         boolean showBroadcastButton =
                 isBroadcastSupported() && mMediaSwitchingController.isPlaying();
 
-        return (isActiveRemoteDevice || showBroadcastButton) ? View.VISIBLE : View.GONE;
+        boolean inBroadcast =
+                enableOutputSwitcherPersonalAudioSharing()
+                        && mMediaSwitchingController.getSessionReleaseType()
+                                == RoutingSessionInfo.RELEASE_TYPE_SHARING;
+
+        return (isActiveRemoteDevice || showBroadcastButton || inBroadcast)
+                ? View.VISIBLE
+                : View.GONE;
     }
 
     @Override
@@ -144,7 +157,16 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
         if (isBroadcastSupported()
                 && mMediaSwitchingController.isPlaying()
                 && !mMediaSwitchingController.isBluetoothLeBroadcastEnabled()) {
+            // TODO(b/333324985): Remove these code (code under flag legacy_le_audio_sharing)
+            //  once flag enable_le_audio_sharing has reached nextfood.
+            // isBroadcastSupported always returns false when flag legacy_le_audio_sharing is
+            // disabled.
             resId = R.string.media_output_broadcast;
+        } else if (enableOutputSwitcherPersonalAudioSharing()) {
+            CharSequence stopButtonText = getTextForSessionReleaseType();
+            if (stopButtonText != null) {
+                return stopButtonText;
+            }
         }
         return mContext.getText(resId);
     }
@@ -152,6 +174,10 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
     @Override
     public void onStopButtonClick() {
         if (isBroadcastSupported() && mMediaSwitchingController.isPlaying()) {
+            // TODO(b/333324985): Remove these code (code under flag legacy_le_audio_sharing)
+            //  once flag enable_le_audio_sharing has reached nextfood.
+            // isBroadcastSupported always returns false when flag legacy_le_audio_sharing is
+            // disabled.
             if (!mMediaSwitchingController.isBluetoothLeBroadcastEnabled()) {
                 if (startLeBroadcastDialogForFirstTime()) {
                     return;
@@ -194,5 +220,16 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
         public int getId() {
             return mId;
         }
+    }
+
+    @Nullable
+    private CharSequence getTextForSessionReleaseType() {
+        return switch (mMediaSwitchingController.getSessionReleaseType()) {
+            case RoutingSessionInfo.RELEASE_TYPE_CASTING ->
+                    mContext.getText(R.string.media_output_dialog_button_stop_casting);
+            case RoutingSessionInfo.RELEASE_TYPE_SHARING ->
+                    mContext.getText(R.string.media_output_dialog_button_stop_sharing);
+            default -> null;
+        };
     }
 }

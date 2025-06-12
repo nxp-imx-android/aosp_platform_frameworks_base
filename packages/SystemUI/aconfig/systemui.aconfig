@@ -727,6 +727,16 @@ flag {
 }
 
 flag {
+    name: "screenshot_dismissal_spring"
+    namespace: "systemui"
+    description: "Use a spring animator for screenshot dismissal, fade out after const distance"
+    bug: "412986001"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "screenshot_policy_split_and_desktop_mode"
     namespace: "systemui"
     description: "Improves screenshot policy handling for split screen and desktop mode."

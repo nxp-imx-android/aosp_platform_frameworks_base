@@ -118,6 +118,7 @@ import android.window.ScreenCapture;
 import android.window.StartingWindowRemovalInfo;
 import android.window.TaskFragmentAnimationParams;
 import android.window.TransitionInfo;
+import android.window.TransitionRequestInfo;
 import android.window.WindowContainerTransaction;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -200,6 +201,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     private final Token mToken;
 
     private @Nullable ActivityRecord mPipActivity;
+    private @Nullable TransitionRequestInfo.RequestedLocation mRequestedLocation;
 
     /** Only use for clean-up after binder death! */
     private SurfaceControl.Transaction mStartTransaction = null;
@@ -667,6 +669,22 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
      */
     @Nullable ActivityRecord getPipActivity() {
         return mPipActivity;
+    }
+
+    /**
+     * Set the requested location request info for a task participating in this transition.
+     * @param displayId Requested display identifier
+     * @param bounds Requested bounds relative to the target display
+     */
+    void setRequestedLocation(int displayId, Rect bounds) {
+        mRequestedLocation = new TransitionRequestInfo.RequestedLocation(displayId, bounds);
+    }
+
+    /**
+     * @return requested location request info for a task participating in this transition.
+     */
+    @Nullable TransitionRequestInfo.RequestedLocation getRequestedLocation() {
+        return mRequestedLocation;
     }
 
     /**

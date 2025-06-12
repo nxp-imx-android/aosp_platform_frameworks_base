@@ -16,12 +16,12 @@
 
 package com.android.server.wm.flicker.notification
 
+import android.platform.test.annotations.RequiresDevice
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
 import android.tools.flicker.legacy.LegacyFlickerTestFactory
 import android.tools.helpers.wakeUpAndGoToHomeScreen
-import android.tools.traces.component.ComponentNameMatcher
 import androidx.test.filters.FlakyTest
 import com.android.server.wm.flicker.helpers.setRotation
 import com.android.server.wm.flicker.statusBarLayerPositionAtEnd
@@ -37,6 +37,7 @@ import org.junit.runners.Parameterized
  *
  * To run this test: `atest FlickerTestsNotification:OpenAppFromNotificationColdTest`
  */
+@RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

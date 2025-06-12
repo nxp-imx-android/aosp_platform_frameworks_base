@@ -298,21 +298,34 @@ class KeyguardController {
      * @param flags See {@link WindowManagerPolicy#KEYGUARD_GOING_AWAY_FLAG_TO_SHADE}
      *              etc.
      */
-    void keyguardGoingAway(int displayId, int flags) {
-        final KeyguardDisplayState state = getDisplayState(displayId);
-        if (!state.mKeyguardShowing || state.mKeyguardGoingAway) {
+    void keyguardGoingAway(int flags) {
+        Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "keyguardGoingAway");
+
+        boolean goingAwayChanged = false;
+        for (int i = mRootWindowContainer.getChildCount() - 1; i >= 0; i--) {
+            final DisplayContent dc = mRootWindowContainer.getChildAt(i);
+            if (!dc.isRemoving() && !dc.isRemoved()) {
+                final var state = getDisplayState(dc.mDisplayId);
+                if (state.mKeyguardShowing && !state.mKeyguardGoingAway) {
+                    goingAwayChanged = true;
+                    state.mKeyguardGoingAway = true;
+                    state.writeEventLog("keyguardGoingAway");
+                    scheduleGoingAwayTimeout(dc.mDisplayId);
+                }
+            }
+        }
+        if (!goingAwayChanged) {
+            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
             return;
         }
-        Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "keyguardGoingAway");
+
         mService.deferWindowLayout();
-        state.mKeyguardGoingAway = true;
         final ActionChain chain = mService.mChainTracker.startTransit("kgGoAway");
         try {
-            state.writeEventLog("keyguardGoingAway");
             final int transitFlags = convertTransitFlags(flags);
             if (ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS) {
                 final Transition transition = chain.getTransition();
-                if (transition != null && displayId == DEFAULT_DISPLAY) {
+                if (transition != null) {
                     transition.addFlag(TRANSIT_FLAG_KEYGUARD_GOING_AWAY);
                 }
             } else {
@@ -330,8 +343,6 @@ class KeyguardController {
             mRootWindowContainer.ensureActivitiesVisible();
             mRootWindowContainer.addStartingWindowsForVisibleActivities();
             mWindowManager.executeAppTransition();
-
-            scheduleGoingAwayTimeout(displayId);
         } finally {
             mService.continueWindowLayout();
             mService.mChainTracker.endPartial();

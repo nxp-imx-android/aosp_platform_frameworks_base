@@ -9671,6 +9671,13 @@
             android:permission="android.permission.LOCATION_HARDWARE"
             android:exported="false" />
 
+        <service android:name="android.proximity.DefaultProximityProviderService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.proximity.ProximityProviderService" />
+            </intent-filter>
+        </service>
+
         <service android:name="com.android.server.MountServiceIdler"
                  android:exported="true"
                  android:permission="android.permission.BIND_JOB_SERVICE" >

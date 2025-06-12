@@ -23,11 +23,13 @@ import android.tools.flicker.annotation.FlickerConfigProvider
 import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.junit.FlickerServiceJUnit4ClassRunner
+import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.flicker.DesktopModeFlickerScenarios.Companion.END_DRAG_TO_DESKTOP
 import com.android.wm.shell.scenarios.EnterDesktopWithDrag
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@RequiresDevice
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
 class EnterDesktopWithDragPortrait : EnterDesktopWithDrag(Rotation.ROTATION_0) {
     @ExpectedScenarios(["END_DRAG_TO_DESKTOP"])

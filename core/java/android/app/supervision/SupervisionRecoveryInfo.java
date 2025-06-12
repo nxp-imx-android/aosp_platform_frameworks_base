@@ -35,7 +35,10 @@ import java.util.Objects;
 /**
  * Contains the information needed for recovering the device supervision PIN.
  *
- * <p>Returned by {@link SupervisionManager#getSupervisionRecoveryInfo}.
+ * <p>Typically returned as an {@link android.content.Intent} extra by the supervision PIN recovery
+ * activity hosted by the {@code android.app.role.RoleManager#ROLE_SYSTEM_SUPERVISION} role holder.
+ * This activity is generally launched to set up a recovery method or for recovery within the device
+ * supervision flow.
  *
  * @hide
  */
@@ -48,8 +51,8 @@ public final class SupervisionRecoveryInfo implements Parcelable {
      * <p>The associated value should be a {@link android.app.supervision.SupervisionRecoveryInfo}
      * object.
      *
-     * <p>* This extra is intended for use when launching the PIN recovery activity via {@link
-     * com.android.settingslib.supervision.SupervisionIntentProvider#getPinRecoveryIntent }
+     * <p>This extra is intended to be used by the supervision PIN recovery activity hosted by the
+     * {@code android.app.role.RoleManager#ROLE_SYSTEM_SUPERVISION} role holder.
      */
     public static final String EXTRA_SUPERVISION_RECOVERY_INFO =
             "android.app.supervision.extra.SUPERVISION_RECOVERY_INFO";

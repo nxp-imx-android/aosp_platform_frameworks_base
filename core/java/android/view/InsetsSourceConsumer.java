@@ -29,7 +29,9 @@ import static android.internal.perfetto.protos.Insetssourceconsumer.InsetsSource
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.Size;
 import android.graphics.Insets;
 import android.graphics.Matrix;
 import android.graphics.Point;
@@ -47,6 +49,7 @@ import java.util.Objects;
 
 /**
  * Controls the visibility and animations of a single window insets source.
+ *
  * @hide
  */
 public class InsetsSourceConsumer {
@@ -57,7 +60,9 @@ public class InsetsSourceConsumer {
 
     protected int mAnimationState = ANIMATION_STATE_NONE;
 
+    @NonNull
     protected final InsetsController mController;
+    @NonNull
     protected final InsetsState mState;
     private final int mId;
     @InsetsType
@@ -67,15 +72,19 @@ public class InsetsSourceConsumer {
     @Nullable
     private InsetsSourceControl mSourceControl;
     private boolean mHasWindowFocus;
+    @NonNull
     private InsetsAnimationControlRunner.SurfaceParamsApplier mSurfaceParamsApplier =
             InsetsAnimationControlRunner.SurfaceParamsApplier.DEFAULT;
+    @NonNull
     private final Matrix mTmpMatrix = new Matrix();
 
     /**
      * Whether the view has focus returned by {@link #onWindowFocusGained(boolean)}.
      */
     private boolean mHasViewFocusWhenWindowFocusGain;
+    @Nullable
     private Rect mPendingFrame;
+    @Nullable
     private Rect mPendingVisibleFrame;
 
     /**
@@ -84,8 +93,8 @@ public class InsetsSourceConsumer {
      * @param state The current {@link InsetsState} of the consumed insets.
      * @param controller The {@link InsetsController} to use for insets interaction.
      */
-    public InsetsSourceConsumer(int id, @InsetsType int type, InsetsState state,
-            InsetsController controller) {
+    public InsetsSourceConsumer(int id, @InsetsType int type, @NonNull InsetsState state,
+            @NonNull InsetsController controller) {
         mId = id;
         mType = type;
         mState = state;
@@ -102,10 +111,10 @@ public class InsetsSourceConsumer {
      * @return Whether the control has changed from the server
      */
     public boolean setControl(@Nullable InsetsSourceControl control,
-            @InsetsType int[] showTypes,
-            @InsetsType int[] hideTypes,
-            @InsetsType int[] cancelTypes,
-            @InsetsType int[] transientTypes) {
+            @NonNull @Size(1) @InsetsType int[] showTypes,
+            @NonNull @Size(1) @InsetsType int[] hideTypes,
+            @NonNull @Size(1) @InsetsType int[] cancelTypes,
+            @NonNull @Size(1) @InsetsType int[] transientTypes) {
         if (Objects.equals(mSourceControl, control)) {
             if (mSourceControl != null && mSourceControl != control) {
                 mSourceControl.release(SurfaceControl::release);
@@ -190,6 +199,7 @@ public class InsetsSourceConsumer {
     }
 
     @VisibleForTesting(visibility = PACKAGE)
+    @Nullable
     public InsetsSourceControl getControl() {
         return mSourceControl;
     }
@@ -207,7 +217,8 @@ public class InsetsSourceConsumer {
         return mId;
     }
 
-    @InsetsType int getType() {
+    @InsetsType
+    int getType() {
         return mType;
     }
 
@@ -216,7 +227,8 @@ public class InsetsSourceConsumer {
      * this class is always applied by the applier, so that the transaction order can always be
      * aligned with the calling sequence.
      */
-    void setSurfaceParamsApplier(InsetsAnimationControlRunner.SurfaceParamsApplier applier) {
+    void setSurfaceParamsApplier(
+            @NonNull InsetsAnimationControlRunner.SurfaceParamsApplier applier) {
         mSurfaceParamsApplier = applier;
     }
 
@@ -360,7 +372,7 @@ public class InsetsSourceConsumer {
 
     @VisibleForTesting(visibility = PACKAGE)
     public void updateSource(InsetsSource newSource, @AnimationType int animationType) {
-        InsetsSource source = mState.peekSource(mId);
+        final InsetsSource source = mState.peekSource(mId);
         if (source == null || animationType == ANIMATION_TYPE_NONE
                 || source.getFrame().equals(newSource.getFrame())) {
             mPendingFrame = null;
@@ -407,7 +419,7 @@ public class InsetsSourceConsumer {
         onPerceptible(visible);
     }
 
-    void dumpDebug(ProtoOutputStream proto, long fieldId) {
+    void dumpDebug(@NonNull ProtoOutputStream proto, long fieldId) {
         final long token = proto.start(fieldId);
         proto.write(HAS_WINDOW_FOCUS, mHasWindowFocus);
         proto.write(IS_REQUESTED_VISIBLE, isShowRequested());

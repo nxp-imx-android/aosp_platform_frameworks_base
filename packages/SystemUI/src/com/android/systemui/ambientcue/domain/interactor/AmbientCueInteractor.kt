@@ -19,14 +19,30 @@ package com.android.systemui.ambientcue.domain.interactor
 import android.graphics.Rect
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepository
 import com.android.systemui.ambientcue.shared.model.ActionModel
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 
-class AmbientCueInteractor @Inject constructor(private val repository: AmbientCueRepository) {
+class AmbientCueInteractor
+@Inject
+constructor(
+    private val repository: AmbientCueRepository,
+    shadeInteractor: ShadeInteractor,
+    keyguardInteractor: KeyguardInteractor,
+) {
     val isRootViewAttached: StateFlow<Boolean> = repository.isRootViewAttached
     val actions: StateFlow<List<ActionModel>> = repository.actions
     val isImeVisible: StateFlow<Boolean> = repository.isImeVisible
+    val isOccludedBySystemUi: Flow<Boolean> =
+        combine(shadeInteractor.isShadeFullyCollapsed, keyguardInteractor.isKeyguardVisible) {
+            isShadeFullyCollapsed,
+            isKeyguardVisible ->
+            !isShadeFullyCollapsed || isKeyguardVisible
+        }
     val isGestureNav: StateFlow<Boolean> = repository.isGestureNav
     val recentsButtonPosition: StateFlow<Rect?> = repository.recentsButtonPosition
     val isTaskBarVisible: StateFlow<Boolean> = repository.isTaskBarVisible

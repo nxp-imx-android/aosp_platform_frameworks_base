@@ -38,7 +38,7 @@ public final class HapticFeedbackRequest {
     private final int mFlags;
 
     private HapticFeedbackRequest(
-            int feedbackConstant,
+            @HapticFeedbackConstants.FeedbackConstant int feedbackConstant,
             @VibrationAttributes.Usage int usage,
             @HapticFeedbackConstants.Flags int flags) {
         mFeedbackConstant = feedbackConstant;
@@ -52,6 +52,7 @@ public final class HapticFeedbackRequest {
      *
      * @see HapticFeedbackConstants
      */
+    @HapticFeedbackConstants.FeedbackConstant
     public int getFeedbackConstant() {
         return mFeedbackConstant;
     }
@@ -105,7 +106,7 @@ public final class HapticFeedbackRequest {
          *      will be constructed from the builder. This needs to be one of the constants
          *      defined in {@link HapticFeedbackConstants}.
          */
-        public Builder(int constant) {
+        public Builder(@HapticFeedbackConstants.FeedbackConstant int constant) {
             mFeedbackConstant = constant;
         }
 

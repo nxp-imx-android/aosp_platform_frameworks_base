@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker.notification
 
+import android.platform.test.annotations.RequiresDevice
 import android.platform.test.rule.SettingOverrideRule
 import android.provider.Settings
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -25,7 +26,6 @@ import android.tools.flicker.legacy.LegacyFlickerTestFactory
 import android.tools.helpers.wakeUpAndGoToHomeScreen
 import android.tools.traces.component.ComponentNameMatcher
 import androidx.test.filters.FlakyTest
-import androidx.test.filters.RequiresDevice
 import org.junit.ClassRule
 import org.junit.FixMethodOrder
 import org.junit.Ignore
