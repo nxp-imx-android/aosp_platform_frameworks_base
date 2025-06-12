@@ -128,13 +128,17 @@ constructor(
                         Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED,
                     )
                     .onStart { emit(Unit) },
+                secureSettings
+                    .observerFlow(UserHandle.USER_ALL, Settings.Secure.DOZE_ALWAYS_ON)
+                    .onStart { emit(Unit) },
                 configurationInteractor.onAnyConfigurationChange,
-                ::Pair,
+                ::Triple,
             )
             .map {
-                val userEnabled =
+                val aodEnabled = secureSettings.getInt(Settings.Secure.DOZE_ALWAYS_ON, 0) == 1
+                val wallpaperEnabled =
                     secureSettings.getInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 1) == 1
-                userEnabled && configEnabled() && ambientAod()
+                aodEnabled && wallpaperEnabled && configEnabled() && ambientAod()
             }
             .flowOn(bgDispatcher)
 
