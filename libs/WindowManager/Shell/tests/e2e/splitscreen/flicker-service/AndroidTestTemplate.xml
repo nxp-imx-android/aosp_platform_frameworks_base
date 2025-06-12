@@ -67,6 +67,11 @@
         <option name="test-file-name" value="{MODULE}.apk"/>
         <option name="test-file-name" value="FlickerTestApp.apk"/>
     </target_preparer>
+    <!-- Needed for bypassing the login screen -->
+    <!-- TODO(b/420640007): remove preparer if it's fixed at tradefed level -->
+    <target_preparer class="com.android.tradefed.targetprep.SwitchUserTargetPreparer">
+      <option name="user-type" value="full" />
+    </target_preparer>
     <!-- Needed for pushing the trace config file -->
     <target_preparer class="com.android.tradefed.targetprep.RootTargetPreparer"/>
     <test class="com.android.tradefed.testtype.AndroidJUnitTest">
