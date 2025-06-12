@@ -39,7 +39,7 @@ class DesktopTaskChangeListener(
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
         logD(
             "onTaskOpening for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
-                "parentTaskId=%b isFreeform=%b isActive=%b",
+                "parentTaskId=%d isFreeform=%b isActive=%b",
             taskInfo.taskId,
             taskInfo.displayId,
             taskInfo.userId,
@@ -100,7 +100,7 @@ class DesktopTaskChangeListener(
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
         logD(
             "onTaskChanging for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
-                "parentTaskId=%b isFreeform=%b isActive=%b",
+                "parentTaskId=%d isFreeform=%b isActive=%b",
             taskInfo.taskId,
             taskInfo.displayId,
             taskInfo.userId,
@@ -173,7 +173,7 @@ class DesktopTaskChangeListener(
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
         logD(
             "onTaskMovingToFront for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
-                "parentTaskId=%b isFreeform=%b isActive=%b",
+                "parentTaskId=%d isFreeform=%b isActive=%b",
             taskInfo.taskId,
             taskInfo.displayId,
             taskInfo.userId,
@@ -225,7 +225,7 @@ class DesktopTaskChangeListener(
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
         logD(
             "onTaskMovingToBack for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
-                "parentTaskId=%b isFreeform=%b isActive=%b",
+                "parentTaskId=%d isFreeform=%b isActive=%b",
             taskInfo.taskId,
             taskInfo.displayId,
             taskInfo.userId,
@@ -261,7 +261,7 @@ class DesktopTaskChangeListener(
         val isActiveTask = desktopRepository.isActiveTask(taskInfo.taskId)
         logD(
             "onTaskClosing for taskId=%d, displayId=%d userId=%s currentUserId=%d " +
-                "parentTaskId=%b isFreeform=%b isActive=%b",
+                "parentTaskId=%d isFreeform=%b isActive=%b",
             taskInfo.taskId,
             taskInfo.displayId,
             taskInfo.userId,
