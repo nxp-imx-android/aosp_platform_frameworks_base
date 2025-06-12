@@ -24,6 +24,8 @@ import com.android.systemui.ambientcue.data.repository.ambientCueRepository
 import com.android.systemui.ambientcue.data.repository.fake
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.ambientcue.shared.model.IconModel
+import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
+import com.android.systemui.keyguard.shared.model.StatusBarState
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.res.R
@@ -124,5 +126,31 @@ class AmbientCueInteractorTest : SysuiTestCase() {
             val isTaskBarVisible by collectLastValue(ambientCueInteractor.isTaskBarVisible)
             ambientCueRepository.fake.setTaskBarVisible(false)
             assertThat(isTaskBarVisible).isFalse()
+        }
+
+    @Test
+    fun isOccludedBySystemUi_collapsedShade_noKeyguard_false() =
+        kosmos.runTest {
+            val isOccludedBySystemUi by collectLastValue(ambientCueInteractor.isOccludedBySystemUi)
+            fakeKeyguardRepository.setKeyguardShowing(false)
+            fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE)
+            assertThat(isOccludedBySystemUi).isFalse()
+        }
+
+    @Test
+    fun isOccludedBySystemUi_whenKeyguardVisible_true() =
+        kosmos.runTest {
+            val isOccludedBySystemUi by collectLastValue(ambientCueInteractor.isOccludedBySystemUi)
+            fakeKeyguardRepository.setKeyguardShowing(true)
+            assertThat(isOccludedBySystemUi).isTrue()
+        }
+
+    @Test
+    fun isOccludedBySystemUi_whenExpandedShade_true() =
+        kosmos.runTest {
+            val isOccludedBySystemUi by collectLastValue(ambientCueInteractor.isOccludedBySystemUi)
+            // SHADE_LOCKED forces the expansion to 1f in ShadeInteractor
+            fakeKeyguardRepository.setStatusBarState(StatusBarState.SHADE_LOCKED)
+            assertThat(isOccludedBySystemUi).isTrue()
         }
 }
