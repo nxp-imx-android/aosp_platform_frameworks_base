@@ -1796,7 +1796,7 @@ public final class MediaDrm implements AutoCloseable {
 
     /**
      * A provision request/response exchange occurs between the app and a provisioning
-     * server to retrieve a device certificate.  If provisionining is required, the
+     * server to retrieve a device certificate.  If provisioning is required, the
      * EVENT_PROVISION_REQUIRED event will be sent to the event handler.
      * getProvisionRequest is used to obtain the opaque provision request byte array that
      * should be delivered to the provisioning server. The provision request byte array
