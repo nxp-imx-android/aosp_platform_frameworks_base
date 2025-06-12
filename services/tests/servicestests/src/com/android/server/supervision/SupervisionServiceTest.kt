@@ -30,7 +30,6 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.IBinder
 import android.content.pm.PackageManager
 import android.content.pm.UserInfo
 import android.content.pm.UserInfo.FLAG_FOR_TESTING
@@ -38,7 +37,9 @@ import android.content.pm.UserInfo.FLAG_FULL
 import android.content.pm.UserInfo.FLAG_MAIN
 import android.content.pm.UserInfo.FLAG_SYSTEM
 import android.os.Handler
+import android.os.IBinder
 import android.os.PersistableBundle
+import android.os.Process
 import android.os.UserHandle
 import android.os.UserHandle.MIN_SECONDARY_USER_ID
 import android.os.UserHandle.USER_SYSTEM
@@ -56,6 +57,7 @@ import com.android.server.LocalServices
 import com.android.server.SystemService.TargetUser
 import com.android.server.pm.UserManagerInternal
 import com.android.server.supervision.SupervisionService.ACTION_CONFIRM_SUPERVISION_CREDENTIALS
+import com.android.server.supervision.SupervisionService.Injector
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Files
 import org.junit.Before
@@ -73,6 +75,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import org.testng.Assert.assertThrows
 
 /**
  * Unit tests for [SupervisionService].
@@ -94,6 +97,7 @@ class SupervisionServiceTest {
     private lateinit var context: Context
     private lateinit var lifecycle: SupervisionService.Lifecycle
     private lateinit var service: SupervisionService
+    private lateinit var injector: Injector
 
     @Before
     fun setUp() {
@@ -110,10 +114,12 @@ class SupervisionServiceTest {
         SupervisionSettings.getInstance()
             .changeDirForTesting(Files.createTempDirectory("tempSupervisionFolder").toFile())
 
-        service = SupervisionService(context)
+        injector = Injector(context.createAttributionContext(SupervisionLog.TAG));
+        service = SupervisionService(injector)
         lifecycle = SupervisionService.Lifecycle(context, service)
         lifecycle.registerProfileOwnerListener()
 
+        injector.callingUid = Process.SYSTEM_UID
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
     }
 
@@ -268,6 +274,15 @@ class SupervisionServiceTest {
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
         assertThat(getSecureSetting(BROWSER_CONTENT_FILTERS_ENABLED)).isEqualTo(-1)
         assertThat(getSecureSetting(SEARCH_CONTENT_FILTERS_ENABLED)).isEqualTo(-1)
+    }
+
+    @Test
+    fun setSupervisionEnabledForUser_callerIsNotSystemUid_throwsException() {
+        injector.callingUid = Process.NOBODY_UID
+
+        assertThrows(SecurityException::class.java) {
+            service.setSupervisionEnabledForUser(USER_ID, true);
+        }
     }
 
     @Test

@@ -51,6 +51,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.PersistableBundle;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
@@ -77,6 +78,7 @@ import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /** Service for handling system supervision. */
 public class SupervisionService extends ISupervisionManager.Stub {
@@ -136,7 +138,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     @Override
     public void setSupervisionEnabledForUser(@UserIdInt int userId, boolean enabled) {
-        // TODO(b/395630828): Ensure that this method can only be called by the system.
+        enforceSystemCaller();
         if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
@@ -556,6 +558,13 @@ public class SupervisionService extends ISupervisionManager.Stub {
         checkCallAuthorization(authorized);
     }
 
+    /** Enforces that the caller is the system. */
+    private void enforceSystemCaller() {
+        int callingUid = mInjector.getCallingUid();
+        checkCallAuthorization(UserHandle.isSameApp(callingUid, Process.SYSTEM_UID),
+              "Caller with UID %s is not authorized.", callingUid);
+    }
+
     /** Provides local services in a lazy manner. */
     static class Injector {
         public Context context;
@@ -565,6 +574,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
         private KeyguardManager mKeyguardManager;
         private PackageManager mPackageManager;
         private UserManagerInternal mUserManagerInternal;
+        private Integer mCallingUid;
 
         Injector(Context context) {
             this.context = context;
@@ -605,6 +615,15 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 mUserManagerInternal = LocalServices.getService(UserManagerInternal.class);
             }
             return mUserManagerInternal;
+        }
+
+        int getCallingUid() {
+            return Objects.requireNonNullElseGet(mCallingUid, Binder::getCallingUid);
+        }
+
+        @VisibleForTesting
+        public void setCallingUid(int Uid) {
+            mCallingUid = Uid;
         }
     }
 
