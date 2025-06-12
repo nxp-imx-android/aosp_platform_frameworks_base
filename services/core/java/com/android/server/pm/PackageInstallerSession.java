@@ -5028,6 +5028,10 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             throw new SecurityException("Must be sealed to accept permissions");
         }
 
+        synchronized (mMetrics) {
+            mMetrics.onUserResponseReceived();
+        }
+
         // To support pre-approval request of atomic install, we allow child session to handle
         // the result by itself since it has the status receiver.
         final PackageInstallerSession root = hasParentSessionId() && isCommitted()
