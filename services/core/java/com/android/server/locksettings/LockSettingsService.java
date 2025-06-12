@@ -1990,9 +1990,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 SyntheticPassword sp = authResult.syntheticPassword;
 
                 if (sp == null) {
-                    if (response != null
-                            && response.getResponseCode()
-                                    == VerifyCredentialResponse.RESPONSE_RETRY) {
+                    if (response != null && response.hasTimeout()) {
                         Slog.w(TAG, "Failed to enroll: rate limit exceeded.");
                     } else {
                         Slog.w(TAG, "Failed to enroll: incorrect credential.");
@@ -2479,14 +2477,11 @@ public class LockSettingsService extends ILockSettings.Stub {
                     case SoftwareRateLimiterResult.RATE_LIMITED:
                         return VerifyCredentialResponse.fromTimeout(res.remainingDelay);
                     case SoftwareRateLimiterResult.CREDENTIAL_TOO_SHORT:
-                        return VerifyCredentialResponse.fromError(
-                                VerifyCredentialResponse.RESPONSE_CRED_TOO_SHORT);
+                        return VerifyCredentialResponse.credTooShort();
                     case SoftwareRateLimiterResult.DUPLICATE_WRONG_GUESS:
-                        return VerifyCredentialResponse.fromError(
-                                VerifyCredentialResponse.RESPONSE_CRED_ALREADY_TRIED);
+                        return VerifyCredentialResponse.credAlreadyTried();
                     default:
-                        return VerifyCredentialResponse.fromError(
-                                VerifyCredentialResponse.RESPONSE_OTHER_ERROR);
+                        return VerifyCredentialResponse.fromError();
                 }
             }
             if (isSpecialUserId(userId)) {
@@ -2526,10 +2521,8 @@ public class LockSettingsService extends ILockSettings.Stub {
                         .build();
             }
             sendCredentialsOnUnlockIfRequired(credential, userId);
-        } else if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_RETRY) {
-            if (response.getTimeout() > 0) {
-                requireStrongAuth(STRONG_AUTH_REQUIRED_AFTER_LOCKOUT, userId);
-            }
+        } else if (response.hasTimeout() && response.getTimeout() > 0) {
+            requireStrongAuth(STRONG_AUTH_REQUIRED_AFTER_LOCKOUT, userId);
         }
         notifyLockSettingsStateListeners(response.isMatched(), userId);
         return response;
@@ -2548,9 +2541,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             if (response.isMatched()) {
                 mSoftwareRateLimiter.reportSuccess(lskfId);
             } else {
-                boolean isCertainlyWrongGuess =
-                        response.getResponseCode()
-                                == VerifyCredentialResponse.RESPONSE_CRED_INCORRECT;
+                boolean isCertainlyWrongGuess = response.isCredCertainlyIncorrect();
                 Duration swTimeout =
                         mSoftwareRateLimiter.reportFailure(
                                 lskfId, credential, isCertainlyWrongGuess);

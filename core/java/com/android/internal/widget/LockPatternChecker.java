@@ -1,14 +1,13 @@
 package com.android.internal.widget;
 
+import static com.android.internal.widget.flags.Flags.runCheckCredentialWithHigherPriority;
+
 import android.annotation.NonNull;
 import android.os.AsyncTask;
 import android.os.Process;
-
 import android.util.Log;
 
 import com.android.internal.widget.LockPatternUtils.RequestThrottledException;
-
-import static com.android.internal.widget.flags.Flags.runCheckCredentialWithHigherPriority;
 
 /**
  * Helper class to check/verify PIN/Password/Pattern asynchronously.
@@ -52,8 +51,8 @@ public final class LockPatternChecker {
          * Invoked when a security verification is finished.
          *
          * @param response The response, optionally containing Gatekeeper HAT or Gatekeeper Password
-         * @param throttleTimeoutMs The amount of time in ms to wait before reattempting
-         * the call. Only non-0 if the response is {@link VerifyCredentialResponse#RESPONSE_RETRY}.
+         * @param throttleTimeoutMs The amount of time in ms to wait before reattempting the call.
+         *     Only non-0 if {@link VerifyCredentialResponse#hasTimeout()}.
          */
         void onVerified(@NonNull VerifyCredentialResponse response, int throttleTimeoutMs);
     }

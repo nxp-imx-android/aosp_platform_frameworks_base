@@ -176,11 +176,26 @@ public final class VerifyCredentialResponse implements Parcelable {
         return fromError(RESPONSE_OTHER_ERROR);
     }
 
+    /** Builds a {@link VerifyCredentialResponse} with {@link #RESPONSE_CRED_TOO_SHORT}. */
+    public static VerifyCredentialResponse credTooShort() {
+        return fromError(RESPONSE_CRED_TOO_SHORT);
+    }
+
+    /** Builds a {@link VerifyCredentialResponse} with {@link #RESPONSE_CRED_ALREADY_TRIED}. */
+    public static VerifyCredentialResponse credAlreadyTried() {
+        return fromError(RESPONSE_CRED_ALREADY_TRIED);
+    }
+
+    /** Builds a {@link VerifyCredentialResponse} with {@link #RESPONSE_CRED_INCORRECT}. */
+    public static VerifyCredentialResponse credIncorrect() {
+        return fromError(RESPONSE_CRED_INCORRECT);
+    }
+
     /**
      * Builds a {@link VerifyCredentialResponse} for an error response that does not use any of the
      * additional fields.
      */
-    public static VerifyCredentialResponse fromError(@ResponseCode int responseCode) {
+    private static VerifyCredentialResponse fromError(@ResponseCode int responseCode) {
         Preconditions.checkArgument(
                 responseCode == RESPONSE_OTHER_ERROR
                         || responseCode == RESPONSE_CRED_TOO_SHORT
@@ -239,8 +254,53 @@ public final class VerifyCredentialResponse implements Parcelable {
         return mResponseCode;
     }
 
+    /** Returns true if credential verification succeeded. */
     public boolean isMatched() {
         return mResponseCode == RESPONSE_OK;
+    }
+
+    /**
+     * Returns true if credential verification failed and there is a timeout before the next request
+     * will be allowed.
+     */
+    public boolean hasTimeout() {
+        return mResponseCode == RESPONSE_RETRY;
+    }
+
+    /**
+     * Returns true if credential verification failed because the credential was shorter than the
+     * minimum length.
+     */
+    public boolean isCredTooShort() {
+        return mResponseCode == RESPONSE_CRED_TOO_SHORT;
+    }
+
+    /**
+     * Returns true if credential verification failed because the credential was incorrect and was
+     * already tried recently.
+     */
+    public boolean isCredAlreadyTried() {
+        return mResponseCode == RESPONSE_CRED_ALREADY_TRIED;
+    }
+
+    /**
+     * Returns true if the credential is known for certain to be incorrect. Returns false in all
+     * other cases: credential verification succeeded, or credential verification failed but it is
+     * not known for certain that the credential is incorrect. (A credential that failed to verify
+     * could still be correct if there is an active timeout or if there was a transient error.)
+     */
+    public boolean isCredCertainlyIncorrect() {
+        return mResponseCode == RESPONSE_CRED_TOO_SHORT
+                || mResponseCode == RESPONSE_CRED_ALREADY_TRIED
+                || mResponseCode == RESPONSE_CRED_INCORRECT;
+    }
+
+    /**
+     * Returns true if credential verification failed for a reason that isn't covered by {@link
+     * #hasTimeout()} or {@link #isCredCertainlyIncorrect()}.
+     */
+    public boolean isOtherError() {
+        return mResponseCode == RESPONSE_OTHER_ERROR;
     }
 
     @Override

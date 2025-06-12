@@ -534,10 +534,9 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         final LockSettingsStateListener listener = mock(LockSettingsStateListener.class);
         mLocalService.registerLockSettingsStateListener(listener);
 
-        assertEquals(
-                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
+        assertTrue(
                 mService.verifyCredential(badPassword, PRIMARY_USER_ID, 0 /* flags */)
-                        .getResponseCode());
+                        .isOtherError());
 
         verify(listener).onAuthenticationFailed(PRIMARY_USER_ID);
     }
@@ -554,10 +553,9 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         verify(listener).onAuthenticationSucceeded(PRIMARY_USER_ID);
 
         mLocalService.unregisterLockSettingsStateListener(listener);
-        assertEquals(
-                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
+        assertTrue(
                 mService.verifyCredential(badPassword, PRIMARY_USER_ID, 0 /* flags */)
-                        .getResponseCode());
+                        .isOtherError());
         verify(listener, never()).onAuthenticationFailed(PRIMARY_USER_ID);
     }
 
@@ -656,11 +654,8 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             VerifyCredentialResponse response =
                     mService.verifyCredential(wrongPin, userId, 0 /* flags */);
             assertFalse(response.isMatched());
-            assertEquals(
-                    i == 0
-                            ? VerifyCredentialResponse.RESPONSE_CRED_INCORRECT
-                            : VerifyCredentialResponse.RESPONSE_CRED_ALREADY_TRIED,
-                    response.getResponseCode());
+            assertTrue(response.isCredCertainlyIncorrect());
+            assertEquals(i != 0, response.isCredAlreadyTried());
             assertEquals(0, response.getTimeout());
         }
         // The software and hardware counters should now be 1, for 1 unique guess.
@@ -690,7 +685,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
             VerifyCredentialResponse response =
                     mService.verifyCredential(wrongPin, userId, 0 /* flags */);
             assertFalse(response.isMatched());
-            assertEquals(VerifyCredentialResponse.RESPONSE_OTHER_ERROR, response.getResponseCode());
+            assertTrue(response.isOtherError());
         }
         // The software counter should still be 0, since the software rate-limiter is fully disabled
         // and thus it should have never been told about the guesses at all. The hardware counter
@@ -706,7 +701,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         setCredential(userId, newPassword("password"));
         VerifyCredentialResponse response =
                 mService.verifyCredential(newPassword("a"), userId, /* flags= */ 0);
-        assertEquals(VerifyCredentialResponse.RESPONSE_CRED_TOO_SHORT, response.getResponseCode());
+        assertTrue(response.isCredTooShort());
     }
 
     @Test
@@ -716,7 +711,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         setCredential(userId, newPassword("password"));
         VerifyCredentialResponse response =
                 mService.verifyCredential(newPassword("a"), userId, /* flags= */ 0);
-        assertEquals(VerifyCredentialResponse.RESPONSE_OTHER_ERROR, response.getResponseCode());
+        assertTrue(response.isOtherError());
     }
 
     // Tests that if verifyCredential is passed a wrong guess and Weaver reports INCORRECT_KEY with
@@ -736,12 +731,12 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         mSpManager.injectWeaverReadResponse(WeaverReadStatus.INCORRECT_KEY, Duration.ZERO);
         VerifyCredentialResponse response =
                 mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
-        assertEquals(VerifyCredentialResponse.RESPONSE_CRED_INCORRECT, response.getResponseCode());
+        assertTrue(response.isCredCertainlyIncorrect());
+        assertFalse(response.isCredAlreadyTried());
         assertEquals(Duration.ZERO, response.getTimeoutAsDuration());
 
         response = mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
-        assertEquals(
-                VerifyCredentialResponse.RESPONSE_CRED_ALREADY_TRIED, response.getResponseCode());
+        assertTrue(response.isCredAlreadyTried());
         assertEquals(Duration.ZERO, response.getTimeoutAsDuration());
     }
 
@@ -765,12 +760,11 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         mSpManager.injectWeaverReadResponse(WeaverReadStatus.INCORRECT_KEY, timeout);
         VerifyCredentialResponse response =
                 mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
-        assertEquals(VerifyCredentialResponse.RESPONSE_RETRY, response.getResponseCode());
+        assertTrue(response.hasTimeout());
         assertEquals(timeout, response.getTimeoutAsDuration());
 
         response = mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
-        assertEquals(
-                VerifyCredentialResponse.RESPONSE_CRED_ALREADY_TRIED, response.getResponseCode());
+        assertTrue(response.isCredAlreadyTried());
         assertEquals(Duration.ZERO, response.getTimeoutAsDuration());
     }
 
@@ -791,7 +785,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         mSpManager.injectWeaverReadResponse(WeaverReadStatus.THROTTLE, timeout);
         VerifyCredentialResponse response =
                 mService.verifyCredential(credential, userId, /* flags= */ 0);
-        assertEquals(VerifyCredentialResponse.RESPONSE_RETRY, response.getResponseCode());
+        assertTrue(response.hasTimeout());
         assertEquals(timeout, response.getTimeoutAsDuration());
 
         response = mService.verifyCredential(credential, userId, /* flags= */ 0);
@@ -814,7 +808,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         mSpManager.injectWeaverReadResponse(WeaverReadStatus.FAILED, Duration.ZERO);
         VerifyCredentialResponse response =
                 mService.verifyCredential(credential, userId, /* flags= */ 0);
-        assertEquals(VerifyCredentialResponse.RESPONSE_OTHER_ERROR, response.getResponseCode());
+        assertTrue(response.isOtherError());
         assertEquals(Duration.ZERO, response.getTimeoutAsDuration());
 
         response = mService.verifyCredential(credential, userId, /* flags= */ 0);
@@ -909,9 +903,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         } else {
             badCredential = LockscreenCredential.createPin("0");
         }
-        assertEquals(
-                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
-                mService.verifyCredential(badCredential, userId, 0 /* flags */).getResponseCode());
+        assertTrue(mService.verifyCredential(badCredential, userId, 0 /* flags */).isOtherError());
     }
 
     private void setAndVerifyCredential(int userId, LockscreenCredential newCredential)

@@ -730,8 +730,7 @@ class SyntheticPasswordManager {
                             Duration.ofMillis(weaverResponse.timeout));
                 }
                 if (android.security.Flags.softwareRatelimiter()) {
-                    yield VerifyCredentialResponse.fromError(
-                            VerifyCredentialResponse.RESPONSE_CRED_INCORRECT);
+                    yield VerifyCredentialResponse.credIncorrect();
                 }
                 yield VerifyCredentialResponse.OTHER_ERROR;
             }

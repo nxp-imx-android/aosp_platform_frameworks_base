@@ -1103,7 +1103,7 @@ public class RecoverableKeyStoreManager {
                     .setResultCode(RemoteLockscreenValidationResult.RESULT_GUESS_VALID)
                     .build();
         }
-        if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_RETRY) {
+        if (response.hasTimeout()) {
             long timeout = (long) response.getTimeout();
             return new RemoteLockscreenValidationResult.Builder()
                     .setResultCode(RemoteLockscreenValidationResult.RESULT_LOCKOUT)

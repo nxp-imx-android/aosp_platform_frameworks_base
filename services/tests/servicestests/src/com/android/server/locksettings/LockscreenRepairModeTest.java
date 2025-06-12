@@ -32,7 +32,6 @@ import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.widget.LockPatternUtils;
-import com.android.internal.widget.VerifyCredentialResponse;
 import com.android.server.locksettings.LockSettingsStorage.PersistentData;
 
 import org.junit.Before;
@@ -98,11 +97,10 @@ public class LockscreenRepairModeTest extends BaseLockSettingsServiceTests {
         assertSame(PersistentData.NONE, mStorage.readRepairModePersistentData());
 
         setRepairModeActive(true);
-        assertEquals(
-                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
+        assertTrue(
                 mService.verifyCredential(
                                 newPin("1234"), PRIMARY_USER_ID, VERIFY_FLAG_WRITE_REPAIR_MODE_PW)
-                        .getResponseCode());
+                        .isOtherError());
         assertSame(PersistentData.NONE, mStorage.readRepairModePersistentData());
     }
 
@@ -187,10 +185,9 @@ public class LockscreenRepairModeTest extends BaseLockSettingsServiceTests {
 
         assertEquals(LockPatternUtils.CREDENTIAL_TYPE_PIN,
                 mService.getCredentialType(USER_REPAIR_MODE));
-        assertEquals(
-                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
+        assertTrue(
                 mService.verifyCredential(newPin("1234"), USER_REPAIR_MODE, 0 /* flags */)
-                        .getResponseCode());
+                        .isOtherError());
     }
 
     @Test
@@ -205,10 +202,9 @@ public class LockscreenRepairModeTest extends BaseLockSettingsServiceTests {
 
         assertEquals(LockPatternUtils.CREDENTIAL_TYPE_PIN,
                 mService.getCredentialType(USER_REPAIR_MODE));
-        assertEquals(
-                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
+        assertTrue(
                 mService.verifyCredential(newPin("5678"), USER_REPAIR_MODE, 0 /* flags */)
-                        .getResponseCode());
+                        .isOtherError());
     }
 
     @Test

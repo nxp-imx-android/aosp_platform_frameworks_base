@@ -194,14 +194,15 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         assertTrue(mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */).isMatched());
         verify(mActivityManager).unlockUser2(eq(PRIMARY_USER_ID), any());
 
-        int expectedResponseCode =
-                mSpManager.isWeaverEnabled()
-                        ? VerifyCredentialResponse.RESPONSE_CRED_INCORRECT
-                        : VerifyCredentialResponse.RESPONSE_OTHER_ERROR;
-        assertEquals(
-                expectedResponseCode,
-                mService.verifyCredential(badPassword, PRIMARY_USER_ID, 0 /* flags */)
-                        .getResponseCode());
+        VerifyCredentialResponse response =
+                mService.verifyCredential(badPassword, PRIMARY_USER_ID, 0 /* flags */);
+        if (mSpManager.isWeaverEnabled()) {
+            assertTrue(response.isCredCertainlyIncorrect());
+            assertFalse(response.isCredTooShort());
+            assertFalse(response.isCredAlreadyTried());
+        } else {
+            assertTrue(response.isOtherError());
+        }
     }
 
     @Test
@@ -214,10 +215,9 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         assertTrue(mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */).isMatched());
         verify(mActivityManager).unlockUser2(eq(PRIMARY_USER_ID), any());
 
-        assertEquals(
-                VerifyCredentialResponse.RESPONSE_OTHER_ERROR,
+        assertTrue(
                 mService.verifyCredential(badPassword, PRIMARY_USER_ID, 0 /* flags */)
-                        .getResponseCode());
+                        .isOtherError());
     }
 
     @Test
