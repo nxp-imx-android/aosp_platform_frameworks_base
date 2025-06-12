@@ -2854,6 +2854,27 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
+    public void testAdjustStartingWindowFlagAffectKeyguardFlag() {
+        registerTestStartingWindowOrganizer();
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
+        activity.addStartingWindow(mPackageName, android.R.style.Theme, null, true, true, false,
+                true, false, false, false);
+        waitUntilHandlersIdle();
+        assertHasStartingWindow(activity);
+        activity.mStartingWindow.mAttrs.flags |= FLAG_SHOW_WHEN_LOCKED;
+        assertTrue(activity.containsShowWhenLockedWindow());
+
+        final WindowManager.LayoutParams attrs = new WindowManager.LayoutParams(
+                TYPE_BASE_APPLICATION);
+        attrs.setTitle("AppWindow");
+        final WindowState win = createWindowState(attrs, activity);
+        win.mAttrs.flags &= ~FLAG_SHOW_WHEN_LOCKED;
+        // Simulate WindowManagerService.relayoutWindow
+        win.adjustStartingWindowFlags();
+        assertFalse(activity.containsShowWhenLockedWindow());
+    }
+
+    @Test
     public void testPostCleanupStartingWindow() {
         registerTestStartingWindowOrganizer();
         final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
