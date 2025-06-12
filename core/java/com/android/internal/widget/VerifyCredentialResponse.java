@@ -39,29 +39,29 @@ public final class VerifyCredentialResponse implements Parcelable {
      * Credential verification failed for a reason that isn't covered by one of the more specific
      * response codes.
      */
-    public static final int RESPONSE_OTHER_ERROR = -1;
+    private static final int RESPONSE_OTHER_ERROR = -1;
 
     /** Credential was successfully verified. */
-    public static final int RESPONSE_OK = 0;
+    private static final int RESPONSE_OK = 0;
 
     /**
      * Either the credential could not be verified because a timeout is still active, or the
      * credential was incorrect and there is a timeout before the next attempt will be allowed.
      * {@link #getTimeout()} gives the timeout.
      */
-    public static final int RESPONSE_RETRY = 1;
+    private static final int RESPONSE_RETRY = 1;
 
     /** Credential was shorter than the minimum length. */
-    public static final int RESPONSE_CRED_TOO_SHORT = 2;
+    private static final int RESPONSE_CRED_TOO_SHORT = 2;
 
     /** Credential was incorrect and was already tried recently. */
-    public static final int RESPONSE_CRED_ALREADY_TRIED = 3;
+    private static final int RESPONSE_CRED_ALREADY_TRIED = 3;
 
     /**
      * Credential was incorrect and none of {@link #RESPONSE_RETRY}, {@link
      * #RESPONSE_CRED_TOO_SHORT}, or {@link #RESPONSE_CRED_ALREADY_TRIED} applies.
      */
-    public static final int RESPONSE_CRED_INCORRECT = 4;
+    private static final int RESPONSE_CRED_INCORRECT = 4;
 
     @IntDef({
         RESPONSE_OTHER_ERROR,
@@ -248,10 +248,6 @@ public final class VerifyCredentialResponse implements Parcelable {
 
     public Duration getTimeoutAsDuration() {
         return Duration.ofMillis(mTimeout);
-    }
-
-    public @ResponseCode int getResponseCode() {
-        return mResponseCode;
     }
 
     /** Returns true if credential verification succeeded. */
