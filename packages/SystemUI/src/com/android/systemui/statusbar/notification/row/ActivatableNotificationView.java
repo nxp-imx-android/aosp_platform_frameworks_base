@@ -612,8 +612,7 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
                         /* bottom= */ fullHeight
                 );
             } else if (clipSide == BOTTOM) {
-                setOutlineRect(0, mAppearAnimationTranslation, getWidth(),
-                        height + mAppearAnimationTranslation);
+                setOutlineRect(0, 0, getWidth(), height);
             }
         }
     }
