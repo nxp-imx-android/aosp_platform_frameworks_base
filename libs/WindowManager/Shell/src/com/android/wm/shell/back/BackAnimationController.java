@@ -81,7 +81,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.LatencyTracker;
 import com.android.internal.view.AppearanceRegion;
-import com.android.systemui.animation.TransitionAnimator;
 import com.android.window.flags.Flags;
 import com.android.wm.shell.R;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
@@ -1298,9 +1297,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             }
 
             if (handlePrepareTransition(transition, info, st, ft, finishCallback)) {
-                if (checkTakeoverFlags()) {
-                    mTakeoverHandler = mTransitions.getHandlerForTakeover(transition, info);
-                }
+                mTakeoverHandler = mTransitions.getHandlerForTakeover(transition, info);
                 kickStartAnimation();
                 return true;
             }
@@ -1308,20 +1305,12 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         }
 
         private boolean canHandOffAnimation() {
-            if (!checkTakeoverFlags()) {
-                return false;
-            }
-
             return mTakeoverHandler != null;
         }
 
         private void handOffAnimation(
                 RemoteAnimationTarget[] targets, WindowAnimationState[] states) {
-            if (!checkTakeoverFlags()) {
-                ProtoLog.e(WM_SHELL_BACK_PREVIEW,
-                        "Trying to hand off the animation, but the required flags are disabled.");
-                return;
-            } else if (mTakeoverHandler == null) {
+            if (mTakeoverHandler == null) {
                 ProtoLog.e(WM_SHELL_BACK_PREVIEW,
                         "Missing takeover handler when trying to hand off animation.");
                 return;
@@ -1751,10 +1740,6 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                 return new WindowContainerTransaction();
             }
             return null;
-        }
-
-        private static boolean checkTakeoverFlags() {
-            return TransitionAnimator.Companion.longLivedReturnAnimationsEnabled();
         }
     }
 

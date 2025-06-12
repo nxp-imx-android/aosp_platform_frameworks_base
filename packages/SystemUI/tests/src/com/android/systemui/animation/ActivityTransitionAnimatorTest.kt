@@ -11,7 +11,6 @@ import android.graphics.Rect
 import android.os.Binder
 import android.os.IBinder
 import android.os.Looper
-import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import android.view.IRemoteAnimationFinishedCallback
@@ -44,7 +43,6 @@ import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
-import com.android.systemui.shared.Flags as SharedFlags
 import com.android.systemui.testKosmos
 import com.android.wm.shell.shared.ShellTransitions
 import com.google.common.truth.Truth.assertThat
@@ -704,7 +702,6 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun registersLongLivedTransition() {
         kosmos.runTest {
@@ -721,7 +718,6 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun registersLongLivedTransitionOverridingPreviousRegistration() {
         kosmos.runTest {
@@ -740,18 +736,6 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @DisableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
-    @Test
-    fun doesNotRegisterLongLivedTransitionIfFlagIsDisabled() {
-        kosmos.runTest {
-            val factory = controllerFactory(createController(), component = null)
-            assertThrows(IllegalStateException::class.java) {
-                underTest.register(factory.cookie, factory, testScope)
-            }
-        }
-    }
-
-    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun doesNotRegisterLongLivedTransitionIfMissingRequiredProperties() {
         kosmos.runTest {
@@ -779,7 +763,6 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun unregistersLongLivedTransition() {
         kosmos.runTest {
@@ -877,18 +860,6 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @DisableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
-    @Test
-    fun creatingRunnerWithLazyInitializationThrows_whenTheFlagsAreDisabled() {
-        kosmos.runTest {
-            assertThrows(IllegalStateException::class.java) {
-                val factory = controllerFactory(createController())
-                underTest.createLongLivedRunner(factory, testScope, forLaunch = true)
-            }
-        }
-    }
-
-    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun runnerCreatesDelegateLazily_onAnimationStart() {
         kosmos.runTest {
@@ -920,7 +891,6 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun runnerCreatesDelegateLazily_onAnimationTakeover() {
         kosmos.runTest {
@@ -948,36 +918,6 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
             waitForIdleSync()
 
             assertThat(delegateInitialized).isTrue()
-        }
-    }
-
-    @DisableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
-    @Test
-    fun animationTakeoverThrows_whenTheFlagsAreDisabled() {
-        kosmos.runTest {
-            val controller = createController()
-            val runner = underTest.createEphemeralRunner(controller)
-            assertThrows(IllegalStateException::class.java) {
-                runner.takeOverAnimation(
-                    arrayOf(fakeWindow()),
-                    emptyArray(),
-                    SurfaceControl.Transaction(),
-                    iCallback,
-                )
-            }
-        }
-    }
-
-    @DisableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
-    @Test
-    fun disposeRunner_delegateDereferenced() {
-        kosmos.runTest {
-            val controller = createController()
-            val runner = underTest.createEphemeralRunner(controller)
-            assertThat(runner.delegate).isNotNull()
-            runner.dispose()
-            waitForIdleSync()
-            assertThat(runner.delegate).isNull()
         }
     }
 

@@ -16,8 +16,6 @@
 
 package com.android.wm.shell.transition;
 
-import static com.android.systemui.shared.Flags.returnAnimationFrameworkLongLived;
-
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.IBinder;
@@ -259,10 +257,6 @@ public class RemoteTransitionHandler implements Transitions.TransitionHandler {
     @Override
     public Transitions.TransitionHandler getHandlerForTakeover(
             @NonNull IBinder transition, @NonNull TransitionInfo info) {
-        if (!returnAnimationFrameworkLongLived()) {
-            return null;
-        }
-
         for (Pair<TransitionFilter, RemoteTransition> registered : mTakeoverFilters) {
             if (registered.first.matches(info)) {
                 ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
