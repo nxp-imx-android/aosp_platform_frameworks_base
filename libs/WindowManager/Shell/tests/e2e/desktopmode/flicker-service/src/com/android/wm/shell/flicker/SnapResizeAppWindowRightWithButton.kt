@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.flicker
 
+import android.platform.test.annotations.RequiresDevice
 import android.tools.flicker.FlickerConfig
 import android.tools.flicker.annotation.ExpectedScenarios
 import android.tools.flicker.annotation.FlickerConfigProvider
@@ -32,6 +33,7 @@ import org.junit.runner.RunWith
  *
  * Assert that the app window fills the right half the display after being snap resized.
  */
+@RequiresDevice
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
 class SnapResizeAppWindowRightWithButton : SnapResizeAppWindowWithButton(toLeft = false) {
     @ExpectedScenarios(["SNAP_RESIZE_RIGHT_WITH_BUTTON"])

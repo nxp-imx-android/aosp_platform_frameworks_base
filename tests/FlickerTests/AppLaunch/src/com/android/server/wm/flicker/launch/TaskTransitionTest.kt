@@ -22,6 +22,7 @@ import android.content.res.Resources
 import android.graphics.Rect
 import android.graphics.Region
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDevice
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
@@ -36,7 +37,6 @@ import android.tools.traces.component.ComponentSplashScreenMatcher
 import android.tools.traces.component.IComponentMatcher
 import android.tools.traces.parsers.toFlickerComponent
 import androidx.test.filters.FlakyTest
-import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.BaseTest
 import com.android.server.wm.flicker.helpers.NewTasksAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper

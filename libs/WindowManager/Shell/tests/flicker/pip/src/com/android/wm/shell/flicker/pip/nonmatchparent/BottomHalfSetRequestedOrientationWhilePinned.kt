@@ -24,6 +24,7 @@ import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
 import android.tools.traces.parsers.toFlickerComponent
+import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.BottomHalfPipAppHelper
 import com.android.server.wm.flicker.helpers.PipAppHelper
 import com.android.server.wm.flicker.testapp.ActivityOptions.BottomHalfPip
@@ -60,6 +61,7 @@ import org.junit.runners.Parameterized
 // TODO(b/380796448): re-enable tests after the support of non-match parent PIP animation for PIP2.
 @RequiresFlagsDisabled(Flags.FLAG_ENABLE_PIP2)
 @RequiresFlagsEnabled(com.android.window.flags.Flags.FLAG_BETTER_SUPPORT_NON_MATCH_PARENT_ACTIVITY)
+@RequiresDevice
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class BottomHalfSetRequestedOrientationWhilePinned(flicker: LegacyFlickerTest) :

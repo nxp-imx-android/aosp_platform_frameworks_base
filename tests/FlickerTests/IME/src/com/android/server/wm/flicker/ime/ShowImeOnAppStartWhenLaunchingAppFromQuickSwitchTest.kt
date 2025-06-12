@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.ime
 
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDevice
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
@@ -38,6 +39,7 @@ import org.junit.runners.Parameterized
  * Test IME windows switching with 2-Buttons or gestural navigation.
  * To run this test: `atest FlickerTestsIme:ShowImeOnAppStartWhenLaunchingAppFromQuickSwitchTest`
  */
+@RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

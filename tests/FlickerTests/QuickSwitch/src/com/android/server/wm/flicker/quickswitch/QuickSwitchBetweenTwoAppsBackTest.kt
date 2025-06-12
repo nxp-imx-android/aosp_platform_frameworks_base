@@ -18,6 +18,7 @@ package com.android.server.wm.flicker.quickswitch
 
 import android.graphics.Rect
 import android.platform.test.annotations.Presubmit
+import android.platform.test.annotations.RequiresDevice
 import android.tools.NavBar
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
@@ -47,6 +48,7 @@ import org.junit.runners.Parameterized
  *     Swipe right from the bottom of the screen to quick switch back to the first app [testApp1]
  * ```
  */
+@RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

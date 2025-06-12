@@ -22,10 +22,12 @@ import android.tools.flicker.annotation.FlickerConfigProvider
 import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.junit.FlickerServiceJUnit4ClassRunner
+import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.scenarios.UnlockKeyguardToSplitScreen
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@RequiresDevice
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
 class UnlockKeyguardToSplitScreenGesturalNavLandscape : UnlockKeyguardToSplitScreen() {
 

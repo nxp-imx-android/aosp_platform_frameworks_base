@@ -22,6 +22,7 @@ import android.tools.flicker.annotation.FlickerConfigProvider
 import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.junit.FlickerServiceJUnit4ClassRunner
+import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.flicker.DesktopModeFlickerScenarios.Companion.BRING_APPS_TO_FRONT
 import com.android.wm.shell.scenarios.BringDesktopAppsToFront
 import org.junit.Test
@@ -32,6 +33,7 @@ import org.junit.runner.RunWith
  *
  * Assert that the app windows move to front.
  */
+@RequiresDevice
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
 class BringDesktopAppsToFrontPortrait : BringDesktopAppsToFront(rotation = ROTATION_0) {
 

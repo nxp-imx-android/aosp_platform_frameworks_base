@@ -16,6 +16,7 @@
 
 package com.android.server.wm.flicker.launch
 
+import android.platform.test.annotations.RequiresDevice
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.LegacyFlickerTest
 import android.tools.flicker.legacy.LegacyFlickerTestFactory
@@ -48,6 +49,7 @@ import org.junit.runners.Parameterized
  *        apps are running before setup
  * ```
  */
+@RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)

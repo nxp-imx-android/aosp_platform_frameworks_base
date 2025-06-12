@@ -22,6 +22,7 @@ import android.tools.flicker.annotation.FlickerConfigProvider
 import android.tools.flicker.config.FlickerConfig
 import android.tools.flicker.config.FlickerServiceConfig
 import android.tools.flicker.junit.FlickerServiceJUnit4ClassRunner
+import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.flicker.DesktopModeFlickerScenarios.Companion.OPEN_APP_WHEN_EXTERNAL_DISPLAY_CONNECTED
 import com.android.wm.shell.scenarios.OpenAppWithExternalDisplayConnected
 import org.junit.Test
@@ -32,6 +33,7 @@ import org.junit.runner.RunWith
  *
  * Assert that the app launches in desktop mode.
  */
+@RequiresDevice
 @RunWith(FlickerServiceJUnit4ClassRunner::class)
 class OpenAppWithExternalDisplayConnected : OpenAppWithExternalDisplayConnected() {
     @ExpectedScenarios(["OPEN_APP_WHEN_EXTERNAL_DISPLAY_CONNECTED"])
