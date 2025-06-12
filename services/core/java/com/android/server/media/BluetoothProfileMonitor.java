@@ -202,8 +202,6 @@ import java.util.concurrent.ThreadLocalRandom;
                         isImproveQualityFlagEnabled());
         BluetoothLeBroadcastSettings settings =
                 buildBroadcastSettings(
-                        /* isPublic= */ true, // TODO(b/421062071): Set to false after framework
-                        // fix.
                         broadcastName,
                         getBroadcastCode(),
                         List.of(subgroupSettings));
@@ -359,13 +357,14 @@ import java.util.concurrent.ThreadLocalRandom;
     }
 
     private BluetoothLeBroadcastSettings buildBroadcastSettings(
-            boolean isPublic,
             String broadcastName,
             byte[] broadcastCode,
             List<BluetoothLeBroadcastSubgroupSettings> subgroupSettingsList) {
         BluetoothLeBroadcastSettings.Builder builder =
                 new BluetoothLeBroadcastSettings.Builder()
-                        .setPublicBroadcast(isPublic)
+                        .setPublicBroadcast(
+                                /* isPublicBroadcast= */ true) // To advertise the broadcast
+                                                               // settings, e.g. name.
                         .setBroadcastName(broadcastName)
                         .setBroadcastCode(broadcastCode);
         for (BluetoothLeBroadcastSubgroupSettings subgroupSettings : subgroupSettingsList) {
