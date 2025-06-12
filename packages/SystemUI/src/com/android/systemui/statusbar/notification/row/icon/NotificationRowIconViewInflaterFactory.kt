@@ -82,7 +82,7 @@ constructor(
             override fun getAppIcon(): Drawable {
                 return appIconProvider.getOrFetchAppIcon(
                     packageName = sbn.packageName,
-                    userHandle = sbn.user,
+                    userHandle = context.user,
                     instanceKey = "LEGACY",
                 )
             }

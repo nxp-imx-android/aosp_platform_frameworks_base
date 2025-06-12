@@ -21,6 +21,7 @@ import android.app.ActivityManager
 import android.app.Flags
 import android.app.Flags.notificationsRedesignThemedAppIcons
 import android.content.Context
+import android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES
 import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -207,7 +208,9 @@ constructor(
     ): BitmapInfo {
         val pm = sysuiContext.packageManager
         val userId = userHandle.identifier
-        val icon = pm.getApplicationInfoAsUser(packageName, 0, userId).loadUnbadgedIcon(pm)
+        val icon =
+            pm.getApplicationInfoAsUser(packageName, MATCH_UNINSTALLED_PACKAGES, userId)
+                .loadUnbadgedIcon(pm)
         val options = iconOptions(userHandle, allowProfileBadge = allowProfileBadge)
         return iconFactory.createBadgedIconBitmap(icon, options)
     }

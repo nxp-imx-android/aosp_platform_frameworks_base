@@ -50,6 +50,7 @@ import android.graphics.drawable.Drawable;
 import android.metrics.LogMaker;
 import android.os.Handler;
 import android.os.RemoteException;
+import android.os.UserHandle;
 import android.service.notification.NotificationAssistantService;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
@@ -340,7 +341,7 @@ public class NotificationInfo extends LinearLayout implements NotificationGuts.G
                     mAppName = String.valueOf(mPm.getApplicationLabel(info));
                     // The app icon is likely already in the cache, so let's use it
                     mPkgIcon = mAppIconProvider.getOrFetchAppIcon(info.packageName,
-                            mSbn.getUser(), /* instanceKey= */ "LEGACY");
+                            UserHandle.of(mSbn.getNormalizedUserId()), /* instanceKey= */ "LEGACY");
                 } catch (Exception ignored) {
                 }
             }

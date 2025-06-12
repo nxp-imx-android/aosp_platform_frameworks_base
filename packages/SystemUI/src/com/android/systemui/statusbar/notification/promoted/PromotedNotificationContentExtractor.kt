@@ -39,6 +39,7 @@ import android.app.Notification.ProgressStyle
 import android.app.Person
 import android.content.Context
 import android.graphics.drawable.Icon
+import android.os.UserHandle
 import android.service.notification.StatusBarNotification
 import android.view.LayoutInflater
 import androidx.compose.ui.util.trace
@@ -324,7 +325,8 @@ constructor(
     private fun StatusBarNotification.skeletonAppIcon(packageContext: Context): NotifIcon.AppIcon? {
         if (!android.app.Flags.notificationsRedesignAppIcons()) return null
         if (!notificationIconStyleProvider.shouldShowAppIcon(this, packageContext)) return null
-        return NotifIcon.AppIcon(appIconProvider.getOrFetchSkeletonAppIcon(packageName, user))
+        val userHandle = UserHandle.of(normalizedUserId)
+        return NotifIcon.AppIcon(appIconProvider.getOrFetchSkeletonAppIcon(packageName, userHandle))
     }
 
     private fun Notification.title(): CharSequence? = getCharSequenceExtraUnlessEmpty(EXTRA_TITLE)
