@@ -27,6 +27,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -39,6 +40,7 @@ import android.bluetooth.BluetoothProfile;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
@@ -161,7 +163,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
     private TestableLooper mTestableLooper;
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
         mTestableLooper = TestableLooper.get(this);
         when(mLocalBluetoothManager.getBluetoothAdapter()).thenReturn(mLocalBluetoothAdapter);
         when(mLocalBluetoothManager.getProfileManager()).thenReturn(mProfileManager);
@@ -190,6 +192,7 @@ public class HearingDevicesDialogDelegateTest extends SysuiTestCase {
         when(mCachedDevice.getDeviceSide()).thenReturn(SIDE_LEFT);
         when(mHearingDeviceItem.getCachedBluetoothDevice()).thenReturn(mCachedDevice);
         when(mInputRoutingFactory.create(any())).thenReturn(mInputRoutingController);
+        when(mPackageManager.getPackageInfo(anyString(), anyInt())).thenReturn(new PackageInfo());
 
         mContext.setMockPackageManager(mPackageManager);
     }
