@@ -518,9 +518,9 @@ public class LockPatternUtils {
                     credential, userId, wrapCallback(progressCallback));
             if (response == null) {
                 return false;
-            } else if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK) {
+            } else if (response.isMatched()) {
                 return true;
-            } else if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_RETRY) {
+            } else if (response.hasTimeout()) {
                 throw new RequestThrottledException(response.getTimeout());
             } else {
                 return false;
