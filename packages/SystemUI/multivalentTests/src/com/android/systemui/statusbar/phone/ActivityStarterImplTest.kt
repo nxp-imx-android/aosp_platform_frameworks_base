@@ -26,7 +26,6 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.shared.Flags as SharedFlags
 import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
@@ -43,6 +42,7 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.never
+import com.android.systemui.shared.Flags as SharedFlags
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -67,10 +67,7 @@ class ActivityStarterImplTest : SysuiTestCase() {
             )
     }
 
-    @EnableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @EnableSceneContainer
     @Test
     fun registerTransition_forwardsTheRequest() {
@@ -88,10 +85,7 @@ class ActivityStarterImplTest : SysuiTestCase() {
         }
     }
 
-    @DisableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @DisableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun registerTransition_doesNotForwardTheRequest_whenFlaggedOff() {
         with(kosmos) {
@@ -107,10 +101,7 @@ class ActivityStarterImplTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @EnableSceneContainer
     @Test
     fun unregisterTransition_forwardsTheRequest() {
@@ -121,10 +112,7 @@ class ActivityStarterImplTest : SysuiTestCase() {
         verify(activityStarterInternal).unregisterTransition(eq(cookie))
     }
 
-    @DisableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @DisableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun unregisterTransition_doesNotForwardTheRequest_whenFlaggedOff() {
         val cookie = mock(ActivityTransitionAnimator.TransitionCookie::class.java)

@@ -66,9 +66,7 @@ import com.android.systemui.Flags.animationLibraryShellMigration
 import com.android.systemui.Flags.instantHideShade
 import com.android.systemui.Flags.moveTransitionAnimationLayer
 import com.android.systemui.animation.TransitionAnimator.Companion.assertLongLivedReturnAnimations
-import com.android.systemui.animation.TransitionAnimator.Companion.assertReturnAnimations
 import com.android.systemui.animation.TransitionAnimator.Companion.longLivedReturnAnimationsEnabled
-import com.android.systemui.animation.TransitionAnimator.Companion.returnAnimationsEnabled
 import com.android.systemui.animation.TransitionAnimator.Companion.toTransitionState
 import com.android.wm.shell.shared.IShellTransitions
 import com.android.wm.shell.shared.ShellTransitions
@@ -714,8 +712,6 @@ constructor(
         launchController: Controller,
         transitionRegister: TransitionRegister?,
     ) {
-        if (!returnAnimationsEnabled()) return
-
         var cleanUpRunnable: Runnable? = null
         val returnRunner =
             createEphemeralRunner(
@@ -1811,19 +1807,17 @@ constructor(
 
             for ((index, it) in info.changes.withIndex()) {
                 if (targetModes.contains(it.mode)) {
-                    if (returnAnimationsEnabled()) {
-                        // If the controller contains a cookie, _only_ match if either the candidate
-                        // contains the matching cookie, or a component is also defined and is a
-                        // match.
-                        if (
-                            controller.transitionCookie != null &&
-                                it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
-                                    true &&
-                                (controller.component == null ||
-                                    it.taskInfo?.topActivity != controller.component)
-                        ) {
-                            continue
-                        }
+                    // If the controller contains a cookie, _only_ match if either the candidate
+                    // contains the matching cookie, or a component is also defined and is a
+                    // match.
+                    if (
+                        controller.transitionCookie != null &&
+                            it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
+                                true &&
+                            (controller.component == null ||
+                                it.taskInfo?.topActivity != controller.component)
+                    ) {
+                        continue
                     }
 
                     if (candidate == null) {
@@ -1948,19 +1942,17 @@ constructor(
 
             for ((index, it) in apps.withIndex()) {
                 if (it.mode == targetMode) {
-                    if (returnAnimationsEnabled()) {
-                        // If the controller contains a cookie, _only_ match if either the
-                        // candidate contains the matching cookie, or a component is also
-                        // defined and is a match.
-                        if (
-                            controller.transitionCookie != null &&
-                                it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
-                                    true &&
-                                (controller.component == null ||
-                                    it.taskInfo?.topActivity != controller.component)
-                        ) {
-                            continue
-                        }
+                    // If the controller contains a cookie, _only_ match if either the
+                    // candidate contains the matching cookie, or a component is also
+                    // defined and is a match.
+                    if (
+                        controller.transitionCookie != null &&
+                            it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
+                                true &&
+                            (controller.component == null ||
+                                it.taskInfo?.topActivity != controller.component)
+                    ) {
+                        continue
                     }
 
                     if (
@@ -2114,12 +2106,6 @@ constructor(
                 "The remote animation was neither cancelled or started within " +
                     "$LONG_TRANSITION_TIMEOUT",
             )
-        }
-
-        init {
-            // We do this check here to cover all entry points, including Launcher which doesn't
-            // call startIntentWithAnimation()
-            if (!controller.isLaunching) assertReturnAnimations()
         }
 
         @UiThread

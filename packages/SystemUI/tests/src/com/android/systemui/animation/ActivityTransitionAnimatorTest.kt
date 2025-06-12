@@ -674,7 +674,6 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY)
     @Test
     fun registersReturnIffCookieIsPresent_withLegacyAPI() {
         kosmos.runTest {
@@ -705,10 +704,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun registersLongLivedTransition() {
         kosmos.runTest {
@@ -725,10 +721,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun registersLongLivedTransitionOverridingPreviousRegistration() {
         kosmos.runTest {
@@ -786,10 +779,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun unregistersLongLivedTransition() {
         kosmos.runTest {
@@ -887,10 +877,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @DisableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @DisableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun creatingRunnerWithLazyInitializationThrows_whenTheFlagsAreDisabled() {
         kosmos.runTest {
@@ -901,10 +888,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun runnerCreatesDelegateLazily_onAnimationStart() {
         kosmos.runTest {
@@ -936,10 +920,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun runnerCreatesDelegateLazily_onAnimationTakeover() {
         kosmos.runTest {
@@ -970,10 +951,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @DisableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @DisableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun animationTakeoverThrows_whenTheFlagsAreDisabled() {
         kosmos.runTest {
@@ -990,10 +968,7 @@ class ActivityTransitionAnimatorTest : SysuiTestCase() {
         }
     }
 
-    @DisableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @DisableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun disposeRunner_delegateDereferenced() {
         kosmos.runTest {
