@@ -19,7 +19,6 @@ package com.android.systemui.screenrecord;
 import static com.android.systemui.screenrecord.ScreenRecordUxController.EXTRA_STATE;
 import static com.android.systemui.screenrecord.ScreenRecordUxController.INTENT_UPDATE_STATE;
 
-import android.app.BroadcastOptions;
 import android.app.Dialog;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -27,7 +26,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.projection.StopReason;
-import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Process;
 import android.os.UserHandle;
@@ -59,9 +57,8 @@ public class RecordingController
     private final ScreenRecordUxController mScreenRecordUxController;
     private boolean mIsStarting;
     private boolean mIsRecording;
-    private PendingIntent mStopIntent;
+    private Runnable mStop;
     private @StopReason int mStopReason = StopReason.STOP_UNKNOWN;
-    private final Bundle mInteractiveBroadcastOption;
     private CountDownTimer mCountDownTimer = null;
     private final Executor mMainExecutor;
     private final BroadcastDispatcher mBroadcastDispatcher;
@@ -130,10 +127,6 @@ public class RecordingController
         mScreenCaptureDisabledDialogDelegate = screenCaptureDisabledDialogDelegate;
         mScreenRecordPermissionDialogDelegateFactory = screenRecordPermissionDialogDelegateFactory;
         mScreenRecordPermissionContentManagerFactory = screenRecordPermissionContentManagerFactory;
-
-        BroadcastOptions options = BroadcastOptions.makeBasic();
-        options.setInteractive(true);
-        mInteractiveBroadcastOption = options.toBundle();
     }
 
     /**
@@ -194,15 +187,14 @@ public class RecordingController
     /**
      * Start counting down in preparation to start a recording
      *
-     * @param ms          Total time in ms to wait before starting
-     * @param interval    Time in ms per countdown step
-     * @param startIntent Intent to start a recording
-     * @param stopIntent  Intent to stop a recording
+     * @param ms       Total time in ms to wait before starting
+     * @param interval Time in ms per countdown step
+     * @param start    Runnable to start a recording
+     * @param stop     Runnable to stop a recording
      */
-    public void startCountdown(long ms, long interval, PendingIntent startIntent,
-            PendingIntent stopIntent) {
+    public void startCountdown(long ms, long interval, Runnable start, Runnable stop) {
         mIsStarting = true;
-        mStopIntent = stopIntent;
+        mStop = stop;
 
         mCountDownTimer = new CountDownTimer(ms, interval) {
             @Override
@@ -220,15 +212,18 @@ public class RecordingController
                     cb.onCountdownEnd();
                 }
                 try {
-                    startIntent.send(mInteractiveBroadcastOption);
+                    start.run();
                     mUserTracker.addCallback(mUserChangedCallback, mMainExecutor);
 
                     IntentFilter stateFilter = new IntentFilter(INTENT_UPDATE_STATE);
                     mBroadcastDispatcher.registerReceiver(mStateChangeReceiver, stateFilter, null,
                             UserHandle.ALL);
                     mRecordingControllerLogger.logSentStartIntent();
-                } catch (PendingIntent.CanceledException e) {
-                    mRecordingControllerLogger.logPendingIntentCancelled(e);
+                } catch (Throwable e) {
+                    if (e instanceof PendingIntent.CanceledException) {
+                        mRecordingControllerLogger.logPendingIntentCancelled(
+                                (PendingIntent.CanceledException) e);
+                    }
                 }
             }
         };
@@ -275,15 +270,18 @@ public class RecordingController
     public void stopRecording(@StopReason int stopReason) {
         mStopReason = stopReason;
         try {
-            if (mStopIntent != null) {
+            if (mStop != null) {
                 mRecordingControllerLogger.logRecordingStopped();
-                mStopIntent.send(mInteractiveBroadcastOption);
+                mStop.run();
             } else {
                 mRecordingControllerLogger.logRecordingStopErrorNoStopIntent();
             }
             updateState(false);
-        } catch (PendingIntent.CanceledException e) {
-            mRecordingControllerLogger.logRecordingStopError(e);
+        } catch (Throwable e) {
+            if (e instanceof PendingIntent.CanceledException) {
+                mRecordingControllerLogger.logRecordingStopError(
+                        (PendingIntent.CanceledException) e);
+            }
         }
     }
 

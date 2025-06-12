@@ -17,7 +17,6 @@
 package com.android.systemui.screenrecord
 
 import android.app.Dialog
-import android.app.PendingIntent
 import android.media.projection.StopReason
 import com.android.systemui.statusbar.policy.CallbackController
 
@@ -51,12 +50,7 @@ interface ScreenRecordUxController :
     ): ScreenRecordPermissionContentManager
 
     /** @see RecordingController.startCountdown */
-    fun startCountdown(
-        ms: Long,
-        interval: Long,
-        startIntent: PendingIntent,
-        stopIntent: PendingIntent,
-    )
+    fun startCountdown(ms: Long, interval: Long, start: Runnable, stop: Runnable)
 
     /** @see RecordingController.cancelCountdown */
     fun cancelCountdown()

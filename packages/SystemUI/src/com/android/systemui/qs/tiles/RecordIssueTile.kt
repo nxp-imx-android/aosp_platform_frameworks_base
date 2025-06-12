@@ -144,7 +144,7 @@ constructor(
     @VisibleForTesting
     public override fun handleClick(expandable: Expandable?) {
         if (issueRecordingState.isRecording) {
-            stopIssueRecordingService()
+            sendStopIssueRecordingServiceIntent()
         } else {
             mUiHandler.post { showPrompt(expandable) }
         }
@@ -154,19 +154,23 @@ constructor(
         screenRecordUxController.startCountdown(
             DELAY_MS,
             INTERVAL_MS,
-            pendingServiceIntent(
+            { sendStartIssueRecordingServiceIntent() },
+            { sendStopIssueRecordingServiceIntent() },
+        )
+
+    private fun sendStopIssueRecordingServiceIntent() =
+        pendingServiceIntent(getStopIntent(userContextProvider.userContext))
+            .send(BroadcastOptions.makeBasic().apply { isInteractive = true }.toBundle())
+
+    private fun sendStartIssueRecordingServiceIntent() =
+        pendingServiceIntent(
                 getStartIntent(
                     userContextProvider.userContext,
                     issueRecordingState.traceConfig,
                     issueRecordingState.recordScreen,
                     issueRecordingState.takeBugreport,
                 )
-            ),
-            pendingServiceIntent(getStopIntent(userContextProvider.userContext)),
-        )
-
-    private fun stopIssueRecordingService() =
-        pendingServiceIntent(getStopIntent(userContextProvider.userContext))
+            )
             .send(BroadcastOptions.makeBasic().apply { isInteractive = true }.toBundle())
 
     private fun pendingServiceIntent(action: Intent) =

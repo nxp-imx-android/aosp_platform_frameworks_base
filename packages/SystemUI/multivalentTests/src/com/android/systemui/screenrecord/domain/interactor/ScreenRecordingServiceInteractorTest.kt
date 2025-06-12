@@ -29,6 +29,8 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
+import com.android.systemui.screenrecord.screenRecordUxController
 import com.android.systemui.screenrecord.service.FakeScreenRecordingService
 import com.android.systemui.screenrecord.service.FakeScreenRecordingServiceCallbackWrapper
 import com.android.systemui.screenrecord.service.callbackStatus
@@ -59,6 +61,7 @@ class ScreenRecordingServiceInteractorTest : SysuiTestCase() {
                 mockedContext,
                 applicationCoroutineScope,
                 userRepository,
+                screenRecordUxController,
             )
         }
     }
@@ -121,9 +124,11 @@ class ScreenRecordingServiceInteractorTest : SysuiTestCase() {
 
 private fun ScreenRecordingServiceInteractor.startRecording() {
     startRecording(
-        captureTarget = null,
-        audioSource = ScreenRecordingAudioSource.NONE,
-        displayId = 0,
-        shouldShowTaps = false,
+        ScreenRecordingParameters(
+            captureTarget = null,
+            audioSource = ScreenRecordingAudioSource.NONE,
+            displayId = 0,
+            shouldShowTaps = false,
+        )
     )
 }

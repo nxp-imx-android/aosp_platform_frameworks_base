@@ -18,9 +18,9 @@ package com.android.systemui.screenrecord
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.PendingIntent
 import android.content.Intent
 import android.hardware.display.DisplayManager
+import android.media.projection.StopReason
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -49,7 +49,8 @@ import com.android.systemui.mediaprojection.permission.ScreenShareMode
 import com.android.systemui.mediaprojection.permission.ScreenShareOption
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
-import com.android.systemui.settings.UserContextProvider
+import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingStartStopInteractor
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -62,8 +63,8 @@ class ScreenRecordPermissionContentManager(
     displayManager: DisplayManager,
     private val controller: ScreenRecordUxController,
     private val activityStarter: ActivityStarter,
-    private val userContextProvider: UserContextProvider,
     private val onStartRecordingClicked: Runnable?,
+    private val screenRecordingStartStopInteractor: ScreenRecordingStartStopInteractor,
 ) :
     BaseMediaProjectionPermissionContentManager(
         createOptionList(displayManager),
@@ -80,8 +81,8 @@ class ScreenRecordPermissionContentManager(
         displayManager: DisplayManager,
         @Assisted controller: ScreenRecordUxController,
         activityStarter: ActivityStarter,
-        userContextProvider: UserContextProvider,
         @Assisted onStartRecordingClicked: Runnable?,
+        screenRecordingStartStopInteractor: ScreenRecordingStartStopInteractor,
     ) : this(
         hostUserHandle,
         hostUid,
@@ -90,8 +91,8 @@ class ScreenRecordPermissionContentManager(
         displayManager,
         controller,
         activityStarter,
-        userContextProvider,
         onStartRecordingClicked,
+        screenRecordingStartStopInteractor,
     )
 
     @AssistedFactory
@@ -209,33 +210,26 @@ class ScreenRecordPermissionContentManager(
         captureTarget: MediaProjectionCaptureTarget?,
         displayId: Int = Display.DEFAULT_DISPLAY,
     ) {
-        val userContext = userContextProvider.userContext
         val showTaps = selectedScreenShareOption.mode != SINGLE_APP && tapsSwitch.isChecked
         val audioMode =
             if (audioSwitch.isChecked) options.selectedItem as ScreenRecordingAudioSource
             else ScreenRecordingAudioSource.NONE
-        val startIntent =
-            PendingIntent.getForegroundService(
-                userContext,
-                RecordingService.REQUEST_CODE,
-                RecordingService.getStartIntent(
-                    userContext,
-                    Activity.RESULT_OK,
-                    audioMode.ordinal,
-                    showTaps,
-                    displayId,
-                    captureTarget,
-                ),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-        val stopIntent =
-            PendingIntent.getService(
-                userContext,
-                RecordingService.REQUEST_CODE,
-                RecordingService.getStopIntent(userContext),
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-            )
-        controller.startCountdown(DELAY_MS, INTERVAL_MS, startIntent, stopIntent)
+
+        controller.startCountdown(
+            DELAY_MS,
+            INTERVAL_MS,
+            {
+                screenRecordingStartStopInteractor.startRecording(
+                    ScreenRecordingParameters(
+                        captureTarget = captureTarget,
+                        audioSource = audioMode,
+                        displayId = displayId,
+                        shouldShowTaps = showTaps,
+                    )
+                )
+            },
+            { screenRecordingStartStopInteractor.stopRecording(StopReason.STOP_UNKNOWN) },
+        )
     }
 
     private inner class CaptureTargetResultReceiver :

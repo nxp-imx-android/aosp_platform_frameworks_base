@@ -123,7 +123,7 @@ protected constructor(
 
     private fun RecordingContext.startRecording() {
         try {
-            Log.d(tag, "Starting screen recording $this")
+            Log.d(tag, "Starting screen recording user=$userId $this")
             setShouldShowTouches(shouldShowTaps)
             recorder.start()
             notificationInteractor.notifyRecording(
