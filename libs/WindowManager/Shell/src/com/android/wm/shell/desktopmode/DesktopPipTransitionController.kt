@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.desktopmode
 
-import android.app.ActivityManager
+import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityTaskManager
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
@@ -71,6 +71,12 @@ class DesktopPipTransitionController(
             if (pipDesktopState.isPipInDesktopMode()) WINDOWING_MODE_FREEFORM
             else WINDOWING_MODE_FULLSCREEN
 
+        logD(
+            "maybeUpdateParentInWct: parentTaskId=%d parentWinMode=%d resolvedWinMode=%d",
+            parentTask.taskId,
+            parentTask.windowingMode,
+            resolvedWinMode,
+        )
         if (resolvedWinMode != parentTask.windowingMode) {
             wct.setWindowingMode(parentTask.token, resolvedWinMode)
             wct.setBounds(
@@ -78,6 +84,42 @@ class DesktopPipTransitionController(
                 if (resolvedWinMode == WINDOWING_MODE_FREEFORM) defaultFreeformBounds else Rect(),
             )
         }
+        if (resolvedWinMode == WINDOWING_MODE_FULLSCREEN) {
+            maybeAddMoveToFullscreenChanges(wct, parentTask)
+        }
+    }
+
+    /**
+     * In multi-activity PiP case, if the task entering PiP was previously active in a Desk and is
+     * now expanding to fullscreen, call [DesktopTasksController#addMoveToFullscreenChanges] for the
+     * parent task to properly move the task to fullscreen.
+     *
+     * @param wct WindowContainerTransaction that will apply these changes
+     * @param parentTask the multi-activity PiP parent
+     */
+    private fun maybeAddMoveToFullscreenChanges(
+        wct: WindowContainerTransaction,
+        parentTask: RunningTaskInfo,
+    ) {
+        val desktopRepository = desktopUserRepositories.getProfile(parentTask.userId)
+        if (!desktopRepository.isActiveTask(parentTask.taskId)) {
+            logW(
+                "maybeAddMoveToFullscreenChanges: parentTask with id=%d is not active in any desk",
+                parentTask.taskId,
+            )
+            return
+        }
+
+        logD(
+            "maybeAddMoveToFullscreenChanges: addMoveToFullscreenChanges, taskId=%d displayId=%d",
+            parentTask.taskId,
+            parentTask.displayId,
+        )
+        desktopTasksController.addMoveToFullscreenChanges(
+            wct = wct,
+            taskInfo = parentTask,
+            willExitDesktop = true,
+        )
     }
 
     /**
@@ -118,58 +160,79 @@ class DesktopPipTransitionController(
         if (deskId == INVALID_DESK_ID) return
 
         val parentTaskId = runningTaskInfo.lastParentTaskIdBeforePip
+        var parentTask: RunningTaskInfo? = null
+        var shouldAddParentToDesk = false
+
+        // If PiP is multi-activity, we should use the parent task for the rest of this method
         if (parentTaskId != ActivityTaskManager.INVALID_TASK_ID) {
-            logD(
-                "maybeReparentTaskToDesk: Multi-activity PiP, unminimize parent task in Desk" +
-                    " instead of moving PiP task to Desk"
-            )
-            unminimizeParentInDesk(wct, parentTaskId, deskId)
-            return
+            parentTask = shellTaskOrganizer.getRunningTaskInfo(parentTaskId)
+            if (parentTask == null) {
+                logW(
+                    "maybeReparentTaskToDesk: Failed to find RunningTaskInfo for parentTaskId %d",
+                    parentTaskId,
+                )
+                return
+            }
+            if (desktopRepository.isActiveTask(parentTaskId)) {
+                logD(
+                    "maybeReparentTaskToDesk: Multi-activity PiP with parent taskId=%d already " +
+                        "in the Desk, move parent task to front",
+                    parentTaskId,
+                )
+                moveParentTaskToFront(wct, parentTask, deskId)
+                return
+            } else {
+                logD(
+                    "maybeReparentTaskToDesk: Multi-activity PiP with parent taskId=%d not " +
+                        "already in the Desk, should add parent to the desk",
+                    parentTaskId,
+                )
+                shouldAddParentToDesk = true
+            }
         }
 
         if (!desktopRepository.isDeskActive(deskId)) {
             logD(
                 "maybeReparentTaskToDesk: addDeskActivationChanges, taskId=%d deskId=%d, " +
                     "displayId=%d",
-                runningTaskInfo.taskId,
+                if (shouldAddParentToDesk) parentTaskId else runningTaskInfo.taskId,
                 deskId,
                 displayId,
             )
             desktopTasksController.addDeskActivationChanges(
                 deskId = deskId,
                 wct = wct,
-                newTask = runningTaskInfo,
+                newTask = if (shouldAddParentToDesk) parentTask!! else runningTaskInfo,
                 displayId = displayId,
             )
         }
 
         logD(
             "maybeReparentTaskToDesk: addMoveToDeskTaskChanges, taskId=%d deskId=%d",
-            runningTaskInfo.taskId,
+            if (shouldAddParentToDesk) parentTaskId else runningTaskInfo.taskId,
             deskId,
         )
         desktopTasksController.addMoveToDeskTaskChanges(
             wct = wct,
-            task = runningTaskInfo,
+            task = if (shouldAddParentToDesk) parentTask!! else runningTaskInfo,
             deskId = deskId,
         )
     }
 
-    private fun unminimizeParentInDesk(
+    /**
+     * In multi-activity PiP case, call [DesktopTasksController#addMoveTaskToFrontChanges] to move
+     * the parent task to front within the desk.
+     *
+     * @param wct WindowContainerTransaction that will apply these changes
+     * @param parentTask the parent task
+     * @param deskId desk id that the multi-activity PiP parent is in
+     */
+    private fun moveParentTaskToFront(
         wct: WindowContainerTransaction,
-        parentTaskId: Int,
+        parentTask: RunningTaskInfo,
         deskId: Int,
     ) {
-        val parentTask = shellTaskOrganizer.getRunningTaskInfo(parentTaskId)
-        if (parentTask == null) {
-            logW(
-                "unminimizeParentInDesk: Failed to find RunningTaskInfo for parentTaskId %d",
-                parentTaskId,
-            )
-            return
-        }
-
-        logD("unminimizeParentInDesk: parentTaskId=%d deskId=%d", parentTask.taskId, deskId)
+        logD("moveParentTaskToFront: parentTaskId=%d deskId=%d", parentTask.taskId, deskId)
         desktopTasksController.addMoveTaskToFrontChanges(
             wct = wct,
             deskId = deskId,
@@ -187,7 +250,7 @@ class DesktopPipTransitionController(
     fun handlePipTransition(
         wct: WindowContainerTransaction,
         transition: IBinder,
-        taskInfo: ActivityManager.RunningTaskInfo,
+        taskInfo: RunningTaskInfo,
     ) {
         if (!pipDesktopState.isDesktopWindowingPipEnabled()) {
             return
