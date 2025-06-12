@@ -38,7 +38,6 @@ import androidx.test.runner.AndroidJUnit4;
 import com.android.internal.widget.IWeakEscrowTokenActivatedListener;
 import com.android.internal.widget.IWeakEscrowTokenRemovedListener;
 import com.android.internal.widget.LockscreenCredential;
-import com.android.internal.widget.VerifyCredentialResponse;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -82,8 +81,7 @@ public class WeakEscrowTokenTests extends BaseLockSettingsServiceTests{
         // Token not activated immediately since user password exists
         assertFalse(mService.isWeakEscrowTokenActive(handle, PRIMARY_USER_ID));
         // Activate token (password gets migrated to SP at the same time)
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK, mService.verifyCredential(
-                password, PRIMARY_USER_ID, 0 /* flags */).getResponseCode());
+        assertTrue(mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */).isMatched());
         // Verify token is activated and valid
         assertTrue(mService.isWeakEscrowTokenActive(handle, PRIMARY_USER_ID));
         assertTrue(mService.isWeakEscrowTokenValid(handle, token, PRIMARY_USER_ID));
@@ -105,8 +103,7 @@ public class WeakEscrowTokenTests extends BaseLockSettingsServiceTests{
         long handle = mService.addWeakEscrowToken(token, PRIMARY_USER_ID, mockActivateListener);
 
         // Activate token
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK, mService.verifyCredential(
-                password, PRIMARY_USER_ID, 0 /* flags */).getResponseCode());
+        assertTrue(mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */).isMatched());
 
         // Verify token removed
         assertTrue(mService.isWeakEscrowTokenActive(handle, PRIMARY_USER_ID));
@@ -164,8 +161,7 @@ public class WeakEscrowTokenTests extends BaseLockSettingsServiceTests{
         reset(mDevicePolicyManager);
 
         long handle = mService.addWeakEscrowToken(token, PRIMARY_USER_ID, mockActivateListener);
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK, mService.verifyCredential(
-                password, PRIMARY_USER_ID, 0 /* flags */).getResponseCode());
+        assertTrue(mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */).isMatched());
         assertTrue(mService.isWeakEscrowTokenActive(handle, PRIMARY_USER_ID));
         assertTrue(mService.isWeakEscrowTokenValid(handle, token, PRIMARY_USER_ID));
 

@@ -60,9 +60,7 @@ public class LockscreenFrpTest extends BaseLockSettingsServiceTests {
         mService.setLockCredential(newPin("1234"), nonePassword(), PRIMARY_USER_ID);
 
         assertEquals(CREDENTIAL_TYPE_PIN, mService.getCredentialType(USER_FRP));
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK,
-                mService.verifyCredential(newPin("1234"), USER_FRP, 0 /* flags */)
-                        .getResponseCode());
+        assertTrue(mService.verifyCredential(newPin("1234"), USER_FRP, 0 /* flags */).isMatched());
     }
 
     @Test
@@ -70,9 +68,8 @@ public class LockscreenFrpTest extends BaseLockSettingsServiceTests {
         mService.setLockCredential(newPattern("4321"), nonePassword(), PRIMARY_USER_ID);
 
         assertEquals(CREDENTIAL_TYPE_PATTERN, mService.getCredentialType(USER_FRP));
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK,
-                mService.verifyCredential(newPattern("4321"), USER_FRP, 0 /* flags */)
-                        .getResponseCode());
+        assertTrue(
+                mService.verifyCredential(newPattern("4321"), USER_FRP, 0 /* flags */).isMatched());
     }
 
     @Test
@@ -80,9 +77,9 @@ public class LockscreenFrpTest extends BaseLockSettingsServiceTests {
         mService.setLockCredential(newPassword("4321"), nonePassword(), PRIMARY_USER_ID);
 
         assertEquals(CREDENTIAL_TYPE_PASSWORD, mService.getCredentialType(USER_FRP));
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK,
+        assertTrue(
                 mService.verifyCredential(newPassword("4321"), USER_FRP, 0 /* flags */)
-                        .getResponseCode());
+                        .isMatched());
     }
 
     @Test
@@ -91,9 +88,8 @@ public class LockscreenFrpTest extends BaseLockSettingsServiceTests {
         mService.setLockCredential(newPattern("5678"), newPassword("1234"), PRIMARY_USER_ID);
 
         assertEquals(CREDENTIAL_TYPE_PATTERN, mService.getCredentialType(USER_FRP));
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK,
-                mService.verifyCredential(newPattern("5678"), USER_FRP, 0 /* flags */)
-                        .getResponseCode());
+        assertTrue(
+                mService.verifyCredential(newPattern("5678"), USER_FRP, 0 /* flags */).isMatched());
     }
 
     @Test
@@ -128,10 +124,7 @@ public class LockscreenFrpTest extends BaseLockSettingsServiceTests {
                 DevicePolicyManager.PASSWORD_QUALITY_NUMERIC, data.payload);
 
         assertEquals(CREDENTIAL_TYPE_PIN, mService.getCredentialType(USER_FRP));
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK,
-                mService.verifyCredential(newPin("1234"), USER_FRP, 0 /* flags */)
-                        .getResponseCode());
-
+        assertTrue(mService.verifyCredential(newPin("1234"), USER_FRP, 0 /* flags */).isMatched());
     }
 
     @Test
@@ -145,9 +138,7 @@ public class LockscreenFrpTest extends BaseLockSettingsServiceTests {
                 DevicePolicyManager.PASSWORD_QUALITY_COMPLEX, data.payload);
 
         assertEquals(CREDENTIAL_TYPE_PASSWORD, mService.getCredentialType(USER_FRP));
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK,
-                mService.verifyCredential(newPin("1234"), USER_FRP, 0 /* flags */)
-                        .getResponseCode());
+        assertTrue(mService.verifyCredential(newPin("1234"), USER_FRP, 0 /* flags */).isMatched());
     }
 
     // The FRP block that gets written by the current version of Android must still be accepted by

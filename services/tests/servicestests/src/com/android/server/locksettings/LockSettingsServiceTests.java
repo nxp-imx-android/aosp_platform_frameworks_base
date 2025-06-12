@@ -169,9 +169,9 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         mGateKeeperService.clearAuthToken(MANAGED_PROFILE_USER_ID);
         mGateKeeperService.clearAuthToken(TURNED_OFF_PROFILE_USER_ID);
         // verify credential
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK, mService.verifyCredential(
-                firstUnifiedPassword, PRIMARY_USER_ID, 0 /* flags */)
-                .getResponseCode());
+        assertTrue(
+                mService.verifyCredential(firstUnifiedPassword, PRIMARY_USER_ID, 0 /* flags */)
+                        .isMatched());
 
         // Verify that we have a new auth token for the profile
         assertNotNull(mGateKeeperService.getAuthToken(MANAGED_PROFILE_USER_ID));
@@ -208,22 +208,22 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         // clear auth token and make sure verify challenge from primary user does not regenerate it.
         mGateKeeperService.clearAuthToken(MANAGED_PROFILE_USER_ID);
         // verify primary credential
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK, mService.verifyCredential(
-                primaryPassword, PRIMARY_USER_ID, 0 /* flags */)
-                .getResponseCode());
+        assertTrue(
+                mService.verifyCredential(primaryPassword, PRIMARY_USER_ID, 0 /* flags */)
+                        .isMatched());
         assertNull(mGateKeeperService.getAuthToken(MANAGED_PROFILE_USER_ID));
 
         // verify profile credential
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK, mService.verifyCredential(
-                profilePassword, MANAGED_PROFILE_USER_ID, 0 /* flags */)
-                .getResponseCode());
+        assertTrue(
+                mService.verifyCredential(profilePassword, MANAGED_PROFILE_USER_ID, 0 /* flags */)
+                        .isMatched());
         assertNotNull(mGateKeeperService.getAuthToken(MANAGED_PROFILE_USER_ID));
         assertEquals(profileSid, mGateKeeperService.getSecureUserId(MANAGED_PROFILE_USER_ID));
 
         setCredential(PRIMARY_USER_ID, newPassword("password"), primaryPassword);
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK, mService.verifyCredential(
-                profilePassword, MANAGED_PROFILE_USER_ID, 0 /* flags */)
-                .getResponseCode());
+        assertTrue(
+                mService.verifyCredential(profilePassword, MANAGED_PROFILE_USER_ID, 0 /* flags */)
+                        .isMatched());
         assertEquals(profileSid, mGateKeeperService.getSecureUserId(MANAGED_PROFILE_USER_ID));
     }
 
@@ -520,9 +520,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         final LockSettingsStateListener listener = mock(LockSettingsStateListener.class);
         mLocalService.registerLockSettingsStateListener(listener);
 
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK,
-                mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */)
-                        .getResponseCode());
+        assertTrue(mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */).isMatched());
 
         verify(listener).onAuthenticationSucceeded(PRIMARY_USER_ID);
     }
@@ -552,9 +550,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         final LockSettingsStateListener listener = mock(LockSettingsStateListener.class);
 
         mLocalService.registerLockSettingsStateListener(listener);
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK,
-                mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */)
-                        .getResponseCode());
+        assertTrue(mService.verifyCredential(password, PRIMARY_USER_ID, 0 /* flags */).isMatched());
         verify(listener).onAuthenticationSucceeded(PRIMARY_USER_ID);
 
         mLocalService.unregisterLockSettingsStateListener(listener);
@@ -895,7 +891,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         VerifyCredentialResponse response = mService.verifyCredential(credential, userId,
                 0 /* flags */);
 
-        assertEquals(VerifyCredentialResponse.RESPONSE_OK, response.getResponseCode());
+        assertTrue(response.isMatched());
         if (credential.isPassword()) {
             assertEquals(CREDENTIAL_TYPE_PASSWORD, mService.getCredentialType(userId));
         } else if (credential.isPin()) {

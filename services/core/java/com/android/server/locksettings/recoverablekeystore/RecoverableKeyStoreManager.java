@@ -1096,7 +1096,7 @@ public class RecoverableKeyStoreManager {
 
     private RemoteLockscreenValidationResult handleVerifyCredentialResponse(
             VerifyCredentialResponse response, int userId) {
-        if (response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK) {
+        if (response.isMatched()) {
             mDatabase.setBadRemoteGuessCounter(userId, 0);
             mRemoteLockscreenValidationSessionStorage.finishSession(userId);
             return new RemoteLockscreenValidationResult.Builder()
