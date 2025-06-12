@@ -45,7 +45,10 @@ import org.junit.runners.Parameterized
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class CloseAllAppsWithBackNavigationTest(flicker: LegacyFlickerTest) : DesktopModeBaseTest(flicker) {
     inner class CloseAllAppsWithBackNavigationScenario :
-        CloseAllAppsWithBackNavigation(flicker.scenario.startRotation)
+        CloseAllAppsWithBackNavigation(
+            navigationMode = flicker.scenario.navBarMode,
+            rotation = flicker.scenario.startRotation
+        )
 
     @Rule
     @JvmField
@@ -83,9 +86,7 @@ class CloseAllAppsWithBackNavigationTest(flicker: LegacyFlickerTest) : DesktopMo
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
         fun getParams(): Collection<FlickerTest> {
-            return LegacyFlickerTestFactory.nonRotationTests(
-                supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
-            )
+            return LegacyFlickerTestFactory.nonRotationTests()
         }
     }
 }
