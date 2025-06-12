@@ -138,7 +138,8 @@ constructor(
 
     /** An internal modification was made to notifications */
     fun notificationStackChanged() {
-        logger?.notificationStackChanged()
+        // TODO(b/424163539): child height updated logs are spammy, which hides other logs
+        // logger?.notificationStackChanged()
         notificationStackChangedDebounced.value = notificationStackChangedDebounced.value + 1
     }
 
