@@ -609,7 +609,8 @@ public class ContentRecorderTests extends WindowTestsBase {
         mContentRecorder.setContentRecordingSession(mTaskSession);
 
         spyOn(mVirtualDisplayContent.mDisplay);
-        doReturn(true).when(mVirtualDisplayContent.mDisplay).canHostTasks();
+        doReturn(true).when(mWm.mDisplayWindowSettings)
+                .shouldShowSystemDecorsLocked(mVirtualDisplayContent);
 
         // WHEN a recording tries to start.
         mContentRecorder.updateRecording();
