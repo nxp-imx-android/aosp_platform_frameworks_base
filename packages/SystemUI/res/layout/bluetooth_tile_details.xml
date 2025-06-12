@@ -68,7 +68,7 @@
             <TextView
                 android:id="@+id/bluetooth_toggle_title"
                 android:layout_width="0dp"
-                android:layout_height="@dimen/internet_details_toggle_row_height"
+                android:layout_height="@dimen/tile_details_toggle_row_height"
                 android:maxLines="2"
                 android:ellipsize="end"
                 android:gravity="start|center_vertical"
@@ -109,7 +109,7 @@
             <TextView
                 android:id="@+id/bluetooth_auto_on_toggle_title"
                 android:layout_width="0dp"
-                android:layout_height="@dimen/internet_details_toggle_row_height"
+                android:layout_height="@dimen/tile_details_toggle_row_height"
                 android:maxLines="2"
                 android:ellipsize="end"
                 android:text="@string/turn_on_bluetooth_auto_tomorrow"
