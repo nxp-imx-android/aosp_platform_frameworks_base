@@ -229,6 +229,7 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
     private boolean mExpansionEnabledPolicy = true;
     private boolean mExpansionEnabledAmbient = true;
     private float mQuickQsHeaderHeight;
+    private boolean mLastMediaVisibility = false;
     /**
      * Determines if QS should be already expanded when expanding shade.
      * Used for split shade, two finger gesture as well as accessibility shortcut to QS.
@@ -2239,6 +2240,10 @@ public class QuickSettingsControllerImpl implements QuickSettingsController, Dum
                         }
                     });
             mQs.setCollapsedMediaVisibilityChangedListener((visible) -> {
+                if (visible != mLastMediaVisibility) {
+                    mLastMediaVisibility = visible;
+                    mPanelViewControllerLazy.get().positionClockAndNotifications();
+                }
                 if (mQs.isHeaderShown()) {
                     setAnimateNextNotificationBounds(
                             StackStateAnimator.ANIMATION_DURATION_STANDARD, 0);
