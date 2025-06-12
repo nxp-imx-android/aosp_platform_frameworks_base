@@ -831,21 +831,7 @@ public final class DeviceStateManagerService extends SystemService {
             }
             mProcessRecords.put(pid, record);
 
-            final DeviceStateInfo currentInfo =
-                    mCommittedState.isPresent() ? getDeviceStateInfoLocked() : null;
-            if (com.android.window.flags.Flags.wlinfoOncreate()) {
-                return currentInfo;
-            } else {
-                // Callback clients should not be notified of invalid device states, so calls to
-                // #getDeviceStateInfoLocked should be gated on checks if a committed state is
-                // present before getting the device state info.
-                if (currentInfo != null) {
-                    // If there is not a committed state we'll wait to notify the process of the
-                    // initial value.
-                    record.notifyDeviceStateInfoAsync(currentInfo);
-                }
-                return null;
-            }
+            return mCommittedState.isPresent() ? getDeviceStateInfoLocked() : null;
         }
     }
 

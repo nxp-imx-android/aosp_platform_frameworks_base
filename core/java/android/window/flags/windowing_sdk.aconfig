@@ -77,13 +77,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "wlinfo_oncreate"
-    description: "Makes WindowLayoutInfo accessible without racing in the Activity#onCreate()"
-    bug: "337820752"
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "better_support_non_match_parent_activity"
     description: "Relax the assumption of non-match parent activity"
     bug: "356277166"
