@@ -449,8 +449,12 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             return -1;
         }
 
-        mService.updateAppFunctionAccessFlags(agentPackage, agentUserId, targetPackage,
-                targetUserId, ACCESS_FLAG_MASK_OTHER, ACCESS_FLAG_OTHER_GRANTED);
+        boolean result = mService.updateAppFunctionAccessFlags(agentPackage, agentUserId,
+                targetPackage, targetUserId, ACCESS_FLAG_MASK_OTHER, ACCESS_FLAG_OTHER_GRANTED);
+        if (!result) {
+            pw.println("Error: Failed to grant the app function access.");
+            return -1;
+        }
         pw.println("Access granted successfully.");
         return 0;
     }
@@ -491,8 +495,12 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             pw.println("Error: --target-package must be specified.");
             return -1;
         }
-        mService.updateAppFunctionAccessFlags(agentPackage, agentUserId, targetPackage,
-                targetUserId, ACCESS_FLAG_MASK_OTHER, ACCESS_FLAG_OTHER_DENIED);
+        boolean result = mService.updateAppFunctionAccessFlags(agentPackage, agentUserId,
+                targetPackage, targetUserId, ACCESS_FLAG_MASK_OTHER, ACCESS_FLAG_OTHER_DENIED);
+        if (!result) {
+            pw.println("Error: Failed to revoke the app function access.");
+            return -1;
+        }
         pw.println("Access revoked successfully.");
         return 0;
     }
