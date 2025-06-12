@@ -27,7 +27,6 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import android.util.Log
-import androidx.annotation.VisibleForTesting
 import com.android.internal.R
 import com.android.launcher3.icons.BaseIconFactory
 import com.android.launcher3.icons.BaseIconFactory.IconOptions
@@ -212,26 +211,13 @@ constructor(
         return iconFactory.createBadgedIconBitmap(icon, options)
     }
 
-    @VisibleForTesting
-    fun createAppIconForTest(packageName: String, @UserIconInfo.UserType userType: Int): Drawable {
-        val pm = sysuiContext.packageManager
-        val userHandle = UserHandle.of(pm.userId)
-        val icon = pm.getApplicationInfo(packageName, 0).loadUnbadgedIcon(pm)
-        val options = iconOptions(UserIconInfo(userHandle, userType))
-        val bitmapInfo = standardIconFactory.createBadgedIconBitmap(icon, options)
-        return bitmapInfo.createIconDrawable(themed = false)
-    }
-
     private fun BitmapInfo.createIconDrawable(themed: Boolean): Drawable =
         newIcon(context = sysuiContext, creationFlags = if (themed) BitmapInfo.FLAG_THEMED else 0)
             .apply { isAnimationEnabled = false }
 
-    private fun iconOptions(userHandle: UserHandle, allowProfileBadge: Boolean): IconOptions =
-        iconOptions(userIconInfo(userHandle, allowProfileBadge = allowProfileBadge))
-
-    private fun iconOptions(userIconInfo: UserIconInfo): IconOptions {
+    private fun iconOptions(userHandle: UserHandle, allowProfileBadge: Boolean): IconOptions {
         return IconOptions().apply {
-            setUser(userIconInfo)
+            setUser(userIconInfo(userHandle, allowProfileBadge = allowProfileBadge))
             setBitmapGenerationMode(BaseIconFactory.MODE_HARDWARE)
             // This color will not be used, but we're just setting it so that the icon factory
             // doesn't try to extract colors from our bitmap (since it won't work, given it's a
