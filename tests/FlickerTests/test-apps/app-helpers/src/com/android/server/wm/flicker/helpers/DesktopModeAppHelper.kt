@@ -308,20 +308,15 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
             .waitForAndVerify()
     }
 
-    /** Close a desktop app by clicking the close button on the app header for the given app or by
-     *  pressing back. */
+    /** Close a desktop app by clicking the close button on the app header for the given app. */
     fun closeDesktopApp(
         wmHelper: WindowManagerStateHelper,
         device: UiDevice,
-        usingBackNavigation: Boolean = false
-    ) {
-        if (usingBackNavigation) {
-            device.pressBack()
-        } else {
-            val caption = getCaptionForTheApp(wmHelper, device)
-            val closeButton = caption?.children?.find { it.resourceName.endsWith(CLOSE_BUTTON) }
-            closeButton?.click()
-        }
+        ) {
+        val caption = getCaptionForTheApp(wmHelper, device)
+        val closeButton = caption?.children?.find { it.resourceName.endsWith(CLOSE_BUTTON) }
+        closeButton?.click()
+
         wmHelper
             .StateSyncBuilder()
             .withAppTransitionIdle()

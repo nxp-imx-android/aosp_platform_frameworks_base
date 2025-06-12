@@ -40,6 +40,7 @@ import org.junit.Test
 
 @Ignore("Base Test Class")
 abstract class CloseAllAppsWithBackNavigation(
+    val navigationMode: NavBar = NavBar.MODE_GESTURAL,
     val rotation: Rotation = Rotation.ROTATION_0
 ) : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
@@ -52,7 +53,7 @@ abstract class CloseAllAppsWithBackNavigation(
 
     val appsInZOrder: ArrayList<DesktopModeAppHelper> = ArrayList()
 
-    @Rule @JvmField val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, rotation)
+    @Rule @JvmField val testSetupRule = Utils.testSetupRule(navigationMode, rotation)
 
     @Before
     fun setup() {
@@ -78,10 +79,16 @@ abstract class CloseAllAppsWithBackNavigation(
 
     @Test
     open fun closeAllAppsInDesktop() {
-        nonResizeableApp.closeDesktopApp(wmHelper, device, usingBackNavigation = true)
-        mailApp.closeDesktopApp(wmHelper, device, usingBackNavigation = true)
-        testApp.closeDesktopApp(wmHelper, device, usingBackNavigation = true)
+        repeat(appsInZOrder.size) {
+            useBackNavigation()
+        }
     }
+
+    private fun useBackNavigation() {
+        tapl.pressBack()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
+    }
+
 
     @After
     fun teardown() {
