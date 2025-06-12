@@ -47,7 +47,7 @@ import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 public abstract class KeyguardPinBasedInputViewController<T extends KeyguardPinBasedInputView>
         extends KeyguardAbsKeyInputViewController<T> implements InputManager.InputDeviceListener {
 
-    private final FalsingCollector mFalsingCollector;
+    private FalsingCollector mFalsingCollector = null;
     private final KeyguardKeyboardInteractor mKeyguardKeyboardInteractor;
     protected PasswordTextView mPasswordEntry;
     private Boolean mShowAnimations;
@@ -65,6 +65,9 @@ public abstract class KeyguardPinBasedInputViewController<T extends KeyguardPinB
 
     private final OnTouchListener mActionButtonTouchListener = (v, event) -> {
         if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+            if (mFalsingCollector != null) {
+                mFalsingCollector.avoidGesture();
+            }
             mView.doHapticKeyClick();
         }
         return false;
@@ -171,6 +174,7 @@ public abstract class KeyguardPinBasedInputViewController<T extends KeyguardPinB
         if (mBouncerHapticPlayer.isEnabled()) {
             deleteButton.setOnTouchListener((View view, MotionEvent event) -> {
                 if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    mFalsingCollector.avoidGesture();
                     mBouncerHapticPlayer.playDeleteKeyPressFeedback();
                 }
                 return false;

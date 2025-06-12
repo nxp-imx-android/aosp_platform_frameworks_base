@@ -496,13 +496,16 @@ public class BrightLineFalsingManager implements FalsingManager {
     }
 
     @Override
-    public void cleanupInternal() {
+    public List<FalsingBeliefListener> cleanupInternal() {
+        List<FalsingBeliefListener> existingBeliefListeners
+                = new ArrayList<>(mFalsingBeliefListeners);
         mDestroyed = true;
         mDataProvider.removeSessionListener(mSessionListener);
         mDataProvider.removeGestureCompleteListener(mGestureFinalizedListener);
         mClassifiers.forEach(FalsingClassifier::cleanup);
         mFalsingBeliefListeners.clear();
         mHistoryTracker.removeBeliefListener(mBeliefListener);
+        return existingBeliefListeners;
     }
 
     private static Collection<FalsingClassifier.Result> getPassedResult(double confidence) {
