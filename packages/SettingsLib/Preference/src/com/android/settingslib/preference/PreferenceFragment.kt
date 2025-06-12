@@ -115,6 +115,7 @@ open class PreferenceFragment :
         fun createPreferenceScreenFromResource() =
             factory.inflate(getPreferenceScreenResId(context))?.also {
                 Log.i(TAG, "Load screen " + it.key + " from resource")
+                onPreferenceScreenCreatedFromResource(it)
             }
 
         val screenCreator =
@@ -152,6 +153,9 @@ open class PreferenceFragment :
         }
         return preferenceScreen
     }
+
+    /** Callbacks when the [PreferenceScreen] is just created from XML resource by catalyst. */
+    protected open fun onPreferenceScreenCreatedFromResource(preferenceScreen: PreferenceScreen) {}
 
     internal fun newPreferenceHierarchy(
         context: Context,
@@ -263,10 +267,15 @@ open class PreferenceFragment :
         preferenceScreenBindingHelper?.onActivityResult(requestCode, resultCode, data)
     }
 
-    protected fun getPreferenceKeysInHierarchy(): Set<String> =
+    /**
+     * Returns the preference keys in the catalyst preference hierarchy.
+     *
+     * Note: async hierarchy is not included, subclass should override to add async preference keys.
+     */
+    protected open fun getPreferenceKeysInHierarchy(): MutableSet<String> =
         preferenceScreenBindingHelper?.let {
             mutableSetOf<String>().apply { it.forEachRecursively { add(it.metadata.bindingKey) } }
-        } ?: setOf()
+        } ?: mutableSetOf()
 
     companion object {
         private const val TAG = "PreferenceFragment"
