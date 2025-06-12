@@ -51,9 +51,8 @@ class BundleHeaderGutsViewModel(
     }
 
     fun onDoneOrApplyClicked() {
-        if (switchState) {
-            closeGuts.invoke()
-        } else {
+        closeGuts.invoke()
+        if (!switchState) {
             // The bundle always starts enabled otherwise the guts would not have been visible. Thus
             // we only need to update settings when the switch was toggled to false. Notifications
             // that were previously in the bundle will be re-sorted into their original locations.
