@@ -75,6 +75,7 @@
             android:layout_height="@dimen/settingslib_expressive_space_medium4"
             android:padding="@dimen/settingslib_expressive_space_extrasmall4"
             android:layout_gravity="center"
+            android:scaleType="centerInside"
             android:tint="@color/settingslib_materialColorSecondary" />
 
     </LinearLayout>
