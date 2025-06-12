@@ -3070,6 +3070,8 @@ package android.provider {
     field public static final String ENABLED_VR_LISTENERS = "enabled_vr_listeners";
     field public static final String GLANCEABLE_HUB_ENABLED = "glanceable_hub_enabled";
     field public static final String IMMERSIVE_MODE_CONFIRMATIONS = "immersive_mode_confirmations";
+    field public static final String LONG_PRESS_TIMEOUT = "long_press_timeout";
+    field public static final String MULTI_PRESS_TIMEOUT = "multi_press_timeout";
     field public static final String NOTIFICATION_BADGING = "notification_badging";
     field public static final String NOTIFICATION_BUBBLES = "notification_bubbles";
     field public static final String POWER_MENU_LOCKED_SHOW_CONTENT = "power_menu_locked_show_content";

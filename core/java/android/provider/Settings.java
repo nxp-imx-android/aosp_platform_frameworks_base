@@ -9601,6 +9601,8 @@ public final class Settings {
          */
         @UnsupportedAppUsage
         @Readable
+        @TestApi
+        @SuppressLint({"UnflaggedApi", "NoSettingsProvider"}) // @TestApi purely for CTS support.
         public static final String LONG_PRESS_TIMEOUT = "long_press_timeout";
 
         /**
@@ -9609,6 +9611,8 @@ public final class Settings {
          * @hide
          */
         @Readable
+        @TestApi
+        @SuppressLint({"UnflaggedApi", "NoSettingsProvider"}) // @TestApi purely for CTS support.
         public static final String MULTI_PRESS_TIMEOUT = "multi_press_timeout";
 
         /**
