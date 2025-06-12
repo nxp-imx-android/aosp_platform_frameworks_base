@@ -1266,4 +1266,7 @@
 
     <!-- Default height of desktop view header for freeform tasks on launch. -->
     <dimen name="desktop_view_default_header_height">40dp</dimen>
+
+    <!-- Default height of taskbar for Launcher.   -->
+    <dimen name="taskbar_stashed_size">24dp</dimen>
 </resources>
