@@ -734,7 +734,15 @@ public class AudioDeviceVolumeManager {
      * @hide
      * Sets the volume on the given audio device
      *
-     * @param vi the volume information, only stream-based volumes are supported
+     * @param vi the volume information, only stream-based volumes are supported for now.
+     * <ul>If vi doesn't contain a mute state: the index is set to vi's index </ul>
+     * <ul>If vi contains a mute state:
+     * <li> if the ada device is the current device for the VolumeInfo routing strategy, the mute
+     *          state will be applied to the stream type</li>
+     * <li> otherwise, the mute state is left unchanged: if vi is muted, the index is set to its
+     *           min value; if vi is unmuted, the index is set to vi's index.</li>
+     * </ul>
+     *
      * @param ada the device for which volume is to be modified
      */
     @SystemApi
