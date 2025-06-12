@@ -29,6 +29,7 @@ sealed interface ShortcutsUiState {
         val shouldShowResetButton: Boolean = false,
         val isCustomizationModeEnabled: Boolean = false,
         val allowExtendedAppShortcutsCustomization: Boolean = true,
+        val shouldShowCustomAppsShortcutLimitHeader: Boolean = false,
     ) : ShortcutsUiState
 
     data object Inactive : ShortcutsUiState

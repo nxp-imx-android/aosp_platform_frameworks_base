@@ -473,11 +473,7 @@ class ShortcutHelperViewModelTest : SysuiTestCase() {
     @Test
     fun allowExtendedAppShortcutsCustomization_true_WhenExtraAppsShortcutsCustomizedIsBelowLimit() {
         testScope.runTest {
-            setupShortcutHelperWithExtendedAppsShortcutCustomizations(
-                numberOfDefaultAppsShortcuts = 3,
-                numberOfCustomShortcutsForDefaultApps = 3,
-                numberOfCustomShortcutsForExtendedApps = 3,
-            )
+            openShortcutHelper()
 
             underTest.toggleCustomizationMode(true)
             val uiState by collectLastValue(underTest.shortcutsUiState)
@@ -491,10 +487,8 @@ class ShortcutHelperViewModelTest : SysuiTestCase() {
     @Test
     fun allowExtendedAppShortcutsCustomization_false_WhenExtraAppsShortcutsCustomizedIsAtLimit() {
         testScope.runTest {
-            setupShortcutHelperWithExtendedAppsShortcutCustomizations(
-                numberOfDefaultAppsShortcuts = 3,
-                numberOfCustomShortcutsForDefaultApps = 3,
-                numberOfCustomShortcutsForExtendedApps = EXTENDED_APPS_SHORTCUT_CUSTOMIZATION_LIMIT,
+            openShortcutHelper(
+                customShortcutsCountForExtendedApps = EXTENDED_APPS_SHORTCUT_CUSTOMIZATION_LIMIT
             )
 
             underTest.toggleCustomizationMode(true)
@@ -507,13 +501,10 @@ class ShortcutHelperViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun allowExtendedAppShortcutsCustomization_false_WhenExtraAppsShortcutsCustomizedIsAboveLimit() {
+    fun showsCustomAppsShortcutLimitHeader_whenAtLimit_customizationModeEnabled() {
         testScope.runTest {
-            setupShortcutHelperWithExtendedAppsShortcutCustomizations(
-                numberOfDefaultAppsShortcuts = 3,
-                numberOfCustomShortcutsForDefaultApps = 3,
-                numberOfCustomShortcutsForExtendedApps =
-                    EXTENDED_APPS_SHORTCUT_CUSTOMIZATION_LIMIT + 3,
+            openShortcutHelper(
+                customShortcutsCountForExtendedApps = EXTENDED_APPS_SHORTCUT_CUSTOMIZATION_LIMIT
             )
 
             underTest.toggleCustomizationMode(true)
@@ -521,8 +512,62 @@ class ShortcutHelperViewModelTest : SysuiTestCase() {
 
             val activeUiState = uiState as ShortcutsUiState.Active
 
-            assertThat(activeUiState.allowExtendedAppShortcutsCustomization).isFalse()
+            assertThat(activeUiState.shouldShowCustomAppsShortcutLimitHeader).isTrue()
         }
+    }
+
+    @Test
+    fun doesNotShowCustomAppsShortcutLimitHeader_whenBelowLimit_customizationModeEnabled() {
+        testScope.runTest {
+            openShortcutHelper()
+
+            underTest.toggleCustomizationMode(true)
+            val uiState by collectLastValue(underTest.shortcutsUiState)
+
+            val activeUiState = uiState as ShortcutsUiState.Active
+
+            assertThat(activeUiState.shouldShowCustomAppsShortcutLimitHeader).isFalse()
+        }
+    }
+
+    @Test
+    fun doesNotShowCustomAppsShortcutLimitHeader_whenAtLimit_customizationModeDisabled() {
+        testScope.runTest {
+            openShortcutHelper(
+                customShortcutsCountForExtendedApps = EXTENDED_APPS_SHORTCUT_CUSTOMIZATION_LIMIT
+            )
+            underTest.toggleCustomizationMode(false)
+            val uiState by collectLastValue(underTest.shortcutsUiState)
+
+            val activeUiState = uiState as ShortcutsUiState.Active
+
+            assertThat(activeUiState.shouldShowCustomAppsShortcutLimitHeader).isFalse()
+        }
+    }
+
+    @Test
+    fun doesNotShowCustomAppsShortcutLimitHeader_whenBelowLimit_customizationModeDisabled() {
+        testScope.runTest {
+            openShortcutHelper()
+            underTest.toggleCustomizationMode(false)
+            val uiState by collectLastValue(underTest.shortcutsUiState)
+
+            val activeUiState = uiState as ShortcutsUiState.Active
+
+            assertThat(activeUiState.shouldShowCustomAppsShortcutLimitHeader).isFalse()
+        }
+    }
+
+    private fun openShortcutHelper(
+        customShortcutsCountForExtendedApps: Int = 0,
+        customShortcutsCountForDefaultApps: Int = 3,
+        defaultShortcutsCount: Int = 3,
+    ) {
+        setupShortcutHelperWithExtendedAppsShortcutCustomizations(
+            numberOfDefaultAppsShortcuts = defaultShortcutsCount,
+            numberOfCustomShortcutsForDefaultApps = customShortcutsCountForDefaultApps,
+            numberOfCustomShortcutsForExtendedApps = customShortcutsCountForExtendedApps,
+        )
     }
 
     private fun setupShortcutHelperWithExtendedAppsShortcutCustomizations(

@@ -57,6 +57,7 @@ import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
@@ -121,6 +122,7 @@ import com.android.compose.modifiers.thenIf
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.keyboard.shortcut.shared.model.Shortcut as ShortcutModel
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType
+import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.AppCategories
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCommand
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCustomizationRequestInfo
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutIcon
@@ -132,6 +134,7 @@ import com.android.systemui.keyboard.shortcut.ui.model.ShortcutsUiState
 import com.android.systemui.res.R
 import kotlinx.coroutines.delay
 
+// TODO break down this file into smaller files for readability. b/424757065
 @Composable
 fun ShortcutHelper(
     onSearchQueryChanged: (String) -> Unit,
@@ -187,18 +190,12 @@ private fun ActiveShortcutHelper(
         )
     } else {
         ShortcutHelperTwoPane(
-            shortcutsUiState.searchQuery,
             onSearchQueryChanged,
-            shortcutsUiState.shortcutCategories,
             selectedCategoryType,
             onCategorySelected = { selectedCategoryType = it },
             onKeyboardSettingsClicked,
-            shortcutsUiState.isShortcutCustomizerFlagEnabled,
-            shortcutsUiState.shouldShowResetButton,
-            shortcutsUiState.isCustomizationModeEnabled,
             onCustomizationModeToggled,
-            shortcutsUiState.isExtendedAppCategoryFlagEnabled,
-            shortcutsUiState.allowExtendedAppShortcutsCustomization,
+            shortcutsUiState,
             modifier,
             onShortcutCustomizationRequested,
         )
@@ -382,22 +379,17 @@ private fun ShortcutSubCategorySinglePane(searchQuery: String, subCategory: Shor
 
 @Composable
 private fun ShortcutHelperTwoPane(
-    searchQuery: String,
     onSearchQueryChanged: (String) -> Unit,
-    categories: List<ShortcutCategoryUi>,
     selectedCategoryType: ShortcutCategoryType?,
     onCategorySelected: (ShortcutCategoryType?) -> Unit,
     onKeyboardSettingsClicked: () -> Unit,
-    isShortcutCustomizerFlagEnabled: Boolean,
-    shouldShowResetButton: Boolean,
-    isCustomizationModeEnabled: Boolean,
     onCustomizationModeToggled: (isCustomizing: Boolean) -> Unit,
-    isExtendedAppCategoryFlagEnabled: Boolean,
-    allowExtendedAppShortcutsCustomization: Boolean,
+    uiState: ShortcutsUiState.Active,
     modifier: Modifier = Modifier,
     onShortcutCustomizationRequested: (ShortcutCustomizationRequestInfo) -> Unit = {},
 ) {
-    val selectedCategory = categories.fastFirstOrNull { it.type == selectedCategoryType }
+    val selectedCategory =
+        uiState.shortcutCategories.fastFirstOrNull { it.type == selectedCategoryType }
 
     Column(modifier = modifier.fillMaxSize().padding(horizontal = 24.dp)) {
         Row(
@@ -408,19 +400,19 @@ private fun ShortcutHelperTwoPane(
             // Keep title centered whether customize button is visible or not.
             Spacer(modifier = Modifier.weight(1f))
             Box(modifier = Modifier.width(412.dp), contentAlignment = Alignment.Center) {
-                TitleBar(isCustomizationModeEnabled)
+                TitleBar(uiState.isCustomizationModeEnabled)
             }
-            if (isShortcutCustomizerFlagEnabled) {
+            if (uiState.isShortcutCustomizerFlagEnabled) {
                 CustomizationButtonsContainer(
                     modifier = Modifier.weight(1f),
-                    isCustomizing = isCustomizationModeEnabled,
+                    isCustomizing = uiState.isCustomizationModeEnabled,
                     onToggleCustomizationMode = {
-                        onCustomizationModeToggled(!isCustomizationModeEnabled)
+                        onCustomizationModeToggled(!uiState.isCustomizationModeEnabled)
                     },
                     onReset = {
                         onShortcutCustomizationRequested(ShortcutCustomizationRequestInfo.Reset)
                     },
-                    shouldShowResetButton = shouldShowResetButton,
+                    shouldShowResetButton = uiState.shouldShowResetButton,
                 )
             } else {
                 Spacer(modifier = Modifier.weight(1f))
@@ -431,20 +423,16 @@ private fun ShortcutHelperTwoPane(
             StartSidePanel(
                 onSearchQueryChanged = onSearchQueryChanged,
                 modifier = Modifier.width(240.dp).semantics { isTraversalGroup = true },
-                categories = categories,
+                categories = uiState.shortcutCategories,
                 onKeyboardSettingsClicked = onKeyboardSettingsClicked,
                 selectedCategory = selectedCategoryType,
                 onCategoryClicked = { onCategorySelected(it.type) },
             )
             Spacer(modifier = Modifier.width(24.dp))
             EndSidePanel(
-                searchQuery,
-                isCustomizationModeEnabled,
+                uiState,
                 onCustomizationModeToggled,
                 selectedCategory,
-                isCustomizing = isCustomizationModeEnabled,
-                isExtendedAppCategoryFlagEnabled,
-                allowExtendedAppShortcutsCustomization,
                 Modifier.fillMaxSize().padding(top = 8.dp).semantics { isTraversalGroup = true },
                 onShortcutCustomizationRequested,
             )
@@ -511,17 +499,14 @@ private fun DoneButton(onClick: () -> Unit) {
 
 @Composable
 private fun EndSidePanel(
-    searchQuery: String,
-    isCustomizationModeEnabled: Boolean,
+    uiState: ShortcutsUiState.Active,
     onCustomizationModeToggled: (isCustomizing: Boolean) -> Unit,
     category: ShortcutCategoryUi?,
-    isCustomizing: Boolean,
-    isExtendedAppCategoryFlagEnabled: Boolean,
-    allowExtendedAppShortcutsCustomization: Boolean,
     modifier: Modifier = Modifier,
     onShortcutCustomizationRequested: (ShortcutCustomizationRequestInfo) -> Unit = {},
 ) {
     val listState = rememberLazyListState()
+
     LaunchedEffect(key1 = category) { if (category != null) listState.animateScrollToItem(0) }
     if (category == null) {
         NoSearchResultsText(horizontalPadding = 24.dp, fillHeight = false)
@@ -532,36 +517,39 @@ private fun EndSidePanel(
         state = listState,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        stickyHeader {
+            Column {
+                AnimatedVisibility(
+                    category.type == AppCategories &&
+                        uiState.shouldShowCustomAppsShortcutLimitHeader
+                ) {
+                    AppCustomShortcutLimitContainer(Modifier.padding(8.dp))
+                }
+            }
+        }
         items(category.subCategories) { subcategory ->
             SubCategoryContainerDualPane(
-                searchQuery = searchQuery,
-                subCategory = subcategory,
-                isCustomizing = isCustomizing and category.type.includeInCustomization,
+                uiState.searchQuery,
+                subcategory,
+                isCustomizing =
+                    uiState.isCustomizationModeEnabled && category.type.includeInCustomization,
                 onShortcutCustomizationRequested = { requestInfo ->
-                    when (requestInfo) {
-                        is ShortcutCustomizationRequestInfo.SingleShortcutCustomization.Add ->
-                            onShortcutCustomizationRequested(
-                                requestInfo.copy(categoryType = category.type)
-                            )
-
-                        is ShortcutCustomizationRequestInfo.SingleShortcutCustomization.Delete ->
-                            onShortcutCustomizationRequested(
-                                requestInfo.copy(categoryType = category.type)
-                            )
-
-                        ShortcutCustomizationRequestInfo.Reset ->
-                            onShortcutCustomizationRequested(requestInfo)
-                    }
+                    onShortcutCustomizationRequestedInSubCategory(
+                        requestInfo,
+                        onShortcutCustomizationRequested,
+                        category.type,
+                    )
                 },
-                allowExtendedAppShortcutsCustomization = allowExtendedAppShortcutsCustomization,
+                uiState.allowExtendedAppShortcutsCustomization,
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
+
         if (
-            category.type == ShortcutCategoryType.AppCategories &&
-                !isCustomizationModeEnabled &&
-                isExtendedAppCategoryFlagEnabled &&
-                allowExtendedAppShortcutsCustomization
+            category.type == AppCategories &&
+                !uiState.isCustomizationModeEnabled &&
+                uiState.isExtendedAppCategoryFlagEnabled &&
+                uiState.allowExtendedAppShortcutsCustomization
         ) {
             item {
                 ShortcutHelperButton(
@@ -573,6 +561,73 @@ private fun EndSidePanel(
                     text = stringResource(R.string.shortcut_helper_add_shortcut_button_label),
                 )
             }
+        }
+    }
+}
+
+private fun onShortcutCustomizationRequestedInSubCategory(
+    requestInfo: ShortcutCustomizationRequestInfo,
+    onShortcutCustomizationRequested: (ShortcutCustomizationRequestInfo) -> Unit,
+    categoryType: ShortcutCategoryType,
+) {
+    when (requestInfo) {
+        is ShortcutCustomizationRequestInfo.SingleShortcutCustomization.Add ->
+            onShortcutCustomizationRequested(requestInfo.copy(categoryType = categoryType))
+
+        is ShortcutCustomizationRequestInfo.SingleShortcutCustomization.Delete ->
+            onShortcutCustomizationRequested(requestInfo.copy(categoryType = categoryType))
+
+        ShortcutCustomizationRequestInfo.Reset -> onShortcutCustomizationRequested(requestInfo)
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun AppCustomShortcutLimitContainer(modifier: Modifier = Modifier) {
+    Row(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(40.dp),
+                )
+                .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Surface(
+            shape = CircleShape,
+            modifier = Modifier.size(40.dp),
+            color = MaterialTheme.colorScheme.secondary,
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                tint = MaterialTheme.colorScheme.onSecondary,
+                modifier = Modifier.size(24.dp).padding(8.dp),
+                contentDescription = null,
+            )
+        }
+
+        Column(
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = stringResource(R.string.shortcut_helper_app_custom_shortcut_limit_exceeded),
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                style = MaterialTheme.typography.titleMediumEmphasized,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text =
+                    stringResource(
+                        R.string.shortcut_helper_app_custom_shortcut_limit_exceeded_instruction
+                    ),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }
@@ -609,7 +664,7 @@ private fun SubCategoryContainerDualPane(
         color = MaterialTheme.colorScheme.surfaceBright,
     ) {
         Column(Modifier.padding(16.dp)) {
-            SubCategoryTitle(subCategory.label)
+            SubCategoryTitle(subCategory.label, Modifier.padding(8.dp))
             Spacer(Modifier.height(8.dp))
             subCategory.shortcuts.fastForEachIndexed { index, shortcut ->
                 if (index > 0) {
@@ -647,11 +702,12 @@ private fun SubCategoryContainerDualPane(
 }
 
 @Composable
-private fun SubCategoryTitle(title: String) {
+private fun SubCategoryTitle(title: String, modifier: Modifier = Modifier) {
     Text(
         title,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
+        modifier = modifier,
     )
 }
 

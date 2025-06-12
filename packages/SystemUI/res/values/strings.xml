@@ -4194,6 +4194,16 @@
          The helper is a component that shows the user which keyboard shortcuts they can use.
          [CHAR LIMIT=NONE] -->
     <string name="shortcut_helper_delete_shortcut_button_label">Delete shortcut</string>
+    <!-- Message displayed at the top of shortcut helper when user has already added 10 custom
+         keyboard shortcuts for extra applications in shortcut helper. The helper is a component
+         that shows the user which keyboard shortcuts they can use and allows users to customize
+         their keyboard shortcuts-->
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded">10 app custom shortcut limit has been used up</string>
+    <!-- Instruction displayed at the top of shortcut helper when user has already added 10 custom
+         keyboard shortcuts for extra applications in shortcut helper. The helper is a component
+         that shows the user which keyboard shortcuts they can use and allows users to customize
+         their keyboard shortcuts-->
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction">Delete a shortcut to be able to add a new one</string>
 
     <!-- Keyboard touchpad tutorial scheduler-->
     <!-- Notification title for launching keyboard tutorial [CHAR_LIMIT=100] -->
