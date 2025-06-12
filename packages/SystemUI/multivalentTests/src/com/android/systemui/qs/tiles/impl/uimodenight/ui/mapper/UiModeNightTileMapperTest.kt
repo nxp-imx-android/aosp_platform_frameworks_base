@@ -37,6 +37,7 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class UiModeNightTileMapperTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val qsTileConfig = kosmos.qsUiModeNightTileConfig

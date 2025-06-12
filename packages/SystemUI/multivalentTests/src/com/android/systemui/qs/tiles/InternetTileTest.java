@@ -68,6 +68,7 @@ import java.util.List;
 @RunWith(ParameterizedAndroidJunit4.class)
 @TestableLooper.RunWithLooper(setAsMainLooper = true)
 @SmallTest
+@android.platform.test.annotations.EnabledOnRavenwood
 public class InternetTileTest extends SysuiTestCase {
 
     @Parameters(name = "{0}")

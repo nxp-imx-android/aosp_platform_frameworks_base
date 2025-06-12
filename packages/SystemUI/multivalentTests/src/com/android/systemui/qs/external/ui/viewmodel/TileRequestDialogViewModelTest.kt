@@ -51,6 +51,7 @@ import org.mockito.kotlin.stub
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
+@android.platform.test.annotations.EnabledOnRavenwood
 class TileRequestDialogViewModelTest : SysuiTestCase() {
 
     @get:Rule val expect: Expect = Expect.create()
