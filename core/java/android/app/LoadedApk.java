@@ -2080,6 +2080,7 @@ public final class LoadedApk {
                 mDispatcher = new WeakReference<LoadedApk.ServiceDispatcher>(sd);
             }
 
+            @Override
             public void connected(ComponentName name, IBinder service, IBinderSession binderSession,
                     boolean dead) throws RemoteException {
                 LoadedApk.ServiceDispatcher sd = mDispatcher.get();
@@ -2277,6 +2278,7 @@ public final class LoadedApk {
                 mDead = dead;
             }
 
+            @Override
             public void run() {
                 if (mCommand == 0) {
                     doConnected(mName, mService, mBinderSession, mDead);
@@ -2299,6 +2301,7 @@ public final class LoadedApk {
                 mService = service;
             }
 
+            @Override
             public void binderDied() {
                 death(mName, mService);
             }

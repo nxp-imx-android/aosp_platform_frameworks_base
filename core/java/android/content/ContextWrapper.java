@@ -445,12 +445,14 @@ public class ContextWrapper extends Context {
     }
 
     /** @hide **/
+    @Override
     public void startActivityForResult(
             String who, Intent intent, int requestCode, @Nullable Bundle options) {
         mBase.startActivityForResult(who, intent, requestCode, options);
     }
 
     /** @hide **/
+    @Override
     public boolean canStartActivityForResult() {
         return mBase.canStartActivityForResult();
     }
@@ -1549,6 +1551,7 @@ public class ContextWrapper extends Context {
      * @hide
      */
     @RequiresPermission(android.Manifest.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS)
+    @Override
     public void closeSystemDialogs() {
         mBase.closeSystemDialogs();
     }
