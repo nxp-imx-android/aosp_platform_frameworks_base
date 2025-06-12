@@ -185,6 +185,13 @@ flag {
 }
 
 flag {
+  name: "allow_freezing_idle_nls"
+  namespace: "backstage_power"
+  description: "Allows freezing idle notification listener services"
+  bug: "344050265"
+}
+
+flag {
   name: "log_cached_posts"
   namespace: "systemui"
   description: "Logs an event if notify was called from a cached process state"

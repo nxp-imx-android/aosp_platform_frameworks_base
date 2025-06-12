@@ -90,6 +90,7 @@ import static android.app.StatusBarManager.ACTION_KEYGUARD_PRIVATE_NOTIFICATIONS
 import static android.app.StatusBarManager.EXTRA_KM_PRIVATE_NOTIFS_ALLOWED;
 import static android.app.backup.NotificationLoggingConstants.DATA_TYPE_ZEN_CONFIG;
 import static android.app.backup.NotificationLoggingConstants.ERROR_XML_PARSING;
+import static android.content.Context.BIND_ALLOW_FREEZE;
 import static android.content.Context.BIND_ALLOW_WHITELIST_MANAGEMENT;
 import static android.content.Context.BIND_AUTO_CREATE;
 import static android.content.Context.BIND_FOREGROUND_SERVICE;
@@ -13714,6 +13715,9 @@ public class NotificationManagerService extends SystemService {
             long freezeFlags = 0;
             if (reportNlsStartAndEnd()) {
                 freezeFlags = BIND_SIMULATE_ALLOW_FREEZE;
+            }
+            if (Flags.allowFreezingIdleNls()) {
+                freezeFlags |= BIND_ALLOW_FREEZE;
             }
             // Most of the same flags as the base, but also add BIND_NOT_PERCEPTIBLE
             // because too many 3P apps could be kept in memory as notification listeners and
