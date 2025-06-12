@@ -200,12 +200,6 @@ object Flags {
     @JvmField
     val ALWAYS_SHOW_HOME_CONTROLS_ON_DREAMS = releasedFlag("always_show_home_controls_on_dreams")
 
-    // 1100 - windowing
-    @Keep
-    @JvmField
-    val WM_ENABLE_SHELL_TRANSITIONS =
-        sysPropBooleanFlag("persist.wm.debug.shell_transit", default = true)
-
     // TODO(b/293252410) : Tracking Bug
     @JvmField val LOCKSCREEN_ENABLE_LANDSCAPE = unreleasedFlag("lockscreen.enable_landscape")
 
