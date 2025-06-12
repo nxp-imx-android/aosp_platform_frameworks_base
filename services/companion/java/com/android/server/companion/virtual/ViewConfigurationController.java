@@ -110,12 +110,12 @@ public class ViewConfigurationController {
                 .build();
         OverlayIdentifier overlayIdentifier = overlay.getIdentifier();
         boolean change = false;
-        change |= setResourceDpValue(overlay, TOUCH_SLOP_RESOURCE_NAME,
-                viewConfigurationParams.getTouchSlopDp());
-        change |= setResourceDpValue(overlay, MIN_FLING_VELOCITY_RESOURCE_NAME,
-                viewConfigurationParams.getMinimumFlingVelocityDpPerSecond());
-        change |= setResourceDpValue(overlay, MAX_FLING_VELOCITY_RESOURCE_NAME,
-                viewConfigurationParams.getMaximumFlingVelocityDpPerSecond());
+        change |= setResourcePixelValue(overlay, TOUCH_SLOP_RESOURCE_NAME,
+                viewConfigurationParams.getTouchSlopPixels());
+        change |= setResourcePixelValue(overlay, MIN_FLING_VELOCITY_RESOURCE_NAME,
+                viewConfigurationParams.getMinimumFlingVelocityPixelsPerSecond());
+        change |= setResourcePixelValue(overlay, MAX_FLING_VELOCITY_RESOURCE_NAME,
+                viewConfigurationParams.getMaximumFlingVelocityPixelsPerSecond());
         change |= setResourceFloatValue(overlay, SCROLL_FRICTION_RESOURCE_NAME,
                 viewConfigurationParams.getScrollFriction());
         change |= setResourceIntValue(overlay, TAP_TIMEOUT_RESOURCE_NAME,
@@ -169,8 +169,8 @@ public class ViewConfigurationController {
         });
     }
 
-    private static boolean setResourceDpValue(@NonNull FabricatedOverlay overlay,
-            @NonNull String resourceName, float value) {
+    private static boolean setResourcePixelValue(@NonNull FabricatedOverlay overlay,
+            @NonNull String resourceName, int value) {
         if (isInvalid(value)) {
             return false;
         }
@@ -180,7 +180,7 @@ public class ViewConfigurationController {
             return false;
         }
 
-        overlay.setResourceValue(resourceName, value, TypedValue.COMPLEX_UNIT_DIP,
+        overlay.setResourceValue(resourceName, (float) value, TypedValue.COMPLEX_UNIT_PX,
                 null /* configuration */);
         return true;
     }
