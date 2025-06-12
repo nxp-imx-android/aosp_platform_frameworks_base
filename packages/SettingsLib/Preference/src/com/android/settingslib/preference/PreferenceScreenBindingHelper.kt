@@ -251,7 +251,8 @@ class PreferenceScreenBindingHelper(
     /** Notifies dependents recursively. */
     private fun notifyDependents(key: String, notifiedKeys: MutableSet<String>) {
         if (!notifiedKeys.add(key)) return
-        for (dependency in dependencies.getOrDefault(key, emptySet())) {
+        val dependencies = dependencies[key] ?: return
+        for (dependency in dependencies) {
             notifyChange(dependency, PreferenceChangeReason.DEPENDENT)
             notifyDependents(dependency, notifiedKeys)
         }
@@ -317,6 +318,10 @@ class PreferenceScreenBindingHelper(
         for (preference in lifecycleAwarePreferences) {
             preference.onDestroy(preferenceLifecycleContext)
         }
+        preferences.clear()
+        observables.clear()
+        dependencies.clear()
+        lifecycleAwarePreferences.clear()
     }
 
     fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
