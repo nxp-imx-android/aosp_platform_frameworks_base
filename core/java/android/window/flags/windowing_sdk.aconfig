@@ -227,3 +227,11 @@ flag {
     bug: "406967985"
     is_fixed_read_only: true
 }
+
+flag {
+    namespace: "windowing_sdk"
+    name: "support_gemini_on_multi_display"
+    description: "Launch Gemini on a multi-display environment"
+    bug: "400351723"
+    is_fixed_read_only: true
+}

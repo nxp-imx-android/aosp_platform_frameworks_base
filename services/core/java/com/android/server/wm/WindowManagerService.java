@@ -4357,16 +4357,29 @@ public class WindowManagerService extends IWindowManager.Stub
         }
     }
 
+    private void requestAssistScreenshotInternal(final IAssistDataReceiver receiver,
+            int displayId) {
+        final ScreenshotHardwareBuffer shb = takeAssistScreenshot(/* predicate= */ null,
+                displayId);
+        final Bitmap bm = shb != null ? shb.asBitmap() : null;
+        FgThread.getHandler().post(() -> {
+            try {
+                receiver.onHandleAssistScreenshot(bm);
+            } catch (RemoteException e) {
+            }
+        });
+    }
+
     @Nullable
     private ScreenshotHardwareBuffer takeAssistScreenshot(
-            @Nullable ToBooleanFunction<WindowState> predicate) {
+            @Nullable ToBooleanFunction<WindowState> predicate, int displayId) {
         if (!checkCallingPermission(READ_FRAME_BUFFER, "requestAssistScreenshot()")) {
             throw new SecurityException("Requires READ_FRAME_BUFFER permission");
         }
 
         ScreenCapture.LayerCaptureArgs captureArgs;
         synchronized (mGlobalLock) {
-            final DisplayContent displayContent = mRoot.getDisplayContent(DEFAULT_DISPLAY);
+            final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
             if (displayContent == null) {
                 if (DEBUG_SCREENSHOT) {
                     Slog.i(TAG_WM, "Screenshot returning null. No Display for displayId="
@@ -4409,14 +4422,7 @@ public class WindowManagerService extends IWindowManager.Stub
      */
     @Override
     public void requestAssistScreenshot(final IAssistDataReceiver receiver) {
-        final ScreenshotHardwareBuffer shb = takeAssistScreenshot(/* predicate= */ null);
-        final Bitmap bm = shb != null ? shb.asBitmap() : null;
-        FgThread.getHandler().post(() -> {
-            try {
-                receiver.onHandleAssistScreenshot(bm);
-            } catch (RemoteException e) {
-            }
-        });
+        requestAssistScreenshotInternal(receiver, DEFAULT_DISPLAY);
     }
 
     /**
@@ -8908,7 +8914,8 @@ public class WindowManagerService extends IWindowManager.Stub
         @Override
         public ScreenshotHardwareBuffer takeAssistScreenshot() {
             // WMS.takeAssistScreenshot takes care of the locking.
-            return WindowManagerService.this.takeAssistScreenshot(/* predicate */ null);
+            return WindowManagerService.this.takeAssistScreenshot(/* predicate */ null,
+                    DEFAULT_DISPLAY);
         }
 
         @Override
@@ -8926,7 +8933,21 @@ public class WindowManagerService extends IWindowManager.Stub
                     default:
                         return true;
                 }
-            });
+            }, DEFAULT_DISPLAY);
+        }
+
+        @Override
+        public void requestAssistScreenshot(IAssistDataReceiver receiver, IBinder activityToken) {
+            int displayId = DEFAULT_DISPLAY;
+            synchronized (mGlobalLock) {
+                final ActivityRecord r = ActivityRecord.forTokenLocked(activityToken);
+                if (r != null && r.isAttached()) {
+                    displayId = r.getDisplayId();
+                } else {
+                    Slog.e(TAG, "Failed to get displayId for activityToken: " + activityToken);
+                }
+            }
+            WindowManagerService.this.requestAssistScreenshotInternal(receiver, displayId);
         }
     }
 

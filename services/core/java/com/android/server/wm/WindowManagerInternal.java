@@ -22,6 +22,7 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UserIdInt;
+import android.app.IAssistDataReceiver;
 import android.content.ClipData;
 import android.content.Context;
 import android.graphics.Matrix;
@@ -1175,4 +1176,11 @@ public abstract class WindowManagerInternal {
      * to this UID will be excluded from the screenshot.
      */
     public abstract ScreenshotHardwareBuffer takeContextualSearchScreenshot(int uid);
+
+    /**
+     * Used only for assist -- request a screenshot of the current application on the display of
+     * the given activity token.
+     */
+    public abstract void requestAssistScreenshot(IAssistDataReceiver receiver,
+            IBinder activityToken);
 }
