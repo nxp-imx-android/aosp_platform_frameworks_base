@@ -22,8 +22,12 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_NONE
+import android.view.WindowManager.TransitionFlags
+import android.view.WindowManager.TransitionType
+
 import android.window.ActivityTransitionInfo
 import android.window.AppCompatTransitionInfo
+import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.TransitionInfo.TransitionMode
 import android.window.WindowContainerToken
@@ -62,7 +66,6 @@ class ChangeTestInputBuilder : TestInputBuilder<Change> {
     var endAbsBounds: Rect? = null
     var endRelOffset: Point? = null
     @TransitionMode var mode: Int = TRANSIT_NONE
-
     data class InputParams(
         var token: WindowContainerToken = mock<WindowContainerToken>(),
         var leash: SurfaceControl = mock<SurfaceControl>(),
@@ -172,6 +175,31 @@ class ComponentNameTestInputBuilder : TestInputBuilder<ComponentName> {
     var className: String = ""
 
     override fun build(): ComponentName = ComponentName(packageName, className)
+}
+
+// [TestInputBuilder] for a [TransitionInfo]
+class TransitionInfoTestInputBuilder : TestInputBuilder<TransitionInfo> {
+
+    @TransitionType
+    var type: Int = TRANSIT_NONE
+
+    @TransitionFlags
+    var flags: Int = 0
+
+    private val transitionInfoChanges = mutableListOf<Change>()
+
+    fun addChange(builder: ChangeTestInputBuilder.() -> Unit): Change {
+        val inputFactoryObj = ChangeTestInputBuilder()
+        inputFactoryObj.builder()
+        return inputFactoryObj.build().apply {
+            transitionInfoChanges.add(this)
+        }
+    }
+
+    override fun build(): TransitionInfo = TransitionInfo(type, flags)
+        .apply {
+            transitionInfoChanges.forEach { c -> addChange(c) }
+        }
 }
 
 // [TestInputBuilder] for a [WindowContainerToken]

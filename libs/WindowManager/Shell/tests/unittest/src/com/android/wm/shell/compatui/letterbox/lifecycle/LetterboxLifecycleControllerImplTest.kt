@@ -45,15 +45,6 @@ import org.mockito.kotlin.verify
 class LetterboxLifecycleControllerImplTest : ShellTestCase() {
 
     @Test
-    fun `this is my test`() {
-        runTestScenario { r ->
-            r.invokeLifecycleControllerWith(
-                r.createLifecycleEvent()
-            )
-        }
-    }
-
-    @Test
     fun `Letterbox is hidden with OPEN Transition but not letterboxed`() {
         runTestScenario { r ->
             r.invokeLifecycleControllerWith(
