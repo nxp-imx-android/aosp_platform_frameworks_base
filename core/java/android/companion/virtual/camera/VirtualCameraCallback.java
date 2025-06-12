@@ -57,23 +57,24 @@ public interface VirtualCameraCallback {
     default void onOpenCamera() {}
 
     /**
-     * Called when the aoo using the {@link VirtualCamera} creates a new
-     * {@link CameraCaptureSession}. This callback is sent after clients open and configure the
+     * Called when the app using the {@link VirtualCamera} creates a new
+     * {@link CameraCaptureSession}. This callback is sent when clients open and configure the
      * capture session for the virtual camera.
      *
-     * @param sessionConfiguration The session configuration provided by the app in association
-     *                             with the requested capture session.
-     * @param captureResultConsumer The consumer interface through which the virtual camera owner
-     *                             can pass {@link android.hardware.camera2.CaptureResult}s for
-     *                              each timestamp of the streams associated with this session.
-     *                              This is {@code null} if the per frame metadata is not enabled
-     *                              in the {@link VirtualCameraConfig} of the virtual camera.
+     * @param virtualCameraSessionConfig The virtual camera session configuration with the session
+     *      parameters provided by the app in association with the requested capture session.
+     * @param captureResultConsumer The consumer interface through which the virtual camera
+     *      owner can pass {@link android.hardware.camera2.CaptureResult}s for each timestamp of
+     *      the streams associated with this session. The timestamp must match the timestamp of the
+     *      buffer posted on the corresponding {@link Surface}. This is {@code null} if the per
+     *      frame metadata is not enabled in the {@link VirtualCameraConfig} of the virtual camera.
      *
      * @see VirtualCameraConfig.Builder#setPerFrameCameraMetadataEnabled(boolean)
      * @see CameraCaptureSession
      */
     @FlaggedApi(Flags.FLAG_VIRTUAL_CAMERA_METADATA)
-    default void onSessionConfigured(@NonNull SessionConfiguration sessionConfiguration,
+    default void onConfigureSession(
+            @NonNull VirtualCameraSessionConfig virtualCameraSessionConfig,
             @Nullable ObjLongConsumer<CaptureResult> captureResultConsumer) {}
 
     /**

@@ -3739,6 +3739,10 @@ package android.companion.virtual.camera {
     ctor public CameraCharacteristicsBuilder(@NonNull android.hardware.camera2.CameraCharacteristics);
     method @NonNull public android.hardware.camera2.CameraCharacteristics build();
     method @NonNull public <T> android.companion.virtual.camera.CameraCharacteristicsBuilder set(@NonNull android.hardware.camera2.CameraCharacteristics.Key<T>, T);
+    method @NonNull public <T> android.companion.virtual.camera.CameraCharacteristicsBuilder setAvailableCaptureRequestKeys(@Nullable java.util.List<android.hardware.camera2.CaptureRequest.Key<?>>);
+    method @NonNull public <T> android.companion.virtual.camera.CameraCharacteristicsBuilder setAvailableCaptureResultKeys(@Nullable java.util.List<android.hardware.camera2.CaptureResult.Key<?>>);
+    method @NonNull public <T> android.companion.virtual.camera.CameraCharacteristicsBuilder setAvailableCharacteristicsKeys(@Nullable java.util.List<android.hardware.camera2.CameraCharacteristics.Key<?>>);
+    method @NonNull public <T> android.companion.virtual.camera.CameraCharacteristicsBuilder setAvailableSessionKeys(@Nullable java.util.List<android.hardware.camera2.CaptureRequest.Key<?>>);
   }
 
   public final class VirtualCamera implements java.io.Closeable {
@@ -3747,10 +3751,10 @@ package android.companion.virtual.camera {
   }
 
   public interface VirtualCameraCallback {
+    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public default void onConfigureSession(@NonNull android.companion.virtual.camera.VirtualCameraSessionConfig, @Nullable java.util.function.ObjLongConsumer<android.hardware.camera2.CaptureResult>);
     method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_on_open") public default void onOpenCamera();
     method public default void onProcessCaptureRequest(int, long);
     method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public default void onProcessCaptureRequest(int, long, @Nullable android.hardware.camera2.CaptureRequest);
-    method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public default void onSessionConfigured(@NonNull android.hardware.camera2.params.SessionConfiguration, @Nullable java.util.function.ObjLongConsumer<android.hardware.camera2.CaptureResult>);
     method public void onStreamClosed(int);
     method public void onStreamConfigured(int, @NonNull android.view.Surface, @IntRange(from=1) int, @IntRange(from=1) int, int);
   }
@@ -3780,6 +3784,13 @@ package android.companion.virtual.camera {
     method @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setPerFrameCameraMetadataEnabled(boolean);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setSensorOrientation(int);
     method @NonNull public android.companion.virtual.camera.VirtualCameraConfig.Builder setVirtualCameraCallback(@NonNull java.util.concurrent.Executor, @NonNull android.companion.virtual.camera.VirtualCameraCallback);
+  }
+
+  @FlaggedApi("android.companion.virtualdevice.flags.virtual_camera_metadata") public final class VirtualCameraSessionConfig implements android.os.Parcelable {
+    method public int describeContents();
+    method @Nullable public android.hardware.camera2.CaptureRequest getSessionParameters();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.camera.VirtualCameraSessionConfig> CREATOR;
   }
 
   public final class VirtualCameraStreamConfig implements android.os.Parcelable {
