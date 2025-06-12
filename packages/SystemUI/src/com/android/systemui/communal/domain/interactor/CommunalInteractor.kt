@@ -28,6 +28,7 @@ import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.TransitionKey
 import com.android.systemui.Flags.communalResponsiveGrid
+import com.android.systemui.Flags.doNotUseRunBlocking
 import com.android.systemui.Flags.glanceableHubBlurredBackground
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.communal.data.repository.CommunalMediaRepository
@@ -444,7 +445,7 @@ constructor(
         }
 
     /** A list of widget content to be displayed in the communal hub. */
-    val widgetContent: Flow<List<WidgetContent>> =
+    val widgetContent: StateFlow<List<WidgetContent>> =
         combine(
             widgetRepository.communalWidgets
                 .map { filterWidgetsByExistingUsers(it) }
@@ -479,7 +480,11 @@ constructor(
                     }
                 }
             }
-        }
+        }.stateIn(
+            scope = bgScope,
+            started = if (doNotUseRunBlocking()) SharingStarted.Eagerly else SharingStarted.Lazily,
+            initialValue = emptyList()
+        )
 
     /** Filter widgets based on whether their associated profile is allowed by device policy. */
     private fun filterWidgetsAllowedByDevicePolicy(
