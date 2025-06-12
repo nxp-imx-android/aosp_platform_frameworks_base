@@ -72,6 +72,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.ApplicationInfo;
+import android.content.res.Configuration;
 import android.hardware.Sensor;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.DisplayManagerGlobal;
@@ -115,6 +116,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.internal.app.BlockedAppStreamingActivity;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalServices;
+import com.android.server.UiModeManagerInternal;
 import com.android.server.companion.virtual.camera.VirtualCameraController;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.sensors.SensorManagerInternal;
@@ -248,6 +250,8 @@ public class VirtualDeviceManagerServiceTest {
     @Mock
     private SensorManagerInternal mSensorManagerInternalMock;
     @Mock
+    private UiModeManagerInternal mUiModeManagerInternalMock;
+    @Mock
     private VirtualSensorCallback mSensorCallback;
     @Mock
     private IVirtualDeviceActivityListener mActivityListener;
@@ -332,6 +336,9 @@ public class VirtualDeviceManagerServiceTest {
 
         LocalServices.removeServiceForTest(SensorManagerInternal.class);
         LocalServices.addService(SensorManagerInternal.class, mSensorManagerInternalMock);
+
+        LocalServices.removeServiceForTest(UiModeManagerInternal.class);
+        LocalServices.addService(UiModeManagerInternal.class, mUiModeManagerInternalMock);
 
         final DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.uniqueId = UNIQUE_ID;
@@ -1212,6 +1219,48 @@ public class VirtualDeviceManagerServiceTest {
         clearInvocations(mInputManagerInternalMock);
         mDeviceImpl.setShowPointerIcon(false);
         verify(mInputManagerInternalMock, times(0)).setPointerIconVisible(eq(false), anyInt());
+    }
+
+    @EnableFlags(Flags.FLAG_DEVICE_AWARE_UI_MODE)
+    @Test
+    public void setDisplayUiMode_untrustedDisplay_throws() {
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
+        assertThrows(SecurityException.class, () -> mDeviceImpl.setDisplayUiMode(
+                DISPLAY_ID_1, Configuration.UI_MODE_NIGHT_YES));
+    }
+
+    @EnableFlags(Flags.FLAG_DEVICE_AWARE_UI_MODE)
+    @Test
+    public void setDisplayUiMode_unownedDisplay_throws() {
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1);
+        assertThrows(SecurityException.class, () -> mDeviceImpl.setDisplayUiMode(
+                Display.DEFAULT_DISPLAY, Configuration.UI_MODE_NIGHT_YES));
+    }
+
+    @EnableFlags(Flags.FLAG_DEVICE_AWARE_UI_MODE)
+    @Test
+    public void setDisplayUiMode_displayReleased_resetUiMode() {
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
+        mDeviceImpl.setDisplayUiMode(DISPLAY_ID_1, Configuration.UI_MODE_NIGHT_YES);
+        verify(mUiModeManagerInternalMock).setDisplayUiMode(
+                DISPLAY_ID_1, Configuration.UI_MODE_NIGHT_YES);
+
+        mDeviceImpl.onVirtualDisplayRemoved(DISPLAY_ID_1);
+        verify(mUiModeManagerInternalMock).setDisplayUiMode(
+                DISPLAY_ID_1, Configuration.UI_MODE_TYPE_UNDEFINED);
+    }
+
+    @EnableFlags(Flags.FLAG_DEVICE_AWARE_UI_MODE)
+    @Test
+    public void setDisplayUiMode_deviceClosed_resetUiMode() {
+        addVirtualDisplay(mDeviceImpl, DISPLAY_ID_1, Display.FLAG_TRUSTED);
+        mDeviceImpl.setDisplayUiMode(DISPLAY_ID_1, Configuration.UI_MODE_NIGHT_YES);
+        verify(mUiModeManagerInternalMock).setDisplayUiMode(
+                DISPLAY_ID_1, Configuration.UI_MODE_NIGHT_YES);
+
+        mDeviceImpl.close();
+        verify(mUiModeManagerInternalMock).setDisplayUiMode(
+                DISPLAY_ID_1, Configuration.UI_MODE_TYPE_UNDEFINED);
     }
 
     @Test

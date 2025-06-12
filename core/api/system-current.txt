@@ -3638,6 +3638,7 @@ package android.companion.virtual {
     method public void setDevicePolicy(int, int);
     method @FlaggedApi("android.companion.virtualdevice.flags.activity_control_api") public void setDevicePolicy(int, int, int);
     method public void setDisplayImePolicy(int, int);
+    method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_ui_mode") public void setDisplayUiMode(int, int);
     method public void setShowPointerIcon(boolean);
     method public void unregisterIntentInterceptor(@NonNull android.companion.virtual.VirtualDeviceManager.IntentInterceptorCallback);
     method @FlaggedApi("android.companion.virtualdevice.flags.device_aware_display_power") public void wakeUp();

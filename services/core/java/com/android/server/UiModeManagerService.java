@@ -34,6 +34,10 @@ import static android.app.UiModeManager.MODE_NIGHT_NO;
 import static android.app.UiModeManager.MODE_NIGHT_YES;
 import static android.app.UiModeManager.PROJECTION_TYPE_AUTOMOTIVE;
 import static android.app.UiModeManager.PROJECTION_TYPE_NONE;
+import static android.content.res.Configuration.UI_MODE_NIGHT_MASK;
+import static android.content.res.Configuration.UI_MODE_NIGHT_UNDEFINED;
+import static android.content.res.Configuration.UI_MODE_TYPE_MASK;
+import static android.content.res.Configuration.UI_MODE_TYPE_UNDEFINED;
 import static android.os.UserHandle.USER_SYSTEM;
 import static android.os.UserHandle.getCallingUserId;
 import static android.provider.Settings.Secure.ACCESSIBILITY_FORCE_INVERT_COLOR_ENABLED;
@@ -99,6 +103,7 @@ import android.util.ArraySet;
 import android.util.Slog;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
+import android.view.Display;
 
 import androidx.annotation.VisibleForTesting;
 
@@ -145,6 +150,10 @@ final class UiModeManagerService extends SystemService {
     private int mDockState = Intent.EXTRA_DOCK_STATE_UNDOCKED;
 
     private int mLastBroadcastState = Intent.EXTRA_DOCK_STATE_UNDOCKED;
+
+    // Mapping of displayId to UI mode override specific to that display.
+    @GuardedBy("mLock")
+    private final SparseIntArray mDisplayUiModeOverrides = new SparseIntArray();
 
     private final IntProperty mNightMode = new IntProperty(){
         private int mNightModeValue = UiModeManager.MODE_NIGHT_NO;
@@ -2590,6 +2599,56 @@ final class UiModeManagerService extends SystemService {
                         + "; isIt=" + isIt);
                 }
                 return isIt;
+            }
+        }
+
+        @Override
+        public void setDisplayUiMode(int displayId, int uiMode) {
+            if (displayId == Display.DEFAULT_DISPLAY) {
+                throw new IllegalArgumentException("Can not override uiMode for DEFAULT_DISPLAY,"
+                        + " the default display follows the device-level uiMode");
+            }
+            if (displayId == Display.INVALID_DISPLAY) {
+                throw new IllegalArgumentException("Can not override uiMode for invalid display.");
+            }
+            synchronized (mLock) {
+                final int currentUiMode = mDisplayUiModeOverrides.get(displayId,
+                        UI_MODE_TYPE_UNDEFINED | UI_MODE_NIGHT_UNDEFINED);
+                if (currentUiMode == uiMode) {
+                    return;
+                }
+                if ((uiMode & UI_MODE_TYPE_MASK) == UI_MODE_TYPE_UNDEFINED
+                        && (uiMode & UI_MODE_NIGHT_MASK) == UI_MODE_NIGHT_UNDEFINED) {
+                    Slog.d(TAG, "Clearing UI mode override on display " + displayId);
+                    mDisplayUiModeOverrides.delete(displayId);
+                } else {
+                    Slog.d(TAG, "Setting UI mode override on display " + displayId + ": " + uiMode);
+                    mDisplayUiModeOverrides.put(displayId, uiMode);
+                }
+            }
+
+            mWindowManager.onDisplayUiModeChanged(displayId);
+        }
+
+        @Override
+        public int getDisplayUiMode(int displayId) {
+            synchronized (mLock) {
+                int uiMode = mDisplayUiModeOverrides.get(displayId,
+                        UI_MODE_TYPE_UNDEFINED | UI_MODE_NIGHT_UNDEFINED);
+
+                // If an override doesn't exist or is undefined, return the global UI mode.
+                if (uiMode == (UI_MODE_TYPE_UNDEFINED | UI_MODE_NIGHT_UNDEFINED)) {
+                    return mCurUiMode.get();
+                }
+                // If there's no explicit UI mode type for this display, use the global one.
+                if ((uiMode & UI_MODE_TYPE_MASK) == UI_MODE_TYPE_UNDEFINED) {
+                    uiMode |= (mCurUiMode.get() & UI_MODE_TYPE_MASK);
+                }
+                // If there's no explicit night mode for this display, use the global one.
+                if ((uiMode & UI_MODE_NIGHT_MASK) == UI_MODE_NIGHT_UNDEFINED) {
+                    uiMode |= (mCurUiMode.get() & UI_MODE_NIGHT_MASK);
+                }
+                return uiMode;
             }
         }
     }

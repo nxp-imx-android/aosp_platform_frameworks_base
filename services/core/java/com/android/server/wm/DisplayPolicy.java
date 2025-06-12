@@ -87,6 +87,7 @@ import android.app.ResourcesManager;
 import android.app.WindowConfiguration;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Insets;
 import android.graphics.PixelFormat;
@@ -139,6 +140,7 @@ import com.android.internal.util.function.TriFunction;
 import com.android.internal.view.AppearanceRegion;
 import com.android.internal.widget.PointerLocationView;
 import com.android.server.LocalServices;
+import com.android.server.UiModeManagerInternal;
 import com.android.server.UiThread;
 import com.android.server.notification.NotificationManagerInternal;
 import com.android.server.policy.WindowManagerPolicy.ScreenOnListener;
@@ -203,6 +205,7 @@ public class DisplayPolicy {
     private long mPanicTime;
     private final long mPanicThresholdMs;
     private StatusBarManagerInternal mStatusBarManagerInternal;
+    private UiModeManagerInternal mUiModeManagerInternal;
 
     @Px
     private int mLeftGestureInset;
@@ -227,6 +230,15 @@ public class DisplayPolicy {
         }
     }
 
+    UiModeManagerInternal getUiModeManagerInternal() {
+        synchronized (mServiceAcquireLock) {
+            if (mUiModeManagerInternal == null) {
+                mUiModeManagerInternal = LocalServices.getService(UiModeManagerInternal.class);
+            }
+            return mUiModeManagerInternal;
+        }
+    }
+
     // Will be null in client transient mode.
     private SystemGesturesPointerEventListener mSystemGestures;
 
@@ -246,6 +258,9 @@ public class DisplayPolicy {
 
     // Written by vr manager thread, only read in this class.
     private volatile boolean mPersistentVrModeEnabled;
+
+    private volatile int mDisplayUiMode =
+            Configuration.UI_MODE_TYPE_UNDEFINED | Configuration.UI_MODE_NIGHT_UNDEFINED;
 
     private volatile boolean mAwake;
     private volatile boolean mScreenOnEarly;
@@ -3347,5 +3362,23 @@ public class DisplayPolicy {
      */
     boolean shouldAttachNavBarToAppDuringTransition() {
         return mShouldAttachNavBarToAppDuringTransition && mNavigationBar != null;
+    }
+
+    /**
+     * @return the display's UI mode. If there's no override for this display, returns undefined,
+     *    which will be overridden by the global configuration.
+     */
+    int getDisplayUiMode() {
+        return mDisplayUiMode;
+    }
+
+    /**
+     * Updates this display's UI mode.
+     */
+    void onDisplayUiModeChanged() {
+        final UiModeManagerInternal uiModeManagerInternal = getUiModeManagerInternal();
+        mDisplayUiMode = uiModeManagerInternal != null
+                ? uiModeManagerInternal.getDisplayUiMode(getDisplayId())
+                : (Configuration.UI_MODE_TYPE_UNDEFINED | Configuration.UI_MODE_NIGHT_UNDEFINED);
     }
 }
