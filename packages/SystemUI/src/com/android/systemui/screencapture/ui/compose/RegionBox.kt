@@ -90,7 +90,8 @@ fun RegionBox(
         )
     }
 
-    val onDrag: (dragAmount: Offset, corner: Corner, maxWidth: Float, maxHeight: Float) -> Unit =
+    val onCornerDrag:
+        (dragAmount: Offset, corner: Corner, maxWidth: Float, maxHeight: Float) -> Unit =
         { dragAmount, corner, maxWidth, maxHeight ->
             // Used for calculating the new dimensions based on which corner is dragged.
             var newLeft = rect.left
@@ -129,9 +130,25 @@ fun RegionBox(
             rect = Rect(newLeft, newTop, newRight, newBottom)
         }
 
+    val onBoxDrag: (dragAmount: Offset, maxWidth: Float, maxHeight: Float) -> Unit =
+        { dragAmount, maxWidth, maxHeight ->
+            val newOffset = rect.topLeft + dragAmount
+
+            // Constrain the new position within the parent's boundaries
+            val constrainedLeft: Float = newOffset.x.coerceIn(0f, maxWidth - rect.width)
+            val constrainedTop: Float = newOffset.y.coerceIn(0f, maxHeight - rect.height)
+
+            rect =
+                rect.translate(
+                    translateX = constrainedLeft - rect.left,
+                    translateY = constrainedTop - rect.top,
+                )
+        }
+
     ResizableRectangle(
         rect = rect,
-        onDrag = onDrag,
+        onCornerDrag = onCornerDrag,
+        onBoxDrag = onBoxDrag,
         onDragEnd = {
             onDragEnd(
                 Offset(rect.left, rect.top),
@@ -144,17 +161,19 @@ fun RegionBox(
 }
 
 /**
- * A box with border lines and centered corner knobs that can be resized.
+ * A box with border lines and centered corner knobs that can be resized and dragged.
  *
  * @param rect The current geometry of the region box.
- * @param onDrag Callback invoked when a knob is dragged.
+ * @param onCornerDrag Callback invoked when a corner knob is dragged.
+ * @param onBoxDrag Callback invoked when the main body of the box is dragged.
  * @param onDragEnd Callback invoked when a drag gesture finishes.
  * @param modifier The modifier to be applied to the composable.
  */
 @Composable
 private fun ResizableRectangle(
     rect: Rect,
-    onDrag: (dragAmount: Offset, corner: Corner, maxWidth: Float, maxHeight: Float) -> Unit,
+    onCornerDrag: (dragAmount: Offset, corner: Corner, maxWidth: Float, maxHeight: Float) -> Unit,
+    onBoxDrag: (dragAmount: Offset, maxWidth: Float, maxHeight: Float) -> Unit,
     onDragEnd: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -195,6 +214,15 @@ private fun ResizableRectangle(
                 modifier =
                     Modifier.fillMaxSize()
                         .border(borderStrokeWidth, MaterialTheme.colorScheme.onSurfaceVariant)
+                        .pointerInput(screenWidth, screenHeight, onBoxDrag, onDragEnd) {
+                            detectDragGestures(
+                                onDragEnd = onDragEnd,
+                                onDrag = { change, dragAmount ->
+                                    change.consume()
+                                    onBoxDrag(dragAmount, screenWidth, screenHeight)
+                                },
+                            )
+                        }
             )
 
             // The offset is half of the knob diameter so that it is centered.
@@ -222,12 +250,12 @@ private fun ResizableRectangle(
                     modifier =
                         Modifier.align(corner.alignment)
                             .offset(x = xOffset, y = yOffset)
-                            .pointerInput(corner, screenWidth, screenHeight) {
+                            .pointerInput(corner, screenWidth, screenHeight, onCornerDrag, onDragEnd) {
                                 detectDragGestures(
                                     onDragEnd = onDragEnd,
                                     onDrag = { change, dragAmount ->
                                         change.consume()
-                                        onDrag(dragAmount, corner, screenWidth, screenHeight)
+                                        onCornerDrag(dragAmount, corner, screenWidth, screenHeight)
                                     },
                                 )
                             },
