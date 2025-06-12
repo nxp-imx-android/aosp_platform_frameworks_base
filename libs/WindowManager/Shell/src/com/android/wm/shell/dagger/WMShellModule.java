@@ -638,7 +638,8 @@ public abstract class WMShellModule {
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
             DesktopState desktopState,
             IActivityTaskManager activityTaskManager,
-            MSDLPlayer msdlPlayer) {
+            MSDLPlayer msdlPlayer,
+            Optional<BubbleController> bubbleController) {
         return new SplitScreenController(
                 context,
                 shellInit,
@@ -667,7 +668,8 @@ public abstract class WMShellModule {
                 rootDisplayAreaOrganizer,
                 desktopState,
                 activityTaskManager,
-                msdlPlayer);
+                msdlPlayer,
+                bubbleController);
     }
 
     //

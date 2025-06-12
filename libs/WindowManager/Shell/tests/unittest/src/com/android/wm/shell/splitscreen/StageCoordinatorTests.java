@@ -22,6 +22,7 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
 import static android.view.Display.DEFAULT_DISPLAY;
 
+import static com.android.wm.shell.Flags.FLAG_ENABLE_ENTER_SPLIT_REMOVE_BUBBLE;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_INDEX_UNDEFINED;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SPLIT_POSITION_BOTTOM_OR_RIGHT;
@@ -88,6 +89,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
 import com.android.wm.shell.TestShellExecutor;
+import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
 import com.android.wm.shell.common.DisplayInsetsController;
@@ -165,6 +167,8 @@ public class StageCoordinatorTests extends ShellTestCase {
     private DesktopUserRepositories mDesktopUserRepositories;
     @Mock
     private DesktopRepository mDesktopRepository;
+    @Mock
+    private BubbleController mBubbleController;
     private FakeDesktopState mDesktopState;
     private IActivityTaskManager mIActivityTaskManager;
 
@@ -209,7 +213,8 @@ public class StageCoordinatorTests extends ShellTestCase {
                 Optional.empty(), mSplitState, Optional.empty(),
                 Optional.of(mDesktopUserRepositories),
                 mRootTDAOrganizer,
-                mRootDisplayAreaOrganizer, mDesktopState, mIActivityTaskManager, mMSDLPlayer));
+                mRootDisplayAreaOrganizer, mDesktopState, mIActivityTaskManager, mMSDLPlayer,
+                Optional.of(mBubbleController)));
         mSplitScreenTransitions = spy(mStageCoordinator.getSplitTransitions());
         mSplitScreenListener = mock(SplitScreenListener.class);
         mStageCoordinator.setSplitTransitions(mSplitScreenTransitions);
@@ -233,6 +238,8 @@ public class StageCoordinatorTests extends ShellTestCase {
         when(mSplitLayout.isLeftRightSplit()).thenReturn(false);
         when(mSplitLayout.applyTaskChanges(any(), any(), any())).thenReturn(true);
         when(mSplitLayout.getDividerLeash()).thenReturn(dividerLeash);
+
+        when(mBubbleController.hasBubbles()).thenReturn(false);
 
         mSplitMultiDisplayHelper = new SplitMultiDisplayHelper(
                 mContext.getSystemService(DisplayManager.class));
@@ -609,6 +616,30 @@ public class StageCoordinatorTests extends ShellTestCase {
         WindowContainerTransaction.Change c =
                 wct.getChanges().get(mMainChildTaskInfo.token.asBinder());
         assertFalse(c != null && c.getWindowingMode() == WINDOWING_MODE_FULLSCREEN);
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_ENTER_SPLIT_REMOVE_BUBBLE)
+    public void updateActivityOptions_withBubbles_setsLaunchBounds() {
+        when(mBubbleController.hasBubbles()).thenReturn(true);
+        Bundle bundle = new Bundle();
+
+        mStageCoordinator.updateActivityOptions(bundle, SPLIT_POSITION_TOP_OR_LEFT);
+        ActivityOptions options = ActivityOptions.fromBundle(bundle);
+
+        assertThat(options.getLaunchBounds()).isEqualTo(new Rect());
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_ENTER_SPLIT_REMOVE_BUBBLE)
+    public void updateActivityOptions_noBubbles_doesNotSetLaunchBounds() {
+        when(mBubbleController.hasBubbles()).thenReturn(false);
+        Bundle bundle = new Bundle();
+
+        mStageCoordinator.updateActivityOptions(bundle, SPLIT_POSITION_TOP_OR_LEFT);
+        ActivityOptions options = ActivityOptions.fromBundle(bundle);
+
+        assertThat(options.getLaunchBounds()).isNull();
     }
 
     private Transitions createTestTransitions() {
