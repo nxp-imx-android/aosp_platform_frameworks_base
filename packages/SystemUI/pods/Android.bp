@@ -63,6 +63,7 @@ java_library {
     static_libs: [
         "com.android.systemui.dagger-api",
         "com.android.systemui.retail-impl",
+        "com.android.systemui.util.kotlin",
         "com.android.systemui.util.settings-api",
         "com.android.systemui.util.time-api",
         "com.android.systemui.util.time-impl",
