@@ -41,6 +41,8 @@ import android.app.NotificationChannel;
 import android.content.Context;
 import android.os.Handler;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 
@@ -51,6 +53,7 @@ import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.systemui.CoreStartable;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.ambient.statusbar.shared.flag.OngoingActivityChipsOnDream;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.flags.FakeFeatureFlagsClassic;
@@ -301,6 +304,36 @@ public class KeyguardNotificationVisibilityProviderTest  extends SysuiTestCase {
                 .setParent(parent)
                 .build();
         when(mHighPriorityProvider.isExplicitlyHighPriority(any())).thenReturn(false);
+        assertTrue(mKeyguardNotificationVisibilityProvider.shouldHideNotification(mEntry));
+    }
+
+    @EnableFlags(OngoingActivityChipsOnDream.FLAG_NAME)
+    @Test
+    public void dreaming_flagEnabled_doNotHideNotifications() {
+        when(mStatusBarStateController.getCurrentOrUpcomingState()).thenReturn(KEYGUARD);
+        mSecureSettings.putBool(Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS, true);
+        mSecureSettings.putBool(Settings.Secure.LOCK_SCREEN_SHOW_SILENT_NOTIFICATIONS, false);
+        mEntry = new NotificationEntryBuilder()
+                .setUser(new UserHandle(NOTIF_USER_ID))
+                .setImportance(IMPORTANCE_LOW)
+                .build();
+        when(mHighPriorityProvider.isExplicitlyHighPriority(any())).thenReturn(false);
+        when(mKeyguardUpdateMonitor.isDreaming()).thenReturn(true);
+        assertFalse(mKeyguardNotificationVisibilityProvider.shouldHideNotification(mEntry));
+    }
+
+    @DisableFlags(OngoingActivityChipsOnDream.FLAG_NAME)
+    @Test
+    public void dreaming_flagDisabled_hideNotifications() {
+        when(mStatusBarStateController.getCurrentOrUpcomingState()).thenReturn(KEYGUARD);
+        mSecureSettings.putBool(Settings.Secure.LOCK_SCREEN_SHOW_NOTIFICATIONS, true);
+        mSecureSettings.putBool(Settings.Secure.LOCK_SCREEN_SHOW_SILENT_NOTIFICATIONS, false);
+        mEntry = new NotificationEntryBuilder()
+                .setUser(new UserHandle(NOTIF_USER_ID))
+                .setImportance(IMPORTANCE_LOW)
+                .build();
+        when(mHighPriorityProvider.isExplicitlyHighPriority(any())).thenReturn(false);
+        when(mKeyguardUpdateMonitor.isDreaming()).thenReturn(true);
         assertTrue(mKeyguardNotificationVisibilityProvider.shouldHideNotification(mEntry));
     }
 
