@@ -24,6 +24,8 @@ import static org.mockito.Mockito.never;
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 
+import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createMockContext;
+import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createMockCompanionDeviceManager;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createAssociationInfo;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createRunningTaskInfo;
 
@@ -77,10 +79,7 @@ public class TaskBroadcasterTest {
     @Mock
     private ActivityTaskManager mMockActivityTaskManager;
 
-    @Mock
     private ICompanionDeviceManager mMockCompanionDeviceManagerService;
-
-    private CompanionDeviceManager mCompanionDeviceManager;
 
     @Mock private ConnectedAssociationStore mMockConnectedAssociationStore;
 
@@ -89,22 +88,11 @@ public class TaskBroadcasterTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mMockContext =  Mockito.spy(
-            new ContextWrapper(
-                InstrumentationRegistry
-                    .getInstrumentation()
-                    .getTargetContext()));
-
-        // Setup fake services.
-        mCompanionDeviceManager
-            = new CompanionDeviceManager(
-                mMockCompanionDeviceManagerService,
-                mMockContext);
+        mMockContext =  createMockContext();
+        mMockCompanionDeviceManagerService = createMockCompanionDeviceManager(mMockContext);
 
         when(mMockContext.getSystemService(Context.ACTIVITY_TASK_SERVICE))
             .thenReturn(mMockActivityTaskManager);
-        when(mMockContext.getSystemService(Context.COMPANION_DEVICE_SERVICE))
-            .thenReturn(mCompanionDeviceManager);
 
         // Create TaskBroadcaster.
         mTaskBroadcaster = new TaskBroadcaster(
