@@ -501,13 +501,6 @@ test_module_config {
 }
 
 test_module_config {
-    name: "WmTests-wm-CameraStateMonitorImplTests",
-    base: "WmTests",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.server.wm.CameraStateMonitorImplTests"],
-}
-
-test_module_config {
     name: "WmTests-wm-ClientLifecycleManagerTests",
     base: "WmTests",
     test_suites: ["device-tests"],
