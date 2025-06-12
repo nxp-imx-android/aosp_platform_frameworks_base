@@ -17,13 +17,15 @@ package com.android.server.pm;
 
 import static com.android.server.pm.HsumBootUserInitializer.designateMainUserOnBoot;
 
+import android.annotation.Nullable;
 import android.util.Log;
 
 import org.junit.Test;
 import org.junit.runners.Parameterized.Parameters;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 
 public final class HsumBootUserInitializerDesignateMainUserOnBootTest
         extends AbstractHsumBootUserInitializerConstructorHelpersTestCase {
@@ -36,14 +38,131 @@ public final class HsumBootUserInitializerDesignateMainUserOnBootTest
     private final boolean mConfigIsMainUserPermanentAdmin;
     private final boolean mResult;
 
-    // NOTE: not really "Generated code", but that's the only why to calm down checkstyle, otherwise
-    // it will complain they should be all upper case
+    // Indices used on cloneBaseline()
+    private static final int INDEX_DEBUGGABLE = 0;
+    private static final int INDEX_SYSPROP = 1;
+    private static final int INDEX_RESULT = 6;
+
+    /**
+     * Arguments baseline, i.e., the behavior without emulating using a system property.
+     */
+    private static final Object[][] BASELINE = {
+        // Note: entries below are broken in 3 lines to make them easier to read / maintain:
+        // - build type and emulation
+        // - input (configs)
+        // - expected output
+
+        // original (only 2 configs used)
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
+                RESULT(false)
+        },
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
+                RESULT(true)
+        },
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
+                RESULT(true)
+        },
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
+                RESULT(true)
+        },
+        // added FLAG and CFG_CREATE_INITIAL
+        // FLAG(false), CFG_CREATE_INITIAL(true) - everything but first equals to original
+        {
+                // This is special case used to guard the config by the flag (RESULT true)
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
+                RESULT(true)
+        },
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
+                RESULT(true)
+        },
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
+                RESULT(true)
+        },
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
+                RESULT(true)
+        },
+        // FLAG(true), CFG_CREATE_INITIAL(false) - everything equals to original
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
+                RESULT(false)
+        },
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
+                RESULT(true)
+        },
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
+                RESULT(true)
+        },
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
+                RESULT(true)
+        },
+        // FLAG(true), CFG_CREATE_INITIAL(true) - everything equals to original
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
+                RESULT(false)
+        },
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
+                RESULT(true)
+        },
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
+                RESULT(true)
+        },
+        {
+                DEBUGGABLE(false), SYSPROP(false),
+                FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
+                RESULT(true)
+        }
+    };
+
     /** Useless javadoc to make checkstyle happy... */
     @Parameters(name =
             "{index}: dbgBuild={0},sysprop={1},flag={2},cfgCreateIU={3},cfgDesignateMU={4},cfgIsMUPermAdm={5},result={6}")
-    public static Collection<Object[]> junitParametersPassedToConstructor() {
-        // TODO(b/402486365): refactor code below so we define one set (for non-debuggable), then
-        // copy it over the other 3 combinations.
+    public static List<Object[]> junitParametersPassedToConstructor() {
+        List<Object[]> parameters = new ArrayList<>(BASELINE.length * 4);
+
+        // User build, sysprop not set - baseline
+        parameters.addAll(Arrays.asList(BASELINE));
+
+        // User build, sysprop not set - everything should be the same as basline
+        parameters.addAll(cloneBaseline(DEBUGGABLE(false), SYSPROP(false), /* result= */ null));
+
+        // Debuggable build - result should be value of property (false)
+        parameters.addAll(cloneBaseline(DEBUGGABLE(true), SYSPROP(false), RESULT(false)));
+
+        // Debuggable build - result should be value of property (true)
+        parameters.addAll(cloneBaseline(DEBUGGABLE(true), SYSPROP(true), RESULT(true)));
+
+        return parameters;
+    }
+
+    // TODO(b/402486365): remove on follow-up CL
+    static List<Object[]> hardcodedParameters() {
         return Arrays.asList(new Object[][] {
                 // Note: entries below are broken in 3 lines to make them easier to read / maintain:
                 // - build type and emulation
@@ -138,7 +257,7 @@ public final class HsumBootUserInitializerDesignateMainUserOnBootTest
                         RESULT(true)
                 },
 
-                // User build, sysprop set - everything should be the same as above
+                // User build, sysprop not set - everything should be the same as above
                 {
                         DEBUGGABLE(false), SYSPROP(false),
                         FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
@@ -421,5 +540,29 @@ public final class HsumBootUserInitializerDesignateMainUserOnBootTest
         boolean result = designateMainUserOnBoot(mMockContext);
 
         expect.withMessage("designateMainUserOnBoot()").that(result).isEqualTo(mResult);
+    }
+
+    /**
+     * Clones the baseline, changing some values.
+     *
+     * @param debuggable new value of {@code isDebuggable}
+     * @param sysprop new value of {@code sysprop}
+     * @param result if not {@code null}, new value of {@code result}
+     *
+     * @return the clone
+     */
+    private static List<Object[]> cloneBaseline(boolean debuggable, boolean sysprop,
+            @Nullable Boolean result) {
+        Object[][] clone = Arrays.stream(BASELINE)
+                .map(row -> Arrays.copyOf(row, row.length))
+                .toArray(Object[][]::new);
+        for (var parameters : clone) {
+            parameters[INDEX_DEBUGGABLE] = debuggable;
+            parameters[INDEX_SYSPROP] = sysprop;
+            if (result != null) {
+                parameters[INDEX_RESULT] = result;
+            }
+        }
+        return Arrays.asList(clone);
     }
 }
