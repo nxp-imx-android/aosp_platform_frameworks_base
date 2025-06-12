@@ -199,9 +199,17 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
     private final BluetoothAdapter.OnMetadataChangedListener mBatteryMetadataListener =
             (device, key, value) -> {
                 if (key == BluetoothDevice.METADATA_MAIN_BATTERY
+                        || key == BluetoothDevice.METADATA_MAIN_CHARGING
+                        || key == BluetoothDevice.METADATA_MAIN_LOW_BATTERY_THRESHOLD
                         || key == BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY
+                        || key == BluetoothDevice.METADATA_UNTETHERED_LEFT_CHARGING
+                        || key == BluetoothDevice.METADATA_UNTETHERED_LEFT_LOW_BATTERY_THRESHOLD
                         || key == BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY
-                        || key == BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY) {
+                        || key == BluetoothDevice.METADATA_UNTETHERED_RIGHT_CHARGING
+                        || key == BluetoothDevice.METADATA_UNTETHERED_RIGHT_LOW_BATTERY_THRESHOLD
+                        || key == BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY
+                        || key == BluetoothDevice.METADATA_UNTETHERED_CASE_CHARGING
+                        || key == BluetoothDevice.METADATA_UNTETHERED_CASE_LOW_BATTERY_THRESHOLD) {
                     Log.d(
                             TAG,
                             "Receiving battery metadata change for device "
