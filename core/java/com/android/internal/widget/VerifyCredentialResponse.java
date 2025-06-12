@@ -45,9 +45,14 @@ public final class VerifyCredentialResponse implements Parcelable {
     private static final int RESPONSE_OK = 0;
 
     /**
-     * Either the credential could not be verified because a timeout is still active, or the
-     * credential was incorrect and there is a timeout before the next attempt will be allowed.
-     * {@link #getTimeout()} gives the timeout.
+     * The credential could not be verified because a timeout is still active. {@link #getTimeout()}
+     * gives the currently active timeout.
+     *
+     * <p>Alternatively, a timeout was not active, the credential was incorrect, and there is a
+     * timeout before the <em>next</em> attempt will be allowed. {@link #getTimeout()} gives the
+     * newly active timeout. The preferred response code in this case is {@link
+     * #RESPONSE_CRED_INCORRECT}, but some devices use a rate-limiting HAL implementation that does
+     * not differentiate this case from the "timeout is still active" case.
      */
     private static final int RESPONSE_RETRY = 1;
 
@@ -60,6 +65,8 @@ public final class VerifyCredentialResponse implements Parcelable {
     /**
      * Credential was incorrect and none of {@link #RESPONSE_RETRY}, {@link
      * #RESPONSE_CRED_TOO_SHORT}, or {@link #RESPONSE_CRED_ALREADY_TRIED} applies.
+     *
+     * <p>{@link #getTimeout()} gives the newly active timeout, if any.
      */
     private static final int RESPONSE_CRED_INCORRECT = 4;
 
@@ -136,10 +143,8 @@ public final class VerifyCredentialResponse implements Parcelable {
     }
 
     /**
-     * Since timeouts are always an error, provide a way to create the VerifyCredentialResponse
-     * object directly. None of the other fields (Gatekeeper HAT, Gatekeeper Password, etc)
-     * are valid in this case. Similarly, the response code will always be
-     * {@link #RESPONSE_RETRY}.
+     * Builds a {@link VerifyCredentialResponse} with {@link #RESPONSE_RETRY} and the given timeout
+     * in milliseconds.
      */
     public static VerifyCredentialResponse fromTimeout(int timeout) {
         return new VerifyCredentialResponse(RESPONSE_RETRY,
@@ -149,12 +154,26 @@ public final class VerifyCredentialResponse implements Parcelable {
     }
 
     /**
-     * Like {@link #fromTimeout(int)}, but takes a Duration instead of a raw milliseconds value.
+     * Builds a {@link VerifyCredentialResponse} with {@link #RESPONSE_RETRY} and the given timeout.
      *
      * <p>The timeout is clamped to fit in an int. See {@link #timeoutToClampedMillis(Duration)}.
      */
     public static VerifyCredentialResponse fromTimeout(Duration timeout) {
         return fromTimeout(timeoutToClampedMillis(timeout));
+    }
+
+    /**
+     * Builds a {@link VerifyCredentialResponse} with {@link #RESPONSE_CRED_INCORRECT} and the given
+     * timeout.
+     *
+     * <p>The timeout is clamped to fit in an int. See {@link #timeoutToClampedMillis(Duration)}.
+     */
+    public static VerifyCredentialResponse credIncorrect(Duration timeout) {
+        return new VerifyCredentialResponse(
+                VerifyCredentialResponse.RESPONSE_CRED_INCORRECT,
+                timeoutToClampedMillis(timeout),
+                /* gatekeeperHAT= */ null,
+                /* gatekeeperPasswordHandle= */ 0L);
     }
 
     /**
@@ -260,6 +279,11 @@ public final class VerifyCredentialResponse implements Parcelable {
      * will be allowed.
      */
     public boolean hasTimeout() {
+        if (android.security.Flags.softwareRatelimiter()) {
+            // Check mTimeout directly. It can be nonzero for either RESPONSE_RETRY or
+            // RESPONSE_CRED_INCORRECT.
+            return mTimeout != 0;
+        }
         return mResponseCode == RESPONSE_RETRY;
     }
 

@@ -2552,7 +2552,10 @@ public class LockSettingsService extends ILockSettings.Stub {
                 // lock screen doesn't allow another attempt until both rate-limiters allow it.
                 Duration hwTimeout = response.getTimeoutAsDuration();
                 if (swTimeout.compareTo(hwTimeout) > 0) {
-                    response = VerifyCredentialResponse.fromTimeout(swTimeout);
+                    response =
+                            isCertainlyWrongGuess
+                                    ? VerifyCredentialResponse.credIncorrect(swTimeout)
+                                    : VerifyCredentialResponse.fromTimeout(swTimeout);
                 }
             }
         }
