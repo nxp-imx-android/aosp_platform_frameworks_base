@@ -575,7 +575,9 @@ final class OverlayManagerServiceImpl {
             }
         }
         try {
-            if (mustReinitializeOverlay(info, oi)) {
+            final boolean mustReinitializeOverlay = mustReinitializeOverlay(info, oi);
+            boolean updated = false;
+            if (mustReinitializeOverlay) {
                 if (oi != null) {
                     // If the fabricated overlay changes its target package, update the previous
                     // target package so it no longer is overlaid.
@@ -587,10 +589,17 @@ final class OverlayManagerServiceImpl {
             } else {
                 // The only non-critical part of the info that will change is path to the fabricated
                 // overlay.
-                mSettings.setBaseCodePath(overlayIdentifier, userId, info.path);
+                updated |= mSettings.setBaseCodePath(overlayIdentifier, userId, info.path);
             }
             // No constraints should be applied when registering a fabricated overlay.
-            if (updateState(oi, userId, 0 /* flags */, Collections.emptyList() /* constraints */)) {
+            updated |= updateState(oi, userId, 0 /* flags */,
+                    Collections.emptyList() /* constraints */);
+            if (DEBUG) {
+                Slog.d(TAG, "In registerFabricatedOverlay, OverlayInfo=" + oi
+                        + " mustReinitializeOverlay=" + mustReinitializeOverlay
+                        + " updated=" + updated);
+            }
+            if (updated) {
                 updatedTargets.add(UserPackage.of(userId, oi.targetPackageName));
             }
         } catch (OverlayManagerSettings.BadKeyException e) {
