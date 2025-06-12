@@ -15,6 +15,8 @@
  */
 package com.android.server.pm;
 
+import static android.multiuser.Flags.FLAG_CREATE_INITIAL_USER;
+
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.server.pm.HsumBootUserInitializer.SYSPROP_DESIGNATE_MAIN_USER;
 
@@ -24,8 +26,10 @@ import static org.mockito.Mockito.when;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.multiuser.Flags;
 import android.os.Build;
 import android.os.SystemProperties;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.Log;
 
 import com.android.internal.R;
@@ -51,6 +55,10 @@ abstract class AbstractHsumBootUserInitializerConstructorHelpersTestCase {
             .mockStatic(Build.class)
             .mockStatic(SystemProperties.class)
             .build();
+
+    @Rule
+    public final SetFlagsRule setFlagsRule =
+            new SetFlagsRule(SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT);
 
     protected final String mTag = getClass().getSimpleName();
 
@@ -91,6 +99,22 @@ abstract class AbstractHsumBootUserInitializerConstructorHelpersTestCase {
                 () -> SystemProperties.getBoolean(eq(SYSPROP_DESIGNATE_MAIN_USER), anyBoolean()));
     }
 
+    @SuppressWarnings("deprecation") // TODO(b/341129262): SetFlagsRule methods are deprecated
+    protected final void setCreateInitialUserFlag(boolean value) {
+        boolean before =  Flags.createInitialUser();
+        if (before == value) {
+            Log.v(mTag, "setCreateInitialUserFlag(): already " + value);
+            return;
+        }
+        Log.v(mTag, "setCreateInitialUserFlag(): changing from " + before + " to " + value);
+        if (value) {
+            setFlagsRule.enableFlags(FLAG_CREATE_INITIAL_USER);
+        } else {
+            setFlagsRule.disableFlags(FLAG_CREATE_INITIAL_USER);
+        }
+    }
+
+
     // Helper methods to make values parameterized values easier to read
     // NOTE: not really "Generated code", but that's the only why to calm down checkstyle, otherwise
     // it will complain they should be all upper case
@@ -101,6 +125,10 @@ abstract class AbstractHsumBootUserInitializerConstructorHelpersTestCase {
     }
 
     protected static boolean SYSPROP(boolean value) {
+        return value;
+    }
+
+    protected static boolean FLAG(boolean value) {
         return value;
     }
 
