@@ -1046,7 +1046,7 @@ public final class AppStartInfoTracker {
             } else {
                 af.failWrite(out);
             }
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             Slog.w(TAG, "Unable to write historical app start info into persistent storage: " + e);
             af.failWrite(out);
         }
