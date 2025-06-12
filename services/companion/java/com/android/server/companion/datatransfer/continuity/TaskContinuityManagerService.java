@@ -85,10 +85,12 @@ public final class TaskContinuityManagerService extends SystemService {
 
         @Override
         public void registerRemoteTaskListener(@NonNull IRemoteTaskListener listener) {
+            mRemoteTaskStore.addListener(listener);
         }
 
         @Override
         public void unregisterRemoteTaskListener(@NonNull IRemoteTaskListener listener) {
+            mRemoteTaskStore.removeListener(listener);
         }
 
         @Override

@@ -27,6 +27,7 @@ import static com.android.server.companion.datatransfer.continuity.TaskContinuit
 import android.app.ActivityManager;
 import android.companion.AssociationInfo;
 import android.companion.datatransfer.continuity.RemoteTask;
+import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 
@@ -42,6 +43,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,13 +54,23 @@ public class RemoteTaskStoreTest {
     @Mock
     private ConnectedAssociationStore mMockConnectedAssociationStore;
 
+    private final IRemoteTaskListener mRemoteTaskListener = new IRemoteTaskListener.Stub() {
+        @Override
+        public void onRemoteTasksChanged(List<RemoteTask> remoteTasks) {
+            remoteTasksReportedToListener.add(remoteTasks);
+        }
+    };
+
+    private final List<List<RemoteTask>> remoteTasksReportedToListener = new ArrayList<>();
     private RemoteTaskStore taskStore;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
+        remoteTasksReportedToListener.clear();
         taskStore = new RemoteTaskStore(mMockConnectedAssociationStore);
+        taskStore.addListener(mRemoteTaskListener);
     }
 
     @Test
@@ -68,20 +80,25 @@ public class RemoteTaskStoreTest {
     }
 
     @Test
-    public void onTransportConnected_addsNewAssociation() {
+    public void onTransportConnected_addsNewAssociationAndNotifiesListeners() {
         // Simulate a new association being connected.
         AssociationInfo associationInfo = createAssociationInfo(1, "name");
         taskStore.onTransportConnected(associationInfo);
+        assertThat(remoteTasksReportedToListener).hasSize(0);
 
         // Add tasks to the new association.
         RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo(1, "task1", 100L);
+        RemoteTask remoteTask
+            = remoteTaskInfo.toRemoteTask(associationInfo.getId(), "name");
+
         taskStore.setTasks(
             associationInfo.getId(),
             Collections.singletonList(remoteTaskInfo));
+        assertThat(remoteTasksReportedToListener).hasSize(1);
+        assertThat(remoteTasksReportedToListener.get(0)).containsExactly(remoteTask);
 
         // Verify the most recent task is added to the task store.
-        assertThat(taskStore.getMostRecentTasks())
-            .containsExactly(remoteTaskInfo.toRemoteTask(associationInfo.getId(), "name"));
+        assertThat(taskStore.getMostRecentTasks()).containsExactly(remoteTask);
     }
 
     @Test
@@ -96,6 +113,7 @@ public class RemoteTaskStoreTest {
         taskStore.setTasks(0, Collections.singletonList(remoteTaskInfo));
 
         assertThat(taskStore.getMostRecentTasks()).isEmpty();
+        assertThat(remoteTasksReportedToListener).isEmpty();
     }
 
     @Test
@@ -117,32 +135,43 @@ public class RemoteTaskStoreTest {
 
         assertThat(taskStore.getMostRecentTasks())
             .containsExactly(mostRecentTask);
+        assertThat(remoteTasksReportedToListener).hasSize(1);
+        assertThat(remoteTasksReportedToListener.get(0)).containsExactly(mostRecentTask);
 
         taskStore.removeTask(associationInfo.getId(), mostRecentTaskInfo.getId());
         assertThat(taskStore.getMostRecentTasks()).containsExactly(secondMostRecentTask);
+        assertThat(remoteTasksReportedToListener).hasSize(2);
+        assertThat(remoteTasksReportedToListener.get(1))
+            .containsExactly(secondMostRecentTask);
     }
 
     @Test
-    public void onTransportDisconnected_removesAssociation() {
+    public void onTransportDisconnected_removesAssociationAndNotifiesListeners() {
         // Create a fake association info, and have connected association store
         // return it.
         AssociationInfo associationInfo = createAssociationInfo(1, "name");
         when(mMockConnectedAssociationStore.getConnectedAssociationById(1))
                 .thenReturn(associationInfo);
+        taskStore.onTransportConnected(associationInfo);
 
         // Set tasks for the association.
         RemoteTaskInfo remoteTaskInfo = createNewRemoteTaskInfo(1, "task1", 100L);
-        taskStore.setTasks(0, Collections.singletonList(remoteTaskInfo));
+        taskStore.setTasks(associationInfo.getId(), Collections.singletonList(remoteTaskInfo));
+        assertThat(remoteTasksReportedToListener).hasSize(1);
+        assertThat(remoteTasksReportedToListener.get(0))
+            .containsExactly(remoteTaskInfo.toRemoteTask(1, "name"));
 
         // Simulate the association being disconnected.
-        taskStore.onTransportDisconnected(0);
+        taskStore.onTransportDisconnected(associationInfo.getId());
 
         // Verify the most recent task is added to the task store.
         assertThat(taskStore.getMostRecentTasks()).isEmpty();
+        assertThat(remoteTasksReportedToListener).hasSize(2);
+        assertThat(remoteTasksReportedToListener.get(1)).isEmpty();
     }
 
     @Test
-    public void addTask_addsTaskToAssociation() {
+    public void addTask_addsTaskToAssociationAndNotifiesListeners() {
         // Create a fake association info, and have connected association store return it.
         AssociationInfo associationInfo = createAssociationInfo(1, "name");
         when(mMockConnectedAssociationStore.getConnectedAssociationById(1))
@@ -153,6 +182,8 @@ public class RemoteTaskStoreTest {
         RemoteTask remoteTask = remoteTaskInfo.toRemoteTask(associationInfo.getId(), "name");
         taskStore.setTasks(1, Collections.singletonList(remoteTaskInfo));
         assertThat(taskStore.getMostRecentTasks()).containsExactly(remoteTask);
+        assertThat(remoteTasksReportedToListener).hasSize(1);
+        assertThat(remoteTasksReportedToListener.get(0)).containsExactly(remoteTask);
 
         // Add a new task to the association.
         RemoteTaskInfo newRemoteTaskInfo = createNewRemoteTaskInfo(2, "task2", 200L);
@@ -161,6 +192,8 @@ public class RemoteTaskStoreTest {
 
         // Verify the most recent tasks are added to the task store.
         assertThat(taskStore.getMostRecentTasks()).containsExactly(newRemoteTask);
+        assertThat(remoteTasksReportedToListener).hasSize(2);
+        assertThat(remoteTasksReportedToListener.get(1)).containsExactly(newRemoteTask);
     }
 
     @Test
