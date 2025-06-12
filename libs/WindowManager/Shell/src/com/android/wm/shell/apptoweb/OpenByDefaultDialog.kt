@@ -55,6 +55,7 @@ import kotlinx.coroutines.withContext
  */
 internal class OpenByDefaultDialog(
     private val context: Context,
+    private val userContext: Context,
     private val taskInfo: RunningTaskInfo,
     private val taskSurface: SurfaceControl,
     private val displayController: DisplayController,
@@ -75,7 +76,7 @@ internal class OpenByDefaultDialog(
     private lateinit var openInBrowserButton: RadioButton
 
     private val domainVerificationManager =
-        context.getSystemService(DomainVerificationManager::class.java)!!
+        userContext.getSystemService(DomainVerificationManager::class.java)!!
     private val packageName = taskInfo.baseActivity?.packageName!!
 
     private var loadAppInfoJob: Job? = null

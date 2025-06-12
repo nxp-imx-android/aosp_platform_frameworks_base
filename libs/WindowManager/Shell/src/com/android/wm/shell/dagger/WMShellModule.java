@@ -1232,7 +1232,8 @@ public abstract class WMShellModule {
             Optional<CompatUIHandler> compatUI,
             DesksOrganizer desksOrganizer,
             ShellDesktopState shelldesktopState,
-            DesktopConfig desktopConfig
+            DesktopConfig desktopConfig,
+            UserProfileContexts userProfileContexts
     ) {
         if (!shelldesktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.empty();
@@ -1251,7 +1252,7 @@ public abstract class WMShellModule {
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController, compatUI.orElse(null),
-                desksOrganizer, shelldesktopState, desktopConfig));
+                desksOrganizer, shelldesktopState, desktopConfig, userProfileContexts));
     }
 
     @WMSingleton
