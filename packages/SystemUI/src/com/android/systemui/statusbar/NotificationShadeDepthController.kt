@@ -367,7 +367,9 @@ constructor(
     private fun onZoomOutChanged(zoomOutFromShadeRadius: Float) {
         TrackTracer.instantForGroup("shade", "zoom_out", zoomOutFromShadeRadius)
         Log.v(TAG, "onZoomOutChanged $zoomOutFromShadeRadius")
-        wallpaperController.setNotificationShadeZoom(zoomOutFromShadeRadius)
+        if (!spatialModelPushbackInShader()) {
+            wallpaperController.setNotificationShadeZoom(zoomOutFromShadeRadius)
+        }
         if (spatialModelAppPushback()) {
             appZoomOutOptional.ifPresent { appZoomOut ->
                 appZoomOut.setProgress(zoomOutFromShadeRadius)
