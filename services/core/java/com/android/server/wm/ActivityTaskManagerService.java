@@ -3789,10 +3789,9 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 }
 
                 final boolean wasNoResumed = mTopApp == null || !mTopApp.hasResumedActivity();
-                for (int i = mRootWindowContainer.getChildCount() - 1; i >= 0; i--) {
-                    final DisplayContent dc = mRootWindowContainer.getChildAt(i);
-                    mKeyguardController.keyguardGoingAway(dc.mDisplayId, flags);
-                }
+
+                mKeyguardController.keyguardGoingAway(flags);
+
                 final boolean foundResumed = wasNoResumed
                         && mTopApp != null && mTopApp.hasResumedActivity();
                 if (isPowerModePreApplied && !foundResumed) {
