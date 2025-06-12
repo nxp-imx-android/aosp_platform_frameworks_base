@@ -4368,6 +4368,9 @@
     <!-- Description for the Underlay close button. The Underlay view appears on the bottom of the screen and shows some AI hints. The button will dismiss the underlay view. [CHAR LIMIT=NONE] -->
     <string name="underlay_close_button_content_description">Close</string>
 
+    <!-- Description for the Ambient Cue Icon. The icon appears on the bottom of the screen with some AI hints. [CHAR LIMIT=NONE] -->
+    <string name="ambient_cue_icon_content_description">Ambient Suggestions Icon</string>
+
     <!--
     Content of user education tooltip shown to teach the user that they can swipe down from the top
     left edge of the display to expand the notification shade panel.

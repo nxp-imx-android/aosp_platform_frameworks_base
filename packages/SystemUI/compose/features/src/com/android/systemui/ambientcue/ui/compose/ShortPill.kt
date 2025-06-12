@@ -261,7 +261,7 @@ private fun CloseButton(
 private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modifier = Modifier) {
     Image(
         painter = rememberDrawablePainter(action.icon.drawable),
-        contentDescription = action.label,
+        contentDescription = stringResource(id = R.string.ambient_cue_icon_content_description),
         modifier =
             modifier
                 .then(
