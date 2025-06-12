@@ -17,10 +17,14 @@ package com.android.systemui.statusbar.notification.row
 
 import android.annotation.ColorInt
 import android.graphics.Color
+import android.graphics.Outline
+import android.graphics.Path
+import android.graphics.RectF
 import android.testing.TestableLooper.RunWithLooper
 import android.view.View
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.app.animation.Interpolators
 import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
@@ -32,6 +36,8 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito.verify
+import org.mockito.kotlin.argThat
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -40,27 +46,32 @@ class ActivatableNotificationViewTest : SysuiTestCase() {
     private val mContentView: View = mock()
     private lateinit var mView: ActivatableNotificationView
 
-    @ColorInt
-    private var mNormalColor = 0
+    @ColorInt private var mNormalColor = 0
+
+    private val finalWidth = 1000
+    private val finalHeight = 200
 
     @Before
     fun setUp() {
-        mView = object : ActivatableNotificationView(mContext, null) {
+        mView =
+            object : ActivatableNotificationView(mContext, null) {
 
-            init {
-                onFinishInflate()
+                init {
+                    onFinishInflate()
+                }
+
+                override fun getContentView(): View {
+                    return mContentView
+                }
+
+                override fun <T : View> findViewTraversal(id: Int): T? =
+                    when (id) {
+                        R.id.backgroundNormal -> mock<NotificationBackgroundView>()
+                        R.id.fake_shadow -> mock<FakeShadowView>()
+                        else -> null
+                    }
+                        as T?
             }
-
-            override fun getContentView(): View {
-                return mContentView
-            }
-
-            override fun <T : View> findViewTraversal(id: Int): T? = when (id) {
-                R.id.backgroundNormal -> mock<NotificationBackgroundView>()
-                R.id.fake_shadow -> mock<FakeShadowView>()
-                else -> null
-            } as T?
-        }
 
         mNormalColor =
             mContext.getColor(com.android.internal.R.color.materialColorSurfaceContainerHigh)
@@ -109,5 +120,91 @@ class ActivatableNotificationViewTest : SysuiTestCase() {
 
         mView.clipBottomAmount = 10
         assertThat(mView.backgroundBottom).isEqualTo(90)
+
+    }
+
+    @Test
+    fun updateAppearRect_forClipSideBottom_atAnimationStart_setsLocalZeroHeightOutline() {
+        // Set state for start of animation
+        mView.mTargetPoint = null
+        mView.appearAnimationFraction = 0.0f
+        mView.setCurrentAppearInterpolator(Interpolators.LINEAR)
+
+        // Call method under test
+        mView.updateAppearRect(ExpandableView.ClipSide.BOTTOM, finalWidth, finalHeight)
+
+        // Assert that outline is zero-height rect at local top
+        val outline = mock<Outline>()
+        mView.outlineProvider.getOutline(mView, outline)
+
+        verify(outline).setPath(argThat { pathArgument: Path -> pathArgument.isEmpty })
+    }
+
+    @Test
+    fun updateAppearRect_forClipSideBottom_midAnimation_setsLocalPartialHeightOutline() {
+        // Set state for mid animation
+        val fraction = 0.5f
+        mView.mTargetPoint = null
+        mView.appearAnimationFraction = fraction
+        mView.setCurrentAppearInterpolator(Interpolators.LINEAR)
+
+        // Call method under test
+        mView.updateAppearRect(ExpandableView.ClipSide.BOTTOM, finalWidth, finalHeight)
+
+        // Assert that outline has a partial height based on the fraction.
+        val outline = mock<Outline>()
+        mView.outlineProvider.getOutline(mView, outline)
+
+        verifyOutline(
+            outline,
+            expectedLeft = 0f,
+            expectedTop = 0f,
+            expectedRight = finalWidth.toFloat(),
+            expectedBottom = finalHeight * fraction,
+        )
+    }
+
+    @Test
+    fun updateAppearRect_forClipSideBottom_atAnimationEnd_setsLocalFullHeightOutline() {
+        // Set state for end of animation
+        mView.mTargetPoint = null
+        mView.appearAnimationFraction = 1.0f
+        mView.setCurrentAppearInterpolator(Interpolators.LINEAR)
+
+        // Call method under test
+        mView.updateAppearRect(ExpandableView.ClipSide.BOTTOM, finalWidth, finalHeight)
+
+        // Assert that outline has the full final height
+        val outline = mock<Outline>()
+        mView.outlineProvider.getOutline(mView, outline)
+
+        verifyOutline(
+            outline,
+            expectedLeft = 0f,
+            expectedTop = 0f,
+            expectedRight = finalWidth.toFloat(),
+            expectedBottom = finalHeight.toFloat(),
+        )
+    }
+
+    /** Helper to verify the bounds of a Path set on an Outline. */
+    private fun verifyOutline(
+        outline: Outline,
+        expectedLeft: Float,
+        expectedTop: Float,
+        expectedRight: Float,
+        expectedBottom: Float,
+    ) {
+        verify(outline)
+            .setPath(
+                argThat { pathArgument: Path ->
+                    val bounds = RectF()
+                    pathArgument.computeBounds(bounds, /* exact= */ true)
+                    bounds.left == expectedLeft &&
+                        bounds.top == expectedTop &&
+                        bounds.right == expectedRight &&
+                        bounds.bottom == expectedBottom
+                }
+            )
     }
 }
