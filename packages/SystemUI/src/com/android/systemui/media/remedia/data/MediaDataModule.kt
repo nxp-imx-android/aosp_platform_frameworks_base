@@ -20,6 +20,7 @@ import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.media.controls.data.repository.MediaFilterRepository
 import com.android.systemui.media.remedia.data.repository.MediaPipelineRepository
+import com.android.systemui.media.remedia.data.repository.MediaRepository
 import com.android.systemui.media.remedia.data.repository.MediaRepositoryImpl
 import dagger.Module
 import dagger.Provides
@@ -41,6 +42,12 @@ interface MediaDataModule {
             } else {
                 oldProvider.get()
             }
+        }
+
+        @Provides
+        @SysUISingleton
+        fun providesMediaRepository(mediaRepository: MediaRepositoryImpl): MediaRepository {
+            return mediaRepository
         }
     }
 }

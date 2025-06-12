@@ -22,6 +22,8 @@ import com.android.systemui.media.controls.domain.pipeline.LegacyMediaDataManage
 import com.android.systemui.media.controls.domain.pipeline.MediaDataManager
 import com.android.systemui.media.controls.domain.pipeline.MediaDataProcessor
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
+import com.android.systemui.media.remedia.domain.interactor.MediaInteractor
+import com.android.systemui.media.remedia.domain.interactor.MediaInteractorImpl
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import dagger.Binds
 import dagger.Module
@@ -57,6 +59,12 @@ interface MediaDomainModule {
             } else {
                 legacyProvider.get()
             }
+        }
+
+        @Provides
+        @SysUISingleton
+        fun providesMediaInteractor(mediaInteractor: MediaInteractorImpl): MediaInteractor {
+            return mediaInteractor
         }
     }
 }
