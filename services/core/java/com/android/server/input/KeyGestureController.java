@@ -16,6 +16,7 @@
 
 package com.android.server.input;
 
+import static android.Manifest.permission.CAPTURE_KEYBOARD;
 import static android.Manifest.permission.OVERRIDE_SYSTEM_KEY_BEHAVIOR_IN_FOCUSED_WINDOW;
 import static android.content.PermissionChecker.PERMISSION_GRANTED;
 import static android.content.PermissionChecker.PID_UNKNOWN;
@@ -617,7 +618,10 @@ final class KeyGestureController {
             return KEY_INTERCEPT_RESULT_CONSUMED;
         }
 
-        // TODO(b/416681006): Key capture stage
+        // Allow focused window to capture key events
+        if (canFocusedWindowCaptureKeys(focus)) {
+            return KEY_INTERCEPT_RESULT_NOT_CONSUMED;
+        }
 
         // Capture shortcuts and system keys if focused window is not capturing keys
         if (mInterceptStages.get(INTERCEPT_STAGE_SHORTCUTS_AFTER_KEY_CAPTURE).interceptKey(focus,
@@ -647,6 +651,16 @@ final class KeyGestureController {
                 & WindowManager.LayoutParams.PRIVATE_FLAG_ALLOW_ACTION_KEY_EVENTS) != 0;
         return hasInterceptWindowFlag && PermissionChecker.checkPermissionForDataDelivery(mContext,
                 OVERRIDE_SYSTEM_KEY_BEHAVIOR_IN_FOCUSED_WINDOW, PID_UNKNOWN, info.windowOwnerUid,
+                null, null, null) == PERMISSION_GRANTED;
+    }
+
+    private boolean canFocusedWindowCaptureKeys(IBinder focusedToken) {
+        KeyInterceptionInfo info =
+                mWindowManagerInternal.getKeyInterceptionInfoFromToken(focusedToken);
+        boolean hasCaptureKeyboardFlag = info != null && (info.layoutParamsInputFeatures
+                & WindowManager.LayoutParams.INPUT_FEATURE_CAPTURE_KEYBOARD) != 0;
+        return hasCaptureKeyboardFlag && PermissionChecker.checkPermissionForDataDelivery(mContext,
+                CAPTURE_KEYBOARD, PID_UNKNOWN, info.windowOwnerUid,
                 null, null, null) == PERMISSION_GRANTED;
     }
 
