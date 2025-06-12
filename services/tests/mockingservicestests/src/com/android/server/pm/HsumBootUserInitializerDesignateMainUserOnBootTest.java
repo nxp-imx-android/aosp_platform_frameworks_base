@@ -55,22 +55,22 @@ public final class HsumBootUserInitializerDesignateMainUserOnBootTest
         // original (only 2 configs used)
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
+                FLAG(false), CFG_CREAT_INITIAL(false), CFG_DESIGNATE(false), CFG_IS_PERM_ADM(false),
                 RESULT(false)
         },
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
+                FLAG(false), CFG_CREAT_INITIAL(false), CFG_DESIGNATE(false), CFG_IS_PERM_ADM(true),
                 RESULT(true)
         },
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
+                FLAG(false), CFG_CREAT_INITIAL(false), CFG_DESIGNATE(true), CFG_IS_PERM_ADM(false),
                 RESULT(true)
         },
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
+                FLAG(false), CFG_CREAT_INITIAL(false), CFG_DESIGNATE(true), CFG_IS_PERM_ADM(true),
                 RESULT(true)
         },
         // added FLAG and CFG_CREATE_INITIAL
@@ -78,64 +78,64 @@ public final class HsumBootUserInitializerDesignateMainUserOnBootTest
         {
                 // This is special case used to guard the config by the flag (RESULT true)
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
+                FLAG(false), CFG_CREAT_INITIAL(true), CFG_DESIGNATE(false), CFG_IS_PERM_ADM(false),
                 RESULT(true)
         },
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
+                FLAG(false), CFG_CREAT_INITIAL(true), CFG_DESIGNATE(false), CFG_IS_PERM_ADM(true),
                 RESULT(true)
         },
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
+                FLAG(false), CFG_CREAT_INITIAL(true), CFG_DESIGNATE(true), CFG_IS_PERM_ADM(false),
                 RESULT(true)
         },
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
+                FLAG(false), CFG_CREAT_INITIAL(true), CFG_DESIGNATE(true), CFG_IS_PERM_ADM(true),
                 RESULT(true)
         },
         // FLAG(true), CFG_CREATE_INITIAL(false) - everything equals to original
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
+                FLAG(true), CFG_CREAT_INITIAL(false), CFG_DESIGNATE(false), CFG_IS_PERM_ADM(false),
                 RESULT(false)
         },
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
+                FLAG(true), CFG_CREAT_INITIAL(false), CFG_DESIGNATE(false), CFG_IS_PERM_ADM(true),
                 RESULT(true)
         },
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
+                FLAG(true), CFG_CREAT_INITIAL(false), CFG_DESIGNATE(true), CFG_IS_PERM_ADM(false),
                 RESULT(true)
         },
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
+                FLAG(true), CFG_CREAT_INITIAL(false), CFG_DESIGNATE(true), CFG_IS_PERM_ADM(true),
                 RESULT(true)
         },
         // FLAG(true), CFG_CREATE_INITIAL(true) - everything equals to original
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
+                FLAG(true), CFG_CREAT_INITIAL(true), CFG_DESIGNATE(false), CFG_IS_PERM_ADM(false),
                 RESULT(false)
         },
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
+                FLAG(true), CFG_CREAT_INITIAL(true), CFG_DESIGNATE(false), CFG_IS_PERM_ADM(true),
                 RESULT(true)
         },
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
+                FLAG(true), CFG_CREAT_INITIAL(true), CFG_DESIGNATE(true), CFG_IS_PERM_ADM(false),
                 RESULT(true)
         },
         {
                 DEBUGGABLE(false), SYSPROP(false),
-                FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
+                FLAG(true), CFG_CREAT_INITIAL(true), CFG_DESIGNATE(true), CFG_IS_PERM_ADM(true),
                 RESULT(true)
         }
     };
@@ -159,353 +159,6 @@ public final class HsumBootUserInitializerDesignateMainUserOnBootTest
         parameters.addAll(cloneBaseline(DEBUGGABLE(true), SYSPROP(true), RESULT(true)));
 
         return parameters;
-    }
-
-    // TODO(b/402486365): remove on follow-up CL
-    static List<Object[]> hardcodedParameters() {
-        return Arrays.asList(new Object[][] {
-                // Note: entries below are broken in 3 lines to make them easier to read / maintain:
-                // - build type and emulation
-                // - input (configs)
-                // - expected output
-
-                // User build, sysprop not set
-                // original (only 2 configs used)
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                // added FLAG and CFG_CREATE_INITIAL
-                // FLAG(false), CFG_CREATE_INITIAL(true) - everything but first equals to original
-                {
-                        // This is special case used to guard the config by the flag (RESULT true)
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                // FLAG(true), CFG_CREATE_INITIAL(false) - everything equals to original
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                // FLAG(true), CFG_CREATE_INITIAL(true) - everything equals to original
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-
-                // User build, sysprop not set - everything should be the same as above
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        // This is special case used to guard the config by the flag (RESULT true)
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(false), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-
-                // Debuggable build - result should be value of property (false)
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(false)
-                },
-                {
-                        // This is special case used to guard the config by the flag (RESULT true)
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(false)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(false),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(false)
-                },
-
-                // Debuggable build - result should be value of property (true)
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(false), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        // This is special case used to guard the config by the flag (RESULT true)
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(false), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(true), CFG_CREATE_INITIAL(false), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(false), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(false),
-                        RESULT(true)
-                },
-                {
-                        DEBUGGABLE(true), SYSPROP(true),
-                        FLAG(true), CFG_CREATE_INITIAL(true), CFG_DESIGNATE_MAIN(true), CFG_IS_PERM_ADM(true),
-                        RESULT(true)
-                },
-        });
     }
 
     public HsumBootUserInitializerDesignateMainUserOnBootTest(boolean isDebuggable,

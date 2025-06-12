@@ -17,8 +17,6 @@ package com.android.server.pm;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 
-import static com.google.common.truth.Truth.assertWithMessage;
-
 import android.content.ContentResolver;
 import android.content.Context;
 import android.os.UserManager;
@@ -82,44 +80,6 @@ public final class HsumBootUserInitializerNonParameterizedTest {
                 mMockContentResolver, mRealContext);
 
         expect.withMessage("result of createInstance()").that(instance).isNull();
-    }
-
-    // TODO(b/402486365): remove on follow-up CL
-    /** Tests the refactored method on HsumBootUserInitializerDesignateMainUserOnBootTest. */
-    @Test
-    public void testJunitParametersPassedToConstructor() {
-        var expected = HsumBootUserInitializerDesignateMainUserOnBootTest.hardcodedParameters();
-        var actual = HsumBootUserInitializerDesignateMainUserOnBootTest
-                .junitParametersPassedToConstructor();
-
-        /* NOTE: ideally it should call some built-in Truth assertion like
-
-        expect.withMessage("junitParametersPassedToConstructor()")
-                .that(actual)
-                .containsExactlyElementsIn(expected).inOrder();
-
-         but that wouldn't work because each element is an Object[], and their equals() would fail.
-
-         There might be another way, but this methods is temporary anyways...
-         */
-        int size = expected.size();
-        assertWithMessage("junitParametersPassedToConstructor()").that(actual).hasSize(size);
-
-        for (int i = 0; i < size; i++) {
-            var expectedLine = expected.get(i);
-            var actualLine = actual.get(i);
-            int expectedLength = expectedLine.length;
-            int actualLength = actualLine.length;
-            if (actualLength != expectedLength) {
-                expect.withMessage("size of line %s (expected %s, actual %s)", i, expectedLength,
-                        actualLength).fail();
-                continue;
-            }
-            for (int j = 0; j < actualLength; j++) {
-                expect.withMessage("cell[%s, %s]", i, j).that(actualLine[j])
-                        .isEqualTo(expectedLine[j]);
-            }
-        }
     }
 
     private void mockIsHsum(boolean value) {
