@@ -25,6 +25,8 @@ import android.os.Messenger
 import android.util.ArrayMap
 import android.util.Log
 import androidx.annotation.VisibleForTesting
+import com.android.app.tracing.traceSection
+import com.android.systemui.Flags
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking
 import com.android.systemui.dagger.SysUISingleton
@@ -70,10 +72,15 @@ constructor(
 
         var observer: PreviewLifecycleObserver? = null
         return try {
-            val preview =
+            val preview = if (Flags.doNotUseRunBlocking()) {
+                traceSection("$TAG#previewRepositoryFactory.create") {
+                    previewFactory.create(request)
+                }
+            } else {
                 runBlocking("$TAG#previewRepositoryFactory.create", mainDispatcher) {
                     previewFactory.create(request)
                 }
+            }
 
             observer =
                 PreviewLifecycleObserver(
