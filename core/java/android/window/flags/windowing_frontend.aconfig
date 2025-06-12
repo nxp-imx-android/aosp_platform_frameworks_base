@@ -522,3 +522,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "multiple_system_navigation_observer_callbacks"
+    namespace: "windowing_frontend"
+    description: "Removes restriction that only one back callback with PRIORITY_SYSTEM_NAVIGATION_OBSERVER can be registered"
+    bug: "424146227"
+}
