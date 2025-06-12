@@ -30,11 +30,14 @@ import android.media.AudioManager;
 import android.media.MediaDescription;
 import android.media.MediaMetadata;
 import android.media.MediaRoute2Info;
+import android.media.RoutingSessionInfo;
 import android.media.session.MediaController;
 import android.media.session.MediaSessionManager;
 import android.media.session.PlaybackState;
 import android.os.PowerExemptionManager;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
@@ -235,6 +238,26 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
+    @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void getStopButtonVisibility_notInBroadcast_returnGone() {
+        when(mLocalMediaManager.getSessionReleaseType()).thenReturn(
+                RoutingSessionInfo.RELEASE_UNSUPPORTED);
+
+        assertThat(mMediaOutputDialog.getStopButtonVisibility()).isEqualTo(View.GONE);
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
+    @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void getStopButtonVisibility_inBroadcast_returnVisible() {
+        when(mLocalMediaManager.getSessionReleaseType()).thenReturn(
+                RoutingSessionInfo.RELEASE_TYPE_SHARING);
+
+        assertThat(mMediaOutputDialog.getStopButtonVisibility()).isEqualTo(View.VISIBLE);
+    }
+
+    @Test
     public void getStopButtonVisibility_localDevice_returnGone() {
         mFeatures.add(MediaRoute2Info.FEATURE_LOCAL_PLAYBACK);
 
@@ -409,6 +432,42 @@ public class MediaOutputDialogTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
+    @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void getStopButtonText_notInBroadcast_returnsDefaultText() {
+        String stopText = mContext.getText(
+                R.string.media_output_dialog_button_stop_casting).toString();
+        MediaSwitchingController mockMediaSwitchingController =
+                mock(MediaSwitchingController.class);
+        when(mockMediaSwitchingController.getSessionReleaseType()).thenReturn(
+                RoutingSessionInfo.RELEASE_UNSUPPORTED);
+
+        withTestDialog(
+                mockMediaSwitchingController,
+                testDialog -> {
+                    assertThat(testDialog.getStopButtonText().toString()).isEqualTo(stopText);
+                });
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
+    @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void getStopButtonText_inBroadcast_returnsDefaultText() {
+        String stopText = mContext.getText(
+                R.string.media_output_dialog_button_stop_sharing).toString();
+        MediaSwitchingController mockMediaSwitchingController =
+                mock(MediaSwitchingController.class);
+        when(mockMediaSwitchingController.getSessionReleaseType()).thenReturn(
+                RoutingSessionInfo.RELEASE_TYPE_SHARING);
+
+        withTestDialog(
+                mockMediaSwitchingController,
+                testDialog -> {
+                    assertThat(testDialog.getStopButtonText().toString()).isEqualTo(stopText);
+                });
+    }
+
+    @Test
     @RequiresFlagsEnabled(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
     public void getStopButtonText_supportsBroadcast_returnsBroadcastText() {
         String stopText = mContext.getText(R.string.media_output_broadcast).toString();
@@ -435,6 +494,24 @@ public class MediaOutputDialogTest extends SysuiTestCase {
         when(mockMediaSwitchingController.isBroadcastSupported()).thenReturn(false);
         when(mockMediaSwitchingController.getCurrentConnectedMediaDevice()).thenReturn(null);
         when(mockMediaSwitchingController.isPlaying()).thenReturn(false);
+        withTestDialog(
+                mockMediaSwitchingController,
+                testDialog -> {
+                    testDialog.onStopButtonClick();
+                });
+
+        verify(mockMediaSwitchingController).releaseSession();
+        verify(mDialogTransitionAnimator).disableAllCurrentDialogsExitAnimations();
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_LEGACY_LE_AUDIO_SHARING)
+    @EnableFlags(com.android.media.flags.Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    public void onStopButtonClick_inBroadcast_releaseSession() {
+        MediaSwitchingController mockMediaSwitchingController =
+                mock(MediaSwitchingController.class);
+        when(mockMediaSwitchingController.getSessionReleaseType()).thenReturn(
+                RoutingSessionInfo.RELEASE_TYPE_SHARING);
         withTestDialog(
                 mockMediaSwitchingController,
                 testDialog -> {
