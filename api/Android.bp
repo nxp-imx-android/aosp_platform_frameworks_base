@@ -112,6 +112,11 @@ combined_apis {
         default: [
             "framework-ondeviceintelligence-platform",
         ],
+    }) + select(release_flag("RELEASE_CONSCRYPT_NSC"), {
+        true: [
+            "framework-conscrypt-nsc",
+        ],
+        default: [],
     }) + select(release_flag("RELEASE_RANGING_STACK"), {
         true: [
             "framework-ranging",

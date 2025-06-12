@@ -10,6 +10,14 @@ flag {
 }
 
 flag {
+    name: "conscrypt_network_security_config"
+    is_exported: true
+    namespace: "network_security"
+    description: "Enable the frameworks APIs required by the NSC implementation in Conscrypt"
+    bug: "404518910"
+}
+
+flag {
     name: "fsverity_api"
     is_exported: true
     namespace: "hardware_backed_security"

@@ -331,6 +331,26 @@ filegroup {
     ],
 }
 
+filegroup {
+    name: "xml-utils-shared-srcs",
+    visibility: ["//visibility:public"],
+    srcs: [
+        "android/util/EmptyArray.java",
+        "android/util/CharsetUtils.java",
+        "android/util/XmlPullAttributes.java",
+        "android/util/Xml.java",
+        "com/android/internal/util/ArrayUtils.java",
+        "com/android/internal/util/ArtFastDataInput.java",
+        "com/android/internal/util/ArtFastDataOutput.java",
+        "com/android/internal/util/ArtBinaryXmlPullParser.java",
+        "com/android/internal/util/ArtBinaryXmlSerializer.java",
+        "com/android/internal/util/HexDump.java",
+        "com/android/internal/util/XmlSerializerWrapper.java",
+        "com/android/internal/util/XmlPullParserWrapper.java",
+        "com/android/internal/util/XmlUtils.java",
+    ]
+}
+
 // keep these files in sync with the apex/jobscheduler/service jarjar-rules.txt for
 // the jobscheduler module.
 filegroup {
