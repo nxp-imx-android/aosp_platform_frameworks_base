@@ -87,12 +87,12 @@ fun SettingsListItem(text: String, enabled: Boolean = true) {
 /** Settings body text displayed in secondary style. */
 @Composable
 fun SettingsBody(
-    body: String,
+    body: CharSequence,
     contentDescription: String? = null,
     maxLines: Int = Int.MAX_VALUE,
 ) {
     if (body.isNotEmpty()) {
-        Text(
+        CharSequenceText(
             text = body,
             modifier = Modifier.contentDescription(contentDescription),
             color = MaterialTheme.colorScheme.onSurfaceVariant,
