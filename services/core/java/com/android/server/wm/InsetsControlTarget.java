@@ -34,15 +34,17 @@ interface InsetsControlTarget extends InsetsTarget {
      * @param displayId the display hosting the window of this target
      */
     default void notifyInsetsControlChanged(int displayId) {
-    };
+    }
 
     /**
      * @return {@link WindowState} of this target, if any.
      */
+    @Nullable
     default WindowState getWindow() {
         return null;
     }
 
+    @Nullable
     @Override
     default IBinder getWindowToken() {
         return null;
@@ -53,8 +55,9 @@ interface InsetsControlTarget extends InsetsTarget {
         return (WindowInsets.Type.defaultVisible() & types) != 0;
     }
 
+    @InsetsType
     @Override
-    default @InsetsType int getRequestedVisibleTypes() {
+    default int getRequestedVisibleTypes() {
         return WindowInsets.Type.defaultVisible();
     }
 
@@ -109,7 +112,8 @@ interface InsetsControlTarget extends InsetsTarget {
     }
 
     /** Returns {@code target.getWindow()}, or null if {@code target} is {@code null}. */
-    static WindowState asWindowOrNull(InsetsControlTarget target) {
+    @Nullable
+    static WindowState asWindowOrNull(@Nullable InsetsControlTarget target) {
         return target != null ? target.getWindow() : null;
     }
 }

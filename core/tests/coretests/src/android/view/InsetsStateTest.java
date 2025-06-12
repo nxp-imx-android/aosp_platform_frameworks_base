@@ -65,6 +65,7 @@ import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.SparseIntArray;
 import android.view.WindowInsets.Type;
 
+import androidx.annotation.NonNull;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
 import com.android.window.flags.Flags;
@@ -168,7 +169,7 @@ public class InsetsStateTest {
     }
 
     @Test
-    public void testCalculateInsets_extraNavRightClimateTop() throws Exception {
+    public void testCalculateInsets_extraNavRightClimateTop() {
         mState.getOrCreateSource(ID_CLIMATE_BAR, statusBars())
                 .setFrame(new Rect(0, 0, 100, 100))
                 .setVisible(true);
@@ -370,16 +371,16 @@ public class InsetsStateTest {
     public void testEquals() {
         final InsetsState state1 = new InsetsState();
         final InsetsState state2 = new InsetsState();
-        assertTrue(state1.equals(state2));
+        assertEquals(state1, state2);
 
         state1.addSource(new InsetsSource(ID_STATUS_BAR, statusBars()));
-        assertFalse(state1.equals(state2));
+        assertNotEquals(state1, state2);
 
         state2.addSource(new InsetsSource(ID_STATUS_BAR, statusBars()));
-        assertTrue(state1.equals(state2));
+        assertEquals(state1, state2);
 
         state2.addSource(new InsetsSource(ID_NAVIGATION_BAR, navigationBars()));
-        assertFalse(state1.equals(state2));
+        assertNotEquals(state1, state2);
     }
 
     @Test
@@ -894,14 +895,14 @@ public class InsetsStateTest {
 
         InsetsState.traverse(insetsState1, insetsState2, new InsetsState.OnTraverseCallbacks() {
             @Override
-            public void onStart(InsetsState state1, InsetsState state2) {
+            public void onStart(@NonNull InsetsState state1, @NonNull InsetsState state2) {
                 assertSame("state1 must be the same as insetsState1", state1, insetsState1);
                 assertSame("state2 must be the same as insetsState2", state2, insetsState2);
                 onStartCalled[0]++;
             }
 
             @Override
-            public void onIdMatch(InsetsSource source1, InsetsSource source2) {
+            public void onIdMatch(@NonNull InsetsSource source1, @NonNull InsetsSource source2) {
                 assertNotNull("source1 must not be null.", source1);
                 assertNotNull("source2 must not be null.", source2);
                 assertEquals("Source IDs must match.", source1.getId(), source2.getId());
@@ -909,7 +910,7 @@ public class InsetsStateTest {
             }
 
             @Override
-            public void onIdNotFoundInState1(int index2, InsetsSource source2) {
+            public void onIdNotFoundInState1(int index2, @NonNull InsetsSource source2) {
                 assertNotNull("source2 must not be null.", source2);
                 assertSame(source2 + " must be placed at " + index2 + " of insetsState2",
                         source2, insetsState2.sourceAt(index2));
@@ -919,7 +920,7 @@ public class InsetsStateTest {
             }
 
             @Override
-            public void onIdNotFoundInState2(int index1, InsetsSource source1) {
+            public void onIdNotFoundInState2(int index1, @NonNull InsetsSource source1) {
                 assertNotNull("source1 must not be null.", source1);
                 assertSame(source1 + " must be placed at " + index1 + " of insetsState1",
                         source1, insetsState1.sourceAt(index1));
@@ -929,7 +930,7 @@ public class InsetsStateTest {
             }
 
             @Override
-            public void onFinish(InsetsState state1, InsetsState state2) {
+            public void onFinish(@NonNull InsetsState state1, @NonNull InsetsState state2) {
                 assertSame("state1 must be the same as insetsState1", state1, insetsState1);
                 assertSame("state2 must be the same as insetsState2", state2, insetsState2);
                 onFinishCalled[0]++;

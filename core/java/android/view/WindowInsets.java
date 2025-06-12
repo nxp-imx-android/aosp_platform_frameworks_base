@@ -81,28 +81,41 @@ import java.util.Objects;
  */
 public final class WindowInsets {
 
+    @NonNull
     private final Insets[] mTypeInsetsMap;
+    @NonNull
     private final Insets[] mTypeMaxInsetsMap;
+    @NonNull
     private final boolean[] mTypeVisibilityMap;
+    @NonNull
     private final Rect[][] mTypeBoundingRectsMap;
+    @NonNull
     private final Rect[][] mTypeMaxBoundingRectsMap;
 
-    @Nullable private Rect mTempRect;
+    @Nullable
+    private Rect mTempRect;
     private final boolean mIsRound;
-    @Nullable private final DisplayCutout mDisplayCutout;
-    @Nullable private final RoundedCorners mRoundedCorners;
-    @Nullable private final PrivacyIndicatorBounds mPrivacyIndicatorBounds;
-    @Nullable private final DisplayShape mDisplayShape;
+    @Nullable
+    private final DisplayCutout mDisplayCutout;
+    @Nullable
+    private final RoundedCorners mRoundedCorners;
+    @Nullable
+    private final PrivacyIndicatorBounds mPrivacyIndicatorBounds;
+    @Nullable
+    private final DisplayShape mDisplayShape;
     private final int mFrameWidth;
     private final int mFrameHeight;
 
-    private final @InsetsType int mForceConsumingTypes;
+    @InsetsType
+    private final int mForceConsumingTypes;
     private final boolean mForceConsumingOpaqueCaptionBar;
-    private final @InsetsType int mSuppressScrimTypes;
+    @InsetsType
+    private final int mSuppressScrimTypes;
     private final boolean mSystemWindowInsetsConsumed;
     private final boolean mStableInsetsConsumed;
     private final boolean mDisplayCutoutConsumed;
 
+    @InsetsType
     private final int mCompatInsetsTypes;
     private final boolean mCompatIgnoreVisibility;
 
@@ -120,7 +133,8 @@ public final class WindowInsets {
      *
      * @see #isConsumed()
      */
-    public static final @NonNull WindowInsets CONSUMED;
+    @NonNull
+    public static final WindowInsets CONSUMED;
 
     static {
         CONSUMED = new WindowInsets(createCompatTypeMap(null), createCompatTypeMap(null),
@@ -131,29 +145,30 @@ public final class WindowInsets {
     /**
      * Construct a new WindowInsets from individual insets.
      *
-     * {@code typeInsetsMap} and {@code typeMaxInsetsMap} are a map of indexOf(type) -> insets that
-     * contain the information what kind of system bars causes how much insets. The insets in this
-     * map are non-additive; i.e. they have the same origin. In other words: If two system bars
+     * <p>{@code typeInsetsMap} and {@code typeMaxInsetsMap} are a map of indexOf(type) -> insets
+     * that contain the information what kind of system bars causes how much insets. The insets in
+     * this map are non-additive; i.e. they have the same origin. In other words: If two system bars
      * overlap on one side, the insets of the larger bar will also include the insets of the smaller
      * bar.
      *
-     * {@code null} type inset map indicates that the respective inset is fully consumed.
+     * <p>{@code null} type inset map indicates that the respective inset is fully consumed.
+     *
      * @hide
      */
     public WindowInsets(@Nullable Insets[] typeInsetsMap,
             @Nullable Insets[] typeMaxInsetsMap,
-            boolean[] typeVisibilityMap,
+            @NonNull boolean[] typeVisibilityMap,
             boolean isRound,
             @InsetsType int forceConsumingTypes,
             boolean forceConsumingOpaqueCaptionBar,
             @InsetsType int suppressScrimTypes,
-            DisplayCutout displayCutout,
-            RoundedCorners roundedCorners,
-            PrivacyIndicatorBounds privacyIndicatorBounds,
-            DisplayShape displayShape,
+            @Nullable DisplayCutout displayCutout,
+            @Nullable RoundedCorners roundedCorners,
+            @Nullable PrivacyIndicatorBounds privacyIndicatorBounds,
+            @Nullable DisplayShape displayShape,
             @InsetsType int compatInsetsTypes, boolean compatIgnoreVisibility,
-            Rect[][] typeBoundingRectsMap,
-            Rect[][] typeMaxBoundingRectsMap,
+            @Nullable Rect[][] typeBoundingRectsMap,
+            @Nullable Rect[][] typeMaxBoundingRectsMap,
             int frameWidth, int frameHeight) {
         mSystemWindowInsetsConsumed = typeInsetsMap == null;
         mTypeInsetsMap = mSystemWindowInsetsConsumed
@@ -214,7 +229,8 @@ public final class WindowInsets {
                 src.mFrameHeight);
     }
 
-    private static DisplayCutout displayCutoutCopyConstructorArgument(WindowInsets w) {
+    @Nullable
+    private static DisplayCutout displayCutoutCopyConstructorArgument(@NonNull WindowInsets w) {
         if (w.mDisplayCutoutConsumed) {
             return null;
         } else if (w.mDisplayCutout == null) {
@@ -228,7 +244,8 @@ public final class WindowInsets {
      * @return The insets that include system bars indicated by {@code typeMask}, taken from
      *         {@code typeInsetsMap}.
      */
-    static Insets getInsets(Insets[] typeInsetsMap, @InsetsType int typeMask) {
+    @NonNull
+    static Insets getInsets(@NonNull Insets[] typeInsetsMap, @InsetsType int typeMask) {
         Insets result = null;
         for (int i = FIRST; i <= LAST; i = i << 1) {
             if ((typeMask & i) == 0) {
@@ -250,7 +267,8 @@ public final class WindowInsets {
     /**
      * Sets all entries in {@code typeInsetsMap} that belong to {@code typeMask} to {@code insets},
      */
-    private static void setInsets(Insets[] typeInsetsMap, @InsetsType int typeMask, Insets insets) {
+    private static void setInsets(@NonNull Insets[] typeInsetsMap, @InsetsType int typeMask,
+            @NonNull Insets insets) {
         for (int i = FIRST; i <= LAST; i = i << 1) {
             if ((typeMask & i) == 0) {
                 continue;
@@ -261,7 +279,7 @@ public final class WindowInsets {
 
     /** @hide */
     @UnsupportedAppUsage
-    public WindowInsets(Rect systemWindowInsets) {
+    public WindowInsets(@Nullable Rect systemWindowInsets) {
         this(createCompatTypeMap(systemWindowInsets), null, new boolean[SIZE], false, 0, false, 0,
                 null, null, null, null, systemBars(), false /* compatIgnoreVisibility */,
                 new Rect[SIZE][], null, 0, 0);
@@ -275,6 +293,7 @@ public final class WindowInsets {
      * @hide
      */
     @VisibleForTesting
+    @Nullable
     public static Insets[] createCompatTypeMap(@Nullable Rect insets) {
         if (insets == null) {
             return null;
@@ -288,7 +307,7 @@ public final class WindowInsets {
      * @hide
      */
     @VisibleForTesting
-    public static void assignCompatInsets(Insets[] typeInsetsMap, Rect insets) {
+    public static void assignCompatInsets(@NonNull Insets[] typeInsetsMap, @NonNull Rect insets) {
         typeInsetsMap[indexOf(STATUS_BARS)] = Insets.of(0, insets.top, 0, 0);
         typeInsetsMap[indexOf(NAVIGATION_BARS)] =
                 Insets.of(insets.left, 0, insets.right, insets.bottom);
@@ -298,6 +317,7 @@ public final class WindowInsets {
      * @hide
      */
     @VisibleForTesting
+    @NonNull
     private static boolean[] createCompatVisibilityMap(@Nullable Insets[] typeInsetsMap) {
         boolean[] typeVisibilityMap = new boolean[SIZE];
         if (typeInsetsMap == null) {
@@ -576,7 +596,9 @@ public final class WindowInsets {
         return getBoundingRects(mTypeMaxBoundingRectsMap, typeMask);
     }
 
-    private List<Rect> getBoundingRects(Rect[][] typeBoundingRectsMap, @InsetsType int typeMask) {
+    @NonNull
+    private List<Rect> getBoundingRects(@NonNull Rect[][] typeBoundingRectsMap,
+            @InsetsType int typeMask) {
         Rect[] allRects = null;
         for (int i = FIRST; i <= LAST; i = i << 1) {
             if ((typeMask & i) == 0) {
@@ -650,7 +672,8 @@ public final class WindowInsets {
      *
      * @return A rectangle representing the maximum bounds of the indicator
      */
-    public @Nullable Rect getPrivacyIndicatorBounds() {
+    @Nullable
+    public Rect getPrivacyIndicatorBounds() {
         return mPrivacyIndicatorBounds == null ? null
                 : mPrivacyIndicatorBounds.getStaticPrivacyIndicatorBounds();
     }
@@ -954,7 +977,7 @@ public final class WindowInsets {
      * occupying it, or it being reserved for touch-only gestures.
      *
      * <p>In contrast to {@link #getSystemGestureInsets regular system gestures}, <b>mandatory</b>
-     * system gestures cannot be overriden by {@link View#setSystemGestureExclusionRects}.
+     * system gestures cannot be overridden by {@link View#setSystemGestureExclusionRects}.
      *
      * <p>Simple taps are guaranteed to reach the window even within the system gesture insets,
      * as long as they are outside the {@link #getTappableElementInsets() system window insets}.
@@ -1023,7 +1046,8 @@ public final class WindowInsets {
     /**
      * @hide
      */
-    public @InsetsType int getForceConsumingTypes() {
+    @InsetsType
+    public int getForceConsumingTypes() {
         return mForceConsumingTypes;
     }
 
@@ -1037,7 +1061,8 @@ public final class WindowInsets {
     /**
      * @hide
      */
-    public @InsetsType int getSuppressScrimTypes() {
+    @InsetsType
+    public int getSuppressScrimTypes() {
         return mSuppressScrimTypes;
     }
 
@@ -1069,27 +1094,27 @@ public final class WindowInsets {
         result.append("\n    ");
         result.append(mDisplayShape != null ? "displayShape=" + mDisplayShape : "");
         result.append("\n    ");
-        result.append("forceConsumingTypes=" + Type.toString(mForceConsumingTypes));
+        result.append("forceConsumingTypes=").append(Type.toString(mForceConsumingTypes));
         result.append("\n    ");
-        result.append("forceConsumingOpaqueCaptionBar=" + mForceConsumingOpaqueCaptionBar);
+        result.append("forceConsumingOpaqueCaptionBar=").append(mForceConsumingOpaqueCaptionBar);
         result.append("\n    ");
-        result.append("suppressScrimTypes=" + Type.toString(mSuppressScrimTypes));
+        result.append("suppressScrimTypes=").append(Type.toString(mSuppressScrimTypes));
         result.append("\n    ");
-        result.append("compatInsetsTypes=" + Type.toString(mCompatInsetsTypes));
+        result.append("compatInsetsTypes=").append(Type.toString(mCompatInsetsTypes));
         result.append("\n    ");
-        result.append("compatIgnoreVisibility=" + mCompatIgnoreVisibility);
+        result.append("compatIgnoreVisibility=").append(mCompatIgnoreVisibility);
         result.append("\n    ");
-        result.append("systemWindowInsetsConsumed=" + mSystemWindowInsetsConsumed);
+        result.append("systemWindowInsetsConsumed=").append(mSystemWindowInsetsConsumed);
         result.append("\n    ");
-        result.append("stableInsetsConsumed=" + mStableInsetsConsumed);
+        result.append("stableInsetsConsumed=").append(mStableInsetsConsumed);
         result.append("\n    ");
-        result.append("displayCutoutConsumed=" + mDisplayCutoutConsumed);
+        result.append("displayCutoutConsumed=").append(mDisplayCutoutConsumed);
         result.append("\n    ");
         result.append(isRound() ? "round" : "");
         result.append("\n    ");
-        result.append("frameWidth=" + mFrameWidth);
+        result.append("frameWidth=").append(mFrameWidth);
         result.append("\n    ");
-        result.append("frameHeight=" + mFrameHeight);
+        result.append("frameHeight=").append(mFrameHeight);
         result.append("}");
         return result.toString();
     }
@@ -1110,7 +1135,7 @@ public final class WindowInsets {
     /**
      * Returns a copy of this instance inset in the given directions.
      *
-     * This is intended for dispatching insets to areas of the window that are smaller than the
+     * <p>This is intended for dispatching insets to areas of the window that are smaller than the
      * current area.
      *
      * <p>Example:
@@ -1131,7 +1156,7 @@ public final class WindowInsets {
     /**
      * Returns a copy of this instance inset in the given directions.
      *
-     * This is intended for dispatching insets to areas of the window that are smaller than the
+     * <p>This is intended for dispatching insets to areas of the window that are smaller than the
      * current area.
      *
      * <p>Example:
@@ -1265,8 +1290,9 @@ public final class WindowInsets {
      * @return {@code typeInsetsMap} if no inset was modified; a copy of the map with the modified
      *          insets otherwise.
      */
+    @NonNull
     private static Insets[] insetInsets(
-            Insets[] typeInsetsMap, int left, int top, int right, int bottom) {
+            @NonNull Insets[] typeInsetsMap, int left, int top, int right, int bottom) {
         boolean cloned = false;
         for (int i = 0; i < SIZE; i++) {
             Insets insets = typeInsetsMap[i];
@@ -1285,7 +1311,8 @@ public final class WindowInsets {
         return typeInsetsMap;
     }
 
-    static Insets insetInsets(Insets insets, int left, int top, int right, int bottom) {
+    @NonNull
+    static Insets insetInsets(@NonNull Insets insets, int left, int top, int right, int bottom) {
         int newLeft = Math.max(0, insets.left - left);
         int newTop = Math.max(0, insets.top - top);
         int newRight = Math.max(0, insets.right - right);
@@ -1297,7 +1324,8 @@ public final class WindowInsets {
         return Insets.of(newLeft, newTop, newRight, newBottom);
     }
 
-    static Rect[][] insetBoundingRects(Rect[][] typeBoundingRectsMap,
+    @NonNull
+    static Rect[][] insetBoundingRects(@NonNull Rect[][] typeBoundingRectsMap,
             int insetLeft, int insetTop, int insetRight, int insetBottom, int frameWidth,
             int frameHeight) {
         if (insetLeft == 0 && insetTop == 0 && insetRight == 0 && insetBottom == 0) {
@@ -1322,7 +1350,8 @@ public final class WindowInsets {
         return typeBoundingRectsMap;
     }
 
-    static Rect[] insetBoundingRects(Rect[] boundingRects,
+    @NonNull
+    static Rect[] insetBoundingRects(@NonNull Rect[] boundingRects,
             int left, int top, int right, int bottom, int frameWidth, int frameHeight) {
         final List<Rect> insetBoundingRectsList = new ArrayList<>();
         for (int i = 0; i < boundingRects.length; i++) {
@@ -1335,7 +1364,8 @@ public final class WindowInsets {
         return insetBoundingRectsList.toArray(new Rect[0]);
     }
 
-    private static Rect insetRect(Rect orig, int insetLeft, int insetTop, int insetRight,
+    @Nullable
+    private static Rect insetRect(@Nullable Rect orig, int insetLeft, int insetTop, int insetRight,
             int insetBottom, int frameWidth, int frameHeight) {
         if (orig == null) {
             return null;
@@ -1371,23 +1401,34 @@ public final class WindowInsets {
      */
     public static final class Builder {
 
+        @NonNull
         private final Insets[] mTypeInsetsMap;
+        @NonNull
         private final Insets[] mTypeMaxInsetsMap;
+        @NonNull
         private final boolean[] mTypeVisibilityMap;
+        @NonNull
         private final Rect[][] mTypeBoundingRectsMap;
+        @NonNull
         private final Rect[][] mTypeMaxBoundingRectsMap;
         private boolean mSystemInsetsConsumed = true;
         private boolean mStableInsetsConsumed = true;
 
+        @Nullable
         private DisplayCutout mDisplayCutout;
+        @Nullable
         private RoundedCorners mRoundedCorners = RoundedCorners.NO_ROUNDED_CORNERS;
+        @Nullable
         private DisplayShape mDisplayShape = DisplayShape.NONE;
 
         private boolean mIsRound;
-        private @InsetsType int mForceConsumingTypes;
+        @InsetsType
+        private int mForceConsumingTypes;
         private boolean mForceConsumingOpaqueCaptionBar;
-        private @InsetsType int mSuppressScrimTypes;
+        @InsetsType
+        private int mSuppressScrimTypes;
 
+        @Nullable
         private PrivacyIndicatorBounds mPrivacyIndicatorBounds = new PrivacyIndicatorBounds();
         private int mFrameWidth;
         private int mFrameHeight;
@@ -1442,7 +1483,7 @@ public final class WindowInsets {
         @Deprecated
         @NonNull
         public Builder setSystemWindowInsets(@NonNull Insets systemWindowInsets) {
-            Preconditions.checkNotNull(systemWindowInsets);
+            Objects.requireNonNull(systemWindowInsets);
             assignCompatInsets(mTypeInsetsMap, systemWindowInsets.toRect());
             mSystemInsetsConsumed = false;
             return this;
@@ -1474,7 +1515,7 @@ public final class WindowInsets {
          * system bar occupying it, or it being reserved for touch-only gestures.
          *
          * <p>In contrast to {@link #setSystemGestureInsets regular system gestures},
-         * <b>mandatory</b> system gestures cannot be overriden by
+         * <b>mandatory</b> system gestures cannot be overridden by
          * {@link View#setSystemGestureExclusionRects}.
          *
          * @see #getMandatorySystemGestureInsets()
@@ -1522,7 +1563,7 @@ public final class WindowInsets {
          */
         @NonNull
         public Builder setInsets(@InsetsType int typeMask, @NonNull Insets insets) {
-            Preconditions.checkNotNull(insets);
+            Objects.requireNonNull(insets);
             WindowInsets.setInsets(mTypeInsetsMap, typeMask, insets);
             mSystemInsetsConsumed = false;
             return this;
@@ -1556,7 +1597,7 @@ public final class WindowInsets {
             if (typeMask == IME) {
                 throw new IllegalArgumentException("Maximum inset not available for IME");
             }
-            Preconditions.checkNotNull(insets);
+            Objects.requireNonNull(insets);
             WindowInsets.setInsets(mTypeMaxInsetsMap, typeMask, insets);
             mStableInsetsConsumed = false;
             return this;
@@ -1601,7 +1642,7 @@ public final class WindowInsets {
         @Deprecated
         @NonNull
         public Builder setStableInsets(@NonNull Insets stableInsets) {
-            Preconditions.checkNotNull(stableInsets);
+            Objects.requireNonNull(stableInsets);
             assignCompatInsets(mTypeMaxInsetsMap, stableInsets.toRect());
             mStableInsetsConsumed = false;
             return this;
@@ -1629,7 +1670,7 @@ public final class WindowInsets {
 
         /** @hide */
         @NonNull
-        public Builder setRoundedCorners(RoundedCorners roundedCorners) {
+        public Builder setRoundedCorners(@Nullable RoundedCorners roundedCorners) {
             mRoundedCorners = roundedCorners != null
                     ? roundedCorners : RoundedCorners.NO_ROUNDED_CORNERS;
             return this;
@@ -1798,25 +1839,22 @@ public final class WindowInsets {
      */
     public static final class Type {
 
-        static final int FIRST = 1 << 0;
-        static final int STATUS_BARS = FIRST;
+        static final int STATUS_BARS = 1 << 0;
         static final int NAVIGATION_BARS = 1 << 1;
         static final int CAPTION_BAR = 1 << 2;
-
         static final int IME = 1 << 3;
-
         static final int SYSTEM_GESTURES = 1 << 4;
         static final int MANDATORY_SYSTEM_GESTURES = 1 << 5;
         static final int TAPPABLE_ELEMENT = 1 << 6;
-
         static final int DISPLAY_CUTOUT = 1 << 7;
-
         static final int WINDOW_DECOR = 1 << 8;
-
         static final int SYSTEM_OVERLAYS = 1 << 9;
+        @InsetsType
+        static final int FIRST = STATUS_BARS;
+        @InsetsType
         static final int LAST = SYSTEM_OVERLAYS;
         static final int SIZE = 10;
-
+        @InsetsType
         static final int DEFAULT_VISIBLE = ~IME;
 
         static int indexOf(@InsetsType int type) {
@@ -1894,37 +1932,50 @@ public final class WindowInsets {
 
         /** @hide */
         @Retention(RetentionPolicy.SOURCE)
-        @IntDef(flag = true, value = {STATUS_BARS, NAVIGATION_BARS, CAPTION_BAR, IME, WINDOW_DECOR,
-                SYSTEM_GESTURES, MANDATORY_SYSTEM_GESTURES, TAPPABLE_ELEMENT, DISPLAY_CUTOUT,
-                SYSTEM_OVERLAYS})
+        @IntDef(flag = true, value = {
+                STATUS_BARS,
+                NAVIGATION_BARS,
+                CAPTION_BAR,
+                IME,
+                SYSTEM_GESTURES,
+                MANDATORY_SYSTEM_GESTURES,
+                TAPPABLE_ELEMENT,
+                DISPLAY_CUTOUT,
+                WINDOW_DECOR,
+                SYSTEM_OVERLAYS,
+        })
         public @interface InsetsType {
         }
 
         /**
          * @return An insets type representing any system bars for displaying status.
          */
-        public static @InsetsType int statusBars() {
+        @InsetsType
+        public static int statusBars() {
             return STATUS_BARS;
         }
 
         /**
          * @return An insets type representing any system bars for navigation.
          */
-        public static @InsetsType int navigationBars() {
+        @InsetsType
+        public static int navigationBars() {
             return NAVIGATION_BARS;
         }
 
         /**
          * @return An insets type representing the window of a caption bar.
          */
-        public static @InsetsType int captionBar() {
+        @InsetsType
+        public static int captionBar() {
             return CAPTION_BAR;
         }
 
         /**
          * @return An insets type representing the window of an {@link InputMethod}.
          */
-        public static @InsetsType int ime() {
+        @InsetsType
+        public static int ime() {
             return IME;
         }
 
@@ -1945,21 +1996,24 @@ public final class WindowInsets {
          *
          * @see #getSystemGestureInsets()
          */
-        public static @InsetsType int systemGestures() {
+        @InsetsType
+        public static int systemGestures() {
             return SYSTEM_GESTURES;
         }
 
         /**
          * @see #getMandatorySystemGestureInsets
          */
-        public static @InsetsType int mandatorySystemGestures() {
+        @InsetsType
+        public static int mandatorySystemGestures() {
             return MANDATORY_SYSTEM_GESTURES;
         }
 
         /**
          * @see #getTappableElementInsets
          */
-        public static @InsetsType int tappableElement() {
+        @InsetsType
+        public static int tappableElement() {
             return TAPPABLE_ELEMENT;
         }
 
@@ -1979,7 +2033,8 @@ public final class WindowInsets {
          * @see DisplayCutout#getSafeInsetRight()
          * @see DisplayCutout#getSafeInsetBottom()
          */
-        public static @InsetsType int displayCutout() {
+        @InsetsType
+        public static int displayCutout() {
             return DISPLAY_CUTOUT;
         }
 
@@ -1988,14 +2043,15 @@ public final class WindowInsets {
          * {@link #navigationBars()} or {@link #statusBars()}, system overlays might not be
          * hidden by the client.
          *
-         * For compatibility reasons, this type is included in {@link #systemBars()}. In this
+         * <p>For compatibility reasons, this type is included in {@link #systemBars()}. In this
          * way, views which fit {@link #systemBars()} fit {@link #systemOverlays()}.
          *
-         * Examples include climate controls, multi-tasking affordances, etc.
+         * <p>Examples include climate controls, multi-tasking affordances, etc.
          *
          * @return An insets type representing the system overlays.
          */
-        public static @InsetsType int systemOverlays() {
+        @InsetsType
+        public static int systemOverlays() {
             return SYSTEM_OVERLAYS;
         }
 
@@ -2003,7 +2059,8 @@ public final class WindowInsets {
          * @return All system bars. Includes {@link #statusBars()}, {@link #captionBar()} as well as
          *         {@link #navigationBars()}, {@link #systemOverlays()}, but not {@link #ime()}.
          */
-        public static @InsetsType int systemBars() {
+        @InsetsType
+        public static int systemBars() {
             return STATUS_BARS | NAVIGATION_BARS | CAPTION_BAR | SYSTEM_OVERLAYS;
         }
 
@@ -2012,7 +2069,8 @@ public final class WindowInsets {
          *
          * @hide
          */
-        public static @InsetsType int defaultVisible() {
+        @InsetsType
+        public static int defaultVisible() {
             return DEFAULT_VISIBLE;
         }
 
@@ -2021,7 +2079,8 @@ public final class WindowInsets {
          *
          * @hide
          */
-        public static @InsetsType int all() {
+        @InsetsType
+        public static int all() {
             return 0xFFFFFFFF;
         }
 
@@ -2050,13 +2109,20 @@ public final class WindowInsets {
 
         /** @hide */
         @Retention(RetentionPolicy.SOURCE)
-        @IntDef(flag = true, value = {LEFT, TOP, RIGHT, BOTTOM})
-        public @interface InsetsSide {}
+        @IntDef(flag = true, value = {
+                LEFT,
+                TOP,
+                RIGHT,
+                BOTTOM,
+        })
+        public @interface InsetsSide {
+        }
 
         /**
          * @return all four sides.
          */
-        public static @InsetsSide int all() {
+        @InsetsSide
+        public static int all() {
             return LEFT | TOP | RIGHT | BOTTOM;
         }
     }
