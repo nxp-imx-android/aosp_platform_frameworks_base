@@ -40,8 +40,7 @@ import java.util.Objects;
 /**
  * Controls the application of {@link ViewConfigurationParams} for a virtual device.
  */
-@VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
-public class ViewConfigurationController {
+class ViewConfigurationController {
 
     private static final String TAG = "ViewConfigurationController";
     private static final String FRAMEWORK_PACKAGE_NAME = "android";
@@ -61,14 +60,21 @@ public class ViewConfigurationController {
 
     private final Context mContext;
     private final OverlayManager mOverlayManager;
+    private final SettingsWriter mSettingsWriter;
     private final Object mLock = new Object();
 
     @GuardedBy("mLock")
     private OverlayIdentifier mOverlayIdentifier = null;
 
-    public ViewConfigurationController(@NonNull Context context) {
+    ViewConfigurationController(@NonNull Context context) {
+        this(context, Settings.Secure::putInt);
+    }
+
+    @VisibleForTesting
+    ViewConfigurationController(@NonNull Context context, @NonNull SettingsWriter settingsWriter) {
         mContext = Objects.requireNonNull(context);
         mOverlayManager = context.getSystemService(OverlayManager.class);
+        mSettingsWriter = settingsWriter;
     }
 
     /**
@@ -159,11 +165,11 @@ public class ViewConfigurationController {
         ContentResolver contentResolver = deviceContext.getContentResolver();
         Binder.withCleanCallingIdentity(() -> {
             if (!isLongPressTimeoutInvalid) {
-                Settings.Secure.putInt(contentResolver, Settings.Secure.LONG_PRESS_TIMEOUT,
+                mSettingsWriter.writeSettings(contentResolver, Settings.Secure.LONG_PRESS_TIMEOUT,
                         longPressTimeout);
             }
             if (!isMultiPressTimeoutInvalid) {
-                Settings.Secure.putInt(contentResolver, Settings.Secure.MULTI_PRESS_TIMEOUT,
+                mSettingsWriter.writeSettings(contentResolver, Settings.Secure.MULTI_PRESS_TIMEOUT,
                         multiPressTimeout);
             }
         });
@@ -213,5 +219,11 @@ public class ViewConfigurationController {
 
     private static boolean isInvalid(float value) {
         return value == ViewConfigurationParams.INVALID_VALUE;
+    }
+
+    @VisibleForTesting
+    interface SettingsWriter {
+        void writeSettings(@NonNull ContentResolver contentResolver, @NonNull String key,
+                int value);
     }
 }
