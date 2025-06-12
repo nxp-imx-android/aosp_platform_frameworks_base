@@ -273,6 +273,8 @@ public class KeyguardService extends Service {
                     SurfaceControl.Transaction candidateT, IBinder currentTransition,
                     IRemoteTransitionFinishedCallback candidateFinishCallback) {
                 if ((candidateInfo.getFlags() & TRANSIT_FLAG_KEYGUARD_APPEARING) != 0) {
+                    Log.i(TAG, "Transition merged with keyguard appearing, setPendingLock(true) "
+                            + " and call cancelKeyguardExitAnimation()");
                     keyguardViewMediator.setPendingLock(true);
                     keyguardViewMediator.cancelKeyguardExitAnimation();
                     return;
