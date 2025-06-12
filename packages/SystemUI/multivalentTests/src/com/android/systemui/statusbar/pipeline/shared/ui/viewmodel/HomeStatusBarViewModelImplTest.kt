@@ -56,7 +56,6 @@ import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
-import com.android.systemui.log.assertLogsWtf
 import com.android.systemui.mediaprojection.data.model.MediaProjectionState
 import com.android.systemui.mediaprojection.data.repository.fakeMediaProjectionRepository
 import com.android.systemui.plugins.DarkIconDispatcher
@@ -94,7 +93,6 @@ import com.android.systemui.statusbar.notification.data.repository.activeNotific
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.shared.ActiveNotificationModel
-import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import com.android.systemui.statusbar.notification.stack.data.repository.headsUpNotificationRepository
 import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.phone.data.repository.fakeDarkIconRepository
@@ -433,7 +431,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
     fun areNotificationsLightsOut_lowProfileWithNotifications_true() =
         kosmos.runTest {
             fakeStatusBarModeRepository.defaultDisplay.statusBarMode.value =
@@ -447,7 +444,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
     fun areNotificationsLightsOut_lowProfileWithoutNotifications_false() =
         kosmos.runTest {
             fakeStatusBarModeRepository.defaultDisplay.statusBarMode.value =
@@ -461,7 +457,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
     fun areNotificationsLightsOut_defaultStatusBarModeWithoutNotifications_false() =
         kosmos.runTest {
             fakeStatusBarModeRepository.defaultDisplay.statusBarMode.value =
@@ -475,7 +470,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
-    @EnableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
     fun areNotificationsLightsOut_defaultStatusBarModeWithNotifications_false() =
         kosmos.runTest {
             fakeStatusBarModeRepository.defaultDisplay.statusBarMode.value =
@@ -486,17 +480,6 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
             val actual by collectLastValue(underTest.areNotificationsLightsOut)
 
             assertThat(actual).isFalse()
-        }
-
-    @Test
-    @DisableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
-    fun areNotificationsLightsOut_requiresFlagEnabled() =
-        kosmos.runTest {
-            assertLogsWtf {
-                val latest by collectLastValue(underTest.areNotificationsLightsOut)
-                // Nothing is emitted
-                assertThat(latest).isNull()
-            }
         }
 
     @Test
