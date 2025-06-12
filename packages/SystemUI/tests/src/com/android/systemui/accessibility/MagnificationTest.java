@@ -39,6 +39,7 @@ import static org.mockito.Mockito.when;
 import android.content.Context;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
+import android.hardware.input.InputManager;
 import android.os.RemoteException;
 import android.testing.TestableLooper;
 import android.view.Display;
@@ -99,6 +100,8 @@ public class MagnificationTest extends SysuiTestCase {
     private IWindowManager mIWindowManager;
     @Mock
     private WindowManagerProvider mWindowManagerProvider;
+    @Mock
+    private InputManager mInputManager;
 
     @Before
     public void setUp() throws Exception {
@@ -132,7 +135,8 @@ public class MagnificationTest extends SysuiTestCase {
                 mCommandQueue, mModeSwitchesController,
                 mSysUiState, mLauncherProxyService, mSecureSettings, mDisplayTracker,
                 getContext().getSystemService(DisplayManager.class), mA11yLogger, mIWindowManager,
-                getContext().getSystemService(AccessibilityManager.class), mWindowManagerProvider);
+                getContext().getSystemService(AccessibilityManager.class), mWindowManagerProvider,
+                mInputManager);
         mMagnification.mWindowMagnificationControllerSupplier = new FakeControllerSupplier(
                 mContext.getSystemService(DisplayManager.class), mWindowMagnificationController);
         mMagnification.mMagnificationSettingsSupplier = new FakeSettingsSupplier(
