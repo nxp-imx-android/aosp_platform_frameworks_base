@@ -254,12 +254,12 @@ public final class MessageQueue {
         mMessageCount.incrementAndGet();
         if (PerfettoTrace.MQ_CATEGORY.isEnabled()) {
             msg.sendingThreadName = Thread.currentThread().getName();
-            msg.mEventId.set(PerfettoTrace.getFlowId());
+            final long eventId = msg.eventId = PerfettoTrace.getFlowId();
 
             traceMessageCount();
             final long messageDelayMs = Math.max(0L, when - SystemClock.uptimeMillis());
             PerfettoTrace.instant(PerfettoTrace.MQ_CATEGORY, "message_queue_send")
-                    .setFlow(msg.mEventId.get())
+                    .setFlow(eventId)
                     .beginProto()
                     .beginNested(2004 /* message_queue */)
                     .addField(2 /* receiving_thread_name */, mThreadName)
@@ -2890,6 +2890,7 @@ public final class MessageQueue {
         msg.when = when;
         msg.insertSeq = seq;
         msg.markInUse();
+        incAndTraceMessageCount(msg, when);
 
         if (DEBUG) {
             Log.d(TAG_C, "Insert message"
@@ -2910,7 +2911,6 @@ public final class MessageQueue {
             }
 
             insertIntoPriorityQueue(msg);
-            incAndTraceMessageCount(msg, when);
             /*
              * We still need to do this even though we are the current thread,
              * otherwise next() may sleep indefinitely.
@@ -2957,6 +2957,7 @@ public final class MessageQueue {
 
                 case STACK_NODE_QUITTING:
                     logDeadThread(msg);
+                    decAndTraceMessageCount();
                     return false;
 
                 default:
