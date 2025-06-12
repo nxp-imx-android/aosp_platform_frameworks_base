@@ -88,6 +88,16 @@ final class PackageMetrics {
     public @interface StepInt {
     }
 
+    public static final String STRING_COMPONENT_STATE_CHANGED = "component_state_changed";
+    public static final String STRING_COMPONENT_LABEL_ICON_CHANGED = "component_label_icon_changed";
+    public static final String STRING_RESET_COMPONENT_STATE_CHANGED =
+            "reset_component_state_changed";
+    public static final String STRING_MIME_GROUP_CHANGED = "mime_group_changed";
+    public static final String STRING_OVERLAY_CHANGED = "overlay_changed";
+    public static final String STRING_STATIC_SHARED_LIBRARY_CHANGED =
+            "static_shared_library_changed";
+    public static final String STRING_TEST = "test";
+
     private final long mInstallStartTimestampMillis;
     private final SparseArray<InstallStep> mInstallSteps = new SparseArray<>();
     private final InstallRequest mInstallRequest;
@@ -491,5 +501,36 @@ final class PackageMetrics {
             int componentNewState, boolean isLauncher, boolean isForWholeApp, int callingUid) {
         FrameworkStatsLog.write(FrameworkStatsLog.COMPONENT_STATE_CHANGED_REPORTED,
                 uid, componentOldState, componentNewState, isLauncher, isForWholeApp, callingUid);
+    }
+
+    public static void reportPackageChangedBroadcast(int callingUid, int targetUid,
+            boolean isForWholeApp, String reason) {
+        FrameworkStatsLog.write(FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED,
+                callingUid, targetUid,
+                convertPackageChangedReasonStringToInteger(reason, isForWholeApp));
+    }
+
+    private static int convertPackageChangedReasonStringToInteger(String reason,
+            boolean isForWholeApp) {
+        return switch (reason) {
+            case STRING_COMPONENT_STATE_CHANGED -> isForWholeApp
+                    ?
+                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_PACKAGE_STATE_CHANGED
+                    : FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_COMPONENT_STATE_CHANGED;
+            case STRING_COMPONENT_LABEL_ICON_CHANGED ->
+                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_COMPONENT_LABEL_ICON_CHANGED;
+            case STRING_RESET_COMPONENT_STATE_CHANGED ->
+                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_COMPONENT_STATE_RESET;
+            case STRING_MIME_GROUP_CHANGED ->
+                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_MIME_GROUP_CHANGED;
+            case STRING_OVERLAY_CHANGED ->
+                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_OVERLAY_CHANGED;
+            case STRING_STATIC_SHARED_LIBRARY_CHANGED ->
+                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_STATIC_SHARED_LIBRARY_CHANGED;
+            case STRING_TEST ->
+                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_TEST;
+            default ->
+                    FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED__REASON__PACKAGE_CHANGED_REASON_UNSPECIFIED;
+        };
     }
 }
