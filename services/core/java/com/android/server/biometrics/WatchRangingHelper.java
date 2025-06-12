@@ -17,8 +17,8 @@
 package com.android.server.biometrics;
 
 import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
+import static android.hardware.biometrics.IIdentityCheckStateListener.WatchRangingState;
 
-import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.os.Handler;
@@ -27,9 +27,6 @@ import android.proximity.ProximityResultCode;
 import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.util.Slog;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 /**
  * This class is a helper class to start and cancel watch ranging. It also provides the state of
  * the watch ranging session.
@@ -37,31 +34,25 @@ import java.lang.annotation.RetentionPolicy;
 public class WatchRangingHelper {
     private static final String TAG = "WatchRangingHelper";
 
-    public static final int WATCH_RANGING_IDLE = 0;
-    public static final int WATCH_RANGING_SUCCESSFUL = 1;
-    public static final int WATCH_RANGING_STARTED = 2;
-    public static final int WATCH_RANGING_STOPPED = 3;
-
     private final long mAuthenticationRequestId;
     private final AuthenticationPolicyManager mAuthenticationPolicyManager;
     private final Handler mHandler;
-    private @WatchRangingState int mWatchRangingState = WATCH_RANGING_IDLE;
+    private @WatchRangingState int mWatchRangingState = WatchRangingState.WATCH_RANGING_IDLE;
+    private final WatchRangingListener mWatchRangingListener;
 
-    @IntDef({
-            WATCH_RANGING_IDLE,
-            WATCH_RANGING_SUCCESSFUL,
-            WATCH_RANGING_STARTED,
-            WATCH_RANGING_STOPPED})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface WatchRangingState {
+    /** Listener for receiving watch ranging state changes */
+    public interface WatchRangingListener {
+        /** When the watch ranging state has changed */
+        void onStateChanged(@WatchRangingState int watchRangingState);
     }
 
     WatchRangingHelper(long authenticationRequestId,
             @NonNull AuthenticationPolicyManager authenticationPolicyManager,
-            @NonNull Handler handler) {
+            @NonNull Handler handler, WatchRangingListener listener) {
         mAuthenticationRequestId = authenticationRequestId;
         mAuthenticationPolicyManager = authenticationPolicyManager;
         mHandler = handler;
+        mWatchRangingListener = listener;
     }
 
     /**
@@ -69,7 +60,7 @@ public class WatchRangingHelper {
      */
     @RequiresPermission(USE_BIOMETRIC_INTERNAL)
     public void startWatchRanging() {
-        setWatchRangingState(WatchRangingHelper.WATCH_RANGING_STARTED);
+        setWatchRangingState(WatchRangingState.WATCH_RANGING_STARTED);
 
         mAuthenticationPolicyManager.startWatchRangingForIdentityCheck(mAuthenticationRequestId,
                 new IProximityResultCallback.Stub() {
@@ -79,7 +70,7 @@ public class WatchRangingHelper {
                                 "Error received for watch ranging, error code: " + error);
                         mAuthenticationPolicyManager.cancelWatchRangingForRequestId(
                                 mAuthenticationRequestId);
-                        setWatchRangingState(WatchRangingHelper.WATCH_RANGING_STOPPED);
+                        setWatchRangingState(WatchRangingState.WATCH_RANGING_STOPPED);
                     }
 
                     @Override
@@ -88,8 +79,8 @@ public class WatchRangingHelper {
                         mAuthenticationPolicyManager.cancelWatchRangingForRequestId(
                                 mAuthenticationRequestId);
                         setWatchRangingState(result == ProximityResultCode.SUCCESS
-                                ? WatchRangingHelper.WATCH_RANGING_SUCCESSFUL
-                                : WatchRangingHelper.WATCH_RANGING_STOPPED);
+                                ? WatchRangingState.WATCH_RANGING_SUCCESSFUL
+                                : WatchRangingState.WATCH_RANGING_STOPPED);
                     }
                 }, mHandler);
     }
@@ -107,6 +98,7 @@ public class WatchRangingHelper {
      */
     public void setWatchRangingState(@WatchRangingState int watchRangingState) {
         mWatchRangingState = watchRangingState;
+        mWatchRangingListener.onStateChanged(watchRangingState);
     }
 
     /**

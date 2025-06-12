@@ -11,6 +11,7 @@ import com.android.systemui.biometrics.domain.interactor.promptSelectorInteracto
 import com.android.systemui.biometrics.promptInfo
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.PromptKind
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -19,6 +20,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -49,6 +51,8 @@ class CredentialViewModelTest : SysuiTestCase() {
                 kosmos.shadeInteractor,
                 kosmos.promptSelectorInteractor,
             )
+
+        kosmos.testScope.runCurrent()
     }
 
     @Test fun setsPinInputFlags() = setsInputFlags(PromptKind.Pin, expectFlags = true)

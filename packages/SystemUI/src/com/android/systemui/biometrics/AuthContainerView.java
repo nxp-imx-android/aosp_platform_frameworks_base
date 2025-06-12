@@ -259,9 +259,9 @@ public class AuthContainerView extends LinearLayout
     }
 
     @Override
-    public void onCredentialMatched(@NonNull byte[] attestation) {
+    public void onCredentialMatched(@NonNull byte[] attestation, boolean isCredentialAllowed) {
         mCredentialAttestation = attestation;
-        if (isAllowDeviceCredentials()) {
+        if (isCredentialAllowed) {
             animateAway(BiometricPrompt.DISMISSED_REASON_CREDENTIAL_CONFIRMED);
         } else if (Flags.bpFallbackOptions()) {
             mPromptSelectorInteractorProvider.get().onSwitchToAuth();

@@ -61,15 +61,20 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
     val fallbackViewModel = promptViewModel.promptFallbackViewModel
     val promptContent by fallbackViewModel.fallbackOptions.collectAsStateWithLifecycle(emptyList())
     val showCredential by fallbackViewModel.showCredential.collectAsStateWithLifecycle(false)
-    val showManageIdentityCheck by
-        fallbackViewModel.showManageIdentityCheck.collectAsStateWithLifecycle(false)
     val credentialText by fallbackViewModel.credentialKindText.collectAsStateWithLifecycle(-1)
     val credentialIcon by
         fallbackViewModel.credentialKindIcon.collectAsStateWithLifecycle(Icons.Filled.Password)
 
+    val showManageIdentityCheck by
+        fallbackViewModel.showManageIdentityCheck.collectAsStateWithLifecycle(false)
+    val icCredentialButtonEnabled by
+        fallbackViewModel.icCredentialButtonEnabled.collectAsStateWithLifecycle(false)
+    val icCredentialSubtitle by
+        fallbackViewModel.icCredentialSubtitle.collectAsStateWithLifecycle(null)
+    val icShowFooter by fallbackViewModel.icShowFooter.collectAsStateWithLifecycle(false)
+
     val context = LocalContext.current
 
-    var optionCount = 0
     val optionTotal = fallbackViewModel.optionCount.collectAsStateWithLifecycle(0)
 
     PlatformTheme {
@@ -102,6 +107,7 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
+                var optionCount = 0
                 // When credential is allowed and IC is disabled, credential should always be first
                 if (showCredential) {
                     OptionItem(
@@ -144,15 +150,21 @@ fun BiometricPromptFallbackView(promptViewModel: PromptViewModel, callback: Spag
                         text = stringResource(credentialText),
                         index = optionCount++,
                         total = optionTotal.value,
-                        enabled = false,
-                        onClick = {},
+                        subtitle = icCredentialSubtitle,
+                        enabled = icCredentialButtonEnabled,
+                        onClick = {
+                            promptViewModel.onSwitchToCredential()
+                            callback.onUseDeviceCredential()
+                        },
                     )
-                    Text(
-                        stringResource(R.string.biometric_dialog_identity_check_pin_footer),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 16.dp),
-                        style = MaterialTheme.typography.bodySmall,
-                    )
+                    if (icShowFooter) {
+                        Text(
+                            stringResource(R.string.biometric_dialog_identity_check_pin_footer),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 16.dp),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
                 }
             }
         }
@@ -165,6 +177,7 @@ private fun OptionItem(
     text: String,
     index: Int,
     total: Int,
+    subtitle: Int? = null,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     onClick: () -> Unit,
@@ -191,7 +204,15 @@ private fun OptionItem(
         ) {
             Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(24.dp))
             Spacer(modifier = Modifier.width(16.dp))
-            Text(text = text, style = MaterialTheme.typography.bodyLarge)
+            Column {
+                Text(text = text, style = MaterialTheme.typography.bodyLarge)
+                if (subtitle != null) {
+                    Text(
+                        text = stringResource(subtitle),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                }
+            }
         }
     }
 }

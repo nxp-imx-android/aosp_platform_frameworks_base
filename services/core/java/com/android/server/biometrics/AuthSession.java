@@ -53,15 +53,14 @@ import android.hardware.biometrics.Flags;
 import android.hardware.biometrics.IBiometricSensorReceiver;
 import android.hardware.biometrics.IBiometricServiceReceiver;
 import android.hardware.biometrics.IBiometricSysuiReceiver;
+import android.hardware.biometrics.IIdentityCheckStateListener;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.face.FaceManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.hardware.fingerprint.FingerprintSensorPropertiesInternal;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.security.KeyStoreAuthorization;
-import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.util.Slog;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -182,13 +181,12 @@ public final class AuthSession implements IBinder.DeathRecipient {
             @NonNull PromptInfo promptInfo,
             boolean debugEnabled,
             @NonNull List<FingerprintSensorPropertiesInternal> fingerprintSensorProperties,
-            @NonNull AuthenticationPolicyManager authenticationPolicyManager,
-            @NonNull Handler handler) {
+            @NonNull WatchRangingHelper watchRangingHelper) {
         this(context, biometricContext, statusBarService, sysuiReceiver, keyStoreAuthorization,
                 random, clientDeathReceiver, preAuthInfo, token, requestId, operationId, userId,
                 sensorReceiver, clientReceiver, opPackageName, promptInfo, debugEnabled,
                 fingerprintSensorProperties, BiometricFrameworkStatsLogger.getInstance(),
-                authenticationPolicyManager, handler);
+                watchRangingHelper);
     }
 
     @VisibleForTesting
@@ -211,8 +209,7 @@ public final class AuthSession implements IBinder.DeathRecipient {
             boolean debugEnabled,
             @NonNull List<FingerprintSensorPropertiesInternal> fingerprintSensorProperties,
             @NonNull BiometricFrameworkStatsLogger logger,
-            @NonNull AuthenticationPolicyManager authenticationPolicyManager,
-            @NonNull Handler handler) {
+            @NonNull WatchRangingHelper watchRangingHelper) {
         Slog.d(TAG, "Creating AuthSession with: " + preAuthInfo);
         mContext = context;
         mBiometricContext = biometricContext;
@@ -241,8 +238,7 @@ public final class AuthSession implements IBinder.DeathRecipient {
         mSfpsSensorIds = mFingerprintSensorProperties.stream().filter(
                 FingerprintSensorPropertiesInternal::isAnySidefpsType).map(
                     prop -> prop.sensorId).toList();
-        mWatchRangingHelper = new WatchRangingHelper(requestId,
-                authenticationPolicyManager, handler);
+        mWatchRangingHelper = watchRangingHelper;
 
         try {
             mClientReceiver.asBinder().linkToDeath(this, 0 /* flags */);
@@ -262,7 +258,7 @@ public final class AuthSession implements IBinder.DeathRecipient {
     /**
      * Returns current state of watch ranging.
      */
-    public @WatchRangingHelper.WatchRangingState int getWatchRangingState() {
+    public @IIdentityCheckStateListener.WatchRangingState int getWatchRangingState() {
         return mWatchRangingHelper.getWatchRangingState();
     }
 

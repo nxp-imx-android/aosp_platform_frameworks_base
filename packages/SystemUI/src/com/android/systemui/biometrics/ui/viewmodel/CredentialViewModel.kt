@@ -14,6 +14,7 @@ import com.android.systemui.biometrics.domain.model.BiometricPromptRequest
 import com.android.systemui.biometrics.shared.model.BiometricUserInfo
 import com.android.systemui.biometrics.shared.model.FallbackOptionModel
 import com.android.systemui.biometrics.shared.model.PromptKind
+import com.android.systemui.biometrics.shared.model.WatchRangingState
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
@@ -37,9 +38,23 @@ constructor(
     shadeInteractor: ShadeInteractor,
     private val promptSelectorInteractor: PromptSelectorInteractor,
 ) {
-    /** Whether credential is allowed in the prompt */
+    /**
+     * Whether credential is allowed in the prompt True if bp caller requested credential and
+     * identity check or watch ranging allow it
+     */
     val isCredentialAllowed: Flow<Boolean> =
-        promptCredentialInteractor.prompt.map { it?.credentialAllowed == true }
+        if (Flags.bpFallbackOptions()) {
+            combine(
+                promptCredentialInteractor.prompt,
+                promptSelectorInteractor.watchRangingState,
+            ) { prompt, watchRangingState ->
+                prompt?.credentialRequested == true &&
+                    (watchRangingState == WatchRangingState.WATCH_RANGING_SUCCESSFUL ||
+                        prompt.credentialAllowed)
+            }
+        } else {
+            promptCredentialInteractor.prompt.map { it?.credentialAllowed == true }
+        }
 
     /** Top level information about the prompt. */
     val header: Flow<CredentialHeaderViewModel> =
