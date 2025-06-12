@@ -207,7 +207,7 @@ public final class Looper {
                     .addField(1 /* sending_thread_name */, msg.sendingThreadName)
                     .endNested()
                     .endProto()
-                    .setTerminatingFlow(msg.mEventId.get())
+                    .setTerminatingFlow(msg.eventId)
                     .emit();
         }
 
