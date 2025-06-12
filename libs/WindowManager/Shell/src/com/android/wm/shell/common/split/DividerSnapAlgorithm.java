@@ -177,7 +177,7 @@ public class DividerSnapAlgorithm {
         mDismissEndTarget = mTargets.get(mTargets.size() - 1);
         mMiddleTarget = mTargets.get(mTargets.size() / 2);
         mMiddleTarget.isMiddleTarget = true;
-        mMotionSpec = Flags.enableMagneticSplitDivider()
+        mMotionSpec = Flags.enableFlexibleTwoAppSplit()
                 ? MagneticDividerUtils.generateMotionSpec(mTargets, res) : null;
     }
 
