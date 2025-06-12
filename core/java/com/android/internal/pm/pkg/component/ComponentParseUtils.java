@@ -98,10 +98,14 @@ public class ComponentParseUtils {
             }
         }
 
-        if (!validPurposes.isEmpty()) {
-            // There can only be valid purposes if component is an instance of ParsedPermissionImpl.
+        if (shouldParseValidPurposes) {
             final ParsedPermissionImpl permission = (ParsedPermissionImpl) component;
-            permission.setValidPurposes(validPurposes);
+            if (permission.isPurposeRequired() && validPurposes.isEmpty()) {
+                return input.error(
+                        "<permission> requires purpose but no valid purpose defined!");
+            } else {
+                permission.setValidPurposes(validPurposes);
+            }
         }
 
         return input.success(component);
