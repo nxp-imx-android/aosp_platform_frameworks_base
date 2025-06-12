@@ -112,7 +112,7 @@ public class ConfirmDeveloperVerification extends Activity {
         }
 
         int dialogTypeFlag = getUserConfirmationDialogFlag(verificationInfo);
-        int userActionNeededReason = verificationInfo.getVerificationUserActionNeededReason();
+        int userActionNeededReason = verificationInfo.getUserActionNeededReason();
         int msgResId = getDialogMessageResourceId(userActionNeededReason);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this)
@@ -210,7 +210,7 @@ public class ConfirmDeveloperVerification extends Activity {
      */
     public static int getUserConfirmationDialogFlag(
             PackageInstaller.DeveloperVerificationUserConfirmationInfo verificationInfo) {
-        int userActionNeededReason = verificationInfo.getVerificationUserActionNeededReason();
+        int userActionNeededReason = verificationInfo.getUserActionNeededReason();
         int verificationPolicy = verificationInfo.getVerificationPolicy();
 
         return switch (userActionNeededReason) {

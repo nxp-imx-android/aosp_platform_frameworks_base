@@ -17,6 +17,7 @@
 package android.content.pm;
 
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.pm.ArchivedPackageParcel;
 import android.content.pm.IPackageDeleteObserver2;
 import android.content.pm.IPackageInstallerCallback;
@@ -99,7 +100,7 @@ interface IPackageInstaller {
     int getDeveloperVerificationPolicy(int userId);
     @EnforcePermission("DEVELOPER_VERIFICATION_AGENT")
     boolean setDeveloperVerificationPolicy(int policy, int userId);
-    String getDeveloperVerificationServiceProvider();
+    ComponentName getDeveloperVerificationServiceProvider();
 
     @EnforcePermission("SET_DEVELOPER_VERIFICATION_USER_RESPONSE")
     void setDeveloperVerificationUserResponse(int sessionId, int developerVerificationUserResponse);

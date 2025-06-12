@@ -56,6 +56,7 @@ import android.app.admin.DevicePolicyEventLogger;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.role.RoleManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -322,7 +323,7 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
 
     public PackageInstallerService(Context context, PackageManagerService pm,
             Supplier<PackageParser2> apexParserSupplier,
-            @Nullable String developerVerifierPackageName) {
+            @Nullable ComponentName developerVerificationServiceProvider) {
         super(PermissionEnforcer.fromContext(context));
 
         mContext = context;
@@ -349,7 +350,7 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
                 context, mInstallThread.getLooper(), new AppStateHelper(context));
         mPackageArchiver = new PackageArchiver(mContext, mPm);
         mDeveloperVerifierController = DeveloperVerifierController.getInstance(context,
-                mInstallHandler, developerVerifierPackageName);
+                mInstallHandler, developerVerificationServiceProvider);
         synchronized (mDeveloperVerificationPolicyPerUser) {
             int[] users = mPm.mUserManager.getUserIds();
             for (int i = 0; i < users.length; i++) {
@@ -2011,18 +2012,19 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
 
     @Override
     @Nullable
-    public String getDeveloperVerificationServiceProvider() {
-        final String verifierPackageName = mDeveloperVerifierController.getVerifierPackageName();
-        if (verifierPackageName == null) {
+    public ComponentName getDeveloperVerificationServiceProvider() {
+        final ComponentName verifierComponentName =
+                mDeveloperVerifierController.getVerifierComponentName();
+        if (verifierComponentName == null) {
             return null;
         }
         final int callingUid = Binder.getCallingUid();
         final Computer snapshot = mPm.snapshotComputer();
-        if (!snapshot.canQueryPackage(callingUid, verifierPackageName)) {
+        if (!snapshot.canQueryPackage(callingUid, verifierComponentName.getPackageName())) {
             // Verifier package is not visible to the caller
             return null;
         }
-        return verifierPackageName;
+        return verifierComponentName;
     }
 
     void onUserAdded(int userId) {

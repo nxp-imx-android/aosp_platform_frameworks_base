@@ -65,6 +65,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -158,7 +159,7 @@ public class DeveloperVerifierControllerTest {
         mTestDeclaredLibraries.add(TEST_SHARED_LIBRARY_INFO2);
         mTestExtensionParams.putString(TEST_KEY, TEST_VALUE);
         mDeveloperVerifierController = new DeveloperVerifierController(
-                mContext, mHandler, mPackageName, mInjector);
+                mContext, mHandler, new ComponentName(mPackageName, "testClass"), mInjector);
     }
 
     private static void setUpMockRemoteServiceForUser(
@@ -504,7 +505,7 @@ public class DeveloperVerifierControllerTest {
                 true).build();
         session.reportVerificationComplete(status);
         // getters should throw after the report
-        expectThrows(IllegalStateException.class, () -> session.getTimeoutTime());
+        expectThrows(IllegalStateException.class, session::getTimeoutTime);
         // Report again should fail with exception
         expectThrows(IllegalStateException.class, () -> session.reportVerificationComplete(status));
     }
@@ -520,10 +521,12 @@ public class DeveloperVerifierControllerTest {
         verify(mMockService).onVerificationRequired(captor.capture());
         DeveloperVerificationSession session = captor.getValue();
         final long initialTimeoutTime = TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS;
-        assertThat(session.getTimeoutTime()).isEqualTo(initialTimeoutTime);
+        assertThat(session.getTimeoutTime().toEpochMilli()).isEqualTo(initialTimeoutTime);
         final long extendTimeMillis = TEST_TIMEOUT_DURATION_MILLIS;
-        assertThat(session.extendTimeRemaining(extendTimeMillis)).isEqualTo(extendTimeMillis);
-        assertThat(session.getTimeoutTime()).isEqualTo(initialTimeoutTime + extendTimeMillis);
+        assertThat(session.extendTimeout(Duration.ofMillis(extendTimeMillis)).toMillis())
+                .isEqualTo(extendTimeMillis);
+        assertThat(session.getTimeoutTime().toEpochMilli())
+                .isEqualTo(initialTimeoutTime + extendTimeMillis);
         verify(mSessionCallback, times(1)).onTimeoutExtensionRequested();
     }
 
@@ -539,11 +542,11 @@ public class DeveloperVerifierControllerTest {
         DeveloperVerificationSession session = captor.getValue();
         final long initialTimeoutTime = TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS;
         final long maxTimeoutTime = TEST_REQUEST_START_TIME + TEST_MAX_TIMEOUT_DURATION_MILLIS;
-        assertThat(session.getTimeoutTime()).isEqualTo(initialTimeoutTime);
+        assertThat(session.getTimeoutTime().toEpochMilli()).isEqualTo(initialTimeoutTime);
         final long extendTimeMillis = TEST_MAX_TIMEOUT_DURATION_MILLIS;
-        assertThat(session.extendTimeRemaining(extendTimeMillis)).isEqualTo(
+        assertThat(session.extendTimeout(Duration.ofMillis(extendTimeMillis)).toMillis()).isEqualTo(
                 TEST_MAX_TIMEOUT_DURATION_MILLIS - TEST_TIMEOUT_DURATION_MILLIS);
-        assertThat(session.getTimeoutTime()).isEqualTo(maxTimeoutTime);
+        assertThat(session.getTimeoutTime().toEpochMilli()).isEqualTo(maxTimeoutTime);
     }
 
     @Test
@@ -591,8 +594,8 @@ public class DeveloperVerifierControllerTest {
         DeveloperVerificationSession session = captor.getValue();
         final int policy = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
         when(mSessionCallback.onVerificationPolicyOverridden(eq(policy))).thenReturn(true);
-        assertThat(session.setVerificationPolicy(policy)).isTrue();
-        assertThat(session.getVerificationPolicy()).isEqualTo(policy);
+        assertThat(session.setPolicy(policy)).isTrue();
+        assertThat(session.getPolicy()).isEqualTo(policy);
         verify(mSessionCallback, times(1)).onVerificationPolicyOverridden(eq(policy));
     }
 

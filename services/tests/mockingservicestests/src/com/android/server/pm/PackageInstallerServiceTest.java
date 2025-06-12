@@ -22,9 +22,11 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageInstaller;
 import android.os.PermissionEnforcer;
@@ -67,7 +69,9 @@ public class PackageInstallerServiceTest {
         when(rule.mocks().getContext().getSystemService(Context.PERMISSION_ENFORCER_SERVICE))
                 .thenReturn(mMockPermissionEnforcer);
         doReturn(mMockDeveloperVerifierController).when(
-                () -> DeveloperVerifierController.getInstance(any(), any(), eq(mPackageName))
+                () -> DeveloperVerifierController.getInstance(any(), any(), argThat(
+                        componentName -> componentName.getPackageName().equals(mPackageName)
+                ))
         );
         doReturn(mMockSystemServiceManager).when(
                 () -> LocalServices.getService(SystemServiceManager.class));
@@ -78,7 +82,8 @@ public class PackageInstallerServiceTest {
     @Test
     public void testVerificationPolicyPerUser() {
         PackageInstallerService service = new PackageInstallerService(
-                rule.mocks().getContext(), mPms, null, mPackageName);
+                rule.mocks().getContext(), mPms, null,
+                new ComponentName(mPackageName, this.getClass().getName()));
         final int defaultPolicy = service.getDeveloperVerificationPolicy(
                 /* userId= */ UserHandle.USER_SYSTEM);
         assertThat(defaultPolicy).isAtLeast(PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE);

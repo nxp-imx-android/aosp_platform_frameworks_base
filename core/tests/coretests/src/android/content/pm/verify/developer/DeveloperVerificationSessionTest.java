@@ -46,6 +46,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -117,7 +118,7 @@ public class DeveloperVerificationSessionTest {
         // structure is different, but all the key/value pairs should be preserved as before.
         assertThat(sessionFromParcel.getExtensionParams().getString(TEST_KEY))
                 .isEqualTo(mTestExtensionParams.getString(TEST_KEY));
-        assertThat(sessionFromParcel.getVerificationPolicy()).isEqualTo(TEST_POLICY);
+        assertThat(sessionFromParcel.getPolicy()).isEqualTo(TEST_POLICY);
     }
 
     @Test
@@ -136,14 +137,16 @@ public class DeveloperVerificationSessionTest {
 
     @Test
     public void testInterface() throws Exception {
-        when(mTestSessionInterface.getTimeoutTime(anyInt())).thenAnswer(i -> TEST_TIMEOUT_TIME);
-        when(mTestSessionInterface.extendTimeRemaining(anyInt(), anyLong())).thenAnswer(
+        when(mTestSessionInterface.getTimeoutTimeMillis(anyInt()))
+                .thenAnswer(i -> TEST_TIMEOUT_TIME);
+        when(mTestSessionInterface.extendTimeoutMillis(anyInt(), anyLong())).thenAnswer(
                 i -> i.getArguments()[1]);
 
-        assertThat(mTestSession.getTimeoutTime()).isEqualTo(TEST_TIMEOUT_TIME);
-        verify(mTestSessionInterface, times(1)).getTimeoutTime(eq(TEST_ID));
-        assertThat(mTestSession.extendTimeRemaining(TEST_EXTEND_TIME)).isEqualTo(TEST_EXTEND_TIME);
-        verify(mTestSessionInterface, times(1)).extendTimeRemaining(
+        assertThat(mTestSession.getTimeoutTime().toEpochMilli()).isEqualTo(TEST_TIMEOUT_TIME);
+        verify(mTestSessionInterface, times(1)).getTimeoutTimeMillis(eq(TEST_ID));
+        assertThat(mTestSession.extendTimeout(Duration.ofMillis(TEST_EXTEND_TIME)).toMillis())
+                .isEqualTo(TEST_EXTEND_TIME);
+        verify(mTestSessionInterface, times(1)).extendTimeoutMillis(
                 eq(TEST_ID), eq(TEST_EXTEND_TIME));
 
         PersistableBundle response = new PersistableBundle();
@@ -166,10 +169,10 @@ public class DeveloperVerificationSessionTest {
 
     @Test
     public void testPolicyNoOverride() {
-        assertThat(mTestSession.getVerificationPolicy()).isEqualTo(TEST_POLICY);
+        assertThat(mTestSession.getPolicy()).isEqualTo(TEST_POLICY);
         // This "set" is a no-op
-        assertThat(mTestSession.setVerificationPolicy(TEST_POLICY)).isTrue();
-        assertThat(mTestSession.getVerificationPolicy()).isEqualTo(TEST_POLICY);
+        assertThat(mTestSession.setPolicy(TEST_POLICY)).isTrue();
+        assertThat(mTestSession.getPolicy()).isEqualTo(TEST_POLICY);
         verifyNoMoreInteractions(mTestSessionInterface);
     }
 
@@ -177,11 +180,11 @@ public class DeveloperVerificationSessionTest {
     public void testPolicyOverrideFail() throws Exception {
         final int newPolicy = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN;
         when(mTestSessionInterface.setVerificationPolicy(anyInt(), anyInt())).thenReturn(false);
-        assertThat(mTestSession.setVerificationPolicy(newPolicy)).isFalse();
+        assertThat(mTestSession.setPolicy(newPolicy)).isFalse();
         verify(mTestSessionInterface, times(1))
                 .setVerificationPolicy(eq(TEST_ID), eq(newPolicy));
         // Next "get" should not trigger binder call because the previous "set" has failed
-        assertThat(mTestSession.getVerificationPolicy()).isEqualTo(TEST_POLICY);
+        assertThat(mTestSession.getPolicy()).isEqualTo(TEST_POLICY);
         verifyNoMoreInteractions(mTestSessionInterface);
     }
 
@@ -189,16 +192,16 @@ public class DeveloperVerificationSessionTest {
     public void testPolicyOverrideSuccess() throws Exception {
         final int newPolicy = DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN;
         when(mTestSessionInterface.setVerificationPolicy(anyInt(), anyInt())).thenReturn(true);
-        assertThat(mTestSession.setVerificationPolicy(newPolicy)).isTrue();
+        assertThat(mTestSession.setPolicy(newPolicy)).isTrue();
         verify(mTestSessionInterface, times(1))
                 .setVerificationPolicy(eq(TEST_ID), eq(newPolicy));
-        assertThat(mTestSession.getVerificationPolicy()).isEqualTo(newPolicy);
-        assertThat(mTestSession.getVerificationPolicy()).isEqualTo(newPolicy);
+        assertThat(mTestSession.getPolicy()).isEqualTo(newPolicy);
+        assertThat(mTestSession.getPolicy()).isEqualTo(newPolicy);
 
         // Setting back to the original policy should still trigger binder calls
-        assertThat(mTestSession.setVerificationPolicy(TEST_POLICY)).isTrue();
+        assertThat(mTestSession.setPolicy(TEST_POLICY)).isTrue();
         verify(mTestSessionInterface, times(1))
                 .setVerificationPolicy(eq(TEST_ID), eq(TEST_POLICY));
-        assertThat(mTestSession.getVerificationPolicy()).isEqualTo(TEST_POLICY);
+        assertThat(mTestSession.getPolicy()).isEqualTo(TEST_POLICY);
     }
 }

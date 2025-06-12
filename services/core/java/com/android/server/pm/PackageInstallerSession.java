@@ -3309,7 +3309,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     return;
                 }
                 if (statusReceived.isVerified()) {
-                    if (statusReceived.isLite()) {
+                    if (statusReceived.isLiteVerification()) {
                         mVerificationLiteEnabled = true;
                         synchronized (mMetrics) {
                             mMetrics.onDeveloperVerificationLiteEnabled();

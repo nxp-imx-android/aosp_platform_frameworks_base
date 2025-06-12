@@ -80,7 +80,7 @@ public class DeveloperVerificationRequestStatusTrackerTest {
     public void testTimeoutExtended() {
         assertThat(mTracker.getTimeoutTime()).isEqualTo(
                 TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS);
-        assertThat(mTracker.extendTimeRemaining(TEST_TIMEOUT_EXTENDED_MILLIS))
+        assertThat(mTracker.extendTimeoutMillis(TEST_TIMEOUT_EXTENDED_MILLIS))
                 .isEqualTo(TEST_TIMEOUT_EXTENDED_MILLIS);
         assertThat(mTracker.getTimeoutTime()).isEqualTo(
                 TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS
@@ -98,7 +98,7 @@ public class DeveloperVerificationRequestStatusTrackerTest {
     public void testTimeoutExtendedExceedsMax() {
         assertThat(mTracker.getTimeoutTime()).isEqualTo(
                 TEST_REQUEST_START_TIME + TEST_TIMEOUT_DURATION_MILLIS);
-        assertThat(mTracker.extendTimeRemaining(TEST_MAX_TIMEOUT_DURATION_MILLIS))
+        assertThat(mTracker.extendTimeoutMillis(TEST_MAX_TIMEOUT_DURATION_MILLIS))
                 .isEqualTo(TEST_MAX_TIMEOUT_DURATION_MILLIS - TEST_TIMEOUT_DURATION_MILLIS);
         assertThat(mTracker.getTimeoutTime()).isEqualTo(
                 TEST_REQUEST_START_TIME + TEST_MAX_TIMEOUT_DURATION_MILLIS);

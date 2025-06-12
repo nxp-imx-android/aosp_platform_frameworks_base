@@ -50,6 +50,7 @@ import android.app.AppGlobals;
 import android.app.PendingIntent;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -1781,14 +1782,14 @@ public class PackageInstaller {
     }
 
     /**
-     *  Return the package name of the developer verification service provider, for the
+     *  Return the component name of the developer verification service provider, for the
      *  purpose of interacting with the specific verifier in relation to
      *  extension parameters and response structure.  Return null if the system
      *  verifier service provider is not available to the caller, or if there is no
      *  such provider specified by the system.
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
-    public final @Nullable String getDeveloperVerificationServiceProvider() {
+    public final @Nullable ComponentName getDeveloperVerificationServiceProvider() {
         try {
             return mInstaller.getDeveloperVerificationServiceProvider();
         } catch (RemoteException e) {
@@ -5100,7 +5101,7 @@ public class PackageInstaller {
         }
 
         @UserActionNeededReason
-        public int getVerificationUserActionNeededReason() {
+        public int getUserActionNeededReason() {
             return mVerificationUserActionNeededReason;
         }
 

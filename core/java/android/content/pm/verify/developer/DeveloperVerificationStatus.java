@@ -69,15 +69,15 @@ public final class DeveloperVerificationStatus implements Parcelable {
     public @interface DeveloperVerifierStatusAsl {}
 
     private final boolean mIsVerified;
-    private final boolean mIsLite;
+    private final boolean mIsLiteVerification;
     private final @DeveloperVerifierStatusAsl int mAslStatus;
     @NonNull
     private final String mFailuresMessage;
 
-    private DeveloperVerificationStatus(boolean isVerified, boolean isLite,
+    private DeveloperVerificationStatus(boolean isVerified, boolean isLiteVerification,
             @DeveloperVerifierStatusAsl int aslStatus, @NonNull String failuresMessage) {
         mIsVerified = isVerified;
-        mIsLite = isLite;
+        mIsLiteVerification = isLiteVerification;
         mAslStatus = aslStatus;
         mFailuresMessage = failuresMessage;
     }
@@ -92,8 +92,8 @@ public final class DeveloperVerificationStatus implements Parcelable {
     /**
      * @return true when the only the lite variation of the verification was conducted.
      */
-    public boolean isLite() {
-        return mIsLite;
+    public boolean isLiteVerification() {
+        return mIsLiteVerification;
     }
 
     /**
@@ -116,7 +116,7 @@ public final class DeveloperVerificationStatus implements Parcelable {
      */
     public static final class Builder {
         private boolean mIsVerified = false;
-        private boolean mIsLite = false;
+        private boolean mIsLiteVerification = false;
         private @DeveloperVerifierStatusAsl int mAslStatus =
                 DEVELOPER_VERIFIER_STATUS_ASL_UNDEFINED;
         private String mFailuresMessage = "";
@@ -135,8 +135,8 @@ public final class DeveloperVerificationStatus implements Parcelable {
          * instead of the full verification.
          */
         @NonNull
-        public Builder setLite(boolean isLite) {
-            mIsLite = isLite;
+        public Builder setLiteVerification(boolean isLiteVerification) {
+            mIsLiteVerification = isLiteVerification;
             return this;
         }
 
@@ -164,14 +164,14 @@ public final class DeveloperVerificationStatus implements Parcelable {
          */
         @NonNull
         public DeveloperVerificationStatus build() {
-            return new DeveloperVerificationStatus(mIsVerified, mIsLite, mAslStatus,
+            return new DeveloperVerificationStatus(mIsVerified, mIsLiteVerification, mAslStatus,
                     mFailuresMessage);
         }
     }
 
     private DeveloperVerificationStatus(Parcel in) {
         mIsVerified = in.readBoolean();
-        mIsLite = in.readBoolean();
+        mIsLiteVerification = in.readBoolean();
         mAslStatus = in.readInt();
         mFailuresMessage = in.readString8();
     }
@@ -179,7 +179,7 @@ public final class DeveloperVerificationStatus implements Parcelable {
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeBoolean(mIsVerified);
-        dest.writeBoolean(mIsLite);
+        dest.writeBoolean(mIsLiteVerification);
         dest.writeInt(mAslStatus);
         dest.writeString8(mFailuresMessage);
     }

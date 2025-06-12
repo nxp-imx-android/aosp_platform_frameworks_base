@@ -50,7 +50,7 @@ public class DeveloperVerificationStatusTest {
                 .setAslStatus(TEST_ASL_STATUS)
                 .setFailureMessage(TEST_FAILURE_MESSAGE)
                 .setVerified(TEST_VERIFIED)
-                .setLite(TEST_LITE)
+                .setLiteVerification(TEST_LITE)
                 .build();
     }
 
@@ -59,7 +59,7 @@ public class DeveloperVerificationStatusTest {
         assertThat(mStatus.isVerified()).isEqualTo(TEST_VERIFIED);
         assertThat(mStatus.getAslStatus()).isEqualTo(TEST_ASL_STATUS);
         assertThat(mStatus.getFailureMessage()).isEqualTo(TEST_FAILURE_MESSAGE);
-        assertThat(mStatus.isLite()).isEqualTo(TEST_LITE);
+        assertThat(mStatus.isLiteVerification()).isEqualTo(TEST_LITE);
     }
 
     @Test
@@ -72,6 +72,6 @@ public class DeveloperVerificationStatusTest {
         assertThat(statusFromParcel.isVerified()).isEqualTo(TEST_VERIFIED);
         assertThat(statusFromParcel.getAslStatus()).isEqualTo(TEST_ASL_STATUS);
         assertThat(statusFromParcel.getFailureMessage()).isEqualTo(TEST_FAILURE_MESSAGE);
-        assertThat(statusFromParcel.isLite()).isEqualTo(TEST_LITE);
+        assertThat(statusFromParcel.isLiteVerification()).isEqualTo(TEST_LITE);
     }
 }

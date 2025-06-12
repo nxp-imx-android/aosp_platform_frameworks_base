@@ -26,6 +26,7 @@ import android.annotation.CurrentTimeMillisLong;
 import android.annotation.DurationMillisLong;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInstaller;
@@ -124,10 +125,10 @@ public class DeveloperVerifierController {
     @NonNull
     private final Injector mInjector;
 
-    // The package name of default verifier, as specified by the system. Null if the system does not
-    // specify a default verifier.
+    // The developer verifier as specified by the system. Null if the system does not
+    // specify a verifier.
     @Nullable
-    private final String mDefaultVerifierPackageName;
+    private final ComponentName mDeveloperVerificationServiceProvider;
 
     // Repository of active verification sessions and their status (map of id -> tracker).
     @NonNull
@@ -143,30 +144,44 @@ public class DeveloperVerifierController {
      * Get an instance of VerifierController.
      */
     public static DeveloperVerifierController getInstance(@NonNull Context context,
-            @NonNull Handler handler, @Nullable String verifierPackageName) {
+            @NonNull Handler handler,
+            @Nullable ComponentName developerVerificationServiceProvider) {
         if (sInstance == null) {
             sInstance = new DeveloperVerifierController(
-                    context, handler, verifierPackageName, new Injector());
+                    context, handler, developerVerificationServiceProvider, new Injector());
         }
         return sInstance;
     }
 
     @VisibleForTesting
     public DeveloperVerifierController(@NonNull Context context, @NonNull Handler handler,
-            @Nullable String defaultVerifierPackageName, @NonNull Injector injector) {
+            @Nullable ComponentName developerVerificationServiceProvider,
+            @NonNull Injector injector) {
         mContext = context;
         mHandler = handler;
-        mDefaultVerifierPackageName = defaultVerifierPackageName;
+        mDeveloperVerificationServiceProvider = developerVerificationServiceProvider;
         mInjector = injector;
     }
 
     /**
-     * Used by the installation session to get the package name of the installed verifier.
+     * Used by the public API that queries the component name of the developer verification service
+     * provider.
+     */
+    @Nullable
+    public ComponentName getVerifierComponentName() {
+        return mDeveloperVerificationServiceProvider;
+    }
+
+    /**
+     * Used by the installation session to get the package name of the developer verifier.
      * Note: there can be only one active verifier for all the users on the device.
      */
     @Nullable
     public String getVerifierPackageName() {
-        return mDefaultVerifierPackageName;
+        if (mDeveloperVerificationServiceProvider == null) {
+            return null;
+        }
+        return mDeveloperVerificationServiceProvider.getPackageName();
     }
 
     /**
@@ -548,8 +563,7 @@ public class DeveloperVerifierController {
             mCallback = callback;
         }
 
-        @Override
-        public @CurrentTimeMillisLong long getTimeoutTime(int verificationId) {
+        public @CurrentTimeMillisLong long getTimeoutTimeMillis(int verificationId) {
             assertCallerIsCurrentVerifier(getCallingUid());
             synchronized (mVerificationStatusTrackers) {
                 final DeveloperVerificationRequestStatusTracker tracker =
@@ -562,9 +576,8 @@ public class DeveloperVerifierController {
             }
         }
 
-        @Override
-        public @DurationMillisLong long extendTimeRemaining(int verificationId,
-                @DurationMillisLong long additionalMs) {
+        public @DurationMillisLong long extendTimeoutMillis(int verificationId,
+                @DurationMillisLong long additionalMillis) {
             assertCallerIsCurrentVerifier(getCallingUid());
             synchronized (mVerificationStatusTrackers) {
                 final DeveloperVerificationRequestStatusTracker tracker =
@@ -574,7 +587,7 @@ public class DeveloperVerifierController {
                             + " doesn't exist or has finished");
                 }
                 mCallback.onTimeoutExtensionRequested();
-                return tracker.extendTimeRemaining(additionalMs);
+                return tracker.extendTimeoutMillis(additionalMillis);
             }
         }
 
