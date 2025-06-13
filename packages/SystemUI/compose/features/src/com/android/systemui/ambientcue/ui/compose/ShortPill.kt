@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -44,7 +45,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,8 +58,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
 import com.android.compose.PlatformIconButton
@@ -94,7 +101,7 @@ fun ShortPill(
         }
     val expansionAlpha by
         animateFloatAsState(
-            if (expanded) 0f else 1f,
+            targetValue = if (expanded) 0f else 1f,
             animationSpec = transitionTween,
             label = "expansion",
         )
@@ -121,6 +128,10 @@ fun ShortPill(
         ) {
             if (it) 0f else 0f
         }
+
+    // State variables to store the measured size and position of the main pill.
+    var pillContentSize by remember { mutableStateOf(IntSize.Zero) }
+    var pillContentPosition by remember { mutableStateOf(Offset.Zero) }
 
     Box(
         modifier =
@@ -159,8 +170,9 @@ fun ShortPill(
                 scaleY = enterProgress
                 scaleX = enterProgress
             }
+        val fadeOutModifier = Modifier.graphicsLayer { alpha = expansionAlpha }
         val pillModifier =
-            Modifier.graphicsLayer { alpha = enterProgress * expansionAlpha }
+            Modifier
                 .clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
                 .animatedActionBorder(strokeWidth = 1.dp, cornerRadius = 16.dp, visible = visible)
@@ -170,11 +182,12 @@ fun ShortPill(
 
         val filteredActions = FilterUtils.filterActions(actions)
 
+        // The layout for the un-expanded state (pill + side button)
         if (horizontal) {
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = scaleAnimationModifier,
+                modifier = fadeOutModifier.then(scaleAnimationModifier),
             ) {
                 Spacer(modifier = Modifier.size(closeButtonSize))
 
@@ -182,7 +195,13 @@ fun ShortPill(
                     horizontalArrangement =
                         Arrangement.spacedBy(-4.dp, Alignment.CenterHorizontally),
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = pillModifier.defaultMinSize(minWidth = minSize),
+                    modifier =
+                        pillModifier
+                            .defaultMinSize(minWidth = minSize)
+                            .onGloballyPositioned { coordinates ->
+                                pillContentSize = coordinates.size
+                                pillContentPosition = coordinates.positionInParent()
+                            },
                 ) {
                     filteredActions.take(3).fastForEach { action ->
                         Icon(action, backgroundColor)
@@ -200,32 +219,61 @@ fun ShortPill(
                 }
 
                 CloseButton(
-                    backgroundColor,
-                    outlineColor,
-                    onCloseClick,
-                    Modifier.size(closeButtonSize),
+                    onCloseClick = onCloseClick,
+                    modifier = Modifier.size(closeButtonSize),
                 )
             }
-        } else {
+        } else { // Vertical
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = scaleAnimationModifier,
+                modifier = fadeOutModifier.then(scaleAnimationModifier),
             ) {
                 Spacer(modifier = Modifier.size(closeButtonSize))
 
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(-4.dp, Alignment.CenterVertically),
-                    modifier = pillModifier.defaultMinSize(minHeight = minSize),
+                    verticalArrangement =
+                        Arrangement.spacedBy(-4.dp, Alignment.CenterVertically),
+                    modifier =
+                        pillModifier
+                            .defaultMinSize(minHeight = minSize)
+                            .onGloballyPositioned { coordinates ->
+                                pillContentSize = coordinates.size
+                                pillContentPosition = coordinates.positionInParent()
+                            },
                 ) {
-                    filteredActions.take(3).fastForEach { action -> Icon(action, backgroundColor) }
+                    filteredActions.take(3).fastForEach { action ->
+                        Icon(action, backgroundColor)
+                    }
                 }
 
                 CloseButton(
-                    backgroundColor,
-                    outlineColor,
-                    onCloseClick,
-                    Modifier.size(closeButtonSize),
+                    onCloseClick = onCloseClick,
+                    modifier = Modifier.size(closeButtonSize),
+                )
+            }
+        }
+
+        // The layout for the expanded state (a single, centered button)
+        if (expansionAlpha < 1f && pillContentSize != IntSize.Zero) {
+            with(LocalDensity.current) {
+                val offsetX =
+                    pillContentPosition.x.toDp() +
+                        (pillContentSize.width.toDp() / 2) -
+                        (closeButtonSize / 2)
+                val offsetY =
+                    pillContentPosition.y.toDp() +
+                        (pillContentSize.height.toDp() / 2) -
+                        (closeButtonSize / 2)
+
+                CloseButton(
+                    onCloseClick = onCloseClick,
+                    modifier =
+                        Modifier
+                            .offset(x = offsetX, y = offsetY)
+                            .size(closeButtonSize)
+                            .graphicsLayer { alpha = 1f - expansionAlpha } // Fade IN
+                            .then(scaleAnimationModifier),
                 )
             }
         }
@@ -234,22 +282,23 @@ fun ShortPill(
 
 @Composable
 private fun CloseButton(
-    backgroundColor: Color,
-    outlineColor: Color,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val decreasedAlphaBackgroundColor = backgroundColor.copy(alpha = 0.7f)
+
     PlatformIconButton(
         modifier =
-            modifier.clip(CircleShape).background(decreasedAlphaBackgroundColor).padding(8.dp),
+            modifier
+                .clip(CircleShape)
+                .background(MaterialTheme.colorScheme.surfaceContainer)
+                .padding(6.dp),
         iconResource = R.drawable.ic_close_white_rounded,
         colors =
             IconButtonColors(
                 containerColor = Color.Transparent,
-                contentColor = outlineColor,
+                contentColor = MaterialTheme.colorScheme.onSurface,
                 disabledContainerColor = Color.Transparent,
-                disabledContentColor = outlineColor,
+                disabledContentColor = MaterialTheme.colorScheme.onSurface,
             ),
         contentDescription =
             stringResource(id = R.string.underlay_close_button_content_description),
@@ -266,9 +315,10 @@ private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modi
             modifier
                 .then(
                     if (action.actionType == ActionType.MR) {
-                        Modifier.size(18.dp)
+                        Modifier.size(20.dp)
                     } else {
-                        Modifier.size(16.dp)
+                        Modifier
+                            .size(19.25.dp)
                             .border(
                                 width = 0.75.dp,
                                 color = MaterialTheme.colorScheme.outline,
