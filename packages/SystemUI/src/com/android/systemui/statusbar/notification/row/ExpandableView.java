@@ -146,6 +146,16 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
         public boolean canRowBeDismissed() {
             return canExpandableViewBeDismissed();
         }
+
+        @NonNull
+        @Override
+        public String getRowLoggingKey() {
+            if (ExpandableView.this instanceof ExpandableNotificationRow row) {
+                return row.getLoggingKey();
+            } else {
+                return "null";
+            }
+        }
     };
 
     /**

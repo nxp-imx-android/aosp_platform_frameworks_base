@@ -50,7 +50,20 @@ constructor(
 ) : MagneticNotificationRowManager {
 
     var currentState = State.IDLE
-        private set
+        private set(value) {
+            val swipedLoggingKey =
+                currentMagneticListeners.swipedListener()?.getRowLoggingKey().toString()
+            if (swipedLoggingKey == "null") {
+                logger.logMagneticRowManagerInvalidStateChange(from = currentState, to = value)
+            } else {
+                logger.logMagneticRowManagerStateSet(
+                    loggingKey = swipedLoggingKey,
+                    from = currentState,
+                    to = value,
+                )
+            }
+            field = value
+        }
 
     // Magnetic targets
     var currentMagneticListeners = listOf<MagneticRowListener?>()
