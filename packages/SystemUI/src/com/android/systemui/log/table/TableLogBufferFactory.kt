@@ -45,7 +45,7 @@ constructor(
      */
     fun create(name: String, maxSize: Int): TableLogBuffer {
         val tableBuffer =
-            TableLogBuffer(adjustMaxSize(maxSize), name, systemClock, logcatEchoTracker)
+            TableLogBufferImpl(adjustMaxSize(maxSize), name, systemClock, logcatEchoTracker)
         dumpManager.registerTableLogBuffer(name, tableBuffer)
         return tableBuffer
     }

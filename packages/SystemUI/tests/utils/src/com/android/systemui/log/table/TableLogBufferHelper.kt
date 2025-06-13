@@ -33,4 +33,9 @@ fun logcatTableLogBuffer(kosmos: Kosmos, name: String = "EchoToLogcatTableLogBuf
  * tests.
  */
 fun logcatTableLogBuffer(systemClock: SystemClock, name: String = "EchoToLogcatTableLogBuffer") =
-    TableLogBuffer(maxSize = 50, name, systemClock, logcatEchoTracker = LogcatEchoTrackerAlways())
+    TableLogBufferImpl(
+        maxSize = 50,
+        name,
+        systemClock,
+        logcatEchoTracker = LogcatEchoTrackerAlways(),
+    )

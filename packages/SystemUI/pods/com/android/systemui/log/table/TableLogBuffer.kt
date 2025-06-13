@@ -12,23 +12,22 @@
  * permissions and limitations under the License.
  */
 
-package com.android.systemui.plugins.log
+package com.android.systemui.log.table
 
-import com.android.systemui.log.table.Diffable
-import com.android.systemui.log.table.TableRowLogger
+import com.android.systemui.Dumpable
 
 /**
  * Base interface for a logger that logs changes in table format.
  *
  * This is a plugin interface for classes outside of SystemUI core.
  */
-interface TableLogBufferBase {
+public interface TableLogBuffer : Dumpable {
     /**
      * Logs a String? change.
      *
      * For Java overloading.
      */
-    fun logChange(prefix: String = "", columnName: String, value: String?) {
+    public fun logChange(prefix: String = "", columnName: String, value: String?) {
         logChange(prefix, columnName, value, isInitial = false)
     }
 
@@ -37,14 +36,19 @@ interface TableLogBufferBase {
      *
      * @param isInitial see [TableLogBuffer.logChange(String, Boolean, (TableRowLogger) -> Unit].
      */
-    fun logChange(prefix: String = "", columnName: String, value: String?, isInitial: Boolean)
+    public fun logChange(
+        prefix: String = "",
+        columnName: String,
+        value: String?,
+        isInitial: Boolean,
+    )
 
     /**
      * Logs a Boolean change.
      *
      * For Java overloading.
      */
-    fun logChange(prefix: String = "", columnName: String, value: Boolean) {
+    public fun logChange(prefix: String = "", columnName: String, value: Boolean) {
         logChange(prefix, columnName, value, isInitial = false)
     }
 
@@ -53,14 +57,19 @@ interface TableLogBufferBase {
      *
      * @param isInitial see [TableLogBuffer.logChange(String, Boolean, (TableRowLogger) -> Unit].
      */
-    fun logChange(prefix: String = "", columnName: String, value: Boolean, isInitial: Boolean)
+    public fun logChange(
+        prefix: String = "",
+        columnName: String,
+        value: Boolean,
+        isInitial: Boolean,
+    )
 
     /**
      * Logs an Int? change.
      *
      * For Java overloading.
      */
-    fun logChange(prefix: String = "", columnName: String, value: Int?) {
+    public fun logChange(prefix: String = "", columnName: String, value: Int?) {
         logChange(prefix, columnName, value, isInitial = false)
     }
 
@@ -69,7 +78,7 @@ interface TableLogBufferBase {
      *
      * @param isInitial see [TableLogBuffer.logChange(String, Boolean, (TableRowLogger) -> Unit].
      */
-    fun logChange(prefix: String = "", columnName: String, value: Int?, isInitial: Boolean)
+    public fun logChange(prefix: String = "", columnName: String, value: Int?, isInitial: Boolean)
 
     /**
      * Log the differences between [prevVal] and [newVal].
@@ -82,7 +91,7 @@ interface TableLogBufferBase {
      * @throws IllegalArgumentException if [columnPrefix] or column name contain "|". "|" is used as
      *   the separator token for parsing, so it can't be present in any part of the column name.
      */
-    fun <T : Diffable<T>> logDiffs(columnPrefix: String = "", prevVal: T, newVal: T)
+    public fun <T : Diffable<T>> logDiffs(columnPrefix: String = "", prevVal: T, newVal: T)
 
     /**
      * Logs change(s) to the buffer using [rowInitializer].
@@ -95,7 +104,7 @@ interface TableLogBufferBase {
      *   help us identify which values were just default starting values, and which values were
      *   derived from updated information. Most callers should use false for this value.
      */
-    fun logChange(
+    public fun logChange(
         columnPrefix: String = "",
         isInitial: Boolean = false,
         rowInitializer: (TableRowLogger) -> Unit,

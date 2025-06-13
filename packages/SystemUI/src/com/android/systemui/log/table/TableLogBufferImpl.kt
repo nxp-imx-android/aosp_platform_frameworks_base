@@ -19,11 +19,9 @@ package com.android.systemui.log.table
 import android.annotation.SuppressLint
 import android.icu.text.SimpleDateFormat
 import android.os.Trace
-import com.android.systemui.Dumpable
 import com.android.systemui.common.buffer.RingBuffer
 import com.android.systemui.log.LogcatEchoTracker
 import com.android.systemui.log.core.LogLevel
-import com.android.systemui.plugins.log.TableLogBufferBase
 import com.android.systemui.util.time.SystemClock
 import java.io.PrintWriter
 import java.util.Locale
@@ -74,13 +72,13 @@ import java.util.Locale
  * @param maxSize the maximum size of the buffer. Must be > 0.
  */
 @SuppressLint("DumpableNotRegistered") // Registered as dumpable in [TableLogBufferFactory]
-class TableLogBuffer(
+class TableLogBufferImpl(
     maxSize: Int,
     private val name: String,
     private val systemClock: SystemClock,
     private val logcatEchoTracker: LogcatEchoTracker,
     private val localLogcat: LogProxy = LogProxyDefault(),
-) : Dumpable, TableLogBufferBase {
+) : TableLogBuffer {
     init {
         if (maxSize <= 0) {
             throw IllegalArgumentException("maxSize must be > 0")
@@ -284,7 +282,7 @@ class TableLogBuffer(
         var timestamp: Long,
         var columnPrefix: String,
         var isInitial: Boolean,
-        val tableLogBuffer: TableLogBuffer,
+        val tableLogBuffer: TableLogBufferImpl,
     ) : TableRowLogger {
         /** Logs a change to a string value. */
         override fun logChange(columnName: String, value: String?) {

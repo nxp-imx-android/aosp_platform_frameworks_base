@@ -23,6 +23,7 @@ java_library {
     srcs: [
         "*.kt",
     ],
+    static_libs: ["SystemUILogLib"],
     defaults: [
         "SystemUI_pod_defaults_api",
     ],
