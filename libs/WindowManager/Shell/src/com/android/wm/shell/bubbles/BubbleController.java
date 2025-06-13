@@ -106,6 +106,8 @@ import com.android.wm.shell.R;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.appinfo.BubbleAppInfoProvider;
 import com.android.wm.shell.bubbles.bar.BubbleBarLayerView;
+import com.android.wm.shell.bubbles.fold.BubblesFoldLockSettingsObserver;
+import com.android.wm.shell.bubbles.fold.BubblesUnfoldListener;
 import com.android.wm.shell.bubbles.shortcut.BubbleShortcutHelper;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -141,6 +143,7 @@ import com.android.wm.shell.taskview.TaskViewController;
 import com.android.wm.shell.taskview.TaskViewTaskController;
 import com.android.wm.shell.taskview.TaskViewTransitions;
 import com.android.wm.shell.transition.Transitions;
+import com.android.wm.shell.unfold.ShellUnfoldProgressProvider;
 
 import dagger.Lazy;
 
@@ -157,6 +160,8 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
+
+import kotlin.Unit;
 
 /**
  * Bubbles are a special type of content that can "float" on top of other apps or System UI.
@@ -227,6 +232,7 @@ public class BubbleController implements ConfigurationChangeListener,
     private final HomeIntentProvider mHomeIntentProvider;
     private final BubbleAppInfoProvider mAppInfoProvider;
     private final Lazy<Optional<SplitScreenController>> mSplitScreenController;
+    private final BubblesFoldLockSettingsObserver mFoldLockSettingsObserver;
 
     // Used to post to main UI thread
     private final ShellExecutor mMainExecutor;
@@ -325,6 +331,9 @@ public class BubbleController implements ConfigurationChangeListener,
     // Experimental listener for app requests for bubble actions.
     private BubbleMultitaskingDelegate mBubbleMultitaskingDelegate;
 
+    /** Used to block task view transitions while we're switching over to floating views. */
+    private IBinder mBarToFloatingTransition = null;
+
     public BubbleController(Context context,
             ShellInit shellInit,
             ShellCommandHandler shellCommandHandler,
@@ -357,7 +366,9 @@ public class BubbleController implements ConfigurationChangeListener,
             ResizabilityChecker resizabilityChecker,
             HomeIntentProvider homeIntentProvider,
             BubbleAppInfoProvider appInfoProvider,
-            Lazy<Optional<SplitScreenController>> splitScreenController) {
+            Lazy<Optional<SplitScreenController>> splitScreenController,
+            Optional<ShellUnfoldProgressProvider> unfoldProgressProvider,
+            BubblesFoldLockSettingsObserver foldLockSettingsObserver) {
         mContext = context;
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
@@ -413,7 +424,25 @@ public class BubbleController implements ConfigurationChangeListener,
         mHomeIntentProvider = homeIntentProvider;
         mAppInfoProvider = appInfoProvider;
         mSplitScreenController = splitScreenController;
+        mFoldLockSettingsObserver = foldLockSettingsObserver;
         shellInit.addInitCallback(this::onInit, this);
+
+        if (unfoldProgressProvider.isPresent() && Flags.enableBubbleBar()
+                && Flags.enableBubbleBarToFloatingTransition()) {
+            addUnfoldProgressProviderListener(unfoldProgressProvider.get());
+        }
+    }
+
+    private void addUnfoldProgressProviderListener(
+            ShellUnfoldProgressProvider unfoldProgressProvider) {
+        BubblesUnfoldListener unfoldListener =
+                new BubblesUnfoldListener(mBubbleData, mFoldLockSettingsObserver, bubble -> {
+                    mBarToFloatingTransition = new Binder();
+                    mBubbleTransitions.mTaskViewTransitions.enqueueExternal(
+                            bubble.getTaskView().getController(), () -> mBarToFloatingTransition);
+                    return Unit.INSTANCE;
+                });
+        unfoldProgressProvider.addListener(mMainExecutor, unfoldListener);
     }
 
     private void registerOneHandedState(OneHandedController oneHanded) {
@@ -2001,6 +2030,19 @@ public class BubbleController implements ConfigurationChangeListener,
                     mStackView.addBubble(b);
                     if (b.getKey().equals(mBubbleData.getSelectedBubbleKey())) {
                         mStackView.setSelectedBubble(b);
+                        if (mBubbleData.isExpanded()) {
+                            Rect bounds = new Rect();
+                            mBubblePositioner.getTaskViewRestBounds(bounds);
+                            // the task view surface has been destroyed and is about to be
+                            // recreated, which will trigger a TRANSIT_OPEN transition that uses
+                            // the current bounds that are stored in the task view repository.
+                            // update the repository so that the app launches with the correct
+                            // bounds.
+                            mBubbleTransitions.mTaskViewTransitions.updateBoundsState(
+                                    b.getTaskView().getController(), bounds);
+                            // the expanded bubble is moving from bar to floating; don't animate.
+                            mStackView.snapToExpanded();
+                        }
                     }
                 } else {
                     Log.w(TAG, "Tried to add a bubble to the stack but the stack is null");
@@ -2013,9 +2055,21 @@ public class BubbleController implements ConfigurationChangeListener,
                 }
             };
         }
-        // TODO (b/380105874): Remove this after properly transitioning the expanded bubble from bar
-        // to floating
-        if (mStackView != null && mBubbleData.isExpanded()) {
+
+        if (mBarToFloatingTransition != null) {
+            // if we have a blocking transition, then we're folding and switching from bubble bar to
+            // floating bubbles with an expanded bubble. Remove any pending transitions that have
+            // been created since they have incorrect bounds. The bounds will be updated once the
+            // expanded bubble is added to the stack view.
+            Bubble b = (Bubble) mBubbleData.getSelectedBubble();
+            mBubbleTransitions.mTaskViewTransitions.removePendingTransitions(
+                    b.getTaskView().getController());
+            mBubbleTransitions.mTaskViewTransitions.onExternalDone(mBarToFloatingTransition);
+            mBarToFloatingTransition = null;
+        } else if (mStackView != null && mBubbleData.isExpanded()) {
+            // if we don't have a blocking transition, and we're moving from bar to floating while
+            // expanded, then the device locks after folding and we should update the internal
+            // bubble data state to collapsed.
             mBubbleData.collapseNoUpdate();
         }
         for (int i = mBubbleData.getBubbles().size() - 1; i >= 0; i--) {
@@ -2039,7 +2093,6 @@ public class BubbleController implements ConfigurationChangeListener,
             } else {
                 bubbleOverflow.initialize(mExpandedViewManager, mStackView, mBubblePositioner);
             }
-
         }
     }
 

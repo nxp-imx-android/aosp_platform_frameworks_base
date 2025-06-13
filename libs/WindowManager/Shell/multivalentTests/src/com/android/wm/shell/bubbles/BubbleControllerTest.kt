@@ -50,6 +50,7 @@ import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.internal.protolog.ProtoLog
 import com.android.internal.statusbar.IStatusBarService
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR
+import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR_TO_FLOATING_TRANSITION
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.R
 import com.android.wm.shell.ShellTaskOrganizer
@@ -80,9 +81,11 @@ import com.android.wm.shell.taskview.TaskViewTransitions
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TRANSIT_CONVERT_TO_BUBBLE
 import com.android.wm.shell.transition.Transitions.TransitionHandler
+import com.android.wm.shell.unfold.ShellUnfoldProgressProvider
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
 import java.util.Optional
+import java.util.concurrent.Executor
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -92,8 +95,9 @@ import org.junit.runner.RunWith
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.isA
 import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.isA
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
@@ -122,6 +126,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     private val transitions = mock<Transitions>()
     private val taskViewTransitions = mock<TaskViewTransitions>()
     private val bubbleAppInfoProvider = FakeBubbleAppInfoProvider()
+    private val unfoldProgressProvider = FakeShellUnfoldProgressProvider()
 
     private lateinit var bubbleController: BubbleController
     private lateinit var bubblePositioner: BubblePositioner
@@ -134,6 +139,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     private lateinit var imeListener: ImeListener
     private lateinit var bubbleTransitions: BubbleTransitions
     private lateinit var shellTaskOrganizer: ShellTaskOrganizer
+
+    private var isStayAwakeOnFold = false
 
     private val deviceConfigFolded =
         DeviceConfig(
@@ -611,6 +618,95 @@ class BubbleControllerTest(flags: FlagsParameterization) {
         assertThat(bubbleData.isExpanded).isTrue()
     }
 
+    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR, FLAG_ENABLE_BUBBLE_BAR_TO_FLOATING_TRANSITION)
+    @Test
+    fun expandBubbleBar_thenFold_stayAwakeOnFold_shouldKeepBubbleExpanded() {
+        isStayAwakeOnFold = true
+        // switch to bubble bar
+        bubblePositioner.update(deviceConfigUnfolded)
+        bubblePositioner.isShowingInBubbleBar = true
+        getInstrumentation().runOnMainSync {
+            bubbleController.setLauncherHasBubbleBar(true)
+            bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
+        }
+
+        val bubble = createBubble("key")
+        bubble.setShouldAutoExpand(true)
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true
+            )
+        }
+        assertThat(bubbleData.hasBubbles()).isTrue()
+        assertThat(bubbleData.isExpanded).isTrue()
+        assertThat(bubbleData.selectedBubble).isEqualTo(bubble)
+        assertThat(bubble.taskView).isNotNull()
+
+        assertThat(bubble.taskView.parent).isEqualTo(bubble.bubbleBarExpandedView)
+
+        unfoldProgressProvider.listener.onFoldStateChanged(/* isFolded= */ true)
+        verify(taskViewTransitions).enqueueExternal(eq(bubble.taskView.controller), any())
+
+        // switch to floating
+        bubblePositioner.update(deviceConfigFolded)
+        bubblePositioner.isShowingInBubbleBar = false
+        getInstrumentation().runOnMainSync {
+            bubbleController.setLauncherHasBubbleBar(false)
+            bubbleController.registerBubbleStateListener(null)
+        }
+
+        assertThat(bubbleData.isExpanded).isTrue()
+        assertThat(bubbleController.stackView!!.isExpanded).isTrue()
+        assertThat(bubble.taskView.parent.parent).isEqualTo(bubble.expandedView)
+        assertThat(bubble.taskView.alpha).isEqualTo(1)
+    }
+
+    @EnableFlags(FLAG_ENABLE_BUBBLE_BAR, FLAG_ENABLE_BUBBLE_BAR_TO_FLOATING_TRANSITION)
+    @Test
+    fun expandBubbleBar_thenFold_notStayAwakeOnFold_shouldCollapse() {
+        isStayAwakeOnFold = false
+        // switch to bubble bar
+        bubblePositioner.update(deviceConfigUnfolded)
+        bubblePositioner.isShowingInBubbleBar = true
+        getInstrumentation().runOnMainSync {
+            bubbleController.setLauncherHasBubbleBar(true)
+            bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
+        }
+
+        val bubble = createBubble("key")
+        bubble.setShouldAutoExpand(true)
+        getInstrumentation().runOnMainSync {
+            bubbleController.inflateAndAdd(
+                bubble,
+                /* suppressFlyout= */ true,
+                /* showInShade= */ true
+            )
+        }
+        assertThat(bubbleData.hasBubbles()).isTrue()
+        assertThat(bubbleData.isExpanded).isTrue()
+        assertThat(bubbleData.selectedBubble).isEqualTo(bubble)
+        assertThat(bubble.taskView).isNotNull()
+
+        assertThat(bubble.taskView.parent).isEqualTo(bubble.bubbleBarExpandedView)
+
+        unfoldProgressProvider.listener.onFoldStateChanged(/* isFolded= */ true)
+
+        // switch to floating
+        bubblePositioner.update(deviceConfigFolded)
+        bubblePositioner.isShowingInBubbleBar = false
+        getInstrumentation().runOnMainSync {
+            bubbleController.setLauncherHasBubbleBar(false)
+            bubbleController.registerBubbleStateListener(null)
+        }
+
+        assertThat(bubbleData.isExpanded).isFalse()
+        assertThat(bubbleController.stackView!!.isExpanded).isFalse()
+        assertThat(bubble.taskView.parent.parent).isEqualTo(bubble.expandedView)
+        assertThat(bubble.taskView.alpha).isEqualTo(0)
+    }
+
     private fun createBubble(key: String, taskId: Int = 0): Bubble {
         val icon = Icon.createWithResource(context.resources, R.drawable.bubble_ic_overflow_button)
         val shortcutInfo = ShortcutInfo.Builder(context, "fakeId").setIcon(icon).build()
@@ -700,6 +796,8 @@ class BubbleControllerTest(flags: FlagsParameterization) {
                 HomeIntentProvider(context),
                 bubbleAppInfoProvider,
                 { Optional.empty() },
+                Optional.of(unfoldProgressProvider),
+                { isStayAwakeOnFold },
             )
         bubbleController.setInflateSynchronously(true)
         bubbleController.onInit()
@@ -712,6 +810,18 @@ class BubbleControllerTest(flags: FlagsParameterization) {
 
         override fun onBubbleExpandChanged(isExpanding: Boolean, key: String) {
             bubblesExpandedState[key] = isExpanding
+        }
+    }
+
+    private class FakeShellUnfoldProgressProvider : ShellUnfoldProgressProvider {
+
+        lateinit var listener: ShellUnfoldProgressProvider.UnfoldListener
+
+        override fun addListener(
+            executor: Executor,
+            listener: ShellUnfoldProgressProvider.UnfoldListener
+        ) {
+            this.listener = listener
         }
     }
 

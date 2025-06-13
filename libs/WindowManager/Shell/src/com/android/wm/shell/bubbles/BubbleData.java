@@ -550,7 +550,8 @@ public class BubbleData {
      *
      * @see #notificationEntryUpdated(Bubble, boolean, boolean, BubbleBarLocation)
      */
-    void notificationEntryUpdated(Bubble bubble, boolean suppressFlyout, boolean showInShade) {
+    public void notificationEntryUpdated(Bubble bubble, boolean suppressFlyout,
+            boolean showInShade) {
         notificationEntryUpdated(bubble, suppressFlyout, showInShade, /* bubbleBarLocation = */
                 null);
     }

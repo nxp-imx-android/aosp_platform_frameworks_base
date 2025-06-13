@@ -96,7 +96,7 @@ public class TestableBubbleController extends BubbleController {
                 displayController, oneHandedOptional, dragAndDropController, shellMainExecutor,
                 shellMainHandler, new SyncExecutor(), taskViewTransitions,
                 transitions, syncQueue, wmService, resizabilityChecker, homeIntentProvider,
-                appInfoProvider, () -> splitScreenController);
+                appInfoProvider, () -> splitScreenController, Optional.empty(), () -> false);
         setInflateSynchronously(true);
         onInit();
     }
