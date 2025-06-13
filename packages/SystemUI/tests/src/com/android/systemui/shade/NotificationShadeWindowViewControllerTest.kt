@@ -523,6 +523,56 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_HUB_BLURRED_BY_SHADE_FIX)
+    fun handleExternalTouch_isNotInterceptedAndIsNotDraggingDown_onTouchNotSent() {
+        whenever(view.dispatchTouchEvent(any())).thenReturn(true)
+        whenever(view.onInterceptTouchEvent(any())).thenReturn(false)
+        whenever(dragDownHelper.isDraggingDown).thenReturn(false)
+
+        underTest.setStatusBarViewController(phoneStatusBarViewController)
+
+        underTest.handleExternalTouch(DOWN_EVENT)
+        underTest.handleExternalTouch(MOVE_EVENT)
+
+        // Interception offered for both events, and onTouchEvent is not called.
+        verify(view).onInterceptTouchEvent(DOWN_EVENT)
+        verify(view).onInterceptTouchEvent(MOVE_EVENT)
+        verify(view, never()).onTouchEvent(any())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HUB_BLURRED_BY_SHADE_FIX)
+    fun handleExternalTouch_isDraggingDown_onTouchSentAndInterceptTouchNotCalledAgain() {
+        whenever(view.dispatchTouchEvent(any())).thenReturn(true)
+        whenever(view.onInterceptTouchEvent(any())).thenReturn(false)
+
+        underTest.setStatusBarViewController(phoneStatusBarViewController)
+        underTest.handleExternalTouch(DOWN_EVENT)
+
+        whenever(panelExpansionInteractor.isFullyExpanded).thenReturn(true)
+        // AND quick settings controller doesn't want it
+        whenever(quickSettingsController.shouldQuickSettingsIntercept(any(), any(), any()))
+            .thenReturn(false)
+        whenever(dragDownHelper.isDragDownEnabled).thenReturn(true)
+        whenever(dragDownHelper.onInterceptTouchEvent(any())).thenReturn(true)
+
+        // THEN dragDownHelper should intercept.
+        assertThat(interactionEventHandler.shouldInterceptTouchEvent(MOVE_EVENT)).isTrue()
+        verify(dragDownHelper).onInterceptTouchEvent(MOVE_EVENT)
+        clearInvocations(view)
+        // AND dragging down is in progress.
+        whenever(dragDownHelper.isDraggingDown).thenReturn(true)
+
+        // Handle touch sent by hub.
+        underTest.handleExternalTouch(MOVE_EVENT)
+
+        // Interception not called again.
+        verify(view, never()).onInterceptTouchEvent(MOVE_EVENT)
+        // onTouchEvent goes to the view.
+        verify(view).onTouchEvent(MOVE_EVENT)
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_COMMUNAL_SHADE_TOUCH_HANDLING_FIXES)
     @DisableSceneContainer
     fun handleExternalTouch_hubDoesNotSeeTouches() {
