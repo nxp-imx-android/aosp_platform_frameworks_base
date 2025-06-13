@@ -62,6 +62,7 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowInsetsAnimation;
 
+import androidx.annotation.NonNull;
 import androidx.test.filters.SmallTest;
 
 import com.android.keyguard.BouncerPanelExpansionCalculator;
@@ -1399,9 +1400,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     public void testOverlapOnTop() {
-        ExpandableNotificationRow firstRow = mKosmos.createRow();
+        ExpandableNotificationRow firstRow = createRow();
         mStackScroller.addContainerView(firstRow);
-        ExpandableNotificationRow secondRow = mKosmos.createRow();
+        ExpandableNotificationRow secondRow = createRow();
         mStackScroller.addContainerView(secondRow);
 
         ExpandableViewState viewState = firstRow.getViewState();
@@ -1428,9 +1429,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     public void testOverlapOnTop_groupCollapsed() {
-        ExpandableNotificationRow firstRow = mKosmos.createRowGroup();
+        ExpandableNotificationRow firstRow = createRowGroup();
         mStackScroller.addContainerView(firstRow);
-        ExpandableNotificationRow secondRow = mKosmos.createRow();
+        ExpandableNotificationRow secondRow = createRow();
         mStackScroller.addContainerView(secondRow);
 
         ExpandableViewState viewState = firstRow.getViewState();
@@ -1458,9 +1459,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @EnableFlags({com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT,
             com.android.systemui.Flags.FLAG_NOTIFICATION_BUNDLE_UI})
     public void testOverlapOnTop_groupExpanded() {
-        ExpandableNotificationRow parent = mKosmos.createRowGroup();
+        ExpandableNotificationRow parent = createRowGroup();
         mStackScroller.addContainerView(parent);
-        ExpandableNotificationRow secondRow = mKosmos.createRow();
+        ExpandableNotificationRow secondRow = createRow();
         mStackScroller.addContainerView(secondRow);
 
         ExpandableViewState viewState = parent.getViewState();
@@ -1500,9 +1501,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @EnableFlags({com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT,
             com.android.systemui.Flags.FLAG_NOTIFICATION_BUNDLE_UI})
     public void testOverlapOnBottom_groupExpanded_Transient() {
-        ExpandableNotificationRow parent = mKosmos.createRowGroup();
+        ExpandableNotificationRow parent = createRowGroup();
         mStackScroller.addContainerView(parent);
-        ExpandableNotificationRow secondRow = mKosmos.createRow();
+        ExpandableNotificationRow secondRow = createRow();
         mStackScroller.addContainerView(secondRow);
 
         ExpandableViewState viewState = parent.getViewState();
@@ -1547,10 +1548,10 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     public void testOverlapOnBottom_whenTransient() {
-        ExpandableNotificationRow firstRow = mKosmos.createRow();
+        ExpandableNotificationRow firstRow = createRow();
         mStackScroller.addTransientView(firstRow, 0);
         firstRow.setTransientContainer(mStackScroller);
-        ExpandableNotificationRow secondRow = mKosmos.createRow();
+        ExpandableNotificationRow secondRow = createRow();
         mStackScroller.addContainerView(secondRow);
 
         ExpandableViewState viewState = firstRow.getViewState();
@@ -1578,12 +1579,28 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
                 secondRow.getBottomOverlap() == 0);
     }
 
+    @NonNull
+    private ExpandableNotificationRow createRow() {
+        ExpandableNotificationRow row = mKosmos.createRow();
+        row.setIsBlurSupported(true);
+        return row;
+    }
+
+    @NonNull
+    private ExpandableNotificationRow createRowGroup() {
+        ExpandableNotificationRow rowGroup = mKosmos.createRowGroup();
+        rowGroup.setIsBlurSupported(true);
+        List<ExpandableNotificationRow> children = rowGroup.getAttachedChildren();
+        children.forEach((it) -> it.setIsBlurSupported(true));
+        return rowGroup;
+    }
+
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     public void testOverlapListCreation_baseline() {
-        ExpandableNotificationRow firstRow = mKosmos.createRow();
+        ExpandableNotificationRow firstRow = createRow();
         mStackScroller.addContainerView(firstRow);
-        ExpandableNotificationRow secondRow = mKosmos.createRow();
+        ExpandableNotificationRow secondRow = createRow();
         mStackScroller.addContainerView(secondRow);
 
         ExpandableViewState viewState = firstRow.getViewState();
@@ -1608,9 +1625,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mStackScroller.createSortedNotificationLists(overlapList, nonOverlapList);
 
         assertTrue("First row wasn't returned as the first element",
-                overlapList.get(0) == firstRow);
+                !overlapList.isEmpty() && overlapList.get(0) == firstRow);
         assertTrue("Second row wasn't returned as the first element",
-                overlapList.get(1) == secondRow);
+                overlapList.size() >= 2 && overlapList.get(1) == secondRow);
         assertTrue("The first view should not be non-overlapping",
                 !nonOverlapList.contains(firstRow));
         assertTrue("The second view should not be non-overlapping",
@@ -1620,11 +1637,11 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     public void testOverlapListCreation_sorted() {
-        ExpandableNotificationRow firstRow = mKosmos.createRow();
+        ExpandableNotificationRow firstRow = createRow();
         mStackScroller.addContainerView(firstRow);
-        ExpandableNotificationRow secondRow = mKosmos.createRow();
+        ExpandableNotificationRow secondRow = createRow();
         mStackScroller.addContainerView(secondRow);
-        ExpandableNotificationRow thirdRow = mKosmos.createRow();
+        ExpandableNotificationRow thirdRow = createRow();
         mStackScroller.addContainerView(thirdRow);
 
         ExpandableViewState viewState = firstRow.getViewState();
@@ -1657,11 +1674,11 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mStackScroller.createSortedNotificationLists(overlapList, nonOverlapList);
 
         assertTrue("Third row wasn't returned as the first element",
-                overlapList.get(0) == thirdRow);
+                !overlapList.isEmpty() && overlapList.get(0) == thirdRow);
         assertTrue("Second row wasn't returned as the second element",
-                overlapList.get(1) == secondRow);
+                overlapList.size() > 1 &&overlapList.get(1) == secondRow);
         assertTrue("First row wasn't returned as the last element",
-                overlapList.get(2) == firstRow);
+                overlapList.size() > 2 &&overlapList.get(2) == firstRow);
         assertTrue("The first view should not be non-overlapping",
                 !nonOverlapList.contains(firstRow));
         assertTrue("The second view should not be non-overlapping",
@@ -1673,10 +1690,10 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     public void testOverlapListCreation_transient() {
-        ExpandableNotificationRow firstRow = mKosmos.createRow();
+        ExpandableNotificationRow firstRow = createRow();
         mStackScroller.addTransientView(firstRow, 0);
         firstRow.setTransientContainer(mStackScroller);
-        ExpandableNotificationRow secondRow = mKosmos.createRow();
+        ExpandableNotificationRow secondRow = createRow();
         mStackScroller.addContainerView(secondRow);
 
         ExpandableViewState viewState = firstRow.getViewState();
@@ -1702,9 +1719,9 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mStackScroller.createSortedNotificationLists(overlapList, nonOverlapList);
 
         assertTrue("First row wasn't returned as the first element",
-                overlapList.get(0) == firstRow);
+                !overlapList.isEmpty() &&overlapList.get(0) == firstRow);
         assertTrue("Second row wasn't returned as the second element",
-                overlapList.get(1) == secondRow);
+                overlapList.size() > 1 &&overlapList.get(1) == secondRow);
         assertTrue("The first view should not be non-overlapping",
                 !nonOverlapList.contains(firstRow));
         assertTrue("The second view should not be non-overlapping",
@@ -1714,7 +1731,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     public void testOverlapListCreation_alpha() {
-        ExpandableNotificationRow firstRow = mKosmos.createRow();
+        ExpandableNotificationRow firstRow = createRow();
         mStackScroller.addContainerView(firstRow);
 
         ExpandableViewState viewState = firstRow.getViewState();
@@ -1738,7 +1755,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     public void testOverlapListCreation_gone() {
-        ExpandableNotificationRow firstRow = mKosmos.createRow();
+        ExpandableNotificationRow firstRow = createRow();
         mStackScroller.addContainerView(firstRow);
 
         ExpandableViewState viewState = firstRow.getViewState();
@@ -1762,8 +1779,34 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
+    public void testOverlapListCreation_opaque() {
+        ExpandableNotificationRow firstRow = createRow();
+        mStackScroller.addContainerView(firstRow);
+
+        ExpandableViewState viewState = firstRow.getViewState();
+        viewState.initFrom(firstRow);
+        viewState.setYTranslation(0f);
+        viewState.height = 100;
+        viewState.notGoneIndex = 0;
+        viewState.setAlpha(1);
+        viewState.hidden = false;
+        viewState.applyToView(firstRow);
+        // make it opaque
+        firstRow.setIsBlurSupported(false);
+
+        ArrayList<ExpandableView> overlapList = new ArrayList<>();
+        ArrayList<ExpandableView> nonOverlapList = new ArrayList<>();
+        mStackScroller.createSortedNotificationLists(overlapList, nonOverlapList);
+
+        assertTrue("A opaque view was returned as foverlapping",
+                nonOverlapList.contains(firstRow));
+        assertTrue("There was an unexpected overlapping view", overlapList.isEmpty());
+    }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     public void testOverlapListCreation_invisible() {
-        ExpandableNotificationRow firstRow = mKosmos.createRow();
+        ExpandableNotificationRow firstRow = createRow();
         mStackScroller.addContainerView(firstRow);
 
         ExpandableViewState viewState = firstRow.getViewState();
@@ -1787,7 +1830,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Test
     @EnableFlags(com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT)
     public void testOverlapListCreation_collapsed_group() {
-        ExpandableNotificationRow parent = mKosmos.createRowGroup();
+        ExpandableNotificationRow parent = createRowGroup();
         mStackScroller.addContainerView(parent);
 
         ExpandableViewState viewState = parent.getViewState();
@@ -1811,7 +1854,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mStackScroller.createSortedNotificationLists(overlapList, nonOverlapList);
 
         assertTrue("The parent wasn't added to the overlapping list",
-                overlapList.get(0) == parent);
+                !overlapList.isEmpty() && overlapList.get(0) == parent);
         assertTrue("Children should only be added when expanded", !overlapList.contains(child));
         assertTrue("Children of collapsed group wasn't added non-overlapping",
                 nonOverlapList.contains(child));
@@ -1821,7 +1864,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @EnableFlags({com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT,
             com.android.systemui.Flags.FLAG_NOTIFICATION_BUNDLE_UI})
     public void testOverlapListCreation_expanded_group() {
-        ExpandableNotificationRow parent = mKosmos.createRowGroup();
+        ExpandableNotificationRow parent = createRowGroup();
         mStackScroller.addContainerView(parent);
 
         ExpandableViewState viewState = parent.getViewState();
@@ -1847,7 +1890,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mStackScroller.createSortedNotificationLists(overlapList, nonOverlapList);
 
         assertTrue("The parent wasn't added to the overlapping list",
-                overlapList.get(0) == parent);
+                !overlapList.isEmpty() &&overlapList.get(0) == parent);
         assertTrue("Children should be added when expanded", overlapList.contains(child));
         assertTrue("Children of expanded group was added non-overlapping",
                 !nonOverlapList.contains(child));
@@ -1857,7 +1900,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @EnableFlags({com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT,
             com.android.systemui.Flags.FLAG_NOTIFICATION_BUNDLE_UI})
     public void testOverlapListCreation_expanded_group_alpha() {
-        ExpandableNotificationRow parent = mKosmos.createRowGroup();
+        ExpandableNotificationRow parent = createRowGroup();
         mStackScroller.addContainerView(parent);
 
         ExpandableViewState viewState = parent.getViewState();
@@ -1883,7 +1926,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mStackScroller.createSortedNotificationLists(overlapList, nonOverlapList);
 
         assertTrue("The parent wasn't added to the overlapping list",
-                overlapList.get(0) == parent);
+                !overlapList.isEmpty() &&overlapList.get(0) == parent);
         assertTrue("Children only should be added when expanded and visible",
                 !overlapList.contains(child));
         assertTrue("Children of expanded group was added non-overlapping",
@@ -1894,7 +1937,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @EnableFlags({com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT,
             com.android.systemui.Flags.FLAG_NOTIFICATION_BUNDLE_UI})
     public void testOverlapListCreation_expanded_group_transient() {
-        ExpandableNotificationRow parent = mKosmos.createRowGroup();
+        ExpandableNotificationRow parent = createRowGroup();
         mStackScroller.addContainerView(parent);
 
         ExpandableViewState viewState = parent.getViewState();
@@ -1923,7 +1966,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
         mStackScroller.createSortedNotificationLists(overlapList, nonOverlapList);
 
         assertTrue("The parent wasn't added to the overlapping list",
-                overlapList.get(0) == parent);
+                !overlapList.isEmpty() && overlapList.get(0) == parent);
         assertTrue("Transient children should be added overlapping when expanded",
                 overlapList.contains(child));
         assertTrue("Transient child of expanded group was added non-overlapping",
@@ -1933,7 +1976,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     @Test
     @EnableFlags({com.android.systemui.Flags.FLAG_PHYSICAL_NOTIFICATION_MOVEMENT})
     public void testOverlapWhenOutOfBounds() {
-        ExpandableNotificationRow firstRow = mKosmos.createRow();
+        ExpandableNotificationRow firstRow = createRow();
         mStackScroller.addContainerView(firstRow);
 
         ExpandableViewState viewState = firstRow.getViewState();

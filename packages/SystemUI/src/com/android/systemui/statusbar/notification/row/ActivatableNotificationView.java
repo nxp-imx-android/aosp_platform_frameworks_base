@@ -28,6 +28,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.util.IndentingPrintWriter;
@@ -387,6 +388,14 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
     public void setTopOverlap(int topOverlap) {
         super.setTopOverlap(topOverlap);
         mBackgroundNormal.setTopOverlap(topOverlap);
+    }
+
+    @Override
+    public boolean isBackgroundOpaque() {
+        if (Color.alpha(mCurrentBackgroundTint) == 255) {
+            return true;
+        }
+        return false;
     }
 
     @Override
