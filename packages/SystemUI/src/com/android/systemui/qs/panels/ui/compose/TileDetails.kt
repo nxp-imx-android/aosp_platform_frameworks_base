@@ -54,8 +54,6 @@ import com.android.systemui.qs.tiles.dialog.InternetDetailsContent
 import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.ModesDetailsContent
 import com.android.systemui.qs.tiles.dialog.ModesDetailsViewModel
-import com.android.systemui.qs.tiles.dialog.ScreenRecordDetailsContent
-import com.android.systemui.qs.tiles.dialog.ScreenRecordDetailsViewModel
 
 @Composable
 fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewModel) {
@@ -148,7 +146,6 @@ fun TileDetails(modifier: Modifier = Modifier, detailsViewModel: DetailsViewMode
 private fun MapTileDetailsContent(tileDetailsViewModel: TileDetailsViewModel) {
     when (tileDetailsViewModel) {
         is InternetDetailsViewModel -> InternetDetailsContent(tileDetailsViewModel)
-        is ScreenRecordDetailsViewModel -> ScreenRecordDetailsContent(tileDetailsViewModel)
         is BluetoothDetailsViewModel ->
             BluetoothDetailsContent(tileDetailsViewModel.detailsContentViewModel)
         is ModesDetailsViewModel -> ModesDetailsContent(tileDetailsViewModel)
