@@ -1166,6 +1166,10 @@ public class BubbleController implements ConfigurationChangeListener,
             }
         });
         try {
+            if (mOnImeHidden != null) {
+                Log.w(TAG, "removing bubbles from window manager with non-null onImeHidden");
+            }
+            mOnImeHidden = null;
             if (mStackView != null) {
                 mWindowManager.removeView(mStackView);
                 mBubbleData.getOverflow().cleanUpExpandedState();

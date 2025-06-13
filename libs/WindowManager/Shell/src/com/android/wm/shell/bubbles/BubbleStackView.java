@@ -2393,13 +2393,22 @@ public class BubbleStackView extends FrameLayout
 
         boolean wasExpanded = mIsExpanded;
 
+        if (wasExpanded) {
+            // stop monitoring gestures without waiting for the IME to hide if we're collapsing in
+            // case the IME gets hidden after we already were detached from the window.
+            stopMonitoringSwipeUpGesture();
+        }
+
         // Do the actual expansion/collapse after the IME is hidden if it's currently visible in
         // order to avoid flickers
+        // TODO: b/424812643 - clean up the onImeHidden runnable
         Runnable onImeHidden = () -> {
+            if (!isAttachedToWindow()) {
+                Log.w(TAG, "onImeHidden runnable running but we're not attached.");
+            }
             mSysuiProxyProvider.getSysuiProxy().onStackExpandChanged(shouldExpand);
 
             if (wasExpanded) {
-                stopMonitoringSwipeUpGesture();
                 animateCollapse();
                 showManageMenu(false);
                 logBubbleEvent(mExpandedBubble,
