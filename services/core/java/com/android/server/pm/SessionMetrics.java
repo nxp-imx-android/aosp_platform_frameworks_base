@@ -83,6 +83,7 @@ final class SessionMetrics {
     private final boolean mIsAutoInstallDependenciesEnabled;
     private long mApksSizeBytes;
     private boolean mWasUserActionIntentSent;
+    private boolean mWasUserResponseReceived;
     private final int mDefaultDeveloperVerificationPolicy;
     private long mDeveloperVerifierBindStartedMillis;
     private long mDeveloperVerifierConnectedMillis;
@@ -102,6 +103,7 @@ final class SessionMetrics {
     private @DeveloperVerificationStatus.DeveloperVerifierStatusAsl int mAslStatus;
     private @PackageInstaller.DeveloperVerificationPolicy int mDeveloperVerificationPolicyOverride;
     private boolean mWasDeveloperVerificationUserActionRequired = false;
+    private boolean mWasDeveloperVerificationUserResponseReceived = false;
     private @PackageInstaller.DeveloperVerificationUserConfirmationInfo.UserActionNeededReason int
             mDeveloperVerificationUserActionRequiredReason;
     private @PackageInstaller.DeveloperVerificationUserResponse int
@@ -160,6 +162,10 @@ final class SessionMetrics {
 
     public void onUserActionIntentSent() {
         mWasUserActionIntentSent = true;
+    }
+
+    public void onUserResponseReceived() {
+        mWasUserResponseReceived = true;
     }
 
     public void onSessionCommitted(long committedMillis) {
@@ -264,6 +270,7 @@ final class SessionMetrics {
     public void onDeveloperVerificationUserResponseReceived(
             @PackageInstaller.DeveloperVerificationUserResponse int response) {
         mDeveloperVerificationUserResponse = response;
+        mWasDeveloperVerificationUserResponseReceived = true;
     }
 
     public void onDeveloperVerificationLiteEnabled() {
@@ -354,7 +361,9 @@ final class SessionMetrics {
                         mDeveloperVerificationDurationMillis,
                         developerVerificationPrepDurationMillis,
                         mDeveloperVerificationRetryDurationMillis,
-                        developerVerifierConnectionDurationMillis
+                        developerVerifierConnectionDurationMillis,
+                        mWasUserResponseReceived,
+                        mWasDeveloperVerificationUserResponseReceived
                         )
         );
     }
