@@ -1913,12 +1913,7 @@ public abstract class OomAdjuster {
             // Process has user perceptible activities.
             return PROCESS_CAPABILITY_CPU_TIME;
         }
-        if (Flags.prototypeAggressiveFreezing()) {
-            if (app.mServices.hasUndemotedShortForegroundService(nowUptime)) {
-                // Grant cpu time for short FGS even when aggressively freezing.
-                return PROCESS_CAPABILITY_CPU_TIME;
-            }
-        } else if (app.mServices.hasForegroundServices()) {
+        if (app.mServices.hasForegroundServices()) {
             return PROCESS_CAPABILITY_CPU_TIME;
         }
         if (app.mReceivers.isReceivingBroadcast()) {

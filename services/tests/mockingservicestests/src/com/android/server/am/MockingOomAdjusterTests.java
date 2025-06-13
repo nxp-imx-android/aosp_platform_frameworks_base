@@ -42,7 +42,6 @@ import static android.app.ActivityManager.PROCESS_STATE_TOP_SLEEPING;
 import static android.app.ActivityManager.PROCESS_STATE_TRANSIENT_BACKGROUND;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY;
 import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_NONE;
-import static android.app.ActivityManagerInternal.OOM_ADJ_REASON_SHORT_FGS_TIMEOUT;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE;
 import static android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE;
 
@@ -116,7 +115,6 @@ import android.os.PowerManagerInternal;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.UserHandle;
-import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -776,52 +774,6 @@ public class MockingOomAdjusterTests {
 
     @SuppressWarnings("GuardedBy")
     @Test
-    @EnableFlags({Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY,
-            Flags.FLAG_PROTOTYPE_AGGRESSIVE_FREEZING})
-    public void testUpdateOomAdjFreezeState_bindingFromShortFgs() {
-        // Setting up a started short FGS within app1.
-        final ServiceRecord s = ServiceRecord.newEmptyInstanceForTest(mService);
-        s.appInfo = new ApplicationInfo();
-        mProcessStateController.setStartRequested(s, true);
-        s.isForeground = true;
-        s.foregroundServiceType = FOREGROUND_SERVICE_TYPE_SHORT_SERVICE;
-        mProcessStateController.setShortFgsInfo(s, SystemClock.uptimeMillis());
-
-        final ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
-                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true);
-        mProcessStateController.setHostProcess(s, app);
-        mProcessStateController.setHasForegroundServices(app.mServices, true,
-                FOREGROUND_SERVICE_TYPE_SHORT_SERVICE, /* hasNoneType=*/false);
-        mProcessStateController.startService(app.mServices, s);
-        app.mState.setLastTopTime(SystemClock.uptimeMillis()
-                - mService.mConstants.TOP_TO_FGS_GRACE_DURATION);
-
-        final ProcessRecord app2 = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
-                MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, false);
-        // App1 with short service binds to app2
-        bindService(app2, app, null, null, 0, mock(IBinder.class));
-
-        setProcessesToLru(app, app2);
-        updateOomAdj(app);
-
-        assertCpuTime(app);
-        assertCpuTime(app2);
-
-        // Timeout the short FGS.
-        mProcessStateController.setShortFgsInfo(s, SystemClock.uptimeMillis()
-                - mService.mConstants.mShortFgsTimeoutDuration
-                - mService.mConstants.mShortFgsProcStateExtraWaitDuration);
-        mService.mServices.onShortFgsProcstateTimeout(s);
-        // mService is a mock, but this verifies that the timeout would trigger an update.
-        verify(mService).updateOomAdjLocked(app, OOM_ADJ_REASON_SHORT_FGS_TIMEOUT);
-        updateOomAdj(app);
-
-        assertNoCpuTime(app);
-        assertNoCpuTime(app2);
-    }
-
-    @SuppressWarnings("GuardedBy")
-    @Test
     @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testUpdateOomAdjFreezeState_bindingWithAllowFreeze() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
@@ -889,7 +841,6 @@ public class MockingOomAdjusterTests {
     @SuppressWarnings("GuardedBy")
     @Test
     @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
-    @DisableFlags(Flags.FLAG_PROTOTYPE_AGGRESSIVE_FREEZING)
     public void testUpdateOomAdjFreezeState_bindingFromFgs() {
         final ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
                 MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true);
@@ -911,7 +862,6 @@ public class MockingOomAdjusterTests {
     @SuppressWarnings("GuardedBy")
     @Test
     @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
-    @DisableFlags(Flags.FLAG_PROTOTYPE_AGGRESSIVE_FREEZING)
     public void testUpdateOomAdjFreezeState_soloFgs() {
         final ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
                 MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true);
