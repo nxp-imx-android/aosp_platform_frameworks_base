@@ -35,8 +35,8 @@ import org.junit.runner.RunWith;
 public class DeveloperVerificationStatusTest {
     private static final boolean TEST_VERIFIED = true;
     private static final boolean TEST_LITE = true;
-    private static final int TEST_ASL_STATUS =
-            DeveloperVerificationStatus.DEVELOPER_VERIFIER_STATUS_ASL_GOOD;
+    private static final int TEST_APP_METADATA_VERIFICATION_STATUS =
+            DeveloperVerificationStatus.APP_METADATA_VERIFICATION_STATUS_GOOD;
     private static final String TEST_FAILURE_MESSAGE = "test test";
     private static final String TEST_KEY = "test key";
     private static final String TEST_VALUE = "test value";
@@ -47,7 +47,7 @@ public class DeveloperVerificationStatusTest {
     public void setUpWithBuilder() {
         mTestExtras.putString(TEST_KEY, TEST_VALUE);
         mStatus = new DeveloperVerificationStatus.Builder()
-                .setAslStatus(TEST_ASL_STATUS)
+                .setAppMetadataVerificationStatus(TEST_APP_METADATA_VERIFICATION_STATUS)
                 .setFailureMessage(TEST_FAILURE_MESSAGE)
                 .setVerified(TEST_VERIFIED)
                 .setLiteVerification(TEST_LITE)
@@ -57,7 +57,8 @@ public class DeveloperVerificationStatusTest {
     @Test
     public void testGetters() {
         assertThat(mStatus.isVerified()).isEqualTo(TEST_VERIFIED);
-        assertThat(mStatus.getAslStatus()).isEqualTo(TEST_ASL_STATUS);
+        assertThat(mStatus.getAppMetadataVerificationStatus()).isEqualTo(
+                TEST_APP_METADATA_VERIFICATION_STATUS);
         assertThat(mStatus.getFailureMessage()).isEqualTo(TEST_FAILURE_MESSAGE);
         assertThat(mStatus.isLiteVerification()).isEqualTo(TEST_LITE);
     }
@@ -70,8 +71,22 @@ public class DeveloperVerificationStatusTest {
         DeveloperVerificationStatus statusFromParcel =
                 DeveloperVerificationStatus.CREATOR.createFromParcel(parcel);
         assertThat(statusFromParcel.isVerified()).isEqualTo(TEST_VERIFIED);
-        assertThat(statusFromParcel.getAslStatus()).isEqualTo(TEST_ASL_STATUS);
+        assertThat(statusFromParcel.getAppMetadataVerificationStatus()).isEqualTo(
+                TEST_APP_METADATA_VERIFICATION_STATUS);
         assertThat(statusFromParcel.getFailureMessage()).isEqualTo(TEST_FAILURE_MESSAGE);
         assertThat(statusFromParcel.isLiteVerification()).isEqualTo(TEST_LITE);
+    }
+
+    @Test
+    public void testParcelWithNullFailureMessage() {
+        DeveloperVerificationStatus status = new DeveloperVerificationStatus.Builder()
+                .setFailureMessage(null)
+                .build();
+        Parcel parcel = Parcel.obtain();
+        status.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+        DeveloperVerificationStatus statusFromParcel =
+                DeveloperVerificationStatus.CREATOR.createFromParcel(parcel);
+        assertThat(statusFromParcel.getFailureMessage()).isEqualTo(null);
     }
 }
