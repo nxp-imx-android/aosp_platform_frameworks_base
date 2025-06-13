@@ -23,7 +23,6 @@ import com.android.systemui.plugins.DarkIconDispatcher;
 import com.android.systemui.statusbar.core.NewStatusBarIcons;
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController;
 import com.android.systemui.statusbar.layout.StatusBarBoundsProvider;
-import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor;
 import com.android.systemui.statusbar.phone.HeadsUpAppearanceController;
 import com.android.systemui.statusbar.phone.LegacyLightsOutNotifController;
 import com.android.systemui.statusbar.phone.PhoneStatusBarTransitions;
@@ -95,9 +94,6 @@ public interface HomeStatusBarComponent {
         }
         getHeadsUpAppearanceController().init();
         getPhoneStatusBarViewController().init();
-        if (!NotificationsLiveDataStoreRefactor.isEnabled()) {
-            getLegacyLightsOutNotifController().init();
-        }
         getStatusBarDemoMode().init();
     }
 

@@ -49,7 +49,6 @@ import com.android.systemui.statusbar.notification.icon.ui.viewbinder.Notificati
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationSummarizationOnboardingUi
-import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import com.android.systemui.statusbar.notification.shelf.ui.viewbinder.NotificationShelfViewBinder
 import com.android.systemui.statusbar.notification.stack.DisplaySwitchNotificationsHiderTracker
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
@@ -324,11 +323,9 @@ constructor(
     }
 
     private suspend fun bindLogger(view: NotificationStackScrollLayout) {
-        if (NotificationsLiveDataStoreRefactor.isEnabled) {
-            viewModel.logger.getOrNull()?.let { viewModel ->
-                loggerOptional.getOrNull()?.let { logger ->
-                    NotificationStatsLoggerBinder.bindLogger(view, logger, viewModel, systemClock)
-                }
+        viewModel.logger.getOrNull()?.let { viewModel ->
+            loggerOptional.getOrNull()?.let { logger ->
+                NotificationStatsLoggerBinder.bindLogger(view, logger, viewModel, systemClock)
             }
         }
     }

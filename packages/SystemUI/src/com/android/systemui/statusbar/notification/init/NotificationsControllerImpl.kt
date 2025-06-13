@@ -53,6 +53,7 @@ import javax.inject.Inject
 @SysUISingleton
 class NotificationsControllerImpl
 @Inject
+// TODO(b/424001722) remove unused fields
 constructor(
     private val notificationListener: NotificationListener,
     private val commonNotifCollection: Lazy<CommonNotifCollection>,
@@ -100,11 +101,6 @@ constructor(
 
         targetSdkResolver.initialize(notifPipeline.get())
         notificationsMediaManager.setUpWithPresenter(presenter)
-        if (!NotificationsLiveDataStoreRefactor.isEnabled) {
-            notificationLoggerOptional.ifPresent { logger ->
-                logger.setUpWithContainer(listContainer)
-            }
-        }
         peopleSpaceWidgetManager.attach(notificationListener)
     }
 
