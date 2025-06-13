@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui.util.time.dagger
+package com.android.systemui.util.time.impl
 
 import com.android.systemui.util.time.SystemClock
-import com.android.systemui.util.time.SystemClockImpl
 import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton

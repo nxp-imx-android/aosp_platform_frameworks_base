@@ -23,10 +23,6 @@ package {
 
 java_defaults {
     name: "SystemUI_pod_defaults_api",
-    srcs: [
-        "*.java",
-        "*.kt",
-    ],
     libs: [
         "jsr330",
     ],
@@ -44,10 +40,6 @@ java_defaults {
 
 java_defaults {
     name: "SystemUI_pod_defaults_impl",
-    srcs: [
-        "impl/*.java",
-        "impl/*.kt",
-    ],
     libs: [
         "jsr330",
     ],
@@ -72,6 +64,9 @@ java_library {
         "com.android.systemui.dagger-api",
         "com.android.systemui.retail-impl",
         "com.android.systemui.util.settings-api",
+        "com.android.systemui.util.time-api",
+        "com.android.systemui.util.time-impl",
+
     ],
     visibility: ["//frameworks/base/packages/SystemUI:__pkg__"],
 }
