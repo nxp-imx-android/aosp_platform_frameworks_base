@@ -441,6 +441,10 @@ constructor(
      */
     val isEncryptedOrLockdown: Flow<Boolean> = repository.isEncryptedOrLockdown
 
+    /** Whether to enable "Sign out" button on keyguard's status bar */
+    val isSignOutButtonOnStatusBarEnabled: Boolean
+        get() = repository.isSignOutButtonOnStatusBarEnabledInConfig
+
     fun dozeTransitionTo(vararg states: DozeStateModel): Flow<DozeTransitionModel> {
         return dozeTransitionModel.filter { states.contains(it.to) }
     }

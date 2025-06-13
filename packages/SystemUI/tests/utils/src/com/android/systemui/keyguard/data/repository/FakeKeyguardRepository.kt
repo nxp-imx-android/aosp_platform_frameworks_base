@@ -131,6 +131,14 @@ class FakeKeyguardRepository @Inject constructor() : KeyguardRepository {
 
     override val onCameraLaunchDetected = MutableStateFlow(CameraLaunchSourceModel())
 
+    private var _isSignOutButtonOnStatusBarEnabledInConfig: Boolean = false
+    override val isSignOutButtonOnStatusBarEnabledInConfig: Boolean
+        get() = _isSignOutButtonOnStatusBarEnabledInConfig
+
+    fun setIsSignOutButtonOnStatusBarEnabledInConfig(value: Boolean) {
+        _isSignOutButtonOnStatusBarEnabledInConfig = value
+    }
+
     override fun setQuickSettingsVisible(isVisible: Boolean) {
         _isQuickSettingsVisible.value = isVisible
     }

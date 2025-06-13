@@ -94,6 +94,7 @@ class KeyguardRepositoryImplTest : SysuiTestCase() {
                 dreamOverlayCallbackController,
                 dispatcher,
                 testScope.backgroundScope,
+                context,
                 systemClock,
                 facePropertyRepository,
                 userTracker,

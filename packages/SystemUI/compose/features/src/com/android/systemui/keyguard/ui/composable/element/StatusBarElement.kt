@@ -17,22 +17,40 @@
 package com.android.systemui.keyguard.ui.composable.element
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.modifiers.height
+import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.dagger.KeyguardStatusBarViewComponent
+import com.android.systemui.common.shared.model.Icon as IconModel
+import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.windowinsets.LocalDisplayCutout
 import com.android.systemui.res.R
 import com.android.systemui.shade.NotificationPanelView
 import com.android.systemui.shade.ShadeViewStateProvider
 import com.android.systemui.statusbar.phone.KeyguardStatusBarView
+import com.android.systemui.statusbar.ui.viewmodel.KeyguardStatusBarViewModel
 import com.android.systemui.util.Utils
 import dagger.Lazy
 import javax.inject.Inject
@@ -42,6 +60,7 @@ class StatusBarElement
 constructor(
     private val componentFactory: KeyguardStatusBarViewComponent.Factory,
     private val notificationPanelView: Lazy<NotificationPanelView>,
+    private val viewModel: KeyguardStatusBarViewModel,
 ) {
 
     @Composable
@@ -83,6 +102,12 @@ constructor(
                     (it.parent as ViewGroup).removeView(it)
                 }
 
+                if (viewModel.isSignOutButtonEnabled) {
+                    view
+                        .requireViewById<FrameLayout>(R.id.sign_out_button_container)
+                        .addView(createSignOutButtonView(context))
+                }
+
                 viewController.init()
                 view
             },
@@ -90,5 +115,40 @@ constructor(
                 modifier.fillMaxWidth().height { Utils.getStatusBarHeaderHeightKeyguard(context) },
             update = { viewController.setDisplayCutout(viewDisplayCutout) },
         )
+    }
+
+    private fun createSignOutButtonView(context: Context): ComposeView {
+        return ComposeView(context).apply {
+            setViewCompositionStrategy(DisposeOnViewTreeLifecycleDestroyed)
+            setContent { PlatformTheme { SignOutButton() } }
+        }
+    }
+
+    @Composable
+    private fun SignOutButton() {
+        val context = LocalContext.current
+        val isVisible by viewModel.isSignOutButtonVisible.collectAsStateWithLifecycle()
+        if (isVisible) {
+            Button(
+                onClick = viewModel.onSignOut,
+                contentPadding = PaddingValues(start = 4.dp, end = 8.dp),
+                modifier = Modifier.padding(end = 8.dp),
+            ) {
+                Icon(
+                    icon =
+                        IconModel.Resource(
+                            com.android.internal.R.drawable.ic_logout,
+                            contentDescription = null,
+                        ),
+                    modifier = Modifier.size(16.dp),
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    checkNotNull(
+                        context.getString(com.android.internal.R.string.global_action_logout)
+                    )
+                )
+            }
+        }
     }
 }

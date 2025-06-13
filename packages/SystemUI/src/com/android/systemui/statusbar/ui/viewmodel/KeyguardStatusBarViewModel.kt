@@ -16,7 +16,7 @@
 
 package com.android.systemui.statusbar.ui.viewmodel
 
-import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
@@ -29,6 +29,8 @@ import com.android.systemui.statusbar.headsup.shared.StatusBarNoHunBehavior
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.statusbar.policy.BatteryController.BatteryStateChangeCallback
+import com.android.systemui.user.domain.interactor.UserLogoutInteractor
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
@@ -55,8 +57,9 @@ constructor(
     @Application scope: CoroutineScope,
     headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     sceneInteractor: SceneInteractor,
-    keyguardInteractor: KeyguardInteractor,
+    private val keyguardInteractor: KeyguardInteractor,
     keyguardStatusBarInteractor: KeyguardStatusBarInteractor,
+    userLogoutInteractor: UserLogoutInteractor,
     batteryController: BatteryController,
 ) {
 
@@ -105,4 +108,14 @@ constructor(
     /** True if we can show the user switcher on keyguard and false otherwise. */
     val isKeyguardUserSwitcherEnabled: Flow<Boolean> =
         keyguardStatusBarInteractor.isKeyguardUserSwitcherEnabled
+
+    val isSignOutButtonEnabled: Boolean
+        get() =
+            Flags.signOutButtonOnKeyguardStatusBar() &&
+                keyguardInteractor.isSignOutButtonOnStatusBarEnabled
+
+    val isSignOutButtonVisible: StateFlow<Boolean> =
+        userLogoutInteractor.isLogoutToSystemUserEnabled
+
+    val onSignOut: () -> Unit = { userLogoutInteractor.logOutToSystemUser() }
 }
