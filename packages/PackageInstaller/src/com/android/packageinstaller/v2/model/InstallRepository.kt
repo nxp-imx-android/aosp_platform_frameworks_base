@@ -471,8 +471,11 @@ class InstallRepository(private val context: Context) {
     /**
      * Processes Install session, file:// or package:// URI to generate data pertaining to user
      * confirmation for an install. This method also checks if the source app has the AppOp granted
-     * to install unknown apps. If an AppOp is to be requested, cache the user action prompt data to
-     * be reused once appOp has been granted
+     * to install unknown apps when {@code forceSourceCheck} is true. If an AppOp is to be
+     * requested, cache the user action prompt data to be reused once appOp has been granted.
+     *
+     * When the identity of the install source could not be determined, user can skip checking the
+     * source and directly proceed with the install by setting {@code forceSourceCheck} to false.
      *
      * @return
      *  * [InstallAborted]
@@ -486,21 +489,8 @@ class InstallRepository(private val context: Context) {
      *      * If AppOP is granted and user action is required to proceed with install
      *      * If AppOp grant is to be requested from the user
      */
-    fun requestUserConfirmation(): InstallStage? {
-        return if (isTrustedSource) {
-            if (localLogv) {
-                Log.i(LOG_TAG, "Install allowed")
-            }
-            maybeDeferUserConfirmation()
-        } else {
-            val unknownSourceStage = handleUnknownSources(appOpRequestInfo)
-            if (unknownSourceStage.stageCode == InstallStage.STAGE_READY) {
-                // Source app already has appOp granted.
-                maybeDeferUserConfirmation()
-            } else {
-                unknownSourceStage
-            }
-        }
+    fun requestUserConfirmation(forceSourceCheck: Boolean = true): InstallStage? {
+        return maybeDeferUserConfirmation(forceSourceCheck)
     }
 
     /**
@@ -508,12 +498,26 @@ class InstallRepository(private val context: Context) {
      *  user and directly proceed with the install. The system will request another
      *  user confirmation shortly.
      */
-    private fun maybeDeferUserConfirmation(): InstallStage? {
+    private fun maybeDeferUserConfirmation(forceSourceCheck: Boolean = true): InstallStage? {
         // Returns InstallUserActionRequired stage if install details could be successfully
         // computed, else it returns InstallAborted.
         val confirmationSnippet: InstallStage = generateConfirmationSnippet()
         if (confirmationSnippet.stageCode == InstallStage.STAGE_ABORTED) {
             return confirmationSnippet
+        }
+
+        // check source is trusted or granted permission
+        if (forceSourceCheck) {
+            if (isTrustedSource) {
+                if (localLogv) {
+                    Log.i(LOG_TAG, "Install allowed")
+                }
+            } else {
+                val unknownSourceStage = handleUnknownSources(appOpRequestInfo)
+                if (unknownSourceStage.stageCode != InstallStage.STAGE_READY) {
+                    return unknownSourceStage
+                }
+            }
         }
 
         val existingUpdateOwner: CharSequence? = getExistingUpdateOwner(newPackageInfo!!)
@@ -1086,14 +1090,6 @@ class InstallRepository(private val context: Context) {
         } else if (stagedSessionId > 0) {
             cleanupStagingSession()
         }
-    }
-
-    /**
-     * When the identity of the install source could not be determined, user can skip checking the
-     * source and directly proceed with the install.
-     */
-    fun forcedSkipSourceCheck(): InstallStage? {
-        return maybeDeferUserConfirmation()
     }
 
     fun abortStaging() {
