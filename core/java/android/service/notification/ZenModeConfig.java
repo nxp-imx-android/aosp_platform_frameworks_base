@@ -16,7 +16,6 @@
 
 package android.service.notification;
 
-import static android.app.NotificationManager.Policy.CONVERSATION_SENDERS_ANYONE;
 import static android.app.NotificationManager.Policy.CONVERSATION_SENDERS_IMPORTANT;
 import static android.app.NotificationManager.Policy.CONVERSATION_SENDERS_NONE;
 import static android.app.NotificationManager.Policy.SUPPRESSED_EFFECT_AMBIENT;
@@ -31,10 +30,8 @@ import static android.service.notification.ZenAdapters.peopleTypeToPrioritySende
 import static android.service.notification.ZenAdapters.prioritySendersToPeopleType;
 import static android.service.notification.ZenAdapters.zenPolicyConversationSendersToNotificationPolicy;
 import static android.service.notification.ZenPolicy.PEOPLE_TYPE_STARRED;
-import static android.service.notification.ZenPolicy.PRIORITY_CATEGORY_ALARMS;
 import static android.service.notification.ZenPolicy.PRIORITY_CATEGORY_CALLS;
 import static android.service.notification.ZenPolicy.PRIORITY_CATEGORY_EVENTS;
-import static android.service.notification.ZenPolicy.PRIORITY_CATEGORY_MEDIA;
 import static android.service.notification.ZenPolicy.PRIORITY_CATEGORY_MESSAGES;
 import static android.service.notification.ZenPolicy.PRIORITY_CATEGORY_REMINDERS;
 import static android.service.notification.ZenPolicy.PRIORITY_CATEGORY_REPEAT_CALLERS;
@@ -50,7 +47,6 @@ import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
-import android.app.AlarmManager;
 import android.app.AutomaticZenRule;
 import android.app.Flags;
 import android.app.NotificationManager;
@@ -59,8 +55,6 @@ import android.app.backup.BackupRestoreEventLogger;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.ParceledListSlice;
 import android.content.res.Resources;
 import android.net.Uri;
@@ -244,7 +238,13 @@ public class ZenModeConfig implements Parcelable {
     public static final String ZEN_TAG = "zen";
     private static final String ZEN_ATT_VERSION = "version";
     private static final String ZEN_ATT_USER = "user";
-    private static final String ALLOW_TAG = "allow";
+
+    // Obsolete tags. These used to be top-level under ZEN_TAG, and contain the settings of the
+    // manual rule. Not written anymore, but still read, when processing an older-version XML.
+    private static final String OLD_ALLOW_TAG = "allow";
+    private static final String OLD_DISALLOW_TAG = "disallow";
+
+    // zen policy allowed types attributes
     private static final String ALLOW_ATT_ALARMS = "alarms";
     private static final String ALLOW_ATT_MEDIA = "media";
     private static final String ALLOW_ATT_SYSTEM = "system";
@@ -262,7 +262,6 @@ public class ZenModeConfig implements Parcelable {
     private static final String ALLOW_ATT_CONV_FROM = "convosFrom";
     private static final String ALLOW_ATT_CHANNELS = "priorityChannelsAllowed";
     private static final String POLICY_USER_MODIFIED_FIELDS = "policyUserModifiedFields";
-    private static final String DISALLOW_TAG = "disallow";
     private static final String DISALLOW_ATT_VISUAL_EFFECTS = "visualEffects";
     private static final String STATE_TAG = "state";
     private static final String STATE_HAS_PRIORITY_CHANNELS = "areChannelsBypassingDnd";
@@ -333,30 +332,12 @@ public class ZenModeConfig implements Parcelable {
     private static final String ITEM_SEPARATOR_ESCAPE = "\\";
     private static final Pattern ITEM_SPLITTER_REGEX = Pattern.compile("(?<!\\\\),");
 
-    // TODO: b/368247671 - These fields should be removed. They are currently only used to migrate
-    //  the old manual rule settings (which were at the root level) when reading an older XML.
-    //  Switch to local variables for that purpose.
-    private boolean allowAlarms = DEFAULT_ALLOW_ALARMS;
-    private boolean allowMedia = DEFAULT_ALLOW_MEDIA;
-    private boolean allowSystem = DEFAULT_ALLOW_SYSTEM;
-    private boolean allowCalls = DEFAULT_ALLOW_CALLS;
-    private boolean allowRepeatCallers = DEFAULT_ALLOW_REPEAT_CALLERS;
-    private boolean allowMessages = DEFAULT_ALLOW_MESSAGES;
-    private boolean allowReminders = DEFAULT_ALLOW_REMINDERS;
-    private boolean allowEvents = DEFAULT_ALLOW_EVENTS;
-    private int allowCallsFrom = DEFAULT_CALLS_SOURCE;
-    private int allowMessagesFrom = DEFAULT_SOURCE;
-    private boolean allowConversations = DEFAULT_ALLOW_CONV;
-    private int allowConversationsFrom = DEFAULT_ALLOW_CONV_FROM;
-    private int suppressedVisualEffects = DEFAULT_SUPPRESSED_VISUAL_EFFECTS;
-
     public int user = UserHandle.USER_SYSTEM;
     /**
      * Whether the current user has any priority channels. These channels may bypass DND when
-     * {@link #allowPriorityChannels} is true.
+     * {@link ZenPolicy#getPriorityChannelsAllowed()} is {@code CHANNEL_POLICY_PRIORITY}.
      */
     public boolean hasPriorityChannels = DEFAULT_HAS_PRIORITY_CHANNELS;
-    public boolean allowPriorityChannels = DEFAULT_ALLOW_PRIORITY_CHANNELS;
     public int version;
 
     public ZenRule manualRule;
@@ -492,32 +473,11 @@ public class ZenModeConfig implements Parcelable {
                 .append("user=").append(user);
 
         sb.append("\nhasPriorityChannels=").append(hasPriorityChannels);
-        sb.append(",allowPriorityChannels=").append(allowPriorityChannels);
         sb.append(",\nautomaticRules=").append(rulesToString(automaticRules));
         sb.append(",\nmanualRule=").append(manualRule);
         sb.append(",\ndeletedRules=").append(rulesToString(deletedRules));
 
         return sb.append(']').toString();
-    }
-
-    public @ZenPolicy.ConversationSenders int getAllowConversationsFrom() {
-        return manualRule.zenPolicy.getPriorityConversationSenders();
-    }
-
-    public @Policy.PrioritySenders int getAllowCallsFrom() {
-        return peopleTypeToPrioritySenders(
-                manualRule.zenPolicy.getPriorityCallSenders(), DEFAULT_CALLS_SOURCE);
-    }
-
-    public void setAllowCallsFrom(@Policy.PrioritySenders int allowCallsFrom) {
-        manualRule.zenPolicy = new ZenPolicy.Builder(manualRule.zenPolicy)
-                .allowCalls(prioritySendersToPeopleType(allowCallsFrom))
-                .build();
-    }
-
-    public boolean isAllowEvents() {
-        return manualRule.zenPolicy.isCategoryAllowed(
-                ZenPolicy.PRIORITY_CATEGORY_EVENTS, false);
     }
 
     private static String rulesToString(ArrayMap<String, ZenRule> ruleList) {
@@ -595,39 +555,18 @@ public class ZenModeConfig implements Parcelable {
         if (!(o instanceof ZenModeConfig)) return false;
         if (o == this) return true;
         final ZenModeConfig other = (ZenModeConfig) o;
-        // The policy fields that live on config are compared directly because the fields will
-        // contain data until MODES_UI is rolled out/cleaned up.
-        return other.allowAlarms == allowAlarms
-                && other.allowMedia == allowMedia
-                && other.allowSystem == allowSystem
-                && other.allowCalls == allowCalls
-                && other.allowRepeatCallers == allowRepeatCallers
-                && other.allowMessages == allowMessages
-                && other.allowCallsFrom == allowCallsFrom
-                && other.allowMessagesFrom == allowMessagesFrom
-                && other.allowReminders == allowReminders
-                && other.allowEvents == allowEvents
-                && other.user == user
+        return other.user == user
                 && Objects.equals(other.automaticRules, automaticRules)
                 && Objects.equals(other.manualRule, manualRule)
-                && other.suppressedVisualEffects == suppressedVisualEffects
                 && other.hasPriorityChannels == hasPriorityChannels
-                && other.allowConversations == allowConversations
-                && other.allowConversationsFrom == allowConversationsFrom
-                && Objects.equals(other.deletedRules, deletedRules)
-                && other.allowPriorityChannels == allowPriorityChannels;
+                && Objects.equals(other.deletedRules, deletedRules);
     }
 
     @Override
     public int hashCode() {
         // The policy fields that live on config are compared directly because the fields will
         // contain data until MODES_UI is rolled out/cleaned up.
-        return Objects.hash(allowAlarms, allowMedia, allowSystem, allowCalls,
-                allowRepeatCallers, allowMessages,
-                allowCallsFrom, allowMessagesFrom, allowReminders, allowEvents,
-                user, automaticRules, manualRule,
-                suppressedVisualEffects, hasPriorityChannels, allowConversations,
-                allowConversationsFrom, allowPriorityChannels);
+        return Objects.hash(user, automaticRules, manualRule, hasPriorityChannels);
     }
 
     private static String toDayList(int[] days) {
@@ -697,41 +636,57 @@ public class ZenModeConfig implements Parcelable {
         boolean readSuppressedEffects = false;
         boolean readManualRule = false;
         boolean readManualRuleWithoutPolicy = false;
+
+        boolean oldAllowAlarms = DEFAULT_ALLOW_ALARMS;
+        boolean oldAllowMedia = DEFAULT_ALLOW_MEDIA;
+        boolean oldAllowSystem = DEFAULT_ALLOW_SYSTEM;
+        boolean oldAllowCalls = DEFAULT_ALLOW_CALLS;
+        boolean oldAllowRepeatCallers = DEFAULT_ALLOW_REPEAT_CALLERS;
+        boolean oldAllowMessages = DEFAULT_ALLOW_MESSAGES;
+        boolean oldAllowReminders = DEFAULT_ALLOW_REMINDERS;
+        boolean oldAllowEvents = DEFAULT_ALLOW_EVENTS;
+        int oldAllowCallsFrom = DEFAULT_CALLS_SOURCE;
+        int oldAllowMessagesFrom = DEFAULT_SOURCE;
+        boolean oldAllowConversations = DEFAULT_ALLOW_CONV;
+        int oldAllowConversationsFrom = DEFAULT_ALLOW_CONV_FROM;
+        int oldSuppressedVisualEffects = DEFAULT_SUPPRESSED_VISUAL_EFFECTS;
+        boolean oldAllowPriorityChannels = DEFAULT_ALLOW_PRIORITY_CHANNELS;
+
         while ((type = parser.next()) != XmlPullParser.END_DOCUMENT) {
             tag = parser.getName();
             if (type == XmlPullParser.START_TAG) {
-                if (ALLOW_TAG.equals(tag)) {
-                    rt.allowCalls = safeBoolean(parser, ALLOW_ATT_CALLS,
+                if (OLD_ALLOW_TAG.equals(tag)) {
+                    oldAllowCalls = safeBoolean(parser, ALLOW_ATT_CALLS,
                             DEFAULT_ALLOW_CALLS);
-                    rt.allowRepeatCallers = safeBoolean(parser, ALLOW_ATT_REPEAT_CALLERS,
+                    oldAllowRepeatCallers = safeBoolean(parser, ALLOW_ATT_REPEAT_CALLERS,
                             DEFAULT_ALLOW_REPEAT_CALLERS);
-                    rt.allowMessages = safeBoolean(parser, ALLOW_ATT_MESSAGES,
+                    oldAllowMessages = safeBoolean(parser, ALLOW_ATT_MESSAGES,
                             DEFAULT_ALLOW_MESSAGES);
-                    rt.allowReminders = safeBoolean(parser, ALLOW_ATT_REMINDERS,
+                    oldAllowReminders = safeBoolean(parser, ALLOW_ATT_REMINDERS,
                             DEFAULT_ALLOW_REMINDERS);
-                    rt.allowConversations = safeBoolean(parser, ALLOW_ATT_CONV, DEFAULT_ALLOW_CONV);
-                    rt.allowEvents = safeBoolean(parser, ALLOW_ATT_EVENTS, DEFAULT_ALLOW_EVENTS);
+                    oldAllowConversations = safeBoolean(parser, ALLOW_ATT_CONV, DEFAULT_ALLOW_CONV);
+                    oldAllowEvents = safeBoolean(parser, ALLOW_ATT_EVENTS, DEFAULT_ALLOW_EVENTS);
                     final int from = safeInt(parser, ALLOW_ATT_FROM, -1);
                     final int callsFrom = safeInt(parser, ALLOW_ATT_CALLS_FROM, -1);
                     final int messagesFrom = safeInt(parser, ALLOW_ATT_MESSAGES_FROM, -1);
-                    rt.allowConversationsFrom = safeInt(parser, ALLOW_ATT_CONV_FROM,
+                    oldAllowConversationsFrom = safeInt(parser, ALLOW_ATT_CONV_FROM,
                             DEFAULT_ALLOW_CONV_FROM);
                     if (isValidSource(callsFrom) && isValidSource(messagesFrom)) {
-                        rt.allowCallsFrom = callsFrom;
-                        rt.allowMessagesFrom = messagesFrom;
+                        oldAllowCallsFrom = callsFrom;
+                        oldAllowMessagesFrom = messagesFrom;
                     } else if (isValidSource(from)) {
                         Slog.i(TAG, "Migrating existing shared 'from': " + sourceToString(from));
-                        rt.allowCallsFrom = from;
-                        rt.allowMessagesFrom = from;
+                        oldAllowCallsFrom = from;
+                        oldAllowMessagesFrom = from;
                     } else {
-                        rt.allowCallsFrom = DEFAULT_CALLS_SOURCE;
-                        rt.allowMessagesFrom = DEFAULT_SOURCE;
+                        oldAllowCallsFrom = DEFAULT_CALLS_SOURCE;
+                        oldAllowMessagesFrom = DEFAULT_SOURCE;
                     }
-                    rt.allowAlarms = safeBoolean(parser, ALLOW_ATT_ALARMS, DEFAULT_ALLOW_ALARMS);
-                    rt.allowMedia = safeBoolean(parser, ALLOW_ATT_MEDIA,
+                    oldAllowAlarms = safeBoolean(parser, ALLOW_ATT_ALARMS, DEFAULT_ALLOW_ALARMS);
+                    oldAllowMedia = safeBoolean(parser, ALLOW_ATT_MEDIA,
                             DEFAULT_ALLOW_MEDIA);
-                    rt.allowSystem = safeBoolean(parser, ALLOW_ATT_SYSTEM, DEFAULT_ALLOW_SYSTEM);
-                    rt.allowPriorityChannels = safeBoolean(parser, ALLOW_ATT_CHANNELS,
+                    oldAllowSystem = safeBoolean(parser, ALLOW_ATT_SYSTEM, DEFAULT_ALLOW_SYSTEM);
+                    oldAllowPriorityChannels = safeBoolean(parser, ALLOW_ATT_CHANNELS,
                             DEFAULT_ALLOW_PRIORITY_CHANNELS);
 
                     // migrate old suppressed visual effects fields, if they still exist in the xml
@@ -742,27 +697,27 @@ public class ZenModeConfig implements Parcelable {
                         // to 0 (all allowed) so that only the relevant bits are disallowed by
                         // the migrated settings.
                         readSuppressedEffects = true;
-                        rt.suppressedVisualEffects = 0;
+                        oldSuppressedVisualEffects = 0;
                     }
                     if (allowWhenScreenOff != null) {
                         if (!allowWhenScreenOff) {
-                            rt.suppressedVisualEffects |= SUPPRESSED_EFFECT_LIGHTS
+                            oldSuppressedVisualEffects |= SUPPRESSED_EFFECT_LIGHTS
                                     | SUPPRESSED_EFFECT_FULL_SCREEN_INTENT
                                     | SUPPRESSED_EFFECT_AMBIENT;
                         }
                     }
                     if (allowWhenScreenOn != null) {
                         if (!allowWhenScreenOn) {
-                            rt.suppressedVisualEffects |= SUPPRESSED_EFFECT_PEEK;
+                            oldSuppressedVisualEffects |= SUPPRESSED_EFFECT_PEEK;
                         }
                     }
                     if (readSuppressedEffects) {
-                        Slog.d(TAG, "Migrated visual effects to " + rt.suppressedVisualEffects);
+                        Slog.d(TAG, "Migrated visual effects to " + oldSuppressedVisualEffects);
                     }
-                } else if (DISALLOW_TAG.equals(tag) && !readSuppressedEffects) {
+                } else if (OLD_DISALLOW_TAG.equals(tag) && !readSuppressedEffects) {
                     // only read from suppressed visual effects field if we haven't just migrated
                     // the values from allowOn/allowOff, lest we wipe out those settings
-                    rt.suppressedVisualEffects = safeInt(parser, DISALLOW_ATT_VISUAL_EFFECTS,
+                    oldSuppressedVisualEffects = safeInt(parser, DISALLOW_ATT_VISUAL_EFFECTS,
                             DEFAULT_SUPPRESSED_VISUAL_EFFECTS);
                 } else if (MANUAL_TAG.equals(tag)) {
                     rt.manualRule = readRuleXml(parser);
@@ -800,7 +755,11 @@ public class ZenModeConfig implements Parcelable {
             if (type == XmlPullParser.END_TAG && ZEN_TAG.equals(tag)) {
                 if (!readManualRule || readManualRuleWithoutPolicy) {
                     // migrate from fields on config into manual rule
-                    rt.manualRule.zenPolicy = rt.toZenPolicyForXmlUpgrade();
+                    rt.manualRule.zenPolicy = migrateToManualRuleZenPolicy(oldAllowAlarms,
+                            oldAllowMedia, oldAllowSystem, oldAllowCalls, oldAllowRepeatCallers,
+                            oldAllowMessages, oldAllowReminders, oldAllowEvents, oldAllowCallsFrom,
+                            oldAllowMessagesFrom, oldAllowConversations, oldAllowConversationsFrom,
+                            oldSuppressedVisualEffects, oldAllowPriorityChannels);
                     if (readManualRuleWithoutPolicy) {
                         // indicates that the xml represents a pre-modes_ui XML with an enabled
                         // manual rule; set rule active, and fill in other fields as would be done
@@ -824,6 +783,50 @@ public class ZenModeConfig implements Parcelable {
             }
         }
         throw new IllegalStateException("Failed to reach END_DOCUMENT");
+    }
+
+    private static ZenPolicy migrateToManualRuleZenPolicy(boolean allowAlarms, boolean allowMedia,
+            boolean allowSystem, boolean allowCalls, boolean allowRepeatCallers,
+            boolean allowMessages, boolean allowReminders, boolean allowEvents, int allowCallsFrom,
+            int allowMessagesFrom, boolean allowConversations, int allowConversationsFrom,
+            int suppressedVisualEffects, boolean allowPriorityChannels) {
+        ZenPolicy.Builder builder = new ZenPolicy.Builder()
+                .allowCalls(allowCalls
+                        ? prioritySendersToPeopleType(allowCallsFrom)
+                        : ZenPolicy.PEOPLE_TYPE_NONE)
+                .allowRepeatCallers(allowRepeatCallers)
+                .allowMessages(allowMessages
+                        ? prioritySendersToPeopleType(allowMessagesFrom)
+                        : ZenPolicy.PEOPLE_TYPE_NONE)
+                .allowReminders(allowReminders)
+                .allowEvents(allowEvents)
+                .allowAlarms(allowAlarms)
+                .allowMedia(allowMedia)
+                .allowSystem(allowSystem)
+                .allowConversations(allowConversations ? allowConversationsFrom
+                        : ZenPolicy.CONVERSATION_SENDERS_NONE);
+        if (suppressedVisualEffects == 0) {
+            builder.showAllVisualEffects();
+        } else {
+            // configs don't have an unset state: wither true or false.
+            builder.showFullScreenIntent(
+                    (suppressedVisualEffects & Policy.SUPPRESSED_EFFECT_FULL_SCREEN_INTENT) == 0);
+            builder.showLights(
+                    (suppressedVisualEffects & SUPPRESSED_EFFECT_LIGHTS) == 0);
+            builder.showPeeking(
+                    (suppressedVisualEffects & SUPPRESSED_EFFECT_PEEK) == 0);
+            builder.showStatusBarIcons(
+                    (suppressedVisualEffects & Policy.SUPPRESSED_EFFECT_STATUS_BAR) == 0);
+            builder.showBadges(
+                    (suppressedVisualEffects & Policy.SUPPRESSED_EFFECT_BADGE) == 0);
+            builder.showInAmbientDisplay(
+                    (suppressedVisualEffects & SUPPRESSED_EFFECT_AMBIENT) == 0);
+            builder.showInNotificationList(
+                    (suppressedVisualEffects & Policy.SUPPRESSED_EFFECT_NOTIFICATION_LIST) == 0);
+        }
+
+        builder.allowPriorityChannels(allowPriorityChannels);
+        return builder.build();
     }
 
     /** Generates the map key used for a {@link ZenRule} in {@link #deletedRules}. */
@@ -851,28 +854,6 @@ public class ZenModeConfig implements Parcelable {
         out.attribute(null, ZEN_ATT_VERSION, version == null
                 ? Integer.toString(xmlVersion) : Integer.toString(version));
         out.attributeInt(null, ZEN_ATT_USER, user);
-        out.startTag(null, ALLOW_TAG);
-        // From MODES_UI these fields are only read if the flag has transitioned from off to on
-        // However, we will continue to write these fields until the flag is cleaned up so it's
-        // possible to turn the flag off without losing user data
-        out.attributeBoolean(null, ALLOW_ATT_CALLS, allowCalls);
-        out.attributeBoolean(null, ALLOW_ATT_REPEAT_CALLERS, allowRepeatCallers);
-        out.attributeBoolean(null, ALLOW_ATT_MESSAGES, allowMessages);
-        out.attributeBoolean(null, ALLOW_ATT_REMINDERS, allowReminders);
-        out.attributeBoolean(null, ALLOW_ATT_EVENTS, allowEvents);
-        out.attributeInt(null, ALLOW_ATT_CALLS_FROM, allowCallsFrom);
-        out.attributeInt(null, ALLOW_ATT_MESSAGES_FROM, allowMessagesFrom);
-        out.attributeBoolean(null, ALLOW_ATT_ALARMS, allowAlarms);
-        out.attributeBoolean(null, ALLOW_ATT_MEDIA, allowMedia);
-        out.attributeBoolean(null, ALLOW_ATT_SYSTEM, allowSystem);
-        out.attributeBoolean(null, ALLOW_ATT_CONV, allowConversations);
-        out.attributeInt(null, ALLOW_ATT_CONV_FROM, allowConversationsFrom);
-        out.attributeBoolean(null, ALLOW_ATT_CHANNELS, allowPriorityChannels);
-        out.endTag(null, ALLOW_TAG);
-
-        out.startTag(null, DISALLOW_TAG);
-        out.attributeInt(null, DISALLOW_ATT_VISUAL_EFFECTS, suppressedVisualEffects);
-        out.endTag(null, DISALLOW_TAG);
 
         if (manualRule != null) {
             out.startTag(null, MANUAL_TAG);
@@ -1433,50 +1414,6 @@ public class ZenModeConfig implements Parcelable {
     }
 
     /**
-     * Converts a ZenModeConfig to a ZenPolicy
-     */
-    // TODO: b/368247671 - Shouldn't use fields.
-    private ZenPolicy toZenPolicyForXmlUpgrade() {
-        ZenPolicy.Builder builder = new ZenPolicy.Builder()
-                .allowCalls(allowCalls
-                        ? prioritySendersToPeopleType(allowCallsFrom)
-                        : ZenPolicy.PEOPLE_TYPE_NONE)
-                .allowRepeatCallers(allowRepeatCallers)
-                .allowMessages(allowMessages
-                        ? prioritySendersToPeopleType(allowMessagesFrom)
-                        : ZenPolicy.PEOPLE_TYPE_NONE)
-                .allowReminders(allowReminders)
-                .allowEvents(allowEvents)
-                .allowAlarms(allowAlarms)
-                .allowMedia(allowMedia)
-                .allowSystem(allowSystem)
-                .allowConversations(allowConversations ? allowConversationsFrom
-                        : ZenPolicy.CONVERSATION_SENDERS_NONE);
-        if (suppressedVisualEffects == 0) {
-            builder.showAllVisualEffects();
-        } else {
-            // configs don't have an unset state: wither true or false.
-            builder.showFullScreenIntent(
-                    (suppressedVisualEffects & Policy.SUPPRESSED_EFFECT_FULL_SCREEN_INTENT) == 0);
-            builder.showLights(
-                    (suppressedVisualEffects & SUPPRESSED_EFFECT_LIGHTS) == 0);
-            builder.showPeeking(
-                    (suppressedVisualEffects & SUPPRESSED_EFFECT_PEEK) == 0);
-            builder.showStatusBarIcons(
-                    (suppressedVisualEffects & Policy.SUPPRESSED_EFFECT_STATUS_BAR) == 0);
-            builder.showBadges(
-                    (suppressedVisualEffects & Policy.SUPPRESSED_EFFECT_BADGE) == 0);
-            builder.showInAmbientDisplay(
-                    (suppressedVisualEffects & SUPPRESSED_EFFECT_AMBIENT) == 0);
-            builder.showInNotificationList(
-                    (suppressedVisualEffects & Policy.SUPPRESSED_EFFECT_NOTIFICATION_LIST) == 0);
-        }
-
-        builder.allowPriorityChannels(allowPriorityChannels);
-        return builder.build();
-    }
-
-    /**
      * Converts a zenPolicy to a notificationPolicy using this ZenModeConfig's values as its
      * defaults for all unset values in zenPolicy
      */
@@ -1749,36 +1686,6 @@ public class ZenModeConfig implements Parcelable {
         return sc;
     }
 
-    private static int sourceToPrioritySenders(int source, int def) {
-        switch (source) {
-            case SOURCE_ANYONE: return Policy.PRIORITY_SENDERS_ANY;
-            case SOURCE_CONTACT: return Policy.PRIORITY_SENDERS_CONTACTS;
-            case SOURCE_STAR: return Policy.PRIORITY_SENDERS_STARRED;
-            default: return def;
-        }
-    }
-
-    private static int normalizePrioritySenders(int prioritySenders, int def) {
-        if (!(prioritySenders == Policy.PRIORITY_SENDERS_CONTACTS
-                || prioritySenders == Policy.PRIORITY_SENDERS_STARRED
-                || prioritySenders == Policy.PRIORITY_SENDERS_ANY)) {
-            return def;
-        }
-        return prioritySenders;
-    }
-
-    private static int normalizeConversationSenders(boolean allowed, int senders, int def) {
-        if (!allowed) {
-            return CONVERSATION_SENDERS_NONE;
-        }
-        if (!(senders == CONVERSATION_SENDERS_ANYONE
-                || senders == CONVERSATION_SENDERS_IMPORTANT
-                || senders == CONVERSATION_SENDERS_NONE)) {
-            return def;
-        }
-        return senders;
-    }
-
     public void applyNotificationPolicy(Policy policy) {
         if (policy == null) return;
         manualRule.zenPolicy = ZenAdapters.notificationPolicyToZenPolicy(policy);
@@ -1967,24 +1874,6 @@ public class ZenModeConfig implements Parcelable {
         }
 
         if (info == null || info.days == null || info.days.length == 0) {
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Returns whether the conditionId is a valid ScheduleCondition.
-     * If allowNever is true, this will return true even if the ScheduleCondition never occurs.
-     */
-    public static boolean isValidScheduleConditionId(Uri conditionId, boolean allowNever) {
-        ScheduleInfo info;
-        try {
-            info = tryParseScheduleConditionId(conditionId);
-        } catch (NullPointerException | ArrayIndexOutOfBoundsException e) {
-            return false;
-        }
-
-        if (info == null || (!allowNever && (info.days == null || info.days.length == 0))) {
             return false;
         }
         return true;
@@ -2225,28 +2114,6 @@ public class ZenModeConfig implements Parcelable {
 
     public static String newRuleId() {
         return UUID.randomUUID().toString().replace("-", "");
-    }
-
-    /**
-     * Gets the name of the app associated with owner
-     */
-    public static String getOwnerCaption(Context context, String owner) {
-        final PackageManager pm = context.getPackageManager();
-        try {
-            final ApplicationInfo info = pm.getApplicationInfo(owner, 0);
-            if (info != null) {
-                final CharSequence seq = info.loadLabel(pm);
-                if (seq != null) {
-                    final String str = seq.toString().trim();
-                    if (str.length() > 0) {
-                        return str;
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            Slog.w(TAG, "Error loading owner caption", e);
-        }
-        return "";
     }
 
     public boolean isManualActive() {
@@ -2759,7 +2626,7 @@ public class ZenModeConfig implements Parcelable {
     }
 
     /**
-     * Determines whether dnd behavior should mute all sounds
+     * Determines whether a Policy should mute all sounds
      */
     public static boolean areAllZenBehaviorSoundsMuted(NotificationManager.Policy
             policy) {
@@ -2792,46 +2659,5 @@ public class ZenModeConfig implements Parcelable {
                 && !policy.isCategoryAllowed(PRIORITY_CATEGORY_SYSTEM, false)
                 && !(config.hasPriorityChannels && policy.getPriorityChannelsAllowed()
                 == STATE_ALLOW);
-    }
-
-    /**
-     * Determines whether dnd mutes all sounds
-     */
-    public static boolean areAllZenBehaviorSoundsMuted(ZenModeConfig config) {
-        final ZenPolicy policy = config.manualRule.zenPolicy;
-        return !policy.isCategoryAllowed(PRIORITY_CATEGORY_ALARMS, false)
-                && !policy.isCategoryAllowed(PRIORITY_CATEGORY_MEDIA, false)
-                && areAllPriorityOnlyRingerSoundsMuted(config);
-    }
-
-    private static long parseAutomaticRuleEndTime(Context context, Uri id) {
-        if (isValidEventConditionId(id)) {
-            // cannot look up end times for events
-            return Long.MAX_VALUE;
-        }
-
-        if (isValidScheduleConditionId(id)) {
-            ScheduleCalendar schedule = toScheduleCalendar(id);
-            long endTimeMs = schedule.getNextChangeTime(System.currentTimeMillis());
-
-            // check if automatic rule will end on next alarm
-            if (schedule.exitAtAlarm()) {
-                long nextAlarm = getNextAlarm(context);
-                schedule.maybeSetNextAlarm(System.currentTimeMillis(), nextAlarm);
-                if (schedule.shouldExitForAlarm(endTimeMs)) {
-                    return nextAlarm;
-                }
-            }
-
-            return endTimeMs;
-        }
-
-        return -1;
-    }
-
-    private static long getNextAlarm(Context context) {
-        final AlarmManager alarms = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        final AlarmManager.AlarmClockInfo info = alarms.getNextAlarmClock(context.getUserId());
-        return info != null ? info.getTriggerTime() : 0;
     }
 }
