@@ -477,11 +477,13 @@ public final class AssociationDiskStore {
         final boolean notify = readBooleanAttribute(parser, XML_ATTR_NOTIFY_DEVICE_NEARBY);
         final long timeApproved = readLongAttribute(parser, XML_ATTR_TIME_APPROVED, 0L);
 
-        return new AssociationInfo(associationId, userId, appPackage,
-                MacAddress.fromString(deviceAddress), null, profile, null,
-                /* managedByCompanionApp */ false, notify, /* revoked */ false, /* pending */ false,
-                timeApproved, Long.MAX_VALUE, /* systemDataSyncFlags */ 0, /* deviceIcon */ null,
-                /* deviceId */ null, /* packagesToNotify */ null);
+        return new AssociationInfo.Builder(associationId, userId, appPackage)
+                .setDeviceMacAddress(MacAddress.fromString(deviceAddress))
+                .setDeviceProfile(profile)
+                .setNotifyOnDeviceNearby(notify)
+                .setTimeApproved(timeApproved)
+                .setSystemDataSyncFlags(0)
+                .build();
     }
 
     private static Associations readAssociationsV1(@NonNull TypedXmlPullParser parser,
@@ -558,9 +560,21 @@ public final class AssociationDiskStore {
             }
         }
 
-        return new AssociationInfo(associationId, userId, appPackage, macAddress, displayName,
-                profile, null, selfManaged, notify, revoked, pending, timeApproved,
-                lastTimeConnected, systemDataSyncFlags, deviceIcon, deviceId, packagesToNotify);
+        return new AssociationInfo.Builder(associationId, userId, appPackage)
+                .setDeviceMacAddress(macAddress)
+                .setDisplayName(displayName)
+                .setDeviceProfile(profile)
+                .setSelfManaged(selfManaged)
+                .setNotifyOnDeviceNearby(notify)
+                .setRevoked(revoked)
+                .setPending(pending)
+                .setTimeApproved(timeApproved)
+                .setLastTimeConnected(lastTimeConnected)
+                .setSystemDataSyncFlags(systemDataSyncFlags)
+                .setDeviceIcon(deviceIcon)
+                .setDeviceId(deviceId)
+                .setPackagesToNotify(packagesToNotify)
+                .build();
     }
 
     private static List<String> readPackagesToNotify(@NonNull TypedXmlPullParser parser)
