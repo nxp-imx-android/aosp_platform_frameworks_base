@@ -1822,6 +1822,7 @@ class SyntheticPasswordManager {
         destroyProtectorCommon(protectorId, userId);
         destroyState(PASSWORD_DATA_NAME, protectorId, userId);
         destroyState(PASSWORD_METRICS_NAME, protectorId, userId);
+        destroyState(FAILURE_COUNTER_NAME, protectorId, userId);
     }
 
     private void destroyProtectorCommon(long protectorId, int userId) {
