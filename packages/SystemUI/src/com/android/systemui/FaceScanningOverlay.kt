@@ -21,6 +21,7 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
+import android.annotation.ColorInt
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -32,9 +33,13 @@ import android.view.View
 import androidx.core.graphics.ColorUtils
 import com.android.app.animation.Interpolators
 import com.android.keyguard.KeyguardUpdateMonitor
+import com.android.settingslib.Utils
 import com.android.systemui.biometrics.AuthController
+import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.log.ScreenDecorationsLogger
 import com.android.systemui.plugins.statusbar.StatusBarStateController
+import com.android.systemui.res.R
+import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.util.asIndenting
 import java.io.PrintWriter
 import java.util.concurrent.Executor
@@ -48,6 +53,8 @@ class FaceScanningOverlay(
     pos: Int,
     val statusBarStateController: StatusBarStateController,
     val keyguardUpdateMonitor: KeyguardUpdateMonitor,
+    val keyguardInteractor: KeyguardInteractor,
+    val shadeInteractor: ShadeInteractor,
     val mainExecutor: Executor,
     val logger: ScreenDecorationsLogger,
     val authController: AuthController,
@@ -59,12 +66,31 @@ class FaceScanningOverlay(
     private val rimRect = RectF()
     private var cameraProtectionColor = Color.BLACK
 
-    var faceScanningAnimColor =
-        context.getColor(com.android.internal.R.color.materialColorPrimaryFixed)
+    @ColorInt private var lockscreenAnimationColor: Int = 0
+    @ColorInt private var onScrimColor: Int = 0
+
+    @ColorInt
+    private fun getFaceScanningAnimationColor(): Int {
+        val behindScrimVisible =
+            shadeInteractor.isAnyFullyExpanded.value ||
+                keyguardInteractor.primaryBouncerShowing.value
+        val sideFpsIndicatorMightBeVisible =
+            (keyguardInteractor.alternateBouncerShowing.value || authController.isShowing) &&
+                authController.isSfpsSupported
+        return if (behindScrimVisible || sideFpsIndicatorMightBeVisible) {
+            // Use this color to comply with a11y color contrast or match SFPS indicator's color.
+            onScrimColor
+        } else {
+            // This is used only when face scanning is happening on the lockscreen.
+            lockscreenAnimationColor
+        }
+    }
+
     private var cameraProtectionAnimator: ValueAnimator? = null
     var hideOverlayRunnable: Runnable? = null
 
     init {
+        updateColors()
         visibility = View.INVISIBLE // only show this view when face scanning is happening
     }
 
@@ -241,7 +267,7 @@ class FaceScanningOverlay(
         val rimPaintAlpha = rimPaint.alpha
         rimPaint.color =
             ColorUtils.blendARGB(
-                faceScanningAnimColor,
+                getFaceScanningAnimationColor(),
                 Color.WHITE,
                 statusBarStateController.dozeAmount,
             )
@@ -398,5 +424,11 @@ class FaceScanningOverlay(
         ipw.println("rimRect=$rimRect")
         ipw.println("this=$this")
         ipw.decreaseIndent()
+    }
+
+    fun updateColors() {
+        lockscreenAnimationColor =
+            Utils.getColorAttrDefaultColor(context, R.attr.wallpaperTextColorAccent)
+        onScrimColor = context.getColor(com.android.internal.R.color.materialColorPrimary)
     }
 }
