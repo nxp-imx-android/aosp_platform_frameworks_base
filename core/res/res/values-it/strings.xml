@@ -75,6 +75,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Questa app non è compatibile con le pagine di 16 kB. Controllo allineamento APK non riuscito. Questa app verrà eseguita utilizzando la modalità compatibile con le dimensioni della pagina. Per la massima compatibilità, ricompila l\'applicazione con il supporto a 16 kB. Per maggiori dettagli, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Questa app non è compatibile con le pagine di 16 kB. Controllo allineamento ELF non riuscito. Questa app verrà eseguita utilizzando la modalità compatibile con le dimensioni della pagina. Per la massima compatibilità, ricompila l\'applicazione con il supporto a 16 kB. Per maggiori dettagli, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Questa app non è compatibile con le pagine di 16 kB. Controlli di allineamento APK ed ELF non riusciti. Questa app verrà eseguita utilizzando la modalità compatibile con le dimensioni della pagina. Per la massima compatibilità, ricompila l\'applicazione con il supporto a 16 kB. Per maggiori dettagli, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Questo avviso viene visualizzato perché si tratta di un\'app di cui è possibile eseguire il debug che è attualmente in fase di test. Se non sei tu, segnalalo allo sviluppatore e chiedi un\'app di cui è possibile eseguire il debug. Questa app non è compatibile con 16 kB. Controllo allineamento APK non riuscito. Segui la procedura su &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Questo avviso viene visualizzato perché si tratta di un\'app di cui è possibile eseguire il debug che è attualmente in fase di test. Se non sei tu, segnalalo allo sviluppatore e chiedi un\'app di cui è possibile eseguire il debug. Questa app non è compatibile con 16 kB. Controllo allineamento ELF non riuscito. Segui la procedura su &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Questo avviso viene visualizzato perché si tratta di un\'app di cui è possibile eseguire il debug che è attualmente in fase di test. Se non sei tu, segnalalo allo sviluppatore e chiedi un\'app di cui è possibile eseguire il debug. Questa app non è compatibile con 16 kB. Controlli di allineamento APK ed ELF non riusciti. Segui la procedura su &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"Non mostrare più"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Servizio non fornito."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Non è possibile modificare l\'impostazione ID chiamante."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"I dati sono stati trasferiti a <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -355,16 +359,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"Possono accedere ai dati dei sensori relativi ai tuoi parametri vitali"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Notifiche"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"Visualizzazione di notifiche"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"dati di eye tracking XR sensibili"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"accedere a dati sensibili sullo sguardo"</string>
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"dati di tracciamento XR"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"accesso ai dati XR relativi a te e all\'ambiente circostante"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"dati di tracciamento XR sensibili"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"accedere a dati di tracciamento sensibili relativi a te e all\'ambiente circostante"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Recuperare contenuti della finestra"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Esamina i contenuti di una finestra con cui interagisci."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Attivare Esplora al tocco"</string>
@@ -678,6 +678,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Consente all\'app di accedere ai dati di tracciamento sull\'ambiente direttamente intorno a te molto dettagliatamente."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"accesso ai dati XR non in primo piano"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Consente all\'app di accedere ai dati XR non in primo piano."</string>
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"acquisire i tasti"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Consente all\'app di acquisire i tasti prima che il sistema possa elaborare le scorciatoie e le azioni di sistema."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Usa la biometria"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Usa la biometria o il blocco schermo"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Verifica la tua identità"</string>
@@ -2561,16 +2563,27 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Applicazioni"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Non è più possibile riconoscere le tue impronte. Riconfigura lo Sblocco con l\'Impronta."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Sicurezza e privacy"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"Protezione avanzata per USB"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Sblocca il dispositivo per il trasferimento dei dati"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Potrebbe essere necessario sbloccare e ricollegare il dispositivo per il trasferimento dei dati"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Sblocca il dispositivo per la ricarica rapida e il trasferimento di dati"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Potresti dover sbloccare e ricollegare il dispositivo per la ricarica rapida e il trasferimento dei dati"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Sblocca il dispositivo per la ricarica rapida"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Potresti dover sbloccare e ricollegare il dispositivo per la ricarica rapida"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Silenzia"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Notifica silenziata"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Silenziata fino al riavvio del dispositivo"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Attività USB sospetta"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"L\'indicatore di dati USB è stato disattivato."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Hai problemi con lo Sblocco con l\'Impronta?"</string>

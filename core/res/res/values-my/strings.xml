@@ -74,6 +74,14 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"ဤအက်ပ်သည် ၁၆ KB နှင့် တွဲမသုံးနိုင်ပါ။ APK ချိန်ညှိခြင်း စစ်ဆေးမှု မအောင်မြင်ပါ။ ဤအက်ပ်သည် တွဲသုံးနိုင်သော စာမျက်နှာအရွယ်အစားမုဒ်သုံး၍ လုပ်ဆောင်ပါမည်။ အကောင်းဆုံး တွဲသုံးနိုင်မှုအတွက် အပလီကေးရှင်းကို ၁၆ KB ပံ့ပိုးမှုဖြင့် ပြန်လည်တည်ဆောက်ပါ။ နောက်ထပ်အချက်အလက်အတွက် &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; တွင် ကြည့်ပါ"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"ဤအက်ပ်ကို ၁၆ KB နှင့် တွဲမသုံးနိုင်ပါ။ ELF ချိန်ညှိခြင်း စစ်ဆေးမှု မအောင်မြင်ပါ။ ဤအက်ပ်ကို တွဲသုံးနိုင်သော စာမျက်နှာအရွယ်အစားမုဒ်သုံး၍ လုပ်ဆောင်ပါမည်။ အကောင်းဆုံး တွဲသုံးနိုင်မှုအတွက် အပလီကေးရှင်းကို ၁၆ KB ပံ့ပိုးမှုဖြင့် ပြန်လည်တည်ဆောက်ပါ။ နောက်ထပ်အချက်အလက်အတွက် &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; တွင် ကြည့်ပါ"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"ဤအက်ပ်ကို ၁၆ KB နှင့် တွဲမသုံးနိုင်ပါ။ APK နှင့် ELF ချိန်ညှိခြင်း စစ်ဆေးမှု မအောင်မြင်ပါ။ ဤအက်ပ်ကို တွဲသုံးနိုင်သော စာမျက်နှာအရွယ်အစားမုဒ်သုံး၍ လုပ်ဆောင်ပါမည်။ အကောင်းဆုံး တွဲသုံးနိုင်မှုအတွက် အပလီကေးရှင်းကို ၁၆ KB ပံ့ပိုးမှုဖြင့် ပြန်လည်တည်ဆောက်ပါ။ နောက်ထပ်အချက်အလက်အတွက် &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; တွင် ကြည့်ပါ"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
+    <skip />
+    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ဝန်ဆောင်မှုအား ကန့်သတ်မထားပါ"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"သင်သည် ခေါ်ဆိုသူ ID ဆက်တင်ကို မပြောင်းလဲနိုင်ပါ။"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"ဒေတာကို <xliff:g id="CARRIERDISPLAY">%s</xliff:g> သို့ ပြောင်းထားသည်"</string>
@@ -354,16 +362,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"သင်၏အရေးကြီးသော ကျန်းမာရေးလက္ခဏာဆိုင်ရာ အာရုံခံကိရိယာဒေတာကို ရယူရန်"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"အကြောင်းကြားချက်များ"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"အကြောင်းကြားချက်များ ပြနိုင်သည်"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"XR သတိထားရမည့် မျက်စိခြေရာခံခြင်း ဒေတာ"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"သတိထားရမည့် မျက်စိအကြည့်ဒေတာကို သုံးခွင့်"</string>
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR ခြေရာခံခြင်းဒေတာ"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"သင်နှင့် သင့်ဘေးနားရှိ ပတ်ဝန်းကျင်အကြောင်း XR ဒေတာကို သုံးခွင့်"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"သတိထားရမည့် XR ခြေရာခံခြင်းဒေတာ"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"သင်နှင့် သင့်အနီးရှိ ပတ်ဝန်းကျင်အကြောင်း သတိထားရမည့် ခြေရာခံခြင်းဒေတာကို သုံးခွင့်"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ဝင်းဒိုးတွင် ပါရှိသည်များကို ပြန်လည်ရယူရန်"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"သင်အသုံးပြုနေသော ဝင်းဒိုးတွင် ပါရှိသည်များကို ကြည့်ရှုစစ်ဆေးသည်။"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"တို့ထိခြင်းဖြင့် ရှာဖွေမှုကို ဖွင့်ရန်"</string>
@@ -677,6 +681,10 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"သင့်ဘေးနားရှိ ပတ်ဝန်းကျင်အကြောင်း အတွင်းကျကျအသေးစိတ် ခြေရာခံခြင်းဒေတာကို အက်ပ်အား သုံးခွင့်ပြုသည်။"</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"မျက်နှာစာတွင် ဖွင့်မထားချိန်၌ XR ဒေတာကို သုံးခွင့်"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"မျက်နှာစာတွင် ဖွင့်မထားချိန်၌ XR ဒေတာကို အက်ပ်အား သုံးခွင့်ပြုသည်။"</string>
+    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
+    <skip />
+    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
+    <skip />
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"ဇီဝမက်ထရစ်အချက်အလက်များ သုံးခြင်း"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"ဇီဝမက်ထရစ်အချက်အလက်များ (သို့) ဖန်သားပြင်လော့ခ်ချခြင်းကို သုံးခြင်း"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"သင်ဖြစ်ကြောင်း အတည်ပြုပါ"</string>
@@ -2560,16 +2568,27 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"အပလီကေးရှင်းများ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"သင့်လက်ဗွေများကို မသိရှိနိုင်တော့ပါ။ ‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ ထပ်မံစနစ်ထည့်သွင်းပါ။"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"လုံခြုံရေးနှင့် ကိုယ်ရေးအချက်အလက်လုံခြုံမှု"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"USB အတွက် အဆင့်မြင့်ကာကွယ်ရေး"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"ဒေတာလွှဲပြောင်းရန်အတွက် စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပါ"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"ဒေတာလွှဲပြောင်းရန်အတွက် သင့်စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပြီး ပြန်ချိတ်ဆက်ရန် လိုအပ်နိုင်သည်"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"အမြန်အားသွင်းခြင်းနှင့် ဒေတာလွှဲပြောင်းခြင်းတို့အတွက် စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပါ"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"အမြန်အားသွင်းခြင်းနှင့် ဒေတာလွှဲပြောင်းခြင်းတို့အတွက် သင့်စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပြီး ပြန်ချိတ်ဆက်ရန် လိုအပ်နိုင်သည်"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"အမြန်အားသွင်းခြင်းအတွက် စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပါ"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"အမြန်အားသွင်းခြင်းအတွက် သင့်စက်ပစ္စည်းကို လော့ခ်ဖွင့်ပြီး ပြန်ချိတ်ဆက်ရန် လိုအပ်နိုင်သည်"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"အသံတိတ်ရန်"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"အကြောင်းကြားချက် အသံတိတ်ထားသည်"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"သင့်စက်ကို ပြန်မစမချင်း အသံတိတ်ထားသည်"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"သံသယဖြစ်ဖွယ် USB လုပ်ဆောင်ချက်"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ဒေတာအချက်ပြမှုကို ပိတ်လိုက်ပါပြီ။"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ တွင် ပြဿနာရှိနေသလား။"</string>

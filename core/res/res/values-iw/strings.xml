@@ -75,6 +75,14 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"‏האפליקציה הזו לא תואמת לגודל דף של 16KB. בדיקות ההתאמה ל-APK נכשלה. האפליקציה הזו תופעל במצב תואם לגודל הדף. כדי לקבל את התאימות הטובה ביותר, צריך לקמפל את האפליקציה מחדש ולדאוג שהיא תומכת בגודל דף של 16KB. מידע נוסף זמין בכתובת &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"‏האפליקציה הזו לא תואמת לגודל דף של 16KB. בדיקות ההתאמה ל-ELF נכשלה. האפליקציה הזו תופעל במצב תואם לגודל הדף. כדי לקבל את התאימות הטובה ביותר, צריך לקמפל את האפליקציה מחדש ולדאוג שהיא תומכת בגודל דף של 16KB. מידע נוסף זמין בכתובת &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"‏האפליקציה הזו לא תואמת לגודל דף של 16KB. בדיקות ההתאמה ל-APK ול-ELF נכשלו. האפליקציה הזו תופעל במצב תואם לגודל הדף. כדי לקבל את התאימות הטובה ביותר, צריך לקמפל את האפליקציה מחדש ולדאוג שהיא תומכת בגודל דף של 16KB. מידע נוסף זמין בכתובת &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
+    <skip />
+    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"השירות לא הוקצה."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"אינך יכול לשנות את הגדרת זיהוי המתקשר."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"הנתונים עברו אל <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -678,6 +686,10 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"ההרשאה מאפשרת לאפליקציה לגשת לנתוני מעקב מהסביבה הקרובה ברמת פירוט גבוהה מאוד."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"‏גישה לנתוני XR כשהאפליקציה לא בחזית"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"‏ההרשאה מאפשרת לאפליקציה לגשת לנתוני XR כשהיא לא בחזית."</string>
+    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
+    <skip />
+    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
+    <skip />
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"שימוש במידע ביומטרי"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"שימוש במידע ביומטרי בנעילת מסך"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"אימות הזהות שלך"</string>
@@ -2561,16 +2573,27 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"אפליקציות"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"טביעות האצבע שלך נשחקו ואי אפשר לזהות אותן. צריך להגדיר \'פתיחה בטביעת אצבע\' מחדש."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"אבטחה ופרטיות"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"‏הגנה מתקדמת ל-USB"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"כדי להעביר נתונים, צריך לפתוח את נעילת המכשיר"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"כדי להעביר נתונים, אולי יהיה צורך לפתוח את נעילת המכשיר ולחבר אותו מחדש לשקע"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"כדי להעביר נתונים ולטעון את המכשיר במהירות, צריך לפתוח את הנעילה שלו"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"כדי להעביר נתונים ולטעון את המכשיר במהירות, אולי יהיה צורך לפתוח את הנעילה שלו ולחבר אותו מחדש לשקע"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"כדי להשתמש בטעינה המהירה, צריך לפתוח את נעילת המכשיר"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"כדי להשתמש בטעינה המהירה, אולי יהיה צורך לפתוח את נעילת המכשיר ולחבר אותו מחדש לשקע"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"השתקה"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"ההתראה מושתקת"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"מושתקת עד שהמכשיר יופעל מחדש"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏זוהתה פעילות חשודה בהתקן USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏האות עם הנתונים מהתקן ה-USB הושבת."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"נתקלת בבעיה בפתיחה בטביעת אצבע?"</string>

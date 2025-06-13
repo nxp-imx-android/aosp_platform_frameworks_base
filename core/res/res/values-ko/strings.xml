@@ -74,6 +74,14 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"이 앱은 16KB와 호환되지 않습니다. APK 정렬 검사에 실패했습니다. 이 앱은 페이지 크기 호환 모드를 사용하여 실행됩니다. 최상의 호환성을 위해 16KB를 지원하도록 애플리케이션을 다시 컴파일하세요. 자세한 내용은 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;를 참고하세요."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"이 앱은 16KB와 호환되지 않습니다. ELF 정렬 검사에 실패했습니다. 이 앱은 페이지 크기 호환 모드를 사용하여 실행됩니다. 최상의 호환성을 위해 16KB를 지원하도록 애플리케이션을 다시 컴파일하세요. 자세한 내용은 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;를 참고하세요."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"이 앱은 16KB와 호환되지 않습니다. APK 및 ELF 정렬 검사에 실패했습니다. 이 앱은 페이지 크기 호환 모드를 사용하여 실행됩니다. 최상의 호환성을 위해 16KB를 지원하도록 애플리케이션을 다시 컴파일하세요. 자세한 내용은 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;를 참고하세요."</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
+    <skip />
+    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"서비스가 준비되지 않았습니다."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"발신자 번호 설정을 변경할 수 없습니다."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g> 이동통신사로 데이터가 변경됨"</string>
@@ -354,16 +362,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"생체 신호에 관한 센서 데이터에 액세스"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"알림"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"알림 표시"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"민감한 XR 눈 추적 데이터"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"민감한 눈 추적 데이터에 액세스"</string>
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR 추적 데이터"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"사용자 및 주변 환경에 대한 XR 데이터에 액세스"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"민감한 XR 추적 데이터"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"사용자 및 주변 환경에 대한 민감한 추적 데이터에 액세스"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"창 콘텐츠 가져오기"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"상호작용 중인 창의 콘텐츠를 검사합니다."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"터치하여 탐색 사용"</string>
@@ -677,6 +681,10 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"앱이 주변 환경에 대한 매우 상세한 추적 데이터에 액세스하도록 허용합니다."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"포그라운드에 있지 않을 때 XR 데이터에 액세스"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"앱이 포그라운드에 있지 않을 때 XR 데이터에 액세스하도록 허용합니다."</string>
+    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
+    <skip />
+    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
+    <skip />
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"생체 인식 사용"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"생체 인식 또는 화면 잠금을 사용"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"본인 확인"</string>
@@ -1074,7 +1082,7 @@
     <string name="lockscreen_failed_attempts_now_wiping" product="tablet" msgid="8682445539263683414">"태블릿을 잠금 해제하려는 시도가 <xliff:g id="NUMBER">%d</xliff:g>번 잘못되었습니다. 태블릿이 초기화됩니다."</string>
     <string name="lockscreen_failed_attempts_now_wiping" product="tv" msgid="2205435033340091883">"Android TV 기기 잠금 해제에 <xliff:g id="NUMBER">%d</xliff:g>번 실패했습니다. Android TV 기기가 초기화됩니다."</string>
     <string name="lockscreen_failed_attempts_now_wiping" product="default" msgid="2203704707679895487">"휴대전화를 잠금 해제하려는 시도가 <xliff:g id="NUMBER">%d</xliff:g>번 잘못되었습니다. 휴대전화가 초기화됩니다."</string>
-    <string name="lockscreen_too_many_failed_attempts_countdown" msgid="6807200118164539589">"<xliff:g id="NUMBER">%d</xliff:g>초 후에 다시 시도하세요."</string>
+    <string name="lockscreen_too_many_failed_attempts_countdown" msgid="6807200118164539589">"<xliff:g id="NUMBER">%d</xliff:g>초 후에 다시 시도하세요"</string>
     <string name="lockscreen_forgot_pattern_button_text" msgid="8362442730606839031">"패턴을 잊으셨나요?"</string>
     <string name="lockscreen_glogin_forgot_pattern" msgid="9218940117797602518">"계정 잠금 해제"</string>
     <string name="lockscreen_glogin_too_many_attempts" msgid="3775904917743034195">"패턴을 너무 많이 시도했습니다."</string>
@@ -1735,7 +1743,7 @@
     <string name="kg_pattern_instructions" msgid="8366024510502517748">"패턴 그리기"</string>
     <string name="kg_sim_pin_instructions" msgid="6479401489471690359">"SIM PIN 입력"</string>
     <string name="kg_pin_instructions" msgid="7355933174673539021">"PIN 입력"</string>
-    <string name="kg_password_instructions" msgid="7179782578809398050">"비밀번호 입력"</string>
+    <string name="kg_password_instructions" msgid="7179782578809398050">"비밀번호를 입력하세요"</string>
     <string name="kg_puk_enter_puk_hint" msgid="6696187482616360994">"이제 SIM을 사용할 수 없습니다. 계속하려면 PUK 코드를 입력합니다. 자세한 내용은 이동통신사에 문의하세요."</string>
     <string name="kg_puk_enter_pin_hint" msgid="8190982314659429770">"원하는 PIN 코드 입력"</string>
     <string name="kg_enter_confirm_pin_hint" msgid="6372557107414074580">"원하는 PIN 코드 확인"</string>
@@ -2560,16 +2568,27 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"애플리케이션"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"지문을 더 이상 인식할 수 없습니다. 지문 잠금 해제를 다시 설정하세요."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"보안 및 개인 정보 보호"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"USB 고급 보호"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"데이터 전송을 위해 기기를 잠금 해제하세요."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"데이터 전송을 위해 기기를 잠금 해제하고 다시 연결해야 할 수 있습니다."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"급속 충전 및 데이터 전송을 위해 기기를 잠금 해제하세요."</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"급속 충전 및 데이터 전송을 위해 기기를 잠금 해제하고 다시 연결해야 할 수 있습니다."</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"급속 충전을 사용하려면 기기를 잠금 해제하세요."</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"급속 충전을 사용하려면 기기를 잠금 해제하고 다시 연결해야 할 수 있습니다."</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"음소거"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"알림 음소거됨"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"기기를 다시 시작할 때까지 음소거됨"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"의심스러운 USB 활동"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB 데이터 신호가 사용 중지됨"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"지문 잠금 해제에 문제가 있나요?"</string>

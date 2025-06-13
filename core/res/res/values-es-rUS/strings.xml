@@ -75,6 +75,14 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Esta app no es compatible con 16 KB. No se pudo verificar la alineación del APK. Esta app se ejecutará con el modo de compatibilidad de tamaño de página. Para obtener mejores resultados, vuelve a compilar la aplicación con la compatibilidad de 16 KB. Para obtener más información, consulta el siguiente vínculo: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Esta app no es compatible con 16 KB. No se pudo verificar la alineación de ELF. La app se ejecutará con el modo de compatibilidad de tamaño de página. Para obtener mejores resultados, vuelve a compilar la aplicación con la compatibilidad de 16 KB. Si necesitas más información, consulta el siguiente vínculo: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Esta app no es compatible con 16 KB. No se pudieron verificar las alineaciones de APK y ELF. La app se ejecutará con el modo de compatibilidad de tamaño de página. Para obtener mejores resultados, vuelve a compilar la aplicación con la compatibilidad de 16 KB. Si necesitas más información, consulta el siguiente vínculo: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
+    <skip />
+    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Servicio no suministrado."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"No puedes cambiar la configuración del identificador de llamadas."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Se cambiaron los datos a <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -678,6 +686,10 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Permite que la app acceda a datos de seguimiento del entorno que te rodea directamente con mucho detalle."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"acceso a los datos de realidad extendida cuando no está en primer plano"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Permite que la app acceda a los datos de realidad extendida cuando no está en primer plano."</string>
+    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
+    <skip />
+    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
+    <skip />
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Usar datos biométricos"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Usar datos biométricos o bloqueo de pantalla"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Comprueba que eres tú"</string>
@@ -2561,16 +2573,27 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplicaciones"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Ya no se pueden reconocer tus huellas dactilares. Vuelve a configurar el Desbloqueo con huellas dactilares."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Seguridad y privacidad"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"Protección avanzada para USB"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Desbloquea el dispositivo para transferir datos"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Es posible que debas desbloquear y volver a conectar el dispositivo para transferir datos"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Desbloquea el dispositivo para la carga rápida y la transferencia de datos"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Es posible que debas desbloquear y volver a conectar el dispositivo para la carga rápida y la transferencia de datos"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Desbloquea el dispositivo para la carga rápida"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Es posible que debas desbloquear y volver a conectar el dispositivo para la carga rápida"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Silenciar"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Notificación silenciada"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Silenciada hasta que reinicies el dispositivo"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Actividad de USB sospechosa"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Se inhabilitó la señal de datos por USB."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"¿Tienes problemas con el Desbloqueo con huellas dactilares?"</string>
