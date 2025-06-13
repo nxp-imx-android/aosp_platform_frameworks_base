@@ -73,4 +73,9 @@ enum ProximityResultCode {
     PRIMARY_DEVICE_RANGING_NOT_SUPPORTED = 24,
     /** Requested ranging is not supported on the associated device. */
     ASSOCIATED_DEVICE_RANGING_NOT_SUPPORTED = 25,
+    /**
+       Failed precondition i.e. device not on-body or not locked or ranging method is turned off,
+       as reported by the associated device.
+    */
+    ASSOCIATED_DEVICE_FAILED_PRECONDITION = 26,
 }
