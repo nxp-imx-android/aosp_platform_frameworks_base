@@ -2460,6 +2460,8 @@
 
     <!-- User visible title for the keyboard shortcut that triggers the notification shade. [CHAR LIMIT=70] -->
     <string name="group_system_access_notification_shade">View notifications</string>
+    <!-- User visible title for the keyboard shortcut that triggers the quick settings panel. [CHAR LIMIT=70] -->
+    <string name="group_system_access_quick_settings_panel">View quick settings</string>
     <!-- User visible title for the keyboard shortcut that takes a full screenshot. [CHAR LIMIT=70] -->
     <string name="group_system_full_screenshot">Take screenshot</string>
     <!-- User visible title for the keyboard shortcut that access list of system / apps shortcuts. [CHAR LIMIT=70] -->

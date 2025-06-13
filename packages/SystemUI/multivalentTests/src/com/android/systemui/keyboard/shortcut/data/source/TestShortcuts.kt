@@ -549,6 +549,7 @@ object TestShortcuts {
             simpleShortcutCategory(System, "System apps", "Open settings"),
             simpleShortcutCategory(System, "System controls", "Lock screen"),
             simpleShortcutCategory(System, "System controls", "View notifications"),
+            simpleShortcutCategory(System, "System controls", "View quick settings"),
             simpleShortcutCategory(System, "System controls", "Take screenshot"),
             simpleShortcutCategory(System, "System controls", "Go back"),
             simpleShortcutCategory(MultiTasking, "Split screen", "Use full screen"),
@@ -579,6 +580,9 @@ object TestShortcuts {
             simpleInputGestureData(keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_LOCK_SCREEN),
             simpleInputGestureData(
                 keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
+            ),
+            simpleInputGestureData(
+                keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
             ),
             simpleInputGestureData(
                 keyGestureType = KeyGestureEvent.KEY_GESTURE_TYPE_TAKE_SCREENSHOT

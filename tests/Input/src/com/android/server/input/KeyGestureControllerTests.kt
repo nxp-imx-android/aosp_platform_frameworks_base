@@ -107,6 +107,7 @@ import org.mockito.kotlin.times
     com.android.window.flags.Flags.FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS,
     com.android.window.flags.Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
     com.android.hardware.input.Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES,
+    com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
 )
 class KeyGestureControllerTests {
 

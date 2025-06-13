@@ -18,11 +18,13 @@ package com.android.systemui.keyevent
 
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
 import android.util.Slog
+import com.android.hardware.input.Flags.enableQuickSettingsPanelShortcut
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.statusbar.CommandQueue
-import com.android.window.flags.Flags
+import com.android.window.flags.Flags.enableKeyGestureHandlerForSysui
 import javax.inject.Inject
 
 /**
@@ -35,15 +37,22 @@ class SysUIKeyGestureEventInitializer
 constructor(private val inputManager: InputManager, private val commandQueue: CommandQueue) :
     CoreStartable {
     override fun start() {
-        if (!Flags.enableKeyGestureHandlerForSysui()) {
+        val supportedGestures = mutableListOf<Int>()
+        if (enableKeyGestureHandlerForSysui()) {
+            supportedGestures.add(KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL)
+        }
+        if (enableQuickSettingsPanelShortcut()) {
+            supportedGestures.add(KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL)
+        }
+        if (supportedGestures.isEmpty()) {
             return
         }
-        inputManager.registerKeyGestureEventHandler(
-            listOf(KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL)
-        ) { event, _ ->
+        inputManager.registerKeyGestureEventHandler(supportedGestures) { event, _ ->
             when (event.keyGestureType) {
                 KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL ->
                     commandQueue.toggleNotificationsPanel()
+                KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL ->
+                    commandQueue.toggleQuickSettingsPanel()
 
                 else -> Slog.w(TAG, "Unsupported key gesture event: ${event.keyGestureType}")
             }

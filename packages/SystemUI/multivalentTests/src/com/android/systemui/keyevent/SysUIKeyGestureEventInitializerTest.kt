@@ -21,13 +21,13 @@ import android.hardware.input.InputManager.KeyGestureEventHandler
 import android.hardware.input.KeyGestureEvent
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_ALL_APPS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.statusbar.CommandQueue
-import com.android.window.flags.Flags
 import com.google.common.truth.Truth.assertThat
 import org.junit.Before
 import org.junit.Rule
@@ -59,18 +59,28 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
+    @EnableFlags(
+        com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI,
+        com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
+    )
     fun start_flagEnabled_registerKeyGestureEvents() {
         underTest.start()
 
         verify(inputManager).registerKeyGestureEventHandler(keyGestureEventsCaptor.capture(), any())
         keyGestureEventsCaptor.value.let { keyGestureEvents ->
-            assertThat(keyGestureEvents).containsExactly(KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL)
+            assertThat(keyGestureEvents)
+                .containsExactly(
+                    KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL,
+                    KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL,
+                )
         }
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
+    @DisableFlags(
+        com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI,
+        com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
+    )
     fun start_flagDisabled_noRegisterKeyGestureEvents() {
         underTest.start()
 
@@ -78,7 +88,7 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
     fun handleKeyGestureEvent_eventTypeToggleNotificationPanel_toggleNotificationPanel() {
         underTest.start()
         verify(inputManager)
@@ -95,7 +105,24 @@ class SysUIKeyGestureEventInitializerTest : SysuiTestCase() {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
+    @EnableFlags(com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT)
+    fun handleKeyGestureEvent_eventTypeToggleQuickSettingsPanel_toggleQuickSettingsPanel() {
+        underTest.start()
+        verify(inputManager)
+            .registerKeyGestureEventHandler(any(), keyGestureEventHandlerCaptor.capture())
+
+        keyGestureEventHandlerCaptor.value.handleKeyGestureEvent(
+            KeyGestureEvent.Builder()
+                .setKeyGestureType(KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL)
+                .build(),
+            /* focusedToken= */ null,
+        )
+
+        verify(commandQueue).toggleQuickSettingsPanel()
+    }
+
+    @Test
+    @EnableFlags(com.android.window.flags.Flags.FLAG_ENABLE_KEY_GESTURE_HANDLER_FOR_SYSUI)
     fun handleKeyGestureEvent_otherEventTypeToggleNotificationPanel_noInteraction() {
         underTest.start()
         verify(inputManager)

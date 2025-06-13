@@ -397,6 +397,14 @@ object KeyGestureTestData {
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
             ),
             KeyGestureData(
+                "META + Q -> Toggle Quick Settings",
+                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_Q),
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL,
+                intArrayOf(KeyEvent.KEYCODE_Q),
+                KeyEvent.META_META_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+            ),
+            KeyGestureData(
                 "META + ESC -> Back",
                 intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_ESCAPE),
                 KeyGestureEvent.KEY_GESTURE_TYPE_BACK,
