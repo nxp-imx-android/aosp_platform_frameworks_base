@@ -35,6 +35,7 @@ import android.os.IBinder;
 import android.os.ICancellationSignal;
 import android.os.OutcomeReceiver;
 import android.os.RemoteException;
+import android.util.Log;
 
 /**
  * Abstract base class to provide app functions to the system.
@@ -56,6 +57,8 @@ import android.os.RemoteException;
  */
 @FlaggedApi(FLAG_ENABLE_APP_FUNCTION_MANAGER)
 public abstract class AppFunctionService extends Service {
+    private static final String TAG = "AppFunctionService";
+
     /**
      * The {@link Intent} that must be declared as handled by the service. To be supported, the
      * service must also require the {@link BIND_APP_FUNCTION_SERVICE} permission so that other
@@ -128,6 +131,7 @@ public abstract class AppFunctionService extends Service {
                             } catch (Exception ex) {
                                 // Apps should handle exceptions. But if they don't, report the
                                 // error on behalf of them.
+                                Log.w(TAG, "Uncaught exception in AppFunctionService", ex);
                                 safeCallback.onError(
                                         new AppFunctionException(toErrorCode(ex), ex.getMessage()));
                             }
