@@ -138,6 +138,10 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"ଆପଣ ବର୍ତ୍ତମାନ ଆପଣଙ୍କର ସମ୍ପୂର୍ଣ୍ଣ ସ୍କ୍ରିନକୁ ରେକର୍ଡ କରୁଛନ୍ତି"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"ଆପଣ ବର୍ତ୍ତମାନ <xliff:g id="APP_NAME">%1$s</xliff:g>ର ବିଷୟବସ୍ତୁକୁ ରେକର୍ଡ କରୁଛନ୍ତି"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ରେକର୍ଡିଂ ବନ୍ଦ କରନ୍ତୁ"</string>
+    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ସ୍କ୍ରିନ ସେୟାର କରାଯାଉଛି"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ବିଷୟବସ୍ତୁ ସେୟାର କରାଯାଉଛି"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ସ୍କ୍ରିନ ସେୟାର କରିବା ବନ୍ଦ କରିବେ?"</string>
@@ -207,9 +211,29 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"ଅନ୍ୟ ଏକ ଉପାୟରେ ଯାଞ୍ଚ କରନ୍ତୁ"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ପରିଚୟ ଯାଞ୍ଚକୁ ପରିଚାଳନା କରନ୍ତୁ"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ପରିଚୟ ଯାଞ୍ଚ ଚାଲୁ ଥିବାରୁ ଏବଂ ଏକ ବାୟୋମେଟ୍ରିକ ଆବଶ୍ୟକ ଥିବାରୁ ଯାଞ୍ଚ ପାଇଁ PIN ବ୍ୟବହାର କରାଯାଇପାରିବ ନାହିଁ। ପରିଚୟ ଯାଞ୍ଚ ବିଷୟରେ ଅଧିକ ଜାଣନ୍ତୁ"</string>
+    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ପାଟର୍ନ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"ପାସ୍‌ୱାର୍ଡ୍ ବ୍ୟବହାର କରନ୍ତୁ"</string>
+    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
+    <skip />
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"ଭୁଲ PIN"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"ଭୁଲ ପାଟର୍ନ"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"ଭୁଲ ପାସ୍‌ୱାର୍ଡ"</string>
@@ -300,12 +324,9 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"କମ୍ ସମୟ।"</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"ସ୍କ୍ରୀନ୍‌ କାଷ୍ଟ କରିବା ରହିଯାଇଛି।"</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"ଡିସ୍‌ପ୍ଲେ ଉଜ୍ଜ୍ୱଳତା"</string>
-    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
-    <skip />
-    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
-    <skip />
-    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
-    <skip />
+    <string name="accessibility_camera_in_use" msgid="1090160655874262911">"କେମେରା ବ୍ୟବହାର କରାଯାଉଛି"</string>
+    <string name="accessibility_microphone_in_use" msgid="1921058214238108340">"ମାଇକ୍ରୋଫୋନ ବ୍ୟବହାର କରାଯାଉଛି"</string>
+    <string name="accessibility_camera_and_microphone_in_use" msgid="1250516397875447442">"କେମେରା ଏବଂ ମାଇକ୍ରୋଫୋନକୁ ବ୍ୟବହାର କରାଯାଉଛି"</string>
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"ମୋବାଇଲ୍‍ ଡାଟା ପଜ୍‍ କରାଯାଇଛି"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"ଡାଟା ପଜ୍‍ କରାଯାଇଛି"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"ଆପଣ ସେଟ୍‍ କରିଥିବା ଡାଟାର ସୀମାରେ ପହଞ୍ଚିଲେ। ଆପଣ ଆଉ ମୋବାଇଲ୍‍ ଡାଟା ବ୍ୟବହାର କରୁନାହାଁନ୍ତି।\n\nଯଦି ଆପଣ ପୁଣି ଆରମ୍ଭ କରନ୍ତି, ଡାଟା ବ୍ୟବହାର ପାଇଁ ଆପଣଙ୍କୁ ଦେୟ ଲାଗୁ କରାଯାଇ ପାରେ।"</string>
@@ -655,8 +676,7 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ପୁରୁଣା ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ଦେଖିବାକୁ ଅନଲକ କରନ୍ତୁ"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"ଏହି ଡିଭାଇସ୍ ଆପଣଙ୍କ ବାପାମାଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ"</string>
-    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
-    <skip />
+    <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"କିଛି ଡିଭାଇସ ସେଟିଂସ PIN ଦ୍ୱାରା ସୁରକ୍ଷିତ ଅଟେ।"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ଏହି ଡିଭାଇସର ମାଲିକାନା ଆପଣଙ୍କ ସଂସ୍ଥା ପାଖରେ ଅଛି ଏବଂ ଏହା ନେଟୱାର୍କ ଟ୍ରାଫିକର ନିରୀକ୍ଷଣ କରିପାରେ"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"ଏହି ଡିଭାଇସଟି <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g>ର ଅଟେ ଏବଂ ଏହା ନେଟୱାର୍କ ଟ୍ରାଫିକକୁ ନିରୀକ୍ଷଣ କରିପାରେ"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"ଏହି ଡିଭାଇସ୍ <xliff:g id="ORGANIZATION_NAME">%s</xliff:g> ଦ୍ୱାରା ପ୍ରଦାନ କରାଯାଇଛି"</string>
@@ -697,8 +717,7 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN ସେଟିଂସ୍ ଖୋଲନ୍ତୁ"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"ଏହି ଡିଭାଇସ୍ ଆପଣଙ୍କ ବାପାମାଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ। ଆପଣଙ୍କ ବାପାମା ଆପଣ ବ୍ୟବହାର କରୁଥିବା ଆପ୍ସ, ଆପଣଙ୍କ ଲୋକେସନ୍ ଓ ସ୍କ୍ରିନ୍ ସମୟ ପରି ସୂଚନା ଦେଖିପାରିବେ ଏବଂ ପରିଚାଳନା କରିପାରିବେ।"</string>
-    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
-    <skip />
+    <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"ଆପଣଙ୍କ ଡିଭାଇସରେ ଦୈନିକ ସୀମା ଏବଂ ଡାଉନଟାଇମ ପରି କିଛି ନିୟନ୍ତ୍ରଣକୁ କେବଳ ଏକ PIN ମାଧ୍ୟମରେ ପରିବର୍ତ୍ତନ କରାଯାଇପାରିବ।"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ଦ୍ୱାରା ଅନ୍‌ଲକ୍ ରହିଛି"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ଡିଭାଇସ ଲକ କରାଯାଇଛି, ଅନେକଗୁଡ଼ିଏ ପ୍ରମାଣୀକରଣ ପ୍ରଚେଷ୍ଟା କରାଯାଇଛି"</string>
@@ -802,8 +821,7 @@
     <string name="status_bar_work" msgid="5238641949837091056">"ୱର୍କ ପ୍ରୋଫାଇଲ୍‌"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"ଏୟାରପ୍ଲେନ ମୋଡ"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"ବାପାମାଙ୍କ ନିୟନ୍ତ୍ରଣ"</string>
-    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
-    <skip />
+    <string name="status_bar_pin_supervision" msgid="4376576498566645782">"କିଛି ଡିଭାଇସ ନିୟନ୍ତ୍ରଣ ପାଇଁ PIN ସୁରକ୍ଷା"</string>
     <string name="zen_alarm_warning" msgid="7844303238486849503">"<xliff:g id="WHEN">%1$s</xliff:g>ବେଳେ ଆପଣ ନିଜର ପରବର୍ତ୍ତୀ ଆଲାର୍ମ ଶୁଣିପାରିବେ ନାହିଁ"</string>
     <string name="alarm_template" msgid="2234991538018805736">"<xliff:g id="WHEN">%1$s</xliff:g> ହେଲେ"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"<xliff:g id="WHEN">%1$s</xliff:g> ବେଳେ"</string>
@@ -814,8 +832,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"ସାଟେଲାଇଟ, କନେକ୍ସନ ଉପଲବ୍ଧ"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"ସେଟେଲାଇଟ SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"କେବଳ ଜରୁରୀକାଳୀନ କଲ କିମ୍ବା SOS"</string>
-    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
-    <skip />
+    <string name="satellite_network_title_text" msgid="4825315858295910999">"ସେଟେଲାଇଟ ନେଟୱାର୍କ"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>।"</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"କୌଣସି ସିଗନାଲ ନାହିଁ"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"ଗୋଟିଏ ବାର"</string>
@@ -997,6 +1014,8 @@
     <string name="battery" msgid="769686279459897127">"ବେଟେରୀ"</string>
     <string name="headset" msgid="4485892374984466437">"ହେଡସେଟ୍‍"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"ସେଟିଂସ୍ ଖୋଲନ୍ତୁ"</string>
+    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
+    <skip />
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"ହେଡଫୋନ୍‍ ସଂଯୁକ୍ତ"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"ହେଡସେଟ୍‍ ସଂଯୁକ୍ତ"</string>
     <string name="data_saver" msgid="3484013368530820763">"ଡାଟା ସେଭର"</string>
@@ -1317,6 +1336,8 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"ଆଉଟପୁଟ"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ଅନ୍ୟ ଏକ ଡିଭାଇସକୁ ମିଡିଆ ମୁଭ କରିବା ପାଇଁ ଆପଣଙ୍କ ସେୟାର କରାଯାଇଥିବା ସେସନକୁ ବନ୍ଦ କରନ୍ତୁ"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"ବନ୍ଦ କରନ୍ତୁ"</string>
+    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
+    <skip />
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"ବ୍ରଡକାଷ୍ଟିଂ କିପରି କାମ କରେ"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"ବ୍ରଡକାଷ୍ଟ"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"ଆପଣଙ୍କ ଆଖପାଖର କମ୍ପାଟିବଲ ବ୍ଲୁଟୁଥ ଡିଭାଇସ ଥିବା ଲୋକମାନେ ଆପଣ ବ୍ରଡକାଷ୍ଟ କରୁଥିବା ମିଡିଆ ଶୁଣିପାରିବେ"</string>
@@ -1503,7 +1524,8 @@
     <string name="mirror_display" msgid="2515262008898122928">"ଡିସପ୍ଲେ ମିରର କରନ୍ତୁ"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"ଖାରଜ କରନ୍ତୁ"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ଡିସପ୍ଲେ କନେକ୍ଟ କରାଯାଇଛି"</string>
-    <string name="privacy_dialog_title" msgid="7839968133469098311">"Microphone ଏବଂ Camera"</string>
+    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
+    <skip />
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"ବର୍ତ୍ତମାନର ଆପ ବ୍ୟବହାର"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"ବର୍ତ୍ତମାନର ଆକ୍ସେସ ଦେଖନ୍ତୁ"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"ହୋଇଗଲା"</string>

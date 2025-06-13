@@ -138,6 +138,10 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"இப்போது உங்கள் முழுத்திரையையும் ரெக்கார்டு செய்கிறீர்கள்"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"இப்போது நீங்கள் <xliff:g id="APP_NAME">%1$s</xliff:g> ஐ ரெக்கார்டு செய்கிறீர்கள்"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ரெக்கார்டிங்கை நிறுத்து"</string>
+    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"திரையைப் பகிர்கிறது"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"உள்ளடக்கம் பகிரப்படுகிறது"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"திரையைப் பகிர்வதை நிறுத்தவா?"</string>
@@ -207,9 +211,29 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"வேறொரு முறையில் உறுதிசெய்"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"அடையாளச் சரிபார்ப்பை நிர்வகித்தல்"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"அடையாளச் சரிபார்ப்பு ஆன் செய்யப்பட்டிருப்பதாலும் அதற்கு பயோமெட்ரிக் தேவைப்படுவதாலும் பின்னை (PIN) சரிபார்ப்புக்குப் பயன்படுத்த முடியாது. அடையாளச் சரிபார்ப்பு குறித்து மேலும் அறிக"</string>
+    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"பின்னைப் பயன்படுத்து"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"பேட்டர்னைப் பயன்படுத்து"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"கடவுச்சொல்லைப் பயன்படுத்து"</string>
+    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
+    <skip />
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"தவறான பின்"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"தவறான பேட்டர்ன்"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"தவறான கடவுச்சொல்"</string>
@@ -300,12 +324,9 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"நேரத்தைக் குறை."</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"திரையை அனுப்புதல் நிறுத்தப்பட்டது."</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"திரை பிரகாசம்"</string>
-    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
-    <skip />
-    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
-    <skip />
-    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
-    <skip />
+    <string name="accessibility_camera_in_use" msgid="1090160655874262911">"கேமரா பயன்பாட்டில் உள்ளது"</string>
+    <string name="accessibility_microphone_in_use" msgid="1921058214238108340">"மைக்ரோஃபோன் பயன்பாட்டில் உள்ளது"</string>
+    <string name="accessibility_camera_and_microphone_in_use" msgid="1250516397875447442">"கேமராவும் மைக்ரோஃபோனும் பயன்பாட்டில் உள்ளன"</string>
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"மொபைல் டேட்டா இடைநிறுத்தப்பட்டுள்ளது"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"தரவு இடைநிறுத்தப்பட்டது"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"நீங்கள் அமைத்த டேட்டா வரம்பை அடைந்துவிட்டீர்கள். இப்போது மொபைல் டேட்டாவைப் பயன்படுத்தவில்லை.\n\nமீண்டும் மொபைல் டேட்டாவைப் பயன்படுத்தத் தொடங்கினால், டேட்டா உபயோகத்திற்குக் கட்டணம் விதிக்கப்படலாம்."</string>
@@ -655,8 +676,7 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"முடக்கு"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"பழைய அறிவிப்பைப் பார்க்க அன்லாக் செய்க"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"இந்தச் சாதனம் உங்கள் பெற்றோரால் நிர்வகிக்கப்படுகிறது"</string>
-    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
-    <skip />
+    <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"சில சாதன அமைப்புகள் பின் (PIN) மூலம் பாதுகாக்கப்பட்டுள்ளன."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"இந்த சாதனம் உங்கள் நிறுவனத்துக்கு உரியது, நெட்வொர்க் ட்ராஃபிக்கையும் நிறுவனமே கண்காணிக்கக்கூடும்"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"இந்த சாதனம் <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> நிறுவனத்துக்கு உரியது, நெட்வொர்க் ட்ராஃபிக்கையும் நிறுவனமே கண்காணிக்கக்கூடும்"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"இந்தச் சாதனம் <xliff:g id="ORGANIZATION_NAME">%s</xliff:g> நிறுவனத்தால் வழங்கப்பட்டது"</string>
@@ -697,8 +717,7 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN அமைப்புகளைத் திற"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"இந்தச் சாதனம் உங்கள் பெற்றோரால் நிர்வகிக்கப்படுகிறது. நீங்கள் பயன்படுத்தும் ஆப்ஸ், இருப்பிடம், பயன்படுத்திய நேரம் ஆகியவற்றைப் பார்க்கவும் நிர்வகிக்கவும் உங்கள் பெற்றோரால் முடியும்."</string>
-    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
-    <skip />
+    <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"உங்கள் சாதனத்தில் தினசரி வரம்புகள், ஓய்வு நேரம் போன்ற சில கட்டுப்பாடுகளை பின் (PIN) மூலம் மட்டுமே மாற்ற முடியும்."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent இதைத் திறந்தே வைத்துள்ளது"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"அளவுக்கதிகமான அங்கீகரிப்பு முயற்சிகளால் சாதனம் பூட்டப்பட்டது"</string>
@@ -802,8 +821,7 @@
     <string name="status_bar_work" msgid="5238641949837091056">"பணிக் கணக்கு"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"விமானப் பயன்முறை"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"பெற்றோர் கட்டுப்பாடுகள்"</string>
-    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
-    <skip />
+    <string name="status_bar_pin_supervision" msgid="4376576498566645782">"சில சாதனக் கட்டுப்பாடுகளுக்கு பின் (PIN) பாதுகாப்பு உள்ளது"</string>
     <string name="zen_alarm_warning" msgid="7844303238486849503">"அடுத்த அலாரத்தை <xliff:g id="WHEN">%1$s</xliff:g> மணிக்கு கேட்க மாட்டீர்கள்"</string>
     <string name="alarm_template" msgid="2234991538018805736">"<xliff:g id="WHEN">%1$s</xliff:g> மணிக்கு"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"<xliff:g id="WHEN">%1$s</xliff:g> மணிக்கு"</string>
@@ -814,8 +832,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"சாட்டிலைட், இணைப்பு கிடைக்கிறது"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"சாட்டிலைட் SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"அவசர அழைப்புகள் அல்லது SOS மட்டும்"</string>
-    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
-    <skip />
+    <string name="satellite_network_title_text" msgid="4825315858295910999">"சாட்டிலைட் நெட்வொர்க்"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"சிக்னல் இல்லை"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"ஒரு கோடு"</string>
@@ -997,6 +1014,8 @@
     <string name="battery" msgid="769686279459897127">"பேட்டரி"</string>
     <string name="headset" msgid="4485892374984466437">"ஹெட்செட்"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"அமைப்புகளைத் திறக்கும்"</string>
+    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
+    <skip />
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"ஹெட்ஃபோன்கள் இணைக்கப்பட்டன"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"ஹெட்செட் இணைக்கப்பட்டது"</string>
     <string name="data_saver" msgid="3484013368530820763">"டேட்டா சேமிப்பான்"</string>
@@ -1317,6 +1336,8 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"வெளியீடு"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"மீடியாவை வேறொரு சாதனத்திற்கு மாற்ற \'பகிரப்படும் அமர்வை\' நிறுத்தவும்"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"நிறுத்து"</string>
+    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
+    <skip />
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"பிராட்காஸ்ட் எவ்வாறு செயல்படுகிறது?"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"பிராட்காஸ்ட்"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"நீங்கள் பிராட்காஸ்ட் செய்யும் மீடியாவை அருகிலுள்ளவர்கள் இணக்கமான புளூடூத் சாதனங்கள் மூலம் கேட்கலாம்"</string>
@@ -1503,7 +1524,8 @@
     <string name="mirror_display" msgid="2515262008898122928">"டிஸ்பிளேயை மிரர் செய்"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"வேண்டாம்"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"டிஸ்ப்ளே இணைக்கப்பட்டது"</string>
-    <string name="privacy_dialog_title" msgid="7839968133469098311">"மைக்ரோஃபோனும் கேமராவும்"</string>
+    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
+    <skip />
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"சமீபத்திய ஆப்ஸ் பயன்பாடு"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"சமீபத்திய அணுகலைக் காட்டு"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"முடிந்தது"</string>

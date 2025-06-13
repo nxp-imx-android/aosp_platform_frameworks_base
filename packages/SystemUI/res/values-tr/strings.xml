@@ -138,6 +138,10 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Şu anda ekranınızın tamamını kaydediyorsunuz"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Şu anda <xliff:g id="APP_NAME">%1$s</xliff:g> içeriğini kaydediyorsunuz"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Kaydı durdur"</string>
+    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ekran paylaşılıyor"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"İçerik paylaşma"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Ekran paylaşımı durdurulsun mu?"</string>
@@ -207,9 +211,29 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Başka bir yolla doğrula"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Kimlik Kontrolü\'nü yönetin"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"Kimlik Kontrolü açık olduğu ve biyometrik doğrulama gerektirdiğinden doğrulama için PIN kullanılamaz. Kimlik Kontrolü hakkında daha fazla bilgi"</string>
+    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN kullan"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Deseni kullan"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Şifre kullan"</string>
+    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
+    <skip />
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"Yanlış PIN"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"Yanlış desen"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"Yanlış şifre"</string>
@@ -300,12 +324,9 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"Daha kısa süre."</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"Ekran yayını durduruldu."</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"Ekran parlaklığı"</string>
-    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
-    <skip />
-    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
-    <skip />
-    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
-    <skip />
+    <string name="accessibility_camera_in_use" msgid="1090160655874262911">"Kamera kullanılıyor"</string>
+    <string name="accessibility_microphone_in_use" msgid="1921058214238108340">"Mikrofon kullanılıyor"</string>
+    <string name="accessibility_camera_and_microphone_in_use" msgid="1250516397875447442">"Kamera ve mikrofon kullanılıyor"</string>
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"Mobil veri duraklatıldı"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"Veri kullanımı duraklatıldı"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"Ayarladığınız veri limitine ulaşıldı. Artık mobil veri kullanmıyorsunuz.\n\nDevam ettirirseniz veri kullanımı için sizden ödeme alınabilir."</string>
@@ -655,8 +676,7 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Kapat"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Eski bildirimler için kilidi açın"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Bu cihaz ebeveyniniz tarafından yönetiliyor"</string>
-    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
-    <skip />
+    <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Bazı cihaz ayarları PIN ile korunur."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Bu cihaz, kuruluşunuza ait olup ağ trafiği kuruluşunuz tarafından izlenebilir"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"Bu cihaz, <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> adlı kuruluşa ait olup ağ trafiği bu kuruluş tarafından izlenebilir"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"Bu cihaz, <xliff:g id="ORGANIZATION_NAME">%s</xliff:g> tarafından sağlanmaktadır"</string>
@@ -697,8 +717,7 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN ayarlarını aç"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Bu cihaz ebeveyniniz tarafından yönetiliyor. Kullandığınız uygulamalar, konumunuz ve ekran başında kalma süreniz gibi bilgiler ebeveyniniz tarafından görülüp yönetilebilir."</string>
-    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
-    <skip />
+    <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Cihazınızdaki günlük sınırlar ve dinlenme zamanı gibi bazı kontroller yalnızca PIN ile değiştirilebilir."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent tarafından kilit açık tutuldu"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Çok fazla kimlik doğrulama denemesi yapıldığından cihaz kilitlendi."</string>
@@ -802,8 +821,7 @@
     <string name="status_bar_work" msgid="5238641949837091056">"İş profili"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"Uçak modu"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"Ebeveyn denetimleri"</string>
-    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
-    <skip />
+    <string name="status_bar_pin_supervision" msgid="4376576498566645782">"Bazı cihaz denetimleri için PIN koruması"</string>
     <string name="zen_alarm_warning" msgid="7844303238486849503">"<xliff:g id="WHEN">%1$s</xliff:g> olarak ayarlanmış bir sonraki alarmınızı duymayacaksınız"</string>
     <string name="alarm_template" msgid="2234991538018805736">"saat: <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"gün ve saat: <xliff:g id="WHEN">%1$s</xliff:g>"</string>
@@ -814,8 +832,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Uydu, bağlantı mevcut"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Acil Uydu Bağlantısı"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Yalnızca acil durum aramaları veya acil yardım"</string>
-    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
-    <skip />
+    <string name="satellite_network_title_text" msgid="4825315858295910999">"Uydu ağı"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"sinyal yok"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"tek çubuk"</string>
@@ -997,6 +1014,8 @@
     <string name="battery" msgid="769686279459897127">"Pil"</string>
     <string name="headset" msgid="4485892374984466437">"Mikrofonlu kulaklık"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"Ayarları aç"</string>
+    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
+    <skip />
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"Mikrofonlu kulaklık bağlı"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"Mikrofonlu kulaklık bağlı"</string>
     <string name="data_saver" msgid="3484013368530820763">"Veri Tasarrufu"</string>
@@ -1317,6 +1336,8 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"Çıkış"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Medyayı başka bir cihaza taşımak için paylaşılan oturumunuzu durdurun"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Durdur"</string>
+    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
+    <skip />
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Yayınlamanın işleyiş şekli"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"Anons"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Yakınınızda ve uyumlu Bluetooth cihazları olan kişiler yayınladığınız medya içeriğini dinleyebilir"</string>
@@ -1503,7 +1524,8 @@
     <string name="mirror_display" msgid="2515262008898122928">"Ekranı yansıt"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Kapat"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Ekran bağlandı"</string>
-    <string name="privacy_dialog_title" msgid="7839968133469098311">"Mikrofon ve Kamera"</string>
+    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
+    <skip />
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Son uygulama kullanımı"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Son erişimi göster"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Bitti"</string>
@@ -1571,7 +1593,7 @@
     <string name="touchpad_tutorial_back_gesture_button" msgid="3104716365403620315">"Geri dön"</string>
     <string name="touchpad_tutorial_home_gesture_button" msgid="8023973153559885624">"Ana sayfaya git"</string>
     <string name="touchpad_tutorial_recent_apps_gesture_button" msgid="8919227647650347359">"Son uygulamaları görüntüle"</string>
-    <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Uygulamalar arasında geçiş yapma"</string>
+    <string name="touchpad_tutorial_switch_apps_gesture_button" msgid="7768255095423767779">"Uygulamalar arasında geçiş yapın"</string>
     <string name="touchpad_tutorial_done_button" msgid="176168488821755503">"Bitti"</string>
     <string name="touchpad_tutorial_next_button" msgid="9169718126626806688">"Sonraki"</string>
     <string name="gesture_error_title" msgid="469064941635578511">"Tekrar deneyin."</string>
@@ -1590,7 +1612,7 @@
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Tebrikler!"</string>
     <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Son uygulamaları görüntüleme hareketini tamamladınız."</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Son kullanılan uygulamaları görüntülemek için dokunmatik alanda üç parmağınızla yukarı kaydırıp basılı tutun"</string>
-    <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Uygulamalar arasında geçiş yapma"</string>
+    <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Uygulamalar arasında geçiş yapın"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Dokunmatik alanda dört parmağınızla sağa kaydırın"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Tebrikler!"</string>
     <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"Uygulamalar arası geçiş hareketini tamamladınız."</string>
