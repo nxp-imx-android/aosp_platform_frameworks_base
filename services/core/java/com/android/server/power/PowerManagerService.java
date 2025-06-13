@@ -7072,6 +7072,7 @@ public final class PowerManagerService extends SystemService
          * @param confirm If true, shows a shutdown confirmation dialog.
          * @param wait If true, this call waits for the shutdown to complete and does not return.
          */
+        @RequiresPermission(android.Manifest.permission.REBOOT)
         @Override // Binder call
         public void shutdown(boolean confirm, String reason, boolean wait) {
             mContext.enforceCallingOrSelfPermission(android.Manifest.permission.REBOOT, null);
