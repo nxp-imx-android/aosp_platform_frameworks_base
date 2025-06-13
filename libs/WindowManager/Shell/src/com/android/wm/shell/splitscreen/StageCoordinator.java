@@ -144,6 +144,7 @@ import com.android.wm.shell.R;
 import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -255,6 +256,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
     private final DesktopState mDesktopState;
     /** A haptics controller that plays haptic effects. */
     private final MSDLPlayer mMSDLPlayer;
+    private final Optional<BubbleController> mBubbleController;
 
     private final Rect mTempRect1 = new Rect();
     private final Rect mTempRect2 = new Rect();
@@ -402,7 +404,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
-            IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer) {
+            IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer,
+            Optional<BubbleController> bubbleController) {
         mContext = context;
         mDisplayId = displayId;
         mSyncQueue = syncQueue;
@@ -420,6 +423,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mRootTDAOrganizer = rootTDAOrganizer;
         mDesktopState = desktopState;
         mMSDLPlayer = msdlPlayer;
+        mBubbleController = bubbleController;
 
         DisplayManager displayManager = context.getSystemService(DisplayManager.class);
 
@@ -509,7 +513,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             Optional<DesktopUserRepositories> desktopUserRepositories,
             RootTaskDisplayAreaOrganizer rootTDAOrganizer,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer, DesktopState desktopState,
-            IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer) {
+            IActivityTaskManager activityTaskManager, MSDLPlayer msdlPlayer,
+            Optional<BubbleController> bubbleController) {
         mContext = context;
         mDisplayId = displayId;
         mSyncQueue = syncQueue;
@@ -537,6 +542,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         mRootTDAOrganizer = rootTDAOrganizer;
         mDesktopState = desktopState;
         mMSDLPlayer = msdlPlayer;
+        mBubbleController = bubbleController;
 
         mDisplayController.addDisplayWindowListener(this);
         transitions.addHandler(this);
@@ -2087,9 +2093,14 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         //                     this might have to be changed as more split-to-pip cujs are defined.
         options.setDisallowEnterPictureInPictureWhileLaunching(true);
         if (enableEnterSplitRemoveBubble()) {
-            // Set an empty rect as the requested launch bounds. This ensures that if an existing
-            // task is reused, and it has bounds set, they are cleared.
-            options.setLaunchBounds(new Rect());
+            mBubbleController.ifPresent(bc -> {
+                if (bc.hasBubbles()) {
+                    // Bubbles are present. Set an empty rect for the launch bounds in case we
+                    // are launching an existing bubble task to split. Bubbles sets bounds on the
+                    // task level and we need to clear them before a task can enter split screen.
+                    options.setLaunchBounds(new Rect());
+                }
+            });
         }
 
         opts.putAll(options.toBundle());

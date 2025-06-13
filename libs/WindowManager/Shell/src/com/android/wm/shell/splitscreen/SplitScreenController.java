@@ -84,6 +84,7 @@ import com.android.wm.shell.R;
 import com.android.wm.shell.RootDisplayAreaOrganizer;
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
+import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.common.ComponentUtils;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayImeController;
@@ -215,6 +216,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
     private final SplitScreenShellCommandHandler mSplitScreenShellCommandHandler;
     private final DesktopState mDesktopState;
     private final MSDLPlayer mMSDLPlayer;
+    private final Optional<BubbleController> mBubbleController;
 
     @VisibleForTesting
     StageCoordinator mStageCoordinator;
@@ -250,7 +252,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
             RootDisplayAreaOrganizer rootDisplayAreaOrganizer,
             DesktopState desktopState,
             IActivityTaskManager activityTaskManager,
-            MSDLPlayer msdlPlayer) {
+            MSDLPlayer msdlPlayer,
+            Optional<BubbleController> bubbleController) {
         mShellCommandHandler = shellCommandHandler;
         mShellController = shellController;
         mTaskOrganizer = shellTaskOrganizer;
@@ -280,6 +283,7 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
         mSplitScreenShellCommandHandler = new SplitScreenShellCommandHandler(this);
         mDesktopState = desktopState;
         mMSDLPlayer = msdlPlayer;
+        mBubbleController = bubbleController;
         // TODO(b/238217847): Temporarily add this check here until we can remove the dynamic
         //                    override for this controller from the base module
         if (ActivityTaskManager.supportsSplitScreenMultiWindow(context)) {
@@ -325,7 +329,8 @@ public class SplitScreenController implements SplitDragPolicy.Starter,
                 mMainExecutor, mMainHandler, mRecentTasksOptional, mLaunchAdjacentController,
                 mWindowDecorViewModel, mSplitState, mDesktopTasksController,
                 mDesktopUserRepositories, mRootTDAOrganizer,
-                mRootDisplayAreaOrganizer, mDesktopState, mActivityTaskManager, mMSDLPlayer);
+                mRootDisplayAreaOrganizer, mDesktopState, mActivityTaskManager, mMSDLPlayer,
+                mBubbleController);
     }
 
     @Override
