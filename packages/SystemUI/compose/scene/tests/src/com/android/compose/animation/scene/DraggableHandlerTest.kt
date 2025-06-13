@@ -130,6 +130,8 @@ class DraggableHandlerTest {
                     swipeSourceDetector = DefaultEdgeDetector,
                     swipeDetector = DefaultSwipeDetector,
                     transitionInterceptionThreshold = transitionInterceptionThreshold,
+                    decayAnimationSpec =
+                        SplineBasedFloatDecayAnimationSpec(density).generateDecayAnimationSpec(),
                     builder = scenesBuilder,
 
                     // Use testScope and not backgroundScope here because backgroundScope does not
@@ -137,8 +139,6 @@ class DraggableHandlerTest {
                     animationScope = testScope,
                     directionChangeSlop = directionChangeSlop,
                     defaultEffectFactory = defaultEffectFactory,
-                    decayAnimationSpec =
-                        SplineBasedFloatDecayAnimationSpec(density).generateDecayAnimationSpec(),
                 )
                 .apply { setContentsAndLayoutTargetSizeForTest(LAYOUT_SIZE) }
 
