@@ -74,6 +74,14 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"このアプリは 16 KB アライメントではありません。APK のアライメント チェックが失敗しました。このアプリはページサイズ互換モードを使用して実行されます。最適な互換性を実現するには、16 KB をサポートするようにアプリケーションを再コンパイルしてください。詳しくは、&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; をご覧ください。"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"このアプリは 16 KB アライメントではありません。ELF のアライメント チェックに失敗しました。このアプリはページサイズ互換モードを使用して実行されます。最適な互換性を実現するには、16 KB をサポートするようにアプリケーションを再コンパイルしてください。詳しくは、&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; をご覧ください。"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"このアプリは 16 KB アライメントではありません。APK と ELF のアライメント チェックに失敗しました。このアプリはページサイズ互換モードを使用して実行されます。最適な互換性を実現するには、16 KB をサポートするようにアプリケーションを再コンパイルしてください。詳しくは、&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; をご覧ください。"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
+    <skip />
+    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"提供可能なサービスがありません。"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"発信者番号の設定は変更できません。"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"データが <xliff:g id="CARRIERDISPLAY">%s</xliff:g> に切り替わりました"</string>
@@ -354,16 +362,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"バイタルサインに関するセンサーデータへのアクセス"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"通知"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"通知を表示"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"機密性の高い XR アイ トラッキング データ"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"機密性の高い視線データへのアクセス"</string>
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR トラッキング データ"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"ユーザーと周囲の環境に関する XR データへのアクセス"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"機密性の高い XR トラッキング データ"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"ユーザーと周囲の環境に関する機密性の高いトラッキング データへのアクセス"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ウィンドウコンテンツの取得"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"ユーザーがアクセスしているウィンドウのコンテンツを検査します。"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"タッチガイドの有効化"</string>
@@ -677,6 +681,10 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"周囲の環境に関する非常に詳細なトラッキング データへのアクセスをアプリに許可します。"</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"フォアグラウンドで実行されていないときに XR データにアクセス"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"フォアグラウンドで実行されていないときに XR データへのアクセスをアプリに許可します。"</string>
+    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
+    <skip />
+    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
+    <skip />
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"生体認証の使用"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"生体認証または画面ロックの使用"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"本人確認"</string>
@@ -2560,16 +2568,27 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"アプリ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"指紋を認識できなくなりました。指紋認証をもう一度設定してください。"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"セキュリティとプライバシー"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"高度な USB 保護機能"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"データを転送するには、デバイスのロックを解除してください"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"データを転送するには、デバイスのロックを解除して再接続する必要があります"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"急速充電とデータ転送を行うには、デバイスのロックを解除してください"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"急速充電とデータ転送を行うには、デバイスのロックを解除して再接続する必要があります"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"急速充電を行うには、デバイスのロックを解除してください"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"急速充電を行うには、デバイスのロックを解除して再接続する必要があります"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"サイレント"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"通知をサイレントにしました"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"デバイスを再起動するまでサイレントにしました"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"不審な USB アクティビティ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB データシグナルが無効になっています。"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"指紋認証で問題が発生している場合"</string>

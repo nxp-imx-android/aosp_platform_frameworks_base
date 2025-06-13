@@ -75,6 +75,14 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Šī lietotne nav saderīga ar 16 KB lapām. APK saskaņošanas pārbaude neizdevās. Šī lietotne tiks palaista, izmantojot ar lapas izmēru saderīgu režīmu. Lai uzlabotu saderību, lūdzu, atkārtoti kompilējiet lietojumprogrammu, nodrošinot atbalstu 16 KB lapām. Plašāku informāciju skatiet vietnē &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Šī lietotne nav saderīga ar 16 KB lapām. ELF saskaņošanas pārbaude neizdevās. Šī lietotne tiks palaista, izmantojot ar lapas izmēru saderīgu režīmu. Lai uzlabotu saderību, lūdzu, atkārtoti kompilējiet lietojumprogrammu, nodrošinot atbalstu 16 KB lapām. Plašāku informāciju skatiet vietnē &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Šī lietotne nav saderīga ar 16 KB lapām. APK un ELF saskaņošanas pārbaudes neizdevās. Šī lietotne tiks palaista, izmantojot ar lapas izmēru saderīgu režīmu. Lai uzlabotu saderību, lūdzu, atkārtoti kompilējiet lietojumprogrammu, nodrošinot atbalstu 16 KB lapām. Plašāku informāciju skatiet vietnē &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
+    <skip />
+    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Pakalpojums netiek nodrošināts."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Zvanītāja ID iestatījumu nevar mainīt."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Tiek izmantots operatora <xliff:g id="CARRIERDISPLAY">%s</xliff:g> datu savienojums"</string>
@@ -678,6 +686,10 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Ļauj lietotnei piekļūt ļoti detalizētiem izsekošanas datiem par vidi tieši ap jums."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"piekļūt PR datiem, kamēr lietotne nedarbojas priekšplānā"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Ļauj lietotnei piekļūt PR datiem, kamēr lietotne nedarbojas priekšplānā."</string>
+    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
+    <skip />
+    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
+    <skip />
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Biometrijas izmantošana"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Biometrijas vai ekrāna bloķēšanas izmantošana"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Apstipriniet, ka tas esat jūs"</string>
@@ -2561,16 +2573,27 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Lietojumprogrammas"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Jūsu pirkstu nospiedumus vairs nevar atpazīt. Vēlreiz iestatiet autorizāciju ar pirksta nospiedumu."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Drošība un konfidencialitāte"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"Papildu aizsardzība USB savienojumiem"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Lai pārsūtītu datus, atbloķējiet ierīci"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Lai pārsūtītu datus, iespējams, ierīce būs jāatbloķē un jāpievieno atkārtoti"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Lai izmantotu ātro uzlādi un pārsūtītu datus, atbloķējiet ierīci"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Lai izmantotu ātro uzlādi un pārsūtītu datus, iespējams, ierīce būs jāatbloķē un jāpievieno atkārtoti"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Lai izmantotu ātro uzlādi, atbloķējiet ierīci"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Lai izmantotu ātro uzlādi, iespējams, ierīce būs jāatbloķē un jāpievieno atkārtoti"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Izslēgt skaņu"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Paziņojuma skaņa ir izslēgta"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Skaņa ir izslēgta, līdz restartēsiet ierīci"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Aizdomīgas darbības ar USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB datu signāls ir atspējots."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Vai radušās problēmas saistībā ar autorizāciju ar pirksta nospiedumu?"</string>

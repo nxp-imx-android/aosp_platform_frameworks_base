@@ -74,6 +74,14 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Bu uygulama 16 KB ile uyumlu değil. APK uyumluluk kontrolü başarısız oldu. Bu uygulama, sayfa boyutuna uyumlu mod kullanılarak çalıştırılacak. En iyi uyumluluk için lütfen uygulamayı 16 KB desteğiyle yeniden derleyin. Daha fazla bilgi için &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; adresini ziyaret edin."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Bu uygulama 16 KB ile uyumlu değil. ELF uyumluluk kontrolü başarısız oldu. Bu uygulama, sayfa boyutuna uyumlu mod kullanılarak çalıştırılacak. En iyi uyumluluk için lütfen uygulamayı 16 KB desteğiyle yeniden derleyin. Daha fazla bilgi için &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; adresini ziyaret edin."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Bu uygulama 16 KB ile uyumlu değil. APK ve ELF uyumluluk kontrolleri başarısız oldu. Bu uygulama, sayfa boyutuna uyumlu mod kullanılarak çalıştırılacak. En iyi uyumluluk için lütfen uygulamayı 16 KB desteğiyle yeniden derleyin. Daha fazla bilgi için &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; adresini ziyaret edin."</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
+    <skip />
+    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Hizmet sağlanamadı."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Arayanın kimliği ayarını değiştiremezsiniz."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Veriler şuraya aktarıldı: <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -354,16 +362,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"hayati belirtilerinizle ilgili sensör verilerine erişme"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Bildirimler"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"bildirimleri göster"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"XR hassas göz takibi verileri"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"hassas göz hareketi verilerine erişme"</string>
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR takip verileri"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"sizinle ve çevrenizdeki ortamla ilgili XR verilerine erişme"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"Hassas XR takip verileri"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"sizinle ve çevrenizdeki ortamla ilgili hassas takip verilerine erişme"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Pencere içeriğini alma"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Etkileşim kurduğunuz pencerenin içeriğini inceler."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Dokunarak Keşfet\'i açma"</string>
@@ -677,6 +681,10 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Uygulamanın, hemen etrafınızdaki ortamla ilgili takip verilerine çok ayrıntılı bir şekilde erişmesine izin verir."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"ön planda değilken XR verilerine erişme"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Uygulamanın, ön planda değilken XR verilerine erişmesine izin verir."</string>
+    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
+    <skip />
+    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
+    <skip />
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Biyometri kullan"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Biyometri veya ekran kilidi kullan"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Kimliğinizi doğrulayın"</string>
@@ -1074,7 +1082,7 @@
     <string name="lockscreen_failed_attempts_now_wiping" product="tablet" msgid="8682445539263683414">"Tablet kilidini <xliff:g id="NUMBER">%d</xliff:g> defa yanlış bir şekilde açmaya çalıştınız. Tablet şimdi fabrika varsayılanına sıfırlanacak."</string>
     <string name="lockscreen_failed_attempts_now_wiping" product="tv" msgid="2205435033340091883">"Android TV cihazınızın kilidini <xliff:g id="NUMBER">%d</xliff:g> kez hatalı bir şekilde açmayı denediniz. Android TV cihazınız şimdi fabrika varsayılanına sıfırlanacak."</string>
     <string name="lockscreen_failed_attempts_now_wiping" product="default" msgid="2203704707679895487">"Telefon kilidini <xliff:g id="NUMBER">%d</xliff:g> defa yanlış bir şekilde açmaya çalıştınız. Telefon şimdi fabrika varsayılanına sıfırlanacak."</string>
-    <string name="lockscreen_too_many_failed_attempts_countdown" msgid="6807200118164539589">"<xliff:g id="NUMBER">%d</xliff:g> saniye içinde tekrar deneyin."</string>
+    <string name="lockscreen_too_many_failed_attempts_countdown" msgid="6807200118164539589">"<xliff:g id="NUMBER">%d</xliff:g> saniye sonra tekrar deneyin."</string>
     <string name="lockscreen_forgot_pattern_button_text" msgid="8362442730606839031">"Deseni unuttunuz mu?"</string>
     <string name="lockscreen_glogin_forgot_pattern" msgid="9218940117797602518">"Hesap kilidini açma"</string>
     <string name="lockscreen_glogin_too_many_attempts" msgid="3775904917743034195">"Çok fazla sayıda desen denemesi yapıldı"</string>
@@ -2560,16 +2568,27 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Uygulamalar"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Parmak izleriniz artık tanınamıyor. Parmak İzi Kilidi\'ni tekrar kurun."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Güvenlik ve gizlilik"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"USB için Gelişmiş Koruma"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Veri aktarımı için cihazın kilidini açın"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Veri aktarımı için cihazınızın kilidini açıp yeniden bağlamanız gerekebilir"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Hızlı şarj ve veri aktarımı için cihazın kilidini açın"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Hızlı şarj ve veri aktarımı için cihazınızın kilidini açıp yeniden bağlamanız gerekebilir"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Hızlı şarj için cihazın kilidini açın"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Hızlı şarj için cihazınızın kilidini açıp yeniden bağlamanız gerekebilir"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Sesi kapat"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Bildirim sesi kapatıldı"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Cihazınızı yeniden başlatana kadar sesi kapatıldı"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Şüpheli USB etkinliği"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB veri sinyali devre dışı bırakıldı."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Parmak İzi Kilidi ile ilgili sorun mu yaşıyorsunuz?"</string>

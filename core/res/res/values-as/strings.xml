@@ -74,6 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APKৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। এই এপ্‌টো পৃষ্ঠাৰ আকাৰৰ সমিল ম’ড ব্যৱহাৰ কৰি চলোৱা হ’ব। উত্তম সমিলতাৰ বাবে, অনুগ্ৰহ কৰি এপ্লিকেশ্বনটো ১৬ কেবিৰ সমৰ্থনৰ সৈতে পুনৰায় কম্পাইল কৰক। অধিক তথ্যৰ বাবে, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;লৈ যাওক"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। এই এপ্‌টো পৃষ্ঠাৰ আকাৰৰ সমিল ম’ড ব্যৱহাৰ কৰি চলোৱা হ’ব। উত্তম সমিলতাৰ বাবে, অনুগ্ৰহ কৰি এপ্লিকেশ্বনটো ১৬ কেবিৰ সমৰ্থনৰ সৈতে পুনৰায় কম্পাইল কৰক। অধিক তথ্যৰ বাবে, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;লৈ যাওক"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APK আৰু ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। এই এপ্‌টো পৃষ্ঠাৰ আকাৰৰ সমিল ম’ড ব্যৱহাৰ কৰি চলোৱা হ’ব। উত্তম সমিলতাৰ বাবে, অনুগ্ৰহ কৰি এপ্লিকেশ্বনটো ১৬ কেবিৰ সমৰ্থনৰ সৈতে পুনৰায় কম্পাইল কৰক। অধিক তথ্যৰ বাবে, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;লৈ যাওক"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱাৰা এপৰ বাবে অনুৰোধ কৰক। এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APKৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱাৰা এপৰ বাবে অনুৰোধ কৰক। এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱাৰা এপৰ বাবে অনুৰোধ কৰক। এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APK আৰু ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"পুনৰাই নেদেখুৱাব"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"সুবিধা যোগান ধৰা হোৱা নাই।"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"আপুনি কলাৰ আইডি ছেটিং সলনি কৰিব নোৱাৰে।"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"ডেটা <xliff:g id="CARRIERDISPLAY">%s</xliff:g>লৈ সলনি কৰা হৈছে"</string>
@@ -354,16 +358,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"আপোনাৰ দেহৰ গুৰুত্বপূৰ্ণ অংগসমূহৰ অৱস্থাৰ বিষয়ে ছেন্সৰৰ ডেটা লাভ কৰিব পাৰে"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"জাননী"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"জাননী দেখুৱাওক"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"XR সংবেদনশীল আই ট্ৰেকিং ডেটা"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"চকুৰ দৃষ্টি সম্পৰ্কীয় সংবেদনশীল ডেটা এক্সেছ কৰা"</string>
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR ট্ৰেকিং ডেটা"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"আপোনাৰ আৰু আপোনাৰ চৌপাশৰ পৰিৱেশ সম্পৰ্কীয় XR ডেটা এক্সেছ কৰা"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"সংবেদনশীল XR ট্ৰেকিং ডেটা"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"আপোনাৰ আৰু আপোনাৰ চৌপাশৰ পৰিৱেশ সম্পৰ্কীয় সংবেদনশীল ট্ৰেকিং ডেটা এক্সেছ কৰা"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ৱিণ্ড’ সমল বিচাৰি উলিওৱাৰ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"আপুনি চাই থকা ৱিণ্ড’খনৰ সমল পৰীক্ষা কৰাৰ।"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"স্পৰ্শৰ দ্বাৰা অন্বেষণ কৰাৰ সুবিধা অন কৰাৰ"</string>
@@ -677,6 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"এপ্‌টোক বিতং সবিশেষৰ সৈতে আপোনাৰ একেবাৰেই আশা-পাশৰ পৰিৱেশ সম্পৰ্কীয় ট্ৰেকিং ডেটা এক্সেছ কৰিবলৈ দিয়ে।"</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"অগ্ৰভূমিত নথকাৰ সময়ত XR ডেটা এক্সেছ কৰা"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"অগ্ৰভূমিত নথকাৰ সময়ত এপ্‌টোক XR ডেটা এক্সেছ কৰিবলৈ দিয়ে।"</string>
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"কেপচাৰ কী"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"এপ্‌টোক, ছিষ্টেমে ছিষ্টেমৰ শ্বৰ্টকাট আৰু কাৰ্য প্ৰক্ৰিয়াকৰণ কৰিব পৰাৰ পূৰ্বে কী কেপচাৰ কৰিবলৈ অনুমতি দিয়ে।"</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"বায়\'মেট্ৰিক ব্যৱহাৰ কৰক"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"বায়\'মেট্ৰিক অথবা স্ক্ৰীন লক ব্যৱহাৰ কৰক"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"এইয়া আপুনিয়েই বুলি সত্যাপন কৰক"</string>
@@ -2560,16 +2562,27 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"এপ্লিকেশ্বন"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"আপোনাৰ ফিংগাৰপ্ৰিণ্ট আৰু চিনাক্ত কৰিব নোৱাৰি। ফিংগাৰপ্ৰিণ্ট আনলক পুনৰ ছেট আপ কৰক।"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"সুৰক্ষা আৰু গোপনীয়তা"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"USBৰ বাবে সুৰক্ষা সম্পৰ্কীয় উন্নত সুবিধা"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"ডেটা স্থানান্তৰণৰ বাবে ডিভাইচ আনলক কৰক"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"ডেটা স্থানান্তৰণৰ বাবে আপুনি আপোনাৰ ডিভাইচটো আনলক কৰি পুনৰ সংযোগ কৰিবলগীয়া হ’ব পাৰে"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"দ্ৰুত চাৰ্জিং আৰু ডেটা স্থানান্তৰণৰ বাবে ডিভাইচ আলনক কৰক"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"দ্ৰুত চাৰ্জিং আৰু ডেটা স্থানান্তৰণৰ বাবে আপুনি আপোনাৰ ডিভাইচটো আনলক কৰি পুনৰ সংযোগ কৰিবলগীয়া হ’ব পাৰে"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"দ্ৰুত চাৰ্জিঙৰ বাবে ডিভাইচ আনলক কৰক"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"দ্ৰুত চাৰ্জিঙৰ বাবে আপুনি আপোনাৰ ডিভাইচটো আনলক কৰি পুনৰ সংযোগ কৰিবলগীয়া হ’ব পাৰে"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"নীৰৱ কৰক"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"জাননী নীৰৱ কৰা হৈছে"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"আপুনি আপোনাৰ ডিভাইচটো ৰিষ্টাৰ্ট নকৰা পৰ্যন্ত নীৰৱ কৰা হৈছে"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"সন্দেহজনক USBৰ কাৰ্যকলাপ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ডেটা ছিগনেল অক্ষম কৰা হৈছে।"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ফিংগাৰপ্ৰিন্ট আনলকৰ ক্ষেত্ৰত কিবা অসুবিধা পাইছে নেকি?"</string>

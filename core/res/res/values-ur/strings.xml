@@ -74,6 +74,14 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"‏یہ ایپ ‎16 KB کے موافق نہیں ہے۔ ‫APK الائنمنٹ چیک ناکام ہو گیا۔ یہ ایپ صفحہ کے سائز کے ساتھ موافقت رکھنے والے موڈ کے ساتھ چلائی جائے گی۔ بہترین موافقت کے لیے، براہ کرم ‎16 KB کے سپورٹ کے ساتھ ایپلیکیشن کو دوبارہ کمپائل کریں۔ مزید معلومات کے لیے &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; دیکھیں"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"‏یہ ایپ ‎16 KB کے موافق نہیں ہے۔ ‫ELF الائنمنٹ چیک ناکام ہو گیا۔ یہ ایپ صفحہ کے سائز کے ساتھ موافقت رکھنے والے موڈ کے ساتھ چلائی جائے گی۔ بہترین موافقت کے لیے، براہ کرم ‎16 KB کے سپورٹ کے ساتھ ایپلیکیشن کو دوبارہ کمپائل کریں۔ مزید معلومات کے لیے &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; دیکھیں"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"‏یہ ایپ ‎16 KB کے موافق نہیں ہے۔ ‫APK اور ELF الائنمنٹ چیکس ناکام ہو گئے۔ یہ ایپ صفحہ کے سائز کے ساتھ موافقت رکھنے والے موڈ کے ساتھ چلائی جائے گی۔ بہترین موافقت کے لیے، براہ کرم ‎16 KB کے سپورٹ کے ساتھ ایپلیکیشن کو دوبارہ کمپائل کریں۔ مزید معلومات کے لیے &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; دیکھیں"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
+    <skip />
+    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"سروس فراہم نہیں کی گئی۔"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"‏آپ کالر ID کی ترتیبات تبدیل نہیں کر سکتے ہیں۔"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"ڈیٹا <xliff:g id="CARRIERDISPLAY">%s</xliff:g> پر سوئچ کیا گیا"</string>
@@ -354,16 +362,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"اپنی علامات حیات کے متعلق سنسر ڈیٹا تک رسائی حاصل کریں"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"اطلاعات"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"اطلاعات دکھائیں"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"‏‫XR حساس آنکھوں کی حرکت کی ٹریکنگ کا ڈیٹا"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"آنکھوں کے حساس ڈیٹا تک رسائی حاصل کریں"</string>
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"‏‫XR ٹریکنگ ڈیٹا"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"‏اپنے اور اپنے آس پاس کے ماحول کے بارے میں XR ڈیٹا تک رسائی حاصل کریں"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"‏حساس XR ٹریکنگ ڈیٹا"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"اپنے اور اپنے آس پاس کے ماحول کے بارے میں حساس ٹریکنگ ڈیٹا تک رسائی حاصل کریں"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ونڈو مواد بازیافت کرنے کی"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"کسی ایسی ونڈو کے مواد کا معائنہ کریں جس کے ساتھ آپ تعامل کر رہے ہیں۔"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"ٹچ کے ذریعے دریافت کریں کو آن کرنے کی"</string>
@@ -677,6 +681,10 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"ایپ کو بہت زیادہ تفصیل کے ساتھ براہ راست آپ کے آس پاس کے ماحول کے بارے میں ٹریکنگ ڈیٹا تک رسائی کی اجازت ملتی ہے۔"</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"‏‫XR ڈیٹا تک رسائی حاصل کریں جبکہ پیش منظر میں نہ ہو"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"‏ایپ کو پیش منظر میں نہ ہوتے ہوئے XR ڈیٹا تک رسائی کی اجازت ملتی ہے۔"</string>
+    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
+    <skip />
+    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
+    <skip />
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"بایو میٹرکس استعمال کریں"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"بایو میٹرکس یا اسکرین لاک استعمال کریں"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"توثیق کریں کہ یہ آپ ہیں"</string>
@@ -2560,16 +2568,27 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ایپلیکیشنز"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"آپ کے فنگر پرنٹس کو مزید پہچانا نہیں جا سکتا۔ فنگر پرنٹ اَن لاک کو دوبارہ سیٹ اپ کریں۔"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"سیکیورٹی اور رازداری"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"‏‫USB کے لیے اعلی تحفظ"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"ڈیٹا کی منتقلی کے لیے آلہ کو غیر مقفل کریں"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"آپ کو ڈیٹا کی منتقلی کے لیے اپنے آلہ کو غیر مقفل اور دوبارہ منسلک کرنا پڑ سکتا ہے"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"فاسٹ چارجنگ اور ڈیٹا کی منتقلی کرنے کے لیے آلہ کو غیر مقفل کریں"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"آپ کو فاسٹ چارجنگ اور ڈیٹا ٹرانسفر کے لیے اپنے آلہ کو غیر مقفل اور دوبارہ منسلک کرنا پڑ سکتا ہے"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"فاسٹ چارجنگ کے لیے آلہ کو غیر مقفل کریں"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"آپ کو فاسٹ چارجنگ کے لیے اپنا آلہ غیر مقفل اور دوبارہ منسلک کرنا پڑ سکتا ہے"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"خاموشی"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"اطلاع خاموش ہو گئی"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"آواز اس وقت تک خاموش رہتی ہے جب تک آپ اپنے آلے کو ری سٹارٹ نہ کریں"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏‫USB کی مشکوک سرگرمی"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏‫USB ڈیٹا سگنل کو غیر فعال کر دیا گیا ہے۔"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"فنگر پرنٹ اَن لاک کے ضمن میں دشواری کا سامنا ہے؟"</string>

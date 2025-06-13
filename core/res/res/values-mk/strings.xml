@@ -74,6 +74,14 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Апликацијава не е компатибилна со 16 KB. Проверката за усогласување на APK не успеа. Апликацијава ќе се извршува со режим компатибилен со големината на страницата. За најдобра компатибилност, рекомпилирајте ја апликацијата со поддршка за 16 KB. За повеќе информации, одете на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Апликацијава не е компатибилна со 16 KB. Проверката за усогласување на ELF не успеа. Апликацијава ќе се извршува со режим компатибилен со големината на страницата. За најдобра компатибилност, рекомпилирајте ја апликацијата со поддршка за 16 KB. За повеќе информации, одете на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Апликацијава не е компатибилна со 16 KB. Проверките за усогласување на APK и ELF се неуспешни. Апликацијава ќе се извршува со режим компатибилен со големината на страницата. За најдобра компатибилност, рекомпилирајте ја апликацијата со поддршка за 16 KB. За повеќе информации, одете на &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
+    <skip />
+    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Услугата не е предвидена."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Не може да го промените поставувањето за ID на повикувач."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Мобилниот интернет се префрли на <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -354,16 +362,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"пристапува до податоците од сензорите за виталните функции"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Известувања"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"да прикажува известувања"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"Чувствителни податоци за следење очи за XR"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"да пристапува до чувствителни податоци за погледот"</string>
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR-податоци за следење"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"да пристапува до XR-податоци за вас и околината околу вас"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"Чувствителни податоци за следење за XR"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"да пристапува до чувствителни податоци за следење за вас и околината околу вас"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"да ги вчитува содржините од прозорците"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"да ги проверува содржините од прозорецот што го користите"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"да вклучи „Истражувај со допир“"</string>
@@ -677,6 +681,10 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Дозволува апликацијата да пристапува до податоците за следење на околината директно околу вас со многу детали."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"да пристапува до XR-податоци кога не е во преден план"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Дозволува апликацијата да пристапува до XR-податоците кога не е во преден план."</string>
+    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
+    <skip />
+    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
+    <skip />
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Користи биометрика"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Користи биометрика или заклучен екран"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Потврдете дека сте вие"</string>
@@ -2560,16 +2568,27 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Апликации"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Вашите отпечатоци веќе не може да се препознаат. Поставете „Отклучување со отпечаток“ повторно."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Безбедност и приватност"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="5205863500921477220">"„Напредна заштита“ за USB"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="2147694109838597680">"Отклучете го уредот за пренос на податоци"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="1979414895616432005">"Можеби ќе треба да го отклучите и повторно да го поврзете уредот за пренос на податоци"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="5974307859193807824">"Отклучете го уредот за брзо полнење и пренос на податоци"</string>
-    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="9045166614060168068">"Можеби ќе треба да го отклучите и повторно да го поврзете уредот за брзо полнење и пренос на податоци"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="5538918232374470393">"Отклучете го уредот за брзо полнење"</string>
-    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="4301626745704703517">"Можеби ќе треба да го отклучите и повторно да го поврзете уредот за брзо полнење"</string>
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
+    <skip />
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Исклучи го звукот"</string>
-    <string name="usb_apm_usb_notification_silenced_title" msgid="7883902869771699533">"Звукот на известувањата е исклучен"</string>
-    <string name="usb_apm_usb_notification_silenced_text" msgid="7154391495952217529">"Звукот е исклучен додека не го рестартирате уредот"</string>
+    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
+    <skip />
+    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
+    <skip />
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Сомнителна активност на USB-уредот"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Сигналот со податоци преку USB е оневозможен."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Имате проблем со „Отклучување со отпечаток“?"</string>
