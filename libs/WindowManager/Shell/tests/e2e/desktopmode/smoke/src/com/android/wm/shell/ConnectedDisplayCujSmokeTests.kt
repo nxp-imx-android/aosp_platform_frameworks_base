@@ -38,6 +38,7 @@ import android.tools.Rotation
 import android.tools.device.apphelpers.BrowserAppHelper
 import android.tools.device.apphelpers.ClockAppHelper
 import android.tools.device.apphelpers.StandardAppHelper
+import android.tools.helpers.RecentTasksUtils
 import android.tools.helpers.SYSTEMUI_PACKAGE
 import android.tools.traces.component.ComponentNameMatcher
 import android.tools.traces.component.IComponentNameMatcher
@@ -376,7 +377,7 @@ class ConnectedDisplayCujSmokeTests {
         overview.flingBackward()
         assertTrue("Can't find a desktop overview item", overview.currentTask.isDesktop)
         overview.flingForward()
-        assertOverviewItemVisible(clockApp)
+        assertOverviewItemVisible(clockApp, DEFAULT_DISPLAY)
     }
 
     // Projected: On the external display, opening an app from a full screen view will switch back
@@ -386,11 +387,7 @@ class ConnectedDisplayCujSmokeTests {
     @ProjectedOnly
     fun cuj7p() {
         // Clear all tasks
-        with(tapl.workspace.openOverviewFromRecentsKeyboardShortcut()) {
-            if (hasTasks()) {
-                dismissAllTasks()
-            }
-        }
+        RecentTasksUtils.clearAllVisibleRecentTasks(instrumentation)
 
         val externalDisplayId = connectedDisplayRule.setupTestDisplay()
         assertTaskbarVisible(externalDisplayId)
@@ -421,11 +418,12 @@ class ConnectedDisplayCujSmokeTests {
         )
 
         // Verify the overview has both the fullscreen app and the desktop.
-        val overview = tapl.workspace.openOverviewFromRecentsKeyboardShortcut()
-        overview.flingBackward()
-        assertTrue("Can't find a desktop overview item", overview.currentTask.isDesktop)
-        overview.flingForward()
-        assertOverviewItemVisible(browserApp)
+        // In projected mode, an external display's overview opens independently from the internal
+        // display's one. So we here need to explicitly tap the recent button on the external
+        // display.
+        clickRecentsButton(externalDisplayId)
+        assertOverviewDesktopItemVisible(externalDisplayId)
+        assertOverviewItemVisible(browserApp, externalDisplayId)
     }
 
     // Extended: Desktop Windows can be dragged across displays using a cursor when external display
@@ -632,7 +630,21 @@ class ConnectedDisplayCujSmokeTests {
         ) { "Unable to find view for $selector" }).click()
     }
 
-    fun assertOverviewItemVisible(appHelper: StandardAppHelper) {
+    fun assertOverviewDesktopItemVisible(displayId: Int) {
+        assertNotNull(
+            "Unable to find overview desktop item",
+            device.wait(
+                Until.findObjects(
+                    By.res(
+                        TestHelpers.getOverviewPackageName(),
+                        TASK_VIEW_DESKTOP_RES_ID
+                    ).displayId(displayId)
+                ), TIMEOUT.inWholeMilliseconds
+            )
+        )
+    }
+
+    fun assertOverviewItemVisible(appHelper: StandardAppHelper, displayId: Int) {
         val objects =
             checkNotNull(
                 device.wait(
@@ -640,7 +652,7 @@ class ConnectedDisplayCujSmokeTests {
                         By.res(
                             TestHelpers.getOverviewPackageName(),
                             TASK_VIEW_SINGLE_RES_ID
-                        )
+                        ).displayId(displayId)
                     ), TIMEOUT.inWholeMilliseconds
                 )
             ) { "Unable to find overview item" }
@@ -714,6 +726,17 @@ class ConnectedDisplayCujSmokeTests {
         )
     }
 
+    fun clickRecentsButton(displayId: Int) {
+        val selector = By.res(device.launcherPackageName, RECENTS_BUTTON_RES_ID)
+            .displayId(displayId)
+        (checkNotNull(
+            device.wait(
+                Until.findObject(selector),
+                TIMEOUT.inWholeMilliseconds
+            )
+        ) { "Unable to find view for $selector" }).click()
+    }
+
     fun taskbarSelector(displayId: Int): BySelector =
         By.res(device.launcherPackageName, TASKBAR_RES_ID).displayId(displayId)
 
@@ -733,7 +756,9 @@ class ConnectedDisplayCujSmokeTests {
         const val FULLSCREEN_BUTTON_RES_ID = "fullscreen_button"
         const val DESKTOP_BUTTON_RES_ID = "desktop_button"
         const val TASK_VIEW_SINGLE_RES_ID = "task_view_single"
+        const val TASK_VIEW_DESKTOP_RES_ID = "task_view_desktop"
         const val APPS_LIST_VIEW_RES_ID = "apps_list_view"
+        const val RECENTS_BUTTON_RES_ID = "recent_apps"
         const val CLOSE_BUTTON = "close_window"
         const val DISPLAY_TOPOLOGY_PANE_CONTENT_RES_ID = "display_topology_pane_content"
         const val EXTERNAL_DISPLAY_TEXT = "External Display"
