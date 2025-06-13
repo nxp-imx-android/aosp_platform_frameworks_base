@@ -2978,5 +2978,10 @@ public class BubblesTest extends SysuiTestCase {
         public void showBubbleBarPillowAt(@Nullable BubbleBarLocation location) {
 
         }
+
+        @Override
+        public void showBubbleBarDropTargetAt(@Nullable BubbleBarLocation location) {
+
+        }
     }
 }

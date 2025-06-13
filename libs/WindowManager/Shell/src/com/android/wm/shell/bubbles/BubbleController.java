@@ -985,7 +985,9 @@ public class BubbleController implements ConfigurationChangeListener,
 
     /** Show bubble bar drop target at provided location or hide it if null. */
     public void showBubbleBarDropTargetAt(@Nullable BubbleBarLocation bubbleBarLocation) {
-        // TODO(b/411505605): Implement logic to show/hide drop target on bubble bar.
+        if (isShowingAsBubbleBar() && mBubbleStateListener != null) {
+            mBubbleStateListener.showBubbleBarDropTargetAt(bubbleBarLocation);
+        }
     }
 
     private void showBubbleBarExpandedViewDropTarget(BubbleBarLocation bubbleBarLocation) {
@@ -3081,6 +3083,11 @@ public class BubbleController implements ConfigurationChangeListener,
                     @Override
                     public void showBubbleBarPillowAt(@Nullable BubbleBarLocation location) {
                         mListener.call(l -> l.showBubbleBarPillowAt(location));
+                    }
+
+                    @Override
+                    public void showBubbleBarDropTargetAt(@Nullable BubbleBarLocation location) {
+                        mListener.call(l -> l.showBubbleBarDropTargetAt(location));
                     }
                 };
 
