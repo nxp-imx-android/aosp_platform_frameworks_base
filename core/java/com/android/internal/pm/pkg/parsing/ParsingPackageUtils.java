@@ -2504,8 +2504,7 @@ public class ParsingPackageUtils {
                 // accessing Build.VERSION_CODES directly and suppressing
                 // AndroidFrameworkCompatChange warning
                 .setOnBackInvokedCallbackEnabled(bool(
-                        com.android.window.flags.Flags.predictiveBackDefaultEnableSdk36()
-                            && targetSdk > Build.VERSION_CODES.VANILLA_ICE_CREAM,
+                        targetSdk > Build.VERSION_CODES.VANILLA_ICE_CREAM,
                         R.styleable.AndroidManifestApplication_enableOnBackInvokedCallback, sa))
                 // Ints Default 0
                 .setUiOptions(anInt(R.styleable.AndroidManifestApplication_uiOptions, sa))
