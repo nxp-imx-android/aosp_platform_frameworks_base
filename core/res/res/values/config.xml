@@ -2834,6 +2834,8 @@
         <item>1</item>
     </integer-array>
 
+    <!-- Should we show the preference to set up when to start dreaming? -->
+    <bool name="config_dreamsShowWhenToDreamSetting">true</bool>
     <!-- Are we allowed to dream while not plugged in? -->
     <bool name="config_dreamsEnabledOnBattery">false</bool>
     <!-- Minimum battery level to allow dreaming when powered.
