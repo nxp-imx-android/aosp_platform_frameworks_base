@@ -40,6 +40,7 @@ import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.SysuiTestableContext
 import com.android.systemui.battery.BatteryMeterView
+import com.android.systemui.flags.DisableSceneContainer
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.flags.andSceneContainer
 import com.android.systemui.kosmos.collectLastValue
@@ -385,6 +386,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP)
     fun handleInterceptTouchEventFromStatusBar_shadeReturnsFalse_flagOff_viewReturnsFalse() {
         whenever(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(false)
@@ -396,6 +398,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableSceneContainer
     @EnableFlags(com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP)
     fun handleInterceptTouchEventFromStatusBar_shadeReturnsFalse_flagOn_viewReturnsFalse() {
         whenever(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(false)
@@ -407,6 +410,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableSceneContainer
     @DisableFlags(com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP)
     fun handleInterceptTouchEventFromStatusBar_shadeReturnsTrue_flagOff_viewReturnsFalse() {
         whenever(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(true)
@@ -418,6 +422,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
     }
 
     @Test
+    @DisableSceneContainer
     @EnableFlags(com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP)
     fun handleInterceptTouchEventFromStatusBar_shadeReturnsTrue_flagOn_viewReturnsTrue() {
         whenever(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(true)
@@ -426,6 +431,45 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
         val returnVal = view.onInterceptTouchEvent(event)
 
         assertThat(returnVal).isTrue()
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun handleInterceptTouchEventFromStatusBar_swipeDown_intercepts() {
+        val downEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 10f, 0)
+        view.onInterceptTouchEvent(downEvent)
+
+        val moveEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_MOVE, 0f, 100f, 0)
+        val intercepted = view.onInterceptTouchEvent(moveEvent)
+
+        assertThat(intercepted).isTrue()
+        verify(windowRootView).dispatchTouchEvent(moveEvent)
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun handleInterceptTouchEventFromStatusBar_smallSwipe_doesNotIntercept() {
+        val downEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 10f, 0)
+        view.onInterceptTouchEvent(downEvent)
+
+        val moveEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_MOVE, 0f, 11f, 0)
+        val intercepted = view.onInterceptTouchEvent(moveEvent)
+
+        assertThat(intercepted).isFalse()
+        verify(windowRootView, never()).dispatchTouchEvent(any())
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun handleInterceptTouchEventFromStatusBar_horizontalSwipe_doesNotIntercept() {
+        val downEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 10f, 0)
+        view.onInterceptTouchEvent(downEvent)
+
+        val moveEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_MOVE, 100f, 11f, 0)
+        val intercepted = view.onInterceptTouchEvent(moveEvent)
+
+        assertThat(intercepted).isFalse()
+        verify(windowRootView, never()).dispatchTouchEvent(any())
     }
 
     @Test

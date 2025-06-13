@@ -21,6 +21,7 @@ import android.view.Display.DEFAULT_DISPLAY
 import android.view.InputDevice
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.Flags
 import com.android.systemui.Gefingerpoken
@@ -258,16 +259,39 @@ private constructor(
     }
 
     inner class PhoneStatusBarViewTouchHandler : Gefingerpoken {
+        private val touchSlop = ViewConfiguration.get(mView.context).scaledTouchSlop
+        private var initialTouchX = 0f
+        private var initialTouchY = 0f
+
         override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
             if (event.action == MotionEvent.ACTION_DOWN) {
                 dispatchEventToShadeDisplayPolicy(event)
             }
-            return if (Flags.statusBarSwipeOverChip()) {
-                shadeViewController.handleExternalInterceptTouch(event)
-            } else {
+
+            if (!Flags.statusBarSwipeOverChip()) {
                 onTouch(event)
-                false
+                return false
             }
+
+            // Let ShadeViewController intercept touch events when flexiglass is disabled.
+            if (!SceneContainerFlag.isEnabled) {
+                return shadeViewController.handleExternalInterceptTouch(event)
+            }
+
+            when (event.action) {
+                MotionEvent.ACTION_DOWN -> {
+                    initialTouchX = event.x
+                    initialTouchY = event.y
+                }
+                MotionEvent.ACTION_MOVE -> {
+                    val dy = event.y - initialTouchY
+                    if (dy > touchSlop) {
+                        windowRootView.get().dispatchTouchEvent(event)
+                        return true
+                    }
+                }
+            }
+            return false
         }
 
         override fun onTouchEvent(event: MotionEvent): Boolean {
