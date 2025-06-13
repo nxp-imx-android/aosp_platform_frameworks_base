@@ -24,6 +24,8 @@ import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -123,11 +125,46 @@ public final class Message implements Parcelable {
     /** If set message is asynchronous */
     /*package*/ static final int FLAG_ASYNCHRONOUS = 1 << 1;
 
+    /** If the message is marked for removal */
+    /* package*/ static final int FLAG_REMOVED = 1 << 2;
+
     /** Flags to clear in the copyFrom method */
-    /*package*/ static final int FLAGS_TO_CLEAR_ON_COPY_FROM = FLAG_IN_USE;
+    /*package*/ static final int FLAGS_TO_CLEAR_ON_COPY_FROM = FLAG_IN_USE | FLAG_REMOVED;
 
     @UnsupportedAppUsage
-    /*package*/ int flags;
+    /*package*/ volatile int flags;
+    /*package*/ static final VarHandle sFlags;
+    static {
+        try {
+            MethodHandles.Lookup l = MethodHandles.lookup();
+            sFlags = l.findVarHandle(Message.class, "flags", int.class);
+        } catch (ReflectiveOperationException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
+    /**
+     * CAS flags with FLAG_REMOVED to indicate that this message should be removed. Returns false if
+     * the message has already been marked for removal.
+     *
+     * The CAS loop shouldn't fail due to FLAG_IN_USE or FLAG_ASYNCHRONOUS being set because those
+     * are only changed when a message is initially created and enqueued. However, we loop anyways
+     * in case additional flags that can be modified are added in the future.
+     */
+    boolean markRemoved() {
+        int localFlags;
+        do {
+            localFlags = this.flags;
+            if ((localFlags & FLAG_REMOVED) != 0) {
+                return false;
+            }
+        } while (!sFlags.compareAndSet(this, localFlags, localFlags | FLAG_REMOVED));
+        return true;
+    }
+
+    boolean isRemoved() {
+       return (this.flags & FLAG_REMOVED) != 0;
+    }
 
     /**
      * The targeted delivery time of this message. The time-base is
@@ -155,6 +192,10 @@ public final class Message implements Parcelable {
     // sometimes we store linked lists of these things
     @UnsupportedAppUsage
     /*package*/ Message next;
+
+    // only used in MessageStack
+    /*package*/ Message prev;
+    /*package*/ Message nextFree;
 
     /**
      * For trace flows, if tracing is enabled.
@@ -367,6 +408,27 @@ public final class Message implements Parcelable {
         data = null;
     }
 
+    // Sentinel values used to clear reference fields with a valid 'null' value, to avoid grabbing a
+    // removed message when matching for 'null' in these fields.
+    private static final Object NULL_OBJECT = new Object();
+    private static final Handler NULL_HANDLER = Handler.createSentinelHandler();
+    private static final Runnable NULL_RUNNABLE = () -> {};
+
+    /**
+     * Clear reference fields to avoid retaining any objects. This is used in MessageStack's message
+     * removal functions, and differs from clear() in that 'flags' and links (next, prev, nextFree)
+     * are not cleared, as they are still needed to indicate that a message is removed and to
+     * traverse the stack.
+     */
+    void clearReferenceFields() {
+        obj = NULL_OBJECT;
+        replyTo = null;
+        sendingThreadName = null;
+        data = null;
+        target = NULL_HANDLER;
+        callback = NULL_RUNNABLE;
+    }
+
     /**
      * Make this message like o.  Performs a shallow copy of the data field.
      * Does not copy the linked list fields, nor the timestamp or
@@ -409,7 +471,9 @@ public final class Message implements Parcelable {
      * worry about yours conflicting with other handlers.
      */
     public Handler getTarget() {
-        return target;
+        // We assign this first to avoid a data race that could potentially expose NULL_HANDLER.
+        final Handler ret = target;
+        return ret == NULL_HANDLER ? null : ret;
     }
 
     /**
@@ -421,7 +485,9 @@ public final class Message implements Parcelable {
      * {@link Handler#handleMessage(Message)}.
      */
     public Runnable getCallback() {
-        return callback;
+        // We assign this first to avoid a data race that could potentially expose NULL_RUNNABLE.
+        final Runnable ret = callback;
+        return ret == NULL_RUNNABLE ? null : ret;
     }
 
     /** @hide */
