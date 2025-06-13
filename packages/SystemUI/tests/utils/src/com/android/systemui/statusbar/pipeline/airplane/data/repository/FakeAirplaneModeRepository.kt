@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.pipeline.airplane.data.repository
 
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.impl.AirplaneModeRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class FakeAirplaneModeRepository : AirplaneModeRepository {

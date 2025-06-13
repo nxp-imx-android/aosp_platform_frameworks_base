@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.pipeline.airplane.data.repository
+package com.android.systemui.statusbar.pipeline.airplane.data.repository.impl
 
 import android.net.ConnectivityManager
 import android.os.Handler

@@ -30,8 +30,8 @@ import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.statusbar.events.data.repository.SystemStatusEventAnimationRepository
 import com.android.systemui.statusbar.events.data.repository.SystemStatusEventAnimationRepositoryImpl
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepositoryImpl
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.impl.AirplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.impl.AirplaneModeRepositoryImpl
 import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModel
 import com.android.systemui.statusbar.pipeline.airplane.ui.viewmodel.AirplaneModeViewModelImpl
 import com.android.systemui.statusbar.pipeline.battery.data.repository.BatteryRepository
