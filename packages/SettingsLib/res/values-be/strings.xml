@@ -578,6 +578,7 @@
     <string name="wifi_tether_connected_summary" msgid="5100712926640492336">"{count,plural, =1{Падключана 1 прылада}one{Падключана # прылада}few{Падключаны # прылады}many{Падключаны # прылад}other{Падключаны # прылады}}"</string>
     <string name="accessibility_manual_zen_more_time" msgid="5141801092071134235">"Больш часу."</string>
     <string name="accessibility_manual_zen_less_time" msgid="6828877595848229965">"Менш часу."</string>
+    <string name="accessibility_screen_magnification_title" msgid="4981096059561256342">"Павелічэнне"</string>
     <string name="cancel" msgid="5665114069455378395">"Скасаваць"</string>
     <string name="next" msgid="2699398661093607009">"Далей"</string>
     <string name="back" msgid="5554327870352703710">"Назад"</string>
