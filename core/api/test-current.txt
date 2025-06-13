@@ -1860,7 +1860,7 @@ package android.hardware.input {
   }
 
   public class VirtualKeyboard implements java.io.Closeable {
-    method public int getInputDeviceId();
+    method public int getInputDeviceIdForTest();
   }
 
 }
