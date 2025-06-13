@@ -2341,6 +2341,7 @@ class MediaRouter2ServiceImpl {
                 new HashMap<>();
 
         RouteDiscoveryPreference mCompositeDiscoveryPreference = RouteDiscoveryPreference.EMPTY;
+        Map<String, RouteDiscoveryPreference> mPerAppPreferences = Map.of();
         Set<String> mActivelyScanningPackages = Set.of();
         final UserHandler mHandler;
 
@@ -3068,7 +3069,8 @@ class MediaRouter2ServiceImpl {
             mRouteProviders.add(proxy);
             proxy.updateDiscoveryPreference(
                     mUserRecord.mActivelyScanningPackages,
-                    mUserRecord.mCompositeDiscoveryPreference);
+                    mUserRecord.mCompositeDiscoveryPreference,
+                    mUserRecord.mPerAppPreferences);
         }
 
         @Override
@@ -4068,7 +4070,12 @@ class MediaRouter2ServiceImpl {
                                     + " routers: %s",
                             newPreference, activelyScanningPackages));
 
-            if (updateScanningOnUserRecord(service, activelyScanningPackages, newPreference)) {
+            Map<String, RouteDiscoveryPreference> perAppPreferences = new HashMap<>();
+            for (RouterRecord record : activeRouterRecords) {
+                perAppPreferences.put(record.mPackageName, record.mDiscoveryPreference);
+            }
+            if (updateScanningOnUserRecord(service, activelyScanningPackages, newPreference,
+                    perAppPreferences)) {
                 updateDiscoveryPreferenceForProviders(activelyScanningPackages);
             }
         }
@@ -4076,16 +4083,19 @@ class MediaRouter2ServiceImpl {
         private void updateDiscoveryPreferenceForProviders(Set<String> activelyScanningPackages) {
             for (MediaRoute2Provider provider : mRouteProviders) {
                 provider.updateDiscoveryPreference(
-                        activelyScanningPackages, mUserRecord.mCompositeDiscoveryPreference);
+                        activelyScanningPackages, mUserRecord.mCompositeDiscoveryPreference,
+                        mUserRecord.mPerAppPreferences);
             }
         }
 
         private boolean updateScanningOnUserRecord(
                 MediaRouter2ServiceImpl service,
                 Set<String> activelyScanningPackages,
-                RouteDiscoveryPreference newPreference) {
+                RouteDiscoveryPreference newPreference,
+                Map<String, RouteDiscoveryPreference> perAppPreferences) {
             synchronized (service.mLock) {
                 if (newPreference.equals(mUserRecord.mCompositeDiscoveryPreference)
+                        && perAppPreferences.equals(mUserRecord.mPerAppPreferences)
                         && activelyScanningPackages.equals(mUserRecord.mActivelyScanningPackages)) {
                     return false;
                 }
@@ -4100,6 +4110,7 @@ class MediaRouter2ServiceImpl {
                 }
 
                 mUserRecord.mCompositeDiscoveryPreference = newPreference;
+                mUserRecord.mPerAppPreferences = perAppPreferences;
                 mUserRecord.mActivelyScanningPackages = activelyScanningPackages;
             }
             return true;

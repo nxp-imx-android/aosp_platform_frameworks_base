@@ -16,6 +16,8 @@
 
 package com.android.server.media;
 
+import static android.Manifest.permission.MEDIA_CONTENT_CONTROL;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.media.MediaRoute2ProviderService.REASON_REJECTED;
 import static android.media.MediaRoute2ProviderService.REQUEST_ID_NONE;
 
@@ -27,6 +29,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.media.IMediaRoute2ProviderService;
 import android.media.IMediaRoute2ProviderServiceCallback;
 import android.media.MediaRoute2Info;
@@ -66,6 +69,7 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
 
     private final Context mContext;
+    private PackageManager mPackageManager;
     private final int mUserId;
     private final Handler mHandler;
     private final boolean mIsSelfScanOnlyProvider;
@@ -79,6 +83,7 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
     private boolean mConnectionReady;
 
     private RouteDiscoveryPreference mLastDiscoveryPreference = null;
+    private Map<String, RouteDiscoveryPreference> mLastPerAppPreferences = null;
     private boolean mLastDiscoveryPreferenceIncludesThisPackage = false;
 
     @GuardedBy("mLock")
@@ -108,6 +113,7 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
             int userId) {
         super(componentName, /* isSystemRouteProvider= */ false);
         mContext = Objects.requireNonNull(context, "Context must not be null.");
+        mPackageManager = mContext.getPackageManager();
         mRequestIdToSessionCreationRequest = new LongSparseArray<>();
         mSessionOriginalIdToTransferRequest = new HashMap<>();
         mRequestIdToSystemSessionRequest = new LongSparseArray<>();
@@ -161,12 +167,14 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
 
     @Override
     public void updateDiscoveryPreference(
-            Set<String> activelyScanningPackages, RouteDiscoveryPreference discoveryPreference) {
+            Set<String> activelyScanningPackages, RouteDiscoveryPreference discoveryPreference,
+            Map<String, RouteDiscoveryPreference> perAppPreferences) {
         mLastDiscoveryPreference = discoveryPreference;
+        mLastPerAppPreferences = perAppPreferences;
         mLastDiscoveryPreferenceIncludesThisPackage =
                 activelyScanningPackages.contains(mComponentName.getPackageName());
         if (mConnectionReady) {
-            mActiveConnection.updateDiscoveryPreference(discoveryPreference);
+            mActiveConnection.updateDiscoveryPreference(discoveryPreference, perAppPreferences);
         }
         updateBinding();
     }
@@ -457,7 +465,8 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
                         mLastDiscoveryPreferenceIncludesThisPackage
                                 ? Set.of(mComponentName.getPackageName())
                                 : Set.of(),
-                        mLastDiscoveryPreference);
+                        mLastDiscoveryPreference,
+                        mLastPerAppPreferences);
             }
         }
     }
@@ -888,9 +897,15 @@ final class MediaRoute2ProviderServiceProxy extends MediaRoute2Provider {
             }
         }
 
-        public void updateDiscoveryPreference(RouteDiscoveryPreference discoveryPreference) {
+        public void updateDiscoveryPreference(RouteDiscoveryPreference discoveryPreference,
+                Map<String, RouteDiscoveryPreference> perAppPreferences) {
+            if (!Flags.enableRouteVisibilityControlApi() || perAppPreferences == null
+                    || mPackageManager.checkPermission(MEDIA_CONTENT_CONTROL,
+                    mComponentName.getPackageName()) != PERMISSION_GRANTED) {
+                perAppPreferences = Map.of();
+            }
             try {
-                mService.updateDiscoveryPreference(discoveryPreference);
+                mService.updateDiscoveryPreference(discoveryPreference, perAppPreferences);
             } catch (RemoteException ex) {
                 Slog.e(TAG, "updateDiscoveryPreference: Failed to deliver request.");
             }

@@ -44,6 +44,7 @@ import com.android.media.flags.Flags;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -212,7 +213,8 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
 
     @Override
     public void updateDiscoveryPreference(
-            Set<String> activelyScanningPackages, RouteDiscoveryPreference discoveryPreference) {
+            Set<String> activelyScanningPackages, RouteDiscoveryPreference discoveryPreference,
+            Map<String, RouteDiscoveryPreference> perAppPreferences) {
         // Do nothing
     }
 
