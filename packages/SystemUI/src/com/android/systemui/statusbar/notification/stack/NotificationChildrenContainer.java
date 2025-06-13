@@ -1225,12 +1225,13 @@ public class NotificationChildrenContainer extends ViewGroup
                 mHeaderViewState.applyToView(mGroupHeader);
             }
 
-            if (notificationsRedesignTemplates()) {
+            if (notificationsRedesignTemplates()
+                    && mCurrentHeader instanceof NotificationHeaderView groupHeader) {
                 if (mTopLineViewState != null) {
-                    mTopLineViewState.animateTo(mGroupHeader.getTopLineView(), properties);
+                    mTopLineViewState.animateTo(groupHeader.getTopLineView(), properties);
                 }
                 if (mExpandButtonViewState != null) {
-                    mExpandButtonViewState.animateTo(mGroupHeader.getExpandButton(), properties);
+                    mExpandButtonViewState.animateTo(groupHeader.getExpandButton(), properties);
                 }
             }
         }
