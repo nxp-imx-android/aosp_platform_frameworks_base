@@ -64,7 +64,7 @@
                 <LinearLayout
                     android:id="@+id/ethernet_layout"
                     android:baselineAligned="false"
-                    android:layout_height="@dimen/internet_details_toggle_row_height"
+                    android:layout_height="@dimen/tile_details_toggle_row_height"
                     style="@style/InternetDialog.Network"
                     android:background="@drawable/settingslib_switch_bar_bg_on"
                     android:visibility="gone">
@@ -113,7 +113,7 @@
                         android:id="@+id/turn_on_mobile_layout"
                         style="@style/InternetDialog.Network"
                         android:baselineAligned="false"
-                        android:layout_height="@dimen/internet_details_toggle_row_height"
+                        android:layout_height="@dimen/tile_details_toggle_row_height"
                         android:clickable="false"
                         android:focusable="false"
                         android:gravity="center">
