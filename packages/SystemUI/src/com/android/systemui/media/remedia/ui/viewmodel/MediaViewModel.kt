@@ -52,7 +52,7 @@ class MediaViewModel
 @AssistedInject
 constructor(
     private val interactor: MediaInteractor,
-    private val falsingSystem: FalsingSystem,
+    private val falsingSystem: MediaFalsingSystem,
     @Assisted private val context: Context,
     @Assisted private val carouselVisibility: MediaCarouselVisibility,
 ) : ExclusiveActivatable() {
@@ -395,12 +395,6 @@ constructor(
      */
     private fun Offset.isHorizontal(): Boolean {
         return abs(x) >= abs(y)
-    }
-
-    interface FalsingSystem {
-        fun runIfNotFalseTap(@FalsingManager.Penalty penalty: Int, block: () -> Unit)
-
-        fun isFalseTouch(@Classifier.InteractionType interactionType: Int): Boolean
     }
 
     @AssistedFactory
