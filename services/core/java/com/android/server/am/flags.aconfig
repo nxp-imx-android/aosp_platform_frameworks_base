@@ -258,3 +258,10 @@ flag {
     description: "Enable ActivityManagerStructured Service"
     bug: "419409018"
 }
+
+flag {
+    name: "not_skip_connection_recompute_for_bind_schedule_like_top_app"
+    namespace: "wear_frameworks"
+    description: "If a connection has flag BIND_SCHEDULE_LIKE_TOP_APP but the host process has not set the corresponding flag, do not skip the connection recompute."
+    bug: "417720000"
+}
