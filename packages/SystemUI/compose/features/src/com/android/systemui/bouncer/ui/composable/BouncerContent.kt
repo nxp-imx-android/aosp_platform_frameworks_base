@@ -99,6 +99,7 @@ import com.android.compose.animation.scene.SceneKey
 import com.android.compose.animation.scene.SceneTransitionLayout
 import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.transitions
+import com.android.compose.modifiers.thenIf
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
 import com.android.systemui.bouncer.shared.model.BouncerActionButtonModel
 import com.android.systemui.bouncer.ui.BouncerDialogFactory
@@ -509,7 +510,11 @@ private fun BesideUserSwitcherLayout(
             aboveFold = {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.Center,
+                    modifier =
+                        Modifier.fillMaxWidth().thenIf(authMethod is PasswordBouncerViewModel) {
+                            Modifier.fillMaxHeight()
+                        },
                 ) {
                     StatusMessage(viewModel = viewModel.message)
                     OutputArea(
@@ -633,14 +638,9 @@ private fun ContentScope.FoldableScene(
         // Content above the fold, when split on a foldable device in a "table top" posture:
         Box(
             modifier =
-                Modifier.element(SceneElements.AboveFold)
-                    .then(
-                        if (isSplit) {
-                            Modifier.weight(splitRatio)
-                        } else {
-                            Modifier
-                        }
-                    )
+                Modifier.element(SceneElements.AboveFold).thenIf(isSplit) {
+                    Modifier.weight(splitRatio)
+                }
         ) {
             aboveFold()
         }
