@@ -36,18 +36,22 @@ import com.android.systemui.qs.tiles.dialog.InternetDetailsViewModel
 import com.android.systemui.qs.tiles.dialog.InternetDialogManager
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.connectivity.AccessPointController
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.fake
+import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.ethernet.domain.EthernetInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.FakeMobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsProxy
 import com.android.systemui.statusbar.pipeline.shared.data.model.DefaultConnectionModel
 import com.android.systemui.statusbar.pipeline.shared.data.model.DefaultConnectionModel.Wifi
-import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
+import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
+import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.InternetTileViewModel
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.FakeWifiRepository
 import com.android.systemui.statusbar.pipeline.wifi.domain.interactor.WifiInteractorImpl
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiScanEntry
+import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -77,9 +81,11 @@ class InternetTileNewImplTest(flags: FlagsParameterization) : SysuiTestCase() {
 
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
+    private val kosmos = testKosmos()
 
-    private var airplaneModeRepository = FakeAirplaneModeRepository()
-    private var connectivityRepository = FakeConnectivityRepository()
+    private var airplaneModeRepository = kosmos.airplaneModeRepository.fake
+    private var airplaneModeInteractor = kosmos.airplaneModeInteractor
+    private var connectivityRepository = kosmos.connectivityRepository.fake
     private var ethernetInteractor = EthernetInteractor(connectivityRepository)
     private var mobileIconsInteractor = FakeMobileIconsInteractor(FakeMobileMappingsProxy(), mock())
     private var wifiRepository = FakeWifiRepository()
@@ -110,7 +116,7 @@ class InternetTileNewImplTest(flags: FlagsParameterization) : SysuiTestCase() {
 
         viewModel =
             InternetTileViewModel(
-                airplaneModeRepository,
+                airplaneModeInteractor,
                 connectivityRepository,
                 ethernetInteractor,
                 mobileIconsInteractor,
