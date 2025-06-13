@@ -209,21 +209,11 @@ public abstract class PowerManagerInternal {
     public abstract void uidIdle(int uid);
 
     /**
-     * Checks if the wakefulness of the supplied group is interactive.
-     */
-    public abstract boolean isGroupInteractive(int groupId);
-
-    /** Returns if any of the default adjacent group is interactive. */
-    public abstract boolean isAnyDefaultAdjacentGroupInteractive();
-
-    /** Returns if the supplied group is adjacent to the default group. */
-    public abstract boolean isDefaultGroupAdjacent(int groupId);
-
-    /**
      * Used to notify the power manager that wakelocks should be disabled.
      *
      * @param force {@code true} to activate force disable wakelocks, {@code false} to turn it off.
      */
+
     public abstract void setForceDisableWakelocks(boolean force);
 
     /**
