@@ -4343,7 +4343,6 @@ package android.content.pm {
   }
 
   @FlaggedApi("android.content.pm.verification_service") public static final class PackageInstaller.DeveloperVerificationUserConfirmationInfo implements android.os.Parcelable {
-    ctor public PackageInstaller.DeveloperVerificationUserConfirmationInfo();
     ctor public PackageInstaller.DeveloperVerificationUserConfirmationInfo(int, int);
     method public int describeContents();
     method public int getUserActionNeededReason();

@@ -5076,33 +5076,42 @@ public class PackageInstaller {
         }
 
         @DeveloperVerificationPolicy
-        private int mVerificationPolicy;
+        private final int mVerificationPolicy;
 
         @UserActionNeededReason
-        private int mVerificationUserActionNeededReason;
+        private final int mUserActionNeededReason;
 
-        public DeveloperVerificationUserConfirmationInfo() {
-        }
-
+        /**
+         * Used by the system to inform the device's default package installer about the ongoing
+         * developer verification session that requires user confirmation.
+         */
         public DeveloperVerificationUserConfirmationInfo(@DeveloperVerificationPolicy int policy,
                 @UserActionNeededReason int reason) {
             mVerificationPolicy = policy;
-            mVerificationUserActionNeededReason = reason;
+            mUserActionNeededReason = reason;
         }
 
         private DeveloperVerificationUserConfirmationInfo(@NonNull Parcel in) {
             mVerificationPolicy = in.readInt();
-            mVerificationUserActionNeededReason = in.readInt();
+            mUserActionNeededReason = in.readInt();
         }
 
+        /**
+         * @return The policy used for this developer verification session, which may affect the
+         * content or format of user confirmation.
+         */
         @DeveloperVerificationPolicy
         public int getVerificationPolicy() {
             return mVerificationPolicy;
         }
 
+        /**
+         * @return The reason for requesting user confirmation this developer verification session,
+         * which may affect the content or format of user confirmation.
+         */
         @UserActionNeededReason
         public int getUserActionNeededReason() {
-            return mVerificationUserActionNeededReason;
+            return mUserActionNeededReason;
         }
 
         @Override
@@ -5113,7 +5122,7 @@ public class PackageInstaller {
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeInt(mVerificationPolicy);
-            dest.writeInt(mVerificationUserActionNeededReason);
+            dest.writeInt(mUserActionNeededReason);
         }
 
         public static final @NonNull Parcelable.Creator<DeveloperVerificationUserConfirmationInfo>
@@ -5134,7 +5143,7 @@ public class PackageInstaller {
         public String toString() {
             return "VerificationUserConfirmationInfo{"
                     + "verificationPolicy=" + mVerificationPolicy
-                    + ", verificationUserActionReason=" + mVerificationUserActionNeededReason
+                    + ", verificationUserActionReason=" + mUserActionNeededReason
                     + '}';
         }
     }
