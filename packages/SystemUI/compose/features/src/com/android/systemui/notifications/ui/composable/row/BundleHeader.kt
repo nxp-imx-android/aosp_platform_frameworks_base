@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEachReversed
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMaxOfOrDefault
 import androidx.compose.ui.util.fastSumBy
@@ -232,20 +232,25 @@ private fun ContentScope.BundlePreviewIcons(
                 compositingStrategy = CompositingStrategy.Offscreen
             }
     ) {
+        // We need to lay out icons from the end (icon1) to the start (icon3) so that we can define
+        // STL animations statically per element, rather than making the movement of each element's
+        // animation dynamic based on the number of visible siblings. This take/reversed does that,
+        // while preserving the user's expected ordering of start-to-end == top-to-bottom contents.
+        val reversedIcons = previewDrawables.take(3).reversed()
         PreviewIcon(
-            drawable = previewDrawables[0],
+            drawable = reversedIcons[0],
             modifier = Modifier.element(BundleHeader.Elements.PreviewIcon1).size(iconSize),
             borderWidth = borderWidth,
         )
-        if (previewDrawables.size < 2) return@HalfOverlappingReversedRow
+        if (reversedIcons.size < 2) return@HalfOverlappingReversedRow
         PreviewIcon(
-            drawable = previewDrawables[1],
+            drawable = reversedIcons[1],
             modifier = Modifier.element(BundleHeader.Elements.PreviewIcon2).size(iconSize),
             borderWidth = borderWidth,
         )
-        if (previewDrawables.size < 3) return@HalfOverlappingReversedRow
+        if (reversedIcons.size < 3) return@HalfOverlappingReversedRow
         PreviewIcon(
-            drawable = previewDrawables[2],
+            drawable = reversedIcons[2],
             modifier = Modifier.element(BundleHeader.Elements.PreviewIcon3).size(iconSize),
             borderWidth = borderWidth,
         )
@@ -299,7 +304,7 @@ private fun HalfOverlappingReversedRow(
         layout(constraints.constrainWidth(width), constraints.constrainHeight(childHeight)) {
             // Start in the middle of the right-most placeable
             var currentXPosition = placeables.fastSumBy { it.width / 2 }
-            placeables.fastForEachReversed { placeable ->
+            placeables.fastForEach { placeable ->
                 currentXPosition -= placeable.width / 2
                 placeable.placeRelative(x = currentXPosition, y = 0)
             }
