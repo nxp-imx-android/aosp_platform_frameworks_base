@@ -498,6 +498,7 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
             public void onAnimationStart(Animator animation) {
                 super.onAnimationStart(animation);
                 mCallback.onBeginDrag(animView);
+                mCallback.onSwipeOutAnimStart(animView);
             }
 
             @Override
@@ -519,7 +520,10 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
                 if (!mCancelled || wasRemoved) {
                     mCallback.onChildDismissed(animView);
                     resetViewIfSwiping(animView);
+                } else {
+                    mCallback.onChildNotDismissed(animView, mCancelled, wasRemoved);
                 }
+
                 if (endAction != null) {
                     endAction.accept(mCancelled);
                 }
@@ -989,6 +993,11 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
         void onBeginDrag(View v);
 
         /**
+         * Called on swipe out animation starts.
+         * Note that: it is added for logging.
+         */
+        default void onSwipeOutAnimStart(View v) {}
+        /**
          * Set magnetic and roundable targets for a view.
          */
         void setMagneticAndRoundableTargets(View v);
@@ -1080,5 +1089,12 @@ public class SwipeHelper implements Gefingerpoken, Dumpable {
 
         /** The density scale has changed */
         void onDensityScaleChange(float density);
+
+        /**
+         * Called when child dismissal fails.
+         * Note that: it is added for logging.
+         */
+        default void onChildNotDismissed(
+                View v, boolean animationCancelled, boolean viewWasRemoved) {}
     }
 }

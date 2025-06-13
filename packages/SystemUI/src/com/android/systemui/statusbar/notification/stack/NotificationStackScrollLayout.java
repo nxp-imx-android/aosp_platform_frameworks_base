@@ -6029,7 +6029,14 @@ public class NotificationStackScrollLayout
     }
 
     void addSwipedOutView(View v) {
+        logAddSwipedOutView(v);
         mSwipedOutViews.add(v);
+    }
+
+    private void logAddSwipedOutView(View v) {
+        if (mLogger != null && v instanceof ExpandableNotificationRow row) {
+            mLogger.logAddSwipedOutView(row.getLoggingKey(), mClearAllInProgress);
+        }
     }
 
     void onSwipeBegin(View viewSwiped) {

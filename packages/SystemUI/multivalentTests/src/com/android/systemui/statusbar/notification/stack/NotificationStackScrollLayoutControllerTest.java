@@ -596,7 +596,8 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
     @Test
     public void callSwipeCallbacksDuringClearAll() {
         initController(/* viewIsAttached= */ true);
-        ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
+        ExpandableNotificationRow row =
+                createExpandableNotificationRow();
         NotificationCallback notificationCallback = mController.mNotificationCallback;
 
         when(mNotificationStackScrollLayout.getClearAllInProgress()).thenReturn(true);
@@ -611,7 +612,8 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
     @Test
     public void callSwipeCallbacksDuringClearNotification() {
         initController(/* viewIsAttached= */ true);
-        ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
+        ExpandableNotificationRow row =
+                createExpandableNotificationRow();
         NotificationCallback notificationCallback = mController.mNotificationCallback;
 
         when(mNotificationStackScrollLayout.getClearAllInProgress()).thenReturn(false);
@@ -866,6 +868,13 @@ public class NotificationStackScrollLayoutControllerTest extends SysuiTestCase {
                 mSensitiveNotificationProtectionController,
                 mMagneticNotificationRowManager,
                 mSectionsManager);
+    }
+
+
+    private static ExpandableNotificationRow createExpandableNotificationRow() {
+        ExpandableNotificationRow row = mock(ExpandableNotificationRow.class);
+        when(row.getLoggingKey()).thenReturn("ENR_loggingKey");
+        return row;
     }
 
     static class LogMatcher implements ArgumentMatcher<LogMaker> {
