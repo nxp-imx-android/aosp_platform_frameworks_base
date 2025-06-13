@@ -102,7 +102,7 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
                 systemUIDialogFactory,
                 context,
                 context.getSystemService(DisplayManager::class.java)!!,
-                fakeDisplayWindowPropertiesRepository,
+                { fakeDisplayWindowPropertiesRepository },
             )
         dialog = underTest.createDialog()
     }

@@ -34,6 +34,7 @@ import com.android.systemui.settings.UserContextProvider
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.phone.SystemUIDialog
+import dagger.Lazy
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -52,7 +53,7 @@ class ScreenRecordPermissionDialogDelegate(
     @StyleRes private val theme: Int,
     private val context: Context,
     private val displayManager: DisplayManager,
-    private val displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
+    private val displayWindowPropertiesRepository: Lazy<DisplayWindowPropertiesRepository>,
 ) :
     BaseMediaProjectionPermissionDialogDelegate<SystemUIDialog>(
         ScreenRecordPermissionContentManager.createOptionList(displayManager),
@@ -76,7 +77,7 @@ class ScreenRecordPermissionDialogDelegate(
         systemUIDialogFactory: SystemUIDialog.Factory,
         @ShadeDisplayAware context: Context,
         displayManager: DisplayManager,
-        displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
+        displayWindowPropertiesRepository: Lazy<DisplayWindowPropertiesRepository>,
     ) : this(
         hostUserHandle,
         hostUid,
@@ -125,7 +126,10 @@ class ScreenRecordPermissionDialogDelegate(
                 // dialog would be tied to the shade and disappear when the shade collapses.
                 // To avoid this, we get a context associated with the status bar on the current
                 // display.  This ensures the dialog remains visible independently of the shade.
-                displayWindowPropertiesRepository.get(context.displayId, TYPE_STATUS_BAR)?.context
+                displayWindowPropertiesRepository
+                    .get()
+                    .get(context.displayId, TYPE_STATUS_BAR)
+                    ?.context
                     // falls back to the default context if the status bar context is not available
                     ?: context
             } else {
