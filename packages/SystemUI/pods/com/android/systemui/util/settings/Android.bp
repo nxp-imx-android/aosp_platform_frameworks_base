@@ -20,10 +20,6 @@ package {
 
 java_library {
     name: "com.android.systemui.util.settings-api",
-    srcs: [
-        "*.java",
-        "*.kt",
-    ],
     libs: [
         "//frameworks/libs/systemui:tracinglib-platform",
         "com.android.systemui.dagger-api",
