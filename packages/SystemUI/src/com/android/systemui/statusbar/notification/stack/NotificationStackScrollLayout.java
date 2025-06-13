@@ -4698,9 +4698,8 @@ public class NotificationStackScrollLayout
         ExpandableView firstVisibleChild =
                 firstSection == null ? null : firstSection.getFirstVisibleChild();
         if (row != null) {
-            if (mLogger != null) {
-                mLogger.childHeightUpdated(row, needsAnimation);
-            }
+            // TODO(b/424163539): child height updated logs are spammy, which hides other logs
+            // logChildHeightUpdated(row, needsAnimation);
             if (row == firstVisibleChild
                     || row.getNotificationParent() == firstVisibleChild) {
                 updateAlgorithmLayoutMinHeight();
@@ -4712,6 +4711,13 @@ public class NotificationStackScrollLayout
         requestChildrenUpdate();
         notifyHeadsUpHeightChangedForView(view);
         mAnimateStackYForContentHeightChange = previouslyNeededAnimation;
+    }
+
+
+    private void logChildHeightUpdated(ExpandableNotificationRow row, boolean needsAnimation) {
+        if (mLogger != null) {
+            mLogger.childHeightUpdated(row, needsAnimation);
+        }
     }
 
     void onChildHeightReset(ExpandableView view) {
