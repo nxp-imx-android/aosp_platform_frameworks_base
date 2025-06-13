@@ -17,6 +17,7 @@
 package com.android.server.vibrator;
 
 import android.hardware.vibrator.IVibrationSession;
+import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorCallback;
 import android.hardware.vibrator.IVibratorManager;
 import android.hardware.vibrator.VibrationSessionConfig;
@@ -44,6 +45,23 @@ import java.util.Optional;
 
 /** Implementations for {@link HalVibratorManager} backed by VINTF objects. */
 class VintfHalVibratorManager {
+    private static final String TAG = "VintfHalVibratorManager";
+    private static final int DEFAULT_VIBRATOR_ID = 0;
+
+    /** Create {@link HalVibratorManager} based on declared services on device. */
+    static HalVibratorManager createHalVibratorManager() {
+        if (ServiceManager.isDeclared(IVibratorManager.DESCRIPTOR + "/default")) {
+            Slog.v(TAG, "Loading default IVibratorManager service.");
+            return new DefaultHalVibratorManager(new DefaultVibratorManagerSupplier());
+        }
+        if (ServiceManager.isDeclared(IVibrator.DESCRIPTOR + "/default")) {
+            Slog.v(TAG, "Loading default IVibrator service.");
+            return new LegacyHalVibratorManager(new int[] { DEFAULT_VIBRATOR_ID });
+        }
+        Slog.v(TAG, "No default services declared for IVibratorManager or IVibrator."
+                + " Vibrator manager service will proceed without vibrator hardware.");
+        return new LegacyHalVibratorManager(new int[0]);
+    }
 
     /** {@link VintfSupplier} for default {@link IVibratorManager} service. */
     static final class DefaultVibratorManagerSupplier extends VintfSupplier<IVibratorManager> {
@@ -341,6 +359,74 @@ class VintfHalVibratorManager {
             public String getInterfaceHash() {
                 return IVibratorCallback.HASH;
             }
+        }
+    }
+
+    /** Legacy implementation for devices without a declared {@link IVibratorManager} service. */
+    static final class LegacyHalVibratorManager implements HalVibratorManager {
+        private final int[] mVibratorIds;
+
+        LegacyHalVibratorManager(@NonNull int[] vibratorIds) {
+            mVibratorIds = vibratorIds;
+        }
+
+        @Override
+        public void init(@NonNull Callbacks callbacks) {
+        }
+
+        @Override
+        public void onSystemReady() {
+        }
+
+        @Override
+        public long getCapabilities() {
+            return 0;
+        }
+
+        @NonNull
+        @Override
+        public int[] getVibratorIds() {
+            return mVibratorIds;
+        }
+
+        @Override
+        public boolean prepareSynced(@NonNull int[] vibratorIds) {
+            return false;
+        }
+
+        @Override
+        public boolean triggerSynced(long vibrationId) {
+            return false;
+        }
+
+        @Override
+        public boolean cancelSynced() {
+            return false;
+        }
+
+        @Override
+        public boolean startSession(long sessionId, @NonNull int[] vibratorIds) {
+            return false;
+        }
+
+        @Override
+        public boolean endSession(long sessionId, boolean shouldAbort) {
+            return false;
+        }
+
+        @Override
+        public void dump(IndentingPrintWriter pw) {
+            pw.println("Legacy HAL VibratorManager:");
+            pw.increaseIndent();
+            pw.println("vibratorIds = " + Arrays.toString(mVibratorIds));
+            pw.decreaseIndent();
+        }
+
+        @Override
+        public String toString() {
+            return "LegacyHalVibratorManager{"
+                    + ", mVibratorIds=" + Arrays.toString(mVibratorIds)
+                    + '}';
         }
     }
 }

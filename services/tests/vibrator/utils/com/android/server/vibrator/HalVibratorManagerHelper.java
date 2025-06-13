@@ -30,6 +30,7 @@ import android.os.Looper;
 import android.os.RemoteException;
 
 import com.android.server.vibrator.VintfHalVibratorManager.DefaultHalVibratorManager;
+import com.android.server.vibrator.VintfHalVibratorManager.LegacyHalVibratorManager;
 
 import java.util.Arrays;
 import java.util.List;
@@ -73,6 +74,11 @@ public class HalVibratorManagerHelper {
     public DefaultHalVibratorManager newDefaultVibratorManager() {
         FakeVibratorManager fakeManager = new FakeVibratorManager();
         return new DefaultHalVibratorManager(new FakeVibratorManagerSupplier(fakeManager));
+    }
+
+    /** Create new {@link LegacyHalVibratorManager} for testing. */
+    public LegacyHalVibratorManager newLegacyVibratorManager() {
+        return new LegacyHalVibratorManager(mVibratorIds);
     }
 
     public void setCapabilities(long capabilities) {
