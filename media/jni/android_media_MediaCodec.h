@@ -81,7 +81,7 @@ struct JMediaCodec : public AHandler {
 
     status_t detachOutputSurface();
 
-    status_t createInputSurface(sp<IGraphicBufferProducer>* surface);
+    status_t createInputSurface(sp<MediaSurfaceType>* surface);
     status_t setInputSurface(const sp<PersistentSurface> &surface);
 
     status_t start();
