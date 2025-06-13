@@ -18,7 +18,7 @@ package com.android.ravenwood.common;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
-import com.android.ravenwood.common.divergence.RavenwoodDivergence;
+import com.android.modules.utils.ravenwood.RavenwoodHelper;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -57,7 +57,7 @@ public class RavenwoodCommonUtils {
     private static boolean sEnableExtraRuntimeCheck =
             "1".equals(System.getenv("RAVENWOOD_ENABLE_EXTRA_RUNTIME_CHECK"));
 
-    private static final boolean IS_ON_RAVENWOOD = RavenwoodDivergence.isOnRavenwood();
+    private static final boolean IS_ON_RAVENWOOD = RavenwoodHelper.isRunningOnRavenwood();
 
     private static final String RAVENWOOD_RUNTIME_PATH = getRavenwoodRuntimePathInternal();
 
