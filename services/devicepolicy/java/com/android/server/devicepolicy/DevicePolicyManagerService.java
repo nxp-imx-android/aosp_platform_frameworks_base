@@ -18876,16 +18876,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             return results;
         }
 
-        private boolean userHasIncompatibleAccounts(int id) {
-            AccountManager am = mContext.createContextAsUser(UserHandle.of(id), /* flags= */ 0)
+        private boolean userHasIncompatibleAccounts(@UserIdInt int userId) {
+            AccountManager am = mContext.createContextAsUser(UserHandle.of(userId), /* flags= */ 0)
                     .getSystemService(AccountManager.class);
             Account[] accounts = am.getAccounts();
 
             for (Account account : accounts) {
-                if (hasAccountFeatures(am, account, FEATURE_DISALLOW)) {
+                if (hasAccountFeatures(userId, am, account, FEATURE_DISALLOW)) {
                     return true;
                 }
-                if (!hasAccountFeatures(am, account, FEATURE_ALLOW)) {
+                if (!hasAccountFeatures(userId, am, account, FEATURE_ALLOW)) {
                     return true;
                 }
             }
@@ -18900,13 +18900,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             Slogf.i(LOG_TAG, "Finished calculating hasIncompatibleAccountsTask");
         }
 
-        private static boolean hasAccountFeatures(AccountManager am, Account account,
-                String[] features) {
+        private static boolean hasAccountFeatures(@UserIdInt int userId, AccountManager am,
+                Account account, String[] features) {
             try {
-                return am.hasFeatures(account, features, null, null)
+                return am.hasFeatures(account, features, /* callback= */ null, /* handler= */ null)
                         .getResult(30, TimeUnit.SECONDS);
             } catch (Exception e) {
-                Slogf.w(LOG_TAG, "Failed to get account feature", e);
+                Slogf.w(LOG_TAG, e, "Failed to get account feature for user %d", userId);
                 return false;
             }
         }
