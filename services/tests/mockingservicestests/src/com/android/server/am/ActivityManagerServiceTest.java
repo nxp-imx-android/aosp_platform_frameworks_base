@@ -287,7 +287,8 @@ public class ActivityManagerServiceTest {
                 mUserController);
         mAms.mConstants.mNetworkAccessTimeoutMs = 2000;
         mAms.mActivityTaskManager = new ActivityTaskManagerService(mContext);
-        mAms.mActivityTaskManager.initialize(null, null, mHandler.getLooper());
+        mAms.mActivityTaskManager.initialize(null, null, mAms.mProcessStateController,
+                mHandler.getLooper());
         mAms.mAtmInternal = mActivityTaskManagerInternal;
         mHandler.setRunnablesToIgnore(
                 List.of(mAms.mUidObserverController.getDispatchRunnableForTest()));

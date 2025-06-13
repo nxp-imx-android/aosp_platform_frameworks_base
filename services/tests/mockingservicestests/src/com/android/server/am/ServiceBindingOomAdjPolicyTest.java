@@ -174,7 +174,7 @@ public final class ServiceBindingOomAdjPolicyTest {
         final ActivityManagerService realAms = new ActivityManagerService(
                 new TestInjector(mContext), mServiceThreadRule.getThread());
         final ActivityTaskManagerService realAtm = new ActivityTaskManagerService(mContext);
-        realAtm.initialize(null, null, mContext.getMainLooper());
+        realAtm.initialize(null, null, realAms.mProcessStateController, mContext.getMainLooper());
         realAms.mActivityTaskManager = spy(realAtm);
         realAms.mAtmInternal = spy(realAms.mActivityTaskManager.getAtmInternal());
         realAms.mProcessStateController = spy(realAms.mProcessStateController);

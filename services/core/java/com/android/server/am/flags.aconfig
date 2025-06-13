@@ -241,3 +241,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "push_activity_state_to_oomadjuster"
+    namespace: "backstage_power"
+    description: "Migrate OomAdjuster pulled activity state to a push model"
+    bug: "401350380"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

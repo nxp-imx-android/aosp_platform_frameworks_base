@@ -76,7 +76,8 @@ public class OomAdjusterTests {
         runWithDexmakerShareClassLoader(() -> {
             sService = mock(ActivityManagerService.class);
             sService.mActivityTaskManager = new ActivityTaskManagerService(sContext);
-            sService.mActivityTaskManager.initialize(null, null, sContext.getMainLooper());
+            sService.mActivityTaskManager.initialize(null, null, mock(ProcessStateController.class),
+                    sContext.getMainLooper());
             sService.mAtmInternal = sService.mActivityTaskManager.getAtmInternal();
 
             setFieldValue(ActivityManagerService.class, sService, "mProcLock",

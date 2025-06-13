@@ -29,6 +29,7 @@ import android.content.Context;
 import android.content.pm.ServiceInfo;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.PowerManagerInternal;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -36,9 +37,11 @@ import android.util.SparseArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
+import com.android.server.wm.WindowProcessController;
 
 import java.lang.ref.WeakReference;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * ProcessStateController is responsible for maintaining state that can affect the OomAdjuster
@@ -46,18 +49,29 @@ import java.util.function.BiConsumer;
  * only ProcessStateController.
  */
 public class ProcessStateController {
-    public static String TAG = "ProcessStateController";
+    public static final String TAG = "ProcessStateController";
 
     private final OomAdjuster mOomAdjuster;
     private final BiConsumer<ConnectionRecord, Boolean> mServiceBinderCallUpdater;
+
+    private final Object mLock;
+
+    private final Handler mActivityStateHandler;
+
+    private final Consumer<ProcessRecord> mTopChangeCallback;
 
     private final GlobalState mGlobalState = new GlobalState();
 
     private ProcessStateController(ActivityManagerService ams, ProcessList processList,
             ActiveUids activeUids, ServiceThread handlerThread,
-            CachedAppOptimizer cachedAppOptimizer, OomAdjuster.Injector oomAdjInjector) {
+            CachedAppOptimizer cachedAppOptimizer, Object lock, Looper activityStateLooper,
+            Consumer<ProcessRecord> topChangeCallback, OomAdjuster.Injector oomAdjInjector) {
         mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
                 mGlobalState, cachedAppOptimizer, oomAdjInjector);
+
+        mLock = lock;
+        mActivityStateHandler = new Handler(activityStateLooper);
+        mTopChangeCallback = topChangeCallback;
         final Handler serviceHandler = new Handler(handlerThread.getLooper());
         mServiceBinderCallUpdater = (cr, hasOngoingCalls) -> serviceHandler.post(() -> {
             synchronized (ams) {
@@ -79,6 +93,7 @@ public class ProcessStateController {
     /**
      * Add a process to evaluated the next time an update is run.
      */
+    @GuardedBy("mLock")
     public void enqueueUpdateTarget(@NonNull ProcessRecord proc) {
         mOomAdjuster.enqueueOomAdjTargetLocked(proc);
     }
@@ -86,6 +101,7 @@ public class ProcessStateController {
     /**
      * Remove a process that was added by {@link #enqueueUpdateTarget}.
      */
+    @GuardedBy("mLock")
     public void removeUpdateTarget(@NonNull ProcessRecord proc, boolean procDied) {
         mOomAdjuster.removeOomAdjTargetLocked(proc, procDied);
     }
@@ -94,15 +110,19 @@ public class ProcessStateController {
      * Trigger an update on a single process (and any processes that have been enqueued with
      * {@link #enqueueUpdateTarget}).
      */
+    @GuardedBy("mLock")
     public boolean runUpdate(@NonNull ProcessRecord proc,
             @ActivityManagerInternal.OomAdjReason int oomAdjReason) {
+        mGlobalState.commitStagedState();
         return mOomAdjuster.updateOomAdjLocked(proc, oomAdjReason);
     }
 
     /**
      * Trigger an update on all processes that have been enqueued with {@link #enqueueUpdateTarget}.
      */
+    @GuardedBy("mLock")
     public void runPendingUpdate(@ActivityManagerInternal.OomAdjReason int oomAdjReason) {
+        mGlobalState.commitStagedState();
         mOomAdjuster.updateOomAdjPendingTargetsLocked(oomAdjReason);
     }
 
@@ -110,6 +130,7 @@ public class ProcessStateController {
      * Trigger an update on all processes.
      */
     public void runFullUpdate(@ActivityManagerInternal.OomAdjReason int oomAdjReason) {
+        mGlobalState.commitStagedState();
         mOomAdjuster.updateOomAdjLocked(oomAdjReason);
     }
 
@@ -118,6 +139,7 @@ public class ProcessStateController {
      * update.
      */
     public void runFollowUpUpdate() {
+        mGlobalState.commitStagedState();
         mOomAdjuster.updateOomAdjFollowUpTargetsLocked();
     }
 
@@ -141,22 +163,76 @@ public class ProcessStateController {
     }
 
     private static class GlobalState implements OomAdjuster.GlobalState {
-        public boolean isAwake = true;
+        private boolean mIsAwake = true;
         // TODO(b/369300367): Maintaining global state for backup processes is a bit convoluted.
         //  ideally the state gets migrated to ProcessStateRecord.
-        public final SparseArray<ProcessRecord> backupTargets = new SparseArray<>();
-        public boolean isLastMemoryLevelNormal = true;
+        private final SparseArray<ProcessRecord> mBackupTargets = new SparseArray<>();
+        private boolean mIsLastMemoryLevelNormal = true;
+
+        @ActivityManager.ProcessState
+        private int mTopProcessState = ActivityManager.PROCESS_STATE_TOP;
+        // TODO: b/424006553 - get rid of the need to use volatile for keyguard unlocking flow.
+        private volatile boolean mUnlockingStaged = false;
+        private boolean mUnlocking = false;
+        private boolean mExpandedNotificationShade = false;
+        private ProcessRecord mTopProcess = null;
+        private ProcessRecord mHomeProcess = null;
+        private ProcessRecord mHeavyWeightProcess = null;
+        private ProcessRecord mShowingUiWhileDozingProcess = null;
+        private ProcessRecord mPreviousProcess = null;
+
+        private void commitStagedState() {
+            mUnlocking = mUnlockingStaged;
+        }
 
         public boolean isAwake() {
-            return isAwake;
+            return mIsAwake;
         }
 
         public ProcessRecord getBackupTarget(@UserIdInt int userId) {
-            return backupTargets.get(userId);
+            return mBackupTargets.get(userId);
         }
 
         public boolean isLastMemoryLevelNormal() {
-            return isLastMemoryLevelNormal;
+            return mIsLastMemoryLevelNormal;
+        }
+
+        @ActivityManager.ProcessState
+        public int getTopProcessState() {
+            return mTopProcessState;
+        }
+
+        public boolean isUnlocking() {
+            return mUnlocking;
+        }
+
+        public boolean hasExpandedNotificationShade() {
+            return mExpandedNotificationShade;
+        }
+
+        @Nullable
+        public ProcessRecord getTopProcess() {
+            return mTopProcess;
+        }
+
+        @Nullable
+        public ProcessRecord getHomeProcess() {
+            return mHomeProcess;
+        }
+
+        @Nullable
+        public ProcessRecord getHeavyWeightProcess() {
+            return mHeavyWeightProcess;
+        }
+
+        @Nullable
+        public ProcessRecord getShowingUiWhileDozingProcess() {
+            return mShowingUiWhileDozingProcess;
+        }
+
+        @Nullable
+        public ProcessRecord getPreviousProcess() {
+            return mPreviousProcess;
         }
     }
 
@@ -164,92 +240,194 @@ public class ProcessStateController {
     /**
      * Set which process state Top processes should get.
      */
-    public void setTopProcessState(@ActivityManager.ProcessState int procState) {
-        // TODO(b/302575389): Migrate state pulled from ATMS to a pushed model
-        throw new UnsupportedOperationException("Not implemented yet");
+    public void setTopProcessStateAsync(@ActivityManager.ProcessState int procState) {
+        if (!Flags.pushActivityStateToOomadjuster()) return;
+
+        mActivityStateHandler.post(() -> {
+            synchronized (mLock) {
+                setTopProcessState(procState);
+            }
+        });
+    }
+
+    @GuardedBy("mLock")
+    private void setTopProcessState(@ActivityManager.ProcessState int procState) {
+        mGlobalState.mTopProcessState = procState;
     }
 
     /**
-     * Set whether to give Top processes the Top sched group.
+     * Set whether the device is currently unlocking.
+     * Note: this does not require locking on {@link #mLock}
      */
-    public void setUseTopSchedGroupForTopProcess(boolean useTopSchedGroup) {
-        // TODO(b/302575389): Migrate state pulled from ATMS to a pushed model
-        throw new UnsupportedOperationException("Not implemented yet");
+    public void setDeviceUnlocking(boolean unlocking) {
+        if (!Flags.pushActivityStateToOomadjuster()) return;
+
+        // This method is called from locations with uncertain ordering guarantees.
+        // Just stage the state and commit it right before an OomAdjuster update.
+        mGlobalState.mUnlockingStaged = unlocking;
     }
 
     /**
-     * Set the Top process.
+     * Set whether the top process is occluded by the notification shade.
      */
-    public void setTopApp(@Nullable ProcessRecord proc) {
-        // TODO(b/302575389): Migrate state pulled from ATMS to a pushed model
-        throw new UnsupportedOperationException("Not implemented yet");
+    public void setExpandedNotificationShadeAsync(boolean expandedShade) {
+        if (!Flags.pushActivityStateToOomadjuster()) return;
+
+        mActivityStateHandler.post(() -> {
+            synchronized (mLock) {
+                setExpandedNotificationShade(expandedShade);
+            }
+        });
+    }
+
+    @GuardedBy("mLock")
+    private void setExpandedNotificationShade(boolean expandedShade) {
+        mGlobalState.mExpandedNotificationShade = expandedShade;
     }
 
     /**
-     * Set which process is considered the Home process, if any.
+     * Set the Top process, also clear the Previous process and demotion reason, if necessary.
      */
-    public void setHomeProcess(@Nullable ProcessRecord proc) {
-        // TODO(b/302575389): Migrate state pulled from ATMS to a pushed model
-        throw new UnsupportedOperationException("Not implemented yet");
+    public void setTopProcessAsync(@Nullable WindowProcessController wpc, boolean clearPrev,
+            boolean cancelExpandedShade) {
+        if (!Flags.pushActivityStateToOomadjuster()) return;
+
+        final ProcessRecord top = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+
+        mActivityStateHandler.post(() -> {
+            synchronized (mLock) {
+                setTopProcess(top);
+                if (clearPrev) {
+                    setPreviousProcess(null);
+                }
+                if (cancelExpandedShade) {
+                    setExpandedNotificationShade(false);
+                }
+            }
+        });
     }
 
-    /**
-     * Set which process is considered the Heavy Weight process, if any.
-     */
-    public void setHeavyWeightProcess(@Nullable ProcessRecord proc) {
-        // TODO(b/302575389): Migrate state pulled from ATMS to a pushed model
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
-
-    /**
-     * Set which process is showing UI while the screen is off, if any.
-     */
-    public void setVisibleDozeUiProcess(@Nullable ProcessRecord proc) {
-        // TODO(b/302575389): Migrate state pulled from ATMS to a pushed model
-        throw new UnsupportedOperationException("Not implemented yet");
+    @GuardedBy("mLock")
+    private void setTopProcess(@Nullable ProcessRecord proc) {
+        if (mGlobalState.mTopProcess == proc) return;
+        mGlobalState.mTopProcess = proc;
+        mTopChangeCallback.accept(proc);
     }
 
     /**
      * Set which process is considered the Previous process, if any.
      */
-    public void setPreviousProcess(@Nullable ProcessRecord proc) {
-        // TODO(b/302575389): Migrate state pulled from ATMS to a pushed model
-        throw new UnsupportedOperationException("Not implemented yet");
+    public void setPreviousProcessAsync(@Nullable WindowProcessController wpc) {
+        if (!Flags.pushActivityStateToOomadjuster()) return;
+
+        final ProcessRecord prev = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+        mActivityStateHandler.post(() -> {
+            synchronized (mLock) {
+                setPreviousProcess(prev);
+            }
+        });
+    }
+
+    @GuardedBy("mLock")
+    private void setPreviousProcess(@Nullable ProcessRecord proc) {
+        mGlobalState.mPreviousProcess = proc;
+    }
+
+    /**
+     * Set which process is considered the Home process, if any.
+     */
+    public void setHomeProcessAsync(@Nullable WindowProcessController wpc) {
+        if (!Flags.pushActivityStateToOomadjuster()) return;
+
+        final ProcessRecord home = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+        mActivityStateHandler.post(() -> {
+            synchronized (mLock) {
+                setHomeProcess(home);
+            }
+        });
+    }
+
+    @GuardedBy("mLock")
+    private void setHomeProcess(@Nullable ProcessRecord proc) {
+        mGlobalState.mHomeProcess = proc;
+    }
+
+    /**
+     * Set which process is considered the Heavy Weight process, if any.
+     */
+    public void setHeavyWeightProcessAsync(@Nullable WindowProcessController wpc) {
+        if (!Flags.pushActivityStateToOomadjuster()) return;
+
+        final ProcessRecord heavy = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+        mActivityStateHandler.post(() -> {
+            synchronized (mLock) {
+                setHeavyWeightProcess(heavy);
+            }
+        });
+    }
+
+    @GuardedBy("mLock")
+    private void setHeavyWeightProcess(@Nullable ProcessRecord proc) {
+        mGlobalState.mHeavyWeightProcess = proc;
+    }
+
+    /**
+     * Set which process is showing UI while the screen is off, if any.
+     */
+    public void setVisibleDozeUiProcessAsync(@Nullable WindowProcessController wpc) {
+        if (!Flags.pushActivityStateToOomadjuster()) return;
+
+        final ProcessRecord dozeUi = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+        mActivityStateHandler.post(() -> {
+            synchronized (mLock) {
+                setVisibleDozeUiProcess(dozeUi);
+            }
+        });
+    }
+
+    @GuardedBy("mLock")
+    private void setVisibleDozeUiProcess(@Nullable ProcessRecord proc) {
+        mGlobalState.mShowingUiWhileDozingProcess = proc;
     }
 
     /**
      * Set what wakefulness state the screen is in.
      */
+    @GuardedBy("mLock")
     public void setWakefulness(int wakefulness) {
-        mGlobalState.isAwake = (wakefulness == PowerManagerInternal.WAKEFULNESS_AWAKE);
+        mGlobalState.mIsAwake = (wakefulness == PowerManagerInternal.WAKEFULNESS_AWAKE);
         mOomAdjuster.onWakefulnessChanged(wakefulness);
     }
 
     /**
      * Set for a given user what process is currently running a backup, if any.
      */
+    @GuardedBy("mLock")
     public void setBackupTarget(@NonNull ProcessRecord proc, @UserIdInt int userId) {
-        mGlobalState.backupTargets.put(userId, proc);
+        mGlobalState.mBackupTargets.put(userId, proc);
     }
 
     /**
      * No longer consider any process running a backup for a given user.
      */
+    @GuardedBy("mLock")
     public void stopBackupTarget(@UserIdInt int userId) {
-        mGlobalState.backupTargets.delete(userId);
+        mGlobalState.mBackupTargets.delete(userId);
     }
 
     /**
      * Set whether the last known memory level is normal.
      */
+    @GuardedBy("mLock")
     public void setIsLastMemoryLevelNormal(boolean isMemoryNormal) {
-        mGlobalState.isLastMemoryLevelNormal = isMemoryNormal;
+        mGlobalState.mIsLastMemoryLevelNormal = isMemoryNormal;
     }
 
     /***************************** UID State Events ****************************/
     /**
      * Set a UID as temp allowlisted.
      */
+    @GuardedBy("mLock")
     public void setUidTempAllowlistStateLSP(int uid, boolean allowList) {
         mOomAdjuster.setUidTempAllowlistStateLSP(uid, allowList);
     }
@@ -258,6 +436,7 @@ public class ProcessStateController {
     /**
      * Set the maximum adj score a process can be assigned.
      */
+    @GuardedBy("mLock")
     public void setMaxAdj(@NonNull ProcessRecord proc, int adj) {
         proc.mState.setMaxAdj(adj);
     }
@@ -273,6 +452,7 @@ public class ProcessStateController {
     /**
      * Note whether a process is pending attach or not.
      */
+    @GuardedBy("mLock")
     public void setPendingFinishAttach(@NonNull ProcessRecord proc, boolean pendingFinishAttach) {
         proc.setPendingFinishAttach(pendingFinishAttach);
     }
@@ -280,6 +460,7 @@ public class ProcessStateController {
     /**
      * Sets an active instrumentation running within the given process.
      */
+    @GuardedBy("mLock")
     public void setActiveInstrumentation(@NonNull ProcessRecord proc,
             ActiveInstrumentation activeInstrumentation) {
         proc.setActiveInstrumentation(activeInstrumentation);
@@ -291,6 +472,7 @@ public class ProcessStateController {
      *
      * @return true if the state changed, otherwise returns false.
      */
+    @GuardedBy("mLock")
     public boolean setHasTopUi(@NonNull ProcessRecord proc, boolean hasTopUi) {
         if (proc.mState.hasTopUi() == hasTopUi) return false;
         if (DEBUG_OOM_ADJ) {
@@ -305,6 +487,7 @@ public class ProcessStateController {
      *
      * @return true if the state changed, otherwise returns false.
      */
+    @GuardedBy("mLock")
     public boolean setHasOverlayUi(@NonNull ProcessRecord proc, boolean hasOverlayUi) {
         if (proc.mState.hasOverlayUi() == hasOverlayUi) return false;
         proc.mState.setHasOverlayUi(hasOverlayUi);
@@ -317,6 +500,7 @@ public class ProcessStateController {
      *
      * @return true if the state changed, otherwise returns false.
      */
+    @GuardedBy("mLock")
     public boolean setRunningRemoteAnimation(@NonNull ProcessRecord proc,
             boolean runningRemoteAnimation) {
         if (proc.mState.isRunningRemoteAnimation() == runningRemoteAnimation) return false;
@@ -331,6 +515,7 @@ public class ProcessStateController {
     /**
      * Note that the process is showing a toast.
      */
+    @GuardedBy("mLock")
     public void setForcingToImportant(@NonNull ProcessRecord proc,
             @Nullable Object forcingToImportant) {
         if (proc.mState.getForcingToImportant() == forcingToImportant) return;
@@ -340,6 +525,7 @@ public class ProcessStateController {
     /**
      * Note that the process has shown UI at some point in its life.
      */
+    @GuardedBy("mLock")
     public void setHasShownUi(@NonNull ProcessRecord proc, boolean hasShownUi) {
         // This arguably should be turned into an internal state of OomAdjuster.
         if (proc.mState.hasShownUi() == hasShownUi) return;
@@ -349,33 +535,73 @@ public class ProcessStateController {
     /**
      * Note whether the process has an activity or not.
      */
-    public void setHasActivity(@NonNull ProcessRecord proc, boolean hasActivity) {
-        // TODO(b/302575389): Migrate state pulled from ATMS to a pushed model
-        // Possibly not needed, maybe can use ActivityStateFlags.
-        throw new UnsupportedOperationException("Not implemented yet");
+    public void setHasActivityAsync(@NonNull WindowProcessController wpc, boolean hasActivity) {
+        if (!Flags.pushActivityStateToOomadjuster()) return;
+
+        final ProcessRecord activity = (ProcessRecord) wpc.mOwner;
+        mActivityStateHandler.post(() -> {
+            synchronized (mLock) {
+                setHasActivity(activity, hasActivity);
+            }
+        });
+    }
+
+    @GuardedBy("mLock")
+    private void setHasActivity(@NonNull ProcessRecord proc, boolean hasActivity) {
+        proc.mState.setHasActivities(hasActivity);
     }
 
     /**
-     * Note whether the process has a visibly activity or not.
+     * Set the Activity State for a process, including the Activity state flags and when a
      */
-    public void setHasVisibleActivity(@NonNull ProcessRecord proc, boolean hasVisibleActivity) {
-        // TODO(b/302575389): Migrate state pulled from ATMS to a pushed model
-        // maybe used ActivityStateFlags instead.
-        throw new UnsupportedOperationException("Not implemented yet");
+    public void setActivityStateAsync(@NonNull WindowProcessController wpc, int flags,
+            long perceptibleStopTimeMs) {
+        if (!Flags.pushActivityStateToOomadjuster()) return;
+
+        final ProcessRecord activity = (ProcessRecord) wpc.mOwner;
+        mActivityStateHandler.post(() -> {
+            synchronized (mLock) {
+                setActivityStateFlags(activity, flags);
+                setPerceptibleTaskStoppedTimeMillis(activity, perceptibleStopTimeMs);
+            }
+        });
+    }
+
+    @GuardedBy("mLock")
+    private void setActivityStateFlags(@NonNull ProcessRecord proc, int flags) {
+        proc.mState.setActivityStateFlags(flags);
+    }
+
+    @GuardedBy("mLock")
+    private void setPerceptibleTaskStoppedTimeMillis(@NonNull ProcessRecord proc, long uptimeMs) {
+        proc.mState.setPerceptibleTaskStoppedTimeMillis(uptimeMs);
     }
 
     /**
-     * Set the Activity State Flags for a process.
+     * Set whether a process has had any recent tasks.
      */
-    public void setActivityStateFlags(@NonNull ProcessRecord proc, int flags) {
-        // TODO(b/302575389): Migrate state pulled from ATMS to a pushed model
-        throw new UnsupportedOperationException("Not implemented yet");
+    public void setHasRecentTasksAsync(@NonNull WindowProcessController wpc,
+            boolean hasRecentTasks) {
+        if (!Flags.pushActivityStateToOomadjuster()) return;
+
+        final ProcessRecord proc = (ProcessRecord) wpc.mOwner;
+        mActivityStateHandler.post(() -> {
+            synchronized (mLock) {
+                setHasRecentTasks(proc, hasRecentTasks);
+            }
+        });
+    }
+
+    @GuardedBy("mLock")
+    private void setHasRecentTasks(@NonNull ProcessRecord proc, boolean hasRecentTasks) {
+        proc.mState.setHasRecentTask(hasRecentTasks);
     }
 
     /********************** Content Provider State Events **********************/
     /**
      * Note that a process is hosting a content provider.
      */
+    @GuardedBy("mLock")
     public boolean addPublishedProvider(@NonNull ProcessRecord proc, String name,
             ContentProviderRecord cpr) {
         final ProcessProviderRecord providers = proc.mProviders;
@@ -387,6 +613,7 @@ public class ProcessStateController {
     /**
      * Remove a published content provider from a process.
      */
+    @GuardedBy("mLock")
     public void removePublishedProvider(@NonNull ProcessRecord proc, String name) {
         final ProcessProviderRecord providers = proc.mProviders;
         providers.removeProvider(name);
@@ -395,6 +622,7 @@ public class ProcessStateController {
     /**
      * Note that a content provider has an external client.
      */
+    @GuardedBy("mLock")
     public void addExternalProviderClient(@NonNull ContentProviderRecord cpr,
             IBinder externalProcessToken, int callingUid, String callingTag) {
         cpr.addExternalProcessHandleLocked(externalProcessToken, callingUid, callingTag);
@@ -403,6 +631,7 @@ public class ProcessStateController {
     /**
      * Remove an external client from a conetnt provider.
      */
+    @GuardedBy("mLock")
     public boolean removeExternalProviderClient(@NonNull ContentProviderRecord cpr,
             IBinder externalProcessToken) {
         return cpr.removeExternalProcessHandleLocked(externalProcessToken);
@@ -411,6 +640,7 @@ public class ProcessStateController {
     /**
      * Note the time a process is no longer hosting any content providers.
      */
+    @GuardedBy("mLock")
     public void setLastProviderTime(@NonNull ProcessRecord proc, long uptimeMs) {
         proc.mProviders.setLastProviderTime(uptimeMs);
     }
@@ -418,6 +648,7 @@ public class ProcessStateController {
     /**
      * Note that a process has connected to a content provider.
      */
+    @GuardedBy("mLock")
     public void addProviderConnection(@NonNull ProcessRecord client,
             ContentProviderConnection cpc) {
         client.mProviders.addProviderConnection(cpc);
@@ -426,6 +657,7 @@ public class ProcessStateController {
     /**
      * Note that a process is no longer connected to a content provider.
      */
+    @GuardedBy("mLock")
     public void removeProviderConnection(@NonNull ProcessRecord client,
             ContentProviderConnection cpc) {
         client.mProviders.removeProviderConnection(cpc);
@@ -435,6 +667,7 @@ public class ProcessStateController {
     /**
      * Note that a process has started hosting a service.
      */
+    @GuardedBy("mLock")
     public boolean startService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
         return psr.startService(sr);
     }
@@ -442,6 +675,7 @@ public class ProcessStateController {
     /**
      * Note that a process has stopped hosting a service.
      */
+    @GuardedBy("mLock")
     public boolean stopService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
         return psr.stopService(sr);
     }
@@ -449,6 +683,7 @@ public class ProcessStateController {
     /**
      * Remove all services that the process is hosting.
      */
+    @GuardedBy("mLock")
     public void stopAllServices(@NonNull ProcessServiceRecord psr) {
         psr.stopAllServices();
     }
@@ -456,6 +691,7 @@ public class ProcessStateController {
     /**
      * Note that a process's service has started executing.
      */
+    @GuardedBy("mLock")
     public void startExecutingService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
         psr.startExecutingService(sr);
     }
@@ -463,6 +699,7 @@ public class ProcessStateController {
     /**
      * Note that a process's service has stopped executing.
      */
+    @GuardedBy("mLock")
     public void stopExecutingService(@NonNull ProcessServiceRecord psr, ServiceRecord sr) {
         psr.stopExecutingService(sr);
     }
@@ -470,6 +707,7 @@ public class ProcessStateController {
     /**
      * Note all executing services a process has has stopped.
      */
+    @GuardedBy("mLock")
     public void stopAllExecutingServices(@NonNull ProcessServiceRecord psr) {
         psr.stopAllExecutingServices();
     }
@@ -477,6 +715,7 @@ public class ProcessStateController {
     /**
      * Note that process has bound to a service.
      */
+    @GuardedBy("mLock")
     public void addConnection(@NonNull ProcessServiceRecord psr, ConnectionRecord cr) {
         psr.addConnection(cr);
     }
@@ -484,6 +723,7 @@ public class ProcessStateController {
     /**
      * Note that process has unbound from a service.
      */
+    @GuardedBy("mLock")
     public void removeConnection(@NonNull ProcessServiceRecord psr, ConnectionRecord cr) {
         psr.removeConnection(cr);
     }
@@ -491,6 +731,7 @@ public class ProcessStateController {
     /**
      * Remove all bindings a process has to services.
      */
+    @GuardedBy("mLock")
     public void removeAllConnections(@NonNull ProcessServiceRecord psr) {
         psr.removeAllConnections();
         psr.removeAllSdkSandboxConnections();
@@ -499,6 +740,7 @@ public class ProcessStateController {
     /**
      * Note whether an executing service should be considered in the foreground or not.
      */
+    @GuardedBy("mLock")
     public void setExecServicesFg(@NonNull ProcessServiceRecord psr, boolean execServicesFg) {
         psr.setExecServicesFg(execServicesFg);
     }
@@ -506,6 +748,7 @@ public class ProcessStateController {
     /**
      * Note whether a service is in the foreground or not and what type of FGS, if so.
      */
+    @GuardedBy("mLock")
     public void setHasForegroundServices(@NonNull ProcessServiceRecord psr,
             boolean hasForegroundServices,
             int fgServiceTypes, boolean hasTypeNoneFgs) {
@@ -515,6 +758,7 @@ public class ProcessStateController {
     /**
      * Note whether a service has a client activity or not.
      */
+    @GuardedBy("mLock")
     public void setHasClientActivities(@NonNull ProcessServiceRecord psr,
             boolean hasClientActivities) {
         psr.setHasClientActivities(hasClientActivities);
@@ -523,6 +767,7 @@ public class ProcessStateController {
     /**
      * Note whether a service should be treated like an activity or not.
      */
+    @GuardedBy("mLock")
     public void setTreatLikeActivity(@NonNull ProcessServiceRecord psr, boolean treatLikeActivity) {
         psr.setTreatLikeActivity(treatLikeActivity);
     }
@@ -538,6 +783,7 @@ public class ProcessStateController {
      * Note whether a process has bound to a service with
      * {@link android.content.Context.BIND_ABOVE_CLIENT} or not.
      */
+    @GuardedBy("mLock")
     public void setHasAboveClient(@NonNull ProcessServiceRecord psr, boolean hasAboveClient) {
         psr.setHasAboveClient(hasAboveClient);
     }
@@ -546,6 +792,7 @@ public class ProcessStateController {
      * Recompute whether a process has bound to a service with
      * {@link android.content.Context.BIND_ABOVE_CLIENT} or not.
      */
+    @GuardedBy("mLock")
     public void updateHasAboveClientLocked(@NonNull ProcessServiceRecord psr) {
         psr.updateHasAboveClientLocked();
     }
@@ -553,6 +800,7 @@ public class ProcessStateController {
     /**
      * Cleanup a process's state.
      */
+    @GuardedBy("mLock")
     public void onCleanupApplicationRecord(@NonNull ProcessServiceRecord psr) {
         psr.onCleanupApplicationRecordLocked();
     }
@@ -560,6 +808,7 @@ public class ProcessStateController {
     /**
      * Set which process is hosting a service.
      */
+    @GuardedBy("mLock")
     public void setHostProcess(@NonNull ServiceRecord sr, @Nullable ProcessRecord host) {
         sr.app = host;
     }
@@ -567,6 +816,7 @@ public class ProcessStateController {
     /**
      * Note whether a service is a Foreground Service or not
      */
+    @GuardedBy("mLock")
     public void setIsForegroundService(@NonNull ServiceRecord sr, boolean isFgs) {
         sr.isForeground = isFgs;
     }
@@ -574,6 +824,7 @@ public class ProcessStateController {
     /**
      * Note the Foreground Service type of a service.
      */
+    @GuardedBy("mLock")
     public void setForegroundServiceType(@NonNull ServiceRecord sr,
             @ServiceInfo.ForegroundServiceType int fgsType) {
         sr.foregroundServiceType = fgsType;
@@ -582,6 +833,7 @@ public class ProcessStateController {
     /**
      * Note the start time of a short foreground service.
      */
+    @GuardedBy("mLock")
     public void setShortFgsInfo(@NonNull ServiceRecord sr, long uptimeNow) {
         sr.setShortFgsInfo(uptimeNow);
     }
@@ -589,6 +841,7 @@ public class ProcessStateController {
     /**
      * Note that a short foreground service has stopped.
      */
+    @GuardedBy("mLock")
     public void clearShortFgsInfo(@NonNull ServiceRecord sr) {
         sr.clearShortFgsInfo();
     }
@@ -596,6 +849,7 @@ public class ProcessStateController {
     /**
      * Note the last time a service was active.
      */
+    @GuardedBy("mLock")
     public void setServiceLastActivityTime(@NonNull ServiceRecord sr, long lastActivityUpdateMs) {
         sr.lastActivity = lastActivityUpdateMs;
     }
@@ -603,6 +857,7 @@ public class ProcessStateController {
     /**
      * Note that a service start was requested.
      */
+    @GuardedBy("mLock")
     public void setStartRequested(@NonNull ServiceRecord sr, boolean startRequested) {
         sr.startRequested = startRequested;
     }
@@ -611,6 +866,7 @@ public class ProcessStateController {
      * Note the last time the service was bound by a Top process with
      * {@link android.content.Context.BIND_ALMOST_PERCEPTIBLE}
      */
+    @GuardedBy("mLock")
     public void setLastTopAlmostPerceptibleBindRequest(@NonNull ServiceRecord sr,
             long lastTopAlmostPerceptibleBindRequestUptimeMs) {
         sr.lastTopAlmostPerceptibleBindRequestUptimeMs =
@@ -621,6 +877,7 @@ public class ProcessStateController {
      * Recompute whether a process has bound to a service with
      * {@link android.content.Context.BIND_ALMOST_PERCEPTIBLE} or not.
      */
+    @GuardedBy("mLock")
     public void updateHasTopStartedAlmostPerceptibleServices(@NonNull ProcessServiceRecord psr) {
         psr.updateHasTopStartedAlmostPerceptibleServices();
     }
@@ -630,6 +887,7 @@ public class ProcessStateController {
      * Note that Broadcast delivery to a process has started and what scheduling group should be
      * used.
      */
+    @GuardedBy("mLock")
     public void noteBroadcastDeliveryStarted(@NonNull ProcessRecord proc, int schedGroup) {
         proc.mReceivers.setIsReceivingBroadcast(true);
         proc.mReceivers.setBroadcastReceiverSchedGroup(schedGroup);
@@ -642,6 +900,7 @@ public class ProcessStateController {
     /**
      * Note that Broadcast delivery to a process has ended.
      */
+    @GuardedBy("mLock")
     public void noteBroadcastDeliveryEnded(@NonNull ProcessRecord proc) {
         proc.mReceivers.setIsReceivingBroadcast(false);
         proc.mReceivers.setBroadcastReceiverSchedGroup(ProcessList.SCHED_GROUP_UNDEFINED);
@@ -661,6 +920,9 @@ public class ProcessStateController {
 
         private ServiceThread mHandlerThread = null;
         private CachedAppOptimizer mCachedAppOptimizer = null;
+        private Object mLock = null;
+        private Consumer<ProcessRecord> mTopChangeCallback = null;
+        private Looper mActivityStateLooper = null;
         private OomAdjuster.Injector mOomAdjInjector = null;
 
         public Builder(ActivityManagerService ams, ProcessList processList, ActiveUids activeUids) {
@@ -679,11 +941,22 @@ public class ProcessStateController {
             if (mCachedAppOptimizer == null) {
                 mCachedAppOptimizer = new CachedAppOptimizer(mAms);
             }
+            if (mLock == null) {
+                mLock = new Object();
+            }
+            if (mActivityStateLooper == null) {
+                // Just use the OomAdjuster Looper.
+                mActivityStateLooper = mHandlerThread.getLooper();
+            }
+            if (mTopChangeCallback == null) {
+                mTopChangeCallback = proc -> {};
+            }
             if (mOomAdjInjector == null) {
                 mOomAdjInjector = new OomAdjuster.Injector();
             }
             return new ProcessStateController(mAms, mProcessList, mActiveUids, mHandlerThread,
-                    mCachedAppOptimizer, mOomAdjInjector);
+                    mCachedAppOptimizer, mLock, mActivityStateLooper, mTopChangeCallback,
+                    mOomAdjInjector);
         }
 
         /**
@@ -710,6 +983,31 @@ public class ProcessStateController {
         @VisibleForTesting
         public Builder setOomAdjusterInjector(OomAdjuster.Injector injector) {
             mOomAdjInjector = injector;
+            return this;
+        }
+
+        /**
+         * Set what object ProcessStateController will lock on for synchronized work.
+         */
+        public Builder setLockObject(Object lock) {
+            mLock = lock;
+            return this;
+        }
+
+        /**
+         * Set what looper async Activity state changes are processed on.
+         */
+        public Builder setActivityStateLooper(Looper looper) {
+            mActivityStateLooper = looper;
+            return this;
+        }
+
+        /**
+         * Set a callback for when ProcessStateController is informed about the Top process
+         * changing.
+         */
+        public Builder setTopProcessChangeCallback(Consumer<ProcessRecord> callback) {
+            mTopChangeCallback = callback;
             return this;
         }
     }

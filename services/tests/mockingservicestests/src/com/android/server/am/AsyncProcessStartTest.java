@@ -131,7 +131,8 @@ public class AsyncProcessStartTest {
                 new TestInjector(mContext), mServiceThreadRule.getThread());
         mRealAms.mConstants.loadDeviceConfigConstants();
         mRealAms.mActivityTaskManager = new ActivityTaskManagerService(mContext);
-        mRealAms.mActivityTaskManager.initialize(null, null, mContext.getMainLooper());
+        mRealAms.mActivityTaskManager.initialize(null, null, mAms.mProcessStateController,
+                mContext.getMainLooper());
         mRealAms.mAtmInternal = mActivityTaskManagerInt;
         mRealAms.mPackageManagerInt = mPackageManagerInt;
         mRealAms.mUsageStatsService = mUsageStatsManagerInt;
