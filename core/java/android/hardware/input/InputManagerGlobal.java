@@ -206,7 +206,14 @@ public final class InputManagerGlobal {
         synchronized (InputManagerGlobal.class) {
             final var oldInstance = sInstance;
             sInstance = new InputManagerGlobal(inputManagerService);
-            return () -> sInstance = oldInstance;
+            Log.d(TAG, "Starting InputManagerGlobal test session with new service instance "
+                    + inputManagerService + ", old service instance = "
+                    + (oldInstance != null ? oldInstance.getInputManagerService() : "null"));
+            return () -> {
+                Log.d(TAG, "Closing test session and restoring service instance to "
+                        + (oldInstance != null ? oldInstance.getInputManagerService() : "null"));
+                sInstance = oldInstance;
+            };
         }
     }
 
