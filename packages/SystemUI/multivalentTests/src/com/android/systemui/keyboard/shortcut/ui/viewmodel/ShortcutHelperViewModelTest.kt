@@ -19,9 +19,11 @@ package com.android.systemui.keyboard.shortcut.ui.viewmodel
 import android.app.role.RoleManager
 import android.app.role.mockRoleManager
 import android.content.Context
+import android.content.applicationContext
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.NameNotFoundException
+import android.view.Display
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material.icons.filled.VerticalSplit
@@ -42,18 +44,24 @@ import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.System
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutSubCategory
 import com.android.systemui.keyboard.shortcut.shared.model.shortcut
+import com.android.systemui.keyboard.shortcut.shortcutHelperCategoriesInteractor
+import com.android.systemui.keyboard.shortcut.shortcutHelperCustomizationModeInteractor
+import com.android.systemui.keyboard.shortcut.shortcutHelperStateInteractor
 import com.android.systemui.keyboard.shortcut.shortcutHelperTestHelper
 import com.android.systemui.keyboard.shortcut.shortcutHelperViewModel
 import com.android.systemui.keyboard.shortcut.ui.model.IconSource
 import com.android.systemui.keyboard.shortcut.ui.model.ShortcutCategoryUi
 import com.android.systemui.keyboard.shortcut.ui.model.ShortcutsUiState
 import com.android.systemui.keyboard.shortcut.ui.viewmodel.ShortcutHelperViewModel.Companion.EXTENDED_APPS_SHORTCUT_CUSTOMIZATION_LIMIT
+import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.model.sysUiState
 import com.android.systemui.settings.FakeUserTracker
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.settings.userTracker
+import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
 import com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_SHORTCUT_HELPER_SHOWING
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -89,6 +97,20 @@ class ShortcutHelperViewModelTest : SysuiTestCase() {
     private val fakeUserTracker = kosmos.fakeUserTracker
     private val mockRoleManager = kosmos.mockRoleManager
     private val underTest = kosmos.shortcutHelperViewModel
+    private val secondaryDisplayViewModel =
+        with(kosmos) {
+            ShortcutHelperViewModel(
+                applicationContext,
+                mockRoleManager,
+                userTracker,
+                applicationCoroutineScope,
+                testDispatcher,
+                shortcutHelperStateInteractor,
+                shortcutHelperCategoriesInteractor,
+                shortcutHelperCustomizationModeInteractor,
+                displayId = SECONDARY_DISPLAY,
+            )
+        }
     private val fakeDefaultShortcutCategoriesRepository =
         kosmos.fakeDefaultShortcutCategoriesRepository
     private val fakeCustomShortcutCategoriesRepository =
@@ -197,6 +219,28 @@ class ShortcutHelperViewModelTest : SysuiTestCase() {
 
             val shouldShowNew by collectLastValue(underTest.shouldShow)
             assertThat(shouldShowNew).isEqualTo(shouldShow)
+        }
+
+    @Test
+    fun shouldShow_falseWhenShortcutHelperTriggeredFromDifferentDisplay() =
+        testScope.runTest {
+            kosmos.fakeFocusedDisplayRepository.setDisplayId(Display.DEFAULT_DISPLAY)
+            val shouldShow by collectLastValue(secondaryDisplayViewModel.shouldShow)
+
+            testHelper.showFromActivity()
+
+            assertThat(shouldShow).isFalse()
+        }
+
+    @Test
+    fun shouldShow_TrueWhenShortcutHelperTriggeredFromSameDisplay() =
+        testScope.runTest {
+            kosmos.fakeFocusedDisplayRepository.setDisplayId(SECONDARY_DISPLAY)
+            val shouldShow by collectLastValue(secondaryDisplayViewModel.shouldShow)
+
+            testHelper.showFromActivity()
+
+            assertThat(shouldShow).isTrue()
         }
 
     @Test
@@ -664,5 +708,6 @@ class ShortcutHelperViewModelTest : SysuiTestCase() {
         const val FIRST_SIMPLE_GROUP_LABEL = "simple group 1"
         const val SECOND_SIMPLE_GROUP_LABEL = "simple group 2"
         const val TEST_PACKAGE = "test.package.name"
+        const val SECONDARY_DISPLAY = 5
     }
 }
