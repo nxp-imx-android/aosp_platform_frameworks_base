@@ -21,12 +21,9 @@
     <string name="update" msgid="3932142540719227615">"Шинэчлэх"</string>
     <string name="done" msgid="6632441120016885253">"Болсон"</string>
     <string name="cancel" msgid="1018267193425558088">"Болих"</string>
-    <!-- no translation found for try_again (3754399538069264237) -->
-    <skip />
-    <!-- no translation found for install_anyway (8794642873773384969) -->
-    <skip />
-    <!-- no translation found for dont_install (414055123295505225) -->
-    <skip />
+    <string name="try_again" msgid="3754399538069264237">"Дахин оролдох"</string>
+    <string name="install_anyway" msgid="8794642873773384969">"Ямартай ч суулга"</string>
+    <string name="dont_install" msgid="414055123295505225">"Бүү суулга"</string>
     <string name="installing" msgid="4921993079741206516">"Суулгаж байна…"</string>
     <string name="installing_app" msgid="1165095864863849422">"<xliff:g id="PACKAGE_LABEL">%1$s</xliff:g>-г суулгаж байна…"</string>
     <string name="install_done" msgid="5987363587661783896">"Аппыг суулгасан."</string>
@@ -49,14 +46,10 @@
     <string name="unknown_apps_admin_dlg_text" msgid="4456572224020176095">"Таны админ тодорхойгүй эх сурвалжаас татсан апп суулгахыг зөвшөөрдөггүй"</string>
     <string name="unknown_apps_user_restriction_dlg_text" msgid="151020786933988344">"Энэ хэрэглэгч тодорхойгүй апп суулгах боломжгүй"</string>
     <string name="install_apps_user_restriction_dlg_text" msgid="2154119597001074022">"Энэ хэрэглэгч нь апп суулгах зөвшөөрөлгүй байна"</string>
-    <!-- no translation found for verification_incomplete_summary (40478808885845735) -->
-    <skip />
-    <!-- no translation found for cannot_install_verification_unavailable_summary (2469994565312971465) -->
-    <skip />
-    <!-- no translation found for cannot_install_package_summary (3358675485628657234) -->
-    <skip />
-    <!-- no translation found for lite_verification_summary (3211866126230002977) -->
-    <skip />
+    <string name="verification_incomplete_summary" msgid="40478808885845735">"Баталгаажуулж чадаагүй тул аппыг одоогоор суулгаагүй байна. Дахин оролдоно уу."</string>
+    <string name="cannot_install_verification_unavailable_summary" msgid="2469994565312971465"><p>"Сануулга: Апп баталгаажуулж чадсангүй. "</p>"Илгээмж баталгаажуулах талаар "<p><a href="">"нэмэлт мэдээлэл авах"</a></p></string>
+    <string name="cannot_install_package_summary" msgid="3358675485628657234"><p>"Энэ аппыг блоклосон тул суулгах боломжгүй. "</p>"Илгээмж баталгаажуулах талаар "<p><a href="">"нэмэлт мэдээлэл авах"</a></p></string>
+    <string name="lite_verification_summary" msgid="3211866126230002977"><p>"Энэ аппыг ADI Lite Developer өмчилдөг бөгөөд баталгаажуулах стандарт явцыг алгасдаг. Та үргэлжлүүлэн суулгамаар байна уу?"</p></string>
     <string name="ok" msgid="7871959885003339302">"ОК"</string>
     <string name="archive" msgid="4447791830199354721">"Архивлах"</string>
     <string name="update_anyway" msgid="8792432341346261969">"Ямартай ч шинэчлэх"</string>
