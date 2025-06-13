@@ -62,8 +62,12 @@ public class AutoclickTypePanel {
     protected static final String POSITION_DELIMITER = ",";
 
     // Distance between panel and screen edge.
-    // TODO(b/396402941): Finalize edge margin.
-    private static final int PANEL_EDGE_MARGIN = 15;
+    // TODO(b/396402941): Finalize horizontal margin.
+    private static final int PANEL_HORIZONTAL_MARGIN = 15;
+    // TODO(b/396402941): Finalize vertical margin.
+    // Using 30 as the panel's vertical margin to keep it same with the panel position after
+    // clicking position button on the panel that moves it to next corner.
+    private static final int PANEL_VERTICAL_MARGIN = 30;
 
     // Touch point when drag starts, it can be anywhere inside the panel.
     private float mTouchStartX, mTouchStartY;
@@ -297,6 +301,9 @@ public class AutoclickTypePanel {
         // Get screen width to determine which side to snap to.
         // TODO(b/397944891): Handle device rotation case.
         int screenWidth = mContext.getResources().getDisplayMetrics().widthPixels;
+        int screenHeight = mContext.getResources().getDisplayMetrics().heightPixels;
+        int taskbarHeight = SystemBarUtils.getTaskbarHeight(mContext.getResources());
+        int panelHeight = mContentView.getMeasuredHeight();
         int yPosition = params.y;
 
         // Determine which half of the screen the panel is on.
@@ -317,9 +324,11 @@ public class AutoclickTypePanel {
         }
 
         // Apply final position: set params.x to be edge margin, params.y to maintain vertical
-        // position.
-        params.x = PANEL_EDGE_MARGIN;
-        params.y = yPosition;
+        // position, with a minimal margin of PANEL_VERTICAL_MARGIN with taskbar and status bar.
+        final int bottomPosition = screenHeight - taskbarHeight - panelHeight - mStatusBarHeight
+                - PANEL_VERTICAL_MARGIN;
+        params.x = PANEL_HORIZONTAL_MARGIN;
+        params.y = Math.min(Math.max(PANEL_VERTICAL_MARGIN, yPosition), bottomPosition);
         mWindowManager.updateViewLayout(mContentView, params);
 
         // Use actual position for icon (not mCurrentCorner which is mainly used for rotation
@@ -515,29 +524,22 @@ public class AutoclickTypePanel {
     }
 
     private void setPanelPositionForCorner(WindowManager.LayoutParams params, @Corner int corner) {
-        //  TODO(b/396402941): Replace hardcoded pixel values with proper dimension calculations,
-        //  Current values are experimental and may not work correctly across different device
-        //  resolutions and configurations.
+        // TODO(b/396402941): Current values are experimental and may not work correctly across
+        // different device resolutions and configurations.
+        params.x = PANEL_HORIZONTAL_MARGIN;
+        params.y = PANEL_VERTICAL_MARGIN;
         switch (corner) {
             case CORNER_BOTTOM_RIGHT:
                 params.gravity = Gravity.END | Gravity.BOTTOM;
-                params.x = PANEL_EDGE_MARGIN;
-                params.y = 90;
                 break;
             case CORNER_BOTTOM_LEFT:
                 params.gravity = Gravity.START | Gravity.BOTTOM;
-                params.x = PANEL_EDGE_MARGIN;
-                params.y = 90;
                 break;
             case CORNER_TOP_LEFT:
                 params.gravity = Gravity.START | Gravity.TOP;
-                params.x = PANEL_EDGE_MARGIN;
-                params.y = 30;
                 break;
             case CORNER_TOP_RIGHT:
                 params.gravity = Gravity.END | Gravity.TOP;
-                params.x = PANEL_EDGE_MARGIN;
-                params.y = 30;
                 break;
             default:
                 throw new IllegalArgumentException("Invalid corner: " + corner);
@@ -775,7 +777,8 @@ public class AutoclickTypePanel {
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 | WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
         layoutParams.privateFlags |= WindowManager.LayoutParams.SYSTEM_FLAG_SHOW_FOR_ALL_USERS;
-        layoutParams.setFitInsetsTypes(WindowInsets.Type.statusBars());
+        layoutParams.setFitInsetsTypes(WindowInsets.Type.statusBars()
+                | WindowInsets.Type.navigationBars());
         layoutParams.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
         layoutParams.format = PixelFormat.TRANSLUCENT;
         layoutParams.setTitle(AutoclickTypePanel.class.getSimpleName());
