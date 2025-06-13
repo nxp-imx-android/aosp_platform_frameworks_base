@@ -17,6 +17,7 @@
 package com.android.server.vibrator;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.util.IndentingPrintWriter;
 
 /** Handles interactions with a vibrator manager HAL. */
@@ -47,6 +48,10 @@ interface HalVibratorManager {
 
     /** Return the IDs of the vibrators controlled by this manager. */
     @NonNull int[] getVibratorIds();
+
+    /** Return the vibrator with given ID controlled by this manager. */
+    @Nullable
+    HalVibrator getVibrator(int id);
 
     /** Prepare vibrators for triggering vibrations in sync. */
     boolean prepareSynced(@NonNull int[] vibratorIds);

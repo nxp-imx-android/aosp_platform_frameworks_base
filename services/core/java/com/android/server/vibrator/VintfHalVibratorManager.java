@@ -16,6 +16,8 @@
 
 package com.android.server.vibrator;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.hardware.vibrator.IVibrationSession;
 import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorCallback;
@@ -30,9 +32,7 @@ import android.os.vibrator.Flags;
 import android.util.IndentingPrintWriter;
 import android.util.LongSparseArray;
 import android.util.Slog;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.util.SparseArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.vibrator.VintfUtils.VintfSupplier;
@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.IntFunction;
 
 /** Implementations for {@link HalVibratorManager} backed by VINTF objects. */
 class VintfHalVibratorManager {
@@ -50,17 +51,21 @@ class VintfHalVibratorManager {
 
     /** Create {@link HalVibratorManager} based on declared services on device. */
     static HalVibratorManager createHalVibratorManager() {
+        // TODO(b/422944962): Replace this with Vintf HalVibrator
+        IntFunction<HalVibrator> vibratorFactory = VibratorController::new;
+
         if (ServiceManager.isDeclared(IVibratorManager.DESCRIPTOR + "/default")) {
             Slog.v(TAG, "Loading default IVibratorManager service.");
-            return new DefaultHalVibratorManager(new DefaultVibratorManagerSupplier());
+            return new DefaultHalVibratorManager(
+                    new DefaultVibratorManagerSupplier(), vibratorFactory);
         }
         if (ServiceManager.isDeclared(IVibrator.DESCRIPTOR + "/default")) {
             Slog.v(TAG, "Loading default IVibrator service.");
-            return new LegacyHalVibratorManager(new int[] { DEFAULT_VIBRATOR_ID });
+            return new LegacyHalVibratorManager(new int[] { DEFAULT_VIBRATOR_ID }, vibratorFactory);
         }
         Slog.v(TAG, "No default services declared for IVibratorManager or IVibrator."
                 + " Vibrator manager service will proceed without vibrator hardware.");
-        return new LegacyHalVibratorManager(new int[0]);
+        return new LegacyHalVibratorManager(new int[0], vibratorFactory);
     }
 
     /** {@link VintfSupplier} for default {@link IVibratorManager} service. */
@@ -87,14 +92,18 @@ class VintfHalVibratorManager {
         @GuardedBy("mLock")
         private final LongSparseArray<IVibrationSession> mOngoingSessions = new LongSparseArray<>();
         private final VintfSupplier<IVibratorManager> mHalSupplier;
+        private final IntFunction<HalVibrator> mVibratorFactory;
+        private final SparseArray<HalVibrator> mVibrators = new SparseArray<>();
 
         private Callbacks mCallbacks;
 
         private volatile long mCapabilities = 0;
         private volatile int[] mVibratorIds = new int[0];
 
-        DefaultHalVibratorManager(VintfSupplier<IVibratorManager> supplier) {
+        DefaultHalVibratorManager(VintfSupplier<IVibratorManager> supplier,
+                IntFunction<HalVibrator> vibratorFactory) {
             mHalSupplier = supplier;
+            mVibratorFactory = vibratorFactory;
         }
 
         @Override
@@ -112,6 +121,9 @@ class VintfHalVibratorManager {
                     e -> Slog.e(TAG, "Error getting vibrator ids", e));
             mCapabilities = capabilities.orElse(0).longValue();
             mVibratorIds = vibratorIds.orElseGet(() -> new int[0]);
+            for (int id : mVibratorIds) {
+                mVibrators.put(id, mVibratorFactory.apply(id));
+            }
 
             // Reset the hardware to a default state.
             // In case this is a runtime restart instead of a fresh boot.
@@ -134,6 +146,12 @@ class VintfHalVibratorManager {
         @Override
         public int[] getVibratorIds() {
             return mVibratorIds;
+        }
+
+        @Nullable
+        @Override
+        public HalVibrator getVibrator(int id) {
+            return mVibrators.get(id);
         }
 
         @Override
@@ -229,11 +247,20 @@ class VintfHalVibratorManager {
         public void dump(IndentingPrintWriter pw) {
             pw.println("Default Hal VibratorManager:");
             pw.increaseIndent();
+
             pw.println("capabilities = " + Arrays.toString(getCapabilitiesNames()));
             pw.println("capabilitiesFlags = " + Long.toBinaryString(mCapabilities));
             pw.println("vibratorIds = " + Arrays.toString(mVibratorIds));
             pw.println("ongoingSessionsCount = " + mOngoingSessions.size());
+            pw.println("Vibrators:");
+            pw.increaseIndent();
+            for (int i = 0; i < mVibrators.size(); i++) {
+                mVibrators.valueAt(i).dump(pw);
+            }
             pw.decreaseIndent();
+
+            pw.decreaseIndent();
+            pw.println();
         }
 
         @Override
@@ -365,9 +392,15 @@ class VintfHalVibratorManager {
     /** Legacy implementation for devices without a declared {@link IVibratorManager} service. */
     static final class LegacyHalVibratorManager implements HalVibratorManager {
         private final int[] mVibratorIds;
+        private final SparseArray<HalVibrator> mVibrators;
 
-        LegacyHalVibratorManager(@NonNull int[] vibratorIds) {
+        LegacyHalVibratorManager(@NonNull int[] vibratorIds,
+                IntFunction<HalVibrator> vibratorFactory) {
             mVibratorIds = vibratorIds;
+            mVibrators = new SparseArray<>(vibratorIds.length);
+            for (int id : vibratorIds) {
+                mVibrators.put(id, vibratorFactory.apply(id));
+            }
         }
 
         @Override
@@ -387,6 +420,12 @@ class VintfHalVibratorManager {
         @Override
         public int[] getVibratorIds() {
             return mVibratorIds;
+        }
+
+        @Nullable
+        @Override
+        public HalVibrator getVibrator(int id) {
+            return mVibrators.get(id);
         }
 
         @Override
@@ -418,8 +457,17 @@ class VintfHalVibratorManager {
         public void dump(IndentingPrintWriter pw) {
             pw.println("Legacy HAL VibratorManager:");
             pw.increaseIndent();
+
             pw.println("vibratorIds = " + Arrays.toString(mVibratorIds));
+            pw.println("Vibrators:");
+            pw.increaseIndent();
+            for (int i = 0; i < mVibrators.size(); i++) {
+                mVibrators.valueAt(i).dump(pw);
+            }
             pw.decreaseIndent();
+
+            pw.decreaseIndent();
+            pw.println();
         }
 
         @Override
