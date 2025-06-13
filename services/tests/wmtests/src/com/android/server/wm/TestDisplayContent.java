@@ -105,6 +105,7 @@ class TestDisplayContent extends DisplayContent {
         private SettingsEntry mOverrideSettings;
         @NonNull
         private DeviceStateController mDeviceStateController = mock(DeviceStateController.class);
+        private boolean mCanHostTasks = true;
 
         Builder(ActivityTaskManagerService service, int width, int height) {
             mService = service;
@@ -158,6 +159,10 @@ class TestDisplayContent extends DisplayContent {
         }
         Builder setOwnerUid(int ownerUid) {
             mInfo.ownerUid = ownerUid;
+            return this;
+        }
+        Builder setCanHostTasks(boolean canHostTasks) {
+            mCanHostTasks = canHostTasks;
             return this;
         }
         Builder setCutout(int left, int top, int right, int bottom) {
@@ -215,6 +220,10 @@ class TestDisplayContent extends DisplayContent {
             mInfo.displayId = displayId;
             final Display display = new Display(DisplayManagerGlobal.getInstance(), displayId,
                     mInfo, DEFAULT_DISPLAY_ADJUSTMENTS);
+            spyOn(display);
+            if (mCanHostTasks) {
+                doReturn(true).when(display).canHostTasks();
+            }
             final TestDisplayContent newDisplay = createInternal(display);
             // disable the normal system decorations
             final DisplayPolicy displayPolicy = newDisplay.getDisplayPolicy();

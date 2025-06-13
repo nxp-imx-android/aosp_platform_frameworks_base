@@ -334,7 +334,7 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
      * Ensures that a trusted display can launch arbitrary activity and an untrusted display can't.
      */
     @Test
-    public void testDisplayCanLaunchActivities() {
+    public void testDisplayCanLaunchActivities_trustedDisplay() {
         final Display display = mDisplayContent.mDisplay;
         // An empty info without FLAG_ALLOW_EMBEDDED.
         final ActivityInfo activityInfo = new ActivityInfo();
@@ -353,6 +353,31 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
                 callingUid, display.getDisplayId(), activityInfo);
 
         assertThat(allowedOnUntrusted).isFalse();
+    }
+
+    /**
+     * Ensures that an arbitrary activity can be launched on a display the can host tasks, and
+     * cannot be launched on a display that cannot host tasks.
+     */
+    @EnableFlags(Flags.FLAG_ENABLE_MIRROR_DISPLAY_NO_ACTIVITY)
+    @Test
+    public void testDisplayCanLaunchActivities_canHostTasksDisplay() {
+        final Display display = mDisplayContent.mDisplay;
+        // An empty info without FLAG_ALLOW_EMBEDDED.
+        final ActivityInfo activityInfo = new ActivityInfo();
+        final int callingPid = 12345;
+        final int callingUid = 12345;
+        spyOn(display);
+
+        doReturn(true).when(display).canHostTasks();
+        final boolean allowedOnCanHostTasks = mSupervisor.isCallerAllowedToLaunchOnDisplay(
+                callingPid, callingUid, display.getDisplayId(), activityInfo);
+        assertThat(allowedOnCanHostTasks).isTrue();
+
+        doReturn(false).when(display).canHostTasks();
+        final boolean allowedOnCannotHostTasks = mSupervisor.isCallerAllowedToLaunchOnDisplay(
+                callingPid, callingUid, display.getDisplayId(), activityInfo);
+        assertThat(allowedOnCannotHostTasks).isFalse();
     }
 
     /**
