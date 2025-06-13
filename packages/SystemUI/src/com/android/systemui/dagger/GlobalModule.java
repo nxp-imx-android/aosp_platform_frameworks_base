@@ -26,7 +26,7 @@ import com.android.systemui.plugins.PluginsModule;
 import com.android.systemui.unfold.UnfoldTransitionModule;
 import com.android.systemui.util.concurrency.GlobalConcurrencyModule;
 import com.android.systemui.util.kotlin.GlobalCoroutinesModule;
-import com.android.systemui.util.time.impl.TimeModule;
+import com.android.systemui.util.time.dagger.TimeModule;
 
 import dagger.Module;
 import dagger.Provides;

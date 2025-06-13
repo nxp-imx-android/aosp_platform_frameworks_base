@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.util.time.impl;
-
-import com.android.systemui.util.time.SystemClock;
+package com.android.systemui.util.time;
 
 import javax.inject.Inject;
 
