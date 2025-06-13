@@ -36,6 +36,7 @@ public interface RotationButton {
     }
     default boolean show() { return false; }
     default boolean hide() { return false; }
+    default void onDestroy() {}
     default boolean isVisible() {
         return false;
     }
