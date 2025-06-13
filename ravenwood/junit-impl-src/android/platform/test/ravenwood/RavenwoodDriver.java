@@ -53,6 +53,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.os.Environment_ravenwood;
 import android.os.HandlerThread;
+import android.os.Handler_ravenwood;
 import android.os.Looper;
 import android.os.Looper_ravenwood;
 import android.os.Message;
@@ -133,12 +134,12 @@ public class RavenwoodDriver {
             !"0".equals(System.getenv("RAVENWOOD_ENABLE_TIMEOUT_STACKS"));
 
     /** RavenwoodCoreTest modifies it, so not final. */
-    public static volatile boolean TOLERATE_UNHANDLED_ASSERTS =
+    public static final boolean TOLERATE_UNHANDLED_ASSERTS =
             !"0".equals(System.getenv("RAVENWOOD_TOLERATE_UNHANDLED_ASSERTS"));
 
     /** RavenwoodCoreTest modifies it, so not final. */
-    public static volatile boolean TOLERATE_UNHANDLED_EXCEPTIONS =
-            "1".equals(System.getenv("RAVENWOOD_TOLERATE_UNHANDLED_EXCEPTIONS"));
+    public static final boolean TOLERATE_UNHANDLED_EXCEPTIONS =
+            !"0".equals(System.getenv("RAVENWOOD_TOLERATE_UNHANDLED_EXCEPTIONS"));
 
     static final int DEFAULT_TIMEOUT_SECONDS = 10;
     private static final int TIMEOUT_MILLIS = getTimeoutSeconds() * 1000;
@@ -150,7 +151,6 @@ public class RavenwoodDriver {
         }
         return Integer.parseInt(e);
     }
-
 
     private static final ScheduledExecutorService sTimeoutExecutor =
             Executors.newScheduledThreadPool(1, (Runnable r) -> {
@@ -171,7 +171,7 @@ public class RavenwoodDriver {
     private static final boolean DIE_ON_UNCAUGHT_EXCEPTION = false;
 
     /**
-     * This is an "recoverable" uncaught exception from a BG thread. When we detect one,
+     * This is a "recoverable" uncaught exception from a BG thread. When we detect one,
      * we just make the current test failed, but continue running the subsequent tests normally.
      */
     private static final AtomicReference<Throwable> sPendingRecoverableUncaughtException =
@@ -367,16 +367,24 @@ public class RavenwoodDriver {
         RavenwoodRuntimeState.sPid = sMyPid;
         RavenwoodRuntimeState.sTargetSdkLevel = sTargetSdkLevel;
 
-        ServiceManager.init$ravenwood();
-        LocalServices.removeAllServicesForTest();
-
-        ActivityManager.init$ravenwood(SYSTEM.getIdentifier());
+        RavenwoodUtils.sPendingExceptionThrower =
+                RavenwoodDriver::maybeThrowPendingRecoverableUncaughtExceptionNoClear;
+        Handler_ravenwood.sPendingExceptionThrower = (a, b, c) -> {
+            maybeThrowPendingRecoverableUncaughtExceptionNoClear();
+            return null;
+        };
 
         final var main = new HandlerThread(MAIN_THREAD_NAME);
         sMainThread = main;
         main.start();
         Looper_ravenwood.sDispatcher = RavenwoodDriver::dispatchMessage;
         Looper.setMainLooperForTest(main.getLooper());
+
+
+        ServiceManager.init$ravenwood();
+        LocalServices.removeAllServicesForTest();
+
+        ActivityManager.init$ravenwood(SYSTEM.getIdentifier());
 
         final boolean isSelfInstrumenting =
                 Objects.equals(sTestPackageName, sTargetPackageName);
@@ -498,7 +506,7 @@ public class RavenwoodDriver {
 
         SystemProperties.clearChangeCallbacksForTest();
 
-        maybeThrowPendingRecoverableUncaughtException();
+        maybeThrowPendingRecoverableUncaughtExceptionAndClear();
     }
 
     /**
@@ -523,7 +531,7 @@ public class RavenwoodDriver {
      */
     public static void exitTestMethod(Description description) {
         cancelTimeout();
-        maybeThrowPendingRecoverableUncaughtException();
+        maybeThrowPendingRecoverableUncaughtExceptionAndClear();
         maybeThrowUnrecoverableUncaughtExceptionIfDetected();
     }
 
@@ -607,6 +615,9 @@ public class RavenwoodDriver {
      * Return if an exception is benign and okay to continue running the remaining tests.
      */
     private static boolean isThrowableRecoverable(Throwable th) {
+        if (th instanceof RavenwoodRecoverableExceptionWrapper) {
+            return true;
+        }
         if (TOLERATE_UNHANDLED_EXCEPTIONS) {
             return true;
         }
@@ -617,15 +628,33 @@ public class RavenwoodDriver {
         return false;
     }
 
-    private static Exception makeRecoverableExceptionInstance(Throwable inner) {
-        var outer = new Exception(String.format("Exception detected on thread %s: "
-                + " *** Continuing running the remaining tests ***",
-                Thread.currentThread().getName()), inner);
+    private static class RavenwoodRecoverableExceptionWrapper extends Exception {
+        RavenwoodRecoverableExceptionWrapper(String message, Throwable cause) {
+            super(message, cause);
+        }
+
+        @Override
+        public String getMessage() {
+            return super.getMessage() + " : " + getCause().getMessage();
+        }
+    }
+
+    private static Throwable makeRecoverableExceptionInstance(Throwable th) {
+        if (th instanceof RavenwoodRecoverableExceptionWrapper) {
+            return th;
+        }
+        var outer = new RavenwoodRecoverableExceptionWrapper(
+                "Exception detected on thread " + Thread.currentThread().getName() + ": "
+                + " *** Continuing running the remaining test ***", th);
         Log.e(TAG, outer.getMessage(), outer);
         return outer;
     }
 
     private static void dispatchMessage(Message msg) {
+        // If there's already an exception caught and pending, don't run any more messages.
+        if (hasPendingRecoverableUncaughtException()) {
+            return;
+        }
         try {
             msg.getTarget().dispatchMessage(msg);
         } catch (Throwable th) {
@@ -633,8 +662,7 @@ public class RavenwoodDriver {
                     Thread.currentThread());
             sStdErr.println(desc);
             if (isThrowableRecoverable(th)) {
-                sPendingRecoverableUncaughtException.compareAndSet(null,
-                        makeRecoverableExceptionInstance(th));
+                setPendingRecoverableUncaughtException(th);
                 return;
             }
             throw th;
@@ -642,17 +670,42 @@ public class RavenwoodDriver {
     }
 
     /**
-     * A callback when a test class finishes its execution, mostly only for debugging.
+     * A callback when a test class finishes its execution.
      */
     public static void exitTestClass() {
-        maybeThrowPendingRecoverableUncaughtException();
+        maybeThrowPendingRecoverableUncaughtExceptionAndClear();
     }
 
-    private static void maybeThrowPendingRecoverableUncaughtException() {
-        final Throwable pending = sPendingRecoverableUncaughtException.getAndSet(null);
+    private static void setPendingRecoverableUncaughtException(Throwable th) {
+        sPendingRecoverableUncaughtException.compareAndSet(null,
+                makeRecoverableExceptionInstance(th));
+    }
+
+    private static boolean hasPendingRecoverableUncaughtException() {
+        return sPendingRecoverableUncaughtException.get() != null;
+    }
+
+    private static Throwable getPendingRecoverableUncaughtException(boolean clear) {
+        if (clear) {
+            return sPendingRecoverableUncaughtException.getAndSet(null);
+        } else {
+            return sPendingRecoverableUncaughtException.get();
+        }
+    }
+
+    private static void maybeThrowPendingRecoverableUncaughtException(boolean clear) {
+        final Throwable pending = getPendingRecoverableUncaughtException(clear);
         if (pending != null) {
             SneakyThrow.sneakyThrow(pending);
         }
+    }
+
+    private static void maybeThrowPendingRecoverableUncaughtExceptionAndClear() {
+        maybeThrowPendingRecoverableUncaughtException(true);
+    }
+
+    private static void maybeThrowPendingRecoverableUncaughtExceptionNoClear() {
+        maybeThrowPendingRecoverableUncaughtException(false);
     }
 
     /**
@@ -753,8 +806,7 @@ public class RavenwoodDriver {
 
     private static void onUncaughtException(Thread thread, Throwable inner) {
         if (isThrowableRecoverable(inner)) {
-            sPendingRecoverableUncaughtException.compareAndSet(null,
-                    makeRecoverableExceptionInstance(inner));
+            setPendingRecoverableUncaughtException(inner);
             return;
         }
         var msg = String.format(

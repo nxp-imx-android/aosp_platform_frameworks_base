@@ -18,6 +18,9 @@ package com.android.ravenwoodtest.runnercallbacktests;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
+import static org.junit.Assert.assertTrue;
+
+import android.os.Looper;
 import android.platform.test.annotations.NoRavenizer;
 import android.platform.test.ravenwood.RavenwoodAwareTestRunner;
 import android.platform.test.ravenwood.RavenwoodConfigPrivate;
@@ -41,6 +44,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 
@@ -74,6 +78,16 @@ public abstract class RavenwoodRunnerTestBase {
     @Retention(RetentionPolicy.RUNTIME)
     public @interface Expected {
         String value();
+    }
+
+    private static final AtomicReference<Throwable> sError = new AtomicReference<>();
+
+    /**
+     * Subclass will call it when it detected a problem. {@link #doTest} will check it
+     * and make the test fail if it's set.
+     */
+    public static void setError(Throwable error) {
+        sError.compareAndSet(null, error);
     }
 
     /**
@@ -134,6 +148,8 @@ public abstract class RavenwoodRunnerTestBase {
         Log.i(TAG, "Running test for " + testClazz);
         var junitCore = new JUnitCore();
 
+        sError.set(null);
+
         // Create a listener.
         var listener = new ResultCollectingListener();
         junitCore.addListener(listener);
@@ -151,10 +167,22 @@ public abstract class RavenwoodRunnerTestBase {
             RavenwoodConfigPrivate.setCriticalErrorHandler(null);
         }
 
+        var error = sError.get();
+        if (error != null) {
+            throw new RuntimeException("Failure detected in test [" + testClazz.getSimpleName()
+                    + "], see the inner exception for details.",
+                    error);
+        }
+
         // Check the result.
-        assertWithMessage("Failure in test class: " + testClazz.getCanonicalName() + "]")
+        assertWithMessage("Failure in test class [" + testClazz.getCanonicalName() + "]")
                 .that(listener.getResult())
                 .isEqualTo(expectedResult);
+
+        // After each test, make sure the main thread is alive.
+        // (RavenwoodRunnerExecutionTest throws exceptions on the main thread, so we make sure
+        // it's not killed.)
+        assertTrue(Looper.getMainLooper().getThread().isAlive());
     }
 
     /**
