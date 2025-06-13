@@ -77,7 +77,7 @@ public class WindowlessWindowManager implements IWindowSession {
      * Used to store SurfaceControl we've built for clients to
      * reconfigure them if relayout is called.
      */
-    final HashMap<IBinder, State> mStateForWindow = new HashMap<IBinder, State>();
+    final HashMap<IBinder, State> mStateForWindow = new HashMap<>();
 
     public interface ResizeCompleteCallback {
         public void finished(SurfaceControl.Transaction completion);
@@ -359,6 +359,31 @@ public class WindowlessWindowManager implements IWindowSession {
             return null;
         }
         return s.mSurfaceControl;
+    }
+
+    /**
+     * Requests input focus for the given embedded view root, to be used for cases where the
+     * embedded window is not rooted to any window (otherwise focus is managed by the hosting
+     * SurfaceView).
+     *
+     * WM will enforce that callers also hold the INTERNAL_SYSTEM_WINDOW permission.
+     * If `focused` is false, WM will resolve focus on the next window.
+     * @hide
+     */
+    boolean requestInputFocus(@NonNull ViewRootImpl viewRoot, boolean focused) {
+        final State s = mStateForWindow.get(viewRoot.mWindow.asBinder());
+        if (s == null) {
+            Log.w(TAG, "Invalid view root specified, not an embedded window");
+            return false;
+        }
+        try {
+            mRealWm.grantEmbeddedWindowFocus(null /* callingWin */, s.mInputTransferToken,
+                    focused);
+            return true;
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to request input focus on embedded window", e);
+            return false;
+        }
     }
 
     @Override
