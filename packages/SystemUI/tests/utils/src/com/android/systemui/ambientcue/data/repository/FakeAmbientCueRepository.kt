@@ -50,6 +50,9 @@ class FakeAmbientCueRepository : AmbientCueRepository {
     private val _recentsButtonPosition = MutableStateFlow<Rect?>(null)
     override val recentsButtonPosition: StateFlow<Rect?> = _recentsButtonPosition.asStateFlow()
 
+    private val _isAmbientCueEnabled = MutableStateFlow(false)
+    override val isAmbientCueEnabled: StateFlow<Boolean> = _isAmbientCueEnabled.asStateFlow()
+
     fun setActions(actions: List<ActionModel>) {
         _actions.update { actions }
     }
@@ -76,5 +79,9 @@ class FakeAmbientCueRepository : AmbientCueRepository {
 
     fun setRecentsButtonPosition(recentsButtonPosition: Rect) {
         _recentsButtonPosition.update { recentsButtonPosition }
+    }
+
+    fun setAmbientCueEnabled(isEnabled: Boolean) {
+        _isAmbientCueEnabled.update { isEnabled }
     }
 }
