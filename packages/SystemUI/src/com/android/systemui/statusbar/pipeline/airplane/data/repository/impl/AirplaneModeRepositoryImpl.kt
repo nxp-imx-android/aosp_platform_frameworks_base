@@ -23,7 +23,8 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
-import com.android.systemui.statusbar.pipeline.dagger.AirplaneTableLog
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.shared.AirplaneTableLog
 import com.android.systemui.util.settings.GlobalSettings
 import com.android.systemui.util.settings.SettingObserver
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
@@ -36,15 +37,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
-
-/** Provides data related to airplane mode. */
-interface AirplaneModeRepository {
-    /** Observable for whether the device is currently in airplane mode. */
-    val isAirplaneMode: StateFlow<Boolean>
-
-    /** Sets airplane mode state. */
-    suspend fun setIsAirplaneMode(isEnabled: Boolean)
-}
 
 @SysUISingleton
 @Suppress("EXPERIMENTAL_IS_NOT_ENABLED")

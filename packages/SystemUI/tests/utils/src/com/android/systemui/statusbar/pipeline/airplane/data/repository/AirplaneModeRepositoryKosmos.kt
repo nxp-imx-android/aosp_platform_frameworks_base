@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.pipeline.airplane.data.repository
 
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.impl.AirplaneModeRepository
 
 val Kosmos.airplaneModeRepository by Kosmos.Fixture { FakeAirplaneModeRepository() }
 

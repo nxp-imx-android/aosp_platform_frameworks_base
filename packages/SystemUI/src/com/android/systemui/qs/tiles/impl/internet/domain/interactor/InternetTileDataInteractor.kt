@@ -30,7 +30,7 @@ import com.android.systemui.qs.tiles.impl.internet.domain.model.InternetTileMode
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.impl.AirplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
 import com.android.systemui.statusbar.pipeline.ethernet.domain.EthernetInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.domain.model.SignalIconModel
