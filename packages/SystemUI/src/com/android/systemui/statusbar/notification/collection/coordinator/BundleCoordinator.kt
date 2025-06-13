@@ -22,6 +22,7 @@ import android.app.NotificationChannel.RECS_ID
 import android.app.NotificationChannel.SOCIAL_MEDIA_ID
 import android.os.Build
 import android.os.SystemProperties
+import android.os.UserHandle
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
@@ -55,7 +56,6 @@ import com.android.systemui.statusbar.notification.stack.BUCKET_SOCIAL
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /** Coordinator for sections derived from NotificationAssistantService classification. */
@@ -256,22 +256,6 @@ constructor(
         updateEntryList(entries, /* currentBundleKey */ null)
     }
 
-    private fun getAppDataForListEntry(listEntry: ListEntry): AppData? {
-        if (listEntry.representativeEntry == null) {
-            error(
-                "getAppDataForListEntry BundleEntry child (key: ${listEntry.key})" +
-                    "has no representativeEntry"
-            )
-        }
-        val representative = listEntry.representativeEntry!!
-        val time = representative.timeAddedToBundle.second
-        return if (time > 0L) {
-            AppData(representative.sbn.packageName, representative.sbn.user, time)
-        } else {
-            error("getAppDataForListEntry not in bundle (key: ${listEntry.key})")
-        }
-    }
-
     /**
      * For each BundleEntry, populate its bundleRepository.appDataList with unique AppData (package
      * name, UserHandle, latest timeAddedToBundle) by recursively checking all NotificationEntry
@@ -289,18 +273,12 @@ constructor(
                     for (listEntry in listEntries) {
                         when (listEntry) {
                             is NotificationEntry -> {
-                                val time = listEntry.timeAddedToBundle.second
-                                appDataList.add(
-                                    AppData(listEntry.sbn.packageName, listEntry.sbn.user, time)
-                                )
+                                appDataList.add(listEntry.toAppData())
                             }
 
                             is GroupEntry -> {
                                 listEntry.representativeEntry?.let { summary ->
-                                    val time = summary.timeAddedToBundle.second
-                                    appDataList.add(
-                                        AppData(summary.sbn.packageName, summary.sbn.user, time)
-                                    )
+                                    appDataList.add(summary.toAppData())
                                 }
                                 collectAppData(listEntry.children)
                             }
@@ -385,3 +363,6 @@ constructor(
         }
     }
 }
+
+private fun NotificationEntry.toAppData(): AppData =
+    AppData(sbn.packageName, UserHandle.of(sbn.normalizedUserId), timeAddedToBundle.second)
