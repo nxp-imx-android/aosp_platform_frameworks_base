@@ -508,10 +508,16 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             } else {
                 stacktrace = null;
             }
+
+            // This is to avoid passing args that are mutable to the background thread, which might
+            // cause issues with concurrent access to the same object.
+            if (args != null) {
+                snapshotMutableArgsToStringInPlace(args);
+            }
+
             mBackgroundHandler.post(() -> {
                 try {
-                    logToProto(logLevel, group, message, args, tsNanos,
-                            stacktrace);
+                    logToProto(logLevel, group, message, args, tsNanos, stacktrace);
                 } catch (RuntimeException e) {
                     // An error occurred during the logging process itself.
                     // Log this error along with information about the original log call.
@@ -539,6 +545,15 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
         }
         if (group.isLogToLogcat()) {
             logToLogcat(group.getTag(), logLevel, message, args);
+        }
+    }
+
+    private void snapshotMutableArgsToStringInPlace(@NonNull Object[] args) {
+        for (int i = 0; i < args.length; i++) {
+            Object arg = args[i];
+            if (arg != null && !(arg instanceof Number) && !(arg instanceof Boolean)) {
+                args[i] = arg.toString();
+            }
         }
     }
 
