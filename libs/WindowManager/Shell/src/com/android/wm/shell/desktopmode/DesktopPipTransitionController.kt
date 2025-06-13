@@ -297,6 +297,7 @@ class DesktopPipTransitionController(
                 deskId = deskId,
                 displayId = displayId,
                 willExitDesktop = true,
+                removingLastTaskId = taskId,
             )
         desktopExitRunnable?.invoke(transition)
     }

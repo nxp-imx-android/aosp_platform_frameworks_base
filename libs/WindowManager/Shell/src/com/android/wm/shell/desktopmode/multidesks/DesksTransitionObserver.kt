@@ -19,7 +19,6 @@ import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.os.IBinder
 import android.view.Display.INVALID_DISPLAY
 import android.view.WindowManager.TRANSIT_CHANGE
-import android.view.WindowManager.TRANSIT_CLOSE
 import android.view.WindowManager.TRANSIT_TO_BACK
 import android.view.WindowManager.TRANSIT_TO_FRONT
 import android.window.DesktopExperienceFlags
@@ -127,7 +126,6 @@ class DesksTransitionObserver(
         val desktopRepository = desktopUserRepositories.current
         when (deskTransition) {
             is DeskTransition.RemoveDesk -> {
-                check(info.type == TRANSIT_CLOSE) { "Expected close transition for desk removal" }
                 // TODO: b/362720497 - consider verifying the desk was actually removed through the
                 //  DesksOrganizer. The transition info won't have changes if the desk was not
                 //  visible, such as when dismissing from Overview.

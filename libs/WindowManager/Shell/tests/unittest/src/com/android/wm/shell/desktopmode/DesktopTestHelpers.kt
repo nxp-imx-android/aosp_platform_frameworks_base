@@ -34,6 +34,7 @@ object DesktopTestHelpers {
     fun createFreeformTask(
         displayId: Int = DEFAULT_DISPLAY,
         bounds: Rect? = null,
+        userId: Int = DEFAULT_USER_ID,
     ): RunningTaskInfo =
         TestRunningTaskInfoBuilder()
             .setDisplayId(displayId)
@@ -42,7 +43,7 @@ object DesktopTestHelpers {
             .setActivityType(ACTIVITY_TYPE_STANDARD)
             .setWindowingMode(WINDOWING_MODE_FREEFORM)
             .setLastActiveTime(100)
-            .setUserId(DEFAULT_USER_ID)
+            .setUserId(userId)
             .apply { bounds?.let { setBounds(it) } }
             .build()
 
