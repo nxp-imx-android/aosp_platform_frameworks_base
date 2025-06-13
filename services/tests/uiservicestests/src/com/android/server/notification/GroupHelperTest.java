@@ -1863,7 +1863,8 @@ public class GroupHelperTest extends UiServiceTestCase {
         // Remove all child notifications from the valid group => summary without children
         Mockito.reset(mCallback);
         for (NotificationRecord r: notificationList) {
-            if (r.getGroupKey().contains(groupToRemove)) {
+            if (r.getGroupKey().contains(groupToRemove)
+                    && r.getSbn().getNotification().isGroupChild()) {
                 r.isCanceled = true;
                 mGroupHelper.onNotificationRemoved(r, notificationList, false);
             }
@@ -1873,6 +1874,110 @@ public class GroupHelperTest extends UiServiceTestCase {
                 summaryByGroup);
         // Check that nothing was force grouped
         verifyNoMoreInteractions(mCallback);
+    }
+
+    @Test
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    public void testRemoveAllGroupChildNotifications_emptySummaryCanceled() {
+        // Check that removing all notifications from a group will not trigger any force grouping
+        // re-evaluation
+        final List<NotificationRecord> notificationList = new ArrayList<>();
+        final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
+        final String pkg = "package";
+        // Post a valid (full) group
+        final int summaryId = 4242;
+        final int numChildren = 3;
+        final String groupToRemove = "testRemoveGrp";
+        NotificationRecord summary = getNotificationRecord(pkg, summaryId,
+                String.valueOf(summaryId), UserHandle.SYSTEM, groupToRemove, true);
+        notificationList.add(summary);
+        summaryByGroup.put(summary.getGroupKey(), summary);
+        final ArrayList<NotificationRecord> childrenToRemove = new ArrayList<>();
+        for (int i = 0; i < numChildren; i++) {
+            NotificationRecord child = getNotificationRecord(pkg, i + 42,
+                    String.valueOf(i + 42), UserHandle.SYSTEM, groupToRemove, false);
+            notificationList.add(child);
+            childrenToRemove.add(child);
+        }
+        mGroupHelper.onNotificationPostedWithDelay(summary, notificationList, summaryByGroup);
+        verifyNoMoreInteractions(mCallback);
+
+        // Remove all child notifications from the valid group => summary without children
+        Mockito.reset(mCallback);
+        for (NotificationRecord r: childrenToRemove) {
+            notificationList.remove(r);
+            mGroupHelper.onNotificationRemoved(r, notificationList, false);
+        }
+
+        // Only call onGroupedNotificationRemovedWithDelay with the summary notification
+        mGroupHelper.onGroupedNotificationRemovedWithDelay(summary, notificationList,
+                summaryByGroup);
+
+        // Check that the summary was canceled
+        verify(mCallback, times(1)).removeAppProvidedSummary(summary.getKey());
+        // Check that nothing else was calledback
+        verifyNoMoreInteractions(mCallback);
+    }
+
+    @Test
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_FORCE_GROUP_SINGLETONS})
+    public void testRemoveAllGroupChildNotifications_emptySummaryCanceledAndCached() {
+        // Check that removing all notifications from a group will not trigger any force grouping
+        // re-evaluation
+        final List<NotificationRecord> notificationList = new ArrayList<>();
+        final ArrayMap<String, NotificationRecord> summaryByGroup = new ArrayMap<>();
+        final String pkg = "package";
+        // Post a valid (full) group
+        final int summaryId = 4242;
+        final int numChildren = AUTOGROUP_AT_COUNT - 1;
+        final String groupToRemove = "testRemoveGrp";
+        PendingIntent summaryDeleteIntent = PendingIntent.getActivity(mContext, 1,
+                new Intent(), PendingIntent.FLAG_IMMUTABLE);
+        NotificationRecord summary = getNotificationRecord(pkg, summaryId,
+                String.valueOf(summaryId), UserHandle.SYSTEM, groupToRemove, true);
+        summary.getNotification().deleteIntent = summaryDeleteIntent;
+        notificationList.add(summary);
+        summaryByGroup.put(summary.getGroupKey(), summary);
+        final ArrayList<NotificationRecord> childrenToRemove = new ArrayList<>();
+        for (int i = 0; i < numChildren; i++) {
+            NotificationRecord child = getNotificationRecord(pkg, i + 42,
+                    String.valueOf(i + 42), UserHandle.SYSTEM, groupToRemove, false);
+            notificationList.add(child);
+            childrenToRemove.add(child);
+        }
+
+        NotificationRecord childBundled = getNotificationRecord(pkg, numChildren + 42,
+                String.valueOf(numChildren + 42), UserHandle.SYSTEM, groupToRemove, false);
+        final String expectedGroupKey = GroupHelper.getFullAggregateGroupKey(pkg,
+                AGGREGATE_GROUP_KEY + "AlertingSection", UserHandle.SYSTEM.getIdentifier());
+        childBundled.setOverrideGroupKey(expectedGroupKey);
+        notificationList.add(childBundled);
+
+        mGroupHelper.onNotificationPostedWithDelay(summary, notificationList, summaryByGroup);
+        verifyNoMoreInteractions(mCallback);
+
+        // Remove all child notifications from the valid group => summary without children
+        Mockito.reset(mCallback);
+        for (NotificationRecord r: childrenToRemove) {
+            notificationList.remove(r);
+            mGroupHelper.onNotificationRemoved(r, notificationList, false);
+        }
+
+        // Only call onGroupedNotificationRemovedWithDelay with the summary notification
+        notificationList.remove(summary);
+        mGroupHelper.onGroupedNotificationRemovedWithDelay(summary, notificationList,
+                summaryByGroup);
+
+        // Check that the summary was canceled
+        verify(mCallback, times(1)).removeAppProvidedSummary(summary.getKey());
+
+        // Cancel the last child
+        childBundled.isCanceled = true;
+        notificationList.remove(childBundled);
+        mGroupHelper.onNotificationRemoved(childBundled, notificationList, true);
+
+        // Check that the summary delete intent was triggered
+        verify(mCallback).sendAppProvidedSummaryDeleteIntent(eq(pkg), eq(summaryDeleteIntent));
     }
 
     @Test

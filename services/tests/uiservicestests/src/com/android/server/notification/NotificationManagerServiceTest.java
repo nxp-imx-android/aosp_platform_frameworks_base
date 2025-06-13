@@ -134,7 +134,6 @@ import static android.service.notification.NotificationListenerService.FLAG_FILT
 import static android.service.notification.NotificationListenerService.HINT_HOST_DISABLE_CALL_EFFECTS;
 import static android.service.notification.NotificationListenerService.HINT_HOST_DISABLE_EFFECTS;
 import static android.service.notification.NotificationListenerService.HINT_HOST_DISABLE_NOTIFICATION_EFFECTS;
-import static android.service.notification.NotificationListenerService.REASON_APP_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_CANCEL;
 import static android.service.notification.NotificationListenerService.REASON_LOCKDOWN;
 import static android.service.notification.NotificationListenerService.Ranking.USER_SENTIMENT_NEGATIVE;
@@ -2939,6 +2938,93 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         // Check that the child notifications were canceled and the autogroup was removed
         assertThat(mService.mNotificationList).hasSize(0);
         assertThat(mService.mSummaryByGroupKey).hasSize(0);
+    }
+
+    @Test
+    @EnableFlags({FLAG_NOTIFICATION_FORCE_GROUPING, FLAG_NOTIFICATION_CLASSIFICATION})
+    public void testCancelGroupChildrenAfterBundling_summaryCanceled() throws Exception {
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
+                anyString())).thenReturn(true);
+
+        // Post grouped notifications
+        final String originalGroupName = "originalGroup";
+        final int summaryId = 0;
+        final NotificationRecord r1 = generateNotificationRecord(mTestNotificationChannel,
+                summaryId + 1, originalGroupName, false);
+        mService.addNotification(r1);
+        final NotificationRecord r2 = generateNotificationRecord(mTestNotificationChannel,
+                summaryId + 2, originalGroupName, false);
+        mService.addNotification(r2);
+        final NotificationRecord summary = generateNotificationRecord(mTestNotificationChannel,
+                summaryId, originalGroupName, true);
+        PendingIntent summaryDeleteIntent = PendingIntent.getActivity(mContext, 1,
+                new Intent(), PendingIntent.FLAG_IMMUTABLE);
+        summary.getNotification().deleteIntent = summaryDeleteIntent;
+        mService.addNotification(summary);
+        final String originalGroupKey = summary.getGroupKey();
+        assertThat(mService.mSummaryByGroupKey).containsEntry(originalGroupKey, summary);
+
+        doAnswer(invocationOnMock -> {
+            RankingReconsideration recon =
+                    ((RankingReconsideration) invocationOnMock.getArguments()[0]);
+            final NotificationRecord r = mService.mNotificationsByKey.get(recon.getKey());
+            if (r != null) {
+                recon.applyChangesLocked(r);
+            }
+            return null;
+        }).when(mRankingHandler).requestReconsideration(any());
+
+        // Classify a child notification into the NEWS bundle
+        final String keyToUnbundle = r1.getKey();
+        final boolean hasOriginalSummary = true;
+        Bundle signals = new Bundle();
+        signals.putInt(Adjustment.KEY_TYPE, Adjustment.TYPE_NEWS);
+        Adjustment adjustment = new Adjustment(r1.getSbn().getPackageName(), r1.getKey(), signals,
+                "", r1.getUser().getIdentifier());
+        mBinderService.applyAdjustmentFromAssistant(null, adjustment);
+        mService.handleRankingSort();
+        waitForIdle();
+
+        // Check that the notification was bundled and a group summary was created
+        assertThat(mService.mSummaryByGroupKey).hasSize(2);
+        assertThat(r1.getChannel().getId()).isEqualTo(NEWS_ID);
+        assertThat(r1.getBundleType()).isEqualTo(Adjustment.TYPE_NEWS);
+        assertThat(r1.getGroupKey()).isNotEqualTo(originalGroupKey);
+        final NotificationRecord bundleSummary = mService.mSummaryByGroupKey.get(r1.getGroupKey());
+        assertThat(bundleSummary).isNotNull();
+        assertThat(GroupHelper.isAggregatedGroup(bundleSummary)).isTrue();
+
+        // Cancel unbundled child notification
+        mBinderService.cancelNotificationWithTag(r2.getSbn().getPackageName(),
+                r2.getSbn().getPackageName(), r2.getSbn().getTag(),
+                r2.getSbn().getId(), r2.getSbn().getUserId());
+        waitForIdle();
+
+        mTestableLooper.moveTimeForward(DELAY_FORCE_REGROUP_TIME);
+        waitForIdle();
+
+        // Check that the summary was canceled
+        verify(mGroupHelper, times(1)).onNotificationRemoved(eq(r2), any(), eq(false));
+        verify(mGroupHelper, times(1)).onGroupedNotificationRemovedWithDelay(eq(summary), any(),
+                any());
+        verify(mGroupHelper, times(1)).onNotificationRemoved(eq(summary), any(), eq(false));
+        assertThat(mService.mSummaryByGroupKey).doesNotContainKey(originalGroupKey);
+
+        // Cancel the remaining (bundled) child notification
+        final NotificationVisibility nv = NotificationVisibility.obtain(r1.getKey(), 1, 2, true);
+        mService.mNotificationDelegate.onNotificationClear(mUid, 0, r1.getSbn().getPackageName(),
+                r1.getUserId(), r1.getKey(), NotificationStats.DISMISSAL_SHADE,
+                NotificationStats.DISMISS_SENTIMENT_POSITIVE, nv, false);
+        waitForIdle();
+
+        // Check that the original summary delete intent was triggered
+        verify(mGroupHelper, times(1)).onNotificationRemoved(eq(r1), any(), eq(true));
+
+        // Check that all notifications were canceled
+        assertThat(mService.mNotificationList).isEmpty();
     }
 
     @Test

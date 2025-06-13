@@ -872,7 +872,7 @@ public class GroupHelper {
     }
 
     @GuardedBy("mAggregatedNotifications")
-    private void addToUngroupedAndMaybeAggregate(NotificationRecord record,
+    private boolean addToUngroupedAndMaybeAggregate(NotificationRecord record,
             FullyQualifiedGroupKey fullAggregateGroupKey, NotificationSectioner sectioner) {
         ArrayMap<String, NotificationAttributes> ungrouped =
                 mUngroupedAbuseNotifications.getOrDefault(fullAggregateGroupKey,
@@ -901,7 +901,9 @@ public class GroupHelper {
             }
             aggregateUngroupedNotifications(fullAggregateGroupKey, record.getKey(),
                     ungrouped, hasSummary, sectioner.mSummaryId);
+            return true;
         }
+        return false;
     }
 
     private static boolean isGroupChildBundled(final NotificationRecord record,
@@ -1099,7 +1101,18 @@ public class GroupHelper {
                 if (DEBUG) {
                     Slog.i(TAG, "isGroupSummaryWithoutChild " + summaryRecord);
                 }
-                addToUngroupedAndMaybeAggregate(summaryRecord, fullAggregateGroupKey, sectioner);
+                boolean aggregated = addToUngroupedAndMaybeAggregate(summaryRecord,
+                        fullAggregateGroupKey, sectioner);
+                if (!aggregated) {
+                    // Cancel the summary and cache it if does not get aggregated
+                    // in order to avoid empty summaries
+                    if (DEBUG) {
+                        Slog.i(TAG,
+                                "Empty group summary to be canceled and cached: " + summaryRecord);
+                    }
+                    mCallback.removeAppProvidedSummary(summaryRecord.getKey());
+                    cacheCanceledSummary(summaryRecord);
+                }
                 return;
             }
 
