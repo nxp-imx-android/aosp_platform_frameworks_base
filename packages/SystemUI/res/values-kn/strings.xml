@@ -138,6 +138,10 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"ನೀವು ಪ್ರಸ್ತುತ ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡುತ್ತಿದ್ದೀರಿ"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"ನೀವು ಪ್ರಸ್ತುತ <xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡುತ್ತಿದ್ದೀರಿ"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ"</string>
+    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ಕಂಟೆಂಟ್‌ ಅನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ಸ್ಕ್ರೀನ್ ಹಂಚಿಕೊಳ್ಳುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಬೇಕೆ?"</string>
@@ -207,9 +211,29 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"ಮತ್ತೊಂದು ರೀತಿಯಲ್ಲಿ ದೃಢೀಕರಿಸಿ"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಅನ್ನು ನಿರ್ವಹಿಸಿ"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಆನ್ ಆಗಿರುವುದರಿಂದ ಮತ್ತು ಬಯೋಮೆಟ್ರಿಕ್ ಅಗತ್ಯವಿರುವುದರಿಂದ ದೃಢೀಕರಣಕ್ಕಾಗಿ ಪಿನ್ ಅನ್ನು ಬಳಸಲಾಗುವುದಿಲ್ಲ. ಐಡೆಂಟಿಟಿ ಚೆಕ್ ಕುರಿತು ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ"</string>
+    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"ಪಿನ್ ಬಳಸಿ"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ಪ್ಯಾಟರ್ನ್ ಬಳಸಿ"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"ಪಾಸ್‌ವರ್ಡ್ ಬಳಸಿ"</string>
+    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
+    <skip />
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"ತಪ್ಪಾದ ಪಿನ್‌"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"ಪ್ಯಾಟರ್ನ್ ತಪ್ಪಾಗಿದೆ"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"ಪಾಸ್‌ವರ್ಡ್ ತಪ್ಪಾಗಿದೆ"</string>
@@ -300,12 +324,9 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"ಕಡಿಮೆ ಸಮಯ."</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"ಸ್ಕ್ರೀನ್ ಪ್ರಸಾರವನ್ನು ನಿಲ್ಲಿಸಲಾಗಿದೆ."</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"ಹೊಳಪನ್ನು ಪ್ರದರ್ಶಿಸಿ"</string>
-    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
-    <skip />
-    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
-    <skip />
-    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
-    <skip />
+    <string name="accessibility_camera_in_use" msgid="1090160655874262911">"ಕ್ಯಾಮರಾ ಬಳಕೆಯಲ್ಲಿದೆ"</string>
+    <string name="accessibility_microphone_in_use" msgid="1921058214238108340">"ಮೈಕ್ರೊಫೋನ್ ಬಳಕೆಯಲ್ಲಿದೆ"</string>
+    <string name="accessibility_camera_and_microphone_in_use" msgid="1250516397875447442">"ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೊಫೋನ್ ಬಳಕೆಯಲ್ಲಿದೆ"</string>
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"ಮೊಬೈಲ್ ಡೇಟಾವನ್ನು ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"ಡೇಟಾ ವಿರಾಮಗೊಳಿಸಲಾಗಿದೆ"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"ಡೇಟಾ ಬಳಕೆಯು ನೀವು ಹೊಂದಿಸಿರುವ ಮಿತಿಯನ್ನು ತಲುಪಿದೆ. ಹೀಗಾಗಿ ನೀವು ಈಗ ಮೊಬೈಲ್ ಡೇಟಾ ಬಳಸುತ್ತಿಲ್ಲ.\n\nನೀವು ಮುಂದುವರಿದರೆ, ಡೇಟಾ ಬಳಕೆಗೆ ಶುಲ್ಕ ತೆರಬೇಕಾಗಬಹುದು."</string>
@@ -655,8 +676,7 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"ಆಫ್ ಮಾಡಿ"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ಹಳೆಯ ಅಧಿಸೂಚನೆಗಳನ್ನು ನೋಡಲು ಅನ್‌ಲಾಕ್ ಮಾಡಿ"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"ಈ ಸಾಧನವನ್ನು ನಿಮ್ಮ ಪೋಷಕರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ"</string>
-    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
-    <skip />
+    <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"ಕೆಲವು ಸಾಧನ ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಪಿನ್ ಮೂಲಕ ಸಂರಕ್ಷಿತವಾಗಿವೆ."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"ನಿಮ್ಮ ಸಂಸ್ಥೆಯು ಈ ಸಾಧನದ ಮಾಲೀಕತ್ವವನ್ನು ಹೊಂದಿದೆ ಮತ್ತು ಅದು ನೆಟ್‌ವರ್ಕ್ ಟ್ರಾಫಿಕ್‌ನ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದು"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> ಈ ಸಾಧನದ ಮಾಲೀಕತ್ವವನ್ನು ಹೊಂದಿದೆ ಮತ್ತು ಅದು ನೆಟ್‌ವರ್ಕ್ ಟ್ರಾಫಿಕ್‌ನ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದು"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"ಈ ಸಾಧನವನ್ನು <xliff:g id="ORGANIZATION_NAME">%s</xliff:g> ಒದಗಿಸಿದ್ದಾರೆ"</string>
@@ -697,8 +717,7 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"ಈ ಸಾಧನವನ್ನು ನಿಮ್ಮ ಪೋಷಕರು ನಿರ್ವಹಿಸುತ್ತಿದ್ದಾರೆ. ನೀವು ಬಳಸುವ ಆ್ಯಪ್‌ಗಳು, ನಿಮ್ಮ ಸ್ಥಳ ಮತ್ತು ನಿಮ್ಮ ವೀಕ್ಷಣಾ ಅವಧಿಯಂತಹ ಮಾಹಿತಿಯನ್ನು ನಿಮ್ಮ ಪೋಷಕರು ನೋಡಬಹುದು ಮತ್ತು ನಿರ್ವಹಿಸಬಹುದು."</string>
-    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
-    <skip />
+    <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿನ ಕೆಲವು ನಿಯಂತ್ರಣಗಳು, ಉದಾಹರಣೆಗೆ ದೈನಂದಿನ ಮಿತಿಗಳು ಮತ್ತು ಡೌನ್‌ಟೈಮ್, ಪಿನ್ ಮೂಲಕ ಮಾತ್ರ ಬದಲಾಯಿಸಬಹುದು."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"TrustAgent ನಿಂದ ಅನ್‌ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"ಹಲವಾರು ದೃಢೀಕರಣ ಪ್ರಯತ್ನಗಳನ್ನು ಮಾಡಿರುವ ಕಾರಣ ಸಾಧನವನ್ನು ಲಾಕ್ ಮಾಡಲಾಗಿದೆ"</string>
@@ -802,8 +821,7 @@
     <string name="status_bar_work" msgid="5238641949837091056">"ಕೆಲಸದ ಪ್ರೊಫೈಲ್"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"ಏರ್‌ಪ್ಲೇನ್ ಮೋಡ್"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"ಪೋಷಕ ನಿಯಂತ್ರಣಗಳು"</string>
-    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
-    <skip />
+    <string name="status_bar_pin_supervision" msgid="4376576498566645782">"ಕೆಲವು ಸಾಧನ ನಿಯಂತ್ರಣಗಳಿಗೆ ಪಿನ್ ರಕ್ಷಣೆ"</string>
     <string name="zen_alarm_warning" msgid="7844303238486849503">"ನಿಮ್ಮ ಮುಂದಿನ <xliff:g id="WHEN">%1$s</xliff:g> ಅಲಾರಮ್ ಅನ್ನು ನೀವು ಆಲಿಸುವುದಿಲ್ಲ"</string>
     <string name="alarm_template" msgid="2234991538018805736">"<xliff:g id="WHEN">%1$s</xliff:g> ರಲ್ಲಿ"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"<xliff:g id="WHEN">%1$s</xliff:g> ರಂದು"</string>
@@ -814,8 +832,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"ಸ್ಯಾಟಲೈಟ್, ಕನೆಕ್ಷನ್ ಲಭ್ಯವಿದೆ"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"ಸ್ಯಾಟಲೈಟ್ SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"ತುರ್ತು ಕರೆಗಳು ಅಥವಾ SOS ಮಾತ್ರ"</string>
-    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
-    <skip />
+    <string name="satellite_network_title_text" msgid="4825315858295910999">"ಸ್ಯಾಟಲೈಟ್ ನೆಟ್‌ವರ್ಕ್"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"ಸಿಗ್ನಲ್ ಇಲ್ಲ"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"ಒಂದು ಬಾರ್"</string>
@@ -997,6 +1014,8 @@
     <string name="battery" msgid="769686279459897127">"ಬ್ಯಾಟರಿ"</string>
     <string name="headset" msgid="4485892374984466437">"ಹೆಡ್‌ಸೆಟ್"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"ಸೆಟ್ಟಿಂಗ್‍ಗಳನ್ನು ತೆರೆಯಿರಿ"</string>
+    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
+    <skip />
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"ಹೆಡ್‌ಫೋನ್ ಸಂಪರ್ಕಪಡಿಸಲಾಗಿದೆ"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"ಹೆಡ್‌ಸೆಟ್ ಸಂಪರ್ಕಪಡಿಸಲಾಗಿದೆ"</string>
     <string name="data_saver" msgid="3484013368530820763">"ಡೇಟಾ ಸೇವರ್"</string>
@@ -1317,6 +1336,8 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"ಔಟ್‌ಪುಟ್"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ಮೀಡಿಯಾವನ್ನು ಮತ್ತೊಂದು ಸಾಧನಕ್ಕೆ ಸರಿಸಲು ನಿಮ್ಮ ಹಂಚಿಕೊಂಡ ಸೆಶನ್ ಅನ್ನು ನಿಲ್ಲಿಸಿ"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"ನಿಲ್ಲಿಸಿ"</string>
+    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
+    <skip />
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"ಪ್ರಸಾರವು ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"ಪ್ರಸಾರ"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"ಹೊಂದಾಣಿಕೆಯಾಗುವ ಬ್ಲೂಟೂತ್ ಸಾಧನಗಳನ್ನು ಹೊಂದಿರುವ ಸಮೀಪದಲ್ಲಿರುವ ಜನರು ನೀವು ಪ್ರಸಾರ ಮಾಡುತ್ತಿರುವ ಮಾಧ್ಯಮವನ್ನು ಆಲಿಸಬಹುದು"</string>
@@ -1503,7 +1524,8 @@
     <string name="mirror_display" msgid="2515262008898122928">"ಮಿರರ್ ಡಿಸ್‌ಪ್ಲೇ"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"ವಜಾಗೊಳಿಸಿ"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ಡಿಸ್‌ಪ್ಲೇ ಕನೆಕ್ಟ್ ಆಗಿದೆ"</string>
-    <string name="privacy_dialog_title" msgid="7839968133469098311">"ಮೈಕ್ರೊಫೋನ್ ಮತ್ತು ಕ್ಯಾಮರಾ"</string>
+    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
+    <skip />
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"ಇತ್ತೀಚಿನ ಆ್ಯಪ್ ಬಳಕೆ"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"ಇತ್ತೀಚಿನ ಆ್ಯಕ್ಸೆಸ್ ಅನ್ನು ನೋಡಿ"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"ಮುಗಿದಿದೆ"</string>

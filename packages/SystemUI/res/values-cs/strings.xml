@@ -138,6 +138,10 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Momentálně nahráváte celou obrazovku"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Momentálně nahráváte aplikaci <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Ukončit nahrávání"</string>
+    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Sdílení obrazovky"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Sdílení obsahu"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Ukončit sdílení obrazovky?"</string>
@@ -207,9 +211,29 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Ověřit jiným způsobem"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Správa ověření totožnosti"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"K ověření nelze použít PIN, protože je zapnuté ověření totožnosti, které vyžaduje biometrické údaje. Další informace o ověření totožnosti"</string>
+    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Použít kód PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Použít gesto"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Použít heslo"</string>
+    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
+    <skip />
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"Nesprávný kód PIN"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"Nesprávné gesto"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"Nesprávné heslo"</string>
@@ -302,12 +326,9 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"Kratší doba"</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"Odesílání obrazovky zastaveno."</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"Jas displeje"</string>
-    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
-    <skip />
-    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
-    <skip />
-    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
-    <skip />
+    <string name="accessibility_camera_in_use" msgid="1090160655874262911">"Používá se fotoaparát"</string>
+    <string name="accessibility_microphone_in_use" msgid="1921058214238108340">"Používá se mikrofon"</string>
+    <string name="accessibility_camera_and_microphone_in_use" msgid="1250516397875447442">"Používá se fotoaparát a mikrofon"</string>
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"Mobilní data byla pozastavena"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"Data jsou pozastavena"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"Byl dosažen limit dat. Mobilní datové připojení již nepoužíváte.\n\nPokud jej obnovíte, mohou vám být účtovány poplatky za využití dat."</string>
@@ -999,6 +1020,8 @@
     <string name="battery" msgid="769686279459897127">"Baterie"</string>
     <string name="headset" msgid="4485892374984466437">"Sluchátka"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"Otevřít nastavení"</string>
+    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
+    <skip />
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"Sluchátka připojena"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"Sluchátka připojena"</string>
     <string name="data_saver" msgid="3484013368530820763">"Spořič dat"</string>
@@ -1319,6 +1342,8 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"Výstup"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Ukončí sdílenou relaci a bude možné přesunout médium do jiného zařízení"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Zastavit"</string>
+    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
+    <skip />
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Jak vysílání funguje"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"Vysílání"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Lidé ve vašem okolí s kompatibilními zařízeními Bluetooth mohou poslouchat média, která vysíláte"</string>
@@ -1505,7 +1530,8 @@
     <string name="mirror_display" msgid="2515262008898122928">"Zrcadlit displej"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Zavřít"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Displej připojen"</string>
-    <string name="privacy_dialog_title" msgid="7839968133469098311">"Mikrofon a fotoaparát"</string>
+    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
+    <skip />
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Nedávné použití aplikacemi"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Zobrazit nedávný přístup"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Hotovo"</string>

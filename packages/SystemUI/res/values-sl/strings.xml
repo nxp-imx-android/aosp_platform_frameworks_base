@@ -138,6 +138,10 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Trenutno snemate celotni zaslon"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Trenutno snemate aplikacijo <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Ustavi snemanje"</string>
+    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Deljenje zaslona"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Deljenje vsebine"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Želite ustaviti deljenje zaslona?"</string>
@@ -207,9 +211,29 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Preveri na drugačen način"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Upravljanje preverjanja identitete"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"Kode PIN ni mogoče uporabiti za preverjanje, ker je vklopljeno preverjanje identitete, ki zahteva biometrične podatke. Preberite več o preverjanju identitete."</string>
+    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Uporabi kodo PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Uporabi vzorec"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Uporabi geslo"</string>
+    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
+    <skip />
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"Napačna koda PIN"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"Napačen vzorec"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"Napačno geslo"</string>
@@ -300,12 +324,9 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"Krajši čas."</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"Predvajanje zaslona je ustavljeno."</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"Svetlost zaslona"</string>
-    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
-    <skip />
-    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
-    <skip />
-    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
-    <skip />
+    <string name="accessibility_camera_in_use" msgid="1090160655874262911">"Fotoaparat je v uporabi"</string>
+    <string name="accessibility_microphone_in_use" msgid="1921058214238108340">"Mikrofon je v uporabi"</string>
+    <string name="accessibility_camera_and_microphone_in_use" msgid="1250516397875447442">"Fotoaparat in mikrofon sta v uporabi"</string>
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"Prenos podatkov v mobil. omrežju je zaustavljen"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"Prenos podatkov je zaustavljen"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"Dosegli ste nastavljeno omejitev porabe podatkov. Prenosa podatkov v mobilnem omrežju ne uporabljate več.\n\nČe nadaljujete, lahko nastanejo stroški prenosa podatkov."</string>
@@ -997,6 +1018,8 @@
     <string name="battery" msgid="769686279459897127">"Baterija"</string>
     <string name="headset" msgid="4485892374984466437">"Slušalke z mikrofonom"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"Odpri nastavitve"</string>
+    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
+    <skip />
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"Slušalke priključene"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"Slušalke z mikrofonom priključene"</string>
     <string name="data_saver" msgid="3484013368530820763">"Varčevanje s podatki"</string>
@@ -1317,6 +1340,8 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"Izhod"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Ustavi deljeno sejo za premik predstavnosti v drugo napravo."</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Ustavi"</string>
+    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
+    <skip />
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Kako deluje oddajanje"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"Oddajanje"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Osebe v bližini z združljivo napravo Bluetooth lahko poslušajo predstavnost, ki jo oddajate."</string>
@@ -1503,7 +1528,8 @@
     <string name="mirror_display" msgid="2515262008898122928">"Zrcali zaslon"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Opusti"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Zaslon je povezan"</string>
-    <string name="privacy_dialog_title" msgid="7839968133469098311">"Mikrofon in fotoaparat"</string>
+    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
+    <skip />
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Nedavna uporaba v aplikacijah"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Ogled nedavnih dostopov"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Končano"</string>
