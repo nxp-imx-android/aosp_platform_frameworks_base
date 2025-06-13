@@ -36,6 +36,7 @@ android_test {
         "mockito-target-extended-minus-junit4",
         "services.core",
         "services.net",
+        "platform-parametric-runner-lib-no-robo",
         "truth",
     ] + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": [
