@@ -250,8 +250,8 @@ import com.android.internal.util.FastPrintWriter;
 import com.android.internal.util.Preconditions;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.org.conscrypt.TrustedCertificateStore;
-import com.android.server.am.MemInfoDumpProto;
 import com.android.server.am.BitmapDumpProto;
+import com.android.server.am.MemInfoDumpProto;
 
 import dalvik.annotation.optimization.NeverCompile;
 import dalvik.system.AppSpecializationHooks;
@@ -1141,6 +1141,7 @@ public final class ActivityThread extends ClientTransactionHandler
         private static final String DB_POOL_INFO_HEADER = "  %13s %13s %13s  %s";
         private static final String DB_POOL_INFO_FORMAT = "  %13d %13d %13d  %s";
 
+        @Override
         public final void scheduleReceiver(Intent intent, ActivityInfo info,
                 CompatibilityInfo compatInfo, int resultCode, String data, Bundle extras,
                 boolean ordered, boolean assumeDelivered, int sendingUser, int processState,
@@ -1156,6 +1157,7 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.RECEIVER, r);
         }
 
+        @Override
         public final void scheduleReceiverList(List<ReceiverInfo> info) throws RemoteException {
             for (int i = 0; i < info.size(); i++) {
                 ReceiverInfo r = info.get(i);
@@ -1173,6 +1175,7 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public final void scheduleCreateBackupAgent(ApplicationInfo app,
                 int backupMode, int userId, @BackupDestination int backupDestination) {
             CreateBackupAgentData d = new CreateBackupAgentData();
@@ -1184,6 +1187,7 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.CREATE_BACKUP_AGENT, d);
         }
 
+        @Override
         public final void scheduleDestroyBackupAgent(ApplicationInfo app, int userId) {
             CreateBackupAgentData d = new CreateBackupAgentData();
             d.appInfo = app;
@@ -1192,6 +1196,7 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.DESTROY_BACKUP_AGENT, d);
         }
 
+        @Override
         public final void scheduleCreateService(IBinder token,
                 ServiceInfo info, CompatibilityInfo compatInfo, int processState) {
             updateProcessState(processState, false);
@@ -1209,6 +1214,7 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.CREATE_SERVICE, s);
         }
 
+        @Override
         public final void scheduleBindService(IBinder token, IBinder bindToken, Intent intent,
                 boolean rebind, int processState, long bindSeq) {
             updateProcessState(processState, false);
@@ -1234,6 +1240,7 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.BIND_SERVICE, s);
         }
 
+        @Override
         public final void scheduleUnbindService(IBinder token, IBinder bindToken, Intent intent) {
             BindServiceData s = new BindServiceData();
             s.token = token;
@@ -1248,6 +1255,7 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.UNBIND_SERVICE, s);
         }
 
+        @Override
         public final void scheduleServiceArgs(IBinder token, ParceledListSlice args) {
             List<ServiceStartArgs> list = args.getList();
 
@@ -1271,6 +1279,7 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public final void scheduleStopService(IBinder token) {
             if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
                 Trace.instant(Trace.TRACE_TAG_ACTIVITY_MANAGER, "scheduleStopService. token="
@@ -1431,6 +1440,7 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public final void runIsolatedEntryPoint(String entryPoint, String[] entryPointArgs) {
             SomeArgs args = SomeArgs.obtain();
             args.arg1 = entryPoint;
@@ -1438,14 +1448,17 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.RUN_ISOLATED_ENTRY_POINT, args);
         }
 
+        @Override
         public final void scheduleExit() {
             sendMessage(H.EXIT_APPLICATION, null);
         }
 
+        @Override
         public final void scheduleSuicide() {
             sendMessage(H.SUICIDE, null);
         }
 
+        @Override
         public void scheduleApplicationInfoChanged(ApplicationInfo ai) {
             synchronized (mResourcesManager) {
                 var oldAi = mPendingAppInfoUpdates.put(ai.packageName, ai);
@@ -1462,10 +1475,12 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.APPLICATION_INFO_CHANGED, ai.packageName);
         }
 
+        @Override
         public void updateTimeZone() {
             TimeZone.setDefault(null);
         }
 
+        @Override
         public void clearDnsCache() {
             // a non-standard API to get this to libcore
             InetAddress.clearDnsCache();
@@ -1474,6 +1489,7 @@ public final class ActivityThread extends ClientTransactionHandler
             NetworkEventDispatcher.getInstance().dispatchNetworkConfigurationChange();
         }
 
+        @Override
         public void updateHttpProxy() {
             final Application app;
             synchronized (ActivityThread.this) {
@@ -1489,11 +1505,13 @@ public final class ActivityThread extends ClientTransactionHandler
             ActivityThread.updateHttpProxy(app);
         }
 
+        @Override
         public void processInBackground() {
             mH.removeMessages(H.GC_WHEN_IDLE);
             mH.sendMessage(mH.obtainMessage(H.GC_WHEN_IDLE));
         }
 
+        @Override
         public void dumpService(ParcelFileDescriptor pfd, IBinder servicetoken, String[] args) {
             DumpComponentInfo data = new DumpComponentInfo();
             try {
@@ -1511,6 +1529,7 @@ public final class ActivityThread extends ClientTransactionHandler
         // This function exists to make sure all receiver dispatching is
         // correctly ordered, since these are one-way calls and the binder driver
         // applies transaction ordering per object for such calls.
+        @Override
         public void scheduleRegisteredReceiver(IIntentReceiver receiver, Intent intent,
                 int resultCode, String dataStr, Bundle extras, boolean ordered,
                 boolean sticky, boolean assumeDelivered, int sendingUser, int processState,
@@ -1575,14 +1594,17 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.DUMP_HEAP, dhd, 0, 0, true /*async*/);
         }
 
+        @Override
         public void attachAgent(String agent) {
             sendMessage(H.ATTACH_AGENT, agent);
         }
 
+        @Override
         public void attachStartupAgents(String dataDir) {
             sendMessage(H.ATTACH_STARTUP_AGENTS, dataDir);
         }
 
+        @Override
         public void setSchedulingGroup(int group) {
             // Note: do this immediately, since going into the foreground
             // should happen regardless of what pending work we have to do
@@ -1595,6 +1617,7 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public void dispatchPackageBroadcast(int cmd, String[] packages) {
             sendMessage(H.DISPATCH_PACKAGE_BROADCAST, packages, cmd);
         }
@@ -1621,6 +1644,7 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public void dumpActivity(ParcelFileDescriptor pfd, IBinder activitytoken,
                 String prefix, String[] args) {
             DumpComponentInfo data = new DumpComponentInfo();
@@ -1637,6 +1661,7 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public void dumpProvider(ParcelFileDescriptor pfd, IBinder providertoken,
                 String[] args) {
             DumpComponentInfo data = new DumpComponentInfo();
@@ -2091,10 +2116,12 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.REQUEST_ASSIST_CONTEXT_EXTRAS, cmd);
         }
 
+        @Override
         public void setCoreSettings(Bundle coreSettings) {
             sendMessage(H.SET_CORE_SETTINGS, coreSettings);
         }
 
+        @Override
         public void updatePackageCompatibilityInfo(String pkg, CompatibilityInfo info) {
             UpdateCompatibilityData ucd = new UpdateCompatibilityData();
             ucd.pkg = pkg;
@@ -2104,6 +2131,7 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.UPDATE_PACKAGE_COMPATIBILITY_INFO, ucd);
         }
 
+        @Override
         public void scheduleTrimMemory(int level) {
             final Runnable r = PooledLambda.obtainRunnable(ActivityThread::handleTrimMemory,
                     ActivityThread.this, level).recycleOnUse();
@@ -2116,15 +2144,18 @@ public final class ActivityThread extends ClientTransactionHandler
             }
         }
 
+        @Override
         public void scheduleTranslucentConversionComplete(IBinder token, boolean drawComplete) {
             sendMessage(H.TRANSLUCENT_CONVERSION_COMPLETE, token, drawComplete ? 1 : 0);
         }
 
+        @Override
         public void scheduleOnNewSceneTransitionInfo(IBinder token, SceneTransitionInfo info) {
             sendMessage(H.ON_NEW_SCENE_TRANSITION_INFO,
                     new Pair<IBinder, SceneTransitionInfo>(token, info));
         }
 
+        @Override
         public void setProcessState(int state) {
             updateProcessState(state, true);
         }
@@ -2541,6 +2572,7 @@ public final class ActivityThread extends ClientTransactionHandler
             }
             return Integer.toString(code);
         }
+        @Override
         public void handleMessage(Message msg) {
             if (DEBUG_MESSAGES) Slog.v(TAG, ">>> handling: " + codeToString(msg.what));
             long debugStoreId = -1;
@@ -3991,6 +4023,7 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage
+    @Override
     public final Activity getActivity(IBinder token) {
         final ActivityClientRecord activityRecord = mActivities.get(token);
         return activityRecord != null ? activityRecord.activity : null;
@@ -4117,6 +4150,7 @@ public final class ActivityThread extends ClientTransactionHandler
         return mTransactionExecutor;
     }
 
+    @Override
     void sendMessage(int what, Object obj) {
         sendMessage(what, obj, 0, 0, false);
     }
