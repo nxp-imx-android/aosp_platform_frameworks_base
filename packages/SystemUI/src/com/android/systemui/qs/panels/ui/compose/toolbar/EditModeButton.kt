@@ -68,7 +68,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupPositionProvider
 import com.android.systemui.Flags
-import com.android.systemui.qs.panels.ui.compose.icons.Edit
+import com.android.systemui.common.ui.icons.Edit
 import com.android.systemui.qs.panels.ui.compose.toolbar.EditModeButtonDefaults.SpacingBetweenTooltipAndAnchor
 import com.android.systemui.qs.panels.ui.compose.toolbar.EditModeButtonDefaults.TooltipHeight
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.EditModeButtonViewModel

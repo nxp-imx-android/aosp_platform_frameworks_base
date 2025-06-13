@@ -51,6 +51,7 @@ import com.android.systemui.qs.panels.ui.viewmodel.EditModeTabViewModel
 @Composable
 fun EditModeTabs(
     viewModel: EditModeTabViewModel,
+    enabled: Boolean,
     modifier: Modifier = Modifier,
     onTabChanged: () -> Unit = {},
 ) {
@@ -58,7 +59,7 @@ fun EditModeTabs(
     val selectedButtonColor = LocalAndroidColorScheme.current.surfaceEffect2
     HorizontalFloatingToolbar(
         modifier = modifier.height(60.dp),
-        expanded = true,
+        expanded = false,
         contentPadding = PaddingValues(horizontal = 7.dp, vertical = 8.dp),
         colors =
             FloatingToolbarDefaults.standardFloatingToolbarColors(
@@ -73,7 +74,7 @@ fun EditModeTabs(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier =
                     Modifier.fillMaxHeight()
-                        .clickable {
+                        .clickable(enabled = enabled) {
                             if (!isSelected.currentState) {
                                 onTabChanged()
                             }
