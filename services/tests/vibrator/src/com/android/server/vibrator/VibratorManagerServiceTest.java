@@ -387,7 +387,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    public void createService_initializesNativeManagerServiceAndVibrators() {
+    public void createService_initializesHals() {
         mockVibrators(1, 2);
         createService();
         assertThat(mHalVibratorManagerHelper.getConnectCount()).isEqualTo(1);
@@ -412,8 +412,8 @@ public class VibratorManagerServiceTest {
     @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void createService_resetsVibratorManager() {
         mockVibrators(1, 2);
-
         createService();
+
         assertThat(mHalVibratorManagerHelper.getCancelSyncedCount()).isEqualTo(1);
         assertThat(mHalVibratorManagerHelper.getClearSessionsCount()).isEqualTo(1);
     }
@@ -1518,7 +1518,8 @@ public class VibratorManagerServiceTest {
 
     @Test
     public void vibrate_withTriggerCallback_finishesVibration() throws Exception {
-        mockCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_PREPARE_COMPOSE);
+        mockCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_TRIGGER_CALLBACK,
+                IVibratorManager.CAP_PREPARE_COMPOSE);
         mockVibrators(1, 2);
         mVibratorHelpers.get(1).setCapabilities(IVibrator.CAP_COMPOSE_EFFECTS);
         mVibratorHelpers.get(1).setSupportedPrimitives(PRIMITIVE_CLICK);
@@ -1528,15 +1529,16 @@ public class VibratorManagerServiceTest {
         setUserSetting(Settings.System.ALARM_VIBRATION_INTENSITY,
                 mVibrator.getDefaultVibrationIntensity(VibrationAttributes.USAGE_ALARM));
         VibratorManagerService service = createSystemReadyService();
-        // The native callback will be dispatched manually in this test.
-        mTestLooper.stopAutoDispatchAndIgnoreExceptions();
 
         VibrationEffect composed = VibrationEffect.startComposition()
                 .addPrimitive(PRIMITIVE_CLICK, 1, 100)
                 .compose();
         CombinedVibration effect = CombinedVibration.createParallel(composed);
 
-        vibrateAndWaitUntilFinished(service, effect, ALARM_ATTRS);
+        vibrate(service, effect, ALARM_ATTRS);
+        waitUntil(s -> mHalVibratorManagerHelper.getTriggerSyncedCount() > 0, service,
+                TEST_TIMEOUT_MILLIS);
+        mHalVibratorManagerHelper.endLastSyncedVibration();
 
         PrimitiveSegment expected = new PrimitiveSegment(
                 VibrationEffect.Composition.PRIMITIVE_CLICK, 1, 100);
@@ -1596,12 +1598,12 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    public void vibrate_withMultipleVibratorsPrepareFailed_skipTrigger() throws Exception {
+    public void vibrate_withMultipleVibratorsPrepareFailed_skipTriggerAndCancel() throws Exception {
         mockCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_PREPARE_ON);
         mockVibrators(1, 2);
         mHalVibratorManagerHelper.setPrepareSyncedToFail();
         VibratorManagerService service = createSystemReadyService();
-        assertThat(mHalVibratorManagerHelper.getCancelSyncedCount()).isEqualTo(1);
+        int cancelCount = mHalVibratorManagerHelper.getCancelSyncedCount();
 
         CombinedVibration effect = CombinedVibration.startParallel()
                 .addVibrator(1, VibrationEffect.createOneShot(10, 50))
@@ -1610,7 +1612,7 @@ public class VibratorManagerServiceTest {
         vibrateAndWaitUntilFinished(service, effect, ALARM_ATTRS);
 
         assertThat(mHalVibratorManagerHelper.getTriggerSyncedCount()).isEqualTo(0);
-        assertThat(mHalVibratorManagerHelper.getCancelSyncedCount()).isEqualTo(1); // Not triggered
+        assertThat(mHalVibratorManagerHelper.getCancelSyncedCount()).isEqualTo(cancelCount);
     }
 
     @Test
@@ -1619,16 +1621,17 @@ public class VibratorManagerServiceTest {
         mockVibrators(1, 2);
         mHalVibratorManagerHelper.setTriggerSyncedToFail();
         VibratorManagerService service = createSystemReadyService();
-        assertThat(mHalVibratorManagerHelper.getCancelSyncedCount()).isEqualTo(1);
+        int cancelCount = mHalVibratorManagerHelper.getCancelSyncedCount();
 
         CombinedVibration effect = CombinedVibration.startParallel()
                 .addVibrator(1, VibrationEffect.createOneShot(10, 50))
                 .addVibrator(2, VibrationEffect.createOneShot(10, 100))
                 .combine();
-        vibrateAndWaitUntilFinished(service, effect, ALARM_ATTRS);
+        Vibration vibration = vibrateAndWaitUntilFinished(service, effect, ALARM_ATTRS);
 
+        assertThat(vibration.getStatus()).isEqualTo(Status.FINISHED);
         assertThat(mHalVibratorManagerHelper.getPrepareSyncedCount()).isEqualTo(1);
-        assertThat(mHalVibratorManagerHelper.getCancelSyncedCount()).isEqualTo(2); // Triggered
+        assertThat(mHalVibratorManagerHelper.getCancelSyncedCount()).isEqualTo(cancelCount + 1);
     }
 
     @Test
@@ -3165,7 +3168,7 @@ public class VibratorManagerServiceTest {
         verify(callback).onStarted(any(IVibrationSession.class));
 
         // Mock HAL ending session unexpectedly.
-        mHalVibratorManagerHelper.endSessionAbruptly(session.getSessionId());
+        mHalVibratorManagerHelper.endLastSessionAbruptly();
         mTestLooper.dispatchAll();
 
         assertThat(session.getStatus()).isEqualTo(Status.CANCELLED_BY_UNKNOWN_REASON);
@@ -3296,7 +3299,7 @@ public class VibratorManagerServiceTest {
         ExternalVibrationScale scale =
                 mExternalVibratorService.onExternalVibrationStart(externalVibration);
 
-        VendorVibrationSession session = startSession(service, RINGTONE_ATTRS, callback, 1);
+        startSession(service, RINGTONE_ATTRS, callback, 1);
 
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();

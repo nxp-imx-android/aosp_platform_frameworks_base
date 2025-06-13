@@ -18,6 +18,9 @@ package com.android.server.vibrator;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+
 import android.hardware.vibrator.IVibratorManager;
 import android.os.test.TestLooper;
 import android.os.vibrator.Flags;
@@ -64,7 +67,7 @@ public abstract class HalVibratorManagerTestCase {
     @Test
     @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void init_initializesHalAndClearSyncedAndSessions() {
-        mHelper.setCapabilities(IVibratorManager.CAP_SYNC);
+        mHelper.setCapabilities(IVibratorManager.CAP_SYNC | IVibratorManager.CAP_START_SESSIONS);
         mHelper.setVibratorIds(new int[] {1, 2});
         HalVibratorManager manager = newVibratorManager();
         manager.init(mHalCallbackMock);
@@ -166,6 +169,21 @@ public abstract class HalVibratorManagerTestCase {
     }
 
     @Test
+    public void triggerSynced_triggerCallback_returnsVibrationId() {
+        mHelper.setCapabilities(IVibratorManager.CAP_SYNC | IVibratorManager.CAP_TRIGGER_CALLBACK);
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newInitializedVibratorManager();
+
+        long vibrationId = 1;
+        assertThat(manager.triggerSynced(vibrationId)).isTrue();
+
+        mHelper.endLastSyncedVibration();
+        mTestLooper.dispatchAll();
+
+        verify(mHalCallbackMock).onSyncedVibrationComplete(eq(vibrationId));
+    }
+
+    @Test
     public void cancelSynced_withCapability_returnsTrue() {
         mHelper.setCapabilities(IVibratorManager.CAP_SYNC);
         mHelper.setVibratorIds(new int[] {1, 2, 3});
@@ -230,8 +248,10 @@ public abstract class HalVibratorManagerTestCase {
         mHelper.setVibratorIds(new int[] {1, 2, 3});
         HalVibratorManager manager = newInitializedVibratorManager();
 
-        assertThat(manager.endSession(/* sessionId= */ 1, /* shouldAbort= */ true)).isTrue();
-        assertThat(manager.endSession(/* sessionId= */ 2, /* shouldAbort= */ false)).isTrue();
+        long sessionId = 1;
+        assertThat(manager.startSession(sessionId, new int[] { 1 })).isTrue();
+        assertThat(manager.endSession(sessionId, /* shouldAbort= */ false)).isTrue();
+        assertThat(manager.endSession(sessionId, /* shouldAbort= */ true)).isTrue();
     }
 
     @Test
@@ -241,5 +261,50 @@ public abstract class HalVibratorManagerTestCase {
 
         assertThat(manager.endSession(/* sessionId= */ 1, /* shouldAbort= */ true)).isFalse();
         assertThat(manager.endSession(/* sessionId= */ 2, /* shouldAbort= */ false)).isFalse();
+    }
+
+    @Test
+    public void endSession_returnsSessionId() {
+        mHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newInitializedVibratorManager();
+
+        long sessionId = 1;
+        assertThat(manager.startSession(sessionId, new int[] { 1 })).isTrue();
+
+        manager.endSession(sessionId, /* shouldAbort= */ false);
+        mTestLooper.dispatchAll();
+
+        verify(mHalCallbackMock).onVibrationSessionComplete(eq(sessionId));
+    }
+
+    @Test
+    public void abortSession_returnsSessionId() {
+        mHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newInitializedVibratorManager();
+
+        long sessionId = 1;
+        assertThat(manager.startSession(sessionId, new int[] { 1 })).isTrue();
+
+        manager.endSession(sessionId, /* shouldAbort= */ true);
+        mTestLooper.dispatchAll();
+
+        verify(mHalCallbackMock).onVibrationSessionComplete(eq(sessionId));
+    }
+
+    @Test
+    public void endSessionFromHal_returnsSessionId() {
+        mHelper.setCapabilities(IVibratorManager.CAP_START_SESSIONS);
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newInitializedVibratorManager();
+
+        long sessionId = 1;
+        assertThat(manager.startSession(sessionId, new int[] { 1 })).isTrue();
+
+        mHelper.endLastSessionAbruptly();
+        mTestLooper.dispatchAll();
+
+        verify(mHalCallbackMock).onVibrationSessionComplete(eq(sessionId));
     }
 }
