@@ -16,6 +16,11 @@
 
 package com.android.systemui.ambientcue.ui.compose
 
+import android.os.VibrationEffect
+import android.os.VibrationEffect.Composition.PRIMITIVE_LOW_TICK
+import android.os.VibrationEffect.Composition.PRIMITIVE_THUD
+import android.os.VibrationEffect.Composition.PRIMITIVE_TICK
+import android.os.Vibrator
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -26,6 +31,8 @@ import androidx.compose.foundation.gestures.anchoredDraggable
 import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.gestures.snapping.SnapPosition.End
 import androidx.compose.foundation.gestures.snapping.SnapPosition.Start
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,6 +47,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -50,11 +58,13 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import kotlin.math.abs
 import kotlin.math.max
+import kotlinx.coroutines.flow.drop
 
 @Composable
 fun ActionList(
@@ -142,6 +152,61 @@ fun ActionList(
         anchoredDraggableState.animateTo(if (visible && expanded) End else Start)
     }
 
+    val enterEffect =
+        VibrationEffect.startComposition()
+            .addPrimitive(PRIMITIVE_TICK, 0.5f, 0)
+            .addPrimitive(PRIMITIVE_TICK, 0.75f, 51)
+            .addPrimitive(PRIMITIVE_THUD, 0.5f, 27)
+            .compose()
+
+    val exitEffect =
+        VibrationEffect.startComposition()
+            .addPrimitive(PRIMITIVE_TICK, 0.75f, 0)
+            .addPrimitive(PRIMITIVE_TICK, 0.5f, 46)
+            .addPrimitive(PRIMITIVE_THUD, 0.25f, 68)
+            .compose()
+
+    val dragStopEffect =
+        VibrationEffect.startComposition()
+            .addPrimitive(PRIMITIVE_LOW_TICK, 0.25f, 0)
+            .addPrimitive(PRIMITIVE_THUD, 0.25f, 60)
+            .compose()
+
+    // We can't use LocalHapticFeedback here as we're using a custom vibration effects
+    val vibrator =
+        LocalContext.current.getSystemService(Vibrator::class.java).takeIf {
+            it?.hasVibrator() ?: false
+        }
+
+    LaunchedEffect(anchoredDraggableState.isAnimationRunning) {
+        if (!anchoredDraggableState.isAnimationRunning) return@LaunchedEffect
+        if (anchoredDraggableState.targetValue == anchoredDraggableState.currentValue)
+            return@LaunchedEffect
+
+        // An animation has just started that was *not* caused by a drag
+        // The current and target values should be different
+        // Look at the target value to determine which effect to run
+        when (anchoredDraggableState.targetValue) {
+            Start -> vibrator?.vibrate(enterEffect)
+            End -> vibrator?.vibrate(exitEffect)
+        }
+    }
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isDragged by interactionSource.collectIsDraggedAsState()
+    LaunchedEffect(Unit) {
+        // The user has just released a drag and the anchoredDraggable will animate towards
+        // a settled position. In this case we don't know where the animation will settle towards
+        // because velocity isn't observable - lastVelocity is not the velocity on drag release.
+        // The value of progress is just positional threshold. The value of current, target, and
+        // settledValue again only indicate positional threshold state. We need to run some haptics
+        // here, so just opt for a generic vibration effect that's not a function of the eventual
+        // settled position.
+        snapshotFlow { isDragged }
+            .drop(1) // Use a snapshotFlow to drop the initial value which is always false
+            .collect { isDragged -> if (!isDragged) vibrator?.vibrate(dragStopEffect) }
+    }
+
     Column(
         modifier =
             modifier
@@ -150,6 +215,7 @@ fun ActionList(
                     orientation = Orientation.Vertical,
                     enabled = expanded,
                     overscrollEffect = overscrollEffect,
+                    interactionSource = interactionSource,
                 )
                 .onGloballyPositioned { layoutCoordinates ->
                     containerHeightPx = layoutCoordinates.size.height
