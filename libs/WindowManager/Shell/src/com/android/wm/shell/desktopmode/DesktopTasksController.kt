@@ -690,6 +690,10 @@ class DesktopTasksController(
         destinationDisplayId: Int,
         transition: IBinder,
     ): WindowContainerTransaction {
+        logD(
+            "onDisplayDisconnect: disconnectedDisplayId=$disconnectedDisplayId, " +
+                "destinationDisplayId=$destinationDisplayId"
+        )
         preserveDisplayRequestHandler?.requestPreserveDisplay(disconnectedDisplayId)
         // TODO: b/406320371 - Verify this works with non-system users once the underlying bug is
         //  resolved.
@@ -698,6 +702,13 @@ class DesktopTasksController(
         //  Additionally, investigate why wallpaper goes to front for inactive users.
         val desktopModeSupportedOnDisplay =
             desktopState.isDesktopModeSupportedOnDisplay(destinationDisplayId)
+        val destDisplayLayout = displayController.getDisplayLayout(destinationDisplayId)
+        if (destDisplayLayout == null) {
+            logE(
+                "onDisplayDisconnect: no display layout found for " +
+                    "destinationDisplayId=$destinationDisplayId"
+            )
+        }
         snapEventHandler.onDisplayDisconnected(disconnectedDisplayId, desktopModeSupportedOnDisplay)
         removeWallpaperTask(wct, disconnectedDisplayId)
         removeHomeTask(wct, disconnectedDisplayId)
@@ -709,6 +720,7 @@ class DesktopTasksController(
                     val deskTasks = desktopRepository.getActiveTaskIdsInDesk(deskId)
                     // Remove desk if it's empty.
                     if (deskTasks.isEmpty()) {
+                        logD("onDisplayDisconnect: removing empty desk=$deskId")
                         desksOrganizer.removeDesk(wct, deskId, desktopRepository.userId)
                         desksTransitionObserver.addPendingTransition(
                             DeskTransition.RemoveDesk(
@@ -721,10 +733,21 @@ class DesktopTasksController(
                             )
                         )
                     } else {
+                        logD(
+                            "onDisplayDisconnect: reparenting desk=$deskId to " +
+                                "display=$destinationDisplayId"
+                        )
                         // Otherwise, reparent it to the destination display.
                         val toTop =
                             deskTasks.contains(focusTransitionObserver.globallyFocusedTaskId)
                         desksOrganizer.moveDeskToDisplay(wct, deskId, destinationDisplayId, toTop)
+                        val taskIds = desktopRepository.getActiveTaskIdsInDesk(deskId)
+                        for (taskId in taskIds) {
+                            val task = shellTaskOrganizer.getRunningTaskInfo(taskId) ?: continue
+                            destDisplayLayout?.densityDpi()?.let {
+                                wct.setDensityDpi(task.token, it)
+                            }
+                        }
                         desksTransitionObserver.addPendingTransition(
                             DeskTransition.ChangeDeskDisplay(
                                 transition,
@@ -742,6 +765,7 @@ class DesktopTasksController(
                     }
                 }
             } else {
+                logD("onDisplayDisconnect: moving tasks to non-desktop display")
                 // Desktop not supported on display; reparent tasks to display area, remove desk.
                 val tdaInfo =
                     checkNotNull(
@@ -758,6 +782,7 @@ class DesktopTasksController(
                             tdaInfo.token,
                             focusTransitionObserver.globallyFocusedTaskId == task.taskId,
                         )
+                        destDisplayLayout?.densityDpi()?.let { wct.setDensityDpi(task.token, it) }
                     }
                     desksOrganizer.removeDesk(wct, deskId, userId)
                     desksTransitionObserver.addPendingTransition(
@@ -777,6 +802,86 @@ class DesktopTasksController(
             }
         }
         return wct
+    }
+
+    /**
+     * Restore a display based on info that was stored on disconnect.
+     *
+     * TODO: b/365873835 - Restore for all users, not just current.
+     */
+    fun restoreDisplay(displayId: Int, uniqueDisplayId: String) {
+        if (!DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue) return
+        logD("restoreDisplay: displayId=$displayId, uniqueDisplayId=$uniqueDisplayId")
+        // TODO: b/365873835 - Utilize DesktopTask data class once it is
+        //  implemented in DesktopRepository.
+        val preservedTaskIdsByDeskId =
+            taskRepository.getPreservedTasksByDeskIdInZOrder(uniqueDisplayId)
+        val boundsByTaskId = taskRepository.getPreservedTaskBounds(uniqueDisplayId)
+        val activeDeskId = taskRepository.getPreservedActiveDesk(uniqueDisplayId)
+        val wct = WindowContainerTransaction()
+        var runOnTransitStart: RunOnTransitStart? = null
+        val destDisplayLayout = displayController.getDisplayLayout(displayId) ?: return
+
+        mainScope.launch {
+            preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
+                val newDeskId =
+                    createDeskSuspending(
+                        displayId = displayId,
+                        userId = userId,
+                        enforceDeskLimit = true,
+                    )
+                logD(
+                    "restoreDisplay: created new desk deskId=$newDeskId " +
+                        "from preserved deskId=$preservedDeskId"
+                )
+
+                if (preservedDeskId == activeDeskId) {
+                    runOnTransitStart = addDeskActivationChanges(deskId = newDeskId, wct = wct)
+                }
+
+                preservedTaskIds.asReversed().forEach { taskId ->
+                    addRestoreTaskToDeskChanges(
+                        wct,
+                        destDisplayLayout,
+                        newDeskId,
+                        taskId,
+                        uniqueDisplayId,
+                        boundsByTaskId[taskId],
+                    )
+                }
+            }
+            val transition = transitions.startTransition(TRANSIT_CHANGE, wct, null)
+            runOnTransitStart?.invoke(transition)
+            taskRepository.removePreservedDisplay(uniqueDisplayId)
+        }
+    }
+
+    private fun addRestoreTaskToDeskChanges(
+        wct: WindowContainerTransaction,
+        destinationDisplayLayout: DisplayLayout,
+        deskId: Int,
+        taskId: Int,
+        uniqueDisplayId: String,
+        taskBounds: Rect?,
+    ) {
+        logD(
+            "addRestoreTaskToDeskChanges: taskId=$taskId; deskId=$deskId; " +
+                "taskBounds=$taskBounds; uniqueDisplayId=$uniqueDisplayId"
+        )
+        val minimized = taskRepository.isPreservedTaskMinimized(uniqueDisplayId, taskId)
+        val task = shellTaskOrganizer.getRunningTaskInfo(taskId)
+        if (task == null) {
+            logE("restoreDisplay: Could not find running task info for taskId=$taskId.")
+            return
+        }
+        desksOrganizer.moveTaskToDesk(wct, deskId, task, minimized = minimized)
+        wct.setDensityDpi(task.token, destinationDisplayLayout.densityDpi())
+        taskBounds?.let { wct.setBounds(task.token, it) }
+
+        if (!minimized) {
+            // Bring display to front if task is not minimized to ensure display focus.
+            wct.reorder(task.token, /* onTop= */ true, /* includingParents= */ true)
+        }
     }
 
     /**
