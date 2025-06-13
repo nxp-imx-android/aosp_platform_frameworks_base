@@ -1412,7 +1412,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_HIDE_OVERLAY_API)
     public void testUpdateOverlayWindows_singleWindowRequestsHiding_doNotHideOverlayWithSameUid() {
         WindowState overlayWindow = newWindowBuilder("overlay_window",
                 TYPE_APPLICATION_OVERLAY).build();
@@ -1432,7 +1431,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_HIDE_OVERLAY_API)
     public void testUpdateOverlayWindows_multipleWindowsRequestHiding_hideOverlaysWithAnyUids() {
         WindowState overlayWindow = newWindowBuilder("overlay_window",
                 TYPE_APPLICATION_OVERLAY).build();
@@ -1464,7 +1462,6 @@ public class WindowManagerServiceTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FIX_HIDE_OVERLAY_API)
     public void testUpdateOverlayWindows_multipleWindowsFromSameUid_idempotent() {
         // Deny INTERNAL_SYSTEM_WINDOW permission for WindowSession so that the saw isn't allowed to
         // show despite hideNonSystemOverlayWindows.
