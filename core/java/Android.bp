@@ -104,15 +104,14 @@ release_package_messagequeue_implementation_srcs {
     out: ["android/os/MessageQueue.java"],
 }
 
-aidl_interface {
-    name: "dropboxmanager_aidl",
-    srcs: ["com/android/internal/os/IDropBoxManagerService.aidl"],
-    unstable: true,
-    backend: {
-        java: {
-            enabled: false, // TODO(b/424186512) switch frameworks/base to using this as well, it uses core build **/*.aidl glob now
-        },
-    },
+aidl_library {
+    name: "IDropBoxManagerService_aidl",
+    srcs: [
+        "com/android/internal/os/IDropBoxManagerService.aidl",
+    ],
+    hdrs: [
+        "android/os/DropBoxManager.aidl",
+    ],
 }
 
 filegroup {
