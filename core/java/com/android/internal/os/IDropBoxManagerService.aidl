@@ -16,6 +16,7 @@
 
 package com.android.internal.os;
 
+import android.os.DropBoxManager;
 import android.os.ParcelFileDescriptor;
 
 /**
@@ -35,21 +36,8 @@ interface IDropBoxManagerService {
     /** @see DropBoxManager#getNextEntry */
     @UnsupportedAppUsage(maxTargetSdk=30,
             publicAlternatives="Use {@link android.os.DropBoxManager#getNextEntry} instead")
-    Entry getNextEntry(String tag, long millis, String packageName);
+    DropBoxManager.Entry getNextEntry(String tag, long millis, String packageName);
 
-    Entry getNextEntryWithAttribution(String tag, long millis, String packageName,
+    DropBoxManager.Entry getNextEntryWithAttribution(String tag, long millis, String packageName,
             String attributionTag);
-
-    /**
-     * An entry maintained by drop box, including contents and metadata.
-     * @hide
-     */
-    parcelable Entry {
-        String tag;
-        long timestamp;
-        ParcelFileDescriptor fd;
-        int flags;
-        byte[] data;
-    }
-
 }
