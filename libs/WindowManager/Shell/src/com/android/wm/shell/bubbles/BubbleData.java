@@ -948,10 +948,11 @@ public class BubbleData {
     }
 
     void overflowBubble(@DismissReason int reason, Bubble bubble) {
-        if (bubble.getPendingIntentCanceled()
-                || !(reason == Bubbles.DISMISS_AGED
+        boolean isOverflowReason = reason == Bubbles.DISMISS_AGED
                 || reason == Bubbles.DISMISS_USER_GESTURE
-                || reason == Bubbles.DISMISS_RELOAD_FROM_DISK)) {
+                || reason == Bubbles.DISMISS_USER_GESTURE_FROM_LAUNCHER
+                || reason == Bubbles.DISMISS_RELOAD_FROM_DISK;
+        if (bubble.getPendingIntentCanceled() || !isOverflowReason) {
             return;
         }
         ProtoLog.d(WM_SHELL_BUBBLES, "overflowBubble=%s reason=%s", bubble.getKey(),
