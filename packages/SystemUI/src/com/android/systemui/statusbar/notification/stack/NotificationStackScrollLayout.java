@@ -153,6 +153,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -5668,6 +5669,39 @@ public class NotificationStackScrollLayout
         mHeadsUpGoingAwayAnimationsAllowed = headsUpGoingAwayAnimationsAllowed;
     }
 
+    /**
+     * Dumps debug info for ActivatableNotificationView appearing with invalid outline
+     */
+    private void verifyOutline(IndentingPrintWriter pw, ExpandableView ev) {
+        if (!(ev instanceof ActivatableNotificationView anv)) {
+            return;
+        }
+        if (!anv.isDrawingAppearAnimation()) {
+            return;
+        }
+        boolean hasInvalidOutline = false;
+        StringBuilder detailStr = new StringBuilder();
+
+        if (anv.hasCustomOutline()) {
+            Rect or = anv.getOutlineRect();
+            if (or.top < 0 || or.bottom < 0 || or.bottom <= or.top) {
+                hasInvalidOutline = true;
+                detailStr.append(" invalidOutline:(").append(or.top).append(",")
+                        .append(or.bottom).append(")");
+            }
+        }
+        if (hasInvalidOutline) {
+            String rowKey = (anv instanceof ExpandableNotificationRow)
+                    ? ((ExpandableNotificationRow) anv).getKey()
+                    : ev.toString();
+            pw.print(" [!] Animating INVALID OUTLINE: " + rowKey);
+            pw.print(" appearFraction: " + String.format(Locale.US, "%.3f",
+                    anv.getAppearAnimationFraction()));
+            pw.print(detailStr);
+            pw.println();
+        }
+    }
+
     public void dump(PrintWriter pwOriginal, String[] args) {
         IndentingPrintWriter pw = DumpUtilsKt.asIndenting(pwOriginal);
         final long elapsedRealtime = SystemClock.elapsedRealtime();
@@ -5733,6 +5767,8 @@ public class NotificationStackScrollLayout
 
                     for (int i = 0; i < childCount; i++) {
                         ExpandableView child = getChildAtIndex(i);
+                        pw.println();
+                        verifyOutline(pw, child);
                         child.dump(pw, args);
                         pw.println();
                     }
