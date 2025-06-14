@@ -16,6 +16,8 @@
 
 package com.android.wm.shell.bubbles;
 
+import static com.android.wm.shell.Flags.FLAG_ENABLE_OPTIONAL_BUBBLE_OVERFLOW;
+
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
@@ -37,6 +39,7 @@ import android.content.LocusId;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.os.UserHandle;
+import android.platform.test.annotations.EnableFlags;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 import android.testing.AndroidTestingRunner;
@@ -456,6 +459,19 @@ public class BubbleDataTest extends ShellTestCase {
     //
     // Overflow
     //
+
+    @EnableFlags(FLAG_ENABLE_OPTIONAL_BUBBLE_OVERFLOW)
+    @Test
+    public void testAddOverflowBubbleFromDisk_notifiesUpdate() {
+        mBubbleData.setListener(mListener);
+
+        mBubbleData.addOverflowBubbleFromDisk(mBubbleA1);
+        verifyUpdateReceived();
+
+        BubbleData.Update update = mUpdateCaptor.getValue();
+        assertThat(update.showOverflowChanged).isTrue();
+        assertThat(update.overflowBubbles).hasSize(1);
+    }
 
     /**
      * Verifies that when the bubble stack reaches its maximum, the oldest bubble is overflowed.
@@ -1095,9 +1111,9 @@ public class BubbleDataTest extends ShellTestCase {
     @Test
     public void test_addToOverflow_doesntAllowDupes() {
         assertEquals(0, mBubbleData.getOverflowBubbles().size());
-        mBubbleData.overflowBubble(Bubbles.DISMISS_AGED, mBubbleA1);
-        mBubbleData.overflowBubble(Bubbles.DISMISS_AGED, mBubbleA1);
-        mBubbleData.overflowBubble(Bubbles.DISMISS_AGED, mBubbleA1);
+        mBubbleData.doOverflow(Bubbles.DISMISS_AGED, mBubbleA1);
+        mBubbleData.doOverflow(Bubbles.DISMISS_AGED, mBubbleA1);
+        mBubbleData.doOverflow(Bubbles.DISMISS_AGED, mBubbleA1);
         assertEquals(1, mBubbleData.getOverflowBubbles().size());
     }
 
