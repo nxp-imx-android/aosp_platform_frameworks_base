@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,7 +36,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
@@ -52,7 +50,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEachReversed
+import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import androidx.compose.ui.util.fastMaxOfOrDefault
 import androidx.compose.ui.util.fastSumBy
@@ -225,7 +223,8 @@ private fun ContentScope.BundlePreviewIcons(
     check(previewDrawables.isNotEmpty())
     val iconSize = 32.dp
 
-    val borderWidth = 2.5.dp
+    // The design stroke width is 2.5dp but there is a ~4% padding inside app icons; ~1.25dp here.
+    val borderWidth = 1.25.dp
     HalfOverlappingReversedRow(
         modifier =
             modifier.graphicsLayer {
@@ -233,20 +232,25 @@ private fun ContentScope.BundlePreviewIcons(
                 compositingStrategy = CompositingStrategy.Offscreen
             }
     ) {
+        // We need to lay out icons from the end (icon1) to the start (icon3) so that we can define
+        // STL animations statically per element, rather than making the movement of each element's
+        // animation dynamic based on the number of visible siblings. This take/reversed does that,
+        // while preserving the user's expected ordering of start-to-end == top-to-bottom contents.
+        val reversedIcons = previewDrawables.take(3).reversed()
         PreviewIcon(
-            drawable = previewDrawables[0],
+            drawable = reversedIcons[0],
             modifier = Modifier.element(BundleHeader.Elements.PreviewIcon1).size(iconSize),
             borderWidth = borderWidth,
         )
-        if (previewDrawables.size < 2) return@HalfOverlappingReversedRow
+        if (reversedIcons.size < 2) return@HalfOverlappingReversedRow
         PreviewIcon(
-            drawable = previewDrawables[1],
+            drawable = reversedIcons[1],
             modifier = Modifier.element(BundleHeader.Elements.PreviewIcon2).size(iconSize),
             borderWidth = borderWidth,
         )
-        if (previewDrawables.size < 3) return@HalfOverlappingReversedRow
+        if (reversedIcons.size < 3) return@HalfOverlappingReversedRow
         PreviewIcon(
-            drawable = previewDrawables[2],
+            drawable = reversedIcons[2],
             modifier = Modifier.element(BundleHeader.Elements.PreviewIcon3).size(iconSize),
             borderWidth = borderWidth,
         )
@@ -275,14 +279,10 @@ private fun PreviewIcon(drawable: Drawable, modifier: Modifier = Modifier, borde
                 drawContent()
             }
     ) {
-        val surfaceColor = notificationElementSurfaceColor()
         Image(
             painter = rememberDrawablePainter(drawable),
             contentDescription = null,
-            modifier =
-                Modifier.fillMaxSize()
-                    .clip(CircleShape)
-                    .background(color = surfaceColor, shape = CircleShape),
+            modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Fit,
         )
     }
@@ -304,7 +304,7 @@ private fun HalfOverlappingReversedRow(
         layout(constraints.constrainWidth(width), constraints.constrainHeight(childHeight)) {
             // Start in the middle of the right-most placeable
             var currentXPosition = placeables.fastSumBy { it.width / 2 }
-            placeables.fastForEachReversed { placeable ->
+            placeables.fastForEach { placeable ->
                 currentXPosition -= placeable.width / 2
                 placeable.placeRelative(x = currentXPosition, y = 0)
             }

@@ -506,8 +506,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     private final Rect mSystemGestureFrameLeft = new Rect();
     private final Rect mSystemGestureFrameRight = new Rect();
 
-    private Set<Rect> mRestrictedKeepClearAreas = new ArraySet<>();
-    private Set<Rect> mUnrestrictedKeepClearAreas = new ArraySet<>();
+    @VisibleForTesting
+    Set<Rect> mRestrictedKeepClearAreas = new ArraySet<>();
+    @VisibleForTesting
+    Set<Rect> mUnrestrictedKeepClearAreas = new ArraySet<>();
 
     /**
      * For default display it contains real metrics, empty for others.
@@ -3702,7 +3704,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mInsetsStateController.dumpDebug(proto, logLevel);
         }
         proto.write(IME_POLICY, getImePolicy());
-        for (Rect r : getKeepClearAreas()) {
+        for (Rect r : mRestrictedKeepClearAreas) {
+            r.dumpDebug(proto, KEEP_CLEAR_AREAS);
+        }
+        for (Rect r : mUnrestrictedKeepClearAreas) {
             r.dumpDebug(proto, KEEP_CLEAR_AREAS);
         }
         proto.end(token);
@@ -3784,11 +3789,15 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             pw.println(mSystemGestureExclusion);
         }
 
-        final Set<Rect> keepClearAreas = getKeepClearAreas();
-        if (!keepClearAreas.isEmpty()) {
+        if (!mRestrictedKeepClearAreas.isEmpty()) {
             pw.println();
-            pw.print("  keepClearAreas=");
-            pw.println(keepClearAreas);
+            pw.print("  restrictedKeepClearAreas=");
+            pw.println(mRestrictedKeepClearAreas);
+        }
+        if (!mUnrestrictedKeepClearAreas.isEmpty()) {
+            pw.println();
+            pw.print("  unrestrictedKeepClearAreas=");
+            pw.println(mUnrestrictedKeepClearAreas);
         }
 
         pw.println();
@@ -6128,15 +6137,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             return w.getWindowType() == TYPE_BASE_APPLICATION
                     && w.getWindowingMode() == WINDOWING_MODE_FULLSCREEN;
         }, true);
-    }
-
-    /**
-     * Returns all keep-clear areas from visible, relevant windows on this display.
-     */
-    Set<Rect> getKeepClearAreas() {
-        final Set<Rect> keepClearAreas = new ArraySet<>();
-        getKeepClearAreas(keepClearAreas, keepClearAreas);
-        return keepClearAreas;
     }
 
     protected MetricsLogger getMetricsLogger() {

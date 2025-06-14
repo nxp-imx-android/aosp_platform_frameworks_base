@@ -112,8 +112,8 @@ constructor(
             .map { it?.modalities ?: BiometricModalities() }
             .distinctUntilChanged()
 
-    /** Whether the shade is expanded */
-    val isShadeExpanded = shadeInteractor.isShadeAnyExpanded
+    /** Whether the shade is being interacted with */
+    val isShadeInteracted = shadeInteractor.isUserInteracting
 
     val udfpsAccessibilityOverlayViewModel =
         BiometricPromptUdfpsAccessibilityOverlayViewModel(

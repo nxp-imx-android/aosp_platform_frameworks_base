@@ -67,7 +67,7 @@ interface IAppFunctionManager {
         int targetUserId
     );
 
-    void updateAppFunctionAccessFlags(
+    boolean updateAppFunctionAccessFlags(
         in String agentPackageName,
         int agentUserId,
         in String targetPackageName,

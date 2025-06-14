@@ -205,6 +205,18 @@ android_ravenwood_test {
     ],
 }
 
+android_ravenwood_test {
+    name: "FrameworksServicesTestsRavenwood_ProcessStateController",
+    defaults: ["FrameworksServicesTestsRavenwood-defaults"],
+    team: "trendy_team_framework_bpm",
+    static_libs: [
+        "services.core.ravenwood",
+    ],
+    srcs: [
+        "src/com/android/server/am/BoundServiceSessionTests.java",
+    ],
+}
+
 java_library {
     name: "servicestests-core-utils",
     srcs: [

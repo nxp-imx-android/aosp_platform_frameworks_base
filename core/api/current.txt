@@ -10098,6 +10098,19 @@ package android.app.wallpaper {
 
 package android.appwidget {
 
+  @FlaggedApi("android.appwidget.flags.engagement_metrics") public final class AppWidgetEvent implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getAppWidgetId();
+    method @Nullable public int[] getClickedIds();
+    method @NonNull public java.time.Instant getEnd();
+    method @Nullable public android.graphics.Rect getPosition();
+    method @Nullable public int[] getScrolledIds();
+    method @NonNull public java.time.Instant getStart();
+    method @NonNull public java.time.Duration getVisibleDuration();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.appwidget.AppWidgetEvent> CREATOR;
+  }
+
   public class AppWidgetHost {
     ctor public AppWidgetHost(android.content.Context, int);
     method public int allocateAppWidgetId();
@@ -10130,6 +10143,8 @@ package android.appwidget {
     method public void setColorResources(@NonNull android.util.SparseIntArray);
     method public void setExecutor(java.util.concurrent.Executor);
     method public void setOnLightBackground(boolean);
+    method @FlaggedApi("android.appwidget.flags.engagement_metrics") public void startVisibilityTracking();
+    method @FlaggedApi("android.appwidget.flags.engagement_metrics") public void stopVisibilityTracking();
     method public void updateAppWidget(android.widget.RemoteViews);
     method public void updateAppWidgetOptions(android.os.Bundle);
     method @Deprecated public void updateAppWidgetSize(android.os.Bundle, int, int, int, int);
@@ -10153,6 +10168,7 @@ package android.appwidget {
     method @Deprecated public void notifyAppWidgetViewDataChanged(int, int);
     method public void partiallyUpdateAppWidget(int[], android.widget.RemoteViews);
     method public void partiallyUpdateAppWidget(int, android.widget.RemoteViews);
+    method @FlaggedApi("android.appwidget.flags.engagement_metrics") @NonNull public java.util.List<android.appwidget.AppWidgetEvent> queryAppWidgetEvents(long, long);
     method @FlaggedApi("android.appwidget.flags.generated_previews") public void removeWidgetPreview(@NonNull android.content.ComponentName, int);
     method public boolean requestPinAppWidget(@NonNull android.content.ComponentName, @Nullable android.os.Bundle, @Nullable android.app.PendingIntent);
     method @FlaggedApi("android.appwidget.flags.generated_previews") public boolean setWidgetPreview(@NonNull android.content.ComponentName, int, @NonNull android.widget.RemoteViews);
@@ -10171,8 +10187,6 @@ package android.appwidget {
     field public static final String ACTION_APPWIDGET_PICK = "android.appwidget.action.APPWIDGET_PICK";
     field public static final String ACTION_APPWIDGET_RESTORED = "android.appwidget.action.APPWIDGET_RESTORED";
     field public static final String ACTION_APPWIDGET_UPDATE = "android.appwidget.action.APPWIDGET_UPDATE";
-    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final String EVENT_CATEGORY_APPWIDGET = "android.appwidget";
-    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final String EVENT_TYPE_WIDGET_INTERACTION = "widget_interaction";
     field public static final String EXTRA_APPWIDGET_ID = "appWidgetId";
     field public static final String EXTRA_APPWIDGET_IDS = "appWidgetIds";
     field public static final String EXTRA_APPWIDGET_OLD_IDS = "appWidgetOldIds";
@@ -10182,10 +10196,6 @@ package android.appwidget {
     field public static final String EXTRA_APPWIDGET_PROVIDER_PROFILE = "appWidgetProviderProfile";
     field public static final String EXTRA_CUSTOM_EXTRAS = "customExtras";
     field public static final String EXTRA_CUSTOM_INFO = "customInfo";
-    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final String EXTRA_EVENT_CLICKED_VIEWS = "android.appwidget.extra.EVENT_CLICKED_VIEWS";
-    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final String EXTRA_EVENT_DURATION_MS = "android.appwidget.extra.EVENT_DURATION_MS";
-    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final String EXTRA_EVENT_POSITION_RECT = "android.appwidget.extra.EVENT_POSITION_RECT";
-    field @FlaggedApi("android.appwidget.flags.engagement_metrics") public static final String EXTRA_EVENT_SCROLLED_VIEWS = "android.appwidget.extra.EVENT_SCROLLED_VIEWS";
     field public static final String EXTRA_HOST_ID = "hostId";
     field public static final int INVALID_APPWIDGET_ID = 0; // 0x0
     field public static final String META_DATA_APPWIDGET_PROVIDER = "android.appwidget.provider";
@@ -11347,7 +11357,7 @@ package android.content {
     field public static final String OVERLAY_SERVICE = "overlay";
     field public static final String PEOPLE_SERVICE = "people";
     field public static final String PERFORMANCE_HINT_SERVICE = "performance_hint";
-    field @FlaggedApi("android.security.frp_enforcement") public static final String PERSISTENT_DATA_BLOCK_SERVICE = "persistent_data_block";
+    field public static final String PERSISTENT_DATA_BLOCK_SERVICE = "persistent_data_block";
     field public static final String POWER_SERVICE = "power";
     field public static final String PRINT_SERVICE = "print";
     field @FlaggedApi("android.os.telemetry_apis_framework_initialization") public static final String PROFILING_SERVICE = "profiling";
@@ -42858,8 +42868,8 @@ package android.service.notification {
 
 package android.service.persistentdata {
 
-  @FlaggedApi("android.security.frp_enforcement") public class PersistentDataBlockManager {
-    method @FlaggedApi("android.security.frp_enforcement") public boolean isFactoryResetProtectionActive();
+  public class PersistentDataBlockManager {
+    method public boolean isFactoryResetProtectionActive();
   }
 
 }
@@ -56397,6 +56407,7 @@ package android.view {
     method public int getFitInsetsTypes();
     method @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public boolean getFrameRateBoostOnTouchEnabled();
     method public final CharSequence getTitle();
+    method @FlaggedApi("com.android.hardware.input.request_key_capture_api") public boolean hasKeyboardCapture();
     method public boolean isFitInsetsIgnoringVisibility();
     method @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public boolean isFrameRatePowerSavingsBalanced();
     method public boolean isHdrConversionEnabled();
@@ -56410,6 +56421,7 @@ package android.view {
     method public void setFitInsetsTypes(int);
     method @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public void setFrameRateBoostOnTouchEnabled(boolean);
     method @FlaggedApi("android.view.flags.toolkit_set_frame_rate_read_only") public void setFrameRatePowerSavingsBalanced(boolean);
+    method @FlaggedApi("com.android.hardware.input.request_key_capture_api") @RequiresPermission(android.Manifest.permission.CAPTURE_KEYBOARD) public void setHasKeyboardCapture(boolean);
     method public void setHdrConversionEnabled(boolean);
     method public final void setTitle(CharSequence);
     method public void setWallpaperTouchEventsEnabled(boolean);
@@ -62146,6 +62158,7 @@ package android.widget {
     method public void removeAllViews(@IdRes int);
     method public void setAccessibilityTraversalAfter(@IdRes int, @IdRes int);
     method public void setAccessibilityTraversalBefore(@IdRes int, @IdRes int);
+    method @FlaggedApi("android.appwidget.flags.engagement_metrics") public void setAppWidgetEventTag(@IdRes int, int);
     method public void setBitmap(@IdRes int, String, android.graphics.Bitmap);
     method public void setBlendMode(@IdRes int, @NonNull String, @Nullable android.graphics.BlendMode);
     method public void setBoolean(@IdRes int, String, boolean);
@@ -62208,7 +62221,6 @@ package android.widget {
     method public void setTextViewText(@IdRes int, CharSequence);
     method public void setTextViewTextSize(@IdRes int, int, float);
     method public void setUri(@IdRes int, String, android.net.Uri);
-    method @FlaggedApi("android.appwidget.flags.engagement_metrics") public void setUsageEventTag(@IdRes int, int);
     method public void setViewLayoutHeight(@IdRes int, float, int);
     method public void setViewLayoutHeightAttr(@IdRes int, @AttrRes int);
     method public void setViewLayoutHeightDimen(@IdRes int, @DimenRes int);

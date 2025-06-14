@@ -781,15 +781,15 @@ internal fun SceneTransitionLayoutForTesting(
                 swipeSourceDetector = swipeSourceDetector,
                 swipeDetector = swipeDetector,
                 transitionInterceptionThreshold = transitionInterceptionThreshold,
+                decayAnimationSpec = decayAnimationSpec,
                 builder = builder,
                 animationScope = animationScope,
+                directionChangeSlop = directionChangeSlop,
                 elements = sharedElementMap,
                 ancestors = ancestors,
-                lookaheadScope = lookaheadScope,
-                directionChangeSlop = directionChangeSlop,
-                defaultEffectFactory = defaultEffectFactory,
-                decayAnimationSpec = decayAnimationSpec,
                 implicitTestTags = implicitTestTags,
+                lookaheadScope = lookaheadScope,
+                defaultEffectFactory = defaultEffectFactory,
             )
             .also { onLayoutImpl?.invoke(it) }
     }

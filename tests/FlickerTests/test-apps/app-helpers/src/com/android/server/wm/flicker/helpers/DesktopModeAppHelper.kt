@@ -308,20 +308,15 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
             .waitForAndVerify()
     }
 
-    /** Close a desktop app by clicking the close button on the app header for the given app or by
-     *  pressing back. */
+    /** Close a desktop app by clicking the close button on the app header for the given app. */
     fun closeDesktopApp(
         wmHelper: WindowManagerStateHelper,
         device: UiDevice,
-        usingBackNavigation: Boolean = false
-    ) {
-        if (usingBackNavigation) {
-            device.pressBack()
-        } else {
-            val caption = getCaptionForTheApp(wmHelper, device)
-            val closeButton = caption?.children?.find { it.resourceName.endsWith(CLOSE_BUTTON) }
-            closeButton?.click()
-        }
+        ) {
+        val caption = getCaptionForTheApp(wmHelper, device)
+        val closeButton = caption?.children?.find { it.resourceName.endsWith(CLOSE_BUTTON) }
+        closeButton?.click()
+
         wmHelper
             .StateSyncBuilder()
             .withAppTransitionIdle()
@@ -558,19 +553,23 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         waitForTransitionToFullscreen(wmHelper)
     }
 
+    private fun clickAppHandle(wmHelper: WindowManagerStateHelper, device: UiDevice) {
+        val windowRect = wmHelper.getWindowRegion(innerHelper).bounds
+        val startX = windowRect.centerX()
+        // Click a little under the top to prevent opening the notification shade.
+        val startY = windowRect.top + 30
+
+        // Click on the app handle coordinates.
+        device.click(startX, startY)
+    }
+
     fun enterDesktopModeFromAppHandleMenu(
         wmHelper: WindowManagerStateHelper,
         device: UiDevice
     ) {
         if (isAnyDesktopWindowVisible(wmHelper)) error("Already in Desktop Mode")
 
-        val windowRect = wmHelper.getWindowRegion(innerHelper).bounds
-        val startX = windowRect.centerX()
-        // Click a little under the top to prevent opening the notification shade.
-        val startY = 10
-
-        // Click on the app handle coordinates.
-        device.click(startX, startY)
+        clickAppHandle(wmHelper, device)
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
 
         val pill = getDesktopAppViewByRes(PILL_CONTAINER)
@@ -580,6 +579,21 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
 
         desktopModeButton.click()
         waitForTransitionToFreeform(wmHelper)
+    }
+
+    fun enterSplitScreenFromAppHandleMenu(
+        wmHelper: WindowManagerStateHelper,
+        device: UiDevice
+    ) {
+        clickAppHandle(wmHelper, device)
+
+        val pill = getDesktopAppViewByRes(PILL_CONTAINER)
+        val splitScreenButton =
+            pill.children?.find { it.resourceName.endsWith(SPLIT_SCREEN_BUTTON) }
+                ?: error("Unable to find Split Screen button")
+
+        splitScreenButton.click()
+        wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
     fun exitDesktopModeToFullScreenWithAppHeader(wmHelper:WindowManagerStateHelper) {

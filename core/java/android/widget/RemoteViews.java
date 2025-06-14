@@ -542,20 +542,19 @@ public class RemoteViews implements Parcelable, Filter {
 
     /**
      * Set a view tag associating a View with an ID to be used for widget interaction usage events
-     * ({@link android.app.usage.UsageEvents.Event}). When this RemoteViews is applied to a bound
+     * ({@link android.appwidget.AppWidgetEvent}). When this RemoteViews is applied to a bound
      * widget, any clicks or scrolls on the tagged view will be reported to
-     * {@link android.app.usage.UsageStatsManager} using this tag.
+     * {@link android.appwidget.AppWidgetManager} using this tag.
      *
      * @param viewId ID of the View whose tag will be set
      * @param tag The integer tag to use for the event
      *
-     * @see android.appwidget.AppWidgetManager#EVENT_TYPE_WIDGET_INTERACTION
-     * @see android.appwidget.AppWidgetManager#EXTRA_EVENT_CLICKED_VIEWS
-     * @see android.appwidget.AppWidgetManager#EXTRA_EVENT_SCROLLED_VIEWS
-     * @see android.app.usage.UsageStatsManager#queryEventsForSelf
+     * @see android.appwidget.AppWidgetEvent#getClickedIds
+     * @see android.appwidget.AppWidgetEvent#getScrolledIds
+     * @see android.appwidget.AppWidgetManager#queryAppWidgetEvents
      */
     @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
-    public void setUsageEventTag(@IdRes int viewId, int tag) {
+    public void setAppWidgetEventTag(@IdRes int viewId, int tag) {
         addAction(new SetIntTagAction(viewId, com.android.internal.R.id.remoteViewsMetricsId, tag));
     }
 

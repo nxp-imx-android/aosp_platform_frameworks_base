@@ -16,8 +16,6 @@
 
 package com.android.systemui.scene.domain.interactor
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper
 import androidx.test.filters.SmallTest
@@ -46,7 +44,6 @@ import com.android.systemui.statusbar.notification.data.repository.setActiveNoti
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
 import com.android.systemui.statusbar.notification.init.NotificationsController
-import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import com.android.systemui.testKosmos
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.mockito.any
@@ -535,25 +532,7 @@ class WindowRootViewVisibilityInteractorTest(flags: FlagsParameterization) : Sys
         }
 
     @Test
-    @DisableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
-    fun lockscreenShadeInteractive_hasHeadsUpAndNotifPresenterCollapsed_flagOff_notifCountOne() =
-        kosmos.runTest {
-            underTest.start()
-
-            whenever(headsUpManager.hasPinnedHeadsUp()).thenReturn(true)
-            whenever(notificationPresenter.isPresenterFullyCollapsed).thenReturn(true)
-            whenever(notificationsController.getActiveNotificationsCount()).thenReturn(4)
-
-            makeLockscreenShadeVisible()
-
-            val notifCount = argumentCaptor<Int>()
-            verify(iStatusBarService).onPanelRevealed(any(), notifCount.capture())
-            assertThat(notifCount.value).isEqualTo(1)
-        }
-
-    @Test
-    @EnableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
-    fun lockscreenShadeInteractive_hasHeadsUpAndNotifPresenterCollapsed_flagOn_notifCountOne() =
+    fun lockscreenShadeInteractive_hasHeadsUpAndNotifPresenterCollapsed_notifCountOne() =
         kosmos.runTest {
             underTest.start()
 
@@ -584,25 +563,7 @@ class WindowRootViewVisibilityInteractorTest(flags: FlagsParameterization) : Sys
         }
 
     @Test
-    @DisableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
-    fun lockscreenShadeInteractive_noHeadsUp_flagOff_notifCountMatchesNotifController() =
-        kosmos.runTest {
-            underTest.start()
-            whenever(notificationPresenter.isPresenterFullyCollapsed).thenReturn(true)
-
-            whenever(headsUpManager.hasPinnedHeadsUp()).thenReturn(false)
-            whenever(notificationsController.getActiveNotificationsCount()).thenReturn(9)
-
-            makeLockscreenShadeVisible()
-
-            val notifCount = argumentCaptor<Int>()
-            verify(iStatusBarService).onPanelRevealed(any(), notifCount.capture())
-            assertThat(notifCount.value).isEqualTo(9)
-        }
-
-    @Test
-    @EnableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
-    fun lockscreenShadeInteractive_noHeadsUp_flagOn_notifCountMatchesNotifController() =
+    fun lockscreenShadeInteractive_noHeadsUp_notifCountMatchesNotifController() =
         kosmos.runTest {
             underTest.start()
             whenever(notificationPresenter.isPresenterFullyCollapsed).thenReturn(true)
@@ -618,25 +579,7 @@ class WindowRootViewVisibilityInteractorTest(flags: FlagsParameterization) : Sys
         }
 
     @Test
-    @DisableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
-    fun lockscreenShadeInteractive_notifPresenterNotCollapsed_flagOff_notifCountMatchesNotifController() =
-        kosmos.runTest {
-            underTest.start()
-            whenever(headsUpManager.hasPinnedHeadsUp()).thenReturn(true)
-
-            whenever(notificationPresenter.isPresenterFullyCollapsed).thenReturn(false)
-            whenever(notificationsController.getActiveNotificationsCount()).thenReturn(8)
-
-            makeLockscreenShadeVisible()
-
-            val notifCount = argumentCaptor<Int>()
-            verify(iStatusBarService).onPanelRevealed(any(), notifCount.capture())
-            assertThat(notifCount.value).isEqualTo(8)
-        }
-
-    @Test
-    @EnableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
-    fun lockscreenShadeInteractive_notifPresenterNotCollapsed_flagOn_notifCountMatchesNotifController() =
+    fun lockscreenShadeInteractive_notifPresenterNotCollapsed_notifCountMatchesNotifController() =
         kosmos.runTest {
             underTest.start()
             whenever(headsUpManager.hasPinnedHeadsUp()).thenReturn(true)

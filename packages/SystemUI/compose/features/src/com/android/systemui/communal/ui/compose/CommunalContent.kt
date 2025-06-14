@@ -23,18 +23,28 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import com.android.compose.animation.scene.ContentScope
+import com.android.compose.modifiers.thenIf
 import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.smartspace.SmartspaceInteractionHandler
+import com.android.systemui.communal.ui.compose.extensions.consumeHorizontalDragGestures
 import com.android.systemui.communal.ui.compose.section.CommunalLockSection
 import com.android.systemui.communal.ui.compose.section.CommunalPopupSection
 import com.android.systemui.communal.ui.compose.section.HubOnboardingSection
@@ -69,10 +79,20 @@ constructor(
     fun ContentScope.Content(modifier: Modifier = Modifier) {
         CommunalTouchableSurface(viewModel = viewModel, modifier = modifier) {
             val orientation = LocalConfiguration.current.orientation
+            var gridRegion by remember { mutableStateOf<Rect?>(null) }
             Layout(
-                modifier = Modifier.fillMaxSize(),
+                modifier =
+                    Modifier.fillMaxSize().thenIf(communalSettingsInteractor.isV2FlagEnabled()) {
+                        Modifier.consumeHorizontalDragGestures(gridRegion)
+                    },
                 content = {
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    Box(
+                        modifier =
+                            Modifier.fillMaxSize().onGloballyPositioned {
+                                gridRegion =
+                                    Rect(offset = it.positionInWindow(), size = it.size.toSize())
+                            }
+                    ) {
                         with(communalPopupSection) { Popup() }
                         CommunalHub(
                             viewModel = viewModel,

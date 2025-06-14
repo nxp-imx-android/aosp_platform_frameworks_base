@@ -18,6 +18,7 @@ package com.android.server.input;
 
 import static android.hardware.input.InputGestureData.createKeyTrigger;
 
+import static com.android.hardware.input.Flags.enableQuickSettingsPanelShortcut;
 import static com.android.hardware.input.Flags.enableTalkbackAndMagnifierKeyGestures;
 import static com.android.hardware.input.Flags.enableVoiceAccessKeyGestures;
 import static com.android.hardware.input.Flags.keyboardA11yShortcutControl;
@@ -315,6 +316,15 @@ final class InputGestureManager {
                             KeyEvent.META_META_ON | KeyEvent.META_CTRL_ON,
                             KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_NEXT_DESK,
                             /* allowCaptureByFocusedWindow = */false
+                    ));
+        }
+        if (enableQuickSettingsPanelShortcut()) {
+            systemShortcuts.add(
+                    createKeyGesture(
+                            KeyEvent.KEYCODE_Q,
+                            KeyEvent.META_META_ON,
+                            KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL,
+                            /* allowCaptureByFocusedWindow = */true
                     ));
         }
         synchronized (mGestureLock) {

@@ -45,9 +45,10 @@ import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICAT
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAXIMIZE_FREEFORM_WINDOW
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL
+import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SLOW_KEYS
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_STICKY_KEYS
-import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER
 import android.hardware.input.KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.Accessibility
 import com.android.systemui.keyboard.shortcut.shared.model.ShortcutCategoryType.AppCategories
@@ -66,6 +67,7 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_TAKE_SCREENSHOT to System,
             KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER to System,
             KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL to System,
+            KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL to System,
             KEY_GESTURE_TYPE_LOCK_SCREEN to System,
             KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS to System,
             KEY_GESTURE_TYPE_LAUNCH_ASSISTANT to System,
@@ -110,6 +112,8 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
             KEY_GESTURE_TYPE_OPEN_SHORTCUT_HELPER to
                 R.string.shortcut_helper_category_system_controls,
             KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL to
+                R.string.shortcut_helper_category_system_controls,
+            KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL to
                 R.string.shortcut_helper_category_system_controls,
             KEY_GESTURE_TYPE_LOCK_SCREEN to R.string.shortcut_helper_category_system_controls,
             KEY_GESTURE_TYPE_ALL_APPS to R.string.shortcut_helper_category_system_controls,
@@ -171,6 +175,8 @@ class InputGestureMaps @Inject constructor(private val context: Context) {
                 R.string.group_system_access_system_app_shortcuts,
             KEY_GESTURE_TYPE_TOGGLE_NOTIFICATION_PANEL to
                 R.string.group_system_access_notification_shade,
+            KEY_GESTURE_TYPE_TOGGLE_QUICK_SETTINGS_PANEL to
+                R.string.group_system_access_quick_settings_panel,
             KEY_GESTURE_TYPE_LOCK_SCREEN to R.string.group_system_lock_screen,
             KEY_GESTURE_TYPE_ALL_APPS to R.string.group_system_access_all_apps_search,
             KEY_GESTURE_TYPE_LAUNCH_SYSTEM_SETTINGS to R.string.group_system_access_system_settings,

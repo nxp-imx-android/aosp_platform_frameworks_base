@@ -138,6 +138,10 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"現在、画面全体を録画しています"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"現在、<xliff:g id="APP_NAME">%1$s</xliff:g>を録画しています"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"録画を停止"</string>
+    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"画面を共有しています"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"コンテンツの共有"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"画面の共有を停止しますか？"</string>
@@ -207,9 +211,23 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"別の方法で検証"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ID チェックの管理"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ID チェックが ON になっているため、PIN は確認に使用できません。生体認証が必要です。ID チェックの詳細"</string>
+    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN を使用"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"パターンを使用"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"パスワードを使用"</string>
+    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"PIN の入力"</string>
+    <string name="biometric_dialog_enter_password" msgid="200503318983048202">"パスワードの入力"</string>
+    <string name="biometric_dialog_enter_pattern" msgid="3065746760277739487">"パターンの入力"</string>
+    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"試行回数の上限を超えた場合、生体認証を復元するには PIN の入力が必要です"</string>
+    <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"試行回数の上限を超えた場合、生体認証を復元するにはパターンの入力が必要です"</string>
+    <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"試行回数の上限を超えた場合、生体認証を復元するにはパスワードの入力が必要です"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"PIN が正しくありません"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"パターンが正しくありません"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"パスワードが正しくありません"</string>
@@ -302,12 +320,9 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"短くします。"</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"画面のキャストが停止しました。"</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"ディスプレイの明るさ"</string>
-    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
-    <skip />
-    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
-    <skip />
-    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
-    <skip />
+    <string name="accessibility_camera_in_use" msgid="1090160655874262911">"カメラを使用中"</string>
+    <string name="accessibility_microphone_in_use" msgid="1921058214238108340">"マイクを使用中"</string>
+    <string name="accessibility_camera_and_microphone_in_use" msgid="1250516397875447442">"カメラとマイクを使用中"</string>
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"モバイルデータが一時停止"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"データの一時停止"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"設定したデータ上限に達しました。現在モバイルデータは使用できません。\n\n再開する場合は、データ使用量について請求が発生する可能性があります。"</string>
@@ -657,8 +672,7 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"OFF にする"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"ロック解除して以前の通知を表示"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"このデバイスは保護者によって管理されています"</string>
-    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
-    <skip />
+    <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"デバイスの設定の一部は PIN で保護されています。"</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"これは組織が所有するデバイスで、ネットワーク トラフィックが監視されることもあります"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"これは <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> が所有するデバイスで、ネットワーク トラフィックが監視されることもあります"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"このデバイスは <xliff:g id="ORGANIZATION_NAME">%s</xliff:g> から提供されています"</string>
@@ -699,8 +713,7 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"VPN 設定を開く"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"このデバイスは保護者によって管理されています。保護者は、あなたが使用するアプリ、あなたの現在地、デバイスの利用時間などの情報を確認したり、管理したりできます。"</string>
-    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
-    <skip />
+    <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"デバイスのコントロールの一部（1 日の利用時間の上限や休息時間など）は PIN を使用しないと変更できません。"</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"信頼エージェントがロック解除を管理"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"認証の試行回数が上限に達したため、デバイスがロックされました"</string>
@@ -804,8 +817,7 @@
     <string name="status_bar_work" msgid="5238641949837091056">"仕事用プロファイル"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"機内モード"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"保護者による使用制限"</string>
-    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
-    <skip />
+    <string name="status_bar_pin_supervision" msgid="4376576498566645782">"一部のデバイス コントロールに対する PIN 保護"</string>
     <string name="zen_alarm_warning" msgid="7844303238486849503">"次回のアラーム（<xliff:g id="WHEN">%1$s</xliff:g>）は鳴りません"</string>
     <string name="alarm_template" msgid="2234991538018805736">"<xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"<xliff:g id="WHEN">%1$s</xliff:g>"</string>
@@ -816,8 +828,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"衛生、接続利用可能"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"衛星 SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"緊急通報または SOS のみ"</string>
-    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
-    <skip />
+    <string name="satellite_network_title_text" msgid="4825315858295910999">"衛星ネットワーク"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>、<xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>。"</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"圏外"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"レベル 1"</string>
@@ -999,6 +1010,8 @@
     <string name="battery" msgid="769686279459897127">"バッテリー"</string>
     <string name="headset" msgid="4485892374984466437">"ヘッドセット"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"設定を開く"</string>
+    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
+    <skip />
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"ヘッドホンを接続しました"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"ヘッドセットを接続しました"</string>
     <string name="data_saver" msgid="3484013368530820763">"データセーバー"</string>
@@ -1319,6 +1332,8 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"出力"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"メディアを他のデバイスに移動する共有中のセッションを停止します。"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"停止"</string>
+    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
+    <skip />
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"ブロードキャストの仕組み"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"ブロードキャスト"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Bluetooth 対応デバイスを持っている付近のユーザーは、あなたがブロードキャストしているメディアを聴けます"</string>
@@ -1505,7 +1520,8 @@
     <string name="mirror_display" msgid="2515262008898122928">"ディスプレイをミラーリングする"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"閉じる"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ディスプレイに接続しました"</string>
-    <string name="privacy_dialog_title" msgid="7839968133469098311">"マイクとカメラ"</string>
+    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
+    <skip />
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"最近のアプリの使用状況"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"最近のアクセスを表示"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"完了"</string>

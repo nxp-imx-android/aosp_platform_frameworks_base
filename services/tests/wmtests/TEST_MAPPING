@@ -1,5 +1,5 @@
 {
-  "wm-cf": [
+  "wm": [
     {
       "name": "WmTests-policy-DeferredKeyActionExecutorTests"
     },

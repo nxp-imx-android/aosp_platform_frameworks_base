@@ -14,31 +14,38 @@
   limitations under the License.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="wrap_content"
     android:layout_width="match_parent"
     android:orientation="vertical"
     android:paddingHorizontal="?android:attr/dialogPreferredPadding"
     android:paddingBottom="@dimen/alert_dialog_inner_padding">
 
-    <include layout="@layout/app_snippet_layout" />
-
-    <ProgressBar
-        android:id="@+id/progress_bar"
-        android:indeterminate="true"
-        android:layout_height="wrap_content"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_marginTop="@dimen/dialog_inter_element_margin"
-        android:paddingVertical="4dp"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:visibility="gone" />
-
-    <TextView
-        style="@style/Widget.PackageInstaller.TextView.CustomMessage"
-        android:id="@+id/custom_message"
         android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_marginTop="@dimen/dialog_inter_element_margin"
-        android:visibility="gone" />
+        android:orientation="vertical">
 
-</LinearLayout>
+        <include layout="@layout/app_snippet_layout" />
+
+        <ProgressBar
+            android:id="@+id/progress_bar"
+            android:indeterminate="true"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_marginTop="@dimen/dialog_inter_element_margin"
+            android:paddingVertical="4dp"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:visibility="gone" />
+
+        <TextView
+            style="@style/Widget.PackageInstaller.TextView.CustomMessage"
+            android:id="@+id/custom_message"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_marginTop="@dimen/dialog_inter_element_margin"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</ScrollView>

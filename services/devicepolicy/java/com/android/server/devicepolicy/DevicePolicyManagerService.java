@@ -9675,8 +9675,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             if (Flags.setKeyguardDisabledFeaturesCoexistence()) {
                 return Binder.withCleanCallingIdentity(() -> {
                     if (!parent && isManagedProfile(userHandle)) {
-                        return mDevicePolicyEngine.getResolvedPolicy(
+                        Integer resolvedPolicy = mDevicePolicyEngine.getResolvedPolicy(
                                 PolicyDefinition.KEYGUARD_DISABLED_FEATURES, userHandle);
+                        return resolvedPolicy == null ? 0 : resolvedPolicy;
                     }
 
                     int targetUserId = getProfileParentUserIfRequested(userHandle, parent);
@@ -11966,9 +11967,8 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         }
     }
 
-    @Override
-    public List<PersistableBundle> getTrustAgentConfiguration(ComponentName admin,
-            ComponentName agent, int userHandle, boolean parent) {
+    private List<PersistableBundle> getTrustAgentConfigurationPreKeyguardDisabledFeaturesCoexistence
+            (ComponentName admin, ComponentName agent, int userHandle, boolean parent) {
         if (!mHasFeature || !mLockPatternUtils.hasSecureLockScreen()) {
             return null;
         }
@@ -12022,6 +12022,136 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             }
             return allAdminsHaveOptions ? result : null;
         }
+    }
+
+    @Override
+    public List<PersistableBundle> getTrustAgentConfiguration(ComponentName who,
+            ComponentName agent, int userHandle, boolean parent) {
+        if (!Flags.setKeyguardDisabledFeaturesCoexistence()) {
+            return getTrustAgentConfigurationPreKeyguardDisabledFeaturesCoexistence(
+                    who, agent, userHandle, parent);
+        }
+
+        if (!mHasFeature || !mLockPatternUtils.hasSecureLockScreen()) {
+            return null;
+        }
+        Objects.requireNonNull(agent, "agent null");
+        Preconditions.checkArgumentNonnegative(userHandle, "Invalid userId");
+
+        final CallerIdentity caller = getCallerIdentity(who);
+        Preconditions.checkCallAuthorization(hasFullCrossUsersPermission(caller, userHandle));
+
+        synchronized (getLockObject()) {
+            final String componentName = agent.flattenToString();
+            if (who != null) {
+                final ActiveAdmin ap = getActiveAdminUncheckedLocked(who, userHandle, parent);
+                if (ap == null) return null;
+                TrustAgentInfo trustAgentInfo = ap.trustAgentInfos.get(componentName);
+                if (trustAgentInfo == null || trustAgentInfo.options == null) return null;
+                List<PersistableBundle> result = new ArrayList<>();
+                result.add(trustAgentInfo.options);
+                return result;
+            }
+
+            // Return strictest policy for this user and profiles that are visible from this user.
+            List<PersistableBundle> result = null;
+            // Search through all admins that use KEYGUARD_DISABLE_TRUST_AGENTS and keep track
+            // of the options. If any admin doesn't have options, discard options for the rest
+            // and return null.
+            List<LockscreenPolicy> lockscreenPolicies =
+                    getEnforcingAdminsForLockscreenPoliciesLocked(
+                            PolicyDefinition.KEYGUARD_DISABLED_FEATURES,
+                            getProfileParentUserIfRequested(userHandle, parent));
+            boolean allAdminsHaveOptions = true;
+            for (LockscreenPolicy policy : lockscreenPolicies) {
+                final TrustAgentInfo info;
+                if (policy.admin.getComponentName() != null) {
+                    ActiveAdmin activeAdmin = getActiveAdminUncheckedLocked(
+                        policy.admin.getComponentName(), policy.admin.getUserId());
+
+                    int activeAdminUserId = activeAdmin.getUserHandle().getIdentifier();
+                    if (policy.targetUserId == activeAdminUserId) {
+                        // Policy set by a DPC on its ownn user
+                        info = activeAdmin.trustAgentInfos.get(componentName);
+                    } else if (activeAdmin.hasParentActiveAdmin() &&
+                            policy.targetUserId == getProfileParentId(activeAdminUserId)) {
+                        // Policy set by DPC on the parent instance.
+                        activeAdmin = activeAdmin.getParentActiveAdmin();
+                        info = activeAdmin.trustAgentInfos.get(componentName);
+                    } else {
+                        Slogf.w(LOG_TAG, "Target user is not the admin's user nor its parent." +
+                            " DPCs can’t set any policies on arbitrary users." +
+                            " Assuming no policy.");
+                        info = null;
+                    }
+                } else {
+                    // Policy is enforced by non-DPC, and only DPC can set trust agent
+                    // configurations.
+                    Slogf.i(LOG_TAG, "No ActiveAdmin for enforcing admin=%s", policy.admin);
+                    info = null;
+                }
+                Integer policyValue = policy.policy.getValue();
+                final int disabledFeatures = policyValue == null ? 0 : policyValue.intValue();
+                final boolean disablesTrust =
+                        (disabledFeatures & DevicePolicyManager.KEYGUARD_DISABLE_TRUST_AGENTS) != 0;
+
+                if (info != null && info.options != null && !info.options.isEmpty()) {
+                    if (disablesTrust) {
+                        if (result == null) {
+                            result = new ArrayList<>();
+                        }
+                        result.add(info.options);
+                    } else {
+                        Slogf.w(LOG_TAG, "Ignoring %s because it has trust options but "
+                                + "doesn't declare KEYGUARD_DISABLE_TRUST_AGENTS", policy.admin);
+                    }
+                } else if (disablesTrust) {
+                    allAdminsHaveOptions = false;
+                    break;
+                }
+            }
+            return allAdminsHaveOptions ? result : null;
+        }
+    }
+
+    private record LockscreenPolicy(
+            int targetUserId, EnforcingAdmin admin, PolicyValue<Integer> policy) {}
+
+    private List<LockscreenPolicy> getEnforcingAdminsForLockscreenPoliciesLocked(
+            PolicyDefinition<Integer> policyDefinition, int userHandle) {
+        List<LockscreenPolicy> result = new ArrayList<>();
+
+        if (isSeparateProfileChallengeEnabled(userHandle)) {
+            // If this profile has a separate challenge, only return policies targeting itself.
+            mDevicePolicyEngine.getLocalPoliciesSetByAdmins(policyDefinition, userHandle)
+                .entrySet().forEach((e) ->
+                        result.add(new LockscreenPolicy(userHandle, e.getKey(), e.getValue())));
+            return result;
+        }
+
+        // Otherwise, this user is either a full user, or it's a profile with unified challenge.
+        // In both cases we query the parent user who owns the credential (the parent user of a full
+        // user is itself), plus any profile of the parent user who has unified challenge since
+        // the policy of a unified challenge profile is enforced on the parent.
+        return mInjector.binderWithCleanCallingIdentity(() -> {
+            for (UserInfo userInfo : mUserManager.getProfiles(userHandle)) {
+                boolean shouldIncludeLockscreenPolicy =
+                    userInfo.id == userHandle ||
+                    userInfo.id == getProfileParentId(userHandle) ||
+                    (userInfo.isManagedProfile() &&
+                        mLockPatternUtils.isProfileWithUnifiedChallenge(userInfo.id));
+                if (shouldIncludeLockscreenPolicy) {
+                    mDevicePolicyEngine
+                            .getLocalPoliciesSetByAdmins(policyDefinition, userInfo.id)
+                            .entrySet()
+                            .forEach((e) -> {
+                                result.add(new LockscreenPolicy(
+                                        userInfo.id, e.getKey(), e.getValue()));
+                            });
+                }
+            }
+            return result;
+        });
     }
 
     @Override
@@ -18876,16 +19006,16 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             return results;
         }
 
-        private boolean userHasIncompatibleAccounts(int id) {
-            AccountManager am = mContext.createContextAsUser(UserHandle.of(id), /* flags= */ 0)
+        private boolean userHasIncompatibleAccounts(@UserIdInt int userId) {
+            AccountManager am = mContext.createContextAsUser(UserHandle.of(userId), /* flags= */ 0)
                     .getSystemService(AccountManager.class);
             Account[] accounts = am.getAccounts();
 
             for (Account account : accounts) {
-                if (hasAccountFeatures(am, account, FEATURE_DISALLOW)) {
+                if (hasAccountFeatures(userId, am, account, FEATURE_DISALLOW)) {
                     return true;
                 }
-                if (!hasAccountFeatures(am, account, FEATURE_ALLOW)) {
+                if (!hasAccountFeatures(userId, am, account, FEATURE_ALLOW)) {
                     return true;
                 }
             }
@@ -18900,13 +19030,13 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             Slogf.i(LOG_TAG, "Finished calculating hasIncompatibleAccountsTask");
         }
 
-        private static boolean hasAccountFeatures(AccountManager am, Account account,
-                String[] features) {
+        private static boolean hasAccountFeatures(@UserIdInt int userId, AccountManager am,
+                Account account, String[] features) {
             try {
-                return am.hasFeatures(account, features, null, null)
+                return am.hasFeatures(account, features, /* callback= */ null, /* handler= */ null)
                         .getResult(30, TimeUnit.SECONDS);
             } catch (Exception e) {
-                Slogf.w(LOG_TAG, "Failed to get account feature", e);
+                Slogf.w(LOG_TAG, e, "Failed to get account feature for user %d", userId);
                 return false;
             }
         }

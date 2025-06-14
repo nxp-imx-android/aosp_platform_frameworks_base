@@ -19681,4 +19681,14 @@ public class ActivityManagerService extends IActivityManager.Stub
             }
         });
     }
+
+    @Override
+    public void reportOptimizationInfo(@NonNull IBinder app, @NonNull String compilerFilter,
+            @NonNull String compilationReason) {
+        final ProcessRecord r = findAppProcess(app, "reportOptimizationInfo");
+        if (r == null) {
+            return;
+        }
+        r.getWindowProcessController().setOptimizationInfo(compilerFilter, compilationReason);
+    }
 }

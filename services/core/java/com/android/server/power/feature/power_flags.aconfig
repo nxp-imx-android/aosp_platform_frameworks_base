@@ -84,3 +84,10 @@ flag {
     description: "Feature flag to enable a new Perfetto data source for tracing app wakelocks."
     bug: "400774865"
 }
+
+flag {
+    name: "shutdown_system_api"
+    namespace: "power"
+    description: "Feature flag to have a system API which shuts down the device."
+    bug: "365055195"
+}

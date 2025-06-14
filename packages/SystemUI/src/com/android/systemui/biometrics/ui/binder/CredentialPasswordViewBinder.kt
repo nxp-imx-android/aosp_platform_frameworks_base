@@ -1,5 +1,6 @@
 package com.android.systemui.biometrics.ui.binder
 
+import android.hardware.biometrics.Flags
 import android.os.UserHandle
 import android.view.KeyEvent
 import android.view.View
@@ -20,6 +21,7 @@ import com.android.systemui.biometrics.ui.viewmodel.CredentialViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.res.R
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 
@@ -63,16 +65,37 @@ object CredentialPasswordViewBinder {
             }
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 // dismiss on a valid credential check
-                launch {
-                    viewModel.validatedAttestation.collect { attestation ->
-                        if (attestation != null) {
-                            imeManager.hideSoftInputFromWindow(
-                                view.windowToken,
-                                0, // flag
+                if (Flags.bpFallbackOptions()) {
+                    launch {
+                        combine(
+                                viewModel.validatedAttestation,
+                                viewModel.isCredentialAllowed,
+                                ::Pair,
                             )
-                            host.onCredentialMatched(attestation)
-                        } else {
-                            passwordField.setText("")
+                            .collect { (attestation, isAllowed) ->
+                                if (attestation != null) {
+                                    imeManager.hideSoftInputFromWindow(
+                                        view.windowToken,
+                                        0, // flag
+                                    )
+                                    host.onCredentialMatched(attestation, isAllowed)
+                                } else {
+                                    passwordField.setText("")
+                                }
+                            }
+                    }
+                } else {
+                    launch {
+                        viewModel.validatedAttestation.collect { attestation ->
+                            if (attestation != null) {
+                                imeManager.hideSoftInputFromWindow(
+                                    view.windowToken,
+                                    0, // flag
+                                )
+                                host.onCredentialMatched(attestation)
+                            } else {
+                                passwordField.setText("")
+                            }
                         }
                     }
                 }

@@ -35,8 +35,11 @@ import static android.service.notification.ZenModeConfig.XML_VERSION_MODES_UI;
 import static android.service.notification.ZenModeConfig.ZEN_TAG;
 import static android.service.notification.ZenModeConfig.ZenRule.OVERRIDE_DEACTIVATE;
 import static android.service.notification.ZenModeConfig.ZenRule.OVERRIDE_NONE;
+import static android.service.notification.ZenPolicy.CONVERSATION_SENDERS_ANYONE;
 import static android.service.notification.ZenPolicy.CONVERSATION_SENDERS_IMPORTANT;
 import static android.service.notification.ZenPolicy.PEOPLE_TYPE_ANYONE;
+import static android.service.notification.ZenPolicy.PEOPLE_TYPE_CONTACTS;
+import static android.service.notification.ZenPolicy.PEOPLE_TYPE_STARRED;
 import static android.service.notification.ZenPolicy.STATE_ALLOW;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -271,7 +274,7 @@ public class ZenModeConfigTest extends UiServiceTestCase {
                 .showBadges(false)
                 .showInAmbientDisplay(false)
                 .allowCalls(ZenPolicy.PEOPLE_TYPE_CONTACTS)
-                .allowMessages(ZenPolicy.PEOPLE_TYPE_STARRED)
+                .allowMessages(PEOPLE_TYPE_STARRED)
                 .allowConversations(ZenPolicy.CONVERSATION_SENDERS_NONE)
                 .allowPriorityChannels(false)
                 .build();
@@ -298,21 +301,18 @@ public class ZenModeConfigTest extends UiServiceTestCase {
     public void testPriorityOnlyMutingAll() {
         ZenModeConfig config = getMutedAllConfig();
         assertTrue(ZenModeConfig.areAllPriorityOnlyRingerSoundsMuted(config));
-        assertTrue(ZenModeConfig.areAllZenBehaviorSoundsMuted(config));
 
         config.manualRule.zenPolicy = new ZenPolicy.Builder(config.manualRule.zenPolicy)
                 .allowReminders(true)
                 .build();
 
         assertFalse(ZenModeConfig.areAllPriorityOnlyRingerSoundsMuted(config));
-        assertFalse(ZenModeConfig.areAllZenBehaviorSoundsMuted(config));
 
         config.manualRule.zenPolicy = new ZenPolicy.Builder(config.manualRule.zenPolicy)
                 .allowReminders(false)
                 .build();
 
         assertTrue(ZenModeConfig.areAllPriorityOnlyRingerSoundsMuted(config));
-        assertTrue(ZenModeConfig.areAllZenBehaviorSoundsMuted(config));
 
         config.hasPriorityChannels = true;
         config.manualRule.zenPolicy = new ZenPolicy.Builder(config.manualRule.zenPolicy)
@@ -320,7 +320,6 @@ public class ZenModeConfigTest extends UiServiceTestCase {
                 .build();
 
         assertFalse(ZenModeConfig.areAllPriorityOnlyRingerSoundsMuted(config));
-        assertFalse(ZenModeConfig.areAllZenBehaviorSoundsMuted(config));
 
         config.hasPriorityChannels = false;
         config.manualRule.zenPolicy = new ZenPolicy.Builder(config.manualRule.zenPolicy)
@@ -331,14 +330,12 @@ public class ZenModeConfigTest extends UiServiceTestCase {
                 .build();
 
         assertTrue(ZenModeConfig.areAllPriorityOnlyRingerSoundsMuted(config));
-        assertFalse(ZenModeConfig.areAllZenBehaviorSoundsMuted(config));
 
         config.manualRule.zenPolicy = new ZenPolicy.Builder(config.manualRule.zenPolicy)
                 .allowAlarms(false)
                 .build();
 
         assertTrue(ZenModeConfig.areAllPriorityOnlyRingerSoundsMuted(config));
-        assertTrue(ZenModeConfig.areAllZenBehaviorSoundsMuted(config));
     }
 
     @Test
@@ -400,8 +397,43 @@ public class ZenModeConfigTest extends UiServiceTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_BACKUP_RESTORE_LOGGING)
     public void testBackupRestore_fromPreModesUi() throws IOException, XmlPullParserException {
+        // Very non-default XML, to check that DND policy is transferred from the old values.
+        String xml = """
+                <zen version="12">
+                <allow calls="true" repeatCallers="false" messages="true"
+                  reminders="false" events="true" callsFrom="0" messagesFrom="1"
+                  alarms="true" media="false" system="true" convos="true"
+                  convosFrom="1" priorityChannelsAllowed="false" />
+                <disallow visualEffects="24" />
+                <manual enabled="true" zen="1" creationTime="0" modified="false" />
+                <state areChannelsBypassingDnd="true" />
+                </zen>""";
+
+        ZenModeConfig config = readConfigXml(new ByteArrayInputStream(xml.getBytes()),
+                mock(BackupRestoreEventLogger.class));
+
+        assertThat(config.manualRule.zenPolicy).isEqualTo(
+                new ZenPolicy.Builder()
+                        .allowCalls(PEOPLE_TYPE_ANYONE)
+                        .allowMessages(PEOPLE_TYPE_CONTACTS)
+                        .allowConversations(CONVERSATION_SENDERS_ANYONE)
+                        .allowRepeatCallers(false)
+                        .allowReminders(false)
+                        .allowEvents(true)
+                        .allowAlarms(true)
+                        .allowMedia(false)
+                        .allowSystem(true)
+                        .allowPriorityChannels(false)
+                        .showAllVisualEffects()
+                        .showLights(false)
+                        .showPeeking(false)
+                        .build());
+    }
+
+    @Test
+    @EnableFlags(FLAG_BACKUP_RESTORE_LOGGING)
+    public void testBackupRestore_fromPreModesUi_logs() throws IOException, XmlPullParserException {
         String xml = "<zen version=\"12\">\n"
                 + "<allow calls=\"true\" repeatCallers=\"true\" messages=\"true\""
                 + " reminders=\"false\" events=\"false\" callsFrom=\"2\" messagesFrom=\"2\""

@@ -26,6 +26,7 @@ import android.testing.AndroidTestingRunner;
 
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -38,6 +39,9 @@ import java.util.List;
 @RunWith(AndroidTestingRunner.class)
 public class RemoteDeviceTaskListTest {
 
+    private RemoteTask mMostRecentTask;
+    private int mObserverCallCount;
+
     private static final int ASSOCIATION_ID = 123;
     private static final String DEVICE_NAME = "device1";
 
@@ -45,7 +49,13 @@ public class RemoteDeviceTaskListTest {
 
     @Before
     public void setUp() {
-        taskList = new RemoteDeviceTaskList(ASSOCIATION_ID, DEVICE_NAME);
+        mMostRecentTask = null;
+        mObserverCallCount = 0;
+
+        taskList = new RemoteDeviceTaskList(
+            ASSOCIATION_ID,
+            DEVICE_NAME,
+            this::onMostRecentTaskChanged);
     }
 
     @Test
@@ -56,27 +66,37 @@ public class RemoteDeviceTaskListTest {
     }
 
     @Test
-    public void testAddTask_updatesMostRecentTask() {
-        RemoteTaskInfo firstAddedTask = createNewRemoteTaskInfo(2, "task2", 200);
+    public void testAddTask_updatesMostRecentTaskAndNotifiesListeners() {
+        // Before adding any tasks, the most recent task should be null.
+        assertThat(taskList.getMostRecentTask()).isNull();
 
-        taskList.addTask(firstAddedTask);
-
-        assertThat(taskList.getMostRecentTask())
-            .isEqualTo(firstAddedTask.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME));
+        // Add a task, verify it automatically becomes the most recent task.
+        RemoteTaskInfo firstAddedTaskInfo
+            = createNewRemoteTaskInfo(2, "task2", 200);
+        RemoteTask firstAddedTask
+            = firstAddedTaskInfo.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
+        taskList.addTask(firstAddedTaskInfo);
+        assertThat(mObserverCallCount).isEqualTo(1);
+        assertThat(mMostRecentTask).isEqualTo(firstAddedTask);
+        assertThat(taskList.getMostRecentTask()).isEqualTo(firstAddedTask);
 
         // Add another task with an older timestamp, verify it doesn't update
         // the most recent task.
-        RemoteTaskInfo secondAddedTask = createNewRemoteTaskInfo(1, "task1", 100);
-        taskList.addTask(secondAddedTask);
-        assertThat(taskList.getMostRecentTask())
-            .isEqualTo(firstAddedTask.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME));
+        RemoteTaskInfo secondAddedTaskInfo = createNewRemoteTaskInfo(1, "task1", 100);
+        taskList.addTask(secondAddedTaskInfo);
+        assertThat(taskList.getMostRecentTask()).isEqualTo(firstAddedTask);
+        assertThat(mObserverCallCount).isEqualTo(2);
+        assertThat(mMostRecentTask).isEqualTo(firstAddedTask);
 
         // Add another task with a newer timestamp, verifying it changes the
         // most recently used task.
-        RemoteTaskInfo thirdAddedTask = createNewRemoteTaskInfo(3, "task3", 300);
-        taskList.addTask(thirdAddedTask);
-        assertThat(taskList.getMostRecentTask())
-            .isEqualTo(thirdAddedTask.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME));
+        RemoteTaskInfo thirdAddedTaskInfo = createNewRemoteTaskInfo(3, "task3", 300);
+        RemoteTask thirdAddedTask = thirdAddedTaskInfo.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
+        taskList.addTask(thirdAddedTaskInfo);
+
+        assertThat(taskList.getMostRecentTask()).isEqualTo(thirdAddedTask);
+        assertThat(mObserverCallCount).isEqualTo(3);
+        assertThat(mMostRecentTask).isEqualTo(thirdAddedTask);
     }
 
     @Test
@@ -94,12 +114,11 @@ public class RemoteDeviceTaskListTest {
 
         taskList.setTasks(initialTasks);
 
-        assertThat(taskList.getMostRecentTask())
-            .isEqualTo(expectedTask.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME));
+        assertThat(taskList.getMostRecentTask().getId()).isEqualTo(expectedTask.getId());
     }
 
     @Test
-    public void testRemoveTask_removesTask() {
+    public void testRemoveTask_removesTaskAndNotifiesListeners() {
         RemoteTaskInfo mostRecentTaskInfo = createNewRemoteTaskInfo(1, "task2", 200);
         RemoteTask mostRecentTask = mostRecentTaskInfo.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
         RemoteTaskInfo secondMostRecentTaskInfo = createNewRemoteTaskInfo(2, "task1", 100);
@@ -107,57 +126,75 @@ public class RemoteDeviceTaskListTest {
             = secondMostRecentTaskInfo.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
 
         taskList.setTasks(Arrays.asList(mostRecentTaskInfo, secondMostRecentTaskInfo));
-        assertThat(taskList.getMostRecentTask())
-            .isEqualTo(mostRecentTask);
+        assertThat(taskList.getMostRecentTask()).isEqualTo(mostRecentTask);
+        assertThat(mObserverCallCount).isEqualTo(1);
+        assertThat(mMostRecentTask).isEqualTo(mostRecentTask);
 
         taskList.removeTask(mostRecentTask.getId());
-        assertThat(taskList.getMostRecentTask())
-            .isEqualTo(secondMostRecentTask);
+        assertThat(taskList.getMostRecentTask()).isEqualTo(secondMostRecentTask);
+        assertThat(mObserverCallCount).isEqualTo(2);
+        assertThat(mMostRecentTask).isEqualTo(secondMostRecentTask);
     }
 
     @Test
-    public void testSetTasks_updatesMostRecentTask() {
+    public void testSetTasks_updatesMostRecentTaskAndNotifiesListeners() {
 
         // Set tasks initially, verify the most recent task is the first one.
-        RemoteTaskInfo firstExpectedTask
-            = createNewRemoteTaskInfo(1, "task2", 200);
+        RemoteTaskInfo firstExpectedTaskInfo = createNewRemoteTaskInfo(1, "task2", 200);
+        RemoteTask firstExpectedTask
+            = firstExpectedTaskInfo.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
+
         List<RemoteTaskInfo> initialTasks = Arrays.asList(
                 createNewRemoteTaskInfo(2, "task1", 100),
-                firstExpectedTask,
+                firstExpectedTaskInfo,
                 createNewRemoteTaskInfo(3, "task3", 150));
+
         taskList.setTasks(initialTasks);
-        assertThat(taskList.getMostRecentTask())
-            .isEqualTo(firstExpectedTask.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME));
+
+        assertThat(taskList.getMostRecentTask().getId()).isEqualTo(firstExpectedTask.getId());
+        assertThat(mObserverCallCount).isEqualTo(1);
+        assertThat(mMostRecentTask.getId()).isEqualTo(firstExpectedTask.getId());
 
         // Set the tasks to a different list, verify the most recent task is the
         // first one.
-        RemoteTaskInfo secondExpectedTask
-            = createNewRemoteTaskInfo(4, "task4", 300);
+        RemoteTaskInfo secondExpectedTaskInfo = createNewRemoteTaskInfo(4, "task4", 300);
         List<RemoteTaskInfo> secondExpectedTasks = Arrays.asList(
-                secondExpectedTask,
+                secondExpectedTaskInfo,
+                createNewRemoteTaskInfo(7, "task7", 200),
                 createNewRemoteTaskInfo(5, "task5", 200),
                 createNewRemoteTaskInfo(6, "task6", 100));
+        RemoteTask secondExpectedTask =
+            secondExpectedTaskInfo.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
+
         taskList.setTasks(secondExpectedTasks);
-        assertThat(taskList.getMostRecentTask())
-            .isEqualTo(secondExpectedTask.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME));
+
+        assertThat(mObserverCallCount).isEqualTo(2);
+        assertThat(mMostRecentTask).isEqualTo(secondExpectedTask);
+        assertThat(taskList.getMostRecentTask()).isEqualTo(secondExpectedTask);
     }
 
     @Test
-    public void testSetTasks_overwritesExistingTasks() {
+    public void testSetTasks_overwritesExistingTasksAndNotifiesListeners() {
         // Set the initial state of the list.
         RemoteTaskInfo firstExpectedTask = createNewRemoteTaskInfo(1, "task1", 100);
+        RemoteTask firstExpectedRemoteTask =
+            firstExpectedTask.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
         taskList.setTasks(Arrays.asList(firstExpectedTask));
-        assertThat(taskList.getMostRecentTask())
-            .isEqualTo(firstExpectedTask.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME));
+        assertThat(taskList.getMostRecentTask()).isEqualTo(firstExpectedRemoteTask);
+        assertThat(mObserverCallCount).isEqualTo(1);
+        assertThat(mMostRecentTask).isEqualTo(firstExpectedRemoteTask);
 
         // Replace the tasks with a different list. The only task in this was used before the
         // previous task.
-        RemoteTaskInfo secondExpectedTask = createNewRemoteTaskInfo(2, "task2", 10);
+        RemoteTaskInfo secondExpectedTask = createNewRemoteTaskInfo(2, "task2", 200);
+        RemoteTask secondExpectedRemoteTask
+            = secondExpectedTask.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
         taskList.setTasks(Arrays.asList(secondExpectedTask));
 
         // Because the task list is overwritten, the most recent task should be the second task.
-        assertThat(taskList.getMostRecentTask())
-            .isEqualTo(secondExpectedTask.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME));
+        assertThat(taskList.getMostRecentTask()).isEqualTo(secondExpectedRemoteTask);
+        assertThat(mObserverCallCount).isEqualTo(2);
+        assertThat(mMostRecentTask).isEqualTo(secondExpectedRemoteTask);
     }
 
     private RemoteTaskInfo createNewRemoteTaskInfo(
@@ -171,5 +208,10 @@ public class RemoteDeviceTaskListTest {
             lastUsedTimeMillis);
 
         return new RemoteTaskInfo(runningTaskInfo);
+    }
+
+    public void onMostRecentTaskChanged(RemoteTask task) {
+        mMostRecentTask = task;
+        mObserverCallCount++;
     }
 }

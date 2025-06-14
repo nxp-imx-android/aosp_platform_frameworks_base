@@ -766,6 +766,42 @@ public class BiometricManager {
         }
     }
 
+    /**
+     * Registers listener for changes to Identity Check state.
+     * @param listener Listener for changes to Identity Check state
+     * @hide
+     */
+    @RequiresPermission(USE_BIOMETRIC_INTERNAL)
+    public void registerIdentityCheckStateListener(IIdentityCheckStateListener listener) {
+        if (mService != null) {
+            try {
+                mService.registerIdentityCheckStateListener(listener);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        } else {
+            Slog.w(TAG, "registerIdentityCheckStateListener(): Service not connected");
+        }
+    }
+
+    /**
+     * Unregisters listener for changes to Identity Check state.
+     * @param listener Listener for changes to Identity Check state
+     * @hide
+     */
+    @RequiresPermission(USE_BIOMETRIC_INTERNAL)
+    public void unregisterIdentityCheckStateListener(IIdentityCheckStateListener listener) {
+        if (mService != null) {
+            try {
+                mService.unregisterIdentityCheckStateListener(listener);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        } else {
+            Slog.w(TAG, "unregisterIdentityCheckStateListener(): Service not connected");
+        }
+    }
+
 
     /**
      * Requests all {@link Authenticators.Types#BIOMETRIC_STRONG} sensors to have their

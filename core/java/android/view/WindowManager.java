@@ -4608,6 +4608,14 @@ public interface WindowManager extends ViewManager {
                 INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE = 1 << 4;
 
         /**
+         * Input feature flag used to indicate that this window wants to capture keys before
+         * system processes system shortcuts and actions.
+         *
+         * @hide
+         */
+        public static final int INPUT_FEATURE_CAPTURE_KEYBOARD = 1 << 5;
+
+        /**
          * An internal annotation for flags that can be specified to {@link #inputFeatures}.
          *
          * NOTE: These are not the same as {@link android.os.InputConfig} flags.
@@ -4620,7 +4628,8 @@ public interface WindowManager extends ViewManager {
                 INPUT_FEATURE_DISABLE_USER_ACTIVITY,
                 INPUT_FEATURE_SPY,
                 INPUT_FEATURE_SENSITIVE_FOR_PRIVACY,
-                INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE
+                INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE,
+                INPUT_FEATURE_CAPTURE_KEYBOARD
         })
         public @interface InputFeatureFlags {
         }
@@ -4637,6 +4646,47 @@ public interface WindowManager extends ViewManager {
         @InputFeatureFlags
         @UnsupportedAppUsage
         public int inputFeatures;
+
+        /**
+         * Allows the currently focused window to capture keys before system processes system
+         * shortcuts and actions.
+         *
+         * <p>
+         * This will allow the application to receive keys before the system processes system
+         * shortcuts and actions. But certain system keys (Power keys, etc.) and shortcuts can be
+         * reserved and can never be blocked by the current focused window even with "keyboard
+         * capture" on.
+         * </p>
+         *
+         * <p>
+         * Window which set this attribute to {@code true}, but doesn't have the required
+         * permission will not be allowed to capture system shortcuts and actions. No exception
+         * will be thrown due to missing permission, we will just fallback to the default
+         * behavior of processing system shortcuts and actions.
+         * </p>
+         *
+         * @param hasCapture whether the window should capture system shortcuts and actions.
+         */
+        @FlaggedApi(com.android.hardware.input.Flags.FLAG_REQUEST_KEY_CAPTURE_API)
+        @RequiresPermission(permission.CAPTURE_KEYBOARD)
+        public void setHasKeyboardCapture(boolean hasCapture) {
+            if (hasCapture) {
+                inputFeatures |= INPUT_FEATURE_CAPTURE_KEYBOARD;
+            } else {
+                inputFeatures &= ~INPUT_FEATURE_CAPTURE_KEYBOARD;
+            }
+        }
+
+        /**
+         * Returns whether "keyboard capture" is on.
+         *
+         * @return whether currently focused window is capturing keys before system processes
+         * shortcuts and actions.
+         */
+        @FlaggedApi(com.android.hardware.input.Flags.FLAG_REQUEST_KEY_CAPTURE_API)
+        public boolean hasKeyboardCapture() {
+            return (inputFeatures & INPUT_FEATURE_CAPTURE_KEYBOARD) != 0;
+        }
 
         /**
          * Sets the number of milliseconds before the user activity timeout occurs
@@ -6311,6 +6361,10 @@ public interface WindowManager extends ViewManager {
             if ((inputFeatures & INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE) != 0) {
                 inputFeatures &= ~INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE;
                 features.add("INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE");
+            }
+            if ((inputFeatures & INPUT_FEATURE_CAPTURE_KEYBOARD) != 0) {
+                inputFeatures &= ~INPUT_FEATURE_CAPTURE_KEYBOARD;
+                features.add("INPUT_FEATURE_CAPTURE_KEYBOARD");
             }
             if (inputFeatures != 0) {
                 features.add(Integer.toHexString(inputFeatures));

@@ -273,6 +273,7 @@ public class NotificationStackScrollLayout
     private float mOverScrolledBottomPixels;
     private final ListenerSet<Runnable> mStackHeightChangedListeners = new ListenerSet<>();
     private final ListenerSet<Runnable> mHeadsUpHeightChangedListeners = new ListenerSet<>();
+    // TODO(b/424001722) remove mLegacyLocationsChangedListener
     private NotificationLogger.OnChildLocationsChangedListener mLegacyLocationsChangedListener;
     private OnNotificationLocationsChangedListener mLocationsChangedListener;
     private OnOverscrollTopChangedListener mOverscrollTopChangedListener;
@@ -1342,9 +1343,6 @@ public class NotificationStackScrollLayout
      */
     public void setNotificationLocationsChangedListener(
             @Nullable OnNotificationLocationsChangedListener listener) {
-        if (NotificationsLiveDataStoreRefactor.isUnexpectedlyInLegacyMode()) {
-            return;
-        }
         mLocationsChangedListener = listener;
     }
 
@@ -4841,14 +4839,8 @@ public class NotificationStackScrollLayout
             child.applyViewState();
         }
 
-        if (NotificationsLiveDataStoreRefactor.isEnabled()) {
-            if (mLocationsChangedListener != null) {
-                mLocationsChangedListener.onChildLocationsChanged(collectVisibleLocationsCallable);
-            }
-        } else {
-            if (mLegacyLocationsChangedListener != null) {
-                mLegacyLocationsChangedListener.onChildLocationsChanged();
-            }
+        if (mLocationsChangedListener != null) {
+            mLocationsChangedListener.onChildLocationsChanged(collectVisibleLocationsCallable);
         }
 
         runAnimationFinishedRunnables();
@@ -6037,7 +6029,14 @@ public class NotificationStackScrollLayout
     }
 
     void addSwipedOutView(View v) {
+        logAddSwipedOutView(v);
         mSwipedOutViews.add(v);
+    }
+
+    private void logAddSwipedOutView(View v) {
+        if (mLogger != null && v instanceof ExpandableNotificationRow row) {
+            mLogger.logAddSwipedOutView(row.getLoggingKey(), mClearAllInProgress);
+        }
     }
 
     void onSwipeBegin(View viewSwiped) {

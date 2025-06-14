@@ -29,11 +29,18 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureRegion
+import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureType
+import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureViewModel
 
-/** TODO(b/422855266): Inject ViewModel */
-@Composable
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
-fun PreCaptureToolbar(expanded: Boolean, onCloseClick: () -> Unit, modifier: Modifier = Modifier) {
+@Composable
+fun PreCaptureToolbar(
+    viewModel: ScreenCaptureViewModel,
+    expanded: Boolean,
+    onCloseClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     // TODO(b/422855266): Preload icons in the view model to avoid loading icons in UI thread and
     // improve performance
     val screenshotIcon =
@@ -51,18 +58,34 @@ fun PreCaptureToolbar(expanded: Boolean, onCloseClick: () -> Unit, modifier: Mod
 
     val captureRegionButtonItems =
         listOf(
-            RadioButtonGroupItem(icon = screenshotWindowIcon),
-            RadioButtonGroupItem(icon = screenshotRegionIcon),
-            RadioButtonGroupItem(icon = screenshotFullscreenIcon),
+            RadioButtonGroupItem(
+                isSelected = (viewModel.captureRegion == ScreenCaptureRegion.APP_WINDOW),
+                onClick = { viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW) },
+                icon = screenshotWindowIcon,
+            ),
+            RadioButtonGroupItem(
+                isSelected = (viewModel.captureRegion == ScreenCaptureRegion.PARTIAL),
+                onClick = { viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL) },
+                icon = screenshotRegionIcon,
+            ),
+            RadioButtonGroupItem(
+                isSelected = (viewModel.captureRegion == ScreenCaptureRegion.FULLSCREEN),
+                onClick = { viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN) },
+                icon = screenshotFullscreenIcon,
+            ),
         )
 
     val captureTypeButtonItems =
         listOf(
             RadioButtonGroupItem(
+                isSelected = (viewModel.captureType == ScreenCaptureType.SCREEN_RECORD),
+                onClick = { viewModel.updateCaptureType(ScreenCaptureType.SCREEN_RECORD) },
                 icon = screenRecordIcon,
                 label = stringResource(id = R.string.screen_capture_toolbar_record_button),
             ),
             RadioButtonGroupItem(
+                isSelected = (viewModel.captureType == ScreenCaptureType.SCREENSHOT),
+                onClick = { viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT) },
                 icon = screenshotIcon,
                 label = stringResource(id = R.string.screen_capture_toolbar_capture_button),
             ),
@@ -80,16 +103,11 @@ fun PreCaptureToolbar(expanded: Boolean, onCloseClick: () -> Unit, modifier: Mod
 
             Spacer(Modifier.size(8.dp))
 
-            // TODO(b/422855266): Use state from ViewModel for selected index
-            RadioButtonGroup(
-                items = captureRegionButtonItems,
-                selectedIndex = 0,
-                onSelect = { _ -> },
-            )
+            RadioButtonGroup(items = captureRegionButtonItems)
 
             Spacer(Modifier.size(16.dp))
 
-            RadioButtonGroup(items = captureTypeButtonItems, selectedIndex = 0, onSelect = { _ -> })
+            RadioButtonGroup(items = captureTypeButtonItems)
         }
     }
 }

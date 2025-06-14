@@ -16,6 +16,8 @@
 
 package com.android.systemui.qs.panels.ui.compose
 
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +40,7 @@ import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.DefaultEditTileGrid
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditAction
 import com.android.systemui.qs.panels.ui.viewmodel.AvailableEditActions
@@ -207,6 +210,86 @@ class EditModeTest : SysuiTestCase() {
         composeRule.waitForIdle()
 
         composeRule.onNodeWithContentDescription("Undo").assertDoesNotExist()
+    }
+
+    @Test
+    @DisableFlags(QsEditModeTabs.FLAG_NAME)
+    fun gridHeader_dependsOnPlacementMode() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        // Assert the idle string is showing
+        composeRule
+            .onNodeWithText(context.getString(R.string.select_to_rearrange_tiles))
+            .assertExists()
+        composeRule
+            .onNodeWithText(context.getString(R.string.tap_to_position_tile))
+            .assertDoesNotExist()
+
+        // Double tap "tileA" to enable placement mode
+        composeRule.onNodeWithContentDescription("tileA").performTouchInput { doubleClick() }
+
+        // Assert the "Tap to position" string is showing
+        composeRule
+            .onNodeWithText(context.getString(R.string.select_to_rearrange_tiles))
+            .assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.tap_to_position_tile)).assertExists()
+    }
+
+    @Test
+    @EnableFlags(QsEditModeTabs.FLAG_NAME)
+    fun gridHeader_dependsOnSelectedTab() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        // Assert the "tap to remove" string is showing
+        composeRule.onNodeWithText(context.getString(R.string.tap_to_remove_tiles)).assertExists()
+        composeRule
+            .onNodeWithText(context.getString(R.string.resize_and_reorder_tiles))
+            .assertDoesNotExist()
+
+        // Tap on Layout tab to select
+        composeRule.onNodeWithText("Layout").performClick()
+
+        // Assert the "Tap to resize" string is showing
+        composeRule
+            .onNodeWithText(context.getString(R.string.tap_to_remove_tiles))
+            .assertDoesNotExist()
+        composeRule
+            .onNodeWithText(context.getString(R.string.resize_and_reorder_tiles))
+            .assertExists()
+    }
+
+    @Test
+    @DisableFlags(QsEditModeTabs.FLAG_NAME)
+    fun visibleAvailableTiles_dependsOnPlacementMode() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        // Assert the available tiles are visible
+        composeRule.onNodeWithText("tileF").assertExists()
+
+        // Double tap "tileA" to enable placement mode
+        composeRule.onNodeWithContentDescription("tileA").performTouchInput { doubleClick() }
+
+        // Assert the available tiles are not visible
+        composeRule.onNodeWithText("tileF").assertDoesNotExist()
+    }
+
+    @Test
+    @EnableFlags(QsEditModeTabs.FLAG_NAME)
+    fun visibleAvailableTiles_dependsOnSelectedTab() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        // Assert the available tiles are visible
+        composeRule.onNodeWithText("tileF").assertExists()
+
+        // Tap on Layout tab to select
+        composeRule.onNodeWithText("Layout").performClick()
+
+        // Assert the available tiles are not visible
+        composeRule.onNodeWithText("tileF").assertDoesNotExist()
     }
 
     private fun ComposeContentTestRule.assertCurrentTilesGridContainsExactly(specs: List<String>) =

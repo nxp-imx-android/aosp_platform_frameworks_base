@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"You\'re currently recording your entire screen"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"You\'re currently recording <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Stop recording"</string>
+    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Capture"</string>
+    <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Record"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Sharing screen"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Sharing content"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Stop sharing screen?"</string>
@@ -207,9 +209,23 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Verify another way"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Manage Identity Check"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"PIN can\'t be used for verification as Identity Check is on and requires a biometric. Learn more about Identity Check"</string>
+    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Use PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Use pattern"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Use password"</string>
+    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"Enter your PIN"</string>
+    <string name="biometric_dialog_enter_password" msgid="200503318983048202">"Enter your password"</string>
+    <string name="biometric_dialog_enter_pattern" msgid="3065746760277739487">"Enter your pattern"</string>
+    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"PIN is required to recover biometrics after too many failed attempts"</string>
+    <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"Pattern is required to recover biometrics after too many failed attempts"</string>
+    <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"Password is required to recover biometrics after too many failed attempts"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"Wrong PIN"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"Wrong pattern"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"Wrong password"</string>
@@ -990,6 +1006,7 @@
     <string name="battery" msgid="769686279459897127">"Battery"</string>
     <string name="headset" msgid="4485892374984466437">"Headset"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"Open settings"</string>
+    <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"Open more details"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"Headphones connected"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"Headset connected"</string>
     <string name="data_saver" msgid="3484013368530820763">"Data Saver"</string>
@@ -1310,6 +1327,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"Output"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Stop your shared session to move media to another device"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Stop"</string>
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Stop sharing"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"How broadcasting works"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"Broadcast"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"People near you with compatible Bluetooth devices can listen to the media you\'re broadcasting"</string>
@@ -1496,7 +1514,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"Mirror display"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Dismiss"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Display connected"</string>
-    <string name="privacy_dialog_title" msgid="7839968133469098311">"Microphone and camera"</string>
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"Microphone, Camera &amp; Location"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Recent app use"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"See recent access"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Done"</string>

@@ -21,12 +21,14 @@ import android.app.ActivityManager
 import android.app.Flags
 import android.app.Flags.notificationsRedesignThemedAppIcons
 import android.content.Context
+import android.content.pm.PackageManager.MATCH_UNINSTALLED_PACKAGES
 import android.content.pm.PackageManager.NameNotFoundException
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.os.UserHandle
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import com.android.internal.R
 import com.android.launcher3.icons.BaseIconFactory
 import com.android.launcher3.icons.BaseIconFactory.IconOptions
@@ -206,18 +208,33 @@ constructor(
     ): BitmapInfo {
         val pm = sysuiContext.packageManager
         val userId = userHandle.identifier
-        val icon = pm.getApplicationInfoAsUser(packageName, 0, userId).loadUnbadgedIcon(pm)
+        val icon =
+            pm.getApplicationInfoAsUser(packageName, MATCH_UNINSTALLED_PACKAGES, userId)
+                .loadUnbadgedIcon(pm)
         val options = iconOptions(userHandle, allowProfileBadge = allowProfileBadge)
         return iconFactory.createBadgedIconBitmap(icon, options)
+    }
+
+    @VisibleForTesting
+    fun createAppIconForTest(packageName: String, @UserIconInfo.UserType userType: Int): Drawable {
+        val pm = sysuiContext.packageManager
+        val userHandle = UserHandle.of(pm.userId)
+        val icon = pm.getApplicationInfo(packageName, 0).loadUnbadgedIcon(pm)
+        val options = iconOptions(UserIconInfo(userHandle, userType))
+        val bitmapInfo = standardIconFactory.createBadgedIconBitmap(icon, options)
+        return bitmapInfo.createIconDrawable(themed = false)
     }
 
     private fun BitmapInfo.createIconDrawable(themed: Boolean): Drawable =
         newIcon(context = sysuiContext, creationFlags = if (themed) BitmapInfo.FLAG_THEMED else 0)
             .apply { isAnimationEnabled = false }
 
-    private fun iconOptions(userHandle: UserHandle, allowProfileBadge: Boolean): IconOptions {
+    private fun iconOptions(userHandle: UserHandle, allowProfileBadge: Boolean): IconOptions =
+        iconOptions(userIconInfo(userHandle, allowProfileBadge = allowProfileBadge))
+
+    private fun iconOptions(userIconInfo: UserIconInfo): IconOptions {
         return IconOptions().apply {
-            setUser(userIconInfo(userHandle, allowProfileBadge = allowProfileBadge))
+            setUser(userIconInfo)
             setBitmapGenerationMode(BaseIconFactory.MODE_HARDWARE)
             // This color will not be used, but we're just setting it so that the icon factory
             // doesn't try to extract colors from our bitmap (since it won't work, given it's a

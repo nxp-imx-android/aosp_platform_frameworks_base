@@ -25,7 +25,6 @@ import static junit.framework.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import android.platform.test.annotations.DisableFlags;
 import android.testing.TestableLooper.RunWithLooper;
 import android.view.Display;
 import android.view.View;
@@ -41,9 +40,9 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.notification.collection.NotifLiveData;
 import com.android.systemui.statusbar.notification.collection.NotifLiveDataStore;
-import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -56,7 +55,7 @@ import java.util.Objects;
 @SmallTest
 @RunWith(AndroidJUnit4.class)
 @RunWithLooper
-@DisableFlags(NotificationsLiveDataStoreRefactor.FLAG_NAME)
+@Ignore("b/424001722") // remove this test when LegacyLightsOutNotifController is gone
 public class LegacyLightsOutNotifControllerTest extends SysuiTestCase {
     private static final int LIGHTS_ON = 0;
     private static final int LIGHTS_OUT = APPEARANCE_LOW_PROFILE_BARS;

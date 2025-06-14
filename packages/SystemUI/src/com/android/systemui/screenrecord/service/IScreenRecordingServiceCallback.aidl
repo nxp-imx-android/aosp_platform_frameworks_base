@@ -19,6 +19,8 @@ package com.android.systemui.screenrecord.service;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
+import android.net.Uri;
+import android.graphics.drawable.Icon;
 
 oneway interface IScreenRecordingServiceCallback {
 
@@ -31,4 +33,6 @@ oneway interface IScreenRecordingServiceCallback {
     * Called when the recording is interrupted for some reason.
     */
     void onRecordingInterrupted(int userId, int reason);
+
+    void onRecordingSaved(in Uri recordingUri, in Icon thumbnail);
 }

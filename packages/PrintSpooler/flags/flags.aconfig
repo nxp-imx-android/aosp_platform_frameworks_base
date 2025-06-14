@@ -14,3 +14,10 @@ flag {
   description: "Metrics tracking final print job status, printer discovery, printer capabilities, and major UI actions."
   bug: "390478410"
 }
+
+flag {
+    name: "enable_print_debug_option"
+    namespace: "printing"
+    description: "Enable extra debug logging by checking a runtime system property."
+    bug: "397418860"
+}

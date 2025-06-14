@@ -538,13 +538,13 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     @Override
-    public void updateAppFunctionAccessFlags(String agentPackageName, int agentUserId,
+    public boolean updateAppFunctionAccessFlags(String agentPackageName, int agentUserId,
             String targetPackageName, int targetUserId, int flagMask, int flags)
             throws RemoteException {
         if (!accessCheckFlagsEnabled()) {
-            return;
+            return false;
         }
-        mAppFunctionAccessService.updateAppFunctionAccessFlags(agentPackageName, agentUserId,
+        return mAppFunctionAccessService.updateAppFunctionAccessFlags(agentPackageName, agentUserId,
                 targetPackageName, targetUserId, flagMask, flags);
     }
 

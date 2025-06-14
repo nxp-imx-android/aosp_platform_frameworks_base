@@ -44,6 +44,7 @@ import android.hardware.biometrics.IAuthService;
 import android.hardware.biometrics.IBiometricEnabledOnKeyguardCallback;
 import android.hardware.biometrics.IBiometricService;
 import android.hardware.biometrics.IBiometricServiceReceiver;
+import android.hardware.biometrics.IIdentityCheckStateListener;
 import android.hardware.biometrics.IInvalidationCallback;
 import android.hardware.biometrics.ITestSession;
 import android.hardware.biometrics.ITestSessionCallback;
@@ -530,6 +531,20 @@ public class AuthService extends SystemService {
             if (faceService != null) {
                 faceService.unregisterAuthenticationStateListener(listener);
             }
+        }
+
+        @Override
+        public void registerIdentityCheckStateListener(IIdentityCheckStateListener listener)
+                throws RemoteException {
+            checkInternalPermission();
+            mBiometricService.registerIdentityCheckStateListener(listener);
+        }
+
+        @Override
+        public void unregisterIdentityCheckStateListener(IIdentityCheckStateListener listener)
+                throws RemoteException {
+            checkInternalPermission();
+            mBiometricService.unregisterIdentityCheckStateListener(listener);
         }
 
         @Override

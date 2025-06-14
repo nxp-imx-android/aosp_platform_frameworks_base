@@ -23,8 +23,9 @@ import android.os.IBinder;
  * event (by calling the corresponding NotificationListenerService API method on the main thread)
  * was completed or there was an error that resulted in no dispatch. This does not signal that the
  * app completed processing the event. It may still be doing that off the main thread.
- * {@hide}
+ *
+ * @hide
  */
-interface IDispatchCompletionListener {
+oneway interface IDispatchCompletionListener {
     void notifyDispatchComplete(in long dispatchToken);
 }

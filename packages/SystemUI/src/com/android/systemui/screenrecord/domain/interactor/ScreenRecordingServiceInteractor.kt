@@ -20,7 +20,9 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.graphics.drawable.Icon
 import android.media.projection.StopReason
+import android.net.Uri
 import android.os.IBinder
 import androidx.annotation.WorkerThread
 import com.android.app.tracing.coroutines.flow.asStateFlowTraced
@@ -182,6 +184,8 @@ constructor(
         override fun onRecordingInterrupted(userId: Int, reason: Int) {
             stopRecording(reason)
         }
+
+        override fun onRecordingSaved(recordingUri: Uri?, thumbnail: Icon?) {}
     }
 
     private data class RecordingContext(val status: Status, val service: IScreenRecordingService?)

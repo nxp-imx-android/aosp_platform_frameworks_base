@@ -138,6 +138,10 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Тренутно снимате цео екран"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Тренутно снимате: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Заустави снимање"</string>
+    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
+    <skip />
+    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
+    <skip />
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Екран се дели"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Дељење садржаја"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Желите да зауставите дељење екрана?"</string>
@@ -207,9 +211,23 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Верификујте на други начин"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Управљајте Провером идентитета"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"PIN не може да се користи за верификацију јер је Провера идентитета укључена и захтева биометрију. Сазнајте више о Провери идентитета"</string>
+    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
+    <skip />
+    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
+    <skip />
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Користи PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Користите шаблон"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Користите лозинку"</string>
+    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"Унесите PIN"</string>
+    <string name="biometric_dialog_enter_password" msgid="200503318983048202">"Унесите лозинку"</string>
+    <string name="biometric_dialog_enter_pattern" msgid="3065746760277739487">"Унесите шаблон"</string>
+    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"PIN је обавезан да бисте могли да вратите биометријске податке после превише неуспелих покушаја"</string>
+    <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"Шаблон је обавезан да бисте могли да вратите биометријске податке после превише неуспелих покушаја"</string>
+    <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"Лозинка је обавезна да бисте могли да вратите биометријске податке после превише неуспелих покушаја"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"Погрешан PIN"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"Погрешан шаблон"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"Погрешна лозинка"</string>
@@ -300,12 +318,9 @@
     <string name="accessibility_quick_settings_less_time" msgid="9110364286464977870">"Мање времена."</string>
     <string name="accessibility_casting_turned_off" msgid="1387906158563374962">"Пребацивање екрана је заустављено."</string>
     <string name="accessibility_brightness" msgid="5391187016177823721">"Осветљеност екрана"</string>
-    <!-- no translation found for accessibility_camera_in_use (1090160655874262911) -->
-    <skip />
-    <!-- no translation found for accessibility_microphone_in_use (1921058214238108340) -->
-    <skip />
-    <!-- no translation found for accessibility_camera_and_microphone_in_use (1250516397875447442) -->
-    <skip />
+    <string name="accessibility_camera_in_use" msgid="1090160655874262911">"Користи се камера"</string>
+    <string name="accessibility_microphone_in_use" msgid="1921058214238108340">"Користи се микрофон"</string>
+    <string name="accessibility_camera_and_microphone_in_use" msgid="1250516397875447442">"Користе се камера и микрофон"</string>
     <string name="data_usage_disabled_dialog_mobile_title" msgid="2286843518689837719">"Мобилни подаци су паузирани"</string>
     <string name="data_usage_disabled_dialog_title" msgid="9131615296036724838">"Подаци су паузирани"</string>
     <string name="data_usage_disabled_dialog" msgid="7933201635215099780">"Достигли се ограничење за податке које сте подесили. Више не користите мобилне податке.\n\nАко наставите, можда ће важити тарифе за потрошњу података."</string>
@@ -655,8 +670,7 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Искључи"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Откључајте за старија обавештења"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Овим уређајем управља родитељ"</string>
-    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
-    <skip />
+    <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Нека подешавања уређаја су заштићена PIN-ом."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Организација је власник уређаја и може да надгледа мрежни саобраћај"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> је власник овог уређаја и може да надгледа мрежни саобраћај"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"Овај уређај пружа <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>"</string>
@@ -697,8 +711,7 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Отвори подешавања VPN-а"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Овим уређајем управља родитељ. Родитељ може да види информације, као што су апликације које користиш, твоју локацију и време испред екрана, и да управља њима."</string>
-    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
-    <skip />
+    <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Неке контроле на уређају, попут дневних ограничења и периода за одмор, могу да се промене само помоћу PIN-а."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Поуздани агент спречава закључавање"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Уређај је закључан, превише покушаја потврде идентитета"</string>
@@ -802,8 +815,7 @@
     <string name="status_bar_work" msgid="5238641949837091056">"Пословни профил"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"Режим рада у авиону"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"Родитељски надзор"</string>
-    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
-    <skip />
+    <string name="status_bar_pin_supervision" msgid="4376576498566645782">"Заштита PIN-ом за неке контроле уређаја"</string>
     <string name="zen_alarm_warning" msgid="7844303238486849503">"Нећете чути следећи аларм у <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template" msgid="2234991538018805736">"у <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"у <xliff:g id="WHEN">%1$s</xliff:g>"</string>
@@ -814,8 +826,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Сателит, веза је доступна"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Хитна помоћ преко сателита"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Само хитни позиви или хитна помоћ"</string>
-    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
-    <skip />
+    <string name="satellite_network_title_text" msgid="4825315858295910999">"Сателитска мрежа"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"нема сигнала"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"једна црта"</string>
@@ -835,8 +846,8 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Да бисте повезали тастатуру са таблетом, прво морате да укључите Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Укључи"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Укључено – на основу лица"</string>
-    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Искључивање звука и груписање"</string>
-    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"Користите Организатор обавештења"</string>
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Искључи звук и групиши"</string>
+    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"Користи Организатор обавештења"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"За: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Продаја, нове функције и друго"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Најважније вести, уводници и друго"</string>
@@ -997,6 +1008,8 @@
     <string name="battery" msgid="769686279459897127">"Батерија"</string>
     <string name="headset" msgid="4485892374984466437">"Наглавне слушалице"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"Отворите подешавања"</string>
+    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
+    <skip />
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"Слушалице су повезане"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"Наглавне слушалице су повезане"</string>
     <string name="data_saver" msgid="3484013368530820763">"Уштеда података"</string>
@@ -1317,6 +1330,8 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"Излаз"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Зауставите дељену сесију да бисте преместили медијски садржај на други уређај"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Заустави"</string>
+    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
+    <skip />
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Како функционише емитовање"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"Емитовање"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Људи у близини са компатибилним Bluetooth уређајима могу да слушају медијски садржај који емитујете"</string>
@@ -1503,7 +1518,8 @@
     <string name="mirror_display" msgid="2515262008898122928">"Пресликај екран"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Одбаци"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Екран је повезан"</string>
-    <string name="privacy_dialog_title" msgid="7839968133469098311">"Микрофон и камера"</string>
+    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
+    <skip />
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Недавно коришћено у апликацијама"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Прикажи недавни приступ"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Готово"</string>

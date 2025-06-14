@@ -16,12 +16,15 @@
 
 package com.android.systemui.biometrics.domain.interactor
 
+import android.hardware.biometrics.BiometricManager
 import com.android.internal.widget.lockPatternUtils
 import com.android.systemui.biometrics.data.repository.fingerprintPropertyRepository
 import com.android.systemui.biometrics.data.repository.promptRepository
 import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.testScope
+import com.android.systemui.util.mockito.mock
 
 val Kosmos.promptSelectorInteractor by Fixture {
     PromptSelectorInteractorImpl(
@@ -30,5 +33,7 @@ val Kosmos.promptSelectorInteractor by Fixture {
         promptRepository = promptRepository,
         credentialInteractor = credentialInteractor,
         lockPatternUtils = lockPatternUtils,
+        biometricManager = mock<BiometricManager>(),
+        bgScope = testScope.backgroundScope,
     )
 }

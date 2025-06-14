@@ -1,5 +1,6 @@
 package com.android.systemui.biometrics.ui.binder
 
+import android.hardware.biometrics.Flags
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import com.android.app.tracing.coroutines.launchTraced as launch
@@ -10,6 +11,7 @@ import com.android.systemui.biometrics.ui.CredentialView
 import com.android.systemui.biometrics.ui.viewmodel.CredentialViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.res.R
+import kotlinx.coroutines.flow.combine
 
 /** Sub-binder for the [CredentialPatternView]. */
 object CredentialPatternViewBinder {
@@ -45,7 +47,22 @@ object CredentialPatternViewBinder {
                 launch { viewModel.stealthMode.collect { lockPatternView.isInStealthMode = it } }
 
                 // dismiss on a valid credential check
-                launch {
+                if (Flags.bpFallbackOptions()) {
+                    launch {
+                        combine(
+                                viewModel.validatedAttestation,
+                                viewModel.isCredentialAllowed,
+                                ::Pair,
+                            )
+                            .collect { (attestation, isAllowed) ->
+                                val matched = attestation != null
+                                lockPatternView.isEnabled = !matched
+                                if (matched) {
+                                    host.onCredentialMatched(attestation!!, isAllowed)
+                                }
+                            }
+                    }
+                } else {
                     viewModel.validatedAttestation.collect { attestation ->
                         val matched = attestation != null
                         lockPatternView.isEnabled = !matched

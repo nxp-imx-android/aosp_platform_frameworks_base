@@ -146,6 +146,12 @@ data class Permission(
     inline val knownCerts: Set<String>
         get() = permissionInfo.knownCerts
 
+    inline val requiresPurpose: Boolean
+        get() = permissionInfo.requiresPurpose
+
+    inline val validPurposes: Set<String>
+        get() = permissionInfo.validPurposes
+
     inline val hasGids: Boolean
         get() = gids.isNotEmpty()
 

@@ -578,6 +578,7 @@
     <string name="wifi_tether_connected_summary" msgid="5100712926640492336">"{count,plural, =1{1 csatlakoztatott eszköz}other{# csatlakoztatott eszköz}}"</string>
     <string name="accessibility_manual_zen_more_time" msgid="5141801092071134235">"Több idő."</string>
     <string name="accessibility_manual_zen_less_time" msgid="6828877595848229965">"Kevesebb idő."</string>
+    <string name="accessibility_screen_magnification_title" msgid="4981096059561256342">"Nagyítás"</string>
     <string name="cancel" msgid="5665114069455378395">"Mégse"</string>
     <string name="next" msgid="2699398661093607009">"Tovább"</string>
     <string name="back" msgid="5554327870352703710">"Vissza"</string>

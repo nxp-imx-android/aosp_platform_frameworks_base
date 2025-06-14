@@ -479,6 +479,10 @@ public class KeyguardIndicationController {
         mBroadcastDispatcher.unregisterReceiver(mBroadcastReceiver);
     }
 
+    public String getPowerChargingString() {
+        return computePowerChargingStringIndication();
+    }
+
     private void handleAlignStateChanged(int alignState) {
         String alignmentIndication = "";
         if (alignState == DockManager.ALIGN_STATE_POOR) {

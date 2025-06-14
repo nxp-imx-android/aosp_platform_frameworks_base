@@ -24,6 +24,7 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.SystemClock;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.IndentingPrintWriter;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
@@ -38,6 +39,7 @@ import java.io.PrintWriter;
 /**
  * Description of a single binding to a service.
  */
+@RavenwoodKeepWholeClass
 final class ConnectionRecord implements OomAdjusterImpl.Connection{
     BoundServiceSession mBoundServiceSession;  // The associated bound service session if created.
     final AppBindRecord binding;    // The application/service binding.

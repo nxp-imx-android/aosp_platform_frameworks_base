@@ -578,6 +578,7 @@
     <string name="wifi_tether_connected_summary" msgid="5100712926640492336">"{count,plural, =1{기기 1대 연결됨}other{기기 #대 연결됨}}"</string>
     <string name="accessibility_manual_zen_more_time" msgid="5141801092071134235">"시간 늘리기"</string>
     <string name="accessibility_manual_zen_less_time" msgid="6828877595848229965">"시간 줄이기"</string>
+    <string name="accessibility_screen_magnification_title" msgid="4981096059561256342">"확대"</string>
     <string name="cancel" msgid="5665114069455378395">"취소"</string>
     <string name="next" msgid="2699398661093607009">"다음"</string>
     <string name="back" msgid="5554327870352703710">"뒤로"</string>

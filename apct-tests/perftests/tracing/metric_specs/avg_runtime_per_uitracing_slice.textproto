@@ -29,8 +29,7 @@ metric_spec: {
       column_names: "slice_name"
       aggregates: {
         column_name: "dur"
-        # TODO (b/416488773): Change this to MEDIAN to be more robust against outliers
-        op: MEAN
+        op: MEDIAN
         result_column_name: "avg_runtime"
       }
     }

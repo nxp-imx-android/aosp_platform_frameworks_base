@@ -552,6 +552,14 @@ class ActivityMetricsLogger {
         }
 
         PackageOptimizationInfo getPackageOptimizationInfo(ArtManagerInternal artManagerInternal) {
+            if (android.app.Flags.getOptimizationInfoFromAppProcess()
+                    && com.android.art.flags.Flags.updatableFilterAndReason()) {
+                if (processRecord == null) {
+                    return PackageOptimizationInfo.createWithNoInfo();
+                }
+                PackageOptimizationInfo info = processRecord.getOptimizationInfo();
+                return info != null ? info : PackageOptimizationInfo.createWithNoInfo();
+            }
             return artManagerInternal == null || launchedActivityAppRecordRequiredAbi == null
                     ? PackageOptimizationInfo.createWithNoInfo()
                     : artManagerInternal.getPackageOptimizationInfo(applicationInfo,

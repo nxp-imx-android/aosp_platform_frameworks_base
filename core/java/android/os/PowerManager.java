@@ -18,6 +18,8 @@ package android.os;
 
 import static android.app.PropertyInvalidatedCache.MODULE_SYSTEM;
 
+import static com.android.server.power.feature.flags.Flags.FLAG_SHUTDOWN_SYSTEM_API;
+
 import android.Manifest.permission;
 import android.annotation.CallbackExecutor;
 import android.annotation.CurrentTimeMillisLong;
@@ -988,6 +990,13 @@ public final class PowerManager {
      * @hide
      */
     public static final String SHUTDOWN_LOW_BATTERY = "battery";
+
+    /**
+     * The value to pass as the 'reason' argument to android_reboot() when the device shutdown is
+     * being requested by a call to {@link PowerManager#shutdown(boolean)}
+     * @hide
+     */
+    public static final String SHUTDOWN_SERVICE_CALL = "service";
 
     /**
      * @hide
@@ -2761,6 +2770,26 @@ public final class PowerManager {
     public void shutdown(boolean confirm, String reason, boolean wait) {
         try {
             mService.shutdown(confirm, reason, wait);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Shuts down the Android device.
+     *
+     * @param wait If true, this call waits for the shutdown to complete and does not return.
+     *             Clients can use this to catch exceptions that might be thrown while shutting
+     *             down the device
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_SHUTDOWN_SYSTEM_API)
+    @RequiresPermission(android.Manifest.permission.REBOOT)
+    public void shutdown(boolean wait) {
+        try {
+            mService.shutdown(false, SHUTDOWN_SERVICE_CALL, wait);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

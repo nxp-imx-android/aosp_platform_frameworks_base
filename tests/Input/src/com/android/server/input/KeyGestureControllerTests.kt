@@ -107,6 +107,7 @@ import org.mockito.kotlin.times
     com.android.window.flags.Flags.FLAG_ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS,
     com.android.window.flags.Flags.FLAG_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS,
     com.android.hardware.input.Flags.FLAG_ENABLE_NEW_25Q2_KEYCODES,
+    com.android.hardware.input.Flags.FLAG_ENABLE_QUICK_SETTINGS_PANEL_SHORTCUT,
 )
 class KeyGestureControllerTests {
 
@@ -450,6 +451,46 @@ class KeyGestureControllerTests {
                 keyGestureController.addCustomInputGesture(0, builder.build().aidlData),
             )
         }
+    }
+
+    @Keep
+    private fun nonCapturableKeyGestures(): Array<KeyGestureData> {
+        return KeyGestureTestData.NON_CAPTURABLE_SYSTEM_GESTURES
+    }
+
+    @Test
+    @Parameters(method = "nonCapturableKeyGestures")
+    fun testKeyGestures_withKeyCapture_nonCapturableGestures(test: KeyGestureData) {
+        setupKeyGestureController()
+        enableKeyCaptureForFocussedWindow()
+        testKeyGestureProduced(test, BLOCKING_APP)
+    }
+
+    @Keep
+    private fun capturableKeyGestures(): Array<KeyGestureData> {
+        return KeyGestureTestData.CAPTURABLE_STATEFUL_SYSTEM_GESTURES +
+            KeyGestureTestData.CAPTURABLE_SYSTEM_GESTURES
+    }
+
+    @Test
+    @Parameters(method = "capturableKeyGestures")
+    fun testKeyGestures_withKeyCapture_capturableGestures(test: KeyGestureData) {
+        setupKeyGestureController()
+        enableKeyCaptureForFocussedWindow()
+        testKeyGestureNotProduced(test, BLOCKING_APP)
+    }
+
+    @Keep
+    private fun capturableKeyGestures_handledAsFallback(): Array<KeyGestureData> {
+        return KeyGestureTestData.CAPTURABLE_SYSTEM_GESTURES
+    }
+
+    @Test
+    @Parameters(method = "capturableKeyGestures_handledAsFallback")
+    fun testKeyGestures_withKeyCapture_capturableGesturesHandledAsFallback(test: KeyGestureData) {
+        setupKeyGestureController()
+        enableKeyCaptureForFocussedWindow()
+        testKeyGestureProduced(test, PASS_THROUGH_APP)
     }
 
     @Test
@@ -1422,6 +1463,31 @@ class KeyGestureControllerTests {
                     0
                 },
                 /* inputFeatures = */ 0,
+                "title",
+                /* uid = */ 0,
+            )
+        Mockito.`when`(windowManagerInternal.getKeyInterceptionInfoFromToken(any()))
+            .thenReturn(info)
+    }
+
+    fun enableKeyCaptureForFocussedWindow() {
+        ExtendedMockito.doReturn(PermissionChecker.PERMISSION_GRANTED).`when` {
+            PermissionChecker.checkPermissionForDataDelivery(
+                any(),
+                eq(Manifest.permission.CAPTURE_KEYBOARD),
+                anyInt(),
+                anyInt(),
+                any(),
+                any(),
+                any(),
+            )
+        }
+
+        val info =
+            KeyInterceptionInfo(
+                /* type = */ 0,
+                /* flags = */ 0,
+                WindowManager.LayoutParams.INPUT_FEATURE_CAPTURE_KEYBOARD,
                 "title",
                 /* uid = */ 0,
             )

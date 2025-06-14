@@ -99,7 +99,7 @@ public final class AssociationInfo implements Parcelable {
      *
      * @hide
      */
-    public AssociationInfo(int id, @UserIdInt int userId, @NonNull String packageName,
+    private AssociationInfo(int id, @UserIdInt int userId, @NonNull String packageName,
             @Nullable MacAddress macAddress, @Nullable CharSequence displayName,
             @Nullable String deviceProfile, @Nullable AssociatedDevice associatedDevice,
             boolean selfManaged, boolean notifyOnDeviceNearby, boolean revoked, boolean pending,
@@ -528,9 +528,9 @@ public final class AssociationInfo implements Parcelable {
         private boolean mNotifyOnDeviceNearby;
         private boolean mRevoked;
         private boolean mPending;
-        private long mTimeApprovedMs;
-        private long mLastTimeConnectedMs;
-        private int mSystemDataSyncFlags;
+        private long mTimeApprovedMs = System.currentTimeMillis();
+        private long mLastTimeConnectedMs = Long.MAX_VALUE; // Never connected.
+        private int mSystemDataSyncFlags = -1; // By default, all system data sync is enabled.
         private Icon mDeviceIcon;
         private DeviceId mDeviceId;
         private List<String> mPackagesToNotify;

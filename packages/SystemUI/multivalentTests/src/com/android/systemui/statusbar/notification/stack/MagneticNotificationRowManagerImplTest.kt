@@ -571,6 +571,8 @@ class MagneticNotificationRowManagerImplTest : SysuiTestCase() {
             override fun canRowBeDismissed(): Boolean {
                 return canRowBeDismissed
             }
+
+            override fun getRowLoggingKey(): String = "testable listener"
         }
     }
 }

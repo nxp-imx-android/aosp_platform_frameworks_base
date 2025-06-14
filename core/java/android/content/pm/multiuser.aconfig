@@ -292,6 +292,13 @@ flag {
 }
 
 flag {
+    name: "stop_excess_for_background_starts"
+    namespace: "multiuser"
+    description: "Be more aggressive when stopping excess users, by triggering this even on background user starts and by allowing user 0's profiles to be stopped."
+    bug: "419867128"
+}
+
+flag {
     name: "stop_previous_user_apps"
     namespace: "multiuser"
     description: "Stop the previous user apps early in a user switch"

@@ -222,3 +222,10 @@ flag {
     description: "Enables per-app overrides compatibility for mouse to touch"
     bug: "413207127"
 }
+
+flag {
+    name: "enable_quick_settings_panel_shortcut"
+    namespace: "input"
+    description: "Enables shortcut for quick settings panel"
+    bug: "423899230"
+}

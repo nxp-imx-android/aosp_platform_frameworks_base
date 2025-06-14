@@ -18,6 +18,7 @@ package com.android.systemui.biometrics.domain.interactor
 
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
+import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.BiometricManager.Authenticators
 import android.hardware.biometrics.PromptContentViewWithMoreOptionsButton
 import android.hardware.biometrics.PromptInfo
@@ -72,6 +73,7 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
     @JvmField @Rule var mockitoRule = MockitoJUnit.rule()
 
     @Mock private lateinit var lockPatternUtils: LockPatternUtils
+    @Mock private lateinit var biometricManager: BiometricManager
 
     private val testScope = TestScope()
     private val fingerprintRepository = FakeFingerprintPropertyRepository()
@@ -103,6 +105,8 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
                 credentialInteractor,
                 promptRepository,
                 lockPatternUtils,
+                biometricManager,
+                testScope.backgroundScope,
             )
     }
 

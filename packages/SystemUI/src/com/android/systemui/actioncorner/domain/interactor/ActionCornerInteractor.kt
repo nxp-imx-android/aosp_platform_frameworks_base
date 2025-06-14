@@ -32,12 +32,15 @@ import com.android.systemui.actioncorner.data.model.ActionType.QUICK_SETTINGS
 import com.android.systemui.actioncorner.data.repository.ActionCornerRepository
 import com.android.systemui.actioncorner.data.repository.ActionCornerSettingRepository
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.keyguard.domain.interactor.WindowManagerLockscreenVisibilityInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.shared.system.actioncorner.ActionCornerConstants
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.policy.data.repository.UserSetupRepository
 import javax.inject.Inject
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.flatMapLatest
@@ -50,13 +53,20 @@ constructor(
     private val launcherProxyService: LauncherProxyService,
     private val actionCornerSettingRepository: ActionCornerSettingRepository,
     private val userSetupRepository: UserSetupRepository,
+    private val lockscreenVisibilityInteractor: WindowManagerLockscreenVisibilityInteractor,
     private val commandQueue: CommandQueue,
 ) : ExclusiveActivatable() {
 
     override suspend fun onActivated(): Nothing {
         userSetupRepository.isUserSetUp
-            .flatMapLatest {
-                if (it) {
+            .combine(lockscreenVisibilityInteractor.lockscreenVisibility) {
+                isUserSetUp,
+                isLockscreenVisible ->
+                isUserSetUp && !isLockscreenVisible
+            }
+            .distinctUntilChanged()
+            .flatMapLatest { shouldMonitorActionCorner ->
+                if (shouldMonitorActionCorner) {
                     repository.actionCornerState.filterIsInstance<ActiveActionCorner>()
                 } else {
                     emptyFlow()

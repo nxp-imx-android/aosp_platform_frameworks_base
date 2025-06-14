@@ -18,8 +18,10 @@
 
 package com.android.systemui.qs.panels.ui.compose.infinitegrid
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
@@ -45,6 +47,7 @@ import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -151,6 +154,7 @@ import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.load
+import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.compose.DragAndDropState
 import com.android.systemui.qs.panels.ui.compose.DragType
@@ -181,9 +185,11 @@ import com.android.systemui.qs.panels.ui.compose.selection.TileState
 import com.android.systemui.qs.panels.ui.compose.selection.rememberResizingState
 import com.android.systemui.qs.panels.ui.compose.selection.rememberSelectionState
 import com.android.systemui.qs.panels.ui.compose.selection.selectableTile
+import com.android.systemui.qs.panels.ui.compose.tabs.EditModeTabs
 import com.android.systemui.qs.panels.ui.model.GridCell
 import com.android.systemui.qs.panels.ui.model.SpacerGridCell
 import com.android.systemui.qs.panels.ui.model.TileGridCell
+import com.android.systemui.qs.panels.ui.viewmodel.EditModeTabViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditTileViewModelConstants.APP_ICON_INLINE_CONTENT_ID
 import com.android.systemui.qs.panels.ui.viewmodel.InfiniteGridSnapshotViewModel
@@ -281,6 +287,7 @@ fun DefaultEditTileGrid(
     }
 
     Scaffold(
+        modifier = modifier,
         containerColor = Color.Transparent,
         topBar = {
             EditModeTopBar(onStopEditing = onStopEditing, modifier = Modifier.statusBarsPadding()) {
@@ -319,94 +326,148 @@ fun DefaultEditTileGrid(
                 }
             }
 
-            Column(
-                verticalArrangement =
-                    spacedBy(dimensionResource(id = R.dimen.qs_label_container_margin)),
-                modifier =
-                    modifier
-                        .fillMaxSize()
-                        // Apply top padding before the scroll so the scrollable doesn't show under
-                        // the top bar
-                        .padding(top = innerPadding.calculateTopPadding())
-                        .clipScrollableContainer(Orientation.Vertical)
-                        .verticalScroll(scrollState)
-                        .dragAndDropRemoveZone(listState) { spec, removalEnabled ->
-                            if (removalEnabled) {
-                                // If removal is enabled, remove the tile
-                                onEditAction(EditAction.RemoveTile(spec))
-                            } else {
-                                // Otherwise submit the new tile ordering
-                                onEditAction(EditAction.SetTiles(listState.tileSpecs()))
-                                selectionState.select(spec)
-                            }
-                        },
-            ) {
-                CurrentTilesGridHeader(
-                    listState,
-                    selectionState,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                )
-
-                CurrentTilesGrid(listState, selectionState, onEditAction)
-
-                // Sets a minimum height to be used when available tiles are hidden
-                Box(
-                    Modifier.fillMaxWidth()
-                        .requiredHeightIn(AvailableTilesGridMinHeight)
-                        .animateContentSize()
+            if (QsEditModeTabs.isEnabled) {
+                val editModeTabViewModel = remember { EditModeTabViewModel() }
+                EditModeScrollableColumnWithTabs(
+                    listState = listState,
+                    selectionState = selectionState,
+                    innerPadding = innerPadding,
+                    scrollState = scrollState,
+                    onEditAction = onEditAction,
+                    editModeTabViewModel = editModeTabViewModel,
                 ) {
-                    // Only show available tiles when a drag or placement isn't in progress, OR
-                    // the drag is within the current tiles grid
-                    val showAvailableTiles =
-                        !(listState.dragInProgress || selectionState.placementEnabled) ||
-                            listState.dragType == DragType.Move
+                    CurrentTilesGrid(listState, selectionState, onEditAction)
 
-                    // Using the fully qualified name here as a workaround for AnimatedVisibility
-                    // not being available from a Box
-                    androidx.compose.animation.AnimatedVisibility(
-                        visible = showAvailableTiles,
-                        enter = fadeIn(),
-                        exit = fadeOut(),
-                    ) {
-                        // Hide available tiles when dragging
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement =
-                                spacedBy(dimensionResource(id = R.dimen.qs_label_container_margin)),
-                            modifier = modifier.fillMaxSize(),
-                        ) {
-                            AvailableTileGrid(
-                                allTiles,
-                                selectionState,
-                                listState.columns,
-                                { onEditAction(EditAction.AddTile(it)) }, // Add to the end
-                                listState,
-                            )
-
-                            TextButton(
-                                onClick = {
-                                    selectionState.unSelect()
-                                    onEditAction(EditAction.ResetGrid)
-                                },
-                                colors =
-                                    ButtonDefaults.textButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                                    ),
-                                modifier = Modifier.padding(vertical = 16.dp),
-                            ) {
-                                Text(
-                                    text = stringResource(id = com.android.internal.R.string.reset),
-                                    style = MaterialTheme.typography.labelLarge,
-                                )
-                            }
-                        }
-                    }
+                    AnimatedAvailableTilesGrid(
+                        allTiles = allTiles,
+                        listState = listState,
+                        selectionState = selectionState,
+                        onEditAction = onEditAction,
+                        showAvailableTiles = editModeTabViewModel.selectedTab.isTilesEditingAllowed,
+                    )
                 }
+            } else {
+                EditModeScrollableColumn(
+                    listState = listState,
+                    selectionState = selectionState,
+                    innerPadding = innerPadding,
+                    scrollState = scrollState,
+                    onEditAction = onEditAction,
+                ) {
+                    CurrentTilesGridHeader(
+                        listState,
+                        selectionState,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                    )
 
-                Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.systemBars))
+                    CurrentTilesGrid(listState, selectionState, onEditAction)
+
+                    // Only show available tiles when a drag or placement isn't in progress, OR the
+                    // drag is within the current tiles grid
+                    AnimatedAvailableTilesGrid(
+                        allTiles = allTiles,
+                        listState = listState,
+                        selectionState = selectionState,
+                        onEditAction = onEditAction,
+                        showAvailableTiles =
+                            !(listState.dragInProgress || selectionState.placementEnabled) ||
+                                listState.dragType == DragType.Move,
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun EditModeScrollableColumn(
+    listState: EditTileListState,
+    selectionState: MutableSelectionState,
+    innerPadding: PaddingValues,
+    scrollState: ScrollState,
+    onEditAction: (EditAction) -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        verticalArrangement = spacedBy(dimensionResource(id = R.dimen.qs_label_container_margin)),
+        modifier =
+            modifier
+                .fillMaxSize()
+                // Apply top padding before the scroll so the scrollable doesn't show under
+                // the top bar
+                .padding(top = innerPadding.calculateTopPadding())
+                .clipScrollableContainer(Orientation.Vertical)
+                .verticalScroll(scrollState)
+                .dragAndDropRemoveZone(listState) { spec, removalEnabled ->
+                    if (removalEnabled) {
+                        // If removal is enabled, remove the tile
+                        onEditAction(EditAction.RemoveTile(spec))
+                    } else {
+                        // Otherwise submit the new tile ordering
+                        onEditAction(EditAction.SetTiles(listState.tileSpecs()))
+                        selectionState.select(spec)
+                    }
+                },
+    ) {
+        content()
+
+        Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.systemBars))
+    }
+}
+
+@Composable
+private fun EditModeScrollableColumnWithTabs(
+    listState: EditTileListState,
+    selectionState: MutableSelectionState,
+    innerPadding: PaddingValues,
+    scrollState: ScrollState,
+    onEditAction: (EditAction) -> Unit,
+    editModeTabViewModel: EditModeTabViewModel,
+    modifier: Modifier = Modifier,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = spacedBy(dimensionResource(id = R.dimen.qs_label_container_margin)),
+        modifier =
+            modifier
+                .fillMaxSize()
+                // Apply top padding before the scroll so the scrollable doesn't show under
+                // the top bar
+                .padding(top = innerPadding.calculateTopPadding()),
+    ) {
+        Column(
+            verticalArrangement =
+                spacedBy(dimensionResource(id = R.dimen.qs_label_container_margin)),
+            modifier =
+                Modifier.weight(1f)
+                    .fillMaxWidth()
+                    .clipScrollableContainer(Orientation.Vertical)
+                    .clip(RoundedCornerShape(GridBackgroundCornerRadius))
+                    .verticalScroll(scrollState)
+                    .dragAndDropRemoveZone(listState) { spec, removalEnabled ->
+                        if (removalEnabled) {
+                            // If removal is enabled, remove the tile
+                            onEditAction(EditAction.RemoveTile(spec))
+                        } else {
+                            // Otherwise submit the new tile ordering
+                            onEditAction(EditAction.SetTiles(listState.tileSpecs()))
+                            selectionState.select(spec)
+                        }
+                    },
+        ) {
+            TabGridHeader(
+                editModeTabViewModel.selectedTab.headerResId,
+                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+            )
+
+            content()
+        }
+
+        EditModeTabs(editModeTabViewModel) { selectionState.unSelect() }
+
+        Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.systemBars))
     }
 }
 
@@ -513,6 +574,13 @@ private fun CurrentTilesGridHeader(
 }
 
 @Composable
+private fun TabGridHeader(@StringRes headerResId: Int, modifier: Modifier = Modifier) {
+    Crossfade(targetState = headerResId, label = "QSEditHeader", modifier = modifier) {
+        EditGridHeader { EditGridCenteredText(text = stringResource(id = it)) }
+    }
+}
+
+@Composable
 private fun EditGridHeader(
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
@@ -598,6 +666,64 @@ private fun CurrentTilesGrid(
                             onEditAction(EditAction.ResizeTile(spec, toIcon))
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AnimatedAvailableTilesGrid(
+    allTiles: List<EditTileViewModel>,
+    listState: EditTileListState,
+    selectionState: MutableSelectionState,
+    showAvailableTiles: Boolean,
+    onEditAction: (EditAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    // Sets a minimum height to be used when available tiles are hidden
+    Box(
+        Modifier.fillMaxWidth().requiredHeightIn(AvailableTilesGridMinHeight).animateContentSize()
+    ) {
+
+        // Using the fully qualified name here as a workaround for AnimatedVisibility not being
+        // available from a Box
+        androidx.compose.animation.AnimatedVisibility(
+            visible = showAvailableTiles,
+            enter = fadeIn(),
+            exit = fadeOut(),
+        ) {
+            // Hide available tiles when dragging
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement =
+                    spacedBy(dimensionResource(id = R.dimen.qs_label_container_margin)),
+                modifier = modifier.fillMaxSize(),
+            ) {
+                AvailableTileGrid(
+                    allTiles,
+                    selectionState,
+                    listState.columns,
+                    { onEditAction(EditAction.AddTile(it)) }, // Add to the end
+                    listState,
+                )
+
+                TextButton(
+                    onClick = {
+                        selectionState.unSelect()
+                        onEditAction(EditAction.ResetGrid)
+                    },
+                    colors =
+                        ButtonDefaults.textButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
+                    modifier = Modifier.padding(vertical = 16.dp),
+                ) {
+                    Text(
+                        text = stringResource(id = com.android.internal.R.string.reset),
+                        style = MaterialTheme.typography.labelLarge,
+                    )
                 }
             }
         }

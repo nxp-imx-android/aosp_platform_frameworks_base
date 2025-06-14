@@ -206,10 +206,7 @@ public class RotationButtonController {
         if (mRotationButton == null) {
             return;
         }
-        mRotationButton.setRotationButtonController(null);
-        mRotationButton.setOnClickListener(null);
-        mRotationButton.setOnHoverListener(null);
-        mRotationButton.setUpdatesCallback(null);
+        mRotationButton.onDestroy();
         mRotationButton = null;
     }
 

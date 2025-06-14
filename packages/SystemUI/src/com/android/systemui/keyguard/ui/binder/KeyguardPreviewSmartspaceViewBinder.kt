@@ -56,7 +56,7 @@ object KeyguardPreviewSmartspaceViewBinder {
                     com.android.systemui.shared.R.id.date_smartspace_view_large
                 )
             val smallDateView =
-                parentView.requireViewById<View>(
+                parentView.findViewById<View>(
                     com.android.systemui.shared.R.id.date_smartspace_view
                 )
             parentView.repeatWhenAttached {
@@ -102,7 +102,7 @@ object KeyguardPreviewSmartspaceViewBinder {
                                     }
                                     it.visibility = largeDateViewVisibility
                                 }
-                                smallDateView.let {
+                                smallDateView?.let {
                                     if (shouldFadeIn && smallDateViewVisibility == View.VISIBLE) {
                                         it.alpha = 0F
                                     }
@@ -113,7 +113,7 @@ object KeyguardPreviewSmartspaceViewBinder {
                                         largeDateView?.animateToAlpha(1F)
                                     }
                                     if (smallDateViewVisibility == View.VISIBLE) {
-                                        smallDateView.animateToAlpha(1F)
+                                        smallDateView?.animateToAlpha(1F)
                                     }
                                 }
                                 val cs = ConstraintSet()
@@ -151,7 +151,7 @@ object KeyguardPreviewSmartspaceViewBinder {
                                                     )
                                                 }
                                             } else {
-                                                smallDateView.also { view ->
+                                                smallDateView?.also { view ->
                                                     constrainWidth(
                                                         view.id,
                                                         ConstraintSet.WRAP_CONTENT,
@@ -179,7 +179,7 @@ object KeyguardPreviewSmartspaceViewBinder {
                                         }
 
                                         ClockSizeSetting.SMALL -> {
-                                            smallDateView.also { view ->
+                                            smallDateView?.also { view ->
                                                 constrainWidth(view.id, ConstraintSet.WRAP_CONTENT)
                                                 constrainHeight(view.id, ConstraintSet.WRAP_CONTENT)
                                                 if (viewModel.shouldDateWeatherBeBelowSmallClock) {

@@ -1957,12 +1957,10 @@ public class KeyguardViewMediator implements CoreStartable,
             //   - The screen off animation is cancelled by the device waking back up. We will call
             //     maybeHandlePendingLock from KeyguardViewMediator#onStartedWakingUp.
             if (mScreenOffAnimationController.shouldDelayKeyguardShow()) {
-                if (DEBUG) {
-                    Log.d(TAG, "#maybeHandlePendingLock: not handling because the screen off "
-                            + "animation's shouldDelayKeyguardShow() returned true. This should be "
-                            + "handled soon by #onStartedWakingUp, or by the end actions of the "
-                            + "screen off animation.");
-                }
+                Log.d(TAG, "#maybeHandlePendingLock: not handling because the screen off "
+                        + "animation's shouldDelayKeyguardShow() returned true. This should be "
+                        + "handled soon by #onStartedWakingUp, or by the end actions of the "
+                        + "screen off animation.");
 
                 return;
             }
@@ -1973,11 +1971,9 @@ public class KeyguardViewMediator implements CoreStartable,
             // StatusBar#finishKeyguardFadingAway, which is always responsible for setting
             // isKeyguardGoingAway to false.
             if (mKeyguardStateController.isKeyguardGoingAway()) {
-                if (DEBUG) {
-                    Log.d(TAG, "#maybeHandlePendingLock: not handling because the keyguard is "
-                            + "going away. This should be handled shortly by "
-                            + "StatusBar#finishKeyguardFadingAway.");
-                }
+                Log.d(TAG, "#maybeHandlePendingLock: not handling because the keyguard is "
+                        + "going away. This should be handled shortly by "
+                        + "StatusBar#finishKeyguardFadingAway.");
 
                 return;
             }

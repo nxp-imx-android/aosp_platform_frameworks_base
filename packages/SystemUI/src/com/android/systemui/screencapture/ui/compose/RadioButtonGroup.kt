@@ -42,7 +42,12 @@ private val ICON_SIZE = 20.dp
  * Data class to represent a single radio button item. The item must have an [icon] or a [label] (or
  * both).
  */
-data class RadioButtonGroupItem(val icon: IconModel? = null, val label: String? = null) {
+data class RadioButtonGroupItem(
+    val isSelected: Boolean,
+    val onClick: () -> Unit,
+    val icon: IconModel? = null,
+    val label: String? = null,
+) {
     init {
         require(icon != null || label != null) {
             "A ButtonItem must have at least an icon or a label (or both)."
@@ -54,12 +59,10 @@ data class RadioButtonGroupItem(val icon: IconModel? = null, val label: String? 
 @Composable
 fun RadioButtonGroup(
     items: List<RadioButtonGroupItem>,
-    selectedIndex: Int,
-    onSelect: (index: Int) -> Unit,
     modifier: Modifier = Modifier,
     colors: ToggleButtonColors = defaultColors(),
 ) {
-    require(selectedIndex in 0..items.size) { "selectedIndex is out of range of items." }
+    require(items.count { it.isSelected } == 1) { "Only one button item must be selected." }
 
     Row(
         modifier = modifier,
@@ -74,8 +77,8 @@ fun RadioButtonGroup(
                         items.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
                         else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                     },
-                checked = (index == selectedIndex),
-                onCheckedChange = { onSelect(index) },
+                checked = item.isSelected,
+                onCheckedChange = { item.onClick() },
             ) {
                 if (item.icon != null && item.label != null) {
                     Icon(icon = item.icon, modifier = Modifier.size(ICON_SIZE))

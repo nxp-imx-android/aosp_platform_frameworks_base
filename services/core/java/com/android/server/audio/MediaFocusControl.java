@@ -17,6 +17,7 @@
 package com.android.server.audio;
 
 import static android.media.audiopolicy.Flags.enableFadeManagerConfiguration;
+import static android.media.audio.Flags.audioFocusDesktop;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -110,8 +111,16 @@ public class MediaFocusControl implements PlayerFocusEnforcer {
         mAppOps = (AppOpsManager)mContext.getSystemService(Context.APP_OPS_SERVICE);
         mFocusEnforcer = pfe;
         final ContentResolver cr = mContext.getContentResolver();
+
+        boolean multiAudioFocusEnabledDefault =
+                audioFocusDesktop()
+                        && mContext.getResources()
+                                .getBoolean(
+                                        com.android.internal.R.bool
+                                                .config_multi_audio_focus_enabled_default);
         mMultiAudioFocusEnabled = Settings.System.getIntForUser(cr,
-                Settings.System.MULTI_AUDIO_FOCUS_ENABLED, 0, cr.getUserId()) != 0;
+                Settings.System.MULTI_AUDIO_FOCUS_ENABLED,
+                multiAudioFocusEnabledDefault ? 1 : 0, cr.getUserId()) != 0;
         initFocusThreading();
     }
 

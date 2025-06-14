@@ -16,8 +16,11 @@
 
 package com.android.systemui.biometrics.domain.interactor
 
+import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.Flags
+import android.hardware.biometrics.IIdentityCheckStateListener
 import android.hardware.biometrics.PromptInfo
+import android.util.Log
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.biometrics.Utils
 import com.android.systemui.biometrics.Utils.getCredentialType
@@ -31,16 +34,24 @@ import com.android.systemui.biometrics.shared.model.BiometricUserInfo
 import com.android.systemui.biometrics.shared.model.FallbackOptionModel
 import com.android.systemui.biometrics.shared.model.FingerprintSensorType
 import com.android.systemui.biometrics.shared.model.PromptKind
+import com.android.systemui.biometrics.shared.model.WatchRangingState
+import com.android.systemui.common.coroutine.ChannelExt.trySendWithFailureLogging
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.shared.model.isDefaultOrientation
+import com.android.systemui.kairos.awaitClose
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.shareIn
 
 /**
  * Business logic for BiometricPrompt's biometric view variants (face, fingerprint, coex, etc.).
@@ -66,6 +77,9 @@ interface PromptSelectorInteractor {
 
     /** If Identity Check is active */
     val isIdentityCheckActive: Flow<Boolean>
+
+    /** The current watch ranging state */
+    val watchRangingState: Flow<WatchRangingState>
 
     /** List of fallback options provided by prompt caller */
     val fallbackOptions: Flow<List<FallbackOptionModel>>
@@ -126,6 +140,8 @@ constructor(
     private val credentialInteractor: CredentialInteractor,
     private val promptRepository: PromptRepository,
     private val lockPatternUtils: LockPatternUtils,
+    private val biometricManager: BiometricManager?,
+    @Background private val bgScope: CoroutineScope,
 ) : PromptSelectorInteractor {
 
     override val prompt: Flow<BiometricPromptRequest.Biometric?> =
@@ -187,6 +203,35 @@ constructor(
         promptRepository.promptInfo
             .map { info -> info?.isIdentityCheckActive ?: false }
             .distinctUntilChanged()
+
+    override val watchRangingState: Flow<WatchRangingState> =
+        callbackFlow {
+                val updateWatchRangingState = { state: Int ->
+                    Log.d(TAG, "authenticationState updated: $state")
+                    trySendWithFailureLogging(
+                        WatchRangingState.entries.first { it.ordinal == state },
+                        TAG,
+                        "Error sending WatchRangingState",
+                    )
+                }
+
+                val identityCheckStateListener =
+                    object : IIdentityCheckStateListener.Stub() {
+                        override fun onWatchRangingStateChanged(state: Int) {
+                            updateWatchRangingState(state)
+                        }
+                    }
+
+                updateWatchRangingState(WatchRangingState.WATCH_RANGING_IDLE.ordinal)
+                biometricManager?.registerIdentityCheckStateListener(identityCheckStateListener)
+                awaitClose {
+                    biometricManager?.unregisterIdentityCheckStateListener(
+                        identityCheckStateListener
+                    )
+                }
+            }
+            .distinctUntilChanged()
+            .shareIn(bgScope, started = SharingStarted.Eagerly, replay = 1)
 
     override val fallbackOptions: Flow<List<FallbackOptionModel>> = promptRepository.fallbackOptions
 
@@ -304,6 +349,10 @@ constructor(
 
     override fun resetPrompt(requestId: Long) {
         promptRepository.unsetPrompt(requestId)
+    }
+
+    companion object {
+        private const val TAG = "PromptSelectorInteractor"
     }
 }
 

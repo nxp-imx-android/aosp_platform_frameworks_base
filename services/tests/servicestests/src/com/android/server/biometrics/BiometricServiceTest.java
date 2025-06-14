@@ -73,6 +73,7 @@ import android.hardware.biometrics.IBiometricSensorReceiver;
 import android.hardware.biometrics.IBiometricService;
 import android.hardware.biometrics.IBiometricServiceReceiver;
 import android.hardware.biometrics.IBiometricSysuiReceiver;
+import android.hardware.biometrics.IIdentityCheckStateListener.WatchRangingState;
 import android.hardware.biometrics.PromptInfo;
 import android.hardware.biometrics.SensorProperties;
 import android.hardware.display.DisplayManagerGlobal;
@@ -1499,14 +1500,14 @@ public class BiometricServiceTest {
         verify(mAuthenticationPolicyService).startWatchRangingForIdentityCheck(anyLong(),
                 proximityResultCallbackArgumentCaptor.capture());
         assertThat(mBiometricService.mAuthSession.getWatchRangingState()).isEqualTo(
-                WatchRangingHelper.WATCH_RANGING_STARTED);
+                WatchRangingState.WATCH_RANGING_STARTED);
 
         proximityResultCallbackArgumentCaptor.getValue().onSuccess(ProximityResultCode.SUCCESS);
         waitForIdle();
 
         verify(mAuthenticationPolicyService).cancelWatchRangingForRequestId(anyLong());
         assertThat(mBiometricService.mAuthSession.getWatchRangingState()).isEqualTo(
-                WatchRangingHelper.WATCH_RANGING_SUCCESSFUL);
+                WatchRangingState.WATCH_RANGING_SUCCESSFUL);
     }
 
     @Test
@@ -1528,7 +1529,7 @@ public class BiometricServiceTest {
         verify(mAuthenticationPolicyService).startWatchRangingForIdentityCheck(anyLong(),
                 proximityResultCallbackArgumentCaptor.capture());
         assertThat(mBiometricService.mAuthSession.getWatchRangingState()).isEqualTo(
-                WatchRangingHelper.WATCH_RANGING_STARTED);
+                WatchRangingState.WATCH_RANGING_STARTED);
 
         proximityResultCallbackArgumentCaptor.getValue().onError(
                 ProximityResultCode.NO_RANGING_RESULT);
@@ -1536,7 +1537,7 @@ public class BiometricServiceTest {
 
         verify(mAuthenticationPolicyService).cancelWatchRangingForRequestId(anyLong());
         assertThat(mBiometricService.mAuthSession.getWatchRangingState()).isEqualTo(
-                WatchRangingHelper.WATCH_RANGING_STOPPED);
+                WatchRangingState.WATCH_RANGING_STOPPED);
     }
 
     @Test

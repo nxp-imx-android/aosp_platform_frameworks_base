@@ -25,7 +25,6 @@ import com.android.systemui.statusbar.notification.collection.provider.SectionSt
 import com.android.systemui.statusbar.notification.promoted.AutomaticPromotionCoordinator
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism
-import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import javax.inject.Inject
 
 /**
@@ -115,9 +114,7 @@ constructor(
         if (NotificationBundleUi.isEnabled) {
             mCoordinators.add(bundleCoordinator)
         }
-        if (NotificationsLiveDataStoreRefactor.isEnabled) {
-            mCoordinators.add(statsLoggerCoordinator)
-        }
+        mCoordinators.add(statsLoggerCoordinator)
         // Manually add Ordered Sections
         if (NotificationMinimalism.isEnabled) {
             mOrderedSections.add(lockScreenMinimalismCoordinator.topOngoingSectioner) // Top Ongoing

@@ -33,16 +33,7 @@ object NotificationsLiveDataStoreRefactor {
     /** Is the refactor enabled */
     @JvmStatic
     inline val isEnabled
-        get() = Flags.notificationsLiveDataStoreRefactor()
-
-    /**
-     * Called to ensure code is only run when the flag is enabled. This protects users from the
-     * unintended behaviors caused by accidentally running new logic, while also crashing on an eng
-     * build to ensure that the refactor author catches issues in testing.
-     */
-    @JvmStatic
-    inline fun isUnexpectedlyInLegacyMode() =
-        RefactorFlagUtils.isUnexpectedlyInLegacyMode(isEnabled, FLAG_NAME)
+        get() = true
 
     /**
      * Called to ensure code is only run when the flag is disabled. This will throw an exception if

@@ -29,7 +29,6 @@ import com.android.systemui.statusbar.notification.collection.render.Notificatio
 import com.android.systemui.statusbar.notification.logging.NotificationLogger
 import com.android.systemui.statusbar.notification.logging.NotificationLogger.ExpansionStateLogger
 import com.android.systemui.statusbar.notification.logging.NotificationPanelLogger
-import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationRowStatsLogger
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationStatsLogger
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationStatsLoggerImpl
@@ -53,30 +52,25 @@ interface NotificationStatsLoggerModule {
 
     companion object {
 
+        // TODO(b/424001722) no need to keep it optional anymore
         /** Provides a [NotificationStatsLogger] if the refactor flag is on. */
         @Provides
         fun provideStatsLogger(
             provider: Provider<NotificationStatsLogger>
         ): Optional<NotificationStatsLogger> {
-            return if (NotificationsLiveDataStoreRefactor.isEnabled) {
-                Optional.of(provider.get())
-            } else {
-                Optional.empty()
-            }
+            return Optional.of(provider.get())
         }
 
+        // TODO(b/424001722) no need to keep it optional anymore
         /** Provides a [NotificationLoggerViewModel] if the refactor flag is on. */
         @Provides
         fun provideViewModel(
             provider: Provider<NotificationLoggerViewModel>
         ): Optional<NotificationLoggerViewModel> {
-            return if (NotificationsLiveDataStoreRefactor.isEnabled) {
-                Optional.of(provider.get())
-            } else {
-                Optional.empty()
-            }
+            return Optional.of(provider.get())
         }
 
+        // TODO(b/424001722) no need for the legacy logger anymore
         /** Provides the legacy [NotificationLogger] if the refactor flag is off. */
         @Provides
         @SysUISingleton
@@ -90,26 +84,9 @@ interface NotificationStatsLoggerModule {
             windowRootViewVisibilityInteractor: WindowRootViewVisibilityInteractor?,
             javaAdapter: JavaAdapter?,
             expansionStateLogger: ExpansionStateLogger?,
-            notificationPanelLogger: NotificationPanelLogger?
+            notificationPanelLogger: NotificationPanelLogger?,
         ): Optional<NotificationLogger> {
-            return if (NotificationsLiveDataStoreRefactor.isEnabled) {
-                Optional.empty()
-            } else {
-                Optional.of(
-                    NotificationLogger(
-                        notificationListener,
-                        uiBgExecutor,
-                        notifLiveDataStore,
-                        visibilityProvider,
-                        notifPipeline,
-                        statusBarStateController,
-                        windowRootViewVisibilityInteractor,
-                        javaAdapter,
-                        expansionStateLogger,
-                        notificationPanelLogger
-                    )
-                )
-            }
+            return Optional.empty()
         }
 
         /**

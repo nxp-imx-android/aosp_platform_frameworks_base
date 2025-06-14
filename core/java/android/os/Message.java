@@ -39,12 +39,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class Message implements Parcelable {
-    /**
-     * For tracing
-     *
-     * @hide Only for use within the system server.
-     */
-    public final AtomicLong mEventId = new AtomicLong();
 
     /**
      * User-defined message code so that the recipient can identify
@@ -162,6 +156,10 @@ public final class Message implements Parcelable {
     @UnsupportedAppUsage
     /*package*/ Message next;
 
+    /**
+     * For trace flows, if tracing is enabled.
+     */
+    /*package*/ volatile long eventId;
 
     /** @hide */
     public static final Object sPoolSync = new Object();

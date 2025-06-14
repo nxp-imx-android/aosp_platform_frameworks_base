@@ -499,13 +499,15 @@ public class AppWidgetManager {
      *
      * A single widget interaction event describes what user interactions happened during a single
      * impression of the widget.
+     * @hide
      */
     @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
-    public static final String EVENT_TYPE_WIDGET_INTERACTION = "widget_interaction";
+    static final String EVENT_TYPE_WIDGET_INTERACTION = "widget_interaction";
 
     /**
      * This is the value of {@link UsageStatsManager.EXTRA_EVENT_CATEGORY} in the event bundle for
      * widget user interaction events.
+     * @hide
      */
     @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
     public static final String EVENT_CATEGORY_APPWIDGET = "android.appwidget";
@@ -516,12 +518,13 @@ public class AppWidgetManager {
      * 10 distinct IDs per event.
      *
      * Widget providers may set a different ID for event logging by setting the usage event tag on
-     * the view with {@link RemoteViews#setUsageEventTag}.
+     * the view with {@link RemoteViews#setAppWidgetEventTag}.
      *
-     * @see android.widget.RemoteViews#setUsageEventTag
+     * @see android.widget.RemoteViews#setAppWidgetEventTag
+     * @hide
      */
     @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
-    public static final String EXTRA_EVENT_CLICKED_VIEWS =
+    static final String EXTRA_EVENT_CLICKED_VIEWS =
             "android.appwidget.extra.EVENT_CLICKED_VIEWS";
 
     /**
@@ -530,20 +533,22 @@ public class AppWidgetManager {
      * 10 distinct IDs per event.
      *
      * Widget providers may set a different ID for event logging by setting the usage event tag on
-     * the view with {@link RemoteViews#setUsageEventTag}.
+     * the view with {@link RemoteViews#setAppWidgetEventTag}.
      *
-     * @see android.widget.RemoteViews#setUsageEventTag
+     * @see android.widget.RemoteViews#setAppWidgetEventTag
+     * @hide
      */
     @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
-    public static final String EXTRA_EVENT_SCROLLED_VIEWS =
+    static final String EXTRA_EVENT_SCROLLED_VIEWS =
             "android.appwidget.extra.EVENT_SCROLLED_VIEWS";
 
     /**
      * This bundle extra contains a long that represents the duration of time in milliseconds
      * during which the widget was visible.
+     * @hide
      */
     @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
-    public static final String EXTRA_EVENT_DURATION_MS =
+    static final String EXTRA_EVENT_DURATION_MS =
             "android.appwidget.extra.EVENT_DURATION_MS";
 
     /**
@@ -551,10 +556,27 @@ public class AppWidgetManager {
      * right, and bottom coordinates of the widget at the end of the interaction event.
      *
      * This Rect indicates the current position and size of the widget.
+     * @hide
      */
     @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
-    public static final String EXTRA_EVENT_POSITION_RECT =
+    static final String EXTRA_EVENT_POSITION_RECT =
             "android.appwidget.extra.EVENT_POSITION_RECT";
+
+    /**
+     * This bundle extra contains a long that describes the start (in epoch milliseconds) of the
+     * time range that this event represents.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
+    static final String EXTRA_EVENT_START = "android.appwidget.extra.EVENT_START";
+
+    /**
+     * This bundle extra contains a long that describes the end (in epoch milliseconds) of the time
+     * range that this event represents.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
+    static final String EXTRA_EVENT_END = "android.appwidget.extra.EVENT_END";
 
     private static final String TAG = "AppWidgetManager";
 
@@ -1639,6 +1661,30 @@ public class AppWidgetManager {
             mService.setConfigActivityComplete(widgetId);
         } catch (RemoteException e) {
             Log.d(TAG, "Error notifying config activity completed");
+        }
+    }
+
+    /**
+     * Query for app widget interaction events in the given time range. Events are only kept by the
+     * system for a few days. This method only returns events for widgets provided by the calling
+     * package and does not require any additional permissions.
+     *
+     * @param beginTime The inclusive beginning of the range of events to include in the results.
+     *                  Defined in terms of "Unix time", see
+     *                  {@link java.lang.System#currentTimeMillis}.
+     * @param endTime The exclusive end of the range of events to include in the results. Defined
+     *                in terms of "Unix time", see {@link java.lang.System#currentTimeMillis}.
+     * @return An array of {@link AppWidgetEvent} objects.
+     */
+    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
+    @NonNull
+    public List<AppWidgetEvent> queryAppWidgetEvents(long beginTime, long endTime) {
+        try {
+            ParceledListSlice<AppWidgetEvent> events = mService.queryAppWidgetEvents(mPackageName,
+                    beginTime, endTime);
+            return events != null ? events.getList() : Collections.emptyList();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
         }
     }
 

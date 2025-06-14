@@ -130,7 +130,7 @@ public class AutoclickTypePanel {
     private final ClickPanelControllerInterface mClickPanelController;
 
     // Whether the panel is expanded or not.
-    private boolean mExpanded = false;
+    private boolean mExpanded = true;
 
     // Whether autoclick is paused.
     private boolean mPaused = false;
@@ -347,10 +347,9 @@ public class AutoclickTypePanel {
         // The pause button calls `togglePause()` directly so it does not need extra logic.
         mPauseButton.setOnClickListener(v -> togglePause());
 
-        collapsePanelWithClickType(AUTOCLICK_TYPE_LEFT_CLICK);
-
+        setSelectedClickType(AUTOCLICK_TYPE_LEFT_CLICK);
         // Remove spacing between buttons when initialized.
-        adjustPanelSpacing(/* isExpanded= */ false);
+        adjustPanelSpacing(/* isExpanded= */ true);
     }
 
     /** Reset panel as collapsed state and only displays selelcted button. */

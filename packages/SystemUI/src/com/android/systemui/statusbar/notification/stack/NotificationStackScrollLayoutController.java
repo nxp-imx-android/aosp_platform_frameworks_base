@@ -572,6 +572,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                  */
                 @Override
                 public void onChildDismissed(View view) {
+                    logOnChildDismissed(view);
                     if (!(view instanceof ActivatableNotificationView row)) {
                         return;
                     }
@@ -595,6 +596,7 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 public void handleChildViewDismissed(View view) {
                     // The View needs to clean up the Swipe states, e.g. roundness.
                     mMagneticNotificationRowManager.resetRoundness();
+                    logHandleChildViewDismissed(view);
                     mView.onSwipeEnd();
                     if (mView.getClearAllInProgress()) {
                         return;
@@ -693,6 +695,34 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 }
 
                 @Override
+                public void onSwipeOutAnimStart(View v) {
+                    logOnSwipeOutAnimationStart(v);
+                }
+
+                private void logOnSwipeOutAnimationStart(View v) {
+                    if (mLogger != null && v instanceof ExpandableNotificationRow row) {
+                        mLogger.logOnSwipeBegin(row.getLoggingKey(),
+                                /* reason = */"onSwipeOutAnimStart",
+                                mView.getClearAllInProgress());
+                    }
+                }
+
+                @Override
+                public void onChildNotDismissed(View v, boolean animationCancelled,
+                        boolean viewWasRemoved) {
+                    logOnChildNotDismissed(v, animationCancelled, viewWasRemoved);
+                }
+
+                private void logOnChildNotDismissed(View v, boolean animationCancelled,
+                        boolean viewWasRemoved) {
+                    if (mLogger != null && v instanceof ExpandableNotificationRow row) {
+                        mLogger.logOnChildNotDismissed(row.getLoggingKey(),
+                                animationCancelled, viewWasRemoved);
+                    }
+                }
+
+
+                @Override
                 public void setMagneticAndRoundableTargets(View v) {
                     if (v instanceof ExpandableNotificationRow row) {
                         mMagneticNotificationRowManager.setMagneticAndRoundableTargets(
@@ -766,6 +796,19 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                     return canChildBeDismissed(v);
                 }
             };
+
+    private void logHandleChildViewDismissed(View view) {
+        if (mLogger != null && view instanceof ExpandableNotificationRow row) {
+            mLogger.logOnSwipeEnd(row.getLoggingKey(),
+                    /* reason = */"handleChildViewDismissed", mView.getClearAllInProgress());
+        }
+    }
+
+    private void logOnChildDismissed(View view) {
+        if (mLogger != null && view instanceof  ExpandableNotificationRow enr) {
+            mLogger.logOnChildDismissed(enr.getLoggingKey(), mView.getClearAllInProgress());
+        }
+    }
 
     private final OnHeadsUpChangedListener mOnHeadsUpChangedListener =
             new OnHeadsUpChangedListener() {

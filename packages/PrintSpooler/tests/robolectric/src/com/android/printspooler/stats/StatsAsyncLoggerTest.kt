@@ -18,6 +18,8 @@ package com.android.printspooler.stats
 
 import android.os.Handler
 import android.print.PrintAttributes
+import android.print.PrintDocumentInfo
+import android.print.PrintJobInfo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import java.util.concurrent.Semaphore
@@ -60,6 +62,116 @@ open class StatsAsyncLoggerTest {
     @After
     fun teardown() {
         StatsAsyncLogger.stopLogging()
+    }
+
+    @Test
+    fun printJobSuccessfullyLoggedTest() {
+        val logWrapperInOrder = inOrder(mStatsLogWrapper)
+        val handlerInOrder = inOrder(mHandler)
+        val semaphoreInOrder = inOrder(mSemaphore)
+        val timeCaptor = argumentCaptor<Long>()
+        val runnableCaptor = argumentCaptor<Runnable>()
+
+        StatsAsyncLogger.startLogging()
+        StatsAsyncLogger.testSetSemaphore(mSemaphore)
+        StatsAsyncLogger.testSetHandler(mHandler)
+        StatsAsyncLogger.testSetStatsLogWrapper(mStatsLogWrapper)
+
+        // "foo" printer service: Generally arbitrary arguments focusing more on creating non-empty
+        // lists.
+        val printServiceFoo = 42
+        val colorsMaskFoo = PrintAttributes.COLOR_MODE_COLOR
+        val sizeFoo = PrintAttributes.MediaSize.NA_LETTER
+        val duplexModeMaskFoo = PrintAttributes.DUPLEX_MODE_LONG_EDGE
+        val resolutionFoo = PrintAttributes.Resolution("hello", "resolution", 123, 321)
+        val docTypeFoo = PrintDocumentInfo.CONTENT_TYPE_DOCUMENT
+        val savedPdfFoo = true
+        val pageCount = 52
+        val finalState = PrintJobInfo.STATE_COMPLETED
+        assertThat(
+                StatsAsyncLogger.PrintJob(
+                    printServiceFoo,
+                    finalState,
+                    colorsMaskFoo,
+                    sizeFoo,
+                    resolutionFoo,
+                    duplexModeMaskFoo,
+                    docTypeFoo,
+                    savedPdfFoo,
+                    pageCount,
+                )
+            )
+            .isTrue()
+
+        // "bar" printer service: Generally arbitrary arguments focusing more on empty/default
+        // values.
+        val printServiceBar = 1337
+        assertThat(
+                StatsAsyncLogger.PrintJob(
+                    printServiceBar,
+                    PrintJobInfo.STATE_FAILED,
+                    0,
+                    null,
+                    null,
+                    0,
+                    PrintDocumentInfo.CONTENT_TYPE_UNKNOWN,
+                    false,
+                    PrintDocumentInfo.PAGE_COUNT_UNKNOWN,
+                )
+            )
+            .isTrue()
+
+        handlerInOrder
+            .verify(mHandler, times(2))
+            .postAtTime(runnableCaptor.capture(), timeCaptor.capture())
+        handlerInOrder.verifyNoMoreInteractions()
+
+        // Validate delay args
+        val firstTime = timeCaptor.firstValue
+        val secondTime = timeCaptor.secondValue
+        assertThat(secondTime - firstTime)
+            .isAtLeast(StatsAsyncLogger.EVENT_REPORTED_MIN_INTERVAL.inWholeMilliseconds)
+        assertThat(secondTime - firstTime)
+            .isAtMost(2 * StatsAsyncLogger.EVENT_REPORTED_MIN_INTERVAL.inWholeMilliseconds)
+
+        // Validate Runnable logic
+        runnableCaptor.firstValue.run()
+        runnableCaptor.secondValue.run()
+        logWrapperInOrder
+            .verify(mStatsLogWrapper)
+            .internalPrintJob(
+                printServiceFoo,
+                StatsAsyncLogger.InternalFinalStatePrintJobEvent.COMPLETED,
+                StatsAsyncLogger.InternalColorModePrintJobEvent.COLOR,
+                StatsAsyncLogger.InternalDuplexModePrintJobEvent.LONG_EDGE,
+                StatsAsyncLogger.InternalMediaSizePrintJobEvent.NA_LETTER,
+                StatsAsyncLogger.InternalDocumentTypePrintJobEvent.DOCUMENT,
+                StatsAsyncLogger.InternalOrientationPrintJobEvent.PORTRAIT,
+                resolutionFoo.getHorizontalDpi(),
+                resolutionFoo.getVerticalDpi(),
+                savedPdfFoo,
+                pageCount,
+            )
+        logWrapperInOrder
+            .verify(mStatsLogWrapper)
+            .internalPrintJob(
+                printServiceBar,
+                StatsAsyncLogger.InternalFinalStatePrintJobEvent.FAILED,
+                StatsAsyncLogger.InternalColorModePrintJobEvent.UNSPECIFIED,
+                StatsAsyncLogger.InternalDuplexModePrintJobEvent.UNSPECIFIED,
+                StatsAsyncLogger.InternalMediaSizePrintJobEvent.UNSPECIFIED,
+                StatsAsyncLogger.InternalDocumentTypePrintJobEvent.UNSPECIFIED,
+                StatsAsyncLogger.InternalOrientationPrintJobEvent.UNSPECIFIED,
+                0,
+                0,
+                false,
+                PrintDocumentInfo.PAGE_COUNT_UNKNOWN,
+            )
+        logWrapperInOrder.verifyNoMoreInteractions()
+
+        // Validate Semaphore logic
+        semaphoreInOrder.verify(mSemaphore, times(2)).tryAcquire()
+        semaphoreInOrder.verify(mSemaphore, times(2)).release()
     }
 
     @Test
@@ -255,7 +367,21 @@ open class StatsAsyncLoggerTest {
         assertThat(StatsAsyncLogger.AdvancedOptionsUiLaunched(42)).isFalse()
         assertThat(StatsAsyncLogger.MainPrintUiLaunched(setOf(1, 2, 3), 42)).isFalse()
         assertThat(StatsAsyncLogger.PrinterDiscovery(1337, 0, 0, setOf())).isFalse()
-        verify(mSemaphore, times(3)).release()
+        assertThat(
+                StatsAsyncLogger.PrintJob(
+                    42,
+                    PrintJobInfo.STATE_FAILED,
+                    0,
+                    null,
+                    null,
+                    0,
+                    PrintDocumentInfo.CONTENT_TYPE_UNKNOWN,
+                    false,
+                    PrintDocumentInfo.PAGE_COUNT_UNKNOWN,
+                )
+            )
+            .isFalse()
+        verify(mSemaphore, times(4)).release()
     }
 
     @Test
@@ -289,6 +415,20 @@ open class StatsAsyncLoggerTest {
         assertThat(StatsAsyncLogger.AdvancedOptionsUiLaunched(42)).isFalse()
         assertThat(StatsAsyncLogger.MainPrintUiLaunched(setOf(1, 2, 3), 42)).isFalse()
         assertThat(StatsAsyncLogger.PrinterDiscovery(1337, 0, 0, setOf())).isFalse()
+        assertThat(
+                StatsAsyncLogger.PrintJob(
+                    42,
+                    PrintJobInfo.STATE_FAILED,
+                    0,
+                    null,
+                    null,
+                    0,
+                    PrintDocumentInfo.CONTENT_TYPE_UNKNOWN,
+                    false,
+                    PrintDocumentInfo.PAGE_COUNT_UNKNOWN,
+                )
+            )
+            .isFalse()
         verifyNoInteractions(mHandler)
         verifyNoInteractions(mSemaphore)
         verifyNoInteractions(mStatsLogWrapper)

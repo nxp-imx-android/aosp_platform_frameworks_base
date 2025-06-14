@@ -499,6 +499,10 @@
     <string name="biometric_dialog_fallback_button">Verify another way</string>
     <string name="biometric_dialog_manage_identity_check">Manage Identity Check</string>
     <string name="biometric_dialog_identity_check_pin_footer">PIN can\'t be used for verification as Identity Check is on and requires a biometric. Learn more about Identity Check</string>
+    <string name="biometric_dialog_identity_check_pattern_footer">Pattern can\'t be used for verification as Identity Check is on and requires a biometric. Learn more about Identity Check</string>
+    <string name="biometric_dialog_identity_check_password_footer">Password can\'t be used for verification as Identity Check is on and requires a biometric. Learn more about Identity Check</string>
+    <string name="biometric_dialog_identity_check_watch_ranging">Assessing risk...</string>
+    <string name="biometric_dialog_unavailable">Unavailable</string>
 
     <!-- Button text shown on BiometricPrompt giving the user the option to use an alternate form of authentication (Pin) [CHAR LIMIT=30] -->
     <string name="biometric_dialog_use_pin">Use PIN</string>
@@ -2456,6 +2460,8 @@
 
     <!-- User visible title for the keyboard shortcut that triggers the notification shade. [CHAR LIMIT=70] -->
     <string name="group_system_access_notification_shade">View notifications</string>
+    <!-- User visible title for the keyboard shortcut that triggers the quick settings panel. [CHAR LIMIT=70] -->
+    <string name="group_system_access_quick_settings_panel">View quick settings</string>
     <!-- User visible title for the keyboard shortcut that takes a full screenshot. [CHAR LIMIT=70] -->
     <string name="group_system_full_screenshot">Take screenshot</string>
     <!-- User visible title for the keyboard shortcut that access list of system / apps shortcuts. [CHAR LIMIT=70] -->
@@ -2679,6 +2685,18 @@
 
     <!-- Label for header of customize QS to indicate that tiles can be selected to be edited [CHAR LIMIT=60] -->
     <string name="select_to_rearrange_tiles">Select tiles to rearrange and resize</string>
+
+    <!-- Label for header of customize QS to indicate that tiles can be tapped to be removed [CHAR LIMIT=60] -->
+    <string name="tap_to_remove_tiles">Tap to remove tiles</string>
+
+    <!-- Label for header of customize QS to indicate that tiles can be resized and reordered [CHAR LIMIT=60] -->
+    <string name="resize_and_reorder_tiles">Resize and reorder layout</string>
+
+    <!-- Label for tab of customize QS used to add and remove tiles [CHAR LIMIT=60] -->
+    <string name="qs_edit_edit_tab">Edit</string>
+
+    <!-- Label for tab of customize QS used to reorder tiles [CHAR LIMIT=60] -->
+    <string name="qs_edit_layout_tab">Layout</string>
 
     <!-- Label for placing tiles in edit mode for QS [CHAR LIMIT=60] -->
     <string name="tap_to_position_tile">Tap to position tile</string>

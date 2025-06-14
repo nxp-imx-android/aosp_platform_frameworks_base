@@ -578,6 +578,7 @@
     <string name="wifi_tether_connected_summary" msgid="5100712926640492336">"{count,plural, =1{1 డివైజ్ కనెక్ట్ అయింది}other{# డివైజ్‌లు కనెక్ట్ అయ్యాయి}}"</string>
     <string name="accessibility_manual_zen_more_time" msgid="5141801092071134235">"ఎక్కువ సమయం."</string>
     <string name="accessibility_manual_zen_less_time" msgid="6828877595848229965">"తక్కువ సమయం."</string>
+    <string name="accessibility_screen_magnification_title" msgid="4981096059561256342">"మ్యాగ్నిఫికేషన్"</string>
     <string name="cancel" msgid="5665114069455378395">"రద్దు చేయండి"</string>
     <string name="next" msgid="2699398661093607009">"తర్వాత"</string>
     <string name="back" msgid="5554327870352703710">"వెనుకకు"</string>

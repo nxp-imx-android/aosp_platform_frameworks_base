@@ -16,6 +16,8 @@
 
 package android.app;
 
+import static dalvik.system.DexFile.OptimizationInfo;
+
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.compat.annotation.UnsupportedAppUsage;
@@ -62,8 +64,10 @@ import android.view.DisplayAdjustments;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.os.DebugStore;
+import com.android.internal.os.RuntimeInit;
 import com.android.internal.util.ArrayUtils;
 
+import dalvik.system.ApplicationRuntime;
 import dalvik.system.BaseDexClassLoader;
 import dalvik.system.VMRuntime;
 
@@ -1195,6 +1199,17 @@ public final class LoadedApk {
         // help deciding whether or not a dex file is the primary apk or a
         // secondary dex.
         DexLoadReporter.getInstance().registerAppDataDir(mPackageName, mDataDir);
+
+        IBinder app = RuntimeInit.getApplicationObject();
+        if (android.app.Flags.getOptimizationInfoFromAppProcess() && app != null) {
+            OptimizationInfo info = ApplicationRuntime.getBaseApkOptimizationInfo();
+            try {
+                ActivityManager.getService().reportOptimizationInfo(
+                        app, info.getStatus(), info.getReason());
+            } catch (RemoteException ex) {
+                throw ex.rethrowFromSystemServer();
+            }
+        }
     }
 
     /**
@@ -2080,6 +2095,7 @@ public final class LoadedApk {
                 mDispatcher = new WeakReference<LoadedApk.ServiceDispatcher>(sd);
             }
 
+            @Override
             public void connected(ComponentName name, IBinder service, IBinderSession binderSession,
                     boolean dead) throws RemoteException {
                 LoadedApk.ServiceDispatcher sd = mDispatcher.get();
@@ -2277,6 +2293,7 @@ public final class LoadedApk {
                 mDead = dead;
             }
 
+            @Override
             public void run() {
                 if (mCommand == 0) {
                     doConnected(mName, mService, mBinderSession, mDead);
@@ -2299,6 +2316,7 @@ public final class LoadedApk {
                 mService = service;
             }
 
+            @Override
             public void binderDied() {
                 death(mName, mService);
             }

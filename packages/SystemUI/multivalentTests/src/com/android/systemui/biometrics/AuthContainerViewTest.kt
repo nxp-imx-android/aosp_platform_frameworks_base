@@ -59,6 +59,7 @@ import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.keyguard.wakefulnessLifecycle
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.res.R
+import com.android.systemui.shade.data.repository.fakeShadeRepository
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runCurrent
@@ -99,6 +100,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
 
     private val testScope = kosmos.testScope
     private val fakeExecutor = kosmos.fakeExecutor
+    private val fakeShadeRepository = kosmos.fakeShadeRepository
 
     private val defaultLogoIcon = context.getDrawable(R.drawable.ic_android)
 
@@ -156,7 +158,7 @@ open class AuthContainerViewTest : SysuiTestCase() {
     }
 
     @Test
-    fun testDismissOnShadeDown() {
+    fun testDismissOnShadeInteraction() {
         val container = initializeFingerprintContainer(addToView = true)
         assertThat(container.parent).isNotNull()
         val root = container.rootView
@@ -301,6 +303,43 @@ open class AuthContainerViewTest : SysuiTestCase() {
             .onDismissed(
                 eq(BiometricPrompt.DISMISSED_REASON_FALLBACK_OPTION_BASE),
                 eq<ByteArray?>(null),
+                eq(authContainer?.requestId ?: 0L),
+            )
+    }
+
+    @Test
+    fun testActionCredentialMatched_dismissesWhenCredentialAllowed() {
+        val container =
+            initializeFingerprintContainer(
+                authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK
+            )
+        val attestation = ByteArray(10)
+        container.onCredentialMatched(attestation, true)
+        waitForIdleSync()
+
+        verify(callback)
+            .onDismissed(
+                eq(BiometricPrompt.DISMISSED_REASON_CREDENTIAL_CONFIRMED),
+                eq(attestation),
+                eq(authContainer?.requestId ?: 0L),
+            )
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_BP_FALLBACK_OPTIONS)
+    fun testActionCredentialMatched_doesNotDismissWhenCredentialNotAllowed() {
+        val container =
+            initializeFingerprintContainer(
+                authenticators = BiometricManager.Authenticators.BIOMETRIC_WEAK
+            )
+        val attestation = ByteArray(10)
+        container.onCredentialMatched(attestation, false)
+        waitForIdleSync()
+
+        verify(callback, never())
+            .onDismissed(
+                eq(BiometricPrompt.DISMISSED_REASON_CREDENTIAL_CONFIRMED),
+                eq(attestation),
                 eq(authContainer?.requestId ?: 0L),
             )
     }

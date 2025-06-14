@@ -235,7 +235,6 @@ public class ZenModeDiff {
         // Field name constants
         public static final String FIELD_USER = "user";
         public static final String FIELD_HAS_PRIORITY_CHANNELS = "hasPriorityChannels";
-        public static final String FIELD_ALLOW_PRIORITY_CHANNELS = "allowPriorityChannels";
 
         /**
          * Create a diff that contains diffs between the "from" and "to" ZenModeConfigs.
@@ -262,10 +261,6 @@ public class ZenModeDiff {
             if (from.hasPriorityChannels != to.hasPriorityChannels) {
                 addField(FIELD_HAS_PRIORITY_CHANNELS,
                         new FieldDiff<>(from.hasPriorityChannels, to.hasPriorityChannels));
-            }
-            if (from.allowPriorityChannels != to.allowPriorityChannels) {
-                addField(FIELD_ALLOW_PRIORITY_CHANNELS,
-                        new FieldDiff<>(from.allowPriorityChannels, to.allowPriorityChannels));
             }
 
             // Compare automatic and manual rules

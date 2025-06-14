@@ -19,6 +19,7 @@ package com.android.wm.shell.pip2.phone.transition;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.view.Surface.ROTATION_0;
+import static android.window.TransitionInfo.FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY;
 
 import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getChangeByToken;
 import static com.android.wm.shell.pip2.phone.transition.PipTransitionUtils.getFixedRotationDelta;
@@ -191,6 +192,14 @@ public class PipExpandHandler implements Transitions.TransitionHandler {
                         endBounds, appCompatTaskInfo.topActivityLetterboxBounds);
                 endBounds.set(appCompatTaskInfo.topActivityLetterboxBounds);
             }
+        }
+        // Resolve the ActivityEmbedding case: the startBounds and endBounds are in absolute screen
+        // coordinates, and we are animating the coordinates relative to its parent TaskFragment.
+        if (pipChange.hasFlags(FLAG_IN_TASK_WITH_EMBEDDED_ACTIVITY)) {
+            final int offsetX = -endBounds.left;
+            final int offsetY = -endBounds.top;
+            startBounds.offset(offsetX, offsetY);
+            endBounds.offsetTo(0, 0);
         }
         final SurfaceControl pipLeash = getLeash(pipChange);
 

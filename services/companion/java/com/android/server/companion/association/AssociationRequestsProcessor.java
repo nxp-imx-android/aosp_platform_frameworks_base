@@ -314,11 +314,23 @@ public class AssociationRequestsProcessor {
         final int id = mAssociationStore.getNextId();
         final long timestamp = System.currentTimeMillis();
 
-        final AssociationInfo association = new AssociationInfo(id, userId, packageName,
-                 macAddress, displayName, deviceProfile, associatedDevice,
-                selfManaged, /* notifyOnDeviceNearby */ false, /* revoked */ false,
-                /* pending */ false, timestamp, Long.MAX_VALUE, /* systemDataSyncFlags */ 0,
-                deviceIcon, /* deviceId */ null, /* packagesToNotify */ null);
+        final AssociationInfo association =
+                new AssociationInfo.Builder(id, userId, packageName)
+                        .setDeviceMacAddress(macAddress)
+                        .setDisplayName(displayName)
+                        .setDeviceProfile(deviceProfile)
+                        .setAssociatedDevice(associatedDevice)
+                        .setSelfManaged(selfManaged)
+                        .setNotifyOnDeviceNearby(false)
+                        .setRevoked(false)
+                        .setPending(false)
+                        .setTimeApproved(timestamp)
+                        .setLastTimeConnected(Long.MAX_VALUE)
+                        .setSystemDataSyncFlags(0)
+                        .setDeviceIcon(deviceIcon)
+                        .setDeviceId(null)
+                        .setPackagesToNotify(null)
+                        .build();
 
         if (skipRoleGrant) {
             Slog.i(TAG, "Created association for " + association.getDeviceProfile() + " and userId="

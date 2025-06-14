@@ -26,6 +26,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
+import android.annotation.XmlRes;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
@@ -2531,6 +2532,18 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
             return mHiddenApiPolicy;
         }
         return HIDDEN_API_ENFORCEMENT_ENABLED;
+    }
+
+    /**
+     * Get the resource Id of the network security config file for this app.
+     *
+     * @return the resource Id of the NSC.
+     * @hide
+     */
+    @FlaggedApi(android.security.Flags.FLAG_CONSCRYPT_NETWORK_SECURITY_CONFIG)
+    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    public @XmlRes int getNetworkSecurityConfigResourceId() {
+        return networkSecurityConfigRes;
     }
 
     /**

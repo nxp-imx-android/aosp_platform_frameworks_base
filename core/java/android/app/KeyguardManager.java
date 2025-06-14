@@ -1285,7 +1285,7 @@ public class KeyguardManager {
             if (response == null) {
                 return false;
             }
-            return response.getResponseCode() == VerifyCredentialResponse.RESPONSE_OK;
+            return response.isMatched();
         }
     }
 

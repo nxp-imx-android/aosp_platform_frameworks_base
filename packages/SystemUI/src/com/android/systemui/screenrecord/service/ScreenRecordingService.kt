@@ -78,19 +78,20 @@ protected constructor(
             },
         )
 
+    private val backgroundContext = Dispatchers.IO
     private val binder = BinderInterface()
     private val screenMediaRecorderListener: ScreenMediaRecorder.ScreenMediaRecorderListener =
         object : ScreenMediaRecorder.ScreenMediaRecorderListener {
             override fun onStarted() {
-                callback?.onRecordingStarted()
+                launchCallbackAction { onRecordingStarted() }
             }
 
             override fun onInfo(mr: MediaRecorder?, what: Int, extra: Int) {
-                callback?.onRecordingInterrupted(userId, StopReason.STOP_ERROR)
+                launchCallbackAction { onRecordingInterrupted(userId, StopReason.STOP_ERROR) }
             }
 
             override fun onStopped(userId: Int, @StopReason stopReason: Int) {
-                callback?.onRecordingInterrupted(userId, stopReason)
+                launchCallbackAction { onRecordingInterrupted(userId, stopReason) }
             }
         }
 
@@ -108,10 +109,12 @@ protected constructor(
         val action = intent?.action
         when (action) {
             ACTION_STOP ->
-                callback?.onRecordingInterrupted(
-                    userId,
-                    intent.getIntExtra(EXTRA_STOP_REASON, StopReason.STOP_UNKNOWN),
-                )
+                launchCallbackAction {
+                    onRecordingInterrupted(
+                        userId,
+                        intent.getIntExtra(EXTRA_STOP_REASON, StopReason.STOP_UNKNOWN),
+                    )
+                }
         }
         return START_NOT_STICKY
     }
@@ -143,7 +146,10 @@ protected constructor(
                 notificationId = notificationId,
                 audioSource = audioSource,
             )
-            val savedRecording: SavedRecording = withContext(Dispatchers.IO) { recorder.save() }
+            val savedRecording: SavedRecording =
+                withContext(backgroundContext) {
+                    recorder.save().apply { callback?.onRecordingSaved(uri, thumbnail) }
+                }
             onRecordingSaved(this, savedRecording)
         } catch (e: Exception) {
             notificationInteractor.notifyErrorSaving(notificationId)
@@ -177,6 +183,10 @@ protected constructor(
 
     private fun getShouldShowTouches(): Boolean =
         Settings.System.getInt(contentResolver, Settings.System.SHOW_TOUCHES, 0) != 0
+
+    private fun launchCallbackAction(action: IScreenRecordingServiceCallback.() -> Unit) {
+        callback?.let { coroutineScope.launch(backgroundContext) { it.action() } }
+    }
 
     private inner class BinderInterface : IScreenRecordingService.Stub() {
 

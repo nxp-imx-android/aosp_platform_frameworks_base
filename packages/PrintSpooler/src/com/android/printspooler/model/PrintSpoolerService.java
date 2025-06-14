@@ -29,6 +29,7 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.drawable.Icon;
 import android.os.AsyncTask;
 import android.os.Binder;
@@ -554,6 +555,58 @@ public final class PrintSpoolerService extends Service {
         mNotificationController.onUpdateNotifications(mPrintJobs);
     }
 
+    // Stats Logging
+    private void logPrintJobFinalState(PrinterId printerId, PrintJobInfo printJob) {
+        if (!Flags.printingTelemetry()) {
+            return;
+        }
+        final ComponentName service = (printerId == null) ? null : printerId.getServiceName();
+        if (service == null) {
+            // We don't know what to do without an identifiable service.
+            Log.e(LOG_TAG, "Failed to get service ComponentName");
+            return;
+        }
+        int serviceUId = 0;
+        try {
+            serviceUId =
+                getPackageManager().getApplicationInfo(service.getPackageName(), 0).uid;
+        } catch (NameNotFoundException e) {
+            Log.e(LOG_TAG, String.format("Failed to get uid for service=%s",
+                                         service.flattenToString()), e);
+            // We don't know what to do without an identifiable service.
+            return;
+        }
+        final boolean savedPdf = service.getPackageName().startsWith(this.getPackageName());
+        final int state = printJob.getState();
+
+        // The following values are all optional.
+
+        final PrintAttributes attributes = printJob.getAttributes();
+        final PrintAttributes.MediaSize size = (attributes == null)
+                ? null : attributes.getMediaSize();
+        final PrintAttributes.Resolution resolution = (attributes == null)
+                ? null : attributes.getResolution();
+        final int colorMode = (attributes == null) ? 0 : attributes.getColorMode();
+        final int duplexMode = (attributes == null) ? 0 : attributes.getDuplexMode();
+
+        final PrintDocumentInfo docInfo = printJob.getDocumentInfo();
+        final int pageCount = (docInfo == null)
+                ? PrintDocumentInfo.PAGE_COUNT_UNKNOWN : docInfo.getPageCount();
+        final int docType = (docInfo == null)
+                ? PrintDocumentInfo.CONTENT_TYPE_UNKNOWN : docInfo.getContentType();
+
+        StatsAsyncLogger.INSTANCE.PrintJob(serviceUId,
+                                           state,
+                                           colorMode,
+                                           size,
+                                           resolution,
+                                           duplexMode,
+                                           docType,
+                                           savedPdf,
+                                           pageCount);
+
+    }
+
     public boolean setPrintJobState(PrintJobId printJobId, int state, String error) {
         boolean success = false;
 
@@ -592,6 +645,7 @@ public final class PrintSpoolerService extends Service {
                     case PrintJobInfo.STATE_FAILED: {
                         PrinterId printerId = printJob.getPrinterId();
                         if (printerId != null) {
+                            logPrintJobFinalState(printerId, printJob);
                             ComponentName service = printerId.getServiceName();
                             if (!hasActivePrintJobsForServiceLocked(service)) {
                                 sendOnAllPrintJobsForServiceHandled(service);

@@ -73,7 +73,7 @@ class BundleHeaderGutsViewModelTest : SysuiTestCase() {
 
         // Assert
         verify(mockDisableBundle).invoke()
-        verify(mockCloseGuts, never()).invoke()
+        verify(mockCloseGuts).invoke()
     }
 
     @Test

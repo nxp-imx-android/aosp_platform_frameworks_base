@@ -68,6 +68,7 @@ import javax.inject.Inject;
  * Handles notification logging, in particular, logging which notifications are visible and which
  * are not.
  */
+// TODO(b/424001722) remove this class, because it is replaced by NotificationStatsLogger
 public class NotificationLogger implements StateListener, CoreStartable,
         NotificationRowStatsLogger {
     static final String TAG = "NotificationLogger";

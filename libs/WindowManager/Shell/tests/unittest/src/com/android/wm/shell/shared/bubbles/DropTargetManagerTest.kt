@@ -590,6 +590,71 @@ class DropTargetManagerTest {
         )
     }
 
+    @Test
+    fun onDropTargetsRemoved_multipleManagers_actionExecutedOnlyWhenItsViewsAreRemoved() {
+        var firstRunnableExecuted = false
+        val firstAction = Runnable { firstRunnableExecuted = true }
+
+        var secondRunnableExecuted = false
+        val secondAction = Runnable { secondRunnableExecuted = true }
+
+        // Create a second DropTargetManager sharing the same container
+        val secondDropTargetManager =
+            DropTargetManager(context, container, FakeDragZoneChangedListener())
+
+        val randomViewsCount = 10
+
+        // Add some random views to the shared container
+        repeat(randomViewsCount) {
+            container.addView(View(context))
+        }
+
+        // First manager starts a drag, adds its views
+        dropTargetManager.onDragStarted(
+            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false) {},
+            listOf(bubbleLeftDragZoneWithSecondDropTarget)
+        )
+        assertThat(container.childCount)
+            .isEqualTo(randomViewsCount + DROP_VIEWS_COUNT_FOR_TWO_DROP_TARGETS)
+        dropTargetManager.onDropTargetRemoved(firstAction)
+        assertThat(firstRunnableExecuted).isFalse() // Manager 1 views are still there
+
+        // Second manager starts a drag, adds its views
+        secondDropTargetManager.onDragStarted(
+            DraggedObject.LauncherIcon(bubbleBarHasBubbles = false) {},
+            listOf(bubbleRightDragZoneWithSecondDropTarget)
+        )
+        // Now container has views from both managers
+        assertThat(container.childCount)
+            .isEqualTo(randomViewsCount + DROP_VIEWS_COUNT_FOR_TWO_DROP_TARGETS * 2)
+        secondDropTargetManager.onDropTargetRemoved(secondAction)
+        assertThat(secondRunnableExecuted).isFalse() // Second manager views are still there
+
+        // First manager ends its drag
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            dropTargetManager.onDragEnded()
+            animatorTestRule.advanceTimeBy(250) // Ensure fade out completes
+        }
+
+        // First manager's views should be removed, its runnable executed.
+        // Second manager's views are still present.
+        assertThat(firstRunnableExecuted).isTrue()
+        assertThat(secondRunnableExecuted).isFalse()
+        // Count should be only manager 2's views
+        assertThat(container.childCount)
+            .isEqualTo(randomViewsCount + DROP_VIEWS_COUNT_FOR_TWO_DROP_TARGETS)
+
+        // Second manager ends its drag
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            secondDropTargetManager.onDragEnded()
+            animatorTestRule.advanceTimeBy(250) // Ensure fade out completes
+        }
+
+        // Second manager's views should be removed, its runnable executed.
+        assertThat(secondRunnableExecuted).isTrue()
+        assertThat(container.childCount).isEqualTo(randomViewsCount) // All managers views removed
+    }
+
     private fun verifyDropTargetPosition(rect: Rect) {
         verifyDropTargetPosition(dropTargetView, rect)
     }

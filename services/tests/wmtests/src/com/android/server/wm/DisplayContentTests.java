@@ -2743,19 +2743,22 @@ public class DisplayContentTests extends WindowTestsBase {
         final var keyguardWin = newWindowBuilder("keyguardWin", TYPE_NOTIFICATION_SHADE).build();
         final Rect rect2 = new Rect(10, 10, 20, 20);
         keyguardWin.setKeepClearAreas(List.of(rect2), Collections.emptyList());
+        mDisplayContent.updateKeepClearAreas();
 
         // No keep clear areas on display, because the windows are not visible
-        assertEquals(Collections.emptySet(), mDisplayContent.getKeepClearAreas());
+        assertEquals(Collections.emptySet(), mDisplayContent.mRestrictedKeepClearAreas);
 
         makeWindowVisible(navBarWin);
+        mDisplayContent.updateKeepClearAreas();
 
         // The returned keep-clear areas contain the areas just from the visible window
-        assertEquals(Set.of(rect1), mDisplayContent.getKeepClearAreas());
+        assertEquals(Set.of(rect1), mDisplayContent.mRestrictedKeepClearAreas);
 
         makeWindowVisible(navBarWin, keyguardWin);
+        mDisplayContent.updateKeepClearAreas();
 
         // The returned keep-clear areas contain the areas from all visible windows
-        assertEquals(Set.of(rect1, rect2), mDisplayContent.getKeepClearAreas());
+        assertEquals(Set.of(rect1, rect2), mDisplayContent.mRestrictedKeepClearAreas);
     }
 
     @Test

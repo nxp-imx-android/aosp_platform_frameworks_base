@@ -202,12 +202,13 @@ public final class DropBoxManagerService extends SystemService {
         }
 
         @Override
-        public DropBoxManager.Entry getNextEntry(String tag, long millis, String callingPackage) {
+        public IDropBoxManagerService.Entry getNextEntry(
+                String tag, long millis, String callingPackage) {
             return getNextEntryWithAttribution(tag, millis, callingPackage, null);
         }
 
         @Override
-        public DropBoxManager.Entry getNextEntryWithAttribution(String tag, long millis,
+        public IDropBoxManagerService.Entry getNextEntryWithAttribution(String tag, long millis,
                 String callingPackage, String callingAttributionTag) {
             return DropBoxManagerService.this.getNextEntry(tag, millis, callingPackage,
                     callingAttributionTag);
@@ -634,7 +635,10 @@ public final class DropBoxManagerService extends SystemService {
         }
     }
 
-    public synchronized DropBoxManager.Entry getNextEntry(String tag, long millis,
+    /**
+     * Implementation returning the expected entry from the AIDL.
+     */
+    public synchronized @Nullable IDropBoxManagerService.Entry getNextEntry(String tag, long millis,
             String callingPackage, @Nullable String callingAttributionTag) {
         if (!checkPermission(Binder.getCallingUid(), callingPackage, callingAttributionTag)) {
             return null;
@@ -653,12 +657,19 @@ public final class DropBoxManagerService extends SystemService {
         for (EntryFile entry : list.contents.tailSet(new EntryFile(millis + 1))) {
             if (entry.tag == null) continue;
             if ((entry.flags & DropBoxManager.IS_EMPTY) != 0) {
-                return new DropBoxManager.Entry(entry.tag, entry.timestampMillis);
+                IDropBoxManagerService.Entry found = new IDropBoxManagerService.Entry();
+                found.tag = entry.tag;
+                found.timestamp = entry.timestampMillis;
+                return found;
             }
             final File file = entry.getFile(mDropBoxDir);
             try {
-                return new DropBoxManager.Entry(
-                        entry.tag, entry.timestampMillis, file, entry.flags);
+                IDropBoxManagerService.Entry found = new IDropBoxManagerService.Entry();
+                found.tag = tag;
+                found.timestamp = entry.timestampMillis;
+                found.fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY);
+                found.flags = entry.flags;
+                return found;
             } catch (IOException e) {
                 Slog.wtf(TAG, "Can't read: " + file, e);
                 // Continue to next file

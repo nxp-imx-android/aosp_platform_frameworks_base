@@ -69,7 +69,6 @@ import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotif
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
-import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import com.android.systemui.statusbar.phone.domain.interactor.DarkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.phone.domain.interactor.LightsOutInteractor
@@ -95,7 +94,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
@@ -371,17 +369,13 @@ constructor(
             )
 
     override val areNotificationsLightsOut: Flow<Boolean> =
-        if (NotificationsLiveDataStoreRefactor.isUnexpectedlyInLegacyMode()) {
-                emptyFlow()
-            } else {
-                combine(
-                        notificationsInteractor.areAnyNotificationsPresent,
-                        lightsOutInteractor.isLowProfile(thisDisplayId) ?: flowOf(false),
-                    ) { hasNotifications, isLowProfile ->
-                        hasNotifications && isLowProfile
-                    }
-                    .distinctUntilChanged()
+        combine(
+                notificationsInteractor.areAnyNotificationsPresent,
+                lightsOutInteractor.isLowProfile(thisDisplayId) ?: flowOf(false),
+            ) { hasNotifications, isLowProfile ->
+                hasNotifications && isLowProfile
             }
+            .distinctUntilChanged()
             .logDiffsForTable(
                 tableLogBuffer = tableLogger,
                 columnName = COL_NOTIF_LIGHTS_OUT,

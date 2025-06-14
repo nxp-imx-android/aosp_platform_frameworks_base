@@ -673,6 +673,8 @@ com.android.server.ServiceThread
 com.android.server.SystemService
 com.android.server.SystemServiceManager
 
+com.android.server.am.BoundServiceSession
+com.android.server.am.ConnectionRecord
 com.android.server.utils.TimingsTraceAndSlog
 
 com.google.android.collect.Lists
