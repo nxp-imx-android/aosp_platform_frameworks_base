@@ -26,6 +26,8 @@ import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.platform.test.flag.junit.SetFlagsRule
+import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -815,6 +817,26 @@ class BubbleStackViewTest {
         assertThat(bubbleStackView.expandedBubble!!.key).isEqualTo(bubble.key)
         assertThat(bubbleStackView.canExpandView(bubble)).isFalse()
         verify(bubbleTransition, never()).continueExpand()
+    }
+
+    @Test
+    fun snapToExpanded() {
+        val bubble = createAndInflateChatBubble(key = "bubble")
+
+        assertThat(bubble.expandedView).isNotNull()
+        assertThat(bubbleStackView.isExpanded).isFalse()
+
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            bubbleStackView.addBubble(bubble)
+            bubbleStackView.setSelectedBubble(bubble)
+            bubbleStackView.snapToExpanded()
+            bubbleStackView.isExpanded = true
+            shellExecutor.flushAll()
+        }
+
+        assertThat(bubble.taskView.alpha).isEqualTo(1)
+        val expandedViewContainer = bubble.expandedView!!.parent as ViewGroup
+        assertThat(expandedViewContainer.visibility).isEqualTo(View.VISIBLE)
     }
 
     private fun createAndInflateChatBubble(key: String): Bubble {

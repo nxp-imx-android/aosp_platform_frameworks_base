@@ -44,6 +44,7 @@ import com.android.systemui.dump.DumpManager
 import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
+import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.shared.system.QuickStepContract
 import com.android.systemui.shared.system.TaskStackChangeListener
 import com.android.systemui.shared.system.TaskStackChangeListeners
@@ -51,6 +52,7 @@ import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import java.io.PrintWriter
 import java.util.concurrent.Executor
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.awaitClose
@@ -61,6 +63,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
@@ -90,6 +93,9 @@ interface AmbientCueRepository {
     val isGestureNav: StateFlow<Boolean>
 
     val recentsButtonPosition: StateFlow<Rect?>
+
+    /* If AmbientCue is enabled. */
+    val isAmbientCueEnabled: StateFlow<Boolean>
 }
 
 @SysUISingleton
@@ -106,6 +112,8 @@ constructor(
     @Application applicationContext: Context,
     launcherProxyService: LauncherProxyService,
     private val taskStackChangeListeners: TaskStackChangeListeners,
+    @Background backgroundDispatcher: CoroutineDispatcher,
+    secureSettingsRepository: SecureSettingsRepository,
 ) : AmbientCueRepository, Dumpable {
 
     init {
@@ -293,12 +301,25 @@ constructor(
 
     val targetTaskId: MutableStateFlow<Int> = MutableStateFlow(INVALID_TASK_ID)
 
+    override val isAmbientCueEnabled: StateFlow<Boolean> =
+        secureSettingsRepository
+            .intSetting(name = AMBIENT_CUE_SETTING, 0)
+            .map { it == OPTED_IN }
+            .flowOn(backgroundDispatcher)
+            .stateIn(
+                scope = backgroundScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
+
     override val isRootViewAttached: StateFlow<Boolean> =
-        combine(isDeactivated, globallyFocusedTaskId, actions) {
+        combine(isDeactivated, globallyFocusedTaskId, actions, isAmbientCueEnabled) {
                 isDeactivated,
                 globallyFocusedTaskId,
-                actions ->
+                actions,
+                isAmbientCueEnabled ->
                 actions.isNotEmpty() &&
+                    isAmbientCueEnabled &&
                     !isDeactivated &&
                     globallyFocusedTaskId == targetTaskId.value
             }
@@ -318,6 +339,7 @@ constructor(
         pw.println("isTaskBarVisible: ${isTaskBarVisible.value}")
         pw.println("isGestureNav: ${isGestureNav.value}")
         pw.println("actions: ${actions.value}")
+        pw.println("isAmbientCueEnabled: ${isAmbientCueEnabled.value}")
     }
 
     companion object {
@@ -334,6 +356,9 @@ constructor(
         private const val TAG = "AmbientCueRepository"
         private const val DEBUG = false
         private const val INVALID_TASK_ID = ActivityTaskManager.INVALID_TASK_ID
+        @VisibleForTesting const val AMBIENT_CUE_SETTING = "spoonBarOptedIn"
+        @VisibleForTesting const val OPTED_IN = 0x10
+        @VisibleForTesting const val OPTED_OUT = 0x01
         const val DEBOUNCE_DELAY_MS = 100L
     }
 }

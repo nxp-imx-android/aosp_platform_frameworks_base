@@ -2484,7 +2484,11 @@ public class ActivityManagerService extends IActivityManager.Stub
         mAppProfiler = new AppProfiler(this, BackgroundThread.getHandler().getLooper(),
                 new LowMemDetector(this));
         mPhantomProcessList = new PhantomProcessList(this);
+        final Looper activityTaskLooper = DisplayThread.get().getLooper();
         mProcessStateController = new ProcessStateController.Builder(this, mProcessList, activeUids)
+                .setLockObject(this)
+                .setActivityStateLooper(activityTaskLooper)
+                .setTopProcessChangeCallback(this::updateTopAppListeners)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();
 
@@ -2527,7 +2531,7 @@ public class ActivityManagerService extends IActivityManager.Stub
 
         mActivityTaskManager = atm;
         mActivityTaskManager.initialize(mIntentFirewall, mPendingIntentController,
-                DisplayThread.get().getLooper());
+                mProcessStateController, activityTaskLooper);
         mAtmInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
 
         mHiddenApiBlacklist = new HiddenApiSettings(mHandler, mContext);
@@ -15526,6 +15530,13 @@ public class ActivityManagerService extends IActivityManager.Stub
     ProcessRecord getTopApp() {
         final WindowProcessController wpc = mAtmInternal != null ? mAtmInternal.getTopApp() : null;
         final ProcessRecord r = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+        if (!Flags.pushActivityStateToOomadjuster()) {
+            updateTopAppListeners(r);
+        }
+        return r;
+    }
+
+    void updateTopAppListeners(ProcessRecord r) {
         String pkg;
         int uid;
         if (r != null) {
@@ -15538,7 +15549,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         // Has the UID or resumed package name changed?
         synchronized (mCurResumedAppLock) {
             if (uid != mCurResumedUid || (pkg != mCurResumedPackage
-                        && (pkg == null || !pkg.equals(mCurResumedPackage)))) {
+                    && (pkg == null || !pkg.equals(mCurResumedPackage)))) {
 
                 final long identity = Binder.clearCallingIdentity();
                 try {
@@ -15557,7 +15568,6 @@ public class ActivityManagerService extends IActivityManager.Stub
                 }
             }
         }
-        return r;
     }
 
     /**

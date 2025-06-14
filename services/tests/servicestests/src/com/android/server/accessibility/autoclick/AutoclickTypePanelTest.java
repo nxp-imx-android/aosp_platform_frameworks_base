@@ -282,11 +282,11 @@ public class AutoclickTypePanelTest {
     public void moveToNextCorner_positionButton_rotatesThroughAllPositions() {
         // Define all positions in sequence
         int[][] expectedPositions = {
-                {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 90},
-                {CORNER_BOTTOM_LEFT, Gravity.START | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 90},
+                {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 30},
+                {CORNER_BOTTOM_LEFT, Gravity.START | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 30},
                 {CORNER_TOP_LEFT, Gravity.START | Gravity.TOP, /*x=*/ 15, /*y=*/ 30},
                 {CORNER_TOP_RIGHT, Gravity.END | Gravity.TOP, /*x=*/ 15, /*y=*/ 30},
-                {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 90}
+                {CORNER_BOTTOM_RIGHT, Gravity.END | Gravity.BOTTOM, /*x=*/ 15, /*y=*/ 30}
         };
 
         // Check initial position
@@ -415,7 +415,7 @@ public class AutoclickTypePanelTest {
         assertThat(panel.getCurrentCornerForTesting()).isEqualTo(CORNER_BOTTOM_RIGHT);
         assertThat(params.gravity).isEqualTo(Gravity.END | Gravity.BOTTOM);
         assertThat(params.x).isEqualTo(15);  // Default edge margin.
-        assertThat(params.y).isEqualTo(90);  // Default bottom offset.
+        assertThat(params.y).isEqualTo(30);  // Default bottom offset.
     }
 
     @Test
@@ -475,7 +475,7 @@ public class AutoclickTypePanelTest {
         assertThat(Integer.parseInt(parts[0])).isEqualTo(Gravity.START | Gravity.TOP);
         assertThat(Integer.parseInt(parts[1])).isEqualTo(15);
         assertThat(Integer.parseInt(parts[2])).isEqualTo(
-                Math.max(0, panelLocation[1] + 10
+                Math.max(30, panelLocation[1] + 10
                         - mAutoclickTypePanel.getStatusBarHeightForTesting()));
         assertThat(Integer.parseInt(parts[3])).isEqualTo(CORNER_BOTTOM_LEFT);
 
@@ -486,7 +486,7 @@ public class AutoclickTypePanelTest {
         WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();
         assertThat(params.gravity).isEqualTo(Gravity.START | Gravity.TOP);
         assertThat(params.x).isEqualTo(15); // PANEL_EDGE_MARGIN
-        assertThat(params.y).isEqualTo(Math.max(0,
+        assertThat(params.y).isEqualTo(Math.max(30,
                 panelLocation[1] + 10 - mAutoclickTypePanel.getStatusBarHeightForTesting()));
         assertThat(mAutoclickTypePanel.getCurrentCornerForTesting()).isEqualTo(
                 CORNER_BOTTOM_LEFT);

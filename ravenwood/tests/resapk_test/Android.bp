@@ -12,11 +12,6 @@ android_ravenwood_test {
 
     resource_apk: "RavenwoodResApkTest-res",
 
-    libs: [
-        // Normally, tests shouldn't directly access it, but we need to access RavenwoodCommonUtils
-        // in this test.
-        "ravenwood-runtime-common-ravenwood",
-    ],
     static_libs: [
         "androidx.annotation_annotation",
         "androidx.test.ext.junit",

@@ -50,10 +50,12 @@ import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.navigationbar.NavigationModeController
 import com.android.systemui.navigationbar.NavigationModeController.ModeChangedListener
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.shade.data.repository.fakeFocusedDisplayRepository
+import com.android.systemui.shared.settings.data.repository.secureSettingsRepository
 import com.android.systemui.shared.system.taskStackChangeListeners
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -95,13 +97,19 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             executor = kosmos.fakeExecutor,
             applicationContext = kosmos.testableContext,
             taskStackChangeListeners = kosmos.taskStackChangeListeners,
+            backgroundDispatcher = kosmos.testDispatcher,
+            secureSettingsRepository = kosmos.secureSettingsRepository,
         )
 
     @Test
-    fun isRootViewAttached_whenHasActionsAndNotDeactivatedAndTaskIdMatch_true() =
+    fun isRootViewAttached_whenHasActionsAndNotDeactivatedAndTaskIdMatchAndEnabled_true() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            secureSettingsRepository.setInt(
+                AmbientCueRepositoryImpl.AMBIENT_CUE_SETTING,
+                AmbientCueRepositoryImpl.OPTED_IN,
+            )
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
@@ -121,6 +129,10 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            secureSettingsRepository.setInt(
+                AmbientCueRepositoryImpl.AMBIENT_CUE_SETTING,
+                AmbientCueRepositoryImpl.OPTED_IN,
+            )
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
@@ -138,6 +150,10 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            secureSettingsRepository.setInt(
+                AmbientCueRepositoryImpl.AMBIENT_CUE_SETTING,
+                AmbientCueRepositoryImpl.OPTED_IN,
+            )
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
@@ -158,6 +174,10 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
             val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            secureSettingsRepository.setInt(
+                AmbientCueRepositoryImpl.AMBIENT_CUE_SETTING,
+                AmbientCueRepositoryImpl.OPTED_IN,
+            )
             runCurrent()
             verify(smartSpaceSession)
                 .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
@@ -168,6 +188,29 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
                 RunningTaskInfo().apply { taskId = TASK_ID_2 }
             )
             advanceTimeBy(DEBOUNCE_DELAY_MS)
+
+            assertThat(isRootViewAttached).isFalse()
+        }
+
+    @Test
+    fun isRootViewAttached_ambientCueDisabled_false() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            taskStackChangeListeners.listenerImpl.onTaskMovedToFront(
+                RunningTaskInfo().apply { taskId = TASK_ID }
+            )
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
+            advanceUntilIdle()
+
+            secureSettingsRepository.setInt(
+                AmbientCueRepositoryImpl.AMBIENT_CUE_SETTING,
+                AmbientCueRepositoryImpl.OPTED_OUT,
+            )
 
             assertThat(isRootViewAttached).isFalse()
         }
@@ -326,6 +369,35 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             runCurrent()
             assertThat(isTaskBarVisible).isFalse()
         }
+
+    @Test
+    fun isAmbientCueEnabled_spoonBarOptIn_true() =
+        kosmos.runTest {
+            val isAmbientCueEnabled by collectLastValue(underTest.isAmbientCueEnabled)
+
+            secureSettingsRepository.setInt(
+                AmbientCueRepositoryImpl.AMBIENT_CUE_SETTING,
+                AmbientCueRepositoryImpl.OPTED_IN,
+            )
+            runCurrent()
+
+            assertThat(isAmbientCueEnabled).isTrue()
+        }
+
+    @Test
+    fun isAmbientCueEnabled_spoonBarOptOut_false() {
+        kosmos.runTest {
+            val isAmbientCueEnabled by collectLastValue(underTest.isAmbientCueEnabled)
+
+            secureSettingsRepository.setInt(
+                AmbientCueRepositoryImpl.AMBIENT_CUE_SETTING,
+                AmbientCueRepositoryImpl.OPTED_OUT,
+            )
+            runCurrent()
+
+            assertThat(isAmbientCueEnabled).isFalse()
+        }
+    }
 
     companion object {
 

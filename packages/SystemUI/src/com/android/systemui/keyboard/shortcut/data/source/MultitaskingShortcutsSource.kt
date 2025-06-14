@@ -129,5 +129,27 @@ constructor(@Main private val resources: Resources, @Application private val con
                 }
             )
         }
+
+        if (
+            DesktopModeStatus.enableMultipleDesktops(context) &&
+                DesktopExperienceFlags.ENABLE_KEYBOARD_SHORTCUTS_TO_SWITCH_DESKS.isTrue
+        ) {
+            // Move between desktops
+            //  - Meta + Ctrl + [ or ]
+            add(
+                shortcutInfo(
+                    resources.getString(R.string.system_multiple_desktop_mode_switch_between_desks)
+                ) {
+                    command(META_META_ON or META_CTRL_ON, KEYCODE_LEFT_BRACKET)
+                }
+            )
+            add(
+                shortcutInfo(
+                    resources.getString(R.string.system_multiple_desktop_mode_switch_between_desks)
+                ) {
+                    command(META_META_ON or META_CTRL_ON, KEYCODE_RIGHT_BRACKET)
+                }
+            )
+        }
     }
 }

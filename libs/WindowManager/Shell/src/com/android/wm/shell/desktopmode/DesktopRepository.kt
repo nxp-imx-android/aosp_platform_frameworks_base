@@ -204,8 +204,40 @@ class DesktopRepository(
         preservedDisplaysByUniqueId[uniqueId] = preservedDisplay
     }
 
+    /** Removes the specified preserved display. */
+    fun removePreservedDisplay(uniqueDisplayId: String) {
+        preservedDisplaysByUniqueId.remove(uniqueDisplayId)
+    }
+
+    /** Whether or not the given uniqueDisplayId matches a display that is being preserved. */
+    fun hasPreservedDisplayForUniqueDisplayId(uniqueDisplayId: String): Boolean =
+        preservedDisplaysByUniqueId.containsKey(uniqueDisplayId)
+
+    /** Returns all active tasks on the preserved display separated by desk. */
+    fun getPreservedTasksByDeskIdInZOrder(uniqueDisplayId: String): Map<Int, List<Int>> {
+        val preservedDesks =
+            preservedDisplaysByUniqueId[uniqueDisplayId]?.orderedDesks ?: emptySet()
+        val tasksByDeskId = mutableMapOf<Int, List<Int>>()
+        for (desk in preservedDesks) {
+            tasksByDeskId[desk.deskId] = desk.freeformTasksInZOrder
+        }
+        return tasksByDeskId
+    }
+
+    /** Returns the active desk on the preserved display for the specified unique display id. */
+    fun getPreservedActiveDesk(uniqueDisplayId: String): Int? =
+        preservedDisplaysByUniqueId[uniqueDisplayId]?.activeDeskId
+
+    /**
+     * Checks if the provided task is minimized on the preserved display with the provided
+     * uniqueDisplayId.
+     */
+    fun isPreservedTaskMinimized(uniqueDisplayId: String, taskId: Int): Boolean =
+        preservedDisplaysByUniqueId[uniqueDisplayId]?.orderedDesks?.any { desk ->
+            desk.minimizedTasks.contains(taskId)
+        } ?: false
+
     /** Returns the bounds of all tasks in all desks of the preserved display. */
-    @VisibleForTesting
     fun getPreservedTaskBounds(uniqueDisplayId: String): Map<Int, Rect> {
         val combinedBoundsMap = mutableMapOf<Int, Rect>()
         val orderedDesks =
@@ -640,6 +672,15 @@ class DesktopRepository(
             .subtract(desk.closingTasks)
             .subtract(desk.minimizedTasks)
             .singleOrNull() == taskId
+    }
+
+    /**
+     * Whether the task is the only task in the desk, regardless of its visibility or minimized
+     * state.
+     */
+    fun isOnlyTaskInDesk(taskId: Int, deskId: Int): Boolean {
+        val desk = desktopData.getDesk(deskId) ?: return false
+        return desk.activeTasks.size == 1 && desk.activeTasks.single() == taskId
     }
 
     /** Whether the task is the only visible desktop task in the display. */

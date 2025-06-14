@@ -419,7 +419,7 @@ status_t JMediaCodec::detachOutputSurface() {
     return err;
 }
 
-status_t JMediaCodec::createInputSurface(sp<IGraphicBufferProducer>* surface) {
+status_t JMediaCodec::createInputSurface(sp<MediaSurfaceType>* surface) {
     return mCodec->createInputSurface(surface);
 }
 
@@ -1937,7 +1937,8 @@ static jobject android_media_MediaCodec_createPersistentInputSurface(
         return NULL;
     }
 
-    sp<Surface> surface = sp<Surface>::make(persistentSurface->getBufferProducer(), true);
+    sp<Surface> surface = mediaflagtools::surfaceTypeToSurface(
+        persistentSurface->getSurface(), true);
     if (surface == NULL) {
         return NULL;
     }
@@ -2039,7 +2040,7 @@ static jobject android_media_MediaCodec_createInputSurface(JNIEnv* env,
     }
 
     // Tell the MediaCodec that we want to use a Surface as input.
-    sp<IGraphicBufferProducer> surface;
+    sp<MediaSurfaceType> surface;
     status_t err = codec->createInputSurface(&surface);
     if (err != NO_ERROR) {
         throwExceptionAsNecessary(env, err, codec);
@@ -2047,7 +2048,8 @@ static jobject android_media_MediaCodec_createInputSurface(JNIEnv* env,
     }
 
     // Wrap the IGBP in a Java-language Surface.
-    return android_view_Surface_createFromIGraphicBufferProducer(env, surface);
+    return android_view_Surface_createFromIGraphicBufferProducer(env,
+            mediaflagtools::surfaceTypeToIGBP(surface));
 }
 
 static void android_media_MediaCodec_start(JNIEnv *env, jobject thiz) {

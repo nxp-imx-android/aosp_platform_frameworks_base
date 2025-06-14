@@ -104,22 +104,14 @@ release_package_messagequeue_implementation_srcs {
     out: ["android/os/MessageQueue.java"],
 }
 
-aidl_interface {
-    name: "dropboxmanager_aidl",
-    srcs: ["com/android/internal/os/IDropBoxManagerService.aidl"],
-    unstable: true,
-    backend: {
-        java: {
-            enabled: false, // TODO(b/424186512) switch frameworks/base to using this as well, it uses core build **/*.aidl glob now
-        },
-        rust: {
-            enabled: true,
-            apex_available: [
-                "//apex_available:platform",
-                "com.android.virt",
-            ],
-        },
-    },
+aidl_library {
+    name: "IDropBoxManagerService_aidl",
+    srcs: [
+        "com/android/internal/os/IDropBoxManagerService.aidl",
+    ],
+    hdrs: [
+        "android/os/DropBoxManager.aidl",
+    ],
 }
 
 filegroup {
@@ -303,8 +295,8 @@ java_library {
     name: "modules-utils-locallog",
     srcs: ["android/util/LocalLog.java"],
     libs: [
-        "ravenwood-annotations-lib",
         "unsupportedappusage",
+        "ravenwood-annotations-lib",
     ],
     sdk_version: "module_current",
     min_sdk_version: "30",

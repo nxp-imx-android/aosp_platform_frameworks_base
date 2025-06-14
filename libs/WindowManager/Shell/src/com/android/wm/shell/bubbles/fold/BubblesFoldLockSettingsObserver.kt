@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ravenwood.common.divergence;
 
-/**
- * A class that behaves differently on the device side and on Ravenwood, because we have
- * two build modules with different implementation and we link the different ones at runtime.
- */
-public final class RavenwoodDivergence {
-    private RavenwoodDivergence() {
-    }
+package com.android.wm.shell.bubbles.fold
 
-    public static boolean isOnRavenwood() {
-        return true;
-    }
+/** Interface for checking if the device stays awake on fold. */
+fun interface BubblesFoldLockSettingsObserver {
+    fun isStayAwakeOnFold(): Boolean
 }

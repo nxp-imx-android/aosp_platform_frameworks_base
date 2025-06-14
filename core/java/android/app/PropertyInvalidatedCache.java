@@ -1220,22 +1220,15 @@ public class PropertyInvalidatedCache<Query, Result> {
     private static final ConcurrentHashMap<CacheKey, NonceHandler> sHandlers =
             new ConcurrentHashMap<>();
 
-    // True if shared memory is flag-enabled, false otherwise.  Read the flags exactly once.
-    private static final boolean sSharedMemoryAvailable = isSharedMemoryAvailable();
-
+    // True if nonces are visible to processes outside this one.
     @android.ravenwood.annotation.RavenwoodReplace
-    private static boolean isSharedMemoryAvailable() {
+    private static boolean isMultiProcess() {
         return true;
     }
 
-    private static boolean isSharedMemoryAvailable$ravenwood() {
-        return false; // Always disable shared memory on Ravenwood. (for now)
-    }
-
-    // Return true if this cache can use shared memory for its nonce.  Shared memory may be used
-    // if the module is the system.
-    private static boolean sharedMemoryOkay(@NonNull CacheKey id) {
-        return sSharedMemoryAvailable && sNamespaceSystem.equals(id.namespace);
+    // Ravenwood processes are always stand-alone.
+    private static boolean isMultiProcess$ravenwood() {
+        return false;
     }
 
     /**
@@ -1249,7 +1242,9 @@ public class PropertyInvalidatedCache<Query, Result> {
             synchronized (sGlobalLock) {
                 h = sHandlers.get(id);
                 if (h == null) {
-                    if (sharedMemoryOkay(id)) {
+                    if (!isMultiProcess()) {
+                        h = new NonceLocal(id);
+                    } else if (sNamespaceSystem.equals(id.namespace)) {
                         h = new NonceSharedMem(id);
                     } else if (sNamespaceTest.equals(id.namespace)) {
                         h = new NonceLocal(id);
@@ -2098,9 +2093,10 @@ public class PropertyInvalidatedCache<Query, Result> {
         // See if brief output is requested.
         final boolean brief = briefRequested(args);
 
-        if (sSharedMemoryAvailable) {
+        NonceStore store = NonceStore.maybeGetInstance();
+        if (store != null) {
             pw.println("  SharedMemory: enabled");
-            NonceStore.getInstance().dump(pw, "    ", detail);
+            store.dump(pw, "    ", detail);
         } else {
             pw.println("  SharedMemory: disabled");
          }
@@ -2239,6 +2235,14 @@ public class PropertyInvalidatedCache<Query, Result> {
                         // not yet mapped.  Swallow the exception and leave sInstance null.
                     }
                 }
+                return sInstance;
+            }
+        }
+
+        // Return the instance but only if it has been created already.  This is used for dump and
+        // debug.
+        static NonceStore maybeGetInstance() {
+            synchronized (sLock) {
                 return sInstance;
             }
         }

@@ -2513,6 +2513,8 @@
     <string name="system_desktop_mode_toggle_maximize_window">Maximize window</string>
     <!-- User visible title for the keyboard shortcut that minimizes a task in desktop mode [CHAR LIMIT=70] -->
     <string name="system_desktop_mode_minimize_window">Minimize window</string>
+    <!-- User visible title for the keyboard shortcut that switches between desktops in multiple desktop mode [CHAR LIMIT=70] -->
+    <string name="system_multiple_desktop_mode_switch_between_desks">Move between desktops</string>
 
     <!-- User visible title for the input keyboard shortcuts list. [CHAR LIMIT=70] -->
     <string name="keyboard_shortcut_group_input">Input</string>

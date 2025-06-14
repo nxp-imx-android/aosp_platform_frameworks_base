@@ -28,6 +28,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Point;
 import android.util.AttributeSet;
 import android.util.IndentingPrintWriter;
@@ -37,6 +38,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.Interpolator;
 
+import androidx.annotation.VisibleForTesting;
 import com.android.app.animation.Interpolators;
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.jank.InteractionJankMonitor.Configuration;
@@ -117,7 +119,7 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
     private boolean mShadowHidden;
     private boolean mIsHeadsUpAnimation;
     private boolean mIsHeadsUpCycling;
-    /* In order to track headsup longpress coorindate. */
+    /* In order to track headsup longpress coordindate. */
     protected Point mTargetPoint;
     private boolean mDismissed;
     private boolean mRefocusOnDismiss;
@@ -134,6 +136,18 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
         setClipChildren(false);
         setClipToPadding(false);
         updateColors();
+    }
+
+    /**
+     * @return Fraction of ongoing appear animation.
+     */
+    public float getAppearAnimationFraction() {
+        return mAppearAnimationFraction;
+    }
+
+    @VisibleForTesting
+    public void setAppearAnimationFraction(float fraction) {
+        mAppearAnimationFraction = fraction;
     }
 
     protected void updateColors() {
@@ -176,6 +190,11 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
             return;
         }
         mBackgroundNormal.setActualWidth(width);
+    }
+
+    @VisibleForTesting
+    public void setCurrentAppearInterpolator(Interpolator interpolator) {
+        mCurrentAppearInterpolator = interpolator;
     }
 
     @Override
@@ -390,6 +409,14 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
     }
 
     @Override
+    public boolean isBackgroundOpaque() {
+        if (Color.alpha(mCurrentBackgroundTint) == 255) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public long performRemoveAnimation(long duration, long delay, float translationDirection,
             boolean isHeadsUpAnimation, boolean isHeadsUpCycling, Runnable onStartedRunnable,
             Runnable onFinishedRunnable, AnimatorListenerAdapter animationListener,
@@ -464,9 +491,9 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
             updateAppearAnimationAlpha();
             if (NotificationHeadsUpCycling.isEnabled()) {
                 // For cycling out, we want the HUN to be clipped from the top.
-                updateAppearRect(clipSide);
+                updateAppearRect(clipSide, getWidth(), getActualHeight());
             } else {
-                updateAppearRect();
+                updateAppearRect(clipSide.BOTTOM, getWidth(), getActualHeight());
             }
             invalidate();
         });
@@ -476,9 +503,9 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
         // we need to apply the initial state already to avoid drawn frames in the wrong state
         updateAppearAnimationAlpha();
         if (NotificationHeadsUpCycling.isEnabled()) {
-            updateAppearRect(clipSide);
+            updateAppearRect(clipSide, getWidth(), getActualHeight());
         } else {
-            updateAppearRect();
+            updateAppearRect(clipSide.BOTTOM, getWidth(), getActualHeight());
         }
         mAppearAnimator.addListener(new AnimatorListenerAdapter() {
             private boolean mRunWithoutInterruptions;
@@ -582,8 +609,11 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
     /**
      * Update the View's Rect clipping to fit the appear animation
      * @param clipSide Which side if view we want to clip from
+     * @param fullWidth The width of the view.
+     * @param fullHeight The actualHeight of the view.
      */
-    private void updateAppearRect(ClipSide clipSide) {
+    @VisibleForTesting
+    public void updateAppearRect(ClipSide clipSide, int fullWidth, int fullHeight) {
         float interpolatedFraction;
         if (useNonLinearAnimation()) {
             interpolatedFraction = mCurrentAppearInterpolator.getInterpolation(
@@ -591,29 +621,34 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
         } else {
             interpolatedFraction = mAppearAnimationFraction;
         }
+        // mAppearAnimationTranslation is used in dispatchDraw to translate the canvas
         mAppearAnimationTranslation = (1.0f - interpolatedFraction) * mAnimationTranslationY;
-        final int fullHeight = getActualHeight();
-        float height = fullHeight * interpolatedFraction;
+        final float animatingHeight = fullHeight * interpolatedFraction;
+
         if (mTargetPoint != null) {
             int width = getWidth();
             float fraction = 1 - mAppearAnimationFraction;
-
-            setOutlineRect(mTargetPoint.x * fraction,
-                    mAnimationTranslationY
+            setOutlineRect(
+                    /* left= */ mTargetPoint.x * fraction,
+                    /* top= */  mAnimationTranslationY
                             + (mAnimationTranslationY - mTargetPoint.y) * fraction,
-                    width - (width - mTargetPoint.x) * fraction,
-                    fullHeight - (fullHeight - mTargetPoint.y) * fraction);
+                    /* right= */  fullWidth - (fullWidth - mTargetPoint.x) * fraction,
+                    /* bottom= */ fullHeight - (fullHeight - mTargetPoint.y) * fraction);
         } else {
             if (clipSide == TOP) {
                 setOutlineRect(
-                        0,
-                        /* top= */ fullHeight - height,
-                        getWidth(),
+                        /* left= */ 0,
+                        /* top= */ fullHeight - animatingHeight,
+                        /* right= */ fullWidth,
                         /* bottom= */ fullHeight
                 );
             } else if (clipSide == BOTTOM) {
-                setOutlineRect(0, mAppearAnimationTranslation, getWidth(),
-                        height + mAppearAnimationTranslation);
+                setOutlineRect(
+                        /* left= */ 0,
+                        /* top= */ 0,
+                        /* right= */ fullWidth,
+                        /* bottom= */ animatingHeight
+                );
             }
         }
     }
@@ -621,10 +656,6 @@ public abstract class ActivatableNotificationView extends ExpandableOutlineView 
     private boolean useNonLinearAnimation() {
         return notificationAppearNonlinear() && (!mIsHeadsUpCycling
                 || physicalNotificationMovement());
-    }
-
-    private void updateAppearRect() {
-        updateAppearRect(ClipSide.BOTTOM);
     }
 
     private void updateAppearAnimationAlpha() {

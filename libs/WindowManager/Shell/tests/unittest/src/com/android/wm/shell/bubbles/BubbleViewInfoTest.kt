@@ -157,6 +157,8 @@ class BubbleViewInfoTest : ShellTestCase() {
                 mock<HomeIntentProvider>(),
                 bubbleAppInfoProvider,
                 { Optional.empty() },
+                Optional.empty(),
+                { false },
             )
 
         val bubbleStackViewManager = BubbleStackViewManager.fromBubbleController(bubbleController)

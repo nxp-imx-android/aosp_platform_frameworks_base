@@ -782,7 +782,7 @@ public final class AppExitInfoTracker {
             }
             proto.flush();
             af.finishWrite(out);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             Slog.w(TAG, "Unable to write historical app exit info into persistent storage: " + e);
             af.failWrite(out);
         }

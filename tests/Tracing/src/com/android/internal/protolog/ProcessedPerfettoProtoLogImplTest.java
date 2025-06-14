@@ -33,6 +33,7 @@ import static org.mockito.Mockito.when;
 
 import static java.io.File.createTempFile;
 
+import android.os.Handler;
 import android.os.SystemClock;
 import android.platform.test.annotations.Presubmit;
 import android.tools.ScenarioBuilder;
@@ -1161,6 +1162,60 @@ public class ProcessedPerfettoProtoLogImplTest {
             Truth.assertThat(protolog.messages.get(i).getMessage())
                     .isEqualTo("My Test Debug Log Message true");
         }
+    }
+
+    @Test
+    public void snapshotsMutableArgumentsOnCallingThread() throws Exception {
+        // This test ensures that the mutable argument is snapshotted on the calling thread,
+        // and not on the background thread, otherwise it might be modified concurrently and this
+        // might lead to a crash.
+
+        PerfettoTraceMonitor traceMonitor = PerfettoTraceMonitor.newBuilder()
+                .enableProtoLog(true, List.of(), TEST_PROTOLOG_DATASOURCE_NAME)
+                .build();
+
+        final String initialValue = "InitialValue";
+        final String modifiedValue = "ModifiedValueAfterLogCall";
+        final StringBuilder mutableArg = new StringBuilder(initialValue);
+        final String logMessageFormat = "Test with mutable arg: %s";
+
+        final Handler backgroundHandler = sProtoLog.mBackgroundHandler;
+
+        // Task to pause the background thread.
+        final CountDownLatch backgroundThreadPausedLatch = new CountDownLatch(1);
+        backgroundHandler.post(() -> {
+            try {
+                backgroundThreadPausedLatch.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                Truth.assertWithMessage(
+                        "Background thread interrupted while waiting on pause latch.")
+                        .fail();
+            }
+        });
+
+        try {
+            traceMonitor.start();
+            assertTrue("ProtoLog tracing should be enabled", sProtoLog.isProtoEnabled());
+
+            sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP,
+                    logMessageFormat, mutableArg);
+
+            mutableArg.replace(0, mutableArg.length(), modifiedValue);
+
+            // Unpause the background thread.
+            backgroundThreadPausedLatch.countDown();
+        } finally {
+            traceMonitor.stop(mWriter);
+        }
+
+        final ResultReader resultReader = new ResultReader(mWriter.write(), mTraceConfig);
+        final ProtoLogTrace protologTrace = resultReader.readProtoLogTrace();
+
+        Truth.assertThat(protologTrace.messages).hasSize(1);
+        final String expectedLoggedMessage = String.format(logMessageFormat, initialValue);
+        Truth.assertThat(protologTrace.messages.getFirst().getMessage())
+                .isEqualTo(expectedLoggedMessage);
     }
 
     private enum TestProtoLogGroup implements IProtoLogGroup {

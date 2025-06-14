@@ -88,6 +88,7 @@ import com.android.server.LockGuard;
 import com.android.server.UiThread;
 import com.android.server.Watchdog;
 import com.android.server.am.ActivityManagerService;
+import com.android.server.am.ProcessStateController;
 import com.android.server.display.DisplayControl;
 import com.android.server.display.color.ColorDisplayService;
 import com.android.server.firewall.IntentFirewall;
@@ -653,7 +654,7 @@ public class SystemServicesTestRule implements TestRule {
             doReturn(true).when(intentFirewall).checkStartActivity(
                     any(), anyInt(), anyInt(), nullable(String.class), any());
             initialize(intentFirewall, null /* intentController */,
-                    DisplayThread.getHandler().getLooper());
+                    mock(ProcessStateController.class), DisplayThread.getHandler().getLooper());
             spyOn(getLifecycleManager());
             spyOn(getLockTaskController());
             spyOn(getTaskChangeNotificationController());

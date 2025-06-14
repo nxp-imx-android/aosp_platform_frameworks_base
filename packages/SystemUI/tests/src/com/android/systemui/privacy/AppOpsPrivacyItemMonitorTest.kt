@@ -25,6 +25,7 @@ import android.os.UserHandle
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.logging.testing.UiEventLoggerFake
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.appops.AppOpItem
 import com.android.systemui.appops.AppOpsController
@@ -32,6 +33,7 @@ import com.android.systemui.privacy.logging.PrivacyLogger
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
+import com.google.common.truth.Truth
 import org.hamcrest.Matchers.hasItem
 import org.hamcrest.Matchers.not
 import org.hamcrest.Matchers.nullValue
@@ -91,6 +93,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
 
     private lateinit var appOpsPrivacyItemMonitor: AppOpsPrivacyItemMonitor
     private lateinit var executor: FakeExecutor
+    private lateinit var uiEventLogger: UiEventLoggerFake
 
     fun createAppOpsPrivacyItemMonitor(): AppOpsPrivacyItemMonitor {
         return AppOpsPrivacyItemMonitor(
@@ -102,6 +105,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
             packageManager,
             activityManager,
             mContext,
+            uiEventLogger,
         )
     }
 
@@ -109,6 +113,7 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
     fun setup() {
         MockitoAnnotations.initMocks(this)
         executor = FakeExecutor(FakeSystemClock())
+        uiEventLogger = UiEventLoggerFake()
 
         // Listen to everything by default
         `when`(privacyConfig.micCameraAvailable).thenReturn(true)
@@ -313,9 +318,91 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
             .`when`(appOpsController)
             .getActiveAppOps(anyBoolean())
 
-        val result = appOpsPrivacyItemMonitor.getActivePrivacyItems()
+        var result = appOpsPrivacyItemMonitor.getActivePrivacyItems()
         assertEquals(result.size, 1)
         assertEquals(result[0].application.packageName, "com.google.android.apps.maps")
+
+        assertEquals(uiEventLogger.numLogs(), 4)
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent
+                            .LOCATION_INDICATOR_NON_SYSTEM_APP
+                            .id
+                }
+            )
+            .isTrue()
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent
+                            .LOCATION_INDICATOR_SYSTEM_APP
+                            .id
+                }
+            )
+            .isTrue()
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent
+                            .LOCATION_INDICATOR_BACKGROUND_APP
+                            .id
+                }
+            )
+            .isTrue()
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent.LOCATION_INDICATOR_ALL_APP
+                            .id
+                }
+            )
+            .isTrue()
+
+        // Simulate a new round of appOps and confirm that there are no additional logs because the
+        // indicator is already showing.
+        result = appOpsPrivacyItemMonitor.getActivePrivacyItems()
+        assertEquals(result.size, 1)
+        assertEquals(result[0].application.packageName, "com.google.android.apps.maps")
+        // Assert no additional logging events
+        assertEquals(uiEventLogger.numLogs(), 4)
+
+        // Simulate a round of appOps where location is disabled so that the indicator disappears.
+        doReturn(listOf<AppOpItem>()).`when`(appOpsController).getActiveAppOps(anyBoolean())
+        result = appOpsPrivacyItemMonitor.getActivePrivacyItems()
+        assertEquals(result.size, 0)
+        // Assert no additional logging events
+        assertEquals(uiEventLogger.numLogs(), 4)
+
+        // Simulate a round of appOps where the location indicator appears again and the logging
+        // count increases.
+        doReturn(
+                listOf(
+                    // Regular item which should not be filtered
+                    AppOpItem(
+                        AppOpsManager.OP_COARSE_LOCATION,
+                        TEST_UID,
+                        "com.google.android.apps.maps",
+                        0,
+                    )
+                )
+            )
+            .`when`(appOpsController)
+            .getActiveAppOps(anyBoolean())
+        result = appOpsPrivacyItemMonitor.getActivePrivacyItems()
+        assertEquals(result.size, 1)
+        assertEquals(result[0].application.packageName, "com.google.android.apps.maps")
+        // Assert there are additional logging events
+        assertEquals(uiEventLogger.numLogs(), 8)
+        Truth.assertThat(
+                uiEventLogger.logs.count { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent
+                            .LOCATION_INDICATOR_NON_SYSTEM_APP
+                            .id
+                }
+            )
+            .isEqualTo(2)
     }
 
     @Test
@@ -335,6 +422,24 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
             .getActiveAppOps(anyBoolean())
 
         assertEquals(appOpsPrivacyItemMonitor.getActivePrivacyItems().size, 0)
+        assertEquals(uiEventLogger.numLogs(), 2)
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent
+                            .LOCATION_INDICATOR_SYSTEM_APP
+                            .id
+                }
+            )
+            .isTrue()
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent.LOCATION_INDICATOR_ALL_APP
+                            .id
+                }
+            )
+            .isTrue()
     }
 
     @Test
@@ -369,6 +474,24 @@ class AppOpsPrivacyItemMonitorTest : SysuiTestCase() {
             .getActiveAppOps(anyBoolean())
 
         assertEquals(appOpsPrivacyItemMonitor.getActivePrivacyItems().size, 0)
+        assertEquals(uiEventLogger.numLogs(), 2)
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent
+                            .LOCATION_INDICATOR_BACKGROUND_APP
+                            .id
+                }
+            )
+            .isTrue()
+        Truth.assertThat(
+                uiEventLogger.logs.any { log ->
+                    log.eventId ==
+                        AppOpsPrivacyItemMonitor.LocationIndicatorEvent.LOCATION_INDICATOR_ALL_APP
+                            .id
+                }
+            )
+            .isTrue()
     }
 
     @Test

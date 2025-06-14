@@ -276,6 +276,7 @@ android.os.Looper
 android.os.Message
 android.os.MessageQueue
 android.os.PackageTagsList
+android.os.PackageTagsMap
 android.os.Parcel
 android.os.ParcelFileDescriptor
 android.os.ParcelFormatException

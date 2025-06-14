@@ -430,6 +430,28 @@ package android.os {
     method public boolean shouldBypassCache(@NonNull Q);
   }
 
+  @FlaggedApi("android.location.flags.change_get_adas_allowlist_from_hidden_to_system") public final class PackageTagsMap implements android.os.Parcelable {
+    method public boolean contains(@NonNull String, @Nullable String);
+    method public boolean containsAll(@NonNull android.os.PackageTagsMap);
+    method public boolean containsPackage(@NonNull String);
+    method public boolean containsPackageWithAllTags(@NonNull String);
+    method public int describeContents();
+    method @NonNull public java.util.Set<java.lang.String> getPackages();
+    method public boolean isEmpty();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.PackageTagsMap> CREATOR;
+  }
+
+  public static final class PackageTagsMap.Builder {
+    ctor public PackageTagsMap.Builder();
+    ctor public PackageTagsMap.Builder(int);
+    method @NonNull public android.os.PackageTagsMap.Builder add(@NonNull String);
+    method @NonNull public android.os.PackageTagsMap.Builder add(@NonNull String, @Nullable String);
+    method @NonNull public android.os.PackageTagsMap.Builder addAll(@NonNull android.os.PackageTagsMap);
+    method @NonNull public android.os.PackageTagsMap.Builder addAll(@NonNull java.util.Map<java.lang.String,? extends java.util.Set<java.lang.String>>);
+    method @NonNull public android.os.PackageTagsMap build();
+  }
+
   public class Process {
     method public static final int toSdkSandboxUid(int);
     field public static final int NFC_UID = 1027; // 0x403

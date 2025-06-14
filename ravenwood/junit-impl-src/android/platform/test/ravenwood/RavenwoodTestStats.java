@@ -30,6 +30,8 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -44,7 +46,8 @@ import java.util.Map;
  */
 public class RavenwoodTestStats {
     private static final String TAG = com.android.ravenwood.common.RavenwoodCommonUtils.TAG;
-    private static final String HEADER = "Module,Class,OuterClass,Passed,Failed,Skipped";
+    private static final String HEADER =
+            "ClassOrMethod,Module,Class,OuterClass,Method,Passed,Failed,Skipped,DurationMillis";
 
     private static RavenwoodTestStats sInstance;
 
@@ -67,11 +70,37 @@ public class RavenwoodTestStats {
         Skipped,
     }
 
+    public static class Outcome {
+        public final Result result;
+        public final Duration duration;
+
+        public Outcome(Result result, Duration duration) {
+            this.result = result;
+            this.duration = duration;
+        }
+
+        /** @return 1 if {@link #result} is "passed". */
+        public int passedCount() {
+            return result == Result.Passed ? 1 : 0;
+        }
+
+        /** @return 1 if {@link #result} is "failed". */
+        public int failedCount() {
+            return result == Result.Failed ? 1 : 0;
+        }
+
+        /** @return 1 if {@link #result} is "skipped". */
+        public int skippedCount() {
+            return result == Result.Skipped ? 1 : 0;
+        }
+    }
+
     private final File mOutputFile;
+    private final File mOutputSymlinkFile;
     private final PrintWriter mOutputWriter;
     private final String mTestModuleName;
 
-    public final Map<String, Map<String, Result>> mStats = new LinkedHashMap<>();
+    public final Map<String, Map<String, Outcome>> mStats = new LinkedHashMap<>();
 
     /** Ctor */
     public RavenwoodTestStats() {
@@ -101,8 +130,9 @@ public class RavenwoodTestStats {
         } catch (IOException e) {
             throw new RuntimeException("Failed to create logfile. File=" + mOutputFile, e);
         }
+        mOutputSymlinkFile = symlink.toFile();
 
-        Log.i(TAG, "Test result stats file: " + mOutputFile);
+        Log.i(TAG, "Test result stats file: " + mOutputSymlinkFile);
 
         // Print the header.
         mOutputWriter.println(HEADER);
@@ -121,14 +151,14 @@ public class RavenwoodTestStats {
     }
 
     private void addResult(String className, String methodName,
-            Result result) {
+            Result result, Duration duration) {
         mStats.compute(className, (className_, value) -> {
             if (value == null) {
                 value = new LinkedHashMap<>();
             }
             // If the result is already set, don't overwrite it.
             if (!value.containsKey(methodName)) {
-                value.put(methodName, result);
+                value.put(methodName, new Outcome(result, duration));
             }
             return value;
         });
@@ -137,8 +167,11 @@ public class RavenwoodTestStats {
     /**
      * Call it when a test method is finished.
      */
-    private void onTestFinished(String className, String testName, Result result) {
-        addResult(className, testName, result);
+    private void onTestFinished(String className,
+            String testName,
+            Result result,
+            Duration duration) {
+        addResult(className, testName, result, duration);
     }
 
     /**
@@ -146,31 +179,40 @@ public class RavenwoodTestStats {
      */
     private void dumpAllAndClear() {
         for (var entry : mStats.entrySet()) {
+            var className = entry.getKey();
+            var outcomes = entry.getValue();
+
             int passed = 0;
             int skipped = 0;
             int failed = 0;
-            var className = entry.getKey();
+            Duration totalDuration = Duration.ZERO;
 
-            for (var e : entry.getValue().values()) {
-                switch (e) {
-                    case Passed:
-                        passed++;
-                        break;
-                    case Skipped:
-                        skipped++;
-                        break;
-                    case Failed:
-                        failed++;
-                        break;
-                }
+            var methods = outcomes.keySet().stream().sorted().toList();
+
+            for (var method : methods) {
+                var outcome = outcomes.get(method);
+
+                // Per-method status, with "m".
+                mOutputWriter.printf("m,%s,%s,%s,%s,%d,%d,%d,%d\n",
+                        mTestModuleName, className, getOuterClassName(className), method,
+                        outcome.passedCount(), outcome.failedCount(), outcome.skippedCount(),
+                        outcome.duration.toMillis());
+
+                passed += outcome.passedCount();
+                skipped += outcome.skippedCount();
+                failed += outcome.failedCount();
+
+                totalDuration = totalDuration.plus(outcome.duration);
             }
 
-            mOutputWriter.printf("%s,%s,%s,%d,%d,%d\n",
-                    mTestModuleName, className, getOuterClassName(className),
-                    passed, failed, skipped);
+            // Per-class status, with "c".
+            mOutputWriter.printf("c,%s,%s,%s,%s,%d,%d,%d,%d\n",
+                    mTestModuleName, className, getOuterClassName(className), "-",
+                    passed, failed, skipped, totalDuration.toMillis());
         }
         mOutputWriter.flush();
         mStats.clear();
+        Log.i(TAG, "Added result to stats file: " + mOutputSymlinkFile);
     }
 
     private static String getOuterClassName(String className) {
@@ -188,6 +230,8 @@ public class RavenwoodTestStats {
     }
 
     private final RunListener mRunListener = new RunListener() {
+        private Instant mStartTime;
+
         @Override
         public void testSuiteStarted(Description description) {
             if (RAVENWOOD_VERBOSE_LOGGING) {
@@ -223,44 +267,62 @@ public class RavenwoodTestStats {
             if (RAVENWOOD_VERBOSE_LOGGING) {
                 Log.d(TAG, "  testStarted: " + description);
             }
+            mStartTime = Instant.now();
+        }
+
+        private void addResult(
+                String className,
+                String methodName,
+                Result result,
+                String logMessage,
+                Object messageExtra) {
+            var endTime = Instant.now();
+            if (RAVENWOOD_VERBOSE_LOGGING) {
+                Log.d(TAG, logMessage + messageExtra);
+            }
+
+            onTestFinished(className, methodName, result, Duration.between(mStartTime, endTime));
         }
 
         @Override
         public void testFinished(Description description) {
-            if (RAVENWOOD_VERBOSE_LOGGING) {
-                Log.d(TAG, "  testFinished: " + description);
-            }
-
-            // Send "Passed", but if there's already another result sent for this, this won't
-            // override it.
-            onTestFinished(description.getClassName(), description.getMethodName(), Result.Passed);
+            // Note: testFinished() is always called, even in failure cases and another callback
+            // (e.g. testFailure) has already called. But we just call it anyway because if
+            // we already recorded a result to the same metho, we won't overwrite it.
+            addResult(description.getClassName(),
+                    description.getMethodName(),
+                    Result.Passed,
+                    "  testFinished: ",
+                    description);
         }
 
         @Override
         public void testFailure(Failure failure) {
-            if (RAVENWOOD_VERBOSE_LOGGING) {
-                Log.d(TAG, "    testFailure: " + failure);
-            }
-
             var description = failure.getDescription();
-            onTestFinished(description.getClassName(), description.getMethodName(), Result.Failed);
+            addResult(description.getClassName(),
+                    description.getMethodName(),
+                    Result.Passed,
+                    "  testFailure: ",
+                    failure);
         }
 
         @Override
         public void testAssumptionFailure(Failure failure) {
-            if (RAVENWOOD_VERBOSE_LOGGING) {
-                Log.d(TAG, "    testAssumptionFailure: " + failure);
-            }
             var description = failure.getDescription();
-            onTestFinished(description.getClassName(), description.getMethodName(), Result.Skipped);
+            addResult(description.getClassName(),
+                    description.getMethodName(),
+                    Result.Skipped,
+                    "  testAssumptionFailure: ",
+                    failure);
         }
 
         @Override
         public void testIgnored(Description description) {
-            if (RAVENWOOD_VERBOSE_LOGGING) {
-                Log.d(TAG, "    testIgnored: " + description);
-            }
-            onTestFinished(description.getClassName(), description.getMethodName(), Result.Skipped);
+            addResult(description.getClassName(),
+                    description.getMethodName(),
+                    Result.Skipped,
+                    "  testIgnored: ",
+                    description);
         }
     };
 }

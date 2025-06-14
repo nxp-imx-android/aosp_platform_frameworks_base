@@ -64,6 +64,14 @@ class DesktopDisplayEventHandler(
 
     private val onDisplayAreaChangeListener = OnDisplayAreaChangeListener { displayId ->
         logV("displayAreaChanged in displayId=%d", displayId)
+        val uniqueDisplayId = displayController.getDisplay(displayId)?.uniqueId
+        uniqueDisplayId?.let {
+            uniqueIdByDisplayId[displayId] = it
+            if (desktopUserRepositories.current.hasPreservedDisplayForUniqueDisplayId(it)) {
+                desktopTasksController.restoreDisplay(displayId, it)
+                return@OnDisplayAreaChangeListener
+            }
+        }
         createDefaultDesksIfNeeded(displayIds = listOf(displayId), userId = null)
     }
 

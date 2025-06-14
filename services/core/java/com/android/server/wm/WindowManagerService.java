@@ -2162,10 +2162,6 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     private boolean shouldHideNonSystemOverlayWindow(WindowState win) {
-        if (!Flags.fixHideOverlayApi()) {
-            return !mHidingNonSystemOverlayWindows.isEmpty();
-        }
-
         if (mHidingNonSystemOverlayWindows.isEmpty()) {
             return false;
         }
@@ -7944,6 +7940,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     && (demoteTopAppReasons & DEMOTE_TOP_REASON_EXPANDED_NOTIFICATION_SHADE) == 0) {
                 mAtmService.mDemoteTopAppReasons =
                         demoteTopAppReasons | DEMOTE_TOP_REASON_EXPANDED_NOTIFICATION_SHADE;
+                mAtmService.mProcessStateController.setExpandedNotificationShadeAsync(true);
                 Trace.instant(TRACE_TAG_WINDOW_MANAGER, "demote-top-for-ns");
                 if (topApp != null) {
                     topApp.scheduleUpdateOomAdj();
@@ -7952,6 +7949,7 @@ public class WindowManagerService extends IWindowManager.Stub
                     && (demoteTopAppReasons & DEMOTE_TOP_REASON_EXPANDED_NOTIFICATION_SHADE) != 0) {
                 mAtmService.mDemoteTopAppReasons =
                         demoteTopAppReasons & ~DEMOTE_TOP_REASON_EXPANDED_NOTIFICATION_SHADE;
+                mAtmService.mProcessStateController.setExpandedNotificationShadeAsync(false);
                 Trace.instant(TRACE_TAG_WINDOW_MANAGER, "cancel-demote-top-for-ns");
                 if (topApp != null) {
                     topApp.scheduleUpdateOomAdj();
@@ -9024,27 +9022,20 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         final boolean changed;
-        if (Flags.fixHideOverlayApi()) {
-            final int uid = win.getOwningUid();
-            final int numUIDsPreUpdate = mHidingNonSystemOverlayWindowsCountPerUid.size();
-            final int newCount = mHidingNonSystemOverlayWindowsCountPerUid.getOrDefault(uid, 0)
-                    + (effective ? +1 : -1);
-            if (newCount <= 0) {
-                mHidingNonSystemOverlayWindowsCountPerUid.remove(uid);
-            } else {
-                mHidingNonSystemOverlayWindowsCountPerUid.put(uid, newCount);
-            }
-            final int numUIDsPostUpdate = mHidingNonSystemOverlayWindowsCountPerUid.size();
-            // The visibility of SAWs needs to be refreshed when the number of uids that
-            // request hiding SAWs changes between "0", "1", or "2+".
-            changed = (numUIDsPostUpdate != numUIDsPreUpdate)
-                    && (numUIDsPostUpdate <= 1 || numUIDsPreUpdate <= 1);
+        final int uid = win.getOwningUid();
+        final int numUIDsPreUpdate = mHidingNonSystemOverlayWindowsCountPerUid.size();
+        final int newCount = mHidingNonSystemOverlayWindowsCountPerUid.getOrDefault(uid, 0)
+                + (effective ? +1 : -1);
+        if (newCount <= 0) {
+            mHidingNonSystemOverlayWindowsCountPerUid.remove(uid);
         } else {
-            // The visibility of SAWs needs to be refreshed when the number of windows that
-            // request hiding SAWs changes between "0" or "1+".
-            changed = (effective && mHidingNonSystemOverlayWindows.size() == 1)
-                    || (!effective && mHidingNonSystemOverlayWindows.isEmpty());
+            mHidingNonSystemOverlayWindowsCountPerUid.put(uid, newCount);
         }
+        final int numUIDsPostUpdate = mHidingNonSystemOverlayWindowsCountPerUid.size();
+        // The visibility of SAWs needs to be refreshed when the number of uids that
+        // request hiding SAWs changes between "0", "1", or "2+".
+        changed = (numUIDsPostUpdate != numUIDsPreUpdate)
+                && (numUIDsPostUpdate <= 1 || numUIDsPreUpdate <= 1);
 
         if (changed) {
             mRoot.forAllWindows((w) -> {

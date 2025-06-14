@@ -46,6 +46,7 @@ constructor(
     val isGestureNav: StateFlow<Boolean> = repository.isGestureNav
     val recentsButtonPosition: StateFlow<Rect?> = repository.recentsButtonPosition
     val isTaskBarVisible: StateFlow<Boolean> = repository.isTaskBarVisible
+    val isAmbientCueEnabled: StateFlow<Boolean> = repository.isAmbientCueEnabled
 
     fun setDeactivated(isDeactivated: Boolean) {
         repository.isDeactivated.update { isDeactivated }

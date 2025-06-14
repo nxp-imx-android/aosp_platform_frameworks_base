@@ -528,6 +528,10 @@ public abstract class ExpandableView extends FrameLayout implements Dumpable, Ro
             Runnable onFinishedRunnable,
             AnimatorListenerAdapter animationListener, ClipSide clipSide);
 
+    public boolean isBackgroundOpaque() {
+        return false;
+    }
+
     public enum ClipSide {
         TOP,
         BOTTOM

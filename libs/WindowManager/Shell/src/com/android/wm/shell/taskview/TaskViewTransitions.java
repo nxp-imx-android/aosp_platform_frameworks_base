@@ -535,8 +535,17 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         // visibility is reported in transition.
     }
 
-    void updateBoundsState(TaskViewTaskController taskView, Rect boundsOnScreen) {
-        if (useRepo()) return;
+    /** Updates the bounds state for the given task view. */
+    public void updateBoundsState(TaskViewTaskController taskView, Rect boundsOnScreen) {
+        if (useRepo()) {
+            final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
+            if (state == null) return;
+            ProtoLog.d(WM_SHELL_BUBBLES_NOISY,
+                    "Transitions.updateBoundsState(): taskView=%d bounds=%s",
+                    taskView.hashCode(), boundsOnScreen);
+            state.mBounds.set(boundsOnScreen);
+            return;
+        }
         final TaskViewRepository.TaskViewState state = mTaskViews.get(taskView);
         if (state == null) return;
         ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "Transitions.updateBoundsState(): taskView=%d bounds=%s",
@@ -1042,14 +1051,7 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         finishTransaction.reparent(leash, taskView.getSurfaceControl())
                 .setPosition(leash, 0, 0)
                 .setWindowCrop(leash, bounds.width(), bounds.height());
-        if (useRepo()) {
-            final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
-            if (state != null) {
-                state.mBounds.set(bounds);
-            }
-        } else {
-            updateBoundsState(taskView, bounds);
-        }
+        updateBoundsState(taskView, bounds);
         return true;
     }
 
@@ -1071,16 +1073,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
                     .setPosition(leash, 0, 0)
                     .setWindowCrop(leash, boundsOnScreen.width(), boundsOnScreen.height());
         }
-        if (useRepo()) {
-            final TaskViewRepository.TaskViewState state = mTaskViewRepo.byTaskView(taskView);
-            if (state != null) {
-                state.mBounds.set(boundsOnScreen);
-                state.mVisible = true;
-            }
-        } else {
-            updateBoundsState(taskView, boundsOnScreen);
-            updateVisibilityState(taskView, true /* visible */);
-        }
+        updateBoundsState(taskView, boundsOnScreen);
+        updateVisibilityState(taskView, true /* visible */);
         wct.setBounds(taskInfo.token, boundsOnScreen);
         taskView.applyCaptionInsetsIfNeeded();
     }

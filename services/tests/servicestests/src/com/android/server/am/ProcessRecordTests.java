@@ -70,7 +70,8 @@ public class ProcessRecordTests {
         runWithDexmakerShareClassLoader(() -> {
             sService = mock(ActivityManagerService.class);
             sService.mActivityTaskManager = new ActivityTaskManagerService(sContext);
-            sService.mActivityTaskManager.initialize(null, null, sContext.getMainLooper());
+            sService.mActivityTaskManager.initialize(null, null, mock(ProcessStateController.class),
+                    sContext.getMainLooper());
             sService.mAtmInternal = sService.mActivityTaskManager.getAtmInternal();
             final AppProfiler profiler = mock(AppProfiler.class);
             setFieldValue(AppProfiler.class, profiler, "mProfilerLock", new Object());

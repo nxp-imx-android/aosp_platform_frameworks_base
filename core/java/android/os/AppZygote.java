@@ -156,9 +156,6 @@ public class AppZygote {
                     false, false, false,
                     zygoteArgs);
         } catch (RuntimeException e) {
-            if (!Flags.appZygoteRetryStart()) {
-                throw e;
-            }
             final boolean zygote_dead = getProcess().isDead();
             if (!zygote_dead) {
                 throw e; // Zygote process is alive. Do nothing.

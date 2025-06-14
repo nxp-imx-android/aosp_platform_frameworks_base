@@ -16,9 +16,12 @@
 
 package com.android.systemui.ambientcue.ui.startable
 
+import android.content.om.OverlayManager
+import android.os.UserHandle
 import android.util.Log
 import android.view.WindowInsets.Type.ime
 import android.view.WindowManager
+import androidx.annotation.VisibleForTesting
 import com.android.systemui.CoreStartable
 import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor
 import com.android.systemui.ambientcue.shared.flag.AmbientCueFlag
@@ -26,6 +29,7 @@ import com.android.systemui.ambientcue.ui.view.AmbientCueUtils
 import com.android.systemui.ambientcue.ui.view.AmbientCueWindowRootView
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -46,6 +50,8 @@ constructor(
     private val ambientCueInteractor: AmbientCueInteractor,
     private val ambientCueWindowRootView: AmbientCueWindowRootView,
     @Application private val mainScope: CoroutineScope,
+    @Background private val backgroundScope: CoroutineScope,
+    private val overlayManager: OverlayManager,
 ) : CoreStartable {
 
     override fun start() {
@@ -64,6 +70,25 @@ constructor(
                     // Delay a while to ensure AmbientCue disappearing animation to show.
                     delay(DELAY_MS)
                     destroyAmbientCueView()
+                }
+            }
+        }
+
+        backgroundScope.launch {
+            ambientCueInteractor.isAmbientCueEnabled.collect { isEnabled ->
+                try {
+                    overlayManager.setEnabled(
+                        AMBIENT_CUE_OVERLAY_PACKAGE,
+                        isEnabled,
+                        UserHandle.SYSTEM,
+                    )
+                    Log.i(TAG, "OverlayManager set AmbientCueOverlay enabled as $isEnabled.")
+                } catch (e: Exception) {
+                    Log.e(
+                        TAG,
+                        "OverlayManager failed to set AmbientCueOverlay enabled as $isEnabled",
+                        e,
+                    )
                 }
             }
         }
@@ -90,8 +115,10 @@ constructor(
         }
     }
 
-    private companion object {
-        const val TAG = "AmbientCueCoreStartable"
-        const val DELAY_MS = 500L
+    companion object {
+        private const val TAG = "AmbientCueCoreStartable"
+        private const val DELAY_MS = 500L
+        @VisibleForTesting
+        const val AMBIENT_CUE_OVERLAY_PACKAGE = "com.android.systemui.overlay.ambientcue"
     }
 }

@@ -533,6 +533,20 @@ public class BubbleDataTest extends ShellTestCase {
         assertOverflowChangedTo(ImmutableList.of());
     }
 
+    @Test
+    public void testOverflow_dismissFromLauncher_addsOverflowBubble() {
+        // Setup
+        sendUpdatedEntryAtTime(mEntryA1, 1000);
+        sendUpdatedEntryAtTime(mEntryA2, 2000);
+        mBubbleData.setListener(mListener);
+
+        // Test
+        mBubbleData.dismissBubbleWithKey(mEntryA1.getKey(),
+                Bubbles.DISMISS_USER_GESTURE_FROM_LAUNCHER);
+        verifyUpdateReceived();
+        assertOverflowChangedTo(ImmutableList.of(mBubbleA1));
+    }
+
     /**
      * Verifies that the update shouldn't show the user education, if the education is not required
      */

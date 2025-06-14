@@ -1051,8 +1051,13 @@ public final class OverlayManagerService extends SystemService {
             Set<UserPackage> affectedPackagesToUpdate = null;
             for (Iterator<Request> it = transaction.getRequests(); it.hasNext(); ) {
                 Request request = it.next();
+                final var affectedPackagesFromRequest = executeRequestLocked(request);
                 affectedPackagesToUpdate = CollectionUtils.addAll(affectedPackagesToUpdate,
-                        executeRequestLocked(request));
+                        affectedPackagesFromRequest);
+                if (DEBUG) {
+                    Slog.d(TAG, "Executed request=" + request
+                            + " affected packages from request=" + affectedPackagesFromRequest);
+                }
             }
 
             // past the point of no return: the entire transaction has been

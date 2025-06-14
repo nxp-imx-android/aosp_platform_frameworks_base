@@ -43,7 +43,7 @@ public abstract class ExpandableOutlineView extends ExpandableView {
     private RoundableState mRoundableState;
     private static final Path EMPTY_PATH = new Path();
     private final Rect mOutlineRect = new Rect();
-    private boolean mCustomOutline;
+    private boolean mHasCustomOutline;
     private float mOutlineAlpha = -1f;
     private boolean mAlwaysRoundBothCorners;
     private Path mTmpPath = new Path();
@@ -59,7 +59,7 @@ public abstract class ExpandableOutlineView extends ExpandableView {
     private final ViewOutlineProvider mProvider = new ViewOutlineProvider() {
         @Override
         public void getOutline(View view, Outline outline) {
-            if (!mCustomOutline && !hasRoundedCorner() && !mAlwaysRoundBothCorners) {
+            if (!mHasCustomOutline && !hasRoundedCorner() && !mAlwaysRoundBothCorners) {
                 // Only when translating just the contents, does the outline need to be shifted.
                 int translation = !mDismissUsingRowTranslationX ? (int) getTranslation() : 0;
                 int left = Math.max(translation, 0);
@@ -85,15 +85,23 @@ public abstract class ExpandableOutlineView extends ExpandableView {
 
     @Override
     public int getClipHeight() {
-        if (mCustomOutline) {
+        if (mHasCustomOutline) {
             return mOutlineRect.height();
         }
 
         return super.getClipHeight();
     }
 
+    public boolean hasCustomOutline() {
+        return mHasCustomOutline;
+    }
+
+    public Rect getOutlineRect() {
+        return mOutlineRect;
+    }
+
     public int getBackgroundBottom() {
-        if (mCustomOutline) {
+        if (mHasCustomOutline) {
             return mOutlineRect.bottom;
         }
         return getActualHeight() - getClipBottomAmount();
@@ -106,7 +114,7 @@ public abstract class ExpandableOutlineView extends ExpandableView {
         int bottom;
         int height;
         float topRadius = mAlwaysRoundBothCorners ? getMaxRadius() : getTopCornerRadius();
-        if (!mCustomOutline) {
+        if (!mHasCustomOutline) {
             // The outline just needs to be shifted if we're translating the contents. Otherwise
             // it's already in the right place.
             int translation = !mDismissUsingRowTranslationX && !ignoreTranslation
@@ -215,7 +223,7 @@ public abstract class ExpandableOutlineView extends ExpandableView {
         // When translating the contents instead of the overall view, we need to make sure we clip
         // rounded to the contents.
         boolean forTranslation = getTranslation() != 0 && !mDismissUsingRowTranslationX;
-        return mAlwaysRoundBothCorners || mCustomOutline || forTranslation;
+        return mAlwaysRoundBothCorners || mHasCustomOutline || forTranslation;
     }
 
     private void initDimens() {
@@ -306,7 +314,7 @@ public abstract class ExpandableOutlineView extends ExpandableView {
         if (rect != null) {
             setOutlineRect(rect.left, rect.top, rect.right, rect.bottom);
         } else {
-            mCustomOutline = false;
+            mHasCustomOutline = false;
             applyRoundnessAndInvalidate();
         }
     }
@@ -325,7 +333,7 @@ public abstract class ExpandableOutlineView extends ExpandableView {
 
     @Override
     public int getOutlineTranslation() {
-        if (mCustomOutline) {
+        if (mHasCustomOutline) {
             return mOutlineRect.left;
         }
         if (mDismissUsingRowTranslationX) {
@@ -335,7 +343,7 @@ public abstract class ExpandableOutlineView extends ExpandableView {
     }
 
     public void updateOutline() {
-        if (mCustomOutline) {
+        if (mHasCustomOutline) {
             return;
         }
         boolean hasOutline = needsOutline();
@@ -361,7 +369,7 @@ public abstract class ExpandableOutlineView extends ExpandableView {
     }
 
     protected void setOutlineRect(float left, float top, float right, float bottom) {
-        mCustomOutline = true;
+        mHasCustomOutline = true;
 
         mOutlineRect.set((int) left, (int) top, (int) right, (int) bottom);
 
@@ -389,7 +397,7 @@ public abstract class ExpandableOutlineView extends ExpandableView {
 
     protected void dumpCustomOutline(IndentingPrintWriter pw, String[] args) {
         pw.print("CustomOutline: ");
-        pw.print("mCustomOutline", mCustomOutline);
+        pw.print("mHasCustomOutline", mHasCustomOutline);
         pw.print("mOutlineRect", mOutlineRect);
         pw.print("mOutlineAlpha", mOutlineAlpha);
         pw.print("mAlwaysRoundBothCorners", mAlwaysRoundBothCorners);

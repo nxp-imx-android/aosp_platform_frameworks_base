@@ -496,6 +496,14 @@ public class JobInfo implements Parcelable {
     @FlaggedApi(Flags.FLAG_JOB_CATEGORY_APIS)
     public static final int CATEGORY_BACKUP = 1;
 
+    /**
+     * Maximum value for {@link Category}.
+     *
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_JOB_CATEGORY_APIS)
+    public static final int CATEGORY_MAX = CATEGORY_BACKUP;
+
     @UnsupportedAppUsage
     private final int jobId;
     private final PersistableBundle extras;
@@ -530,6 +538,8 @@ public class JobInfo implements Parcelable {
     private final ArraySet<String> mDebugTags;
     @Nullable
     private final String mTraceTag;
+    @Category
+    private final int mCategory;
 
     /**
      * Unique job id associated with this application (uid).  This is the same job ID
@@ -838,7 +848,7 @@ public class JobInfo implements Parcelable {
     @FlaggedApi(Flags.FLAG_JOB_CATEGORY_APIS)
     @Category
     public int getCategory() {
-        return JobInfo.CATEGORY_UNKNOWN;
+        return mCategory;
     }
 
     /**
@@ -996,6 +1006,9 @@ public class JobInfo implements Parcelable {
         if (!Objects.equals(mTraceTag, j.mTraceTag)) {
             return false;
         }
+        if (mCategory != j.mCategory) {
+            return false;
+        }
         return true;
     }
 
@@ -1046,6 +1059,7 @@ public class JobInfo implements Parcelable {
         if (mTraceTag != null) {
             hashCode = 31 * hashCode + mTraceTag.hashCode();
         }
+        hashCode = 31 * hashCode + mCategory;
         return hashCode;
     }
 
@@ -1099,6 +1113,7 @@ public class JobInfo implements Parcelable {
         }
         final String traceTag = in.readString();
         mTraceTag = traceTag == null ? null : traceTag.intern();
+        mCategory = in.readInt();
     }
 
     private JobInfo(JobInfo.Builder b) {
@@ -1133,6 +1148,7 @@ public class JobInfo implements Parcelable {
         flags = b.mFlags;
         mDebugTags = b.mDebugTags;
         mTraceTag = b.mTraceTag;
+        mCategory = b.mCategory;
     }
 
     @Override
@@ -1187,6 +1203,7 @@ public class JobInfo implements Parcelable {
             out.writeString(mDebugTags.valueAt(i));
         }
         out.writeString(mTraceTag);
+        out.writeInt(mCategory);
     }
 
     public static final @android.annotation.NonNull Creator<JobInfo> CREATOR = new Creator<JobInfo>() {
@@ -1333,6 +1350,8 @@ public class JobInfo implements Parcelable {
         private boolean mBackoffPolicySet = false;
         private final ArraySet<String> mDebugTags = new ArraySet<>();
         private String mTraceTag;
+        @Category
+        private int mCategory;
 
         /**
          * Initialize a new Builder to construct a {@link JobInfo}.
@@ -2298,7 +2317,7 @@ public class JobInfo implements Parcelable {
         @FlaggedApi(Flags.FLAG_JOB_CATEGORY_APIS)
         @NonNull
         public Builder setCategory(@Category int category) {
-            // TODO: b/419047126 - Store the category
+            mCategory = validateCategory(category);
             return this;
         }
 
@@ -2623,6 +2642,16 @@ public class JobInfo implements Parcelable {
             throw new IllegalArgumentException("Trace tag cannot contain |, \\n, or \\0");
         }
         return traceTag.intern();
+    }
+
+    /**
+     * Returns the {@code category} if valid, or throws an exception if not.
+     */
+    private static int validateCategory(@Category int category) {
+        if (category < CATEGORY_UNKNOWN || category > CATEGORY_MAX) {
+            throw new IllegalArgumentException("Not a valid category: " + category);
+        }
+        return category;
     }
 
     /**
