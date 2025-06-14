@@ -37,6 +37,7 @@
 #include <ui/GraphicTypes.h>
 #include <ui/PixelFormat.h>
 
+#include "aidl/android/hardware/graphics/common/PixelFormat.h"
 #include "screencap_utils.h"
 #include "utils/Errors.h"
 
@@ -87,12 +88,14 @@ static const struct option LONG_OPTIONS[] = {{"png", no_argument, nullptr, 'p'},
                                               LongOpts::HintForSeamless},
                                              {0, 0, 0, 0}};
 
-static int32_t flinger2bitmapFormat(PixelFormat f) {
+static int32_t flinger2bitmapFormat(aidl::android::hardware::graphics::common::PixelFormat f) {
     switch (f) {
-        case PIXEL_FORMAT_RGB_565:
+        case aidl::android::hardware::graphics::common::PixelFormat::RGB_565:
             return ANDROID_BITMAP_FORMAT_RGB_565;
-        case PIXEL_FORMAT_RGBA_1010102:
+        case aidl::android::hardware::graphics::common::PixelFormat::RGBA_1010102:
             return ANDROID_BITMAP_FORMAT_RGBA_1010102;
+        case aidl::android::hardware::graphics::common::PixelFormat::BGRA_1010102:
+            return ANDROID_BITMAP_FORMAT_BGRA_1010102;
         default:
             return ANDROID_BITMAP_FORMAT_RGBA_8888;
     }
@@ -205,7 +208,9 @@ status_t saveImage(const char* fn, std::optional<AndroidBitmapCompressFormat> fo
 
     if (format) {
         AndroidBitmapInfo info;
-        info.format = flinger2bitmapFormat(buffer->getPixelFormat());
+        info.format = flinger2bitmapFormat(
+                static_cast<aidl::android::hardware::graphics::common::PixelFormat>(
+                        buffer->getPixelFormat()));
         info.flags = ANDROID_BITMAP_FLAGS_ALPHA_PREMUL;
         info.width = buffer->getWidth();
         info.height = buffer->getHeight();

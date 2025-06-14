@@ -26,6 +26,7 @@
 #include <utils/Color.h>
 
 #include "GraphicsJNI.h"
+#include "SkColorType.h"
 #include "TypeCast.h"
 #include "android/graphics/bitmap.h"
 
@@ -64,6 +65,8 @@ static uint32_t getFormat(const SkImageInfo& info) {
             return ANDROID_BITMAP_FORMAT_RGBA_1010102;
         case kBGRA_8888_SkColorType:
             return ANDROID_BITMAP_FORMAT_BGRA_8888;
+        case kBGRA_1010102_SkColorType:
+            return ANDROID_BITMAP_FORMAT_BGRA_1010102;
         default:
             return ANDROID_BITMAP_FORMAT_NONE;
     }
@@ -85,6 +88,8 @@ static SkColorType getColorType(uint32_t format) {
             return kRGBA_1010102_SkColorType;
         case ANDROID_BITMAP_FORMAT_BGRA_8888:
             return kBGRA_8888_SkColorType;
+        case ANDROID_BITMAP_FORMAT_BGRA_1010102:
+            return kBGRA_1010102_SkColorType;
         default:
             return kUnknown_SkColorType;
     }
@@ -219,6 +224,11 @@ private:
 int ABitmap_compress(const AndroidBitmapInfo* info, ADataSpace dataSpace, const void* pixels,
                      AndroidBitmapCompressFormat inFormat, int32_t quality, void* userContext,
                      AndroidBitmap_CompressWriteFunc fn) {
+    // BGRA_1010102 isn't in the public bitmap api.
+    if (info->format == ANDROID_BITMAP_FORMAT_BGRA_1010102) {
+        ALOGE("%s: bad format %d", __func__, info->format);
+        return ANDROID_BITMAP_RESULT_BAD_PARAMETER;
+    }
     return ABitmap_compressWithGainmap(info, dataSpace, pixels, nullptr, -1.f, inFormat, quality,
                                        userContext, fn);
 }
@@ -271,6 +281,9 @@ int ABitmap_compressWithGainmap(const AndroidBitmapInfo* info, ADataSpace dataSp
             break;
         case ANDROID_BITMAP_FORMAT_RGBA_1010102:
             colorType = kRGBA_1010102_SkColorType;
+            break;
+        case ANDROID_BITMAP_FORMAT_BGRA_1010102:
+            colorType = kBGRA_1010102_SkColorType;
             break;
         default:
             ALOGE("%s: bad format %d", __func__, info->format);
