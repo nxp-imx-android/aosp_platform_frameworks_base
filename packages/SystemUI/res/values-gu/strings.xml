@@ -138,10 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"તમે હાલમાં તમારી પૂર્ણ સ્ક્રીન રેકોર્ડ કરી રહ્યાં છો"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"તમે હાલમાં <xliff:g id="APP_NAME">%1$s</xliff:g> રેકોર્ડ કરી રહ્યાં છો"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"રેકોર્ડિંગ રોકો"</string>
-    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
-    <skip />
+    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"કૅપ્ચર કરો"</string>
+    <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"રેકોર્ડ કરો"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"સ્ક્રીન શેર કરી રહ્યાં છીએ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"કન્ટેન્ટ શેર કરી રહ્યાં છીએ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"સ્ક્રીન શેર કરવાનું રોકીએ?"</string>
@@ -222,18 +220,12 @@
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"પિનનો ઉપયોગ કરો"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"પૅટર્નનો ઉપયોગ કરો"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"પાસવર્ડનો ઉપયોગ કરો"</string>
-    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
-    <skip />
+    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"તમારો પિન દાખલ કરો"</string>
+    <string name="biometric_dialog_enter_password" msgid="200503318983048202">"તમારો પાસવર્ડ દાખલ કરો"</string>
+    <string name="biometric_dialog_enter_pattern" msgid="3065746760277739487">"તમારી પૅટર્ન દાખલ કરો"</string>
+    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"ઘણા બધા નિષ્ફળ પ્રયાસો પછી બાયોમેટ્રિક્સ રિકવર કરવા માટે પિન જરૂરી છે"</string>
+    <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"ઘણા બધા નિષ્ફળ પ્રયાસો પછી બાયોમેટ્રિક્સ રિકવર કરવા માટે પૅટર્ન જરૂરી છે"</string>
+    <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"ઘણા બધા નિષ્ફળ પ્રયાસો પછી બાયોમેટ્રિક્સ રિકવર કરવા માટે પાસવર્ડ જરૂરી છે"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"ખોટો પિન"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"ખોટી પૅટર્ન"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"ખોટો પાસવર્ડ"</string>
@@ -961,6 +953,8 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"ઍપ ખોલનારા શૉર્ટકટ બતાવી રહ્યાં છીએ"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"હાલની ઍપ માટે શૉર્ટકટ બતાવી રહ્યાં છીએ"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"નોટિફિકેશન જુઓ"</string>
+    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
+    <skip />
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"સ્ક્રીનશૉટ લો"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"શૉર્ટકટ બતાવો"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"પાછળ જાઓ"</string>
@@ -986,6 +980,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"વિંડોને જમણી બાજુ ખસેડો"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"વિંડો મોટી કરો"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"વિંડો નાની કરો"</string>
+    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
+    <skip />
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ઇનપુટ"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"આગલી ભાષા પર સ્વિચ કરો"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"પાછલી ભાષા પર સ્વિચ કરો"</string>
@@ -1014,8 +1010,7 @@
     <string name="battery" msgid="769686279459897127">"બૅટરી"</string>
     <string name="headset" msgid="4485892374984466437">"હૅડસેટ"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"સેટિંગ ખોલો"</string>
-    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
-    <skip />
+    <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"વધુ વિગતો ખોલો"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"હેડફોન કનેક્ટ કર્યાં"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"હૅડસેટ કનેક્ટ કર્યો"</string>
     <string name="data_saver" msgid="3484013368530820763">"ડેટા સેવર"</string>
@@ -1051,6 +1046,14 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"ટાઇલ ઉમેરવા માટે તેના પર આંગળી દબાવીને ખેંચો"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"ટાઇલને ફરીથી ગોઠવવા માટે આંગળી દબાવીને ખેંચો"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"ફરીથી ગોઠવવા અને કદ બદલવા માટે ટાઇલ પસંદ કરો"</string>
+    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
+    <skip />
+    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
+    <skip />
+    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
+    <skip />
+    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
+    <skip />
     <string name="tap_to_position_tile" msgid="6282815817773342757">"શીર્ષકના સ્થિતિ નિર્ધારણ માટે ટૅપ કરો"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"દૂર કરવા માટે અહીં ખેંચો"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"તમને ઓછામાં ઓછી <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ટાઇલની જરૂર છે"</string>
@@ -1524,8 +1527,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"મિરર ડિસ્પ્લે"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"છોડી દો"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Display કનેક્ટેડ છે"</string>
-    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
-    <skip />
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"માઇક્રોફોન, કૅમેરા અને લોકેશન"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"તાજેતરનો ઍપનો વપરાશ"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"તાજેતરનો ઍક્સેસ જુઓ"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"થઈ ગયું"</string>

@@ -222,18 +222,12 @@
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PINను ఉపయోగించండి"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ఆకృతిని ఉపయోగించండి"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"పాస్‌వర్డ్‌ను ఉపయోగించండి"</string>
-    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
-    <skip />
+    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"మీ PINను ఎంటర్ చేయండి"</string>
+    <string name="biometric_dialog_enter_password" msgid="200503318983048202">"మీ పాస్‌వర్డ్‌ను ఎంటర్ చేయండి"</string>
+    <string name="biometric_dialog_enter_pattern" msgid="3065746760277739487">"మీ ఆకృతిని ఎంటర్ చేయండి"</string>
+    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"చాలాసార్లు విఫలమైన ప్రయత్నాల తర్వాత బయోమెట్రిక్ డేటాను రికవర్ చేయడానికి PIN అవసరం"</string>
+    <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"చాలాసార్లు విఫలమైన ప్రయత్నాల తర్వాత బయోమెట్రిక్ డేటాను రికవర్ చేయడానికి ఆకృతి అవసరం"</string>
+    <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"చాలాసార్లు విఫలమైన ప్రయత్నాల తర్వాత బయోమెట్రిక్ డేటాను రికవర్ చేయడానికి పాస్‌వర్డ్ అవసరం"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"PIN తప్పు"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"ఆకృతి తప్పు"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"పాస్‌వర్డ్ తప్పు"</string>
@@ -961,6 +955,8 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"యాప్‌లను తెరిచే షార్ట్‌కట్‌లను చూపుతోంది"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"ప్రస్తుత యాప్ కోసం షార్ట్‌కట్‌లను చూపుతోంది"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"నోటిఫికేషన్‌లను చూడండి"</string>
+    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
+    <skip />
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"స్క్రీన్‌షాట్‌ను తీయండి"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"షార్ట్‌కట్‌లను చూపించండి"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"వెనుకకు వెళ్లండి"</string>
@@ -986,6 +982,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"విండోను కుడి వైపునకు తరలించండి"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"విండోను విస్తరించండి"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"విండోను కుదించండి"</string>
+    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
+    <skip />
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ఇన్‌పుట్"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"తర్వాతి భాషకు మారండి"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"మునుపటి భాషకు మారండి"</string>
@@ -1051,6 +1049,14 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"టైల్స్‌ను జోడించడానికి పట్టుకుని, లాగండి"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"టైల్స్‌ను వేరే క్రమంలో అమర్చడానికి వాటిని పట్టుకుని, లాగండి"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"క్రమాన్ని, సైజ్‌ను మార్చడానికి టైల్స్‌ను ఎంచుకోండి"</string>
+    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
+    <skip />
+    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
+    <skip />
+    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
+    <skip />
+    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
+    <skip />
     <string name="tap_to_position_tile" msgid="6282815817773342757">"పొజిషన్ టైల్‌ను ట్యాప్ చేయండి"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"తీసివేయడానికి ఇక్కడికి లాగండి"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"మీ వద్ద కనీసం <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> టైల్‌లు ఉండాలి"</string>

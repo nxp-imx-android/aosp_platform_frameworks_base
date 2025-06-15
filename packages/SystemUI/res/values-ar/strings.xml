@@ -138,10 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"يتم حاليًا تسجيل محتوى الشاشة بأكمله"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"يتم حاليًا تسجيل محتوى \"<xliff:g id="APP_NAME">%1$s</xliff:g>\""</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"إيقاف التسجيل"</string>
-    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
-    <skip />
+    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"التقاط"</string>
+    <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"تسجيل"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"جارِ مشاركة محتوى الشاشة"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"مشاركة المحتوى"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"هل تريد إيقاف مشاركة الشاشة؟"</string>
@@ -222,18 +220,12 @@
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"استخدام رقم تعريف شخصي"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"استخدام النقش"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"استخدام كلمة المرور"</string>
-    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
-    <skip />
+    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"إدخال رقم التعريف الشخصي"</string>
+    <string name="biometric_dialog_enter_password" msgid="200503318983048202">"إدخال كلمة المرور"</string>
+    <string name="biometric_dialog_enter_pattern" msgid="3065746760277739487">"إدخال النقش"</string>
+    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"يجب إدخال رقم التعريف الشخصي لاسترداد المقاييس الحيوية بعد تعذُّر استخدامها أكثر من مرة"</string>
+    <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"يجب إدخال النقش لاسترداد المقاييس الحيوية بعد تعذُّر استخدامها أكثر من مرة"</string>
+    <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"يجب إدخال كلمة المرور لاسترداد المقاييس الحيوية بعد تعذُّر استخدامها أكثر من مرة"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"رقم تعريف شخصي خاطئ"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"النقش غير صحيح."</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"كلمة مرور غير صحيحة"</string>
@@ -961,6 +953,8 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"جارٍ عرض اختصارات فتح التطبيقات"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"جارٍ عرض اختصارات التطبيق الحالي"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"عرض الإشعارات"</string>
+    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
+    <skip />
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"أخذ لقطة شاشة"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"عرض الاختصارات"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"رجوع"</string>
@@ -986,6 +980,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"نقل النافذة إلى اليسار"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"تكبير النافذة"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"تصغير النافذة"</string>
+    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
+    <skip />
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"الإدخال"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"التبديل إلى اللغة التالية"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"التبديل إلى اللغة السابقة"</string>
@@ -1014,8 +1010,7 @@
     <string name="battery" msgid="769686279459897127">"البطارية"</string>
     <string name="headset" msgid="4485892374984466437">"سماعة الرأس"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"فتح الإعدادات"</string>
-    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
-    <skip />
+    <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"عرض المزيد من التفاصيل"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"تم توصيل سماعات رأس"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"تم توصيل سماعات رأس"</string>
     <string name="data_saver" msgid="3484013368530820763">"توفير البيانات"</string>
@@ -1051,6 +1046,14 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"اضغط باستمرار مع السحب لإضافة المربّعات"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"اضغط باستمرار مع السحب لإعادة ترتيب الميزات"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"يمكنك اختيار المربّعات لإعادة ترتيبها وتغيير حجمها"</string>
+    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
+    <skip />
+    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
+    <skip />
+    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
+    <skip />
+    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
+    <skip />
     <string name="tap_to_position_tile" msgid="6282815817773342757">"عليك النقر لتحديد موضع المربّع"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"اسحب هنا للإزالة"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"الحدّ الأدنى من عدد المربعات الذي تحتاج إليه هو <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
@@ -1524,8 +1527,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"بث المحتوى على الشاشة"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"إغلاق"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"تم توصيل الشاشة"</string>
-    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
-    <skip />
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"الميكروفون والكاميرا والموقع الجغرافي"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"آخر استخدام في التطبيقات"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"عرض آخر استخدام في التطبيقات"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"تم"</string>
