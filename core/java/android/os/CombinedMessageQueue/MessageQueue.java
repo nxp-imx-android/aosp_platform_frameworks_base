@@ -2980,7 +2980,6 @@ public final class MessageQueue {
                         mMessageCounts.incrementQueued();
                     }
                 }
-                incAndTraceMessageCount(msg, when);
                 return true;
             }
         }
