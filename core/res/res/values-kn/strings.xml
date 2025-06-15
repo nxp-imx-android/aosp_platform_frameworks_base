@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"ಈ ಆ್ಯಪ್‌ 16 KB ಗೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಮತ್ತು ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿವೆ ಪುಟದ ಗಾತ್ರಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವ ಮೋಡ್ ಅನ್ನು ಬಳಸಿಕೊಂಡು ಆ್ಯಪ್ ಅನ್ನು ರನ್ ಮಾಡಲಾಗುತ್ತದೆ. ಉತ್ತಮ ಹೊಂದಾಣಿಕೆಗಾಗಿ, 16 KB ಗೆ ಬೆಂಬಲದೊಂದಿಗೆ ಆ್ಯಪ್ ಅನ್ನು ಮರುಕಂಪೈಲ್ ಮಾಡಿ. ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ಅನ್ನು ನೋಡಿ"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"ಈ ಆ್ಯಪ್‌ 16 KB ಗೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ. ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿದೆ. ಪುಟದ ಗಾತ್ರಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವ ಮೋಡ್ ಅನ್ನು ಬಳಸಿಕೊಂಡು ಆ್ಯಪ್ ಅನ್ನು ರನ್ ಮಾಡಲಾಗುತ್ತದೆ. ಉತ್ತಮ ಹೊಂದಾಣಿಕೆಗಾಗಿ, 16 KB ಗೆ ಬೆಂಬಲದೊಂದಿಗೆ ಆ್ಯಪ್ ಅನ್ನು ಮರುಕಂಪೈಲ್ ಮಾಡಿ. ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ಅನ್ನು ನೋಡಿ"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"ಈ ಆ್ಯಪ್‌ 16 KB ಗೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಮತ್ತು ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿವೆ ಪುಟದ ಗಾತ್ರಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವ ಮೋಡ್ ಅನ್ನು ಬಳಸಿಕೊಂಡು ಆ್ಯಪ್ ಅನ್ನು ರನ್ ಮಾಡಲಾಗುತ್ತದೆ. ಉತ್ತಮ ಹೊಂದಾಣಿಕೆಗಾಗಿ, 16 KB ಗೆ ಬೆಂಬಲದೊಂದಿಗೆ ಆ್ಯಪ್ ಅನ್ನು ಮರುಕಂಪೈಲ್ ಮಾಡಿ. ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ಅನ್ನು ನೋಡಿ"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"ಇದು ಡೀಬಗ್ ಮಾಡಬಹುದಾದ ಆ್ಯಪ್ ಆಗಿದ್ದು, ಪ್ರಸ್ತುತ ಪರೀಕ್ಷಿಸಲಾಗುತ್ತಿರುವುದರಿಂದ ಈ ಎಚ್ಚರಿಕೆಯನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ. ನೀವು ಡೆವಲಪರ್ ಅಲ್ಲದಿದ್ದರೆ, ಇದನ್ನು ಡೆವಲಪರ್‌ಗೆ ವರದಿ ಮಾಡಿ ಮತ್ತು ಡೀಬಗ್ ಮಾಡಲಾಗದ ಆ್ಯಪ್‌ಗಾಗಿ ಕೇಳಿ. ಈ ಆ್ಯಪ್ 16 KB ಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆ ವಿಫಲವಾಗಿದೆ. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ನಲ್ಲಿ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"ಇದು ಡೀಬಗ್ ಮಾಡಬಹುದಾದ ಆ್ಯಪ್ ಆಗಿದ್ದು, ಪ್ರಸ್ತುತ ಪರೀಕ್ಷಿಸಲಾಗುತ್ತಿರುವುದರಿಂದ ಈ ಎಚ್ಚರಿಕೆಯನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ. ನೀವು ಡೆವಲಪರ್ ಅಲ್ಲದಿದ್ದರೆ, ಇದನ್ನು ಡೆವಲಪರ್‌ಗೆ ವರದಿ ಮಾಡಿ ಮತ್ತು ಡೀಬಗ್ ಮಾಡಲಾಗದ ಆ್ಯಪ್‌ಗಾಗಿ ಕೇಳಿ. ಈ ಆ್ಯಪ್ 16 KB ಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆ ವಿಫಲವಾಗಿದೆ. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ನಲ್ಲಿ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"ಇದು ಡೀಬಗ್ ಮಾಡಬಹುದಾದ ಆ್ಯಪ್ ಆಗಿದ್ದು, ಪ್ರಸ್ತುತ ಪರೀಕ್ಷಿಸಲಾಗುತ್ತಿರುವುದರಿಂದ ಈ ಎಚ್ಚರಿಕೆಯನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ. ನೀವು ಡೆವಲಪರ್ ಅಲ್ಲದಿದ್ದರೆ, ಇದನ್ನು ಡೆವಲಪರ್‌ಗೆ ವರದಿ ಮಾಡಿ ಮತ್ತು ಡೀಬಗ್ ಮಾಡಲಾಗದ ಆ್ಯಪ್‌ಗಾಗಿ ಕೇಳಿ. ಈ ಆ್ಯಪ್ 16 KB ಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಮತ್ತು ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿವೆ. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ನಲ್ಲಿ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"ಮತ್ತೊಮ್ಮೆ ತೋರಿಸಬೇಡಿ"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ಸೇವೆಯನ್ನು ಪೂರೈಸಲಾಗಿಲ್ಲ."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"ನೀವು ಕಾಲರ್‌ ID ಸೆಟ್ಟಿಂಗ್‌ ಬದಲಾಯಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g> ಗೆ ಡೇಟಾವನ್ನು ಬದಲಾಯಿಸಲಾಗಿದೆ"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"ನಿಮ್ಮ ಸುತ್ತಲಿನ ಪರಿಸರದ ಕುರಿತು ಟ್ರ್ಯಾಕಿಂಗ್ ಡೇಟಾವನ್ನು ಹೆಚ್ಚಿನ ವಿವರಗಳೊಂದಿಗೆ ನೇರವಾಗಿ ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"ಮುನ್ನೆಲೆಯಲ್ಲಿ ಇಲ್ಲದಿರುವಾಗ XR ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಿ"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"ಮುನ್ನೆಲೆಯಲ್ಲಿ ಇಲ್ಲದಿರುವಾಗ XR ಡೇಟಾವನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲು ಆ್ಯಪ್ ಅನ್ನು ಅನುಮತಿಸುತ್ತದೆ."</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"ಕ್ಯಾಪ್ಚರ್ ಕೀಗಳು"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"ಸಿಸ್ಟಂ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು ಮತ್ತು ಆ್ಯಕ್ಷನ್‌ಗಳನ್ನು ಸಿಸ್ಟಂ ಪ್ರಾಸೆಸ್ ಮಾಡುವ ಮೊದಲು ಕೀಗಳನ್ನು ಕ್ಯಾಪ್ಚರ್ ಮಾಡಲು ಆ್ಯಪ್‌ಗೆ ಅನುಮತಿಸುತ್ತದೆ."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"ಬಯೋಮೆಟ್ರಿಕ್ಸ್ ಬಳಸಿ"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"ಬಯೋಮೆಟ್ರಿಕ್ಸ್ ಅಥವಾ ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಅನ್ನು ಬಳಸಿ"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"ಇದು ನೀವೇ ಎಂದು ಪರಿಶೀಲಿಸಿ"</string>

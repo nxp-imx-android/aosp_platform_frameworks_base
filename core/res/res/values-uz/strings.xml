@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Bu ilova 16 KB sahifa hajmi bilan mos emas. APK fayllardagi maʼlumotlarning tekislanishi tekshirilmadi. Bu ilova sahifa hajmiga mos rejimda ishlaydi. Eng yaxshi moslik uchun ilovani 16 KB sahifa hajmi bilan qayta kompilyatsiya qiling. Batafsil: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Bu ilova 16 KB sahifa hajmi bilan mos emas. ELF fayllardagi maʼlumotlarning tekislanishi tekshirilmadi. Bu ilova sahifa hajmiga mos rejimda ishlaydi. Eng yaxshi moslik uchun ilovani 16 KB sahifa hajmi bilan qayta kompilyatsiya qiling. Batafsil: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Bu ilova 16 KB sahifa hajmi bilan mos emas. APK va ELF fayllardagi maʼlumotlarning tekislanishi tekshirilmadi. Bu ilova sahifa hajmiga mos rejimda ishlaydi. Eng yaxshi moslik uchun ilovani 16 KB sahifa hajmi bilan qayta kompilyatsiya qiling. Batafsil: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Bu hozirda sinovdan oʻtkazilayotgan nosozliklari aniqlanadigan ilova boʻlgani sababli ushbu ogohlantirish chiqmoqda. Agar dastur ishlab chiquvchi boʻlmasangiz, bu haqda ishlab chiquvchiga xabar berib, nosozliklari aniqlanmaydigan ilovani talab qiling. Bu ilova 16 KB hajm bilan muvofiq emas. APK fayllardagi maʼlumotlarning tekislanishi tekshirilmadi. Bu yerdagi qadamlarni bajaring: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Bu hozirda sinovdan oʻtkazilayotgan nosozliklari aniqlanadigan ilova boʻlgani sababli ushbu ogohlantirish chiqmoqda. Agar dastur ishlab chiquvchi boʻlmasangiz, bu haqda ishlab chiquvchiga xabar berib, nosozliklari aniqlanmaydigan ilovani talab qiling. Bu ilova 16 KB hajm bilan muvofiq emas. ELF fayllardagi maʼlumotlarning tekislanishi tekshirilmadi. Bu yerdagi qadamlarni bajaring: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Bu hozirda sinovdan oʻtkazilayotgan nosozliklari aniqlanadigan ilova boʻlgani sababli ushbu ogohlantirish chiqmoqda. Agar dastur ishlab chiquvchi boʻlmasangiz, bu haqda ishlab chiquvchiga xabar berib, nosozliklari aniqlanmaydigan ilovani talab qiling. Bu ilova 16 KB hajm bilan muvofiq emas. APK va ELF fayllardagi maʼlumotlarning tekislanishi tekshirilmadi. Bu yerdagi qadamlarni bajaring: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"Boshqa chiqmasin"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Xizmat ishalamaydi."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Qo‘ng‘iroq qiluvchining ID raqami sozlamasini o‘zgartirib bo‘lmaydi."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Internet <xliff:g id="CARRIERDISPLAY">%s</xliff:g> operatoriga almashtirildi"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Ilovaga bevosita atrofingizdagi juda yuqori aniqlikda muhit haqidagi kuzatuv maʼlumotlariga kirish imkonini beradi."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"XR maʼlumotlariga faol rejimda emasligida kirish"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Ilovaga faol rejimda emasligida XR maʼlumotlariga kirish imkonini beradi."</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"kalitlarni ushlab qolish"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Tizim yorliqlar va amallarni qayta ishlashdan oldin ilovaga kalitlarni ushlab qolish imkonini beradi."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Biometrik tasdiqlash"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Biometrika yoki ekran qulfi"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Oʻzingizni taniting"</string>

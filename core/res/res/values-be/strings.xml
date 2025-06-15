@@ -76,14 +76,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Гэта праграма несумяшчальная з памерам 16 КБ. Не ўдалося праверыць выраўноўванне APK. Гэта праграма будзе працаваць у рэжыме, сумяшчальным з памерам старонкі. Для найлепшай сумяшчальнасці выканайце паўторнае кампіляванне праграмы з падтрымкай 16 КБ. Дадатковую інфармацыю можна знайсці на старонцы &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Гэта праграма несумяшчальная з памерам 16 КБ. Не ўдалося праверыць выраўноўванне ELF. Гэта праграма будзе працаваць у рэжыме, сумяшчальным з памерам старонкі. Для найлепшай сумяшчальнасці выканайце паўторнае кампіляванне праграмы з падтрымкай 16 КБ. Дадатковую інфармацыю можна знайсці на старонцы &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Гэта праграма несумяшчальная з памерам 16 КБ. Не ўдалося праверыць выраўноўванне APK і ELF. Гэта праграма будзе працаваць у рэжыме, сумяшчальным з памерам старонкі. Для найлепшай сумяшчальнасці выканайце паўторнае кампіляванне праграмы з падтрымкай 16 КБ. Дадатковую інфармацыю можна знайсці на старонцы &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Вы бачыце папярэджанне, бо гэта праграма з магчымасцю адладкі, і зараз яна тэсціруецца. Калі вы не распрацоўшчык, паведаміце пра праблему распрацоўшчыку і запытайце версію без магчымасці адладкі. Гэта праграма несумяшчальная з рэжымам 16 КБ. Не ўдалося праверыць выраўноўванне APK. Выканайце інструкцыі на старонцы &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Вы бачыце папярэджанне, бо гэта праграма з магчымасцю адладкі, і зараз яна тэсціруецца. Калі вы не распрацоўшчык, паведаміце пра праблему распрацоўшчыку і запытайце версію без магчымасці адладкі. Гэта праграма несумяшчальная з рэжымам 16 КБ. Не ўдалося праверыць выраўноўванне ELF. Выканайце інструкцыі на старонцы &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Вы бачыце папярэджанне, бо гэта праграма з магчымасцю адладкі, і зараз яна тэсціруецца. Калі вы не распрацоўшчык, паведаміце пра праблему распрацоўшчыку і запытайце версію без магчымасці адладкі. Гэта праграма несумяшчальная з рэжымам 16 КБ. Не ўдалося праверыць выраўноўванне APK і ELF. Выканайце інструкцыі на старонцы &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"Больш не паказваць"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Служба не прадастаўляецца."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Вы не можаце змяніць налады ідэнтыфікатара абанента, якi тэлефануе."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Мабільны трафік пераключаны на аператара \"<xliff:g id="CARRIERDISPLAY">%s</xliff:g>\""</string>
@@ -683,10 +679,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Дазваляе праграме атрымліваць доступ да даных адсочвання вашага блізкага асяроддзя з вялікай дэталізацыяй."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"атрымліваць доступ да даных XR, калі праграма не ў актыўным рэжыме"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Дазваляе праграме атрымліваць доступ да даных XR, калі яна працуе не ў актыўным рэжыме."</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"перахопліванне націскання клавіш"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Праграма зможа перахопліваць націсканне клавіш да таго, як сістэма апрацуе сістэмныя ярлыкі і дзеянні."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Выкарыстоўваць біяметрыю"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Выкарыстоўваць біяметрыю ці блакіроўку экрана"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Спраўдзіце, што гэта вы"</string>

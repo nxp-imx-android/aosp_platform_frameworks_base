@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Tämä sovellus ei tue 16 kt:tä. APK-sovelluksen yhteensopivuustarkistus epäonnistui. Sovellus käynnistetään sivukoon kanssa yhteensopivan tilan avulla. Parhaan yhteensopivuuden varmistamiseksi kokoa sovellus uudelleen niin, että se tukee 16 kt:tä. Katso lisätietoa osoitteesta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Tämä sovellus ei tue 16 kt:tä. ELF:n yhteensopivuustarkastus epäonnistui. Sovellus käynnistetään sivukoon kanssa yhteensopivan tilan avulla. Parhaan yhteensopivuuden varmistamiseksi kokoa sovellus uudelleen niin, että se tukee 16 kt:tä. Katso lisätietoa osoitteesta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Tämä sovellus ei tue 16 kt:tä. APK:n ja ELF:n yhteensopivuustarkastukset epäonnistuivat. Sovellus käynnistetään sivukoon kanssa yhteensopivan tilan avulla. Parhaan yhteensopivuuden varmistamiseksi kokoa sovellus uudelleen niin, että se tukee 16 kt:tä. Katso lisätietoa osoitteesta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Varoitus näkyy, koska tämä on virheenkorjausta tukeva sovellus, jota testataan parhaillaan. Jos et ole sovelluksen kehittäjä, ilmoita hänelle asiasta ja pyydä sovellus, joka ei tue virheenkorjausta. Sovellus ei tue 16 kt:tä. APK-sovelluksen yhteensopivuustarkistus epäonnistui. Seuraa näitä ohjeita: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Varoitus näkyy, koska tämä on virheenkorjausta tukeva sovellus, jota testataan parhaillaan. Jos et ole sovelluksen kehittäjä, ilmoita hänelle asiasta ja pyydä sovellus, joka ei tue virheenkorjausta. Sovellus ei tue 16 kt:tä. ELF:n yhteensopivuustarkastus epäonnistui. Seuraa näitä ohjeita: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Varoitus näkyy, koska tämä on virheenkorjausta tukeva sovellus, jota testataan parhaillaan. Jos et ole sovelluksen kehittäjä, ilmoita hänelle asiasta ja pyydä sovellus, joka ei tue virheenkorjausta. Sovellus ei tue 16 kt:tä. APK:n ja ELF:n yhteensopivuustarkastukset epäonnistuivat. Seuraa näitä ohjeita: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"Älä näytä uudelleen"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Palvelua ei tarjota."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Et voi muuttaa soittajan tunnuksen asetusta."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Data vaihdettu: <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Sallii sovellukselle pääsyn erittäin yksityiskohtaiseen, välittömään ympäristöösi liittyvään seurantadataan."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"pääsy XR-dataan, kun sovellus ei ole etualalla."</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Sallii sovellukselle pääsyn XR-dataan, kun sovellus ei ole etualalla."</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"näppäinten kaappaus"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Antaa sovelluksen kaapata näppäimiä ennen kuin järjestelmä voi käsitellä järjestelmän pikanäppäimiä ja toimintoja."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Käytä biometriikkaa"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Käytä biometriikkaa tai näytön lukitusta"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Vahvista henkilöllisyytesi"</string>
