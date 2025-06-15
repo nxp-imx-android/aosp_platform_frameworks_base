@@ -30,6 +30,7 @@ import com.android.systemui.statusbar.systemstatusicons.domain.interactor.Ordere
 import com.android.systemui.statusbar.systemstatusicons.ethernet.ui.viewmodel.EthernetIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.hotspot.ui.viewmodel.HotspotIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.mobile.ui.viewmodel.MobileSystemStatusIconsViewModel
+import com.android.systemui.statusbar.systemstatusicons.profile.ui.viewmodel.ManagedProfileIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.MuteIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ringer.ui.viewmodel.VibrateIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.vpn.ui.viewmodel.VpnIconViewModel
@@ -60,6 +61,7 @@ constructor(
     dataSaverIconViewModelFactory: DataSaverIconViewModel.Factory,
     ethernetIconViewModelFactory: EthernetIconViewModel.Factory,
     hotspotIconViewModelFactory: HotspotIconViewModel.Factory,
+    managedProfileIconViewModelFactory: ManagedProfileIconViewModel.Factory,
     mobileSystemStatusIconsViewModelFactory: MobileSystemStatusIconsViewModel.Factory,
     muteIconViewModelFactory: MuteIconViewModel.Factory,
     nextAlarmIconViewModelFactory: NextAlarmIconViewModel.Factory,
@@ -83,6 +85,7 @@ constructor(
     private val dataSaverIcon by lazy { dataSaverIconViewModelFactory.create(context) }
     private val ethernetIcon by lazy { ethernetIconViewModelFactory.create(context) }
     private val hotspotIcon by lazy { hotspotIconViewModelFactory.create(context) }
+    private val managedProfileIcon by lazy { managedProfileIconViewModelFactory.create(context) }
     private val mobileIcons by lazy { mobileSystemStatusIconsViewModelFactory.create(context) }
     private val muteIcon by lazy { muteIconViewModelFactory.create(context) }
     private val nextAlarmIcon by lazy { nextAlarmIconViewModelFactory.create(context) }
@@ -99,6 +102,7 @@ constructor(
             dataSaverIcon,
             ethernetIcon,
             hotspotIcon,
+            managedProfileIcon,
             mobileIcons,
             muteIcon,
             nextAlarmIcon,
@@ -133,6 +137,7 @@ constructor(
             launch { dataSaverIcon.activate() }
             launch { ethernetIcon.activate() }
             launch { hotspotIcon.activate() }
+            launch { managedProfileIcon.activate() }
             launch { mobileIcons.activate() }
             launch { muteIcon.activate() }
             launch { nextAlarmIcon.activate() }
