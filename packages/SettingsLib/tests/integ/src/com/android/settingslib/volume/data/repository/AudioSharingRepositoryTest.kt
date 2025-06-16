@@ -228,6 +228,7 @@ class AudioSharingRepositoryTest {
             `when`(assistant.isProfileReady).thenReturn(true)
             `when`(volumeControl.isProfileReady).thenReturn(true)
             `when`(leAudio.isProfileReady).thenReturn(true)
+            `when`(leAudio.broadcastToUnicastFallbackGroup).thenReturn(TEST_GROUP_ID_INVALID)
             val groupIds = mutableListOf<Int?>()
             underTest.primaryGroupId.onEach { groupIds.add(it) }.launchIn(backgroundScope)
             runCurrent()
