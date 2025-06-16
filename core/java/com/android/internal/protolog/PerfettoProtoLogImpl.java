@@ -257,7 +257,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
 
                 mConfigurationService.registerClient(this, args);
             } catch (RemoteException e) {
-                throw new RuntimeException("Failed to register ProtoLog client", e);
+                Log.wtf(LOG_TAG, "Failed to register ProtoLog client", e);
             }
         });
     }
@@ -279,7 +279,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 }
                 mConfigurationService.registerGroups(this, args);
             } catch (RemoteException e) {
-                throw new RuntimeException("Failed to register ProtoLog groups", e);
+                Log.wtf(LOG_TAG, "Failed to register ProtoLog groups", e);
             }
         });
     }
@@ -308,7 +308,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
             try {
                 mConfigurationService.unregisterClient(this);
             } catch (RemoteException e) {
-                throw new RuntimeException("Failed to unregister ProtoLog client", e);
+                Log.wtf(LOG_TAG, "Failed to unregister ProtoLog client", e);
             }
         });
     }
