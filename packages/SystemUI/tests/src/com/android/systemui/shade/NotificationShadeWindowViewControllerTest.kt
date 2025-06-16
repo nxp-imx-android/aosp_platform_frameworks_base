@@ -29,6 +29,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.test.filters.SmallTest
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.keyguard.KeyguardSecurityContainerController
 import com.android.keyguard.dagger.KeyguardBouncerComponent
 import com.android.systemui.Flags
@@ -37,6 +38,7 @@ import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor
 import com.android.systemui.bouncer.domain.interactor.PrimaryBouncerInteractor
 import com.android.systemui.bouncer.ui.binder.BouncerViewBinder
 import com.android.systemui.classifier.FalsingCollectorFake
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.dock.DockManager
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.flags.DisableSceneContainer
@@ -111,6 +113,7 @@ import org.mockito.Answers
 import org.mockito.ArgumentCaptor
 import org.mockito.Mock
 import org.mockito.Mockito.anyFloat
+import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.atLeast
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
@@ -144,6 +147,10 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     @Mock private lateinit var dumpManager: DumpManager
     @Mock private lateinit var ambientState: AmbientState
     @Mock private lateinit var stackScrollLayoutController: NotificationStackScrollLayoutController
+    @Mock private lateinit var systemUIDisplaySubcomponent: SystemUIDisplaySubcomponent
+    @Mock
+    private lateinit var perDisplaySubcomponentRepository:
+        PerDisplayRepository<SystemUIDisplaySubcomponent>
     @Mock private lateinit var statusBarWindowStateController: StatusBarWindowStateController
     @Mock private lateinit var quickSettingsController: QuickSettingsControllerImpl
     @Mock
@@ -196,6 +203,7 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
     @Before
     fun setUp() {
         MockitoAnnotations.initMocks(this)
+        whenever(view.context).thenReturn(context)
         whenever(view.bottom).thenReturn(VIEW_BOTTOM)
         whenever(view.findViewById<ViewGroup>(R.id.keyguard_bouncer_container))
             .thenReturn(mock(ViewGroup::class.java))
@@ -205,6 +213,10 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
             .thenReturn(keyguardSecurityContainerController)
         whenever(keyguardTransitionInteractor.transition(Edge.create(LOCKSCREEN, DREAMING)))
             .thenReturn(emptyFlow<TransitionStep>())
+        whenever(systemUIDisplaySubcomponent.statusBarWindowStateController)
+            .thenReturn(statusBarWindowStateController)
+        whenever(perDisplaySubcomponentRepository.getOrDefault(anyInt()))
+            .thenReturn(systemUIDisplaySubcomponent)
 
         featureFlagsClassic = FakeFeatureFlagsClassic()
         featureFlagsClassic.set(SPLIT_SHADE_SUBPIXEL_OPTIMIZATION, true)
@@ -234,7 +246,7 @@ class NotificationShadeWindowViewControllerTest(flags: FlagsParameterization) : 
                 panelExpansionInteractor,
                 ShadeExpansionStateManager(),
                 stackScrollLayoutController,
-                statusBarWindowStateController,
+                perDisplaySubcomponentRepository,
                 centralSurfaces,
                 dozeServiceHost,
                 dozeScrimController,

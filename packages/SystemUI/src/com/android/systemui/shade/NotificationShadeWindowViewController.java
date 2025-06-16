@@ -32,6 +32,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.android.app.displaylib.PerDisplayRepository;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.keyguard.AuthKeyguardMessageArea;
 import com.android.keyguard.KeyguardUnfoldTransition;
@@ -43,6 +44,7 @@ import com.android.systemui.bouncer.ui.binder.BouncerViewBinder;
 import com.android.systemui.classifier.FalsingCollector;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.dagger.qualifiers.Main;
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.dock.DockManager;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.flags.FeatureFlagsClassic;
@@ -109,7 +111,8 @@ public class NotificationShadeWindowViewController implements Dumpable {
     private final NotificationStackScrollLayoutController mNotificationStackScrollLayoutController;
     private final LockscreenShadeTransitionController mLockscreenShadeTransitionController;
     private final ShadeLogger mShadeLogger;
-    private final StatusBarWindowStateController mStatusBarWindowStateController;
+    private final PerDisplayRepository<SystemUIDisplaySubcomponent>
+            mPerDisplaySubcomponentRepository;
     private final KeyguardUnlockAnimationController mKeyguardUnlockAnimationController;
     private final AmbientState mAmbientState;
     private final PulsingGestureListener mPulsingGestureListener;
@@ -195,7 +198,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
             PanelExpansionInteractor panelExpansionInteractor,
             ShadeExpansionStateManager shadeExpansionStateManager,
             NotificationStackScrollLayoutController notificationStackScrollLayoutController,
-            StatusBarWindowStateController statusBarWindowStateController,
+            PerDisplayRepository<SystemUIDisplaySubcomponent> perDisplaySubcomponentRepository,
             CentralSurfaces centralSurfaces,
             DozeServiceHost dozeServiceHost,
             DozeScrimController dozeScrimController,
@@ -232,7 +235,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
         mShadeExpansionStateManager = shadeExpansionStateManager;
         mDepthController = depthController;
         mNotificationStackScrollLayoutController = notificationStackScrollLayoutController;
-        mStatusBarWindowStateController = statusBarWindowStateController;
+        mPerDisplaySubcomponentRepository = perDisplaySubcomponentRepository;
         mShadeLogger = shadeLogger;
         mService = centralSurfaces;
         mDozeServiceHost = dozeServiceHost;
@@ -494,7 +497,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
                     float y = ev.getRawY();
                     if (phoneStatusBarViewController.touchIsWithinView(x, y)) {
                         if (!mPrimaryBouncerInteractor.isBouncerShowing()) {
-                            if (mStatusBarWindowStateController.windowIsShowing()) {
+                            if (statusBarWindowStateController().windowIsShowing()) {
                                 mIsTrackingBarGesture = true;
                                 return logDownOrFalseResultDispatch(ev,
                                         "sending touch to status bar",
@@ -521,6 +524,13 @@ public class NotificationShadeWindowViewController implements Dumpable {
                 }
                 return logDownOrFalseResultDispatch(ev, "no custom touch dispatch of down event",
                         null);
+            }
+
+            private StatusBarWindowStateController statusBarWindowStateController() {
+                SystemUIDisplaySubcomponent displaySubcomponent =
+                        mPerDisplaySubcomponentRepository.getOrDefault(
+                                getView().getContext().getDisplayId());
+                return displaySubcomponent.getStatusBarWindowStateController();
             }
 
             @Override

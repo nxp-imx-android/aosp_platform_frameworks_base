@@ -88,6 +88,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleRegistry;
 
+import com.android.app.displaylib.PerDisplayRepository;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.colorextraction.ColorExtractor;
 import com.android.internal.logging.MetricsLogger;
@@ -127,6 +128,7 @@ import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dagger.qualifiers.UiBackground;
 import com.android.systemui.demomode.DemoMode;
 import com.android.systemui.demomode.DemoModeController;
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.emergency.EmergencyGesture;
 import com.android.systemui.emergency.EmergencyGestureModule.EmergencyGestureIntentFactory;
 import com.android.systemui.flags.FeatureFlags;
@@ -615,7 +617,7 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
             AutoHideController autoHideController,
             StatusBarInitializer statusBarInitializer,
             StatusBarWindowControllerStore statusBarWindowControllerStore,
-            StatusBarWindowStateController statusBarWindowStateController,
+            PerDisplayRepository<SystemUIDisplaySubcomponent> perDisplaySubcomponentRepository,
             StatusBarModeRepositoryStore statusBarModeRepository,
             KeyguardUpdateMonitor keyguardUpdateMonitor,
             StatusBarSignalPolicy statusBarSignalPolicy,
@@ -822,6 +824,10 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
         mDreamManager = dreamManager;
         lockscreenShadeTransitionController.setCentralSurfaces(this);
         if (!StatusBarConnectedDisplays.isEnabled()) {
+            SystemUIDisplaySubcomponent displaySubcomponent = perDisplaySubcomponentRepository.get(
+                    Display.DEFAULT_DISPLAY);
+            StatusBarWindowStateController statusBarWindowStateController =
+                    displaySubcomponent.getStatusBarWindowStateController();
             statusBarWindowStateController.addListener(this::onStatusBarWindowStateChanged);
         }
         mScreenOffAnimationController = screenOffAnimationController;

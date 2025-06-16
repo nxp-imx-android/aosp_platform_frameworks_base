@@ -25,7 +25,6 @@ import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
-import com.android.systemui.util.containsExactly
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
@@ -161,6 +160,53 @@ class PerDisplayInstanceRepositoryImplTest : SysuiTestCase() {
                 displayIds.add(instance.displayId)
             }
             assertThat(displayIds).containsExactly(DEFAULT_DISPLAY_ID, NON_DEFAULT_DISPLAY_ID)
+        }
+
+    @Test
+    fun getOrDefault_existingDisplay_returnsCorrectInstance() =
+        testScope.runTest {
+            val defaultInstance = underTest[DEFAULT_DISPLAY_ID]
+            val nonDefaultInstance = underTest.getOrDefault(NON_DEFAULT_DISPLAY_ID)
+
+            // The correct instance for the non-default display should be returned
+            assertThat(nonDefaultInstance.displayId).isEqualTo(NON_DEFAULT_DISPLAY_ID)
+
+            // It should NOT be the default instance
+            assertThat(nonDefaultInstance).isNotSameInstanceAs(defaultInstance)
+        }
+
+    @Test
+    fun getOrDefault_nonExistingDisplay_returnsDefaultInstance() =
+        testScope.runTest {
+            // First, get the default instance so we have something to compare against.
+            val defaultInstance = underTest.getOrDefault(DEFAULT_DISPLAY_ID)
+
+            // Now, request a display that does not exist.
+            val instance = underTest.getOrDefault(NON_EXISTING_DISPLAY_ID)
+
+            // It should fall back to returning the default instance.
+            assertThat(instance).isSameInstanceAs(defaultInstance)
+        }
+
+    @Test
+    fun getOrDefault_disallowedByLifecycleManager_returnsDefaultInstance() =
+        testScope.runTest {
+            val underTestWithLifecycle =
+                kosmos.createPerDisplayInstanceRepository(
+                    overrideLifecycleManager = lifecycleManager
+                )
+
+            // Allow only the default display, even though the non-default one exists.
+            lifecycleManager.displayIds.value = setOf(DEFAULT_DISPLAY_ID)
+
+            // Get the default instance to have a reference.
+            val defaultInstance = underTestWithLifecycle.getOrDefault(DEFAULT_DISPLAY_ID)
+
+            // Request the non-default display, which is disallowed by the manager.
+            val instance = underTestWithLifecycle.getOrDefault(NON_DEFAULT_DISPLAY_ID)
+
+            // It should fall back to the default instance.
+            assertThat(instance).isSameInstanceAs(defaultInstance)
         }
 
     private fun createDisplay(displayId: Int): Display =
