@@ -34,10 +34,9 @@ import android.content.res.TypedArray;
 import android.os.Bundle;
 import android.os.Handler;
 import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
 import android.test.mock.MockContentResolver;
+import android.virtualdevice.cts.common.VirtualDeviceRule;
 
 import androidx.test.filters.SmallTest;
 
@@ -56,7 +55,7 @@ import org.mockito.MockitoAnnotations;
  * Test class for {@link CoreSettingsObserver}.
  *
  * Build/Install/Run:
- *  atest FrameworksServicesTests:CoreSettingsObserverTest
+ * atest FrameworksServicesTests:CoreSettingsObserverTest
  */
 @SmallTest
 @RequiresFlagsEnabled(Flags.FLAG_DEVICE_AWARE_SETTINGS_OVERRIDE)
@@ -69,13 +68,16 @@ public class CoreSettingsObserverTest {
     private static final float TEST_FLOAT = 3.14f;
     private static final String TEST_STRING = "testString";
 
-    @Rule public ServiceThreadRule mServiceThreadRule = new ServiceThreadRule();
-    @Rule public final CheckFlagsRule checkFlagsRule =
-            DeviceFlagsValueProvider.createCheckFlagsRule();
+    @Rule
+    public ServiceThreadRule mServiceThreadRule = new ServiceThreadRule();
+    @Rule
+    public final VirtualDeviceRule mVirtualDeviceRule = VirtualDeviceRule.createDefault();
 
     private ActivityManagerService mAms;
-    @Mock private Context mContext;
-    @Mock private Resources mResources;
+    @Mock
+    private Context mContext;
+    @Mock
+    private Resources mResources;
 
     private MockContentResolver mContentResolver;
     private CoreSettingsObserver mCoreSettingsObserver;
@@ -169,6 +171,13 @@ public class CoreSettingsObserverTest {
                 TEST_INT, settingsBundle.getInt(TEST_SETTING_SECURE_INT));
         assertEquals("Unexpected value of " + TEST_SETTING_SYSTEM_STRING,
                 TEST_STRING, settingsBundle.getString(TEST_SETTING_SYSTEM_STRING));
+    }
+
+    @Test
+    public void testPopulateSettings_withInvalidDeviceId() {
+        mVirtualDeviceRule.createManagedVirtualDevice();
+        when(mContext.createDeviceContext(anyInt())).thenThrow(new IllegalArgumentException());
+        testPopulateSettings();
     }
 
     private Bundle getPopulatedBundle() {
