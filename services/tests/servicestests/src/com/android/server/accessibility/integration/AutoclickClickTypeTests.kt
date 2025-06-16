@@ -117,17 +117,21 @@ class AutoclickClickTypeTests {
         // autoclick.
         desktopMouseTestRule.move(DEFAULT_DISPLAY, targetXPx = 0, targetYPx = 0)
 
-        // The click type button group starts closed so click it to open the panel.
-        val clickTypeButtonGroup = findObject(
-            By.res(CLICK_TYPE_BUTTON_GROUP_ID)
-        )
-        desktopMouseTestRule.move(
-            DEFAULT_DISPLAY, clickTypeButtonGroup.visibleCenter.x, clickTypeButtonGroup.visibleCenter.y
-        )
+        if (!isAutoclickPanelOpen()) {
+            // The click type button group starts closed so click it to open the panel.
+            val clickTypeButtonGroup = findObject(
+                By.res(CLICK_TYPE_BUTTON_GROUP_ID)
+            )
+            desktopMouseTestRule.move(
+                DEFAULT_DISPLAY,
+                clickTypeButtonGroup.visibleCenter.x,
+                clickTypeButtonGroup.visibleCenter.y
+            )
 
-        // Wait for the panel to fully open before attempting to select a click type.
-        waitAndAssert {
-            isAutoclickPanelOpen()
+            // Wait for the panel to fully open before attempting to select a click type.
+            waitAndAssert {
+                isAutoclickPanelOpen()
+            }
         }
 
         desktopMouseTestRule.move(DEFAULT_DISPLAY, targetXPx = 0, targetYPx = 0)
