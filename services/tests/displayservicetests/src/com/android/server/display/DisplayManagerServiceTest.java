@@ -158,7 +158,6 @@ import android.view.SurfaceControl;
 import android.window.DisplayWindowPolicyController;
 
 import androidx.test.core.app.ApplicationProvider;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.FlakyTest;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -3940,19 +3939,6 @@ public class DisplayManagerServiceTest {
 
         DisplayTopology topology = displayManagerBinderService.getDisplayTopology();
         assertNull(topology);
-    }
-
-    @Test
-    public void testGetDisplayTopology_withoutPermission_shouldThrowException() {
-        when(mMockFlags.isDisplayTopologyEnabled()).thenReturn(true);
-        DisplayManagerService displayManager = new DisplayManagerService(mContext, mBasicInjector);
-        DisplayManagerInternal localService = displayManager.new LocalService();
-        DisplayManagerService.BinderService displayManagerBinderService =
-                displayManager.new BinderService();
-        registerDefaultDisplays(displayManager);
-        initDisplayPowerController(localService);
-
-        assertThrows(SecurityException.class, displayManagerBinderService::getDisplayTopology);
     }
 
     @Test

@@ -269,7 +269,6 @@ interface IDisplayManager {
     float getDefaultDozeBrightness(int displayId);
 
     // Get the display topology
-    @EnforcePermission("MANAGE_DISPLAYS")
     @nullable
     DisplayTopology getDisplayTopology();
 
