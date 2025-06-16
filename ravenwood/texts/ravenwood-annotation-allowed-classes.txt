@@ -274,6 +274,7 @@ android.os.IpcDataCache
 android.os.LocaleList
 android.os.Looper
 android.os.Message
+android.os.MessageHeap
 android.os.MessageQueue
 android.os.PackageTagsList
 android.os.PackageTagsMap
