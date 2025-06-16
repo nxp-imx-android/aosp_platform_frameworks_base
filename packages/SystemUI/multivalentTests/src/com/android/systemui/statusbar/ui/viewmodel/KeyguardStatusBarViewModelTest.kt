@@ -31,6 +31,7 @@ import com.android.systemui.keyguard.data.repository.fakeKeyguardTransitionRepos
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.scene.data.repository.sceneContainerRepository
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.scene.shared.model.Overlays
@@ -99,6 +100,7 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
                 userLogoutInteractor,
                 batteryController,
             )
+        underTest.activateIn(testScope)
     }
 
     @Test
@@ -250,12 +252,12 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
     fun signOutButton_isVisible_whenUserManagerLogoutIsEnabled() {
         testScope.runTest {
             kosmos.fakeKeyguardRepository.setIsSignOutButtonOnStatusBarEnabledInConfig(true)
-            val isSignOutButtonVisible by collectLastValue(underTest.isSignOutButtonVisible)
             val logoutToSystemUserCount = userRepository.logOutWithUserManagerCallCount
             userRepository.setUserManagerLogoutEnabled(true)
             userRepository.setPolicyManagerLogoutEnabled(false)
+            runCurrent()
             assertThat(underTest.isSignOutButtonEnabled).isTrue()
-            assertThat(isSignOutButtonVisible).isTrue()
+            assertThat(underTest.isSignOutButtonVisible).isTrue()
             underTest.onSignOut()
             runCurrent()
             assertThat(userRepository.logOutWithUserManagerCallCount)
@@ -268,11 +270,11 @@ class KeyguardStatusBarViewModelTest(flags: FlagsParameterization) : SysuiTestCa
     fun signOutButton_isNotVisible_whenUserManagerLogoutIsDisabled() {
         testScope.runTest {
             kosmos.fakeKeyguardRepository.setIsSignOutButtonOnStatusBarEnabledInConfig(true)
-            val isSignOutButtonVisible by collectLastValue(underTest.isSignOutButtonVisible)
             userRepository.setUserManagerLogoutEnabled(false)
             userRepository.setPolicyManagerLogoutEnabled(true)
+            runCurrent()
             assertThat(underTest.isSignOutButtonEnabled).isTrue()
-            assertThat(isSignOutButtonVisible).isFalse()
+            assertThat(underTest.isSignOutButtonVisible).isFalse()
         }
     }
 
