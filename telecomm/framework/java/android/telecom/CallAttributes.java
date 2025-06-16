@@ -60,6 +60,9 @@ public final class CallAttributes implements Parcelable {
     /** Allows a package to opt into capabilities on the telecom side, on a per-call basis **/
     @CallCapability private final int mCallCapabilities;
 
+    /** Indicate whether the call is excluded from the system call logs **/
+    private final boolean mIsLogExcluded;
+
     /** @hide **/
     public static final String CALL_CAPABILITIES_KEY = "TelecomCapabilities";
 
@@ -77,13 +80,15 @@ public final class CallAttributes implements Parcelable {
             @NonNull Uri address,
             int direction,
             int callType,
-            int callCapabilities) {
+            int callCapabilities,
+            boolean isLogExcluded) {
         mPhoneAccountHandle = phoneAccountHandle;
         mDisplayName = displayName;
         mAddress = address;
         mDirection = direction;
         mCallType = callType;
         mCallCapabilities = callCapabilities;
+        mIsLogExcluded = isLogExcluded;
     }
 
     /** @hide */
@@ -162,6 +167,7 @@ public final class CallAttributes implements Parcelable {
         // optional fields
         @CallType private int mCallType = CallAttributes.AUDIO_CALL;
         @CallCapability private int mCallCapabilities = SUPPORTS_SET_INACTIVE;
+        private boolean mIsLogExcluded;
 
         /**
          * Constructor for the CallAttributes.Builder class
@@ -217,6 +223,18 @@ public final class CallAttributes implements Parcelable {
         }
 
         /**
+         * Sets the attribute to exclude the call from system call logs.
+         * @param isExcluded whether the call should be excluded.
+         * @return Builder
+         */
+        @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS)
+        @NonNull
+        public Builder setLogExcluded(boolean isExcluded) {
+            mIsLogExcluded = isExcluded;
+            return this;
+        }
+
+        /**
          * Build an instance of {@link CallAttributes} based on the last values passed to the
          * setters or default values.
          *
@@ -225,7 +243,7 @@ public final class CallAttributes implements Parcelable {
         @NonNull
         public CallAttributes build() {
             return new CallAttributes(mPhoneAccountHandle, mDisplayName, mAddress, mDirection,
-                    mCallType, mCallCapabilities);
+                    mCallType, mCallCapabilities, mIsLogExcluded);
         }
 
         /** @hide */
@@ -274,6 +292,14 @@ public final class CallAttributes implements Parcelable {
     }
 
     /**
+     * @return Whether the call is excluded from system call logs
+     */
+    @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS)
+    public boolean isLogExcluded() {
+        return mIsLogExcluded;
+    }
+
+    /**
      * @return The allowed capabilities of the new call
      */
     public @CallCapability int getCallCapabilities() {
@@ -293,6 +319,7 @@ public final class CallAttributes implements Parcelable {
         dest.writeInt(mDirection);
         dest.writeInt(mCallType);
         dest.writeInt(mCallCapabilities);
+        dest.writeBoolean(mIsLogExcluded);
     }
 
     /**
@@ -310,7 +337,8 @@ public final class CallAttributes implements Parcelable {
                                     android.net.Uri.class),
                             source.readInt(),
                             source.readInt(),
-                            source.readInt());
+                            source.readInt(),
+                            source.readBoolean());
                 }
 
                 @Override
@@ -338,6 +366,8 @@ public final class CallAttributes implements Parcelable {
                 .append(mCallType)
                 .append("], [mCallCapabilities=")
                 .append(mCallCapabilities)
+                .append("], [mIsLogExcluded=")
+                .append(mIsLogExcluded)
                 .append("]  }");
 
         return sb.toString();
@@ -357,7 +387,8 @@ public final class CallAttributes implements Parcelable {
                 && this.mCallCapabilities == that.mCallCapabilities
                 && Objects.equals(this.mPhoneAccountHandle, that.mPhoneAccountHandle)
                 && Objects.equals(this.mAddress, that.mAddress)
-                && Objects.equals(this.mDisplayName, that.mDisplayName);
+                && TextUtils.equals(this.mDisplayName, that.mDisplayName)
+                && this.mIsLogExcluded == that.mIsLogExcluded;
     }
 
     /**
@@ -366,6 +397,6 @@ public final class CallAttributes implements Parcelable {
     @Override
     public int hashCode() {
         return Objects.hash(mPhoneAccountHandle, mAddress, mDisplayName,
-                mDirection, mCallType, mCallCapabilities);
+                mDirection, mCallType, mCallCapabilities, mIsLogExcluded);
     }
 }
