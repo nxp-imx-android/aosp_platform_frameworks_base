@@ -46,9 +46,7 @@ import com.android.wm.shell.shared.desktopmode.DesktopState;
 import com.android.wm.shell.sysui.ShellInit;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -70,7 +68,6 @@ public class DisplayController {
 
     private final SparseArray<DisplayRecord> mDisplays = new SparseArray<>();
     private final ArrayList<OnDisplaysChangedListener> mDisplayChangedListeners = new ArrayList<>();
-    private final Map<Integer, RectF> mUnpopulatedDisplayBounds = new HashMap<>();
     private DisplayTopology mDisplayTopology;
 
     public DisplayController(Context context, IWindowManager wmService, ShellInit shellInit,
@@ -220,10 +217,6 @@ public class DisplayController {
             }
             final DisplayRecord record = new DisplayRecord(displayId, hasStatusAndNavBars);
             DisplayLayout displayLayout = record.createLayout(context, display);
-            if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
-                    && mUnpopulatedDisplayBounds.containsKey(displayId)) {
-                displayLayout.setGlobalBoundsDp(mUnpopulatedDisplayBounds.get(displayId));
-            }
             record.setDisplayLayout(context, displayLayout);
             mDisplays.put(displayId, record);
             for (int i = 0; i < mDisplayChangedListeners.size(); ++i) {
@@ -270,17 +263,10 @@ public class DisplayController {
         }
         mDisplayTopology = topology;
         SparseArray<RectF> absoluteBounds = topology.getAbsoluteBounds();
-        mUnpopulatedDisplayBounds.clear();
         for (int i = 0; i < absoluteBounds.size(); ++i) {
             int displayId = absoluteBounds.keyAt(i);
             DisplayLayout displayLayout = getDisplayLayout(displayId);
-            if (displayLayout == null) {
-                // onDisplayTopologyChanged can arrive before onDisplayAdded.
-                // Store the bounds to be applied later in onDisplayAdded.
-                Slog.d(TAG, "Storing bounds for onDisplayTopologyChanged on unknown"
-                        + " display, displayId=" + displayId);
-                mUnpopulatedDisplayBounds.put(displayId, absoluteBounds.valueAt(i));
-            } else {
+            if (displayLayout != null) {
                 displayLayout.setGlobalBoundsDp(absoluteBounds.valueAt(i));
             }
         }
@@ -309,11 +295,6 @@ public class DisplayController {
                     : mContext.createDisplayContext(display);
             final Context context = perDisplayContext.createConfigurationContext(newConfig);
             final DisplayLayout displayLayout = dr.createLayout(context, display);
-            if (mDisplayTopology != null) {
-                displayLayout.setGlobalBoundsDp(
-                        mDisplayTopology.getAbsoluteBounds().get(
-                                displayId, displayLayout.globalBoundsDp()));
-            }
             dr.setDisplayLayout(context, displayLayout);
             for (int i = 0; i < mDisplayChangedListeners.size(); ++i) {
                 mDisplayChangedListeners.get(i).onDisplayConfigurationChanged(
@@ -395,7 +376,7 @@ public class DisplayController {
         }
     }
 
-    private static class DisplayRecord {
+    private class DisplayRecord {
         private final int mDisplayId;
         private Context mContext;
         private DisplayLayout mDisplayLayout;
@@ -408,12 +389,20 @@ public class DisplayController {
         }
 
         private DisplayLayout createLayout(Context context, Display display) {
-            if (mDisplayId != Display.DEFAULT_DISPLAY && mHasStatusAndNavBars) {
-                return new DisplayLayout(context, display, true /* hasNavigationBar */,
-                        true /* hasTaskBar */);
-            } else {
-                return new DisplayLayout(context, display);
+            final boolean shouldInitWithSystemDecorations =
+                    mDisplayId != Display.DEFAULT_DISPLAY && mHasStatusAndNavBars;
+            final DisplayLayout layout = shouldInitWithSystemDecorations
+                    ? new DisplayLayout(
+                            context, display, true /* hasNavigationBar */, true /* hasTaskBar */)
+                    : new DisplayLayout(context, display);
+            if (DesktopExperienceFlags.ENABLE_CONNECTED_DISPLAYS_WINDOW_DRAG.isTrue()
+                    && mDisplayTopology != null) {
+                final RectF globalBounds = mDisplayTopology.getAbsoluteBounds().get(mDisplayId);
+                if (globalBounds != null) {
+                    layout.setGlobalBoundsDp(globalBounds);
+                }
             }
+            return layout;
         }
 
 
