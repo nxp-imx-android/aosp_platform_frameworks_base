@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Deze app is niet compatibel met 16 KB. APK-uitlijningscontrole mislukt. Deze app wordt uitgevoerd in de compatibele modus voor paginagrootte. Voor de beste compatibiliteit moet je de app opnieuw compileren met ondersteuning voor 16 KB. Zie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; voor meer informatie."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Deze app is niet compatibel met 16 KB. ELF-uitlijningscontrole mislukt. Deze app wordt uitgevoerd in de compatibele modus voor paginagrootte. Voor de beste compatibiliteit moet je de app opnieuw compileren met ondersteuning voor 16 KB. Zie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; voor meer informatie."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Deze app is niet compatibel met 16 KB. APK- en ELF-uitlijningscontroles mislukt. Deze app wordt uitgevoerd in de compatibele modus voor paginagrootte. Voor de beste compatibiliteit moet je de app opnieuw compileren met ondersteuning voor 16 KB. Zie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; voor meer informatie."</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Deze waarschuwing wordt getoond omdat dit een app is waarin fouten kunnen worden opgespoord en die op dit moment wordt getest. Als je niet de ontwikkelaar bent, meld je dit aan de ontwikkelaar en vraag je om een app waarin geen fouten kunnen worden opgespoord. Deze app is niet compatibel met 16 KB. APK-uitlijningscontrole mislukt. Volg de stappen op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Deze waarschuwing wordt getoond omdat dit een app is waarin fouten kunnen worden opgespoord en die op dit moment wordt getest. Als je niet de ontwikkelaar bent, meld je dit aan de ontwikkelaar en vraag je om een app waarin geen fouten kunnen worden opgespoord. Deze app is niet compatibel met 16 KB. ELF-uitlijningscontrole mislukt. Volg de stappen op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Deze waarschuwing wordt getoond omdat dit een app is waarin fouten kunnen worden opgespoord en die op dit moment wordt getest. Als je niet de ontwikkelaar bent, meld je dit aan de ontwikkelaar en vraag je om een app waarin geen fouten kunnen worden opgespoord. Deze app is niet compatibel met 16 KB. APK- en ELF-uitlijningscontroles mislukt. Volg de stappen op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"Niet meer tonen"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Service niet voorzien."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"U kunt de instelling voor de beller-ID niet wijzigen."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Mobiele data overgeschakeld naar <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Hiermee kan de app toegang krijgen tot trackinggegevens over de omgeving direct om je heen met veel details."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"toegang tot XR-gegevens terwijl de app niet op de voorgrond wordt gebruikt"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Hiermee kan de app toegang krijgen tot XR-gegevens terwijl de app niet op de voorgrond wordt gebruikt."</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"toetsen vastleggen"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Hiermee kan de app toetsen vastleggen voordat het systeem snelkoppelingen en acties kan verwerken."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Biometrische gegevens gebruiken"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Biometrische gegevens of schermvergrendeling gebruiken"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Je identiteit bevestigen"</string>
