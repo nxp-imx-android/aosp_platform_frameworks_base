@@ -36,3 +36,197 @@ android_test {
     ],
     data: ["trace_config/*"],
 }
+
+// Auto generated section, don't update it manually
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-CatchAll",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    exclude_filters: [
+        "com.android.wm.shell.flicker.DesktopModeBaseTest",
+        "com.android.wm.shell.flicker.fundamentals.CloseAllAppsViaAppHeaderExitTest",
+        "com.android.wm.shell.flicker.fundamentals.CloseAllAppsWithBackNavigationTest",
+        "com.android.wm.shell.flicker.fundamentals.EnterDesktopFromSplitScreenWithAppHandleMenuFlickerTest",
+        "com.android.wm.shell.flicker.fundamentals.EnterDesktopWithAppHandleMenuFlickerTest",
+        "com.android.wm.shell.flicker.fundamentals.ExitDesktopToFullScreenWithAppHeaderMenuFlickerTest",
+        "com.android.wm.shell.flicker.fundamentals.ExitDesktopToSplitScreenWithAppHeaderMenuFlickerTest",
+        "com.android.wm.shell.flicker.fundamentals.OpenAppFromAllAppsFlickerTest",
+        "com.android.wm.shell.flicker.fundamentals.OpenAppFromTaskbarFlickerTest",
+        "com.android.wm.shell.flicker.fundamentals.QuickSwitchBetweenDesktopAndFullscreenTest",
+        "com.android.wm.shell.flicker.fundamentals.SwitchFocusBetweenAppsTest",
+        "com.android.wm.shell.flicker.fundamentals.SwitchToHomeFromDesktopTest",
+        "com.android.wm.shell.flicker.resizing.ResizeAppToMaximumWindowSizeFlickerTest",
+        "com.android.wm.shell.flicker.resizing.ResizeAppToMinimumWindowSizeFlickerTest",
+        "com.android.wm.shell.flicker.resizing.ResizeAppWithCornerResizeFlickerTest",
+        "com.android.wm.shell.flicker.resizing.ResizeAppWithEdgeResizeMouseFlickerTest",
+        "com.android.wm.shell.flicker.resizing.ResizeAppWithEdgeResizeStylusFlickerTest",
+        "com.android.wm.shell.flicker.resizing.ResizeAppWithEdgeResizeTouchpadFlickerTest",
+        "com.android.wm.shell.flicker.tiling.TilingDividerResizingAppsFlickerTest",
+        "com.android.wm.shell.flicker.tiling.TilingDividerShownAfterHomeSwipeFlickerTest",
+        "com.android.wm.shell.flicker.tiling.TilingDividerShownAfterOverviewFlickerTest",
+        "com.android.wm.shell.flicker.tiling.TilingDividerShownHiddenFlickerTest",
+        "com.android.wm.shell.flicker.tiling.TilingPairBrokenWhenEnteringPipFlickerTest",
+    ],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-CloseAllAppsViaAppHeaderExitTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.CloseAllAppsViaAppHeaderExitTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-CloseAllAppsWithBackNavigationTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.CloseAllAppsWithBackNavigationTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-DesktopModeBaseTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.DesktopModeBaseTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-EnterDesktopFromSplitScreenWithAppHandleMenuFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.EnterDesktopFromSplitScreenWithAppHandleMenuFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-EnterDesktopWithAppHandleMenuFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.EnterDesktopWithAppHandleMenuFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-ExitDesktopToFullScreenWithAppHeaderMenuFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.ExitDesktopToFullScreenWithAppHeaderMenuFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-ExitDesktopToSplitScreenWithAppHeaderMenuFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.ExitDesktopToSplitScreenWithAppHeaderMenuFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-FocusBetweenAppsTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.SwitchFocusBetweenAppsTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-OpenAppFromAllAppsFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.OpenAppFromAllAppsFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-OpenAppFromTaskbarFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.OpenAppFromTaskbarFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-QuickSwitchBetweenDesktopAndFullscreenTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.QuickSwitchBetweenDesktopAndFullscreenTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-TilingDividerResizingAppsFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.tiling.TilingDividerResizingAppsFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-TilingDividerShownAfterHomeSwipeFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.tiling.TilingDividerShownAfterHomeSwipeFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-TilingDividerShownAfterOverviewFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.tiling.TilingDividerShownAfterOverviewFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-TilingDividerShownHiddenFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.tiling.TilingDividerShownHiddenFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-TilingPairBrokenWhenEnteringPipFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.tiling.TilingPairBrokenWhenEnteringPipFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-ToHomeFromDesktopTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.SwitchToHomeFromDesktopTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-zing-ResizeAppToMaximumWindowSizeFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.resizing.ResizeAppToMaximumWindowSizeFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-zing-ResizeAppToMinimumWindowSizeFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.resizing.ResizeAppToMinimumWindowSizeFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-zing-ResizeAppWithCornerResizeFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.resizing.ResizeAppWithCornerResizeFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-zing-ResizeAppWithEdgeResizeMouseFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.resizing.ResizeAppWithEdgeResizeMouseFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-zing-ResizeAppWithEdgeResizeStylusFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.resizing.ResizeAppWithEdgeResizeStylusFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-zing-ResizeAppWithEdgeResizeTouchpadFlickerTes",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.resizing.ResizeAppWithEdgeResizeTouchpadFlickerTest"],
+}
