@@ -591,9 +591,8 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         underTest = factory.create(entry) as NotificationEntryAdapter
 
         underTest.onBundleDisabled()
-        assertThat(underTest.isMarkedForUserTriggeredMovement).isTrue()
         verify(kosmos.mockVisualStabilityCoordinator)
-            .temporarilyAllowSectionChanges(eq(entry), anyLong())
+            .temporarilyAllowFreeMovement(eq(entry), anyLong())
     }
 
     @Test
@@ -630,8 +629,8 @@ class NotificationEntryAdapterTest : SysuiTestCase() {
         underTest = factory.create(summaryEntry) as NotificationEntryAdapter
         underTest.onBundleDisabled()
         verify(kosmos.mockVisualStabilityCoordinator)
-            .temporarilyAllowSectionChanges(eq(summaryEntry), anyLong())
+            .temporarilyAllowFreeMovement(eq(summaryEntry), anyLong())
         verify(kosmos.mockVisualStabilityCoordinator)
-            .temporarilyAllowSectionChanges(eq(childEntry), anyLong())
+            .temporarilyAllowFreeMovement(eq(childEntry), anyLong())
     }
 }

@@ -291,9 +291,7 @@ class NotificationEntryAdapter(
     }
 
     override fun onBundleDisabled() {
-        markForUserTriggeredMovement(true)
-        onImportanceChanged()
-
+        visualStabilityCoordinator.temporarilyAllowFreeMovement(entry, SystemClock.uptimeMillis())
         if (isGroupRoot()) {
             row.attachedChildren?.forEach { it.entryAdapter.onBundleDisabled() }
         }
