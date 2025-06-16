@@ -17,6 +17,7 @@
 package com.android.server.power;
 
 
+import static android.os.PowerManager.USER_ACTIVITY_FLAG_INDIRECT;
 import static android.os.PowerManagerInternal.WAKEFULNESS_ASLEEP;
 import static android.os.PowerManagerInternal.WAKEFULNESS_AWAKE;
 import static android.os.PowerManagerInternal.WAKEFULNESS_DOZING;
@@ -28,7 +29,7 @@ import static com.android.server.power.PowerManagerService.WAKE_LOCK_SCREEN_DIM;
 import static com.android.server.power.PowerManagerService.WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE;
 import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_NON_INTERACTIVE;
 import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_SCREEN_LOCK;
-import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_UNKNOWN;
+import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_NOT_ACQUIRED;
 import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_USER_ACTIVITY_ACCESSIBILITY;
 import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_USER_ACTIVITY_ATTENTION;
 import static com.android.server.power.ScreenTimeoutOverridePolicy.RELEASE_REASON_USER_ACTIVITY_BUTTON;
@@ -63,7 +64,7 @@ public class ScreenTimeoutOverridePolicyTest {
     private ScreenTimeoutOverridePolicy mScreenTimeoutOverridePolicy;
 
     private ScreenTimeoutOverridePolicy.PolicyCallback mPolicyCallback;
-    private int mReleaseReason = RELEASE_REASON_UNKNOWN;
+    private int mReleaseReason = RELEASE_REASON_NOT_ACQUIRED;
 
     @Before
     public void setUp() {
@@ -83,30 +84,53 @@ public class ScreenTimeoutOverridePolicyTest {
     @Test
     public void testUserActivity() {
         mScreenTimeoutOverridePolicy.onUserActivity(WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE,
-                PowerManager.USER_ACTIVITY_EVENT_ATTENTION);
+                PowerManager.USER_ACTIVITY_EVENT_ATTENTION, 0);
         verifyReason(RELEASE_REASON_USER_ACTIVITY_ATTENTION);
 
         mScreenTimeoutOverridePolicy.onUserActivity(WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE,
-                PowerManager.USER_ACTIVITY_EVENT_OTHER);
+                PowerManager.USER_ACTIVITY_EVENT_OTHER, 0);
         verifyReason(RELEASE_REASON_USER_ACTIVITY_OTHER);
 
         mScreenTimeoutOverridePolicy.onUserActivity(WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE,
-                PowerManager.USER_ACTIVITY_EVENT_BUTTON);
+                PowerManager.USER_ACTIVITY_EVENT_BUTTON, 0);
         verifyReason(RELEASE_REASON_USER_ACTIVITY_BUTTON);
 
         mScreenTimeoutOverridePolicy.onUserActivity(WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE,
-                PowerManager.USER_ACTIVITY_EVENT_TOUCH);
+                PowerManager.USER_ACTIVITY_EVENT_TOUCH, 0);
         verifyReason(RELEASE_REASON_USER_ACTIVITY_TOUCH);
 
         mScreenTimeoutOverridePolicy.onUserActivity(WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE,
-                PowerManager.USER_ACTIVITY_EVENT_ACCESSIBILITY);
+                PowerManager.USER_ACTIVITY_EVENT_ACCESSIBILITY, 0);
         verifyReason(RELEASE_REASON_USER_ACTIVITY_ACCESSIBILITY);
+    }
+
+    @Test
+    public void testUserActivityIndirect() {
+        mScreenTimeoutOverridePolicy.onUserActivity(WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE,
+                PowerManager.USER_ACTIVITY_EVENT_ATTENTION, USER_ACTIVITY_FLAG_INDIRECT);
+        verifyReason(RELEASE_REASON_NOT_ACQUIRED);
+
+        mScreenTimeoutOverridePolicy.onUserActivity(WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE,
+                PowerManager.USER_ACTIVITY_EVENT_OTHER, USER_ACTIVITY_FLAG_INDIRECT);
+        verifyReason(RELEASE_REASON_NOT_ACQUIRED);
+
+        mScreenTimeoutOverridePolicy.onUserActivity(WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE,
+                PowerManager.USER_ACTIVITY_EVENT_BUTTON, USER_ACTIVITY_FLAG_INDIRECT);
+        verifyReason(RELEASE_REASON_NOT_ACQUIRED);
+
+        mScreenTimeoutOverridePolicy.onUserActivity(WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE,
+                PowerManager.USER_ACTIVITY_EVENT_TOUCH, USER_ACTIVITY_FLAG_INDIRECT);
+        verifyReason(RELEASE_REASON_NOT_ACQUIRED);
+
+        mScreenTimeoutOverridePolicy.onUserActivity(WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE,
+                PowerManager.USER_ACTIVITY_EVENT_ACCESSIBILITY, USER_ACTIVITY_FLAG_INDIRECT);
+        verifyReason(RELEASE_REASON_NOT_ACQUIRED);
     }
 
     @Test
     public void testScreenWakeLock() {
         mScreenTimeoutOverridePolicy.checkScreenWakeLock(WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE);
-        verifyReason(RELEASE_REASON_UNKNOWN);
+        verifyReason(RELEASE_REASON_NOT_ACQUIRED);
 
         mScreenTimeoutOverridePolicy.checkScreenWakeLock(
                 WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE | WAKE_LOCK_SCREEN_BRIGHT);
@@ -126,11 +150,11 @@ public class ScreenTimeoutOverridePolicyTest {
     public void testWakefulnessChange() {
         mScreenTimeoutOverridePolicy.onWakefulnessChange(
                 WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE, WAKEFULNESS_AWAKE);
-        verifyReason(RELEASE_REASON_UNKNOWN);
+        verifyReason(RELEASE_REASON_NOT_ACQUIRED);
 
         mScreenTimeoutOverridePolicy.onWakefulnessChange(
                 WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE, WAKEFULNESS_DREAMING);
-        verifyReason(RELEASE_REASON_UNKNOWN);
+        verifyReason(RELEASE_REASON_NOT_ACQUIRED);
 
         mScreenTimeoutOverridePolicy.onWakefulnessChange(
                 WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE, WAKEFULNESS_ASLEEP);
@@ -143,6 +167,6 @@ public class ScreenTimeoutOverridePolicyTest {
 
     private void verifyReason(int expectedReason) {
         assertThat(mReleaseReason).isEqualTo(expectedReason);
-        mReleaseReason = RELEASE_REASON_UNKNOWN;
+        mReleaseReason = RELEASE_REASON_NOT_ACQUIRED;
     }
 }
