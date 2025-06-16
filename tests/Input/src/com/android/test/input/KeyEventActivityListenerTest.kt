@@ -25,7 +25,6 @@ import com.android.compatibility.common.util.PollingCheck
 import com.android.cts.input.CaptureEventActivity
 import com.android.cts.input.EvdevInputEventCodes
 import com.android.cts.input.UinputKeyboard
-import com.android.hardware.input.Flags.FLAG_KEY_EVENT_ACTIVITY_DETECTION
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertTrue
@@ -39,7 +38,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 
-@RequiresFlagsEnabled(FLAG_KEY_EVENT_ACTIVITY_DETECTION)
+@RequiresFlagsEnabled(com.android.hardware.input.Flags.FLAG_KEY_EVENT_ACTIVITY_DETECTION)
 class KeyEventActivityListenerTest {
     private lateinit var inputManager: InputManager
     private lateinit var listener: InputManager.KeyEventActivityListener
