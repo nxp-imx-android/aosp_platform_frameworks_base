@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.notification.collection.provider
 
 import com.android.internal.statusbar.NotificationVisibility
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.statusbar.notification.collection.NotifLiveDataStore
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider
@@ -32,7 +31,6 @@ class NotificationVisibilityProviderImpl
 @Inject
 constructor(
     private val activeNotificationsInteractor: ActiveNotificationsInteractor,
-    private val notifDataStore: NotifLiveDataStore,
     private val notifCollection: CommonNotifCollection,
 ) : NotificationVisibilityProvider {
 

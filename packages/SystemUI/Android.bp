@@ -377,7 +377,6 @@ filegroup {
         "tests/src/**/systemui/statusbar/notification/collection/coordinator/ViewConfigCoordinatorTest.kt",
         "tests/src/**/systemui/statusbar/notification/collection/coordinator/StackCoordinatorTest.kt",
         "tests/src/**/systemui/statusbar/notification/collection/coordinator/ShadeEventCoordinatorTest.kt",
-        "tests/src/**/systemui/statusbar/notification/collection/coordinator/DataStoreCoordinatorTest.kt",
         "tests/src/**/systemui/statusbar/notification/collection/coordinator/RowAppearanceCoordinatorTest.kt",
         "tests/src/**/systemui/statusbar/notification/RoundableTest.kt",
         "tests/src/**/systemui/stylus/StylusUsiPowerUiTest.kt",

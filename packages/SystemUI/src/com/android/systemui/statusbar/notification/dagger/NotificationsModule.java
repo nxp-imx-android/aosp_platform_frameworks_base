@@ -41,8 +41,6 @@ import com.android.systemui.statusbar.notification.VisibilityLocationProvider;
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory;
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl;
 import com.android.systemui.statusbar.notification.collection.NotifInflaterImpl;
-import com.android.systemui.statusbar.notification.collection.NotifLiveDataStore;
-import com.android.systemui.statusbar.notification.collection.NotifLiveDataStoreImpl;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotifPipelineChoreographerModule;
 import com.android.systemui.statusbar.notification.collection.coordinator.ShadeEventCoordinator;
@@ -266,10 +264,6 @@ public interface NotificationsModule {
     /** */
     @Binds
     BindEventManager bindBindEventManagerImpl(BindEventManagerImpl bindEventManagerImpl);
-
-    /** */
-    @Binds
-    NotifLiveDataStore bindNotifLiveDataStore(NotifLiveDataStoreImpl notifLiveDataStoreImpl);
 
     /** */
     @Binds
