@@ -270,7 +270,7 @@ constructor(
     @JvmField val primaryBouncerShowing: StateFlow<Boolean> = bouncerRepository.primaryBouncerShow
 
     /** Whether the alternate bouncer is showing or not. */
-    val alternateBouncerShowing: Flow<Boolean> = bouncerRepository.alternateBouncerVisible
+    val alternateBouncerShowing: StateFlow<Boolean> = bouncerRepository.alternateBouncerVisible
 
     /** Observable for the [StatusBarState] */
     val statusBarState: StateFlow<StatusBarState> = repository.statusBarState
