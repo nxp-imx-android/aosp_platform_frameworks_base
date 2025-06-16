@@ -1449,7 +1449,8 @@ public class RecentTasksTest extends WindowTestsBase {
                 Surface.ROTATION_0, taskSize, new Rect() /* contentInsets */,
                 new Rect() /* letterboxInsets*/, false /* isLowResolution */,
                 true /* isRealSnapshot */, WINDOWING_MODE_FULLSCREEN, 0 /* mSystemUiVisibility */,
-                false /* isTranslucent */, false /* hasImeSurface */, 0 /* uiMode */);
+                false /* isTranslucent */, false /* hasImeSurface */, 0 /* uiMode */,
+                300 /* densityDpi */);
     }
 
     /**
