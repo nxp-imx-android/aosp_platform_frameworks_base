@@ -3110,6 +3110,10 @@ public class AudioDeviceBroker {
         return mDeviceInventory.findBtDeviceStateForAddress(address, deviceType);
     }
 
+    boolean hasAlwaysRingDevice() {
+        return mDeviceInventory.hasAlwaysRingDevice();
+    }
+
     void addAudioDeviceWithCategoryInInventoryIfNeeded(@NonNull String address,
             @AudioDeviceCategory int btAudioDeviceCategory) {
         mDeviceInventory.addAudioDeviceWithCategoryInInventoryIfNeeded(address,

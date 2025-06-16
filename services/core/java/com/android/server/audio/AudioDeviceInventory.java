@@ -534,6 +534,39 @@ public class AudioDeviceInventory {
     }
 
     /**
+     * Whether there's a connected device that should always ring (outside of silent mode)
+     * Writes are protected by mDevicesLock, reads are atomic in {@link #hasAlwaysRingDevice()}
+     */
+    private final AtomicBoolean mAlwaysRingDeviceConnected = new AtomicBoolean(false);
+
+    /**
+     * @return whether there's a connected device that should always ring (outside of silent mode)
+     */
+    boolean hasAlwaysRingDevice() {
+        return mAlwaysRingDeviceConnected.get();
+    }
+
+    /**
+     * Holds the list of native device types that are candidates for "always ring"
+     */
+    private static final Set<Integer> ALWAYS_RING_DEVICE_CANDIDATES;
+    /**
+     * Holds the list of device categories that are "always ring"
+     */
+    private static final Set<Integer> ALWAYS_RING_CATEGORIES;
+
+    static {
+        ALWAYS_RING_DEVICE_CANDIDATES = new HashSet<>();
+        ALWAYS_RING_DEVICE_CANDIDATES.addAll(DEVICE_OUT_ALL_SCO_SET);
+        ALWAYS_RING_DEVICE_CANDIDATES.add(DEVICE_OUT_BLE_HEADSET);
+
+        ALWAYS_RING_CATEGORIES = new HashSet<>();
+        ALWAYS_RING_CATEGORIES.add(AudioManager.AUDIO_DEVICE_CATEGORY_HEADPHONES);
+        ALWAYS_RING_CATEGORIES.add(AudioManager.AUDIO_DEVICE_CATEGORY_CARKIT);
+    }
+
+
+    /**
      * List of devices actually connected to AudioPolicy (through AudioSystem).
      * Each entry is a String, generated from {@link DeviceInfo#getKey()}.
      * An entry is added when a device is successfully made available to AudioPolicy.
@@ -863,6 +896,7 @@ public class AudioDeviceInventory {
                     mDeviceBroker.onSetBtScoActiveDevice(null, false /*deviceSwitch*/);
                 }
             }
+            updateAlwaysRingDeviceConnected();
 
             mAppliedStrategyRolesInt.clear();
             mAppliedPresetRolesInt.clear();
@@ -3247,6 +3281,25 @@ public class AudioDeviceInventory {
                         new Exception());
             }
         }
+        updateAlwaysRingDeviceConnected();
+    }
+
+    @GuardedBy("mDevicesLock")
+    private void updateAlwaysRingDeviceConnected() {
+        boolean foundAlwaysRingDevice = false;
+        for (DeviceInfo devInfo : mConnectedDevices.values()) {
+            // device type is candidate?
+            if (ALWAYS_RING_DEVICE_CANDIDATES.contains(devInfo.mDeviceType)) {
+                AdiDeviceState ads = findBtDeviceStateForAddress(
+                        devInfo.mDeviceAddress, devInfo.mDeviceType);
+                // device category is a match?
+                if (ads != null && ALWAYS_RING_CATEGORIES.contains(ads.getAudioDeviceCategory())) {
+                    foundAlwaysRingDevice = true;
+                    break;
+                }
+            }
+        }
+        mAlwaysRingDeviceConnected.set(foundAlwaysRingDevice);
     }
 
     /**
@@ -3271,6 +3324,7 @@ public class AudioDeviceInventory {
                         new Exception());
             }
         }
+        updateAlwaysRingDeviceConnected();
     }
 
     //----------------------------------------------------------
