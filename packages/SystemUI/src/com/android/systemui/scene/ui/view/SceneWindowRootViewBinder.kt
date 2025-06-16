@@ -50,7 +50,9 @@ import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.scene.ui.composable.SceneContainer
 import com.android.systemui.scene.ui.viewmodel.DualShadeEducationalTooltipsViewModel
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
+import com.android.systemui.shade.ui.composable.WithStatusIconContext
 import com.android.systemui.statusbar.notification.stack.ui.view.SharedNotificationContainer
+import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitCancellation
@@ -76,6 +78,7 @@ object SceneWindowRootViewBinder {
         dataSourceDelegator: SceneDataSourceDelegator,
         qsSceneAdapter: Provider<QSSceneAdapter>,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
+        tintedIconManagerFactory: TintedIconManager.Factory,
     ) {
         val unsortedSceneByKey: Map<SceneKey, Scene> = scenes.associateBy { scene -> scene.key }
         val sortedSceneByKey: Map<SceneKey, Scene> =
@@ -128,6 +131,7 @@ object SceneWindowRootViewBinder {
                                 qsSceneAdapter = qsSceneAdapter,
                                 containerConfig = containerConfig,
                                 sceneJankMonitorFactory = sceneJankMonitorFactory,
+                                tintedIconManagerFactory = tintedIconManagerFactory,
                             )
                             .also { it.id = R.id.scene_container_root_composable }
                     )
@@ -175,6 +179,7 @@ object SceneWindowRootViewBinder {
         qsSceneAdapter: Provider<QSSceneAdapter>,
         containerConfig: SceneContainerConfig,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
+        tintedIconManagerFactory: TintedIconManager.Factory,
     ): View {
         return ComposeView(context).apply {
             setContent {
@@ -183,17 +188,19 @@ object SceneWindowRootViewBinder {
                         displayCutout = displayCutoutFromWindowInsets(scope, context, windowInsets),
                         screenCornerRadius = ScreenDecorationsUtils.getWindowCornerRadius(context),
                     ) {
-                        SceneContainer(
-                            viewModel = viewModel,
-                            sceneByKey = sceneByKey,
-                            overlayByKey = overlayByKey,
-                            initialSceneKey = containerConfig.initialSceneKey,
-                            transitionsBuilder = containerConfig.transitionsBuilder,
-                            dataSourceDelegator = dataSourceDelegator,
-                            qsSceneAdapter = qsSceneAdapter,
-                            sceneJankMonitorFactory = sceneJankMonitorFactory,
-                            modifier = Modifier.sysUiResTagContainer(),
-                        )
+                        WithStatusIconContext(tintedIconManagerFactory = tintedIconManagerFactory) {
+                            SceneContainer(
+                                viewModel = viewModel,
+                                sceneByKey = sceneByKey,
+                                overlayByKey = overlayByKey,
+                                initialSceneKey = containerConfig.initialSceneKey,
+                                transitionsBuilder = containerConfig.transitionsBuilder,
+                                dataSourceDelegator = dataSourceDelegator,
+                                qsSceneAdapter = qsSceneAdapter,
+                                sceneJankMonitorFactory = sceneJankMonitorFactory,
+                                modifier = Modifier.sysUiResTagContainer(),
+                            )
+                        }
                     }
                 }
             }
