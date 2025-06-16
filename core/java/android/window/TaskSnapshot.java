@@ -380,8 +380,7 @@ public class TaskSnapshot implements Parcelable {
      */
     public synchronized void removeReference(@ReferenceFlags int usage) {
         mInternalReferences &= ~usage;
-        if (Flags.releaseSnapshotAggressively() && mInternalReferences == 0 && mSnapshot != null
-                && !mSnapshot.isClosed()) {
+        if (mInternalReferences == 0 && mSnapshot != null && !mSnapshot.isClosed()) {
             if (mSafeSnapshotReleaser != null) {
                 mSafeSnapshotReleaser.accept(mSnapshot);
             } else {
