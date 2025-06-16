@@ -1807,6 +1807,7 @@ public abstract class WMShellModule {
             Optional<DesktopUserRepositories> desktopUserRepositories,
             FocusTransitionObserver focusTransitionObserver,
             DisplayImeController displayImeController,
+            Optional<DesktopModeWindowDecorViewModel> desktopModeWindowDecorViewModel,
             DisplayController displayController,
             ShellTaskOrganizer shellTaskOrganizer,
             Transitions transitions,
@@ -1821,7 +1822,8 @@ public abstract class WMShellModule {
         return Optional.of(
                 new DesktopImeHandler(desktopTasksController.get(), desktopUserRepositories.get(),
                         focusTransitionObserver, shellTaskOrganizer,
-                        displayImeController, displayController, transitions, mainExecutor,
+                        displayImeController, desktopModeWindowDecorViewModel, displayController,
+                        transitions, mainExecutor,
                         animExecutor, context, shellInit));
     }
 
