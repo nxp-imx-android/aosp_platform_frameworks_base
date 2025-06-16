@@ -2050,3 +2050,13 @@ flag {
     description: "Migrate from the old remote animation APIs to the new Shell RemoteTransition-based ones."
     bug: "397180418"
 }
+
+flag {
+    name: "lowlight_clock_uses_keyguard_charging_status"
+    namespace: "systemui"
+    description: "Make sure keyguard and low-light clock show the same charging status."
+    bug: "424297980"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
