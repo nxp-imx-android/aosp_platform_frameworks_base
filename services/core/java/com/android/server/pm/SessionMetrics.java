@@ -27,22 +27,12 @@ import android.content.pm.verify.developer.DeveloperVerificationStatus;
 import android.os.Handler;
 
 import com.android.internal.util.FrameworkStatsLog;
+import com.android.server.pm.verify.developer.DeveloperVerificationStatusInternal;
 
 import java.util.Arrays;
 
 final class SessionMetrics {
     private static final String TAG = "SessionMetrics";
-
-    public enum DeveloperVerifierResponse {
-        COMPLETE_WITH_PASS,
-        COMPLETE_WITH_REJECT,
-        INCOMPLETE_UNKNOWN,
-        INCOMPLETE_NETWORK,
-        TIMEOUT,
-        DISCONNECTED,
-        OTHER
-    }
-
     private final Handler mHandler;
     private final int mSessionId;
     private final int mUserId;
@@ -97,8 +87,8 @@ final class SessionMetrics {
     private boolean mIsDeveloperVerificationTimeoutExtensionRequested = false;
     private final boolean mHasDeveloperVerificationExtensionParams;
     private boolean mIsDeveloperVerificationPolicyOverridden = false;
-    @Nullable
-    private DeveloperVerifierResponse mDeveloperVerifierResponse = null;
+    private DeveloperVerificationStatusInternal mDeveloperVerificationStatus =
+            DeveloperVerificationStatusInternal.UNKNOWN;
     private @DeveloperVerificationStatus.AppMetadataVerificationStatus int mAslStatus;
     private @PackageInstaller.DeveloperVerificationPolicy int mDeveloperVerificationPolicyOverride;
     private boolean mWasDeveloperVerificationUserActionRequired = false;
@@ -107,7 +97,6 @@ final class SessionMetrics {
     private @PackageInstaller.DeveloperVerificationUserResponse int
             mDeveloperVerificationUserResponse;
     private int mDeveloperVerificationRetryCount;
-    private boolean mDeveloperVerificationLiteEnabled = false;
     private @PackageInstaller.DeveloperVerificationFailedReason int
             mDeveloperVerificationFailureReason;
     @Nullable
@@ -234,8 +223,8 @@ final class SessionMetrics {
         mDeveloperVerificationPolicyOverride = defaultDeveloperVerificationPolicy;
     }
 
-    public void onDeveloperVerifierResponseReceived(DeveloperVerifierResponse response) {
-        mDeveloperVerifierResponse = response;
+    public void onDeveloperVerificationFinished(DeveloperVerificationStatusInternal status) {
+        mDeveloperVerificationStatus = status;
         final long responseReceivedMillis = System.currentTimeMillis();
         if (mDeveloperVerifierRequestSentMillis != 0
                 && mDeveloperVerifierRetryRequestSentMillis == 0) {
@@ -249,11 +238,6 @@ final class SessionMetrics {
         }
     }
 
-    public void onAslStatusReceived(
-            @DeveloperVerificationStatus.AppMetadataVerificationStatus int aslStatus) {
-        mAslStatus = aslStatus;
-    }
-
     public void onDeveloperVerificationUserActionRequired(
             @PackageInstaller.DeveloperVerificationUserConfirmationInfo.UserActionNeededReason int
                     reason) {
@@ -264,10 +248,6 @@ final class SessionMetrics {
     public void onDeveloperVerificationUserResponseReceived(
             @PackageInstaller.DeveloperVerificationUserResponse int response) {
         mDeveloperVerificationUserResponse = response;
-    }
-
-    public void onDeveloperVerificationLiteEnabled() {
-        mDeveloperVerificationLiteEnabled = true;
     }
 
     public void onDeveloperVerificationFailed(
@@ -338,15 +318,17 @@ final class SessionMetrics {
                         mHasDeveloperVerificationExtensionParams,
                         mIsDeveloperVerificationPolicyOverridden,
                         getTranslatedPolicyCodeForStats(mDeveloperVerificationPolicyOverride),
-                        getTranslatedResponseCodeForStats(mDeveloperVerifierResponse),
-                        getTranslatedAslStatusForStats(mAslStatus),
+                        getTranslatedResponseCodeForStats(
+                                mDeveloperVerificationStatus.getInternalStatus()),
+                        getTranslatedAppMetadataVerificationStatusForStats(
+                                mDeveloperVerificationStatus.getAppMetadataVerificationStatus()),
                         mWasDeveloperVerificationUserActionRequired,
                         getTranslatedDeveloperVerificationUserActionReasonForStats(
                                 mDeveloperVerificationUserActionRequiredReason),
                         getTranslatedDeveloperVerificationUserResponseForStats(
                                 mDeveloperVerificationUserResponse),
                         mDeveloperVerificationRetryCount,
-                        mDeveloperVerificationLiteEnabled,
+                        mDeveloperVerificationStatus.isLiteVerification(),
                         getTranslatedDeveloperVerificationFailedReasonForStats(
                                 mDeveloperVerificationFailureReason),
                         mPackageNameWhenDeveloperVerificationFailed,
@@ -450,31 +432,29 @@ final class SessionMetrics {
         };
     }
 
-    private static int getTranslatedResponseCodeForStats(@Nullable DeveloperVerifierResponse response) {
-        if (response == null) {
-            return FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ADI_VERIFIER_RESPONSE__RESPONSE_UNSPECIFIED;
-        }
-        return switch (response) {
-            case COMPLETE_WITH_PASS ->
+    private static int getTranslatedResponseCodeForStats(
+            @DeveloperVerificationStatusInternal.Status int internalStatus) {
+        return switch (internalStatus) {
+            case DeveloperVerificationStatusInternal.STATUS_COMPLETED_WITH_PASS ->
                     FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ADI_VERIFIER_RESPONSE__RESPONSE_COMPLETE_WITH_PASS;
-            case COMPLETE_WITH_REJECT ->
+            case DeveloperVerificationStatusInternal.STATUS_COMPLETED_WITH_REJECT ->
                     FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ADI_VERIFIER_RESPONSE__RESPONSE_COMPLETE_WITH_REJECT;
-            case INCOMPLETE_UNKNOWN ->
+            case DeveloperVerificationStatusInternal.STATUS_INCOMPLETE_UNKNOWN ->
                     FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ADI_VERIFIER_RESPONSE__RESPONSE_INCOMPLETE_UNKNOWN;
-            case INCOMPLETE_NETWORK ->
+            case DeveloperVerificationStatusInternal.STATUS_INCOMPLETE_NETWORK_UNAVAILABLE ->
                     FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ADI_VERIFIER_RESPONSE__RESPONSE_INCOMPLETE_NETWORK_UNAVAILABLE;
-            case TIMEOUT ->
+            case DeveloperVerificationStatusInternal.STATUS_TIMEOUT ->
                     FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ADI_VERIFIER_RESPONSE__RESPONSE_TIMEOUT;
-            case DISCONNECTED ->
+            case DeveloperVerificationStatusInternal.STATUS_DISCONNECTED ->
                     FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ADI_VERIFIER_RESPONSE__RESPONSE_MODULE_DISCONNECTED;
-            case OTHER ->
+            case DeveloperVerificationStatusInternal.STATUS_INFEASIBLE ->
                     FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ADI_VERIFIER_RESPONSE__RESPONSE_OTHER;
             default ->
                     FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ADI_VERIFIER_RESPONSE__RESPONSE_UNSPECIFIED;
         };
     }
 
-    private static int getTranslatedAslStatusForStats(
+    private static int getTranslatedAppMetadataVerificationStatusForStats(
             @DeveloperVerificationStatus.AppMetadataVerificationStatus int aslStatus) {
         return switch (aslStatus) {
             case DeveloperVerificationStatus.APP_METADATA_VERIFICATION_STATUS_GOOD ->

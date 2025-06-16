@@ -2556,6 +2556,10 @@ final class InstallPackageHelper {
                 // cases.
                 ps.setSplitNames(null);
                 ps.setSplitRevisionCodes(null);
+
+                // Store the developer verification result in the package setting
+                ps.setDeveloperVerificationStatusInternal(
+                        installRequest.getDeveloperVerificationStatus());
             }
             installRequest.onCommitFinished();
         }

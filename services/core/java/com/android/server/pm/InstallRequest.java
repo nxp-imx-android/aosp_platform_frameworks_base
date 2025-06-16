@@ -58,6 +58,7 @@ import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageState;
 import com.android.server.pm.pkg.PackageStateInternal;
 import com.android.server.pm.pkg.PackageUserStateInternal;
+import com.android.server.pm.verify.developer.DeveloperVerificationStatusInternal;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -172,6 +173,8 @@ final class InstallRequest {
     private boolean mKeepArtProfile = false;
     private final boolean mDependencyInstallerEnabled;
     private final int mMissingSharedLibraryCount;
+    @Nullable
+    private final DeveloperVerificationStatusInternal mDeveloperVerificationStatus;;
 
     // New install
     InstallRequest(InstallingSession params) {
@@ -194,6 +197,7 @@ final class InstallRequest {
         mHasAppMetadataFileFromInstaller = params.mHasAppMetadataFile;
         mDependencyInstallerEnabled = params.mDependencyInstallerEnabled;
         mMissingSharedLibraryCount = params.mMissingSharedLibraryCount;
+        mDeveloperVerificationStatus = params.mDeveloperVerificationStatus;
     }
 
     // Install existing package as user
@@ -215,6 +219,7 @@ final class InstallRequest {
         mHasAppMetadataFileFromInstaller = false;
         mDependencyInstallerEnabled = false;
         mMissingSharedLibraryCount = 0;
+        mDeveloperVerificationStatus = null;
     }
 
     // addForInit
@@ -239,6 +244,7 @@ final class InstallRequest {
         mHasAppMetadataFileFromInstaller = false;
         mDependencyInstallerEnabled = false;
         mMissingSharedLibraryCount = 0;
+        mDeveloperVerificationStatus = null;
     }
 
     @Nullable
@@ -1097,5 +1103,9 @@ final class InstallRequest {
 
     boolean isDependencyInstallerEnabled() {
         return mDependencyInstallerEnabled;
+    }
+
+    DeveloperVerificationStatusInternal getDeveloperVerificationStatus() {
+        return mDeveloperVerificationStatus;
     }
 }

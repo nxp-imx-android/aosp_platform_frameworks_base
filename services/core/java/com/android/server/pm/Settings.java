@@ -124,6 +124,7 @@ import com.android.server.pm.pkg.PackageUserStateInternal;
 import com.android.server.pm.pkg.SharedUserApi;
 import com.android.server.pm.pkg.SuspendParams;
 import com.android.server.pm.resolution.ComponentResolver;
+import com.android.server.pm.verify.developer.DeveloperVerificationStatusInternal;
 import com.android.server.pm.verify.domain.DomainVerificationLegacySettings;
 import com.android.server.pm.verify.domain.DomainVerificationManagerInternal;
 import com.android.server.pm.verify.domain.DomainVerificationPersistence;
@@ -384,6 +385,15 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
     private static final String ATTR_ARCHIVE_ICON_PATH = "icon-path";
     private static final String ATTR_ARCHIVE_MONOCHROME_ICON_PATH = "monochrome-icon-path";
     private static final String ATTR_ARCHIVE_TIME = "archive-time";
+
+    private static final String ATTR_HAS_DEVELOPER_VERIFICATION_STATUS =
+            "has-developer-verification-status";
+    private static final String ATTR_DEVELOPER_VERIFICATION_STATUS =
+            "developer-verification-status";
+    private static final String ATTR_APP_METADATA_VERIFICATION_STATUS =
+            "app-metadata-verification-status";
+    private static final String ATTR_IS_LITE_VERIFICATION =
+            "is_lite_verification";
 
     private final Handler mHandler;
 
@@ -3341,7 +3351,17 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                 != ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED) {
             serializer.attributeInt(null, "pageSizeCompat", pkg.getPageSizeAppCompatFlags());
         }
-
+        if (pkg.getDeveloperVerificationStatusInternal() != null) {
+            final DeveloperVerificationStatusInternal developerVerificationStatusInternal =
+                    pkg.getDeveloperVerificationStatusInternal();
+            serializer.attributeBoolean(null, ATTR_HAS_DEVELOPER_VERIFICATION_STATUS, true);
+            serializer.attributeInt(null, ATTR_DEVELOPER_VERIFICATION_STATUS,
+                    developerVerificationStatusInternal.getInternalStatus());
+            serializer.attributeInt(null, ATTR_APP_METADATA_VERIFICATION_STATUS,
+                    developerVerificationStatusInternal.getAppMetadataVerificationStatus());
+            serializer.attributeBoolean(null, ATTR_IS_LITE_VERIFICATION,
+                    developerVerificationStatusInternal.isLiteVerification());
+        }
         serializer.attributeFloat(null, "loadingProgress", pkg.getLoadingProgress());
         serializer.attributeLongHex(null, "loadingCompletedTime", pkg.getLoadingCompletedTime());
 
@@ -4165,6 +4185,8 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         boolean isSdkLibrary = false;
         int baseRevisionCode = 0;
         int PageSizeCompat = 0;
+        DeveloperVerificationStatusInternal developerVerificationStatusInternal = null;
+
         try {
             name = parser.getAttributeValue(null, ATTR_NAME);
             realName = parser.getAttributeValue(null, "realName");
@@ -4218,6 +4240,20 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                 "scannedAsStoppedSystemApp", false);
 
             String domainSetIdString = parser.getAttributeValue(null, "domainSetId");
+
+            final boolean hasDeveloperVerificationStatus = parser.getAttributeBoolean(null,
+                    ATTR_HAS_DEVELOPER_VERIFICATION_STATUS, false);
+            if (hasDeveloperVerificationStatus) {
+                final int developerVerificationStatus = parser.getAttributeInt(null,
+                        ATTR_DEVELOPER_VERIFICATION_STATUS);
+                final int appMetadataVerificationStatus = parser.getAttributeInt(null,
+                        ATTR_APP_METADATA_VERIFICATION_STATUS);
+                boolean isLiteVerification = parser.getAttributeBoolean(null,
+                        ATTR_IS_LITE_VERIFICATION, false);
+                developerVerificationStatusInternal = new DeveloperVerificationStatusInternal(
+                        developerVerificationStatus, appMetadataVerificationStatus,
+                        isLiteVerification);
+            }
 
             if (TextUtils.isEmpty(domainSetIdString)) {
                 // If empty, assume restoring from previous platform version and generate an ID
@@ -4369,7 +4405,8 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
                     .setBaseRevisionCode(baseRevisionCode)
                     .setRestrictUpdateHash(restrictUpdateHash)
                     .setScannedAsStoppedSystemApp(isScannedAsStoppedSystemApp)
-                    .setPageSizeAppCompatFlags(PageSizeCompat);
+                    .setPageSizeAppCompatFlags(PageSizeCompat)
+                    .setDeveloperVerificationStatusInternal(developerVerificationStatusInternal);
             // Handle legacy string here for single-user mode
             final String enabledStr = parser.getAttributeValue(null, ATTR_ENABLED);
             if (enabledStr != null) {
@@ -5257,6 +5294,13 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
             pw.print("  pageSizeCompat=");
             pw.print(ps.getPageSizeAppCompatFlags());
             pw.println();
+            if (ps.getDeveloperVerificationStatusInternal() != null) {
+                pw.println();
+                pw.print(prefix);
+                pw.print("  developerVerificationStatus=");
+                pw.print(ps.getDeveloperVerificationStatusInternal().toString());
+                pw.println();
+            }
             if (!ps.getPkg().getQueriesPackages().isEmpty()) {
                 pw.append(prefix).append("  queriesPackages=")
                         .println(ps.getPkg().getQueriesPackages());
