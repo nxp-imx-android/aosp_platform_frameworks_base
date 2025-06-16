@@ -214,11 +214,46 @@ public class NotificationTest {
     }
 
     @Test
-    public void testHasCompletedProgress_zeroMax() {
-        Notification n = new Notification.Builder(mContext)
+    @EnableFlags(Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION)
+    public void getProgressState_indeterminate_ongoing() {
+        Notification n1 = new Notification.Builder(mContext)
                 .setProgress(0, 0, true)
                 .build();
-        assertFalse(n.hasCompletedProgress());
+        assertThat(n1.getProgressState()).isEqualTo(Notification.PROGRESS_STATE_ONGOING);
+
+        // Ignores max and progress.
+        Notification n2 = new Notification.Builder(mContext)
+                .setProgress(100, 100, true)
+                .build();
+        Notification n3 = new Notification.Builder(mContext)
+                .setProgress(100, 50, true)
+                .build();
+        assertThat(n2.getProgressState()).isEqualTo(Notification.PROGRESS_STATE_ONGOING);
+        assertThat(n3.getProgressState()).isEqualTo(Notification.PROGRESS_STATE_ONGOING);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION)
+    public void getProgressState_noProgress_none() {
+        Notification n = new Notification.Builder(mContext).build();
+        assertThat(n.getProgressState()).isEqualTo(Notification.PROGRESS_STATE_NONE);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION)
+    public void getProgressState_atMax_complete() {
+        Notification n = new Notification.Builder(mContext)
+                .setProgress(10, 10, false)
+                .build();
+        assertThat(n.getProgressState()).isEqualTo(Notification.PROGRESS_STATE_COMPLETE);
+    }
+
+    @Test
+    public void getProgressState_notAtMax_ongoing() {
+        Notification n = new Notification.Builder(mContext)
+                .setProgress(10, 4, false)
+                .build();
+        assertThat(n.getProgressState()).isEqualTo(Notification.PROGRESS_STATE_ONGOING);
     }
 
     @Test
