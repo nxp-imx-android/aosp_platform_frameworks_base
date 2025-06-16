@@ -79,8 +79,7 @@ class AutoclickPanelTests {
         uiDevice = UiDevice.getInstance(instrumentation)
 
         // Move the cursor to the edge of the screen once to trigger the Autoclick panel creation.
-        var bounds = windowManager.currentWindowMetrics.bounds
-        desktopMouseTestRule.move(DEFAULT_DISPLAY, bounds.width() - 1, bounds.height() - 1)
+        desktopMouseTestRule.move(DEFAULT_DISPLAY, 0, 0)
     }
 
     private fun findObject(selector: BySelector): UiObject2 {
@@ -100,12 +99,23 @@ class AutoclickPanelTests {
         uiDevice.waitForIdle(DELAY_FOR_ANIMATION.inWholeMilliseconds)
     }
 
-    private fun clickLeftClickButton() {
-        clickClickTypeButton(LEFT_CLICK_BUTTON_LAYOUT_ID)
-    }
-
     private fun clickLongPressButton() {
+
+        if (!isAutoclickPanelOpen()) {
+            clickClickTypeButton(CLICK_TYPE_BUTTON_GROUP_ID)
+
+            // Wait for the panel to fully open before attempting to select a click type.
+            waitAndAssert {
+                isAutoclickPanelOpen()
+            }
+        }
+
         clickClickTypeButton(LONG_PRESS_BUTTON_LAYOUT_ID)
+
+        // Wait for the panel to close as the signal that the click type was selected.
+        waitAndAssert {
+            !isAutoclickPanelOpen()
+        }
     }
 
     private fun clickPositionButton() {
@@ -159,9 +169,6 @@ class AutoclickPanelTests {
 
     @Test
     fun switchClickType_LongPressClickTypeIsSelected() {
-        // Click the left click button to open the panel.
-        clickLeftClickButton()
-
         // Click the long press button then verify only the long press button is visible with all
         // other click type buttons hidden.
         clickLongPressButton()
