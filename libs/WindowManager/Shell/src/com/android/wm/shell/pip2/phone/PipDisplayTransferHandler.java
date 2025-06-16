@@ -203,18 +203,19 @@ public class PipDisplayTransferHandler implements
     public void showDragMirrorOnConnectedDisplays(RectF globalDpPipBounds, int focusedDisplayId) {
         final Transaction transaction = mSurfaceControlTransactionFactory.getTransaction();
         mIsMirrorShown = false;
+        // If PiP is on a display that's not in the topology, don't show drag mirrors on other
+        // displays because it can't be dragged over.
+        if (!mDisplayController.isDisplayInTopology(focusedDisplayId)) return;
+
         // Iterate through each connected display ID to ensure partial PiP bounds are shown on
         // all corresponding displays while dragging
         for (int displayId : mRootTaskDisplayAreaOrganizer.getDisplayIds()) {
             DisplayLayout displayLayout = mDisplayController.getDisplayLayout(displayId);
             if (displayLayout == null) continue;
 
-            boolean shouldShowOnDisplay = RectF.intersects(globalDpPipBounds,
-                    displayLayout.globalBoundsDp());
-
-            // Hide mirror if it's the currently focused display or if the PiP bounds do not
-            // intersect with the boundaries of a given display bounds
-            if (displayId == focusedDisplayId || !shouldShowOnDisplay) {
+            // Hide mirror(s) if it shouldn't be shown on this display.
+            if (!canShowMirrorForDisplay(displayId, focusedDisplayId, displayLayout,
+                    globalDpPipBounds)) {
                 if (mOnDragMirrorPerDisplayId.containsKey(displayId)) {
                     SurfaceControl pipMirror = mOnDragMirrorPerDisplayId.get(displayId);
                     transaction.hide(pipMirror);
@@ -242,6 +243,26 @@ public class PipDisplayTransferHandler implements
             mIsMirrorShown = true;
         }
         transaction.apply();
+    }
+
+    /**
+     * Drag mirrors can only be shown on non-focused display(s) in the topology that intersect
+     * with the PiP global DP bounds.
+     *
+     * @param displayId         the given display ID on which drag mirror should be shown
+     * @param focusedDisplayId  the display ID of where the PiP window is focused on
+     *                          (where the pointer is)
+     * @param displayLayout     the display layout of the given display ID
+     * @param globalDpBounds    the PiP bounds in global DP
+     * @return whether drag mirror can be shown on a given display ID.
+     */
+    private boolean canShowMirrorForDisplay(int displayId, int focusedDisplayId,
+            DisplayLayout displayLayout, RectF globalDpBounds) {
+        boolean pipBoundsIntersectDisplay = RectF.intersects(globalDpBounds,
+                displayLayout.globalBoundsDp());
+
+        return displayId != focusedDisplayId && pipBoundsIntersectDisplay
+                && mDisplayController.isDisplayInTopology(displayId);
     }
 
     /**
