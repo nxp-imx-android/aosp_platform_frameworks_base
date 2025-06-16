@@ -225,7 +225,9 @@ import static com.android.server.wm.IdentifierProto.USER_ID;
 import static com.android.server.wm.LetterboxConfiguration.DEFAULT_LETTERBOX_ASPECT_RATIO_FOR_MULTI_WINDOW;
 import static com.android.server.wm.LetterboxConfiguration.MIN_FIXED_ORIENTATION_LETTERBOX_ASPECT_RATIO;
 import static com.android.server.wm.StartingData.AFTER_TRANSACTION_COPY_TO_CLIENT;
+import static com.android.server.wm.StartingData.AFTER_TRANSACTION_IDLE;
 import static com.android.server.wm.StartingData.AFTER_TRANSACTION_REMOVE_DIRECTLY;
+import static com.android.server.wm.StartingData.AFTER_TRANSITION_FINISH;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_APP_TRANSITION;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_PREDICT_BACK;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_RECENTS;
@@ -2814,8 +2816,27 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
         attachStartingSurfaceToAssociatedTask();
     }
 
+    /**
+     * If the device is locked and the app does not request showWhenLocked,
+     * defer removing the starting window until the transition is complete.
+     * This prevents briefly appearing the app context and causing secure concern.
+     */
+    void deferStartingWindowRemovalForKeyguardUnoccluding() {
+        if (mStartingData != null
+                && mStartingData.mRemoveAfterTransaction != AFTER_TRANSITION_FINISH
+                && isKeyguardLocked() && !canShowWhenLockedInner(this) && !isVisibleRequested()
+                && mTransitionController.inTransition(this)) {
+            mStartingData.mRemoveAfterTransaction = AFTER_TRANSITION_FINISH;
+        }
+    }
+
     void removeStartingWindow() {
         boolean prevEligibleForLetterboxEducation = isEligibleForLetterboxEducation();
+
+        if (mStartingData != null
+                && mStartingData.mRemoveAfterTransaction == AFTER_TRANSITION_FINISH) {
+            return;
+        }
 
         if (transferSplashScreenIfNeeded()) {
             return;
@@ -4487,6 +4508,10 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
                 tStartingWindow.mToken = this;
                 tStartingWindow.mActivityRecord = this;
 
+                if (mStartingData.mRemoveAfterTransaction == AFTER_TRANSITION_FINISH) {
+                    mStartingData.mRemoveAfterTransaction = AFTER_TRANSACTION_IDLE;
+                }
+
                 ProtoLog.v(WM_DEBUG_ADD_REMOVE,
                         "Removing starting %s from %s", tStartingWindow, fromActivity);
                 mTransitionController.collect(tStartingWindow);
@@ -4668,15 +4693,20 @@ final class ActivityRecord extends WindowToken implements WindowManagerService.A
         if (r == null || r.getTaskFragment() == null) {
             return false;
         }
-        if (!r.inPinnedWindowingMode() && (r.mShowWhenLocked || r.containsShowWhenLockedWindow())) {
+        if (canShowWhenLockedInner(r)) {
             return true;
         } else if (r.mInheritShownWhenLocked) {
             final ActivityRecord activity = r.getTaskFragment().getActivityBelow(r);
-            return activity != null && !activity.inPinnedWindowingMode()
-                    && (activity.mShowWhenLocked || activity.containsShowWhenLockedWindow());
+            return activity != null && canShowWhenLockedInner(activity);
         } else {
             return false;
         }
+    }
+
+    /** @see #canShowWhenLocked(ActivityRecord) */
+    private static boolean canShowWhenLockedInner(@NonNull ActivityRecord r) {
+        return !r.inPinnedWindowingMode() &&
+                (r.mShowWhenLocked || r.containsShowWhenLockedWindow());
     }
 
     /**
