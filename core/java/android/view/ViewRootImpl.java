@@ -3727,7 +3727,7 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         boolean windowShouldResize = layoutRequested && windowSizeMayChange
-            && ((mWidth != host.getMeasuredWidth() || mHeight != host.getMeasuredHeight())
+            && ((mWidth != mMeasuredWidth || mHeight != mMeasuredHeight)
                 || (lp.width == ViewGroup.LayoutParams.WRAP_CONTENT &&
                         frame.width() < desiredWindowWidth && frame.width() != mWidth)
                 || (lp.height == ViewGroup.LayoutParams.WRAP_CONTENT &&
