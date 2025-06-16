@@ -37,15 +37,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
-/**
- * Provides data related to airplane mode.
- *
- * IMPORTANT: This is currently *not* used to render any airplane mode information anywhere. It is
- * only used to help [com.android.systemui.statusbar.pipeline.wifi.ui.viewmodel.WifiViewModel]
- * determine what parts of the wifi icon view should be shown.
- *
- * TODO(b/238425913): Consider migrating the status bar airplane mode icon to use this repo.
- */
+/** Provides data related to airplane mode. */
 interface AirplaneModeRepository {
     /** Observable for whether the device is currently in airplane mode. */
     val isAirplaneMode: StateFlow<Boolean>
