@@ -22,7 +22,7 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -86,6 +86,7 @@ fun BundleHeader(
     viewModel: BundleHeaderViewModel,
     modifier: Modifier = Modifier,
     onHeaderClicked: () -> Unit = {},
+    onHeaderLongClicked: () -> Unit = {},
 ) {
     val state =
         rememberMutableSceneTransitionLayoutState(
@@ -139,11 +140,12 @@ fun BundleHeader(
         SceneTransitionLayout(
             state = state,
             modifier =
-                Modifier.clickable(
+                Modifier.combinedClickable(
                     onClick = {
                         viewModel.onHeaderClicked()
                         onHeaderClicked()
                     },
+                    onLongClick = { onHeaderLongClicked() },
                     interactionSource = null,
                     indication = null,
                 ),
