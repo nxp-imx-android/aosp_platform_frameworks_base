@@ -20,6 +20,7 @@ import android.annotation.Nullable;
 import android.annotation.UserIdInt;
 import android.app.role.RoleManager;
 import android.app.supervision.SupervisionManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.Flags;
 import android.os.Binder;
@@ -103,8 +104,11 @@ public class ProtectedPackages {
 
     /** Sets developer verification service provider package which should be protected. */
     public synchronized void setDeveloperVerificationServiceProviderPackage(
-            @Nullable String verificationServiceProviderPackage) {
-        mDeveloperVerificationServiceProviderPackage = verificationServiceProviderPackage;
+            @Nullable ComponentName verificationServiceProvider) {
+        if (verificationServiceProvider == null) {
+            return;
+        }
+        mDeveloperVerificationServiceProviderPackage = verificationServiceProvider.getPackageName();
     }
 
     private synchronized boolean hasDeviceOwnerOrProfileOwner(int userId, String packageName) {

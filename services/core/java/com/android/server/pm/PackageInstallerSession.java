@@ -3301,7 +3301,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     mMetrics.onDeveloperVerifierResponseReceived(statusReceived.isVerified()
                             ? SessionMetrics.DeveloperVerifierResponse.COMPLETE_WITH_PASS
                             : SessionMetrics.DeveloperVerifierResponse.COMPLETE_WITH_REJECT);
-                    mMetrics.onAslStatusReceived(statusReceived.getAslStatus());
+                    mMetrics.onAslStatusReceived(statusReceived.getAppMetadataVerificationStatus());
                 }
                 if (mCurrentVerificationPolicy.get() == DEVELOPER_VERIFICATION_POLICY_NONE) {
                     // No policy applied. Continue with the rest of the verification and install.
@@ -3309,7 +3309,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     return;
                 }
                 if (statusReceived.isVerified()) {
-                    if (statusReceived.isLite()) {
+                    if (statusReceived.isLiteVerification()) {
                         mVerificationLiteEnabled = true;
                         synchronized (mMetrics) {
                             mMetrics.onDeveloperVerificationLiteEnabled();

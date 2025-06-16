@@ -4343,11 +4343,10 @@ package android.content.pm {
   }
 
   @FlaggedApi("android.content.pm.verification_service") public static final class PackageInstaller.DeveloperVerificationUserConfirmationInfo implements android.os.Parcelable {
-    ctor public PackageInstaller.DeveloperVerificationUserConfirmationInfo();
     ctor public PackageInstaller.DeveloperVerificationUserConfirmationInfo(int, int);
     method public int describeContents();
+    method public int getUserActionNeededReason();
     method public int getVerificationPolicy();
-    method public int getVerificationUserActionNeededReason();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo> CREATOR;
     field public static final int DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED = 2; // 0x2
@@ -4755,20 +4754,20 @@ package android.content.pm.verify.developer {
 
   @FlaggedApi("android.content.pm.verification_service") public final class DeveloperVerificationSession implements android.os.Parcelable {
     method public int describeContents();
-    method public long extendTimeRemaining(long);
+    method @NonNull public java.time.Duration extendTimeout(@NonNull java.time.Duration);
     method @NonNull public java.util.List<android.content.pm.SharedLibraryInfo> getDeclaredLibraries();
     method @NonNull public android.os.PersistableBundle getExtensionParams();
     method public int getId();
     method public int getInstallSessionId();
     method @NonNull public String getPackageName();
+    method public int getPolicy();
     method @NonNull public android.content.pm.SigningInfo getSigningInfo();
     method @NonNull public android.net.Uri getStagedPackageUri();
-    method public long getTimeoutTime();
-    method public int getVerificationPolicy();
+    method @NonNull public java.time.Instant getTimeoutTime();
     method public void reportVerificationComplete(@NonNull android.content.pm.verify.developer.DeveloperVerificationStatus);
     method public void reportVerificationComplete(@NonNull android.content.pm.verify.developer.DeveloperVerificationStatus, @NonNull android.os.PersistableBundle);
     method public void reportVerificationIncomplete(int);
-    method public boolean setVerificationPolicy(int);
+    method public boolean setPolicy(int);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.verify.developer.DeveloperVerificationSession> CREATOR;
     field public static final int DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE = 1; // 0x1
@@ -4777,23 +4776,23 @@ package android.content.pm.verify.developer {
 
   @FlaggedApi("android.content.pm.verification_service") public final class DeveloperVerificationStatus implements android.os.Parcelable {
     method public int describeContents();
-    method public int getAslStatus();
-    method @NonNull public String getFailureMessage();
-    method public boolean isLite();
+    method public int getAppMetadataVerificationStatus();
+    method @Nullable public String getFailureMessage();
+    method public boolean isLiteVerification();
     method public boolean isVerified();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field public static final int APP_METADATA_VERIFICATION_STATUS_BAD = 2; // 0x2
+    field public static final int APP_METADATA_VERIFICATION_STATUS_GOOD = 1; // 0x1
+    field public static final int APP_METADATA_VERIFICATION_STATUS_UNDEFINED = 0; // 0x0
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.verify.developer.DeveloperVerificationStatus> CREATOR;
-    field public static final int DEVELOPER_VERIFIER_STATUS_ASL_BAD = 2; // 0x2
-    field public static final int DEVELOPER_VERIFIER_STATUS_ASL_GOOD = 1; // 0x1
-    field public static final int DEVELOPER_VERIFIER_STATUS_ASL_UNDEFINED = 0; // 0x0
   }
 
   public static final class DeveloperVerificationStatus.Builder {
     ctor public DeveloperVerificationStatus.Builder();
     method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus build();
-    method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus.Builder setAslStatus(int);
-    method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus.Builder setFailureMessage(@NonNull String);
-    method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus.Builder setLite(boolean);
+    method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus.Builder setAppMetadataVerificationStatus(int);
+    method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus.Builder setFailureMessage(@Nullable String);
+    method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus.Builder setLiteVerification(boolean);
     method @NonNull public android.content.pm.verify.developer.DeveloperVerificationStatus.Builder setVerified(boolean);
   }
 

@@ -16,8 +16,6 @@
 
 package android.content.pm.verify.developer;
 
-import android.annotation.CurrentTimeMillisLong;
-import android.annotation.DurationMillisLong;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -35,6 +33,8 @@ import android.os.RemoteException;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
@@ -84,12 +84,12 @@ public final class DeveloperVerificationSession implements Parcelable {
     /**
      * The current policy that is active for the developer verification session. It might not be
      * the same as the original policy that was initially assigned for this verification session,
-     * because the active policy can be overridden by {@link #setVerificationPolicy(int)}.
+     * because the active policy can be overridden by {@link #setPolicy(int)}.
      * <p>To improve the latency, store the original policy value and any changes made to it,
-     * so that {@link #getVerificationPolicy()} does not need to make a binder call to retrieve the
+     * so that {@link #getPolicy()} does not need to make a binder call to retrieve the
      * currently active policy.</p>
      */
-    private volatile @PackageInstaller.DeveloperVerificationPolicy int mVerificationPolicy;
+    private volatile @PackageInstaller.DeveloperVerificationPolicy int mPolicy;
 
     /**
      * Constructor used by the system to describe the details of a developer verification session.
@@ -108,7 +108,7 @@ public final class DeveloperVerificationSession implements Parcelable {
         mSigningInfo = signingInfo;
         mDeclaredLibraries = declaredLibraries;
         mExtensionParams = extensionParams;
-        mVerificationPolicy = defaultPolicy;
+        mPolicy = defaultPolicy;
         mSession = session;
     }
 
@@ -169,16 +169,17 @@ public final class DeveloperVerificationSession implements Parcelable {
     }
 
     /**
-     * Get the value of Clock.elapsedRealtime() at which time this developer verification session
+     * Get the point in time when this developer verification session
      * will timeout as incomplete if no other verification response is provided.
      * @throws SecurityException if the caller is not the current verifier bound by the system.
      * @throws IllegalStateException if this is called after the session has finished, because
      * the {@link #reportVerificationComplete} or {@link #reportVerificationIncomplete} have
      * been called, or because the session has timed out.
      */
-    public @CurrentTimeMillisLong long getTimeoutTime() {
+    @NonNull
+    public Instant getTimeoutTime() {
         try {
-            return mSession.getTimeoutTime(mId);
+            return Instant.ofEpochMilli(mSession.getTimeoutTimeMillis(mId));
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -186,13 +187,13 @@ public final class DeveloperVerificationSession implements Parcelable {
 
     /**
      * Return the current policy that is active for this developer verification session.
-     * <p>If the policy for this session has been changed by {@link #setVerificationPolicy},
+     * <p>If the policy for this session has been changed by {@link #setPolicy},
      * the return value of this method is the current policy that is active for this session.
      * Otherwise, the return value is the same as the initial policy that was assigned to the
      * session when it was first created.</p>
      */
-    public @PackageInstaller.DeveloperVerificationPolicy int getVerificationPolicy() {
-        return mVerificationPolicy;
+    public @PackageInstaller.DeveloperVerificationPolicy int getPolicy() {
+        return mPolicy;
     }
 
     /**
@@ -204,14 +205,14 @@ public final class DeveloperVerificationSession implements Parcelable {
      * been called, or because the session has timed out, unless the new policy value is the same
      * as the existing one.
      */
-    public boolean setVerificationPolicy(@PackageInstaller.DeveloperVerificationPolicy int policy) {
-        if (mVerificationPolicy == policy) {
+    public boolean setPolicy(@PackageInstaller.DeveloperVerificationPolicy int policy) {
+        if (mPolicy == policy) {
             // No effective policy change
             return true;
         }
         try {
             if (mSession.setVerificationPolicy(mId, policy)) {
-                mVerificationPolicy = policy;
+                mPolicy = policy;
                 return true;
             } else {
                 return false;
@@ -222,7 +223,7 @@ public final class DeveloperVerificationSession implements Parcelable {
     }
 
     /**
-     * Extend the timeout for this developer verification session by the provided additionalMs to
+     * Extend the timeout for this developer verification session by the provided duration to
      * fetch relevant information over the network or wait for the network.
      * <p>
      * This may be called multiple times. If the request would bypass any max
@@ -231,9 +232,11 @@ public final class DeveloperVerificationSession implements Parcelable {
      * </p>
      * @throws SecurityException if the caller is not the current verifier bound by the system.
      */
-    public @DurationMillisLong long extendTimeRemaining(@DurationMillisLong long additionalMs) {
+    @NonNull
+    public Duration extendTimeout(@NonNull Duration additionalDuration) {
         try {
-            return mSession.extendTimeRemaining(mId, additionalMs);
+            return Duration.ofMillis(
+                    mSession.extendTimeoutMillis(mId, additionalDuration.toMillis()));
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -298,7 +301,7 @@ public final class DeveloperVerificationSession implements Parcelable {
         mSigningInfo = SigningInfo.CREATOR.createFromParcel(in);
         mDeclaredLibraries = in.createTypedArrayList(SharedLibraryInfo.CREATOR);
         mExtensionParams = in.readPersistableBundle(getClass().getClassLoader());
-        mVerificationPolicy = in.readInt();
+        mPolicy = in.readInt();
         mSession = IDeveloperVerificationSessionInterface.Stub.asInterface(in.readStrongBinder());
     }
 
@@ -316,7 +319,7 @@ public final class DeveloperVerificationSession implements Parcelable {
         mSigningInfo.writeToParcel(dest, flags);
         dest.writeTypedList(mDeclaredLibraries);
         dest.writePersistableBundle(mExtensionParams);
-        dest.writeInt(mVerificationPolicy);
+        dest.writeInt(mPolicy);
         dest.writeStrongBinder(mSession.asBinder());
     }
 

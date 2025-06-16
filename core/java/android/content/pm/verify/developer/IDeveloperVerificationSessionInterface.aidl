@@ -24,8 +24,8 @@ import android.os.PersistableBundle;
  * @hide
  */
 interface IDeveloperVerificationSessionInterface {
-    long getTimeoutTime(int verificationId);
-    long extendTimeRemaining(int verificationId, long additionalMs);
+    long getTimeoutTimeMillis(int verificationId);
+    long extendTimeoutMillis(int verificationId, long additionalMillis);
     boolean setVerificationPolicy(int verificationId, int policy);
     void reportVerificationIncomplete(int verificationId, int reason);
     void reportVerificationComplete(int verificationId, in DeveloperVerificationStatus status, in @nullable PersistableBundle extensionResponse);

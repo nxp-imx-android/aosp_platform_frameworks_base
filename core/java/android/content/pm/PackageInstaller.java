@@ -50,6 +50,7 @@ import android.app.AppGlobals;
 import android.app.PendingIntent;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -1781,14 +1782,14 @@ public class PackageInstaller {
     }
 
     /**
-     *  Return the package name of the developer verification service provider, for the
+     *  Return the component name of the developer verification service provider, for the
      *  purpose of interacting with the specific verifier in relation to
      *  extension parameters and response structure.  Return null if the system
      *  verifier service provider is not available to the caller, or if there is no
      *  such provider specified by the system.
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
-    public final @Nullable String getDeveloperVerificationServiceProvider() {
+    public final @Nullable ComponentName getDeveloperVerificationServiceProvider() {
         try {
             return mInstaller.getDeveloperVerificationServiceProvider();
         } catch (RemoteException e) {
@@ -5075,33 +5076,42 @@ public class PackageInstaller {
         }
 
         @DeveloperVerificationPolicy
-        private int mVerificationPolicy;
+        private final int mVerificationPolicy;
 
         @UserActionNeededReason
-        private int mVerificationUserActionNeededReason;
+        private final int mUserActionNeededReason;
 
-        public DeveloperVerificationUserConfirmationInfo() {
-        }
-
+        /**
+         * Used by the system to inform the device's default package installer about the ongoing
+         * developer verification session that requires user confirmation.
+         */
         public DeveloperVerificationUserConfirmationInfo(@DeveloperVerificationPolicy int policy,
                 @UserActionNeededReason int reason) {
             mVerificationPolicy = policy;
-            mVerificationUserActionNeededReason = reason;
+            mUserActionNeededReason = reason;
         }
 
         private DeveloperVerificationUserConfirmationInfo(@NonNull Parcel in) {
             mVerificationPolicy = in.readInt();
-            mVerificationUserActionNeededReason = in.readInt();
+            mUserActionNeededReason = in.readInt();
         }
 
+        /**
+         * @return The policy used for this developer verification session, which may affect the
+         * content or format of user confirmation.
+         */
         @DeveloperVerificationPolicy
         public int getVerificationPolicy() {
             return mVerificationPolicy;
         }
 
+        /**
+         * @return The reason for requesting user confirmation this developer verification session,
+         * which may affect the content or format of user confirmation.
+         */
         @UserActionNeededReason
-        public int getVerificationUserActionNeededReason() {
-            return mVerificationUserActionNeededReason;
+        public int getUserActionNeededReason() {
+            return mUserActionNeededReason;
         }
 
         @Override
@@ -5112,7 +5122,7 @@ public class PackageInstaller {
         @Override
         public void writeToParcel(@NonNull Parcel dest, int flags) {
             dest.writeInt(mVerificationPolicy);
-            dest.writeInt(mVerificationUserActionNeededReason);
+            dest.writeInt(mUserActionNeededReason);
         }
 
         public static final @NonNull Parcelable.Creator<DeveloperVerificationUserConfirmationInfo>
@@ -5133,7 +5143,7 @@ public class PackageInstaller {
         public String toString() {
             return "VerificationUserConfirmationInfo{"
                     + "verificationPolicy=" + mVerificationPolicy
-                    + ", verificationUserActionReason=" + mVerificationUserActionNeededReason
+                    + ", verificationUserActionReason=" + mUserActionNeededReason
                     + '}';
         }
     }

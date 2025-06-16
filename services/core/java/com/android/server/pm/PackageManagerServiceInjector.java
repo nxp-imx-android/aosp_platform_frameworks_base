@@ -141,7 +141,7 @@ public class PackageManagerServiceInjector {
             mScanningPackageParserProducer;
     private final Producer<PackageParser2>
             mPreparingPackageParserProducer;
-    private final SingletonWithArgument<PackageInstallerService, String>
+    private final SingletonWithArgument<PackageInstallerService, ComponentName>
             mPackageInstallerServiceProducer;
 
     private final ProducerWithArgument<InstantAppResolverConnection, ComponentName>
@@ -185,7 +185,8 @@ public class PackageManagerServiceInjector {
             Producer<PackageParser2> scanningCachingPackageParserProducer,
             Producer<PackageParser2> scanningPackageParserProducer,
             Producer<PackageParser2> preparingPackageParserProducer,
-            ProducerWithArgument<PackageInstallerService, String> packageInstallerServiceProducer,
+            ProducerWithArgument<PackageInstallerService, ComponentName>
+                    packageInstallerServiceProducer,
             ProducerWithArgument<InstantAppResolverConnection,
                     ComponentName>
                     instantAppResolverConnectionProducer,
@@ -402,9 +403,10 @@ public class PackageManagerServiceInjector {
     /**
      * Create a PackageInstallerService instance for the given verifier package name.
      */
-    public PackageInstallerService getPackageInstallerService(String verifierPackageName) {
+    public PackageInstallerService getPackageInstallerService(
+            ComponentName developerVerificationServiceProvider) {
         return mPackageInstallerServiceProducer.get(this, mPackageManager,
-                verifierPackageName);
+                developerVerificationServiceProvider);
     }
 
     public InstantAppResolverConnection getInstantAppResolverConnection(

@@ -39,7 +39,7 @@ public final class DeveloperVerificationRequestStatusTracker {
      * By default, the timeout time is the default timeout duration plus the current time (when
      * the timer starts for a verification request). Both the default timeout time and the max
      * timeout time cannot be changed after the timer has started, but the actual timeout time
-     * can be extended via {@link #extendTimeRemaining} to the maximum allowed.
+     * can be extended via {@link #extendTimeoutMillis} to the maximum allowed.
      */
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PROTECTED)
     public DeveloperVerificationRequestStatusTracker(@DurationMillisLong long defaultTimeoutMillis,
@@ -79,7 +79,7 @@ public final class DeveloperVerificationRequestStatusTracker {
      * @return the amount of time in millis that the timeout has been extended, subject to the max
      * amount allowed.
      */
-    public @DurationMillisLong long extendTimeRemaining(@DurationMillisLong long additionalMs) {
+    public @DurationMillisLong long extendTimeoutMillis(@DurationMillisLong long additionalMs) {
         if (mTimeoutTime + additionalMs > mMaxTimeoutTime) {
             additionalMs = mMaxTimeoutTime - mTimeoutTime;
         }

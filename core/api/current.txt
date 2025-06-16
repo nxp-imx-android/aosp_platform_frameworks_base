@@ -13254,7 +13254,7 @@ package android.content.pm {
     method @Deprecated @Nullable public android.content.pm.PackageInstaller.SessionInfo getActiveStagedSession();
     method @NonNull public java.util.List<android.content.pm.PackageInstaller.SessionInfo> getActiveStagedSessions();
     method @NonNull public java.util.List<android.content.pm.PackageInstaller.SessionInfo> getAllSessions();
-    method @FlaggedApi("android.content.pm.verification_service") @Nullable public final String getDeveloperVerificationServiceProvider();
+    method @FlaggedApi("android.content.pm.verification_service") @Nullable public final android.content.ComponentName getDeveloperVerificationServiceProvider();
     method @NonNull public java.util.List<android.content.pm.PackageInstaller.SessionInfo> getMySessions();
     method @Nullable public android.content.pm.PackageInstaller.SessionInfo getSessionInfo(int);
     method @NonNull public java.util.List<android.content.pm.PackageInstaller.SessionInfo> getStagedSessions();
