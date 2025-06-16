@@ -22,12 +22,20 @@
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowAnimationStyle">@null</item>
+        <item name="textAppearanceInstallerAppLabel">@style/TextAppearance.PackageInstaller.AppLabel</item>
+        <item name="textAppearanceInstallerCustomMessage">@style/TextAppearance.PackageInstaller.CustomMessage</item>
+        <item name="textAppearanceInstallerKeepDataHeading">@style/TextAppearance.PackageInstaller.KeepData.Heading</item>
+        <item name="textAppearanceInstallerKeepDataSubHeading">@style/TextAppearance.PackageInstaller.KeepData.SubHeading</item>
     </style>
 
     <style name="Theme.AlertDialogActivity.Material" parent="Theme.Material3.DynamicColors.DayNight">
         <!-- TODO (b/274120822): Remove this attribute when we replace all dialogs to MaterialAlertDialog -->
         <item name="android:alertDialogTheme">@style/Theme.MaterialAlertDialog.System</item>
         <item name="materialAlertDialogTheme">@style/Theme.MaterialAlertDialog</item>
+        <item name="textAppearanceInstallerAppLabel">@style/TextAppearance.PackageInstaller.Material.AppLabel</item>
+        <item name="textAppearanceInstallerCustomMessage">@style/TextAppearance.PackageInstaller.Material.CustomMessage</item>
+        <item name="textAppearanceInstallerKeepDataHeading">@style/TextAppearance.PackageInstaller.Material.KeepData.Heading</item>
+        <item name="textAppearanceInstallerKeepDataSubHeading">@style/TextAppearance.PackageInstaller.Material.KeepData.SubHeading</item>
     </style>
 
     <!-- TODO (b/274120822): Remove this theme when we replace all dialogs to MaterialAlertDialog -->

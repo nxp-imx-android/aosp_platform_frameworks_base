@@ -89,7 +89,7 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
         // theme to support the material design.
         if (PackageUtil.isMaterialDesignEnabled(this)) {
             Log.d(LOG_TAG, "Apply material design")
-            theme.applyStyle(R.style.Theme_AlertDialogActivity_Material, /* force= */ false)
+            theme.applyStyle(R.style.Theme_AlertDialogActivity_Material, /* force= */ true)
         }
 
         fragmentManager = supportFragmentManager
