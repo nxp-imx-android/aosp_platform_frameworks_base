@@ -34,6 +34,7 @@ import android.view.View.MeasureSpec.EXACTLY
 import android.view.View.MeasureSpec.UNSPECIFIED
 import android.view.View.MeasureSpec.makeMeasureSpec
 import android.view.View.VISIBLE
+import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewStub
 import android.widget.Chronometer
@@ -160,6 +161,9 @@ fun AODPromotedNotificationView(
         AndroidView(
             factory = { context ->
                 val notificationView = notificationViewFactory(context)
+                if (notificationView.parent != null) {
+                    (notificationView.parent as ViewGroup).removeView(notificationView)
+                }
                 val updater =
                     traceSection("$TAG.findViews") {
                         AODPromotedNotificationViewUpdater(notificationView)
