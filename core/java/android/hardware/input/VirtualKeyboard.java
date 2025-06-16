@@ -67,10 +67,14 @@ public class VirtualKeyboard extends VirtualInputDevice {
      * @return The id of the {@link android.view.InputDevice} corresponding to this keyboard.
      * @hide
      */
+    // TODO(b/423975806): Remove once the system api is unflagged
     @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
     @TestApi
-    @Override
-    public int getInputDeviceId() {
-        return super.getInputDeviceId();
+    public int getInputDeviceIdForTest() {
+        try {
+            return mVirtualInputDevice.getInputDeviceId();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 }

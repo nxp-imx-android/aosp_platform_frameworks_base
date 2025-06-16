@@ -6061,6 +6061,7 @@ package android.hardware.input {
 
   public class VirtualDpad implements java.io.Closeable {
     method public void close();
+    method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public int getInputDeviceId();
     method public void sendKeyEvent(@NonNull android.hardware.input.VirtualKeyEvent);
   }
 
@@ -6113,6 +6114,7 @@ package android.hardware.input {
 
   public class VirtualKeyboard implements java.io.Closeable {
     method public void close();
+    method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public int getInputDeviceId();
     method public void sendKeyEvent(@NonNull android.hardware.input.VirtualKeyEvent);
   }
 
@@ -6136,6 +6138,7 @@ package android.hardware.input {
   public class VirtualMouse implements java.io.Closeable {
     method public void close();
     method @NonNull public android.graphics.PointF getCursorPosition();
+    method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public int getInputDeviceId();
     method public void sendButtonEvent(@NonNull android.hardware.input.VirtualMouseButtonEvent);
     method public void sendRelativeEvent(@NonNull android.hardware.input.VirtualMouseRelativeEvent);
     method public void sendScrollEvent(@NonNull android.hardware.input.VirtualMouseScrollEvent);
@@ -6212,6 +6215,7 @@ package android.hardware.input {
 
   public class VirtualNavigationTouchpad implements java.io.Closeable {
     method public void close();
+    method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public int getInputDeviceId();
     method public void sendTouchEvent(@NonNull android.hardware.input.VirtualTouchEvent);
   }
 
@@ -6230,6 +6234,7 @@ package android.hardware.input {
 
   @FlaggedApi("android.companion.virtualdevice.flags.virtual_rotary") public class VirtualRotaryEncoder implements java.io.Closeable {
     method public void close();
+    method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public int getInputDeviceId();
     method public void sendScrollEvent(@NonNull android.hardware.input.VirtualRotaryEncoderScrollEvent);
   }
 
@@ -6261,6 +6266,7 @@ package android.hardware.input {
 
   public class VirtualStylus implements java.io.Closeable {
     method public void close();
+    method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public int getInputDeviceId();
     method public void sendButtonEvent(@NonNull android.hardware.input.VirtualStylusButtonEvent);
     method public void sendMotionEvent(@NonNull android.hardware.input.VirtualStylusMotionEvent);
   }
@@ -6366,6 +6372,7 @@ package android.hardware.input {
 
   public class VirtualTouchscreen implements java.io.Closeable {
     method public void close();
+    method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public int getInputDeviceId();
     method public void sendTouchEvent(@NonNull android.hardware.input.VirtualTouchEvent);
   }
 
