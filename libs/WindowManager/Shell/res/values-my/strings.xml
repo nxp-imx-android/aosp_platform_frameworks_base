@@ -46,9 +46,9 @@
     <string name="accessibility_action_divider_left_70" formatted="false" msgid="3986621081137830158">"ဘယ် ၇၀%၊ ညာ ၃၀%"</string>
     <string name="accessibility_action_divider_left_90" formatted="false" msgid="3525922058426249817">"ဘယ် ၉၀%၊ ညာ ၁၀%"</string>
     <string name="accessibility_action_divider_right_full" msgid="4162106720432709858">"ညာဘက်ရှိအက်ပ်ကို ဖန်သားပြင်အပြည့် လုပ်ရန်"</string>
-    <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"အပေါ်ရှိအက်ပ်ကို အောက်ရှိအက်ပ်ဖြင့် လက်ရှိခွဲထားသည့်အတိုင်း နေရာလဲပါ"</string>
+    <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"အပေါ်အက်ပ်နှင့် အောက်အက်ပ်ကို လက်ရှိခွဲထားသည့်အတိုင်း နေရာလဲရန်"</string>
     <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"ဘယ်ဘက်ရှိအက်ပ်ကို ညာဘက်ရှိအက်ပ်ဖြင့် လက်ရှိခွဲထားသည့်အတိုင်း နေရာလဲပါ"</string>
-    <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"အပေါ်ရှိအက်ပ်ကို ဖန်သားပြင်အပြည့် လုပ်ရန်"</string>
+    <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"အပေါ်အက်ပ်ကို ဖန်သားပြင်အပြည့် လုပ်ရန်"</string>
     <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"အပေါ် ၁၀%၊ အောက် ၉၀%"</string>
     <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"အပေါ် ၃၀%၊ အောက် ၇၀%"</string>
     <string name="accessibility_action_divider_top_50" formatted="false" msgid="1038204315880066213">"အပေါ် ၅၀%၊ အောက် ၅၀%"</string>
