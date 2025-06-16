@@ -74,7 +74,7 @@ open class BaseMediaProjectionPermissionContentManager(
     }
 
     private fun initScreenShareSpinner() {
-        val adapter = OptionsAdapter(containerView.context.applicationContext, screenShareOptions)
+        val adapter = OptionsAdapter(containerView.context, screenShareOptions)
         screenShareModeSpinner = containerView.requireViewById(R.id.screen_share_mode_options)
         screenShareModeSpinner.adapter = adapter
         screenShareModeSpinner.onItemSelectedListener = this
