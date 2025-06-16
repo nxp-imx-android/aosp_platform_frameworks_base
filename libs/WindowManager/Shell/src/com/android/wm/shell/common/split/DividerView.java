@@ -75,7 +75,7 @@ import java.util.Objects;
 public class DividerView extends FrameLayout implements View.OnTouchListener {
     public static final long TOUCH_ANIMATION_DURATION = 150;
     public static final long TOUCH_RELEASE_ANIMATION_DURATION = 200;
-    private static final boolean SHOW_DRAG_TOOLTIP = true;
+    private static final boolean SHOW_DRAG_TOOLTIP = false;
 
     private final Paint mPaint = new Paint();
     private final Rect mBackgroundRect = new Rect();
@@ -440,65 +440,14 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 if (!mMoving && Math.abs(displacement) > mTouchSlop) {
                     mStartPos = touchPos;
                     mMoving = true;
-                    if (Flags.enableMagneticSplitDivider()) {
-                        // Move gesture is confirmed, create framework for magnetic snap
-                        InputDirection direction =
-                                displacement > 0 ? InputDirection.Max : InputDirection.Min;
-                        mDistanceGestureContext = DistanceGestureContext.create(mContext, mStartPos,
-                                direction);
-                        mViewMotionValue = new ViewMotionValue(mStartPos,
-                                mDistanceGestureContext,
-                                mSplitLayout.mDividerSnapAlgorithm.getMotionSpec(),
-                                "dividerView::pos" /* label */);
-                        mLastHoveredOverSnapPosition = mSplitLayout.calculateCurrentSnapPosition();
-                        // Set a "starting region" in which we don't want to show the tooltip yet.
-                        mDragStartingSnapPosition = mSplitLayout.calculateCurrentSnapPosition();
-                        mViewMotionValue.addUpdateCallback(viewMotionValue -> {
-                            int snappedPosition = (int) viewMotionValue.getOutput();
-                            // Whenever MotionValue updates (from user moving the divider):
-                            // - Place divider in its new position
-                            placeDivider(snappedPosition);
-                            // - Play a haptic if entering a magnetic zone
-                            Integer currentlyHoveredOverSnapZone = viewMotionValue.get(
-                                    MagneticDividerUtils.getSNAP_POSITION_KEY());
-
-                            boolean changedSnapPosition = !Objects.equals(
-                                    currentlyHoveredOverSnapZone, mLastHoveredOverSnapPosition);
-                            if (currentlyHoveredOverSnapZone != null && changedSnapPosition) {
-                                playHapticClick();
-                            }
-                            // - Update the last-hovered-over snap zone
-                            mLastHoveredOverSnapPosition = currentlyHoveredOverSnapZone;
-                            // - Update tooltip state if needed
-                            if (SHOW_DRAG_TOOLTIP) {
-                                // - Update internal state for closest snap position (i.e. where the
-                                // user will end up if drag is released)
-                                final float velocity = isLeftRightSplit
-                                        ? mVelocityTracker.getXVelocity()
-                                        : mVelocityTracker.getYVelocity();
-                                int closestSnapPosition = mSplitLayout
-                                        .findSnapTarget(snappedPosition,
-                                                velocity, false /* hardDismiss */)
-                                        .snapPosition;
-                                // If we are still in the starting zone, wait until the user drags
-                                // to a point where the closest snap position is a different one.
-                                if (!mDraggedOutOfStartingRegion
-                                        && closestSnapPosition != mDragStartingSnapPosition) {
-                                    mDraggedOutOfStartingRegion = true;
-                                }
-                                // Afterwards, always show the tooltip, updating to reflect the
-                                // nearest snap point.
-                                if (mDraggedOutOfStartingRegion) {
-                                    showTooltip(snapPositionToUIString(closestSnapPosition));
-                                }
-                            }
-                        });
+                    if (Flags.enableFlexibleTwoAppSplit()) {
+                        updateSnapOnMove(displacement, isLeftRightSplit);
                     }
                 }
                 if (mMoving) {
                     final int position = mSplitLayout.getDividerPosition() + touchPos - mStartPos;
                     mLastDraggingPosition = position;
-                    if (Flags.enableMagneticSplitDivider()) {
+                    if (Flags.enableFlexibleTwoAppSplit()) {
                         updateMagneticSnapCalculation(position);
                     } else {
                         placeDivider(position);
@@ -510,7 +459,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 releaseTouching();
                 if (!mMoving) {
                     mSplitLayout.onDraggingCancelled();
-                    if (Flags.enableMagneticSplitDivider()) {
+                    if (Flags.enableFlexibleTwoAppSplit()) {
                         cleanUpMagneticSnapFramework();
                     }
                     break;
@@ -526,7 +475,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                         mSplitLayout.findSnapTarget(position, velocity, false /* hardDismiss */);
                 mSplitLayout.snapToTarget(position, snapTarget);
                 mMoving = false;
-                if (Flags.enableMagneticSplitDivider()) {
+                if (Flags.enableFlexibleTwoAppSplit()) {
                     cleanUpMagneticSnapFramework();
                 }
                 break;
@@ -560,6 +509,62 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     /** Updates the position of the divider. */
     private void placeDivider(int position) {
         mSplitLayout.updateDividerBounds(position, true /* shouldUseParallaxEffect */);
+    }
+
+    /** Performs snapping and haptic clicks based on current divider displacement. */
+    private void updateSnapOnMove(int displacement, boolean isLeftRightSplit) {
+        // Move gesture is confirmed, create framework for magnetic snap
+        InputDirection direction =
+                displacement > 0 ? InputDirection.Max : InputDirection.Min;
+        mDistanceGestureContext = DistanceGestureContext.create(mContext, mStartPos,
+                direction);
+        mViewMotionValue = new ViewMotionValue(mStartPos,
+                mDistanceGestureContext,
+                mSplitLayout.mDividerSnapAlgorithm.getMotionSpec(),
+                "dividerView::pos" /* label */);
+        mLastHoveredOverSnapPosition = mSplitLayout.calculateCurrentSnapPosition();
+        // Set a "starting region" in which we don't want to show the tooltip yet.
+        mDragStartingSnapPosition = mSplitLayout.calculateCurrentSnapPosition();
+        mViewMotionValue.addUpdateCallback(viewMotionValue -> {
+            int snappedPosition = (int) viewMotionValue.getOutput();
+            // Whenever MotionValue updates (from user moving the divider):
+            // - Place divider in its new position
+            placeDivider(snappedPosition);
+            // - Play a haptic if entering a magnetic zone
+            Integer currentlyHoveredOverSnapZone = viewMotionValue.get(
+                    MagneticDividerUtils.getSNAP_POSITION_KEY());
+
+            boolean changedSnapPosition = !Objects.equals(
+                    currentlyHoveredOverSnapZone, mLastHoveredOverSnapPosition);
+            if (currentlyHoveredOverSnapZone != null && changedSnapPosition) {
+                playHapticClick();
+            }
+            // - Update the last-hovered-over snap zone
+            mLastHoveredOverSnapPosition = currentlyHoveredOverSnapZone;
+            // - Update tooltip state if needed
+            if (SHOW_DRAG_TOOLTIP) {
+                // - Update internal state for closest snap position (i.e. where the
+                // user will end up if drag is released)
+                final float velocity = isLeftRightSplit
+                        ? mVelocityTracker.getXVelocity()
+                        : mVelocityTracker.getYVelocity();
+                int closestSnapPosition = mSplitLayout
+                        .findSnapTarget(snappedPosition,
+                                velocity, false /* hardDismiss */)
+                        .snapPosition;
+                // If we are still in the starting zone, wait until the user drags
+                // to a point where the closest snap position is a different one.
+                if (!mDraggedOutOfStartingRegion
+                        && closestSnapPosition != mDragStartingSnapPosition) {
+                    mDraggedOutOfStartingRegion = true;
+                }
+                // Afterwards, always show the tooltip, updating to reflect the
+                // nearest snap point.
+                if (mDraggedOutOfStartingRegion) {
+                    showTooltip(snapPositionToUIString(closestSnapPosition));
+                }
+            }
+        });
     }
 
     /**
