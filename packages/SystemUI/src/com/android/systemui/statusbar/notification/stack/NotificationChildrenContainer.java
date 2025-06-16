@@ -39,6 +39,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.compose.ui.platform.ComposeView;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.widget.NotificationExpandButton;
@@ -130,7 +131,7 @@ public class NotificationChildrenContainer extends ViewGroup
      * This view is only set when this NCC is a bundle. If this view is set, all other header
      * view variants have to be null.
      */
-    private View mBundleHeaderView;
+    private ComposeView mBundleHeaderView;
     @Nullable private BundleHeaderViewModel mBundleHeaderViewModel;
 
     private NotificationHeaderView mGroupHeader;
@@ -222,6 +223,13 @@ public class NotificationChildrenContainer extends ViewGroup
         mHybridGroupManager.initDimens();
         mMinSingleLineHeight = getResources().getDimensionPixelSize(
                 R.dimen.conversation_single_line_face_pile_size);
+    }
+
+    public void recomposeBundleHeader() {
+        if (mBundleHeaderView != null) {
+            mBundleHeaderView.disposeComposition();
+            mBundleHeaderView.createComposition();
+        }
     }
 
     @NonNull
@@ -511,7 +519,7 @@ public class NotificationChildrenContainer extends ViewGroup
         mMinimizedGroupHeader = null;
         mMinimizedGroupHeaderWrapper = null;
     }
-    public void setBundleHeaderView(@NonNull View view) {
+    public void setBundleHeaderView(@NonNull ComposeView view) {
         if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
         initBundleDimens();
         mBundleHeaderView = view;
@@ -1643,6 +1651,7 @@ public class NotificationChildrenContainer extends ViewGroup
             addView(divider, index);
             mDividers.set(i, divider);
         }
+        recomposeBundleHeader();
     }
 
     public void setUserLocked(boolean userLocked) {
