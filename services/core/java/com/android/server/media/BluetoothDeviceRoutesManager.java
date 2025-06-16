@@ -76,6 +76,13 @@ import java.util.stream.Collectors;
         void onBluetoothRoutesUpdated();
     }
 
+    /** Interface for receiving events about Broadcast sinks volume changes. */
+    interface OnBroadcastSinkVolumeChangedListener {
+
+        /** Called when Bluetooth sink volume in broadcast has changed. */
+        void onBroadcastSinkVolumeChanged();
+    }
+
     @NonNull
     private final AdapterStateChangedReceiver mAdapterStateChangedReceiver =
             new AdapterStateChangedReceiver();
@@ -122,7 +129,7 @@ import java.util.stream.Collectors;
 
     public void start(UserHandle user, @NonNull BluetoothRoutesUpdatedListener listener) {
         mListener = listener;
-        mBluetoothProfileMonitor.start();
+        mBluetoothProfileMonitor.start(() -> listener.onBluetoothRoutesUpdated());
 
         IntentFilter adapterStateChangedIntentFilter = new IntentFilter();
 
@@ -179,6 +186,31 @@ import java.util.stream.Collectors;
         mBluetoothAdapter.setActiveDevice(btRouteInfo.mBtDevice, ACTIVE_DEVICE_AUDIO);
     }
 
+    public synchronized boolean isMediaOnlyRouteInBroadcast(@NonNull String routeId) {
+        for (BluetoothRouteInfo info : mBluetoothRoutes.values()) {
+            if (info.mRoute.getId().equals(routeId)) {
+                if (mBluetoothProfileMonitor.isMediaOnlyDeviceInBroadcast(info.mBtDevice)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public synchronized boolean setRouteVolume(@NonNull String routeId, int volume) {
+        boolean volumeUpdated = false;
+        for (BluetoothRouteInfo info : mBluetoothRoutes.values()) {
+            if (info.mRoute.getId().equals(routeId)) {
+                // There could be multiple BT devices for the same route id, for example, LE Audio
+                // devices, hearing aids.
+                mBluetoothProfileMonitor.setDeviceVolume(
+                        info.mBtDevice, volume, /* isGroupOp= */ false);
+                volumeUpdated = true;
+            }
+        }
+        return volumeUpdated;
+    }
+
     private void updateBluetoothRoutes() {
         Set<BluetoothDevice> bondedDevices = mBluetoothAdapter.getBondedDevices();
 
@@ -199,7 +231,8 @@ import java.util.stream.Collectors;
                                             BluetoothDevice::getAddress, Function.identity()));
             for (BluetoothDevice device : bondedDevices) {
                 if (device.isConnected()) {
-                    BluetoothRouteInfo newBtRoute = createBluetoothRoute(device);
+                    BluetoothRouteInfo newBtRoute =
+                            createBluetoothRoute(device, /* setVolume= */ false);
                     if (newBtRoute.mConnectedProfiles.size() > 0) {
                         mBluetoothRoutes.put(device.getAddress(), newBtRoute);
                     }
@@ -283,7 +316,13 @@ import java.util.stream.Collectors;
 
         // Convert List<BluetoothDevice> to List<MediaRoute2Info>
         return mBluetoothProfileMonitor.getDevicesWithBroadcastSource().stream()
-                .map(device -> createBluetoothRoute(device).mRoute)
+                .map(
+                        device ->
+                                createBluetoothRoute(
+                                                device,
+                                                /* setVolume= */ mBluetoothProfileMonitor
+                                                        .isMediaOnlyDeviceInBroadcast(device))
+                                        .mRoute)
                 .filter(routeInfo -> routeIdSet.add(routeInfo.getId()))
                 .toList();
     }
@@ -307,9 +346,8 @@ import java.util.stream.Collectors;
      * bluetooth devices individually, since the audio stack refers to a bluetooth device group by
      * any of its member devices.
      */
-    private BluetoothRouteInfo createBluetoothRoute(BluetoothDevice device) {
-        BluetoothRouteInfo
-                newBtRoute = new BluetoothRouteInfo();
+    private BluetoothRouteInfo createBluetoothRoute(BluetoothDevice device, boolean setVolume) {
+        BluetoothRouteInfo newBtRoute = new BluetoothRouteInfo();
         newBtRoute.mBtDevice = device;
         String deviceName = getDeviceName(device);
 
@@ -317,9 +355,7 @@ import java.util.stream.Collectors;
         String routeId = getRouteIdForType(device, type);
 
         newBtRoute.mConnectedProfiles = getConnectedProfiles(device);
-        // Note that volume is only relevant for active bluetooth routes, and those are managed via
-        // AudioManager.
-        newBtRoute.mRoute =
+        MediaRoute2Info.Builder routeInfoBuilder =
                 new MediaRoute2Info.Builder(routeId, deviceName)
                         .addFeature(MediaRoute2Info.FEATURE_LIVE_AUDIO)
                         .addFeature(MediaRoute2Info.FEATURE_LOCAL_PLAYBACK)
@@ -329,8 +365,17 @@ import java.util.stream.Collectors;
                                         .getText(R.string.bluetooth_a2dp_audio_route_name)
                                         .toString())
                         .setType(type)
-                        .setAddress(device.getAddress())
-                        .build();
+                        .setAddress(device.getAddress());
+        // Note that volume is only relevant for active bluetooth routes, and those are managed via
+        // AudioManager.
+        // The only exception is media only devices in broadcast, the volume is fetched from
+        // bluetooth volume control profile.
+        if (setVolume) {
+            routeInfoBuilder
+                    .setVolume(mBluetoothProfileMonitor.getDeviceVolume(device))
+                    .setVolumeMax(BluetoothProfileMonitor.MAXIMUM_DEVICE_VOLUME);
+        }
+        newBtRoute.mRoute = routeInfoBuilder.build();
         return newBtRoute;
     }
 
