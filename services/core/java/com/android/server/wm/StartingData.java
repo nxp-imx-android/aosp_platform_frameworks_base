@@ -37,6 +37,7 @@ public abstract class StartingData {
      * when the parent activity of starting window may be put in a partial area of the task.
      */
     Task mAssociatedTask;
+    boolean mRemoveAfterTransition;
 
     protected StartingData(WindowManagerService service, int typeParams) {
         mService = service;
