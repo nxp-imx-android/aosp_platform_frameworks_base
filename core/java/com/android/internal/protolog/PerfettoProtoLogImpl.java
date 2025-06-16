@@ -247,12 +247,10 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 args.groups = new String[groups.length];
                 args.groupsDefaultLogcatStatus = new boolean[groups.length];
 
-                synchronized (mLogGroupsLock) {
-                    for (var i = 0; i < groups.length; i++) {
-                        var group = groups[i];
-                        args.groups[i] = group.name();
-                        args.groupsDefaultLogcatStatus[i] = group.isLogToLogcat();
-                    }
+                for (var i = 0; i < groups.length; i++) {
+                    var group = groups[i];
+                    args.groups[i] = group.name();
+                    args.groupsDefaultLogcatStatus[i] = group.isLogToLogcat();
                 }
 
                 mConfigurationService.registerClient(this, args);
