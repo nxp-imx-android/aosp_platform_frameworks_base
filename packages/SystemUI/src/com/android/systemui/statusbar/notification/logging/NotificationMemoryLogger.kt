@@ -42,8 +42,12 @@ constructor(
     private val notificationPipeline: NotifPipeline,
     private val statsManager: StatsManager,
     @Main private val mainDispatcher: CoroutineDispatcher,
-    @Background private val backgroundExecutor: Executor
+    @Background private val backgroundExecutor: Executor,
 ) : StatsManager.StatsPullAtomCallback {
+
+    companion object {
+        private const val TAG = "NotificationMemoryLogger"
+    }
 
     /**
      * This class is used to accumulate and aggregate data - the fields mirror values in statd Atom
@@ -74,7 +78,7 @@ constructor(
             SysUiStatsLog.NOTIFICATION_MEMORY_USE,
             null,
             backgroundExecutor,
-            this
+            this,
         )
     }
 
@@ -94,7 +98,7 @@ constructor(
                             compareBy(
                                 { it.packageName },
                                 { it.objectUsage.style },
-                                { it.notificationKey }
+                                { it.notificationKey },
                             )
                         )
                 val usageData = aggregateMemoryUsageData(notificationMemoryUse)
@@ -120,7 +124,7 @@ constructor(
                             toKb(use.styleViews),
                             toKb(use.customViews),
                             toKb(use.softwareBitmaps),
-                            use.seenCount
+                            use.seenCount,
                         )
                     )
                 }
@@ -128,12 +132,12 @@ constructor(
                 // This can happen if the device is sleeping or view walking takes too long.
                 // The statsd collector will interrupt the thread and we need to handle it
                 // gracefully.
-                Log.w(NotificationLogger.TAG, "Timed out when measuring notification memory.", e)
+                Log.w(TAG, "Timed out when measuring notification memory.", e)
                 return@traceSection StatsManager.PULL_SKIP
             } catch (e: Exception) {
                 // Error while collecting data, this should not crash prod SysUI. Just
                 // log WTF and move on.
-                Log.wtf(NotificationLogger.TAG, "Failed to measure notification memory.", e)
+                Log.wtf(TAG, "Failed to measure notification memory.", e)
                 return@traceSection StatsManager.PULL_SKIP
             }
 
@@ -162,7 +166,7 @@ internal fun aggregateMemoryUsageData(
                 if (first) {
                     NotificationMemoryLogger.NotificationMemoryUseAtomBuilder(
                         element.uid,
-                        element.objectUsage.style
+                        element.objectUsage.style,
                     )
                 } else {
                     accumulator!!
@@ -209,5 +213,6 @@ internal fun aggregateMemoryUsageData(
             return@aggregate use
         }
 }
+
 /** Rounds the passed value to the nearest KB - e.g. 700B rounds to 1KB. */
 private fun toKb(value: Int): Int = (value.toFloat() / 1024f).roundToInt()

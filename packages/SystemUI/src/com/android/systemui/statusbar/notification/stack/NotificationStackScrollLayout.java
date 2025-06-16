@@ -117,7 +117,6 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpUtil;
 import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;
-import com.android.systemui.statusbar.notification.logging.NotificationLogger;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
@@ -128,7 +127,6 @@ import com.android.systemui.statusbar.notification.shared.NotificationContentAlp
 import com.android.systemui.statusbar.notification.shared.NotificationHeadsUpCycling;
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism;
 import com.android.systemui.statusbar.notification.shared.NotificationThrottleHun;
-import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor;
 import com.android.systemui.statusbar.notification.stack.shared.model.AccessibilityScrollEvent;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimBounds;
 import com.android.systemui.statusbar.notification.stack.shared.model.ShadeScrimShape;
@@ -274,8 +272,6 @@ public class NotificationStackScrollLayout
     private float mOverScrolledBottomPixels;
     private final ListenerSet<Runnable> mStackHeightChangedListeners = new ListenerSet<>();
     private final ListenerSet<Runnable> mHeadsUpHeightChangedListeners = new ListenerSet<>();
-    // TODO(b/424001722) remove mLegacyLocationsChangedListener
-    private NotificationLogger.OnChildLocationsChangedListener mLegacyLocationsChangedListener;
     private OnNotificationLocationsChangedListener mLocationsChangedListener;
     private OnOverscrollTopChangedListener mOverscrollTopChangedListener;
     private ExpandableView.OnHeightChangedListener mOnHeightChangedListener;
@@ -1345,12 +1341,6 @@ public class NotificationStackScrollLayout
     public void setNotificationLocationsChangedListener(
             @Nullable OnNotificationLocationsChangedListener listener) {
         mLocationsChangedListener = listener;
-    }
-
-    public void setChildLocationsChangedListener(
-            NotificationLogger.OnChildLocationsChangedListener listener) {
-        NotificationsLiveDataStoreRefactor.assertInLegacyMode();
-        mLegacyLocationsChangedListener = listener;
     }
 
     private void setMaxLayoutHeight(int maxLayoutHeight) {

@@ -36,6 +36,7 @@ enum class StatusBarMode {
     /**
      * A mode where notification icons in the status bar are hidden and replaced by a dot (this mode
      * can be requested by apps).
+     *
      * @see [com.android.systemui.statusbar.phone.domain.interactor.LightsOutInteractor].
      */
     LIGHTS_OUT,
