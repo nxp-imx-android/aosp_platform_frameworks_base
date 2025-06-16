@@ -23,7 +23,7 @@ import android.content.IntentFilter
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
-import kotlinx.coroutines.Dispatchers
+import com.android.settingslib.spa.coroutines.SpaDispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -50,7 +50,7 @@ fun Context.broadcastReceiverFlow(intentFilter: IntentFilter, flags: Int): Flow<
                 object : BroadcastReceiver() {
                     override fun onReceive(context: Context, intent: Intent) {
                         Log.d(TAG, "onReceive: $intent")
-                        trySend(intent)
+                        val unused = trySend(intent)
                     }
                 }
             registerReceiver(broadcastReceiver, intentFilter, flags)
@@ -59,4 +59,4 @@ fun Context.broadcastReceiverFlow(intentFilter: IntentFilter, flags: Int): Flow<
         }
         .catch { e -> Log.e(TAG, "Error while broadcastReceiverFlow", e) }
         .conflate()
-        .flowOn(Dispatchers.Default)
+        .flowOn(SpaDispatchers.Default)

@@ -16,8 +16,8 @@
 
 package com.android.settingslib.spa.restricted
 
+import com.android.settingslib.spa.coroutines.SpaDispatchers
 import com.android.settingslib.spa.widget.preference.SwitchPreferenceModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flowOf
@@ -35,7 +35,7 @@ class RestrictedSwitchPreferencePresenter(
                 null -> flowOf(indeterminateModel)
             }
             .conflate()
-            .flowOn(Dispatchers.Default)
+            .flowOn(SpaDispatchers.Default)
 
     private fun restrictedModelFlow(restrictedMode: Blocked): Flow<SwitchPreferenceModel> =
         restrictedMode.switchPreferenceOverridesFlow.map { overrides ->

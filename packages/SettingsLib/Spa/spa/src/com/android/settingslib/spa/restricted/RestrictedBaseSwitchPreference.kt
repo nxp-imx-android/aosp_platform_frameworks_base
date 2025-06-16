@@ -30,9 +30,9 @@ import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.settingslib.spa.R
+import com.android.settingslib.spa.coroutines.SpaDispatchers
 import com.android.settingslib.spa.framework.common.SpaEnvironmentFactory
 import com.android.settingslib.spa.widget.preference.SwitchPreferenceModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.flowOn
 
@@ -61,7 +61,10 @@ internal fun RestrictedBaseSwitchPreference(
     }
     val restrictedModeFlow =
         remember(restrictions) {
-            repository.restrictedModeFlow(restrictions).conflate().flowOn(Dispatchers.Default)
+            repository
+                .restrictedModeFlow(restrictions)
+                .conflate()
+                .flowOn(SpaDispatchers.Default)
         }
     val restrictedMode by restrictedModeFlow.collectAsStateWithLifecycle(initialValue = null)
     val presenter =
