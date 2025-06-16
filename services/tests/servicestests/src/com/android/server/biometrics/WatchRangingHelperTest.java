@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import android.content.Context;
 import android.hardware.biometrics.IIdentityCheckStateListener.WatchRangingState;
@@ -72,6 +73,19 @@ public class WatchRangingHelperTest {
                 watchRangingState -> {});
         mProximityResultCallbackArgumentCaptor = ArgumentCaptor.forClass(
                 IProximityResultCallback.class);
+    }
+
+    @Test
+    public void testNullAuthenticationPolicyManager() {
+        mWatchRangingHelper = new WatchRangingHelper(AUTHENTICATION_REQUEST_ID,
+                null, new Handler(TestableLooper.get(this).getLooper()),
+                watchRangingState -> {});
+
+        mWatchRangingHelper.startWatchRanging();
+
+        verifyNoInteractions(mAuthenticationPolicyService);
+        assertThat(mWatchRangingHelper.getWatchRangingState()).isEqualTo(
+                WatchRangingState.WATCH_RANGING_IDLE);
     }
 
     @Test
