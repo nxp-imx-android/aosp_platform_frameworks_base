@@ -24,6 +24,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import com.android.settingslib.spa.framework.util.SystemProperties
 import com.android.settingslib.spa.restricted.RestrictedRepository
+import kotlinx.coroutines.Dispatchers
+import kotlin.coroutines.CoroutineContext
 
 private const val TAG = "SpaEnvironment"
 
@@ -107,6 +109,9 @@ abstract class SpaEnvironment(context: Context) {
 
     // Specify provider authorities for debugging purpose.
     open val searchProviderAuthorities: String? = null
+
+    /** Specify default dispatcher. */
+    open val defaultDispatcher: CoroutineContext = Dispatchers.Default
 
     /** Specify whether expressive design is enabled. */
     open val isSpaExpressiveEnabled by lazy {
