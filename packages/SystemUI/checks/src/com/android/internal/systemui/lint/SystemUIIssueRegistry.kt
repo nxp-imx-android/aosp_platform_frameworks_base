@@ -36,6 +36,7 @@ class SystemUIIssueRegistry : IssueRegistry() {
                 DemotingTestWithoutBugDetector.ISSUE,
                 DoNotDirectlyConstructKosmosDetector.ISSUE,
                 DumpableNotRegisteredDetector.ISSUE,
+                ExposeFlowFromUiLayerDetector.ISSUE,
                 FlowDetector.SHARED_FLOW_CREATION,
                 MainThreadCoroutineScopeDetector.ISSUE,
                 MissingApacheLicenseDetector.ISSUE,
