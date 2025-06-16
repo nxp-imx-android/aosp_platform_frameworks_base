@@ -25,7 +25,12 @@ import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameMode
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 
 /**
  * Every mobile line of service can be identified via a [SubscriptionInfo] object. We set up a
@@ -174,5 +179,27 @@ interface MobileConnectionRepository {
     companion object {
         /** The default number of levels to use for [numberOfLevels]. */
         val DEFAULT_NUM_LEVELS = CellSignalStrength.getNumSignalStrengthLevels()
+
+        /**
+         * Automatically implements [MobileConnectionRepository.numberOfLevels] based on the
+         * [inflateSignalStrength] value.
+         *
+         * @param default The default number of levels to use if [inflateSignalStrength] is false.
+         */
+        fun createNumberOfLevelsFlow(
+            scope: CoroutineScope,
+            inflateSignalStrength: Flow<Boolean>,
+            default: Int = DEFAULT_NUM_LEVELS,
+        ): StateFlow<Int> {
+            return inflateSignalStrength
+                .map { shouldInflate ->
+                    if (shouldInflate) {
+                        default + 1
+                    } else {
+                        default
+                    }
+                }
+                .stateIn(scope, SharingStarted.WhileSubscribed(), default)
+        }
     }
 }
