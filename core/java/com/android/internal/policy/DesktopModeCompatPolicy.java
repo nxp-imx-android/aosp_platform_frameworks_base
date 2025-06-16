@@ -49,14 +49,6 @@ public class DesktopModeCompatPolicy {
     public DesktopModeCompatPolicy(@NonNull Context context) {
         mContext = context;
         mSystemUiPackage = context.getResources().getString(R.string.config_systemUi);
-        mDefaultHomePackageSupplier = () -> {
-            final ComponentName homeActivities = getPackageManager().getHomeActivities(
-                    new ArrayList<>());
-            if (homeActivities != null) {
-                return homeActivities.getPackageName();
-            }
-            return null;
-        };
     }
 
     public void setDefaultHomePackageSupplier(
@@ -74,8 +66,9 @@ public class DesktopModeCompatPolicy {
         return mPackageManager;
     }
 
+    @Nullable
     private String getDefaultHomePackage() {
-        if (mDefaultHomePackageSupplier != null) {
+        if (mDefaultHomePackageSupplier != null && mDefaultHomePackageSupplier.get() != null) {
             return mDefaultHomePackageSupplier.get();
         }
 
@@ -259,7 +252,7 @@ public class DesktopModeCompatPolicy {
      * currently no default home package available.
      */
     private boolean isPartOfDefaultHomePackageOrNoHomeAvailable(@Nullable String packageName) {
-        final String defaultHomePackage = mDefaultHomePackageSupplier.get();
+        final String defaultHomePackage = getDefaultHomePackage();
         return defaultHomePackage == null || (packageName != null
                 && packageName.equals(defaultHomePackage));
     }
