@@ -1210,6 +1210,16 @@ flag {
 }
 
 flag {
+    name: "enable_window_drop_smooth_transition"
+    namespace: "lse_desktop_experience"
+    description: "Enables smoother visual transition when a window is dropped after being dragged."
+    bug: "398992368"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_window_repositioning_api"
     namespace: "lse_desktop_experience"
     description: "Enables the API to allow default browsers to reposition their windows."
