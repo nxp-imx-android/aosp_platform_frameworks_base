@@ -53,9 +53,13 @@ public class AutoclickIndicatorView extends View {
 
     private final RectF mRingRect;
 
-    // x and y coordinates of the visual indicator.
-    private float mX;
-    private float mY;
+    // x and y coordinates of the mouse.
+    private float mMouseX;
+    private float mMouseY;
+
+    // x and y coordinates of the visual indicator, set when drawing of the indicator begins.
+    private float mSnapshotX;
+    private float mSnapshotY;
 
     // Current sweep angle of the animated ring.
     private float mSweepAngle;
@@ -114,10 +118,10 @@ public class AutoclickIndicatorView extends View {
 
         if (showIndicator) {
             mRingRect.set(
-                    /* left= */ mX - mRadius,
-                    /* top= */ mY - mRadius,
-                    /* right= */ mX + mRadius,
-                    /* bottom= */ mY + mRadius);
+                    /* left= */ mSnapshotX - mRadius,
+                    /* top= */ mSnapshotY - mRadius,
+                    /* right= */ mSnapshotX + mRadius,
+                    /* bottom= */ mSnapshotY + mRadius);
             canvas.drawArc(mRingRect, /* startAngle= */ -90, mSweepAngle, false, mPaint);
         }
     }
@@ -134,8 +138,8 @@ public class AutoclickIndicatorView extends View {
     }
 
     public void setCoordination(float x, float y) {
-        mX = x;
-        mY = y;
+        mMouseX = x;
+        mMouseY = y;
     }
 
     public void setRadius(int radius) {
@@ -148,6 +152,8 @@ public class AutoclickIndicatorView extends View {
     }
 
     public void redrawIndicator() {
+        mSnapshotX = mMouseX;
+        mSnapshotY = mMouseY;
         showIndicator = true;
         invalidate();
         mAnimator.start();
