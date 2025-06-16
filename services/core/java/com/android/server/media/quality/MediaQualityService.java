@@ -2042,9 +2042,20 @@ public class MediaQualityService extends SystemService {
                 throws RemoteException {
             Long dbId = pictureProfile.pictureProfileId;
             if (dbId != null) {
+                android.hardware.tv.mediaquality.PictureParameter[] params =
+                        pictureProfile.parameters.pictureParameters;
+                for (android.hardware.tv.mediaquality.PictureParameter param : params) {
+                    if (param.getTag() == PictureParameter.activeProfile
+                            && !param.getActiveProfile()) {
+                        synchronized (mPictureProfileLock) {
+                            mHandleToPictureProfile.remove(dbId);
+                            mCurrentPictureHandleToOriginal.removeValue(dbId);
+                        }
+                        break;
+                    }
+                }
                 updatePictureProfileFromHal(dbId,
-                        MediaQualityUtils.convertPictureParameterListToPersistableBundle(
-                                pictureProfile.parameters.pictureParameters));
+                        MediaQualityUtils.convertPictureParameterListToPersistableBundle(params));
             }
         }
 
