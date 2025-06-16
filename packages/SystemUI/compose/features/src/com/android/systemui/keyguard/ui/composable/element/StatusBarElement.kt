@@ -130,7 +130,7 @@ constructor(
         val isVisible by viewModel.isSignOutButtonVisible.collectAsStateWithLifecycle()
         if (isVisible) {
             Button(
-                onClick = viewModel.onSignOut,
+                onClick = viewModel::onSignOut,
                 contentPadding = PaddingValues(start = 4.dp, end = 8.dp),
                 modifier = Modifier.padding(end = 8.dp),
             ) {

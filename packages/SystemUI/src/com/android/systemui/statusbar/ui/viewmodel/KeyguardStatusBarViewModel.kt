@@ -59,7 +59,7 @@ constructor(
     sceneInteractor: SceneInteractor,
     private val keyguardInteractor: KeyguardInteractor,
     keyguardStatusBarInteractor: KeyguardStatusBarInteractor,
-    userLogoutInteractor: UserLogoutInteractor,
+    private val userLogoutInteractor: UserLogoutInteractor,
     batteryController: BatteryController,
 ) {
 
@@ -117,5 +117,7 @@ constructor(
     val isSignOutButtonVisible: StateFlow<Boolean> =
         userLogoutInteractor.isLogoutToSystemUserEnabled
 
-    val onSignOut: () -> Unit = { userLogoutInteractor.logOutToSystemUser() }
+    fun onSignOut() {
+        userLogoutInteractor.logOutToSystemUser()
+    }
 }
