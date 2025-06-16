@@ -51,6 +51,7 @@ import android.view.animation.PathInterpolator
 import android.window.IRemoteTransition
 import android.window.IRemoteTransitionFinishedCallback
 import android.window.RemoteTransition
+import android.window.RemoteTransitionStub
 import android.window.TransitionFilter
 import android.window.TransitionInfo
 import android.window.WindowAnimationState
@@ -61,6 +62,7 @@ import com.android.app.animation.Interpolators
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.systemui.Flags.animationLibraryDelayLeashCleanup
+import com.android.systemui.Flags.animationLibraryShellMigration
 import com.android.systemui.Flags.instantHideShade
 import com.android.systemui.Flags.moveTransitionAnimationLayer
 import com.android.systemui.animation.TransitionAnimator.Companion.assertLongLivedReturnAnimations
@@ -230,6 +232,15 @@ constructor(
         private fun defaultDialogToAppAnimator(mainExecutor: Executor): TransitionAnimator {
             return TransitionAnimator(mainExecutor, DIALOG_TIMINGS, INTERPOLATORS)
         }
+
+        private fun assertShellMigration() {
+            check(shellMigrationEnabled()) {
+                "Attempted to use the new APIs, but the animationLibraryShellMigration flag is " +
+                    "disabled"
+            }
+        }
+
+        fun shellMigrationEnabled() = animationLibraryShellMigration()
     }
 
     /**
@@ -269,6 +280,45 @@ constructor(
 
     /**
      * Start an intent and animate the opening window. The intent will be started by running
+     * [intentStarter], which should use the provided [RemoteTransition] and return the launch
+     * result. [controller] is responsible from animating the view from which the intent was started
+     * in [Controller.onTransitionAnimationProgress]. No animation will start if there is no window
+     * opening.
+     *
+     * If [controller] is null or does not contain a valid [TransitionCookie], or [animate] is
+     * false, then the intent will be started and no animation will run.
+     *
+     * If [animateReturn] is true, the return transition will also be animated back using
+     * [controller].
+     *
+     * If the device is currently locked, the user will have to unlock it before the intent is
+     * started unless [showOverLockscreen] is true. In that case, the activity will be started
+     * directly over the lockscreen.
+     *
+     * This method will throw any exception thrown by [intentStarter].
+     */
+    @JvmOverloads
+    fun startIntentWithAnimation(
+        controller: Controller?,
+        scope: CoroutineScope,
+        animate: Boolean = true,
+        animateReturn: Boolean = false,
+        showOverLockscreen: Boolean = false,
+        intentStarter: (RemoteTransition?) -> Int,
+    ) {
+        assertShellMigration()
+        startIntentWithAnimationInternal(
+            controller,
+            scope,
+            animate = animate,
+            animateReturn = animateReturn,
+            showOverLockscreen = showOverLockscreen,
+            intentStarter = intentStarter,
+        )
+    }
+
+    /**
+     * Start an intent and animate the opening window. The intent will be started by running
      * [intentStarter], which should use the provided [RemoteAnimationAdapter] and return the launch
      * result. [controller] is responsible from animating the view from which the intent was started
      * in [Controller.onTransitionAnimationProgress]. No animation will start if there is no window
@@ -286,6 +336,13 @@ constructor(
      *
      * This method will throw any exception thrown by [intentStarter].
      */
+    @Deprecated(
+        "New usages should call the overload above",
+        ReplaceWith(
+            "startIntentWithAnimation(controller, scope, animate, animateReturn, showOverLockscreen, " +
+                "intentStarter)"
+        ),
+    )
     @JvmOverloads
     fun startIntentWithAnimation(
         controller: Controller?,
@@ -294,87 +351,180 @@ constructor(
         showOverLockscreen: Boolean = false,
         intentStarter: (RemoteAnimationAdapter?) -> Int,
     ) {
-        if (controller == null || !animate) {
-            Log.i(TAG, "Starting intent with no animation")
-            intentStarter(null)
-            controller?.callOnIntentStartedOnMainThread(willAnimate = false)
-            return
-        }
-
-        val callback =
-            this.callback
-                ?: throw IllegalStateException(
-                    "ActivityTransitionAnimator.callback must be set before using this animator"
-                )
-        val runner = createEphemeralRunner(controller)
-        val runnerDelegate = runner.delegate
-        val hideKeyguardWithAnimation = callback.isOnKeyguard() && !showOverLockscreen
-
-        // Pass the RemoteAnimationAdapter to the intent starter only if we are not hiding the
-        // keyguard with the animation
-        val animationAdapter =
-            if (!hideKeyguardWithAnimation) {
-                RemoteAnimationAdapter(
-                    runner,
-                    TIMINGS.totalDuration,
-                    TIMINGS.totalDuration - 150, /* statusBarTransitionDelay */
-                )
-            } else {
-                null
-            }
-
-        // Register the remote animation for the given package to also animate trampoline
-        // activity launches.
-        if (packageName != null && animationAdapter != null) {
-            try {
-                ActivityTaskManager.getService()
-                    .registerRemoteAnimationForNextActivityStart(
-                        packageName,
-                        animationAdapter,
-                        null, /* launchCookie */
-                    )
-            } catch (e: RemoteException) {
-                Log.w(TAG, "Unable to register the remote animation", e)
-            }
-        }
-
-        if (animationAdapter != null && controller.transitionCookie != null) {
-            registerEphemeralReturnAnimation(controller, transitionRegister)
-        }
-
-        val launchResult = intentStarter(animationAdapter)
-
-        // Only animate if the app is not already on top and will be opened, unless we are on the
-        // keyguard.
-        val willAnimate =
-            launchResult == ActivityManager.START_TASK_TO_FRONT ||
-                launchResult == ActivityManager.START_SUCCESS ||
-                (launchResult == ActivityManager.START_DELIVERED_TO_TOP &&
-                    hideKeyguardWithAnimation)
-
-        Log.i(
-            TAG,
-            "launchResult=$launchResult willAnimate=$willAnimate " +
-                "hideKeyguardWithAnimation=$hideKeyguardWithAnimation",
+        startIntentWithAnimationInternal(
+            controller,
+            animate = animate,
+            packageName = packageName,
+            showOverLockscreen = showOverLockscreen,
+            intentStarterLegacy = intentStarter,
         )
-        controller.callOnIntentStartedOnMainThread(willAnimate)
+    }
 
-        // If we expect an animation, post a timeout to cancel it in case the remote animation is
-        // never started.
-        if (willAnimate) {
-            if (longLivedReturnAnimationsEnabled()) {
-                runner.postTimeouts()
-            } else {
-                runnerDelegate!!.postTimeouts()
+    /**
+     * If [intentStarter] is not null, the [RemoteTransition] flow is used. Else if
+     * [intentStarterLegacy] is not null, the legacy [RemoteAnimationAdapter] flow is used. Else
+     * this function throws an [IllegalArgumentException].
+     */
+    private fun startIntentWithAnimationInternal(
+        controller: Controller?,
+        scope: CoroutineScope? = null,
+        animate: Boolean = true,
+        animateReturn: Boolean = false,
+        packageName: String? = null,
+        showOverLockscreen: Boolean = false,
+        intentStarter: ((RemoteTransition?) -> Int)? = null,
+        intentStarterLegacy: ((RemoteAnimationAdapter?) -> Int)? = null,
+    ) {
+        if (intentStarter != null) {
+            val cookie = controller?.transitionCookie
+            if (cookie == null || scope == null || !animate) {
+                Log.i(TAG, "Starting intent with no animation")
+                intentStarter(null)
+                controller?.callOnIntentStartedOnMainThread(willAnimate = false)
+                return
             }
 
-            // Hide the keyguard using the launch animation instead of the default unlock animation.
-            if (hideKeyguardWithAnimation) {
-                callback.hideKeyguardWithAnimation(runner)
+            val callback =
+                this.callback
+                    ?: throw IllegalStateException(
+                        "ActivityTransitionAnimator.callback must be set before using this animator"
+                    )
+            val hideKeyguardWithAnimation = callback.isOnKeyguard() && !showOverLockscreen
+
+            val (launchTransition, returnTransition) =
+                registerEphemeralTransitions(
+                    controller,
+                    cookie,
+                    scope,
+                    callback,
+                    transitionAnimator,
+                    lifecycleListener,
+                    transitionRegister,
+                    includeReturn = animateReturn,
+                )
+
+            val launchResult = intentStarter(launchTransition)
+
+            // Only animate if the app is not already on top and will be opened, unless we are on
+            // the keyguard.
+            val willAnimate =
+                launchResult == ActivityManager.START_TASK_TO_FRONT ||
+                    launchResult == ActivityManager.START_SUCCESS ||
+                    (launchResult == ActivityManager.START_DELIVERED_TO_TOP &&
+                        hideKeyguardWithAnimation)
+
+            Log.i(
+                TAG,
+                "launchResult=$launchResult willAnimate=$willAnimate " +
+                    "hideKeyguardWithAnimation=$hideKeyguardWithAnimation",
+            )
+            controller.callOnIntentStartedOnMainThread(willAnimate)
+
+            // If we expect an animation, post a timeout to cancel it in case the remote animation
+            // is never started.
+            if (willAnimate) {
+                (launchTransition.remoteTransition as? OriginTransition)?.postTimeouts()
+
+                // Hide the keyguard using the launch transition instead of the default unlock
+                // animation.
+                if (hideKeyguardWithAnimation) {
+                    callback.hideKeyguardWithAnimation(launchTransition.remoteTransition)
+                }
+            } else {
+                // We need to make sure delegate references are dropped to avoid memory leaks.
+                (launchTransition.remoteTransition as? OriginTransition)?.dispose()
+                (returnTransition?.remoteTransition as? OriginTransition)?.dispose()
+            }
+        } else if (intentStarterLegacy != null) {
+            if (controller == null || !animate) {
+                Log.i(TAG, "Starting intent with no animation")
+                intentStarterLegacy(null)
+                controller?.callOnIntentStartedOnMainThread(willAnimate = false)
+                return
+            }
+
+            val callback =
+                this.callback
+                    ?: throw IllegalStateException(
+                        "ActivityTransitionAnimator.callback must be set before using this animator"
+                    )
+            val hideKeyguardWithAnimation = callback.isOnKeyguard() && !showOverLockscreen
+
+            val runner = createEphemeralRunner(controller)
+            val runnerDelegate = runner.delegate
+
+            // Pass the RemoteAnimationAdapter to the intent starter only if we are not hiding the
+            // keyguard with the animation
+            val animationAdapter =
+                if (!hideKeyguardWithAnimation) {
+                    RemoteAnimationAdapter(
+                        runner,
+                        TIMINGS.totalDuration,
+                        TIMINGS.totalDuration - 150, /* statusBarTransitionDelay */
+                    )
+                } else {
+                    null
+                }
+
+            // Register the remote animation for the given package to also animate trampoline
+            // activity launches.
+            if (packageName != null && animationAdapter != null) {
+                try {
+                    ActivityTaskManager.getService()
+                        .registerRemoteAnimationForNextActivityStart(
+                            packageName,
+                            animationAdapter,
+                            null, /* launchCookie */
+                        )
+                } catch (e: RemoteException) {
+                    Log.w(TAG, "Unable to register the remote animation", e)
+                }
+            }
+
+            if (animationAdapter != null && controller.transitionCookie != null) {
+                registerEphemeralReturnAnimation(controller, transitionRegister)
+            }
+
+            val launchResult = intentStarterLegacy(animationAdapter)
+
+            // Only animate if the app is not already on top and will be opened, unless we are on
+            // the
+            // keyguard.
+            val willAnimate =
+                launchResult == ActivityManager.START_TASK_TO_FRONT ||
+                    launchResult == ActivityManager.START_SUCCESS ||
+                    (launchResult == ActivityManager.START_DELIVERED_TO_TOP &&
+                        hideKeyguardWithAnimation)
+
+            Log.i(
+                TAG,
+                "launchResult=$launchResult willAnimate=$willAnimate " +
+                    "hideKeyguardWithAnimation=$hideKeyguardWithAnimation",
+            )
+            controller.callOnIntentStartedOnMainThread(willAnimate)
+
+            // If we expect an animation, post a timeout to cancel it in case the remote animation
+            // is never started.
+            if (willAnimate) {
+                if (longLivedReturnAnimationsEnabled()) {
+                    runner.postTimeouts()
+                } else {
+                    runnerDelegate!!.postTimeouts()
+                }
+
+                // Hide the keyguard using the launch animation instead of the default unlock
+                // animation.
+                if (hideKeyguardWithAnimation) {
+                    callback.hideKeyguardWithAnimation(runner)
+                }
+            } else {
+                // We need to make sure delegate references are dropped to avoid memory leaks.
+                runner.dispose()
             }
         } else {
-            // We need to make sure delegate references are dropped to avoid memory leaks.
-            runner.dispose()
+            throw IllegalArgumentException(
+                "Either intentStarter or intentStarterLegacy must be defined"
+            )
         }
     }
 
@@ -397,6 +547,27 @@ constructor(
      * Same as [startIntentWithAnimation] but allows [intentStarter] to throw a
      * [PendingIntent.CanceledException] which must then be handled by the caller. This is useful
      * for Java caller starting a [PendingIntent].
+     */
+    @Throws(PendingIntent.CanceledException::class)
+    @JvmOverloads
+    fun startPendingIntentWithAnimation(
+        controller: Controller?,
+        scope: CoroutineScope,
+        animate: Boolean = true,
+        animateReturn: Boolean = false,
+        showOverLockscreen: Boolean = false,
+        intentStarter: PendingIntentStarter,
+    ) {
+        assertShellMigration()
+        startIntentWithAnimation(controller, scope, animate, animateReturn, showOverLockscreen) {
+            intentStarter.startPendingIntent(it)
+        }
+    }
+
+    /**
+     * Same as [startIntentWithAnimation] but allows [intentStarter] to throw a
+     * [PendingIntent.CanceledException] which must then be handled by the caller. This is useful
+     * for Java caller starting a [PendingIntent].
      *
      * If possible, you should pass the [packageName] of the intent that will be started so that
      * trampoline activity launches will also be animated.
@@ -408,11 +579,127 @@ constructor(
         animate: Boolean = true,
         packageName: String? = null,
         showOverLockscreen: Boolean = false,
-        intentStarter: PendingIntentStarter,
+        intentStarter: LegacyPendingIntentStarter,
     ) {
         startIntentWithAnimation(controller, animate, packageName, showOverLockscreen) {
             intentStarter.startPendingIntent(it)
         }
+    }
+
+    /**
+     * Creates, registers and returns an ephemeral launch transition and its matching return
+     * transition (iff [includeReturn] is true).
+     *
+     * Calling this function will get rid of any previous registration linked to the same cookie.
+     */
+    private fun registerEphemeralTransitions(
+        controller: Controller,
+        cookie: TransitionCookie,
+        scope: CoroutineScope,
+        callback: Callback,
+        transitionAnimator: TransitionAnimator,
+        listener: Listener?,
+        transitionRegister: TransitionRegister?,
+        includeReturn: Boolean,
+    ): Pair<RemoteTransition, RemoteTransition?> {
+        // Make sure that any previous registrations linked to the same cookie are gone.
+        unregister(cookie)
+
+        val launchTransition =
+            registerEphemeralTransition(
+                controller,
+                cookie,
+                scope,
+                isLaunch = true,
+                label = "${cookie}_launchTransition",
+                callback,
+                transitionAnimator,
+                listener,
+                transitionRegister,
+            )
+
+        val returnTransition =
+            if (includeReturn) {
+                registerEphemeralTransition(
+                    controller,
+                    cookie,
+                    scope,
+                    isLaunch = false,
+                    label = "${cookie}_returnTransition",
+                    callback,
+                    transitionAnimator,
+                    listener,
+                    transitionRegister,
+                )
+            } else {
+                null
+            }
+
+        return Pair(launchTransition, returnTransition)
+    }
+
+    /** Creates and registers a [RemoteTransition] that unregisters itself once it has run once. */
+    private fun registerEphemeralTransition(
+        controller: Controller,
+        cookie: TransitionCookie,
+        scope: CoroutineScope,
+        isLaunch: Boolean,
+        label: String,
+        callback: Callback,
+        transitionAnimator: TransitionAnimator,
+        listener: Listener?,
+        transitionRegister: TransitionRegister?,
+    ): RemoteTransition {
+        var cleanUpRunnable: Runnable? = null
+
+        val controllerFactory =
+            object : ControllerFactory(cookie, controller.component) {
+                override suspend fun createController(forLaunch: Boolean): Controller {
+                    return object : DelegateTransitionAnimatorController(controller) {
+                        override val isLaunching = forLaunch
+
+                        override fun onDispose() {
+                            cleanUpRunnable?.run()
+                        }
+                    }
+                }
+            }
+
+        val typeSet =
+            if (isLaunch) {
+                intArrayOf(TRANSIT_OPEN, TRANSIT_TO_FRONT)
+            } else {
+                intArrayOf(TRANSIT_CLOSE, TRANSIT_TO_BACK)
+            }
+        val filter =
+            TransitionFilter().apply {
+                mTypeSet = typeSet
+                mRequirements =
+                    arrayOf(
+                        TransitionFilter.Requirement().apply {
+                            mLaunchCookie = controllerFactory.cookie
+                            mModes = typeSet
+                        }
+                    )
+            }
+
+        val remoteTransition =
+            RemoteTransition(
+                OriginTransition(
+                    createController = { controllerFactory.createController(isLaunch) },
+                    scope,
+                    callback,
+                    transitionAnimator,
+                    listener,
+                    cleanUp = { cleanUpRunnable?.run() },
+                ),
+                label,
+            )
+
+        cleanUpRunnable = Runnable { transitionRegister?.unregister(remoteTransition) }
+        transitionRegister?.register(filter, remoteTransition, includeTakeover = false)
+
+        return remoteTransition
     }
 
     /**
@@ -422,6 +709,7 @@ constructor(
      *
      * TODO(b/339194555): automatically de-register when the launchable is detached.
      */
+    @Deprecated("The new API comes with its own helper methods above")
     private fun registerEphemeralReturnAnimation(
         launchController: Controller,
         transitionRegister: TransitionRegister?,
@@ -525,6 +813,12 @@ constructor(
     }
 
     interface PendingIntentStarter {
+        /** Start a pending intent using the provided [transition] and return the launch result. */
+        @Throws(PendingIntent.CanceledException::class)
+        fun startPendingIntent(transition: RemoteTransition?): Int
+    }
+
+    interface LegacyPendingIntentStarter {
         /**
          * Start a pending intent using the provided [animationAdapter] and return the launch
          * result.
@@ -537,7 +831,17 @@ constructor(
         /** Whether we are currently on the keyguard or not. */
         fun isOnKeyguard(): Boolean = false
 
+        /** Hide the keyguard and animate using [transition]. */
+        // TODO(b/397180418): implement this wherever the old version is implemented.
+        fun hideKeyguardWithAnimation(transition: IRemoteTransition) {
+            throw UnsupportedOperationException()
+        }
+
         /** Hide the keyguard and animate using [runner]. */
+        @Deprecated(
+            "New usages should call the overload above",
+            ReplaceWith("hideKeyguardWithAnimation(transition)"),
+        )
         fun hideKeyguardWithAnimation(runner: IRemoteAnimationRunner) {
             throw UnsupportedOperationException()
         }
@@ -747,7 +1051,9 @@ constructor(
             }
         val launchRemoteTransition =
             RemoteTransition(
-                OriginTransition(createLongLivedRunner(controllerFactory, scope, forLaunch = true)),
+                LegacyOriginTransition(
+                    createLongLivedRunner(controllerFactory, scope, forLaunch = true)
+                ),
                 "${cookie}_launchTransition",
             )
         // TODO(b/403529740): re-enable takeovers once we solve the Compose jank issues.
@@ -772,7 +1078,7 @@ constructor(
             }
         val returnRemoteTransition =
             RemoteTransition(
-                OriginTransition(
+                LegacyOriginTransition(
                     createLongLivedRunner(controllerFactory, scope, forLaunch = false)
                 ),
                 "${cookie}_returnTransition",
@@ -824,8 +1130,245 @@ constructor(
         }
     }
 
+    /**
+     * An [IRemoteTransition] capable of running an activity launch or return animation.
+     *
+     * The logic to animate the expandable that the activity originates from / minimizes to is
+     * contained inside the [Controller] returned by [createController]. [scope] must be a valid
+     * [CoroutineScope] which [createController] will use to provide the [Controller].
+     */
+    private inner class OriginTransition(
+        private val createController: (suspend () -> Controller),
+        private val scope: CoroutineScope,
+        private val callback: Callback,
+        private val transitionAnimator: TransitionAnimator,
+        private val listener: Listener?,
+        private val cleanUp: (() -> Unit)? = null,
+    ) : RemoteTransitionStub() {
+        private val timeoutHandler =
+            if (disableWmTimeout) {
+                null
+            } else {
+                Handler(Looper.getMainLooper())
+            }
+
+        // This is being passed across IPC boundaries and cycles (through PendingIntentRecords,
+        // etc.) are possible. So we need to make sure we drop any references that might
+        // transitively cause leaks when we're done with animation.
+        private var delegate: TransitionAnimationDelegate? = null
+        private var cancelled = false
+        private var timedOut = false
+
+        /**
+         * A timeout to cancel the animation if the remote transition is not started or cancelled
+         * within [TRANSITION_TIMEOUT] milliseconds after the intent is started.
+         *
+         * Note that it is important to keep this a Runnable (and not a Kotlin lambda), otherwise it
+         * will be automatically converted when posted and we wouldn't be able to remove it after
+         * posting it.
+         */
+        private var onTimeout = Runnable { onAnimationTimedOut() }
+
+        /**
+         * A long timeout to Log.wtf (signaling a bug in WM) when the remote transition isn't
+         * started or cancelled within [LONG_TRANSITION_TIMEOUT] milliseconds after the intent is
+         * started.
+         */
+        private var onLongTimeout = Runnable {
+            Log.wtf(
+                TAG,
+                "The remote animation was neither cancelled or started within " +
+                    "$LONG_TRANSITION_TIMEOUT",
+            )
+        }
+
+        @UiThread
+        fun postTimeouts() {
+            timeoutHandler?.let {
+                it.postDelayed(onTimeout, TRANSITION_TIMEOUT)
+                it.postDelayed(onLongTimeout, LONG_TRANSITION_TIMEOUT)
+            }
+        }
+
+        private fun removeTimeouts() {
+            timeoutHandler?.let {
+                it.removeCallbacks(onTimeout)
+                it.removeCallbacks(onLongTimeout)
+            }
+        }
+
+        @BinderThread
+        override fun startAnimation(
+            token: IBinder?,
+            info: TransitionInfo?,
+            startTransaction: SurfaceControl.Transaction?,
+            finishCallback: IRemoteTransitionFinishedCallback?,
+        ) {
+            if (info == null || startTransaction == null) {
+                Log.e(
+                    TAG,
+                    "Skipping the animation because the required data is missing: info=$info, " +
+                        "startTransaction=$startTransaction",
+                )
+                finishCallback?.invoke(info)
+                return
+            }
+
+            initAndRun(onFailure = { finishCallback?.invoke(info) }) {
+                performAnimation(delegate) { delegate ->
+                    delegate.onAnimationStart(
+                        info,
+                        startTransaction = startTransaction,
+                        onAnimationFinished = { finishCallback?.invoke(info) },
+                    )
+                }
+            }
+        }
+
+        @BinderThread
+        override fun takeOverAnimation(
+            transition: IBinder?,
+            info: TransitionInfo?,
+            startTransaction: SurfaceControl.Transaction?,
+            finishCallback: IRemoteTransitionFinishedCallback?,
+            states: Array<out WindowAnimationState>,
+        ) {
+            if (info == null || startTransaction == null) {
+                Log.e(
+                    TAG,
+                    "Skipping the animation takeover because the required data is missing: " +
+                        "info=$info, startTransaction=$startTransaction",
+                )
+                finishCallback?.invoke(info)
+                return
+            }
+
+            initAndRun(onFailure = { finishCallback?.invoke(info) }) {
+                performAnimation(delegate) { delegate ->
+                    delegate.takeOverAnimation(
+                        info,
+                        startTransaction = startTransaction,
+                        onAnimationFinished = { finishCallback?.invoke(info) },
+                        states,
+                    )
+                }
+            }
+        }
+
+        @BinderThread
+        fun initAndRun(onFailure: () -> Unit, performAnimation: () -> Boolean) {
+            removeTimeouts()
+            scope.launch {
+                val success =
+                    withTimeoutOrNull(TRANSITION_TIMEOUT) {
+                        delegate =
+                            TransitionAnimationDelegate(
+                                mainExecutor,
+                                createController(),
+                                callback,
+                                DelegatingAnimationCompletionListener(
+                                    listener,
+                                    this@OriginTransition::dispose,
+                                ),
+                                transitionAnimator,
+                                disableWmTimeout,
+                                skipReparentTransaction,
+                            )
+                        performAnimation()
+                    } ?: false
+                if (!success) onFailure()
+            }
+        }
+
+        @BinderThread
+        private fun performAnimation(
+            delegate: TransitionAnimationDelegate?,
+            performAnimation: (TransitionAnimationDelegate) -> Unit,
+        ): Boolean {
+            return if (delegate != null) {
+                mainExecutor.execute { performAnimation(delegate) }
+                true
+            } else {
+                // Animation started too late and timed out already.
+                Log.i(TAG, "performAnimation called after completion")
+                false
+            }
+        }
+
+        override fun mergeAnimation(
+            transition: IBinder?,
+            info: TransitionInfo?,
+            transaction: SurfaceControl.Transaction?,
+            mergeTarget: IBinder?,
+            finishCallback: IRemoteTransitionFinishedCallback?,
+        ) {
+            removeTimeouts()
+            transaction?.close()
+            info?.releaseAllSurfaces()
+            mainExecutor.execute {
+                cancelled = true
+                delegate?.onAnimationCancelled()
+            }
+            finishCallback?.invoke(info)
+        }
+
+        override fun onTransitionConsumed(transition: IBinder?, aborted: Boolean) {
+            removeTimeouts()
+            mainExecutor.execute {
+                cancelled = true
+                delegate?.onAnimationCancelled()
+            }
+        }
+
+        private fun onAnimationTimedOut() {
+            // The remote animation was cancelled by WM, so we already cancelled the transition
+            // animation.
+            if (cancelled) {
+                return
+            }
+
+            Log.w(TAG, "Remote animation timed out")
+            timedOut = true
+
+            if (DEBUG_TRANSITION_ANIMATION) {
+                Log.d(
+                    TAG,
+                    "Calling controller.onTransitionAnimationCancelled() [animation timed out]",
+                )
+            }
+
+            scope.launch { createController().onTransitionAnimationCancelled() }
+            listener?.onTransitionAnimationCancelled()
+        }
+
+        @AnyThread
+        fun dispose() =
+            mainExecutor.execute {
+                cleanUp?.invoke()
+
+                delegate = null
+                cancelled = false
+                timedOut = false
+            }
+
+        fun IRemoteTransitionFinishedCallback.invoke(info: TransitionInfo?) {
+            info?.releaseAllSurfaces()
+
+            val finishTransaction = SurfaceControl.Transaction()
+            try {
+                onTransitionFinished(null, finishTransaction)
+            } catch (e: RemoteException) {
+                Log.e(TAG, "Failed to call animation finished callback", e)
+            } finally {
+                finishTransaction.close()
+            }
+
+            dispose()
+        }
+    }
+
     /** [Runner] wrapper that supports animation takeovers. */
-    private inner class OriginTransition(private val runner: Runner) : IRemoteTransition {
+    private inner class LegacyOriginTransition(private val runner: Runner) : IRemoteTransition {
         private val delegate = RemoteAnimationRunnerCompat.wrap(runner)
 
         init {
@@ -1212,12 +1755,13 @@ constructor(
         @UiThread
         fun onAnimationStart(
             info: TransitionInfo,
-            finishCallback: IRemoteTransitionFinishedCallback?,
+            startTransaction: SurfaceControl.Transaction,
+            onAnimationFinished: () -> Unit,
         ) {
-            val finishTransaction = SurfaceControl.Transaction()
             impl.onAnimationStart(
                 resolveAnimatedWindow = { resolveAnimatedWindow(info) },
-                onAnimationFinished = { finishCallback?.invoke(finishTransaction) },
+                startTransaction,
+                onAnimationFinished,
             )
         }
 
@@ -1225,14 +1769,13 @@ constructor(
         fun takeOverAnimation(
             info: TransitionInfo,
             startTransaction: SurfaceControl.Transaction,
-            finishCallback: IRemoteTransitionFinishedCallback?,
+            onAnimationFinished: () -> Unit,
             states: Array<out WindowAnimationState>,
         ) {
-            val finishTransaction = SurfaceControl.Transaction()
             impl.takeOverAnimation(
                 resolveAnimatedWindow = { resolveAnimatedWindow(info, states) },
-                startTransaction = startTransaction,
-                onAnimationFinished = { finishCallback?.invoke(finishTransaction) },
+                startTransaction,
+                onAnimationFinished,
             )
         }
 
@@ -1296,16 +1839,6 @@ constructor(
             }
 
             return candidate?.let { AnimatedWindow.fromTransitionInfo(candidate, state) }
-        }
-
-        private fun IRemoteTransitionFinishedCallback.invoke(
-            finishTransaction: SurfaceControl.Transaction
-        ) {
-            try {
-                onTransitionFinished(null, finishTransaction)
-            } catch (e: RemoteException) {
-                e.printStackTrace()
-            }
         }
 
         private fun Rect.hasGreaterAreaThan(other: Rect): Boolean {
@@ -1607,15 +2140,20 @@ constructor(
         @UiThread
         fun onAnimationStart(
             resolveAnimatedWindow: () -> AnimatedWindow?,
+            startTransaction: SurfaceControl.Transaction? = null,
             onAnimationFinished: () -> Unit,
         ) {
             val window = setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
 
             if (controller.windowAnimatorState == null || !longLivedReturnAnimationsEnabled()) {
-                startAnimation(window, onAnimationFinished = onAnimationFinished)
+                startAnimation(
+                    window,
+                    startTransaction = startTransaction,
+                    onAnimationFinished = onAnimationFinished,
+                )
             } else {
                 // If a [controller.windowAnimatorState] exists, treat this like a takeover.
-                takeOverAnimationInternal(window, startTransaction = null, onAnimationFinished)
+                takeOverAnimationInternal(window, startTransaction, onAnimationFinished)
             }
         }
 
@@ -1814,11 +2352,14 @@ constructor(
                             // check above and the call below. For this reason, we still need to
                             // wrap the transaction in a try/catch and set the value of [reparent]
                             // accordingly.
-                            // TODO(b/397180418): re-use the start transaction once the
-                            //  RemoteAnimation wrapper is cleaned up.
                             try {
-                                SurfaceControl.Transaction().use {
-                                    it.reparent(window.leash, viewRoot.surfaceControl).apply()
+                                if (startTransaction != null) {
+                                    startTransaction.reparent(window.leash, viewRoot.surfaceControl)
+                                    startTransaction.apply()
+                                } else {
+                                    SurfaceControl.Transaction().use {
+                                        it.reparent(window.leash, viewRoot.surfaceControl).apply()
+                                    }
                                 }
                                 reparent = true
                             } catch (e: IllegalStateException) {
