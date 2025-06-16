@@ -27,6 +27,7 @@ import androidx.lifecycle.Observer
  *
  * This interface is read-only.
  */
+// TODO(b/34027044) remove NotifLiveDataStore
 interface NotifLiveDataStore {
     val hasActiveNotifs: NotifLiveData<Boolean>
     val activeNotifCount: NotifLiveData<Int>

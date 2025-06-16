@@ -24,7 +24,6 @@ import com.android.systemui.statusbar.core.NewStatusBarIcons;
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController;
 import com.android.systemui.statusbar.layout.StatusBarBoundsProvider;
 import com.android.systemui.statusbar.phone.HeadsUpAppearanceController;
-import com.android.systemui.statusbar.phone.LegacyLightsOutNotifController;
 import com.android.systemui.statusbar.phone.PhoneStatusBarTransitions;
 import com.android.systemui.statusbar.phone.PhoneStatusBarView;
 import com.android.systemui.statusbar.phone.PhoneStatusBarViewController;
@@ -113,10 +112,6 @@ public interface HomeStatusBarComponent {
     /** */
     @HomeStatusBarScope
     HeadsUpAppearanceController getHeadsUpAppearanceController();
-
-    /** */
-    @HomeStatusBarScope
-    LegacyLightsOutNotifController getLegacyLightsOutNotifController();
 
     /** */
     @HomeStatusBarScope
