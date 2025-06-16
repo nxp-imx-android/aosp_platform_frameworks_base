@@ -54,9 +54,9 @@ interface IUiModeManager {
     void disableCarModeByCallingPackage(int flags, String callingPackage);
 
     /**
-     * Return the current running mode.
+     * Returns the current running mode on the given display.
      */
-    int getCurrentModeType();
+    int getCurrentModeType(int displayId);
 
     /**
      * Sets the night mode.
@@ -69,14 +69,14 @@ interface IUiModeManager {
     void setNightMode(int mode);
 
     /**
-     * Gets the currently configured night mode.
+     * Returns the currently configured night mode on the given display.
      * <p>
      * Returns
      * <ol>notnight mode</ol>
      * <ol>night mode</ol>
      * <ol>custom schedule mode switching</ol>
      */
-    int getNightMode();
+    int getNightMode(int displayId);
 
     /**
      * Sets the current night mode to {@link #MODE_NIGHT_CUSTOM} with the custom night mode type

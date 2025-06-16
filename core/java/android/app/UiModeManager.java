@@ -45,6 +45,7 @@ import android.util.ArraySet;
 import android.util.Log;
 import android.util.Slog;
 import android.util.SparseArray;
+import android.view.Display;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.function.pooled.PooledLambda;
@@ -956,10 +957,10 @@ public class UiModeManager {
         }
     }
 
-    private Integer getCurrentModeTypeFromServer() {
+    private Integer getCurrentModeTypeFromServer(int displayId) {
         try {
             if (sGlobals != null) {
-                return sGlobals.mService.getCurrentModeType();
+                return sGlobals.mService.getCurrentModeType(displayId);
             }
             return Configuration.UI_MODE_TYPE_NORMAL;
         } catch (RemoteException e) {
@@ -971,13 +972,13 @@ public class UiModeManager {
     /**
      * Retrieve the current running mode type for the user.
      */
-    private final IpcDataCache.QueryHandler<Void, Integer> mCurrentModeTypeQuery =
+    private final IpcDataCache.QueryHandler<Integer, Integer> mCurrentModeTypeQuery =
             new IpcDataCache.QueryHandler<>() {
 
                 @Override
                 @NonNull
-                public Integer apply(Void query) {
-                    return getCurrentModeTypeFromServer();
+                public Integer apply(Integer displayId) {
+                    return getCurrentModeTypeFromServer(displayId);
                 }
             };
 
@@ -986,7 +987,7 @@ public class UiModeManager {
     /**
      * Cache the current running mode type for a user.
      */
-    private final IpcDataCache<Void, Integer> mCurrentModeTypeCache =
+    private final IpcDataCache<Integer, Integer> mCurrentModeTypeCache =
             new IpcDataCache<>(1, IpcDataCache.MODULE_SYSTEM,
                     CURRENT_MODE_TYPE_API, /* cacheName= */ "CurrentModeTypeCache",
                     mCurrentModeTypeQuery);
@@ -1015,9 +1016,9 @@ public class UiModeManager {
      */
     public int getCurrentModeType() {
         if (enableCurrentModeTypeBinderCache()) {
-            return mCurrentModeTypeCache.query(null);
+            return mCurrentModeTypeCache.query(getDisplayId());
         } else {
-            return getCurrentModeTypeFromServer();
+            return getCurrentModeTypeFromServer(getDisplayId());
         }
     }
 
@@ -1193,10 +1194,10 @@ public class UiModeManager {
         }
     }
 
-    private Integer getNightModeFromServer() {
+    private Integer getNightModeFromServer(int displayId) {
         try {
             if (sGlobals != null) {
-                return sGlobals.mService.getNightMode();
+                return sGlobals.mService.getNightMode(displayId);
             }
             return -1;
         } catch (RemoteException e) {
@@ -1208,13 +1209,13 @@ public class UiModeManager {
     /**
      * Retrieve the night mode for the user.
      */
-    private final IpcDataCache.QueryHandler<Void, Integer> mNightModeQuery =
+    private final IpcDataCache.QueryHandler<Integer, Integer> mNightModeQuery =
             new IpcDataCache.QueryHandler<>() {
 
                 @Override
                 @NonNull
-                public Integer apply(Void query) {
-                    return getNightModeFromServer();
+                public Integer apply(Integer displayId) {
+                    return getNightModeFromServer(displayId);
                 }
             };
 
@@ -1223,7 +1224,7 @@ public class UiModeManager {
     /**
      * Cache the night mode for a user.
      */
-    private final IpcDataCache<Void, Integer> mNightModeCache =
+    private final IpcDataCache<Integer, Integer> mNightModeCache =
             new IpcDataCache<>(1, IpcDataCache.MODULE_SYSTEM,
                     NIGHT_MODE_API, /* cacheName= */ "NightModeCache", mNightModeQuery);
 
@@ -1255,9 +1256,9 @@ public class UiModeManager {
      */
     public @NightMode int getNightMode() {
         if (enableNightModeBinderCache()) {
-            return mNightModeCache.query(null);
+            return mNightModeCache.query(getDisplayId());
         } else {
-            return getNightModeFromServer();
+            return getNightModeFromServer(getDisplayId());
         }
     }
 
@@ -1811,5 +1812,12 @@ public class UiModeManager {
      */
     private int getUserId() {
         return mContext != null ? mContext.getUserId() : UserHandle.myUserId();
+    }
+
+    private int getDisplayId() {
+        if (!android.companion.virtualdevice.flags.Flags.deviceAwareUiMode()) {
+            return Display.DEFAULT_DISPLAY;
+        }
+        return mContext == null ? Display.DEFAULT_DISPLAY : mContext.getDisplayId();
     }
 }

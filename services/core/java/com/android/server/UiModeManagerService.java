@@ -934,14 +934,14 @@ final class UiModeManagerService extends SystemService {
         }
 
         @Override
-        public int getCurrentModeType() {
-            final long ident = Binder.clearCallingIdentity();
-            try {
-                synchronized (mLock) {
-                    return mCurUiMode.get() & Configuration.UI_MODE_TYPE_MASK;
+        public int getCurrentModeType(int displayId) {
+            synchronized (mLock) {
+                int uiModeOverride = mDisplayUiModeOverrides.get(
+                        displayId, UI_MODE_TYPE_UNDEFINED) & UI_MODE_TYPE_MASK;
+                if (uiModeOverride != UI_MODE_TYPE_UNDEFINED) {
+                    return uiModeOverride;
                 }
-            } finally {
-                Binder.restoreCallingIdentity(ident);
+                return mCurUiMode.get() & UI_MODE_TYPE_MASK;
             }
         }
 
@@ -1011,8 +1011,13 @@ final class UiModeManagerService extends SystemService {
         }
 
         @Override
-        public int getNightMode() {
+        public int getNightMode(int displayId) {
             synchronized (mLock) {
+                int nightModeOverride = mDisplayUiModeOverrides.get(
+                        displayId, UI_MODE_NIGHT_UNDEFINED) & UI_MODE_NIGHT_MASK;
+                if (nightModeOverride != UI_MODE_NIGHT_UNDEFINED) {
+                    return nightModeOverride;
+                }
                 return mNightMode.get();
             }
         }
@@ -2503,7 +2508,7 @@ final class UiModeManagerService extends SystemService {
 
         private void printCurrentNightMode() throws RemoteException {
             final PrintWriter pw = getOutPrintWriter();
-            final int currMode = mInterface.getNightMode();
+            final int currMode = mInterface.getNightMode(Display.DEFAULT_DISPLAY);
             final int customType = mInterface.getNightModeCustomType();
             final String currModeStr = nightModeToStr(currMode, customType);
             pw.println("Night mode: " + currModeStr);
@@ -2580,7 +2585,7 @@ final class UiModeManagerService extends SystemService {
 
         private void printCurrentCarMode() throws RemoteException {
             final PrintWriter pw = getOutPrintWriter();
-            final int currMode = mInterface.getCurrentModeType();
+            final int currMode = mInterface.getCurrentModeType(Display.DEFAULT_DISPLAY);
             pw.println("Car mode: " + (currMode == Configuration.UI_MODE_TYPE_CAR ? "yes" : "no"));
         }
     }
@@ -2588,14 +2593,22 @@ final class UiModeManagerService extends SystemService {
     public final class LocalService extends UiModeManagerInternal {
 
         @Override
-        public boolean isNightMode() {
+        public boolean isNightMode(int displayId) {
             synchronized (mLock) {
-                final boolean isIt = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_YES) != 0;
+                final boolean isIt;
+                final int nightModeOverride = mDisplayUiModeOverrides.get(
+                        displayId, UI_MODE_NIGHT_UNDEFINED) & UI_MODE_NIGHT_MASK;
+                if (nightModeOverride != UI_MODE_NIGHT_UNDEFINED) {
+                    isIt = (nightModeOverride & Configuration.UI_MODE_NIGHT_YES) != 0;
+                } else {
+                    isIt = (mConfiguration.uiMode & Configuration.UI_MODE_NIGHT_YES) != 0;
+                }
                 if (LOG) {
                     Slog.d(TAG,
                         "LocalService.isNightMode(): mNightMode=" + mNightMode
                         + "; mComputedNightMode=" + mComputedNightMode
                         + "; uiMode=" + mConfiguration.uiMode
+                        + "; nightModeOverride=" + nightModeOverride
                         + "; isIt=" + isIt);
                 }
                 return isIt;
@@ -2625,8 +2638,11 @@ final class UiModeManagerService extends SystemService {
                     Slog.d(TAG, "Setting UI mode override on display " + displayId + ": " + uiMode);
                     mDisplayUiModeOverrides.put(displayId, uiMode);
                 }
+                if (enableCurrentModeTypeBinderCache()) {
+                    UiModeManager.invalidateCurrentModeTypeCache();
+                    UiModeManager.invalidateNightModeCache();
+                }
             }
-
             mWindowManager.onDisplayUiModeChanged(displayId);
         }
 
