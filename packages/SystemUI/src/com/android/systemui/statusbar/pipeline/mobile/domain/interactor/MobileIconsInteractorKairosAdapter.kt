@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.pipeline.mobile.domain.interactor
 import android.content.Context
 import com.android.settingslib.SignalIcon
 import com.android.settingslib.mobile.MobileMappings
-import com.android.systemui.Flags
 import com.android.systemui.KairosActivatable
 import com.android.systemui.KairosBuilder
 import com.android.systemui.dagger.SysUISingleton
@@ -35,6 +34,7 @@ import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.TableLogBufferFactory
+import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepository
@@ -251,6 +251,6 @@ constructor(
         fun kairosActivatable(
             impl: Provider<MobileIconsInteractorKairosAdapter>
         ): Set<@JvmSuppressWildcards KairosActivatable> =
-            if (Flags.statusBarMobileIconKairos()) setOf(impl.get()) else emptySet()
+            if (StatusBarMobileIconKairos.isEnabled) setOf(impl.get()) else emptySet()
     }
 }
