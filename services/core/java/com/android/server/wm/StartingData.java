@@ -37,6 +37,7 @@ public abstract class StartingData {
      * when the parent activity of starting window may be put in a partial area of the task.
      */
     Task mAssociatedTask;
+    boolean mRemoveAfterTransition;
 
     /** Whether the starting window is drawn. */
     boolean mIsDisplayed;
