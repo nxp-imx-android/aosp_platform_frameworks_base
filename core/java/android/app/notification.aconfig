@@ -253,6 +253,15 @@ flag {
   }
 }
 
+flag {
+  name: "notification_update_shedding_allow_progress_completion"
+  namespace: "systemui"
+  description: "When throttling notification updates, specifically allow the progress -> no_progress transition"
+  bug: "425364383"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
 
 # Start: exported flags that cannot be removed
 

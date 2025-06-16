@@ -9430,22 +9430,43 @@ public class NotificationManagerService extends SystemService {
                             + " cannot create notifications");
                 }
 
-                // Rate limit updates that aren't completed progress notifications
+                // Rate limit updates. Because this triggers often for progress notifications,
+                // explicitly let through "important" progress updates (e.g. progress completed).
                 // Search for the original one in the posted and not-yet-posted (enqueued) lists.
-                boolean isUpdate = mNotificationsByKey.get(r.getSbn().getKey()) != null
-                        || findNotificationByListLocked(mEnqueuedNotifications, r.getSbn().getKey())
-                        != null;
-                if (isUpdate && !r.getNotification().hasCompletedProgress() && !isAutogroup) {
-                    final float appEnqueueRate = mUsageStats.getAppEnqueueRate(pkg);
-                    if (appEnqueueRate > mMaxPackageEnqueueRate) {
-                        mUsageStats.registerOverRateQuota(pkg);
-                        final long now = SystemClock.elapsedRealtime();
-                        if ((now - mLastOverRateLogTime) > MIN_PACKAGE_OVERRATE_LOG_INTERVAL) {
-                            Slog.e(TAG, "Package enqueue rate is " + appEnqueueRate
-                                    + ". Shedding " + r.getSbn().getKey() + ". package=" + pkg);
-                            mLastOverRateLogTime = now;
+                if (android.app.Flags.notificationUpdateSheddingAllowProgressCompletion()) {
+                    NotificationRecord previous = findPreviousNotificationLocked(r.getKey());
+                    if (previous != null
+                            && previous.getNotification().getProgressState()
+                                    == r.getNotification().getProgressState()
+                            && !isAutogroup) {
+                        final float appEnqueueRate = mUsageStats.getAppEnqueueRate(pkg);
+                        if (appEnqueueRate > mMaxPackageEnqueueRate) {
+                            mUsageStats.registerOverRateQuota(pkg);
+                            final long now = SystemClock.elapsedRealtime();
+                            if ((now - mLastOverRateLogTime) > MIN_PACKAGE_OVERRATE_LOG_INTERVAL) {
+                                Slog.e(TAG, "Package enqueue rate is " + appEnqueueRate
+                                        + ". Shedding " + r.getSbn().getKey() + ". package=" + pkg);
+                                mLastOverRateLogTime = now;
+                            }
+                            return false;
                         }
-                        return false;
+                    }
+                } else {
+                    boolean isUpdate = mNotificationsByKey.get(r.getSbn().getKey()) != null
+                            || findNotificationByListLocked(mEnqueuedNotifications,
+                                    r.getSbn().getKey()) != null;
+                    if (isUpdate && !r.getNotification().hasCompletedProgress() && !isAutogroup) {
+                        final float appEnqueueRate = mUsageStats.getAppEnqueueRate(pkg);
+                        if (appEnqueueRate > mMaxPackageEnqueueRate) {
+                            mUsageStats.registerOverRateQuota(pkg);
+                            final long now = SystemClock.elapsedRealtime();
+                            if ((now - mLastOverRateLogTime) > MIN_PACKAGE_OVERRATE_LOG_INTERVAL) {
+                                Slog.e(TAG, "Package enqueue rate is " + appEnqueueRate
+                                        + ". Shedding " + r.getSbn().getKey() + ". package=" + pkg);
+                                mLastOverRateLogTime = now;
+                            }
+                            return false;
+                        }
                     }
                 }
             }
@@ -10427,12 +10448,22 @@ public class NotificationManagerService extends SystemService {
             return true;
         }
 
-        if (oldN.hasCompletedProgress() != newN.hasCompletedProgress()) {
-            if (DEBUG_INTERRUPTIVENESS) {
-                Slog.v(TAG, "INTERRUPTIVENESS: "
-                    +  r.getKey() + " is interruptive: completed progress");
+        if (android.app.Flags.notificationUpdateSheddingAllowProgressCompletion()) {
+            if (oldN.getProgressState() != newN.getProgressState()) {
+                if (DEBUG_INTERRUPTIVENESS) {
+                    Slog.v(TAG, "INTERRUPTIVENESS: "
+                            + r.getKey() + " is interruptive: significantly changed progress");
+                }
+                return true;
             }
-            return true;
+        } else {
+            if (oldN.hasCompletedProgress() != newN.hasCompletedProgress()) {
+                if (DEBUG_INTERRUPTIVENESS) {
+                    Slog.v(TAG, "INTERRUPTIVENESS: "
+                            + r.getKey() + " is interruptive: completed progress");
+                }
+                return true;
+            }
         }
 
         if (Notification.areIconsDifferent(oldN, newN)) {
@@ -11869,6 +11900,22 @@ public class NotificationManagerService extends SystemService {
             }
         }
         return records;
+    }
+
+    /**
+     * Returns the "previous" version of a NotificationRecord, given its key. Searches both posted
+     * notifications and enqueued updates, prioritizing the latter (and among updates to the same
+     * notification, prioritizing the last to be enqueued).
+     */
+    @Nullable
+    @GuardedBy("mNotificationLock")
+    private NotificationRecord findPreviousNotificationLocked(String key) {
+        for (NotificationRecord enqueued : mEnqueuedNotifications.reversed()) {
+            if (enqueued.getKey().equals(key)) {
+                return enqueued;
+            }
+        }
+        return mNotificationsByKey.get(key); // or null if not present
     }
 
     // Searches both enqueued and posted notifications by key.

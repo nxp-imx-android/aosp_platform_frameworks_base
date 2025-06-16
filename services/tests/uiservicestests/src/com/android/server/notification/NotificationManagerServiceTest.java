@@ -16432,6 +16432,40 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
+    @EnableFlags(android.app.Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION)
+    public void enqueueUpdate_aboveMaxRate_stillAcceptsProgressCompletion() throws Exception {
+        // Post a notification with ongoing progress
+        long now = System.currentTimeMillis();
+        Notification inProgress = new Notification.Builder(mContext, TEST_CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setProgress(100, 90, false)
+                .setWhen(now)
+                .build();
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "tag", 0, inProgress, mUserId);
+        waitForIdle();
+        assertThat(mService.mNotificationList).hasSize(1);
+        assertThat(mService.mNotificationList.get(0).getNotification().when)
+                .isEqualTo(inProgress.when);
+
+        // Simulate that rapid updates have triggered throttling.
+        reset(mUsageStats);
+        when(mUsageStats.getAppEnqueueRate(eq(mPkg)))
+                .thenReturn(DEFAULT_MAX_NOTIFICATION_ENQUEUE_RATE + 1f);
+
+        // Post an update with "completed" progress (removing progress bar)
+        Notification finished = new Notification.Builder(mContext, TEST_CHANNEL_ID)
+                .setSmallIcon(android.R.drawable.sym_def_app_icon)
+                .setWhen(now + 111)
+                .build();
+        mBinderService.enqueueNotificationWithTag(mPkg, mPkg, "tag", 0, finished, mUserId);
+        waitForIdle();
+
+        assertThat(mService.mNotificationList).hasSize(1);
+        assertThat(mService.mNotificationList.get(0).getNotification().when)
+                .isEqualTo(finished.when);
+    }
+
+    @Test
     public void enqueueNotification_acceptsCorrectToken() throws RemoteException {
         Notification sent = new Notification.Builder(mContext, TEST_CHANNEL_ID)
                 .setContentIntent(createPendingIntent("content"))
