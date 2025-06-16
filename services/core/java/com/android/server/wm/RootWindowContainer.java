@@ -2253,6 +2253,15 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
                 // Ensure the leash of new task is in sync with its current bounds after reparent.
                 rootTask.maybeApplyLastRecentsAnimationTransaction();
+
+                boolean isLastParentTransientHide = mTransitionController
+                        .getTransientHideTransitionForContainer(task) != null;
+                if (isPip2ExperimentEnabled() && isLastParentTransientHide) {
+                    // Ensure the last parent is explicitly hidden in the sync transaction of the
+                    // enter PiP transition. This is needed because transient hide task's layer
+                    // isn't actually hidden until the transient-launch transition finishes in Core.
+                    rootTask.getSyncTransaction().hide(task.getSurfaceControl());
+                }
             }
 
             // TODO(remove-legacy-transit): Move this to the `singleActivity` case when removing
