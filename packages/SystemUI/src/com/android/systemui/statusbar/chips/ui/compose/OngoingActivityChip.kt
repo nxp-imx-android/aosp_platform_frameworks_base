@@ -202,11 +202,16 @@ private fun ChipBody(
         }
 
         model.decorativeIcon?.let {
+            val context = LocalContext.current
             Icon(
                 icon = it.icon,
+                tint = Color(it.colors.text(context)),
                 modifier =
                     modifier
-                        .background(color = it.backgroundColor, shape = it.backgroundShape)
+                        .background(
+                            color = Color(it.colors.background(context).defaultColor),
+                            shape = it.backgroundShape,
+                        )
                         .padding(vertical = 2.dp, horizontal = 8.dp)
                         .size(12.dp),
             )

@@ -22,7 +22,6 @@ import android.annotation.StringRes
 import android.os.SystemClock
 import android.view.View
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import com.android.internal.logging.InstanceId
 import com.android.systemui.animation.ComposableControllerFactory
@@ -288,9 +287,5 @@ sealed class OngoingActivityChipModel {
     )
 
     /** Represents a decorative icon to show on the right side of the chip. */
-    data class DecorativeIcon(
-        val icon: Icon,
-        val backgroundColor: Color,
-        val backgroundShape: Shape,
-    )
+    data class DecorativeIcon(val icon: Icon, val backgroundShape: Shape, val colors: ColorsModel)
 }
