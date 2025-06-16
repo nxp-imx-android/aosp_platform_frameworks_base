@@ -121,7 +121,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_likeCollapsed() {
-        View headerView = new ComposeView(mContext);
+        ComposeView headerView = new ComposeView(mContext);
         mChildrenContainer.setBundleHeaderView(headerView);
         mChildrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
         Assert.assertEquals(mChildrenContainer.getMaxAllowedVisibleChildren(true),
@@ -132,7 +132,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_expandedChildren() {
-        View headerView = new ComposeView(mContext);
+        ComposeView headerView = new ComposeView(mContext);
         mChildrenContainer.setBundleHeaderView(headerView);
         mChildrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
         mChildrenContainer.setChildrenExpanded(true);
@@ -143,7 +143,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
     @Test
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGetMaxAllowedVisibleChildren_bundle_userLocked() {
-        View headerView = new ComposeView(mContext);
+        ComposeView headerView = new ComposeView(mContext);
         mChildrenContainer.setBundleHeaderView(headerView);
         mChildrenContainer.setBundleHeaderViewModel(mock(BundleHeaderViewModel.class));
         mGroup.setUserLocked(true);
@@ -317,7 +317,7 @@ public class NotificationChildrenContainerTest extends SysuiTestCase {
         View currentView = mChildrenContainer.getChildAt(mChildrenContainer.getChildCount() - 1);
         Assert.assertFalse(currentView instanceof ComposeView);
 
-        View headerView = new ComposeView(mContext);
+        ComposeView headerView = new ComposeView(mContext);
         mChildrenContainer.setBundleHeaderView(headerView);
         BundleHeaderViewModel viewModel = mKosmos.getBundleHeaderViewModel();
         mChildrenContainer.setBundleHeaderViewModel(viewModel);
