@@ -167,6 +167,16 @@ flag {
 }
 
 flag {
+    name: "update_is_in_emergency_before_on_register"
+    namespace: "location"
+    description: "Update isInEmergency before onRegister() without holding a lock"
+    bug: "355384257"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "gnss_assistance_interface_jni"
     namespace: "location"
     description: "Flag for GNSS assistance interface JNI"
