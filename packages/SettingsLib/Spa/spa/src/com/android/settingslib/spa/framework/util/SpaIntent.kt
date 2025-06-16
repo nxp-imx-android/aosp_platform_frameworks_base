@@ -28,7 +28,7 @@ const val SESSION_BROWSE = "browse"
 const val SESSION_SEARCH = "search"
 const val SESSION_EXTERNAL = "external"
 
-@VisibleForTesting const val KEY_DESTINATION = "spaActivityDestination"
+const val KEY_DESTINATION = "spaActivityDestination"
 @VisibleForTesting const val KEY_HIGHLIGHT_ITEM_KEY = "highlightKey"
 internal const val KEY_SESSION_SOURCE_NAME = "sessionSource"
 

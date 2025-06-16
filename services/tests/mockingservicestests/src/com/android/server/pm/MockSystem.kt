@@ -315,7 +315,7 @@ class MockSystem(withSession: (StaticMockitoSessionBuilder) -> Unit = {}) {
         whenever(mocks.injector.handler) { mocks.handler }
         whenever(mocks.injector.defaultAppProvider) { mocks.defaultAppProvider }
         whenever(mocks.injector.backgroundHandler) { mocks.backgroundHandler }
-        whenever(mocks.injector.getPackageInstallerService(anyString())) {
+        whenever(mocks.injector.getPackageInstallerService(nullable())) {
             mocks.packageInstallerService }
         whenever(mocks.injector.updateOwnershipHelper) { mocks.updateOwnershipHelper }
         whenever(mocks.injector.getSystemService(AppOpsManager::class.java)) { mocks.appOpsManager }

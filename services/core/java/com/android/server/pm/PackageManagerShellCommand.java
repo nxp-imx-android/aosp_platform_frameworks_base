@@ -4754,11 +4754,11 @@ class PackageManagerShellCommand extends ShellCommand {
         final PrintWriter pw = getOutPrintWriter();
         try {
             final IPackageInstaller installer = mInterface.getPackageInstaller();
-            final String packageName = installer.getDeveloperVerificationServiceProvider();
-            if (TextUtils.isEmpty(packageName)) {
+            final ComponentName componentName = installer.getDeveloperVerificationServiceProvider();
+            if (componentName == null) {
                 pw.println("No verification service provider specified.");
             } else {
-                pw.println(packageName);
+                pw.println(componentName.toString());
             }
         } catch (Exception e) {
             pw.println("Failure [" + e.getMessage() + "]");

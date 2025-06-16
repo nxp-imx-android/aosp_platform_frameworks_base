@@ -276,10 +276,15 @@ class SystemMediaRoute2Provider extends MediaRoute2Provider {
     public void setRouteVolume(long requestId, String routeOriginalId, int volume) {
         synchronized (mLock) {
             if (!mSelectedRouteIds.contains(routeOriginalId)) {
+                notifyRequestFailed(requestId, MediaRoute2ProviderService.REASON_INVALID_COMMAND);
                 return;
             }
         }
-        mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0);
+        if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
+            mDeviceRouteController.setVolume(requestId, routeOriginalId, volume);
+        } else {
+            mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0);
+        }
     }
 
     @Override

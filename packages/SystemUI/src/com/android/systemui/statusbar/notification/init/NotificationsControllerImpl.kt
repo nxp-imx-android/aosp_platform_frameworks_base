@@ -34,13 +34,10 @@ import com.android.systemui.statusbar.notification.collection.inflation.Notifica
 import com.android.systemui.statusbar.notification.collection.init.NotifPipelineInitializer
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
-import com.android.systemui.statusbar.notification.interruption.HeadsUpViewBinder
-import com.android.systemui.statusbar.notification.logging.NotificationLogger
 import com.android.systemui.statusbar.notification.row.NotifBindPipelineInitializer
 import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import dagger.Lazy
-import java.util.Optional
 import javax.inject.Inject
 
 /**
@@ -53,7 +50,6 @@ import javax.inject.Inject
 @SysUISingleton
 class NotificationsControllerImpl
 @Inject
-// TODO(b/424001722) remove unused fields
 constructor(
     private val notificationListener: NotificationListener,
     private val commonNotifCollection: Lazy<CommonNotifCollection>,
@@ -62,10 +58,8 @@ constructor(
     private val targetSdkResolver: TargetSdkResolver,
     private val notifPipelineInitializer: Lazy<NotifPipelineInitializer>,
     private val notifBindPipelineInitializer: NotifBindPipelineInitializer,
-    private val notificationLoggerOptional: Optional<NotificationLogger>,
     private val notificationRowBinder: NotificationRowBinderImpl,
     private val notificationsMediaManager: NotificationMediaManager,
-    private val headsUpViewBinder: HeadsUpViewBinder,
     private val clickerBuilder: NotificationClicker.Builder,
     private val animatedImageNotificationManager: AnimatedImageNotificationManager,
     private val peopleSpaceWidgetManager: PeopleSpaceWidgetManager,

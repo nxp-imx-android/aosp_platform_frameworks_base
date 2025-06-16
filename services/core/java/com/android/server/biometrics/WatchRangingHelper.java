@@ -20,6 +20,7 @@ import static android.Manifest.permission.USE_BIOMETRIC_INTERNAL;
 import static android.hardware.biometrics.IIdentityCheckStateListener.WatchRangingState;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.os.Handler;
 import android.proximity.IProximityResultCallback;
@@ -47,7 +48,7 @@ public class WatchRangingHelper {
     }
 
     WatchRangingHelper(long authenticationRequestId,
-            @NonNull AuthenticationPolicyManager authenticationPolicyManager,
+            @Nullable AuthenticationPolicyManager authenticationPolicyManager,
             @NonNull Handler handler, WatchRangingListener listener) {
         mAuthenticationRequestId = authenticationRequestId;
         mAuthenticationPolicyManager = authenticationPolicyManager;
@@ -60,6 +61,11 @@ public class WatchRangingHelper {
      */
     @RequiresPermission(USE_BIOMETRIC_INTERNAL)
     public void startWatchRanging() {
+        if (mAuthenticationPolicyManager == null) {
+            Slog.e(TAG, "Authentication policy manager is null");
+            return;
+        }
+
         setWatchRangingState(WatchRangingState.WATCH_RANGING_STARTED);
 
         mAuthenticationPolicyManager.startWatchRangingForIdentityCheck(mAuthenticationRequestId,
@@ -90,6 +96,11 @@ public class WatchRangingHelper {
      */
     @RequiresPermission(USE_BIOMETRIC_INTERNAL)
     public void cancelWatchRanging() {
+        if (mAuthenticationPolicyManager == null) {
+            Slog.e(TAG, "Authentication policy manager is null");
+            return;
+        }
+
         mAuthenticationPolicyManager.cancelWatchRangingForRequestId(mAuthenticationRequestId);
     }
 

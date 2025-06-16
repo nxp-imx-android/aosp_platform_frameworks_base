@@ -100,7 +100,7 @@ final class SessionMetrics {
     private boolean mIsDeveloperVerificationPolicyOverridden = false;
     @Nullable
     private DeveloperVerifierResponse mDeveloperVerifierResponse = null;
-    private @DeveloperVerificationStatus.DeveloperVerifierStatusAsl int mAslStatus;
+    private @DeveloperVerificationStatus.AppMetadataVerificationStatus int mAslStatus;
     private @PackageInstaller.DeveloperVerificationPolicy int mDeveloperVerificationPolicyOverride;
     private boolean mWasDeveloperVerificationUserActionRequired = false;
     private boolean mWasDeveloperVerificationUserResponseReceived = false;
@@ -256,7 +256,7 @@ final class SessionMetrics {
     }
 
     public void onAslStatusReceived(
-            @DeveloperVerificationStatus.DeveloperVerifierStatusAsl int aslStatus) {
+            @DeveloperVerificationStatus.AppMetadataVerificationStatus int aslStatus) {
         mAslStatus = aslStatus;
     }
 
@@ -484,11 +484,11 @@ final class SessionMetrics {
     }
 
     private static int getTranslatedAslStatusForStats(
-            @DeveloperVerificationStatus.DeveloperVerifierStatusAsl int aslStatus) {
+            @DeveloperVerificationStatus.AppMetadataVerificationStatus int aslStatus) {
         return switch (aslStatus) {
-            case DeveloperVerificationStatus.DEVELOPER_VERIFIER_STATUS_ASL_GOOD ->
+            case DeveloperVerificationStatus.APP_METADATA_VERIFICATION_STATUS_GOOD ->
                 FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ASL_STATUS__ASL_STATUS_GOOD;
-            case DeveloperVerificationStatus.DEVELOPER_VERIFIER_STATUS_ASL_BAD ->
+            case DeveloperVerificationStatus.APP_METADATA_VERIFICATION_STATUS_BAD ->
                 FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ASL_STATUS__ASL_STATUS_BAD;
             default ->
                 FrameworkStatsLog.PACKAGE_INSTALLER_SESSION_REPORTED__ASL_STATUS__ASL_STATUS_UNSPECIFIED;

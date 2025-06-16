@@ -294,6 +294,7 @@ public class MediaQualityService extends SystemService {
                         && !hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
                     mMqManagerNotifier.notifyOnPictureProfileError(
                             null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                    return;
                 }
 
                 synchronized (mPictureProfileLock) {
@@ -329,9 +330,15 @@ public class MediaQualityService extends SystemService {
             int callingPid = Binder.getCallingPid();
             mHandler.post(() -> {
                 Long dbId = mPictureProfileTempIdMap.getKey(id);
+                if (dbId == null) {
+                    mMqManagerNotifier.notifyOnPictureProfileError(
+                            id, PictureProfile.ERROR_INVALID_ARGUMENT, callingUid, callingPid);
+                    return;
+                }
                 if (!hasPermissionToUpdatePictureProfile(dbId, pp, callingUid)) {
                     mMqManagerNotifier.notifyOnPictureProfileError(
                             id, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                    return;
                 }
                 synchronized (mPictureProfileLock) {
                     ContentValues values = MediaQualityUtils.getContentValues(dbId,
@@ -349,8 +356,7 @@ public class MediaQualityService extends SystemService {
                                 values, pp.getParameters(), callingUid, callingPid, false);
                     }
                     if (isPackageDefaultPictureProfile(pp)) {
-                        mPackageDefaultPictureProfileHandleMap.put(
-                            pp.getPackageName(), pp.getHandle().getId());
+                        mPackageDefaultPictureProfileHandleMap.put(pp.getPackageName(), dbId);
                     }
                 }
             });
@@ -373,11 +379,17 @@ public class MediaQualityService extends SystemService {
             mHandler.post(() -> {
                 synchronized (mPictureProfileLock) {
                     Long dbId = mPictureProfileTempIdMap.getKey(id);
+                    if (dbId == null) {
+                        mMqManagerNotifier.notifyOnPictureProfileError(
+                                id, PictureProfile.ERROR_INVALID_ARGUMENT, callingUid, callingPid);
+                        return;
+                    }
 
                     PictureProfile toDelete = mMqDatabaseUtils.getPictureProfile(dbId);
                     if (!hasPermissionToRemovePictureProfile(toDelete, callingUid)) {
-                mMqManagerNotifier.notifyOnPictureProfileError(
-                        id, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                        mMqManagerNotifier.notifyOnPictureProfileError(
+                                id, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                        return;
                     }
 
                     if (dbId != null) {
@@ -389,6 +401,7 @@ public class MediaQualityService extends SystemService {
                         if (result == 0) {
                             mMqManagerNotifier.notifyOnPictureProfileError(id,
                                     PictureProfile.ERROR_INVALID_ARGUMENT, callingUid, callingPid);
+                            return;
                         } else {
                             mMqManagerNotifier.notifyOnPictureProfileRemoved(
                                     mPictureProfileTempIdMap.getValue(dbId), toDelete, callingUid,
@@ -484,6 +497,7 @@ public class MediaQualityService extends SystemService {
             if (!hasGlobalPictureQualityServicePermission(uid, pid)) {
                 mMqManagerNotifier.notifyOnPictureProfileError(
                         null, PictureProfile.ERROR_NO_PERMISSION, uid, pid);
+                return new ArrayList<>();
             }
 
             synchronized (mPictureProfileLock) {
@@ -516,6 +530,7 @@ public class MediaQualityService extends SystemService {
             if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
                 mMqManagerNotifier.notifyOnPictureProfileError(
                         null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                return null;
             }
             Long defaultPictureProfileId = mPictureProfileSharedPreference.getLong(
                     DEFAULT_PICTURE_PROFILE_ID,
@@ -541,6 +556,7 @@ public class MediaQualityService extends SystemService {
             if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
                 mMqManagerNotifier.notifyOnPictureProfileError(
                         profileId, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                return false;
             }
 
             Long longId = mPictureProfileTempIdMap.getKey(profileId);
@@ -589,6 +605,7 @@ public class MediaQualityService extends SystemService {
             if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
                 mMqManagerNotifier.notifyOnPictureProfileError(
                         null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                return new ArrayList<>();
             }
             String [] column = {BaseParameters.PARAMETER_PACKAGE};
             synchronized (mPictureProfileLock) {
@@ -674,6 +691,7 @@ public class MediaQualityService extends SystemService {
             if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
                 mMqManagerNotifier.notifyOnPictureProfileError(
                         null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                return -1;
             }
             String[] columns = {BaseParameters.PARAMETER_ID};
             String selection = BaseParameters.PARAMETER_TYPE + " = ? AND ("
@@ -727,6 +745,7 @@ public class MediaQualityService extends SystemService {
             if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
                 mMqManagerNotifier.notifyOnPictureProfileError(
                         null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                return new ArrayList<>();
             }
             String[] columns = MediaQualityUtils.getMediaProfileColumns(/* includeParams= */ true);
             String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
@@ -1286,6 +1305,7 @@ public class MediaQualityService extends SystemService {
             if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
                 mMqManagerNotifier.notifyOnPictureProfileError(
                         null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                return new ArrayList<>();
             }
             String allowlist = mPictureProfileSharedPreference.getString(ALLOWLIST, null);
             if (allowlist != null) {
@@ -1304,6 +1324,7 @@ public class MediaQualityService extends SystemService {
                 if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
                     mMqManagerNotifier.notifyOnPictureProfileError(
                             null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                    return;
                 }
                 SharedPreferences.Editor editor = mPictureProfileSharedPreference.edit();
                 editor.putString(ALLOWLIST, String.join(COMMA_DELIMITER, packages));
@@ -1358,6 +1379,7 @@ public class MediaQualityService extends SystemService {
                 if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
                     mMqManagerNotifier.notifyOnPictureProfileError(
                             null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                    return;
                 }
                 synchronized (mPictureProfileLock) {
                     try {
@@ -1399,6 +1421,7 @@ public class MediaQualityService extends SystemService {
                 if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
                     mMqManagerNotifier.notifyOnPictureProfileError(
                             null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
+                    return;
                 }
                 synchronized (mPictureProfileLock) {
                     try {
@@ -1779,7 +1802,8 @@ public class MediaQualityService extends SystemService {
                             .get(callback);
                     if ((pidUid.first == pid && pidUid.second == uid)
                             || (hasGlobalPictureQualityServicePermission(
-                                    pidUid.first, pidUid.second)
+                                    pidUid.second, pidUid.first)
+                            && profile != null
                             && profile.getProfileType() == PictureProfile.TYPE_SYSTEM)) {
                         if (mode == ProfileModes.ADD) {
                             callback.onPictureProfileAdded(profileId, profile);
@@ -2018,9 +2042,20 @@ public class MediaQualityService extends SystemService {
                 throws RemoteException {
             Long dbId = pictureProfile.pictureProfileId;
             if (dbId != null) {
+                android.hardware.tv.mediaquality.PictureParameter[] params =
+                        pictureProfile.parameters.pictureParameters;
+                for (android.hardware.tv.mediaquality.PictureParameter param : params) {
+                    if (param.getTag() == PictureParameter.activeProfile
+                            && !param.getActiveProfile()) {
+                        synchronized (mPictureProfileLock) {
+                            mHandleToPictureProfile.remove(dbId);
+                            mCurrentPictureHandleToOriginal.removeValue(dbId);
+                        }
+                        break;
+                    }
+                }
                 updatePictureProfileFromHal(dbId,
-                        MediaQualityUtils.convertPictureParameterListToPersistableBundle(
-                                pictureProfile.parameters.pictureParameters));
+                        MediaQualityUtils.convertPictureParameterListToPersistableBundle(params));
             }
         }
 

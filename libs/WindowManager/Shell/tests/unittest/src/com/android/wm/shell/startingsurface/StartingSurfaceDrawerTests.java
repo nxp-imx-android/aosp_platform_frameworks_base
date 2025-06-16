@@ -357,6 +357,6 @@ public class StartingSurfaceDrawerTests extends ShellTestCase {
                 Surface.ROTATION_0, taskSize, contentInsets, new Rect() /* letterboxInsets */,
                 false, true /* isRealSnapshot */, WINDOWING_MODE_FULLSCREEN,
                 0 /* systemUiVisibility */, false /* isTranslucent */,
-                hasImeSurface /* hasImeSurface */, 0 /* uiMode */);
+                hasImeSurface /* hasImeSurface */, 0 /* uiMode */, 300 /* densityDpi */);
     }
 }

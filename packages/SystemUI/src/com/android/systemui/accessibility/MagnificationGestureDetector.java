@@ -78,12 +78,11 @@ class MagnificationGestureDetector {
         boolean onFinish(float x, float y);
     }
 
-    private final PointF mPointerDown = new PointF();
-    private final PointF mPointerLocation = new PointF(Float.NaN, Float.NaN);
+    private final MotionAccumulator mAccumulator = new MotionAccumulator();
     private final Handler mHandler;
     private final Runnable mCancelTapGestureRunnable;
     private final OnGestureListener mOnGestureListener;
-    private int mTouchSlopSquare;
+    private final int mTouchSlopSquare;
     // Assume the gesture default is a single-tap. Set it to false if the gesture couldn't be a
     // single-tap anymore.
     private boolean mDetectSingleTap = true;
@@ -113,10 +112,10 @@ class MagnificationGestureDetector {
     boolean onTouch(View view, MotionEvent event) {
         final float rawX = event.getRawX();
         final float rawY = event.getRawY();
+        mAccumulator.onMotionEvent(event);
         boolean handled = false;
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                mPointerDown.set(rawX, rawY);
                 mHandler.postAtTime(mCancelTapGestureRunnable,
                         event.getDownTime() + ViewConfiguration.getLongPressTimeout());
                 handled |= mOnGestureListener.onStart(rawX, rawY);
@@ -125,11 +124,11 @@ class MagnificationGestureDetector {
                 stopSingleTapDetection();
                 break;
             case MotionEvent.ACTION_MOVE:
-                stopSingleTapDetectionIfNeeded(rawX, rawY);
-                handled |= notifyDraggingGestureIfNeeded(view, rawX, rawY);
+                stopSingleTapDetectionIfNeeded();
+                handled |= notifyDraggingGestureIfNeeded(view);
                 break;
             case MotionEvent.ACTION_UP:
-                stopSingleTapDetectionIfNeeded(rawX, rawY);
+                stopSingleTapDetectionIfNeeded();
                 if (mDetectSingleTap) {
                     handled |= mOnGestureListener.onSingleTap(view);
                 }
@@ -142,17 +141,18 @@ class MagnificationGestureDetector {
         return handled;
     }
 
-    private void stopSingleTapDetectionIfNeeded(float x, float y) {
+    private void stopSingleTapDetectionIfNeeded() {
         if (mDraggingDetected) {
             return;
         }
-        if (!isLocationValid(mPointerDown)) {
+
+        final float deltaX = mAccumulator.getDeltaX();
+        final float deltaY = mAccumulator.getDeltaY();
+        if (Float.isNaN(deltaX) || Float.isNaN(deltaY)) {
             return;
         }
 
-        final int deltaX = (int) (mPointerDown.x - x);
-        final int deltaY = (int) (mPointerDown.y - y);
-        final int distanceSquare = (deltaX * deltaX) + (deltaY * deltaY);
+        final float distanceSquare = (deltaX * deltaX) + (deltaY * deltaY);
         if (distanceSquare > mTouchSlopSquare) {
             mDraggingDetected = true;
             stopSingleTapDetection();
@@ -164,33 +164,68 @@ class MagnificationGestureDetector {
         mDetectSingleTap = false;
     }
 
-    private boolean notifyDraggingGestureIfNeeded(View view, float x, float y) {
+    private boolean notifyDraggingGestureIfNeeded(View view) {
         if (!mDraggingDetected) {
             return false;
         }
-        if (!isLocationValid(mPointerLocation)) {
-            mPointerLocation.set(mPointerDown);
-        }
-        final float offsetX = x - mPointerLocation.x;
-        final float offsetY = y - mPointerLocation.y;
-        mPointerLocation.set(x, y);
-        return mOnGestureListener.onDrag(view, offsetX, offsetY);
+        final float deltaX = mAccumulator.getDeltaX();
+        final float deltaY = mAccumulator.getDeltaY();
+        mAccumulator.consumeDelta();
+        return mOnGestureListener.onDrag(view, deltaX, deltaY);
     }
 
     private void reset() {
-        resetPointF(mPointerDown);
-        resetPointF(mPointerLocation);
+        mAccumulator.reset();
         mHandler.removeCallbacks(mCancelTapGestureRunnable);
         mDetectSingleTap = true;
         mDraggingDetected = false;
     }
 
-    private static void resetPointF(PointF pointF) {
-        pointF.x = Float.NaN;
-        pointF.y = Float.NaN;
-    }
+    private static class MotionAccumulator {
+        private final PointF mAccumulatedDelta = new PointF(Float.NaN, Float.NaN);
+        private final PointF mLastLocation = new PointF(Float.NaN, Float.NaN);
 
-    private static boolean isLocationValid(PointF location) {
-        return !Float.isNaN(location.x) && !Float.isNaN(location.y);
+        // Start or accumulate the motion event location.
+        public void onMotionEvent(MotionEvent event) {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    mAccumulatedDelta.set(0, 0);
+                    mLastLocation.set(event.getRawX(), event.getRawY());
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                case MotionEvent.ACTION_UP:
+                    float dx = event.getRawX() - mLastLocation.x;
+                    float dy = event.getRawY() - mLastLocation.y;
+                    mAccumulatedDelta.offset(dx, dy);
+                    mLastLocation.set(event.getRawX(), event.getRawY());
+                    break;
+            }
+        }
+
+        // Get delta X of accumulated motions, or NaN if no motion is added.
+        public float getDeltaX() {
+            return mAccumulatedDelta.x;
+        }
+
+        // Get delta Y of accumulated motions, or NaN if no motion is added.
+        public float getDeltaY() {
+            return mAccumulatedDelta.y;
+        }
+
+        // Consume the accumulated motions, and restart accumulation from the last added motion.
+        public void consumeDelta() {
+            mAccumulatedDelta.set(0, 0);
+        }
+
+        // Reset the state.
+        public void reset() {
+            resetPointF(mAccumulatedDelta);
+            resetPointF(mLastLocation);
+        }
+
+        private static void resetPointF(PointF pointF) {
+            pointF.x = Float.NaN;
+            pointF.y = Float.NaN;
+        }
     }
 }

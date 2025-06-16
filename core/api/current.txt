@@ -13254,7 +13254,7 @@ package android.content.pm {
     method @Deprecated @Nullable public android.content.pm.PackageInstaller.SessionInfo getActiveStagedSession();
     method @NonNull public java.util.List<android.content.pm.PackageInstaller.SessionInfo> getActiveStagedSessions();
     method @NonNull public java.util.List<android.content.pm.PackageInstaller.SessionInfo> getAllSessions();
-    method @FlaggedApi("android.content.pm.verification_service") @Nullable public final String getDeveloperVerificationServiceProvider();
+    method @FlaggedApi("android.content.pm.verification_service") @Nullable public final android.content.ComponentName getDeveloperVerificationServiceProvider();
     method @NonNull public java.util.List<android.content.pm.PackageInstaller.SessionInfo> getMySessions();
     method @Nullable public android.content.pm.PackageInstaller.SessionInfo getSessionInfo(int);
     method @NonNull public java.util.List<android.content.pm.PackageInstaller.SessionInfo> getStagedSessions();
@@ -44111,6 +44111,7 @@ package android.telecom {
     method public int getDirection();
     method @NonNull public CharSequence getDisplayName();
     method @NonNull public android.telecom.PhoneAccountHandle getPhoneAccountHandle();
+    method @FlaggedApi("com.android.server.telecom.flags.integrated_call_logs") public boolean isLogExcluded();
     method public void writeToParcel(@Nullable android.os.Parcel, int);
     field public static final int AUDIO_CALL = 1; // 0x1
     field @NonNull public static final android.os.Parcelable.Creator<android.telecom.CallAttributes> CREATOR;
@@ -44128,6 +44129,7 @@ package android.telecom {
     method @NonNull public android.telecom.CallAttributes build();
     method @NonNull public android.telecom.CallAttributes.Builder setCallCapabilities(int);
     method @NonNull public android.telecom.CallAttributes.Builder setCallType(int);
+    method @FlaggedApi("com.android.server.telecom.flags.integrated_call_logs") @NonNull public android.telecom.CallAttributes.Builder setLogExcluded(boolean);
   }
 
   public final class CallAudioState implements android.os.Parcelable {

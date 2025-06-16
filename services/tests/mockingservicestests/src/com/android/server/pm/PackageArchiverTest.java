@@ -150,7 +150,7 @@ public class PackageArchiverTest {
         MockitoAnnotations.initMocks(this);
         rule.system().stageNominalSystemState();
         when(rule.mocks().getInjector().getPackageInstallerService(
-                nullable(String.class))).thenReturn(mInstallerService);
+                nullable(ComponentName.class))).thenReturn(mInstallerService);
         final int sdkVersion = Build.VERSION_CODES.CUR_DEVELOPMENT;
         final int sdkVersionFull = (android.sdk.Flags.majorMinorVersioningScheme())
                 ? Build.parseFullVersion(String.valueOf(sdkVersion)) : 0;

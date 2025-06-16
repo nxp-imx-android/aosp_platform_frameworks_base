@@ -163,6 +163,7 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
                 TestDisplay.entries.find { it.id == id }?.getSpyDisplayLayout(resources)
             displayLayouts.put(id, displayLayout)
             whenever(mockDisplayController.getDisplayLayout(id)).thenReturn(displayLayout)
+            whenever(mockDisplayController.isDisplayInTopology(id)).thenReturn(true)
         }
 
         pipDisplayTransferHandler =
@@ -187,6 +188,10 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             DESTINATION_BOUNDS
         )
 
+        verify(mockPipBoundsAlgorithm).snapToMovementBoundsEdge(
+            eq(DESTINATION_BOUNDS),
+            eq(displayLayouts.get(TARGET_DISPLAY_ID))
+        )
         verify(mockPipTransitionState).setState(eq(SCHEDULED_BOUNDS_CHANGE), any())
     }
 
@@ -233,10 +238,6 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             extra
         )
 
-        verify(mockPipBoundsAlgorithm).snapToMovementBoundsEdge(
-            eq(destinationBounds),
-            eq(displayLayouts.get(TARGET_DISPLAY_ID))
-        )
         verify(mockPipTransitionState).state = eq(EXITING_PIP)
         verify(mockPipTransitionState).state = eq(EXITED_PIP)
         verify(mockPipResizeAnimator).start()
@@ -383,6 +384,70 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
         verify(mockSurfaceTransactionHelper, times(2)).setMirrorTransformations(any(), any())
         verify(mockTransaction, times(1)).apply()
         assertThat(pipDisplayTransferHandler.isMirrorShown()).isTrue()
+    }
+
+    @Test
+    fun showDragMirrorOnConnectedDisplays_displayNotInTopology_createsOneFewerMirror() {
+        val globalDpBounds = MultiDisplayDragMoveBoundsCalculator.calculateGlobalDpBoundsForDrag(
+            displayLayouts.get(ORIGIN_DISPLAY_ID)!!, START_DRAG_COORDINATES,
+            PIP_BOUNDS, displayLayouts.get(TARGET_DISPLAY_ID)!!,
+            1000f, -100f)
+        whenever(mockDisplayController.isDisplayInTopology(SECONDARY_DISPLAY_ID)).thenReturn(false)
+
+        pipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(
+            globalDpBounds, ORIGIN_DISPLAY_ID
+        )
+
+        verify(mockRootTaskDisplayAreaOrganizer).reparentToDisplayArea(
+            eq(TARGET_DISPLAY_ID),
+            any(),
+            any()
+        )
+        assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.size).isEqualTo(1)
+        assertThat(
+            pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.containsKey(
+                SECONDARY_DISPLAY_ID
+            )
+        ).isFalse()
+        assertThat(
+            pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.containsKey(
+                TARGET_DISPLAY_ID
+            )
+        ).isTrue()
+        verify(mockSurfaceTransactionHelper, times(1)).setPipTransformations(
+            any(),
+            any(),
+            any(),
+            any(),
+            any()
+        )
+        verify(mockSurfaceTransactionHelper, times(1)).setMirrorTransformations(any(), any())
+        verify(mockTransaction, times(1)).apply()
+        assertThat(pipDisplayTransferHandler.isMirrorShown()).isTrue()
+    }
+
+    @Test
+    fun showDragMirrorOnConnectedDisplays_focusedDisplayNotInTopology_doesNotCreateMirrors() {
+        val globalDpBounds = MultiDisplayDragMoveBoundsCalculator.calculateGlobalDpBoundsForDrag(
+            displayLayouts.get(ORIGIN_DISPLAY_ID)!!, START_DRAG_COORDINATES,
+            PIP_BOUNDS, displayLayouts.get(TARGET_DISPLAY_ID)!!,
+            1000f, -100f)
+        whenever(mockDisplayController.isDisplayInTopology(ORIGIN_DISPLAY_ID)).thenReturn(false)
+
+        pipDisplayTransferHandler.showDragMirrorOnConnectedDisplays(
+            globalDpBounds, ORIGIN_DISPLAY_ID
+        )
+
+        verify(mockRootTaskDisplayAreaOrganizer, never()).reparentToDisplayArea(
+            any(), any(), any()
+        )
+        assertThat(pipDisplayTransferHandler.mOnDragMirrorPerDisplayId.isEmpty()).isTrue()
+        verify(mockSurfaceTransactionHelper, never()).setPipTransformations(
+            any(), any(), any(), any(), any()
+        )
+        verify(mockSurfaceTransactionHelper, never()).setMirrorTransformations(any(), any())
+        verify(mockTransaction, never()).apply()
+        assertThat(pipDisplayTransferHandler.isMirrorShown()).isFalse()
     }
 
     @Test

@@ -265,7 +265,8 @@ constructor(
                 STRONG_VIBRATION_SCALE
             }
         val vibrationScale = scaleFactor * normalizedTranslation.pow(VIBRATION_SCALE_EXPONENT)
-        val compensatedScale = vibrationScale.pow(VIBRATION_PERCEPTION_EXPONENT)
+        val compensatedScale =
+            vibrationScale.pow(VIBRATION_PERCEPTION_EXPONENT).coerceAtMost(maximumValue = 1f)
         if (Flags.msdlFeedback()) {
             msdlPlayer.playToken(
                 MSDLToken.DRAG_INDICATOR_CONTINUOUS,

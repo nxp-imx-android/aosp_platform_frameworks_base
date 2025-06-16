@@ -168,6 +168,15 @@ import java.util.List;
     boolean updateVolume(int volume);
 
     /**
+     * Sets device route volume.
+     *
+     * @param requestId identifies the request.
+     * @param routeId to set the volume.
+     * @param volume specifies a volume for the device route.
+     */
+    void setVolume(long requestId, @NonNull String routeId, int volume);
+
+    /**
      * Starts listening for changes in the system to keep an up to date view of available and
      * selected devices.
      */

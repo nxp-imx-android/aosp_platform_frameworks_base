@@ -19,6 +19,7 @@ package android.content.pm.verify.developer;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.content.pm.Flags;
 import android.os.Parcel;
@@ -26,7 +27,6 @@ import android.os.Parcelable;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Objects;
 
 /**
  * This class is used by the developer verifier to describe the status of the verification request,
@@ -37,48 +37,48 @@ import java.util.Objects;
 @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
 public final class DeveloperVerificationStatus implements Parcelable {
     /**
-     * The ASL status has not been determined.
+     * The verification status of the App Metadata associated with the app has not been
+     * determined.
      * <p>This happens in situations where the verification
-     * service is not monitoring ASLs, and means the ASL data in the app is not necessarily bad but
-     * can't be trusted.
+     * service is not monitoring App Metadata for the app, and means the App Metadata of the app is
+     * not necessarily bad but can't be trusted.
      * </p>
      */
-    public static final int DEVELOPER_VERIFIER_STATUS_ASL_UNDEFINED = 0;
+    public static final int APP_METADATA_VERIFICATION_STATUS_UNDEFINED = 0;
 
     /**
-     * The app's ASL data is considered to be in a good state.
+     * The app's App Metadata is considered to be in a good state. This can be used by
+     * the system to inform the user that the App Metadata of the app can be trusted.
      */
-    public static final int DEVELOPER_VERIFIER_STATUS_ASL_GOOD = 1;
+    public static final int APP_METADATA_VERIFICATION_STATUS_GOOD = 1;
 
     /**
-     * There is something bad in the app's ASL data.
-     * <p>
-     * The user should be warned about this when shown
-     * the ASL data and/or appropriate decisions made about the use of this data by the platform.
-     * </p>
+     * There is something bad in the app's App Metadata. This can be used by the system to warn
+     * the user or make appropriate decisions about the app.
      */
-    public static final int DEVELOPER_VERIFIER_STATUS_ASL_BAD = 2;
+    public static final int APP_METADATA_VERIFICATION_STATUS_BAD = 2;
 
     /** @hide */
-    @IntDef(prefix = {"DEVELOPER_VERIFIER_STATUS_ASL_"}, value = {
-            DEVELOPER_VERIFIER_STATUS_ASL_UNDEFINED,
-            DEVELOPER_VERIFIER_STATUS_ASL_GOOD,
-            DEVELOPER_VERIFIER_STATUS_ASL_BAD,
+    @IntDef(prefix = {"APP_METADATA_VERIFICATION_STATUS_"}, value = {
+            APP_METADATA_VERIFICATION_STATUS_UNDEFINED,
+            APP_METADATA_VERIFICATION_STATUS_GOOD,
+            APP_METADATA_VERIFICATION_STATUS_BAD,
     })
     @Retention(RetentionPolicy.SOURCE)
-    public @interface DeveloperVerifierStatusAsl {}
+    public @interface AppMetadataVerificationStatus {}
 
     private final boolean mIsVerified;
-    private final boolean mIsLite;
-    private final @DeveloperVerifierStatusAsl int mAslStatus;
-    @NonNull
+    private final boolean mIsLiteVerification;
+    private final @AppMetadataVerificationStatus int mAppMetadataVerificationStatus;
+    @Nullable
     private final String mFailuresMessage;
 
-    private DeveloperVerificationStatus(boolean isVerified, boolean isLite,
-            @DeveloperVerifierStatusAsl int aslStatus, @NonNull String failuresMessage) {
+    private DeveloperVerificationStatus(boolean isVerified, boolean isLiteVerification,
+            @AppMetadataVerificationStatus int appMetadataVerificationStatus,
+            @Nullable String failuresMessage) {
         mIsVerified = isVerified;
-        mIsLite = isLite;
-        mAslStatus = aslStatus;
+        mIsLiteVerification = isLiteVerification;
+        mAppMetadataVerificationStatus = appMetadataVerificationStatus;
         mFailuresMessage = failuresMessage;
     }
 
@@ -92,23 +92,24 @@ public final class DeveloperVerificationStatus implements Parcelable {
     /**
      * @return true when the only the lite variation of the verification was conducted.
      */
-    public boolean isLite() {
-        return mIsLite;
+    public boolean isLiteVerification() {
+        return mIsLiteVerification;
     }
 
     /**
-     * @return the failure message associated with the failure status.
+     * @return the developer-facing failure message associated with the failure status.
+     * Null if there is no failure.
      */
-    @NonNull
+    @Nullable
     public String getFailureMessage() {
         return mFailuresMessage;
     }
 
     /**
-     * @return the asl status.
+     * @return the verification status of the App Metadata associated with the app.
      */
-    public @DeveloperVerifierStatusAsl int getAslStatus() {
-        return mAslStatus;
+    public @AppMetadataVerificationStatus int getAppMetadataVerificationStatus() {
+        return mAppMetadataVerificationStatus;
     }
 
     /**
@@ -116,10 +117,10 @@ public final class DeveloperVerificationStatus implements Parcelable {
      */
     public static final class Builder {
         private boolean mIsVerified = false;
-        private boolean mIsLite = false;
-        private @DeveloperVerifierStatusAsl int mAslStatus =
-                DEVELOPER_VERIFIER_STATUS_ASL_UNDEFINED;
-        private String mFailuresMessage = "";
+        private boolean mIsLiteVerification = false;
+        private @AppMetadataVerificationStatus int mAppMetadataVerificationStatus =
+                APP_METADATA_VERIFICATION_STATUS_UNDEFINED;
+        private @Nullable String mFailuresMessage = null;
 
         /**
          * Set in the status whether the verification has succeeded or failed.
@@ -135,8 +136,8 @@ public final class DeveloperVerificationStatus implements Parcelable {
          * instead of the full verification.
          */
         @NonNull
-        public Builder setLite(boolean isLite) {
-            mIsLite = isLite;
+        public Builder setLiteVerification(boolean isLiteVerification) {
+            mIsLiteVerification = isLiteVerification;
             return this;
         }
 
@@ -144,18 +145,23 @@ public final class DeveloperVerificationStatus implements Parcelable {
          * Set a developer-facing failure message to include in the verification failure status.
          */
         @NonNull
-        public Builder setFailureMessage(@NonNull String failureMessage) {
-            Objects.requireNonNull(failureMessage, "failureMessage cannot be null");
+        public Builder setFailureMessage(@Nullable String failureMessage) {
             mFailuresMessage = failureMessage;
             return this;
         }
 
         /**
-         * Set the ASL status, as defined in {@link DeveloperVerifierStatusAsl}.
+         * Set the verification status of the App Metadata associated with the app, which can be
+         * one of {@link #APP_METADATA_VERIFICATION_STATUS_UNDEFINED},
+         * {@link #APP_METADATA_VERIFICATION_STATUS_GOOD},
+         * or {@link #APP_METADATA_VERIFICATION_STATUS_BAD}.
+         * @see <a href="https://developer.android.com/about/versions/14/features/app-metadata">
+         * the Android Developer Site</a> for more information on App Metadata.
          */
         @NonNull
-        public Builder setAslStatus(@DeveloperVerifierStatusAsl int aslStatus) {
-            mAslStatus = aslStatus;
+        public Builder setAppMetadataVerificationStatus(
+                @AppMetadataVerificationStatus int appMetadataVerificationStatus) {
+            this.mAppMetadataVerificationStatus = appMetadataVerificationStatus;
             return this;
         }
 
@@ -164,23 +170,24 @@ public final class DeveloperVerificationStatus implements Parcelable {
          */
         @NonNull
         public DeveloperVerificationStatus build() {
-            return new DeveloperVerificationStatus(mIsVerified, mIsLite, mAslStatus,
+            return new DeveloperVerificationStatus(mIsVerified, mIsLiteVerification,
+                    mAppMetadataVerificationStatus,
                     mFailuresMessage);
         }
     }
 
     private DeveloperVerificationStatus(Parcel in) {
         mIsVerified = in.readBoolean();
-        mIsLite = in.readBoolean();
-        mAslStatus = in.readInt();
+        mIsLiteVerification = in.readBoolean();
+        mAppMetadataVerificationStatus = in.readInt();
         mFailuresMessage = in.readString8();
     }
 
     @Override
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeBoolean(mIsVerified);
-        dest.writeBoolean(mIsLite);
-        dest.writeInt(mAslStatus);
+        dest.writeBoolean(mIsLiteVerification);
+        dest.writeInt(mAppMetadataVerificationStatus);
         dest.writeString8(mFailuresMessage);
     }
 

@@ -80,7 +80,7 @@ public class VerificationConfirmationFragment extends DialogFragment {
                 mDialogData.getVerificationInfo();
         assert verificationInfo != null;
         int dialogTypeFlag = getUserConfirmationDialogFlag(verificationInfo);
-        int userActionNeededReasonReason = verificationInfo.getVerificationUserActionNeededReason();
+        int userActionNeededReasonReason = verificationInfo.getUserActionNeededReason();
         int msgResId = getDialogMessageResourceId(userActionNeededReasonReason);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(requireActivity())
@@ -171,7 +171,7 @@ public class VerificationConfirmationFragment extends DialogFragment {
      */
     private int getUserConfirmationDialogFlag(
             DeveloperVerificationUserConfirmationInfo verificationInfo) {
-        int userActionNeededReason = verificationInfo.getVerificationUserActionNeededReason();
+        int userActionNeededReason = verificationInfo.getUserActionNeededReason();
         int verificationPolicy = verificationInfo.getVerificationPolicy();
 
         return switch (userActionNeededReason) {

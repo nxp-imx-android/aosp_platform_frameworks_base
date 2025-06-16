@@ -225,6 +225,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS),
     ENABLE_WINDOW_DECORATION_REFACTOR(Flags::enableWindowDecorationRefactor, false,
             Flags.FLAG_ENABLE_WINDOW_DECORATION_REFACTOR),
+    ENABLE_WINDOW_DROP_SMOOTH_TRANSITION(Flags::enableWindowDropSmoothTransition, false,
+            Flags.FLAG_ENABLE_WINDOW_DROP_SMOOTH_TRANSITION),
     ENABLE_WINDOW_REPOSITIONING_API(Flags::enableWindowRepositioningApi, false,
             Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API),
     ENTER_DESKTOP_BY_DEFAULT_ON_FREEFORM_DISPLAYS(Flags::enterDesktopByDefaultOnFreeformDisplays,

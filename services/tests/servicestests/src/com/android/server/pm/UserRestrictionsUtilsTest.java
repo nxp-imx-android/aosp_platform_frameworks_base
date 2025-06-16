@@ -19,13 +19,7 @@ package com.android.server.pm;
 import static com.android.server.devicepolicy.DpmTestUtils.assertRestrictions;
 import static com.android.server.devicepolicy.DpmTestUtils.newRestrictions;
 
-import static junit.framework.Assert.assertFalse;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 import android.os.Bundle;
 import android.os.UserManager;
@@ -35,6 +29,8 @@ import android.util.SparseArray;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
+
+import com.google.common.truth.Expect;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,18 +46,22 @@ import org.junit.runner.RunWith;
 @Presubmit
 @RunWith(AndroidJUnit4.class)
 @SmallTest
-public class UserRestrictionsUtilsTest {
+public final class UserRestrictionsUtilsTest {
+
+    @Rule
+    public final Expect expect = Expect.create();
+
     @Rule
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Test
     public void testNonNull() {
         Bundle out = UserRestrictionsUtils.nonNull(null);
-        assertNotNull(out);
+        expect.that(out).isNotNull();
         out.putBoolean("a", true); // Should not be Bundle.EMPTY.
 
         Bundle in = new Bundle();
-        assertSame(in, UserRestrictionsUtils.nonNull(in));
+        expect.that(UserRestrictionsUtils.nonNull(in)).isSameInstanceAs(in);
     }
 
     @Test
@@ -82,106 +82,110 @@ public class UserRestrictionsUtilsTest {
 
     @Test
     public void testCanDeviceOwnerChange() {
-        assertFalse(UserRestrictionsUtils.canDeviceOwnerChange(UserManager.DISALLOW_RECORD_AUDIO));
-        assertFalse(UserRestrictionsUtils.canDeviceOwnerChange(UserManager.DISALLOW_WALLPAPER));
-        assertTrue(UserRestrictionsUtils.canDeviceOwnerChange(UserManager.DISALLOW_ADD_USER));
-        assertTrue(UserRestrictionsUtils.canDeviceOwnerChange(UserManager.DISALLOW_USER_SWITCH));
+        expect.that(UserRestrictionsUtils.canDeviceOwnerChange(UserManager.DISALLOW_RECORD_AUDIO))
+                .isFalse();
+        expect.that(UserRestrictionsUtils.canDeviceOwnerChange(UserManager.DISALLOW_WALLPAPER))
+                .isFalse();
+        expect.that(UserRestrictionsUtils.canDeviceOwnerChange(UserManager.DISALLOW_ADD_USER))
+                .isTrue();
+        expect.that(UserRestrictionsUtils.canDeviceOwnerChange(UserManager.DISALLOW_USER_SWITCH))
+                .isTrue();
     }
 
     @Test
     public void testCanProfileOwnerChange_mainUser() {
-        assertFalse(UserRestrictionsUtils.canProfileOwnerChange(
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_RECORD_AUDIO,
-                true,
-                false));
-        assertFalse(UserRestrictionsUtils.canProfileOwnerChange(
+                /* isMainUser= */ true,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_WALLPAPER,
-                true,
-                false));
-        assertFalse(UserRestrictionsUtils.canProfileOwnerChange(
+                /* isMainUser= */ true,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_USER_SWITCH,
-                true,
-                false));
-        assertTrue(UserRestrictionsUtils.canProfileOwnerChange(
+                /* isMainUser= */ true,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_ADD_USER,
-                true,
-                false));
-        assertTrue(UserRestrictionsUtils.canProfileOwnerChange(
+                /* isMainUser= */ true,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isTrue();
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_ADJUST_VOLUME,
-                true,
-                false));
+                /* isMainUser= */ true,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isTrue();
     }
 
     @Test
     public void testCanProfileOwnerChange_notMainUser() {
-        assertFalse(UserRestrictionsUtils.canProfileOwnerChange(
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_RECORD_AUDIO,
-                false,
-                false));
-        assertFalse(UserRestrictionsUtils.canProfileOwnerChange(
+                /* isMainUser= */ false,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_WALLPAPER,
-                false,
-                false));
-        assertFalse(UserRestrictionsUtils.canProfileOwnerChange(
+                /* isMainUser= */ false,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_ADD_USER,
-                false,
-                false));
-        assertFalse(UserRestrictionsUtils.canProfileOwnerChange(
+                /* isMainUser= */ false,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_USER_SWITCH,
-                false,
-                false));
-        assertTrue(UserRestrictionsUtils.canProfileOwnerChange(
+                /* isMainUser= */ false,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_ADJUST_VOLUME,
-                false,
-                false));
+                /* isMainUser= */ false,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isTrue();
     }
 
     @Test
     public void testCanProfileOwnerChange_restrictionRequiresOrgOwnedDevice_orgOwned() {
-        assertTrue(UserRestrictionsUtils.canProfileOwnerChange(
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_SIM_GLOBALLY,
-                false,
-                true));
-        assertTrue(UserRestrictionsUtils.canProfileOwnerChange(
+                /* isMainUser= */ false,
+                /* isProfileOwnerOnOrgOwnedDevice= */                 true)).isTrue();
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_SIM_GLOBALLY,
-                true,
-                true));
+                /* isMainUser= */ true,
+                /* isProfileOwnerOnOrgOwnedDevice= */ true)).isTrue();
     }
 
     @Test
     public void testCanProfileOwnerChange_restrictionRequiresOrgOwnedDevice_notOrgOwned() {
-        assertFalse(UserRestrictionsUtils.canProfileOwnerChange(
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_SIM_GLOBALLY,
-                false,
-                false));
-        assertFalse(UserRestrictionsUtils.canProfileOwnerChange(
+                /* isMainUser= */ false,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_SIM_GLOBALLY,
-                true,
-                false));
+                /* isMainUser= */ true,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
     }
 
     @Test
     public void testCanProfileOwnerChange_restrictionNotRequiresOrgOwnedDevice_orgOwned() {
-        assertTrue(UserRestrictionsUtils.canProfileOwnerChange(
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_ADJUST_VOLUME,
-                false,
-                true));
-        assertTrue(UserRestrictionsUtils.canProfileOwnerChange(
+                /* isMainUser= */ false,
+                /* isProfileOwnerOnOrgOwnedDevice= */ true)).isTrue();
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_ADJUST_VOLUME,
-                true,
-                true));
+                /* isMainUser= */ true,
+                /* isProfileOwnerOnOrgOwnedDevice= */ true)).isTrue();
     }
 
     @Test
     public void testCanProfileOwnerChange_restrictionNotRequiresOrgOwnedDevice_notOrgOwned() {
-        assertTrue(UserRestrictionsUtils.canProfileOwnerChange(
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_ADJUST_VOLUME,
-                false,
-                false));
-        assertTrue(UserRestrictionsUtils.canProfileOwnerChange(
+                /* isMainUser= */ false,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isTrue();
+        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
                 UserManager.DISALLOW_ADJUST_VOLUME,
-                true,
-                false));
+                /* isMainUser= */ true,
+                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isTrue();
     }
 
     @Test
@@ -207,10 +211,10 @@ public class UserRestrictionsUtilsTest {
         assertRestrictions(
                 newRestrictions(0, UserManager.DISALLOW_ADJUST_VOLUME),
                 localRestrictions.get(0));
-        assertNull(globalRestrictions.getRestrictions(0));
+        expect.that(globalRestrictions.getRestrictions(0)).isNull();
 
         // Check user 1.
-        assertTrue(localRestrictions.get(1).isEmpty());
+        expect.that(localRestrictions.get(1).isEmpty()).isTrue();
         assertRestrictions(
                 newRestrictions(UserManager.ENSURE_VERIFY_APPS, UserManager.DISALLOW_ADD_USER),
                 globalRestrictions.getRestrictions(1));
@@ -226,58 +230,58 @@ public class UserRestrictionsUtilsTest {
 
     @Test
     public void testAreEqual() {
-        assertTrue(UserRestrictionsUtils.areEqual(
+        expect.that(UserRestrictionsUtils.areEqual(
                 null,
-                null));
+                null)).isTrue();
 
-        assertTrue(UserRestrictionsUtils.areEqual(
+        expect.that(UserRestrictionsUtils.areEqual(
                 null,
-                Bundle.EMPTY));
+                Bundle.EMPTY)).isTrue();
 
-        assertTrue(UserRestrictionsUtils.areEqual(
+        expect.that(UserRestrictionsUtils.areEqual(
                 Bundle.EMPTY,
-                null));
+                null)).isTrue();
 
-        assertTrue(UserRestrictionsUtils.areEqual(
+        expect.that(UserRestrictionsUtils.areEqual(
                 Bundle.EMPTY,
-                Bundle.EMPTY));
+                Bundle.EMPTY)).isTrue();
 
-        assertTrue(UserRestrictionsUtils.areEqual(
+        expect.that(UserRestrictionsUtils.areEqual(
                 new Bundle(),
-                Bundle.EMPTY));
+                Bundle.EMPTY)).isTrue();
 
-        assertFalse(UserRestrictionsUtils.areEqual(
+        expect.that(UserRestrictionsUtils.areEqual(
                 null,
-                newRestrictions("a")));
+                newRestrictions("a"))).isFalse();
 
-        assertFalse(UserRestrictionsUtils.areEqual(
+        expect.that(UserRestrictionsUtils.areEqual(
                 newRestrictions("a"),
-                null));
+                null)).isFalse();
 
-        assertTrue(UserRestrictionsUtils.areEqual(
+        expect.that(UserRestrictionsUtils.areEqual(
                 newRestrictions("a"),
-                newRestrictions("a")));
+                newRestrictions("a"))).isTrue();
 
-        assertFalse(UserRestrictionsUtils.areEqual(
+        expect.that(UserRestrictionsUtils.areEqual(
                 newRestrictions("a"),
-                newRestrictions("a", "b")));
+                newRestrictions("a", "b"))).isFalse();
 
-        assertFalse(UserRestrictionsUtils.areEqual(
+        expect.that(UserRestrictionsUtils.areEqual(
                 newRestrictions("a", "b"),
-                newRestrictions("a")));
+                newRestrictions("a"))).isFalse();
 
-        assertFalse(UserRestrictionsUtils.areEqual(
+        expect.that(UserRestrictionsUtils.areEqual(
                 newRestrictions("b", "a"),
-                newRestrictions("a", "a")));
+                newRestrictions("a", "a"))).isFalse();
 
         // Make sure false restrictions are handled correctly.
-        final Bundle a = newRestrictions("a");
+        Bundle a = newRestrictions("a");
         a.putBoolean("b", true);
 
-        final Bundle b = newRestrictions("a");
+        Bundle b = newRestrictions("a");
         b.putBoolean("b", false);
 
-        assertFalse(UserRestrictionsUtils.areEqual(a, b));
-        assertFalse(UserRestrictionsUtils.areEqual(b, a));
+        expect.that(UserRestrictionsUtils.areEqual(a, b)).isFalse();
+        expect.that(UserRestrictionsUtils.areEqual(b, a)).isFalse();
     }
 }

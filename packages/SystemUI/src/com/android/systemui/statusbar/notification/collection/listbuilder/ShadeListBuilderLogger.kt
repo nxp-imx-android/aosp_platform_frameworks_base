@@ -372,46 +372,61 @@ constructor(
         }
         for (i in entries.indices) {
             val entry = entries[i]
+            logPipelineEntry(entry, i, "")
+            if (entry is BundleEntry) {
+                for ((j, bundleChild) in entry.children.withIndex()) {
+                    logPipelineEntry(bundleChild, j, "  ")
+                    if (bundleChild is GroupEntry) {
+                        logGroupEntry(bundleChild, "  ")
+                    }
+                }
+            }
+            if (entry is GroupEntry) {
+                logGroupEntry(entry, "")
+            }
+        }
+    }
+
+    private fun logPipelineEntry(entry: PipelineEntry, i : Int, indent: String) {
+        buffer.log(
+            TAG,
+            DEBUG,
+            {
+                int1 = i
+                str1 = entry.logKey
+                bool1 = logRankInFinalList
+                str2 = getRankString(entry)
+            },
+            { "$indent[$int1] $str1".let { if (bool1) "$it rank=$str2" else it } },
+        )
+    }
+
+    private fun logGroupEntry(entry: GroupEntry, indent: String) {
+        entry.summary?.let {
             buffer.log(
                 TAG,
                 DEBUG,
                 {
-                    int1 = i
-                    str1 = entry.logKey
+                    str1 = it.logKey
                     bool1 = logRankInFinalList
-                    str2 = getRankString(entry)
+                    int2 = it.ranking.rank
                 },
-                { "[$int1] $str1".let { if (bool1) "$it rank=$str2" else it } },
+                { "$indent  [*] $str1 (summary)".let { if (bool1) "$it rank=$int2" else it } },
             )
-            // TODO(b/399736937) rank bundles as -1 and log bundle children rankings
-            if (entry is GroupEntry) {
-                entry.summary?.let {
-                    buffer.log(
-                        TAG,
-                        DEBUG,
-                        {
-                            str1 = it.logKey
-                            bool1 = logRankInFinalList
-                            int2 = it.ranking.rank
-                        },
-                        { "  [*] $str1 (summary)".let { if (bool1) "$it rank=$int2" else it } },
-                    )
-                }
-                for (j in entry.children.indices) {
-                    val child = entry.children[j]
-                    buffer.log(
-                        TAG,
-                        DEBUG,
-                        {
-                            int1 = j
-                            str1 = child.logKey
-                            bool1 = logRankInFinalList
-                            int2 = child.ranking.rank
-                        },
-                        { "  [$int1] $str1".let { if (bool1) "$it rank=$int2" else it } },
-                    )
-                }
-            }
+        }
+        for (j in entry.children.indices) {
+            val child = entry.children[j]
+            buffer.log(
+                TAG,
+                DEBUG,
+                {
+                    int1 = j
+                    str1 = child.logKey
+                    bool1 = logRankInFinalList
+                    int2 = child.ranking.rank
+                },
+                { "$indent  [$int1] $str1".let { if (bool1) "$it rank=$int2" else it } },
+            )
         }
     }
 

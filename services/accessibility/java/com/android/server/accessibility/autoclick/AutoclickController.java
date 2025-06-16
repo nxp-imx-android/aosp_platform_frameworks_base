@@ -928,13 +928,18 @@ public class AutoclickController extends BaseEventStreamTransformation {
             boolean moved = detectMovement(event);
             cacheLastEvent(event, policyFlags, mLastMotionEvent == null || moved /* useAsAnchor */);
 
+            if (Flags.enableAutoclickIndicator()) {
+                // Give the indicator the latest mouse coordinates for when the indicator is ready
+                // to redraw.
+                final int pointerIndex = event.getActionIndex();
+                mAutoclickIndicatorView.setCoordination(
+                        event.getX(pointerIndex), event.getY(pointerIndex));
+            }
+
             if (moved) {
                 rescheduleClick(mDelay);
 
                 if (Flags.enableAutoclickIndicator()) {
-                    final int pointerIndex = event.getActionIndex();
-                    mAutoclickIndicatorView.setCoordination(
-                            event.getX(pointerIndex), event.getY(pointerIndex));
                     mAutoclickIndicatorScheduler.update();
                 }
             }

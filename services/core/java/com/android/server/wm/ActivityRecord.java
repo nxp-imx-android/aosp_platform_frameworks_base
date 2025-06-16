@@ -5792,18 +5792,11 @@ final class ActivityRecord extends WindowToken {
      * surfaces that's eligible, if the app is already stopped.
      */
     private void destroySurfaces(boolean cleanupOnResume) {
-        boolean destroyedSomething = false;
-
         // Copying to a different list as multiple children can be removed.
         final ArrayList<WindowState> children = new ArrayList<>(mChildren);
         for (int i = children.size() - 1; i >= 0; i--) {
             final WindowState win = children.get(i);
-            destroyedSomething |= win.destroySurface(cleanupOnResume, mAppStopped);
-        }
-        if (destroyedSomething) {
-            final DisplayContent dc = getDisplayContent();
-            dc.assignWindowLayers(true /*setLayoutNeeded*/);
-            updateLetterboxSurfaceIfNeeded(null);
+            win.destroySurface(cleanupOnResume, mAppStopped);
         }
     }
 

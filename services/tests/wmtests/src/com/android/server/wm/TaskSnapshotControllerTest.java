@@ -109,6 +109,7 @@ public class TaskSnapshotControllerTest extends WindowTestsBase {
         final Rect contentInsets = new Rect(1, 2, 3, 4);
         final Rect letterboxInsets = new Rect(5, 6, 7, 8);
         final Point taskSize = new Point(9, 10);
+        final int densityDpi = 400;
 
         try {
             TaskSnapshot.Builder builder =
@@ -126,6 +127,7 @@ public class TaskSnapshotControllerTest extends WindowTestsBase {
             builder.setIsRealSnapshot(true);
             builder.setPixelFormat(pixelFormat);
             builder.setTaskSize(taskSize);
+            builder.setDensityDpi(densityDpi);
 
             // Not part of TaskSnapshot itself, used in screenshot process
             assertEquals(pixelFormat, builder.getPixelFormat());
@@ -146,6 +148,7 @@ public class TaskSnapshotControllerTest extends WindowTestsBase {
             assertSame(buffer, snapshot.getHardwareBuffer());
             assertTrue(snapshot.isRealSnapshot());
             assertEquals(taskSize, snapshot.getTaskSize());
+            assertEquals(densityDpi, snapshot.getDensityDpi());
         } finally {
             if (buffer != null) {
                 buffer.close();

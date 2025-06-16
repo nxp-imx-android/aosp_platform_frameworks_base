@@ -63,6 +63,7 @@ import android.annotation.NonNull;
 import android.app.Instrumentation;
 import android.app.UiModeManager;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.ForceDarkType;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManagerGlobal;
@@ -78,9 +79,12 @@ import android.provider.Settings;
 import android.sysprop.ViewProperties;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.MergedConfiguration;
+import android.util.SequenceUtils;
 import android.view.WindowInsets.Side;
 import android.view.WindowInsets.Type;
 import android.view.accessibility.AccessibilityManager;
+import android.window.ClientWindowFrames;
 
 import androidx.test.annotation.UiThreadTest;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -102,6 +106,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.lang.reflect.Field;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -453,6 +458,42 @@ public class ViewRootImplTest {
         checkKeyEvent(() -> {
             mViewRootImpl.setPausedForTransition(true /*paused*/);
         }, false /*shouldReceiveKey*/);
+    }
+
+    @Test
+    public void relayoutOnWindowSizeChange() throws Throwable {
+        mView = new View(sContext);
+        attachViewToWindow(mView);
+
+        final Configuration config = mView.getResources().getConfiguration();
+        final MergedConfiguration mergedConfiguration = new MergedConfiguration(config, config);
+        final ClientWindowFrames frames = new ClientWindowFrames();
+        frames.frame.set(config.windowConfiguration.getBounds());
+        frames.frame.scale(0.5f);
+        frames.seq = SequenceUtils.getInitSeq() + 10;
+        final Field fieldWindow = ViewRootImpl.class.getDeclaredField("mWindow");
+        fieldWindow.setAccessible(true);
+        final Field fieldRelayoutSeq = ViewRootImpl.class.getDeclaredField("mRelayoutSeq");
+        fieldRelayoutSeq.setAccessible(true);
+        final int initRelayoutSeq = fieldRelayoutSeq.getInt(mView.getViewRootImpl());
+        final IWindow iWindow = (IWindow) fieldWindow.get(mView.getViewRootImpl());
+        final WindowRelayoutResult layout = new WindowRelayoutResult(frames, mergedConfiguration,
+                new InsetsState(), null /* insetControls */);
+        iWindow.resized(layout, true /* reportDraw */, false /* forceLayout */,
+                mView.getDisplay().getDisplayId(), false /* syncWithBuffers */,
+                false /* dragResizing */);
+        final int[] resizedRelayoutSeq = new int[1];
+        runAfterDraw(() -> {
+            try {
+                resizedRelayoutSeq[0] = fieldRelayoutSeq.getInt(mView.getViewRootImpl());
+            } catch (IllegalAccessException e) {
+                resizedRelayoutSeq[0] = -1;
+            }
+        });
+        waitForAfterDraw();
+
+        assertWithMessage("Window size change must invoke relayoutWindow")
+                .that(resizedRelayoutSeq[0]).isGreaterThan(initRelayoutSeq);
     }
 
     @UiThreadTest

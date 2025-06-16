@@ -186,6 +186,7 @@ class TaskSnapshotPersisterTestBase extends WindowTestsBase {
         private int mRotation = Surface.ROTATION_0;
         private int mWidth = SNAPSHOT_WIDTH;
         private int mHeight = SNAPSHOT_HEIGHT;
+        private int mDensityDpi = 300;
         private ComponentName mTopActivityComponent = new ComponentName("", "");
 
         TaskSnapshotBuilder() {
@@ -232,6 +233,11 @@ class TaskSnapshotPersisterTestBase extends WindowTestsBase {
             return this;
         }
 
+        TaskSnapshotBuilder setDensityDpi(int densityDpi) {
+            mDensityDpi = densityDpi;
+            return this;
+        }
+
         TaskSnapshot build() {
             // To satisfy existing tests, ensure the graphics buffer is always 100x100, and
             // compute the ize of the task according to mScaleFraction.
@@ -252,7 +258,7 @@ class TaskSnapshotPersisterTestBase extends WindowTestsBase {
                     // disk.
                     false /* isLowResolution */,
                     mIsRealSnapshot, mWindowingMode, mSystemUiVisibility, mIsTranslucent,
-                    false /* hasImeSurface */, 0 /* uiMode */);
+                    false /* hasImeSurface */, 0 /* uiMode */, mDensityDpi);
         }
     }
 }
