@@ -956,6 +956,23 @@ public class SyntheticPasswordTests extends BaseLockSettingsServiceTests {
         }
     }
 
+    @Test
+    public void testFailureCounterDeletedOnLskfChanged() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential pin = newPin("1234");
+        initSpAndSetCredential(userId, pin);
+        final long oldProtectorId = mService.getCurrentLskfBasedProtectorId(userId);
+        final LskfIdentifier oldLskfId = new LskfIdentifier(userId, oldProtectorId);
+
+        mSpManager.writeFailureCounter(oldLskfId, 1);
+        assertEquals(1, mSpManager.readFailureCounter(oldLskfId));
+        assertTrue(mService.setLockCredential(nonePassword(), pin, userId));
+
+        final long newProtectorId = mService.getCurrentLskfBasedProtectorId(userId);
+        assertNotEquals(oldProtectorId, newProtectorId);
+        assertEquals(0, mSpManager.readFailureCounter(oldLskfId));
+    }
+
     // b/62213311
     //TODO: add non-migration work profile case, and unify/un-unify transition.
     //TODO: test token after user resets password
