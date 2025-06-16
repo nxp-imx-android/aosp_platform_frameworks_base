@@ -42,6 +42,7 @@ import android.os.UserHandle;
 import android.service.notification.StatusBarNotification;
 import android.text.TextUtils;
 import android.util.FloatProperty;
+import android.util.LayoutDirection;
 import android.util.Log;
 import android.util.Property;
 import android.util.TypedValue;
@@ -59,6 +60,7 @@ import com.android.internal.statusbar.StatusBarIcon;
 import com.android.internal.statusbar.StatusBarIcon.Shape;
 import com.android.internal.util.ContrastColorUtil;
 import com.android.systemui.res.R;
+import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.notification.NotificationContentDescription;
 import com.android.systemui.statusbar.notification.NotificationDozeHelper;
 import com.android.systemui.statusbar.notification.NotificationUtils;
@@ -143,6 +145,7 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
     @VisibleForTesting int mNewStatusBarIconSize = 1;
     @VisibleForTesting float mScaleToFitNewIconSize = 1;
     private StatusBarIcon mIcon;
+    private int mLayoutDirectionForLoadedDrawable = LayoutDirection.UNDEFINED;
     @ViewDebug.ExportedProperty private String mSlot;
     private StatusBarNotification mNotification;
     private final boolean mBlocked;
@@ -445,6 +448,7 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
             setImageDrawable(null);
         }
         setImageDrawable(drawable);
+        mLayoutDirectionForLoadedDrawable = getLayoutDirection();
         return true;
     }
 
@@ -531,7 +535,10 @@ public class StatusBarIconView extends AnimatedImageView implements StatusIconDi
     @Override
     public void onRtlPropertiesChanged(int layoutDirection) {
         super.onRtlPropertiesChanged(layoutDirection);
-        updateDrawable();
+        if (!SceneContainerFlag.isEnabled()
+                || mLayoutDirectionForLoadedDrawable != layoutDirection) {
+            updateDrawable();
+        }
     }
 
     @Override
