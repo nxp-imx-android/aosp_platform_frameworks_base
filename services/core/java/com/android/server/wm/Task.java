@@ -3491,9 +3491,6 @@ class Task extends TaskFragment {
     @Nullable
     private static Rect calculateTopActivityMainWindowFrameForTaskInfo(
             @Nullable ActivityRecord top) {
-        if (!Flags.betterSupportNonMatchParentActivity()) {
-            return null;
-        }
         if (top == null) {
             return null;
         }

@@ -76,13 +76,6 @@ flag {
 }
 
 flag {
-    namespace: "windowing_sdk"
-    name: "better_support_non_match_parent_activity"
-    description: "Relax the assumption of non-match parent activity"
-    bug: "356277166"
-}
-
-flag {
     namespace: "aaos_core_contrib"
     name: "safe_region_letterboxing"
     description: "Enables letterboxing for a safe region"
