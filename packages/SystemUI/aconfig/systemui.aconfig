@@ -474,6 +474,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_inflate_carrier_merged"
+    namespace: "systemui"
+    description: "Allow the status bar to inflate the levels of the carrier merged connection"
+    bug: "423686800"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "icon_refresh_2025"
     namespace: "systemui"
     description: "Build time flag for 2025 icon refresh"
