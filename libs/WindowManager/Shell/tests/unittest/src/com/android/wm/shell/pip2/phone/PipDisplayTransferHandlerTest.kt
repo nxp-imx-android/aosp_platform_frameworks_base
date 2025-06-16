@@ -187,6 +187,10 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             DESTINATION_BOUNDS
         )
 
+        verify(mockPipBoundsAlgorithm).snapToMovementBoundsEdge(
+            eq(DESTINATION_BOUNDS),
+            eq(displayLayouts.get(TARGET_DISPLAY_ID))
+        )
         verify(mockPipTransitionState).setState(eq(SCHEDULED_BOUNDS_CHANGE), any())
     }
 
@@ -233,10 +237,6 @@ class PipDisplayTransferHandlerTest : ShellTestCase() {
             extra
         )
 
-        verify(mockPipBoundsAlgorithm).snapToMovementBoundsEdge(
-            eq(destinationBounds),
-            eq(displayLayouts.get(TARGET_DISPLAY_ID))
-        )
         verify(mockPipTransitionState).state = eq(EXITING_PIP)
         verify(mockPipTransitionState).state = eq(EXITED_PIP)
         verify(mockPipResizeAnimator).start()

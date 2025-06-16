@@ -93,14 +93,24 @@ public class PipDisplayTransferHandler implements
     }
 
     void scheduleMovePipToDisplay(int originDisplayId, int targetDisplayId,
-            Rect destinationBounds) {
+            Rect boundsOnRelease) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                 "%s scheduleMovePipToDisplay from=%d to=%d", TAG, originDisplayId, targetDisplayId);
+
+        // Set bounds to the bounds on drag release so that we can use this as the origin bounds
+        // during animation to snap to the display's edge.
+        mPipBoundsState.setBounds(boundsOnRelease);
+
+        // Snap to movement bounds edge of the target display ID on drag release.
+        // The target display layout needs to be supplied since this happens before the PiP
+        // is released and the display ID and layout are updated.
+        mPipBoundsAlgorithm.snapToMovementBoundsEdge(boundsOnRelease,
+                mDisplayController.getDisplayLayout(targetDisplayId));
 
         Bundle extra = new Bundle();
         extra.putInt(ORIGIN_DISPLAY_ID_KEY, originDisplayId);
         extra.putInt(TARGET_DISPLAY_ID_KEY, targetDisplayId);
-        extra.putParcelable(PIP_DESTINATION_BOUNDS, destinationBounds);
+        extra.putParcelable(PIP_DESTINATION_BOUNDS, boundsOnRelease);
 
         mPipTransitionState.setState(PipTransitionState.SCHEDULED_BOUNDS_CHANGE, extra);
     }
@@ -143,17 +153,9 @@ public class PipDisplayTransferHandler implements
                 final Rect pipBounds = extra.getParcelable(
                         PIP_DESTINATION_BOUNDS, Rect.class);
 
-                Rect finalBounds = new Rect(pipBounds);
-                final DisplayLayout targetDisplayLayout = mDisplayController.getDisplayLayout(
-                        mTargetDisplayId);
-
                 mPipDisplayLayoutState.setDisplayId(mTargetDisplayId);
-                mPipDisplayLayoutState.setDisplayLayout(targetDisplayLayout);
-
-                // Snap to movement bounds edge of the target display ID on drag release.
-                // The target display layout needs to be supplied since this happens before the PiP
-                // is released and the display ID and layout are updated.
-                mPipBoundsAlgorithm.snapToMovementBoundsEdge(finalBounds, targetDisplayLayout);
+                mPipDisplayLayoutState.setDisplayLayout(
+                        mDisplayController.getDisplayLayout(mTargetDisplayId));
 
                 mPipSurfaceTransactionHelper.round(startTx, pipLeash, true).shadow(startTx,
                         pipLeash, true /* applyShadowRadius */);
@@ -168,13 +170,14 @@ public class PipDisplayTransferHandler implements
 
                 final PipResizeAnimator animator = mPipResizeAnimatorSupplier.get(mContext,
                         mPipSurfaceTransactionHelper, pipLeash, startTx, finishTx,
-                        pipBounds, pipBounds, finalBounds, duration, 0);
+                        mPipBoundsState.getBounds(), mPipBoundsState.getBounds(), pipBounds,
+                        duration, 0);
 
                 animator.setAnimationEndCallback(() -> {
                     ProtoLog.v(ShellProtoLogGroup.WM_SHELL_PICTURE_IN_PICTURE,
                             "%s Finished animating PiP display change to=%d", TAG,
                             mTargetDisplayId);
-                    mPipScheduler.scheduleFinishPipBoundsChange(finalBounds);
+                    mPipScheduler.scheduleFinishPipBoundsChange(pipBounds);
                     // Set state to ENTERED_PIP to register input consumer on the target display
                     mPipTransitionState.setState(PipTransitionState.ENTERED_PIP);
                     mPipBoundsState.setHasUserResizedPip(true);
