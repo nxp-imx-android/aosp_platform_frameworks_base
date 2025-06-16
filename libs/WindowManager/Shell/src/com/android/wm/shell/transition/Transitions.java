@@ -1117,7 +1117,7 @@ public class Transitions implements RemoteCallable<Transitions>,
         if (transition.mHandler != null) {
             // Notifies to clean-up the aborted transition.
             transition.mHandler.onTransitionConsumed(
-                    transition.mToken, true /* aborted */, null /* finishTransaction */);
+                    transition.mToken, true /* aborted */, transition.mFinishT);
         }
 
         releaseSurfaces(transition.mInfo);
