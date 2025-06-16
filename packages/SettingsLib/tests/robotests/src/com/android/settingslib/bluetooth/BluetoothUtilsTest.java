@@ -319,6 +319,89 @@ public class BluetoothUtilsTest {
     }
 
     @Test
+    public void isBatteryAllTheTimeSupported_nullDevice_returnsFalse() {
+        assertFalse(BluetoothUtils.isBatteryAllTheTimeSupported(null));
+    }
+
+    @Test
+    public void isBatteryAllTheTimeSupported_noMetadata_returnsFalse() {
+        when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(null);
+
+        assertFalse(BluetoothUtils.isBatteryAllTheTimeSupported(mBluetoothDevice));
+    }
+
+    @Test
+    public void isBatteryAllTheTimeSupported_emptyMetadataString_returnsFalse() {
+        when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn("".getBytes());
+
+        assertFalse(BluetoothUtils.isBatteryAllTheTimeSupported(mBluetoothDevice));
+    }
+
+    @Test
+    public void isBatteryAllTheTimeSupported_metadataWithoutBattTag_returnsFalse() {
+        String metadata = "<OTHERTAG>someValue</OTHERTAG>";
+        when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(metadata.getBytes());
+
+        assertFalse(BluetoothUtils.isBatteryAllTheTimeSupported(mBluetoothDevice));
+    }
+
+    @Test
+    public void isBatteryAllTheTimeSupported_metadataWithBattTagTrue_returnsTrue() {
+        String metadata = "<BATT>true</BATT>";
+        when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(metadata.getBytes());
+
+        assertTrue(BluetoothUtils.isBatteryAllTheTimeSupported(mBluetoothDevice));
+    }
+
+    @Test
+    public void isBatteryAllTheTimeSupported_metadataWithBattTagTRUECaseInsensitive_returnsTrue() {
+        String metadata = "<BATT>TRUE</BATT>";
+        when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(metadata.getBytes());
+
+        assertTrue(BluetoothUtils.isBatteryAllTheTimeSupported(mBluetoothDevice));
+    }
+
+    @Test
+    public void isBatteryAllTheTimeSupported_metadataWithBattTagFalse_returnsFalse() {
+        String metadata = "<BATT>false</BATT>";
+        when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(metadata.getBytes());
+
+        assertFalse(BluetoothUtils.isBatteryAllTheTimeSupported(mBluetoothDevice));
+    }
+
+    @Test
+    public void isBatteryAllTheTimeSupported_metadataWithBattTagEmptyValue_returnsFalse() {
+        String metadata = "<BATT></BATT>";
+        when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(metadata.getBytes());
+
+        assertFalse(BluetoothUtils.isBatteryAllTheTimeSupported(mBluetoothDevice));
+    }
+
+    @Test
+    public void isBatteryAllTheTimeSupported_metadataWithBattTagOtherString_returnsFalse() {
+        String metadata = "<BATT>someOtherValue</BATT>";
+        when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(metadata.getBytes());
+
+        assertFalse(BluetoothUtils.isBatteryAllTheTimeSupported(mBluetoothDevice));
+    }
+
+    @Test
+    public void isBatteryAllTheTimeSupported_metadataWithBattTagAndOtherTags_returnsTrue() {
+        String metadata = "<OTHER>info</OTHER><BATT>true</BATT><MORE>data</MORE>";
+        when(mBluetoothDevice.getMetadata(METADATA_FAST_PAIR_CUSTOMIZED_FIELDS))
+                .thenReturn(metadata.getBytes());
+
+        assertTrue(BluetoothUtils.isBatteryAllTheTimeSupported(mBluetoothDevice));
+    }
+    @Test
     public void isAdvancedDetailsHeader_untetheredHeadset_returnTrue() {
         when(mBluetoothDevice.getMetadata(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET))
                 .thenReturn(BOOL_METADATA.getBytes());

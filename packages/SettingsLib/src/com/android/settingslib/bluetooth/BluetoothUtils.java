@@ -81,6 +81,7 @@ public class BluetoothUtils {
             "bluetooth_le_audio_sharing_ui_preview_enabled";
     private static final int METADATA_FAST_PAIR_CUSTOMIZED_FIELDS = 25;
     private static final String KEY_HEARABLE_CONTROL_SLICE = "HEARABLE_CONTROL_SLICE_WITH_WIDTH";
+    private static final String KEY_BATTERY_ALL_THE_TIME = "BATT";
     private static final Set<Integer> SA_PROFILES =
             ImmutableSet.of(
                     BluetoothProfile.A2DP, BluetoothProfile.LE_AUDIO);
@@ -560,6 +561,18 @@ public class BluetoothUtils {
      */
     public static String getControlUriMetaData(BluetoothDevice bluetoothDevice) {
         return getFastPairCustomizedField(bluetoothDevice, KEY_HEARABLE_CONTROL_SLICE);
+    }
+
+    /**
+     * Check if battery all the time is supported for the given Bluetooth device.
+     *
+     * @param bluetoothDevice the BluetoothDevice to check
+     * @return true if battery all the time is supported, false otherwise
+     */
+    public static boolean isBatteryAllTheTimeSupported(@Nullable BluetoothDevice bluetoothDevice) {
+        String value = getFastPairCustomizedField(bluetoothDevice, KEY_BATTERY_ALL_THE_TIME);
+        Log.d(TAG, "Is BATT supported: " + value);
+        return Boolean.parseBoolean(value);
     }
 
     /**
