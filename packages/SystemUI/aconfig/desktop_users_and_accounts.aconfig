@@ -11,6 +11,13 @@ flag {
 }
 
 flag {
+    name: "disable_user_switcher_dropdown_on_bouncer"
+    namespace: "desktop_users_and_accounts"
+    description: "Show pill with current user's name instead of user switcher dropdown"
+    bug: "425357051"
+}
+
+flag {
     name: "sign_out_button_on_keyguard_status_bar"
     namespace: "desktop_users_and_accounts"
     description: "Add a 'Sign out' button on keyguard's status bar"

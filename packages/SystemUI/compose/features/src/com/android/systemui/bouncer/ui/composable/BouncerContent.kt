@@ -48,6 +48,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -104,6 +105,7 @@ import com.android.compose.animation.scene.rememberMutableSceneTransitionLayoutS
 import com.android.compose.animation.scene.transitions
 import com.android.compose.modifiers.thenIf
 import com.android.compose.windowsizeclass.LocalWindowSizeClass
+import com.android.systemui.Flags
 import com.android.systemui.bouncer.shared.model.BouncerActionButtonModel
 import com.android.systemui.bouncer.ui.BouncerDialogFactory
 import com.android.systemui.bouncer.ui.viewmodel.AuthMethodBouncerViewModel
@@ -898,6 +900,7 @@ private fun Dialog(
 @Composable
 private fun UserSwitcher(viewModel: BouncerOverlayContentViewModel, modifier: Modifier = Modifier) {
     val isUserSwitcherVisible by viewModel.isUserSwitcherVisible.collectAsStateWithLifecycle()
+    val dropdownItems by viewModel.userSwitcherDropdown.collectAsStateWithLifecycle(emptyList())
     if (!isUserSwitcherVisible) {
         // Take up the same space as the user switcher normally would, but with nothing inside it.
         Box(modifier = modifier)
@@ -905,10 +908,8 @@ private fun UserSwitcher(viewModel: BouncerOverlayContentViewModel, modifier: Mo
     }
 
     val selectedUserImage by viewModel.selectedUserImage.collectAsStateWithLifecycle(null)
-    val dropdownItems by viewModel.userSwitcherDropdown.collectAsStateWithLifecycle(emptyList())
     val userSwitcherIconSize = dimensionResource(R.dimen.bouncer_user_switcher_icon_size)
-    val dropDownWidth = userSwitcherIconSize + UserSwitcherDropdownExtraWidth
-
+    val maxUserSwitcherWidth = userSwitcherIconSize + UserSwitcherDropdownExtraWidth
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -921,51 +922,90 @@ private fun UserSwitcher(viewModel: BouncerOverlayContentViewModel, modifier: Mo
                 modifier = Modifier.size(userSwitcherIconSize).sysuiResTag("user_icon"),
             )
         }
-
-        val (isDropdownExpanded, setDropdownExpanded) = remember { mutableStateOf(false) }
-
-        dropdownItems.firstOrNull()?.let { firstDropdownItem ->
+        if (Flags.disableUserSwitcherDropdownOnBouncer() && dropdownItems.size <= 1) {
+            Spacer(modifier = Modifier.height(24.dp))
+            UserNamePill(viewModel = viewModel, maxWidth = maxUserSwitcherWidth)
+        } else {
             Spacer(modifier = Modifier.height(40.dp))
+            UserSwitcherDropdown(viewModel = viewModel, width = maxUserSwitcherWidth)
+        }
+    }
+}
 
-            Box {
-                PlatformButton(
-                    modifier =
-                        Modifier
-                            // Remove the built-in padding applied inside PlatformButton:
-                            .padding(vertical = 0.dp)
-                            .width(dropDownWidth)
-                            .height(UserSwitcherDropdownHeight),
-                    colors =
-                        ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                        ),
-                    onClick = { setDropdownExpanded(!isDropdownExpanded) },
-                ) {
-                    val context = LocalContext.current
-                    Text(
-                        text = checkNotNull(firstDropdownItem.text.loadText(context)),
-                        style = MaterialTheme.typography.labelMedium,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+/**
+ * Displays the current user's name in a stylized pill shape. This is used when the user switcher
+ * dropdown is disabled.
+ */
+@Composable
+private fun UserNamePill(viewModel: BouncerOverlayContentViewModel, maxWidth: Dp) {
+    val selectedUserName by viewModel.selectedUserName.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    selectedUserName.loadText(context)?.let { userName ->
+        Text(
+            text = userName,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier =
+                Modifier.widthIn(max = maxWidth)
+                    .background(
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        shape = RoundedCornerShape(percent = 50),
                     )
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+        )
+    }
+}
 
-                    Spacer(modifier = Modifier.weight(1f))
+/**
+ * Displays the current user's name and an arrow, which can be clicked to expand a dropdown menu for
+ * switching users.
+ */
+@Composable
+private fun UserSwitcherDropdown(viewModel: BouncerOverlayContentViewModel, width: Dp) {
+    val dropdownItems by viewModel.userSwitcherDropdown.collectAsStateWithLifecycle(emptyList())
+    val (isDropdownExpanded, setDropdownExpanded) = remember { mutableStateOf(false) }
 
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp).sysuiResTag("user_switcher_anchor"),
-                    )
-                }
+    dropdownItems.firstOrNull()?.let { firstDropdownItem ->
+        Box {
+            PlatformButton(
+                modifier =
+                    Modifier
+                        // Remove the built-in padding applied inside PlatformButton:
+                        .padding(vertical = 0.dp)
+                        .width(width)
+                        .height(UserSwitcherDropdownHeight),
+                colors =
+                    ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ),
+                onClick = { setDropdownExpanded(!isDropdownExpanded) },
+            ) {
+                val context = LocalContext.current
+                Text(
+                    text = checkNotNull(firstDropdownItem.text.loadText(context)),
+                    style = MaterialTheme.typography.headlineSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
 
-                UserSwitcherDropdownMenu(
-                    isExpanded = isDropdownExpanded,
-                    items = dropdownItems,
-                    dropDownWidth = dropDownWidth,
-                    onDismissed = { setDropdownExpanded(false) },
+                Spacer(modifier = Modifier.weight(1f))
+
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = null,
+                    modifier = Modifier.size(32.dp).sysuiResTag("user_switcher_anchor"),
                 )
             }
+
+            UserSwitcherDropdownMenu(
+                isExpanded = isDropdownExpanded,
+                items = dropdownItems,
+                dropDownWidth = width,
+                onDismissed = { setDropdownExpanded(false) },
+            )
         }
     }
 }
