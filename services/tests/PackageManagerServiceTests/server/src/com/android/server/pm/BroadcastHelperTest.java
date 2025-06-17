@@ -16,8 +16,6 @@
 
 package com.android.server.pm;
 
-import static android.content.pm.Flags.FLAG_REDUCE_BROADCASTS_FOR_COMPONENT_STATE_CHANGES;
-
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertNotNull;
@@ -42,9 +40,6 @@ import android.os.Message;
 import android.os.UserHandle;
 import android.platform.test.annotations.AppModeFull;
 import android.platform.test.annotations.AppModeNonSdkSandbox;
-import android.platform.test.annotations.RequiresFlagsEnabled;
-import android.platform.test.flag.junit.CheckFlagsRule;
-import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -54,7 +49,6 @@ import com.android.internal.pm.pkg.component.ParsedActivity;
 import com.android.server.pm.pkg.PackageStateInternal;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -72,9 +66,6 @@ public class BroadcastHelperTest {
     private static final String PACKAGE_CHANGED_TEST_PACKAGE_NAME = "testpackagename";
     private static final String PACKAGE_CHANGED_TEST_MAIN_ACTIVITY =
             PACKAGE_CHANGED_TEST_PACKAGE_NAME + ".MainActivity";
-
-    @Rule
-    public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
 
     @Mock
     ActivityManagerInternal mMockActivityManagerInternal;
@@ -121,7 +112,6 @@ public class BroadcastHelperTest {
         mBroadcastHelper = new BroadcastHelper(mMockPackageManagerServiceInjector);
     }
 
-    @RequiresFlagsEnabled(FLAG_REDUCE_BROADCASTS_FOR_COMPONENT_STATE_CHANGES)
     @Test
     public void changeNonExportedComponent_sendPackageChangedBroadcastToSystemAndApplicationItself()
             throws Exception {
@@ -142,7 +132,6 @@ public class BroadcastHelperTest {
         assertThat(intent2.getPackage()).isEqualTo(PACKAGE_CHANGED_TEST_PACKAGE_NAME);
     }
 
-    @RequiresFlagsEnabled(FLAG_REDUCE_BROADCASTS_FOR_COMPONENT_STATE_CHANGES)
     @Test
     public void changeNonExportedComponent_sendPackageChangedBroadcastToSharedUserIdApplications()
             throws Exception {
