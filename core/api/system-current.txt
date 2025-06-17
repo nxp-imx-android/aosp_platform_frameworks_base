@@ -10436,7 +10436,9 @@ package android.net {
 
   public abstract class NetworkSpecifier {
     method public boolean canBeSatisfiedBy(@Nullable android.net.NetworkSpecifier);
+    method @FlaggedApi("com.android.net.thread.platform.flags.thread_mobile_enabled") public long getApplicableRedactions();
     method @Nullable public android.net.NetworkSpecifier redact();
+    method @FlaggedApi("com.android.net.thread.platform.flags.thread_mobile_enabled") @Nullable public android.net.NetworkSpecifier redact(long);
   }
 
   public class NetworkStack {
