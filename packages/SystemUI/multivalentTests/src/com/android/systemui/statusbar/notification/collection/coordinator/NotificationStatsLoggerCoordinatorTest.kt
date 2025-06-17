@@ -27,7 +27,6 @@ import com.android.systemui.statusbar.notification.stack.ui.view.NotificationSta
 import com.android.systemui.util.mockito.mock
 import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.mockito.withArgCaptor
-import java.util.Optional
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,7 +41,7 @@ class NotificationStatsLoggerCoordinatorTest : SysuiTestCase() {
 
     private val pipeline: NotifPipeline = mock()
     private val logger: NotificationStatsLogger = mock()
-    private val underTest = NotificationStatsLoggerCoordinator(Optional.of(logger))
+    private val underTest = NotificationStatsLoggerCoordinator(logger)
 
     @Before
     fun attachPipeline() {

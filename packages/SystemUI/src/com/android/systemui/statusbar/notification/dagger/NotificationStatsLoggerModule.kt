@@ -19,12 +19,8 @@ package com.android.systemui.statusbar.notification.dagger
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationRowStatsLogger
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationStatsLogger
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationStatsLoggerImpl
-import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationLoggerViewModel
 import dagger.Binds
 import dagger.Module
-import dagger.Provides
-import java.util.Optional
-import javax.inject.Provider
 
 @Module
 interface NotificationStatsLoggerModule {
@@ -32,38 +28,6 @@ interface NotificationStatsLoggerModule {
     /** Binds an implementation to the [NotificationStatsLogger]. */
     @Binds fun bindsStatsLoggerImpl(impl: NotificationStatsLoggerImpl): NotificationStatsLogger
 
-    companion object {
-
-        // TODO(b/424001722) no need to keep it optional anymore
-        /** Provides a [NotificationStatsLogger] if the refactor flag is on. */
-        @Provides
-        fun provideStatsLogger(
-            provider: Provider<NotificationStatsLogger>
-        ): Optional<NotificationStatsLogger> {
-            return Optional.of(provider.get())
-        }
-
-        // TODO(b/424001722) no need to keep it optional anymore
-        /** Provides a [NotificationLoggerViewModel] if the refactor flag is on. */
-        @Provides
-        fun provideViewModel(
-            provider: Provider<NotificationLoggerViewModel>
-        ): Optional<NotificationLoggerViewModel> {
-            return Optional.of(provider.get())
-        }
-
-        /**
-         * Provides a the legacy [NotificationLogger] or the new [NotificationStatsLogger] to the
-         * notification row.
-         *
-         * TODO(b/308623704) remove the [NotificationRowStatsLogger] interface, and provide a
-         *   [NotificationStatsLogger] to the row directly.
-         */
-        @Provides
-        fun provideRowStatsLogger(
-            provider: Provider<NotificationStatsLogger>
-        ): NotificationRowStatsLogger {
-            return provider.get()
-        }
-    }
+    /** Binds [NotificationStatsLogger] to [NotificationRowStatsLogger]. */
+    @Binds fun bindRowStatsLogger(logger: NotificationStatsLogger): NotificationRowStatsLogger
 }

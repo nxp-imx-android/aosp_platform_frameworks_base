@@ -61,13 +61,11 @@ import com.android.systemui.statusbar.notification.stack.ui.viewmodel.Notificati
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.SummarizationOnboardingViewModel
 import com.android.systemui.statusbar.notification.ui.viewbinder.HeadsUpNotificationViewBinder
 import com.android.systemui.util.kotlin.awaitCancellationThenDispose
-import com.android.systemui.util.kotlin.getOrNull
 import com.android.systemui.util.time.SystemClock
 import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.stopAnimating
 import com.android.systemui.util.ui.value
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
-import java.util.Optional
 import javax.inject.Inject
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineDispatcher
@@ -89,7 +87,7 @@ constructor(
     @ShadeDisplayAware private val configuration: ConfigurationState,
     private val falsingManager: FalsingManager,
     private val hunBinder: HeadsUpNotificationViewBinder,
-    private val loggerOptional: Optional<NotificationStatsLogger>,
+    private val logger: NotificationStatsLogger,
     private val metricsLogger: MetricsLogger,
     private val nicBinder: NotificationIconContainerShelfViewBinder,
     // Using a provider to avoid a circular dependency.
@@ -323,11 +321,7 @@ constructor(
     }
 
     private suspend fun bindLogger(view: NotificationStackScrollLayout) {
-        viewModel.logger.getOrNull()?.let { viewModel ->
-            loggerOptional.getOrNull()?.let { logger ->
-                NotificationStatsLoggerBinder.bindLogger(view, logger, viewModel, systemClock)
-            }
-        }
+        NotificationStatsLoggerBinder.bindLogger(view, logger, viewModel.logger, systemClock)
     }
 
     private suspend fun bindBundleOnboarding(parentView: NotificationStackScrollLayout) {

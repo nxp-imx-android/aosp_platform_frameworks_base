@@ -39,7 +39,6 @@ import com.android.systemui.util.kotlin.sample
 import com.android.systemui.util.ui.AnimatableEvent
 import com.android.systemui.util.ui.AnimatedValue
 import com.android.systemui.util.ui.toAnimatedValueFlow
-import java.util.Optional
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -64,7 +63,7 @@ constructor(
     val emptyShadeViewModelFactory: EmptyShadeViewModel.Factory,
     val bundleOnboarding: BundleOnboardingViewModel,
     val summarizationOnboarding: SummarizationOnboardingViewModel,
-    val logger: Optional<NotificationLoggerViewModel>,
+    val logger: NotificationLoggerViewModel,
     activeNotificationsInteractor: ActiveNotificationsInteractor,
     notificationStackInteractor: NotificationStackInteractor,
     private val headsUpNotificationInteractor: HeadsUpNotificationInteractor,
