@@ -500,5 +500,7 @@ class BubbleControllerBubbleBarTest {
         override fun animateBubbleBarLocation(location: BubbleBarLocation?) {}
 
         override fun showBubbleBarPillowAt(location: BubbleBarLocation?) {}
+
+        override fun showBubbleBarDropTargetAt(location: BubbleBarLocation?) {}
     }
 }

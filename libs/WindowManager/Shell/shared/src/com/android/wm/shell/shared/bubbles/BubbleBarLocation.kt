@@ -65,6 +65,7 @@ enum class BubbleBarLocation : Parcelable {
          * Checks whether locations are on the different sides from each other. If any of the
          * locations is null returns false.
          */
+        @JvmStatic
         fun isDifferentSides(
             first: BubbleBarLocation?,
             second: BubbleBarLocation?,

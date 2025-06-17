@@ -147,6 +147,8 @@ import com.android.wm.shell.unfold.ShellUnfoldProgressProvider;
 
 import dagger.Lazy;
 
+import kotlin.Unit;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -160,8 +162,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
-
-import kotlin.Unit;
 
 /**
  * Bubbles are a special type of content that can "float" on top of other apps or System UI.
@@ -973,12 +973,20 @@ public class BubbleController implements ConfigurationChangeListener,
         }
     }
 
+    // TODO(b/411505605) remove all related code
     /**
      * Show bubble bar pin view given location.
      */
     public void showBubbleBarPinAtLocation(@Nullable BubbleBarLocation bubbleBarLocation) {
         if (isShowingAsBubbleBar() && mBubbleStateListener != null) {
             mBubbleStateListener.showBubbleBarPillowAt(bubbleBarLocation);
+        }
+    }
+
+    /** Show bubble bar drop target at provided location or hide it if null. */
+    public void showBubbleBarDropTargetAt(@Nullable BubbleBarLocation bubbleBarLocation) {
+        if (isShowingAsBubbleBar() && mBubbleStateListener != null) {
+            mBubbleStateListener.showBubbleBarDropTargetAt(bubbleBarLocation);
         }
     }
 
@@ -3086,6 +3094,11 @@ public class BubbleController implements ConfigurationChangeListener,
                     @Override
                     public void showBubbleBarPillowAt(@Nullable BubbleBarLocation location) {
                         mListener.call(l -> l.showBubbleBarPillowAt(location));
+                    }
+
+                    @Override
+                    public void showBubbleBarDropTargetAt(@Nullable BubbleBarLocation location) {
+                        mListener.call(l -> l.showBubbleBarDropTargetAt(location));
                     }
                 };
 
