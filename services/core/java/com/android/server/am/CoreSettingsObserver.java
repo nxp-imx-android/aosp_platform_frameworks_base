@@ -27,6 +27,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
+import android.util.Slog;
 import android.widget.WidgetFlags;
 
 import com.android.internal.R;
@@ -46,6 +47,8 @@ import java.util.Objects;
  * in {@link Settings.Secure}.
  */
 final class CoreSettingsObserver extends ContentObserver {
+
+    private static final String TAG = "CoreSettingsObserver";
 
     private static class DeviceConfigEntry<T> {
         String namespace;
@@ -232,15 +235,24 @@ final class CoreSettingsObserver extends ContentObserver {
             deviceIds.add(Context.DEVICE_ID_DEFAULT);
             for (int deviceId : deviceIds) {
                 final Bundle deviceBundle = new Bundle();
-                final Context deviceContext = context.createDeviceContext(deviceId);
-                populateSettings(deviceContext, deviceBundle, sSecureSettingToTypeMap);
-                populateSettings(deviceContext, deviceBundle, sSystemSettingToTypeMap);
+                Context deviceContext = null;
+                try {
+                    deviceContext = context.createDeviceContext(deviceId);
+                } catch (IllegalArgumentException e) {
+                    Slog.w(TAG, "Exception during Context#createDeviceContext", e);
+                }
 
-                // Copy global settings and device config values, as they don't vary across devices.
-                deviceBundle.putAll(globalSettingsBundle);
-                deviceBundle.putAll(deviceConfigBundle);
+                if (deviceContext != null) {
+                    populateSettings(deviceContext, deviceBundle, sSecureSettingToTypeMap);
+                    populateSettings(deviceContext, deviceBundle, sSystemSettingToTypeMap);
 
-                mCoreSettings.putBundle(String.valueOf(deviceId), deviceBundle);
+                    // Copy global settings and device config values, as they don't vary across
+                    // devices.
+                    deviceBundle.putAll(globalSettingsBundle);
+                    deviceBundle.putAll(deviceConfigBundle);
+
+                    mCoreSettings.putBundle(String.valueOf(deviceId), deviceBundle);
+                }
             }
         } else {
             populateSettings(context, mCoreSettings, sSecureSettingToTypeMap);
