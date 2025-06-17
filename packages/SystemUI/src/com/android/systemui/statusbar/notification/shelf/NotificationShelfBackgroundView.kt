@@ -43,8 +43,4 @@ constructor(context: Context, attrs: AttributeSet? = null) :
     override fun toDumpString(): String {
         return super.toDumpString() + " alignToEnd=" + alignToEnd
     }
-
-    override fun backgroundTransparency(): Boolean {
-        return false
-    }
 }
