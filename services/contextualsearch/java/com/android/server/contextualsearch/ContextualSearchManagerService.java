@@ -77,7 +77,7 @@ import android.util.Slog;
 import android.view.Display;
 import android.view.IWindowManager;
 import android.window.DesktopExperienceFlags;
-import android.window.ScreenCapture.ScreenshotHardwareBuffer;
+import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;

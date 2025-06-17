@@ -67,7 +67,7 @@ import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -265,7 +265,7 @@ public class BubbleStackView extends FrameLayout
      * Buffer containing a screenshot of the animating-out bubble. This is drawn into the
      * SurfaceView during animations.
      */
-    private ScreenCapture.ScreenshotHardwareBuffer mAnimatingOutBubbleBuffer;
+    private ScreenCaptureInternal.ScreenshotHardwareBuffer mAnimatingOutBubbleBuffer;
 
     private BubbleFlyoutView mFlyout;
     /** Runnable that fades out the flyout and then sets it to GONE. */

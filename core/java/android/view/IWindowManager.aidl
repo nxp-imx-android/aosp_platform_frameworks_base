@@ -77,7 +77,7 @@ import android.window.ISurfaceSyncGroupCompletedListener;
 import android.window.ITaskFpsCallback;
 import android.window.ITrustedPresentationListener;
 import android.window.InputTransferToken;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 import android.window.TrustedPresentationThresholds;
 import android.window.WindowContextInfo;
 
@@ -1115,8 +1115,8 @@ interface IWindowManager
      * Captures the entire display specified by the displayId using the args provided. If the args
      * are null or if the sourceCrop is invalid or null, the entire display bounds will be captured.
      */
-    oneway void captureDisplay(int displayId, in @nullable ScreenCapture.CaptureArgs captureArgs,
-            in ScreenCapture.ScreenCaptureListener listener);
+    oneway void captureDisplay(int displayId, in @nullable ScreenCaptureInternal.CaptureArgs captureArgs,
+            in ScreenCaptureInternal.ScreenCaptureListener listener);
 
     /**
      * Returns {@code true} if the key will be handled globally and not forwarded to all apps.

@@ -32,8 +32,8 @@ import android.service.notification.NotificationListenerService;
 import android.service.notification.NotificationListenerService.RankingMap;
 import android.util.Pair;
 import android.util.SparseArray;
-import android.window.ScreenCapture.ScreenshotHardwareBuffer;
-import android.window.ScreenCapture.SynchronousScreenCaptureListener;
+import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
+import android.window.ScreenCaptureInternal.SynchronousScreenCaptureListener;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;

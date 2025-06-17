@@ -102,7 +102,7 @@ import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.accessibility.IAccessibilityInteractionConnection;
 import android.view.accessibility.IAccessibilityInteractionConnectionCallback;
 import android.view.accessibility.IWindowSurfaceInfoCallback;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 
 import com.android.server.accessibility.AccessibilityWindowManager.RemoteAccessibilityConnection;
 import com.android.server.accessibility.magnification.MagnificationProcessor;
@@ -790,8 +790,8 @@ public class AbstractAccessibilityServiceConnectionTest {
 
         takeScreenshotOfDisplay();
 
-        final ArgumentCaptor<ScreenCapture.CaptureArgs> displayArgsCaptor =
-                ArgumentCaptor.forClass(ScreenCapture.CaptureArgs.class);
+        final ArgumentCaptor<ScreenCaptureInternal.CaptureArgs> displayArgsCaptor =
+                ArgumentCaptor.forClass(ScreenCaptureInternal.CaptureArgs.class);
         verify(mMockWindowManagerInternal).captureDisplay(
                 eq(Display.DEFAULT_DISPLAY), displayArgsCaptor.capture(), any());
         assertThat(displayArgsCaptor.getValue().mCaptureSecureLayers).isFalse();
@@ -804,8 +804,8 @@ public class AbstractAccessibilityServiceConnectionTest {
 
         takeScreenshotOfDisplay();
 
-        final ArgumentCaptor<ScreenCapture.CaptureArgs> displayArgsCaptor =
-                ArgumentCaptor.forClass(ScreenCapture.CaptureArgs.class);
+        final ArgumentCaptor<ScreenCaptureInternal.CaptureArgs> displayArgsCaptor =
+                ArgumentCaptor.forClass(ScreenCaptureInternal.CaptureArgs.class);
         verify(mMockWindowManagerInternal).captureDisplay(
                 anyInt(), displayArgsCaptor.capture(), any());
         assertThat(displayArgsCaptor.getValue().mCaptureSecureLayers).isTrue();
@@ -831,8 +831,8 @@ public class AbstractAccessibilityServiceConnectionTest {
         takeScreenshotOfWindow(/*windowFlags=*/0);
 
         // Screenshot was allowed
-        final ArgumentCaptor<ScreenCapture.LayerCaptureArgs> layerArgsCaptor =
-                ArgumentCaptor.forClass(ScreenCapture.LayerCaptureArgs.class);
+        final ArgumentCaptor<ScreenCaptureInternal.LayerCaptureArgs> layerArgsCaptor =
+                ArgumentCaptor.forClass(ScreenCaptureInternal.LayerCaptureArgs.class);
         verify(mMockSystemSupport).performScreenCapture(layerArgsCaptor.capture(), any());
         // ...without secure layers included
         assertThat(layerArgsCaptor.getValue().mCaptureSecureLayers).isFalse();
@@ -849,8 +849,8 @@ public class AbstractAccessibilityServiceConnectionTest {
         takeScreenshotOfWindow(/*windowFlags=*/0);
 
         // Screenshot was allowed
-        final ArgumentCaptor<ScreenCapture.LayerCaptureArgs> layerArgsCaptor =
-                ArgumentCaptor.forClass(ScreenCapture.LayerCaptureArgs.class);
+        final ArgumentCaptor<ScreenCaptureInternal.LayerCaptureArgs> layerArgsCaptor =
+                ArgumentCaptor.forClass(ScreenCaptureInternal.LayerCaptureArgs.class);
         verify(mMockSystemSupport).performScreenCapture(layerArgsCaptor.capture(), any());
         // ...with secure layers included
         assertThat(layerArgsCaptor.getValue().mCaptureSecureLayers).isTrue();
@@ -882,8 +882,8 @@ public class AbstractAccessibilityServiceConnectionTest {
         takeScreenshotOfWindow(WindowManager.LayoutParams.FLAG_SECURE);
 
         // Screenshot was allowed
-        final ArgumentCaptor<ScreenCapture.LayerCaptureArgs> layerArgsCaptor =
-                ArgumentCaptor.forClass(ScreenCapture.LayerCaptureArgs.class);
+        final ArgumentCaptor<ScreenCaptureInternal.LayerCaptureArgs> layerArgsCaptor =
+                ArgumentCaptor.forClass(ScreenCaptureInternal.LayerCaptureArgs.class);
         verify(mMockSystemSupport).performScreenCapture(layerArgsCaptor.capture(), any());
         // ...with secure layers included
         assertThat(layerArgsCaptor.getValue().mCaptureSecureLayers).isTrue();

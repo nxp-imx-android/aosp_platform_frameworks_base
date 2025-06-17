@@ -95,8 +95,8 @@ import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.accessibility.IAccessibilityInteractionConnectionCallback;
 import android.view.accessibility.IWindowSurfaceInfoCallback;
 import android.view.inputmethod.EditorInfo;
-import android.window.ScreenCapture;
-import android.window.ScreenCapture.ScreenshotHardwareBuffer;
+import android.window.ScreenCaptureInternal;
+import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.compat.IPlatformCompat;
@@ -346,8 +346,9 @@ abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServ
                 SurfaceControl sc,
                 IAccessibilityInteractionConnectionCallback callback);
 
-        int performScreenCapture(ScreenCapture.LayerCaptureArgs captureArgs,
-                ScreenCapture.ScreenCaptureListener captureListener);
+        int performScreenCapture(
+                ScreenCaptureInternal.LayerCaptureArgs captureArgs,
+                ScreenCaptureInternal.ScreenCaptureListener captureListener);
     }
 
     public AbstractAccessibilityServiceConnection(Context context, ComponentName componentName,
@@ -1416,9 +1417,12 @@ abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServ
 
     @RequiresNoPermission
     @Override
-    public void takeScreenshotOfWindow(int accessibilityWindowId, int interactionId,
-            ScreenCapture.ScreenCaptureListener listener,
-            IAccessibilityInteractionConnectionCallback callback) throws RemoteException {
+    public void takeScreenshotOfWindow(
+            int accessibilityWindowId,
+            int interactionId,
+            ScreenCaptureInternal.ScreenCaptureListener listener,
+            IAccessibilityInteractionConnectionCallback callback)
+            throws RemoteException {
         final long currentTimestamp = SystemClock.uptimeMillis();
         if ((currentTimestamp
                 - mRequestTakeScreenshotOfWindowTimestampMs.get(accessibilityWindowId, 0L))
@@ -1460,40 +1464,48 @@ abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServ
                 return;
             }
             if (Flags.allowSecureScreenshots()) {
-                IWindowSurfaceInfoCallback infoCallback = new IWindowSurfaceInfoCallback.Stub() {
-                    @Override
-                    public void provideWindowSurfaceInfo(int windowFlags, int processUid,
-                            SurfaceControl surfaceControl) {
-                        final boolean canCaptureSecureLayers = canCaptureSecureLayers();
-                        if (!canCaptureSecureLayers
-                                && (windowFlags & WindowManager.LayoutParams.FLAG_SECURE) != 0) {
-                            try {
-                                callback.sendTakeScreenshotOfWindowError(
-                                        AccessibilityService.ERROR_TAKE_SCREENSHOT_SECURE_WINDOW,
-                                        interactionId);
-                            } catch (RemoteException e) {
-                                // ignore - the other side will time out
-                            }
-                            return;
-                        }
+                IWindowSurfaceInfoCallback infoCallback =
+                        new IWindowSurfaceInfoCallback.Stub() {
+                            @Override
+                            public void provideWindowSurfaceInfo(
+                                    int windowFlags,
+                                    int processUid,
+                                    SurfaceControl surfaceControl) {
+                                final boolean canCaptureSecureLayers = canCaptureSecureLayers();
+                                if (!canCaptureSecureLayers
+                                        && (windowFlags & WindowManager.LayoutParams.FLAG_SECURE)
+                                                != 0) {
+                                    try {
+                                        callback.sendTakeScreenshotOfWindowError(
+                                                AccessibilityService
+                                                        .ERROR_TAKE_SCREENSHOT_SECURE_WINDOW,
+                                                interactionId);
+                                    } catch (RemoteException e) {
+                                        // ignore - the other side will time out
+                                    }
+                                    return;
+                                }
 
-                        final ScreenCapture.LayerCaptureArgs captureArgs =
-                                new ScreenCapture.LayerCaptureArgs.Builder(surfaceControl)
-                                        .setChildrenOnly(false)
-                                        .setUid(processUid)
-                                        .setCaptureSecureLayers(canCaptureSecureLayers)
-                                        .build();
-                        if (mSystemSupport.performScreenCapture(captureArgs, listener) != 0) {
-                            try {
-                                callback.sendTakeScreenshotOfWindowError(
-                                        AccessibilityService.ERROR_TAKE_SCREENSHOT_INTERNAL_ERROR,
-                                        interactionId);
-                            } catch (RemoteException e) {
-                                // ignore - the other side will time out
+                                final ScreenCaptureInternal.LayerCaptureArgs captureArgs =
+                                        new ScreenCaptureInternal.LayerCaptureArgs.Builder(
+                                                        surfaceControl)
+                                                .setChildrenOnly(false)
+                                                .setUid(processUid)
+                                                .setCaptureSecureLayers(canCaptureSecureLayers)
+                                                .build();
+                                if (mSystemSupport.performScreenCapture(captureArgs, listener)
+                                        != 0) {
+                                    try {
+                                        callback.sendTakeScreenshotOfWindowError(
+                                                AccessibilityService
+                                                        .ERROR_TAKE_SCREENSHOT_INTERNAL_ERROR,
+                                                interactionId);
+                                    } catch (RemoteException e) {
+                                        // ignore - the other side will time out
+                                    }
+                                }
                             }
-                        }
-                    }
-                };
+                        };
                 connection.getRemote().getWindowSurfaceInfo(infoCallback);
             } else {
                 connection.getRemote().takeScreenshotOfWindow(interactionId, listener, callback);
@@ -1552,22 +1564,24 @@ abstract class AbstractAccessibilityServiceConnection extends IAccessibilityServ
         }
         final long identity = Binder.clearCallingIdentity();
         try {
-            ScreenCapture.ScreenCaptureListener screenCaptureListener = new
-                    ScreenCapture.ScreenCaptureListener(
-                    (screenshotBuffer, result) -> {
-                        if (screenshotBuffer != null && result == 0) {
-                            sendScreenshotSuccess(screenshotBuffer, callback);
-                        } else {
-                            sendScreenshotFailure(
-                                    AccessibilityService.ERROR_TAKE_SCREENSHOT_INVALID_DISPLAY,
-                                    callback);
-                        }
-                    }
-            );
+            ScreenCaptureInternal.ScreenCaptureListener screenCaptureListener =
+                    new ScreenCaptureInternal.ScreenCaptureListener(
+                            (screenshotBuffer, result) -> {
+                                if (screenshotBuffer != null && result == 0) {
+                                    sendScreenshotSuccess(screenshotBuffer, callback);
+                                } else {
+                                    sendScreenshotFailure(
+                                            AccessibilityService
+                                                    .ERROR_TAKE_SCREENSHOT_INVALID_DISPLAY,
+                                            callback);
+                                }
+                            });
             if (Flags.allowSecureScreenshots()) {
-                mWindowManagerService.captureDisplay(displayId,
-                        new ScreenCapture.CaptureArgs.Builder<>()
-                                .setCaptureSecureLayers(canCaptureSecureLayers()).build(),
+                mWindowManagerService.captureDisplay(
+                        displayId,
+                        new ScreenCaptureInternal.CaptureArgs.Builder<>()
+                                .setCaptureSecureLayers(canCaptureSecureLayers())
+                                .build(),
                         screenCaptureListener);
             } else {
                 mWindowManagerService.captureDisplay(displayId, null, screenCaptureListener);

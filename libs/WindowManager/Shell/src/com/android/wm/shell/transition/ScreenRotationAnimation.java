@@ -38,7 +38,7 @@ import android.view.SurfaceControl.Transaction;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 import android.window.TransitionInfo;
 
 import com.android.internal.R;
@@ -145,15 +145,15 @@ class ScreenRotationAnimation {
                 t.reparent(mScreenshotLayer, mAnimLeash);
                 mStartLuma = change.getSnapshotLuma();
             } else {
-                ScreenCapture.LayerCaptureArgs args =
-                        new ScreenCapture.LayerCaptureArgs.Builder(mSurfaceControl)
+                ScreenCaptureInternal.LayerCaptureArgs args =
+                        new ScreenCaptureInternal.LayerCaptureArgs.Builder(mSurfaceControl)
                                 .setCaptureSecureLayers(true)
                                 .setAllowProtected(true)
                                 .setSourceCrop(new Rect(0, 0, mStartWidth, mStartHeight))
                                 .setHintForSeamlessTransition(true)
                                 .build();
-                ScreenCapture.ScreenshotHardwareBuffer screenshotBuffer =
-                        ScreenCapture.captureLayers(args);
+                ScreenCaptureInternal.ScreenshotHardwareBuffer screenshotBuffer =
+                        ScreenCaptureInternal.captureLayers(args);
                 if (screenshotBuffer == null) {
                     Slog.w(TAG, "Unable to take screenshot of display");
                     return;

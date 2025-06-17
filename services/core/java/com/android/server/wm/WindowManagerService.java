@@ -316,8 +316,8 @@ import android.window.ISurfaceSyncGroupCompletedListener;
 import android.window.ITaskFpsCallback;
 import android.window.ITrustedPresentationListener;
 import android.window.InputTransferToken;
-import android.window.ScreenCapture;
-import android.window.ScreenCapture.ScreenshotHardwareBuffer;
+import android.window.ScreenCaptureInternal;
+import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
 import android.window.SystemPerformanceHinter;
 import android.window.TaskSnapshot;
 import android.window.TaskSnapshotManager;
@@ -2571,8 +2571,20 @@ public class WindowManagerService extends IWindowManager.Stub
                 }
             }
 
-            if (DEBUG_LAYOUT) Slog.v(TAG_WM, "Relayout " + win + ": viewVisibility=" + viewVisibility
-                    + " req=" + requestedWidth + "x" + requestedHeight + " " + win.mAttrs);
+            if (DEBUG_LAYOUT) {
+                Slog.v(
+                        TAG_WM,
+                        "Relayout "
+                                + win
+                                + ": viewVisibility="
+                                + viewVisibility
+                                + " req="
+                                + requestedWidth
+                                + "x"
+                                + requestedHeight
+                                + " "
+                                + win.mAttrs);
+            }
             if ((attrChanges & WindowManager.LayoutParams.ALPHA_CHANGED) != 0) {
                 winAnimator.mAlpha = attrs.alpha;
             }
@@ -4373,7 +4385,7 @@ public class WindowManagerService extends IWindowManager.Stub
             throw new SecurityException("Requires READ_FRAME_BUFFER permission");
         }
 
-        ScreenCapture.LayerCaptureArgs captureArgs;
+        ScreenCaptureInternal.LayerCaptureArgs captureArgs;
         synchronized (mGlobalLock) {
             final DisplayContent displayContent = mRoot.getDisplayContent(displayId);
             if (displayContent == null) {
@@ -4390,10 +4402,10 @@ public class WindowManagerService extends IWindowManager.Stub
 
         final ScreenshotHardwareBuffer screenshotBuffer;
         if (captureArgs != null) {
-            ScreenCapture.SynchronousScreenCaptureListener syncScreenCapture =
-                    ScreenCapture.createSyncCaptureListener();
+            ScreenCaptureInternal.SynchronousScreenCaptureListener syncScreenCapture =
+                    ScreenCaptureInternal.createSyncCaptureListener();
 
-            ScreenCapture.captureLayers(captureArgs, syncScreenCapture);
+            ScreenCaptureInternal.captureLayers(captureArgs, syncScreenCapture);
 
             screenshotBuffer = syncScreenCapture.getBuffer();
         } else {
@@ -4424,18 +4436,18 @@ public class WindowManagerService extends IWindowManager.Stub
     /**
      * Generates and returns an up-to-date {@link Bitmap} for the specified taskId.
      *
-     * @param taskId                  The task ID of the task for which a Bitmap is requested.
-     * @param layerCaptureArgsBuilder A {@link ScreenCapture.LayerCaptureArgs.Builder} with
-     *                                arguments for how to capture the Bitmap. The caller can
-     *                                specify any arguments, but this method will ensure that the
-     *                                specified task's SurfaceControl is used and the crop is set to
-     *                                the bounds of that task.
+     * @param taskId The task ID of the task for which a Bitmap is requested.
+     * @param layerCaptureArgsBuilder A {@link ScreenCaptureInternal.LayerCaptureArgs.Builder} with
+     *     arguments for how to capture the Bitmap. The caller can specify any arguments, but this
+     *     method will ensure that the specified task's SurfaceControl is used and the crop is set
+     *     to the bounds of that task.
      * @return The Bitmap, or null if no task with the specified ID can be found or the bitmap could
-     * not be generated.
+     *     not be generated.
      */
     @Nullable
-    public Bitmap captureTaskBitmap(int taskId,
-            @NonNull ScreenCapture.LayerCaptureArgs.Builder layerCaptureArgsBuilder) {
+    public Bitmap captureTaskBitmap(
+            int taskId,
+            @NonNull ScreenCaptureInternal.LayerCaptureArgs.Builder layerCaptureArgsBuilder) {
         if (mTaskSnapshotController.shouldDisableSnapshots()) {
             return null;
         }
@@ -4454,8 +4466,9 @@ public class WindowManagerService extends IWindowManager.Stub
             mTmpRect.offsetTo(0, 0);
 
             final SurfaceControl sc = task.getSurfaceControl();
-            final ScreenshotHardwareBuffer buffer = ScreenCapture.captureLayers(
-                    layerCaptureArgsBuilder.setLayer(sc).setSourceCrop(mTmpRect).build());
+            final ScreenshotHardwareBuffer buffer =
+                    ScreenCaptureInternal.captureLayers(
+                            layerCaptureArgsBuilder.setLayer(sc).setSourceCrop(mTmpRect).build());
             if (buffer == null) {
                 Slog.w(TAG, "Could not get screenshot buffer for taskId: " + taskId);
                 return null;
@@ -8762,8 +8775,10 @@ public class WindowManagerService extends IWindowManager.Stub
         }
 
         @Override
-        public void captureDisplay(int displayId, @Nullable ScreenCapture.CaptureArgs captureArgs,
-                                   ScreenCapture.ScreenCaptureListener listener) {
+        public void captureDisplay(
+                int displayId,
+                @Nullable ScreenCaptureInternal.CaptureArgs captureArgs,
+                ScreenCaptureInternal.ScreenCaptureListener listener) {
             WindowManagerService.this.captureDisplay(displayId, captureArgs, listener);
         }
 
@@ -10093,8 +10108,8 @@ public class WindowManagerService extends IWindowManager.Stub
         // be covering it with the same uid. We want to make sure we include content that's
         // covering to ensure we get as close as possible to what the user sees
         final int uid = session.mUid;
-        ScreenCapture.LayerCaptureArgs.Builder args =
-                new ScreenCapture.LayerCaptureArgs.Builder(displaySurfaceControl)
+        ScreenCaptureInternal.LayerCaptureArgs.Builder args =
+                new ScreenCaptureInternal.LayerCaptureArgs.Builder(displaySurfaceControl)
                         .setUid(uid)
                         .setSourceCrop(boundsInDisplay);
 
@@ -10272,15 +10287,18 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     @Override
-    public void captureDisplay(int displayId, @Nullable ScreenCapture.CaptureArgs captureArgs,
-            ScreenCapture.ScreenCaptureListener listener) {
+    public void captureDisplay(
+            int displayId,
+            @Nullable ScreenCaptureInternal.CaptureArgs captureArgs,
+            ScreenCaptureInternal.ScreenCaptureListener listener) {
         Slog.d(TAG, "captureDisplay");
         if (!checkCallingPermission(READ_FRAME_BUFFER, "captureDisplay()")) {
             throw new SecurityException("Requires READ_FRAME_BUFFER permission");
         }
 
-        ScreenCapture.LayerCaptureArgs layerCaptureArgs = getCaptureArgs(displayId, captureArgs);
-        ScreenCapture.captureLayers(layerCaptureArgs, listener);
+        ScreenCaptureInternal.LayerCaptureArgs layerCaptureArgs =
+                getCaptureArgs(displayId, captureArgs);
+        ScreenCaptureInternal.captureLayers(layerCaptureArgs, listener);
 
         if (Binder.getCallingUid() != SYSTEM_UID) {
             // Release the SurfaceControl objects only if the caller is not in system server as no
@@ -10290,8 +10308,8 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     @VisibleForTesting
-    ScreenCapture.LayerCaptureArgs getCaptureArgs(int displayId,
-            @Nullable ScreenCapture.CaptureArgs captureArgs) {
+    ScreenCaptureInternal.LayerCaptureArgs getCaptureArgs(
+            int displayId, @Nullable ScreenCaptureInternal.CaptureArgs captureArgs) {
         final SurfaceControl displaySurfaceControl;
         synchronized (mGlobalLock) {
             DisplayContent displayContent = mRoot.getDisplayContent(displayId);
@@ -10303,8 +10321,7 @@ public class WindowManagerService extends IWindowManager.Stub
             displaySurfaceControl = displayContent.getSurfaceControl();
 
             if (captureArgs == null) {
-                captureArgs = new ScreenCapture.CaptureArgs.Builder<>()
-                        .build();
+                captureArgs = new ScreenCaptureInternal.CaptureArgs.Builder<>().build();
             }
 
             if (captureArgs.mSourceCrop.isEmpty()) {
@@ -10315,9 +10332,10 @@ public class WindowManagerService extends IWindowManager.Stub
             }
         }
 
-        return new ScreenCapture.LayerCaptureArgs.Builder(displaySurfaceControl, captureArgs)
-                        .setSourceCrop(mTmpRect)
-                        .build();
+        return new ScreenCaptureInternal.LayerCaptureArgs.Builder(
+                        displaySurfaceControl, captureArgs)
+                .setSourceCrop(mTmpRect)
+                .build();
     }
 
     @Override

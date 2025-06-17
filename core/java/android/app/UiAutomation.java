@@ -73,8 +73,8 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.accessibility.IAccessibilityInteractionConnection;
 import android.view.inputmethod.EditorInfo;
-import android.window.ScreenCapture;
-import android.window.ScreenCapture.ScreenshotHardwareBuffer;
+import android.window.ScreenCaptureInternal;
+import android.window.ScreenCaptureInternal.ScreenshotHardwareBuffer;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
@@ -1290,8 +1290,8 @@ public final class UiAutomation {
         display.getRealSize(displaySize);
 
         // Take the screenshot
-        ScreenCapture.SynchronousScreenCaptureListener syncScreenCapture =
-                ScreenCapture.createSyncCaptureListener();
+        ScreenCaptureInternal.SynchronousScreenCaptureListener syncScreenCapture =
+                ScreenCaptureInternal.createSyncCaptureListener();
         try {
             if (!mUiAutomationConnection.takeScreenshot(
                     new Rect(0, 0, displaySize.x, displaySize.y), syncScreenCapture, mDisplayId)) {
@@ -1350,8 +1350,8 @@ public final class UiAutomation {
         display.getRealSize(displaySize);
 
         // Take the screenshot
-        ScreenCapture.SynchronousScreenCaptureListener syncScreenCapture =
-                ScreenCapture.createSyncCaptureListener();
+        ScreenCaptureInternal.SynchronousScreenCaptureListener syncScreenCapture =
+                ScreenCaptureInternal.createSyncCaptureListener();
         try {
             if (!mUiAutomationConnection.takeScreenshot(
                     new Rect(0, 0, displaySize.x, displaySize.y), syncScreenCapture, displayId)) {
@@ -1419,8 +1419,8 @@ public final class UiAutomation {
         // Apply a sync transaction to ensure SurfaceFlinger is flushed before capturing a
         // screenshot.
         new SurfaceControl.Transaction().apply(true);
-        ScreenCapture.SynchronousScreenCaptureListener syncScreenCapture =
-                ScreenCapture.createSyncCaptureListener();
+        ScreenCaptureInternal.SynchronousScreenCaptureListener syncScreenCapture =
+                ScreenCaptureInternal.createSyncCaptureListener();
         try {
             if (!mUiAutomationConnection.takeSurfaceControlScreenshot(sc, syncScreenCapture)) {
                 Log.e(LOG_TAG, "Failed to take screenshot for window=" + window);
@@ -1430,7 +1430,8 @@ public final class UiAutomation {
             Log.e(LOG_TAG, "Error while taking screenshot!", re);
             return null;
         }
-        ScreenCapture.ScreenshotHardwareBuffer captureBuffer = syncScreenCapture.getBuffer();
+        ScreenCaptureInternal.ScreenshotHardwareBuffer captureBuffer =
+                syncScreenCapture.getBuffer();
         if (captureBuffer == null) {
             Log.e(LOG_TAG, "Failed to take screenshot for window=" + window);
             return null;

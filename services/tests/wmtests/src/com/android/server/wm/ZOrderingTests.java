@@ -52,7 +52,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.platform.test.annotations.Presubmit;
 import android.view.SurfaceControl;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 
 import androidx.test.filters.SmallTest;
 
@@ -526,9 +526,9 @@ public class ZOrderingTests extends WindowTestsBase {
         final Task task = createTask(mDisplayContent);
         final WindowState imeAppTarget = createAppWindow(task, TYPE_APPLICATION, "imeAppTarget");
         final Rect bounds = mImeWindow.getParentFrame();
-        final ScreenCapture.ScreenshotHardwareBuffer imeBuffer =
-                ScreenCapture.captureLayersExcluding(mImeWindow.getSurfaceControl(),
-                bounds, 1.0f, PixelFormat.RGB_565, null);
+        final ScreenCaptureInternal.ScreenshotHardwareBuffer imeBuffer =
+                ScreenCaptureInternal.captureLayersExcluding(
+                        mImeWindow.getSurfaceControl(), bounds, 1.0f, PixelFormat.RGB_565, null);
 
         spyOn(mDisplayContent.mWmService.mTaskSnapshotController);
         doReturn(imeBuffer).when(mDisplayContent.mWmService.mTaskSnapshotController)

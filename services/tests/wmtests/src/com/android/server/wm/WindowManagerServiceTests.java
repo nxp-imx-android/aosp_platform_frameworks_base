@@ -117,7 +117,7 @@ import android.window.ActivityWindowInfo;
 import android.window.ClientWindowFrames;
 import android.window.ConfigurationChangeSetting;
 import android.window.InputTransferToken;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 import android.window.WindowContainerToken;
 
 import androidx.test.filters.SmallTest;
@@ -1060,34 +1060,33 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         when(mDisplayContent.getBounds()).thenReturn(displayBounds);
 
         // Null captureArgs
-        ScreenCapture.LayerCaptureArgs resultingArgs =
+        ScreenCaptureInternal.LayerCaptureArgs resultingArgs =
                 mWm.getCaptureArgs(DEFAULT_DISPLAY, null /* captureArgs */);
         assertEquals(displayBounds, resultingArgs.mSourceCrop);
 
         // Non null captureArgs, didn't set rect
-        ScreenCapture.CaptureArgs captureArgs = new ScreenCapture.CaptureArgs.Builder<>().build();
+        ScreenCaptureInternal.CaptureArgs captureArgs =
+                new ScreenCaptureInternal.CaptureArgs.Builder<>().build();
         resultingArgs = mWm.getCaptureArgs(DEFAULT_DISPLAY, captureArgs);
         assertEquals(displayBounds, resultingArgs.mSourceCrop);
 
         // Non null captureArgs, invalid rect
-        captureArgs = new ScreenCapture.CaptureArgs.Builder<>()
-                .setSourceCrop(new Rect(0, 0, -1, -1))
-                .build();
+        captureArgs =
+                new ScreenCaptureInternal.CaptureArgs.Builder<>()
+                        .setSourceCrop(new Rect(0, 0, -1, -1))
+                        .build();
         resultingArgs = mWm.getCaptureArgs(DEFAULT_DISPLAY, captureArgs);
         assertEquals(displayBounds, resultingArgs.mSourceCrop);
 
         // Non null captureArgs, null rect
-        captureArgs = new ScreenCapture.CaptureArgs.Builder<>()
-                .setSourceCrop(null)
-                .build();
+        captureArgs = new ScreenCaptureInternal.CaptureArgs.Builder<>().setSourceCrop(null).build();
         resultingArgs = mWm.getCaptureArgs(DEFAULT_DISPLAY, captureArgs);
         assertEquals(displayBounds, resultingArgs.mSourceCrop);
 
         // Non null captureArgs, valid rect
         Rect validRect = new Rect(0, 0, 10, 50);
-        captureArgs = new ScreenCapture.CaptureArgs.Builder<>()
-                .setSourceCrop(validRect)
-                .build();
+        captureArgs =
+                new ScreenCaptureInternal.CaptureArgs.Builder<>().setSourceCrop(validRect).build();
         resultingArgs = mWm.getCaptureArgs(DEFAULT_DISPLAY, captureArgs);
         assertEquals(validRect, resultingArgs.mSourceCrop);
     }
