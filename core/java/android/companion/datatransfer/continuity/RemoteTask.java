@@ -180,9 +180,9 @@ public final class RemoteTask implements Parcelable {
     public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeInt(mId);
         dest.writeInt(mDeviceId);
-        dest.writeString8(mLabel);
+        dest.writeString(mLabel);
         dest.writeBoolean(mIsHandoffEnabled);
-        dest.writeString8(mSourceDeviceName);
+        dest.writeString(mSourceDeviceName);
         dest.writeInt(mLastUsedTimestampMillis);
         if (mIcon != null) {
             dest.writeInt(1);
