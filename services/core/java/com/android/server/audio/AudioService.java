@@ -11604,8 +11604,9 @@ public class AudioService extends IAudioService.Stub
 
     /* Listen to permission invalidations for the PermissionProvider */
     private void setupPermissionListener()  {
-        // instanceof to simplify the construction requirements of AudioService for testing: no
-        // delayed execution during unit tests.
+        // Use instanceof to simplify the construction requirements of AudioService for testing:
+        // If not using a scheduled executor service, AudioService was constructed for unit tests,
+        // so don't listen for and propagate permission changes to audioserver.
         if (mAudioServerLifecycleExecutor instanceof ScheduledExecutorService exec) {
             // The order on the task list is an embedding on the scheduling order of the executor,
             // since we synchronously add the scheduled task to our local queue. This list should
@@ -11648,19 +11649,8 @@ public class AudioService extends IAudioService.Stub
                     }, getAudioPermissionsDelay(), TimeUnit.MILLISECONDS));
                 }
             };
-            if (PropertyInvalidatedCache.separatePermissionNotificationsEnabled()) {
-                mCacheWatcher = new CacheWatcher(task);
-                mCacheWatcher.start();
-            } else {
-                mSysPropListenerNativeHandle = mAudioSystem.listenForSystemPropertyChange(
-                        PermissionManager.CACHE_KEY_PACKAGE_INFO_NOTIFY,
-                        task);
-            }
-        } else {
-            mAudioSystem.listenForSystemPropertyChange(
-                    PermissionManager.CACHE_KEY_PACKAGE_INFO_NOTIFY,
-                    () -> mAudioServerLifecycleExecutor.execute(
-                                mPermissionProvider::onPermissionStateChanged));
+            mCacheWatcher = new CacheWatcher(task);
+            mCacheWatcher.start();
         }
     }
 
@@ -15863,11 +15853,7 @@ public class AudioService extends IAudioService.Stub
     /** @see AudioManager#permissionUpdateBarrier() */
     public void permissionUpdateBarrier() {
         if (!audioserverPermissions()) return;
-        if (PropertyInvalidatedCache.separatePermissionNotificationsEnabled()) {
-            mCacheWatcher.doCheck();
-        } else {
-            mAudioSystem.triggerSystemPropertyUpdate(mSysPropListenerNativeHandle);
-        }
+        mCacheWatcher.doCheck();
         List<Future> snapshot;
         synchronized (mScheduledPermissionTasks) {
             snapshot = List.copyOf(mScheduledPermissionTasks);
