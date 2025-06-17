@@ -234,6 +234,23 @@ public class BluetoothUtilsTest {
     }
 
     @Test
+    public void getBtDrawableWithDescription_untetheredHeadset_returnUntetheredIcon() {
+        when(mBluetoothDevice.getMetadata(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET))
+                .thenReturn("true".getBytes());
+        when(mCachedBluetoothDevice.getDevice()).thenReturn(mBluetoothDevice);
+        when(mCachedBluetoothDevice.getAddress()).thenReturn("1f:aa:bb");
+        Drawable icon = mock(Drawable.class);
+        when(mContext.getDrawable(com.android.settingslib.R.drawable.ic_earbuds_advanced))
+                .thenReturn(icon);
+
+        assertThat(
+                BluetoothUtils.getBtDrawableWithDescription(
+                        mContext, mCachedBluetoothDevice)
+                        .first)
+                .isSameInstanceAs(icon);
+    }
+
+    @Test
     public void getStringMetaData_hasMetaData_getCorrectMetaData() {
         when(mBluetoothDevice.getMetadata(BluetoothDevice.METADATA_UNTETHERED_LEFT_ICON))
                 .thenReturn(STRING_METADATA.getBytes());

@@ -311,6 +311,8 @@ public class BluetoothUtils {
                 } catch (SecurityException e) {
                     Log.e(TAG, "Failed to get permission for: " + iconUri, e);
                 }
+            } else {
+                return new Pair<>(context.getDrawable(R.drawable.ic_earbuds_advanced), pair.second);
             }
         }
 
