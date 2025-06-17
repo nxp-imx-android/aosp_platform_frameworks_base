@@ -104,7 +104,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
     public void setUp() throws Exception {
         mAppCompatConfiguration = mDisplayContent.mWmService.mAppCompatConfiguration;
         spyOn(mAppCompatConfiguration);
-        when(mAppCompatConfiguration.isCameraCompatTreatmentEnabled())
+        when(mAppCompatConfiguration.isCameraCompatForceRotateTreatmentEnabled())
                 .thenReturn(true);
         when(mAppCompatConfiguration.isCameraCompatRefreshEnabled())
                 .thenReturn(true);
@@ -187,7 +187,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
 
     @Test
     public void testOnScreenRotationAnimationFinished_treatmentNotEnabled_doNotShowToast() {
-        when(mAppCompatConfiguration.isCameraCompatTreatmentEnabled())
+        when(mAppCompatConfiguration.isCameraCompatForceRotateTreatmentEnabled())
                 .thenReturn(false);
 
         mDisplayRotationCompatPolicy.onScreenRotationAnimationFinished();
@@ -241,7 +241,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
 
     @Test
     public void testTreatmentNotEnabled_noForceRotationOrRefresh() throws Exception {
-        when(mAppCompatConfiguration.isCameraCompatTreatmentEnabled())
+        when(mAppCompatConfiguration.isCameraCompatForceRotateTreatmentEnabled())
                 .thenReturn(false);
 
         configureActivity(SCREEN_ORIENTATION_PORTRAIT);
@@ -255,7 +255,7 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
 
     @Test
     public void testTreatmentDisabledViaDeviceConfig_noForceRotationOrRefresh() throws Exception {
-        when(mAppCompatConfiguration.isCameraCompatTreatmentEnabled())
+        when(mAppCompatConfiguration.isCameraCompatForceRotateTreatmentEnabled())
                 .thenReturn(false);
 
         configureActivity(SCREEN_ORIENTATION_PORTRAIT);

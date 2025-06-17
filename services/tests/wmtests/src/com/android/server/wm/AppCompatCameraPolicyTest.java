@@ -59,7 +59,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @Test
     public void testDisplayRotationCompatPolicy_presentWhenEnabled() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatTreatmentAtBuildTime(/* enabled= */ true);
+            robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasDisplayRotationCompatPolicy(/* exists= */ true);
         });
@@ -68,7 +68,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @Test
     public void testDisplayRotationCompatPolicy_notPresentWhenDisabled() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatTreatmentAtBuildTime(/* enabled= */ false);
+            robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ false);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasDisplayRotationCompatPolicy(/* exists= */ false);
         });
@@ -77,7 +77,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @Test
     public void testDisplayRotationCompatPolicy_startedWhenEnabled() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatTreatmentAtBuildTime(/* enabled= */ true);
+            robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasDisplayRotationCompatPolicy(/* exists= */ true);
             robot.checkTopActivityDisplayRotationCompatPolicyIsRunning();
@@ -161,7 +161,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @Test
     public void testCameraStateManager_existsWhenDisplayRotationCompatPolicyExists() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatTreatmentAtBuildTime(/* enabled= */ true);
+            robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasDisplayRotationCompatPolicy(/* exists= */ true);
             robot.checkTopActivityHasCameraStateMonitor(/* exists= */ true);
@@ -171,7 +171,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @Test
     public void testCameraStateManager_startedWhenDisplayRotationCompatPolicyExists() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatTreatmentAtBuildTime(/* enabled= */ true);
+            robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasDisplayRotationCompatPolicy(/* exists= */ true);
             robot.checkTopActivityHasCameraStateMonitor(/* exists= */ true);
@@ -183,7 +183,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @DisableFlags(FLAG_ENABLE_CAMERA_COMPAT_FOR_DESKTOP_WINDOWING)
     public void testCameraStateManager_doesNotExistWhenNoPolicyExists() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatTreatmentAtBuildTime(/* enabled= */ false);
+            robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ false);
             robot.activity().createActivityWithComponentInNewTaskAndDisplay();
             robot.checkTopActivityHasDisplayRotationCompatPolicy(/* exists= */ false);
             robot.checkTopActivityHasCameraCompatFreeformPolicy(/* exists= */ false);
@@ -194,7 +194,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @Test
     public void testIsCameraCompatTreatmentActive_whenTreatmentForTopActivityIsEnabled() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatTreatmentAtBuildTime(/* enabled= */ true);
+            robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
             robot.applyOnActivity((a)-> {
                 a.createActivityWithComponentInNewTaskAndDisplay();
                 a.enableFullscreenCameraCompatTreatmentForTopActivity(/* enabled */ true);
@@ -207,7 +207,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     @Test
     public void testIsCameraCompatTreatmentNotActive_whenTreatmentForTopActivityIsDisabled() {
         runTestScenario((robot) -> {
-            robot.conf().enableCameraCompatTreatmentAtBuildTime(/* enabled= */ true);
+            robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
             robot.applyOnActivity((a)-> {
                 a.createActivityWithComponent();
                 a.enableFullscreenCameraCompatTreatmentForTopActivity(/* enabled */ false);
@@ -223,7 +223,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
         runTestScenario((robot) -> {
             robot.applyOnActivity((a)-> {
                 robot.dw().allowEnterDesktopMode(true);
-                robot.conf().enableCameraCompatTreatmentAtBuildTime(/* enabled= */ true);
+                robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
                 a.createActivityWithComponentInNewTaskAndDisplay();
                 a.setIsCameraRunningAndWindowingModeEligibleFullscreen(/* enabled */ false);
             });
@@ -238,7 +238,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
         runTestScenario((robot) -> {
             robot.applyOnActivity((a)-> {
                 robot.dw().allowEnterDesktopMode(true);
-                robot.conf().enableCameraCompatTreatmentAtBuildTime(/* enabled= */ true);
+                robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
                 a.createActivityWithComponentInNewTaskAndDisplay();
                 a.setIsCameraRunningAndWindowingModeEligibleFullscreen(/* active */ true);
             });
@@ -252,7 +252,7 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
     public void testShouldOverrideMinAspectRatioForCameraFullscr_cameraIsRunning_overrideEnabled() {
         runTestScenario((robot) -> {
             robot.applyOnActivity((a)-> {
-                robot.conf().enableCameraCompatTreatmentAtBuildTime(/* enabled= */ true);
+                robot.conf().enableCameraCompatForceRotateTreatmentAtBuildTime(/* enabled= */ true);
                 a.createActivityWithComponentInNewTaskAndDisplay();
                 a.setIsCameraRunningAndWindowingModeEligibleFullscreen(/* active */ true);
             });

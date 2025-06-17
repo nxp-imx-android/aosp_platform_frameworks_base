@@ -1274,18 +1274,18 @@ final class AppCompatConfiguration {
     }
 
     /**
-     * @return Whether camera compatibility treatment is currently enabled.
+     * @return Whether camera compatibility force-rotate treatment is currently enabled.
      */
-    boolean isCameraCompatTreatmentEnabled() {
+    boolean isCameraCompatForceRotateTreatmentEnabled() {
         return mDeviceConfig.getFlagValue(KEY_ENABLE_CAMERA_COMPAT_TREATMENT);
     }
 
     /**
-     * @return Whether camera compatibility treatment is enabled at build time. This is used when
-     * we need to safely initialize a component before the {@link DeviceConfig} flag value is
-     * available.
+     * @return Whether camera compatibility force-rotate treatment is enabled at build time. This is
+     * used when we need to safely initialize a component before the {@link DeviceConfig} flag value
+     * is available.
      */
-    boolean isCameraCompatTreatmentEnabledAtBuildTime() {
+    boolean isCameraCompatForceRotateTreatmentEnabledAtBuildTime() {
         return mDeviceConfig.isBuildTimeFlagEnabled(KEY_ENABLE_CAMERA_COMPAT_TREATMENT);
     }
 

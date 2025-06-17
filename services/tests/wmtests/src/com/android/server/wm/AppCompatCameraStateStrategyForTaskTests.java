@@ -214,8 +214,8 @@ public class AppCompatCameraStateStrategyForTaskTests extends WindowTestsBase {
 
         private void setupAppCompatConfiguration() {
             applyOnConf((c) -> {
-                c.enableCameraCompatTreatment(true);
-                c.enableCameraCompatTreatmentAtBuildTime(true);
+                c.enableCameraCompatForceRotateTreatment(true);
+                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
             });
         }
 

@@ -75,21 +75,25 @@ class AppCompatCameraOverrides {
         mAppCompatCameraOverridesState = new AppCompatCameraOverridesState();
         mAllowMinAspectRatioOverrideOptProp = optPropBuilder.create(
                 PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE);
-        final BooleanSupplier isCameraCompatTreatmentEnabled = AppCompatUtils.asLazy(
-                mAppCompatConfiguration::isCameraCompatTreatmentEnabled);
+        final BooleanSupplier isCameraCompatForceRotateTreatmentEnabled = AppCompatUtils.asLazy(
+                mAppCompatConfiguration::isCameraCompatForceRotateTreatmentEnabled);
         mCameraCompatAllowRefreshOptProp = optPropBuilder.create(
                 PROPERTY_CAMERA_COMPAT_ALLOW_REFRESH,
-                isCameraCompatTreatmentEnabled);
+                // TODO(b/425491882): check if any camera compat treatment is available.
+                isCameraCompatForceRotateTreatmentEnabled);
         mCameraCompatEnableRefreshViaPauseOptProp = optPropBuilder.create(
                 PROPERTY_CAMERA_COMPAT_ENABLE_REFRESH_VIA_PAUSE,
-                isCameraCompatTreatmentEnabled);
+                // TODO(b/425491882): check if any camera compat treatment is available.
+                isCameraCompatForceRotateTreatmentEnabled);
         mCameraCompatAllowForceRotationOptProp = optPropBuilder.create(
                 PROPERTY_CAMERA_COMPAT_ALLOW_FORCE_ROTATION,
-                isCameraCompatTreatmentEnabled);
+                isCameraCompatForceRotateTreatmentEnabled);
         mCameraCompatAllowOrientationTreatmentOptProp =
                 Flags.enableCameraCompatForDesktopWindowingOptOut() ? optPropBuilder.create(
                 PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION,
-                isCameraCompatTreatmentEnabled) : null;
+                        // TODO(b/425491882): check if simulate requested orientation camera compat
+                        //  treatment is available.
+                        isCameraCompatForceRotateTreatmentEnabled) : null;
     }
 
     /**
