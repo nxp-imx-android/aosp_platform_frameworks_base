@@ -214,16 +214,6 @@ public class AutoclickTypePanel {
         // Set up touch event handling for the panel to allow the user to drag and reposition the
         // panel by touching and moving it.
         mContentView.setOnTouchListener(this::onPanelTouch);
-
-        // Set hover behavior for the panel, show grab when hovering.
-        mContentView.setOnHoverListener((v, event) -> {
-            mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRAB);
-            v.setPointerIcon(mCurrentCursor);
-            return false;
-        });
-
-        // Show default cursor when hovering over buttons.
-        setDefaultCursorForButtons();
     }
 
     /**
@@ -235,58 +225,14 @@ public class AutoclickTypePanel {
         // TODO(b/397681794): Make sure this works on multiple screens.
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                // Store initial touch positions.
-                mTouchStartX = event.getRawX();
-                mTouchStartY = event.getRawY();
-
-                // Store initial panel position relative to screen's top-left corner.
-                // getLocationOnScreen provides coordinates relative to the top-left corner of the
-                // screen's display. We are using this coordinate system to consistently track the
-                // panel's position during drag operations.
-                int[] location = new int[2];
-                v.getLocationOnScreen(location);
-                mPanelStartX = location[0];
-                mPanelStartY = location[1];
-                // Show grabbing cursor when dragging starts.
-                boolean isSynthetic =
-                        (event.getFlags() & MotionEvent.FLAG_IS_GENERATED_GESTURE) != 0;
-                if (!isSynthetic) {
-                    mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRABBING);
-                    v.setPointerIcon(mCurrentCursor);
-                }
+                onDragStart(event);
                 return true;
             case MotionEvent.ACTION_MOVE:
-                mIsDragging = true;
-
-                // Set panel gravity to TOP|LEFT to match getLocationOnScreen's coordinate system
-                mParams.gravity = Gravity.LEFT | Gravity.TOP;
-
-                if (mIsDragging) {
-                    // Calculate touch distance moved from start position.
-                    float deltaX = event.getRawX() - mTouchStartX;
-                    float deltaY = event.getRawY() - mTouchStartY;
-
-                    // Update panel position, based on Top-Left absolute positioning.
-                    mParams.x = mPanelStartX + (int) deltaX;
-
-                    // Adjust Y by status bar height:
-                    // Note: mParams.y is relative to the content area (below the status bar),
-                    // but mPanelStartY uses absolute screen coordinates. Subtract status bar
-                    // height to align coordinates properly.
-                    mParams.y = Math.max(0, mPanelStartY + (int) deltaY - mStatusBarHeight);
-                    mWindowManager.updateViewLayout(mContentView, mParams);
-                }
+                onDragMove(event);
                 return true;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                if (mIsDragging) {
-                    // When drag ends, snap panel to nearest edge.
-                    snapToNearestEdge(mParams);
-                }
-                mIsDragging = false;
-                // Show grab cursor when dragging ends.
-                mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRAB);
-                v.setPointerIcon(mCurrentCursor);
+                onDragEnd();
                 return true;
             case MotionEvent.ACTION_OUTSIDE:
                 if (mExpanded) {
@@ -307,7 +253,9 @@ public class AutoclickTypePanel {
         int yPosition = params.y;
 
         // Determine which half of the screen the panel is on.
-        boolean isOnLeftHalf = params.x < screenWidth / 2;
+        @Corner int visualCorner = getVisualCorner();
+        boolean isOnLeftHalf =
+                (visualCorner == CORNER_TOP_LEFT || visualCorner == CORNER_BOTTOM_LEFT);
 
         if (isOnLeftHalf) {
             // Snap to left edge. Set params.gravity to make sure x, y offsets from correct anchor.
@@ -357,6 +305,10 @@ public class AutoclickTypePanel {
         mPauseButton.setOnClickListener(v -> togglePause());
 
         setSelectedClickType(AUTOCLICK_TYPE_LEFT_CLICK);
+
+        // Set up hover listeners on panel and buttons to dynamically change cursor icons.
+        setupHoverListenersForCursor();
+
         // Remove spacing between buttons when initialized.
         adjustPanelSpacing(/* isExpanded= */ true);
     }
@@ -714,20 +666,129 @@ public class AutoclickTypePanel {
         }
     }
 
-    private void setDefaultCursorForButtons() {
-        View[] buttons = {
+    /**
+     * Starts drag operation, capturing initial positions and updating cursor icon.
+     */
+    public void onDragStart(MotionEvent event) {
+        mIsDragging = true;
+
+        // Store initial touch positions.
+        mTouchStartX = event.getRawX();
+        mTouchStartY = event.getRawY();
+
+        // Store initial panel position relative to screen's top-left corner.
+        // getLocationOnScreen provides coordinates relative to the top-left corner of the
+        // screen's display. We are using this coordinate system to consistently track the
+        // panel's position during drag operations.
+        int[] location = new int[2];
+        mContentView.getLocationOnScreen(location);
+        mPanelStartX = location[0];
+        mPanelStartY = location[1];
+
+        // Show grabbing cursor when dragging starts.
+        mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRABBING);
+        mContentView.setPointerIcon(mCurrentCursor);
+    }
+
+    /**
+     * Updates panel position during drag.
+     */
+    public void onDragMove(MotionEvent event) {
+        mIsDragging = true;
+
+        // Calculate touch distance moved from start position.
+        float deltaX = event.getRawX() - mTouchStartX;
+        float deltaY = event.getRawY() - mTouchStartY;
+
+        // Set panel gravity to TOP|LEFT to match getLocationOnScreen's coordinate system.
+        mParams.gravity = Gravity.LEFT | Gravity.TOP;
+
+        // Update panel position, based on Top-Left absolute positioning.
+        mParams.x = mPanelStartX + (int) deltaX;
+
+        // Adjust Y by status bar height:
+        // Note: mParams.y is relative to the content area (below the status bar),
+        // but mPanelStartY uses absolute screen coordinates. Subtract status bar
+        // height to align coordinates properly.
+        mParams.y = Math.max(0, mPanelStartY + (int) deltaY - mStatusBarHeight);
+        mWindowManager.updateViewLayout(mContentView, mParams);
+
+        // Keep grabbing cursor during drag.
+        if (mCurrentCursor.getType() != PointerIcon.TYPE_GRABBING) {
+            mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRABBING);
+            mContentView.setPointerIcon(mCurrentCursor);
+        }
+    }
+
+    /**
+     * Ends drag operation and snaps to the nearest edge.
+     */
+    public void onDragEnd() {
+        if (mIsDragging) {
+            mIsDragging = false;
+            // When drag ends, snap panel to nearest edge.
+            snapToNearestEdge(mParams);
+            // Show grab cursor when dragging ends.
+            mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRAB);
+            mContentView.setPointerIcon(mCurrentCursor);
+        }
+    }
+
+    /**
+     * Returns true if cursor is over content view but not over any buttons.
+     */
+    public boolean isHoveringDraggableArea() {
+        if (!mContentView.isHovered()) {
+            return false;
+        }
+
+        View[] buttons = {mLeftClickButton, mRightClickButton, mDoubleClickButton,
+                mScrollButton, mDragButton, mLongPressButton, mPauseButton, mPositionButton};
+        for (View button : buttons) {
+            if (button.isHovered()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Sets up hover listeners to update cursor icons (grab for draggable areas, arrow for buttons).
+     */
+    private void setupHoverListenersForCursor() {
+        View[] mAllButtons = new View[]{
                 mLeftClickButton, mRightClickButton, mDoubleClickButton,
                 mScrollButton, mDragButton, mLongPressButton,
                 mPauseButton, mPositionButton
         };
 
-        for (View button : buttons) {
+        // Set hover behavior for the panel.
+        mContentView.setOnHoverListener((v, event) -> {
+            updateCursorIcon();
+            return false;
+        });
+
+        // Set hover behavior for all buttons.
+        for (View button : mAllButtons) {
             button.setOnHoverListener((v, event) -> {
-                mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_ARROW);
-                v.setPointerIcon(mCurrentCursor);
+                updateCursorIcon();
                 return false;
             });
         }
+    }
+
+    /**
+     * Updates cursor based on hover state: grab for draggable areas, arrow for buttons.
+     */
+    private void updateCursorIcon() {
+        // Don't update cursor icon while dragging to avoid overriding the grabbing cursor during
+        // drag.
+        if (mIsDragging) {
+            return;
+        }
+        int cursorType = isHoveringDraggableArea() ? PointerIcon.TYPE_GRAB : PointerIcon.TYPE_ARROW;
+        mCurrentCursor = PointerIcon.getSystemIcon(mContext, cursorType);
+        mContentView.setPointerIcon(mCurrentCursor);
     }
 
     @VisibleForTesting
@@ -752,8 +813,7 @@ public class AutoclickTypePanel {
         return mParams;
     }
 
-    @VisibleForTesting
-    boolean getIsDraggingForTesting() {
+    boolean getIsDragging() {
         return mIsDragging;
     }
 

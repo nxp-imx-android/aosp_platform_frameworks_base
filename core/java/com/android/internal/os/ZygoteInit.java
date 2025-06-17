@@ -427,25 +427,23 @@ public class ZygoteInit {
                 SharedLibraryInfo.TYPE_BUILTIN, null /*declaringPackage*/,
                 null /*dependentPackages*/, null /*dependencies*/, false /*isNative*/));
 
-        if (Flags.enableMediaAndLocationPreload()) {
-            // As these libraries are technically optional and not necessarily inherited from
-            // base_system.mk, only cache them if they exist.
-            final String mediaJarPath = "/system/framework/com.android.media.remotedisplay.jar";
-            if (new File(mediaJarPath).exists()) {
-                libs.add(new SharedLibraryInfo(
-                        mediaJarPath, null /*packageName*/,
-                        null /*codePaths*/, null /*name*/, 0 /*version*/,
-                        SharedLibraryInfo.TYPE_BUILTIN, null /*declaringPackage*/,
-                        null /*dependentPackages*/, null /*dependencies*/, false /*isNative*/));
-            }
-            final String locationJarPath = "/system/framework/com.android.location.provider.jar";
-            if (new File(locationJarPath).exists()) {
-                libs.add(new SharedLibraryInfo(
-                        locationJarPath, null /*packageName*/,
-                        null /*codePaths*/, null /*name*/, 0 /*version*/,
-                        SharedLibraryInfo.TYPE_BUILTIN, null /*declaringPackage*/,
-                        null /*dependentPackages*/, null /*dependencies*/, false /*isNative*/));
-            }
+        // As these libraries are technically optional and not necessarily inherited from
+        // base_system.mk, only cache them if they exist.
+        final String mediaJarPath = "/system/framework/com.android.media.remotedisplay.jar";
+        if (new File(mediaJarPath).exists()) {
+            libs.add(new SharedLibraryInfo(
+                    mediaJarPath, null /*packageName*/,
+                    null /*codePaths*/, null /*name*/, 0 /*version*/,
+                    SharedLibraryInfo.TYPE_BUILTIN, null /*declaringPackage*/,
+                    null /*dependentPackages*/, null /*dependencies*/, false /*isNative*/));
+        }
+        final String locationJarPath = "/system/framework/com.android.location.provider.jar";
+        if (new File(locationJarPath).exists()) {
+            libs.add(new SharedLibraryInfo(
+                    locationJarPath, null /*packageName*/,
+                    null /*codePaths*/, null /*name*/, 0 /*version*/,
+                    SharedLibraryInfo.TYPE_BUILTIN, null /*declaringPackage*/,
+                    null /*dependentPackages*/, null /*dependencies*/, false /*isNative*/));
         }
 
         // WindowManager Extensions is an optional shared library that is required for WindowManager

@@ -117,7 +117,7 @@ import android.window.ActivityWindowInfo;
 import android.window.ClientWindowFrames;
 import android.window.ConfigurationChangeSetting;
 import android.window.InputTransferToken;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 import android.window.WindowContainerToken;
 
 import androidx.test.filters.SmallTest;
@@ -1060,34 +1060,33 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         when(mDisplayContent.getBounds()).thenReturn(displayBounds);
 
         // Null captureArgs
-        ScreenCapture.LayerCaptureArgs resultingArgs =
+        ScreenCaptureInternal.LayerCaptureArgs resultingArgs =
                 mWm.getCaptureArgs(DEFAULT_DISPLAY, null /* captureArgs */);
         assertEquals(displayBounds, resultingArgs.mSourceCrop);
 
         // Non null captureArgs, didn't set rect
-        ScreenCapture.CaptureArgs captureArgs = new ScreenCapture.CaptureArgs.Builder<>().build();
+        ScreenCaptureInternal.CaptureArgs captureArgs =
+                new ScreenCaptureInternal.CaptureArgs.Builder<>().build();
         resultingArgs = mWm.getCaptureArgs(DEFAULT_DISPLAY, captureArgs);
         assertEquals(displayBounds, resultingArgs.mSourceCrop);
 
         // Non null captureArgs, invalid rect
-        captureArgs = new ScreenCapture.CaptureArgs.Builder<>()
-                .setSourceCrop(new Rect(0, 0, -1, -1))
-                .build();
+        captureArgs =
+                new ScreenCaptureInternal.CaptureArgs.Builder<>()
+                        .setSourceCrop(new Rect(0, 0, -1, -1))
+                        .build();
         resultingArgs = mWm.getCaptureArgs(DEFAULT_DISPLAY, captureArgs);
         assertEquals(displayBounds, resultingArgs.mSourceCrop);
 
         // Non null captureArgs, null rect
-        captureArgs = new ScreenCapture.CaptureArgs.Builder<>()
-                .setSourceCrop(null)
-                .build();
+        captureArgs = new ScreenCaptureInternal.CaptureArgs.Builder<>().setSourceCrop(null).build();
         resultingArgs = mWm.getCaptureArgs(DEFAULT_DISPLAY, captureArgs);
         assertEquals(displayBounds, resultingArgs.mSourceCrop);
 
         // Non null captureArgs, valid rect
         Rect validRect = new Rect(0, 0, 10, 50);
-        captureArgs = new ScreenCapture.CaptureArgs.Builder<>()
-                .setSourceCrop(validRect)
-                .build();
+        captureArgs =
+                new ScreenCaptureInternal.CaptureArgs.Builder<>().setSourceCrop(validRect).build();
         resultingArgs = mWm.getCaptureArgs(DEFAULT_DISPLAY, captureArgs);
         assertEquals(validRect, resultingArgs.mSourceCrop);
     }
@@ -1101,13 +1100,11 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final IBinder window = new Binder();
         final InputTransferToken inputTransferToken = mock(InputTransferToken.class);
 
-        final InputChannel inputChannel = new InputChannel();
         assertThrows(IllegalArgumentException.class, () ->
                 mWm.grantInputChannel(session, callingUid, callingPid, DEFAULT_DISPLAY,
                         surfaceControl, window, null /* hostInputToken */, FLAG_NOT_FOCUSABLE,
                         PRIVATE_FLAG_TRUSTED_OVERLAY, INPUT_FEATURE_SPY, TYPE_APPLICATION,
-                        null /* windowToken */, inputTransferToken, "TestInputChannel",
-                        inputChannel));
+                        null /* windowToken */, inputTransferToken, "TestInputChannel"));
     }
 
     @Test
@@ -1119,11 +1116,11 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final IBinder window = new Binder();
         final InputTransferToken inputTransferToken = mock(InputTransferToken.class);
 
-        final InputChannel inputChannel = new InputChannel();
-        mWm.grantInputChannel(session, callingUid, callingPid, DEFAULT_DISPLAY, surfaceControl,
-                window, null /* hostInputToken */, FLAG_NOT_FOCUSABLE, PRIVATE_FLAG_TRUSTED_OVERLAY,
+        mWm.grantInputChannel(session, callingUid, callingPid,
+                DEFAULT_DISPLAY, surfaceControl, window, null /* hostInputToken */,
+                FLAG_NOT_FOCUSABLE, PRIVATE_FLAG_TRUSTED_OVERLAY,
                 INPUT_FEATURE_SPY, TYPE_APPLICATION, null /* windowToken */, inputTransferToken,
-                "TestInputChannel", inputChannel);
+                "TestInputChannel");
 
         verify(mTransaction).setInputWindowInfo(
                 eq(surfaceControl),
@@ -1139,13 +1136,12 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final IBinder window = new Binder();
         final InputTransferToken inputTransferToken = mock(InputTransferToken.class);
 
-        final InputChannel inputChannel = new InputChannel();
         assertThrows(SecurityException.class, () ->
                 mWm.grantInputChannel(session, callingUid, callingPid, DEFAULT_DISPLAY,
                         surfaceControl, window, null /* hostInputToken */, 0 /* flags */,
                         PRIVATE_FLAG_TRUSTED_OVERLAY, INPUT_FEATURE_DISPLAY_TOPOLOGY_AWARE,
                         TYPE_APPLICATION, null /* windowToken */, inputTransferToken,
-                        "TestInputChannel", inputChannel));
+                        "TestInputChannel"));
     }
 
     @Test
@@ -1157,11 +1153,11 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final IBinder window = new Binder();
         final InputTransferToken inputTransferToken = mock(InputTransferToken.class);
 
-        final InputChannel inputChannel = new InputChannel();
-        mWm.grantInputChannel(session, callingUid, callingPid, DEFAULT_DISPLAY, surfaceControl,
-                window, null /* hostInputToken */, FLAG_NOT_FOCUSABLE, PRIVATE_FLAG_TRUSTED_OVERLAY,
+        final InputChannel inputChannel = mWm.grantInputChannel(session, callingUid, callingPid,
+                DEFAULT_DISPLAY, surfaceControl, window, null /* hostInputToken */,
+                FLAG_NOT_FOCUSABLE, PRIVATE_FLAG_TRUSTED_OVERLAY,
                 0 /* inputFeatures */, TYPE_APPLICATION, null /* windowToken */, inputTransferToken,
-                "TestInputChannel", inputChannel);
+                "TestInputChannel");
         verify(mTransaction).setInputWindowInfo(
                 eq(surfaceControl),
                 argThat(h -> (h.inputConfig & InputConfig.SPY) == 0));
@@ -1182,11 +1178,11 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final IBinder window = new Binder();
         final InputTransferToken inputTransferToken = mock(InputTransferToken.class);
 
-        final InputChannel inputChannel = new InputChannel();
-        mWm.grantInputChannel(session, callingUid, callingPid, DEFAULT_DISPLAY, surfaceControl,
+        final InputChannel inputChannel = mWm.grantInputChannel(session, callingUid, callingPid,
+                DEFAULT_DISPLAY, surfaceControl,
                 window, null /* hostInputToken */, FLAG_NOT_FOCUSABLE, PRIVATE_FLAG_TRUSTED_OVERLAY,
                 0 /* inputFeatures */, TYPE_APPLICATION, null /* windowToken */, inputTransferToken,
-                "TestInputChannel", inputChannel);
+                "TestInputChannel");
         verify(mTransaction).setInputWindowInfo(
                 eq(surfaceControl),
                 argThat(h -> (h.inputConfig & InputConfig.SPY) == 0));
@@ -1209,12 +1205,11 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final IBinder window = new Binder();
         final InputTransferToken inputTransferToken = mock(InputTransferToken.class);
 
-        final InputChannel inputChannel = new InputChannel();
-        mWm.grantInputChannel(session, callingUid, callingPid, DEFAULT_DISPLAY, surfaceControl,
+        final InputChannel inputChannel = mWm.grantInputChannel(session, callingUid, callingPid,
+                DEFAULT_DISPLAY, surfaceControl,
                 window, null /* hostInputToken */, FLAG_NOT_FOCUSABLE, 0 /* privateFlags */,
                 INPUT_FEATURE_SENSITIVE_FOR_PRIVACY, TYPE_APPLICATION, null /* windowToken */,
-                inputTransferToken,
-                "TestInputChannel", inputChannel);
+                inputTransferToken, "TestInputChannel");
         verify(mTransaction).setInputWindowInfo(
                 eq(surfaceControl),
                 argThat(h -> (h.inputConfig & InputConfig.SENSITIVE_FOR_PRIVACY) == 0));

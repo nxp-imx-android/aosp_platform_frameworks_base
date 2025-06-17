@@ -353,6 +353,7 @@ public:
     void setTouchpadThreeFingerTapShortcutEnabled(bool enabled);
     void setTouchpadSystemGesturesEnabled(bool enabled);
     void setTouchpadAccelerationEnabled(bool enabled);
+    void setTouchpadsEnabled(bool enabled);
     void setInputDeviceEnabled(uint32_t deviceId, bool enabled);
     void setShowTouches(bool enabled);
     void setNonInteractiveDisplays(const std::set<ui::LogicalDisplayId>& displayIds);
@@ -541,6 +542,9 @@ private:
         // True if the speed of the pointer will increase as the user moves
         // their finger faster on the touchpad.
         bool touchpadAccelerationEnabled{true};
+
+        // True to enable touchpads.
+        bool touchpadsEnabled{true};
 
         // True if a pointer icon should be shown for stylus pointers.
         bool stylusPointerIconEnabled{false};
@@ -806,6 +810,7 @@ void NativeInputManager::getReaderConfiguration(InputReaderConfiguration* outCon
                 mLocked.touchpadThreeFingerTapShortcutEnabled;
         outConfig->touchpadSystemGesturesEnabled = mLocked.touchpadSystemGesturesEnabled;
         outConfig->touchpadAccelerationEnabled = mLocked.touchpadAccelerationEnabled;
+        outConfig->touchpadsEnabled = mLocked.touchpadsEnabled;
 
         outConfig->disabledDevices = mLocked.disabledInputDevices;
 
@@ -1637,6 +1642,22 @@ void NativeInputManager::setTouchpadAccelerationEnabled(bool enabled) {
 
     mInputManager->getReader().requestRefreshConfiguration(
             InputReaderConfiguration::Change::TOUCHPAD_SETTINGS);
+}
+
+void NativeInputManager::setTouchpadsEnabled(bool enabled) {
+    { // acquire lock
+        std::scoped_lock _l(mLock);
+
+        if (mLocked.touchpadsEnabled == enabled) {
+            return;
+        }
+
+        ALOGI("Setting touchpads enabled to %s.", toString(enabled));
+        mLocked.touchpadsEnabled = enabled;
+    } // release lock
+
+    mInputManager->getReader().requestRefreshConfiguration(
+            InputReaderConfiguration::Change::ENABLED_STATE);
 }
 
 void NativeInputManager::setInputDeviceEnabled(uint32_t deviceId, bool enabled) {
@@ -2621,6 +2642,10 @@ static void nativeSetTouchpadAccelerationEnabled(JNIEnv* env, jobject nativeImpl
     im->setTouchpadAccelerationEnabled(enabled);
 }
 
+static void nativeSetTouchpadsEnabled(JNIEnv* env, jobject nativeImplObj, jboolean enabled) {
+    getNativeInputManager(env, nativeImplObj)->setTouchpadsEnabled(enabled);
+}
+
 static void nativeSetShowTouches(JNIEnv* env, jobject nativeImplObj, jboolean enabled) {
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
 
@@ -3341,6 +3366,7 @@ static const JNINativeMethod gInputManagerMethods[] = {
          (void*)nativeSetTouchpadThreeFingerTapShortcutEnabled},
         {"setTouchpadSystemGesturesEnabled", "(Z)V", (void*)nativeSetTouchpadSystemGesturesEnabled},
         {"setTouchpadAccelerationEnabled", "(Z)V", (void*)nativeSetTouchpadAccelerationEnabled},
+        {"setTouchpadsEnabled", "(Z)V", (void*)nativeSetTouchpadsEnabled},
         {"setShowTouches", "(Z)V", (void*)nativeSetShowTouches},
         {"setNonInteractiveDisplays", "([I)V", (void*)nativeSetNonInteractiveDisplays},
         {"reloadCalibration", "()V", (void*)nativeReloadCalibration},

@@ -51,7 +51,7 @@ import android.view.accessibility.AccessibilityRequestPreparer;
 import android.view.accessibility.Flags;
 import android.view.accessibility.IAccessibilityInteractionConnectionCallback;
 import android.view.accessibility.IWindowSurfaceInfoCallback;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
@@ -596,11 +596,12 @@ public final class AccessibilityInteractionController {
     }
 
     /**
-     * Take a screenshot using {@link ScreenCapture} of this {@link ViewRootImpl}'s {@link
+     * Take a screenshot using {@link ScreenCaptureInternal} of this {@link ViewRootImpl}'s {@link
      * SurfaceControl}.
      */
-    public void takeScreenshotOfWindowClientThread(int interactionId,
-            ScreenCapture.ScreenCaptureListener listener,
+    public void takeScreenshotOfWindowClientThread(
+            int interactionId,
+            ScreenCaptureInternal.ScreenCaptureListener listener,
             IAccessibilityInteractionConnectionCallback callback) {
         Message message = PooledLambda.obtainMessage(
                 AccessibilityInteractionController::takeScreenshotOfWindowUiThread,
@@ -611,8 +612,9 @@ public final class AccessibilityInteractionController {
         mHandler.sendMessage(message);
     }
 
-    private void takeScreenshotOfWindowUiThread(int interactionId,
-            ScreenCapture.ScreenCaptureListener listener,
+    private void takeScreenshotOfWindowUiThread(
+            int interactionId,
+            ScreenCaptureInternal.ScreenCaptureListener listener,
             IAccessibilityInteractionConnectionCallback callback) {
         try {
             if ((mViewRootImpl.getWindowFlags() & WindowManager.LayoutParams.FLAG_SECURE) != 0) {
@@ -620,10 +622,13 @@ public final class AccessibilityInteractionController {
                         AccessibilityService.ERROR_TAKE_SCREENSHOT_SECURE_WINDOW, interactionId);
                 return;
             }
-            final ScreenCapture.LayerCaptureArgs captureArgs =
-                    new ScreenCapture.LayerCaptureArgs.Builder(mViewRootImpl.getSurfaceControl())
-                            .setChildrenOnly(false).setUid(Process.myUid()).build();
-            if (ScreenCapture.captureLayers(captureArgs, listener) != 0) {
+            final ScreenCaptureInternal.LayerCaptureArgs captureArgs =
+                    new ScreenCaptureInternal.LayerCaptureArgs.Builder(
+                                    mViewRootImpl.getSurfaceControl())
+                            .setChildrenOnly(false)
+                            .setUid(Process.myUid())
+                            .build();
+            if (ScreenCaptureInternal.captureLayers(captureArgs, listener) != 0) {
                 callback.sendTakeScreenshotOfWindowError(
                         AccessibilityService.ERROR_TAKE_SCREENSHOT_INTERNAL_ERROR, interactionId);
             }

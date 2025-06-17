@@ -79,6 +79,7 @@ import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.compose.ui.platform.ComposeView;
 import androidx.dynamicanimation.animation.FloatPropertyCompat;
 import androidx.dynamicanimation.animation.SpringAnimation;
 
@@ -1727,6 +1728,9 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         if (mBigPictureIconManager != null) {
             mBigPictureIconManager.updateMaxImageSizes();
         }
+        if (mChildrenContainer != null) {
+            mChildrenContainer.recomposeBundleHeader();
+        }
     }
 
     public void onUiModeChanged() {
@@ -1909,7 +1913,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         mRedactionType = redactionType;
     }
 
-    public void setBundleHeaderView(@NonNull View view) {
+    public void setBundleHeaderView(@NonNull ComposeView view) {
         if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) return;
         NotificationChildrenContainer childrenContainer = getChildrenContainerNonNull();
         childrenContainer.setBundleHeaderView(view);
@@ -4632,6 +4636,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             pw.print(", entry dismissable: " + canEntryBeDismissed());
             pw.print(", mOnUserInteractionCallback==null: " + (mOnUserInteractionCallback == null));
             pw.print(", removed: " + isRemoved());
+            pw.print(", dismissed: " + isDismissed());
             pw.print(", expandAnimationRunning: " + mExpandAnimationRunning);
             pw.print(", mShowingPublic: " + mShowingPublic);
             pw.print(", mShowingPublicInitialized: " + mShowingPublicInitialized);

@@ -95,6 +95,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
@@ -688,8 +689,10 @@ public class NotificationManager {
     private final RateLimiter mUnnecessaryCancelRateLimiter = new RateLimiter("cancel (dupe)",
             "notifications.value_client_throttled_cancel_duplicate",
             MAX_NOTIFICATION_UNNECESSARY_CANCEL_RATE);
-    // Value is KNOWN_STATUS_ENQUEUED/_CANCELLED
-    private final LruCache<NotificationKey, Integer> mKnownNotifications = new LruCache<>(100);
+    // KnownStatus is KNOWN_STATUS_ENQUEUED/_CANCELLED
+    private record KnownNotification(int knownStatus, OptionalInt progressState) {}
+    private final LruCache<NotificationKey, KnownNotification> mKnownNotifications =
+            new LruCache<>(100);
     private final Object mThrottleLock = new Object();
 
     @UnsupportedAppUsage
@@ -848,16 +851,30 @@ public class NotificationManager {
         if (Flags.nmBinderPerfThrottleNotify()) {
             NotificationKey key = new NotificationKey(user, pkg, tag, id);
             synchronized (mThrottleLock) {
-                Integer status = mKnownNotifications.get(key);
-                if (status != null && status == KNOWN_STATUS_ENQUEUED
-                        && !notification.hasCompletedProgress()) {
-                    if (mUpdateRateLimiter.eventExceedsRate()) {
-                        mUpdateRateLimiter.recordRejected(key);
-                        return true;
+                KnownNotification status = mKnownNotifications.get(key);
+                if (Flags.notificationUpdateSheddingAllowProgressCompletion()) {
+                    if (status != null && status.knownStatus == KNOWN_STATUS_ENQUEUED
+                            && status.progressState.orElse(-1) == notification.getProgressState()) {
+                        if (mUpdateRateLimiter.eventExceedsRate()) {
+                            mUpdateRateLimiter.recordRejected(key);
+                            return true;
+                        }
+                        mUpdateRateLimiter.recordAccepted();
                     }
-                    mUpdateRateLimiter.recordAccepted();
+                    mKnownNotifications.put(key, new KnownNotification(KNOWN_STATUS_ENQUEUED,
+                                OptionalInt.of(notification.getProgressState())));
+                } else {
+                    if (status != null && status.knownStatus == KNOWN_STATUS_ENQUEUED
+                            && !notification.hasCompletedProgress()) {
+                        if (mUpdateRateLimiter.eventExceedsRate()) {
+                            mUpdateRateLimiter.recordRejected(key);
+                            return true;
+                        }
+                        mUpdateRateLimiter.recordAccepted();
+                    }
+                    mKnownNotifications.put(key, new KnownNotification(KNOWN_STATUS_ENQUEUED,
+                            OptionalInt.empty()));
                 }
-                mKnownNotifications.put(key, KNOWN_STATUS_ENQUEUED);
             }
         }
 
@@ -1047,15 +1064,16 @@ public class NotificationManager {
         if (Flags.nmBinderPerfThrottleNotify()) {
             NotificationKey key = new NotificationKey(user, pkg, tag, id);
             synchronized (mThrottleLock) {
-                Integer status = mKnownNotifications.get(key);
-                if (status != null && status == KNOWN_STATUS_CANCELLED) {
+                KnownNotification status = mKnownNotifications.get(key);
+                if (status != null && status.knownStatus == KNOWN_STATUS_CANCELLED) {
                     if (mUnnecessaryCancelRateLimiter.eventExceedsRate()) {
                         mUnnecessaryCancelRateLimiter.recordRejected(key);
                         return true;
                     }
                     mUnnecessaryCancelRateLimiter.recordAccepted();
                 }
-                mKnownNotifications.put(key, KNOWN_STATUS_CANCELLED);
+                mKnownNotifications.put(key, new KnownNotification(KNOWN_STATUS_CANCELLED,
+                        OptionalInt.empty()));
             }
         }
 
@@ -1076,7 +1094,8 @@ public class NotificationManager {
             synchronized (mThrottleLock) {
                 for (NotificationKey key : mKnownNotifications.snapshot().keySet()) {
                     if (key.pkg.equals(pkg) && key.user.equals(user)) {
-                        mKnownNotifications.put(key, KNOWN_STATUS_CANCELLED);
+                        mKnownNotifications.put(key, new KnownNotification(KNOWN_STATUS_CANCELLED,
+                                OptionalInt.empty()));
                     }
                 }
             }

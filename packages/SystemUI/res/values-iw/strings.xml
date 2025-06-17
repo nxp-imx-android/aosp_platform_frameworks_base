@@ -222,18 +222,12 @@
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"שימוש בקוד אימות"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"שימוש בקו פתיחת נעילה"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"שימוש בסיסמה"</string>
-    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
-    <skip />
+    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"צריך להזין קוד אימות"</string>
+    <string name="biometric_dialog_enter_password" msgid="200503318983048202">"צריך להזין סיסמה"</string>
+    <string name="biometric_dialog_enter_pattern" msgid="3065746760277739487">"צריך להזין את קו פתיחת הנעילה"</string>
+    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"אחרי יותר מדי ניסיונות כושלים, נדרש קוד אימות כדי לשחזר את הנתונים הביומטריים"</string>
+    <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"אחרי יותר מדי ניסיונות כושלים, נדרש קו פתיחת נעילה כדי לשחזר את הנתונים הביומטריים"</string>
+    <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"אחרי יותר מדי ניסיונות כושלים, נדרשת סיסמה כדי לשחזר את הנתונים הביומטריים"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"קוד אימות שגוי"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"קו פתיחת נעילה שגוי"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"סיסמה שגויה"</string>
@@ -676,8 +670,7 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"השבתה"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"יש לבטל את הנעילה כדי לראות התראות ישנות"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"המכשיר הזה מנוהל על ידי ההורה שלך"</string>
-    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
-    <skip />
+    <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"חלק מהגדרות המכשיר מוגנות באמצעות קוד אימות."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"הארגון שלך הוא הבעלים של המכשיר הזה והוא עשוי לנטר את התנועה ברשת"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"הארגון <xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> הוא הבעלים של המכשיר הזה והוא עשוי לנטר את התנועה ברשת"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"המכשיר הזה התקבל מ-<xliff:g id="ORGANIZATION_NAME">%s</xliff:g>"</string>
@@ -718,8 +711,7 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"‏להגדרות ה-VPN"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"מכשיר זה מנוהל על ידי ההורה שלך. להורה שלך יש אפשרות לצפות בפרטים כמו האפליקציות שבשימוש, המיקום וזמן המסך שלך, ולנהל אותם."</string>
-    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
-    <skip />
+    <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"יש הגדרות במכשיר, כמו מגבלות יומיות ומשך השתקה, שאפשר לשנות רק באמצעות קוד אימות."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"הנעילה נמנעת על ידי סביבה מהימנה"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"המכשיר ננעל, יותר מדי ניסיונות אימות"</string>
@@ -823,8 +815,7 @@
     <string name="status_bar_work" msgid="5238641949837091056">"פרופיל עבודה"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"מצב טיסה"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"אמצעי בקרת הורים"</string>
-    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
-    <skip />
+    <string name="status_bar_pin_supervision" msgid="4376576498566645782">"הגנה באמצעות קוד אימות על חלק מההגדרות במכשיר"</string>
     <string name="zen_alarm_warning" msgid="7844303238486849503">"לא ניתן יהיה לשמוע את השעון המעורר הבא שלך <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template" msgid="2234991538018805736">"בשעה <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"ב-<xliff:g id="WHEN">%1$s</xliff:g>"</string>
@@ -835,8 +826,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"לוויין, יש חיבור זמין"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"תקשורת לוויינית למצב חירום"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"רק שיחות חירום או תקשורת לוויינית למצב חירום"</string>
-    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
-    <skip />
+    <string name="satellite_network_title_text" msgid="4825315858295910999">"רשת לוויינית"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"‫<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"אין קליטה"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"פס אחד"</string>
@@ -965,6 +955,8 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"מוצגים: קיצורי הדרך לפתיחת אפליקציות"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"מוצגים: קיצורי הדרך של האפליקציה הנוכחית"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"צפייה בהתראות"</string>
+    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
+    <skip />
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"צילום המסך"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"צפייה במקשי הקיצור"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"חזרה"</string>
@@ -990,6 +982,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"העברת החלון ימינה"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"הגדלת החלון"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"מזעור החלון"</string>
+    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
+    <skip />
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"קלט"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"מעבר לשפה הבאה"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"מעבר לשפה הקודמת"</string>
@@ -1055,6 +1049,14 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"צריך ללחוץ ולגרור כדי להוסיף משבצות"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"צריך ללחוץ ולגרור כדי לסדר מחדש את המשבצות"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"אפשר לבחור כפתורים כדי לשנות את הסדר והגודל שלהם"</string>
+    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
+    <skip />
+    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
+    <skip />
+    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
+    <skip />
+    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
+    <skip />
     <string name="tap_to_position_tile" msgid="6282815817773342757">"יש להקיש כדי למקם את המשבצת"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"אפשר לגרור לכאן כדי להסיר"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"יש צורך ב-<xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> אריחים לפחות"</string>

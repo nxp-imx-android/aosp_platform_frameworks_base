@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"កម្មវិធីនេះមិនត្រូវគ្នានឹង 16 KB ទេ។ ការត្រួតពិនិត្យការតម្រឹម APK មិនបានសម្រេចទេ។ កម្មវិធីនេះនឹងត្រូវបានដំណើរការដោយប្រើមុខងារដែលត្រូវគ្នានឹងទំហំទំព័រ។ ដើម្បីទទួលបានភាពត្រូវគ្នាល្អបំផុត សូមចងក្រងកម្មវិធីឡើងវិញដោយប្រើជំនួយ 16 KB។ ដើម្បីទទួលបានព័ត៌មានបន្ថែម សូមមើល &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"កម្មវិធីនេះមិនត្រូវគ្នានឹង 16 KB ទេ។ ការត្រួតពិនិត្យការតម្រឹម ELF មិនបានសម្រេចទេ។ កម្មវិធីនេះនឹងត្រូវបានដំណើរការដោយប្រើមុខងារដែលត្រូវគ្នានឹងទំហំទំព័រ។ ដើម្បីទទួលបានភាពត្រូវគ្នាល្អបំផុត សូមចងក្រងកម្មវិធីឡើងវិញដោយប្រើជំនួយ 16 KB។ ដើម្បីទទួលបានព័ត៌មានបន្ថែម សូមមើល &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"កម្មវិធីនេះមិនត្រូវគ្នានឹង 16 KB ទេ។ ការត្រួតពិនិត្យការតម្រឹម APK និង ELF មិនបានសម្រេចទេ។ កម្មវិធីនេះនឹងត្រូវបានដំណើរការដោយប្រើមុខងារដែលត្រូវគ្នានឹងទំហំទំព័រ។ ដើម្បីទទួលបានភាពត្រូវគ្នាល្អបំផុត សូមចងក្រងកម្មវិធីឡើងវិញដោយប្រើជំនួយ 16 KB។ ដើម្បីទទួលបានព័ត៌មានបន្ថែម សូមមើល &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"ការព្រមាននេះកំពុងបង្ហាញ ដោយសារនេះជាកម្មវិធីដែលអាចជួសជុលបាន ដែលកំពុងត្រូវបានធ្វើតេស្តនាពេលបច្ចុប្បន្ន។ ប្រសិនបើអ្នមិនមែនជាអ្នកអភិវឌ្ឍន៍ទេ សូមរាយការណ៍អំពីបញ្ហានេះទៅអ្នក​អភិវឌ្ឍន៍ និងស្នើសុំកម្មវិធីដែលមិនអាចជួសជុលបាន។ កម្មវិធីនេះមិនត្រូវគ្នានឹង 16 KB ទេ។ ការត្រួតពិនិត្យភាពត្រូវគ្នានៃ APK មិនបានសម្រេចទេ។ សូមធ្វើតាមជំហាននៅលើ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"ការព្រមាននេះកំពុងបង្ហាញ ដោយសារនេះជាកម្មវិធីដែលអាចជួសជុលបាន ដែលកំពុងត្រូវបានធ្វើតេស្តនាពេលបច្ចុប្បន្ន។ ប្រសិនបើអ្នមិនមែនជាអ្នកអភិវឌ្ឍន៍ទេ សូមរាយការណ៍អំពីបញ្ហានេះទៅអ្នក​អភិវឌ្ឍន៍ និងស្នើសុំកម្មវិធីដែលមិនអាចជួសជុលបាន។ កម្មវិធីនេះមិនត្រូវគ្នានឹង 16 KB ទេ។ ការត្រួតពិនិត្យភាពត្រូវគ្នានៃ ELF មិនបានសម្រេចទេ។ សូមធ្វើតាមជំហាននៅលើ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"ការព្រមាននេះកំពុងបង្ហាញ ដោយសារនេះជាកម្មវិធីដែលអាចជួសជុលបាន ដែលកំពុងត្រូវបានធ្វើតេស្តនាពេលបច្ចុប្បន្ន។ ប្រសិនបើអ្នមិនមែនជាអ្នកអភិវឌ្ឍន៍ទេ សូមរាយការណ៍អំពីបញ្ហានេះទៅអ្នក​អភិវឌ្ឍន៍ និងស្នើសុំកម្មវិធីដែលមិនអាចជួសជុលបាន។ កម្មវិធីនេះមិនត្រូវគ្នានឹង 16 KB ទេ។ ការត្រួតពិនិត្យភាពត្រូវគ្នានៃ APK និង ELF មិនបានសម្រេចទេ។ សូមធ្វើតាមជំហាននៅលើ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"កុំបង្ហាញម្ដងទៀត"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"មិន​បាន​ផ្ដល់​សេវាកម្ម។"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"អ្នក​មិន​អាច​ប្ដូរ​ការ​កំណត់​លេខ​សម្គាល់​អ្នក​ហៅ​បានទេ។"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"បានប្ដូរទិន្នន័យទៅ <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"អនុញ្ញាតឱ្យកម្មវិធីចូលប្រើទិន្នន័យតាមដានអំពីមជ្ឈដ្ឋានជុំវិញអ្នកដោយផ្ទាល់ដោយមានភាពលម្អិតកម្រិតខ្ពស់ខ្លាំង។"</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"ចូលប្រើទិន្នន័យ XR ពេលមិននៅផ្ទៃខាងមុខ"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"អនុញ្ញាតឱ្យកម្មវិធីចូលប្រើទិន្នន័យ XR ពេលមិននៅផ្ទៃខាងមុខ។"</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"ថតកូដ"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"អនុញ្ញាតឱ្យកម្មវិធីថតកូដ មុនពេលប្រព័ន្ធអាចដំណើរការសកម្មភាព និងផ្លូវកាត់ប្រព័ន្ធ។"</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"ប្រើ​ជីវមាត្រ"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"ប្រើជីវមាត្រ ឬ​ការចាក់សោអេក្រង់"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"ផ្ទៀងផ្ទាត់ថាជាអ្នក"</string>

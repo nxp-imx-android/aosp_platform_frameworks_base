@@ -301,6 +301,17 @@ public final class BarringInfo implements Parcelable {
                 ? BARRING_SERVICE_INFO_UNBARRED : BARRING_SERVICE_INFO_UNKNOWN;
     }
 
+    /**
+     * Return the cell that reported the BarringInfo.
+     *
+     * @return the {@link CellIdentity} of the cell that is broadcasting this barring information.
+     *
+     * @hide
+     */
+    public CellIdentity getCellIdentity() {
+        return mCellIdentity;
+    }
+
     /** @hide */
     @SystemApi
     public @NonNull BarringInfo createLocationInfoSanitizedCopy() {

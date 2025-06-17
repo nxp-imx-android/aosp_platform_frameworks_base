@@ -33,7 +33,6 @@ import androidx.collection.MutableIntObjectMap;
 
 import com.android.internal.statusbar.StatusBarIcon;
 import com.android.internal.statusbar.StatusBarIcon.Shape;
-import com.android.systemui.Flags;
 import com.android.systemui.demomode.DemoModeCommandReceiver;
 import com.android.systemui.kairos.ExperimentalKairosApi;
 import com.android.systemui.kairos.KairosNetwork;
@@ -45,6 +44,7 @@ import com.android.systemui.statusbar.phone.DemoStatusIcons;
 import com.android.systemui.statusbar.phone.StatusBarIconHolder;
 import com.android.systemui.statusbar.phone.StatusBarIconHolder.BindableIconHolder;
 import com.android.systemui.statusbar.phone.StatusBarLocation;
+import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos;
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileUiAdapter;
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileUiAdapterKairos;
 import com.android.systemui.statusbar.pipeline.mobile.ui.binder.MobileIconsBinder;
@@ -251,7 +251,7 @@ public class IconManager implements DemoModeCommandReceiver {
     private ModernStatusBarMobileView onCreateModernStatusBarMobileView(
             String slot, int subId) {
         Context mobileContext = mMobileContextProvider.getMobileContextForSub(subId, mContext);
-        if (Flags.statusBarMobileIconKairos()) {
+        if (StatusBarMobileIconKairos.isEnabled()) {
             Pair<ModernStatusBarMobileView, Job> viewAndJob =
                     ModernStatusBarMobileView.constructAndBind(
                             mobileContext,
@@ -298,7 +298,7 @@ public class IconManager implements DemoModeCommandReceiver {
         if (mIsInDemoMode) {
             mDemoStatusIcons.onRemoveIcon((StatusIconDisplayable) mGroup.getChildAt(viewIndex));
         }
-        if (Flags.statusBarMobileIconKairos()) {
+        if (StatusBarMobileIconKairos.isEnabled()) {
             View view = mGroup.getChildAt(viewIndex);
             if (view instanceof ModernStatusBarMobileView) {
                 Job bindingJob = mBindingJobs.remove(((ModernStatusBarMobileView) view).getSubId());

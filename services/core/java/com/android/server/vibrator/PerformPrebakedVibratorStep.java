@@ -19,6 +19,7 @@ package com.android.server.vibrator;
 import android.annotation.NonNull;
 import android.os.Trace;
 import android.os.VibrationEffect;
+import android.os.vibrator.Flags;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.VibrationEffectSegment;
 import android.util.Slog;
@@ -62,26 +63,29 @@ final class PerformPrebakedVibratorStep extends AbstractComposedVibratorStep {
                         + controller.getVibratorInfo().getId());
             }
 
-            VibrationEffect fallback = getVibration().getFallback(prebaked.getEffectId());
             int stepId = conductor.nextVibratorCallbackStepId(getVibratorId());
             long vibratorOnResult = controller.on(prebaked, getVibration().id, stepId);
             handleVibratorOnResult(vibratorOnResult);
             getVibration().stats.reportPerformEffect(vibratorOnResult, prebaked);
 
-            if (vibratorOnResult == 0 && prebaked.shouldFallback()
-                    && (fallback instanceof VibrationEffect.Composed)) {
-                if (VibrationThread.DEBUG) {
-                    Slog.d(VibrationThread.TAG, "Playing fallback for effect "
-                            + VibrationEffect.effectIdToString(prebaked.getEffectId()));
+            if (!Flags.removeHidlSupport()) {
+                VibrationEffect fallback = getVibration().getFallback(prebaked.getEffectId());
+                if (vibratorOnResult == 0 && prebaked.shouldFallback()
+                        && (fallback instanceof VibrationEffect.Composed)) {
+                    if (VibrationThread.DEBUG) {
+                        Slog.d(VibrationThread.TAG, "Playing fallback for effect "
+                                + VibrationEffect.effectIdToString(prebaked.getEffectId()));
+                    }
+                    AbstractVibratorStep fallbackStep = conductor.nextVibrateStep(startTime,
+                            controller,
+                            replaceCurrentSegment((VibrationEffect.Composed) fallback),
+                            segmentIndex, mPendingVibratorOffDeadline);
+                    List<Step> fallbackResult = fallbackStep.play();
+                    // Update the result with the fallback result so this step is seamlessly
+                    // replaced by the fallback to any outer application of this.
+                    handleVibratorOnResult(fallbackStep.getVibratorOnDuration());
+                    return fallbackResult;
                 }
-                AbstractVibratorStep fallbackStep = conductor.nextVibrateStep(startTime, controller,
-                        replaceCurrentSegment((VibrationEffect.Composed) fallback),
-                        segmentIndex, mPendingVibratorOffDeadline);
-                List<Step> fallbackResult = fallbackStep.play();
-                // Update the result with the fallback result so this step is seamlessly
-                // replaced by the fallback to any outer application of this.
-                handleVibratorOnResult(fallbackStep.getVibratorOnDuration());
-                return fallbackResult;
             }
 
             return vibratorOnNextSteps(/* segmentsPlayed= */ 1);

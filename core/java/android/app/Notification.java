@@ -4358,6 +4358,7 @@ public class Notification implements Parcelable
     /**
      * @hide
      */
+    // TODO: b/425364383 - Remove when inlining
     public boolean hasCompletedProgress() {
         // not a progress notification; can't be complete
         if (!extras.containsKey(EXTRA_PROGRESS)
@@ -4369,6 +4370,30 @@ public class Notification implements Parcelable
             return false;
         }
         return extras.getInt(EXTRA_PROGRESS) == extras.getInt(EXTRA_PROGRESS_MAX);
+    }
+
+    /** @hide */
+    public static final int PROGRESS_STATE_NONE = 0;
+    /** @hide */
+    public static final int PROGRESS_STATE_ONGOING = 1;
+    /** @hide */
+    public static final int PROGRESS_STATE_COMPLETE = 2;
+
+    /** @hide */
+    @FlaggedApi(Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION)
+    public int getProgressState() {
+        final int progress = extras.getInt(EXTRA_PROGRESS, 0);
+        final int max = extras.getInt(EXTRA_PROGRESS_MAX, 0);
+        final boolean ind = extras.getBoolean(EXTRA_PROGRESS_INDETERMINATE);
+        if (max != 0 || ind) {
+            if (progress == max && !ind) {
+                return PROGRESS_STATE_COMPLETE;
+            } else {
+                return PROGRESS_STATE_ONGOING;
+            }
+        } else {
+            return PROGRESS_STATE_NONE;
+        }
     }
 
     /** @removed */

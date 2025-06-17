@@ -26,7 +26,6 @@ import android.view.IWindowSession
 import android.view.InputChannel
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
-import com.android.wm.shell.common.suppliers.InputChannelSupplier
 import com.android.wm.shell.common.suppliers.WindowSessionSupplier
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerRobotTest.Companion.ANOTHER_TASK_ID
 import com.android.wm.shell.compatui.letterbox.LetterboxMatchers.asAnyMode
@@ -43,6 +42,7 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 /**
  * Tests for [LetterboxInputController].
@@ -150,7 +150,6 @@ class LetterboxInputControllerTest : ShellTestCase() {
         private val reachabilityListenerFactory: ReachabilityGestureListenerFactory
         private val windowSessionSupplier: WindowSessionSupplier
         private val windowSession: IWindowSession
-        private val inputChannelSupplier: InputChannelSupplier
 
         init {
             inputSurfaceBuilder = getLetterboxInputSurfaceBuilderMock()
@@ -161,10 +160,15 @@ class LetterboxInputControllerTest : ShellTestCase() {
             windowSessionSupplier = mock<WindowSessionSupplier>()
             windowSession = mock<IWindowSession>()
             doReturn(windowSession).`when`(windowSessionSupplier).get()
-            inputChannelSupplier = mock<InputChannelSupplier>()
-            val inputChannels = InputChannel.openInputChannelPair(TAG)
-            inputChannels.first().dispose()
-            doReturn(inputChannels[1]).`when`(inputChannelSupplier).get()
+            whenever(windowSession.grantInputChannel(
+                any(), any(), any(), anyOrNull(), any(), any(), any(), any(),
+                anyOrNull(), any(), any()
+            )).thenAnswer {
+                val inputChannels = InputChannel.openInputChannelPair(
+                    "TestChannel-InputLetterboxControllerRobotTest: $TAG")
+                inputChannels.first().dispose()
+                inputChannels.last()
+            }
         }
 
         override fun buildController(): LetterboxController =
@@ -174,7 +178,6 @@ class LetterboxInputControllerTest : ShellTestCase() {
                 inputSurfaceBuilder,
                 reachabilityListenerFactory,
                 windowSessionSupplier,
-                inputChannelSupplier
             )
 
         fun checkInputSurfaceBuilderInvoked(

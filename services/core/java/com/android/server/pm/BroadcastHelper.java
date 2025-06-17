@@ -363,17 +363,6 @@ public final class BroadcastHelper {
         final boolean isForWholeApp = componentNames.contains(packageName);
         final String callingPackageNameForTrace = mContext.getPackageManager().getNameForUid(
                 callingUidForTrace);
-        if (!android.content.pm.Flags.reduceBroadcastsForComponentStateChanges()) {
-            tracePackageChangedBroadcastEvent(false /* applyFlag */, reasonForTrace, packageName,
-                    "<implicit>" /* targetPackageName */, "whole" /* targetComponent */,
-                    componentNames.size(), callingPackageNameForTrace);
-            sendPackageChangedBroadcastWithPermissions(packageName, dontKillApp, componentNames,
-                    packageUid, reason, userIds, instantUserIds, broadcastAllowList,
-                    null /* targetPackageName */, null /* requiredPermissions */,
-                    null /* bOptions */);
-            return;
-        }
-
         if (isForWholeApp) {
             tracePackageChangedBroadcastEvent(true /* applyFlag */, reasonForTrace, packageName,
                     "<implicit>" /* targetPackageName */, "whole" /* targetComponent */,

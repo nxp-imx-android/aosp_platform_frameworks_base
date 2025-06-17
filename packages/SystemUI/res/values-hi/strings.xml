@@ -961,6 +961,8 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"ऐसे शॉर्टकट दिखाए जा रहे हैं जिनसे ऐप्लिकेशन खोले जा सकें"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"मौजूदा ऐप्लिकेशन के लिए शॉर्टकट दिखाए जा रहे हैं"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"सूचनाएं देखने के लिए"</string>
+    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
+    <skip />
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"स्क्रीनशॉट लेने के लिए"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"शॉर्टकट देखने के लिए"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"वापस जाने के लिए"</string>
@@ -986,6 +988,8 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"विंडो को दाईं ओर ले जाएं"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"विंडो को बड़ा करें"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"विंडो को छोटा करें"</string>
+    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
+    <skip />
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"इनपुट"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"अगली भाषा पर स्विच करने के लिए"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"पिछली भाषा पर स्विच करने के लिए"</string>
@@ -1051,6 +1055,14 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"टाइल जोड़ने के लिए दबाकर खींचें और छोड़ें"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"टाइल का क्रम फिर से बदलने के लिए उन्हें दबाकर रखें और खींचें"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"उन टाइल को चुनें जिन्हें फिर से व्यवस्थित करना है और जिनका साइज़ बदलना है"</string>
+    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
+    <skip />
+    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
+    <skip />
+    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
+    <skip />
+    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
+    <skip />
     <string name="tap_to_position_tile" msgid="6282815817773342757">"टाइल की जगह तय करने के लिए टैप करें"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"हटाने के लिए यहां खींचें और छोड़ें"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"आपके पास कम से कम <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> टाइलें होनी चाहिए"</string>

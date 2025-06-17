@@ -645,20 +645,20 @@ public class RecentTasksController implements TaskStackListenerCallback,
     @VisibleForTesting
     <T extends TaskInfo> ArrayList<GroupedTaskInfo> generateList(@NonNull List<T> tasks,
             String reason) {
-        if (tasks.isEmpty()) {
+        final boolean multipleDesktopsEnabled = mDesktopState.enableMultipleDesktops();
+        // When the multiple desktops feature is enabled, we include all desks even if they're
+        // empty.
+        final boolean shouldIncludeEmptyDesktops = multipleDesktopsEnabled;
+
+        initializeDesksMap(multipleDesktopsEnabled);
+
+        if (tasks.isEmpty() && (!shouldIncludeEmptyDesktops || mTmpDesks.isEmpty())) {
             return new ArrayList<>();
         }
 
         if (enableShellTopTaskTracking()) {
             ProtoLog.v(WM_SHELL_TASK_OBSERVER, "RecentTasksController.generateList(%s)", reason);
         }
-
-        final boolean multipleDesktopsEnabled = mDesktopState.enableMultipleDesktops();
-        initializeDesksMap(multipleDesktopsEnabled);
-
-        // When the multiple desktops feature is enabled, we include all desks even if they're
-        // empty.
-        final boolean shouldIncludeEmptyDesktops = multipleDesktopsEnabled;
 
         // Make a mapping of task id -> task info for the remaining tasks to be processed, this
         // mapping is used to keep track of split tasks that may exist later in the task list that

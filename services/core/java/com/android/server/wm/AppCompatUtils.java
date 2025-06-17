@@ -187,14 +187,18 @@ final class AppCompatUtils {
                 top.getAppCompatDisplayInsets() != null
                         ? top.getAppCompatDisplayInsets().mAspectRatio
                         : TaskInfo.PROPERTY_VALUE_UNSET;
-        final boolean isTopActivityLetterboxed = top.areBoundsLetterboxed();
+        final AppCompatLetterboxPolicy letterboxPolicy =
+                top.mAppCompatController.getLetterboxPolicy();
+        final boolean isTopActivityLetterboxed = letterboxPolicy.isRunning();
         appCompatTaskInfo.setTopActivityLetterboxed(isTopActivityLetterboxed);
         if (isTopActivityLetterboxed) {
-            final Rect bounds = top.getBounds();
-            appCompatTaskInfo.topActivityLetterboxWidth = bounds.width();
-            appCompatTaskInfo.topActivityLetterboxHeight = bounds.height();
             // TODO(b/379824541) Remove duplicate information.
-            appCompatTaskInfo.topActivityLetterboxBounds = bounds;
+            appCompatTaskInfo.topActivityLetterboxBounds = new Rect();
+            letterboxPolicy.getLetterboxInnerBounds(appCompatTaskInfo.topActivityLetterboxBounds);
+            appCompatTaskInfo.topActivityLetterboxWidth =
+                    appCompatTaskInfo.topActivityLetterboxBounds.width();
+            appCompatTaskInfo.topActivityLetterboxHeight =
+                    appCompatTaskInfo.topActivityLetterboxBounds.height();
             // We need to consider if letterboxed or pillarboxed.
             // TODO(b/336807329) Encapsulate reachability logic
             appCompatTaskInfo.setLetterboxDoubleTapEnabled(reachabilityOverrides
@@ -323,8 +327,12 @@ final class AppCompatUtils {
     @Nullable
     static AppCompatTransitionInfo createAppCompatTransitionInfo(
             @NonNull ActivityRecord activityRecord) {
-        if (activityRecord.areBoundsLetterboxed()) {
-            return new AppCompatTransitionInfo(new Rect(activityRecord.getBounds()));
+        final AppCompatLetterboxPolicy letterboxPolicy =
+                activityRecord.mAppCompatController.getLetterboxPolicy();
+        if (letterboxPolicy.isRunning()) {
+            final Rect letterboxBounds = new Rect();
+            letterboxPolicy.getLetterboxInnerBounds(letterboxBounds);
+            return new AppCompatTransitionInfo(letterboxBounds);
         }
         return null;
     }

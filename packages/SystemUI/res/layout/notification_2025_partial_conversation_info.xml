@@ -17,6 +17,7 @@
 
 <com.android.systemui.statusbar.notification.row.PartialConversationInfo
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     android:id="@+id/notification_guts"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -69,6 +70,18 @@
         </LinearLayout>
 
         <!-- end aligned fields -->
+        <!-- feedback for notificationassistantservice -->
+        <ImageButton
+            android:id="@+id/feedback"
+            android:layout_width="@dimen/notification_2025_guts_button_size"
+            android:layout_height="@dimen/notification_2025_guts_button_size"
+            android:layout_centerVertical="true"
+            android:visibility="gone"
+            android:background="@drawable/ripple_drawable"
+            android:contentDescription="@string/notification_guts_bundle_feedback"
+            android:src="@*android:drawable/ic_feedback"
+            android:layout_toStartOf="@id/info"
+            android:tint="@androidprv:color/materialColorPrimary"/>
         <ImageButton
             android:id="@+id/info"
             android:layout_width="@dimen/notification_2025_guts_button_size"

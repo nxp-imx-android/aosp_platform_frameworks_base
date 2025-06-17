@@ -177,7 +177,7 @@ class MouseKeysInterceptorTest {
         testLooper.dispatchAll()
 
         assertThat(nextInterceptor.events).hasSize(1)
-        assertThat(nextInterceptor.events.poll()).isEqualTo(downEvent)
+        verifyKeyEventsEqual(downEvent, nextInterceptor.events.poll())
     }
 
     @Test
@@ -527,6 +527,13 @@ class MouseKeysInterceptorTest {
 
         assertThat(actualXAxis).containsExactlyElementsIn(xAxisMovements.toList()).inOrder()
         assertThat(actualYAxis).containsExactlyElementsIn(yAxisMovements.toList()).inOrder()
+    }
+
+    private fun verifyKeyEventsEqual(expected: KeyEvent, received: KeyEvent) {
+        assertThat(received.keyCode).isEqualTo(expected.keyCode)
+        assertThat(received.action).isEqualTo(expected.action)
+        assertThat(received.downTime).isEqualTo(expected.downTime)
+        assertThat(received.eventTime).isEqualTo(expected.eventTime)
     }
 
     private fun createInputDevice(

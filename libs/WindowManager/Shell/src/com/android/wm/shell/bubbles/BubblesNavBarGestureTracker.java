@@ -42,6 +42,7 @@ class BubblesNavBarGestureTracker {
     private static final String GESTURE_MONITOR = "bubbles-gesture";
     private final Context mContext;
     private final BubblePositioner mPositioner;
+    private final InputManager mInputManager;
 
     @Nullable
     private InputMonitor mInputMonitor;
@@ -50,6 +51,7 @@ class BubblesNavBarGestureTracker {
 
     BubblesNavBarGestureTracker(Context context, BubblePositioner positioner) {
         mContext = context;
+        mInputManager = mContext.getSystemService(InputManager.class);
         mPositioner = positioner;
     }
 
@@ -63,8 +65,7 @@ class BubblesNavBarGestureTracker {
 
         stopInternal();
 
-        mInputMonitor = mContext.getSystemService(InputManager.class)
-                .monitorGestureInput(GESTURE_MONITOR, mContext.getDisplayId());
+        mInputMonitor = mInputManager.monitorGestureInput(GESTURE_MONITOR, mContext.getDisplayId());
         InputChannel inputChannel = mInputMonitor.getInputChannel();
 
         BubblesNavBarMotionEventHandler motionEventHandler =
@@ -92,8 +93,8 @@ class BubblesNavBarGestureTracker {
 
     private void onInterceptTouch() {
         ProtoLog.d(WM_SHELL_BUBBLES, "intercept touch event");
-        if (mInputMonitor != null) {
-            mInputMonitor.pilferPointers();
+        if (mInputEventReceiver != null) {
+            mInputManager.pilferPointers(mInputEventReceiver.getToken());
         }
     }
 }

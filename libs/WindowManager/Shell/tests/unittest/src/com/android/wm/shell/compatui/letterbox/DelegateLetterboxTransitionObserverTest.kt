@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.compatui.letterbox
 
+import android.graphics.Rect
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
@@ -27,17 +28,16 @@ import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.compatui.letterbox.lifecycle.FakeLetterboxLifecycleEventFactory
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleController
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEvent
-import com.android.wm.shell.compatui.letterbox.lifecycle.toLetterboxLifecycleEvent
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.util.executeTransitionObserverTest
+import java.util.function.Consumer
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import java.util.function.Consumer
 
 /**
  * Tests for [DelegateLetterboxTransitionObserver].
@@ -76,12 +76,9 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
         runTestScenario { r ->
             executeTransitionObserverTest(observerFactory = r.observerFactory) {
                 r.invokeShellInit()
-
-                inputBuilder {
-                    buildTransitionInfo()
+                transitionInfo {
                 }
-
-                validateOutput {
+                validateOnTransitionReady {
                     r.checkLifecycleControllerInvoked(times = 0)
                 }
             }
@@ -93,13 +90,10 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
         runTestScenario { r ->
             executeTransitionObserverTest(observerFactory = r.observerFactory) {
                 r.invokeShellInit()
-
-                inputBuilder {
-                    buildTransitionInfo()
-                    addChange(createChange())
+                transitionInfo {
+                    addChange { }
                 }
-
-                validateOutput {
+                validateOnTransitionReady {
                     r.checkLifecycleControllerInvoked(times = 1)
                 }
             }
@@ -111,15 +105,12 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
         runTestScenario { r ->
             executeTransitionObserverTest(observerFactory = r.observerFactory) {
                 r.invokeShellInit()
-
-                inputBuilder {
-                    buildTransitionInfo()
-                    addChange(createChange())
-                    addChange(createChange())
-                    addChange(createChange())
+                transitionInfo {
+                    addChange { }
+                    addChange { }
+                    addChange { }
                 }
-
-                validateOutput {
+                validateOnTransitionReady {
                     r.checkLifecycleControllerInvoked(times = 3)
                     r.checkOnLetterboxLifecycleEventFactory { factory ->
                         assert(factory.canHandleInvokeTimes == 3)
@@ -146,6 +137,9 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
         private val letterboxLifecycleController: LetterboxLifecycleController
         private var letterboxLifecycleEventFactory: FakeLetterboxLifecycleEventFactory
 
+        private var inputEvent: LetterboxLifecycleEvent? =
+            LetterboxLifecycleEvent(taskBounds = Rect())
+
         val observerFactory: () -> DelegateLetterboxTransitionObserver
 
         init {
@@ -154,7 +148,7 @@ class DelegateLetterboxTransitionObserverTest : ShellTestCase() {
             transitions = mock<Transitions>()
             letterboxLifecycleController = mock<LetterboxLifecycleController>()
             letterboxLifecycleEventFactory = FakeLetterboxLifecycleEventFactory(
-                eventToReturnFactory = { c -> c.toLetterboxLifecycleEvent() }
+                eventToReturnFactory = { _ -> inputEvent }
             )
             letterboxObserver =
                 DelegateLetterboxTransitionObserver(

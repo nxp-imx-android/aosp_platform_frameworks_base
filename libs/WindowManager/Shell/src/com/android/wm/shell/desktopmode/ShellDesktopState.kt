@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.android.wm.shell.desktopmode
 
-package android.window;
+import com.android.wm.shell.shared.desktopmode.DesktopState
 
-/** @hide */
-parcelable ScreenCapture.CaptureArgs;
-
-/** @hide */
-parcelable ScreenCapture.ScreenshotHardwareBuffer;
-
-/** @hide */
-parcelable ScreenCapture.ScreenCaptureListener;
+/** Extends [DesktopState] with methods that integrate with shell-specific components and logic. */
+interface ShellDesktopState : DesktopState {
+    /**
+     * Determines if a display with [displayId] is an eligible drop target for a window in the
+     * context of desktop mode.
+     */
+    fun isEligibleWindowDropTarget(displayId: Int): Boolean
+}

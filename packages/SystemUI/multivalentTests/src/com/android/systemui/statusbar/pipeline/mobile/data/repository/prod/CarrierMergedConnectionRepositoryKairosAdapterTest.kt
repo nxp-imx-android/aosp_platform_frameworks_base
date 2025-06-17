@@ -22,16 +22,17 @@ import com.android.systemui.activated
 import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.launchKairosNetwork
 import com.android.systemui.kairos.stateOf
+import com.android.systemui.kosmos.testScope
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfig
 import com.android.systemui.statusbar.pipeline.mobile.data.model.testCarrierConfig
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.android.systemui.statusbar.pipeline.wifi.data.repository.fake
+import com.android.systemui.statusbar.pipeline.wifi.data.repository.wifiRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.runCurrent
 import org.junit.runner.RunWith
 import org.mockito.Mockito
 
-@OptIn(ExperimentalKairosApi::class, ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalKairosApi::class)
 @SmallTest
 @RunWith(AndroidJUnit4::class)
 @android.platform.test.annotations.EnabledOnRavenwood
@@ -39,21 +40,21 @@ class CarrierMergedConnectionRepositoryKairosAdapterTest :
     CarrierMergedConnectionRepositoryTestBase() {
 
     var job: Job? = null
-    val kairosNetwork = testScope.backgroundScope.launchKairosNetwork()
+    val kairosNetwork = kosmos.testScope.backgroundScope.launchKairosNetwork()
 
     override fun recreateRepo(): MobileConnectionRepositoryKairosAdapter {
         lateinit var adapter: MobileConnectionRepositoryKairosAdapter
         job?.cancel()
         Mockito.clearInvocations(telephonyManager)
         job =
-            testScope.backgroundScope.launch {
+            kosmos.testScope.backgroundScope.launch {
                 kairosNetwork.activateSpec {
                     val repo = activated {
                         CarrierMergedConnectionRepositoryKairos(
                             SUB_ID,
                             logger,
                             telephonyManager,
-                            wifiRepository,
+                            kosmos.wifiRepository.fake,
                             isInEcmMode = stateOf(false),
                         )
                     }
@@ -65,7 +66,6 @@ class CarrierMergedConnectionRepositoryKairosAdapterTest :
                     Unit
                 }
             }
-        testScope.runCurrent() // ensure the lateinit is set
         return adapter
     }
 }

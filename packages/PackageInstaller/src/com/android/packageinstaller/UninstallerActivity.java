@@ -17,11 +17,9 @@
 package com.android.packageinstaller;
 
 import static android.app.AppOpsManager.MODE_ALLOWED;
-import static android.content.pm.Flags.usePiaV2;
 import static android.view.WindowManager.LayoutParams.SYSTEM_FLAG_HIDE_NON_SYSTEM_OVERLAY_WINDOWS;
 
 import static com.android.packageinstaller.PackageUtil.getMaxTargetSdkVersionForUid;
-import static com.android.packageinstaller.PackageUtil.getReasonForDebug;
 
 import android.Manifest;
 import android.app.Activity;
@@ -47,7 +45,6 @@ import android.os.Bundle;
 import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.provider.Settings;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -93,13 +90,7 @@ public class UninstallerActivity extends Activity {
         // be stale, if e.g. the app was uninstalled while the activity was destroyed.
         super.onCreate(null);
 
-        boolean testOverrideForPiaV2 = Settings.System.getInt(getContentResolver(),
-                "use_pia_v2", 0) == 1;
-        boolean usePiaV2aConfig = usePiaV2();
-
-        if ((usePiaV2aConfig || testOverrideForPiaV2) && !isTv()) {
-            Log.d(TAG, getReasonForDebug(usePiaV2aConfig, testOverrideForPiaV2));
-
+        if (PackageUtil.isVersionTwoEnabled(this)) {
             boolean returnResult = getIntent().getBooleanExtra(Intent.EXTRA_RETURN_RESULT, false);
             Intent piaV2 = new Intent(getIntent());
             piaV2.putExtra(UninstallLaunch.EXTRA_CALLING_PKG_UID, getLaunchedFromUid());

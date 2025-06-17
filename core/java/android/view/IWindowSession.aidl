@@ -300,11 +300,11 @@ interface IWindowSession {
     * the IWindow binder object. For other requests, the token can be any unique IBinder token to
     * be used as unique identifier.
     */
-    void grantInputChannel(int displayId, in SurfaceControl surface, in IBinder clientToken,
+    @nullable
+    InputChannel grantInputChannel(int displayId, in SurfaceControl surface, in IBinder clientToken,
             in @nullable InputTransferToken hostInputTransferToken, int flags, int privateFlags,
             int inputFeatures, int type, in IBinder windowToken,
-            in InputTransferToken embeddedInputTransferToken, String inputHandleName,
-            out InputChannel outInputChannel);
+            in InputTransferToken embeddedInputTransferToken, String inputHandleName);
 
     /**
      * Update the flags on an input channel associated with a particular surface.

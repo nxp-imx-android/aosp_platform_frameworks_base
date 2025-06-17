@@ -3453,6 +3453,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         if (sysWP.mCropHints != null) {
             lockWP.mCropHints = sysWP.mCropHints.clone();
         }
+        lockWP.mSampleSize = sysWP.mSampleSize;
         lockWP.allowBackup = sysWP.allowBackup;
         lockWP.primaryColors = sysWP.primaryColors;
         lockWP.mWallpaperDimAmount = sysWP.mWallpaperDimAmount;
@@ -4500,6 +4501,7 @@ public class WallpaperManagerService extends IWallpaperManager.Stub
         });
         pw.print("  mCropHint="); pw.println(wallpaper.cropHint);
         if (multiCrop()) pw.print("  mCropHints="); pw.println(wallpaper.mCropHints);
+        pw.print("  mSampleSize="); pw.println(wallpaper.mSampleSize);
         pw.print("  mName=");  pw.println(wallpaper.name);
         pw.print("  mAllowBackup="); pw.println(wallpaper.allowBackup);
         pw.print("  mWallpaperComponent="); pw.println(wallpaper.getComponent());

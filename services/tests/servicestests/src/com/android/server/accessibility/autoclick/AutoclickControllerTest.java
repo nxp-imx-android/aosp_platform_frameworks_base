@@ -41,9 +41,11 @@ import android.provider.Settings;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableContext;
 import android.testing.TestableLooper;
+import android.view.Gravity;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.PointerIcon;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 
@@ -1432,6 +1434,62 @@ public class AutoclickControllerTest {
         mTestableLooper.moveTimeForward(CONTINUOUS_SCROLL_INTERVAL);
         mTestableLooper.processAllMessages();
         assertThat(scrollCaptor.eventCount).isEqualTo(countBeforeRunnable);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void typePanelDrag_completeLifeCycle() {
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Store initial position for comparison.
+        WindowManager.LayoutParams initialParams =
+                mController.mAutoclickTypePanel.getLayoutParamsForTesting();
+        int initialX = initialParams.x;
+        int initialY = initialParams.y;
+
+        // Test onDragStart - should enable dragging and change cursor.
+        MotionEvent dragStartEvent = MotionEvent.obtain(
+                /* downTime= */ 0, /* eventTime= */ 0, MotionEvent.ACTION_DOWN,
+                /* x= */ 100f, /* y= */ 100f, /* metaState= */ 0);
+        mController.mAutoclickTypePanel.onDragStart(dragStartEvent);
+        assertThat(mController.mAutoclickTypePanel.getIsDragging()).isTrue();
+        assertThat(mController.mAutoclickTypePanel.getCurrentCursorForTesting().getType())
+                .isEqualTo(PointerIcon.TYPE_GRABBING);
+
+        // Test onDragMove - should update position and maintain drag state.
+        MotionEvent dragMoveEvent = MotionEvent.obtain(
+                /* downTime= */ 0, /* eventTime= */ 50, MotionEvent.ACTION_MOVE,
+                /* x= */ 150f, /* y= */ 150f, /* metaState= */ 0);
+        mController.mAutoclickTypePanel.onDragMove(dragMoveEvent);
+
+        // Verify drag state maintained and gravity changed to absolute positioning
+        assertThat(mController.mAutoclickTypePanel.getIsDragging()).isTrue();
+        assertThat(mController.mAutoclickTypePanel.getCurrentCursorForTesting().getType())
+                .isEqualTo(PointerIcon.TYPE_GRABBING);
+        assertThat(mController.mAutoclickTypePanel.getLayoutParamsForTesting().gravity)
+                .isEqualTo(Gravity.LEFT | Gravity.TOP);
+
+        // Verify position coordinates actually changed from drag movement.
+        WindowManager.LayoutParams dragParams =
+                mController.mAutoclickTypePanel.getLayoutParamsForTesting();
+        assertThat(dragParams.x).isNotEqualTo(initialX);
+        assertThat(dragParams.y).isNotEqualTo(initialY);
+
+        // Test onDragEnd - should reset state, change cursor, and snap to edge.
+        mController.mAutoclickTypePanel.onDragEnd();
+        assertThat(mController.mAutoclickTypePanel.getIsDragging()).isFalse();
+        assertThat(mController.mAutoclickTypePanel.getCurrentCursorForTesting().getType())
+                .isEqualTo(PointerIcon.TYPE_GRAB);
+
+        // Verify panel snapped to edge.
+        WindowManager.LayoutParams finalParams =
+                mController.mAutoclickTypePanel.getLayoutParamsForTesting();
+        boolean snappedToLeftEdge = (finalParams.gravity & Gravity.START) == Gravity.START;
+        boolean snappedToRightEdge = (finalParams.gravity & Gravity.END) == Gravity.END;
+        assertThat(snappedToLeftEdge || snappedToRightEdge).isTrue();
+
+        dragStartEvent.recycle();
+        dragMoveEvent.recycle();
     }
 
     @Test

@@ -126,9 +126,7 @@ class DragResizeInputListener implements AutoCloseable {
             Supplier<SurfaceControl.Builder> surfaceControlBuilderSupplier,
             Supplier<SurfaceControl.Transaction> surfaceControlTransactionSupplier,
             DisplayController displayController,
-            DesktopModeEventLogger desktopModeEventLogger,
-            InputChannel inputChannel,
-            InputChannel sinkInputChannel) {
+            DesktopModeEventLogger desktopModeEventLogger) {
         mContext = context;
         mWindowSession = windowSession;
         mBgExecutor = bgExecutor;
@@ -159,11 +157,9 @@ class DragResizeInputListener implements AutoCloseable {
             final InputSetUpResult result = setUpInputChannels(mDisplayId, mWindowSession,
                     mDecorationSurface, mClientToken, mSinkClientToken,
                     mSurfaceControlBuilderSupplier,
-                    mSurfaceControlTransactionSupplier, inputChannel, sinkInputChannel);
+                    mSurfaceControlTransactionSupplier);
             mainExecutor.execute(() -> {
                 if (mClosed) {
-                    result.mInputChannel.dispose();
-                    result.mSinkInputChannel.dispose();
                     mSurfaceControlTransactionSupplier.get().remove(
                             result.mInputSinkSurface).apply();
                     return;
@@ -216,7 +212,7 @@ class DragResizeInputListener implements AutoCloseable {
                 new DefaultTaskResizeInputEventReceiverFactory(), taskInfo,
                 handler, choreographer, displayId, decorationSurface, callback,
                 surfaceControlBuilderSupplier, surfaceControlTransactionSupplier,
-                displayController, desktopModeEventLogger, new InputChannel(), new InputChannel());
+                displayController, desktopModeEventLogger);
     }
 
     DragResizeInputListener(
@@ -259,13 +255,12 @@ class DragResizeInputListener implements AutoCloseable {
             @NonNull IBinder clientToken,
             @NonNull IBinder sinkClientToken,
             @NonNull Supplier<SurfaceControl.Builder> surfaceControlBuilderSupplier,
-            @NonNull Supplier<SurfaceControl.Transaction> surfaceControlTransactionSupplier,
-            @NonNull InputChannel inputChannel,
-            @NonNull InputChannel sinkInputChannel) {
+            @NonNull Supplier<SurfaceControl.Transaction> surfaceControlTransactionSupplier) {
         Trace.beginSection("DragResizeInputListener#setUpInputChannels");
+        InputChannel inputChannel = null;
         final InputTransferToken inputTransferToken = new InputTransferToken();
         try {
-            windowSession.grantInputChannel(
+            inputChannel = windowSession.grantInputChannel(
                     displayId,
                     decorationSurface,
                     clientToken,
@@ -276,8 +271,7 @@ class DragResizeInputListener implements AutoCloseable {
                     TYPE_APPLICATION,
                     null /* windowToken */,
                     inputTransferToken,
-                    TAG + " of " + decorationSurface,
-                    inputChannel);
+                    TAG + " of " + decorationSurface);
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         }
@@ -292,8 +286,10 @@ class DragResizeInputListener implements AutoCloseable {
                 .setLayer(inputSinkSurface, WindowDecoration.INPUT_SINK_Z_ORDER)
                 .show(inputSinkSurface)
                 .apply();
+
+        InputChannel sinkInputChannel = null;
         try {
-            windowSession.grantInputChannel(
+            sinkInputChannel = windowSession.grantInputChannel(
                     displayId,
                     inputSinkSurface,
                     sinkClientToken,
@@ -304,8 +300,7 @@ class DragResizeInputListener implements AutoCloseable {
                     TYPE_INPUT_CONSUMER,
                     null /* windowToken */,
                     inputTransferToken,
-                    "TaskInputSink of " + decorationSurface,
-                    sinkInputChannel);
+                    "TaskInputSink of " + decorationSurface);
         } catch (RemoteException e) {
             e.rethrowFromSystemServer();
         }

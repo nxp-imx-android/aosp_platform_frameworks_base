@@ -67,7 +67,7 @@ import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -265,7 +265,7 @@ public class BubbleStackView extends FrameLayout
      * Buffer containing a screenshot of the animating-out bubble. This is drawn into the
      * SurfaceView during animations.
      */
-    private ScreenCapture.ScreenshotHardwareBuffer mAnimatingOutBubbleBuffer;
+    private ScreenCaptureInternal.ScreenshotHardwareBuffer mAnimatingOutBubbleBuffer;
 
     private BubbleFlyoutView mFlyout;
     /** Runnable that fades out the flyout and then sets it to GONE. */
@@ -655,7 +655,9 @@ public class BubbleStackView extends FrameLayout
             } else {
                 // TODO(b/417749498): Delete debug log
                 ProtoLog.v(
-                        WM_SHELL_BUBBLES_NOISY, "BubbleStackView.bubbleDrag.onDown: isCollapsed");
+                        WM_SHELL_BUBBLES_NOISY,
+                        "BubbleStackView.bubbleDrag.onDown: isCollapsed magneticTarget(%d)",
+                        (mMagneticTarget != null ? mMagneticTarget.hashCode() : -1));
                 // If we're collapsed, prepare to drag the stack. Cancel active animations, set the
                 // animation controller, and hide the flyout.
                 mStackAnimationController.cancelStackPositionAnimations();
@@ -762,10 +764,10 @@ public class BubbleStackView extends FrameLayout
             // released in the target or flung out of it, and we should ignore the event.
             if (!passEventToMagnetizedObject(ev)) {
                 // TODO(b/417749498): Delete debug log
-                ProtoLog.v(
-                        WM_SHELL_BUBBLES_NOISY,
+                ProtoLog.v(WM_SHELL_BUBBLES_NOISY,
                         "BubbleStackView.bubbleDrag.onUp: magnetized object not handling"
-                                + " event");
+                                + " event magneticTarget(%d)",
+                        (mMagneticTarget != null ? mMagneticTarget.hashCode() : -1));
                 if (mBubbleData.isExpanded()) {
                     mExpandedAnimationController.snapBubbleBack(v, velX, velY);
 
@@ -786,15 +788,16 @@ public class BubbleStackView extends FrameLayout
                 // TODO(b/417749498): Delete debug log
                 ProtoLog.v(
                         WM_SHELL_BUBBLES_NOISY,
-                        "BubbleStackView.bubbleDrag.onUp: hide dismiss view");
+                        "BubbleStackView.bubbleDrag.onUp: hide dismissView(%d)",
+                        mDismissView.hashCode());
                 mDismissView.hide();
             } else {
                 // TODO(b/417749498): Delete debug log
-                ProtoLog.v(
-                        WM_SHELL_BUBBLES_NOISY,
-                        "BubbleStackView.bubbleDrag.onUp: magnetized object handling up");
+                ProtoLog.v(WM_SHELL_BUBBLES_NOISY,
+                        "BubbleStackView.bubbleDrag.onUp: magnetized object handling up "
+                                + "magneticTarget(%d)",
+                        (mMagneticTarget != null ? mMagneticTarget.hashCode() : -1));
             }
-
             onDraggingEnded();
 
             // Hide the stack after a delay, if needed.
@@ -1413,6 +1416,8 @@ public class BubbleStackView extends FrameLayout
 
     private void setUpDismissView() {
         if (mDismissView != null) {
+            // TODO(b/417749498): Delete debug log
+            ProtoLog.v(WM_SHELL_BUBBLES_NOISY, "BubbleStackView.setUpDismissView remove previous");
             removeView(mDismissView);
         }
         mDismissView = new DismissView(getContext());
@@ -1430,6 +1435,10 @@ public class BubbleStackView extends FrameLayout
         // MagnetizedObjects when the dismiss view gets shown.
         mMagneticTarget = new MagnetizedObject.MagneticTarget(
                 mDismissView.getCircle(), dismissRadius);
+        // TODO(b/417749498): Delete debug log
+        ProtoLog.v(WM_SHELL_BUBBLES_NOISY,
+                "BubbleStackView.setUpDismissView create new dismissView(%d) magneticTarget(%d)",
+                mDismissView.hashCode(), mMagneticTarget.hashCode());
         mBubbleContainer.bringToFront();
     }
 

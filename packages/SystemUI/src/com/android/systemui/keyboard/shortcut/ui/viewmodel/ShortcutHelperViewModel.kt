@@ -98,6 +98,12 @@ constructor(
                     val filteredCategories =
                         filterCategoriesBySearchQuery(query, categoriesWithLauncherExcluded)
                     val shortcutCategoriesUi = convertCategoriesModelToUiModel(filteredCategories)
+
+                    val allowExtendedAppShortcutsCustomization =
+                        !isExtendedAppsShortcutCustomizationLimitReached(
+                            shortcutCategories = categoriesWithLauncherExcluded
+                        )
+
                     ShortcutsUiState.Active(
                         searchQuery = query,
                         shortcutCategories = shortcutCategoriesUi,
@@ -107,10 +113,11 @@ constructor(
                         isExtendedAppCategoryFlagEnabled = extendedAppsShortcutCategory(),
                         shouldShowResetButton = shouldShowResetButton(shortcutCategoriesUi),
                         isCustomizationModeEnabled = isCustomizationModeEnabled,
-                        allowExtendedAppShortcutsCustomization =
-                            !isExtendedAppsShortcutCustomizationLimitReached(
-                                categoriesWithLauncherExcluded
-                            ),
+                        allowExtendedAppShortcutsCustomization,
+                        shouldShowCustomAppsShortcutLimitHeader =
+                            isCustomizationModeEnabled &&
+                                extendedAppsShortcutCategory() &&
+                                !allowExtendedAppShortcutsCustomization,
                     )
                 }
             }

@@ -33,7 +33,6 @@ import android.view.SurfaceControl.Transaction
 import android.view.WindowManager
 import android.window.InputTransferToken
 import com.android.internal.protolog.ProtoLog
-import com.android.wm.shell.common.suppliers.InputChannelSupplier
 import com.android.wm.shell.common.suppliers.WindowSessionSupplier
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
 
@@ -46,7 +45,6 @@ class LetterboxInputDetector(
     private val letterboxListener: GestureDetector.SimpleOnGestureListener,
     private val inputSurfaceBuilder: LetterboxInputSurfaceBuilder,
     private val windowSessionSupplier: WindowSessionSupplier,
-    private val inputChannelSupplier: InputChannelSupplier
 ) {
 
     companion object {
@@ -67,7 +65,6 @@ class LetterboxInputDetector(
                     letterboxListener,
                     inputSurfaceBuilder,
                     windowSessionSupplier.get(),
-                    inputChannelSupplier
                 )
             if (tmpState.start(tx)) {
                 state = tmpState
@@ -115,17 +112,14 @@ class LetterboxInputDetector(
         val letterboxListener: GestureDetector.SimpleOnGestureListener,
         val inputSurfaceBuilder: LetterboxInputSurfaceBuilder,
         val windowSession: IWindowSession,
-        inputChannelSupplier: InputChannelSupplier
     ) {
 
         private val inputToken: IBinder
-        private val inputChannel: InputChannel
         private var receiver: EventReceiver? = null
         private var inputSurface: SurfaceControl? = null
 
         init {
             inputToken = Binder()
-            inputChannel = inputChannelSupplier.get()
         }
 
         fun start(tx: Transaction): Boolean {
@@ -138,7 +132,7 @@ class LetterboxInputDetector(
                         "ShellLetterboxInputSurface $source",
                         "$TAG creation"
                     )
-                windowSession.grantInputChannel(
+                val inputChannel = windowSession.grantInputChannel(
                     displayId,
                     inputSurface,
                     inputToken,
@@ -150,7 +144,6 @@ class LetterboxInputDetector(
                     null,
                     inputTransferToken,
                     "$TAG of $source",
-                    inputChannel
                 )
                 receiver = EventReceiver(context, inputChannel, handler, letterboxListener)
                 return true
@@ -165,7 +158,7 @@ class LetterboxInputDetector(
                 tx.setWindowCrop(inputSurface, region.bounds.width(), region.bounds.height())
 
                 windowSession.updateInputChannel(
-                    inputChannel.token,
+                    receiver?.token,
                     null /* hostInputTransferToken */,
                     displayId,
                     inputSurface,
@@ -195,7 +188,6 @@ class LetterboxInputDetector(
         private fun resetInputState() {
             receiver?.dispose()
             receiver = null
-            inputChannel.dispose()
             windowSession.removeToken(inputToken)
         }
 

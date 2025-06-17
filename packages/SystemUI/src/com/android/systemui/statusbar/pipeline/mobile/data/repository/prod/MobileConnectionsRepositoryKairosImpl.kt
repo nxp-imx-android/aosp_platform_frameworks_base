@@ -36,7 +36,6 @@ import com.android.keyguard.KeyguardUpdateMonitorCallback
 import com.android.settingslib.SignalIcon.MobileIconGroup
 import com.android.settingslib.mobile.MobileMappings.Config
 import com.android.systemui.Dumpable
-import com.android.systemui.Flags
 import com.android.systemui.KairosActivatable
 import com.android.systemui.KairosBuilder
 import com.android.systemui.activated
@@ -78,6 +77,7 @@ import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository
 import com.android.systemui.statusbar.pipeline.dagger.MobileSummaryLog
+import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.data.MobileInputLogger
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
@@ -634,7 +634,7 @@ constructor(
         fun kairosActivatable(
             impl: Provider<MobileConnectionsRepositoryKairosImpl>
         ): Set<@JvmSuppressWildcards KairosActivatable> =
-            if (Flags.statusBarMobileIconKairos()) setOf(impl.get()) else emptySet()
+            if (StatusBarMobileIconKairos.isEnabled) setOf(impl.get()) else emptySet()
     }
 
     companion object {

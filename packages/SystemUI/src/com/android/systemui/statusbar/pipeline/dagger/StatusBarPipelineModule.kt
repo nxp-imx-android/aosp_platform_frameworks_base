@@ -18,7 +18,6 @@ package com.android.systemui.statusbar.pipeline.dagger
 
 import android.net.wifi.WifiManager
 import com.android.systemui.CoreStartable
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.KairosNetwork
@@ -38,6 +37,7 @@ import com.android.systemui.statusbar.pipeline.battery.data.repository.BatteryRe
 import com.android.systemui.statusbar.pipeline.battery.data.repository.BatteryRepositoryImpl
 import com.android.systemui.statusbar.pipeline.icons.shared.BindableIconsRegistry
 import com.android.systemui.statusbar.pipeline.icons.shared.BindableIconsRegistryImpl
+import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.CarrierConfigCoreStartable
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.CarrierConfigRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.CarrierConfigRepositoryImpl
@@ -175,7 +175,7 @@ abstract class StatusBarPipelineModule {
             impl: Provider<MobileIconsInteractorImpl>,
             kairosImpl: Provider<MobileIconsInteractorKairosAdapter>,
         ): MobileIconsInteractor {
-            return if (Flags.statusBarMobileIconKairos()) {
+            return if (StatusBarMobileIconKairos.isEnabled) {
                 kairosImpl.get()
             } else {
                 impl.get()
@@ -187,7 +187,7 @@ abstract class StatusBarPipelineModule {
             impl: Provider<MobileRepositorySwitcher>,
             kairosImpl: Provider<MobileConnectionsRepositoryKairosAdapter>,
         ): MobileConnectionsRepository {
-            return if (Flags.statusBarMobileIconKairos()) {
+            return if (StatusBarMobileIconKairos.isEnabled) {
                 kairosImpl.get()
             } else {
                 impl.get()
@@ -218,7 +218,7 @@ abstract class StatusBarPipelineModule {
             kairosViewModel: Provider<MobileIconsViewModelKairos>,
             kairosNetwork: KairosNetwork,
         ): Supplier<Flow<Boolean>> {
-            return if (Flags.statusBarMobileIconKairos()) {
+            return if (StatusBarMobileIconKairos.isEnabled) {
                 Supplier {
                     kairosViewModel
                         .get()

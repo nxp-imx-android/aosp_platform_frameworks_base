@@ -23,6 +23,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
@@ -245,8 +246,9 @@ public class AppCompatUtilsTest extends WindowTestsBase {
                 a.createActivityWithComponent();
                 a.checkTopActivityInSizeCompatMode(/* inScm */ false);
                 a.setIgnoreOrientationRequest(true);
-                a.configureTopActivityBounds(new Rect(20, 30, 520, 630));
             });
+            robot.setIsLetterboxPolicyRunning(true);
+            robot.setLetterboxPolicyLetterboxBounds(new Rect(20, 30, 520, 630));
             robot.setIsLetterboxedForAspectRatioOnly(/* forAspectRatio */ true);
 
 
@@ -290,6 +292,9 @@ public class AppCompatUtilsTest extends WindowTestsBase {
                 a.configureTopActivityBounds(new Rect(20, 30, 520, 630));
             });
 
+            robot.setIsLetterboxPolicyRunning(true);
+            robot.setLetterboxPolicyLetterboxBounds(new Rect(20, 30, 520, 630));
+
             robot.createAppCompatTransitionInfo();
 
             robot.checkAppCompatTransitionInfoIsCreated(/* expected */ true);
@@ -327,6 +332,7 @@ public class AppCompatUtilsTest extends WindowTestsBase {
             super.onPostActivityCreation(activity);
             spyOn(activity.mAppCompatController.getAspectRatioPolicy());
             spyOn(activity.mAppCompatController.getSafeRegionPolicy());
+            spyOn(activity.mAppCompatController.getLetterboxPolicy());
         }
 
         @Override
@@ -358,6 +364,20 @@ public class AppCompatUtilsTest extends WindowTestsBase {
 
         void setIsLetterboxedForDisplayCutout(boolean displayCutout) {
             when(mWindowState.isLetterboxedForDisplayCutout()).thenReturn(displayCutout);
+        }
+
+        void setIsLetterboxPolicyRunning(boolean isLetterboxRunning) {
+            when(activity().top().mAppCompatController.getLetterboxPolicy().isRunning())
+                    .thenReturn(isLetterboxRunning);
+        }
+
+        void setLetterboxPolicyLetterboxBounds(@NonNull Rect expectedBounds) {
+            doAnswer(invocation -> {
+                Rect bounds = invocation.getArgument(0);
+                bounds.set(expectedBounds);
+                return null;
+            }).when(activity().top().mAppCompatController.getLetterboxPolicy())
+                    .getLetterboxInnerBounds(any(Rect.class));
         }
 
         void setIsLetterboxedForSafeRegionOnlyAllowed(boolean safeRegionOnly) {

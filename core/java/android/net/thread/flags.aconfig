@@ -19,3 +19,10 @@ flag {
     description: "Controls whether the Android Thread feature is enabled"
     bug: "384596973"
 }
+
+flag {
+    name: "thread_mobile_enabled"
+    namespace: "thread_network"
+    description: "Controls whether Thread support for mobile devices is enabled"
+    bug: "363970206"
+}

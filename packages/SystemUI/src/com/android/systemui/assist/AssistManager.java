@@ -45,6 +45,7 @@ import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shared.Flags;
 import com.android.systemui.statusbar.CommandQueue;
 import com.android.systemui.statusbar.policy.DeviceProvisionedController;
+import com.android.systemui.topwindoweffects.data.repository.InvocationEffectEnabler;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 import com.android.systemui.util.settings.SecureSettings;
 
@@ -53,6 +54,7 @@ import dagger.Lazy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -157,6 +159,7 @@ public class AssistManager {
     private final ActivityManager mActivityManager;
     private final AssistInteractor mInteractor;
     private final Handler mBgHandler;
+    private final Optional<InvocationEffectEnabler> mOptionalInvocationEffectEnabler;
 
     private final DeviceProvisionedController mDeviceProvisionedController;
 
@@ -203,7 +206,8 @@ public class AssistManager {
             SelectedUserInteractor selectedUserInteractor,
             ActivityManager activityManager,
             AssistInteractor interactor,
-            WindowManager windowManager) {
+            WindowManager windowManager,
+            Optional<InvocationEffectEnabler> optionalInvocationEffectEnabler) {
         mContext = context;
         mDeviceProvisionedController = controller;
         mCommandQueue = commandQueue;
@@ -219,6 +223,7 @@ public class AssistManager {
         mActivityManager = activityManager;
         mInteractor = interactor;
         mBgHandler = bgHandler;
+        mOptionalInvocationEffectEnabler = optionalInvocationEffectEnabler;
 
         registerVoiceInteractionSessionListener();
         registerVisualQueryRecognitionStatusListener();
@@ -292,8 +297,8 @@ public class AssistManager {
                         if (VERBOSE) {
                             Log.v(TAG, "Set invocation effect enabled received");
                         }
-                        // TODO(b/418179198): Call InvocationEffectEnabler.setEnabled when the
-                        //  squeeze effect codebase moves to the general SystemUIModule
+                        mOptionalInvocationEffectEnabler.ifPresent(
+                                effectEnabler -> effectEnabler.setEnabled(enabled));
                     }
                 });
     }

@@ -71,14 +71,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class PropertyInvalidatedCache<Query, Result> {
-    /**
-     * A method to report if the PermissionManager notifications can be separated from cache
-     * invalidation.  The feature relies on a series of flags, all of which are committed.
-     * @hide
-     */
-    public static boolean separatePermissionNotificationsEnabled() {
-        return true;
-    }
 
     /**
      * This is a configuration class that customizes a cache instance.

@@ -21,7 +21,6 @@ import android.telephony.CarrierConfigManager
 import android.telephony.SubscriptionManager
 import android.telephony.SubscriptionManager.PROFILE_CLASS_PROVISIONING
 import com.android.settingslib.SignalIcon.MobileIconGroup
-import com.android.systemui.Flags
 import com.android.systemui.KairosActivatable
 import com.android.systemui.KairosBuilder
 import com.android.systemui.activated
@@ -48,6 +47,7 @@ import com.android.systemui.log.table.logDiffsForTable
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.pipeline.dagger.MobileSummaryLog
+import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepositoryKairos
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepositoryKairos
@@ -466,7 +466,7 @@ constructor(
             fun kairosActivatable(
                 impl: Provider<MobileIconsInteractorKairosImpl>
             ): Set<@JvmSuppressWildcards KairosActivatable> =
-                if (Flags.statusBarMobileIconKairos()) setOf(impl.get()) else emptySet()
+                if (StatusBarMobileIconKairos.isEnabled) setOf(impl.get()) else emptySet()
         }
     }
 }

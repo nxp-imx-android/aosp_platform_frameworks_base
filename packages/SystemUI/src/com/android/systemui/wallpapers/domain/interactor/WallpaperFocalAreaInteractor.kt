@@ -147,9 +147,7 @@ constructor(
         val newX = (x - screenCenterX) / wallpaperZoomedInScale + screenCenterX
         val screenCenterY = context.resources.displayMetrics.heightPixels / 2F
         val newY = (y - screenCenterY) / wallpaperZoomedInScale + screenCenterY
-        if (wallpaperFocalAreaRepository.wallpaperFocalAreaBounds.value.contains(newX, newY)) {
-            wallpaperFocalAreaRepository.setTapPosition(PointF(newX, newY))
-        }
+        wallpaperFocalAreaRepository.setTapPosition(PointF(newX, newY))
     }
 
     companion object {

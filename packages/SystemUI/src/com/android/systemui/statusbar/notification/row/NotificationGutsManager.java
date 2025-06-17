@@ -643,6 +643,11 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
             };
         }
 
+        NotificationInfo.OnFeedbackClickListener onNasFeedbackClick = (View v, Intent intent) -> {
+            guts.resetFalsingCheck();
+            mNotificationActivityStarter.startNotificationGutsIntent(intent, sbn.getUid(), row);
+        };
+
         notificationInfoView.bindNotification(
                 pmUser,
                 mNotificationManager,
@@ -651,6 +656,7 @@ public class NotificationGutsManager implements NotifGutsViewManager, CoreStarta
                 ranking,
                 sbn,
                 onSettingsClick,
+                onNasFeedbackClick,
                 mDeviceProvisionedController.isDeviceProvisioned(),
                 NotificationBundleUi.isEnabled()
                         ? !row.getEntryAdapter().isBlockable()

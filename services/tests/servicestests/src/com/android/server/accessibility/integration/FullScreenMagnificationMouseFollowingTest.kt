@@ -33,6 +33,7 @@ import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.Settings
 import android.testing.PollingCheck
+import android.util.Log
 import android.view.Display
 import android.view.InputDevice
 import android.view.MotionEvent
@@ -67,6 +68,7 @@ private fun Float.nearEq(other: Float) = abs(this - other) < EPS
 @RunWith(AndroidJUnit4::class)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_MAGNIFICATION_FOLLOWS_MOUSE_WITH_POINTER_MOTION_FILTER)
 class FullScreenMagnificationMouseFollowingTest {
+    private val TAG = FullScreenMagnificationMouseFollowingTest::class.java.simpleName
 
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private lateinit var uiAutomation: UiAutomation
@@ -83,18 +85,35 @@ class FullScreenMagnificationMouseFollowingTest {
         )
 
     @get:Rule(order = 2)
+    val magnificationCapabilitySettingsRule =
+        SettingsStateChangerRule(
+            instrumentation.context,
+            Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CAPABILITY,
+            Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_ALL.toString()
+        )
+
+    @get:Rule(order = 3)
+    val magnificationModeSettingsRule =
+        SettingsStateChangerRule(
+            instrumentation.context,
+            Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE,
+            Settings.Secure.ACCESSIBILITY_MAGNIFICATION_MODE_FULLSCREEN.toString()
+        )
+
+    @get:Rule(order = 4)
     val magnificationAccessibilityServiceRule =
         InstrumentedAccessibilityServiceTestRule<TestMagnificationAccessibilityService>(
             TestMagnificationAccessibilityService::class.java, false
         )
 
-    @get:Rule(order = 3)
+    @get:Rule(order = 5)
     val desktopMouseRule = DesktopMouseTestRule()
 
-    @get:Rule(order = 4)
+    @get:Rule(order = 6)
     val a11yDumpRule: AccessibilityDumpOnFailureRule = AccessibilityDumpOnFailureRule()
 
     private lateinit var service: TestMagnificationAccessibilityService
+    private lateinit var controller: AccessibilityService.MagnificationController
     private val displayId = Display.DEFAULT_DISPLAY
     private var activityScenario: ActivityScenario<TestActivity>? = null
 
@@ -130,6 +149,8 @@ class FullScreenMagnificationMouseFollowingTest {
 
         service = magnificationAccessibilityServiceRule.enableService()
         service.observingDisplayId = displayId
+
+        controller = service.getMagnificationController(displayId)
     }
 
     @After
@@ -153,23 +174,25 @@ class FullScreenMagnificationMouseFollowingTest {
 
     @Test
     fun testContinuous_toBottomRight() {
+        setCursorFollowingMode(
+            Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS
+        )
+
         ensureMouseAtCenter()
 
-        val controller = service.getMagnificationController(displayId)
-
-        scaleTo(controller, 2f)
-        assertMagnification(controller, scale = 2f, centerX, centerY)
+        scaleTo(2f)
+        assertMagnification(scale = 2f, centerX, centerY)
 
         // Move cursor by (10, 15)
         // This will move magnification center by (5, 7.5)
         sendMouseMove(10, 15)
         assertCursorLocation(centerX + 10, centerY + 15)
-        assertMagnification(controller, scale = 2f, centerX + 5, centerY + 7.5f)
+        assertMagnification(scale = 2f, centerX + 5, centerY + 7.5f)
 
         // Move cursor to the rest of the way to the edge.
         sendMouseMove(displayWidth - 10, displayHeight - 15)
         assertCursorLocation(displayWidth - 1f, displayHeight - 1f)
-        assertMagnification(controller, scale = 2f, displayWidth * 3f / 4, displayHeight * 3f / 4)
+        assertMagnification(scale = 2f, displayWidth * 3f / 4, displayHeight * 3f / 4)
 
         // Move cursor further won't move the magnification.
         sendMouseMove(100, 100)
@@ -178,28 +201,38 @@ class FullScreenMagnificationMouseFollowingTest {
 
     @Test
     fun testContinuous_toTopLeft() {
+        setCursorFollowingMode(
+            Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE_CONTINUOUS
+        )
+
         ensureMouseAtCenter()
 
-        val controller = service.getMagnificationController(displayId)
-
-        scaleTo(controller, 3f)
-        assertMagnification(controller, scale = 3f, centerX, centerY)
+        scaleTo(3f)
+        assertMagnification(scale = 3f, centerX, centerY)
 
         // Move cursor by (-30, -15)
         // This will move magnification center by (-20, -10)
         sendMouseMove(-30, -15)
         assertCursorLocation(centerX - 30, centerY - 15)
-        assertMagnification(controller, scale = 3f, centerX - 20, centerY - 10)
+        assertMagnification(scale = 3f, centerX - 20, centerY - 10)
 
         // Move cursor to the rest of the way to the edge.
         sendMouseMove(-centerX.toInt() + 30, -centerY.toInt() + 15)
         assertCursorLocation(0f, 0f)
-        assertMagnification(controller, scale = 3f, displayWidth / 6f, displayHeight / 6f)
+        assertMagnification(scale = 3f, displayWidth / 6f, displayHeight / 6f)
 
         // Move cursor further won't move the magnification.
         sendMouseMove(-100, -100)
         assertCursorLocation(0f, 0f)
-        assertMagnification(controller, scale = 3f, displayWidth / 6f, displayHeight / 6f)
+        assertMagnification(scale = 3f, displayWidth / 6f, displayHeight / 6f)
+    }
+
+    private fun setCursorFollowingMode(mode: Int) {
+        Settings.Secure.putInt(
+            instrumentation.context.contentResolver,
+            Settings.Secure.ACCESSIBILITY_MAGNIFICATION_CURSOR_FOLLOWING_MODE,
+            mode
+        )
     }
 
     private fun ensureMouseAtCenter() {
@@ -220,7 +253,7 @@ class FullScreenMagnificationMouseFollowingTest {
         }
     }
 
-    private fun scaleTo(controller: AccessibilityService.MagnificationController, scale: Float) {
+    private fun scaleTo(scale: Float) {
         val config =
             MagnificationConfig.Builder()
                 .setActivated(true)
@@ -233,7 +266,6 @@ class FullScreenMagnificationMouseFollowingTest {
     }
 
     private fun assertMagnification(
-        controller: AccessibilityService.MagnificationController,
         scale: Float = Float.NaN, centerX: Float = Float.NaN, centerY: Float = Float.NaN
     ) {
         PollingCheck.check(
@@ -241,11 +273,18 @@ class FullScreenMagnificationMouseFollowingTest {
             MAGNIFICATION_TIMEOUT.inWholeMilliseconds
         ) check@{
             val actual = controller.getMagnificationConfig() ?: return@check false
-            actual.isActivated &&
+            val result = actual.isActivated &&
                 (actual.mode == MagnificationConfig.MAGNIFICATION_MODE_FULLSCREEN) &&
                 (scale.isNaN() || scale.nearEq(actual.scale)) &&
                 (centerX.isNaN() || centerX.nearEq(actual.centerX)) &&
                 (centerY.isNaN() || centerY.nearEq(actual.centerY))
+
+            // Log check results during polling.
+            if (!result) {
+                Log.d(TAG, "Actual config: $actual")
+            }
+
+            result
         }
     }
 

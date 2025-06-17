@@ -142,6 +142,78 @@ public class NotificationManagerTest {
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY,
+            Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION})
+    public void notifyAsPackage_advanceProgress_isThrottled() throws Exception {
+        for (int i = 0; i < 100; i++) {
+            Notification advance = new Notification.Builder(mContext, "channel")
+                    .setSmallIcon(android.R.drawable.star_big_on)
+                    .setProgress(200, i, false)
+                    .build();
+            mNotificationManager.notifyAsPackage("some.package.name", "tag", 1, advance);
+            mClock.advanceByMillis(5);
+        }
+
+        verify(mNotificationManager.mBackendService, atLeast(20)).enqueueNotificationWithTag(
+                eq("some.package.name"), any(), any(), anyInt(), any(), anyInt());
+        verify(mNotificationManager.mBackendService, atMost(30)).enqueueNotificationWithTag(
+                eq("some.package.name"), any(), any(), anyInt(), any(), anyInt());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY,
+            Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION})
+    public void notifyAsPackage_completesProgress_isNotThrottled() throws Exception {
+        for (int i = 0; i < 100; i++) {
+            Notification advance = new Notification.Builder(mContext, "channel")
+                    .setSmallIcon(android.R.drawable.star_big_on)
+                    .setProgress(200, i, false)
+                    .build();
+            mNotificationManager.notifyAsPackage("some.package.name", "tag", 1, advance);
+            mClock.advanceByMillis(5);
+        }
+
+        verify(mNotificationManager.mBackendService, atMost(30)).enqueueNotificationWithTag(
+                eq("some.package.name"), any(), any(), anyInt(), any(), anyInt());
+
+        // Now, post one more notification that brings the progress bar to the end.
+        Notification finished = new Notification.Builder(mContext, "channel")
+                .setProgress(200, 200, false)
+                .setSmallIcon(android.R.drawable.star_big_on)
+                .build();
+        mNotificationManager.notifyAsPackage("some.package.name", "tag", 1, finished);
+
+        verify(mNotificationManager.mBackendService).enqueueNotificationWithTag(
+                eq("some.package.name"), any(), any(), anyInt(), eq(finished), anyInt());
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY,
+            Flags.FLAG_NOTIFICATION_UPDATE_SHEDDING_ALLOW_PROGRESS_COMPLETION})
+    public void notifyAsPackage_removesProgress_isNotThrottled() throws Exception {
+        for (int i = 0; i < 100; i++) {
+            Notification advance = new Notification.Builder(mContext, "channel")
+                    .setSmallIcon(android.R.drawable.star_big_on)
+                    .setProgress(200, i, false)
+                    .build();
+            mNotificationManager.notifyAsPackage("some.package.name", "tag", 1, advance);
+            mClock.advanceByMillis(5);
+        }
+
+        verify(mNotificationManager.mBackendService, atMost(30)).enqueueNotificationWithTag(
+                eq("some.package.name"), any(), any(), anyInt(), any(), anyInt());
+
+        // Now, post one more notification that removes the progress bar.
+        Notification noProgress = new Notification.Builder(mContext, "channel")
+                .setSmallIcon(android.R.drawable.star_big_on)
+                .build();
+        mNotificationManager.notifyAsPackage("some.package.name", "tag", 1, noProgress);
+
+        verify(mNotificationManager.mBackendService).enqueueNotificationWithTag(
+                eq("some.package.name"), any(), any(), anyInt(), eq(noProgress), anyInt());
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
     public void cancel_unnecessaryAndRapid_isThrottled() throws Exception {
 
@@ -206,7 +278,7 @@ public class NotificationManagerTest {
 
     @Test
     @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
-    public void enqueue_afterCancel_isNotUpdateAndIsNotThrottled() throws Exception {
+    public void notify_afterCancel_isNotUpdateAndIsNotThrottled() throws Exception {
         // First, hit the enqueue threshold.
         Notification n = exampleNotification();
         for (int i = 0; i < 100; i++) {
@@ -226,7 +298,7 @@ public class NotificationManagerTest {
 
     @Test
     @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
-    public void enqueue_afterCancelAsPackage_isNotUpdateAndIsNotThrottled() throws Exception {
+    public void notify_afterCancelAsPackage_isNotUpdateAndIsNotThrottled() throws Exception {
         // First, hit the enqueue threshold.
         Notification n = exampleNotification();
         for (int i = 0; i < 100; i++) {
@@ -246,7 +318,7 @@ public class NotificationManagerTest {
 
     @Test
     @EnableFlags(Flags.FLAG_NM_BINDER_PERF_THROTTLE_NOTIFY)
-    public void enqueue_afterCancelAll_isNotUpdateAndIsNotThrottled() throws Exception {
+    public void notify_afterCancelAll_isNotUpdateAndIsNotThrottled() throws Exception {
         // First, hit the enqueue threshold.
         Notification n = exampleNotification();
         for (int i = 0; i < 100; i++) {

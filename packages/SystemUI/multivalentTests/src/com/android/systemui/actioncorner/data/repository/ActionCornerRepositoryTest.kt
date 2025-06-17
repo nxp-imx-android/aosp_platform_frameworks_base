@@ -36,6 +36,7 @@ import com.android.systemui.display.shared.model.DisplayWindowProperties
 import com.android.systemui.inputdevice.data.repository.FakePointerDeviceRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.advanceTimeBy
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.collectValues
@@ -44,6 +45,7 @@ import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
 import kotlin.test.Test
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import org.junit.Before
@@ -85,7 +87,7 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
     fun topLeftCursor_topLeftActionCornerEmitted() =
         kosmos.runTest {
             val model by collectLastValue(underTest.actionCornerState)
-            cursorPositionRepository.addCursorPosition(display.topLeftCursorPos)
+            addCursorPosition(display.topLeftCursorPos)
             assertThat(model)
                 .isEqualTo(
                     ActiveActionCorner(
@@ -101,7 +103,7 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
             val model by collectLastValue(underTest.actionCornerState)
             val actionCornerPos = display.topLeftCursorPos
             // Update x and y to make it just out of bound of action corner
-            cursorPositionRepository.addCursorPosition(
+            addCursorPosition(
                 CursorPosition(
                     x = actionCornerPos.x + 1,
                     y = actionCornerPos.y + 1,
@@ -116,7 +118,7 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             val model by collectLastValue(underTest.actionCornerState)
             val actionCornerPos = display.topRightCursorPos
-            cursorPositionRepository.addCursorPosition(actionCornerPos)
+            addCursorPosition(actionCornerPos)
             assertThat(model)
                 .isEqualTo(
                     ActiveActionCorner(ActionCornerRegion.TOP_RIGHT, actionCornerPos.displayId)
@@ -128,7 +130,7 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             val model by collectLastValue(underTest.actionCornerState)
             val actionCornerPos = display.topRightCursorPos
-            cursorPositionRepository.addCursorPosition(
+            addCursorPosition(
                 CursorPosition(
                     x = actionCornerPos.x - 1,
                     y = actionCornerPos.y + 1,
@@ -143,7 +145,7 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             val model by collectLastValue(underTest.actionCornerState)
             val actionCornerPos = display.bottomLeftCursorPos
-            cursorPositionRepository.addCursorPosition(actionCornerPos)
+            addCursorPosition(actionCornerPos)
             assertThat(model)
                 .isEqualTo(
                     ActiveActionCorner(ActionCornerRegion.BOTTOM_LEFT, actionCornerPos.displayId)
@@ -155,7 +157,7 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             val model by collectLastValue(underTest.actionCornerState)
             val actionCornerPos = display.bottomLeftCursorPos
-            cursorPositionRepository.addCursorPosition(
+            addCursorPosition(
                 CursorPosition(
                     x = actionCornerPos.x + 1,
                     y = actionCornerPos.y - 1,
@@ -170,7 +172,7 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             val model by collectLastValue(underTest.actionCornerState)
             val actionCornerPos = display.bottomRightCursorPos
-            cursorPositionRepository.addCursorPosition(actionCornerPos)
+            addCursorPosition(actionCornerPos)
             assertThat(model)
                 .isEqualTo(
                     ActiveActionCorner(ActionCornerRegion.BOTTOM_RIGHT, actionCornerPos.displayId)
@@ -182,7 +184,7 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             val model by collectLastValue(underTest.actionCornerState)
             val actionCornerPos = display.bottomRightCursorPos
-            cursorPositionRepository.addCursorPosition(
+            addCursorPosition(
                 CursorPosition(
                     x = actionCornerPos.x - 1,
                     y = actionCornerPos.y - 1,
@@ -201,11 +203,9 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
                     underTest.actionCornerState.filter { it != InactiveActionCorner }
                 )
             val actionCornerPos = display.bottomRightCursorPos
-            cursorPositionRepository.addCursorPosition(actionCornerPos)
-            cursorPositionRepository.addCursorPosition(
-                CursorPosition(x = 1000f, y = 1000f, actionCornerPos.displayId)
-            )
-            cursorPositionRepository.addCursorPosition(actionCornerPos)
+            addCursorPosition(actionCornerPos)
+            addCursorPosition(CursorPosition(x = 1000f, y = 1000f, actionCornerPos.displayId))
+            addCursorPosition(actionCornerPos)
 
             val bottomRightModel =
                 ActiveActionCorner(ActionCornerRegion.BOTTOM_RIGHT, actionCornerPos.displayId)
@@ -217,16 +217,16 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             val models by kosmos.collectValues(underTest.actionCornerState.drop(1))
             val actionCornerPos = display.bottomRightCursorPos
-            cursorPositionRepository.addCursorPosition(actionCornerPos)
+            addCursorPosition(actionCornerPos)
             // Move within the same corner
-            cursorPositionRepository.addCursorPosition(
+            addCursorPosition(
                 CursorPosition(
                     actionCornerPos.x + 1,
                     actionCornerPos.y + 1,
                     actionCornerPos.displayId,
                 )
             )
-            cursorPositionRepository.addCursorPosition(
+            addCursorPosition(
                 CursorPosition(
                     actionCornerPos.x + 2,
                     actionCornerPos.y + 2,
@@ -240,14 +240,32 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
     @Test
     fun activeActionCorner_pointerDeviceDisconnected_inactiveActionCorner() =
         kosmos.runTest {
+            val model by collectLastValue(underTest.actionCornerState)
+
             val actionCornerPos = display.bottomRightCursorPos
-            cursorPositionRepository.addCursorPosition(actionCornerPos)
+            addCursorPosition(actionCornerPos)
 
             fakePointerRepository.setIsAnyPointerConnected(false)
 
-            val model by collectLastValue(underTest.actionCornerState)
             assertThat(model).isEqualTo(InactiveActionCorner)
         }
+
+    @Test
+    fun actionCornerState_remainsInactive_whenCursorMovesIntoActiveArea_butDebounceNotMet() =
+        kosmos.runTest {
+            val model by collectLastValue(underTest.actionCornerState)
+
+            val actionCornerPos = display.bottomRightCursorPos
+            cursorPositionRepository.addCursorPosition(actionCornerPos)
+
+            // Debounce duration has not elapsed yet
+            assertThat(model).isEqualTo(InactiveActionCorner)
+        }
+
+    private fun Kosmos.addCursorPosition(cursorPosition: CursorPosition) {
+        cursorPositionRepository.addCursorPosition(cursorPosition)
+        advanceTimeBy(DEBOUNCE_DELAY + 1.milliseconds)
+    }
 
     private fun createDisplayWindowProperties() =
         DisplayWindowProperties(
@@ -261,6 +279,7 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
     companion object {
         private val metrics = WindowMetrics(Rect(0, 0, 2560, 1600), mock<WindowInsets>(), 2f)
         private const val ACTION_CORNER_DP = 8f
+        private val DEBOUNCE_DELAY = 200.milliseconds
         private val cornerSize = ACTION_CORNER_DP * metrics.density
 
         private val display =

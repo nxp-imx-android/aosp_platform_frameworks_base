@@ -213,7 +213,7 @@ constructor(
                     animate,
                     intent.creatorPackage,
                     actuallyShowOverLockscreen,
-                    object : ActivityTransitionAnimator.PendingIntentStarter {
+                    object : ActivityTransitionAnimator.LegacyPendingIntentStarter {
                         override fun startPendingIntent(
                             animationAdapter: RemoteAnimationAdapter?
                         ): Int {

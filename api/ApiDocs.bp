@@ -87,6 +87,16 @@ droidstubs {
         "android-non-updatable-doc-stubs-defaults",
         "module-classpath-stubs-defaults",
     ],
+
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
+    check_api: {
+        last_released: {
+            enabled: false,
+            api_file: ":android-non-updatable.api.combined.public.latest",
+            removed_api_file: ":android-non-updatable-removed.api.combined.public.latest",
+        },
+    },
 }
 
 droidstubs {
@@ -96,6 +106,16 @@ droidstubs {
         "module-classpath-stubs-defaults",
     ],
     flags: ["--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.PRIVILEGED_APPS\\)"],
+
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
+    check_api: {
+        last_released: {
+            enabled: false,
+            api_file: ":android-non-updatable.api.combined.system.latest",
+            removed_api_file: ":android-non-updatable-removed.api.combined.system.latest",
+        },
+    },
 }
 
 droidstubs {
@@ -108,8 +128,39 @@ droidstubs {
         "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.MODULE_LIBRARIES\\)",
         "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.PRIVILEGED_APPS\\)",
     ],
+
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
+    check_api: {
+        last_released: {
+            enabled: false,
+            api_file: ":android-non-updatable.api.combined.module-lib.latest",
+            removed_api_file: ":android-non-updatable-removed.api.combined.module-lib.latest",
+        },
+    },
     generate_stubs: false, // We're only using this module for the annotations.zip output, disable doc-stubs.
     write_sdk_values: false,
+}
+
+// Filegroups consisting of all the files that contribute to the previously released
+// module-lib API plus the previously released system-server API. These are needed as the
+// `system-server` API surface only extends public but the
+// `android-non-updatable-doc-stubs-system-server` module includes module-lib APIs
+// too.
+filegroup {
+    name: "android-non-updatable.api.system-server-plus-module-lib.latest",
+    srcs: [
+        ":android-non-updatable.api.combined.module-lib.latest",
+        ":android-non-updatable.api.system-server.latest",
+    ],
+}
+
+filegroup {
+    name: "android-non-updatable-removed.api.system-server-plus-module-lib.latest",
+    srcs: [
+        ":android-non-updatable-removed.api.combined.module-lib.latest",
+        ":android-non-updatable-removed.api.system-server.latest",
+    ],
 }
 
 droidstubs {
@@ -123,6 +174,16 @@ droidstubs {
         "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.PRIVILEGED_APPS\\)",
         "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.SYSTEM_SERVER\\)",
     ],
+
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
+    check_api: {
+        last_released: {
+            enabled: false,
+            api_file: ":android-non-updatable.api.system-server-plus-module-lib.latest",
+            removed_api_file: ":android-non-updatable-removed.api.system-server-plus-module-lib.latest",
+        },
+    },
     generate_stubs: false, // We're only using this module for the annotations.zip output, disable doc-stubs.
     write_sdk_values: false,
 }
@@ -130,10 +191,6 @@ droidstubs {
 droidstubs {
     name: "framework-doc-stubs",
     defaults: ["android-non-updatable-doc-stubs-defaults"],
-    flags: [
-        // Ignore any compatibility errors, see check_api.last_released below for more information.
-        "--hide-category Compatibility",
-    ],
     srcs: [":all-modules-public-stubs-source-exportable"],
     api_levels_module: "api_versions_public",
     aidl: {
@@ -143,12 +200,11 @@ droidstubs {
         ],
     },
 
-    // Pass the previously released API to support reverting flagged APIs. Without this, reverting
-    // a flagged API will cause it to be removed, even if it had previously been released. This
-    // has the side effect of causing compatibility issues to be reported but they are already
-    // checked elsewhere so they will be ignored, see `--hide-category Compatibility` above.
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
     check_api: {
         last_released: {
+            enabled: false,
             api_file: ":android.api.combined.public.latest",
             removed_api_file: ":android-removed.api.combined.public.latest",
         },
@@ -160,17 +216,14 @@ droidstubs {
     defaults: ["framework-doc-stubs-sources-default"],
     flags: [
         "--show-annotation android.annotation.SystemApi\\(client=android.annotation.SystemApi.Client.PRIVILEGED_APPS\\)",
-        // Ignore any compatibility errors, see check_api.last_released below for more information.
-        "--hide-category Compatibility",
     ],
     api_levels_module: "api_versions_system",
 
-    // Pass the previously released API to support reverting flagged APIs. Without this, reverting
-    // a flagged API will cause it to be removed, even if it had previously been released. This
-    // has the side effect of causing compatibility issues to be reported but they are already
-    // checked elsewhere so they will be ignored, see `--hide-category Compatibility` above.
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
     check_api: {
         last_released: {
+            enabled: false,
             api_file: ":android.api.combined.system.latest",
             removed_api_file: ":android-removed.api.combined.system.latest",
         },

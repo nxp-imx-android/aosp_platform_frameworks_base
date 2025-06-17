@@ -75,7 +75,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import static java.lang.Integer.MAX_VALUE;
 
@@ -111,7 +110,6 @@ import androidx.test.filters.SmallTest;
 import com.android.internal.graphics.ColorUtils;
 import com.android.server.wm.TransitionController.OnStartCollect;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -222,7 +220,13 @@ public class TransitionTests extends WindowTestsBase {
                 new Rect(10, 10, 200, 300));
         opening.onRequestedOverrideConfigurationChanged(
                 opening.getRequestedOverrideConfiguration());
-        final Rect letterboxBounds = opening.getBounds();
+        final WindowState appWindow = newWindowBuilder("appWindow",
+                TYPE_BASE_APPLICATION).setWindowToken(opening).build();
+        final Rect letterboxBounds = new Rect();
+        final AppCompatLetterboxPolicy letterboxPolicy =
+                opening.mAppCompatController.getLetterboxPolicy();
+        letterboxPolicy.start(appWindow);
+        letterboxPolicy.getLetterboxInnerBounds(letterboxBounds);
         final ActivityTransitionInfo closingActivityTransitionInfo =
                 new ActivityTransitionInfo(closing.mActivityComponent, theTask.mTaskId);
         final ActivityTransitionInfo openingActivityTransitionInfo = new ActivityTransitionInfo(

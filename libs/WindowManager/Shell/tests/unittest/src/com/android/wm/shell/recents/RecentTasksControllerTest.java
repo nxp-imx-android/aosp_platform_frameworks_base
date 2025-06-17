@@ -95,6 +95,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -866,6 +867,66 @@ public class RecentTasksControllerTest extends ShellTestCase {
                 List.of(task1.taskId),
                 List.of(task2.taskId),
                 List.of(task3.taskId)));
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND})
+    public void generateList_emptyTaskList_multipleDesktopsEnabled_shouldIncludeEmptyDesks() {
+        mDesktopState.setEnableMultipleDesktops(true);
+        Set<Integer> deskIds = Set.of(101, 102);
+        when(mDesktopUserRepositories.getCurrent().getAllDeskIds()).thenReturn(deskIds);
+
+        ArrayList<GroupedTaskInfo> groupedTasks =
+                mRecentTasksControllerReal.generateList(List.of(),
+                        "test_empty_desks");
+
+        // Verification: Should return GroupedTaskInfo for each empty desk
+        assertEquals("Expected number of desks not matching", deskIds.size(), groupedTasks.size());
+
+        List<Integer> actualDeskIdsInGroupedTasks = new ArrayList<>();
+        for (GroupedTaskInfo deskTaskInfo : groupedTasks) {
+            assertTrue("Task info should be of type DESK", deskTaskInfo.isBaseType(TYPE_DESK));
+            assertTrue("Desk should be empty", deskTaskInfo.getTaskInfoList().isEmpty());
+            actualDeskIdsInGroupedTasks.add(deskTaskInfo.getDeskId());
+        }
+        // Verify that the set of expected desk IDs matches the collected list of actual desk IDs
+        assertEquals("Desk ID list size does not match expected set size",
+                deskIds.size(), actualDeskIdsInGroupedTasks.size());
+        assertTrue("Actual desk IDs do not match expected desk IDs",
+                deskIds.containsAll(actualDeskIdsInGroupedTasks));
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND})
+    public void generateList_emptyTaskList_multipleDesktopsEnabled_noDesks_returnsEmptyList() {
+        mDesktopState.setEnableMultipleDesktops(true);
+        when(mDesktopUserRepositories.getCurrent().getAllDeskIds()).thenReturn(Set.of());
+
+        ArrayList<GroupedTaskInfo> groupedTasks =
+                mRecentTasksControllerReal.generateList(List.of(),
+                        "test_empty_desks_no_actual_desks");
+
+        // Verification: Should return an empty list because there are no tasks and no desks
+        assertTrue("Expected empty list when multiple desktops enabled and there is no desks",
+                groupedTasks.isEmpty());
+    }
+
+
+    @Test
+    @DisableFlags({Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+            Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_FRONTEND})
+    public void generateList_emptyTaskList_multipleDesktopsDisabled_shouldNotIncludeEmptyDesks() {
+        mDesktopState.setEnableMultipleDesktops(false);
+        when(mDesktopUserRepositories.getCurrent().getAllDeskIds()).thenReturn(Set.of(101));
+
+        ArrayList<GroupedTaskInfo> groupedTasks =
+                mRecentTasksControllerReal.generateList(List.of(), "test_no_empty_desks");
+
+        // Verification: Should return an empty list
+        assertTrue("Expected empty list when multiple desktops disabled even there are"
+                        + " empty desks", groupedTasks.isEmpty());
     }
 
     /**

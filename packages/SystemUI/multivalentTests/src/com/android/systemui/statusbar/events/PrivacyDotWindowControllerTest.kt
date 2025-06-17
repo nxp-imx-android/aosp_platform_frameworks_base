@@ -265,6 +265,21 @@ class PrivacyDotWindowControllerTest : SysuiTestCase() {
         assertThat(windowManager.addedViews).isEmpty()
     }
 
+    @Test
+    fun onStop_removingWindowViewsThrows_codeDoesNotCrash() {
+        underTest.start()
+        executor.runAllReady()
+
+        viewController.showingListener?.onPrivacyDotShown(viewController.topLeft)
+        executor.runAllReady()
+
+        // Simulate removing a view from window manager outside of our code
+        windowManager.addedViews.clear()
+        // Ensure no crash when stopping and trying to remove an already detached view
+        underTest.stop()
+        executor.runAllReady()
+    }
+
     // Helper functions: Note that paramsForView needs to find the *root* view (FrameLayout)
     // that was added to the window manager, not the inner dotView.
     private fun paramsForView(dotView: View): WindowManager.LayoutParams {

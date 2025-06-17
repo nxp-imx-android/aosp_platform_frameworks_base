@@ -88,10 +88,6 @@ import com.android.systemui.util.println
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.google.android.msdl.data.model.MSDLToken
 import com.google.android.msdl.domain.MSDLPlayer
-import dagger.Lazy
-import java.io.PrintWriter
-import java.util.Optional
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
@@ -110,6 +106,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import dagger.Lazy
+import java.io.PrintWriter
+import java.util.Optional
+import javax.inject.Inject
 
 /**
  * Hooks up business logic that manipulates the state of the [SceneInteractor] for the system UI
@@ -281,48 +281,49 @@ constructor(
                 .flatMapLatest { isAllowedToBeVisible ->
                     if (isAllowedToBeVisible) {
                         combine(
-                                sceneInteractor.transitionState.mapNotNull { state ->
-                                    when (state) {
+                                sceneInteractor.transitionState,
+                                headsUpInteractor.isHeadsUpOrAnimatingAway,
+                                occlusionInteractor.invisibleDueToOcclusion,
+                                alternateBouncerInteractor.isVisible,
+                            ) {
+                                transitionState,
+                                isHeadsUpOrAnimatingAway,
+                                invisibleDueToOcclusion,
+                                isAlternateBouncerVisible ->
+                                val isCommunalShowing =
+                                    transitionState.isTransitioningFromOrTo(Scenes.Communal) ||
+                                        transitionState.isIdle(Scenes.Communal)
+
+                                val inTransition =
+                                    transitionState is ObservableTransitionState.Transition
+                                val visibilityForTransitionState =
+                                    when (transitionState) {
                                         is ObservableTransitionState.Idle -> {
-                                            if (state.currentScene == Scenes.Dream) {
+                                            if (transitionState.currentScene == Scenes.Dream) {
                                                 false to "dream is showing"
-                                            } else if (state.currentScene != Scenes.Gone) {
+                                            } else if (transitionState.currentScene != Scenes.Gone) {
                                                 true to "scene is not Gone"
-                                            } else if (state.currentOverlays.isNotEmpty()) {
+                                            } else if (transitionState.currentOverlays.isNotEmpty()) {
                                                 true to "overlay is shown"
                                             } else {
                                                 false to "scene is Gone and no overlays are shown"
                                             }
                                         }
                                         is ObservableTransitionState.Transition -> {
-                                            if (state.fromContent == Scenes.Gone) {
-                                                true to "scene transitioning away from Gone"
-                                            } else if (state.fromContent == Scenes.Dream) {
-                                                true to "scene transitioning away from dream"
-                                            } else {
-                                                null
-                                            }
+                                            true to "in transition"
                                         }
                                     }
-                                },
-                                sceneInteractor.transitionState.map { state ->
-                                    state.isTransitioningFromOrTo(Scenes.Communal) ||
-                                        state.isIdle(Scenes.Communal)
-                                },
-                                headsUpInteractor.isHeadsUpOrAnimatingAway,
-                                occlusionInteractor.invisibleDueToOcclusion,
-                                alternateBouncerInteractor.isVisible,
-                            ) {
-                                visibilityForTransitionState,
-                                isCommunalShowing,
-                                isHeadsUpOrAnimatingAway,
-                                invisibleDueToOcclusion,
-                                isAlternateBouncerVisible ->
+
                                 when {
                                     isCommunalShowing ->
                                         true to "on or transitioning to/from communal"
                                     isHeadsUpOrAnimatingAway -> true to "showing a HUN"
                                     isAlternateBouncerVisible -> true to "showing alternate bouncer"
+                                    // We need to be visible during transitions, even if occlusion
+                                    // would otherwise result in being invisible, so that all
+                                    // transitions get a chance to complete.
+                                    inTransition && visibilityForTransitionState.first ->
+                                        true to visibilityForTransitionState.second
                                     invisibleDueToOcclusion -> false to "invisible due to occlusion"
                                     else -> visibilityForTransitionState
                                 }

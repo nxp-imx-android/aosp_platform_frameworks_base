@@ -31,7 +31,7 @@ import android.os.Handler;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.view.Display;
-import android.window.ScreenCapture;
+import android.window.ScreenCaptureInternal;
 import android.window.TaskSnapshot;
 import android.window.TaskSnapshotManager;
 
@@ -267,8 +267,8 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
     }
 
     @Nullable
-    private ScreenCapture.ScreenshotHardwareBuffer createImeScreenshot(@NonNull Task task,
-            @PixelFormat.Format int pixelFormat) {
+    private ScreenCaptureInternal.ScreenshotHardwareBuffer createImeScreenshot(
+            @NonNull Task task, @PixelFormat.Format int pixelFormat) {
         if (task.getSurfaceControl() == null) {
             if (DEBUG_SCREENSHOT) {
                 Slog.w(TAG_WM, "Failed to create IME screenshot. No surface control for " + task);
@@ -279,14 +279,15 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
         if (imeWindow != null && imeWindow.isVisible()) {
             final Rect bounds = imeWindow.getParentFrame();
             bounds.offsetTo(0, 0);
-            final var captureArgs = new ScreenCapture.LayerCaptureArgs.Builder(
-                    imeWindow.getSurfaceControl())
-                    .setSourceCrop(bounds)
-                    .setFrameScale(1.0f)
-                    .setPixelFormat(pixelFormat)
-                    .setCaptureSecureLayers(true)
-                    .build();
-            return ScreenCapture.captureLayers(captureArgs);
+            final var captureArgs =
+                    new ScreenCaptureInternal.LayerCaptureArgs.Builder(
+                                    imeWindow.getSurfaceControl())
+                            .setSourceCrop(bounds)
+                            .setFrameScale(1.0f)
+                            .setPixelFormat(pixelFormat)
+                            .setCaptureSecureLayers(true)
+                            .build();
+            return ScreenCaptureInternal.captureLayers(captureArgs);
         }
         return null;
     }
@@ -296,7 +297,8 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
      * task snapshot, to maintain the IME visibility while transitioning to a different task.
      */
     @Nullable
-    ScreenCapture.ScreenshotHardwareBuffer screenshotImeFromAttachedTask(@NonNull Task task) {
+    ScreenCaptureInternal.ScreenshotHardwareBuffer screenshotImeFromAttachedTask(
+            @NonNull Task task) {
         // Check if the IME target task is ready to capture the IME screenshot. If not, this means
         // the task is not yet visible for some reason, so it doesn't need the screenshot.
         if (checkIfReadyToScreenshot(task) == null) {

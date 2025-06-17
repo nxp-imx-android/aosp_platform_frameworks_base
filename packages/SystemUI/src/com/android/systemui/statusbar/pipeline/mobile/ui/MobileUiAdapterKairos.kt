@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.pipeline.mobile.ui
 
 import com.android.systemui.Dumpable
-import com.android.systemui.Flags
 import com.android.systemui.KairosActivatable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
@@ -30,6 +29,7 @@ import com.android.systemui.kairos.launchEffect
 import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.shade.carrier.ShadeCarrierGroupController
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
+import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModelKairos
 import dagger.Provides
@@ -111,6 +111,6 @@ constructor(
         fun kairosActivatable(
             impl: Provider<MobileUiAdapterKairos>
         ): Set<@JvmSuppressWildcards KairosActivatable> =
-            if (Flags.statusBarMobileIconKairos()) setOf(impl.get()) else emptySet()
+            if (StatusBarMobileIconKairos.isEnabled) setOf(impl.get()) else emptySet()
     }
 }

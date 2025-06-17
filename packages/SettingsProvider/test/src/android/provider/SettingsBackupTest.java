@@ -958,7 +958,9 @@ public class SettingsBackupTest {
                         Settings.System.SCREEN_AUTO_BRIGHTNESS_ADJ,
                         Settings.System.MULTI_AUDIO_FOCUS_ENABLED, // form-factor/OEM specific
                         // Potentially disruptive to on-boarding flow on new devices
-                        Settings.System.TOUCHPAD_SYSTEM_GESTURES
+                        Settings.System.TOUCHPAD_SYSTEM_GESTURES,
+                        // Potentially disruptive to on-boarding flow on new devices
+                        Settings.System.TOUCHPAD_ENABLED
                 );
         if (!Flags.backUpSmoothDisplayAndForcePeakRefreshRate()) {
             settings.add(Settings.System.MIN_REFRESH_RATE);

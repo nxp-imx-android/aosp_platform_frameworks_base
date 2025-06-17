@@ -907,11 +907,10 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     }
 
     @Override
-    public void grantInputChannel(int displayId, SurfaceControl surface,
+    public InputChannel grantInputChannel(int displayId, SurfaceControl surface,
             IBinder clientToken, @Nullable InputTransferToken hostInputTransferToken, int flags,
             int privateFlags, int inputFeatures, int type, IBinder windowToken,
-            InputTransferToken inputTransferToken, String inputHandleName,
-            InputChannel outInputChannel) {
+            InputTransferToken inputTransferToken, String inputHandleName) {
         if (!Flags.updateHostInputTransferToken()) {
             // This is not a valid security check, callers can pass in a bogus token. If the
             // token is not known to wm, then input APIs is request focus or transferTouchGesture
@@ -926,10 +925,9 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
 
         final long identity = Binder.clearCallingIdentity();
         try {
-            mService.grantInputChannel(this, mUid, mPid, displayId, surface, clientToken,
+            return mService.grantInputChannel(this, mUid, mPid, displayId, surface, clientToken,
                     hostInputTransferToken, flags, mCanAddInternalSystemWindow ? privateFlags : 0,
-                    inputFeatures, type, windowToken, inputTransferToken, inputHandleName,
-                    outInputChannel);
+                    inputFeatures, type, windowToken, inputTransferToken, inputHandleName);
         } finally {
             Binder.restoreCallingIdentity(identity);
         }

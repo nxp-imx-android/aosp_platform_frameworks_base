@@ -16,7 +16,9 @@
 
 package com.android.systemui.statusbar.notification.row;
 
+import static android.app.Flags.notificationClassificationUi;
 import static android.app.Notification.EXTRA_BUILDER_APPLICATION_INFO;
+import static android.app.NotificationChannel.SYSTEM_RESERVED_IDS;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_ALL;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_NONE;
 import static android.app.NotificationManager.BUBBLE_PREFERENCE_SELECTED;
@@ -33,6 +35,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.app.Flags;
 import android.app.INotificationManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -350,9 +353,16 @@ public class NotificationConversationInfo extends LinearLayout implements
         return com.android.systemui.Flags.notificationAnimatedActionsTreatment() &&
                 (hasAnimatedSmartActions || hasAnimatedSmartReplies);
     }
+
+    private boolean showClassificationFeedback() {
+        return Flags.notificationClassificationUi() &&
+                SYSTEM_RESERVED_IDS.contains(mNotificationChannel.getId());
+    }
+
     private void bindFeedback() {
         View feedbackButton = findViewById(R.id.feedback);
-        if (!showSummarizationFeedback() && !showAnimatedFeedback()) {
+        if (!showSummarizationFeedback() && !showAnimatedFeedback()
+                && !showClassificationFeedback()) {
             feedbackButton.setVisibility(GONE);
         } else {
             Intent intent = NotificationInfo.getAssistantFeedbackIntent(

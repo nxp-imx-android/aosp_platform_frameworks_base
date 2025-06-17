@@ -44,13 +44,6 @@ flag {
 }
 
 flag {
-    name: "enable_media_and_location_preload"
-    namespace: "system_performance"
-    description: "Enables zygote preload of non-BCP media and location libraries."
-    bug: "241474956"
-}
-
-flag {
     name: "debug_store_enabled"
     namespace: "stability"
     description: "If the debug store is enabled."

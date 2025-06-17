@@ -29,7 +29,7 @@ java_library {
     optimize: {
         enabled: false,
     },
-    srcs: ["src/**/*.kt"],
+    srcs: ["src/**/scenarios/*.kt"],
     static_libs: [
         "WMShellFlickerTestsBase",
         "WMShellTestUtils",
@@ -45,4 +45,18 @@ java_library {
         "launcher-aosp-tapl",
         "desktop-test-lib",
     ],
+}
+
+android_test {
+    name: "FunctionalTestsDesktopMode",
+    defaults: ["WMShellFlickerTestsDefault"],
+    manifest: "AndroidManifest.xml",
+    test_config_template: "AndroidTestTemplate.xml",
+    srcs: ["src/com/android/wm/shell/functional/**/*.kt"],
+    static_libs: [
+        "WMShellFlickerTestsBase",
+        "WMShellScenariosDesktopMode",
+        "WMShellTestUtils",
+    ],
+    data: ["trace_config/*"],
 }

@@ -60,37 +60,3 @@ fun Change.asLetterboxLifecycleEventType() = when {
     isOpeningType(mode) -> OPEN
     else -> NONE
 }
-
-/**
- * Creates a [LetterboxLifecycleEvent] from the information in a [Change].
- */
-// TODO(b/375339716): Clean code and improve readability.
-fun Change.toLetterboxLifecycleEvent(): LetterboxLifecycleEvent {
-    val taskBounds = Rect(
-        endRelOffset.x,
-        endRelOffset.y,
-        endAbsBounds.width(),
-        endAbsBounds.height()
-    )
-
-    val type = when {
-        isClosingType(mode) -> CLOSE
-        isOpeningType(mode) -> OPEN
-        else -> NONE
-    }
-
-    val isLetterboxed = taskInfo?.appCompatTaskInfo?.isTopActivityLetterboxed ?: false
-    // Letterbox bounds are null when the activity is not letterboxed.
-    val letterboxBounds =
-        if (isLetterboxed) taskInfo?.appCompatTaskInfo?.topActivityLetterboxBounds else null
-
-    return LetterboxLifecycleEvent(
-        type = type,
-        displayId = taskInfo?.displayId ?: -1,
-        taskId = taskInfo?.taskId ?: -1,
-        taskBounds = taskBounds,
-        letterboxBounds = letterboxBounds,
-        containerToken = taskInfo?.token,
-        taskLeash = leash
-    )
-}

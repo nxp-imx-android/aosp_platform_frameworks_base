@@ -58,7 +58,6 @@ import com.android.internal.widget.LockscreenCredential;
 import com.android.internal.widget.VerifyCredentialResponse;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -724,6 +723,7 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
                 mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
         assertTrue(response.isCredCertainlyIncorrect());
         assertFalse(response.isCredAlreadyTried());
+        assertFalse(response.hasTimeout());
         assertEquals(Duration.ZERO, response.getTimeoutAsDuration());
 
         response = mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
@@ -732,10 +732,6 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
     }
 
     // Same as preceding test case, but uses a nonzero timeout.
-    //
-    // TODO(b/395976735): currently the behavior in this scenario is wrong, so currently this test
-    // case is ignored. Fix the behavior and remove @Ignore.
-    @Ignore
     @Test
     @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
     public void testRepeatOfWrongGuessRejectedAsDuplicate_afterWeaverIncorrectKeyWithTimeout()
@@ -751,6 +747,8 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         mSpManager.injectWeaverReadResponse(WeaverReadStatus.INCORRECT_KEY, timeout);
         VerifyCredentialResponse response =
                 mService.verifyCredential(wrongGuess, userId, /* flags= */ 0);
+        assertTrue(response.isCredCertainlyIncorrect());
+        assertFalse(response.isCredAlreadyTried());
         assertTrue(response.hasTimeout());
         assertEquals(timeout, response.getTimeoutAsDuration());
 
