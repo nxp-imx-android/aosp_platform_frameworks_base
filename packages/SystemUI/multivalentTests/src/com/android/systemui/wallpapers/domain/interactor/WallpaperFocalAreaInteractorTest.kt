@@ -33,8 +33,8 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.ShadeRepository
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.testKosmos
+import com.android.systemui.util.mockito.mock
 import com.android.systemui.wallpapers.data.repository.wallpaperFocalAreaRepository
-import com.android.systemui.wallpapers.ui.viewmodel.wallpaperFocalAreaViewModel
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -216,7 +216,7 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun onTap_inFocalBounds() =
+    fun onTapInFocalBounds_setTapPosition() =
         testScope.runTest {
             kosmos.wallpaperFocalAreaRepository.setTapPosition(PointF(0F, 0F))
             overrideMockedResources(
@@ -241,7 +241,7 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    fun onTap_outFocalBounds() =
+    fun onTapOutFocalBounds_stillSetTapPosition() =
         testScope.runTest {
             kosmos.wallpaperFocalAreaRepository.setTapPosition(PointF(0F, 0F))
             overrideMockedResources(
@@ -252,7 +252,6 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
                     centerAlignFocalArea = false,
                 ),
             )
-            kosmos.wallpaperFocalAreaViewModel = mock()
             kosmos.wallpaperFocalAreaRepository.setWallpaperFocalAreaBounds(
                 RectF(500F, 500F, 1000F, 1000F)
             )
@@ -260,7 +259,7 @@ class WallpaperFocalAreaInteractorTest : SysuiTestCase() {
             assertThat(
                     currentValue(kosmos.wallpaperFocalAreaRepository.wallpaperFocalAreaTapPosition)
                 )
-                .isEqualTo(PointF(0F, 0F))
+                .isEqualTo(PointF(375F, 625F))
         }
 
     @Test
