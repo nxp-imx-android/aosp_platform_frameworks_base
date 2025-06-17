@@ -31,7 +31,6 @@ import static android.window.TransitionInfo.FLAG_SHOW_WALLPAPER;
 
 import static com.android.internal.jank.InteractionJankMonitor.CUJ_PREDICTIVE_BACK_HOME;
 import static com.android.systemui.Flags.predictiveBackDelayWmTransition;
-import static com.android.window.flags.Flags.unifyBackNavigationTransition;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_BACK_PREVIEW;
 
 import android.annotation.NonNull;
@@ -1365,7 +1364,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
             if (transition == mClosePrepareTransition && aborted) {
                 mClosePrepareTransition = null;
                 applyFinishOpenTransition();
-            } else if (!aborted && unifyBackNavigationTransition()) {
+            } else if (!aborted) {
                 // Since the closing target participates in the predictive back transition, the
                 // merged transition must be applied with the first transition to ensure a seamless
                 // animation.
@@ -1474,8 +1473,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
                             if (moveToTop) {
                                 change.setFlags(change.getFlags() | FLAG_MOVED_TO_TOP);
                             }
-                        } else if (Flags.unifyBackNavigationTransition()
-                                && change.hasFlags(FLAG_BACK_GESTURE_ANIMATED)
+                        } else if (change.hasFlags(FLAG_BACK_GESTURE_ANIMATED)
                                 && change.getMode() == TRANSIT_CHANGE
                                 && isCloseChangeExist(info, change)) {
                             // This is the original top target, don't add it into current transition
@@ -1756,8 +1754,7 @@ public class BackAnimationController implements RemoteCallable<BackAnimationCont
         }
 
         private static boolean checkTakeoverFlags() {
-            return TransitionAnimator.Companion.longLivedReturnAnimationsEnabled()
-                    && Flags.unifyBackNavigationTransition();
+            return TransitionAnimator.Companion.longLivedReturnAnimationsEnabled();
         }
     }
 
