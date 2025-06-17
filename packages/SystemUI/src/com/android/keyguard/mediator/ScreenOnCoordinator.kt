@@ -85,6 +85,7 @@ constructor(
 
     @BinderThread
     fun onScreenTurnedOff() {
+        fullScreenLightRevealAnimations?.forEach { it.onScreenTurnedOff() }
         pendingTasks.reset()
     }
 }
