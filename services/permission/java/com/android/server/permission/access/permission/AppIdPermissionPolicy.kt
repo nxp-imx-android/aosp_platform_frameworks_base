@@ -1321,20 +1321,22 @@ class AppIdPermissionPolicy : SchemePolicy() {
         return false
     }
 
-    // TODO(b/422817717) - Handle app-compat scenarios by using versioning info at the purpose level
     private fun hasValidPurposeForPackage(
         androidPackage: AndroidPackage,
         permission: Permission,
     ): Boolean {
-        // TODO(b/419394842) - Use < Android C build version code when available.
-        if (androidPackage.targetSdkVersion <= Build.VERSION_CODES.BAKLAVA) {
-            // Purpose declaration is not supported on older target versions. Bypass check.
+        val targetSdkVersion = androidPackage.targetSdkVersion
+        if (targetSdkVersion < permission.requiresPurposeTargetSdkVersion) {
             return true
         }
-        val purposes = androidPackage.usesPermissionMapping[permission.name]?.purposes
-        // There must be at least one valid purpose defined as the parsing logic would otherwise
-        // force set the permission to not require purpose, making this code unreachable.
-        return purposes?.any { it in permission.validPurposes } ?: false
+        val purposes =
+            androidPackage.usesPermissionMapping[permission.name]?.purposes ?: return false
+        return purposes.any {
+            // NOTE: Map cannot be empty. The package parser ensures at least one valid purpose is
+            // required to be defined when {@code requiresPurpose} is {@code true}.
+            val validPurpose = permission.validPurposes[it]
+            validPurpose != null && targetSdkVersion <= validPurpose.maxTargetSdkVersion
+        }
     }
 
     private fun MutateStateScope.shouldGrantPermissionBySignature(
