@@ -54,9 +54,5 @@ class WindowManagerFlags {
 
     final boolean mDispatchFirstKeyguardLockedState = Flags.dispatchFirstKeyguardLockedState();
 
-    // TODO(b/383241933): Remove isSurfaceShowing(), mLastSurfaceShowing, enforceSurfaceVisible
-    //  with this flag.
-    final boolean mEnsureSurfaceVisibility = Flags.respectHierarchySurfaceVisibility();
-
     /* End Available Flags */
 }
