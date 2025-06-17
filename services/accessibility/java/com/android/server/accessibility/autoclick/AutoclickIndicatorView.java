@@ -36,17 +36,21 @@ import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.R;
 
-// A visual indicator for the autoclick feature.
+/**
+ * A view that displays a circular visual indicator for the autoclick feature.
+ * The indicator animates a ring to provide visual feedback before an automatic click occurs.
+ */
 public class AutoclickIndicatorView extends View {
     private static final String TAG = AutoclickIndicatorView.class.getSimpleName();
 
-    // TODO(b/383901288): update delay time once determined by UX.
     static final int SHOW_INDICATOR_DELAY_TIME = 150;
 
     static final int MINIMAL_ANIMATION_DURATION = 50;
 
+    // Radius of the indicator circle.
     private int mRadius = AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT;
 
+    // Paint object used to draw the indicator.
     private final Paint mPaint;
 
     private final ValueAnimator mAnimator;
