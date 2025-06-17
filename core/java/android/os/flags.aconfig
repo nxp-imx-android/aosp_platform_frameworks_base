@@ -239,14 +239,6 @@ flag {
 }
 
 flag {
-    name: "enable_angle_allow_list"
-    namespace: "gpu"
-    description: "Whether to read from angle allowlist to determine if app should use ANGLE"
-    is_fixed_read_only: true
-    bug: "370845648"
-}
-
-flag {
     name: "enable_binder_call_signal_collector"
     namespace: "backstage_power"
     description: "Enable binder call signal collector for anomaly detection."
