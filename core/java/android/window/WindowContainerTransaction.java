@@ -567,21 +567,27 @@ public final class WindowContainerTransaction implements Parcelable {
     }
 
     /**
-     * Sets whether back press should be intercepted for the root activity of the given task
-     * container. If true, then
-     * {@link TaskOrganizer#onBackPressedOnTaskRoot(ActivityManager.RunningTaskInfo)} will be
-     * called.
+     * Sets whether back press should be intercepted for the root activity of the given root task
+     * or its children.
      *
-     * @param container The window container of the task that the intercept-back state is set on.
+     * <p>When {@code true}, the system will invoke
+     * {@link TaskOrganizer#onBackPressedOnTaskRoot(ActivityManager.RunningTaskInfo)}, providing
+     * the {@link ActivityManager.RunningTaskInfo} of the task that received the back press.
+     * This interception mechanism is specifically designed to be applied to the root task
+     * container only.
+     *
+     * @param rootTaskContainer The window container of the task that the intercept-back state is
+     *                          set on. This parameter is expected to refer to the root task of a
+     *                          task stack.
      * @param interceptBackPressed {@code true} to allow back to be intercepted for the root
      *                             activity of the task, {@code false} otherwise.
      * @hide
      */
     @NonNull
     public WindowContainerTransaction setInterceptBackPressedOnTaskRoot(
-            @NonNull WindowContainerToken container,
+            @NonNull WindowContainerToken rootTaskContainer,
             boolean interceptBackPressed) {
-        final Change change = getOrCreateChange(container.asBinder());
+        final Change change = getOrCreateChange(rootTaskContainer.asBinder());
         change.mChangeMask |= Change.CHANGE_INTERCEPT_BACK_PRESSED;
         change.mInterceptBackPressed = interceptBackPressed;
         return this;

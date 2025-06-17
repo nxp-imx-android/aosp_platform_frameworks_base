@@ -1510,9 +1510,11 @@ public class WindowOrganizerTests extends WindowTestsBase {
         final ITaskOrganizer organizer = registerMockOrganizer();
         final Task rootTask = createRootTask();
         final Task task = createTask(rootTask);
+        task.setTaskOrganizer(organizer);
         final ActivityRecord activity = createActivityRecord(rootTask.mDisplayContent, task);
         final Task rootTask2 = createRootTask();
         final Task task2 = createTask(rootTask2);
+        task2.setTaskOrganizer(organizer);
         final ActivityRecord activity2 = createActivityRecord(rootTask.mDisplayContent, task2);
 
         assertTrue(rootTask.isOrganized());
