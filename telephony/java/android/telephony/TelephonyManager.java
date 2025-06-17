@@ -4635,6 +4635,23 @@ public class TelephonyManager {
      * slotMapping[0] = UiccSlotMapping{0, 1, 0} and slotMapping[1] = UiccSlotMapping{1, 1, 1} or
      * slotMapping[0] = UiccSlotMapping{1, 1, 0} and slotMapping[1] = UiccSlotMapping{0, 1, 1}
      *
+     * <p>Starting API level 37 along with supported HAL version, this API can be used to set the
+     * support sim type {@link SimType} corresponding to the physical slot.
+     * Example: Some hardware configurations support more than one sim type on physical slot and
+     * at a time only one of the supported sim types can be mapped to the physical slot.
+     *
+     * Assume no. of logical slots 2, physical slots 2 and consider both slots are non MEP.Also
+     * assume 2nd physical slot supports either a pSIM or eSIM sim type. To map the physical slot
+     * to one of the supported sim types,available mappings are:
+     *
+     * slotMapping[0] = UiccSlotMapping{0 //port, 0 //physical slot, 0 //logical slot, 1 //simType}
+     * slotMapping[1] = UiccSlotMapping{0 //port, 1 //physical slot, 1 //logical slot, 1 //simType}
+     *
+     * or
+     *
+     * slotMapping[0] = UiccSlotMapping{0 //port, 0 //physical slot, 0 //logical slot, 1 //simType}
+     * slotMapping[1] = UiccSlotMapping{0 //port, 1 //physical slot, 1 //logical slot, 2 //simType}
+     *
      * @param slotMapping Logical to physical slot and port mapping.
      * @throws IllegalStateException if telephony service is null or slot mapping was sent when the
      *         radio in middle of a silent restart or other invalid states to handle the command
@@ -19971,4 +19988,41 @@ public class TelephonyManager {
         }
         return UNKNOWN_CARRIER_ID;
     }
+
+    /**
+     * Sim Type mounted on each physical slot.
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = {"SIM_TYPE_"},
+            value = {
+                    SIM_TYPE_UNKNOWN,
+                    SIM_TYPE_PHYSICAL,
+                    SIM_TYPE_EMBEDDED,
+            })
+    public @interface SimType {}
+
+    /**
+     * Sim Type: type is not known.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_SLOT_SWITCHING_2PSIM_1ESIM_CONFIG)
+    @SystemApi
+    public static final int SIM_TYPE_UNKNOWN = -1;
+
+    /**
+     * Sim Type: physical sim.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_SLOT_SWITCHING_2PSIM_1ESIM_CONFIG)
+    @SystemApi
+    public static final int SIM_TYPE_PHYSICAL = 1;
+
+    /**
+     * Sim Type: embedded sim.
+     * @hide
+     */
+    @FlaggedApi(Flags.FLAG_SUPPORT_SLOT_SWITCHING_2PSIM_1ESIM_CONFIG)
+    @SystemApi
+    public static final int SIM_TYPE_EMBEDDED = 2;
 }
