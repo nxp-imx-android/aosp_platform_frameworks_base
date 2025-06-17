@@ -35,8 +35,6 @@ import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.WindowInsetsController;
 
-import com.android.window.flags.Flags;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.function.Consumer;
@@ -410,9 +408,6 @@ public class TaskSnapshot implements Parcelable {
      * Only used in core.
      */
     public synchronized void setSafeRelease(Consumer<HardwareBuffer> releaser) {
-        if (!Flags.safeReleaseSnapshotAggressively()) {
-            return;
-        }
         mSafeSnapshotReleaser = releaser;
     }
 
