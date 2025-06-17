@@ -235,58 +235,14 @@ public class AutoclickTypePanel {
         // TODO(b/397681794): Make sure this works on multiple screens.
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                // Store initial touch positions.
-                mTouchStartX = event.getRawX();
-                mTouchStartY = event.getRawY();
-
-                // Store initial panel position relative to screen's top-left corner.
-                // getLocationOnScreen provides coordinates relative to the top-left corner of the
-                // screen's display. We are using this coordinate system to consistently track the
-                // panel's position during drag operations.
-                int[] location = new int[2];
-                v.getLocationOnScreen(location);
-                mPanelStartX = location[0];
-                mPanelStartY = location[1];
-                // Show grabbing cursor when dragging starts.
-                boolean isSynthetic =
-                        (event.getFlags() & MotionEvent.FLAG_IS_GENERATED_GESTURE) != 0;
-                if (!isSynthetic) {
-                    mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRABBING);
-                    v.setPointerIcon(mCurrentCursor);
-                }
+                onDragStart(event);
                 return true;
             case MotionEvent.ACTION_MOVE:
-                mIsDragging = true;
-
-                // Set panel gravity to TOP|LEFT to match getLocationOnScreen's coordinate system
-                mParams.gravity = Gravity.LEFT | Gravity.TOP;
-
-                if (mIsDragging) {
-                    // Calculate touch distance moved from start position.
-                    float deltaX = event.getRawX() - mTouchStartX;
-                    float deltaY = event.getRawY() - mTouchStartY;
-
-                    // Update panel position, based on Top-Left absolute positioning.
-                    mParams.x = mPanelStartX + (int) deltaX;
-
-                    // Adjust Y by status bar height:
-                    // Note: mParams.y is relative to the content area (below the status bar),
-                    // but mPanelStartY uses absolute screen coordinates. Subtract status bar
-                    // height to align coordinates properly.
-                    mParams.y = Math.max(0, mPanelStartY + (int) deltaY - mStatusBarHeight);
-                    mWindowManager.updateViewLayout(mContentView, mParams);
-                }
+                onDragMove(event);
                 return true;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                if (mIsDragging) {
-                    // When drag ends, snap panel to nearest edge.
-                    snapToNearestEdge(mParams);
-                }
-                mIsDragging = false;
-                // Show grab cursor when dragging ends.
-                mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRAB);
-                v.setPointerIcon(mCurrentCursor);
+                onDragEnd();
                 return true;
             case MotionEvent.ACTION_OUTSIDE:
                 if (mExpanded) {
@@ -727,6 +683,74 @@ public class AutoclickTypePanel {
                 v.setPointerIcon(mCurrentCursor);
                 return false;
             });
+        }
+    }
+
+    /**
+     * Starts drag operation, capturing initial positions and updating cursor icon.
+     */
+    public void onDragStart(MotionEvent event) {
+        mIsDragging = true;
+
+        // Store initial touch positions.
+        mTouchStartX = event.getRawX();
+        mTouchStartY = event.getRawY();
+
+        // Store initial panel position relative to screen's top-left corner.
+        // getLocationOnScreen provides coordinates relative to the top-left corner of the
+        // screen's display. We are using this coordinate system to consistently track the
+        // panel's position during drag operations.
+        int[] location = new int[2];
+        mContentView.getLocationOnScreen(location);
+        mPanelStartX = location[0];
+        mPanelStartY = location[1];
+
+        // Show grabbing cursor when dragging starts.
+        mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRABBING);
+        mContentView.setPointerIcon(mCurrentCursor);
+    }
+
+    /**
+     * Updates panel position during drag.
+     */
+    public void onDragMove(MotionEvent event) {
+        mIsDragging = true;
+
+        // Calculate touch distance moved from start position.
+        float deltaX = event.getRawX() - mTouchStartX;
+        float deltaY = event.getRawY() - mTouchStartY;
+
+        // Set panel gravity to TOP|LEFT to match getLocationOnScreen's coordinate system.
+        mParams.gravity = Gravity.LEFT | Gravity.TOP;
+
+        // Update panel position, based on Top-Left absolute positioning.
+        mParams.x = mPanelStartX + (int) deltaX;
+
+        // Adjust Y by status bar height:
+        // Note: mParams.y is relative to the content area (below the status bar),
+        // but mPanelStartY uses absolute screen coordinates. Subtract status bar
+        // height to align coordinates properly.
+        mParams.y = Math.max(0, mPanelStartY + (int) deltaY - mStatusBarHeight);
+        mWindowManager.updateViewLayout(mContentView, mParams);
+
+        // Keep grabbing cursor during drag.
+        if (mCurrentCursor.getType() != PointerIcon.TYPE_GRABBING) {
+            mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRABBING);
+            mContentView.setPointerIcon(mCurrentCursor);
+        }
+    }
+
+    /**
+     * Ends drag operation and snaps to the nearest edge.
+     */
+    public void onDragEnd() {
+        if (mIsDragging) {
+            mIsDragging = false;
+            // When drag ends, snap panel to nearest edge.
+            snapToNearestEdge(mParams);
+            // Show grab cursor when dragging ends.
+            mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRAB);
+            mContentView.setPointerIcon(mCurrentCursor);
         }
     }
 
