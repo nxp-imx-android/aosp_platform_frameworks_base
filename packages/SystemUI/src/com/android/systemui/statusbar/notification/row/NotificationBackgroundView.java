@@ -24,6 +24,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -86,7 +87,7 @@ public class NotificationBackgroundView extends View implements Dumpable,
                 R.color.notification_state_color_light);
         mDarkColoredStatefulColors = getResources().getColorStateList(
                 R.color.notification_state_color_dark);
-        if (backgroundTransparency()) {
+        if (notificationRowTransparency()) {
             mNormalColor = SurfaceEffectColors.surfaceEffect1(getContext());
         } else  {
             mNormalColor = mContext.getColor(
@@ -105,13 +106,6 @@ public class NotificationBackgroundView extends View implements Dumpable,
             mDrawDismissButtonCutout = targetVisible;
             invalidate();
         }
-    }
-
-    /**
-     * @return Whether to apply transparency to the background.
-     */
-    protected boolean backgroundTransparency() {
-        return notificationRowTransparency();
     }
 
     @Override
@@ -307,7 +301,7 @@ public class NotificationBackgroundView extends View implements Dumpable,
 
     public void setTint(int tintColor) {
         Drawable baseLayer = getBaseBackgroundLayer();
-        if (backgroundTransparency()) {
+        if (notificationRowTransparency()) {
             ((GradientDrawable) baseLayer.mutate()).setColor(tintColor);
 
         } else {
