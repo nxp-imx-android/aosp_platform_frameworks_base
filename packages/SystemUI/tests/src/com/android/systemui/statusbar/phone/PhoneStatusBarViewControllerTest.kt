@@ -387,8 +387,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @DisableSceneContainer
-    @DisableFlags(com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP)
-    fun handleInterceptTouchEventFromStatusBar_shadeReturnsFalse_flagOff_viewReturnsFalse() {
+    fun handleInterceptTouchEventFromStatusBar_shadeReturnsFalse_viewReturnsFalse() {
         whenever(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(false)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 
@@ -399,32 +398,7 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @DisableSceneContainer
-    @EnableFlags(com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP)
-    fun handleInterceptTouchEventFromStatusBar_shadeReturnsFalse_flagOn_viewReturnsFalse() {
-        whenever(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(false)
-        val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
-
-        val returnVal = view.onInterceptTouchEvent(event)
-
-        assertThat(returnVal).isFalse()
-    }
-
-    @Test
-    @DisableSceneContainer
-    @DisableFlags(com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP)
-    fun handleInterceptTouchEventFromStatusBar_shadeReturnsTrue_flagOff_viewReturnsFalse() {
-        whenever(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(true)
-        val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
-
-        val returnVal = view.onInterceptTouchEvent(event)
-
-        assertThat(returnVal).isFalse()
-    }
-
-    @Test
-    @DisableSceneContainer
-    @EnableFlags(com.android.systemui.Flags.FLAG_STATUS_BAR_SWIPE_OVER_CHIP)
-    fun handleInterceptTouchEventFromStatusBar_shadeReturnsTrue_flagOn_viewReturnsTrue() {
+    fun handleInterceptTouchEventFromStatusBar_shadeReturnsTrue_viewReturnsTrue() {
         whenever(shadeViewController.handleExternalInterceptTouch(any())).thenReturn(true)
         val event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 2f, 0)
 

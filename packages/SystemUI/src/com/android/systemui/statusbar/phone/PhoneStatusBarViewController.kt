@@ -23,7 +23,6 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import androidx.annotation.VisibleForTesting
-import com.android.systemui.Flags
 import com.android.systemui.Gefingerpoken
 import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.dagger.qualifiers.DisplaySpecific
@@ -266,11 +265,6 @@ private constructor(
         override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
             if (event.action == MotionEvent.ACTION_DOWN) {
                 dispatchEventToShadeDisplayPolicy(event)
-            }
-
-            if (!Flags.statusBarSwipeOverChip()) {
-                onTouch(event)
-                return false
             }
 
             // Let ShadeViewController intercept touch events when flexiglass is disabled.
