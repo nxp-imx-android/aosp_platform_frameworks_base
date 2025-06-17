@@ -4,73 +4,73 @@
       "name": "WMShellFlickerTestsDesktopMode-CatchAll"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-CloseAllAppsViaAppHeaderExitTes"
+      "name": "WMShellFlickerTestsDesktopMode-DesktopModeBaseTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-CloseAllAppsWithBackNavigationTes"
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-CloseAllAppsViaAppHeaderExitTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-DesktopModeBaseTes"
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-CloseAllAppsWithBackNavigationTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-EnterDesktopFromSplitScreenWithAppHandleMenuFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-EnterDesktopFromSplitScreenWithAppHandleMenuFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-EnterDesktopWithAppHandleMenuFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-EnterDesktopWithAppHandleMenuFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-ExitDesktopToFullScreenWithAppHeaderMenuFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-ExitDesktopToFullScreenWithAppHeaderMenuFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-ExitDesktopToSplitScreenWithAppHeaderMenuFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-ExitDesktopToSplitScreenWithAppHeaderMenuFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-FocusBetweenAppsTes"
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-OpenAppFromAllAppsFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-OpenAppFromAllAppsFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-OpenAppFromTaskbarFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-OpenAppFromTaskbarFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-QuickSwitchBetweenDesktopAndFullscreenTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-QuickSwitchBetweenDesktopAndFullscreenTes"
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-SwitchFocusBetweenAppsTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-TilingDividerResizingAppsFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-TilingDividerShownAfterHomeSwipeFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-resizing-ResizeAppToMaximumWindowSizeFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-TilingDividerShownAfterOverviewFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-resizing-ResizeAppToMinimumWindowSizeFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-TilingDividerShownHiddenFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-resizing-ResizeAppWithCornerResizeFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-TilingPairBrokenWhenEnteringPipFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-resizing-ResizeAppWithEdgeResizeMouseFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-ToHomeFromDesktopTes"
+      "name": "WMShellFlickerTestsDesktopMode-resizing-ResizeAppWithEdgeResizeStylusFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-zing-ResizeAppToMaximumWindowSizeFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-resizing-ResizeAppWithEdgeResizeTouchpadFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-zing-ResizeAppToMinimumWindowSizeFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-tiling-TilingDividerResizingAppsFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-zing-ResizeAppWithCornerResizeFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-tiling-TilingDividerShownAfterHomeSwipeFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-zing-ResizeAppWithEdgeResizeMouseFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-tiling-TilingDividerShownAfterOverviewFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-zing-ResizeAppWithEdgeResizeStylusFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-tiling-TilingDividerShownHiddenFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-zing-ResizeAppWithEdgeResizeTouchpadFlickerTes"
+      "name": "WMShellFlickerTestsDesktopMode-tiling-TilingPairBrokenWhenEnteringPipFlickerTest"
     }
   ]
 }
