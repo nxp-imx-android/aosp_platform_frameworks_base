@@ -243,7 +243,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Mock
     private HandleMenu mMockHandleMenu;
     @Mock
-    private HandleMenuFactory mMockHandleMenuFactory;
+    private HandleMenu.HandleMenuFactory mMockHandleMenuFactory;
     @Mock
     private MultiInstanceHelper mMockMultiInstanceHelper;
     @Mock

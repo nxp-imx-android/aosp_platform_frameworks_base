@@ -193,7 +193,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final AppHandleViewHolder.Factory mAppHandleViewHolderFactory;
     private final RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
     private final MaximizeMenuFactory mMaximizeMenuFactory;
-    private final HandleMenuFactory mHandleMenuFactory;
+    private final HandleMenu.HandleMenuFactory mHandleMenuFactory;
     private final AppToWebGenericLinksParser mGenericLinksParser;
     private final AssistContentRequester mAssistContentRequester;
     private final DesktopModeCompatPolicy mDesktopModeCompatPolicy;
@@ -268,7 +268,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 new SurfaceControlViewHostFactory() {},
                 windowDecorViewHostSupplier,
                 DefaultMaximizeMenuFactory.INSTANCE,
-                DefaultHandleMenuFactory.INSTANCE, multiInstanceHelper,
+                HandleMenu.HandleMenuFactory.INSTANCE, multiInstanceHelper,
                 windowDecorCaptionRepository, desktopModeEventLogger,
                 desktopModeUiEventLogger, desktopModeCompatPolicy,
                 desktopState, desktopConfig, windowDecorationActions);
@@ -305,7 +305,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             SurfaceControlViewHostFactory surfaceControlViewHostFactory,
             @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost> windowDecorViewHostSupplier,
             MaximizeMenuFactory maximizeMenuFactory,
-            HandleMenuFactory handleMenuFactory,
+            HandleMenu.HandleMenuFactory handleMenuFactory,
             MultiInstanceHelper multiInstanceHelper,
             WindowDecorCaptionRepository windowDecorCaptionRepository,
             DesktopModeEventLogger desktopModeEventLogger,

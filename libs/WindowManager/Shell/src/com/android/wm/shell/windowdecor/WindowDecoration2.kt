@@ -21,7 +21,6 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
-import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.Region
 import android.gui.BorderSettings
@@ -40,14 +39,11 @@ import android.window.DesktopExperienceFlags
 import android.window.TaskConstants
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
-import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.BoxShadowHelper
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayController.OnDisplaysChangedListener
-import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_WINDOW_DECORATION
 import com.android.wm.shell.shared.annotations.ShellMainThread
-import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewHostViewContainer
 import com.android.wm.shell.windowdecor.caption.CaptionController
 import com.android.wm.shell.windowdecor.extension.getDimensionPixelSize
 import com.android.wm.shell.windowdecor.extension.isVisible
@@ -468,71 +464,6 @@ abstract class WindowDecoration2<T>(
         sc: SurfaceControl,
         surfaceControlSupplier: () -> SurfaceControl
     ) = surfaceControlSupplier().apply { copyFrom(sc, TAG) }
-
-    /**
-     * Create a window associated with this WindowDecoration.
-     * Note that subclass must dispose of this when the task is hidden/closed.
-     *
-     * @param v            View to attach to the window
-     * @param t            the transaction to apply
-     * @param xPos         x position of new window
-     * @param yPos         y position of new window
-     * @param width        width of new window
-     * @param height       height of new window
-     * @return the [AdditionalViewHostViewContainer] that was added.
-     */
-    fun addWindow(
-        v: View,
-        namePrefix: String,
-        t: SurfaceControl.Transaction,
-        xPos: Int,
-        yPos: Int,
-        width: Int,
-        height: Int
-    ): AdditionalViewHostViewContainer? {
-        if (display == null) {
-            ProtoLog.e(WM_SHELL_WINDOW_DECORATION, "Attempting to add window to null display")
-            return null
-        }
-        val builder = surfaceControlBuilderSupplier()
-        val windowSurfaceControl = builder
-            .setName(namePrefix + " of Task=" + taskInfo.taskId)
-            .setContainerLayer()
-            .setParent(checkNotNull(decorationContainerSurface) {
-                "expected non-null decoration container surface control"
-            })
-            .setCallsite("WindowDecoration2.addWindow")
-            .build()
-        t.setPosition(windowSurfaceControl, xPos.toFloat(), yPos.toFloat())
-            .setWindowCrop(windowSurfaceControl, width, height)
-            .show(windowSurfaceControl)
-        val lp = LayoutParams(
-            width,
-            height,
-            LayoutParams.TYPE_APPLICATION,
-            LayoutParams.FLAG_NOT_FOCUSABLE or LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
-            PixelFormat.TRANSPARENT
-        ).apply {
-            title = "Additional window of Task=" + taskInfo.taskId
-            setTrustedOverlay()
-        }
-        val windowManager = WindowlessWindowManager(
-            taskInfo.configuration,
-            windowSurfaceControl, /* hostInputTransferToken = */ null
-        )
-        val viewHost = surfaceControlViewHostFactory.create(
-            decorWindowContext,
-            checkNotNull(display) { "expected non-null display" },
-            windowManager
-        ).apply {
-            setView(v, lp)
-        }
-        return AdditionalViewHostViewContainer(
-            windowSurfaceControl,
-            viewHost,
-            surfaceControlTransactionSupplier,
-        )
-    }
 
     /**  Holds the data required to update the window decorations. */
     data class RelayoutParams(
