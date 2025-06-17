@@ -30,6 +30,7 @@ import static com.android.window.flags.Flags.FLAG_ENABLE_DESKTOP_SPLITSCREEN_TRA
 import static com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_PIP2;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_RECENTS_BOOKEND_TRANSITION;
+import static com.android.wm.shell.Flags.FLAG_FIX_BUBBLES_TO_RECENTS;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_ANIMATING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_NOT_RUNNING;
 import static com.android.wm.shell.recents.RecentsTransitionStateListener.TRANSITION_STATE_REQUESTED;
@@ -78,6 +79,7 @@ import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
 import com.android.wm.shell.TestShellExecutor;
+import com.android.wm.shell.bubbles.BubbleController;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayInsetsController;
 import com.android.wm.shell.common.TaskStackListenerImpl;
@@ -146,6 +148,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     @Mock private DisplayController mDisplayController;
     @Mock private Context mConnectedDisplayContext;
     @Mock private Resources mConnectedDisplayResources;
+    @Mock private BubbleController mBubbleController;
 
     private ShellTaskOrganizer mShellTaskOrganizer;
     private RecentTasksController mRecentTasksController;
@@ -178,6 +181,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         when(mConnectedDisplayResources.getDimensionPixelSize(
                 R.dimen.desktop_windowing_freeform_rounded_corner_radius)
         ).thenReturn(FREEFORM_TASK_CORNER_RADIUS_ON_CD);
+        when(mBubbleController.hasStableBubbleForTask(anyInt())).thenReturn(false);
         mShellInit = spy(new ShellInit(mMainExecutor));
         mShellController = spy(new ShellController(mContext, mShellInit, mShellCommandHandler,
                 mDisplayInsetsController, mUserManager, mMainExecutor));
@@ -193,7 +197,7 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
         doReturn(mMainExecutor).when(mTransitions).getMainExecutor();
         mRecentsTransitionHandler = new RecentsTransitionHandler(mShellInit, mShellTaskOrganizer,
                 mTransitions, mRecentTasksController, mock(HomeTransitionObserver.class),
-                mDisplayController, mDesksOrganizer);
+                mDisplayController, mDesksOrganizer, Optional.of(mBubbleController));
         // By default use a mock finish transaction since we are sending transitions that don't have
         // real surface controls
         mRecentsTransitionHandler.setFinishTransactionSupplier(
@@ -523,6 +527,16 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     public void testMerge_cancelToHome_onTransitRemovePip() throws Exception {
         TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_REMOVE_PIP)
                 .build();
+        startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo);
+    }
+
+    @Test
+    @EnableFlags(FLAG_FIX_BUBBLES_TO_RECENTS)
+    public void testMerge_cancelBubbleToBack() throws Exception {
+        TransitionInfo mergeTransitionInfo = new TransitionInfoBuilder(TRANSIT_TO_BACK)
+                .addChange(TRANSIT_TO_BACK, new TestRunningTaskInfoBuilder().setTaskId(123).build())
+                .build();
+        when(mBubbleController.hasStableBubbleForTask(123)).thenReturn(true);
         startTransitionAndMergeThenVerifyCanceled(mergeTransitionInfo);
     }
 

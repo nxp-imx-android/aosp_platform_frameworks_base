@@ -736,7 +736,8 @@ public abstract class WMShellModule {
             Optional<RecentTasksController> recentTasksController,
             HomeTransitionObserver homeTransitionObserver,
             DisplayController displayController,
-            DesksOrganizer desksOrganizer) {
+            DesksOrganizer desksOrganizer,
+            Optional<BubbleController> bubbleController) {
         return new RecentsTransitionHandler(
                 shellInit,
                 shellTaskOrganizer,
@@ -744,7 +745,8 @@ public abstract class WMShellModule {
                 recentTasksController.orElse(null),
                 homeTransitionObserver,
                 displayController,
-                desksOrganizer);
+                desksOrganizer,
+                bubbleController);
     }
 
     //
