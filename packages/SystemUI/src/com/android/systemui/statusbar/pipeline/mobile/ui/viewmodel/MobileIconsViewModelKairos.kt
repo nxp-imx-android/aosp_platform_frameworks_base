@@ -20,7 +20,6 @@ import android.content.Context
 import androidx.compose.runtime.State as ComposeState
 import androidx.compose.runtime.getValue
 import com.android.settingslib.mobile.TelephonyIcons
-import com.android.systemui.Flags
 import com.android.systemui.KairosActivatable
 import com.android.systemui.KairosBuilder
 import com.android.systemui.activated
@@ -45,6 +44,7 @@ import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.AirplaneModeInteractor
+import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Factory.Companion.MOBILE_CONNECTION_BUFFER_SIZE
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Factory.Companion.tableBufferLogName
@@ -213,7 +213,7 @@ constructor(
         fun bindKairosActivatable(
             impl: Provider<MobileIconsViewModelKairos>
         ): Set<@JvmSuppressWildcards KairosActivatable> =
-            if (Flags.statusBarMobileIconKairos()) setOf(impl.get()) else emptySet()
+            if (StatusBarMobileIconKairos.isEnabled) setOf(impl.get()) else emptySet()
     }
 }
 
