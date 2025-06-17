@@ -19,6 +19,9 @@ package com.android.systemui.statusbar.pipeline.mobile.data.repository
 import android.telephony.CellSignalStrength
 import android.telephony.SubscriptionInfo
 import android.telephony.TelephonyManager
+import com.android.systemui.kairos.ExperimentalKairosApi
+import com.android.systemui.kairos.State
+import com.android.systemui.kairos.combine as kairosCombine
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
@@ -222,6 +225,28 @@ interface MobileConnectionRepository {
                     }
                 }
                 .stateIn(scope, SharingStarted.WhileSubscribed(), default.value)
+        }
+
+        /**
+         * Automatically implements [MobileConnectionRepository.numberOfLevels] based on the
+         * [inflateSignalStrength] value, but for Kairos states.
+         *
+         * @param default The default number of levels to use if [inflateSignalStrength] is false.
+         */
+        @ExperimentalKairosApi
+        fun createNumberOfLevelsState(
+            inflateSignalStrength: State<Boolean>,
+            default: State<Int>,
+        ): State<Int> {
+            return kairosCombine(default, inflateSignalStrength) {
+                defaultNumberOfLevels,
+                shouldInflate ->
+                if (shouldInflate) {
+                    defaultNumberOfLevels + 1
+                } else {
+                    defaultNumberOfLevels
+                }
+            }
         }
     }
 }

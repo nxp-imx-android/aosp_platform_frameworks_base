@@ -116,8 +116,7 @@ adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile
 Set the wifi level to max
 
 ```
-adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi
-show -e level 4
+adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi show -e level 4
 ```
 
 Set carrier merged to max

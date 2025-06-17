@@ -36,12 +36,14 @@ import com.android.systemui.kairos.util.nameTag
 import com.android.systemui.kairosBuilder
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
+import com.android.systemui.statusbar.pipeline.StatusBarInflateCarrierMerged
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType.DefaultNetworkType
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository.Companion.DEFAULT_NUM_LEVELS
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository.Companion.createNumberOfLevelsState
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepositoryKairos
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.model.FakeNetworkEventModel.Mobile as FakeMobileEvent
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepositoryKairos.Companion.COL_CARRIER_ID
@@ -123,14 +125,19 @@ class DemoMobileConnectionRepositoryKairos(
             }
 
     override val inflateSignalStrength: State<Boolean> = buildState {
-        mobileEvents
-            .map { ev -> ev.inflateStrength }
-            .holdState(
-                false,
-                nameTag {
-                    "DemoMobileConnectionRepositoryKairos(subId=$subId).inflateSignalStrength"
-                },
-            )
+        lastEvent
+            .map {
+                when (it) {
+                    is First -> it.value.inflateStrength
+                    is Second -> {
+                        if (StatusBarInflateCarrierMerged.isEnabled) {
+                            it.value.inflateSignalStrength
+                        } else {
+                            false
+                        }
+                    }
+                }
+            }
             .also {
                 logDiffsForTable(
                     name =
@@ -374,9 +381,39 @@ class DemoMobileConnectionRepositoryKairos(
             }
     }
 
+    private val defaultNumberOfLevels: State<Int> =
+        if (StatusBarInflateCarrierMerged.isEnabled) {
+            buildState {
+                lastEvent
+                    .map {
+                        when (it) {
+                            is First -> DEFAULT_NUM_LEVELS
+                            is Second -> it.value.numberOfLevels
+                        }
+                    }
+                    .also {
+                        logDiffsForTable(
+                            name =
+                                nameTag {
+                                    "DemoMobileConnectionRepositoryKairos(subId=$subId).defaultNumberOfLevels"
+                                },
+                            it,
+                            tableLogBuffer,
+                            columnName = "defaultNumberOfLevels",
+                        )
+                    }
+            }
+        } else {
+            stateOf(DEFAULT_NUM_LEVELS)
+        }
+
     override val numberOfLevels: State<Int> =
-        inflateSignalStrength.map { shouldInflate ->
-            if (shouldInflate) DEFAULT_NUM_LEVELS + 1 else DEFAULT_NUM_LEVELS
+        if (StatusBarInflateCarrierMerged.isEnabled) {
+            createNumberOfLevelsState(inflateSignalStrength, defaultNumberOfLevels)
+        } else {
+            inflateSignalStrength.map { shouldInflate ->
+                if (shouldInflate) DEFAULT_NUM_LEVELS + 1 else DEFAULT_NUM_LEVELS
+            }
         }
 
     override val dataEnabled: State<Boolean> = stateOf(true)
