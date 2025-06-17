@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.notification.stack.domain.interactor
 
+import android.util.Log
 import androidx.core.content.edit
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationListRepository
@@ -53,10 +54,19 @@ constructor(
         allOf(onboardingUnseen, bundlesPresent).distinctUntilChanged().flowOn(bgDispatcher)
 
     fun markOnboardingDismissed() {
+        Log.i(TAG, "dismissing onboarding")
         sharedPreferencesInteractor.sharedPreferences.value?.edit {
             putBoolean(KEY_SHOW_BUNDLE_ONBOARDING, false)
-        }
+        } ?: Log.e(TAG, "Could not write to shared preferences")
+    }
+
+    fun resurrectOnboarding() {
+        Log.i(TAG, "reviving onboarding")
+        sharedPreferencesInteractor.sharedPreferences.value?.edit {
+            putBoolean(KEY_SHOW_BUNDLE_ONBOARDING, true)
+        } ?: Log.e(TAG, "Could not write to shared preferences")
     }
 }
 
+private const val TAG = "NotifBundles"
 private const val KEY_SHOW_BUNDLE_ONBOARDING = "show_bundle_onboarding"
