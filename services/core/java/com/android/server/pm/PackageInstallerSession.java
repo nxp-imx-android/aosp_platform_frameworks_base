@@ -219,6 +219,7 @@ import com.android.server.pm.dex.DexManager;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
 import com.android.server.pm.verify.developer.DeveloperVerifierController;
+import com.android.server.Watchdog;
 
 import libcore.io.IoUtils;
 import libcore.util.EmptyArray;
@@ -5006,6 +5007,9 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 // Use mStageDirInUse to prevent stage dir from being deleted during the extraction.
                 markStageDirInUseLocked();
             }
+            // Native library extraction may take a very long time and we don't want to trigger
+            // a watchdog kill and crash the system server.
+            Watchdog.getInstance().pauseWatchingCurrentThread("extract_native_libraries");
             final int res = NativeLibraryHelper.copyNativeBinariesWithOverride(handle, libDir,
                     params.abiOverride, isIncrementalInstallation());
             if (res != INSTALL_SUCCEEDED) {
@@ -5014,6 +5018,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             }
         } finally {
             IoUtils.closeQuietly(handle);
+            Watchdog.getInstance().resumeWatchingCurrentThread("extract_native_libraries");
         }
     }
 
