@@ -94,7 +94,6 @@ constructor(
                     KeyguardState.OCCLUDED -> TO_OCCLUDED_DURATION
                     KeyguardState.ALTERNATE_BOUNCER -> TO_BOUNCER_DURATION
                     KeyguardState.PRIMARY_BOUNCER -> TO_BOUNCER_DURATION
-                    KeyguardState.GONE -> TO_GONE_DURATION
                     else -> DEFAULT_DURATION
                 }.inWholeMilliseconds
         }
@@ -264,6 +263,5 @@ constructor(
         val TO_BOUNCER_DURATION = 400.milliseconds
         val TO_OCCLUDED_DURATION = 450.milliseconds
         val TO_AOD_DURATION = 500.milliseconds
-        val TO_GONE_DURATION = 100.milliseconds
     }
 }
