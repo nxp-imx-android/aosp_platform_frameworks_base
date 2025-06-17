@@ -248,3 +248,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "update_ams_service_appinfo"
+    namespace: "resource_manager"
+    description: "Update the application info object in AMS service records"
+    bug: "414686685"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
