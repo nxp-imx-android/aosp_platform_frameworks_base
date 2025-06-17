@@ -654,19 +654,6 @@ public class MediaSwitchingController
         }
     }
 
-    private void addSuggestedDeviceGroupDivider(List<MediaItem> mediaItems) {
-        mediaItems.add(
-                MediaItem.createGroupDividerMediaItem(
-                        mContext.getString(R.string.media_output_group_title_suggested_device)));
-    }
-
-    private void addSpeakersAndDisplaysGroupDivider(List<MediaItem> mediaItems) {
-        mediaItems.add(
-                MediaItem.createGroupDividerMediaItem(
-                        mContext.getString(
-                                R.string.media_output_group_title_speakers_and_displays)));
-    }
-
     private void attachConnectNewDeviceItemIfNeeded(List<MediaItem> mediaItems) {
         MediaItem connectNewDeviceItem = getConnectNewDeviceItem();
         if (connectNewDeviceItem != null) {
