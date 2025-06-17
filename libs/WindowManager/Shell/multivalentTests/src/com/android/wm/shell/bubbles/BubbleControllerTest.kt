@@ -84,8 +84,6 @@ import com.android.wm.shell.transition.Transitions.TransitionHandler
 import com.android.wm.shell.unfold.ShellUnfoldProgressProvider
 import com.google.common.truth.Truth.assertThat
 import com.google.common.util.concurrent.MoreExecutors.directExecutor
-import java.util.Optional
-import java.util.concurrent.Executor
 import org.junit.After
 import org.junit.Assume.assumeTrue
 import org.junit.Before
@@ -103,6 +101,8 @@ import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import platform.test.runner.parameterized.ParameterizedAndroidJunit4
 import platform.test.runner.parameterized.Parameters
+import java.util.Optional
+import java.util.concurrent.Executor
 
 /** Tests for [BubbleController].
  *
@@ -456,12 +456,14 @@ class BubbleControllerTest(flags: FlagsParameterization) {
     fun expandStackAndSelectBubbleForExistingTransition_reusesExistingBubble() {
         assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
 
+        val bubbleStateListener = FakeBubblesStateListener()
+
         // switch to bubble bar mode because the transition currently requires bubble layer view
         bubblePositioner.update(deviceConfigUnfolded)
         bubblePositioner.isShowingInBubbleBar = true
         getInstrumentation().runOnMainSync {
             bubbleController.setLauncherHasBubbleBar(true)
-            bubbleController.registerBubbleStateListener(FakeBubblesStateListener())
+            bubbleController.registerBubbleStateListener(bubbleStateListener)
         }
 
         val taskInfo = ActivityManager.RunningTaskInfo().apply {
@@ -484,6 +486,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
             ) {}
         }
 
+        assertThat(bubbleStateListener.lastUpdate!!.bubbleBarLocation).isNull()
         assertThat(bubbleData.selectedBubble).isEqualTo(bubble)
         assertThat(bubbleController.isStackExpanded).isTrue()
     }
