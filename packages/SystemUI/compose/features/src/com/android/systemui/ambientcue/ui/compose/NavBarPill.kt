@@ -241,7 +241,10 @@ fun NavBarPill(
                                 ) {
                                     Image(
                                         painter = rememberDrawablePainter(action.icon.drawable),
-                                        contentDescription = action.label,
+                                        contentDescription =
+                                            stringResource(
+                                                id = R.string.ambient_cue_icon_content_description
+                                            ),
                                         modifier =
                                             Modifier.size(16.dp).then(iconBorder).clip(CircleShape),
                                     )
