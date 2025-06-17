@@ -108,11 +108,11 @@ class DesktopStateImpl(context: Context) : DesktopState {
                 && isDesktopModeSupportedOnDisplay(display)
 
     override fun isMultipleDesktopFrontendEnabledOnDisplay(displayId: Int): Boolean =
-        displayManager.getDisplay(displayId)?.let { isMultipleDesktopFrontendEnabledOnDisplay(it) }
+        displayManager?.getDisplay(displayId)?.let { isMultipleDesktopFrontendEnabledOnDisplay(it) }
             ?: false
 
     override fun isDesktopModeSupportedOnDisplay(displayId: Int): Boolean =
-        displayManager.getDisplay(displayId)?.let { isDesktopModeSupportedOnDisplay(it) } ?: false
+        displayManager?.getDisplay(displayId)?.let { isDesktopModeSupportedOnDisplay(it) } ?: false
 
     override fun isDesktopModeSupportedOnDisplay(display: Display): Boolean {
         if (!canEnterDesktopMode) return false
@@ -131,13 +131,13 @@ class DesktopStateImpl(context: Context) : DesktopState {
             return false
         }
 
-        return displayManager.displays
+        return displayManager?.displays
             ?.any { display -> isDesktopModeSupportedOnDisplay(display)
             } ?: false
     }
 
     private val deviceHasLargeScreen =
-        displayManager.getDisplays(DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED)
+        displayManager?.getDisplays(DisplayManager.DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED)
             ?.filter { display -> display.type == Display.TYPE_INTERNAL }
             ?.any { display ->
                 display.minSizeDimensionDp >= WindowManager.LARGE_SCREEN_SMALLEST_SCREEN_WIDTH_DP
