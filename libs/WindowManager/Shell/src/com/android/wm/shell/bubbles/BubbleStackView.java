@@ -2450,13 +2450,11 @@ public class BubbleStackView extends FrameLayout
         if (mPositioner.isImeVisible()) {
             hideCurrentInputMethod(onImeHidden);
         } else {
-            if (Flags.enableBubbleSwipeUpCleanup()) {
-                // Clear out the existing runnable if one was scheduled to run after IME was hidden.
-                // IME hide action can take time or in some cases not trigger at all. And we can
-                // get a second call to expand in during it. Make sure we don't run a previous
-                // runnable in that case.
-                mManager.clearImeHiddenRunnable();
-            }
+            // Clear out the existing runnable if one was scheduled to run after IME was hidden.
+            // IME hide action can take time or in some cases not trigger at all. And we can
+            // get a second call to expand in during it. Make sure we don't run a previous
+            // runnable in that case.
+            mManager.clearImeHiddenRunnable();
             // the IME is already hidden, so run the runnable immediately
             onImeHidden.run();
         }

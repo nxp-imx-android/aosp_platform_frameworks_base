@@ -314,7 +314,6 @@ class BubbleStackViewTest {
         }
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_SWIPE_UP_CLEANUP)
     @Test
     fun expandStack_clearsImeRunnable() {
         val bubble = createAndInflateBubble()
@@ -344,7 +343,6 @@ class BubbleStackViewTest {
         assertThat(bubbleStackViewManager.onImeHidden).isNull()
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_BUBBLE_SWIPE_UP_CLEANUP)
     @Test
     fun collapseStack_clearsImeRunnable() {
         val bubble = createAndInflateBubble()
