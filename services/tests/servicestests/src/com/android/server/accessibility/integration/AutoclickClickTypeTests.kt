@@ -32,17 +32,10 @@ import android.widget.Button
 import android.widget.LinearLayout
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.uiautomator.By
-import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.Configurator
 import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.UiObject2
-import androidx.test.uiautomator.Until
-import com.android.compatibility.common.util.PollingCheck
-import com.android.compatibility.common.util.PollingCheck.waitFor
 import com.android.compatibility.common.util.SettingsStateChangerRule
 import com.android.server.accessibility.Flags
-import kotlin.time.Duration.Companion.seconds
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
@@ -92,10 +85,6 @@ class AutoclickClickTypeTests {
         }
     }
 
-    private fun findObject(selector: BySelector): UiObject2 {
-        return uiDevice.wait(Until.findObject(selector), FIND_OBJECT_TIMEOUT.inWholeMilliseconds)
-    }
-
     private fun moveMouseToView(view: View) {
         val xOnScreen = view.locationOnScreen[0]
         val yOnScreen = view.locationOnScreen[1]
@@ -104,57 +93,9 @@ class AutoclickClickTypeTests {
         desktopMouseTestRule.move(DEFAULT_DISPLAY, centerX, centerY)
     }
 
-    // The panel is considered open when more than one click type button is visible.
-    private fun isAutoclickPanelOpen(): Boolean {
-        val clickTypeButtonGroupContainer = findObject(
-            By.res(CLICK_TYPE_BUTTON_GROUP_ID)
-        )
-        return clickTypeButtonGroupContainer.childCount > 1
-    }
-
-    private fun changeClickType(clickTypeResourceId: String) {
-        // First move the cursor to the edge of the screen so the next move will trigger an
-        // autoclick.
-        desktopMouseTestRule.move(DEFAULT_DISPLAY, targetXPx = 0, targetYPx = 0)
-
-        if (!isAutoclickPanelOpen()) {
-            // The click type button group starts closed so click it to open the panel.
-            val clickTypeButtonGroup = findObject(
-                By.res(CLICK_TYPE_BUTTON_GROUP_ID)
-            )
-            desktopMouseTestRule.move(
-                DEFAULT_DISPLAY,
-                clickTypeButtonGroup.visibleCenter.x,
-                clickTypeButtonGroup.visibleCenter.y
-            )
-
-            // Wait for the panel to fully open before attempting to select a click type.
-            waitAndAssert {
-                isAutoclickPanelOpen()
-            }
-        }
-
-        desktopMouseTestRule.move(DEFAULT_DISPLAY, targetXPx = 0, targetYPx = 0)
-        val targetClickTypeButton = findObject(By.res(clickTypeResourceId))
-        desktopMouseTestRule.move(
-            DEFAULT_DISPLAY,
-            targetClickTypeButton.visibleCenter.x,
-            targetClickTypeButton.visibleCenter.y
-        )
-
-        // Wait for the panel to close as the signal that the click type was selected.
-        waitAndAssert {
-            !isAutoclickPanelOpen()
-        }
-    }
-
-    private fun waitAndAssert(condition: PollingCheck.PollingCheckCondition) {
-        waitFor(FIND_OBJECT_TIMEOUT.inWholeMilliseconds, condition)
-    }
-
     @Test
     fun performLeftClick_buttonReflectsClickType() {
-        changeClickType(LEFT_CLICK_BUTTON_LAYOUT_ID)
+        changeClickType(uiDevice, desktopMouseTestRule, LEFT_CLICK_BUTTON_LAYOUT_ID)
         moveMouseToView(testClickButton)
 
         waitAndAssert {
@@ -164,7 +105,7 @@ class AutoclickClickTypeTests {
 
     @Test
     fun performDoubleClick_buttonReflectsClickType() {
-        changeClickType(DOUBLE_CLICK_BUTTON_LAYOUT_ID)
+        changeClickType(uiDevice, desktopMouseTestRule, DOUBLE_CLICK_BUTTON_LAYOUT_ID)
         moveMouseToView(testClickButton)
 
         waitAndAssert {
@@ -174,7 +115,7 @@ class AutoclickClickTypeTests {
 
     @Test
     fun performRightClick_buttonReflectsClickType() {
-        changeClickType(RIGHT_CLICK_BUTTON_LAYOUT_ID)
+        changeClickType(uiDevice, desktopMouseTestRule, RIGHT_CLICK_BUTTON_LAYOUT_ID)
         moveMouseToView(testClickButton)
 
         waitAndAssert {
@@ -184,7 +125,7 @@ class AutoclickClickTypeTests {
 
     @Test
     fun performLongPress_buttonReflectsClickType() {
-        changeClickType(LONG_PRESS_BUTTON_LAYOUT_ID)
+        changeClickType(uiDevice, desktopMouseTestRule, LONG_PRESS_BUTTON_LAYOUT_ID)
         moveMouseToView(testClickButton)
 
         waitAndAssert {
@@ -243,7 +184,6 @@ class AutoclickClickTypeTests {
     }
 
     private companion object {
-        private val FIND_OBJECT_TIMEOUT = 5.seconds
         private val TEST_BUTTON_ID = View.generateViewId()
 
         // Button text.
@@ -251,18 +191,6 @@ class AutoclickClickTypeTests {
         private val DOUBLE_CLICK_TEXT = "Double Clicked!"
         private val RIGHT_CLICK_TEXT = "Right Clicked!"
         private val LONG_PRESS_TEXT = "Long Press Clicked!"
-
-        // Autoclick panel resource ids.
-        private val LEFT_CLICK_BUTTON_LAYOUT_ID =
-            "android:id/accessibility_autoclick_left_click_layout"
-        private val LONG_PRESS_BUTTON_LAYOUT_ID =
-            "android:id/accessibility_autoclick_long_press_layout"
-        private val RIGHT_CLICK_BUTTON_LAYOUT_ID =
-            "android:id/accessibility_autoclick_right_click_layout"
-        private val DOUBLE_CLICK_BUTTON_LAYOUT_ID =
-            "android:id/accessibility_autoclick_double_click_layout"
-        private val CLICK_TYPE_BUTTON_GROUP_ID =
-            "android:id/accessibility_autoclick_click_type_button_group_container"
 
         @BeforeClass
         @JvmStatic
