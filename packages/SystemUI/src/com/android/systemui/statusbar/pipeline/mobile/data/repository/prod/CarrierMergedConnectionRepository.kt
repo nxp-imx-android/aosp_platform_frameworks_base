@@ -23,11 +23,15 @@ import android.util.Log
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.statusbar.pipeline.StatusBarInflateCarrierMerged
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
+import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfig
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.CarrierConfigRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository.Companion.DEFAULT_NUM_LEVELS
+import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository.Companion.createNumberOfLevelsFlow
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.WifiRepository
 import com.android.systemui.statusbar.pipeline.wifi.shared.model.WifiNetworkModel
 import javax.inject.Inject
@@ -57,6 +61,7 @@ class CarrierMergedConnectionRepository(
     override val subId: Int,
     override val tableLogBuffer: TableLogBuffer,
     private val telephonyManager: TelephonyManager,
+    systemUiCarrierConfig: SystemUiCarrierConfig,
     private val bgContext: CoroutineContext,
     @Background private val scope: CoroutineScope,
     val wifiRepository: WifiRepository,
@@ -113,7 +118,7 @@ class CarrierMergedConnectionRepository(
 
     override val carrierName: StateFlow<NetworkNameModel> = networkName
 
-    override val numberOfLevels: StateFlow<Int> =
+    private val defaultNumberOfLevels: StateFlow<Int> =
         wifiRepository.wifiNetwork
             .map {
                 if (it is WifiNetworkModel.CarrierMerged) {
@@ -123,6 +128,20 @@ class CarrierMergedConnectionRepository(
                 }
             }
             .stateIn(scope, SharingStarted.WhileSubscribed(), DEFAULT_NUM_LEVELS)
+
+    override val inflateSignalStrength =
+        if (StatusBarInflateCarrierMerged.isEnabled) {
+            systemUiCarrierConfig.shouldInflateSignalStrength
+        } else {
+            MutableStateFlow(false).asStateFlow()
+        }
+
+    override val numberOfLevels =
+        if (StatusBarInflateCarrierMerged.isEnabled) {
+            createNumberOfLevelsFlow(scope, inflateSignalStrength, defaultNumberOfLevels)
+        } else {
+            defaultNumberOfLevels
+        }
 
     override val primaryLevel =
         network
@@ -164,7 +183,6 @@ class CarrierMergedConnectionRepository(
 
     override val isRoaming = MutableStateFlow(false).asStateFlow()
     override val carrierId = MutableStateFlow(INVALID_SUBSCRIPTION_ID).asStateFlow()
-    override val inflateSignalStrength = MutableStateFlow(false).asStateFlow()
     override val allowNetworkSliceIndicator = MutableStateFlow(false).asStateFlow()
     override val isEmergencyOnly = MutableStateFlow(false).asStateFlow()
     override val operatorAlphaShort = MutableStateFlow(null).asStateFlow()
@@ -203,6 +221,7 @@ class CarrierMergedConnectionRepository(
     @Inject
     constructor(
         private val telephonyManager: TelephonyManager,
+        private val carrierConfigRepository: CarrierConfigRepository,
         @Background private val bgContext: CoroutineContext,
         @Background private val scope: CoroutineScope,
         private val wifiRepository: WifiRepository,
@@ -212,6 +231,7 @@ class CarrierMergedConnectionRepository(
                 subId,
                 mobileLogger,
                 telephonyManager.createForSubscriptionId(subId),
+                carrierConfigRepository.getOrCreateConfigForSubId(subId),
                 bgContext,
                 scope,
                 wifiRepository,

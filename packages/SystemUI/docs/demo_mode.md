@@ -33,9 +33,11 @@ Commands are sent as string extras with key ```command``` (required). Possible v
 | ```network```        |                            |                  | Control the RSSI display
 |                      | ```airplane```             |                  | ```show``` to show icon, any other value to hide
 |                      | ```fully```                |                  | Sets MCS state to fully connected (```true```, ```false```)
-|                      | ```wifi```                 |                  | ```show``` to show icon, any other value to hide
+|                      | ```wifi```                 |                  | ```show``` to show icon, ```carriermerged``` to show a carrier merged (W+) connection, any other value to hide
 |                      |                            | ```level```      | Sets wifi level (null or 0-4)
 |                      |                            | ```hotspot```    | Sets the wifi to be from an Instant Hotspot. Values: ```none```, ```unknown```, ```phone```, ```tablet```, ```laptop```, ```watch```, ```auto```. (See `DemoModeWifiDataSource.kt`.)
+|                      |                            | ```numlevels```  | Sets the default maximum number of levels (typically 5)
+|                      |                            | ```inflate```    | True if numlevels should be increased by 1 (represents a carrier configuration)
 |                      | ```mobile```               |                  | ```show``` to show icon, any other value to hide
 |                      |                            | ```datatype```   | Values: ```1x```, ```3g```, ```4g```, ```e```, ```g```, ```h```, ```lte```, ```roam```, any other value to hide
 |                      |                            | ```level```      | Sets mobile signal strength level (null or 0-4)
@@ -93,6 +95,11 @@ adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi
 show -e level 4
 ```
 
+Set carrier merged to max
+
+```
+adb shell am broadcast -a com.android.systemui.demo -e command network -e wifi carriermerged -e slot 3 -e level 4 -e numlevels 5
+```
 
 Show the satellite icon
 
