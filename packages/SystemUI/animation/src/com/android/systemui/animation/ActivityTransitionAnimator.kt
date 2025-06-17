@@ -2362,7 +2362,7 @@ constructor(
                                     }
                                 }
                                 reparent = true
-                            } catch (e: IllegalStateException) {
+                            } catch (e: Exception) {
                                 Log.e(TAG, "Failed to reparent transition leash: already released")
                                 reparent = false
                             }
