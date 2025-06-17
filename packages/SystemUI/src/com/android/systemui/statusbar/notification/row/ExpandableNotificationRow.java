@@ -4636,6 +4636,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             pw.print(", entry dismissable: " + canEntryBeDismissed());
             pw.print(", mOnUserInteractionCallback==null: " + (mOnUserInteractionCallback == null));
             pw.print(", removed: " + isRemoved());
+            pw.print(", dismissed: " + isDismissed());
             pw.print(", expandAnimationRunning: " + mExpandAnimationRunning);
             pw.print(", mShowingPublic: " + mShowingPublic);
             pw.print(", mShowingPublicInitialized: " + mShowingPublicInitialized);
