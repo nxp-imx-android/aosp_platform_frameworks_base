@@ -188,6 +188,13 @@ non_updatable_exportable_droidstubs {
     // and can result in incorrect behavior.
     previous_api: ":android.api.combined.test.latest",
     check_api: {
+        // Use the compatibility check properties to supply the previously released API to which
+        // flagged APIs can be reverted but disable the compatibility check as it is not required.
+        last_released: {
+            enabled: false,
+            api_file: ":android.api.combined.test.latest",
+            removed_api_file: ":android-removed.api.combined.test.latest",
+        },
         current: {
             api_file: ":non-updatable-test-current.txt",
             removed_api_file: ":non-updatable-test-removed.txt",
