@@ -803,6 +803,7 @@ public class WindowManagerService extends IWindowManager.Stub
     final WindowContextListenerController mWindowContextListenerController =
             new WindowContextListenerController();
 
+    // The currently focused input target (window or embedded window) as reported from input
     private InputTarget mFocusedInputTarget;
 
     @VisibleForTesting

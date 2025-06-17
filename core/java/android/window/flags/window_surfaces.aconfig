@@ -126,3 +126,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "use_input_reported_focus_for_accessibility"
+    namespace: "window_surfaces"
+    description: "Use input-reported focus state when composing accessibility window info"
+    bug: "424253885"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

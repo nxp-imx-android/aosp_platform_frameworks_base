@@ -4510,7 +4510,10 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             windowInfo.activityToken = mActivityRecord.token;
         }
         windowInfo.accessibilityIdOfAnchor = mAttrs.accessibilityIdOfAnchor;
-        windowInfo.focused = isFocused();
+        // TODO(b/378565144): Remove with Flags.useInputReportedFocusForAccessibility()
+        if (!Flags.useInputReportedFocusForAccessibility()) {
+            windowInfo.focused = isFocused();
+        }
         Task task = getTask();
         windowInfo.inPictureInPicture = (task != null) && task.inPinnedWindowingMode();
         windowInfo.taskId = task == null ? ActivityTaskManager.INVALID_TASK_ID : task.mTaskId;
