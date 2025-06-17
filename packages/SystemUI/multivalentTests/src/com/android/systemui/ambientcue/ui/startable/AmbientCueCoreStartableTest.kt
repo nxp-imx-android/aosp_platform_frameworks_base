@@ -17,8 +17,10 @@
 package com.android.systemui.ambientcue.ui.startable
 
 import android.os.UserHandle
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.ambientcue.data.repository.ambientCueRepository
 import com.android.systemui.ambientcue.data.repository.fake
@@ -36,6 +38,7 @@ class AmbientCueCoreStartableTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_UNDERLAY)
     fun isAmbientCueEnabled_setFalse_disableOverlay() =
         kosmos.runTest {
             ambientCueCoreStartable.start()
@@ -47,6 +50,7 @@ class AmbientCueCoreStartableTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_UNDERLAY)
     fun isAmbientCueEnabled_setTrue_enableOverlay() =
         kosmos.runTest {
             ambientCueCoreStartable.start()
