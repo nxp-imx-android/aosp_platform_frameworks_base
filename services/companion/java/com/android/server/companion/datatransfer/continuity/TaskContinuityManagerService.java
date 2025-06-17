@@ -70,7 +70,9 @@ public final class TaskContinuityManagerService extends SystemService {
 
         mTaskContinuityMessageReceiver = new TaskContinuityMessageReceiver(context);
         mRemoteTaskStore = new RemoteTaskStore(mConnectedAssociationStore);
-        mOutboundHandoffRequestController = new OutboundHandoffRequestController(context);
+        mOutboundHandoffRequestController = new OutboundHandoffRequestController(
+            context,
+            mConnectedAssociationStore);
         mInboundHandoffRequestController = new InboundHandoffRequestController(context);
     }
 
