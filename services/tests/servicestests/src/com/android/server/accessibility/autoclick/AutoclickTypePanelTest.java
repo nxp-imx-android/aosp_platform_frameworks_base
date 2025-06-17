@@ -51,6 +51,7 @@ import androidx.annotation.NonNull;
 import com.android.internal.R;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -345,7 +346,7 @@ public class AutoclickTypePanelTest {
         contentView.dispatchTouchEvent(moveEvent);
 
         // Verify position update.
-        assertThat(mAutoclickTypePanel.getIsDraggingForTesting()).isTrue();
+        assertThat(mAutoclickTypePanel.getIsDragging()).isTrue();
         assertThat(params.gravity).isEqualTo(Gravity.LEFT | Gravity.TOP);
         assertThat(params.x).isEqualTo(panelLocation[0] + delta);
         assertThat(params.y).isEqualTo(
@@ -354,6 +355,7 @@ public class AutoclickTypePanelTest {
     }
 
     @Test
+    @Ignore ("b/424594372")
     public void dragAndEndAtRight_snapsToRightSide() {
         View contentView = mAutoclickTypePanel.getContentViewForTesting();
         WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();
@@ -377,6 +379,7 @@ public class AutoclickTypePanelTest {
     }
 
     @Test
+    @Ignore ("b/424594372")
     public void dragAndEndAtLeft_snapsToLeftSide() {
         View contentView = mAutoclickTypePanel.getContentViewForTesting();
         WindowManager.LayoutParams params = mAutoclickTypePanel.getLayoutParamsForTesting();

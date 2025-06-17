@@ -277,6 +277,11 @@ public class AutoclickController extends BaseEventStreamTransformation {
                         mAutoclickIndicatorScheduler);
             }
 
+            if (mAutoclickTypePanel != null && mAutoclickTypePanel.getIsDragging()
+                    && event.getActionMasked() == MotionEvent.ACTION_HOVER_MOVE) {
+                mAutoclickTypePanel.onDragMove(event);
+            }
+
             if (!isPaused()) {
                 scheduleClick(event, policyFlags);
 
@@ -448,6 +453,9 @@ public class AutoclickController extends BaseEventStreamTransformation {
         }
         if (mAutoclickIndicatorScheduler != null) {
             mAutoclickIndicatorScheduler.cancel();
+        }
+        if (mAutoclickTypePanel != null && mAutoclickTypePanel.getIsDragging()) {
+            mAutoclickTypePanel.onDragEnd();
         }
     }
 
@@ -1164,6 +1172,12 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 clearLongPressState();
             }
 
+            if (mAutoclickTypePanel.isHoveringDraggableArea()
+                    && !mAutoclickTypePanel.getIsDragging()) {
+                mAutoclickTypePanel.onDragStart(mLastMotionEvent);
+                return;
+            }
+
             // Always triggers left-click when the cursor hovers over the autoclick type panel, to
             // always allow users to change a different click type. Otherwise, if one chooses the
             // right-click, this user won't be able to rely on autoclick to select other click
@@ -1216,6 +1230,12 @@ public class AutoclickController extends BaseEventStreamTransformation {
                     break;
             }
             sendMotionEventsForClick(actionButton);
+
+            // End panel drag operation if one is active (autoclick triggered after user stopped
+            // moving during drag).
+            if (mAutoclickTypePanel != null && mAutoclickTypePanel.getIsDragging()) {
+                mAutoclickTypePanel.onDragEnd();
+            }
         }
 
         /**

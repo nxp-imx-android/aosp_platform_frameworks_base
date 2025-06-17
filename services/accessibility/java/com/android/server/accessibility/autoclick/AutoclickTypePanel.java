@@ -214,16 +214,6 @@ public class AutoclickTypePanel {
         // Set up touch event handling for the panel to allow the user to drag and reposition the
         // panel by touching and moving it.
         mContentView.setOnTouchListener(this::onPanelTouch);
-
-        // Set hover behavior for the panel, show grab when hovering.
-        mContentView.setOnHoverListener((v, event) -> {
-            mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_GRAB);
-            v.setPointerIcon(mCurrentCursor);
-            return false;
-        });
-
-        // Show default cursor when hovering over buttons.
-        setDefaultCursorForButtons();
     }
 
     /**
@@ -263,7 +253,9 @@ public class AutoclickTypePanel {
         int yPosition = params.y;
 
         // Determine which half of the screen the panel is on.
-        boolean isOnLeftHalf = params.x < screenWidth / 2;
+        @Corner int visualCorner = getVisualCorner();
+        boolean isOnLeftHalf =
+                (visualCorner == CORNER_TOP_LEFT || visualCorner == CORNER_BOTTOM_LEFT);
 
         if (isOnLeftHalf) {
             // Snap to left edge. Set params.gravity to make sure x, y offsets from correct anchor.
@@ -313,6 +305,10 @@ public class AutoclickTypePanel {
         mPauseButton.setOnClickListener(v -> togglePause());
 
         setSelectedClickType(AUTOCLICK_TYPE_LEFT_CLICK);
+
+        // Set up hover listeners on panel and buttons to dynamically change cursor icons.
+        setupHoverListenersForCursor();
+
         // Remove spacing between buttons when initialized.
         adjustPanelSpacing(/* isExpanded= */ true);
     }
@@ -670,22 +666,6 @@ public class AutoclickTypePanel {
         }
     }
 
-    private void setDefaultCursorForButtons() {
-        View[] buttons = {
-                mLeftClickButton, mRightClickButton, mDoubleClickButton,
-                mScrollButton, mDragButton, mLongPressButton,
-                mPauseButton, mPositionButton
-        };
-
-        for (View button : buttons) {
-            button.setOnHoverListener((v, event) -> {
-                mCurrentCursor = PointerIcon.getSystemIcon(mContext, PointerIcon.TYPE_ARROW);
-                v.setPointerIcon(mCurrentCursor);
-                return false;
-            });
-        }
-    }
-
     /**
      * Starts drag operation, capturing initial positions and updating cursor icon.
      */
@@ -754,6 +734,63 @@ public class AutoclickTypePanel {
         }
     }
 
+    /**
+     * Returns true if cursor is over content view but not over any buttons.
+     */
+    public boolean isHoveringDraggableArea() {
+        if (!mContentView.isHovered()) {
+            return false;
+        }
+
+        View[] buttons = {mLeftClickButton, mRightClickButton, mDoubleClickButton,
+                mScrollButton, mDragButton, mLongPressButton, mPauseButton, mPositionButton};
+        for (View button : buttons) {
+            if (button.isHovered()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Sets up hover listeners to update cursor icons (grab for draggable areas, arrow for buttons).
+     */
+    private void setupHoverListenersForCursor() {
+        View[] mAllButtons = new View[]{
+                mLeftClickButton, mRightClickButton, mDoubleClickButton,
+                mScrollButton, mDragButton, mLongPressButton,
+                mPauseButton, mPositionButton
+        };
+
+        // Set hover behavior for the panel.
+        mContentView.setOnHoverListener((v, event) -> {
+            updateCursorIcon();
+            return false;
+        });
+
+        // Set hover behavior for all buttons.
+        for (View button : mAllButtons) {
+            button.setOnHoverListener((v, event) -> {
+                updateCursorIcon();
+                return false;
+            });
+        }
+    }
+
+    /**
+     * Updates cursor based on hover state: grab for draggable areas, arrow for buttons.
+     */
+    private void updateCursorIcon() {
+        // Don't update cursor icon while dragging to avoid overriding the grabbing cursor during
+        // drag.
+        if (mIsDragging) {
+            return;
+        }
+        int cursorType = isHoveringDraggableArea() ? PointerIcon.TYPE_GRAB : PointerIcon.TYPE_ARROW;
+        mCurrentCursor = PointerIcon.getSystemIcon(mContext, cursorType);
+        mContentView.setPointerIcon(mCurrentCursor);
+    }
+
     @VisibleForTesting
     boolean getExpansionStateForTesting() {
         return mExpanded;
@@ -776,8 +813,7 @@ public class AutoclickTypePanel {
         return mParams;
     }
 
-    @VisibleForTesting
-    boolean getIsDraggingForTesting() {
+    boolean getIsDragging() {
         return mIsDragging;
     }
 
