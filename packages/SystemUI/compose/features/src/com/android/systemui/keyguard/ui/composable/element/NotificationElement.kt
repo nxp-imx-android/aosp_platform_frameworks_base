@@ -17,7 +17,7 @@
 package com.android.systemui.keyguard.ui.composable.element
 
 import android.view.ViewGroup
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.android.compose.animation.scene.ContentScope
@@ -85,7 +85,7 @@ constructor(
             stackScrollView = stackScrollView.get(),
             viewModel = rememberViewModel("Notifications") { viewModelFactory.create() },
             modifier =
-                modifier.fillMaxWidth().let {
+                modifier.fillMaxSize().let {
                     if (burnInParams == null) {
                         it
                     } else {
