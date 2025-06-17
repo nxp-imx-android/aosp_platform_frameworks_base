@@ -724,6 +724,7 @@ public class BubbleTransitions {
             ProtoLog.d(WM_SHELL_BUBBLES_NOISY, "LaunchNewTaskBubble.cleanup()");
             mFinishCb.onTransitionFinished(mFinishWct);
             mFinishCb = null;
+            mBubble.setPreparingTransition(null);
         }
     }
 
@@ -1070,6 +1071,7 @@ public class BubbleTransitions {
             mFinishCb = null;
             mPendingEnterTransitions.remove(mLaunchCookie.binder);
             mEnterTransitions.remove(mPlayingTransition);
+            mBubble.setPreparingTransition(null);
         }
     }
 

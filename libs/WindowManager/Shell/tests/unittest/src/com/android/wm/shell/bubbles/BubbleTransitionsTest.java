@@ -784,6 +784,90 @@ public class BubbleTransitionsTest extends ShellTestCase {
     }
 
     @Test
+    public void testLaunchOrConvert_convertTaskToBubble_collapseWhileExpanding() {
+        final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
+
+        when(mLayerView.canExpandView(mBubble)).thenReturn(true);
+
+        final BubbleTransitions.LaunchOrConvertToBubble bt =
+                (BubbleTransitions.LaunchOrConvertToBubble) mBubbleTransitions
+                        .startLaunchIntoOrConvertToBubble(
+                                mBubble, mExpandedViewManager, mTaskViewFactory, mBubblePositioner,
+                                mStackView, mLayerView, mIconFactory, false /* inflateSync */,
+                                BubbleBarLocation.RIGHT);
+
+        bt.onInflated(mBubble);
+
+        verify(mBubble).setPreparingTransition(bt);
+
+        // Check that an external transition was enqueued, and a launch cookie was set.
+        assertThat(mTaskViewTransitions.hasPending()).isTrue();
+        assertThat(bt.mLaunchCookie).isNotNull();
+
+        // Prepare for startAnimation call
+        final SurfaceControl taskLeash = new SurfaceControl.Builder().setName("taskLeash").build();
+        final SurfaceControl snapshot = new SurfaceControl.Builder().setName("snapshot").build();
+        final TransitionInfo info = setupConvertTransition(taskInfo, taskLeash, snapshot,
+                bt.mLaunchCookie.binder);
+
+        final IBinder transitionToken = mock(IBinder.class);
+        bt.mPlayingTransition = transitionToken;
+
+        final SurfaceControl.Transaction startT = mock(SurfaceControl.Transaction.class);
+        final SurfaceControl.Transaction finishT = mock(SurfaceControl.Transaction.class);
+        final boolean[] finishCalled = new boolean[] { false };
+        final Transitions.TransitionFinishCallback finishCb = wct -> {
+            assertThat(finishCalled[0]).isFalse();
+            finishCalled[0] = true;
+        };
+
+        // Start playing the transition
+        bt.startAnimation(transitionToken, info, startT, finishT, finishCb);
+
+        assertThat(mTaskViewTransitions.hasPending()).isFalse();
+        // Verify startT modifications (position, snapshot handling)
+        verify(startT).setPosition(taskLeash, 0, 0);
+        verify(startT).show(snapshot);
+        verify(startT).reparent(eq(snapshot), any(SurfaceControl.class));
+        verify(startT).setPosition(snapshot, 0 , 0);
+        verify(startT).setLayer(snapshot, Integer.MAX_VALUE);
+
+        // Bubble data gets updated with the correct bubble bar location
+        verify(mBubbleData).notificationEntryUpdated(eq(mBubble), anyBoolean(), anyBoolean(),
+                eq(BubbleBarLocation.RIGHT));
+
+        // Simulate surfaceCreated so the animation can start but don't call continueExpand
+        bt.surfaceCreated();
+
+        // Verify preparingTransition is not cleared yet
+        verify(mBubble, never()).setPreparingTransition(null);
+
+        // Verify animateConvert is called due to TRANSIT_CHANGE and snapshot exists
+        ArgumentCaptor<Runnable> animCb = ArgumentCaptor.forClass(Runnable.class);
+        verify(mLayerView).animateConvert(
+                any(),
+                // Check that task bounds are passed in as the initial bounds
+                eq(new Rect(0, 0, FULLSCREEN_TASK_WIDTH, FULLSCREEN_TASK_HEIGHT)),
+                eq(1f),
+                eq(snapshot),
+                eq(taskLeash),
+                animCb.capture()
+        );
+
+        // Trigger animation callback to finish
+        assertThat(finishCalled[0]).isFalse();
+        animCb.getValue().run();
+        assertThat(finishCalled[0]).isTrue();
+
+        // Verify that the playing transition and pending cookie are removed
+        assertThat(mBubbleTransitions.mEnterTransitions).doesNotContainKey(transitionToken);
+        assertThat(mBubbleTransitions.mPendingEnterTransitions).doesNotContainKey(
+                bt.mLaunchCookie.binder);
+        // Verify we cleared the preparing transition after the animation finished
+        verify(mBubble).setPreparingTransition(null);
+    }
+
+    @Test
     public void testLaunchOrConvert_convertTaskToBubble_noSnapshot() {
         final ActivityManager.RunningTaskInfo taskInfo = setupAppBubble();
 
