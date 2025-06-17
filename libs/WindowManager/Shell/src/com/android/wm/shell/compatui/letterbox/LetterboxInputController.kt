@@ -24,7 +24,6 @@ import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
 import android.window.WindowContainerToken
 import com.android.internal.protolog.ProtoLog
-import com.android.wm.shell.common.suppliers.InputChannelSupplier
 import com.android.wm.shell.common.suppliers.WindowSessionSupplier
 import com.android.wm.shell.compatui.letterbox.LetterboxUtils.Maps.runOnItem
 import com.android.wm.shell.compatui.letterbox.events.ReachabilityGestureListenerFactory
@@ -44,7 +43,6 @@ class LetterboxInputController @Inject constructor(
     private val inputSurfaceBuilder: LetterboxInputSurfaceBuilder,
     private val listenerFactory: ReachabilityGestureListenerFactory,
     private val windowSessionSupplier: WindowSessionSupplier,
-    private val inputChannelSupplier: InputChannelSupplier
 ) : LetterboxController {
 
     companion object {
@@ -69,7 +67,6 @@ class LetterboxInputController @Inject constructor(
                 gestureListener,
                 inputSurfaceBuilder,
                 windowSessionSupplier,
-                inputChannelSupplier
             ).apply {
                 start(transaction, parentLeash, key)
             }
