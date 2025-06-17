@@ -1292,18 +1292,18 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 continue;
             }
             final boolean isImeAnimation = type == ime();
+            @AnimationType
+            final int animationType = getAnimationType(type);
             if (isImeAnimation) {
                 // When the IME is requested to be hidden, but already hidden, we don't show
                 // an animation again (mRequestedVisibleTypes are reported at the end of the IME
                 // hide animation but set at the beginning)
-                if ((mRequestedVisibleTypes & ime()) == 0) {
+                if ((mRequestedVisibleTypes & ime()) == 0 && animationType != ANIMATION_TYPE_USER) {
                     ImeTracker.forLogging().onCancelled(statsToken,
                             ImeTracker.PHASE_CLIENT_ALREADY_HIDDEN);
                     continue;
                 }
             }
-            @AnimationType
-            final int animationType = getAnimationType(type);
             final boolean requestedVisible = (type & mRequestedVisibleTypes) != 0;
             if (mPendingImeControlRequest != null && !requestedVisible) {
                 // Remove the hide insets type from the pending show request.
@@ -1313,7 +1313,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
                 }
             }
             if (!requestedVisible && animationType == ANIMATION_TYPE_NONE
-                    || animationType == ANIMATION_TYPE_HIDE || (animationType
+                    || animationType == ANIMATION_TYPE_HIDE || (isImeAnimation && animationType
                     == ANIMATION_TYPE_USER && mIsPredictiveBackImeHideAnimInProgress)) {
                 // no-op: already hidden or animating out (because window visibility is
                 // applied before starting animation).
