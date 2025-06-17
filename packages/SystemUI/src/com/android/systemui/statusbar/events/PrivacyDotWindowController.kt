@@ -96,7 +96,7 @@ constructor(
                     val dotViewContainer = dotViewContainersByView[v]
                     val windowView = dotWindowViewsByCorner.remove(dotViewContainer?.corner)
                     if (windowView != null) {
-                        windowManager.removeView(windowView)
+                        windowManager.removeViewSafely(windowView)
                     }
                 }
             }
@@ -143,7 +143,9 @@ constructor(
     }
 
     fun stop() {
-        dotWindowViewsByCorner.forEach { windowManager.removeView(it.value) }
+        uiExecutor.execute {
+            dotWindowViewsByCorner.forEach { windowManager.removeViewSafely(it.value) }
+        }
     }
 
     private data class DotViewContainer(
@@ -160,6 +162,14 @@ constructor(
             windowManager: WindowManager,
             inflater: LayoutInflater,
         ): PrivacyDotWindowController
+    }
+
+    private fun WindowManager.removeViewSafely(view: View) {
+        try {
+            removeView(view)
+        } catch (e: IllegalArgumentException) {
+            Log.e(TAG, "Failed to remove view from window manager.")
+        }
     }
 
     private companion object {
