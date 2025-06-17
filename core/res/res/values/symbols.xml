@@ -6245,6 +6245,8 @@
   <java-symbol type="integer" name="def_accessibility_text_cursor_blink_interval_ms" />
   <java-symbol type="integer" name="no_blink_accessibility_text_cursor_blink_interval_ms" />
   <java-symbol type="array" name="accessibility_text_cursor_blink_intervals" />
+  <java-symbol type="string" name="no_blink_accessibility_text_cursor_blink_label" />
+  <java-symbol type="array" name="accessibility_text_cursor_blink_labels" />
 
   <!-- Developer verification service provider -->
   <java-symbol type="string" name="config_developerVerificationServiceProviderPackageName" />
