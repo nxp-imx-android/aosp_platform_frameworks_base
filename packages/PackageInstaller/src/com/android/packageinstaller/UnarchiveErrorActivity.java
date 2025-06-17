@@ -16,10 +16,6 @@
 
 package com.android.packageinstaller;
 
-import static android.content.pm.Flags.usePiaV2;
-
-import static com.android.packageinstaller.PackageUtil.getReasonForDebug;
-
 import android.app.Activity;
 import android.app.DialogFragment;
 import android.app.Fragment;
@@ -28,8 +24,6 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageInstaller;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.util.Log;
 
 import com.android.packageinstaller.v2.ui.UnarchiveLaunch;
 
@@ -49,13 +43,7 @@ public class UnarchiveErrorActivity extends Activity {
     public void onCreate(Bundle icicle) {
         super.onCreate(null);
 
-        boolean testOverrideForPiaV2 = Settings.System.getInt(getContentResolver(),
-                "use_pia_v2", 0) == 1;
-        boolean usePiaV2aConfig = usePiaV2();
-
-        if (usePiaV2aConfig || testOverrideForPiaV2) {
-            Log.d(LOG_TAG, getReasonForDebug(usePiaV2aConfig, testOverrideForPiaV2));
-
+        if (PackageUtil.isVersionTwoEnabled(this)) {
             Intent piaV2 = new Intent(getIntent());
             piaV2.putExtra(UnarchiveLaunch.EXTRA_CALLING_PKG_NAME, getLaunchedFromPackage());
             piaV2.putExtra(UnarchiveLaunch.EXTRA_CALLING_PKG_UID, getLaunchedFromUid());
