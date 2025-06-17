@@ -51,10 +51,14 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
     private static final String DEVICE_ID_2 = "device_id_2";
     private static final String DEVICE_ID_3 = "device_id_3";
     private static final String DEVICE_ID_4 = "device_id_4";
+    private static final String DEVICE_ID_5 = "device_id_5";
+    private static final String DEVICE_ID_6 = "device_id_6";
     @Mock private MediaDevice mMediaDevice1;
     @Mock private MediaDevice mMediaDevice2;
     @Mock private MediaDevice mMediaDevice3;
     @Mock private MediaDevice mMediaDevice4;
+    @Mock private MediaDevice mMediaDevice5;
+    @Mock private MediaDevice mMediaDevice6;
 
     private MediaItem mMediaItem1;
     private MediaItem mMediaItem2;
@@ -79,6 +83,9 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
         when(mMediaDevice2.isSuggestedDevice()).thenReturn(true);
         when(mMediaDevice3.getId()).thenReturn(DEVICE_ID_3);
         when(mMediaDevice4.getId()).thenReturn(DEVICE_ID_4);
+        when(mMediaDevice5.getId()).thenReturn(DEVICE_ID_5);
+        when(mMediaDevice5.isSuggestedDevice()).thenReturn(true);
+        when(mMediaDevice6.getId()).thenReturn(DEVICE_ID_6);
         mMediaItem1 = MediaItem.createDeviceMediaItem(mMediaDevice1);
         mMediaItem2 = MediaItem.createDeviceMediaItem(mMediaDevice2);
 
@@ -300,6 +307,51 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
 
         mOutputMediaItemListProxy.removeMutingExpectedDevices();
         assertThat(mOutputMediaItemListProxy.isEmpty()).isFalse();
+    }
+
+    @Test
+    public void getOutputMediaItemList_withMoreThanTwoSuggestedDevices_limitsSuggested() {
+        when(mMediaDevice4.isSuggestedDevice()).thenReturn(true);
+        List<MediaDevice> allDevices = List.of(
+                mMediaDevice1, // Normal
+                mMediaDevice2, // Suggested 1
+                mMediaDevice3, // Normal
+                mMediaDevice4, // Suggested 2
+                mMediaDevice5, // Suggested 3 (overflow)
+                mMediaDevice6  // Normal
+        );
+
+        assertThat(mOutputMediaItemListProxy.isEmpty()).isTrue();
+
+        // Update the proxy with all the devices keeping mMediaDevice3 as the selected device.
+        mOutputMediaItemListProxy.updateMediaDevices(
+                /* devices= */ allDevices,
+                /* selectedDevices= */ List.of(mMediaDevice3),
+                /* connectedMediaDevice= */ null,
+                /* needToHandleMutingExpectedDevice= */ false);
+
+        List<MediaDevice> actualDevices = getMediaDevices(
+                mOutputMediaItemListProxy.getOutputMediaItemList());
+
+        // The order of selected devices should be:
+        //     * a media item with the selected mMediaDevice3
+        //     * a group divider for suggested
+        //     * a media item with the suggested mMediaDevice2
+        //     * a media item with the suggested mMediaDevice4
+        //     * a group divider for speakers and displays
+        //     * a media item with the mMediaDevice1
+        //     * a media item with the mMediaDevice5
+        //     * a media item with the mMediaDevice6
+        assertThat(actualDevices).containsExactly(
+                mMediaDevice3,
+                null,
+                mMediaDevice2,
+                mMediaDevice4,
+                null,
+                mMediaDevice1,
+                mMediaDevice5,
+                mMediaDevice6
+        ).inOrder();
     }
 
     private List<MediaDevice> getMediaDevices(List<MediaItem> mediaItems) {
