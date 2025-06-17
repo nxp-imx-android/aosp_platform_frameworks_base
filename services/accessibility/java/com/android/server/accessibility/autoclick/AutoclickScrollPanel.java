@@ -41,6 +41,14 @@ import com.android.internal.R;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * Manages the UI panel for controlling scroll actions in autoclick mode.
+ * This panel provides buttons for scrolling in four directions (up, down, left, right)
+ * and an exit button to leave scroll mode. It interacts with a
+ * {@link ScrollPanelControllerInterface} to notify about hover events and exit requests.
+ * It also displays a {@link AutoclickScrollPointIndicator} at the cursor position
+ * when the panel is shown.
+ */
 public class AutoclickScrollPanel {
     public static final int DIRECTION_UP = 0;
     public static final int DIRECTION_DOWN = 1;
@@ -53,6 +61,9 @@ public class AutoclickScrollPanel {
     // TODO(b/388845721): Finalize edge margin.
     private static final int PANEL_EDGE_MARGIN = 15;
 
+    /**
+     * Defines the possible scroll directions and actions for the panel buttons.
+     */
     @IntDef({
             DIRECTION_UP,
             DIRECTION_DOWN,
@@ -179,6 +190,9 @@ public class AutoclickScrollPanel {
     /**
      * Positions the panel at the bottom right of the cursor coordinates,
      * ensuring it stays within the screen boundaries.
+     * If the panel would go off the right or bottom edge, it's repositioned
+     * to the left or above the cursor, respectively.
+     * The panel's gravity is set to TOP|LEFT for absolute positioning.
      */
     protected void positionPanelAtCursor(float cursorX, float cursorY) {
         // Set gravity to TOP|LEFT for absolute positioning.
@@ -224,6 +238,10 @@ public class AutoclickScrollPanel {
 
     /**
      * Sets up a hover listener for a button.
+     * When the button is hovered or unhovered, it updates the button's style
+     * and notifies the {@link ScrollPanelControllerInterface}.
+     * @param button The ImageButton to set the listener for.
+     * @param direction The {@link ScrollDirection} associated with this button.
      */
     private void setupHoverListenerForButton(ImageButton button, @ScrollDirection int direction) {
         button.setOnHoverListener((v, event) -> {
@@ -253,6 +271,8 @@ public class AutoclickScrollPanel {
 
     /**
      * Updates the button's style based on hover state.
+     * When hovered, a semi-transparent tint is applied to the button's background.
+     * When not hovered, the tint is cleared.
      *
      * @param button  The button to update the style for.
      * @param hovered Whether the button is being hovered or not.

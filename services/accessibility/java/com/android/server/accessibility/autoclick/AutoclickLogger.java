@@ -18,6 +18,11 @@ package com.android.server.accessibility.autoclick;
 
 import com.android.internal.util.FrameworkStatsLog;
 
+/**
+ * Helper class for logging autoclick related events and states to FrameworkStatsLog.
+ * This class provides static methods to log various aspects of the autoclick feature,
+ * such as selected click types, feature enablement, session duration, and settings.
+ */
 public class AutoclickLogger {
     /**
      * Logs an autoclick clicked type, emit when autoclick is sent.
