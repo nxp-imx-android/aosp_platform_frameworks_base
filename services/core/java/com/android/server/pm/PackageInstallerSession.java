@@ -218,6 +218,7 @@ import com.android.server.pm.Installer.InstallerException;
 import com.android.server.pm.dex.DexManager;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
+import com.android.server.pm.verify.developer.DeveloperVerificationStatusInternal;
 import com.android.server.pm.verify.developer.DeveloperVerifierController;
 import com.android.server.Watchdog;
 
@@ -494,9 +495,11 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
     private String mVerificationFailedMessage = null;
 
     /**
-     * Indicates whether a lite verification was conducted on the installation.
+     * The developer verification status which will be preserved into the package state if the
+     * installation is successful.
      */
-    private boolean mVerificationLiteEnabled = false;
+    private final DeveloperVerificationStatusInternal mDeveloperVerificationStatusInternal =
+            DeveloperVerificationStatusInternal.UNKNOWN;
 
     /** Staging location where client data is written. */
     final File stageDir;
@@ -3209,9 +3212,10 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
          */
         private void onConnectionInfeasible() {
             mHandler.post(() -> {
+                mDeveloperVerificationStatusInternal.setInternalStatus(
+                        DeveloperVerificationStatusInternal.STATUS_INFEASIBLE);
                 synchronized (mMetrics) {
-                    mMetrics.onDeveloperVerifierResponseReceived(
-                            SessionMetrics.DeveloperVerifierResponse.OTHER);
+                    mMetrics.onDeveloperVerificationFinished(mDeveloperVerificationStatusInternal);
                 }
                 if (mCurrentVerificationPolicy.get()
                         != DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED) {
@@ -3234,9 +3238,10 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
          */
         public void onConnectionFailed() {
             mHandler.post(() -> {
+                mDeveloperVerificationStatusInternal.setInternalStatus(
+                        DeveloperVerificationStatusInternal.STATUS_DISCONNECTED);
                 synchronized (mMetrics) {
-                    mMetrics.onDeveloperVerifierResponseReceived(
-                            SessionMetrics.DeveloperVerifierResponse.DISCONNECTED);
+                    mMetrics.onDeveloperVerificationFinished(mDeveloperVerificationStatusInternal);
                 }
                 if (mCurrentVerificationPolicy.get()
                         != DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED) {
@@ -3270,9 +3275,10 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             // Always notify the verifier, regardless of the policy.
             mDeveloperVerifierController.notifyVerificationTimeout(sessionId, userId);
             mHandler.post(() -> {
+                mDeveloperVerificationStatusInternal.setInternalStatus(
+                        DeveloperVerificationStatusInternal.STATUS_TIMEOUT);
                 synchronized (mMetrics) {
-                    mMetrics.onDeveloperVerifierResponseReceived(
-                            SessionMetrics.DeveloperVerifierResponse.TIMEOUT);
+                    mMetrics.onDeveloperVerificationFinished(mDeveloperVerificationStatusInternal);
                 }
                 if (mCurrentVerificationPolicy.get()
                         != DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED) {
@@ -3298,11 +3304,16 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 @NonNull DeveloperVerificationStatus statusReceived,
                 @Nullable PersistableBundle extensionResponse) {
             mHandler.post(() -> {
+                final int internalStatus = statusReceived.isVerified()
+                        ? DeveloperVerificationStatusInternal.STATUS_COMPLETED_WITH_PASS
+                        : DeveloperVerificationStatusInternal.STATUS_COMPLETED_WITH_REJECT;
+                mDeveloperVerificationStatusInternal.setInternalStatus(internalStatus);
+                mDeveloperVerificationStatusInternal.setAppMetadataVerificationStatus(
+                        statusReceived.getAppMetadataVerificationStatus());
+                mDeveloperVerificationStatusInternal.setLiteVerification(
+                        statusReceived.isLiteVerification());
                 synchronized (mMetrics) {
-                    mMetrics.onDeveloperVerifierResponseReceived(statusReceived.isVerified()
-                            ? SessionMetrics.DeveloperVerifierResponse.COMPLETE_WITH_PASS
-                            : SessionMetrics.DeveloperVerifierResponse.COMPLETE_WITH_REJECT);
-                    mMetrics.onAslStatusReceived(statusReceived.getAppMetadataVerificationStatus());
+                    mMetrics.onDeveloperVerificationFinished(mDeveloperVerificationStatusInternal);
                 }
                 if (mCurrentVerificationPolicy.get() == DEVELOPER_VERIFICATION_POLICY_NONE) {
                     // No policy applied. Continue with the rest of the verification and install.
@@ -3311,10 +3322,6 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 }
                 if (statusReceived.isVerified()) {
                     if (statusReceived.isLiteVerification()) {
-                        mVerificationLiteEnabled = true;
-                        synchronized (mMetrics) {
-                            mMetrics.onDeveloperVerificationLiteEnabled();
-                        }
                         // This is a lite verification. Need further user action.
                         mVerificationUserActionNeededReason =
                                 DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
@@ -3353,10 +3360,12 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             mHandler.post(() -> {
                 final boolean isNetworkUnavailable =
                         incompleteReason == DEVELOPER_VERIFICATION_INCOMPLETE_NETWORK_UNAVAILABLE;
+                final int internalStatus = isNetworkUnavailable
+                        ? DeveloperVerificationStatusInternal.STATUS_INCOMPLETE_NETWORK_UNAVAILABLE
+                        : DeveloperVerificationStatusInternal.STATUS_INCOMPLETE_UNKNOWN;
+                mDeveloperVerificationStatusInternal.setInternalStatus(internalStatus);
                 synchronized (mMetrics) {
-                    mMetrics.onDeveloperVerifierResponseReceived(isNetworkUnavailable
-                            ? SessionMetrics.DeveloperVerifierResponse.INCOMPLETE_NETWORK
-                            : SessionMetrics.DeveloperVerifierResponse.INCOMPLETE_UNKNOWN);
+                    mMetrics.onDeveloperVerificationFinished(mDeveloperVerificationStatusInternal);
                 }
                 if (mCurrentVerificationPolicy.get() == DEVELOPER_VERIFICATION_POLICY_NONE) {
                     // Continue with the rest of the verification and installation.
@@ -3399,7 +3408,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             bundle.putInt(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON,
                     getVerificationFailureReason(mVerificationUserActionNeededReason));
             bundle.putBoolean(EXTRA_DEVELOPER_VERIFICATION_LITE_PERFORMED,
-                    mVerificationLiteEnabled);
+                    mDeveloperVerificationStatusInternal.isLiteVerification());
             bundle.putParcelable(Intent.EXTRA_INTENT, intent);
             if (extensionResponse != null) {
                 bundle.putParcelable(EXTRA_DEVELOPER_VERIFICATION_EXTENSION_RESPONSE,
@@ -3899,7 +3908,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
             return new InstallingSession(sessionId, stageDir, localObserver, params, mInstallSource,
                     user, mSigningDetails, mInstallerUid, mPackageLite, mPreVerifiedDomains, mPm,
                     mHasAppMetadataFile, mDependencyInstallerEnabled.get(),
-                    mMissingSharedLibraryCount.get());
+                    mMissingSharedLibraryCount.get(), mDeveloperVerificationStatusInternal);
         }
     }
 
@@ -5083,7 +5092,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 bundle.putInt(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON,
                         getVerificationFailureReason(mVerificationUserActionNeededReason));
                 bundle.putBoolean(EXTRA_DEVELOPER_VERIFICATION_LITE_PERFORMED,
-                        mVerificationLiteEnabled);
+                        mDeveloperVerificationStatusInternal.isLiteVerification());
 
                 setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg);
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg, bundle);
@@ -5095,7 +5104,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 bundle.putInt(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON,
                         getVerificationFailureReason(mVerificationUserActionNeededReason));
                 bundle.putBoolean(EXTRA_DEVELOPER_VERIFICATION_LITE_PERFORMED,
-                        mVerificationLiteEnabled);
+                        mDeveloperVerificationStatusInternal.isLiteVerification());
 
                 setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg);
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg, bundle);
@@ -5106,7 +5115,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                 bundle.putInt(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON,
                         getVerificationFailureReason(mVerificationUserActionNeededReason));
                 bundle.putBoolean(EXTRA_DEVELOPER_VERIFICATION_LITE_PERFORMED,
-                        mVerificationLiteEnabled);
+                        mDeveloperVerificationStatusInternal.isLiteVerification());
 
                 setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, mVerificationFailedMessage);
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE,
