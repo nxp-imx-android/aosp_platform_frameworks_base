@@ -1259,16 +1259,10 @@ class DesktopTasksController(
             // parent task to the back so that it is not brought to the front and shown when the
             // child task breaks off into PiP.
             val isMultiActivityPip = taskInfo.numActivities > 1
+            var minimizeMultiActivityRunnable: RunOnTransitStart? = null
             if (isMultiActivityPip) {
-                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                    desksOrganizer.minimizeTask(
-                        wct = wct,
-                        deskId = checkNotNull(deskId) { "Expected non-null deskId" },
-                        task = taskInfo,
-                    )
-                } else {
-                    wct.reorder(taskInfo.token, /* onTop= */ false)
-                }
+                minimizeMultiActivityRunnable =
+                    minimizeMultiActivityPipTask(wct = wct, deskId = deskId, task = taskInfo)
             }
 
             // If the task minimizing to PiP is the last task, modify wct to perform Desktop cleanup
@@ -1283,16 +1277,7 @@ class DesktopTasksController(
                     )
             }
             val transition = freeformTaskTransitionStarter.startPipTransition(wct)
-            if (isMultiActivityPip) {
-                desktopTasksLimiter.ifPresent {
-                    it.addPendingMinimizeChange(
-                        transition = transition,
-                        displayId = displayId,
-                        taskId = taskId,
-                        minimizeReason = minimizeReason,
-                    )
-                }
-            }
+            minimizeMultiActivityRunnable?.invoke(transition)
             desktopExitRunnable?.invoke(transition)
         } else {
             val willExitDesktop =
@@ -1341,6 +1326,46 @@ class DesktopTasksController(
         taskbarDesktopTaskListener?.onTaskbarCornerRoundingUpdate(
             doesAnyTaskRequireTaskbarRounding(displayId, taskId)
         )
+    }
+
+    /**
+     * Called when a multi-activity PiP task needs to be minimized.
+     *
+     * @param wct WindowContainerTransaction that will apply minimization changes
+     * @param deskId desk id that the multi-activity PiP is in
+     * @param taskInfo of the task that is entering PiP
+     * @return RunOnTransitStart runnable to be invoked after the transition has been started
+     */
+    fun minimizeMultiActivityPipTask(
+        wct: WindowContainerTransaction,
+        deskId: Int?,
+        task: RunningTaskInfo,
+    ): RunOnTransitStart {
+        logD(
+            "minimizeMultiActivityPipTask taskId=%d deskId=%d displayId=%d",
+            task.taskId,
+            deskId,
+            task.displayId,
+        )
+        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+            desksOrganizer.minimizeTask(
+                wct = wct,
+                deskId = checkNotNull(deskId) { "Expected non-null deskId" },
+                task = task,
+            )
+        } else {
+            wct.reorder(task.token, /* onTop= */ false)
+        }
+        return { transition ->
+            desktopTasksLimiter.ifPresent {
+                it.addPendingMinimizeChange(
+                    transition = transition,
+                    displayId = task.displayId,
+                    taskId = task.taskId,
+                    minimizeReason = MinimizeReason.MULTI_ACTIVITY_PIP,
+                )
+            }
+        }
     }
 
     /** Checks whether the given [taskInfo] is allowed to enter PiP in AppOps. */

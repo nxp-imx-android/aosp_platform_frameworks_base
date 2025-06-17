@@ -4798,6 +4798,24 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
+    fun minimizeMultiActivityPipTask_minimizesTask() {
+        val deskId = DEFAULT_DISPLAY
+        val task = setUpPipTask(autoEnterEnabled = true, deskId = deskId)
+        val wct = WindowContainerTransaction()
+        val transition = Binder()
+
+        val runOnTransitStart =
+            controller.minimizeMultiActivityPipTask(wct = wct, deskId = deskId, task = task)
+        runOnTransitStart.invoke(transition)
+
+        verify(desksOrganizer).minimizeTask(wct = wct, deskId = deskId, task = task)
+        val minimizingTaskId =
+            assertNotNull(desktopTasksLimiter.getMinimizingTask(transition)?.taskId)
+        assertThat(minimizingTaskId).isEqualTo(task.taskId)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND)
     fun handleRequest_fullscreenTask_switchToDesktop_movesTaskToDesk() {
         taskRepository.addDesk(displayId = DEFAULT_DISPLAY, deskId = 5)
         setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = 5)
