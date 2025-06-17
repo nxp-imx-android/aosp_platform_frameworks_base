@@ -520,7 +520,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 direction);
         mViewMotionValue = new ViewMotionValue(mStartPos,
                 mDistanceGestureContext,
-                mSplitLayout.mDividerSnapAlgorithm.getMotionSpec(),
+                mSplitLayout.mDividerSnapAlgorithm.getMotionSpec(getResources()),
                 "dividerView::pos" /* label */);
         mLastHoveredOverSnapPosition = mSplitLayout.calculateCurrentSnapPosition();
         // Set a "starting region" in which we don't want to show the tooltip yet.
