@@ -17,6 +17,7 @@
 package com.android.systemui.display.data.repository
 
 import android.view.IWindowManager
+import android.window.DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT
 import com.android.app.displaylib.DisplaysWithDecorationsRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -48,7 +49,13 @@ constructor(
         val callback =
             object : CommandQueue.Callbacks {
                 override fun onDisplayAddSystemDecorations(displayId: Int) {
-                    trySend(Event.Add(displayId))
+                    if (ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
+                        trySend(Event.Add(displayId))
+                    } else {
+                        if (windowManager.shouldShowSystemDecors(displayId)) {
+                            trySend(Event.Add(displayId))
+                        }
+                    }
                 }
 
                 override fun onDisplayRemoveSystemDecorations(displayId: Int) {
