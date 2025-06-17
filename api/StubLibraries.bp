@@ -1051,6 +1051,16 @@ droidstubs {
     srcs: [":android_stubs_current_with_test_libs{.jar}"],
     api_levels_sdk_type: "public",
     visibility: ["//frameworks/base"],
+
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
+    check_api: {
+        last_released: {
+            enabled: false,
+            api_file: ":android.api.combined.public.latest",
+            removed_api_file: ":android-removed.api.combined.public.latest",
+        },
+    },
 }
 
 // Produces an `api-versions.xml` file that includes up-to-date information
@@ -1061,6 +1071,17 @@ droidstubs {
     defaults: ["api_versions_complete_defaults"],
     srcs: [":android_system_stubs_current_with_test_libs{.jar}"],
     api_levels_sdk_type: "system",
+
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
+    check_api: {
+        last_released: {
+            enabled: false,
+            api_file: ":android.api.combined.system.latest",
+            removed_api_file: ":android-removed.api.combined.system.latest",
+        },
+    },
+
     dists: [
         // Make the api-versions.xml file for the system API available in the
         // sdk build target.
@@ -1097,6 +1118,16 @@ droidstubs {
     defaults: ["api_versions_non_updatable_defaults"],
     srcs: [":android_module_stubs_current_with_test_libs{.jar}"],
     api_levels_sdk_type: "module-lib",
+
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
+    check_api: {
+        last_released: {
+            enabled: false,
+            api_file: ":android.api.combined.module-lib.latest",
+            removed_api_file: ":android-removed.api.combined.module-lib.latest",
+        },
+    },
 }
 
 // Create a single jar containing the whole module-lib API surface.
@@ -1123,6 +1154,16 @@ droidstubs {
     defaults: ["api_versions_complete_defaults"],
     srcs: [":android_module_stubs_complete_current_with_test_libs{.jar}"],
     api_levels_sdk_type: "module-lib",
+
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
+    check_api: {
+        last_released: {
+            enabled: false,
+            api_file: ":android.api.combined.module-lib.latest",
+            removed_api_file: ":android-removed.api.combined.module-lib.latest",
+        },
+    },
 }
 
 // Produces an `api-versions.xml` file that includes up-to-date information
@@ -1135,6 +1176,16 @@ droidstubs {
     defaults: ["api_versions_non_updatable_defaults"],
     srcs: [":android_system_server_stubs_current_with_test_libs{.jar}"],
     api_levels_sdk_type: "system-server",
+
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
+    check_api: {
+        last_released: {
+            enabled: false,
+            api_file: ":android.api.combined.system-server.latest",
+            removed_api_file: ":android-removed.api.combined.system-server.latest",
+        },
+    },
 }
 
 // Create a single jar containing the whole system-server API surface.
@@ -1165,6 +1216,16 @@ droidstubs {
     defaults: ["api_versions_complete_defaults"],
     srcs: [":android_system_server_stubs_complete_current_with_test_libs{.jar}"],
     api_levels_sdk_type: "system-server",
+
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
+    check_api: {
+        last_released: {
+            enabled: false,
+            api_file: ":android.api.combined.system-server.latest",
+            removed_api_file: ":android-removed.api.combined.system-server.latest",
+        },
+    },
 }
 
 /////////////////////////////////////////////////////////////////////
