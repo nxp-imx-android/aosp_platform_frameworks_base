@@ -21,8 +21,11 @@ import com.android.wm.shell.shared.bubbles.BubbleBarUpdate
 
 /** A fake implementation of [Bubbles.BubbleStateListener] */
 class FakeBubblesStateListener : Bubbles.BubbleStateListener {
+    var lastUpdate: BubbleBarUpdate? = null
 
-    override fun onBubbleStateChange(update: BubbleBarUpdate?) {}
+    override fun onBubbleStateChange(update: BubbleBarUpdate?) {
+        lastUpdate = update
+    }
 
     override fun animateBubbleBarLocation(location: BubbleBarLocation?) {}
 

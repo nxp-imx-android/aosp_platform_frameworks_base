@@ -1751,8 +1751,8 @@ public class BubbleController implements ConfigurationChangeListener,
 
         Bubble b = mBubbleData.getBubbleInStackWithTaskId(taskInfo.taskId);
         if (b != null) {
-            // Reuse the existing bubble
-            mBubbleData.setSelectedBubbleAndExpandStack(b, BubbleBarLocation.DEFAULT);
+            // Reuse the existing bubble; pass null for location to use existing location.
+            mBubbleData.setSelectedBubbleAndExpandStack(b, null /* bubbleBarLocation */);
         } else {
             // Create a new bubble and show it, remove from overflow
             b = mBubbleData.getOrCreateBubble(taskInfo);
