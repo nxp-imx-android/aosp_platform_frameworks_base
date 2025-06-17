@@ -335,7 +335,7 @@ public class MediaQualityService extends SystemService {
                             id, PictureProfile.ERROR_INVALID_ARGUMENT, callingUid, callingPid);
                     return;
                 }
-                if (!hasPermissionToUpdatePictureProfile(dbId, pp, callingUid)) {
+                if (!hasPermissionToUpdatePictureProfile(dbId, pp, callingUid, callingPid)) {
                     mMqManagerNotifier.notifyOnPictureProfileError(
                             id, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
                     return;
@@ -363,12 +363,16 @@ public class MediaQualityService extends SystemService {
         }
 
         private boolean hasPermissionToUpdatePictureProfile(
-                Long dbId, PictureProfile toUpdate, int uid) {
+                Long dbId, PictureProfile toUpdate, int uid, int pid) {
             PictureProfile fromDb = mMqDatabaseUtils.getPictureProfile(dbId);
+            boolean isPackageOwner = fromDb.getPackageName().equals(getPackageOfUid(uid));
+            boolean isSystemAppWithPermission =
+                hasGlobalPictureQualityServicePermission(uid, pid)
+                    && fromDb.getProfileType() == PictureProfile.TYPE_SYSTEM;
             return fromDb.getProfileType() == toUpdate.getProfileType()
-                    && fromDb.getPackageName().equals(toUpdate.getPackageName())
                     && fromDb.getName().equals(toUpdate.getName())
-                    && fromDb.getName().equals(getPackageOfUid(uid));
+                    && fromDb.getPackageName().equals(toUpdate.getPackageName())
+                    && (isPackageOwner || isSystemAppWithPermission);
         }
 
         @GuardedBy("mPictureProfileLock")
