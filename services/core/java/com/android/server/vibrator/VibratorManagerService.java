@@ -637,7 +637,9 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         // Create Vibration.Stats as close to the received request as possible, for tracking.
         SingleVibrationSession session = new SingleVibrationSession(token, callerInfo, effect);
         HalVibration vib = session.getVibration();
-        vib.fillFallbacks(mVibrationSettings::getFallbackEffect);
+        if (!Flags.removeHidlSupport()) {
+            vib.fillFallbacks(mVibrationSettings::getFallbackEffect);
+        }
 
         if (attrs.isFlagSet(VibrationAttributes.FLAG_INVALIDATE_SETTINGS_CACHE)) {
             // Force update of user settings before checking if this vibration effect should
@@ -1989,7 +1991,9 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                     }
                     // Create Vibration.Stats as close to the request as possible, for tracking.
                     HalVibration vib = new HalVibration(callerInfo, effect);
-                    vib.fillFallbacks(mVibrationSettings::getFallbackEffect);
+                    if (!Flags.removeHidlSupport()) {
+                        vib.fillFallbacks(mVibrationSettings::getFallbackEffect);
+                    }
 
                     if (callerInfo.attrs.isFlagSet(
                             VibrationAttributes.FLAG_INVALIDATE_SETTINGS_CACHE)) {

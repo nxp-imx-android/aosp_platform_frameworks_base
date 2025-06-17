@@ -55,7 +55,8 @@ final class DeviceAdapter implements CombinedVibration.VibratorAdapter {
 
     DeviceAdapter(VibrationSettings settings, SparseArray<VibratorController> vibrators) {
         mSegmentAdapters = Arrays.asList(
-                // TODO(b/167947076): add filter that replaces unsupported prebaked with fallback
+                // Replace unsupported prebaked effects with fallback
+                new PrebakedFallbackAdapter(settings.getFallbackEffects()),
                 // Updates primitive delays to hardware supported pauses
                 new PrimitiveDelayAdapter(),
                 // Convert segments based on device capabilities
@@ -76,7 +77,9 @@ final class DeviceAdapter implements CombinedVibration.VibratorAdapter {
                 // Validate Pwle segments base on the vibrators frequency range
                 new PwleSegmentsValidator(),
                 // Validate primitive segments based on device support
-                new PrimitiveSegmentsValidator()
+                new PrimitiveSegmentsValidator(),
+                // Validate prebaked segments based on device support
+                new PrebakedSegmentsValidator()
         );
         mAvailableVibrators = vibrators;
         mAvailableVibratorIds = new int[vibrators.size()];
