@@ -150,8 +150,20 @@ constructor(
                 transitionKey = transitionKey,
             )
         } else {
+            changeSingeShadeScene(Scenes.Shade, transitionKey, loggingReason)
+        }
+    }
+
+    private fun changeSingeShadeScene(
+        sceneKey: SceneKey,
+        transitionKey: TransitionKey?,
+        loggingReason: String,
+    ) {
+        if (transitionKey == Instant) {
+            sceneInteractor.snapToScene(sceneKey, loggingReason)
+        } else {
             sceneInteractor.changeScene(
-                toScene = Scenes.Shade,
+                toScene = sceneKey,
                 loggingReason = loggingReason,
                 transitionKey =
                     transitionKey ?: ToSplitShade.takeIf { shadeModeInteractor.isSplitShade },
@@ -174,12 +186,9 @@ constructor(
                 transitionKey = transitionKey,
             )
         } else {
-            val isSplitShade = shadeModeInteractor.isSplitShade
-            sceneInteractor.changeScene(
-                toScene = if (isSplitShade) Scenes.Shade else Scenes.QuickSettings,
-                loggingReason = loggingReason,
-                transitionKey = transitionKey ?: ToSplitShade.takeIf { isSplitShade },
-            )
+            val toScene =
+                if (shadeModeInteractor.isSplitShade) Scenes.Shade else Scenes.QuickSettings
+            changeSingeShadeScene(toScene, transitionKey, loggingReason)
         }
     }
 
