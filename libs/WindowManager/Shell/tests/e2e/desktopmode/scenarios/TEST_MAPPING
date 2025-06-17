@@ -7,7 +7,166 @@
   ],
   "wm": [
     {
-      "name": "WMShellFlickerTestsDesktopMode"
+      "name": "FunctionalTestsDesktopMode-AltTabSwitchInDesktopModeTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-AltTabSwitchOutDesktopModeTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-BringDesktopAppsToFrontTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-CatchAll"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-ChromeNewTabAtWindowLimitTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-CloseAllAppsWithAppHeaderExitTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-DisableDisplayMirroringSwitchTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-DragMoveWindowToNextDisplayTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-EnableDisplayMirroringSwitchTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-EnterDesktopViaMenuOfLiveOverviewTaskTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-EnterDesktopViaMenuOfStaticOverviewTaskTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-EnterDesktopViaStaticDesktopOverviewTaskTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-EnterDesktopWithAppHandleMenuTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragExistingWindowsTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragWindowsLimitTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-ExitDesktopToFullScreenWithAppHeaderMenuTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-ExitDesktopWithDragToTopDragZoneTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-FocusAppFromAllAppsTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-FocusAppFromTaskbarTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-MaximizeAppWindowTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-MaximizeAppWindowWithDragToTopDragZoneTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-MinimizeAppWindowsTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-MinimizeAutoPipAppWindowTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-MinimizeWindowOnAppOpenTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-MinimizeWindowOnAppOpenViaIntentTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-MoveToNextDisplayTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-OpenAppWithExternalDisplayConnectedTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-OpenAppsInDesktopModeTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-OpenTrampolineAppInDesktopModeTaskLimitTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-OpenUnlimitedAppsTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-SwitchToOverviewFromDesktopTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-TabTearingDesktopWindowingLimitTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-TabTearingTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-UnmaximizeAppWindowTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-UnminimizeAppFromAllAppsTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-UnminimizeAppFromTaskbarTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-CloseAllAppsViaAppHeaderExitTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-CloseAllAppsWithBackNavigationTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopFromSplitScreenWithAppHandleMenuTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-ExitDesktopToSplitScreenWithAppHeaderMenuTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppFromAllAppsTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppFromTaskbarTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-QuickSwitchBetweenDesktopAndFullscreenTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-SwitchFocusBetweenAppsTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-resizing-ResizeAppWithCornerResizeTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-resizing-ResizeAppWithEdgeResizeTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-resizing-ScaleDensityForExternalDisplayTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-resizing-SnapResizeAppWindowWithButtonTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-resizing-SnapResizeAppWindowWithDragTest"
     }
   ]
 }
