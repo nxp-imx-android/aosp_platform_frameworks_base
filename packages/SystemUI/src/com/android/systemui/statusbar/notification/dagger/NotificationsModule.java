@@ -95,6 +95,7 @@ import com.android.systemui.statusbar.notification.stack.MagneticNotificationRow
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
 import com.android.systemui.statusbar.notification.stack.NotificationSectionsManager;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController;
+import com.android.systemui.statusbar.notification.stack.OnboardingAffordanceCommands;
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.phone.StatusBarNotificationActivityStarter;
@@ -128,6 +129,7 @@ import javax.inject.Provider;
                 NotificationSectionHeadersModule.class,
                 NotificationStatsLoggerModule.class,
                 NotificationsLogModule.class,
+                OnboardingAffordanceCommands.Module.class,
         }
 )
 public interface NotificationsModule {

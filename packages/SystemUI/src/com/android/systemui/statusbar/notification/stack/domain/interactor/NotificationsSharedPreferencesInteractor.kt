@@ -19,7 +19,7 @@ package com.android.systemui.statusbar.notification.stack.domain.interactor
 import android.content.Context
 import android.content.SharedPreferences
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.domain.interactor.SharedPreferencesInteractor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -32,12 +32,12 @@ class NotificationsSharedPreferencesInteractor
 @Inject
 constructor(
     sharedPreferencesInteractor: SharedPreferencesInteractor,
-    @Application scope: CoroutineScope,
+    @Background scope: CoroutineScope,
 ) {
     val sharedPreferences: StateFlow<SharedPreferences?> =
         sharedPreferencesInteractor
             .sharedPreferences(FILENAME, Context.MODE_PRIVATE)
-            .stateIn(scope, SharingStarted.WhileSubscribed(), null)
+            .stateIn(scope, SharingStarted.Eagerly, null)
 }
 
 private const val FILENAME = "notifs_prefs"
