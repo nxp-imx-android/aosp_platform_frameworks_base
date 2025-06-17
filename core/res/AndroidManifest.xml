@@ -7458,7 +7458,15 @@
         processes.
         @hide -->
     <permission android:name="android.permission.MANAGE_NOTIFICATIONS"
-                android:protectionLevel="signature" />
+        android:protectionLevel="signature"
+        android:featureFlag="!android.companion.enable_medical_profile" />
+
+    <!-- @SystemApi Allows modification of do not disturb rules and policies.
+        @FlaggedApi(android.companion.Flags.FLAG_ENABLE_MEDICAL_PROFILE)
+        @hide -->
+    <permission android:name="android.permission.MANAGE_NOTIFICATIONS"
+                android:protectionLevel="signature|installer"
+                android:featureFlag="android.companion.enable_medical_profile"/>
 
     <!-- @SystemApi @TestApi Allows adding/removing enabled notification listener components.
         @hide -->

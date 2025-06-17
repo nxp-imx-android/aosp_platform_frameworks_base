@@ -237,6 +237,7 @@ package android {
     field public static final String MANAGE_IPSEC_TUNNELS = "android.permission.MANAGE_IPSEC_TUNNELS";
     field public static final String MANAGE_LOW_POWER_STANDBY = "android.permission.MANAGE_LOW_POWER_STANDBY";
     field public static final String MANAGE_MUSIC_RECOGNITION = "android.permission.MANAGE_MUSIC_RECOGNITION";
+    field @FlaggedApi("android.companion.enable_medical_profile") public static final String MANAGE_NOTIFICATIONS = "android.permission.MANAGE_NOTIFICATIONS";
     field public static final String MANAGE_NOTIFICATION_LISTENERS = "android.permission.MANAGE_NOTIFICATION_LISTENERS";
     field public static final String MANAGE_ONE_TIME_PERMISSION_SESSIONS = "android.permission.MANAGE_ONE_TIME_PERMISSION_SESSIONS";
     field public static final String MANAGE_PROFILE_AND_DEVICE_OWNERS = "android.permission.MANAGE_PROFILE_AND_DEVICE_OWNERS";
@@ -1105,6 +1106,7 @@ package android.app {
     method @FlaggedApi("android.service.notification.callstyle_callback_api") @RequiresPermission(allOf={android.Manifest.permission.INTERACT_ACROSS_USERS, android.Manifest.permission.ACCESS_NOTIFICATIONS}) public void registerCallNotificationEventListener(@NonNull String, @NonNull android.os.UserHandle, @NonNull java.util.concurrent.Executor, @NonNull android.app.NotificationManager.CallNotificationEventListener);
     method public void setNotificationAssistantAccessGranted(@Nullable android.content.ComponentName, boolean);
     method @RequiresPermission(android.Manifest.permission.MANAGE_NOTIFICATION_LISTENERS) public void setNotificationListenerAccessGranted(@NonNull android.content.ComponentName, boolean, boolean);
+    method @FlaggedApi("android.companion.enable_medical_profile") @RequiresPermission(android.Manifest.permission.MANAGE_NOTIFICATIONS) public void setNotificationPolicyAccessGranted(@NonNull String, boolean);
     method @FlaggedApi("android.service.notification.callstyle_callback_api") @RequiresPermission(allOf={android.Manifest.permission.INTERACT_ACROSS_USERS, android.Manifest.permission.ACCESS_NOTIFICATIONS}) public void unregisterCallNotificationEventListener(@NonNull android.app.NotificationManager.CallNotificationEventListener);
     field @RequiresPermission(android.Manifest.permission.STATUS_BAR_SERVICE) public static final String ACTION_CLOSE_NOTIFICATION_HANDLER_PANEL = "android.app.action.CLOSE_NOTIFICATION_HANDLER_PANEL";
     field @RequiresPermission(android.Manifest.permission.STATUS_BAR_SERVICE) public static final String ACTION_OPEN_NOTIFICATION_HANDLER_PANEL = "android.app.action.OPEN_NOTIFICATION_HANDLER_PANEL";
