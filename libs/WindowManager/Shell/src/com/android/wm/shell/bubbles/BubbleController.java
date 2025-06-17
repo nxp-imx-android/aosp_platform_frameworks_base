@@ -1971,7 +1971,13 @@ public class BubbleController implements ConfigurationChangeListener,
                     return;
                 }
                 bubble.inflate(
-                        (b) -> mBubbleData.overflowBubble(Bubbles.DISMISS_RELOAD_FROM_DISK, bubble),
+                        (b) -> {
+                            if (Flags.enableOptionalBubbleOverflow()) {
+                                mBubbleData.addOverflowBubbleFromDisk(bubble);
+                            } else {
+                                mBubbleData.doOverflow(Bubbles.DISMISS_RELOAD_FROM_DISK, bubble);
+                            }
+                        },
                         mContext,
                         mExpandedViewManager,
                         mBubbleTaskViewFactory,
