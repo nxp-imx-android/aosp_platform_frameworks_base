@@ -308,6 +308,16 @@ flag {
 }
 
 flag {
+   name: "global_actions_emphasized_font"
+   namespace: "systemui"
+   description: "Use emphasized font for global actions."
+   bug: "393616338"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "coroutine_tracing"
     namespace: "systemui"
     description: "Adds thread-local data to System UI's global coroutine scopes to "
