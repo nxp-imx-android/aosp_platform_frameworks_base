@@ -24,10 +24,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.SemanticsActions.CustomActions
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.doubleClick
 import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -50,6 +53,7 @@ import com.android.systemui.qs.pipeline.shared.TileSpec
 import com.android.systemui.qs.shared.model.TileCategory
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
+import com.google.common.truth.Truth.assertThat
 import org.junit.Assert.assertThrows
 import org.junit.Rule
 import org.junit.Test
@@ -69,8 +73,9 @@ class EditModeTest : SysuiTestCase() {
         val allTiles = remember { TestEditTiles.toMutableStateList() }
         val largeTiles = remember { TestLargeTilesSpecs.toMutableStateList() }
         val currentTiles = allTiles.filter { it.isCurrent }
-        val listState =
+        val listState = remember {
             EditTileListState(currentTiles, TestLargeTilesSpecs, columns = 4, largeTilesSpan = 2)
+        }
         LaunchedEffect(currentTiles, largeTiles) {
             listState.updateTiles(currentTiles, largeTiles.toSet())
         }
@@ -130,6 +135,63 @@ class EditModeTest : SysuiTestCase() {
     }
 
     @Test
+    @DisableFlags(QsEditModeTabs.FLAG_NAME)
+    fun clickCurrentTile_shouldRemove() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        // Tap to remove
+        composeRule
+            .onAllNodesWithContentDescription(
+                context.getString(R.string.accessibility_qs_edit_remove_tile_action)
+            )
+            .onFirst()
+            .performClick()
+
+        composeRule.assertCurrentTilesGridContainsExactly(
+            listOf("tileB", "tileC", "tileD_large", "tileE")
+        )
+        composeRule.assertAvailableTilesGridContainsExactly(TestEditTiles.map { it.tileSpec.spec })
+    }
+
+    @Test
+    @EnableFlags(QsEditModeTabs.FLAG_NAME)
+    fun clickCurrentTile_inAddTab_shouldRemove() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        // Tap to remove
+        composeRule
+            .onAllNodesWithContentDescription(
+                context.getString(R.string.accessibility_qs_edit_remove_tile_action)
+            )
+            .onFirst()
+            .performClick()
+
+        // Assert tileA is missing
+        composeRule.assertCurrentTilesGridContainsExactly(
+            listOf("tileB", "tileC", "tileD_large", "tileE")
+        )
+        composeRule.assertAvailableTilesGridContainsExactly(TestEditTiles.map { it.tileSpec.spec })
+    }
+
+    @Test
+    @EnableFlags(QsEditModeTabs.FLAG_NAME)
+    fun clickCurrentTile_inLayoutTab_shouldNotRemove() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        // Tap to remove
+        composeRule.onNodeWithText("tileA").performClick()
+
+        // Assert tileA is not missing
+        composeRule.assertCurrentTilesGridContainsExactly(
+            listOf("tileA", "tileB", "tileC", "tileD_large", "tileE")
+        )
+    }
+
+    @Test
+    @DisableFlags(QsEditModeTabs.FLAG_NAME)
     fun placementMode_shouldRepositionTile() {
         composeRule.setContent { EditTileGridUnderTest() }
         composeRule.waitForIdle()
@@ -147,6 +209,28 @@ class EditModeTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(QsEditModeTabs.FLAG_NAME)
+    fun placementMode_inLayoutTab_shouldRepositionTile() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        // Tap on Layout tab to select
+        composeRule.onNodeWithText("Layout").performClick()
+
+        // Double tap first "tileA", i.e. the one in the current grid
+        composeRule.onNodeWithContentDescription("tileA").performTouchInput { doubleClick() }
+
+        // Tap on tileE to position tileA in its spot
+        composeRule.onNodeWithContentDescription("tileE").performClick()
+
+        // Assert tileA moved to tileE's position
+        composeRule.assertCurrentTilesGridContainsExactly(
+            listOf("tileB", "tileC", "tileD_large", "tileE", "tileA")
+        )
+    }
+
+    @Test
+    @DisableFlags(QsEditModeTabs.FLAG_NAME)
     fun resizingAction_dependsOnPlacementMode() {
         composeRule.setContent { EditTileGridUnderTest() }
         composeRule.waitForIdle()
@@ -172,9 +256,84 @@ class EditModeTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(QsEditModeTabs.FLAG_NAME)
+    fun resizingAction_inLayoutTab_dependsOnPlacementMode() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        // Tap on Layout tab to select
+        composeRule.onNodeWithText("Layout").performClick()
+
+        // Use the toggle size action
+        composeRule
+            .onNodeWithContentDescription("tileE")
+            .performCustomAccessibilityActionWithLabel(
+                context.getString(R.string.accessibility_qs_edit_toggle_tile_size_action)
+            )
+
+        // Double tap "tileA" to enable placement mode
+        composeRule.onNodeWithContentDescription("tileA").performTouchInput { doubleClick() }
+
+        // Assert the toggle size action is missing
+        assertThrows(AssertionError::class.java) {
+            composeRule
+                .onNodeWithContentDescription("tileE")
+                .performCustomAccessibilityActionWithLabel(
+                    context.getString(R.string.accessibility_qs_edit_toggle_tile_size_action)
+                )
+        }
+    }
+
+    @Test
+    @EnableFlags(QsEditModeTabs.FLAG_NAME)
+    fun layoutActions_inAddTab_doNotExist() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        // Assert the toggle size action is missing from the "Add" tab
+        val hasCustomActions =
+            composeRule
+                .onNodeWithContentDescription("tileE")
+                .fetchSemanticsNode()
+                .config
+                .contains(CustomActions)
+        assertThat(hasCustomActions).isFalse()
+    }
+
+    @Test
+    @DisableFlags(QsEditModeTabs.FLAG_NAME)
     fun placementAction_dependsOnPlacementMode() {
         composeRule.setContent { EditTileGridUnderTest() }
         composeRule.waitForIdle()
+
+        // Assert the placement action is missing
+        assertThrows(AssertionError::class.java) {
+            composeRule
+                .onNodeWithContentDescription("tileE")
+                .performCustomAccessibilityActionWithLabel(
+                    context.getString(R.string.accessibility_qs_edit_place_tile_action)
+                )
+        }
+
+        // Double tap "tileA" to enable placement mode
+        composeRule.onNodeWithContentDescription("tileA").performTouchInput { doubleClick() }
+
+        // Use the placement action
+        composeRule
+            .onNodeWithContentDescription("tileE")
+            .performCustomAccessibilityActionWithLabel(
+                context.getString(R.string.accessibility_qs_edit_place_tile_action)
+            )
+    }
+
+    @Test
+    @EnableFlags(QsEditModeTabs.FLAG_NAME)
+    fun placementAction_inLayoutTab_dependsOnPlacementMode() {
+        composeRule.setContent { EditTileGridUnderTest() }
+        composeRule.waitForIdle()
+
+        // Tap on Layout tab to select
+        composeRule.onNodeWithText("Layout").performClick()
 
         // Assert the placement action is missing
         assertThrows(AssertionError::class.java) {
