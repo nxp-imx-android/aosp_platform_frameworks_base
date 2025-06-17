@@ -6453,6 +6453,13 @@ public final class Settings {
                 "touchpad_acceleration_enabled";
 
         /**
+         * Whether to enable touchpads.
+         *
+         * @hide
+         */
+        public static final String TOUCHPAD_ENABLED = "touchpad_enabled";
+
+        /**
          * Whether to enable reversed vertical scrolling for connected mice.
          *
          * When enabled, scrolling down on the mouse wheel will move the screen up and vice versa.
@@ -6773,6 +6780,7 @@ public final class Settings {
             PRIVATE_SETTINGS.add(TOUCHPAD_RIGHT_CLICK_ZONE);
             PRIVATE_SETTINGS.add(TOUCHPAD_SYSTEM_GESTURES);
             PRIVATE_SETTINGS.add(TOUCHPAD_ACCELERATION_ENABLED);
+            PRIVATE_SETTINGS.add(TOUCHPAD_ENABLED);
             PRIVATE_SETTINGS.add(CAMERA_FLASH_NOTIFICATION);
             PRIVATE_SETTINGS.add(SCREEN_FLASH_NOTIFICATION);
             PRIVATE_SETTINGS.add(SCREEN_FLASH_NOTIFICATION_COLOR);
