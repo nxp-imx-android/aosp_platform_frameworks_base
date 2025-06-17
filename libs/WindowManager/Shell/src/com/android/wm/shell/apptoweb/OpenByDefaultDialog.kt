@@ -31,7 +31,6 @@ import android.view.LayoutInflater
 import android.view.SurfaceControl
 import android.view.SurfaceControlViewHost
 import android.view.WindowManager.LayoutParams
-import android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
 import android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
 import android.view.WindowManager.LayoutParams.TYPE_APPLICATION_PANEL
 import android.view.WindowlessWindowManager
@@ -40,6 +39,7 @@ import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.TextView
 import android.window.TaskConstants
+import com.android.window.flags.Flags
 import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.compatui.DialogAnimationController
@@ -107,8 +107,12 @@ internal class OpenByDefaultDialog(
         appIconView = dialog.requireViewById(R.id.application_icon)
         appNameView = dialog.requireViewById(R.id.application_name)
 
-        // TODO: ag/34061541 - once landed, can refactor with simpler fix
-        transitions.runOnIdle(this::createDialogWindow)
+        if (Flags.useInputReportedFocusForAccessibility()) {
+            createDialogWindow()
+        } else {
+            // TODO: ag/34061541 - once landed, can refactor with simpler fix
+            transitions.runOnIdle(this::createDialogWindow)
+        }
 
         dialog.setDismissOnClickListener { closeMenu() }
         dialog.setConfirmButtonClickListener {
@@ -117,6 +121,9 @@ internal class OpenByDefaultDialog(
         }
 
         listener.onDialogCreated()
+        if (Flags.useInputReportedFocusForAccessibility()) {
+            viewHost.requestInputFocus(true)
+        }
     }
 
     private fun createDialogWindow() {
@@ -126,7 +133,7 @@ internal class OpenByDefaultDialog(
             taskBounds.width(),
             taskBounds.height(),
             TYPE_APPLICATION_PANEL,
-            FLAG_NOT_FOCUSABLE or FLAG_NOT_TOUCH_MODAL,
+            FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
             token = Binder()
@@ -143,11 +150,13 @@ internal class OpenByDefaultDialog(
     }
 
     private fun onAnimationEnded() {
-        dialog.post {
-            dialog.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)
-            val subHeader: TextView = dialog.requireViewById(R.id.dialog_subheader)
-            subHeader.requestFocus()
-            subHeader.requestAccessibilityFocus()
+        if (!Flags.useInputReportedFocusForAccessibility()) {
+            dialog.post {
+                dialog.sendAccessibilityEvent(AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED)
+                val subHeader: TextView = dialog.requireViewById(R.id.dialog_subheader)
+                subHeader.requestFocus()
+                subHeader.requestAccessibilityFocus()
+            }
         }
     }
 
@@ -175,6 +184,9 @@ internal class OpenByDefaultDialog(
     }
 
     private fun closeMenu() {
+        if (Flags.useInputReportedFocusForAccessibility()) {
+            viewHost.requestInputFocus(false)
+        }
         loadAppInfoJob?.cancel()
         animationController.startExitAnimation(dialog) {
             // Release the host and manager after the exit animation
