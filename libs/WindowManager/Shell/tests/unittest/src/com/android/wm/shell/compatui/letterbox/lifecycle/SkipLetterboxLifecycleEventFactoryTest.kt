@@ -17,6 +17,8 @@
 package com.android.wm.shell.compatui.letterbox.lifecycle
 
 import android.testing.AndroidTestingRunner
+import android.view.WindowManager.TRANSIT_CLOSE
+import android.view.WindowManager.TRANSIT_OPEN
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
@@ -26,7 +28,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
-
 import org.mockito.kotlin.mock
 
 /**
@@ -40,11 +41,31 @@ import org.mockito.kotlin.mock
 class SkipLetterboxLifecycleEventFactoryTest : ShellTestCase() {
 
     @Test
-    fun `Factory is active when Change is a DesksOrganizer change`() {
+    fun `Factory is active when Change is a Closing one`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
                 inputChange {
-                    // Empty Change
+                    mode = TRANSIT_CLOSE
+                }
+                validateCanHandle { canHandle ->
+                    assert(canHandle)
+                }
+                validateCreateLifecycleEvent { event ->
+                    assert(event == null)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `Factory is active when Change is not closing and a DesksOrganizer change`() {
+        runTestScenario { r ->
+            testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
+                inputChange {
+                    mode = TRANSIT_OPEN
+                    activityTransitionInfo {
+                        taskId = 10
+                    }
                 }
                 r.configureDesksOrganizer(isDeskChange = true)
                 validateCanHandle { canHandle ->
@@ -58,11 +79,14 @@ class SkipLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    fun `Factory is skipped when Change is NOT a DesksOrganizer change`() {
+    fun `Factory is skipped when Change is not closing one and is NOT a DesksOrganizer change`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
                 inputChange {
-                    // Empty Change
+                    mode = TRANSIT_OPEN
+                    activityTransitionInfo {
+                        taskId = 10
+                    }
                 }
                 r.configureDesksOrganizer(isDeskChange = false)
                 validateCanHandle { canHandle ->

@@ -21,9 +21,11 @@ import android.content.ComponentName
 import android.graphics.Point
 import android.graphics.Rect
 import android.view.SurfaceControl
+import android.view.WindowManager.TRANSIT_NONE
 import android.window.ActivityTransitionInfo
 import android.window.AppCompatTransitionInfo
 import android.window.TransitionInfo.Change
+import android.window.TransitionInfo.TransitionMode
 import android.window.WindowContainerToken
 import org.mockito.kotlin.mock
 
@@ -59,6 +61,7 @@ class ChangeTestInputBuilder : TestInputBuilder<Change> {
     private val inputParams = InputParams()
     var endAbsBounds: Rect? = null
     var endRelOffset: Point? = null
+    @TransitionMode var mode: Int = TRANSIT_NONE
 
     data class InputParams(
         var token: WindowContainerToken = mock<WindowContainerToken>(),
@@ -109,6 +112,7 @@ class ChangeTestInputBuilder : TestInputBuilder<Change> {
             inputParams.token,
             inputParams.leash
         ).apply {
+            mode = this@ChangeTestInputBuilder.mode
             taskInfo = inputParams.taskInfo
             this@ChangeTestInputBuilder.endAbsBounds?.let {
                 this@apply.endAbsBounds.set(endAbsBounds)
