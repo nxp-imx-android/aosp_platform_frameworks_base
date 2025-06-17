@@ -314,6 +314,11 @@ public class DisplayManagerFlags {
             Flags::ensureColorFadeWhenTurningOn
     );
 
+    private final FlagState mIsOnDisplayAddedInObserverEnabled = new FlagState(
+            Flags.FLAG_ENABLE_ON_DISPLAY_ADDED_IN_OBSERVER,
+            Flags::enableOnDisplayAddedInObserver
+    );
+
     /**
      * @return {@code true} if 'port' is allowed in display layout configuration file.
      */
@@ -662,6 +667,10 @@ public class DisplayManagerFlags {
         return mEnsureColorFadeWhenTurningOn.isEnabled();
     }
 
+    public boolean isOnDisplayAddedInObserverEnabled() {
+        return mIsOnDisplayAddedInObserverEnabled.isEnabled();
+    }
+
     /**
      * dumps all flagstates
      * @param pw printWriter
@@ -726,6 +735,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mEnableDefaultDisplayInTopologySwitch);
         pw.println(" " + mModeSwitchWithoutSaving);
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
+        pw.println(" " + mIsOnDisplayAddedInObserverEnabled);
     }
 
     private static class FlagState {
