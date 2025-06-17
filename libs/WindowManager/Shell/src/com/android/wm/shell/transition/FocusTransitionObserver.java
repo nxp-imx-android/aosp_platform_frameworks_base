@@ -28,6 +28,7 @@ import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
 import static com.android.wm.shell.transition.Transitions.TransitionObserver;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.ActivityManager.RunningTaskInfo;
 import android.os.RemoteException;
 import android.util.ArraySet;
@@ -265,6 +266,18 @@ public class FocusTransitionObserver {
             return task.isFocused;
         }
         return task.displayId == mFocusedDisplayId && isFocusedOnDisplay(task);
+    }
+
+    /**
+     * Gets the focused task on a specific display.
+     *
+     * @param displayId The ID of the display.
+     * @return The {@link RunningTaskInfo} of the focused task on the given display,
+     *         or {@code null} if no task is focused or display not recorded in the observer.
+     */
+    @Nullable
+    public RunningTaskInfo getFocusedTaskOnDisplay(int displayId) {
+        return mFocusedTaskOnDisplay.get(displayId);
     }
 
     /** Dumps focused display and tasks. */

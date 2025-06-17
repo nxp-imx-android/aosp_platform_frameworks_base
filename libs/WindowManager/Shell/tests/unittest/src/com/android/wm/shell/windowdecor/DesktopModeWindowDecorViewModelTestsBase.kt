@@ -66,6 +66,7 @@ import com.android.wm.shell.desktopmode.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTasksLimiter
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
+import com.android.wm.shell.desktopmode.FakeShellDesktopState
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController
 import com.android.wm.shell.desktopmode.education.AppToWebEducationController
@@ -174,6 +175,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected lateinit var spyContext: TestableContext
     private lateinit var desktopModeEventLogger: DesktopModeEventLogger
     protected lateinit var desktopState: FakeDesktopState
+    protected lateinit var shellDesktopState: FakeShellDesktopState
     protected lateinit var desktopConfig: FakeDesktopConfig
 
     private val transactionFactory = Supplier<SurfaceControl.Transaction> {
@@ -195,6 +197,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     @Before
     fun earlySetUp() {
         desktopState = FakeDesktopState()
+        shellDesktopState = FakeShellDesktopState(desktopState)
         desktopConfig = FakeDesktopConfig()
     }
 
@@ -268,7 +271,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             mockMultiDisplayDragMoveIndicatorController,
             mockCompatUIHandler,
             mockDesksOrganizer,
-            desktopState,
+            shellDesktopState,
             desktopConfig,
         )
         desktopModeWindowDecorViewModel.setSplitScreenController(mockSplitScreenController)
