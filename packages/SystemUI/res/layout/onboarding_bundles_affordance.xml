@@ -84,11 +84,14 @@
                 style="@*android:style/Widget.DeviceDefault.Notification.Text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
                 android:focusable="true"
                 android:forceHasOverlappingRendering="false"
                 android:paddingHorizontal="16dp"
                 android:paddingTop="10dp"
                 android:paddingBottom="4dp"
+                android:gravity="center"
                 android:text="@string/learn_more"
                 android:textColor="@androidprv:color/materialColorOnTertiaryFixedVariant" />
             <TextView
@@ -96,11 +99,14 @@
                 style="@*android:style/Widget.DeviceDefault.Notification.Text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:minWidth="48dp"
+                android:minHeight="48dp"
                 android:focusable="true"
                 android:forceHasOverlappingRendering="false"
                 android:paddingHorizontal="16dp"
                 android:paddingTop="10dp"
                 android:paddingBottom="4dp"
+                android:gravity="center"
                 android:text="@string/got_it"
                 android:textColor="@androidprv:color/materialColorOnTertiaryFixedVariant" />
       </LinearLayout>
