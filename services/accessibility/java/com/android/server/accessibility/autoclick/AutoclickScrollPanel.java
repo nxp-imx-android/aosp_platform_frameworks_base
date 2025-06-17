@@ -37,6 +37,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.internal.R;
+import com.android.internal.policy.SystemBarUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -89,6 +90,8 @@ public class AutoclickScrollPanel {
     private final ImageButton mRightButton;
     private final ImageButton mExitButton;
 
+    private final int mStatusBarHeight;
+
     private boolean mInScrollMode = false;
 
     // Panel size determined after measuring.
@@ -122,6 +125,7 @@ public class AutoclickScrollPanel {
         mContentView = (AutoclickLinearLayout) LayoutInflater.from(context).inflate(
                 R.layout.accessibility_autoclick_scroll_panel, null);
         mParams = getDefaultLayoutParams();
+        mStatusBarHeight = SystemBarUtils.getStatusBarHeight(context);
 
         // Initialize buttons.
         mUpButton = mContentView.findViewById(R.id.scroll_up);
@@ -190,8 +194,7 @@ public class AutoclickScrollPanel {
     /**
      * Positions the panel at the bottom right of the cursor coordinates,
      * ensuring it stays within the screen boundaries.
-     * If the panel would go off the right or bottom edge, it's repositioned
-     * to the left or above the cursor, respectively.
+     * If the panel would go off the right or bottom edge, tries other diagonal directions.
      * The panel's gravity is set to TOP|LEFT for absolute positioning.
      */
     protected void positionPanelAtCursor(float cursorX, float cursorY) {
@@ -204,24 +207,34 @@ public class AutoclickScrollPanel {
         int screenWidth = displayMetrics.widthPixels;
         int screenHeight = displayMetrics.heightPixels;
 
-        // Calculate initial position.
-        int panelX = (int) cursorX;
-        int panelY = (int) cursorY;
+        // Adjust Y for status bar height.
+        float adjustedCursorY = cursorY - mStatusBarHeight;
 
-        // Check if panel would go off right edge of screen.
-        if (panelX + mPanelWidth > screenWidth - PANEL_EDGE_MARGIN) {
-            // Place to the left of cursor instead if no space left for right edge.
-            panelX = (int) cursorX - mPanelWidth;
+        // Offset from cursor point to panel center.
+        int margin = 10;
+        int xOffset = mPanelWidth / 2 + margin;
+        int yOffset = mPanelHeight / 2 + margin;
+
+        // Try 4 diagonal positions: bottom-right, bottom-left, top-right, top-left.
+        int[][] directions = {{+1, +1}, {-1, +1}, {+1, -1}, {-1, -1}};
+        for (int[] dir : directions) {
+            // (panelX, panelY) is the top-left point of the panel.
+            int panelX = (int) (cursorX + dir[0] * xOffset - mPanelWidth / 2);
+            int panelY = (int) (adjustedCursorY + dir[1] * yOffset - mPanelHeight / 2);
+            if (isWithinBounds(panelX, panelY, screenWidth, screenHeight)) {
+                mParams.x = panelX;
+                mParams.y = panelY;
+                return;
+            }
         }
+    }
 
-        // Check if panel would go off bottom edge of screen.
-        if (panelY + mPanelHeight > screenHeight - PANEL_EDGE_MARGIN) {
-            // Place above cursor instead if no space left for bottom edge.
-            panelY = (int) cursorY - mPanelHeight;
-        }
-
-        mParams.x = panelX;
-        mParams.y = panelY;
+    /**
+     * Returns true if the panel fits on screen with margin.
+     */
+    private boolean isWithinBounds(int x, int y, int screenWidth, int screenHeight) {
+        return x > PANEL_EDGE_MARGIN && x + mPanelWidth + PANEL_EDGE_MARGIN < screenWidth
+                && y > PANEL_EDGE_MARGIN && y + mPanelHeight + PANEL_EDGE_MARGIN < screenHeight;
     }
 
     /**
@@ -335,5 +348,20 @@ public class AutoclickScrollPanel {
     @VisibleForTesting
     public WindowManager.LayoutParams getLayoutParamsForTesting() {
         return mParams;
+    }
+
+    @VisibleForTesting
+    public int getPanelWidthForTesting() {
+        return mPanelWidth;
+    }
+
+    @VisibleForTesting
+    public int getPanelHeightForTesting() {
+        return mPanelHeight;
+    }
+
+    @VisibleForTesting
+    public int getStatusBarHeightForTesting() {
+        return mStatusBarHeight;
     }
 }
