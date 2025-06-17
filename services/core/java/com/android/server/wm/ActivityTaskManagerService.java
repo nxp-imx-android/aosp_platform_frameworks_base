@@ -4597,7 +4597,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             mTaskOrganizerController.dump(pw, "  ");
             mVisibleActivityProcessTracker.dump(pw, "  ");
             mActiveUids.dump(pw, "  ");
-            pw.println("  SleepTokens=" + mRootWindowContainer.mSleepTokens);
             if (mDemoteTopAppReasons != 0) {
                 pw.println("  mDemoteTopAppReasons=" + mDemoteTopAppReasons);
             }
@@ -4763,13 +4762,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         final long sleepToken = proto.start(ActivityManagerServiceDumpProcessesProto.SLEEP_STATUS);
         proto.write(ActivityManagerServiceDumpProcessesProto.SleepStatus.WAKEFULNESS,
                 PowerManagerInternal.wakefulnessToProtoEnum(wakeFullness));
-        final int tokenSize = mRootWindowContainer.mSleepTokens.size();
-        for (int i = 0; i < tokenSize; i++) {
-            final RootWindowContainer.SleepToken st =
-                    mRootWindowContainer.mSleepTokens.valueAt(i);
-            proto.write(ActivityManagerServiceDumpProcessesProto.SleepStatus.SLEEP_TOKENS,
-                    st.toString());
-        }
         proto.write(ActivityManagerServiceDumpProcessesProto.SleepStatus.SLEEPING, mSleeping);
         proto.write(ActivityManagerServiceDumpProcessesProto.SleepStatus.SHUTTING_DOWN,
                 mShuttingDown);
@@ -5311,36 +5303,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
 
         EventLogTags.writeWmSetResumedActivity(r.mUserId, r.shortComponentName, reason);
-    }
-
-    final class SleepTokenAcquirer {
-        private final String mTag;
-        private final SparseArray<RootWindowContainer.SleepToken> mSleepTokens =
-                new SparseArray<>();
-
-        SleepTokenAcquirer(@NonNull String tag) {
-            mTag = tag;
-        }
-
-        void acquire(int displayId) {
-            synchronized (mGlobalLock) {
-                if (!mSleepTokens.contains(displayId)) {
-                    mSleepTokens.append(displayId,
-                            mRootWindowContainer.createSleepToken(mTag, displayId));
-                    updateSleepIfNeededLocked();
-                }
-            }
-        }
-
-        void release(int displayId) {
-            synchronized (mGlobalLock) {
-                final RootWindowContainer.SleepToken token = mSleepTokens.get(displayId);
-                if (token != null) {
-                    mRootWindowContainer.removeSleepToken(token);
-                    mSleepTokens.remove(displayId);
-                }
-            }
-        }
     }
 
     void updateSleepIfNeededLocked() {
@@ -7123,7 +7085,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 if (dumpPackage == null) {
                     pw.println("  mWakefulness="
                             + PowerManagerInternal.wakefulnessToString(wakefulness));
-                    pw.println("  mSleepTokens=" + mRootWindowContainer.mSleepTokens);
                     if (mRunningVoice != null) {
                         pw.println("  mRunningVoice=" + mRunningVoice);
                         pw.println("  mVoiceWakeLock" + mVoiceWakeLock);
