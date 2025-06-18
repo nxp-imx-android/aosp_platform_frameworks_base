@@ -491,7 +491,7 @@ public final class WindowContainerTransaction implements Parcelable {
      * @hide
      */
     @NonNull
-    @FlaggedApi(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @FlaggedApi(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public WindowContainerTransaction setSafeRegionBounds(
             @NonNull WindowContainerToken container,
             @Nullable Rect safeRegionBounds) {
@@ -2207,7 +2207,7 @@ public final class WindowContainerTransaction implements Parcelable {
 
         /** Creates a hierarchy op for setting the safe region bounds. */
         @NonNull
-        @FlaggedApi(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+        @FlaggedApi(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
         public static HierarchyOp createForSetSafeRegionBounds(@NonNull IBinder container,
                 @Nullable Rect safeRegionBounds) {
             return new Builder(HIERARCHY_OP_TYPE_SET_SAFE_REGION_BOUNDS)

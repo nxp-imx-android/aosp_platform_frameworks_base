@@ -541,7 +541,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      *                         WindowContainer
      */
     void setSafeRegionBounds(@Nullable Rect safeRegionBounds) {
-        if (!Flags.safeRegionLetterboxing()) {
+        if (!Flags.safeRegionLetterboxingV1()) {
             Slog.i(TAG, "Feature safe region letterboxing is not available");
             return;
         }

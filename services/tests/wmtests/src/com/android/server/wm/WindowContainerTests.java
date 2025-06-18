@@ -1534,7 +1534,7 @@ public class WindowContainerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testSetSafeRegionBounds_appliedOnNodeAndChildren() {
         final TestWindowContainerBuilder builder = new TestWindowContainerBuilder(mWm);
         final TestWindowContainer root = builder.setLayer(0).build();
@@ -1575,7 +1575,7 @@ public class WindowContainerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testSetSafeRegionBounds_resetSafeRegionBounds() {
         final TestWindowContainerBuilder builder = new TestWindowContainerBuilder(mWm);
         final TestWindowContainer root = builder.setLayer(0).build();
