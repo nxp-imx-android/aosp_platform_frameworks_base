@@ -2899,9 +2899,8 @@ public final class MessageQueue {
                     + " now: " + SystemClock.uptimeMillis());
         }
 
-        final Looper myLooper = Looper.myLooper();
         /* If we are running on the looper thread we can add directly to the priority queue */
-        if (myLooper != null && myLooper.getQueue() == this) {
+        if (Thread.currentThread() == mLooperThread) {
             if (getQuitting()) {
                 logDeadThread(msg);
                 return false;
