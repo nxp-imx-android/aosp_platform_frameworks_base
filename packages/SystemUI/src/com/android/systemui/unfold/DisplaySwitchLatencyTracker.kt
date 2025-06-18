@@ -21,6 +21,7 @@ import android.hardware.devicestate.DeviceStateManager
 import android.util.Log
 import com.android.app.tracing.instantForTrack
 import com.android.internal.util.LatencyTracker
+import com.android.internal.util.LatencyTracker.ACTION_SWITCH_DISPLAY_FOLD
 import com.android.internal.util.LatencyTracker.ACTION_SWITCH_DISPLAY_UNFOLD
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
@@ -79,7 +80,7 @@ constructor(
         scope.launch {
             displaySwitchInteractor.displaySwitchState
                 .filter { it !is DisplaySwitchState.Unknown }
-                .onEach(::startLatencyTrackingIfUnfolding)
+                .onEach(::startLatencyTracking)
                 .map(::toDisplaySwitchUpdate)
                 // we need full chain of updates to create tracking event with possible options for
                 // display switch chain:
@@ -98,20 +99,30 @@ constructor(
                     log { "new display switch states: $updatesChain " }
                     if (updatesChain.wasCorrupted || updatesChain.timedOut) {
                         latencyTracker.onActionCancel(ACTION_SWITCH_DISPLAY_UNFOLD)
+                        latencyTracker.onActionCancel(ACTION_SWITCH_DISPLAY_FOLD)
                     } else {
                         latencyTracker.onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+
+                        if (getCurrentState()
+                            != SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__TO_STATE__SCREEN_OFF
+                        ) {
+                            latencyTracker.onActionEnd(ACTION_SWITCH_DISPLAY_FOLD)
+                        } else {
+                            latencyTracker.onActionCancel(ACTION_SWITCH_DISPLAY_FOLD)
+                        }
                     }
                     logDisplaySwitchEvent(updatesChain)
                 }
         }
     }
 
-    private fun startLatencyTrackingIfUnfolding(switchState: DisplaySwitchState) {
-        val startedUnfolding =
-            switchState is DisplaySwitchState.Switching &&
-                switchState.newDeviceState != DeviceState.FOLDED
+    private fun startLatencyTracking(switchState: DisplaySwitchState) {
+        if (switchState !is DisplaySwitchState.Switching) return
+        val startedUnfolding = switchState.newDeviceState != DeviceState.FOLDED
         if (startedUnfolding) {
             latencyTracker.onActionStart(ACTION_SWITCH_DISPLAY_UNFOLD)
+        } else {
+            latencyTracker.onActionStart(ACTION_SWITCH_DISPLAY_FOLD)
         }
     }
 
