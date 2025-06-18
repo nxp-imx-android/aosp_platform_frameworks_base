@@ -227,16 +227,6 @@ flag {
 }
 
 flag {
-    name: "enable_bubble_swipe_up_cleanup"
-    namespace: "multitasking"
-    description: "Enable clean up of bubbles swipe gesture handling"
-    bug: "391909607"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "enable_enter_split_remove_bubble"
     namespace: "multitasking"
     description: "Enable removing a task from bubbles when it is entering split screen"

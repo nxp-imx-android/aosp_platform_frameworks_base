@@ -2680,8 +2680,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 mSysuiProxy.requestNotificationShadeTopUi(true, TAG);
             }
 
-            if (Flags.enableBubbleSwipeUpCleanup() && !update.removedBubbles.isEmpty()
-                    && !mBubbleData.hasBubbles()) {
+            if (!update.removedBubbles.isEmpty() && !mBubbleData.hasBubbles()) {
                 // This update removed all the bubbles. Send an update to SystemUI to mark the stack
                 // collapsed. This should be sent by the UI classes (BubbleStackView or
                 // BubbleBarLayerView), but if we fail to send this, home gesture stops working.
