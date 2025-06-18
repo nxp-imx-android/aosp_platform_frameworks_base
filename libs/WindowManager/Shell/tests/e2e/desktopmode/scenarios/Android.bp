@@ -104,7 +104,6 @@ test_module_config {
         "com.android.wm.shell.functional.EnterDesktopWithDragExistingWindowsTest",
         "com.android.wm.shell.functional.EnterDesktopWithDragTest",
         "com.android.wm.shell.functional.EnterDesktopWithDragWindowsLimitTest",
-        "com.android.wm.shell.functional.ExitDesktopToFullScreenWithAppHeaderMenuTest",
         "com.android.wm.shell.functional.ExitDesktopWithDragToTopDragZoneTest",
         "com.android.wm.shell.functional.FocusAppFromAllAppsTest",
         "com.android.wm.shell.functional.FocusAppFromTaskbarTest",
@@ -129,6 +128,7 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.CloseAllAppsViaAppHeaderExitTest",
         "com.android.wm.shell.functional.fundamentals.CloseAllAppsWithBackNavigationTest",
         "com.android.wm.shell.functional.fundamentals.EnterDesktopFromSplitScreenWithAppHandleMenuTest",
+        "com.android.wm.shell.functional.fundamentals.ExitDesktopToFullScreenWithAppHeaderMenuTest",
         "com.android.wm.shell.functional.fundamentals.ExitDesktopToSplitScreenWithAppHeaderMenuTest",
         "com.android.wm.shell.functional.fundamentals.OpenAppFromAllAppsTest",
         "com.android.wm.shell.functional.fundamentals.OpenAppFromTaskbarTest",
@@ -233,7 +233,7 @@ test_module_config {
     name: "FunctionalTestsDesktopMode-ExitDesktopToFullScreenWithAppHeaderMenuTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.ExitDesktopToFullScreenWithAppHeaderMenuTest"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.ExitDesktopToFullScreenWithAppHeaderMenuTest"],
 }
 
 test_module_config {
