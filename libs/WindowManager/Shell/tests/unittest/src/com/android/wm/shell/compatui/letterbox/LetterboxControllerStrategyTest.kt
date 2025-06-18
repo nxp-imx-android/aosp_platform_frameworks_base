@@ -17,11 +17,13 @@
 package com.android.wm.shell.compatui.letterbox
 
 import android.content.Context
+import android.graphics.Rect
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode.MULTIPLE_SURFACES
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode.SINGLE_SURFACE
+import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEvent
 import java.util.function.Consumer
 import kotlin.test.assertEquals
 import org.junit.Test
@@ -38,10 +40,23 @@ import org.junit.runner.RunWith
 class LetterboxControllerStrategyTest : ShellTestCase() {
 
     @Test
-    fun `LetterboxMode is MULTIPLE_SURFACES with rounded corners`() {
+    fun `LetterboxMode is SINGLE_SURFACE with rounded corners`() {
         runTestScenario { r ->
             r.configureRoundedCornerRadius(true)
             r.configureLetterboxMode()
+            r.checkLetterboxModeIsSingle()
+        }
+    }
+
+    @Test
+    fun `LetterboxMode is SINGLE_SURFACE with Bubble Events`() {
+        runTestScenario { r ->
+            r.configureRoundedCornerRadius(true)
+            r.configureLetterboxMode(
+                r.SIMPLE_TEST_EVENT.copy(
+                    isBubble = true
+                )
+            )
             r.checkLetterboxModeIsSingle()
         }
     }
@@ -63,7 +78,7 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
         consumer.accept(robot)
     }
 
-    class LetterboxStrategyRobotTest(val ctx: Context) {
+    class LetterboxStrategyRobotTest(ctx: Context) {
 
         companion object {
             @JvmStatic
@@ -71,6 +86,10 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
             @JvmStatic
             private val ROUNDED_CORNERS_FALSE = 0
         }
+
+        val SIMPLE_TEST_EVENT = LetterboxLifecycleEvent(
+            taskBounds = Rect()
+        )
 
         private val letterboxConfiguration: LetterboxConfiguration
         private val letterboxStrategy: LetterboxControllerStrategy
@@ -86,8 +105,8 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
             )
         }
 
-        fun configureLetterboxMode() {
-            letterboxStrategy.configureLetterboxMode()
+        fun configureLetterboxMode(event: LetterboxLifecycleEvent = SIMPLE_TEST_EVENT) {
+            letterboxStrategy.configureLetterboxMode(event)
         }
 
         fun checkLetterboxModeIsSingle(expected: Boolean = true) {

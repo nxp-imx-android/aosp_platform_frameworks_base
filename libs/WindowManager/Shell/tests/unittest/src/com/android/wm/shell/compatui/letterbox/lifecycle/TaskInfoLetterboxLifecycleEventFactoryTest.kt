@@ -56,6 +56,28 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
     }
 
     @Test
+    fun `With TaskInfo for Bubble a bubble event is returned`() {
+        runTestScenario { r ->
+            testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
+                inputChange {
+                    endAbsBounds = Rect(100, 200, 2000, 1000)
+                    runningTaskInfo { ti ->
+                        ti.isAppBubble = true
+                    }
+                    endAbsBounds = Rect(0, 0, 500, 1000)
+                }
+                validateCanHandle { canHandle ->
+                    assert(canHandle == true)
+                }
+                validateCreateLifecycleEvent { event ->
+                    assert(event != null)
+                    assert(event?.isBubble == true)
+                }
+            }
+        }
+    }
+
+    @Test
     fun `With TaskInfo taskBounds are calculated from endAbsBounds`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {

@@ -49,7 +49,8 @@ class TaskInfoLetterboxLifecycleEventFactory : LetterboxLifecycleEventFactory {
                 taskBounds = taskBounds,
                 letterboxBounds = letterboxBounds,
                 containerToken = ti.token,
-                taskLeash = change.leash
+                taskLeash = change.leash,
+                isBubble = ti.isAppBubble
             )
         }
         return null

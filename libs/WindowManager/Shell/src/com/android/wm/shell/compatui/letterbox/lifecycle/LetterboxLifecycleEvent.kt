@@ -44,6 +44,7 @@ data class LetterboxLifecycleEvent(
     val letterboxBounds: Rect? = null,
     val containerToken: WindowContainerToken? = null,
     val taskLeash: SurfaceControl? = null,
+    val isBubble: Boolean = false
 )
 
 /**
