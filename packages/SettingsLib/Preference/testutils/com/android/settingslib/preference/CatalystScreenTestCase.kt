@@ -26,6 +26,7 @@ import androidx.preference.PreferenceScreen
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.google.common.truth.Truth.assertWithMessage
 import java.util.concurrent.atomic.AtomicBoolean
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -47,13 +48,14 @@ abstract class CatalystScreenTestCase {
         enableCatalystScreen()
         assertThat(preferenceScreenCreator.isFlagEnabled(appContext)).isTrue()
         val catalystScreen = dumpPreferenceScreen()
-        Log.i(TAG, catalystScreen)
+        Log.i(TAG, "Catalyst screen: $catalystScreen")
 
         disableCatalystScreen()
         assertThat(preferenceScreenCreator.isFlagEnabled(appContext)).isFalse()
         val legacyScreen = dumpPreferenceScreen()
-
-        assertThat(catalystScreen).isEqualTo(legacyScreen)
+        assertWithMessage("Legacy screen: %s", legacyScreen)
+            .that(catalystScreen)
+            .isEqualTo(legacyScreen)
     }
 
     /** Enables the flag to test catalyst screen. */
@@ -94,7 +96,7 @@ abstract class CatalystScreenTestCase {
         FragmentScenario.launch(fragmentClass)
 
     private fun Preference.toString(builder: StringBuilder, indent: String = "") {
-        val clazz = javaClass
+        val clazz = getPreferenceClass(this)
         builder.append(indent).append(clazz).append(" {\n")
         val indent2 = "$indent  "
         if (clazz != PreferenceScreen::class.java) {
@@ -124,6 +126,13 @@ abstract class CatalystScreenTestCase {
         }
         builder.append(indent).append("}\n")
     }
+
+    /**
+     * Returns the preference class to dump.
+     *
+     * Subclass could override to take care of preference widget change after migration.
+     */
+    protected open fun getPreferenceClass(preference: Preference): Class<*> = preference.javaClass
 
     companion object {
         const val TAG = "CatalystScreenTestCase"
