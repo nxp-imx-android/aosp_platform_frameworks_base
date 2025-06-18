@@ -1549,9 +1549,7 @@ public class NotificationStackScrollLayout
             boolean canClip = true;
             if (child instanceof ExpandableNotificationRow row) {
                 if (row.isChildInGroup()) {
-                    ExpandableNotificationRow notifParent = row.getNotificationParent();
-                    canClip = notifParent.isGroupExpanded()
-                            && !notifParent.isGroupExpansionChanging();
+                    canClip = canClipChildRow(row);
                 }
                 // handle the notGoneIndex for the children as well
                 List<ExpandableNotificationRow> children = row.getAttachedChildren();
@@ -1574,6 +1572,18 @@ public class NotificationStackScrollLayout
             }
         }
         Collections.sort(overlappingList, mNotGoneIndexComparator);
+    }
+
+    private boolean canClipChildRow(ExpandableNotificationRow row) {
+        ExpandableNotificationRow notifParent = row.getNotificationParent();
+        if (NotificationBundleUi.isEnabled()) {
+            return notifParent.isGroupExpanded()
+                    && !notifParent.isGroupExpansionChanging()
+                    && (!notifParent.isChildInGroup() || canClipChildRow(notifParent));
+        } else {
+            return notifParent.isGroupExpanded()
+                    && !notifParent.isGroupExpansionChanging();
+        }
     }
 
     private void updateScrollStateForAddedChildren() {
