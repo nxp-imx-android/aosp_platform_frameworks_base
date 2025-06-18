@@ -28,16 +28,20 @@ class TaskInfoLetterboxLifecycleEventFactory : LetterboxLifecycleEventFactory {
 
     override fun createLifecycleEvent(change: Change): LetterboxLifecycleEvent? {
         change.taskInfo?.let { ti ->
-            val taskBounds = Rect(
-                change.endRelOffset.x,
-                change.endRelOffset.y,
-                change.endAbsBounds.width(),
-                change.endAbsBounds.height()
-            )
             val isLetterboxed = ti.appCompatTaskInfo?.isTopActivityLetterboxed ?: false
+            val taskBoundsAbs = change.endAbsBounds
+            // The bounds are absolute to the screen but we need them relative to the Task.
+            val taskBounds = Rect(taskBoundsAbs).apply {
+                offset(-taskBoundsAbs.left, -taskBoundsAbs.top)
+            }
             // Letterbox bounds are null when the activity is not letterboxed.
-            val letterboxBounds =
+            val letterboxBoundsAbs =
                 if (isLetterboxed) ti.appCompatTaskInfo?.topActivityLetterboxBounds else null
+            val letterboxBounds = letterboxBoundsAbs?.let { absBounds ->
+                Rect(absBounds).apply {
+                    offset(-taskBoundsAbs.left, -taskBoundsAbs.top)
+                }
+            }
             return LetterboxLifecycleEvent(
                 type = change.asLetterboxLifecycleEventType(),
                 displayId = ti.displayId,
