@@ -26,6 +26,7 @@ import com.android.server.companion.datatransfer.continuity.messages.HandoffRequ
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 
+import android.app.ActivityOptions;
 import android.app.HandoffActivityData;
 import android.content.Context;
 import android.content.Intent;
@@ -34,6 +35,7 @@ import android.companion.datatransfer.continuity.IHandoffRequestCallback;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Slog;
+import android.os.UserHandle;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -146,7 +148,10 @@ public class OutboundHandoffRequestController {
         intent.setComponent(topActivity.getComponentName());
         intent.putExtras(new Bundle(topActivity.getExtras()));
         // TODO (joeantonetti): Handle failures here and fall back to a web URL.
-        mContext.startActivity(intent);
+        mContext.startActivityAsUser(
+            intent,
+            ActivityOptions.makeBasic().toBundle(),
+            UserHandle.CURRENT);
         finishHandoffRequest(associationId, taskId, HANDOFF_REQUEST_RESULT_SUCCESS);
     }
 
