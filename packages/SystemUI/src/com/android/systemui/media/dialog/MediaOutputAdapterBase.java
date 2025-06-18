@@ -315,9 +315,12 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
             disableSeekBar();
             if (isChecked && isDeviceIncluded(mController.getSelectableMediaDevice(), device)) {
                 mController.addDeviceToPlayMedia(device);
-            } else if (!isChecked && isDeviceIncluded(mController.getDeselectableMediaDevice(),
-                    device)) {
+            } else if (!isChecked
+                    && isDeviceIncluded(mController.getDeselectableMediaDevice(), device)) {
                 mController.removeDeviceFromPlayMedia(device);
+            }
+            if (Flags.enableOutputSwitcherPersonalAudioSharing()) {
+                notifyDataSetChanged();
             }
         }
 
