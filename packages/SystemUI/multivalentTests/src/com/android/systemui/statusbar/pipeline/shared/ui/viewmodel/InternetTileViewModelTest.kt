@@ -31,7 +31,9 @@ import com.android.systemui.qs.tileimpl.QSTileImpl.ResourceIcon
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.connectivity.WifiIcons
 import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider
-import com.android.systemui.statusbar.pipeline.airplane.data.repository.FakeAirplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.airplaneModeRepository
+import com.android.systemui.statusbar.pipeline.airplane.data.repository.fake
+import com.android.systemui.statusbar.pipeline.airplane.domain.interactor.airplaneModeInteractor
 import com.android.systemui.statusbar.pipeline.ethernet.domain.EthernetInteractor
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
@@ -41,7 +43,8 @@ import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIc
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractorImpl
 import com.android.systemui.statusbar.pipeline.mobile.util.FakeMobileMappingsProxy
 import com.android.systemui.statusbar.pipeline.shared.data.model.DefaultConnectionModel
-import com.android.systemui.statusbar.pipeline.shared.data.repository.FakeConnectivityRepository
+import com.android.systemui.statusbar.pipeline.shared.data.repository.connectivityRepository
+import com.android.systemui.statusbar.pipeline.shared.data.repository.fake
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SignalIcon
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.InternetTileViewModel.Companion.NOT_CONNECTED_NETWORKS_UNAVAILABLE
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.FakeWifiRepository
@@ -71,8 +74,9 @@ class InternetTileViewModelTest : SysuiTestCase() {
     private lateinit var underTest: InternetTileViewModel
     private lateinit var mobileIconsInteractor: MobileIconsInteractor
 
-    private val airplaneModeRepository = FakeAirplaneModeRepository()
-    private val connectivityRepository = FakeConnectivityRepository()
+    private val airplaneModeRepository = kosmos.airplaneModeRepository.fake
+    private val airplaneModeInteractor = kosmos.airplaneModeInteractor
+    private val connectivityRepository = kosmos.connectivityRepository.fake
     private val ethernetInteractor = EthernetInteractor(connectivityRepository)
     private val wifiRepository = FakeWifiRepository()
     private val userSetupRepo = FakeUserSetupRepository()
@@ -128,7 +132,7 @@ class InternetTileViewModelTest : SysuiTestCase() {
 
         underTest =
             InternetTileViewModel(
-                airplaneModeRepository,
+                airplaneModeInteractor,
                 connectivityRepository,
                 ethernetInteractor,
                 mobileIconsInteractor,

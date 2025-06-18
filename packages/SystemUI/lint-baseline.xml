@@ -410,17 +410,6 @@
 
     <issue
         id="CleanArchitectureDependencyViolation"
-        message="The ui layer may not depend on the data layer."
-        errorLine1="import com.android.systemui.statusbar.pipeline.airplane.data.repository.AirplaneModeRepository"
-        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
-        <location
-            file="frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/pipeline/satellite/ui/viewmodel/DeviceBasedSatelliteViewModel.kt"
-            line="23"
-            column="1"/>
-    </issue>
-
-    <issue
-        id="CleanArchitectureDependencyViolation"
         message="The data layer may not depend on the domain layer."
         errorLine1="import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor"
         errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
