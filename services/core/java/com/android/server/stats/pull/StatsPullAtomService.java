@@ -70,7 +70,6 @@ import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STA
 import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STATE__DETECTION_MODE__TELEPHONY;
 import static com.android.internal.util.FrameworkStatsLog.TIME_ZONE_DETECTOR_STATE__DETECTION_MODE__UNKNOWN;
 import static com.android.server.am.MemoryStatUtil.readMemoryStatFromFilesystem;
-import static com.android.server.stats.Flags.accumulateNetworkStatsSinceBoot;
 import static com.android.server.stats.Flags.addMobileBytesTransferByProcStatePuller;
 import static com.android.server.stats.Flags.addPressureStallInformationPuller;
 import static com.android.server.stats.pull.IonMemoryUtil.readProcessSystemIonHeapSizesFromDebugfs;
@@ -1615,33 +1614,24 @@ public class StatsPullAtomService extends SystemService {
         final long bucketDurationMillis = Settings.Global.getLong(mContext.getContentResolver(),
                 NETSTATS_UID_BUCKET_DURATION, NETSTATS_UID_DEFAULT_BUCKET_DURATION_MS);
 
-        if (accumulateNetworkStatsSinceBoot()) {
-            NetworkStatsAccumulator accumulator = CollectionUtils.find(
-                    mNetworkStatsAccumulators, it -> it.hasEqualParameters(template, includeTags));
-            if (accumulator == null) {
-                accumulator = new NetworkStatsAccumulator(
-                        template,
-                        includeTags,
-                        bucketDurationMillis,
-                        bootTimeMillis - bucketDurationMillis);
-                mNetworkStatsAccumulators.add(accumulator);
-            }
-
-            return accumulator.queryStats(currentTimeMillis,
-                    (aTemplate, aIncludeTags, aStartTime, aEndTime) -> {
-                        synchronized (mDataBytesTransferLock) {
-                            return getUidNetworkStatsSnapshotForTemplateLocked(aTemplate,
-                                    aIncludeTags, aStartTime, aEndTime);
-                        }
-                    });
-
-        } else {
-            // Set end time in the future to include all stats in the active bucket.
-            return getUidNetworkStatsSnapshotForTemplateLocked(
-                    template, includeTags,
-                    bootTimeMillis - bucketDurationMillis,
-                    currentTimeMillis + bucketDurationMillis);
+        NetworkStatsAccumulator accumulator = CollectionUtils.find(
+                mNetworkStatsAccumulators, it -> it.hasEqualParameters(template, includeTags));
+        if (accumulator == null) {
+            accumulator = new NetworkStatsAccumulator(
+                    template,
+                    includeTags,
+                    bucketDurationMillis,
+                    bootTimeMillis - bucketDurationMillis);
+            mNetworkStatsAccumulators.add(accumulator);
         }
+
+        return accumulator.queryStats(currentTimeMillis,
+                (aTemplate, aIncludeTags, aStartTime, aEndTime) -> {
+                    synchronized (mDataBytesTransferLock) {
+                        return getUidNetworkStatsSnapshotForTemplateLocked(aTemplate,
+                                aIncludeTags, aStartTime, aEndTime);
+                    }
+                });
     }
 
     @GuardedBy("mDataBytesTransferLock")
