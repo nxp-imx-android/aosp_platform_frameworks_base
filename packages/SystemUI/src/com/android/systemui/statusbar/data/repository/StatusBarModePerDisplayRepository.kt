@@ -30,6 +30,7 @@ import com.android.internal.view.AppearanceRegion
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.statusbar.CommandQueue
+import com.android.systemui.statusbar.StatusBarRegionSampling
 import com.android.systemui.statusbar.core.StatusBarInitializer.OnStatusBarViewInitializedListener
 import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.data.model.StatusBarAppearance
@@ -113,6 +114,12 @@ interface StatusBarModePerDisplayRepository : OnStatusBarViewInitializedListener
      * state.
      */
     fun setOngoingProcessRequiresStatusBarVisible(requiredVisible: Boolean)
+
+    /**
+     * Sets [AppearanceRegion]s obtained from region lightness sampling. If non-empty then these
+     * regions override the regions obtained from DisplayPolicy.
+     */
+    fun setSampledAppearanceRegions(appearanceRegions: List<AppearanceRegion>)
 }
 
 class StatusBarModePerDisplayRepositoryImpl
@@ -220,6 +227,12 @@ constructor(
         _ongoingProcessRequiresStatusBarVisible.value = requiredVisible
     }
 
+    private val _sampledAppearanceRegions = MutableStateFlow<List<AppearanceRegion>>(emptyList())
+
+    override fun setSampledAppearanceRegions(appearanceRegions: List<AppearanceRegion>) {
+        _sampledAppearanceRegions.value = appearanceRegions
+    }
+
     override val isInFullscreenMode: StateFlow<Boolean> =
         _originalStatusBarAttributes
             .map { params ->
@@ -231,16 +244,26 @@ constructor(
 
     /** Modifies the raw [StatusBarAttributes] if letterboxing is needed. */
     private val modifiedStatusBarAttributes: StateFlow<ModifiedStatusBarAttributes?> =
-        combine(_originalStatusBarAttributes, _statusBarBounds) {
+        combine(_originalStatusBarAttributes, _statusBarBounds, _sampledAppearanceRegions) {
                 originalAttributes,
-                statusBarBounds ->
+                statusBarBounds,
+                sampledAppearanceRegions ->
                 if (originalAttributes == null) {
                     null
                 } else {
+                    val originalAppearanceRegions =
+                        if (
+                            StatusBarRegionSampling.isEnabled &&
+                                sampledAppearanceRegions.isNotEmpty()
+                        ) {
+                            sampledAppearanceRegions
+                        } else {
+                            originalAttributes.appearanceRegions
+                        }
                     val (newAppearance, newAppearanceRegions) =
                         modifyAppearanceIfNeeded(
                             originalAttributes.appearance,
-                            originalAttributes.appearanceRegions,
+                            originalAppearanceRegions,
                             originalAttributes.letterboxDetails,
                             statusBarBounds,
                         )
