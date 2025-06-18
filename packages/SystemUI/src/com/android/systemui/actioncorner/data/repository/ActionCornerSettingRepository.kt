@@ -32,7 +32,7 @@ import com.android.systemui.actioncorner.data.model.ActionType.NOTIFICATIONS
 import com.android.systemui.actioncorner.data.model.ActionType.OVERVIEW
 import com.android.systemui.actioncorner.data.model.ActionType.QUICK_SETTINGS
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.util.settings.repository.UserAwareSecureSettingsRepository
+import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -44,12 +44,12 @@ import kotlinx.coroutines.flow.stateIn
 
 /**
  * Repository for action configured for each action corner.Reads corresponding settings from
- * [UserAwareSecureSettingsRepository] and convert it to action type for each corner.
+ * [SecureSettingsRepository] and convert it to action type for each corner.
  */
 class ActionCornerSettingRepository
 @Inject
 constructor(
-    private val settingsRepository: UserAwareSecureSettingsRepository,
+    private val settingsRepository: SecureSettingsRepository,
     @Background private val backgroundScope: CoroutineScope,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
 ) {

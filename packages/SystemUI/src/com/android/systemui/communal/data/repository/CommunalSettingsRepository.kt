@@ -37,8 +37,8 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.flags.Flags
+import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.util.kotlin.emitOnStart
-import com.android.systemui.util.settings.repository.UserAwareSecureSettingsRepository
 import javax.inject.Inject
 import javax.inject.Named
 import kotlinx.coroutines.CoroutineDispatcher
@@ -108,7 +108,7 @@ constructor(
     @Background private val bgDispatcher: CoroutineDispatcher,
     @Main private val resources: Resources,
     private val featureFlagsClassic: FeatureFlagsClassic,
-    private val userAwareSecureSettingsRepository: UserAwareSecureSettingsRepository,
+    private val secureSettingsRepository: SecureSettingsRepository,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val devicePolicyManager: DevicePolicyManager,
     @Named(DEFAULT_BACKGROUND_TYPE) private val defaultBackgroundType: CommunalBackgroundType,
@@ -149,7 +149,7 @@ constructor(
         if (!getV2FlagEnabled()) {
             return MutableStateFlow(WhenToStartHub.NEVER)
         }
-        return userAwareSecureSettingsRepository
+        return secureSettingsRepository
             .intSetting(Settings.Secure.WHEN_TO_START_GLANCEABLE_HUB, whenToStartHubByDefault)
             .map { it.toWhenToStartHub() }
             .flowOn(bgDispatcher)
@@ -169,13 +169,13 @@ constructor(
             .map { devicePolicyManager.areKeyguardWidgetsAllowed(user.id) }
 
     override fun getBackground(): Flow<CommunalBackgroundType> =
-        userAwareSecureSettingsRepository
+        secureSettingsRepository
             .intSetting(GLANCEABLE_HUB_BACKGROUND_SETTING, defaultBackgroundType.value)
             .map { it.toCommunalBackgroundType() }
             .flowOn(bgDispatcher)
 
     override fun getSettingEnabledByUser(): Flow<Boolean> =
-        userAwareSecureSettingsRepository
+        secureSettingsRepository
             .intSetting(Settings.Secure.GLANCEABLE_HUB_ENABLED, ENABLED_SETTING_DEFAULT)
             .map { it == 1 }
             .flowOn(bgDispatcher)

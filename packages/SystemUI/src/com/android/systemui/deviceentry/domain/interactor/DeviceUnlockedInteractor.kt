@@ -39,7 +39,7 @@ import com.android.systemui.power.domain.interactor.PowerInteractor
 import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.scene.domain.SceneFrameworkTableLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
-import com.android.systemui.util.settings.repository.UserAwareSecureSettingsRepository
+import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
@@ -77,7 +77,7 @@ constructor(
     private val powerInteractor: PowerInteractor,
     private val biometricSettingsInteractor: DeviceEntryBiometricSettingsInteractor,
     private val systemPropertiesHelper: SystemPropertiesHelper,
-    private val userAwareSecureSettingsRepository: UserAwareSecureSettingsRepository,
+    private val secureSettingsRepository: SecureSettingsRepository,
     private val keyguardInteractor: KeyguardInteractor,
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
     deviceEntryBypassInteractor: DeviceEntryBypassInteractor,
@@ -354,7 +354,7 @@ constructor(
      */
     private suspend fun lockDelay(): Long {
         val lockAfterScreenTimeoutSetting =
-            userAwareSecureSettingsRepository
+            secureSettingsRepository
                 .getInt(
                     Settings.Secure.LOCK_SCREEN_LOCK_AFTER_TIMEOUT,
                     KeyguardViewMediator.KEYGUARD_LOCK_AFTER_DELAY_DEFAULT,
@@ -372,7 +372,7 @@ constructor(
         }
 
         val screenOffTimeoutSetting =
-            userAwareSecureSettingsRepository
+            secureSettingsRepository
                 .getInt(
                     Settings.System.SCREEN_OFF_TIMEOUT,
                     KeyguardViewMediator.KEYGUARD_DISPLAY_TIMEOUT_DELAY_DEFAULT,

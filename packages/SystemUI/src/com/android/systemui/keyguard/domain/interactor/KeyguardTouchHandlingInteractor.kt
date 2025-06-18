@@ -38,8 +38,8 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.res.R
 import com.android.systemui.shade.PulsingGestureListener
 import com.android.systemui.shade.ShadeDisplayAware
+import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.statusbar.policy.AccessibilityManagerWrapper
-import com.android.systemui.util.settings.repository.UserAwareSecureSettingsRepository
 import com.android.systemui.util.time.SystemClock
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -71,7 +71,7 @@ constructor(
     private val accessibilityManager: AccessibilityManagerWrapper,
     private val pulsingGestureListener: PulsingGestureListener,
     private val faceAuthInteractor: DeviceEntryFaceAuthInteractor,
-    private val secureSettingsRepository: UserAwareSecureSettingsRepository,
+    private val secureSettingsRepository: SecureSettingsRepository,
     private val powerManager: PowerManager,
     private val systemClock: SystemClock,
 ) {

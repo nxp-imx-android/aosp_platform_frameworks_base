@@ -39,7 +39,7 @@ val Kosmos.deviceUnlockedInteractor by Fixture {
             powerInteractor = powerInteractor,
             biometricSettingsInteractor = deviceEntryBiometricSettingsInteractor,
             systemPropertiesHelper = fakeSystemPropertiesHelper,
-            userAwareSecureSettingsRepository = userAwareSecureSettingsRepository,
+            secureSettingsRepository = userAwareSecureSettingsRepository,
             keyguardInteractor = keyguardInteractor,
             tableLogBuffer = logcatTableLogBuffer(this, "sceneFrameworkTableLogBuffer"),
             deviceEntryBypassInteractor = deviceEntryBypassInteractor,

@@ -22,7 +22,7 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.lowlight.shared.model.LowLightDisplayBehavior
 import com.android.systemui.res.R
-import com.android.systemui.util.settings.repository.UserAwareSecureSettingsRepository
+import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -63,7 +63,7 @@ class LowLightSettingsRepositoryImpl
 @Inject
 constructor(
     @Background private val bgDispatcher: CoroutineDispatcher,
-    private val userAwareSecureSettingsRepository: UserAwareSecureSettingsRepository,
+    private val secureSettingsRepository: SecureSettingsRepository,
     @Main private val resources: Resources,
 ) : LowLightSettingsRepository {
     private val lowLightDisplayBehaviorEnabledDefault by lazy {
@@ -77,7 +77,7 @@ constructor(
     }
 
     override fun getLowLightDisplayBehaviorEnabled(): Flow<Boolean> =
-        userAwareSecureSettingsRepository
+        secureSettingsRepository
             .boolSetting(
                 Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR_ENABLED,
                 lowLightDisplayBehaviorEnabledDefault,
@@ -85,7 +85,7 @@ constructor(
             .flowOn(bgDispatcher)
 
     override suspend fun setLowLightDisplayBehaviorEnabled(enabled: Boolean) {
-        userAwareSecureSettingsRepository.setBoolean(
+        secureSettingsRepository.setBoolean(
             Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR_ENABLED,
             enabled,
         )
@@ -95,7 +95,7 @@ constructor(
         getLowLightDisplayBehaviorEnabled()
             .flatMapLatestConflated { enabled ->
                 if (enabled) {
-                    userAwareSecureSettingsRepository
+                    secureSettingsRepository
                         .intSetting(
                             Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR,
                             lowLightDisplayBehaviorDefault,
@@ -108,7 +108,7 @@ constructor(
             .flowOn(bgDispatcher)
 
     override suspend fun setLowLightDisplayBehavior(behavior: LowLightDisplayBehavior) {
-        userAwareSecureSettingsRepository.setInt(
+        secureSettingsRepository.setInt(
             Settings.Secure.LOW_LIGHT_DISPLAY_BEHAVIOR,
             behavior.toSettingsInt(),
         )
