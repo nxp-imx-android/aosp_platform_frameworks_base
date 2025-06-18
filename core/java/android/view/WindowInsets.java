@@ -1853,8 +1853,11 @@ public final class WindowInsets {
         @InsetsType
         static final int LAST = SYSTEM_OVERLAYS;
         static final int SIZE = 9;
+
         @InsetsType
-        static final int DEFAULT_VISIBLE = ~IME;
+        static final int ALL = ((1 << SIZE) - 1);
+        @InsetsType
+        static final int DEFAULT_VISIBLE = ALL & ~IME;
 
         static int indexOf(@InsetsType int type) {
             switch (type) {
@@ -2074,7 +2077,7 @@ public final class WindowInsets {
          */
         @InsetsType
         public static int all() {
-            return 0xFFFFFFFF;
+            return ALL;
         }
 
         /**
