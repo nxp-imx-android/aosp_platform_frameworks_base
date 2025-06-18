@@ -112,6 +112,13 @@ aidl_interface {
         java: {
             enabled: false, // TODO(b/424186512) switch frameworks/base to using this as well, it uses core build **/*.aidl glob now
         },
+        rust: {
+            enabled: true,
+            apex_available: [
+                "//apex_available:platform",
+                "com.android.virt",
+            ],
+        },
     },
 }
 
