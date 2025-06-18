@@ -5306,8 +5306,10 @@ public class HdmiControlService extends SystemService {
         Display display = getContext().getDisplay();
         if (display != null) {
             DeviceProductInfo deviceProductInfo = display.getDeviceProductInfo();
-            manufacturerPnpId = deviceProductInfo.getManufacturerPnpId();
-            manufactureYear = deviceProductInfo.getManufactureYear();
+            if (deviceProductInfo != null) {
+                manufacturerPnpId = deviceProductInfo.getManufacturerPnpId();
+                manufactureYear = deviceProductInfo.getManufactureYear();
+            }
         }
         int enumLogReason =
                 HdmiStatsEnums.LOG_REASON_POWER_STATE_CHANGE_ON_ACTIVE_SOURCE_LOST_TOGGLE_UNKNOWN;
