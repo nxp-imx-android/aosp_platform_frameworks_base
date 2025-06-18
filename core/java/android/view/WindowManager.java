@@ -4653,12 +4653,12 @@ public interface WindowManager extends ViewManager {
          * behavior of processing system shortcuts and actions.
          * </p>
          *
-         * @param hasCapture whether the window should capture system shortcuts and actions.
+         * @param enabled whether the window should capture system shortcuts and actions.
          */
         @FlaggedApi(com.android.hardware.input.Flags.FLAG_REQUEST_KEY_CAPTURE_API)
         @RequiresPermission(permission.CAPTURE_KEYBOARD)
-        public void setHasKeyboardCapture(boolean hasCapture) {
-            if (hasCapture) {
+        public void setKeyboardCaptureEnabled(boolean enabled) {
+            if (enabled) {
                 inputFeatures |= INPUT_FEATURE_CAPTURE_KEYBOARD;
             } else {
                 inputFeatures &= ~INPUT_FEATURE_CAPTURE_KEYBOARD;
