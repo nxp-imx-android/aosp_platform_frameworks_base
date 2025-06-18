@@ -73,7 +73,6 @@ import static com.android.server.am.MemoryStatUtil.readMemoryStatFromFilesystem;
 import static com.android.server.stats.Flags.accumulateNetworkStatsSinceBoot;
 import static com.android.server.stats.Flags.addMobileBytesTransferByProcStatePuller;
 import static com.android.server.stats.Flags.addPressureStallInformationPuller;
-import static com.android.server.stats.Flags.applyNetworkStatsPollRateLimit;
 import static com.android.server.stats.pull.IonMemoryUtil.readProcessSystemIonHeapSizesFromDebugfs;
 import static com.android.server.stats.pull.IonMemoryUtil.readSystemIonHeapSizeFromDebugfs;
 import static com.android.server.stats.pull.netstats.NetworkStatsUtils.fromPublicNetworkStats;
@@ -1650,18 +1649,10 @@ public class StatsPullAtomService extends SystemService {
     private NetworkStats getUidNetworkStatsSnapshotForTemplateLocked(
             @NonNull NetworkTemplate template, boolean includeTags, long startTime, long endTime) {
         final long elapsedMillisSinceBoot = SystemClock.elapsedRealtime();
-        if (applyNetworkStatsPollRateLimit()) {
-            // The new way: rate-limit force-polling for all NetworkStats queries
-            if (elapsedMillisSinceBoot - mLastNetworkStatsPollTime >= NETSTATS_POLL_RATE_LIMIT_MS) {
-                mLastNetworkStatsPollTime = elapsedMillisSinceBoot;
-                getNetworkStatsManager().forceUpdate();
-            }
-        } else {
-            // The old way: force-poll only on WiFi queries. Data for other queries can be stale
-            // if there was no recent poll beforehand (e.g. for WiFi or scheduled poll)
-            if (template.getMatchRule() == MATCH_WIFI && template.getSubscriberIds().isEmpty()) {
-                getNetworkStatsManager().forceUpdate();
-            }
+        // Rate-limit force-polling for all NetworkStats queries
+        if (elapsedMillisSinceBoot - mLastNetworkStatsPollTime >= NETSTATS_POLL_RATE_LIMIT_MS) {
+            mLastNetworkStatsPollTime = elapsedMillisSinceBoot;
+            getNetworkStatsManager().forceUpdate();
         }
 
         final android.app.usage.NetworkStats queryNonTaggedStats =
