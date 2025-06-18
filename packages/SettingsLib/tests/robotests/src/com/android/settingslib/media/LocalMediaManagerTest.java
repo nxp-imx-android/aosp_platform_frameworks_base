@@ -59,6 +59,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadow.api.Shadow;
 
 import java.util.ArrayList;
@@ -660,6 +661,42 @@ public class LocalMediaManagerTest {
 
         verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1);
         verify(mInfoMediaManager).startScan();
+    }
+
+    @Test
+    public void connectSuggestedDevice_handlerTimesOut_completesConnectionAttempt() {
+        when(mInfoMediaManager.getSuggestedDevice()).thenReturn(mSuggestedDeviceState);
+        when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
+        mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice2);
+
+        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState);
+        mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
+        mLocalMediaManager.dispatchDeviceListUpdate();
+
+        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1);
+
+        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+
+        verify(mInfoMediaManager)
+                .onConnectionAttemptCompletedForSuggestion(mSuggestedDeviceState, false);
+    }
+
+    @Test
+    public void connectSuggestedDevice_connectionSuccess_completesConnectionAttempt() {
+        when(mInfoMediaManager.getSuggestedDevice()).thenReturn(mSuggestedDeviceState);
+        when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
+        mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice2);
+
+        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState);
+        mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
+        mLocalMediaManager.dispatchDeviceListUpdate();
+
+        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1);
+
+        mLocalMediaManager.dispatchSelectedDeviceStateChanged(mInfoMediaDevice1,
+            LocalMediaManager.MediaDeviceState.STATE_CONNECTED);
+        verify(mInfoMediaManager)
+                .onConnectionAttemptCompletedForSuggestion(mSuggestedDeviceState, true);
     }
 
     @Test
