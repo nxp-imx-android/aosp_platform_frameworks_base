@@ -251,6 +251,9 @@ public class ModifierShortcutManager {
             case Intent.CATEGORY_APP_CALCULATOR:
                 resid = R.string.keyboard_shortcut_group_applications_calculator;
                 break;
+            case Intent.CATEGORY_APP_FILES:
+                resid = R.string.keyboard_shortcut_group_applications_files;
+                break;
             default:
                 Log.e(TAG, ("No label for app category " + category));
                 return null;

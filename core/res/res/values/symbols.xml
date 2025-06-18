@@ -6120,6 +6120,7 @@
   <java-symbol type="string" name="keyboard_shortcut_group_applications_calendar" />
   <java-symbol type="string" name="keyboard_shortcut_group_applications_contacts" />
   <java-symbol type="string" name="keyboard_shortcut_group_applications_email" />
+  <java-symbol type="string" name="keyboard_shortcut_group_applications_files" />
   <java-symbol type="string" name="keyboard_shortcut_group_applications_maps" />
   <java-symbol type="string" name="keyboard_shortcut_group_applications_music" />
   <java-symbol type="string" name="keyboard_shortcut_group_applications_sms" />
