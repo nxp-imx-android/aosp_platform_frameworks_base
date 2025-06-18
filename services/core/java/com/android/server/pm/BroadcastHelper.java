@@ -363,6 +363,10 @@ public final class BroadcastHelper {
         final boolean isForWholeApp = componentNames.contains(packageName);
         final String callingPackageNameForTrace = mContext.getPackageManager().getNameForUid(
                 callingUidForTrace);
+
+        PackageMetrics.reportPackageChangedBroadcast(callingUidForTrace, packageUid, isForWholeApp,
+                reasonForTrace);
+
         if (isForWholeApp) {
             tracePackageChangedBroadcastEvent(true /* applyFlag */, reasonForTrace, packageName,
                     "<implicit>" /* targetPackageName */, "whole" /* targetComponent */,
@@ -779,7 +783,7 @@ public final class BroadcastHelper {
                             dontKillApp,
                             new ArrayList<>(Collections.singletonList(pkg.getPackageName())),
                             pkg.getUid(), null /* reason */,
-                            "static_shared_library_changed" /* reasonForTrace */,
+                            PackageMetrics.STRING_STATIC_SHARED_LIBRARY_CHANGED,
                             Process.SYSTEM_UID);
                 }
             }
