@@ -53,6 +53,9 @@ class FakeAmbientCueRepository : AmbientCueRepository {
     private val _isAmbientCueEnabled = MutableStateFlow(false)
     override val isAmbientCueEnabled: StateFlow<Boolean> = _isAmbientCueEnabled.asStateFlow()
 
+    private val _ambientCueTimeoutMs = MutableStateFlow(0)
+    override val ambientCueTimeoutMs: StateFlow<Int> = _ambientCueTimeoutMs.asStateFlow()
+
     fun setActions(actions: List<ActionModel>) {
         _actions.update { actions }
     }
@@ -83,5 +86,9 @@ class FakeAmbientCueRepository : AmbientCueRepository {
 
     fun setAmbientCueEnabled(isEnabled: Boolean) {
         _isAmbientCueEnabled.update { isEnabled }
+    }
+
+    fun setAmbientCueTimeoutMs(timeoutMs: Int) {
+        _ambientCueTimeoutMs.update { timeoutMs }
     }
 }
