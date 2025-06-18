@@ -4961,6 +4961,7 @@
   <java-symbol type="bool" name="config_isCompatFakeFocusEnabled" />
   <java-symbol type="bool" name="config_isWindowManagerCameraCompatTreatmentEnabled" />
   <java-symbol type="bool" name="config_isWindowManagerCameraCompatSplitScreenAspectRatioEnabled" />
+  <java-symbol type="bool" name="config_isCameraCompatSimulateRequestedOrientationTreatmentEnabled" />
   <java-symbol type="dimen" name="config_windowManagerCameraCompatAspectRatio" />
   <java-symbol type="bool" name="config_skipActivityRelaunchWhenDocking" />
 
