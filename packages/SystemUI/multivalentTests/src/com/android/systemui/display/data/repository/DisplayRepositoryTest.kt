@@ -552,6 +552,44 @@ class DisplayRepositoryTest : SysuiTestCase() {
         testScope.runTest {
             setDisplays(0)
             whenever(windowManager.shouldShowSystemDecors(0)).thenReturn(true)
+            whenever(windowManager.shouldShowSystemDecors(2)).thenReturn(true)
+            whenever(windowManager.shouldShowSystemDecors(3)).thenReturn(true)
+            val lastDisplayIdsWithSystemDecorations by latestDisplayIdsWithSystemDecorationsValue()
+
+            sendOnDisplayAddSystemDecorations(2)
+            sendOnDisplayAddSystemDecorations(3)
+
+            assertThat(lastDisplayIdsWithSystemDecorations).containsExactly(0, 2, 3)
+        }
+
+    @Test
+    @DisableFlags(
+        Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM,
+        FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
+    )
+    fun displayIdsWithSystemDecorations_systemDecorationAdded_contentModeFlagOff_emitsOnlyDisplaysWithSystemDecorations() =
+        testScope.runTest {
+            setDisplays(0)
+            whenever(windowManager.shouldShowSystemDecors(0)).thenReturn(true)
+            whenever(windowManager.shouldShowSystemDecors(2)).thenReturn(true)
+            whenever(windowManager.shouldShowSystemDecors(3)).thenReturn(false)
+            val lastDisplayIdsWithSystemDecorations by latestDisplayIdsWithSystemDecorationsValue()
+
+            sendOnDisplayAddSystemDecorations(2)
+            sendOnDisplayAddSystemDecorations(3)
+
+            assertThat(lastDisplayIdsWithSystemDecorations).containsExactly(0, 2)
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM)
+    @EnableFlags(FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT)
+    fun displayIdsWithSystemDecorations_systemDecorationAdded_contentModeFlagOn_emitsAllDisplays() =
+        testScope.runTest {
+            setDisplays(0)
+            whenever(windowManager.shouldShowSystemDecors(0)).thenReturn(true)
+            whenever(windowManager.shouldShowSystemDecors(2)).thenReturn(true)
+            whenever(windowManager.shouldShowSystemDecors(3)).thenReturn(false)
             val lastDisplayIdsWithSystemDecorations by latestDisplayIdsWithSystemDecorationsValue()
 
             sendOnDisplayAddSystemDecorations(2)
@@ -566,6 +604,7 @@ class DisplayRepositoryTest : SysuiTestCase() {
         testScope.runTest {
             setDisplays(0)
             whenever(windowManager.shouldShowSystemDecors(0)).thenReturn(true)
+            whenever(windowManager.shouldShowSystemDecors(1)).thenReturn(true)
 
             val priorDisplayIdsWithSystemDecorations by latestDisplayIdsWithSystemDecorationsValue()
             sendOnDisplayAddSystemDecorations(1)
@@ -580,6 +619,8 @@ class DisplayRepositoryTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM)
     fun displayIdsWithSystemDecorations_systemDecorationRemoved_doesNotEmitRemovedDisplayId() =
         testScope.runTest {
+            whenever(windowManager.shouldShowSystemDecors(1)).thenReturn(true)
+            whenever(windowManager.shouldShowSystemDecors(2)).thenReturn(true)
             val lastDisplayIdsWithSystemDecorations by latestDisplayIdsWithSystemDecorationsValue()
 
             sendOnDisplayAddSystemDecorations(1)
@@ -593,6 +634,8 @@ class DisplayRepositoryTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM)
     fun displayIdsWithSystemDecorations_systemDecorationsRemoved_nonExistentDisplay_noEffect() =
         testScope.runTest {
+            whenever(windowManager.shouldShowSystemDecors(1)).thenReturn(true)
+            whenever(windowManager.shouldShowSystemDecors(2)).thenReturn(true)
             val lastDisplayIdsWithSystemDecorations by latestDisplayIdsWithSystemDecorationsValue()
 
             sendOnDisplayAddSystemDecorations(1)
@@ -605,6 +648,8 @@ class DisplayRepositoryTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM)
     fun displayIdsWithSystemDecorations_displayRemoved_doesNotEmitRemovedDisplayId() =
         testScope.runTest {
+            whenever(windowManager.shouldShowSystemDecors(1)).thenReturn(true)
+            whenever(windowManager.shouldShowSystemDecors(2)).thenReturn(true)
             val lastDisplayIdsWithSystemDecorations by latestDisplayIdsWithSystemDecorationsValue()
 
             sendOnDisplayAddSystemDecorations(1)
@@ -618,6 +663,7 @@ class DisplayRepositoryTest : SysuiTestCase() {
     @DisableFlags(Flags.FLAG_ENABLE_SYS_DECORS_CALLBACKS_VIA_WM)
     fun displayIdsWithSystemDecorations_displayRemoved_nonExistentDisplay_noEffect() =
         testScope.runTest {
+            whenever(windowManager.shouldShowSystemDecors(1)).thenReturn(true)
             val lastDisplayIdsWithSystemDecorations by latestDisplayIdsWithSystemDecorationsValue()
 
             sendOnDisplayAddSystemDecorations(1)
