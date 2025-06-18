@@ -274,6 +274,22 @@ class DesktopPipTransitionController(
         val deskId = getDeskId(desktopRepository, displayId)
         if (deskId == INVALID_DESK_ID) return
 
+        // For multi-activity PiP, minimize the parent/original task
+        if (taskInfo.numActivities > 1) {
+            logD(
+                "handlePipTransition: minimizeMultiActivityPipTask, taskId=%d deskId=%d",
+                taskInfo.taskId,
+                deskId,
+            )
+            val runOnTransitStart =
+                desktopTasksController.minimizeMultiActivityPipTask(
+                    wct = wct,
+                    deskId = deskId,
+                    task = taskInfo,
+                )
+            runOnTransitStart?.invoke(transition)
+        }
+
         val isLastTask =
             desktopRepository.isOnlyVisibleNonClosingTaskInDesk(
                 taskId = taskId,
