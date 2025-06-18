@@ -122,8 +122,11 @@ public class DividerSnapAlgorithm {
     private final SnapTarget mDismissEndTarget;
     private final SnapTarget mMiddleTarget;
 
-    /** A spec used for "magnetic snap" user-controlled movement. */
-    private final MotionSpec mMotionSpec;
+    /** A spec used for "magnetic snap" user-controlled movement. Lazy-initialized, {@code null} if
+     * the flex split flag is not enabled
+     */
+    @Nullable
+    private MotionSpec mMotionSpec;
 
     public DividerSnapAlgorithm(Resources res, int displayWidth, int displayHeight, int dividerSize,
             boolean isLeftRightSplit, Rect insets, Rect pinnedTaskbarInsets, int dockSide) {
@@ -177,8 +180,6 @@ public class DividerSnapAlgorithm {
         mDismissEndTarget = mTargets.get(mTargets.size() - 1);
         mMiddleTarget = mTargets.get(mTargets.size() / 2);
         mMiddleTarget.isMiddleTarget = true;
-        mMotionSpec = Flags.enableFlexibleTwoAppSplit()
-                ? MagneticDividerUtils.generateMotionSpec(mTargets, res) : null;
     }
 
     /**
@@ -556,7 +557,11 @@ public class DividerSnapAlgorithm {
         return snap(currentPosition, /* hardDismiss */ true).snapPosition;
     }
 
-    public MotionSpec getMotionSpec() {
+    @Nullable
+    public MotionSpec getMotionSpec(Resources resources) {
+        if (Flags.enableFlexibleTwoAppSplit() && mMotionSpec == null) {
+            mMotionSpec = MagneticDividerUtils.generateMotionSpec(mTargets, resources);
+        }
         return mMotionSpec;
     }
 
