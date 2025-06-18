@@ -25,6 +25,7 @@ import android.app.smartspace.SmartspaceSession
 import android.app.smartspace.SmartspaceSession.OnTargetsAvailableListener
 import android.app.smartspace.SmartspaceTarget
 import android.content.Intent
+import android.content.applicationContext
 import android.content.testableContext
 import android.os.Binder
 import android.os.Bundle
@@ -36,11 +37,15 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.LauncherProxyService.LauncherProxyListener
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.ambientcue.data.logger.ambientCueLogger
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.AMBIENT_CUE_SURFACE
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.DEBOUNCE_DELAY_MS
+import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_ACTION_TYPE
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_ACTIVITY_ID
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_ATTRIBUTION_DIALOG_PENDING_INTENT
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_AUTOFILL_ID
+import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.MA_ACTION_TYPE_NAME
+import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.MR_ACTION_TYPE_NAME
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.dump.DumpManager
@@ -99,6 +104,7 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             taskStackChangeListeners = kosmos.taskStackChangeListeners,
             backgroundDispatcher = kosmos.testDispatcher,
             secureSettingsRepository = kosmos.secureSettingsRepository,
+            ambientCueLogger = kosmos.ambientCueLogger,
         )
 
     @Test
@@ -302,6 +308,36 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun action_ma_performMaLogger() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(maLoggerTarget))
+
+            val action: ActionModel = actions!!.first()
+            action.onPerformAction()
+            runCurrent()
+            verify(kosmos.ambientCueLogger).setFulfilledWithMaStatus()
+        }
+
+    @Test
+    fun action_mr_performMrLogger() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(mrLoggerTarget))
+
+            val action: ActionModel = actions!!.first()
+            action.onPerformAction()
+            runCurrent()
+            verify(kosmos.ambientCueLogger).setFulfilledWithMrStatus()
+        }
+
+    @Test
     fun action_performLongClick_pendingIntentSent() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
@@ -435,6 +471,32 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
                                     putParcelable(EXTRA_ACTIVITY_ID, activityId)
                                     putParcelable(EXTRA_AUTOFILL_ID, autofillId)
                                 }
+                            )
+                            .build()
+                    )
+            }
+        private val maLoggerTarget =
+            mock<SmartspaceTarget> {
+                on { smartspaceTargetId } doReturn AMBIENT_CUE_SURFACE
+                on { actionChips } doReturn
+                    listOf(
+                        SmartspaceAction.Builder("action1-id", "title 1")
+                            .setSubtitle("subtitle 1")
+                            .setExtras(
+                                Bundle().apply { putString(EXTRA_ACTION_TYPE, MA_ACTION_TYPE_NAME) }
+                            )
+                            .build()
+                    )
+            }
+        private val mrLoggerTarget =
+            mock<SmartspaceTarget> {
+                on { smartspaceTargetId } doReturn AMBIENT_CUE_SURFACE
+                on { actionChips } doReturn
+                    listOf(
+                        SmartspaceAction.Builder("action1-id", "title 1")
+                            .setSubtitle("subtitle 1")
+                            .setExtras(
+                                Bundle().apply { putString(EXTRA_ACTION_TYPE, MR_ACTION_TYPE_NAME) }
                             )
                             .build()
                     )

@@ -35,6 +35,7 @@ import androidx.tracing.trace
 import com.android.systemui.Dumpable
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.LauncherProxyService.LauncherProxyListener
+import com.android.systemui.ambientcue.data.logger.AmbientCueLogger
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.ambientcue.shared.model.IconModel
 import com.android.systemui.dagger.SysUISingleton
@@ -114,6 +115,7 @@ constructor(
     private val taskStackChangeListeners: TaskStackChangeListeners,
     @Background backgroundDispatcher: CoroutineDispatcher,
     secureSettingsRepository: SecureSettingsRepository,
+    private val ambientCueLogger: AmbientCueLogger,
 ) : AmbientCueRepository, Dumpable {
 
     init {
@@ -194,7 +196,13 @@ constructor(
                                                 launchPendingIntent(pendingIntent)
                                             } else if (intent != null) {
                                                 activityStarter.startActivity(intent, false)
-                                            }
+                                            } else {}
+                                        }
+                                        if (actionType == MA_ACTION_TYPE_NAME) {
+                                            ambientCueLogger.setFulfilledWithMaStatus()
+                                        }
+                                        if (actionType == MR_ACTION_TYPE_NAME) {
+                                            ambientCueLogger.setFulfilledWithMrStatus()
                                         }
                                     },
                                     onPerformLongClick = {
@@ -300,6 +308,7 @@ constructor(
             )
 
     val targetTaskId: MutableStateFlow<Int> = MutableStateFlow(INVALID_TASK_ID)
+    var isSessionStarted = false
 
     override val isAmbientCueEnabled: StateFlow<Boolean> =
         secureSettingsRepository
@@ -322,6 +331,26 @@ constructor(
                     isAmbientCueEnabled &&
                     !isDeactivated &&
                     globallyFocusedTaskId == targetTaskId.value
+            }
+            .onEach { isAttached ->
+                if (isAttached && !isSessionStarted) {
+                    isSessionStarted = true
+                    var maCount = 0
+                    var mrCount = 0
+                    actions.value.forEach { action ->
+                        when (action.actionType) {
+                            MA_ACTION_TYPE_NAME -> maCount++
+                            MR_ACTION_TYPE_NAME -> mrCount++
+                            else -> {}
+                        }
+                    }
+                    ambientCueLogger.setAmbientCueDisplayStatus(maCount, mrCount)
+                }
+                if (!isAttached && isSessionStarted) {
+                    ambientCueLogger.flushAmbientCueEventReported()
+                    ambientCueLogger.clear()
+                    isSessionStarted = false
+                }
             }
             .stateIn(
                 scope = backgroundScope,
@@ -350,7 +379,7 @@ constructor(
         @VisibleForTesting const val EXTRA_AUTOFILL_ID = "autofillId"
         @VisibleForTesting
         const val EXTRA_ATTRIBUTION_DIALOG_PENDING_INTENT = "attributionDialogPendingIntent"
-        private const val EXTRA_ACTION_TYPE = "actionType"
+        @VisibleForTesting const val EXTRA_ACTION_TYPE = "actionType"
 
         // Timeout to hide cuebar if it wasn't interacted with
         private const val TAG = "AmbientCueRepository"
@@ -360,5 +389,7 @@ constructor(
         @VisibleForTesting const val OPTED_IN = 0x10
         @VisibleForTesting const val OPTED_OUT = 0x01
         const val DEBOUNCE_DELAY_MS = 100L
+        @VisibleForTesting const val MA_ACTION_TYPE_NAME = "ma"
+        @VisibleForTesting const val MR_ACTION_TYPE_NAME = "mr"
     }
 }
