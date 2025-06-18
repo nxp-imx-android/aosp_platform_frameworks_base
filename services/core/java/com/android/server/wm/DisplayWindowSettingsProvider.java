@@ -34,7 +34,6 @@ import android.os.Environment;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.AtomicFile;
-import android.util.LruCache;
 import android.util.Slog;
 import android.util.Xml;
 import android.view.DisplayAddress;
@@ -55,7 +54,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * Implementation of {@link SettingsProvider} that reads the base settings provided in a display
@@ -71,13 +73,6 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
     private static final String DATA_DISPLAY_SETTINGS_FILE_PATH = "system/display_settings.xml";
     private static final String VENDOR_DISPLAY_SETTINGS_FILE_PATH = "etc/display_settings.xml";
     private static final String WM_DISPLAY_COMMIT_TAG = "wm-displays";
-    /**
-     * Maximum number of display settings entries cached in LruCache. When limit is reached,
-     * least recently used entries are evicted instead of proactively removing stale settings
-     * from dynamic display changes (user switching, system restarts). Aligns with DisplayTopology's
-     * LRU approach using DisplayTopologyXmlStore#MAX_NUMBER_OF_TOPOLOGIES.
-     */
-    private static final int MAX_NUMBER_OF_DISPLAY_SETTINGS = 100;
 
     private static final int IDENTIFIER_UNIQUE_ID = 0;
     private static final int IDENTIFIER_PORT = 1;
@@ -154,6 +149,38 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
     }
 
     /**
+     * Removes display override settings that are no longer associated with active displays.
+     * <p>
+     * This cleanup process is essential due to the dynamic nature of displays, which can
+     * be added or removed during various system events such as user switching or
+     * system server restarts.
+     *
+     * @param wms  the WindowManagerService instance for retrieving all possible {@link DisplayInfo}
+     *             for the given logical display.
+     * @param root the root window container used to obtain the currently active displays.
+     */
+    void removeStaleDisplaySettingsLocked(@NonNull WindowManagerService wms,
+            @NonNull RootWindowContainer root) {
+        final Set<String> displayIdentifiers = new ArraySet<>();
+        final Consumer<DisplayInfo> addDisplayIdentifier =
+                displayInfo -> displayIdentifiers.add(mOverrideSettings.getIdentifier(displayInfo));
+        root.forAllDisplays(dc -> {
+            // Begin with the current display's information. Note that the display layout of the
+            // current device state might not include this display (e.g., external or virtual
+            // displays), resulting in empty possible display info.
+            addDisplayIdentifier.accept(dc.getDisplayInfo());
+
+            // Then, add all possible display information for this display if available.
+            final List<DisplayInfo> displayInfos = wms.getPossibleDisplayInfoLocked(dc.mDisplayId);
+            final int size = displayInfos.size();
+            for (int i = 0; i < size; i++) {
+                addDisplayIdentifier.accept(displayInfos.get(i));
+            }
+        });
+        mOverrideSettings.removeStaleDisplaySettings(displayIdentifiers);
+    }
+
+    /**
      * Overrides the storage that should be used to save override settings.
      *
      * @see #setOverrideSettingsForUser(int)
@@ -218,8 +245,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
         @DisplayIdentifierType
         protected int mIdentifierType;
         @NonNull
-        protected final LruCache<String, SettingsEntry> mSettings =
-                new LruCache<>(MAX_NUMBER_OF_DISPLAY_SETTINGS);
+        protected final ArrayMap<String, SettingsEntry> mSettings = new ArrayMap<>();
 
         ReadableSettings(@NonNull ReadableSettingsStorage settingsStorage) {
             loadSettings(settingsStorage);
@@ -259,9 +285,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
             FileData fileData = readSettings(settingsStorage);
             if (fileData != null) {
                 mIdentifierType = fileData.mIdentifierType;
-                for (final Map.Entry<String, SettingsEntry> entry : fileData.mSettings.entrySet()) {
-                    mSettings.put(entry.getKey(), entry.getValue());
-                }
+                mSettings.putAll(fileData.mSettings);
             }
         }
     }
@@ -318,7 +342,7 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
 
         void onDisplayRemoved(@NonNull DisplayInfo info) {
             final String identifier = getIdentifier(info);
-            if (mSettings.get(identifier) == null) {
+            if (!mSettings.containsKey(identifier)) {
                 return;
             }
             if (mVirtualDisplayIdentifiers.remove(identifier)
@@ -335,16 +359,23 @@ class DisplayWindowSettingsProvider implements SettingsProvider {
             mVirtualDisplayIdentifiers.remove(identifier);
         }
 
+        void removeStaleDisplaySettings(@NonNull Set<String> currentDisplayIdentifiers) {
+            if (mSettings.retainAll(currentDisplayIdentifiers)) {
+                writeSettings();
+            }
+        }
+
         private void writeSettings() {
             final FileData fileData = new FileData();
             fileData.mIdentifierType = mIdentifierType;
-            for (final Map.Entry<String, SettingsEntry> entry : mSettings.snapshot().entrySet()) {
-                final String identifier = entry.getKey();
+            final int size = mSettings.size();
+            for (int i = 0; i < size; i++) {
+                final String identifier = mSettings.keyAt(i);
                 if (mVirtualDisplayIdentifiers.contains(identifier)) {
                     // Do not write virtual display settings to file.
                     continue;
                 }
-                fileData.mSettings.put(identifier, entry.getValue());
+                fileData.mSettings.put(identifier, mSettings.get(identifier));
             }
             DisplayWindowSettingsProvider.writeSettings(mSettingsStorage, fileData);
         }
