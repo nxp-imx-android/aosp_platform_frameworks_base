@@ -794,84 +794,62 @@ final class BroadcastRecord extends Binder {
                 blockedUntilBeyondCount[i] = i;
             }
         } else {
-            if (Flags.limitPriorityScope()) {
-                final boolean[] changeEnabled = calculateChangeStateForReceivers(
-                        receivers, LIMIT_PRIORITY_SCOPE, platformCompat);
+            final boolean[] changeEnabled = calculateChangeStateForReceivers(
+                    receivers, LIMIT_PRIORITY_SCOPE, platformCompat);
 
-                // Priority of the previous tranche
-                int lastTranchePriority = 0;
-                // Priority of the current tranche
-                int currentTranchePriority = 0;
-                // Index of the last receiver in the previous tranche
-                int lastTranchePriorityIndex = -1;
-                // Index of the last receiver with change disabled in the previous tranche
-                int lastTrancheChangeDisabledIndex = -1;
-                // Index of the last receiver with change disabled in the current tranche
-                int currentTrancheChangeDisabledIndex = -1;
+            // Priority of the previous tranche
+            int lastTranchePriority = 0;
+            // Priority of the current tranche
+            int currentTranchePriority = 0;
+            // Index of the last receiver in the previous tranche
+            int lastTranchePriorityIndex = -1;
+            // Index of the last receiver with change disabled in the previous tranche
+            int lastTrancheChangeDisabledIndex = -1;
+            // Index of the last receiver with change disabled in the current tranche
+            int currentTrancheChangeDisabledIndex = -1;
 
-                for (int i = 0; i < N; i++) {
-                    final int thisPriority = getReceiverPriority(receivers.get(i));
-                    if (i == 0) {
-                        currentTranchePriority = thisPriority;
-                        if (!changeEnabled[i]) {
-                            currentTrancheChangeDisabledIndex = i;
-                        }
-                        continue;
-                    }
-
-                    // Check if a new priority tranche has started
-                    if (thisPriority != currentTranchePriority) {
-                        // Update tranche boundaries and reset the disabled index.
-                        if (currentTrancheChangeDisabledIndex != -1) {
-                            lastTrancheChangeDisabledIndex = currentTrancheChangeDisabledIndex;
-                        }
-                        lastTranchePriority = currentTranchePriority;
-                        lastTranchePriorityIndex = i - 1;
-                        currentTranchePriority = thisPriority;
-                        currentTrancheChangeDisabledIndex = -1;
-                    }
+            for (int i = 0; i < N; i++) {
+                final int thisPriority = getReceiverPriority(receivers.get(i));
+                if (i == 0) {
+                    currentTranchePriority = thisPriority;
                     if (!changeEnabled[i]) {
                         currentTrancheChangeDisabledIndex = i;
+                    }
+                    continue;
+                }
 
-                        // Since the change is disabled, block the current receiver until the
-                        // last receiver in the previous tranche.
-                        blockedUntilBeyondCount[i] = lastTranchePriorityIndex + 1;
-                    } else if (thisPriority != lastTranchePriority) {
-                        // If the changeId was disabled for an earlier receiver and the current
-                        // receiver has a different priority, block the current receiver
-                        // until that earlier receiver.
-                        if (lastTrancheChangeDisabledIndex != -1) {
-                            blockedUntilBeyondCount[i] = lastTrancheChangeDisabledIndex + 1;
-                        }
+                // Check if a new priority tranche has started
+                if (thisPriority != currentTranchePriority) {
+                    // Update tranche boundaries and reset the disabled index.
+                    if (currentTrancheChangeDisabledIndex != -1) {
+                        lastTrancheChangeDisabledIndex = currentTrancheChangeDisabledIndex;
+                    }
+                    lastTranchePriority = currentTranchePriority;
+                    lastTranchePriorityIndex = i - 1;
+                    currentTranchePriority = thisPriority;
+                    currentTrancheChangeDisabledIndex = -1;
+                }
+                if (!changeEnabled[i]) {
+                    currentTrancheChangeDisabledIndex = i;
+
+                    // Since the change is disabled, block the current receiver until the
+                    // last receiver in the previous tranche.
+                    blockedUntilBeyondCount[i] = lastTranchePriorityIndex + 1;
+                } else if (thisPriority != lastTranchePriority) {
+                    // If the changeId was disabled for an earlier receiver and the current
+                    // receiver has a different priority, block the current receiver
+                    // until that earlier receiver.
+                    if (lastTrancheChangeDisabledIndex != -1) {
+                        blockedUntilBeyondCount[i] = lastTrancheChangeDisabledIndex + 1;
                     }
                 }
-                // If the entire list is in the same priority tranche or no receivers had
-                // changeId disabled, mark as -1 to indicate that none of them need to wait
-                if (N > 0 && (lastTranchePriorityIndex == -1
-                        || (lastTrancheChangeDisabledIndex == -1
-                                && currentTrancheChangeDisabledIndex == -1))) {
-                    Arrays.fill(blockedUntilBeyondCount, -1);
-                }
-            } else {
-                // When sending a prioritized broadcast, we only need to wait
-                // for the previous tranche of receivers to be terminated
-                int lastPriority = 0;
-                int lastPriorityIndex = 0;
-                for (int i = 0; i < N; i++) {
-                    final int thisPriority = getReceiverPriority(receivers.get(i));
-                    if ((i == 0) || (thisPriority != lastPriority)) {
-                        lastPriority = thisPriority;
-                        lastPriorityIndex = i;
-                        blockedUntilBeyondCount[i] = i;
-                    } else {
-                        blockedUntilBeyondCount[i] = lastPriorityIndex;
-                    }
-                }
-                // If the entire list is in the same priority tranche, mark as -1 to
-                // indicate that none of them need to wait
-                if (N > 0 && blockedUntilBeyondCount[N - 1] == 0) {
-                    Arrays.fill(blockedUntilBeyondCount, -1);
-                }
+            }
+            // If the entire list is in the same priority tranche or no receivers had
+            // changeId disabled, mark as -1 to indicate that none of them need to wait
+            if (N > 0 && (lastTranchePriorityIndex == -1
+                    || (lastTrancheChangeDisabledIndex == -1
+                            && currentTrancheChangeDisabledIndex == -1))) {
+                Arrays.fill(blockedUntilBeyondCount, -1);
             }
         }
         return blockedUntilBeyondCount;
