@@ -198,7 +198,6 @@ import com.android.systemui.statusbar.policy.SplitShadeStateController;
 import com.android.systemui.unfold.SysUIUnfoldComponent;
 import com.android.systemui.util.Utils;
 import com.android.systemui.util.time.SystemClock;
-import com.android.systemui.wallpapers.ui.viewmodel.WallpaperFocalAreaViewModel;
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor;
 import com.android.wm.shell.animation.FlingAnimationUtils;
 
@@ -503,7 +502,6 @@ public final class NotificationPanelViewController implements
     private final NotificationListContainer mNotificationListContainer;
     private final NPVCDownEventState.Buffer mLastDownEvents;
     private final KeyguardClockInteractor mKeyguardClockInteractor;
-    private final WallpaperFocalAreaViewModel mWallpaperFocalAreaViewModel;
     private float mMinExpandHeight;
     private boolean mPanelUpdateWhenAnimatorEnds;
     private boolean mHasVibratedOnOpen = false;
@@ -637,7 +635,6 @@ public final class NotificationPanelViewController implements
             KeyguardTransitionInteractor keyguardTransitionInteractor,
             DumpManager dumpManager,
             KeyguardTouchHandlingViewModel.Factory keyguardTouchHandlingViewModelFactory,
-            WallpaperFocalAreaViewModel wallpaperFocalAreaViewModel,
             KeyguardInteractor keyguardInteractor,
             ActivityStarter activityStarter,
             SharedNotificationContainerInteractor sharedNotificationContainerInteractor,
@@ -800,7 +797,6 @@ public final class NotificationPanelViewController implements
                 SysUIUnfoldComponent::getKeyguardUnfoldTransition);
 
         mKeyguardClockInteractor = keyguardClockInteractor;
-        mWallpaperFocalAreaViewModel = wallpaperFocalAreaViewModel;
         KeyguardTouchViewBinder.bind(
                 mView.requireViewById(R.id.keyguard_long_press),
                 keyguardTouchHandlingViewModelFactory,
