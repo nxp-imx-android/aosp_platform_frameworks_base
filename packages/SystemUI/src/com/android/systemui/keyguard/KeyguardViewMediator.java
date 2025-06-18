@@ -3465,7 +3465,8 @@ public class KeyguardViewMediator implements CoreStartable,
                         Slog.e(TAG, "Keyguard exit without a corresponding app to show.");
 
                         try {
-                            if (!KeyguardWmStateRefactor.isEnabled()) {
+                            if (ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS
+                                    || !KeyguardWmStateRefactor.isEnabled()) {
                                 finishedCallback.onAnimationFinished();
                             }
                         } catch (RemoteException e) {
