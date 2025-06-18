@@ -279,7 +279,7 @@ class ActionCornerRepositoryTest : SysuiTestCase() {
     companion object {
         private val metrics = WindowMetrics(Rect(0, 0, 2560, 1600), mock<WindowInsets>(), 2f)
         private const val ACTION_CORNER_DP = 8f
-        private val DEBOUNCE_DELAY = 200.milliseconds
+        private val DEBOUNCE_DELAY = 50.milliseconds
         private val cornerSize = ACTION_CORNER_DP * metrics.density
 
         private val display =
