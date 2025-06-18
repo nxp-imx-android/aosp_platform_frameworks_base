@@ -240,9 +240,7 @@ public class LocalMediaManager implements BluetoothCallback {
                     return;
                 }
             }
-            mConnectingSuggestedDeviceState =
-                    new ConnectingSuggestedDeviceState(
-                            currentSuggestion, mConnectSuggestedDeviceHandler);
+            mConnectingSuggestedDeviceState = new ConnectingSuggestedDeviceState(currentSuggestion);
             mConnectingSuggestedDeviceState.tryConnect();
         }
     }
@@ -267,20 +265,6 @@ public class LocalMediaManager implements BluetoothCallback {
     @Nullable
     public SuggestedDeviceState getSuggestedDevice() {
         return mInfoMediaManager.getSuggestedDevice();
-    }
-
-    private boolean connectToDeviceIfConnectionPending(MediaDevice device) {
-        synchronized (mMediaDevicesLock) {
-            if (mConnectingSuggestedDeviceState != null
-                    && mConnectingSuggestedDeviceState
-                            .mSuggestedDeviceState
-                            .getSuggestedDeviceInfo()
-                            .getRouteId()
-                            .equals(device.getId())) {
-                return connectDevice(device);
-            }
-            return false;
-        }
     }
 
     void dispatchSelectedDeviceStateChanged(MediaDevice device, @MediaDeviceState int state) {
@@ -905,43 +889,77 @@ public class LocalMediaManager implements BluetoothCallback {
         private static final int SCAN_DURATION_MS = 10000;
 
         @NonNull final SuggestedDeviceState mSuggestedDeviceState;
-        @NonNull final Handler mConnectSuggestedDeviceHandler;
         @NonNull final DeviceCallback mDeviceCallback;
         @NonNull final Runnable mConnectionAttemptFinishedRunnable;
 
-        ConnectingSuggestedDeviceState(SuggestedDeviceState suggestedDeviceState, Handler handler) {
+        boolean mIsConnectionAttemptActive = false;
+        boolean mDidAttemptCompleteSuccessfully = false;
+
+        ConnectingSuggestedDeviceState(SuggestedDeviceState suggestedDeviceState) {
             mSuggestedDeviceState = suggestedDeviceState;
-            mConnectSuggestedDeviceHandler = handler;
             mDeviceCallback =
                     new DeviceCallback() {
                         @Override
                         public void onDeviceListUpdate(List<MediaDevice> mediaDevices) {
-                            for (MediaDevice mediaDevice : mediaDevices) {
-                                if (connectToDeviceIfConnectionPending(mediaDevice)) {
-                                    mConnectSuggestedDeviceHandler.removeCallbacks(
-                                            mConnectionAttemptFinishedRunnable);
-                                    mConnectionAttemptFinishedRunnable.run();
-                                    break;
+                            synchronized (mMediaDevicesLock) {
+                                for (MediaDevice mediaDevice : mediaDevices) {
+                                    if (isSuggestedDevice(mediaDevice)) {
+                                        connectDevice(mediaDevice);
+                                        mIsConnectionAttemptActive = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
+
+                        @Override
+                        public void onSelectedDeviceStateChanged(
+                                @NonNull MediaDevice device, @MediaDeviceState int state) {
+                            if (isSuggestedDevice(device)
+                                    && state == MediaDeviceState.STATE_CONNECTED) {
+                                if (!mConnectSuggestedDeviceHandler.hasCallbacks(
+                                        mConnectionAttemptFinishedRunnable)) {
+                                    return;
+                                }
+                                mDidAttemptCompleteSuccessfully = true;
+                                // Remove the postDelayed runnable previously set and post a new one
+                                // to be executed right away.
+                                mConnectSuggestedDeviceHandler.removeCallbacks(
+                                        mConnectionAttemptFinishedRunnable);
+                                mConnectSuggestedDeviceHandler.post(
+                                        mConnectionAttemptFinishedRunnable);
+                            }
+                        }
+
+                        private boolean isSuggestedDevice(MediaDevice device) {
+                            return mConnectingSuggestedDeviceState != null
+                                    && mConnectingSuggestedDeviceState
+                                            .mSuggestedDeviceState
+                                            .getSuggestedDeviceInfo()
+                                            .getRouteId()
+                                            .equals(device.getId());
+                        }
                     };
             mConnectionAttemptFinishedRunnable =
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            synchronized (mMediaDevicesLock) {
-                                mConnectingSuggestedDeviceState = null;
-                            }
-                            unregisterCallback(mDeviceCallback);
-                            stopScan();
-                            mInfoMediaManager.onConnectionAttemptCompletedForSuggestion(
-                                    mSuggestedDeviceState);
+                    () -> {
+                        synchronized (mMediaDevicesLock) {
+                            mConnectingSuggestedDeviceState = null;
+                            mIsConnectionAttemptActive = false;
                         }
+                        unregisterCallback(mDeviceCallback);
+                        stopScan();
+                        mInfoMediaManager.onConnectionAttemptCompletedForSuggestion(
+                                mSuggestedDeviceState, mDidAttemptCompleteSuccessfully);
                     };
         }
 
         void tryConnect() {
+            // Attempt connection only if there isn't one already in progress.
+            if (mIsConnectionAttemptActive) {
+                return;
+            }
+            // Reset mDidAttemptCompleteSuccessfully at the start of each connection attempt.
+            mDidAttemptCompleteSuccessfully = false;
             registerCallback(mDeviceCallback);
             startScan();
             mConnectSuggestedDeviceHandler.postDelayed(
