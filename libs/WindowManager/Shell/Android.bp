@@ -148,6 +148,7 @@ android_library {
         "WindowManager-Shell-lite-proto",
         "WindowManager-Shell-proto",
         "WindowManager-Shell-shared",
+        "am_flags_lib",
         "androidx-constraintlayout_constraintlayout",
         "androidx.appcompat_appcompat",
         "androidx.arch.core_core-runtime",
@@ -171,6 +172,7 @@ android_library {
         "kotlin-annotations",
     ],
     flags_packages: [
+        "am_flags",
         "com_android_wm_shell_flags",
     ],
     kotlincflags: ["-Xjvm-default=all"],
