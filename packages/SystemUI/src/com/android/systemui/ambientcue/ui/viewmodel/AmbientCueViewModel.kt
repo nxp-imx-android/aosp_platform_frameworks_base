@@ -146,6 +146,7 @@ constructor(
     }
 
     fun hide() {
+        // TODO(b/425279501) Log ambient cue close button click status.
         ambientCueInteractor.setDeactivated(true)
         isExpanded = false
     }
@@ -162,6 +163,7 @@ constructor(
         coroutineScopeTraced("AmbientCueViewModel") {
             deactivateCueBarJob = launch {
                 delay(AMBIENT_CUE_TIMEOUT_SEC)
+                // TODO(b/425279501) Log ambient cue timeout status.
                 ambientCueInteractor.setDeactivated(true)
             }
         }
