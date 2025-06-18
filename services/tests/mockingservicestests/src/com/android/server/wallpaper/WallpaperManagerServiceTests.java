@@ -507,8 +507,7 @@ public class WallpaperManagerServiceTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT,
-            Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING})
+    @EnableFlags(Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testSaveLoadSettings_withoutWallpaperDescription()
             throws IOException, XmlPullParserException {
         WallpaperData expectedData = mService.getCurrentWallpaperData(FLAG_SYSTEM, 0);
@@ -548,8 +547,7 @@ public class WallpaperManagerServiceTests {
     }
 
     @Test
-    @EnableFlags({Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT,
-            Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING})
+    @EnableFlags(Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
     public void testSaveLoadSettings_withWallpaperDescription()
             throws IOException, XmlPullParserException {
         WallpaperData expectedData = mService.getCurrentWallpaperData(FLAG_SYSTEM, 0);
@@ -578,34 +576,6 @@ public class WallpaperManagerServiceTests {
 
         assertThat(actualData.getComponent()).isEqualTo(expectedData.getComponent());
         assertThat(actualData.getDescription()).isEqualTo(expectedData.getDescription());
-    }
-
-    @Test
-    @DisableFlags({Flags.FLAG_REMOVE_NEXT_WALLPAPER_COMPONENT,
-            Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING})
-    public void testSaveLoadSettings_legacyNextComponent()
-            throws IOException, XmlPullParserException {
-        WallpaperData systemWallpaperData = mService.getCurrentWallpaperData(FLAG_SYSTEM, 0);
-        systemWallpaperData.setComponent(sDefaultWallpaperComponent);
-        ByteArrayOutputStream ostream = new ByteArrayOutputStream();
-        TypedXmlSerializer serializer = Xml.newBinarySerializer();
-        serializer.setOutput(ostream, StandardCharsets.UTF_8.name());
-        mService.mWallpaperDataParser.saveSettingsToSerializer(serializer, systemWallpaperData,
-                null);
-        ostream.close();
-
-        WallpaperData shouldMatchSystem = new WallpaperData(0, FLAG_SYSTEM);
-        ByteArrayInputStream istream = new ByteArrayInputStream(ostream.toByteArray());
-        TypedXmlPullParser parser = Xml.newBinaryPullParser();
-        parser.setInput(istream, StandardCharsets.UTF_8.name());
-        mService.mWallpaperDataParser.loadSettingsFromSerializer(parser,
-                shouldMatchSystem, /* userId= */0, /* loadSystem= */ true, /* loadLock= */
-                false, /* keepDimensionHints= */ true,
-                new WallpaperDisplayHelper.DisplayData(0));
-
-        assertThat(shouldMatchSystem.nextWallpaperComponent).isEqualTo(
-                systemWallpaperData.getComponent());
-        assertThat(shouldMatchSystem.primaryColors).isEqualTo(systemWallpaperData.primaryColors);
     }
 
     @Test

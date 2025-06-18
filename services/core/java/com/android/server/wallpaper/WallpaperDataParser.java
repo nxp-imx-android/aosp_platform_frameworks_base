@@ -17,7 +17,6 @@
 package com.android.server.wallpaper;
 
 import static android.app.Flags.liveWallpaperContentHandling;
-import static android.app.Flags.removeNextWallpaperComponent;
 import static android.app.WallpaperManager.FLAG_LOCK;
 import static android.app.WallpaperManager.FLAG_SYSTEM;
 import static android.app.WallpaperManager.ORIENTATION_UNKNOWN;
@@ -246,11 +245,7 @@ public class WallpaperDataParser {
 
                     ComponentName comp = parseComponentName(parser);
                     if (!liveWallpaperContentHandling()) {
-                        if (removeNextWallpaperComponent()) {
-                            wallpaperToParse.setComponent(comp);
-                        } else {
-                            wallpaperToParse.nextWallpaperComponent = comp;
-                        }
+                        wallpaperToParse.setComponent(comp);
                     }
                     if (multiCrop()) {
                         parseWallpaperAttributes(parser, wallpaperToParse, keepDimensionHints);
@@ -262,12 +257,7 @@ public class WallpaperDataParser {
                         Slog.v(TAG, "cropRect:" + wallpaper.cropHint);
                         Slog.v(TAG, "primaryColors:" + wallpaper.primaryColors);
                         Slog.v(TAG, "mName:" + wallpaper.name);
-                        if (removeNextWallpaperComponent()) {
-                            Slog.v(TAG, "mWallpaperComponent:" + wallpaper.getComponent());
-                        } else {
-                            Slog.v(TAG, "mNextWallpaperComponent:"
-                                    + wallpaper.nextWallpaperComponent);
-                        }
+                        Slog.v(TAG, "mWallpaperComponent:" + wallpaper.getComponent());
                     }
                 }
             }
