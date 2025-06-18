@@ -219,7 +219,10 @@ constructor(
         if (forceQs) {
             QSExpansionState(1f)
         } else {
-            QSExpansionState(qsExpansion.coerceIn(if (isQsExpanded) EARLY_EXPANSION else 0f, 1f))
+            QSExpansionState(
+                if (Flags.noExpansionOnOverscroll() && isStackScrollerOverscrolling) 0f
+                else qsExpansion.coerceIn(if (isQsExpanded) EARLY_EXPANSION else 0f, 1f)
+            )
         }
     }
 
