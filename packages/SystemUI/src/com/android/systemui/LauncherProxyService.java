@@ -19,7 +19,7 @@ package com.android.systemui;
 import static android.content.Intent.ACTION_PACKAGE_ADDED;
 import static android.content.Intent.EXTRA_CHANGED_COMPONENT_NAME_LIST;
 import static android.content.pm.PackageManager.MATCH_SYSTEM_ONLY;
-import static android.view.Display.INVALID_DISPLAY;
+import static android.view.KeyEvent.KEYCODE_BACK;
 import static android.view.MotionEvent.ACTION_CANCEL;
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.ACTION_UP;
@@ -343,18 +343,24 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         }
 
         @Override
-        public void onBackEvent(@Nullable KeyEvent keyEvent) throws RemoteException {
-            final int displayId = keyEvent == null ? INVALID_DISPLAY : keyEvent.getDisplayId();
+        public void onBackEvent(@Nullable KeyEvent keyEvent, int displayId) throws RemoteException {
             if (predictiveBackSwipeEdgeNoneApi() && mBackAnimation != null && keyEvent != null) {
                 mBackAnimation.setTriggerBack(!keyEvent.isCanceled());
                 mBackAnimation.onBackMotion(/* touchX */ 0, /* touchY */ 0, keyEvent.getAction(),
                         EDGE_NONE, displayId);
             } else {
-                verifyCallerAndClearCallingIdentityPostMain("onBackPressed", () -> {
-                    sendEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK, displayId);
-                    sendEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK, displayId);
-                });
+                onKeyEvent(KEYCODE_BACK, displayId);
             }
+        }
+
+        @Override
+        public void onKeyEvent(int keycode, int displayId) {
+            verifyCallerAndClearCallingIdentityPostMain(
+                    "onKeyEvent " + KeyEvent.keyCodeToString(keycode) + " displayId=" + displayId,
+                    () -> {
+                        sendEvent(KeyEvent.ACTION_DOWN, keycode, displayId);
+                        sendEvent(KeyEvent.ACTION_UP, keycode, displayId);
+                    });
         }
 
         @Override
