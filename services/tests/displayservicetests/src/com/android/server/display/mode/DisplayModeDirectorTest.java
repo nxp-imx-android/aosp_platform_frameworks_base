@@ -343,6 +343,9 @@ public class DisplayModeDirectorTest {
         mInjector = spy(new FakesInjector(mDisplayManagerInternalMock, mStatusBarMock,
                 mSensorManagerInternalMock));
         mHandler = new Handler(Looper.getMainLooper());
+        mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, Display.TYPE_INTERNAL,
+                DISPLAY_ID_2, Display.TYPE_INTERNAL));
+        when(mDisplayManagerFlags.isOnDisplayAddedInObserverEnabled()).thenReturn(true);
     }
 
     private Resources mockResources() {
@@ -1901,12 +1904,18 @@ public class DisplayModeDirectorTest {
     public void testPeakRefreshRate_notAppliedToExternalDisplays() {
         when(mDisplayManagerFlags.isBackUpSmoothDisplayAndForcePeakRefreshRateEnabled())
                 .thenReturn(true);
-        mInjector.mDisplayInfo.type = Display.TYPE_EXTERNAL;
+        mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, Display.TYPE_EXTERNAL));
         DisplayModeDirector director =
                 new DisplayModeDirector(mContext, mHandler, mInjector,
                         mDisplayManagerFlags, mDisplayDeviceConfigProvider);
         director.getBrightnessObserver().setDefaultDisplayState(Display.STATE_ON);
-        director.getDisplayObserver().onDisplayAdded(DISPLAY_ID);
+
+        Sensor lightSensor = createLightSensor();
+        SensorManager sensorManager = createMockSensorManager(lightSensor);
+        director.start(sensorManager);
+
+        mInjector.setEnabledDisplays(Map.of(DISPLAY_ID, Display.TYPE_EXTERNAL,
+                    DISPLAY_ID_2, Display.TYPE_EXTERNAL));
         director.getDisplayObserver().onDisplayAdded(DISPLAY_ID_2);
 
         Display.Mode[] modes1 = new Display.Mode[] {
@@ -1925,9 +1934,6 @@ public class DisplayModeDirectorTest {
         supportedModesByDisplay.put(DISPLAY_ID, modes1);
         supportedModesByDisplay.put(DISPLAY_ID_2, modes2);
 
-        Sensor lightSensor = createLightSensor();
-        SensorManager sensorManager = createMockSensorManager(lightSensor);
-        director.start(sensorManager);
         director.injectSupportedModesByDisplay(supportedModesByDisplay);
 
         // Disable Smooth Display
@@ -2058,9 +2064,8 @@ public class DisplayModeDirectorTest {
                 .thenReturn(isRefreshRateSynchronizationEnabled);
         when(mResources.getBoolean(R.bool.config_refreshRateSynchronizationEnabled))
                 .thenReturn(isRefreshRateSynchronizationEnabled);
-        mInjector.mDisplayInfo.type =
-                isExternalDisplay ? Display.TYPE_EXTERNAL : Display.TYPE_INTERNAL;
-        mInjector.mDisplayInfo.displayId = DISPLAY_ID_2;
+        mInjector.setEnabledDisplays(Map.of(DISPLAY_ID_2,
+                isExternalDisplay ? Display.TYPE_EXTERNAL : Display.TYPE_INTERNAL));
 
         DisplayModeDirector director = createDirectorFromModeArray(TEST_MODES, DEFAULT_MODE_60);
         director.start(createMockSensorManager());
@@ -3873,6 +3878,8 @@ public class DisplayModeDirectorTest {
         private final FakeDeviceConfig mDeviceConfig;
         private final DisplayInfo mDisplayInfo;
         private final Map<Integer, Display> mDisplays;
+        private Display[] mEnabledDisplays = new Display[0];
+        private Map<Integer, Integer> mEnabledDisplayTypes = Map.of();
         private boolean mDisplayInfoValid = true;
         private final DisplayManagerInternal mDisplayManagerInternal;
         private final StatusBarManagerInternal mStatusBarManagerInternal;
@@ -3899,6 +3906,14 @@ public class DisplayModeDirectorTest {
             mDisplayManagerInternal = displayManagerInternal;
             mStatusBarManagerInternal = statusBarManagerInternal;
             mSensorManagerInternal = sensorManagerInternal;
+        }
+
+        void setEnabledDisplays(Map<Integer, Integer> enabledDisplayTypes) {
+            // Display ids from enabledDisplayTypes, which are external displays.
+            mEnabledDisplayTypes = enabledDisplayTypes;
+            mEnabledDisplays = mDisplays.values().stream()
+                .filter(display -> enabledDisplayTypes.containsKey(display.getDisplayId()))
+                .toArray(size -> new Display[size]);
         }
 
         @NonNull
@@ -3940,9 +3955,15 @@ public class DisplayModeDirectorTest {
         }
 
         @Override
+        public Display[] getEnabledDisplays() {
+            return mEnabledDisplays;
+        }
+
+        @Override
         public boolean getDisplayInfo(int displayId, DisplayInfo displayInfo) {
             displayInfo.copyFrom(mDisplayInfo);
             displayInfo.displayId = displayId;
+            displayInfo.type = mEnabledDisplayTypes.getOrDefault(displayId, Display.TYPE_INTERNAL);
             return mDisplayInfoValid;
         }
 
