@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.systemGestureExclusion
 import androidx.compose.foundation.verticalScroll
@@ -340,11 +341,7 @@ fun ContentScope.QuickSettingsLayout(
             }
 
             GridAnchor()
-            TileGrid(
-                viewModel = viewModel.tileGridViewModel,
-                modifier = Modifier.fillMaxWidth(),
-                revealEffectContainer = QuickSettingsShade.Elements.Panel,
-            )
+            TileGrid(viewModel = viewModel.tileGridViewModel, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.padding(bottom = QuickSettingsShade.Dimensions.Padding))
         }
     }
