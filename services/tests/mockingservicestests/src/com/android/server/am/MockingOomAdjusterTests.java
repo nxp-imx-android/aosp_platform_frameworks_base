@@ -901,6 +901,25 @@ public class MockingOomAdjusterTests {
     @SuppressWarnings("GuardedBy")
     @Test
     @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
+    public void testUpdateOomAdjFreezeState_executingServices() {
+        final ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
+                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true);
+
+        updateOomAdj(app);
+        assertNoCpuTime(app);
+
+        mProcessStateController.startExecutingService(app.mServices, mock(ServiceRecord.class));
+        updateOomAdj(app);
+        assertCpuTime(app);
+
+        mProcessStateController.stopAllExecutingServices(app.mServices);
+        updateOomAdj(app);
+        assertNoCpuTime(app);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testUpdateOomAdjFreezeState_activeInstrumentation() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, true);
