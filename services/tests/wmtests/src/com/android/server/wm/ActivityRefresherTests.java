@@ -71,7 +71,7 @@ public class ActivityRefresherTests extends WindowTestsBase {
     public void setUp() throws Exception {
         mAppCompatConfiguration = mDisplayContent.mWmService.mAppCompatConfiguration;
         spyOn(mAppCompatConfiguration);
-        when(mAppCompatConfiguration.isCameraCompatTreatmentEnabled())
+        when(mAppCompatConfiguration.isCameraCompatForceRotateTreatmentEnabled())
                 .thenReturn(true);
         when(mAppCompatConfiguration.isCameraCompatRefreshEnabled())
                 .thenReturn(true);
