@@ -30,6 +30,7 @@ import android.text.TextUtils;
 import android.util.Slog;
 
 import com.android.internal.util.CollectionUtils;
+import com.android.server.telecom.flags.Flags;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -59,7 +60,12 @@ public class DefaultDialerManager {
      * @hide
      * */
     public static boolean setDefaultDialerApplication(Context context, String packageName) {
-        return setDefaultDialerApplication(context, packageName, ActivityManager.getCurrentUser());
+        if (Flags.resolveHiddenDependenciesTwo()) {
+            return setDefaultDialerApplication(context, packageName, Binder.getCallingUserHandle());
+        } else {
+            return setDefaultDialerApplicationLegacy(context, packageName,
+                    ActivityManager.getCurrentUser());
+        }
     }
 
     /**
@@ -73,6 +79,41 @@ public class DefaultDialerManager {
      * @hide
      * */
     public static boolean setDefaultDialerApplication(Context context, String packageName,
+            UserHandle user) {
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            CompletableFuture<Void> future = new CompletableFuture<>();
+            Consumer<Boolean> callback = successful -> {
+                if (successful) {
+                    future.complete(null);
+                } else {
+                    future.completeExceptionally(new RuntimeException());
+                }
+            };
+            context.getSystemService(RoleManager.class).addRoleHolderAsUser(
+                    RoleManager.ROLE_DIALER, packageName, 0, user,
+                    AsyncTask.THREAD_POOL_EXECUTOR, callback);
+            future.get(5, TimeUnit.SECONDS);
+            return true;
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Slog.e(TAG, "Failed to set default dialer to " + packageName + " for user " + user, e);
+            return false;
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    /**
+     * Sets the specified package name as the default dialer application for the specified user.
+     * The caller of this method needs to have permission to write to secure settings and
+     * manage users on the device.
+     *
+     * @return {@code true} if the default dialer application was successfully changed,
+     *         {@code false} otherwise.
+     *
+     * @hide
+     **/
+    public static boolean setDefaultDialerApplicationLegacy(Context context, String packageName,
             int user) {
         final long identity = Binder.clearCallingIdentity();
         try {
@@ -111,7 +152,11 @@ public class DefaultDialerManager {
      * @hide
      * */
     public static String getDefaultDialerApplication(Context context) {
-        return getDefaultDialerApplication(context, context.getUserId());
+        if (Flags.resolveHiddenDependenciesTwo()) {
+            return getDefaultDialerApplication(context, context.getUser());
+        } else {
+            return getDefaultDialerApplicationLegacy(context, context.getUserId());
+        }
     }
 
     /**
@@ -127,7 +172,30 @@ public class DefaultDialerManager {
      *
      * @hide
      * */
-    public static String getDefaultDialerApplication(Context context, int user) {
+    public static String getDefaultDialerApplication(Context context, UserHandle user) {
+        final long identity = Binder.clearCallingIdentity();
+        try {
+            return CollectionUtils.firstOrNull(context.getSystemService(RoleManager.class)
+                    .getRoleHoldersAsUser(RoleManager.ROLE_DIALER, user));
+        } finally {
+            Binder.restoreCallingIdentity(identity);
+        }
+    }
+
+    /**
+     * Returns the installed dialer application for the specified user that will be used to receive
+     * incoming calls, and is allowed to make emergency calls.
+     *
+     * The application will be returned in order of preference:
+     * 1) User selected phone application (if still installed)
+     * 2) Pre-installed system dialer (if not disabled)
+     * 3) Null
+     *
+     * The caller of this method needs to have permission to manage users on the device.
+     *
+     * @hide
+     **/
+    public static String getDefaultDialerApplicationLegacy(Context context, int user) {
         final long identity = Binder.clearCallingIdentity();
         try {
             return CollectionUtils.firstOrNull(context.getSystemService(RoleManager.class)
