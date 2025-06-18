@@ -35,6 +35,7 @@ cc_library_shared {
         "libcutils",
         "liblog",
         "libutils",
+        "dropboxmanager_aidl-cpp",
     ],
     header_libs: [
         "libbase_headers",
@@ -42,7 +43,6 @@ cc_library_shared {
     aidl: {
         libs: [
             "ILogcatManagerService_aidl",
-            "IDropBoxManagerService_aidl",
         ],
     },
 
@@ -55,4 +55,18 @@ cc_library_shared {
         "-Wunused",
         "-Wunreachable-code",
     ],
+}
+
+cc_test {
+    name: "DropBoxManagerTestCpp",
+    team: "trendy_team_framework_bpm",
+    srcs: [
+        "test/DropBoxManagerTest.cpp",
+    ],
+    shared_libs: [
+        "libbase",
+        "libservices",
+        "libutils",
+    ],
+    require_root: true,
 }
