@@ -471,6 +471,7 @@ public class StatsPullAtomService extends SystemService {
     // Whether or not to enable the new puller with pressure stall information.
     public static final boolean ENABLE_PRESSURE_STALL_INFORMATION_PULLER =
                 addPressureStallInformationPuller();
+    private static int mPreviousThermalThrottlingStatus = Temperature.THROTTLING_NONE;
 
     // Puller locks
     private final Object mDataBytesTransferLock = new Object();
@@ -5395,7 +5396,9 @@ public class StatsPullAtomService extends SystemService {
         @Override
         public void notifyThrottling(Temperature temp) {
             FrameworkStatsLog.write(FrameworkStatsLog.THERMAL_THROTTLING_SEVERITY_STATE_CHANGED,
-                    temp.getType(), temp.getName(), (int) (temp.getValue() * 10), temp.getStatus());
+                    temp.getType(), temp.getName(), (int) (temp.getValue() * 10),
+                    temp.getStatus(), mPreviousThermalThrottlingStatus);
+            mPreviousThermalThrottlingStatus = temp.getStatus();
         }
     }
 
