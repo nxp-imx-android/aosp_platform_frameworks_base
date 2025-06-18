@@ -2,13 +2,6 @@ package: "android.app"
 container: "system"
 
 flag {
-  name: "fix_wallpaper_changed"
-  namespace: "systemui"
-  description: "Fixes timing of wallpaper changed notification and adds extra information. Only effective after rebooting."
-  bug: "369814294"
-}
-
-flag {
   name: "live_wallpaper_content_handling"
   namespace: "systemui"
   description: "Support for user-generated content in live wallpapers. Only effective after rebooting."
