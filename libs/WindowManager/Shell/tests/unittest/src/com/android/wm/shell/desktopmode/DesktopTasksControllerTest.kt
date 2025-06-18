@@ -124,6 +124,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.Unminim
 import com.android.wm.shell.desktopmode.DesktopTasksController.DesktopModeEntryExitTransitionListener
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.desktopmode.DesktopTasksController.TaskbarDesktopTaskListener
+import com.android.wm.shell.desktopmode.DesktopTestHelpers.DEFAULT_USER_ID
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFullscreenTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createHomeTask
@@ -1286,7 +1287,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES)
     fun addMoveToDeskTaskChanges_newTaskInstance_inheritsClosingInstanceBounds() {
         // Setup existing task.
-        val existingTask = setUpFreeformTask(active = true)
+        val existingTask = setUpFreeformTask(active = true).apply { userId = DEFAULT_USER_ID }
         val testComponent = ComponentName(/* package */ "test.package", /* class */ "test.class")
         existingTask.topActivity = testComponent
         existingTask.configuration.windowConfiguration.setBounds(Rect(0, 0, 500, 500))
@@ -1294,6 +1295,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val launchingTask =
             setUpFullscreenTask().apply {
                 topActivityInfo = ActivityInfo().apply { launchMode = LAUNCH_SINGLE_INSTANCE }
+                userId = DEFAULT_USER_ID
             }
         launchingTask.topActivity = testComponent
 
@@ -1305,6 +1307,35 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         // New instance should inherit task bounds of old instance.
         assertThat(findBoundsChange(wct, launchingTask))
             .isEqualTo(existingTask.configuration.windowConfiguration.bounds)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES)
+    fun addMoveToDeskTaskChanges_newTaskInstanceInDifferentUser_doesntInheritBounds() {
+        // Setup existing task.
+        val existingTask = setUpFreeformTask(active = true)
+        val testComponent = ComponentName(/* package */ "test.package", /* class */ "test.class")
+        existingTask.topActivity = testComponent
+        existingTask.configuration.windowConfiguration.setBounds(Rect(0, 0, 500, 500))
+        // Set up new instance of already existing task in a different user.
+        val launchingTask =
+            setUpFullscreenTask().apply {
+                topActivityInfo =
+                    ActivityInfo().apply {
+                        launchMode = LAUNCH_SINGLE_INSTANCE
+                        applicationInfo = ApplicationInfo()
+                    }
+                userId = 100
+            }
+        launchingTask.topActivity = testComponent
+
+        // Move new instance to desktop.
+        val wct = WindowContainerTransaction()
+        controller.addMoveToDeskTaskChanges(wct, launchingTask, deskId = 0)
+
+        // New instance should not inherit task bounds of old instance.
+        assertThat(findBoundsChange(wct, launchingTask))
+            .isNotEqualTo(existingTask.configuration.windowConfiguration.bounds)
     }
 
     @Test
@@ -1332,6 +1363,33 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         val finalBounds = findBoundsChange(wct, launchingTask)
         // New instance should inherit task bounds of old instance.
         assertThat(finalBounds).isEqualTo(existingTask.configuration.windowConfiguration.bounds)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES)
+    fun handleRequest_newTaskInstanceInDifferentUser_doesntInheritBounds() {
+        setUpLandscapeDisplay()
+        // Setup existing task.
+        val existingTask = setUpFreeformTask(active = true)
+        val testComponent = ComponentName(/* package */ "test.package", /* class */ "test.class")
+        existingTask.topActivity = testComponent
+        existingTask.configuration.windowConfiguration.setBounds(Rect(0, 0, 500, 500))
+        // Set up new instance of already existing task.
+        val launchingTask =
+            setUpFreeformTask(active = false).apply {
+                topActivityInfo = ActivityInfo().apply { launchMode = LAUNCH_SINGLE_INSTANCE }
+                userId = 100
+            }
+        taskRepository.removeTask(launchingTask.taskId)
+        launchingTask.topActivity = testComponent
+
+        // Move new instance to desktop.
+        val wct = controller.handleRequest(Binder(), createTransition(launchingTask))
+
+        assertNotNull(wct, "should handle request")
+        val finalBounds = findBoundsChange(wct, launchingTask)
+        // New instance should not inherit task bounds of old instance.
+        assertThat(finalBounds).isNotEqualTo(existingTask.configuration.windowConfiguration.bounds)
     }
 
     @Test
