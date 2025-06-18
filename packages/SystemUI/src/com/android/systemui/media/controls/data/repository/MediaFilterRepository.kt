@@ -137,14 +137,6 @@ class MediaFilterRepository @Inject constructor(private val systemClock: SystemC
         _currentMedia.value = sortedMedia.values.toList()
     }
 
-    fun hasActiveMedia(): Boolean {
-        return mutableUserEntries.value.any { it.value.active }
-    }
-
-    fun hasAnyMedia(): Boolean {
-        return mutableUserEntries.value.entries.isNotEmpty()
-    }
-
     private fun canBeRemoved(data: MediaData): Boolean {
         return data.isPlaying?.let { !it } ?: data.isClearable && !data.active
     }

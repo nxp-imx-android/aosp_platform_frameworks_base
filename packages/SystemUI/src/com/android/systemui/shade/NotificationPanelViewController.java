@@ -2265,7 +2265,9 @@ public final class NotificationPanelViewController implements
             mOpenCloseListener.onClosingFinished();
         }
         setClosingWithAlphaFadeout(false);
-        mMediaHierarchyManager.closeGuts();
+        if (!Flags.mediaControlsInCompose()) {
+            mMediaHierarchyManager.closeGuts();
+        }
     }
 
     private void setClosingWithAlphaFadeout(boolean closing) {

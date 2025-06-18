@@ -31,6 +31,7 @@ import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.internal.logging.UiEventLogger
 import com.android.keyguard.BouncerPanelExpansionCalculator
 import com.android.systemui.Dumpable
+import com.android.systemui.Flags
 import com.android.systemui.Flags.qsComposeFragmentEarlyExpansion
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.classifier.Classifier
@@ -43,6 +44,7 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QQS
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager.Companion.LOCATION_QS
 import com.android.systemui.media.controls.ui.view.MediaHost
@@ -114,6 +116,7 @@ constructor(
     @Named(QSFragmentComposeModule.QS_USING_MEDIA_PLAYER) private val usingMedia: Boolean,
     private val uiEventLogger: UiEventLogger,
     @Assisted private val lifecycleScope: LifecycleCoroutineScope,
+    private val mediaCarouselInteractor: MediaCarouselInteractor,
 ) : Dumpable, ExclusiveActivatable() {
 
     val containerViewModel = containerViewModelFactory.create(supportsBrightnessMirroring = true)
@@ -271,7 +274,7 @@ constructor(
             initialValue = usingMedia,
             source =
                 if (usingMedia) {
-                    mediaHostVisible(qqsMediaHost)
+                    mediaHostVisible(qqsMediaHost, mediaCarouselInteractor)
                 } else {
                     flowOf(false)
                 },
@@ -284,7 +287,12 @@ constructor(
         hydrator.hydratedStateOf(
             traceName = "qsMediaVisible",
             initialValue = usingMedia,
-            source = if (usingMedia) mediaHostVisible(qsMediaHost) else flowOf(false),
+            source =
+                if (usingMedia) {
+                    mediaHostVisible(qsMediaHost, mediaCarouselInteractor)
+                } else {
+                    flowOf(false)
+                },
         )
 
     val qsMediaInRow: Boolean
@@ -612,7 +620,17 @@ private val SHORT_PARALLAX_AMOUNT = 0.1f
  * Returns a flow to track the visibility of a [MediaHost]. The flow will emit on start the visible
  * state of the view.
  */
-private fun mediaHostVisible(mediaHost: MediaHost): Flow<Boolean> {
+private fun mediaHostVisible(
+    mediaHost: MediaHost,
+    mediaCarouselInteractor: MediaCarouselInteractor,
+): Flow<Boolean> {
+    if (Flags.mediaControlsInCompose()) {
+        return if (mediaHost.showsOnlyActiveMedia) {
+            mediaCarouselInteractor.hasActiveMedia
+        } else {
+            mediaCarouselInteractor.hasAnyMedia
+        }
+    }
     return callbackFlow {
             val listener: (Boolean) -> Unit = { visible: Boolean -> trySend(visible) }
             mediaHost.addVisibilityChangeListener(listener)

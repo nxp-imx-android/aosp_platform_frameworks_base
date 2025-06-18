@@ -29,7 +29,7 @@ val Kosmos.mediaDataFilter by
             userTracker = userTracker,
             lockscreenUserManager = notificationLockscreenUserManager,
             executor = fakeExecutor,
-            mediaFilterRepository = mediaFilterRepository,
+            mediaPipelineRepository = mediaFilterRepository,
             mediaLogger = mediaLogger,
         )
     }

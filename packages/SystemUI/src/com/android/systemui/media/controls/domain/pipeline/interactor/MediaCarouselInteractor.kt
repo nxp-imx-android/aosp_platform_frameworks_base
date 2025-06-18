@@ -23,6 +23,7 @@ import android.media.session.PlaybackState
 import android.service.notification.StatusBarNotification
 import com.android.internal.logging.InstanceId
 import com.android.systemui.CoreStartable
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.media.controls.data.repository.MediaFilterRepository
@@ -34,11 +35,12 @@ import com.android.systemui.media.controls.domain.pipeline.MediaDeviceManager
 import com.android.systemui.media.controls.domain.pipeline.MediaSessionBasedFilter
 import com.android.systemui.media.controls.domain.pipeline.MediaTimeoutListener
 import com.android.systemui.media.controls.domain.resume.MediaResumeListener
-import com.android.systemui.media.controls.shared.model.MediaCommonModel
+import com.android.systemui.media.remedia.data.repository.MediaPipelineRepository
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import java.io.PrintWriter
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -57,12 +59,12 @@ constructor(
     private val mediaDeviceManager: MediaDeviceManager,
     private val mediaDataCombineLatest: MediaDataCombineLatest,
     private val mediaDataFilter: MediaDataFilterImpl,
-    private val mediaFilterRepository: MediaFilterRepository,
+    private val mediaPipelineRepository: MediaPipelineRepository,
 ) : MediaDataManager, CoreStartable {
 
     /** Are there any media notifications active? */
     val hasActiveMedia: StateFlow<Boolean> =
-        mediaFilterRepository.currentUserEntries
+        mediaPipelineRepository.currentUserEntries
             .map { entries -> entries.any { it.value.active } }
             .stateIn(
                 scope = applicationScope,
@@ -72,7 +74,7 @@ constructor(
 
     /** Are there any media entries, including inactive ones? */
     val hasAnyMedia: StateFlow<Boolean> =
-        mediaFilterRepository.currentUserEntries
+        mediaPipelineRepository.currentUserEntries
             .map { entries -> entries.isNotEmpty() }
             .stateIn(
                 scope = applicationScope,
@@ -81,10 +83,16 @@ constructor(
             )
 
     /** The current list for user media instances */
-    val currentMedia: StateFlow<List<MediaCommonModel>> = mediaFilterRepository.currentMedia
+    val currentMedia =
+        if (!Flags.mediaControlsInCompose()) {
+            (mediaPipelineRepository as MediaFilterRepository).currentMedia
+        } else {
+            // TODO(b/397989775) remove, not used with media_controls_in_compose
+            MutableStateFlow(mutableListOf())
+        }
 
     override fun start() {
-        if (!SceneContainerFlag.isEnabled) {
+        if (!SceneContainerFlag.isEnabled && !Flags.mediaControlsInCompose()) {
             return
         }
 
@@ -182,12 +190,14 @@ constructor(
         mediaDataFilter.onSwipeToDismiss()
     }
 
-    override fun hasActiveMedia() = mediaFilterRepository.hasActiveMedia()
+    override fun hasActiveMedia() = mediaPipelineRepository.hasActiveMedia()
 
-    override fun hasAnyMedia() = mediaFilterRepository.hasAnyMedia()
+    override fun hasAnyMedia() = mediaPipelineRepository.hasAnyMedia()
 
     fun reorderMedia() {
-        mediaFilterRepository.setOrderedMedia()
+        if (!Flags.mediaControlsInCompose()) {
+            (mediaPipelineRepository as MediaFilterRepository).setOrderedMedia()
+        }
     }
 
     /** Add a listener for internal events. */
@@ -201,6 +211,9 @@ constructor(
     companion object {
         val unsupported: Nothing
             get() =
-                error("Code path not supported when ${SceneContainerFlag.DESCRIPTION} is enabled")
+                error(
+                    "Code path not supported when ${SceneContainerFlag.DESCRIPTION} or " +
+                        "media_controls_in_compose is enabled"
+                )
     }
 }

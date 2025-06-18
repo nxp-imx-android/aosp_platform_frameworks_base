@@ -102,5 +102,9 @@ abstract class MediaPipelineRepository {
         return true
     }
 
+    fun hasAnyMedia() = mutableUserEntries.value.entries.isNotEmpty()
+
+    fun hasActiveMedia() = mutableUserEntries.value.any { it.value.active }
+
     abstract fun clearCurrentUserMedia()
 }
