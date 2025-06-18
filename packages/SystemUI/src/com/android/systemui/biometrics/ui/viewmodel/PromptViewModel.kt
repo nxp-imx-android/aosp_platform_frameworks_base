@@ -50,6 +50,8 @@ import com.android.systemui.biometrics.domain.interactor.UdfpsOverlayInteractor
 import com.android.systemui.biometrics.domain.model.BiometricPromptRequest
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.BiometricModality
+import com.android.systemui.biometrics.shared.model.NegativeButtonState
+import com.android.systemui.biometrics.shared.model.PositiveButtonState
 import com.android.systemui.biometrics.shared.model.PromptKind
 import com.android.systemui.biometrics.shared.model.UdfpsOverlayParams
 import com.android.systemui.dagger.qualifiers.Application
@@ -537,6 +539,105 @@ constructor(
             if (contentView == null) description else ""
         }
 
+    private val isIdentityCheckEnabled: Flow<Boolean> =
+        promptSelectorInteractor.isIdentityCheckActive
+
+    private val _canTryAgainNow = MutableStateFlow(false)
+    /**
+     * If authentication can be manually restarted via the try again button or touching a
+     * fingerprint sensor.
+     */
+    val canTryAgainNow: Flow<Boolean> =
+        combine(_canTryAgainNow, size, position, isAuthenticated, isRetrySupported) {
+            readyToTryAgain,
+            size,
+            _,
+            authState,
+            supportsRetry ->
+            readyToTryAgain && size.isNotSmall && supportsRetry && authState.isNotAuthenticated
+        }
+
+    /** State of the positive (right) button */
+    val positiveButtonState: Flow<PositiveButtonState> =
+        combine(size, isPendingConfirmation, canTryAgainNow, modalities) {
+                size,
+                isPendingConfirmation,
+                canTryAgain,
+                modalities ->
+                when {
+                    canTryAgain && modalities.hasFaceOnly -> PositiveButtonState.TryAgain
+
+                    size.isNotSmall && isPendingConfirmation -> PositiveButtonState.Confirm
+
+                    else -> PositiveButtonState.Gone
+                }
+            }
+            .distinctUntilChanged()
+
+    /** State of the negative (left) button */
+    val negativeButtonState: Flow<NegativeButtonState> =
+        combine(
+                size,
+                isAuthenticated,
+                promptSelectorInteractor.isCredentialAllowed,
+                isIdentityCheckEnabled,
+                promptSelectorInteractor.prompt,
+                credentialKind,
+                positiveButtonState,
+            ) {
+                size,
+                authState,
+                isCredentialAllowed,
+                isIdentityCheck,
+                prompt,
+                credential,
+                positiveState ->
+                val fallbackOptionsCount = prompt?.fallbackOptions?.size ?: 0
+                val hasMultipleFallbackOptions =
+                    (if (isCredentialAllowed && isIdentityCheck) 2
+                    else (if (isCredentialAllowed) 1 else 0)) + fallbackOptionsCount >= 2
+
+                if (size.isSmall) {
+                    NegativeButtonState.Gone
+                } else if (authState.isAuthenticated) {
+                    // Hide negative button if authed and confirmation not needed
+                    if (positiveState == PositiveButtonState.Confirm) {
+                        NegativeButtonState.Cancel(context.getString(android.R.string.cancel))
+                    } else {
+                        NegativeButtonState.Gone
+                    }
+                } else {
+                    when {
+                        // If the app provides one, setNegativeButton takes priority
+                        prompt?.negativeButtonText != null &&
+                            prompt.negativeButtonText.isNotBlank() -> {
+                            NegativeButtonState.SetNegative(prompt.negativeButtonText)
+                        }
+
+                        hasMultipleFallbackOptions ->
+                            NegativeButtonState.FallbackOptions(
+                                context.getString(R.string.biometric_dialog_fallback_button)
+                            )
+
+                        isCredentialAllowed -> {
+                            NegativeButtonState.UseCredential(
+                                context.getCredentialString(credential)
+                            )
+                        }
+
+                        (prompt?.fallbackOptions?.size ?: 0) == 1 -> {
+                            NegativeButtonState.SingleFallback(
+                                prompt!!.fallbackOptions[0].text.toString()
+                            )
+                        }
+
+                        else ->
+                            NegativeButtonState.Cancel(context.getString(android.R.string.cancel))
+                    }
+                }
+            }
+            .distinctUntilChanged()
+
     private val hasOnlyOneLineTitle: Flow<Boolean> =
         combine(title, subtitle, contentView, description) {
             title,
@@ -628,9 +729,6 @@ constructor(
     val isIconConfirmButton: Flow<Boolean> =
         combine(modalities, size) { modalities, size -> modalities.hasUdfps && size.isNotSmall }
 
-    private val isIdentityCheckEnabled: Flow<Boolean> =
-        promptSelectorInteractor.isIdentityCheckActive
-
     val isFallbackButtonVisible: Flow<Boolean> =
         combine(
             size,
@@ -674,21 +772,6 @@ constructor(
             showNegativeButton,
             showConfirmButton ->
             size.isNotSmall && authState.isAuthenticated && !showNegativeButton && showConfirmButton
-        }
-
-    private val _canTryAgainNow = MutableStateFlow(false)
-    /**
-     * If authentication can be manually restarted via the try again button or touching a
-     * fingerprint sensor.
-     */
-    val canTryAgainNow: Flow<Boolean> =
-        combine(_canTryAgainNow, size, position, isAuthenticated, isRetrySupported) {
-            readyToTryAgain,
-            size,
-            _,
-            authState,
-            supportsRetry ->
-            readyToTryAgain && size.isNotSmall && supportsRetry && authState.isNotAuthenticated
         }
 
     /** If the try again button show be shown (only the button, see [canTryAgainNow]). */
@@ -1117,6 +1200,17 @@ private fun Context.getActivityInfo(componentName: ComponentName): ActivityInfo?
     } catch (e: PackageManager.NameNotFoundException) {
         Log.w(PromptViewModel.TAG, "Cannot find activity info for $opPackageName", e)
         null
+    }
+
+fun Context.getCredentialString(kind: PromptKind): String =
+    when (kind) {
+        PromptKind.Pin -> this.getString(R.string.biometric_dialog_use_pin)
+
+        PromptKind.Password -> this.getString(R.string.biometric_dialog_use_password)
+
+        PromptKind.Pattern -> this.getString(R.string.biometric_dialog_use_pattern)
+
+        else -> ""
     }
 
 /** How the fingerprint sensor was started for the prompt. */
