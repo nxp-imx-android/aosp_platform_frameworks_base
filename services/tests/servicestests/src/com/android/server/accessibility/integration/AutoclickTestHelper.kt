@@ -37,6 +37,12 @@ val RIGHT_CLICK_BUTTON_LAYOUT_ID =
     "android:id/accessibility_autoclick_right_click_layout"
 val DOUBLE_CLICK_BUTTON_LAYOUT_ID =
     "android:id/accessibility_autoclick_double_click_layout"
+val DRAG_CLICK_BUTTON_LAYOUT_ID = "android:id/accessibility_autoclick_drag_layout"
+val SCROLL_BUTTON_LAYOUT_ID = "android:id/accessibility_autoclick_scroll_layout"
+val SCROLL_UP_BUTTON_LAYOUT_ID = "android:id/scroll_up"
+val SCROLL_DOWN_BUTTON_LAYOUT_ID = "android:id/scroll_down"
+val SCROLL_LEFT_BUTTON_LAYOUT_ID = "android:id/scroll_left"
+val SCROLL_RIGHT_BUTTON_LAYOUT_ID = "android:id/scroll_right"
 val CLICK_TYPE_BUTTON_GROUP_ID =
     "android:id/accessibility_autoclick_click_type_button_group_container"
 val PAUSE_BUTTON_LAYOUT_ID = "android:id/accessibility_autoclick_pause_layout"
