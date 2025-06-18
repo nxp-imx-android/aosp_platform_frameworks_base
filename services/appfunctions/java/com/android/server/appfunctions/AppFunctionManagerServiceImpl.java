@@ -137,7 +137,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private List<SignedPackage> mUpdatableAgentAllowlist = new ArrayList<>();
 
     public AppFunctionManagerServiceImpl(
-            @NonNull Context context, @NonNull PackageManagerInternal packageManagerInternal,
+            @NonNull Context context,
+            @NonNull PackageManagerInternal packageManagerInternal,
             @NonNull AppFunctionAccessServiceInterface appFunctionAccessServiceInterface,
             @NonNull IUriGrantsManager uriGrantsManager,
             @NonNull UriGrantsManagerInternal uriGrantsManagerInternal) {
@@ -145,7 +146,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 context,
                 new RemoteServiceCallerImpl<>(
                         context, IAppFunctionService.Stub::asInterface, THREAD_POOL_EXECUTOR),
-                new CallerValidatorImpl(context),
+                new CallerValidatorImpl(context, appFunctionAccessServiceInterface),
                 new ServiceHelperImpl(context),
                 new ServiceConfigImpl(),
                 new AppFunctionsLoggerWrapper(context),

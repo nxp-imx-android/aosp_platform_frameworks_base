@@ -22,6 +22,8 @@ import android.annotation.NonNull;
 import android.annotation.RequiresPermission;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManager.AppFunctionsPolicy;
+import android.app.appfunctions.AppFunctionAccessServiceInterface;
+import android.app.appfunctions.AppFunctionManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Binder;
@@ -36,9 +38,13 @@ import java.util.Objects;
 /* Validates that caller has the correct privilege to call an AppFunctionManager Api. */
 class CallerValidatorImpl implements CallerValidator {
     private final Context mContext;
+    private final AppFunctionAccessServiceInterface mAppFunctionAccessService;
 
-    CallerValidatorImpl(@NonNull Context context) {
+    CallerValidatorImpl(
+            @NonNull Context context,
+            @NonNull AppFunctionAccessServiceInterface appFunctionAccessService) {
         mContext = Objects.requireNonNull(context);
+        mAppFunctionAccessService = Objects.requireNonNull(appFunctionAccessService);
     }
 
     @Override
@@ -75,16 +81,45 @@ class CallerValidatorImpl implements CallerValidator {
         }
     }
 
-    @Override
     @RequiresPermission(Manifest.permission.EXECUTE_APP_FUNCTIONS)
     @CanExecuteAppFunctionResult
-    public AndroidFuture<Integer> verifyCallerCanExecuteAppFunction(
+    private AndroidFuture<Integer> verifyCallerCanExecuteAppFunctionWithAccessService(
             int callingUid,
             int callingPid,
             @NonNull UserHandle targetUser,
             @NonNull String callerPackageName,
-            @NonNull String targetPackageName,
-            @NonNull String functionId) {
+            @NonNull String targetPackageName) {
+
+        boolean hasExecutionPermission =
+                mContext.checkPermission(
+                        Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
+                        == PackageManager.PERMISSION_GRANTED;
+
+        boolean isSamePackage = callerPackageName.equals(targetPackageName);
+        int requestState =
+                mAppFunctionAccessService.getAccessRequestState(
+                        callerPackageName,
+                        UserHandle.getUserId(callingUid),
+                        targetPackageName,
+                        targetUser.getIdentifier());
+        boolean hasAccessPermission =
+                requestState == AppFunctionManager.ACCESS_REQUEST_STATE_GRANTED;
+        if (hasExecutionPermission && hasAccessPermission) {
+            return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION);
+        }
+        if (isSamePackage) {
+            return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_SAME_PACKAGE);
+        }
+        return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_DENIED);
+    }
+
+    @RequiresPermission(Manifest.permission.EXECUTE_APP_FUNCTIONS)
+    @CanExecuteAppFunctionResult
+    private AndroidFuture<Integer> verifyCallerCanExecuteAppFunctionHelper(
+            int callingUid,
+            int callingPid,
+            @NonNull String callerPackageName,
+            @NonNull String targetPackageName) {
         boolean hasExecutionPermission =
                 mContext.checkPermission(
                                 Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
@@ -96,6 +131,25 @@ class CallerValidatorImpl implements CallerValidator {
             return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_SAME_PACKAGE);
         }
         return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_DENIED);
+    }
+
+    @Override
+    @RequiresPermission(Manifest.permission.EXECUTE_APP_FUNCTIONS)
+    @CanExecuteAppFunctionResult
+    public AndroidFuture<Integer> verifyCallerCanExecuteAppFunction(
+            int callingUid,
+            int callingPid,
+            @NonNull UserHandle targetUser,
+            @NonNull String callerPackageName,
+            @NonNull String targetPackageName,
+            @NonNull String functionId) {
+
+        if (Flags.appFunctionAccessApiEnabled() && Flags.appFunctionAccessServiceEnabled()) {
+            return verifyCallerCanExecuteAppFunctionWithAccessService(
+                    callingUid, callingPid, targetUser, callerPackageName, targetPackageName);
+        }
+        return verifyCallerCanExecuteAppFunctionHelper(
+                callingUid, callingPid, callerPackageName, targetPackageName);
     }
 
     @Override
