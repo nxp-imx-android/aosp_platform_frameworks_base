@@ -669,7 +669,8 @@ public class NotificationManagerService extends SystemService {
     static final long NOTIFICATION_MAX_AGE_AT_POST = Duration.ofDays(14).toMillis();
 
     // Minium number of sparse groups for a package before autogrouping them
-    private static final int AUTOGROUP_SPARSE_GROUPS_AT_COUNT = 6;
+    @VisibleForTesting
+    static final int AUTOGROUP_SPARSE_GROUPS_AT_COUNT = 6;
     // Minimum number notifications in a bundle section before autogrouping them
     private static final int AUTOGROUP_BUNDLE_SECTIONS_AT_COUNT = 1;
 
@@ -3282,7 +3283,8 @@ public class NotificationManagerService extends SystemService {
         return StatsManager.PULL_SUCCESS;
     }
 
-    private GroupHelper getGroupHelper() {
+    @VisibleForTesting
+    protected GroupHelper getGroupHelper() {
         mAutoGroupAtCount =
                 getContext().getResources().getInteger(R.integer.config_autoGroupAtCount);
         return new GroupHelper(getContext(), getContext().getPackageManager(),
