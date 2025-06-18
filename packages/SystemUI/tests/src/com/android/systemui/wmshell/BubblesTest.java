@@ -162,6 +162,7 @@ import com.android.systemui.util.settings.FakeGlobalSettings;
 import com.android.systemui.util.settings.SystemSettings;
 import com.android.systemui.util.time.SystemClock;
 import com.android.wm.shell.Flags;
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.bubbles.Bubble;
 import com.android.wm.shell.bubbles.BubbleData;
@@ -501,6 +502,7 @@ public class BubblesTest extends SysuiTestCase {
 
         mShellTaskOrganizer = new ShellTaskOrganizer(mock(ShellInit.class),
                 mock(ShellCommandHandler.class),
+                mock(RootTaskDisplayAreaOrganizer.class),
                 null,
                 Optional.empty(),
                 Optional.empty(),

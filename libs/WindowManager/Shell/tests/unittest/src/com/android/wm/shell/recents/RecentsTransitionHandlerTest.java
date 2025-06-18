@@ -77,6 +77,7 @@ import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
 import com.android.internal.os.IResultReceiver;
+import com.android.wm.shell.RootTaskDisplayAreaOrganizer;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.ShellTestCase;
 import com.android.wm.shell.TestRunningTaskInfoBuilder;
@@ -131,6 +132,8 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
     private TaskStackListenerImpl mTaskStackListener;
     @Mock
     private ShellCommandHandler mShellCommandHandler;
+    @Mock
+    private RootTaskDisplayAreaOrganizer mRootTaskDisplayAreaOrganizer;
     @Mock
     private DesktopUserRepositories mDesktopUserRepositories;
     @Mock
@@ -193,8 +196,8 @@ public class RecentsTransitionHandlerTest extends ShellTestCase {
                 mMainExecutor, desktopState);
         mRecentTasksController = spy(mRecentTasksControllerReal);
         mShellTaskOrganizer = new ShellTaskOrganizer(mShellInit, mShellCommandHandler,
-                null /* sizeCompatUI */, Optional.empty(), Optional.of(mRecentTasksController),
-                mMainExecutor);
+                mRootTaskDisplayAreaOrganizer, null /* sizeCompatUI */, Optional.empty(),
+                Optional.of(mRecentTasksController), mMainExecutor);
 
         doReturn(mMainExecutor).when(mTransitions).getMainExecutor();
         mRecentsTransitionHandler = new RecentsTransitionHandler(mShellInit, mShellTaskOrganizer,

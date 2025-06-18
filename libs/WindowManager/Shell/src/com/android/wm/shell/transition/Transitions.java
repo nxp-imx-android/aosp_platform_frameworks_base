@@ -1402,6 +1402,11 @@ public class Transitions implements RemoteCallable<Transitions>,
         return mOrganizer.getHomeTaskOverlayContainer();
     }
 
+    @Nullable
+    private SurfaceControl getOverviewOverlayContainer(int displayId) {
+        return mOrganizer.getOverviewOverlayContainer(displayId);
+    }
+
     /**
      * Interface for a callback that must be called after a TransitionHandler finishes playing an
      * animation.
@@ -1760,6 +1765,21 @@ public class Transitions implements RemoteCallable<Transitions>,
                         transitions.mFocusTransitionObserver.setRemoteFocusTransitionListener(
                                 transitions, listener);
                     });
+        }
+
+        @Override
+        public SurfaceControl getOverviewOverlayContainer(int displayId) {
+            SurfaceControl[] result = new SurfaceControl[1];
+            executeRemoteCallWithTaskPermission(mTransitions, "getOverviewOverlayContainer",
+                    (controller) -> {
+                        result[0] = controller.getOverviewOverlayContainer(displayId);
+                    }, true /* blocking */);
+            if (result[0] == null) {
+                Log.wtf("WindowManagerShell", "Null overview overlay surface, "
+                        + "mTransitions=%s" + (mTransitions != null) + "displayId: " + displayId);
+            }
+            // Return a copy as writing to parcel releases the original surface
+            return new SurfaceControl(result[0], "Transitions.OverviewOverlay");
         }
 
         @Override
