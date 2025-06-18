@@ -43,10 +43,10 @@ import android.testing.TestableLooper;
 import androidx.test.filters.SmallTest;
 
 import com.android.internal.logging.MetricsLogger;
+import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.classifier.FalsingManagerFake;
-import com.android.systemui.Flags;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger;
 import com.android.systemui.plugins.ActivityStarter;
@@ -67,7 +67,6 @@ import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -419,40 +418,6 @@ public class ScreenRecordTileTest extends SysuiTestCase {
         verify(mPermissionDialogPrompt).show();
         verify(mMediaProjectionMetricsLogger)
                 .notifyPermissionRequestDisplayed(mContext.getUserId());
-    }
-
-    @Test
-    @EnableFlags(QsDetailedView.FLAG_NAME)
-    public void testNotStartingAndRecording_returnDetailsViewModel() {
-        when(mController.isStarting()).thenReturn(false);
-        when(mController.isRecording()).thenReturn(false);
-        when(mController.isScreenCaptureDisabled()).thenReturn(false);
-        mTile.getDetailsViewModel(Assert::assertNotNull);
-    }
-
-    @Test
-    @EnableFlags(QsDetailedView.FLAG_NAME)
-    public void testRecordingDisabled_notReturnDetailsViewModel() {
-        when(mController.isStarting()).thenReturn(false);
-        when(mController.isRecording()).thenReturn(false);
-        when(mController.isScreenCaptureDisabled()).thenReturn(true);
-        mTile.getDetailsViewModel(Assert::assertNull);
-    }
-
-    @Test
-    @EnableFlags(QsDetailedView.FLAG_NAME)
-    public void testStarting_notReturnDetailsViewModel() {
-        when(mController.isStarting()).thenReturn(true);
-        when(mController.isRecording()).thenReturn(false);
-        mTile.getDetailsViewModel(Assert::assertNull);
-    }
-
-    @Test
-    @EnableFlags(QsDetailedView.FLAG_NAME)
-    public void testRecording_notReturnDetailsViewModel() {
-        when(mController.isStarting()).thenReturn(false);
-        when(mController.isRecording()).thenReturn(true);
-        mTile.getDetailsViewModel(Assert::assertNull);
     }
 
     private QSTile.Icon createExpectedIcon(int resId) {

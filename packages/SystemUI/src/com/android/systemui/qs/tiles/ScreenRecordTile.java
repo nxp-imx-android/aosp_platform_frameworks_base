@@ -42,14 +42,12 @@ import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.FalsingManager;
 import com.android.systemui.plugins.qs.QSTile;
-import com.android.systemui.plugins.qs.TileDetailsViewModel;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.qs.QSHost;
 import com.android.systemui.qs.QsEventLogger;
 import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
-import com.android.systemui.qs.tiles.dialog.ScreenRecordDetailsViewModel;
 import com.android.systemui.res.R;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel;
@@ -57,8 +55,6 @@ import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.util.Utils;
-
-import java.util.function.Consumer;
 
 import javax.inject.Inject;
 
@@ -194,26 +190,6 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
             mUiHandler.post(showPromptCallback);
         }
         refreshState();
-    }
-
-    @Override
-    public boolean getDetailsViewModel(Consumer<TileDetailsViewModel> callback) {
-        handleClick(() -> executeWhenUnlockedKeyguard(
-                () -> {
-                    if (mController.isScreenCaptureDisabled()) {
-                        // Close the panel first so that the toast can show up.
-                        mDialogTransitionAnimator.disableAllCurrentDialogsExitAnimations();
-                        mPanelInteractor.collapsePanels();
-
-                        showDisabledByPolicyToast();
-                        return;
-                    }
-
-                    callback.accept(new ScreenRecordDetailsViewModel(mController,
-                            this::onStartRecordingClicked));
-                })
-        );
-        return true;
     }
 
     @Override
