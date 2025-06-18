@@ -305,3 +305,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "resolve_trampoline_destination_packages"
+    namespace: "multitasking"
+    description: "Fixes a bug where resolving package name for task trampoline."
+    bug: "370653710"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

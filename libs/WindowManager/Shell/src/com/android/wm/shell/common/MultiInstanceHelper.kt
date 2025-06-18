@@ -187,13 +187,13 @@ constructor(
     }
 
     companion object {
-        /** Returns the component from a PendingIntent */
+        /** Returns the component from a PendingIntent. */
         @JvmStatic
         fun getComponent(pendingIntent: PendingIntent?): ComponentName? {
             return pendingIntent?.intent?.component
         }
 
-        /** Returns the component from a shortcut */
+        /** Returns the component from a shortcut. */
         @JvmStatic
         fun getShortcutComponent(
             packageName: String,
@@ -208,17 +208,6 @@ constructor(
             val shortcuts = launcherApps.getShortcuts(query, user)
             val info = if (shortcuts != null && shortcuts.size > 0) shortcuts[0] else null
             return info?.activity
-        }
-
-        /** Returns true if package names and user ids match. */
-        @JvmStatic
-        fun samePackage(
-            packageName1: String?,
-            packageName2: String?,
-            userId1: Int,
-            userId2: Int,
-        ): Boolean {
-            return (packageName1 != null && packageName1 == packageName2) && (userId1 == userId2)
         }
     }
 }

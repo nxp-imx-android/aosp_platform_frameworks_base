@@ -447,4 +447,16 @@ interface IActivityTaskManager {
      * @hide
      */
     void reportHandoffActivityData(in IBinder requestToken, in List<HandoffActivityData> data);
+
+    /**
+     * Retrieves the destination activity's package name associated
+     * with an original launching activity.
+     * This is used for Activity Trampolines, where an initial activity redirects to a final
+     * destination activity.
+     *
+     * @param originalPackageName The package name of the first activity in the launch chain.
+     * @return The package name of the final destination activity, or the provided
+     * {@code originalPackageName} if no redirection is found.
+     */
+    String getDestinationPackage(in String originalPackageName);
 }
