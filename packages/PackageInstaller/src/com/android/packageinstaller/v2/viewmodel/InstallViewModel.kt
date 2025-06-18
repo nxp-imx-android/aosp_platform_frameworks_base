@@ -94,7 +94,7 @@ class InstallViewModel(application: Application, val repository: InstallReposito
     }
 
     fun forcedSkipSourceCheck() {
-        val stage = repository.forcedSkipSourceCheck()
+        val stage = repository.requestUserConfirmation(/* forceSourceCheck= */ false)
         if (stage != null) {
             _currentInstallStage.value = stage
         }
