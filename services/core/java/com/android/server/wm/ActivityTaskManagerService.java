@@ -871,13 +871,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         int caller() default NONE;
     }
 
-    private final Runnable mUpdateOomAdjRunnable = new Runnable() {
-        @Override
-        public void run() {
-            mAmInternal.updateOomAdj(ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY);
-        }
-    };
-
     @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
     public ActivityTaskManagerService(Context context) {
         mContext = context;
@@ -5523,49 +5516,50 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     void updateSleepIfNeededLocked() {
         final boolean shouldSleep = !mRootWindowContainer.hasAwakeDisplay();
         final boolean wasSleeping = mSleeping;
-        boolean updateOomAdj = false;
 
-        if (!shouldSleep) {
-            // If wasSleeping is true, we need to wake up activity manager state from when
-            // we started sleeping. In either case, we need to apply the sleep tokens, which
-            // will wake up root tasks or put them to sleep as appropriate.
-            if (wasSleeping) {
-                mSleeping = false;
-                FrameworkStatsLog.write(FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED,
-                        FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED__STATE__AWAKE);
-                startTimeTrackingFocusedActivityLocked();
-                if (mTopApp != null) {
-                    mTopApp.addToPendingTop();
+        try (var unused = mActivityStateUpdater.startBatchSession()) {
+            boolean updateOomAdj = false;
+            if (!shouldSleep) {
+                // If wasSleeping is true, we need to wake up activity manager state from when
+                // we started sleeping. In either case, we need to apply the sleep tokens, which
+                // will wake up root tasks or put them to sleep as appropriate.
+                if (wasSleeping) {
+                    mSleeping = false;
+                    FrameworkStatsLog.write(FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED,
+                            FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED__STATE__AWAKE);
+                    startTimeTrackingFocusedActivityLocked();
+                    if (mTopApp != null) {
+                        mTopApp.addToPendingTop();
+                    }
+                    mTopProcessState = ActivityManager.PROCESS_STATE_TOP;
+                    mActivityStateUpdater.setTopProcessStateAsync(mInternal.getTopProcessState());
+                    Slog.d(TAG, "Top Process State changed to PROCESS_STATE_TOP");
+                    mTaskSupervisor.comeOutOfSleepIfNeededLocked();
+                    updateOomAdj = true;
                 }
-                mTopProcessState = ActivityManager.PROCESS_STATE_TOP;
+                mRootWindowContainer.applySleepTokens(true /* applyToRootTasks */);
+            } else if (!mSleeping && shouldSleep) {
+                mSleeping = true;
+                FrameworkStatsLog.write(FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED,
+                        FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED__STATE__ASLEEP);
+                if (mCurAppTimeTracker != null) {
+                    mCurAppTimeTracker.stop();
+                }
+                mTopProcessState = ActivityManager.PROCESS_STATE_TOP_SLEEPING;
                 mActivityStateUpdater.setTopProcessStateAsync(mInternal.getTopProcessState());
-                Slog.d(TAG, "Top Process State changed to PROCESS_STATE_TOP");
-                mTaskSupervisor.comeOutOfSleepIfNeededLocked();
+                Slog.d(TAG, "Top Process State changed to PROCESS_STATE_TOP_SLEEPING");
+                mTaskSupervisor.goingToSleepLocked();
+                updateResumedAppTrace(null /* resumed */);
                 updateOomAdj = true;
             }
-            mRootWindowContainer.applySleepTokens(true /* applyToRootTasks */);
-        } else if (!mSleeping && shouldSleep) {
-            mSleeping = true;
-            FrameworkStatsLog.write(FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED,
-                    FrameworkStatsLog.ACTIVITY_MANAGER_SLEEP_STATE_CHANGED__STATE__ASLEEP);
-            if (mCurAppTimeTracker != null) {
-                mCurAppTimeTracker.stop();
+            if (updateOomAdj) {
+                updateOomAdj();
             }
-            mTopProcessState = ActivityManager.PROCESS_STATE_TOP_SLEEPING;
-            mActivityStateUpdater.setTopProcessStateAsync(mInternal.getTopProcessState());
-            Slog.d(TAG, "Top Process State changed to PROCESS_STATE_TOP_SLEEPING");
-            mTaskSupervisor.goingToSleepLocked();
-            updateResumedAppTrace(null /* resumed */);
-            updateOomAdj = true;
-        }
-        if (updateOomAdj) {
-            updateOomAdj();
         }
     }
 
     void updateOomAdj() {
-        mH.removeCallbacks(mUpdateOomAdjRunnable);
-        mH.post(mUpdateOomAdjRunnable);
+        mActivityStateUpdater.runUpdateAsync();
     }
 
     void updateCpuStats() {

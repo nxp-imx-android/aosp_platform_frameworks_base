@@ -89,6 +89,8 @@ import com.android.internal.app.HeavyWeightSwitcherActivity;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.Watchdog;
+import com.android.server.am.Flags;
+import com.android.server.am.ProcessStateController;
 import com.android.server.am.ProcessStateRecord;
 import com.android.server.art.ReasonMapping;
 import com.android.server.grammaticalinflection.GrammaticalInflectionManagerInternal;
@@ -1337,8 +1339,6 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         }
         mActivityStateFlags = stateFlags;
         mPerceptibleTaskStoppedTimeMillis = perceptibleTaskStoppedTimeMillis;
-        // TODO: b/399680824 - batch these state changes when called from
-        //  computeProcessActivityStateBatch
         mAtm.mActivityStateUpdater.setActivityStateAsync(this, stateFlags,
                 perceptibleTaskStoppedTimeMillis);
 
@@ -1397,13 +1397,29 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         if (addPendingTopUid) {
             addToPendingTop();
         }
-        if (updateOomAdj) {
-            prepareOomAdjustment();
+
+        // Multiple OomAdjuster affecting state changes can occur, wrap those state changes in a
+        // BatchSession.
+        try (ProcessStateController.AsyncBatchSession batchSession =
+                     mAtm.mActivityStateUpdater.startBatchSession()) {
+            if (updateOomAdj) {
+                prepareOomAdjustment();
+            }
+
+            // Posting on handler so WM lock isn't held when we call into AM.
+            if (Flags.pushActivityStateToOomadjuster()) {
+                // updateProcessInfo can trigger an OomAdjuster update, let the
+                // ProcessStateController batch session handle it.
+                batchSession.enqueue(
+                        () -> mListener.updateProcessInfo(updateServiceConnectionActivities,
+                                activityChange, updateOomAdj));
+            } else {
+                final Message m = PooledLambda.obtainMessage(
+                        WindowProcessListener::updateProcessInfo,
+                        mListener, updateServiceConnectionActivities, activityChange, updateOomAdj);
+                mAtm.mH.sendMessage(m);
+            }
         }
-        // Posting on handler so WM lock isn't held when we call into AM.
-        final Message m = PooledLambda.obtainMessage(WindowProcessListener::updateProcessInfo,
-                mListener, updateServiceConnectionActivities, activityChange, updateOomAdj);
-        mAtm.mH.sendMessage(m);
     }
 
     /** Refreshes oom adjustment and process state of this process. */
@@ -1458,26 +1474,41 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     }
 
     void onStartActivity(int topProcessState, ActivityInfo info) {
-        String packageName = null;
+        final String packageName;
         if ((info.flags & ActivityInfo.FLAG_MULTIPROCESS) == 0
                 || !"android".equals(info.packageName)) {
             // Don't add this if it is a platform component that is marked to run in multiple
             // processes, because this is actually part of the framework so doesn't make sense
             // to track as a separate apk in the process.
             packageName = info.packageName;
+        } else {
+            packageName = null;
         }
         // update ActivityManagerService.PendingStartActivityUids list.
         if (topProcessState == ActivityManager.PROCESS_STATE_TOP) {
             mAtm.mAmInternal.addPendingTopUid(mUid, mPid, mThread);
         }
-        prepareOomAdjustment();
-        // Posting the message at the front of queue so WM lock isn't held when we call into AM,
-        // and the process state of starting activity can be updated quicker which will give it a
-        // higher scheduling group.
-        final Message m = PooledLambda.obtainMessage(WindowProcessListener::onStartActivity,
-                mListener, topProcessState, shouldSetProfileProc(), packageName,
-                info.applicationInfo.longVersionCode);
-        mAtm.mH.sendMessageAtFrontOfQueue(m);
+
+        // Multiple OomAdjuster affecting state changes can occur, wrap those state changes in a
+        // BatchSession.
+        try (ProcessStateController.AsyncBatchSession batchSession =
+                     mAtm.mActivityStateUpdater.startBatchSession()) {
+            prepareOomAdjustment();
+            // Posting the message at the front of queue so WM lock isn't held when we call into AM,
+            // and the process state of starting activity can be updated quicker which will give it
+            // a higher scheduling group.
+            if (Flags.pushActivityStateToOomadjuster()) {
+                batchSession.postToHead();
+                batchSession.enqueue(
+                        () -> mListener.onStartActivity(topProcessState, shouldSetProfileProc(),
+                                packageName, info.applicationInfo.longVersionCode));
+            } else {
+                final Message m = PooledLambda.obtainMessage(WindowProcessListener::onStartActivity,
+                        mListener, topProcessState, shouldSetProfileProc(), packageName,
+                        info.applicationInfo.longVersionCode);
+                mAtm.mH.sendMessageAtFrontOfQueue(m);
+            }
+        }
     }
 
     void appDied(String reason) {
