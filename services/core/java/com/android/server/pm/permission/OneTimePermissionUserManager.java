@@ -19,13 +19,13 @@ package com.android.server.pm.permission;
 import static android.content.pm.PackageManager.FLAG_PERMISSION_ONE_TIME;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.ActivityManagerInternal;
 import android.app.AlarmManager;
 import android.app.IActivityManager;
 import android.app.IUidObserver;
 import android.app.UidObserver;
-import android.companion.virtual.VirtualDevice;
 import android.companion.virtual.VirtualDeviceManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -71,7 +71,6 @@ public class OneTimePermissionUserManager {
     private final @NonNull AlarmManager mAlarmManager;
     private final @NonNull PermissionControllerManager mPermissionControllerManager;
     private final @NonNull PermissionManager mPermissionManager;
-    private final VirtualDeviceManagerInternal mVirtualDeviceManagerInternal;
 
     private final Object mLock = new Object();
 
@@ -108,8 +107,6 @@ public class OneTimePermissionUserManager {
         mPermissionControllerManager = new PermissionControllerManager(
                 mContext, PermissionThread.getHandler());
         mPermissionManager = mContext.getSystemService(PermissionManager.class);
-        mVirtualDeviceManagerInternal =
-                LocalServices.getService(VirtualDeviceManagerInternal.class);
         mHandler = context.getMainThreadHandler();
     }
 
@@ -274,9 +271,13 @@ public class OneTimePermissionUserManager {
         private @NonNull List<String> getOneTimePermissions(@NonNull String packageName,
                 int deviceId) {
             List<String> permissions = new ArrayList<>();
+            String persistentDeviceId = getPersistentDeviceId(deviceId);
+            if (persistentDeviceId == null) {
+                Log.w(LOG_TAG, "No persistence device id found for device : " +  deviceId);
+                return permissions;
+            }
             Map<String, PermissionManager.PermissionState> permissionStates =
-                    mPermissionManager.getAllPermissionStates(packageName,
-                            getPersistentDeviceId(deviceId));
+                    mPermissionManager.getAllPermissionStates(packageName, persistentDeviceId);
             for (Map.Entry<String, PermissionManager.PermissionState> entry :
                     permissionStates.entrySet()) {
                 PermissionManager.PermissionState permissionState = entry.getValue();
@@ -288,14 +289,16 @@ public class OneTimePermissionUserManager {
             return permissions;
         }
 
-        private @NonNull String getPersistentDeviceId(int deviceId) {
-            VirtualDevice virtualDevice = mVirtualDeviceManagerInternal.getVirtualDevice(deviceId);
-            String persistentDeviceId = null;
-            if (virtualDevice != null) {
-                persistentDeviceId = virtualDevice.getPersistentDeviceId();
+        private @Nullable String getPersistentDeviceId(int deviceId) {
+            if (deviceId == Context.DEVICE_ID_DEFAULT) {
+                return VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT;
             }
-            return persistentDeviceId != null ? persistentDeviceId
-                    : VirtualDeviceManager.PERSISTENT_DEVICE_ID_DEFAULT;
+            VirtualDeviceManagerInternal virtualDeviceManagerInternal =
+                    LocalServices.getService(VirtualDeviceManagerInternal.class);
+            if (virtualDeviceManagerInternal != null) {
+                return virtualDeviceManagerInternal.getPersistentIdForDevice(deviceId);
+            }
+            return null;
         }
 
         public void updateSessionParameters(long timeoutMillis, long revokeAfterKilledDelayMillis) {
