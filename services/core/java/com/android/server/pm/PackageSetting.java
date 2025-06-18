@@ -22,6 +22,8 @@ import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DEFAULT;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_ENABLED;
 
+import static com.android.server.pm.PackageManagerService.TAG;
+
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -46,10 +48,12 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.IntArray;
+import android.util.Slog;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.content.LibraryAlignmentInfo;
 import com.android.internal.pm.parsing.pkg.AndroidPackageInternal;
 import com.android.internal.util.CollectionUtils;
 import com.android.internal.util.DataClass;
@@ -225,6 +229,15 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
     private int categoryOverride = ApplicationInfo.CATEGORY_UNDEFINED;
 
     private int mPageSizeAppCompatFlags = ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED;
+
+    /**
+     * This array will be populated during scanning when all the following are true for the app
+     * - Developer mode is unlocked
+     * - app is debuggable
+     * - new package is being installed
+     * - App is installed by adb
+     */
+    private LibraryAlignmentInfo[] mUnalignedNativeLibraries;
 
     @NonNull
     private final PackageStateUnserialized pkgState = new PackageStateUnserialized(this);
@@ -876,6 +889,9 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
 
         copyMimeGroups(other.mimeGroups);
         mPageSizeAppCompatFlags = other.mPageSizeAppCompatFlags;
+        mUnalignedNativeLibraries = other.mUnalignedNativeLibraries != null
+                ? Arrays.copyOf(other.mUnalignedNativeLibraries,
+                other.mUnalignedNativeLibraries.length) : null;
 
         pkgState.updateFrom(other.pkgState);
         onChanged();
@@ -1636,7 +1652,8 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
      */
     public PackageSetting setPageSizeAppCompatFlags(int mode) {
         if (mode < 0 || mode >= ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_MAX) {
-            throw new IllegalArgumentException("Invalid page size compat mode specified");
+            Slog.e(TAG, "Invalid page size compat mode specified. mode : " + mode);
+            return this;
         }
 
         // OR assignment is used here to avoid overriding the mode set by the manifest.
@@ -1657,6 +1674,19 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
 
     public int getPageSizeAppCompatFlags() {
         return mPageSizeAppCompatFlags;
+    }
+
+    /**
+     * Set native library alignment info.
+     */
+    public PackageSetting setLibraryAlignmentInfo(LibraryAlignmentInfo[] libs) {
+        if (libs == null) {
+            Slog.e(TAG, "Invalid LibraryAlignmentInfo specified");
+            return this;
+        }
+        this.mUnalignedNativeLibraries = libs;
+        onChanged();
+        return this;
     }
 
     public PackageSetting setLegacyNativeLibraryPath(
@@ -1871,28 +1901,68 @@ public class PackageSetting extends SettingBase implements PackageStateInternal 
 
         // On 4 KB device, show a warning to fix compatibility.
         boolean is4kbDevice = Os.sysconf(OsConstants._SC_PAGESIZE) == 4096;
+        StringBuilder fullMessage = new StringBuilder();
+
+        String message = getWarningMessage(context, uncompressedLibsNotAligned, elfNotAligned,
+                is4kbDevice);
+        if (message == null) {
+            return null;
+        }
+        fullMessage.append(message);
+
+        if (mUnalignedNativeLibraries != null) {
+            for (LibraryAlignmentInfo info : mUnalignedNativeLibraries) {
+                String libInfo = getErrorMessageForLib(context, info.libraryName, info.errorCode);
+                fullMessage.append(libInfo);
+            }
+        }
+
+        return fullMessage.toString();
+    }
+
+    private String getWarningMessage(@NonNull Context context, boolean uncompressedLibsNotAligned,
+            boolean elfNotAligned, boolean is4kbDevice) {
         if (uncompressedLibsNotAligned && elfNotAligned) {
-            return context.getText(is4kbDevice
+            return context.getString(is4kbDevice
                             ? com.android.internal.R.string.page_size_compat_apk_and_elf_warning_4kb
-                     : com.android.internal.R.string.page_size_compat_apk_and_elf_warning)
-                    .toString();
+                            : com.android.internal.R.string.page_size_compat_apk_and_elf_warning);
         }
 
         if (uncompressedLibsNotAligned) {
-            return context.getText(is4kbDevice
+            return context.getString(is4kbDevice
                             ? com.android.internal.R.string.page_size_compat_apk_warning_4kb
-                            : com.android.internal.R.string.page_size_compat_apk_warning)
-                    .toString();
+                            : com.android.internal.R.string.page_size_compat_apk_warning);
         }
 
         if (elfNotAligned) {
-            return context.getText(is4kbDevice
+            return context.getString(is4kbDevice
                             ? com.android.internal.R.string.page_size_compat_elf_warning_4kb
-                            : com.android.internal.R.string.page_size_compat_elf_warning)
-                    .toString();
+                            : com.android.internal.R.string.page_size_compat_elf_warning);
+        }
+        return null;
+    }
+
+    private String getErrorMessageForLib(Context context, String name, int errorCode) {
+        boolean uncompressedLibsNotAligned = (errorCode
+                & ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNCOMPRESSED_LIBS_NOT_ALIGNED) != 0;
+        boolean elfNotAligned = (errorCode
+                & ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_ELF_NOT_ALIGNED) != 0;
+
+        if (uncompressedLibsNotAligned && elfNotAligned) {
+            return context.getString(
+                    com.android.internal.R.string.page_size_compat_apk_and_elf_not_aligned, name);
         }
 
-        return null;
+        if (uncompressedLibsNotAligned) {
+            return context.getString(
+                    com.android.internal.R.string.page_size_compat_apk_not_aligned, name);
+        }
+
+        if (elfNotAligned) {
+            return context.getString(
+                    com.android.internal.R.string.page_size_compat_elf_not_aligned, name);
+        }
+        return context.getString(com.android.internal.R.string.page_size_compat_unknown, name);
     }
 
     public void setDeveloperVerificationStatusInternal(
