@@ -298,6 +298,7 @@ public class ZOrderingTests extends WindowTestsBase {
         mDisplayContent.setImeLayeringTarget(imeAppTarget);
         assertWithMessage("IME control target was updated")
                 .that(mDisplayContent.getImeControlTarget()).isEqualTo(imeAppTarget);
+        mDisplayContent.mTransitionController.mBuildingTransitionLayers = true;
         mDisplayContent.assignChildLayers(mTransaction);
 
         // Ime should be above all app windows except for non-fullscreen app window above it and
@@ -374,6 +375,7 @@ public class ZOrderingTests extends WindowTestsBase {
                 ACTIVITY_TYPE_HOME).setDisplay(mDisplayContent).build();
         final WindowState anyWindow2 = createWindow("anyWindow2");
 
+        mDisplayContent.mTransitionController.mBuildingTransitionLayers = true;
         mDisplayContent.assignChildLayers(mTransaction);
 
         assertWindowHigher(dockedStackWindow, homeActivityWindow);
