@@ -43,6 +43,7 @@ import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -92,6 +93,13 @@ fun NavBarPill(
 
     val density = LocalDensity.current
     val collapsedWidthPx = with(density) { navBarWidth.toPx() }
+    var wasEverCollapsed by remember(actions) { mutableStateOf(false) }
+    LaunchedEffect(expanded) {
+        if (expanded) {
+            wasEverCollapsed = true
+        }
+    }
+
     var expandedSize by remember { mutableStateOf(IntSize.Zero) }
     val visibleState = remember { MutableTransitionState(false) }
     visibleState.targetState = visible
@@ -248,7 +256,27 @@ fun NavBarPill(
                                         modifier =
                                             Modifier.size(16.dp).then(iconBorder).clip(CircleShape),
                                     )
-                                    if (!action.icon.repeated) {
+                                    if (
+                                        isMrAction &&
+                                            !(wasEverCollapsed && filteredActions.size > 1)
+                                    ) {
+                                        Text(
+                                            text = action.label,
+                                            style = MaterialTheme.typography.labelMedium,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            modifier = Modifier.widthIn(0.dp, maxPillWidth * 0.5f),
+                                        )
+                                        if (action.icon.repeatCount > 0) {
+                                            Text(
+                                                text = "+${action.icon.repeatCount}",
+                                                style = MaterialTheme.typography.labelMedium,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.padding(end = 3.dp),
+                                            )
+                                        }
+                                    } else if (action.icon.repeatCount == 0) {
                                         Text(
                                             text = action.label,
                                             style = MaterialTheme.typography.labelMedium,

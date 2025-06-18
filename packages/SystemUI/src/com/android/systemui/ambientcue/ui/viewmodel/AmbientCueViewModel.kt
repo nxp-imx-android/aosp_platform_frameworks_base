@@ -113,7 +113,7 @@ constructor(
                                 IconViewModel(
                                     drawable = action.icon.drawable,
                                     iconId = action.icon.iconId,
-                                    repeated = false,
+                                    repeatCount = 0,
                                 ),
                             label = action.label,
                             attribution = action.attribution,
