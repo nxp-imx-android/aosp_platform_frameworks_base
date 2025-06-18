@@ -231,6 +231,11 @@ public final class AccessibilityWindowInfo implements Parcelable {
 
     /**
      * Gets the root node in the window's hierarchy.
+     * <p>
+     * Returns {@code null} if connection is invalid. Otherwise, always returns a node, even if the
+     * root is considered unimportant for accessibility. In this case, calling
+     * {@link AccessibilityNodeInfo#isImportantForAccessibility()} on the returned node will return
+     * {@code false}.
      *
      * @return The root node.
      */
@@ -240,6 +245,11 @@ public final class AccessibilityWindowInfo implements Parcelable {
 
     /**
      * Gets the root node in the window's hierarchy.
+     * <p>
+     * Returns {@code null} if connection is invalid. Otherwise, always returns a node, even if the
+     * root is considered unimportant for accessibility. In this case, calling
+     * {@link AccessibilityNodeInfo#isImportantForAccessibility()} on the returned node will return
+     * {@code false}.
      *
      * @param prefetchingStrategy the prefetching strategy.
      * @return The root node.
