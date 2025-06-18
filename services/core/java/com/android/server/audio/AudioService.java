@@ -5554,6 +5554,7 @@ public class AudioService extends IAudioService.Stub
         Set<Integer> absVolumeDeviceTypes = new ArraySet<>(
                 AudioSystem.DEVICE_OUT_ALL_A2DP_SET);
         absVolumeDeviceTypes.addAll(mAbsVolumeMultiModeCaseDevices);
+        absVolumeDeviceTypes.add(AudioSystem.DEVICE_OUT_BLE_BROADCAST);
 
         final Set<AudioDeviceAttributes> absVolumeDevices =
                 AudioSystem.intersectionAudioDeviceTypes(absVolumeDeviceTypes, devices);
