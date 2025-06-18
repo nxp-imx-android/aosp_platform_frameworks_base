@@ -112,6 +112,7 @@ public class MediaQualityService extends SystemService {
     private static final String DEFAULT_PICTURE_PROFILE_ID = "default_picture_profile_id";
     private static final String STREAM_STATUS = "stream_status";
     private static final String PREVIOUS_STREAM_STATUS = "previous_stream_status";
+    private static final String STREAM_STATUS_NOT_CREATED = "stream_status_not_created";
     private final Context mContext;
     private final MediaQualityDbHelper mMediaQualityDbHelper;
     private final BiMap<Long, String> mPictureProfileTempIdMap;
@@ -2159,6 +2160,25 @@ public class MediaQualityService extends SystemService {
                                         selection,
                                         selectionArguments);
                         if (list.isEmpty()) {
+                            Slog.d(TAG, "The picture profile list is empty");
+                            // Short term solution for b/422302653.
+                            // Signal the HAL when the request stream status is not created by the
+                            // APK.
+                            PictureProfile currentSdr = getSdrPictureProfile(profileName, previous);
+                            if (currentSdr == null) {
+                                Slog.d(TAG, "The current SDR profile is null");
+                                return;
+                            }
+                            PersistableBundle currentSdrParameter = currentSdr.getParameters();
+                            currentSdrParameter.putString(
+                                    STREAM_STATUS_NOT_CREATED, newStatus);
+                            mHandleToPictureProfile.put(profileHandle, currentSdr);
+                            mCurrentPictureHandleToOriginal.removeValue(profileHandle);
+                            mCurrentPictureHandleToOriginal.put(
+                                    currentSdr.getHandle().getId(), profileHandle);
+                            mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
+                                    currentSdrParameter);
+
                             Slog.d(TAG, "Picture profile not found for status: " + newStatus);
                             return;
                         }
@@ -2188,26 +2208,11 @@ public class MediaQualityService extends SystemService {
                         }
 
                         // to SDR
-                        String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
-                                + BaseParameters.PARAMETER_PACKAGE + " = ? AND ("
-                                + BaseParameters.PARAMETER_NAME + " = ? OR "
-                                + BaseParameters.PARAMETER_NAME + " = ?)";
-                        String[] selectionArguments = {
-                                Integer.toString(previous.getProfileType()),
-                                previous.getPackageName(),
-                                profileName,
-                                profileName + "/" + PictureProfile.STATUS_SDR
-                        };
-                        List<PictureProfile> list =
-                                mMqDatabaseUtils.getPictureProfilesBasedOnConditions(
-                                        MediaQualityUtils.getMediaProfileColumns(true),
-                                        selection,
-                                        selectionArguments);
-                        if (list.isEmpty()) {
-                            Slog.d(TAG, "SDR profile not found");
+                        PictureProfile current = getSdrPictureProfile(profileName, previous);
+                        if (current == null) {
+                            Slog.d(TAG, "The current SDR profile is null");
                             return;
                         }
-                        PictureProfile current = list.get(0);
                         PersistableBundle currentProfileParameters = current.getParameters();
                         currentProfileParameters.putString(
                                 STREAM_STATUS, PictureProfile.STATUS_SDR);
@@ -2581,5 +2586,27 @@ public class MediaQualityService extends SystemService {
                 android.Manifest.permission.MANAGE_GLOBAL_PICTURE_QUALITY_SERVICE, pid,
                 uid)
                 == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private PictureProfile getSdrPictureProfile(String profileName, PictureProfile previous) {
+        String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
+                + BaseParameters.PARAMETER_PACKAGE + " = ? AND ("
+                + BaseParameters.PARAMETER_NAME + " = ? OR "
+                + BaseParameters.PARAMETER_NAME + " = ?)";
+        String[] selectionArguments = {
+                Integer.toString(previous.getProfileType()),
+                previous.getPackageName(),
+                profileName,
+                profileName + "/" + PictureProfile.STATUS_SDR
+        };
+        List<PictureProfile> list =
+                mMqDatabaseUtils.getPictureProfilesBasedOnConditions(
+                        MediaQualityUtils.getMediaProfileColumns(true),
+                        selection,
+                        selectionArguments);
+        if (list.isEmpty()) {
+            return null;
+        }
+        return list.getFirst();
     }
 }
