@@ -26,6 +26,7 @@ import com.android.compose.animation.scene.TestContentScope
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.ui.composable.EditModeScene
 import com.android.systemui.qs.ui.viewmodel.editModeSceneActionsViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.editModeSceneContentViewModelFactory
@@ -47,6 +48,8 @@ class EditModeSceneTest : SysuiTestCase() {
 
     @Test
     fun testViewHierarchy() {
+        kosmos.usingMediaInComposeFragment = true
+
         val scene = EditModeScene(
             kosmos.editModeSceneContentViewModelFactory,
             kosmos.editModeSceneActionsViewModelFactory,
