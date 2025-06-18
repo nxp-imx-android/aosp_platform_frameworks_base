@@ -21,13 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.app.tracing.coroutines.launchTraced
 import com.android.app.tracing.coroutines.traceCoroutine
-import com.android.systemui.Flags.rememberViewModelOffMainThread
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 
 /**
  * Returns a remembered view-model of the type [T]. If the returned instance is also an
@@ -41,27 +36,10 @@ import kotlinx.coroutines.Dispatchers
  * of some complex concatenation or templating scheme.
  */
 @Composable
-fun <T> rememberViewModel(
-    traceName: String,
-    key: Any = Unit,
-    context: CoroutineContext = EmptyCoroutineContext,
-    factory: () -> T,
-): T {
+fun <T> rememberViewModel(traceName: String, key: Any = Unit, factory: () -> T): T {
     val instance = remember(key) { factory() }
     if (instance is Activatable) {
-        LaunchedEffect(instance) {
-            launchTraced(
-                spanName = traceName,
-                context =
-                    when {
-                        context != EmptyCoroutineContext -> context
-                        rememberViewModelOffMainThread() -> Dispatchers.Default
-                        else -> coroutineContext
-                    },
-            ) {
-                instance.activate()
-            }
-        }
+        LaunchedEffect(instance) { traceCoroutine(traceName) { instance.activate() } }
     }
     return instance
 }
