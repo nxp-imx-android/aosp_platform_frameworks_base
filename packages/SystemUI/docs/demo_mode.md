@@ -41,6 +41,8 @@ Commands are sent as string extras with key ```command``` (required). Possible v
 |                      | ```mobile```               |                  | ```show``` to show icon, any other value to hide
 |                      |                            | ```datatype```   | Values: ```1x```, ```3g```, ```4g```, ```e```, ```g```, ```h```, ```lte```, ```roam```, any other value to hide
 |                      |                            | ```level```      | Sets mobile signal strength level (null or 0-4)
+|                      |                            | ```slot```       | Sets the subscription ID for this demo mobile icon. Allows you to have multiple demo SIMs.
+|                      |                            | ```inflate```    | True if there should be 5 bars instead of 4
 |                      | ```satellite```            |                  | ```show``` to show icon, any other value to hide
 |                      |                            | ```connection``` | ```connected```, ```off```, ```on```, or ```unknown``` (matches SatelliteConnectionState enum)
 |                      |                            | ```level```      | Sets satellite signal strength level (0-4)
@@ -87,6 +89,29 @@ adb shell am broadcast -a com.android.systemui.demo -e command clock -e hhmm
 1231
 ```
 
+Set mobile to 3 bars with LTE
+
+```
+adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e level 3 -e datatype lte
+```
+
+Set mobile to no bars with 3g
+
+```
+adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e level 0 -e datatype 3g
+```
+
+Set 2 SIMs with the same number of levels (so they'll be stacked)
+```
+adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e slot 10 -e level 1
+adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e slot 11 -e level 2
+```
+
+Set 2 SIMs with different number of levels
+```
+adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e slot 10 -e level 1 -e inflate false
+adb shell am broadcast -a com.android.systemui.demo -e command network -e mobile show -e slot 11 -e level 2 -e inflate true
+```
 
 Set the wifi level to max
 
