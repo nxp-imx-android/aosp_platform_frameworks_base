@@ -43,6 +43,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.never
+import org.mockito.kotlin.whenever
 
 /**
  * Tests for the [FixedAspectRatioTaskPositionerDecorator], written in parameterized form to check
@@ -55,7 +56,7 @@ import org.mockito.kotlin.never
 @RunWith(TestParameterInjector::class)
 class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase(){
     @Mock
-    private lateinit var mockDesktopWindowDecoration: DesktopModeWindowDecoration
+    private lateinit var mockDesktopWindowDecoration: WindowDecorationWrapper
     @Mock
     private lateinit var mockTaskPositioner: VeiledResizeTaskPositioner
 
@@ -63,10 +64,12 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase(){
 
     @Before
     fun setUp() {
-        mockDesktopWindowDecoration.mTaskInfo = ActivityManager.RunningTaskInfo().apply {
-            isResizeable = false
-            configuration.windowConfiguration.setBounds(PORTRAIT_BOUNDS)
-        }
+        whenever(mockDesktopWindowDecoration.taskInfo).thenReturn(
+            ActivityManager.RunningTaskInfo().apply {
+                isResizeable = false
+                configuration.windowConfiguration.setBounds(PORTRAIT_BOUNDS)
+            }
+        )
         doReturn(PORTRAIT_BOUNDS).`when`(mockTaskPositioner).onDragPositioningStart(
             any(), any(), any(), any())
         doReturn(Rect()).`when`(mockTaskPositioner).onDragPositioningMove(any(), any(), any())
@@ -83,9 +86,11 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase(){
     ) {
         val originalX = 0f
         val originalY = 0f
-        mockDesktopWindowDecoration.mTaskInfo = ActivityManager.RunningTaskInfo().apply {
-            isResizeable = testCase.isResizeable
-        }
+        whenever(mockDesktopWindowDecoration.taskInfo).thenReturn(
+            ActivityManager.RunningTaskInfo().apply {
+                isResizeable = testCase.isResizeable
+            }
+        )
 
         decoratedTaskPositioner.onDragPositioningStart(
             testCase.ctrlType, DISPLAY_ID, originalX, originalY)
@@ -138,9 +143,11 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase(){
         val originalY = 0f
         decoratedTaskPositioner.onDragPositioningStart(
             testCase.ctrlType, DISPLAY_ID, originalX, originalX)
-        mockDesktopWindowDecoration.mTaskInfo = ActivityManager.RunningTaskInfo().apply {
-            isResizeable = testCase.isResizeable
-        }
+        whenever(mockDesktopWindowDecoration.taskInfo).thenReturn(
+            ActivityManager.RunningTaskInfo().apply {
+                isResizeable = testCase.isResizeable
+            }
+        )
 
         decoratedTaskPositioner.onDragPositioningMove(
             DISPLAY_ID, originalX + SMALL_DELTA, originalY + SMALL_DELTA)
@@ -236,9 +243,11 @@ class FixedAspectRatioTaskPositionerDecoratorTests : ShellTestCase(){
         val originalY = 0f
         decoratedTaskPositioner.onDragPositioningStart(testCase.ctrlType, DISPLAY_ID,
             originalX, originalX)
-        mockDesktopWindowDecoration.mTaskInfo = ActivityManager.RunningTaskInfo().apply {
-            isResizeable = testCase.isResizeable
-        }
+        whenever(mockDesktopWindowDecoration.taskInfo).thenReturn(
+            ActivityManager.RunningTaskInfo().apply {
+                isResizeable = testCase.isResizeable
+            }
+        )
 
         decoratedTaskPositioner.onDragPositioningEnd(
             DISPLAY_ID, originalX + SMALL_DELTA, originalY + SMALL_DELTA)

@@ -1197,6 +1197,7 @@ public abstract class WMShellModule {
             @ShellMainThread Handler mainHandler,
             @ShellMainThread Choreographer mainChoreographer,
             @ShellMainThread MainCoroutineDispatcher mainDispatcher,
+            @ShellMainThread CoroutineScope mainScope,
             @ShellBackgroundThread CoroutineScope bgScope,
             @ShellBackgroundThread ShellExecutor bgExecutor,
             ShellInit shellInit,
@@ -1241,7 +1242,7 @@ public abstract class WMShellModule {
             return Optional.empty();
         }
         return Optional.of(new DesktopModeWindowDecorViewModel(context, shellExecutor, mainHandler,
-                mainChoreographer, mainDispatcher, bgScope, bgExecutor,
+                mainChoreographer, mainDispatcher, mainScope, bgScope, bgExecutor,
                 shellInit, shellCommandHandler, windowManager,
                 taskOrganizer, desktopUserRepositories, displayController, shellController,
                 displayInsetsController, syncQueue, transitions, desktopTasksController,

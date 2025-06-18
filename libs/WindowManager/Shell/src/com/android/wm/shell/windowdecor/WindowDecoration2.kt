@@ -82,11 +82,16 @@ abstract class WindowDecoration2<T>(
 ) : AutoCloseable where T : View, T : TaskFocusStateConsumer {
 
     protected var captionController: CaptionController<T>? = null
-    protected var display: Display? = displayController.getDisplay(taskInfo.displayId)
-    protected var windowDecorConfig: Configuration? = null
-    protected lateinit var decorWindowContext: Context
-    protected var hasGlobalFocus = false
-    private val exclusionRegion = Region.obtain()
+    /** Returns the display associated with the task. */
+    var display: Display? = displayController.getDisplay(taskInfo.displayId)
+    private var windowDecorConfig: Configuration? = null
+    /** The decor's context. */
+    lateinit var decorWindowContext: Context
+    /** Whether the task associated with the decor has global focus. */
+    var hasGlobalFocus = false
+    /** The exclusion region of the task's display. */
+    val exclusionRegion = Region.obtain()
+
     private val onDisplaysChangedListener: OnDisplaysChangedListener =
         object : OnDisplaysChangedListener {
             override fun onDisplayAdded(displayId: Int) {
@@ -98,10 +103,10 @@ abstract class WindowDecoration2<T>(
             }
         }
     /** The surface control of the task that owns this decoration. */
-    protected val taskSurface = cloneSurfaceControl(taskSurface, surfaceControlSupplier)
+    val taskSurface = cloneSurfaceControl(taskSurface, surfaceControlSupplier)
     protected var decorationContainerSurface: SurfaceControl? = null
     /** Sets the [TaskDragResizer] which allows task to be drag-resized. */
-    protected var taskDragResizer: TaskDragResizer? = null
+    var taskDragResizer: TaskDragResizer? = null
 
     protected var isKeyguardVisibleAndOccluded = false
     protected var isStatusBarVisible = displayController.getInsetsState(taskInfo.displayId)
@@ -441,7 +446,7 @@ abstract class WindowDecoration2<T>(
     }
 
     /** Updates the window decorations when exclusion region changes. */
-    protected open fun onExclusionRegionChanged(exclusionRegion: Region) {
+    open fun onExclusionRegionChanged(exclusionRegion: Region) {
         relayout(taskInfo, hasGlobalFocus, exclusionRegion)
     }
 

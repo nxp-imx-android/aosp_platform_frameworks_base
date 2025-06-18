@@ -56,7 +56,6 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.argThat
 import org.mockito.kotlin.doAnswer
 import org.mockito.kotlin.eq
@@ -78,7 +77,7 @@ import org.mockito.kotlin.whenever
 class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
     private val mockShellTaskOrganizer = mock<ShellTaskOrganizer>()
-    private val mockDesktopWindowDecoration = mock<DesktopModeWindowDecoration>()
+    private val mockWindowDecoration = mock<WindowDecorationWrapper>()
     private val mockDragEventListener = mock<DragPositioningCallbackUtility.DragEventListener>()
 
     private val taskToken = mock<WindowContainerToken>()
@@ -108,8 +107,8 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
     @Before
     fun setUp() {
         whenever(taskToken.asBinder()).thenReturn(taskBinder)
-        mockDesktopWindowDecoration.mDisplay = mockDisplay
-        mockDesktopWindowDecoration.mDecorWindowContext = mContext
+        whenever(mockWindowDecoration.display).thenReturn(mockDisplay)
+        whenever(mockWindowDecoration.decorWindowContext).thenReturn(mContext)
         resources = mContext.orCreateTestableResources
         val resourceConfiguration = Configuration()
         resourceConfiguration.uiMode = 0
@@ -124,9 +123,9 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         doAnswer { i ->
                 val rect = i.getArgument<Rect>(0)
                 if (
-                    mockDesktopWindowDecoration.mTaskInfo.configuration.windowConfiguration
+                    mockWindowDecoration.taskInfo.configuration.windowConfiguration
                         .displayRotation == ROTATION_90 ||
-                        mockDesktopWindowDecoration.mTaskInfo.configuration.windowConfiguration
+                        mockWindowDecoration.taskInfo.configuration.windowConfiguration
                             .displayRotation == ROTATION_270
                 ) {
                     rect.set(STABLE_BOUNDS_LANDSCAPE)
@@ -138,10 +137,10 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             .whenever(spyDisplayLayout0)
             .getStableBounds(any())
         whenever(mockTransactionFactory.get()).thenReturn(mockTransaction)
-        whenever(mockDesktopWindowDecoration.leash).thenReturn(mockSurfaceControl)
+        whenever(mockWindowDecoration.taskSurface).thenReturn(mockSurfaceControl)
         whenever(mockTransaction.setPosition(any(), any(), any())).thenReturn(mockTransaction)
         whenever(mockTransaction.setAlpha(any(), any())).thenReturn(mockTransaction)
-        mockDesktopWindowDecoration.mTaskInfo =
+        whenever(mockWindowDecoration.taskInfo).thenReturn(
             ActivityManager.RunningTaskInfo().apply {
                 taskId = TASK_ID
                 token = taskToken
@@ -153,14 +152,15 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 configuration.windowConfiguration.displayRotation = ROTATION_90
                 isResizeable = true
             }
-        whenever(mockDesktopWindowDecoration.calculateValidDragArea()).thenReturn(VALID_DRAG_AREA)
-        mockDesktopWindowDecoration.mDisplay = mockDisplay
+        )
+        whenever(mockWindowDecoration.calculateValidDragArea()).thenReturn(VALID_DRAG_AREA)
+        whenever(mockWindowDecoration.display).thenReturn(mockDisplay)
         whenever(mockDisplay.displayId).thenAnswer { DISPLAY_ID_0 }
 
         taskPositioner =
             MultiDisplayVeiledResizeTaskPositioner(
                 mockShellTaskOrganizer,
-                mockDesktopWindowDecoration,
+                mockWindowDecoration,
                 mockDisplayController,
                 { mockTransaction },
                 mockTransitions,
@@ -179,7 +179,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             STARTING_BOUNDS.left.toFloat(),
             STARTING_BOUNDS.top.toFloat(),
         )
-        verify(mockDesktopWindowDecoration, never()).showResizeVeil(STARTING_BOUNDS)
+        verify(mockWindowDecoration, never()).showResizeVeil(STARTING_BOUNDS)
 
         taskPositioner.onDragPositioningEnd(
             DISPLAY_ID_0,
@@ -200,7 +200,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
                 },
                 eq(taskPositioner),
             )
-        verify(mockDesktopWindowDecoration, never()).hideResizeVeil()
+        verify(mockWindowDecoration, never()).hideResizeVeil()
         verifyNoInteractions(mockMultiDisplayDragMoveIndicatorController)
     }
 
@@ -232,8 +232,8 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         val rectAfterEnd = Rect(STARTING_BOUNDS)
         rectAfterEnd.offset(70, 20)
 
-        verify(mockDesktopWindowDecoration, never()).showResizeVeil(any())
-        verify(mockDesktopWindowDecoration, never()).hideResizeVeil()
+        verify(mockWindowDecoration, never()).showResizeVeil(any())
+        verify(mockWindowDecoration, never()).hideResizeVeil()
         verify(mockMultiDisplayDragMoveIndicatorController).onDragEnd(eq(TASK_ID), any())
         Assert.assertEquals(rectAfterEnd, endBounds)
     }
@@ -273,13 +273,13 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         verify(mockTransaction)
             .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
         verify(mockTransaction)
-            .setAlpha(eq(mockDesktopWindowDecoration.leash), eq(ALPHA_FOR_TRANSLUCENT_WINDOW))
+            .setAlpha(eq(mockWindowDecoration.taskSurface), eq(ALPHA_FOR_TRANSLUCENT_WINDOW))
 
         val endBounds = taskPositioner.onDragPositioningEnd(DISPLAY_ID_1, 300f, 450f)
         val rectAfterEnd = Rect(300, 450, 500, 650)
 
-        verify(mockDesktopWindowDecoration, never()).showResizeVeil(any())
-        verify(mockDesktopWindowDecoration, never()).hideResizeVeil()
+        verify(mockWindowDecoration, never()).showResizeVeil(any())
+        verify(mockWindowDecoration, never()).hideResizeVeil()
         verify(mockMultiDisplayDragMoveIndicatorController).onDragEnd(eq(TASK_ID), any())
         Assert.assertEquals(rectAfterEnd, endBounds)
     }
@@ -303,7 +303,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
         inOrder
             .verify(mockTransaction)
-            .setAlpha(eq(mockDesktopWindowDecoration.leash), eq(ALPHA_FOR_TRANSLUCENT_WINDOW))
+            .setAlpha(eq(mockWindowDecoration.taskSurface), eq(ALPHA_FOR_TRANSLUCENT_WINDOW))
 
         // Moving back to the original display
         taskPositioner.onDragPositioningMove(DISPLAY_ID_0, 100f, 1500f)
@@ -313,14 +313,14 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
             .setPosition(any(), eq(rectAfterMove.left.toFloat()), eq(rectAfterMove.top.toFloat()))
         inOrder
             .verify(mockTransaction)
-            .setAlpha(eq(mockDesktopWindowDecoration.leash), eq(ALPHA_FOR_VISIBLE_WINDOW))
+            .setAlpha(eq(mockWindowDecoration.taskSurface), eq(ALPHA_FOR_VISIBLE_WINDOW))
 
         // Finish the drag move on the original display
         val endBounds = taskPositioner.onDragPositioningEnd(DISPLAY_ID_0, 50f, 50f)
         rectAfterMove.set(50, 50, 150, 150)
 
-        verify(mockDesktopWindowDecoration, never()).showResizeVeil(any())
-        verify(mockDesktopWindowDecoration, never()).hideResizeVeil()
+        verify(mockWindowDecoration, never()).showResizeVeil(any())
+        verify(mockWindowDecoration, never()).hideResizeVeil()
         verify(mockMultiDisplayDragMoveIndicatorController).onDragEnd(eq(TASK_ID), any())
         Assert.assertEquals(rectAfterMove, endBounds)
     }
@@ -343,7 +343,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         val rectAfterMove = Rect(STARTING_BOUNDS)
         rectAfterMove.right += 10
         rectAfterMove.top += 10
-        verify(mockDesktopWindowDecoration).showResizeVeil(rectAfterMove)
+        verify(mockWindowDecoration).showResizeVeil(rectAfterMove)
         verify(mockShellTaskOrganizer, never())
             .applyTransaction(
                 argThat { wct ->
@@ -364,7 +364,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         val rectAfterEnd = Rect(rectAfterMove)
         rectAfterEnd.right += 10
         rectAfterEnd.top += 10
-        verify(mockDesktopWindowDecoration).updateResizeVeil(any())
+        verify(mockWindowDecoration).updateResizeVeil(any())
         verify(mockTransitions)
             .startTransition(
                 eq(TRANSIT_CHANGE),
@@ -457,7 +457,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
     @Test
     fun testDragResize_resize_resizingTaskReorderedToTopWhenNotFocused() = runOnUiThread {
-        mockDesktopWindowDecoration.mHasGlobalFocus = false
+        whenever(mockWindowDecoration.hasGlobalFocus).thenReturn(false)
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_RIGHT, // Resize right
             DISPLAY_ID_0,
@@ -478,7 +478,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
     @Test
     fun testDragResize_resize_resizingTaskNotReorderedToTopWhenFocused() = runOnUiThread {
-        mockDesktopWindowDecoration.mHasGlobalFocus = true
+        whenever(mockWindowDecoration.hasGlobalFocus).thenReturn(true)
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_RIGHT, // Resize right
             DISPLAY_ID_0,
@@ -499,7 +499,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
 
     @Test
     fun testDragResize_drag_draggedTaskNotReorderedToTop() = runOnUiThread {
-        mockDesktopWindowDecoration.mHasGlobalFocus = false
+        whenever(mockWindowDecoration.hasGlobalFocus).thenReturn(false)
         taskPositioner.onDragPositioningStart(
             CTRL_TYPE_UNDEFINED, // drag
             DISPLAY_ID_0,
@@ -560,7 +560,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         verify(spyDisplayLayout0, times(1)).getStableBounds(any())
 
         // Rotate the screen to portrait
-        mockDesktopWindowDecoration.mTaskInfo.apply {
+        mockWindowDecoration.taskInfo.apply {
             configuration.windowConfiguration.displayRotation = ROTATION_0
         }
         // Test portrait stable bounds

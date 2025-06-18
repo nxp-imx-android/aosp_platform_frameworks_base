@@ -120,6 +120,7 @@ import com.android.wm.shell.shared.desktopmode.FakeDesktopState;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.WindowDecoration.RelayoutParams;
+import com.android.wm.shell.windowdecor.common.ExclusionRegionListener;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
@@ -229,7 +230,7 @@ public class DesktopModeWindowDecorationTests extends ShellTestCase {
     @Mock
     private TestTouchEventListener mMockTouchEventListener;
     @Mock
-    private DesktopModeWindowDecoration.ExclusionRegionListener mMockExclusionRegionListener;
+    private ExclusionRegionListener mMockExclusionRegionListener;
     @Mock
     private PackageManager mMockPackageManager;
     @Mock

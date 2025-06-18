@@ -62,7 +62,7 @@ import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TRANSIT_MINIMIZE
 import com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION
-import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
+import com.android.wm.shell.windowdecor.WindowDecorationWrapper
 import com.android.wm.shell.windowdecor.DragPositioningCallbackUtility
 import com.android.wm.shell.windowdecor.DragPositioningCallbackUtility.DragEventListener
 import com.android.wm.shell.windowdecor.DragResizeWindowGeometry
@@ -122,7 +122,7 @@ class DesktopTilingWindowDecoration(
 
     fun onAppTiled(
         taskInfo: RunningTaskInfo,
-        desktopModeWindowDecoration: DesktopModeWindowDecoration,
+        windowDecoration: WindowDecorationWrapper,
         position: SnapPosition,
         currentBounds: Rect,
         destinationBoundsOverride: Rect?,
@@ -131,7 +131,7 @@ class DesktopTilingWindowDecoration(
         val resizeMetadata =
             AppResizingHelper(
                 taskInfo,
-                desktopModeWindowDecoration,
+                windowDecoration,
                 context,
                 destinationBounds,
                 displayController,
@@ -147,7 +147,7 @@ class DesktopTilingWindowDecoration(
         configuration = shellController.lastConfiguration
         isDarkMode = isInDarkMode(configuration.uiMode)
         // Observe drag resizing to break tiling if a task is drag resized.
-        desktopModeWindowDecoration.addDragResizeListener(this)
+        windowDecoration.addDragResizeListener(this)
         val callback: () -> Unit = {
             initTilingForDisplayIfNeeded(taskInfo.configuration, isFirstTiledApp)
             moveTiledPairToFront(taskInfo.taskId, taskInfo.isFocused)
@@ -226,13 +226,13 @@ class DesktopTilingWindowDecoration(
             leftTaskResizingHelper?.initIfNeeded()
             rightTaskResizingHelper?.initIfNeeded()
             leftTaskResizingHelper
-                ?.desktopModeWindowDecoration
+                ?.windowDecoration
                 ?.updateDisabledResizingEdge(
                     DragResizeWindowGeometry.DisabledEdge.RIGHT,
                     /* shouldDelayUpdate = */ false,
                 )
             rightTaskResizingHelper
-                ?.desktopModeWindowDecoration
+                ?.windowDecoration
                 ?.updateDisabledResizingEdge(
                     DragResizeWindowGeometry.DisabledEdge.LEFT,
                     /* shouldDelayUpdate = */ false,
@@ -268,7 +268,7 @@ class DesktopTilingWindowDecoration(
             }
         // a leash to present the divider on top of, without re-parenting.
         val relativeLeash =
-            leftTaskResizingHelper?.desktopModeWindowDecoration?.getLeash() ?: return tilingManager
+            leftTaskResizingHelper?.windowDecoration?.taskSurface ?: return tilingManager
         tilingManager?.generateViewHost(relativeLeash)
         return tilingManager
     }
@@ -523,7 +523,7 @@ class DesktopTilingWindowDecoration(
 
     class AppResizingHelper(
         val taskInfo: RunningTaskInfo,
-        val desktopModeWindowDecoration: DesktopModeWindowDecoration,
+        val windowDecoration: WindowDecorationWrapper,
         val context: Context,
         val bounds: Rect,
         val displayController: DisplayController,
@@ -556,7 +556,7 @@ class DesktopTilingWindowDecoration(
                     taskResourceLoader = taskResourceLoader,
                     mainDispatcher = mainDispatcher,
                     bgScope = bgScope,
-                    parentSurface = desktopModeWindowDecoration.getLeash(),
+                    parentSurface = windowDecoration.taskSurface,
                     surfaceControlTransactionSupplier = transactionSupplier,
                     taskInfo = taskInfo,
                 )
@@ -565,7 +565,7 @@ class DesktopTilingWindowDecoration(
         fun showVeil(t: Transaction) =
             resizeVeil.updateTransactionWithShowVeil(
                 t,
-                desktopModeWindowDecoration.getLeash(),
+                windowDecoration.taskSurface,
                 bounds,
                 taskInfo,
             )
@@ -586,7 +586,7 @@ class DesktopTilingWindowDecoration(
             return BaseIconFactory(context, densityDpi, iconSize)
         }
 
-        fun getLeash(): SurfaceControl = desktopModeWindowDecoration.getLeash()
+        fun getLeash(): SurfaceControl = windowDecoration.taskSurface
 
         fun dispose() {
             if (isInitialised) resizeVeil.dispose()
@@ -652,7 +652,7 @@ class DesktopTilingWindowDecoration(
             val taskId = rightTaskResizingHelper?.taskInfo?.taskId
             val callback: (() -> Unit)? = {
                 rightTaskResizingHelper
-                    ?.desktopModeWindowDecoration
+                    ?.windowDecoration
                     ?.updateDisabledResizingEdge(NONE, shouldDelayUpdate)
             }
             if (taskId != null && taskRepository.isVisibleTask(taskId)) {
@@ -672,7 +672,7 @@ class DesktopTilingWindowDecoration(
             val taskId = leftTaskResizingHelper?.taskInfo?.taskId
             val callback: (() -> Unit)? = {
                 leftTaskResizingHelper
-                    ?.desktopModeWindowDecoration
+                    ?.windowDecoration
                     ?.updateDisabledResizingEdge(NONE, shouldDelayUpdate)
             }
             if (taskId != null && taskRepository.isVisibleTask(taskId)) {
@@ -714,8 +714,8 @@ class DesktopTilingWindowDecoration(
     ) {
         if (appResizingHelper == null) return
         if (!taskVanished) {
-            appResizingHelper.desktopModeWindowDecoration.removeDragResizeListener(this)
-            appResizingHelper.desktopModeWindowDecoration.updateDisabledResizingEdge(
+            appResizingHelper.windowDecoration.removeDragResizeListener(this)
+            appResizingHelper.windowDecoration.updateDisabledResizingEdge(
                 NONE,
                 shouldDelayUpdate,
             )
@@ -834,7 +834,7 @@ class DesktopTilingWindowDecoration(
             leftBounds.width(),
             stableBounds,
             displayController,
-            leftTaskResizingHelper?.desktopModeWindowDecoration,
+            leftTaskResizingHelper?.windowDecoration,
             desktopState.canEnterDesktopMode,
         ) ||
             DragPositioningCallbackUtility.isExceedingWidthConstraint(
@@ -842,7 +842,7 @@ class DesktopTilingWindowDecoration(
                 rightBounds.width(),
                 stableBounds,
                 displayController,
-                rightTaskResizingHelper?.desktopModeWindowDecoration,
+                rightTaskResizingHelper?.windowDecoration,
                 desktopState.canEnterDesktopMode,
             )
     }
