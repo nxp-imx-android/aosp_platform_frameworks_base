@@ -1933,13 +1933,6 @@ class BackNavigationController {
                         openAnimationAdaptor.createStartingSurface(mSnapshot);
                     }
                 }
-                // Force update mLastSurfaceShowing for opening activity and its task.
-                if (mWindowManagerService.mRoot.mTransitionController.isShellTransitionsEnabled()
-                        && !mWindowManagerService.mFlags.mEnsureSurfaceVisibility) {
-                    for (int i = visibleOpenActivities.length - 1; i >= 0; --i) {
-                        WindowContainer.enforceSurfaceVisible(visibleOpenActivities[i]);
-                    }
-                }
             }
 
             @Nullable Runnable build() {

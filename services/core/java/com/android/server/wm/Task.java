@@ -106,8 +106,6 @@ import static com.android.server.wm.LockTaskController.LOCK_TASK_AUTH_DONT_LOCK;
 import static com.android.server.wm.LockTaskController.LOCK_TASK_AUTH_LAUNCHABLE;
 import static com.android.server.wm.LockTaskController.LOCK_TASK_AUTH_LAUNCHABLE_PRIV;
 import static com.android.server.wm.LockTaskController.LOCK_TASK_AUTH_PINNABLE;
-import static com.android.server.wm.WindowContainer.AnimationFlags.CHILDREN;
-import static com.android.server.wm.WindowContainer.AnimationFlags.PARENTS;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_ROOT_TASK;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_TASK_MOVEMENT;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
@@ -639,8 +637,6 @@ class Task extends TaskFragment {
      * {@link ActivityRecord#clearLastParentBeforePip()}.
      */
     ActivityRecord mChildPipActivity;
-
-    boolean mLastSurfaceShowing;
 
     boolean mAlignActivityLocaleWithTask = false;
 
@@ -3348,33 +3344,6 @@ class Task extends TaskFragment {
         if (mDimmer.hasDimState() && mDimmer.updateDims(t)) {
             scheduleAnimation();
         }
-
-        if (mWmService.mFlags.mEnsureSurfaceVisibility) {
-            return;
-        }
-
-        // Let organizer manage task visibility for shell transition. So don't change it's
-        // visibility during collecting.
-        if (mTransitionController.isCollecting() && mCreatedByOrganizer) {
-            return;
-        }
-
-        // We intend to let organizer manage task visibility but it doesn't
-        // have enough information until we finish shell transitions.
-        // In the mean time we do an easy fix here.
-        final boolean visible = isVisible();
-        final boolean show = visible || isAnimating(PARENTS | CHILDREN,
-                SurfaceAnimator.ANIMATION_TYPE_ALL);
-        if (mSurfaceControl != null) {
-            if (show != mLastSurfaceShowing) {
-                t.setVisibility(mSurfaceControl, show);
-            }
-        }
-        // Only show the overlay if the task has other visible children
-        if (mOverlayHost != null) {
-            mOverlayHost.setVisibility(t, visible);
-        }
-        mLastSurfaceShowing = show;
     }
 
     @Override
@@ -4862,13 +4831,9 @@ class Task extends TaskFragment {
                     // rotation change) after leaving this scope, the visibility operation will be
                     // put in sync transaction, then it is not synced with reparent.
                     if (lastParentBeforePip.mSyncState == SYNC_STATE_NONE) {
-                        if (mWmService.mFlags.mEnsureSurfaceVisibility) {
-                            if (lastParentBeforePip.isVisible()) {
-                                lastParentBeforePip.getPendingTransaction().show(
-                                        lastParentBeforePip.mSurfaceControl);
-                            }
-                        } else {
-                            lastParentBeforePip.prepareSurfaces();
+                        if (lastParentBeforePip.isVisible()) {
+                            lastParentBeforePip.getPendingTransaction().show(
+                                    lastParentBeforePip.mSurfaceControl);
                         }
                         // If the moveToFront is a part of finishing transition, then make sure
                         // the z-order of tasks are up-to-date.
