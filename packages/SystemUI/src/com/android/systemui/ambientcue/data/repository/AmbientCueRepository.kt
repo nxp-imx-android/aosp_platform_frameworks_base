@@ -147,6 +147,10 @@ constructor(
                 Log.i(TAG, "SmartSpace session created")
 
                 val smartSpaceListener = OnTargetsAvailableListener { targets ->
+                    Log.i(TAG, "Receiving SmartSpace targets # ${targets.size}")
+                    if (targets.none { it.smartspaceTargetId == AMBIENT_CUE_SURFACE }) {
+                        return@OnTargetsAvailableListener
+                    }
                     val actions =
                         targets
                             .filter { it.smartspaceTargetId == AMBIENT_CUE_SURFACE }

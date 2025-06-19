@@ -152,6 +152,60 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun isRootViewAttached_whenEmptySmartSpaceTargets_true() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            secureSettingsRepository.setInt(
+                AmbientCueRepositoryImpl.AMBIENT_CUE_SETTING,
+                AmbientCueRepositoryImpl.OPTED_IN,
+            )
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+
+            taskStackChangeListeners.listenerImpl.onTaskMovedToFront(
+                RunningTaskInfo().apply { taskId = TASK_ID }
+            )
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+            // Attach the root view first.
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
+            advanceUntilIdle()
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(emptyList())
+            advanceUntilIdle()
+
+            // Empty list won't cause the root view to be detached.
+            assertThat(isRootViewAttached).isTrue()
+        }
+
+   @Test
+    fun isRootViewAttached_whenNoValidSmartSpaceTargets_true() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            secureSettingsRepository.setInt(
+                AmbientCueRepositoryImpl.AMBIENT_CUE_SETTING,
+                AmbientCueRepositoryImpl.OPTED_IN,
+            )
+            runCurrent()
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+
+            taskStackChangeListeners.listenerImpl.onTaskMovedToFront(
+                RunningTaskInfo().apply { taskId = TASK_ID }
+            )
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+            // Attach the root view first.
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(autofillTarget))
+            advanceUntilIdle()
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(listOf(invalidTarget1))
+            advanceUntilIdle()
+
+            // Invalid target won't cause the root view to be detached.
+            assertThat(isRootViewAttached).isTrue()
+        }
+
+    @Test
     fun isRootViewAttached_deactivated_false() =
         kosmos.runTest {
             val actions by collectLastValue(underTest.actions)
