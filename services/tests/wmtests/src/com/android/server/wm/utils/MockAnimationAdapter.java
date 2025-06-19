@@ -20,6 +20,7 @@ import android.util.proto.ProtoOutputStream;
 import android.view.SurfaceControl;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.server.wm.AnimationAdapter;
 import com.android.server.wm.SurfaceAnimator;
@@ -44,7 +45,7 @@ public class MockAnimationAdapter implements AnimationAdapter {
     }
 
     @Override
-    public void onAnimationCancelled(SurfaceControl animationLeash) {}
+    public void onAnimationCancelled(@Nullable SurfaceControl animationLeash) {}
 
     @Override
     public long getDurationHint() {
