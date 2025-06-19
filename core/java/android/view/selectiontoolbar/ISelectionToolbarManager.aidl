@@ -26,6 +26,6 @@ import android.view.selectiontoolbar.ShowInfo;
  */
 oneway interface ISelectionToolbarManager {
     void showToolbar(in ShowInfo showInfo, in ISelectionToolbarCallback callback);
-    void hideToolbar(long widgetToken);
-    void dismissToolbar(long widgetToken);
+    void hideToolbar();
+    void dismissToolbar();
 }

@@ -30,11 +30,6 @@ parcelable WidgetInfo {
     int sequenceNumber;
 
     /**
-     * The token that is used to identify the selection toolbar.
-     */
-    long widgetToken;
-
-    /**
      * A Rect that defines the size and positioning of the remote view with respect to
      * its host window.
      */

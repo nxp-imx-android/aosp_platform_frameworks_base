@@ -16,6 +16,7 @@
 
 package com.android.internal.widget.floatingtoolbar;
 
+import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Rect;
@@ -24,6 +25,8 @@ import android.view.View;
 import android.view.selectiontoolbar.SelectionToolbarManager;
 import android.widget.PopupWindow;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -31,6 +34,19 @@ import java.util.List;
  *
  */
 public interface FloatingToolbarPopup {
+
+    int TOOLBAR_STATE_SHOWN = 1;
+    int TOOLBAR_STATE_HIDDEN = 2;
+    int TOOLBAR_STATE_DISMISSED = 3;
+
+    @IntDef(prefix = {"TOOLBAR_STATE_"}, value = {
+            TOOLBAR_STATE_SHOWN,
+            TOOLBAR_STATE_HIDDEN,
+            TOOLBAR_STATE_DISMISSED
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    @interface ToolbarState {
+    }
 
     /**
      * Sets the suggested dp width of this floating toolbar.

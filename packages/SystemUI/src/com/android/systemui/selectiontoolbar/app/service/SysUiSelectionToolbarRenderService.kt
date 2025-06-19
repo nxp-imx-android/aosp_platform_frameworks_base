@@ -20,80 +20,66 @@ import android.service.selectiontoolbar.RemoteSelectionToolbar
 import android.service.selectiontoolbar.SelectionToolbarRenderService
 import android.util.IndentingPrintWriter
 import android.util.Slog
-import android.view.selectiontoolbar.ISelectionToolbarCallback
-import android.view.selectiontoolbar.SelectionToolbarManager
 import android.view.selectiontoolbar.ShowInfo
 import java.io.FileDescriptor
 import java.io.PrintWriter
-import java.util.UUID
 
 class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
     // TODO(b/215497659): handle remove if the client process dies.
     // Only show one toolbar, dismiss the old ones and remove from cache
-    private val toolbarCache = mutableMapOf<Int, Pair<Long, RemoteSelectionToolbar>>()
+    private val toolbarCache = mutableMapOf<Int, RemoteSelectionToolbar>()
 
     override fun onShow(
-        callingUid: Int,
+        uid: Int,
         showInfo: ShowInfo,
         callbackWrapper: RemoteCallbackWrapper,
     ) {
-        if (isToolbarShown(callingUid, showInfo)) {
-            Slog.e(TAG, "Do not allow multiple toolbar for the app.")
-            callbackWrapper.onError(
-                ISelectionToolbarCallback.ERROR_DO_NOT_ALLOW_MULTIPLE_TOOL_BAR,
-                showInfo.sequenceNumber,
-            )
+        val existingToolbar = toolbarCache[uid]
+        // Only allow one package to create one toolbar
+        if (existingToolbar != null) {
+            Slog.e(TAG, "Do not allow multiple toolbar for the uid : $uid")
             return
         }
-        val widgetToken =
-            if (showInfo.widgetToken == SelectionToolbarManager.NO_TOOLBAR_ID) {
-                UUID.randomUUID().mostSignificantBits
-            } else {
-                showInfo.widgetToken
-            }
-        if (!toolbarCache.containsKey(callingUid)) {
-            val toolbar =
-                RemoteSelectionToolbar(
-                    callingUid,
-                    this,
-                    widgetToken,
-                    showInfo,
-                    callbackWrapper,
-                    ::transferTouch,
-                    ::onPasteAction,
-                )
-            toolbarCache[callingUid] = widgetToken to toolbar
-        }
-        Slog.v(TAG, "onShow() for $widgetToken")
-        val toolbarPair = toolbarCache[callingUid]!!
-        if (toolbarPair.first == widgetToken) {
-            toolbarPair.second.show(showInfo)
-        } else {
-            Slog.w(TAG, "onShow() for unknown $widgetToken")
+
+        val toolbar =
+            RemoteSelectionToolbar(
+                uid,
+                this,
+                showInfo,
+                callbackWrapper,
+                ::transferTouch,
+                ::onPasteAction,
+            )
+        toolbarCache[uid] = toolbar
+        toolbar.show(showInfo)
+
+        Slog.v(TAG, "onShow() for uid: $uid")
+    }
+
+    override fun onHide(uid: Int) {
+        val toolbar = toolbarCache[uid]
+        if (toolbar != null) {
+            Slog.v(TAG, "onHide() for uid: $uid")
+            toolbar.hide(uid)
         }
     }
 
-    override fun onHide(widgetToken: Long) {
-        getRemoteSelectionToolbarByToken(widgetToken)?.let {
-            Slog.v(TAG, "onHide() for $widgetToken")
-            it.hide(widgetToken)
+    override fun onDismiss(uid: Int) {
+        Slog.v(TAG, "onDismiss() for uid: $uid")
+        removeAndDismissToolbar(uid)
+    }
+
+    private fun removeAndDismissToolbar(uid: Int) {
+        val toolbar = toolbarCache[uid]
+        if (toolbar != null) {
+            toolbar.dismiss(uid)
+            toolbarCache.remove(uid)
         }
     }
 
-    override fun onDismiss(widgetToken: Long) {
-        getRemoteSelectionToolbarByToken(widgetToken)?.let {
-            Slog.v(TAG, "onDismiss() for $widgetToken")
-            it.dismiss(widgetToken)
-            removeRemoteSelectionToolbarByToken(widgetToken)
-        }
-    }
-
-    override fun onUidDied(callingUid: Int) {
-        toolbarCache[callingUid]?.let {
-            val remoteToolbar = it.second
-            remoteToolbar.dismiss(it.first)
-            toolbarCache.remove(callingUid)
-        }
+    override fun onUidDied(uid: Int) {
+        Slog.w(TAG, "onUidDied for uid: $uid")
+        removeAndDismissToolbar(uid)
     }
 
     override fun dump(fd: FileDescriptor, pw: PrintWriter, args: Array<String>) {
@@ -103,35 +89,14 @@ class SysUiSelectionToolbarRenderService : SelectionToolbarRenderService() {
         ipw.increaseIndent()
         toolbarCache.forEach {
             it
-            val callingUid = it.key
-            val widgetToken = it.value.first
-            val selectionToolbar = it.value.second
-            ipw.print("callingUid: ")
-            ipw.println(callingUid)
-            ipw.print("widgetToken: ")
-            ipw.println(widgetToken)
+            val uid = it.key
+            val selectionToolbar = it.value
+            ipw.print("uid: ")
+            ipw.println(uid)
             selectionToolbar.dump("", ipw)
             ipw.println()
         }
         ipw.decreaseIndent()
-    }
-
-    private fun getRemoteSelectionToolbarByToken(widgetToken: Long): RemoteSelectionToolbar? {
-        toolbarCache
-            .filterValues { it.first == widgetToken }
-            .forEach {
-                return it.value.second
-            }
-        return null
-    }
-
-    private fun removeRemoteSelectionToolbarByToken(widgetToken: Long) =
-        toolbarCache.entries.removeIf { it.value.first == widgetToken }
-
-    /** Only allow one package to create one toolbar. */
-    private fun isToolbarShown(uid: Int, showInfo: ShowInfo): Boolean {
-        return showInfo.widgetToken != SelectionToolbarManager.NO_TOOLBAR_ID ||
-            toolbarCache.contains(uid)
     }
 
     companion object {
