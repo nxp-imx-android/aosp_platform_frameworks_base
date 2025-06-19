@@ -70,10 +70,17 @@ class DesktopModeKeyGestureHandler(
             KeyGestureEvent.KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY -> {
                 logV("Key gesture MOVE_TO_NEXT_DISPLAY is handled")
                 getGloballyFocusedDesktopTask()?.let {
+                    logV("Found globally focused desktop task to move: ${it.taskId}")
                     mainExecutor.execute {
                         desktopTasksController.get().moveToNextDesktopDisplay(it.taskId)
                     }
                 }
+                    ?: logW(
+                        "No globally focused desktop task to move: " +
+                            "globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
+                        focusTransitionObserver.globallyFocusedTaskId,
+                        focusTransitionObserver.globallyFocusedDisplayId,
+                    )
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK -> {
                 logV("Key gesture SWITCH_TO_PREVIOUS_DESK is handled")
@@ -172,6 +179,10 @@ class DesktopModeKeyGestureHandler(
 
     private fun logV(msg: String, vararg arguments: Any?) {
         ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logW(msg: String, vararg arguments: Any?) {
+        ProtoLog.w(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 
     companion object {
