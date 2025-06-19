@@ -50,7 +50,7 @@ abstract class MaximizeAppWindow(
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val testApp = if (isResizable) {
+    val testApp = if (isResizable) {
         DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     } else {
         DesktopModeAppHelper(NonResizeableAppHelper(instrumentation))
