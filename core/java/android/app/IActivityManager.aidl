@@ -221,6 +221,7 @@ interface IActivityManager {
             in List<ContentProviderHolder> providers);
     boolean refContentProvider(in IBinder connection, int stableDelta, int unstableDelta);
     PendingIntent getRunningServiceControlPanel(in ComponentName service);
+    List<ActivityManager.ConnectionInfo> getRunningServiceConnections(in ComponentName service);
     ComponentName startService(in IApplicationThread caller, in Intent service,
             in String resolvedType, boolean requireForeground, in String callingPackage,
             in String callingFeatureId, int userId);

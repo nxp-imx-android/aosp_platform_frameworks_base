@@ -13665,6 +13665,22 @@ public class ActivityManagerService extends IActivityManager.Stub
         }
     }
 
+    @Nullable
+    @Override
+    public List<ActivityManager.ConnectionInfo> getRunningServiceConnections(ComponentName name) {
+        enforceNotIsolatedCaller("getRunningServiceConnections");
+        enforceCallingPermission(permission.DUMP, "getRunningServiceConnections()");
+        final int callingUid = Binder.getCallingUid();
+        final int callingUserId = UserHandle.getUserId(callingUid);
+        if (name == null || getPackageManagerInternal()
+                .filterAppAccess(name.getPackageName(), callingUid, callingUserId)) {
+            return null;
+        }
+        synchronized (this) {
+            return mServices.getRunningServiceConnectionsLocked(name);
+        }
+    }
+
     @Override
     public void logFgsApiBegin(@ForegroundServiceApiType int apiType,
             int uid, int pid) {

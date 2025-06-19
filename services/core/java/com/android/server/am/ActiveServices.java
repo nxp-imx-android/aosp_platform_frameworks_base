@@ -7659,6 +7659,43 @@ public final class ActiveServices {
         return null;
     }
 
+    /**
+     * Create a ConnectionInfo for test verification from a ConnectionRecord
+     */
+    ActivityManager.ConnectionInfo makeConnectionInfoLocked(ConnectionRecord r) {
+        final ActivityManager.ConnectionInfo info =
+                new ActivityManager.ConnectionInfo(r.getFlags(),
+                                r.getClientProcessName(),
+                                r.getClientPackageName());
+        return info;
+    }
+
+    /**
+     * Get a list of connections to a given service for test verification.
+     */
+    public List<ActivityManager.ConnectionInfo> getRunningServiceConnectionsLocked(
+                    ComponentName name) {
+
+        final int userId = UserHandle.getUserId(mAm.mInjector.getCallingUid());
+        final ServiceRecord r = getServiceByNameLocked(name, userId);
+        if (r == null) {
+            return new ArrayList<ActivityManager.ConnectionInfo>();
+        }
+
+        final ArrayMap<IBinder, ArrayList<ConnectionRecord>> connections = r.getConnections();
+        final ArrayList<ActivityManager.ConnectionInfo> res =
+                new ArrayList<ActivityManager.ConnectionInfo>(connections.size());
+        for (int conni = 0; conni < connections.size(); conni++) {
+            final ArrayList<ConnectionRecord> conn = connections.valueAt(conni);
+            for (int i = 0; i < conn.size(); i++) {
+                final ConnectionRecord cr = conn.get(i);
+                res.add(makeConnectionInfoLocked(conn.get(i)));
+            }
+        }
+
+        return res;
+    }
+
     void serviceTimeout(ProcessRecord proc) {
         try {
             Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "serviceTimeout()");
