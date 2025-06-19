@@ -16,6 +16,7 @@
 
 package com.android.server.media;
 
+import static android.Manifest.permission.BLUETOOTH_PRIVILEGED;
 import static android.Manifest.permission.MODIFY_AUDIO_ROUTING;
 
 import static com.android.server.media.AudioRoutingUtils.ATTRIBUTES_MEDIA;
@@ -123,7 +124,9 @@ public class AudioManagerRouteControllerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mInstrumentation = InstrumentationRegistry.getInstrumentation();
-        mInstrumentation.getUiAutomation().adoptShellPermissionIdentity(MODIFY_AUDIO_ROUTING);
+        mInstrumentation
+                .getUiAutomation()
+                .adoptShellPermissionIdentity(BLUETOOTH_PRIVILEGED, MODIFY_AUDIO_ROUTING);
         Resources mockResources = Mockito.mock(Resources.class);
         when(mockResources.getText(anyInt())).thenReturn(FAKE_ROUTE_NAME);
         mRealContext = mInstrumentation.getContext();
