@@ -449,6 +449,7 @@ flag {
     namespace: "profile_experiences"
     description: "Enable moving content into the Private Space"
     bug: "360066001"
+    is_exported: true
 }
 
 flag {
