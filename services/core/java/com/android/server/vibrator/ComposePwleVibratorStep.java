@@ -40,11 +40,11 @@ final class ComposePwleVibratorStep extends AbstractComposedVibratorStep {
     private static final int DEFAULT_PWLE_SIZE_LIMIT = 100;
 
     ComposePwleVibratorStep(VibrationStepConductor conductor, long startTime,
-            VibratorController controller, VibrationEffect.Composed effect, int index,
+            HalVibrator vibrator, VibrationEffect.Composed effect, int index,
             long pendingVibratorOffDeadline) {
         // This step should wait for the last vibration to finish (with the timeout) and for the
         // intended step start time (to respect the effect delays).
-        super(conductor, Math.max(startTime, pendingVibratorOffDeadline), controller, effect,
+        super(conductor, Math.max(startTime, pendingVibratorOffDeadline), vibrator, effect,
                 index, pendingVibratorOffDeadline);
     }
 
@@ -55,7 +55,7 @@ final class ComposePwleVibratorStep extends AbstractComposedVibratorStep {
         try {
             // Load the next RampSegments to create a single composePwle call to the vibrator,
             // limited to the vibrator PWLE maximum size.
-            int limit = controller.getVibratorInfo().getPwleSizeMax();
+            int limit = vibrator.getInfo().getPwleSizeMax();
             List<RampSegment> pwles = unrollRampSegments(effect, segmentIndex,
                     limit > 0 ? limit : DEFAULT_PWLE_SIZE_LIMIT);
 
@@ -67,11 +67,11 @@ final class ComposePwleVibratorStep extends AbstractComposedVibratorStep {
 
             if (VibrationThread.DEBUG) {
                 Slog.d(VibrationThread.TAG, "Compose " + pwles + " PWLEs on vibrator "
-                        + controller.getVibratorInfo().getId());
+                        + vibrator.getInfo().getId());
             }
             RampSegment[] pwlesArray = pwles.toArray(new RampSegment[pwles.size()]);
             int stepId = conductor.nextVibratorCallbackStepId(getVibratorId());
-            long vibratorOnResult = controller.on(pwlesArray, getVibration().id, stepId);
+            long vibratorOnResult = vibrator.on(getVibration().id, stepId, pwlesArray);
             handleVibratorOnResult(vibratorOnResult);
             getVibration().stats.reportComposePwle(vibratorOnResult, pwlesArray);
             return vibratorOnNextSteps(/* segmentsPlayed= */ pwles.size());

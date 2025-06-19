@@ -16,6 +16,8 @@
 
 package com.android.server.vibrator;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -41,7 +43,6 @@ import android.os.IBinder;
 import android.os.IVibratorStateListener;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
-import android.os.test.TestLooper;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
 import android.os.vibrator.PwlePoint;
@@ -67,17 +68,15 @@ public class VibratorControllerTest {
     @Rule public MockitoRule rule = MockitoJUnit.rule();
     @Rule public FakeSettingsProviderRule mSettingsProviderRule = FakeSettingsProvider.rule();
 
-    @Mock private VibratorController.OnVibrationCompleteListener mOnCompleteListenerMock;
+    @Mock private HalVibrator.Callbacks mCallbacksMock;
     @Mock private VibratorController.NativeWrapper mNativeWrapperMock;
     @Mock private IVibratorStateListener mVibratorStateListenerMock;
     @Mock private IBinder mVibratorStateListenerBinderMock;
 
-    private TestLooper mTestLooper;
     private ContextWrapper mContextSpy;
 
     @Before
     public void setUp() throws Exception {
-        mTestLooper = new TestLooper();
         mContextSpy = spy(new ContextWrapper(InstrumentationRegistry.getContext()));
 
         ContentResolver contentResolver = mSettingsProviderRule.mockContentResolver(mContextSpy);
@@ -87,41 +86,75 @@ public class VibratorControllerTest {
     }
 
     private VibratorController createController() {
-        return new VibratorController(VIBRATOR_ID, mOnCompleteListenerMock, mNativeWrapperMock);
+        VibratorController controller = new VibratorController(VIBRATOR_ID, mNativeWrapperMock);
+        controller.init(mCallbacksMock);
+        controller.onSystemReady();
+        return controller;
     }
 
     @Test
-    public void createController_initializesNativeWrapper() {
-        VibratorController controller = createController();
-        assertEquals(VIBRATOR_ID, controller.getVibratorInfo().getId());
+    public void init_initializesNativeWrapper() {
+        VibratorController controller = new VibratorController(VIBRATOR_ID, mNativeWrapperMock);
+        controller.init(mCallbacksMock);
+        assertEquals(VIBRATOR_ID, controller.getInfo().getId());
         verify(mNativeWrapperMock).init(eq(VIBRATOR_ID), notNull());
     }
 
     @Test
-    public void isAvailable_withVibratorHalPresent_returnsTrue() {
-        when(mNativeWrapperMock.isAvailable()).thenReturn(true);
-        assertTrue(createController().isAvailable());
+    public void init_turnsOffVibratorAndDisablesExternalControl() {
+        mockVibratorCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        VibratorController controller = new VibratorController(VIBRATOR_ID, mNativeWrapperMock);
+        controller.init(mCallbacksMock);
+
+        assertFalse(controller.isVibrating());
+        verify(mNativeWrapperMock).setExternalControl(eq(false));
+        verify(mNativeWrapperMock).off();
     }
 
     @Test
-    public void isAvailable_withNoVibratorHalPresent_returnsFalse() {
-        when(mNativeWrapperMock.isAvailable()).thenReturn(false);
-        assertFalse(createController().isAvailable());
+    public void onSystemReady_loadSucceeded_doesNotReload() {
+        mockVibratorCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        VibratorController controller = new VibratorController(VIBRATOR_ID, mNativeWrapperMock);
+
+        controller.init(mCallbacksMock);
+        assertThat(controller.getInfo().hasCapability(IVibrator.CAP_EXTERNAL_CONTROL)).isTrue();
+
+        controller.onSystemReady();
+        assertThat(controller.getInfo().hasCapability(IVibrator.CAP_EXTERNAL_CONTROL)).isTrue();
+        verify(mNativeWrapperMock).getInfo(any(VibratorInfo.Builder.class));
+    }
+
+    @Test
+    public void onSystemReady_loadFailed_reloadsVibratorInfo() {
+        when(mNativeWrapperMock.getInfo(any(VibratorInfo.Builder.class)))
+                .then(invocation -> {
+                    ((VibratorInfo.Builder) invocation.getArgument(0))
+                            .setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+                    return false;
+                });
+        VibratorController controller = new VibratorController(VIBRATOR_ID, mNativeWrapperMock);
+
+        controller.init(mCallbacksMock);
+        assertThat(controller.getInfo().hasCapability(IVibrator.CAP_EXTERNAL_CONTROL)).isTrue();
+
+        controller.onSystemReady();
+        assertThat(controller.getInfo().hasCapability(IVibrator.CAP_EXTERNAL_CONTROL)).isTrue();
+        verify(mNativeWrapperMock, times(2)).getInfo(any(VibratorInfo.Builder.class));
     }
 
     @Test
     public void hasCapability_withSupport_returnsTrue() {
         mockVibratorCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
-        assertTrue(createController().hasCapability(IVibrator.CAP_AMPLITUDE_CONTROL));
+        assertTrue(createController().getInfo().hasCapability(IVibrator.CAP_AMPLITUDE_CONTROL));
     }
 
     @Test
     public void hasCapability_withNoSupport_returnsFalse() {
-        assertFalse(createController().hasCapability(IVibrator.CAP_ALWAYS_ON_CONTROL));
-        assertFalse(createController().hasCapability(IVibrator.CAP_AMPLITUDE_CONTROL));
-        assertFalse(createController().hasCapability(IVibrator.CAP_COMPOSE_EFFECTS));
-        assertFalse(createController().hasCapability(IVibrator.CAP_EXTERNAL_CONTROL));
-        assertFalse(createController().hasCapability(IVibrator.CAP_ON_CALLBACK));
+        assertFalse(createController().getInfo().hasCapability(IVibrator.CAP_ALWAYS_ON_CONTROL));
+        assertFalse(createController().getInfo().hasCapability(IVibrator.CAP_AMPLITUDE_CONTROL));
+        assertFalse(createController().getInfo().hasCapability(IVibrator.CAP_COMPOSE_EFFECTS));
+        assertFalse(createController().getInfo().hasCapability(IVibrator.CAP_EXTERNAL_CONTROL));
+        assertFalse(createController().getInfo().hasCapability(IVibrator.CAP_ON_CALLBACK));
     }
 
     @Test
@@ -157,7 +190,7 @@ public class VibratorControllerTest {
         mockVibratorCapabilities(IVibrator.CAP_ALWAYS_ON_CONTROL);
         PrebakedSegment prebaked = createPrebaked(VibrationEffect.EFFECT_CLICK,
                 VibrationEffect.EFFECT_STRENGTH_MEDIUM);
-        createController().updateAlwaysOn(1, prebaked);
+        createController().setAlwaysOn(1, prebaked);
 
         verify(mNativeWrapperMock).alwaysOnEnable(
                 eq(1L), eq((long) VibrationEffect.EFFECT_CLICK),
@@ -167,7 +200,7 @@ public class VibratorControllerTest {
     @Test
     public void updateAlwaysOn_withNullEffect_disablesAlwaysOnEffect() {
         mockVibratorCapabilities(IVibrator.CAP_ALWAYS_ON_CONTROL);
-        createController().updateAlwaysOn(1, null);
+        createController().setAlwaysOn(1, null);
         verify(mNativeWrapperMock).alwaysOnDisable(eq(1L));
     }
 
@@ -175,7 +208,7 @@ public class VibratorControllerTest {
     public void updateAlwaysOn_withoutCapability_ignoresEffect() {
         PrebakedSegment prebaked = createPrebaked(VibrationEffect.EFFECT_CLICK,
                 VibrationEffect.EFFECT_STRENGTH_MEDIUM);
-        createController().updateAlwaysOn(1, prebaked);
+        createController().setAlwaysOn(1, prebaked);
 
         verify(mNativeWrapperMock, never()).alwaysOnDisable(anyLong());
         verify(mNativeWrapperMock, never()).alwaysOnEnable(anyLong(), anyLong(), anyLong());
@@ -187,7 +220,7 @@ public class VibratorControllerTest {
         assertFalse(controller.isVibrating());
 
         controller.setAmplitude(1);
-        assertEquals(0, controller.getCurrentAmplitude(), /* delta= */ 0);
+        assertThat(controller.getCurrentAmplitude()).isEqualTo(0f);
     }
 
     @Test
@@ -198,7 +231,7 @@ public class VibratorControllerTest {
         assertTrue(controller.isVibrating());
 
         controller.setAmplitude(1);
-        assertEquals(0, controller.getCurrentAmplitude(), /* delta= */ 0);
+        assertThat(controller.getCurrentAmplitude()).isEqualTo(-1f);
     }
 
     @Test
@@ -208,10 +241,10 @@ public class VibratorControllerTest {
         VibratorController controller = createController();
         controller.on(100, 1, 1);
         assertTrue(controller.isVibrating());
-        assertEquals(-1, controller.getCurrentAmplitude(), /* delta= */ 0);
+        assertThat(controller.getCurrentAmplitude()).isEqualTo(-1f);
 
         controller.setAmplitude(1);
-        assertEquals(1, controller.getCurrentAmplitude(), /* delta= */ 0);
+        assertThat(controller.getCurrentAmplitude()).isEqualTo(1f);
     }
 
     @Test
@@ -219,7 +252,7 @@ public class VibratorControllerTest {
         when(mNativeWrapperMock.on(anyLong(), anyLong(), anyLong()))
                 .thenAnswer(args -> args.getArgument(0));
         VibratorController controller = createController();
-        controller.on(100, 10, 20);
+        controller.on(10, 20, /* milliseconds= */ 100);
 
         assertTrue(controller.isVibrating());
         verify(mNativeWrapperMock).on(eq(100L), eq(10L), eq(20L));
@@ -233,7 +266,7 @@ public class VibratorControllerTest {
 
         PrebakedSegment prebaked = createPrebaked(VibrationEffect.EFFECT_CLICK,
                 VibrationEffect.EFFECT_STRENGTH_MEDIUM);
-        assertEquals(10L, controller.on(prebaked, 11, 23));
+        assertEquals(10L, controller.on(11, 23, prebaked));
 
         assertTrue(controller.isVibrating());
         verify(mNativeWrapperMock).perform(eq((long) VibrationEffect.EFFECT_CLICK),
@@ -249,7 +282,7 @@ public class VibratorControllerTest {
         PrimitiveSegment[] primitives = new PrimitiveSegment[]{
                 new PrimitiveSegment(VibrationEffect.Composition.PRIMITIVE_CLICK, 0.5f, 10)
         };
-        assertEquals(15L, controller.on(primitives, 12, 34));
+        assertEquals(15L, controller.on(12, 34, primitives));
 
         assertTrue(controller.isVibrating());
         verify(mNativeWrapperMock).compose(eq(primitives), eq(12L), eq(34L));
@@ -265,7 +298,7 @@ public class VibratorControllerTest {
                 new RampSegment(/* startAmplitude= */ 0, /* endAmplitude= */ 1,
                         /* startFrequencyHz= */ 100, /* endFrequencyHz= */ 200, /* duration= */ 10)
         };
-        assertEquals(15L, controller.on(primitives, 12, 45));
+        assertEquals(15L, controller.on(12, 45, primitives));
         assertTrue(controller.isVibrating());
 
         verify(mNativeWrapperMock).composePwle(eq(primitives), eq(Braking.NONE), eq(12L), eq(45L));
@@ -281,7 +314,7 @@ public class VibratorControllerTest {
                 new PwlePoint(/*amplitude=*/ 0, /*frequencyHz=*/ 100, /*timeMillis=*/ 0),
                 new PwlePoint(/*amplitude=*/ 1, /*frequencyHz=*/ 200, /*timeMillis=*/ 10)
         };
-        assertEquals(15L, controller.on(primitives, 12, 53));
+        assertEquals(15L, controller.on(12, 53, primitives));
         assertTrue(controller.isVibrating());
 
         verify(mNativeWrapperMock).composePwleV2(eq(primitives), eq(12L), eq(53L));
@@ -293,29 +326,13 @@ public class VibratorControllerTest {
                 .thenAnswer(args -> args.getArgument(0));
         VibratorController controller = createController();
 
-        controller.on(100, 1, 1);
+        controller.on(1, 1, /* milliseconds= */ 100);
         assertTrue(controller.isVibrating());
 
         controller.off();
         controller.off();
         assertFalse(controller.isVibrating());
-        verify(mNativeWrapperMock, times(2)).off();
-    }
-
-    @Test
-    public void reset_turnsOffVibratorAndDisablesExternalControl() {
-        mockVibratorCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
-        when(mNativeWrapperMock.on(anyLong(), anyLong(), anyLong()))
-                .thenAnswer(args -> args.getArgument(0));
-        VibratorController controller = createController();
-
-        controller.on(100, 1, 1);
-        assertTrue(controller.isVibrating());
-
-        controller.reset();
-        assertFalse(controller.isVibrating());
-        verify(mNativeWrapperMock).setExternalControl(eq(false));
-        verify(mNativeWrapperMock).off();
+        verify(mNativeWrapperMock, times(3)).off(); // called once by init
     }
 
     @Test

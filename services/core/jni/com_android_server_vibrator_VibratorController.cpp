@@ -224,16 +224,6 @@ static jlong vibratorGetNativeFinalizer(JNIEnv* /* env */, jclass /* clazz */) {
     return static_cast<jlong>(reinterpret_cast<uintptr_t>(&destroyNativeWrapper));
 }
 
-static jboolean vibratorIsAvailable(JNIEnv* env, jclass /* clazz */, jlong ptr) {
-    VibratorControllerWrapper* wrapper = reinterpret_cast<VibratorControllerWrapper*>(ptr);
-    if (wrapper == nullptr) {
-        ALOGE("vibratorIsAvailable failed because native wrapper was not initialized");
-        return JNI_FALSE;
-    }
-    auto pingFn = [](vibrator::HalWrapper* hal) { return hal->ping(); };
-    return wrapper->halCall<void>(pingFn, "ping").isOk() ? JNI_TRUE : JNI_FALSE;
-}
-
 static jlong vibratorOn(JNIEnv* env, jclass /* clazz */, jlong ptr, jlong timeoutMs,
                         jlong vibrationId, jlong stepId) {
     VibratorControllerWrapper* wrapper = reinterpret_cast<VibratorControllerWrapper*>(ptr);
@@ -568,11 +558,9 @@ static jboolean vibratorGetInfo(JNIEnv* env, jclass /* clazz */, jlong ptr,
 }
 
 static const JNINativeMethod method_table[] = {
-        {"nativeInit",
-         "(ILcom/android/server/vibrator/VibratorController$OnVibrationCompleteListener;)J",
+        {"nativeInit", "(ILcom/android/server/vibrator/HalVibrator$Callbacks;)J",
          (void*)vibratorNativeInit},
         {"getNativeFinalizer", "()J", (void*)vibratorGetNativeFinalizer},
-        {"isAvailable", "(J)Z", (void*)vibratorIsAvailable},
         {"on", "(JJJJ)J", (void*)vibratorOn},
         {"off", "(J)V", (void*)vibratorOff},
         {"setAmplitude", "(JF)V", (void*)vibratorSetAmplitude},
@@ -592,10 +580,9 @@ static const JNINativeMethod method_table[] = {
 
 int register_android_server_vibrator_VibratorController(JavaVM* jvm, JNIEnv* env) {
     sJvm = jvm;
-    auto listenerClassName =
-            "com/android/server/vibrator/VibratorController$OnVibrationCompleteListener";
+    auto listenerClassName = "com/android/server/vibrator/HalVibrator$Callbacks";
     jclass listenerClass = FindClassOrDie(env, listenerClassName);
-    sMethodIdOnComplete = GetMethodIDOrDie(env, listenerClass, "onComplete", "(IJJ)V");
+    sMethodIdOnComplete = GetMethodIDOrDie(env, listenerClass, "onVibrationStepComplete", "(IJJ)V");
 
     jclass primitiveClass = FindClassOrDie(env, "android/os/vibrator/PrimitiveSegment");
     sPrimitiveClassInfo.id = GetFieldIDOrDie(env, primitiveClass, "mPrimitiveId", "I");

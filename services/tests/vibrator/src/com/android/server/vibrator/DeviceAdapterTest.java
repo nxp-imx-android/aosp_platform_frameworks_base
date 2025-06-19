@@ -76,7 +76,8 @@ public class DeviceAdapterTest {
     private static final int PWLE_VIBRATOR_ID = 2;
     private static final int PWLE_WITHOUT_FREQUENCIES_VIBRATOR_ID = 3;
     private static final int PWLE_V2_VIBRATOR_ID = 4;
-    private static final int BASIC_VIBRATOR_ID = 5;
+    private static final int PWLE_V2_BASIC_VIBRATOR_ID = 5;
+    private static final int BASIC_VIBRATOR_ID = 6;
     private static final float TEST_MIN_FREQUENCY = 50;
     private static final float TEST_RESONANT_FREQUENCY = 150;
     private static final float TEST_FREQUENCY_RESOLUTION = 25;
@@ -120,13 +121,20 @@ public class DeviceAdapterTest {
         mVibrationSettings = new VibrationSettings(context, new Handler(mTestLooper.getLooper()),
                 new VibrationConfig(context.getResources()), mFallbackEffects);
 
-        SparseArray<VibratorController> vibrators = new SparseArray<>();
-        vibrators.put(EMPTY_VIBRATOR_ID, createEmptyVibratorController(EMPTY_VIBRATOR_ID));
-        vibrators.put(PWLE_VIBRATOR_ID, createPwleVibratorController(PWLE_VIBRATOR_ID));
+        SparseArray<HalVibrator> vibrators = new SparseArray<>();
+        vibrators.put(EMPTY_VIBRATOR_ID, createEmptyVibrator(EMPTY_VIBRATOR_ID));
+        vibrators.put(PWLE_VIBRATOR_ID, createPwleVibrator(PWLE_VIBRATOR_ID));
         vibrators.put(PWLE_WITHOUT_FREQUENCIES_VIBRATOR_ID,
-                createPwleWithoutFrequenciesVibratorController(
+                createPwleWithoutFrequenciesVibrator(
                         PWLE_WITHOUT_FREQUENCIES_VIBRATOR_ID));
-        vibrators.put(BASIC_VIBRATOR_ID, createBasicVibratorController(BASIC_VIBRATOR_ID));
+        vibrators.put(PWLE_V2_VIBRATOR_ID, createPwleV2Vibrator(PWLE_V2_VIBRATOR_ID));
+        vibrators.put(PWLE_V2_BASIC_VIBRATOR_ID,
+                createPwleV2Vibrator(PWLE_V2_VIBRATOR_ID, TEST_BASIC_FREQUENCIES_HZ,
+                        TEST_BASIC_OUTPUT_ACCELERATIONS_GS));
+        vibrators.put(BASIC_VIBRATOR_ID, createBasicVibrator(BASIC_VIBRATOR_ID));
+        for (int i = 0; i < vibrators.size(); i++) {
+            vibrators.valueAt(i).init((vibratorId, vibrationId, stepId)  -> {});
+        }
         mAdapter = new DeviceAdapter(mVibrationSettings, vibrators);
     }
 
@@ -295,6 +303,21 @@ public class DeviceAdapterTest {
                                 new RampSegment(1, 1, 0, 0, 10),
                                 new RampSegment(1, 1, 0, 0, 50)),
                                 /* repeatIndex= */ 1))
+                .addVibrator(PWLE_V2_VIBRATOR_ID, new VibrationEffect.Composed(Arrays.asList(
+                        // Step(amplitude, frequencyHz, duration)
+                        new StepSegment(1, 175, 10),
+                        new StepSegment(1, 50, 50)),
+                        /* repeatIndex= */ 1))
+                .addVibrator(PWLE_V2_BASIC_VIBRATOR_ID, new VibrationEffect.Composed(Arrays.asList(
+                        // Step(amplitude, frequencyHz, duration)
+                        new StepSegment(1, 175, 10),
+                        new StepSegment(1, 50, 50)),
+                        /* repeatIndex= */ 1))
+                .addVibrator(BASIC_VIBRATOR_ID, new VibrationEffect.Composed(Arrays.asList(
+                        // Step(amplitude, frequencyHz, duration)
+                        new StepSegment(1, 175, 10),
+                        new StepSegment(1, 0, 50)),
+                        /* repeatIndex= */ 1))
                 .combine();
 
         assertThat(CombinedVibration.createParallel(effect).adapt(mAdapter)).isEqualTo(expected);
@@ -359,11 +382,7 @@ public class DeviceAdapterTest {
                 new PwleSegment(0.65f, 0.65f, 100, 50, 50)),
                 /* repeatIndex= */ 1);
 
-        SparseArray<VibratorController> vibrators = new SparseArray<>();
-        vibrators.put(PWLE_V2_VIBRATOR_ID, createPwleV2VibratorController(PWLE_V2_VIBRATOR_ID));
-        DeviceAdapter adapter = new DeviceAdapter(mVibrationSettings, vibrators);
-
-        assertThat(adapter.adaptToVibrator(PWLE_V2_VIBRATOR_ID, effect)).isEqualTo(expected);
+        assertThat(mAdapter.adaptToVibrator(PWLE_V2_VIBRATOR_ID, effect)).isEqualTo(expected);
     }
 
     @Test
@@ -376,11 +395,7 @@ public class DeviceAdapterTest {
                 new PwleSegment(0.65f, 0.65f, frequencyBelowSupportedRange, 50, 50)),
                 /* repeatIndex= */ 1);
 
-        SparseArray<VibratorController> vibrators = new SparseArray<>();
-        vibrators.put(PWLE_V2_VIBRATOR_ID, createPwleV2VibratorController(PWLE_V2_VIBRATOR_ID));
-        DeviceAdapter adapter = new DeviceAdapter(mVibrationSettings, vibrators);
-
-        assertThat(adapter.adaptToVibrator(PWLE_V2_VIBRATOR_ID, effect)).isNull();
+        assertThat(mAdapter.adaptToVibrator(PWLE_V2_VIBRATOR_ID, effect)).isNull();
     }
 
     @Test
@@ -393,11 +408,7 @@ public class DeviceAdapterTest {
                 new PwleSegment(0.65f, 0.65f, 100, 50, 50)),
                 /* repeatIndex= */ 1);
 
-        SparseArray<VibratorController> vibrators = new SparseArray<>();
-        vibrators.put(PWLE_V2_VIBRATOR_ID, createPwleV2VibratorController(PWLE_V2_VIBRATOR_ID));
-        DeviceAdapter adapter = new DeviceAdapter(mVibrationSettings, vibrators);
-
-        assertThat(adapter.adaptToVibrator(PWLE_V2_VIBRATOR_ID, effect)).isNull();
+        assertThat(mAdapter.adaptToVibrator(PWLE_V2_VIBRATOR_ID, effect)).isNull();
     }
 
     @Test
@@ -424,20 +435,13 @@ public class DeviceAdapterTest {
                 new BasicPwleSegment(1.0f, 0.0f, 1.0f, 0.5f, 100)),
                 /* repeatIndex= */ 1);
 
-
         VibrationEffect.Composed expected = new VibrationEffect.Composed(Arrays.asList(
                 new PwleSegment(0.0f, 0.16522837f, 63.52442f, 281.7622f, 20),
                 new PwleSegment(0.16522837f, 1.0f, 281.7622f, 500f, 100),
                 new PwleSegment(1.0f, 0.0f, 500, 281.7622f, 100)),
                 /* repeatIndex= */ 1);
 
-        SparseArray<VibratorController> vibrators = new SparseArray<>();
-        vibrators.put(PWLE_V2_VIBRATOR_ID,
-                createPwleV2VibratorController(PWLE_V2_VIBRATOR_ID, TEST_BASIC_FREQUENCIES_HZ,
-                        TEST_BASIC_OUTPUT_ACCELERATIONS_GS));
-        DeviceAdapter adapter = new DeviceAdapter(mVibrationSettings, vibrators);
-
-        assertThat(adapter.adaptToVibrator(PWLE_V2_VIBRATOR_ID, effect)).isEqualTo(expected);
+        assertThat(mAdapter.adaptToVibrator(PWLE_V2_BASIC_VIBRATOR_ID, effect)).isEqualTo(expected);
     }
 
     @Test
@@ -559,39 +563,39 @@ public class DeviceAdapterTest {
         assertThat(mAdapter.adaptToVibrator(BASIC_VIBRATOR_ID, effect2)).isNull();
     }
 
-    private VibratorController createEmptyVibratorController(int vibratorId) {
+    private HalVibrator createEmptyVibrator(int vibratorId) {
         return new FakeVibratorControllerProvider(mTestLooper.getLooper())
-                .newVibratorController(vibratorId, (id, vibrationId, stepId)  -> {});
+                .newVibratorController(vibratorId);
     }
 
-    private VibratorController createBasicVibratorController(int vibratorId) {
+    private HalVibrator createBasicVibrator(int vibratorId) {
         FakeVibratorControllerProvider provider = createVibratorProviderWithEffects(
                 IVibrator.CAP_COMPOSE_EFFECTS);
-        return provider.newVibratorController(vibratorId, (id, vibrationId, stepId)  -> {});
+        return provider.newVibratorController(vibratorId);
     }
 
-    private VibratorController createPwleWithoutFrequenciesVibratorController(int vibratorId) {
+    private HalVibrator createPwleWithoutFrequenciesVibrator(int vibratorId) {
         FakeVibratorControllerProvider provider = createVibratorProviderWithEffects(
                 IVibrator.CAP_COMPOSE_EFFECTS, IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
-        return provider.newVibratorController(vibratorId, (id, vibrationId, stepId)  -> {});
+        return provider.newVibratorController(vibratorId);
     }
 
-    private VibratorController createPwleVibratorController(int vibratorId) {
+    private HalVibrator createPwleVibrator(int vibratorId) {
         FakeVibratorControllerProvider provider = createVibratorProviderWithEffects(
                 IVibrator.CAP_COMPOSE_EFFECTS, IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
         provider.setResonantFrequency(TEST_RESONANT_FREQUENCY);
         provider.setMinFrequency(TEST_MIN_FREQUENCY);
         provider.setFrequencyResolution(TEST_FREQUENCY_RESOLUTION);
         provider.setMaxAmplitudes(TEST_AMPLITUDE_MAP);
-        return provider.newVibratorController(vibratorId, (id, vibrationId, stepId)  -> {});
+        return provider.newVibratorController(vibratorId);
     }
 
-    private VibratorController createPwleV2VibratorController(int vibratorId) {
-        return createPwleV2VibratorController(vibratorId, TEST_FREQUENCIES_HZ,
+    private HalVibrator createPwleV2Vibrator(int vibratorId) {
+        return createPwleV2Vibrator(vibratorId, TEST_FREQUENCIES_HZ,
                 TEST_OUTPUT_ACCELERATIONS_GS);
     }
 
-    private VibratorController createPwleV2VibratorController(int vibratorId, float[] frequencies,
+    private HalVibrator createPwleV2Vibrator(int vibratorId, float[] frequencies,
             float[] accelerations) {
         FakeVibratorControllerProvider provider = createVibratorProviderWithEffects(
                 IVibrator.CAP_COMPOSE_EFFECTS, IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
@@ -602,7 +606,7 @@ public class DeviceAdapterTest {
         provider.setMinEnvelopeEffectControlPointDurationMillis(
                 TEST_MIN_ENVELOPE_EFFECT_CONTROL_POINT_DURATION_MILLIS);
 
-        return provider.newVibratorController(vibratorId, (id, vibrationId, stepId)  -> {});
+        return provider.newVibratorController(vibratorId);
     }
 
     private FakeVibratorControllerProvider createVibratorProviderWithEffects(int... capabilities) {
