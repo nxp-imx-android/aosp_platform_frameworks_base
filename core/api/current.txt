@@ -25326,6 +25326,7 @@ package android.media {
     method @NonNull public android.media.MediaRoute2Info.Builder setType(int);
     method @NonNull public android.media.MediaRoute2Info.Builder setVisibilityPublic();
     method @NonNull public android.media.MediaRoute2Info.Builder setVisibilityRestricted(@NonNull java.util.Set<java.lang.String>);
+    method @FlaggedApi("com.android.media.flags.enable_route_visibility_control_api") @NonNull public android.media.MediaRoute2Info.Builder setVisibilityRestricted(@NonNull java.util.Set<java.lang.String>, boolean);
     method @NonNull public android.media.MediaRoute2Info.Builder setVolume(int);
     method @NonNull public android.media.MediaRoute2Info.Builder setVolumeHandling(int);
     method @NonNull public android.media.MediaRoute2Info.Builder setVolumeMax(int);
