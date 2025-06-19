@@ -1035,16 +1035,6 @@ flag {
 }
 
 flag {
-    name: "enforce_brightness_base_user_restriction"
-    namespace: "systemui"
-    description: "Enforce BaseUserRestriction for DISALLOW_CONFIG_BRIGHTNESS."
-    bug: "329205638"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "ambient_touch_monitor_listen_to_display_changes"
   namespace: "systemui"
   description: "listen to display changes and cache window metrics"

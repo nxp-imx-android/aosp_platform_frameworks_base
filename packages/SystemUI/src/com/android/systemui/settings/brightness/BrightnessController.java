@@ -419,7 +419,7 @@ public class BrightnessController implements ToggleSlider.Listener, MirroredBrig
                         RestrictedLockUtilsInternal.checkIfRestrictionEnforced(mContext,
                                 UserManager.DISALLOW_CONFIG_BRIGHTNESS,
                                 userId);
-                if (Flags.enforceBrightnessBaseUserRestriction() && enforcedAdmin == null
+                if (enforcedAdmin == null
                         && RestrictedLockUtilsInternal.hasBaseUserRestriction(mContext,
                         UserManager.DISALLOW_CONFIG_BRIGHTNESS,
                         userId)) {
