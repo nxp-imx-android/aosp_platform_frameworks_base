@@ -42,6 +42,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.FileUtils;
 import android.os.Handler;
@@ -470,14 +471,19 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
     }
 
     /**
-     * The system user and managed profiles can only be acted on by callers in the system or root
-     * processes. Other users can be acted on by callers who have both android.permission.BACKUP and
+     * Private profiles' activation status is never allowed to be changed by anyone. The system
+     * user and managed profiles can only be acted on by callers in the system or root processes.
+     * Other users can be acted on by callers who have both android.permission.BACKUP and
      * android.permission.INTERACT_ACROSS_USERS_FULL permissions.
      */
-    private void enforcePermissionsOnUser(@UserIdInt int userId) throws SecurityException {
-        boolean isRestrictedUser =
-                userId == UserHandle.USER_SYSTEM
-                        || mUserManagerInternal.getUserInfo(userId).isManagedProfile();
+    private void enforceSetBackupServiceActiveAllowedForUser(@UserIdInt int userId)
+            throws SecurityException {
+        UserInfo userInfo = mUserManagerInternal.getUserInfo(userId);
+        if (userInfo.isPrivateProfile()) {
+            throw new SecurityException("Changing private profile backup activation not allowed");
+        }
+
+        boolean isRestrictedUser = userId == UserHandle.USER_SYSTEM || userInfo.isManagedProfile();
 
         if (isRestrictedUser) {
             int caller = binderGetCallingUid();
@@ -499,7 +505,7 @@ public class BackupManagerService extends IBackupManager.Stub implements BackupM
      * is unlocked at this point yet, so handle both cases.
      */
     public void setBackupServiceActive(@UserIdInt int userId, boolean makeActive) {
-        enforcePermissionsOnUser(userId);
+        enforceSetBackupServiceActiveAllowedForUser(userId);
 
         // In Q, backup is OFF by default for non-system users. In the future, we will change that
         // to ON unless backup was explicitly deactivated with a (permissioned) call to
