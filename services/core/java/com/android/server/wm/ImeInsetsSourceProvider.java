@@ -25,6 +25,7 @@ import static com.android.server.wm.WindowManagerService.H.UPDATE_MULTI_WINDOW_S
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.Rect;
+import android.os.IBinder;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 import android.view.InsetsSource;
@@ -425,13 +426,23 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                             ImeTracker.ORIGIN_SERVER,
                             SoftInputShowHideReason.IME_REQUESTED_CHANGED_LISTENER,
                             false /* fromUser */);
+
+            // If the RemoteInsetsControlTarget is the current controlTarget, pass the
+            // windowToken of the imeInputTarget to IMMS.
+            final IBinder windowToken;
+            if (controlTarget.getWindowToken() != null) {
+                windowToken = controlTarget.getWindowToken();
+            } else if (mDisplayContent.getImeInputTarget() != null) {
+                windowToken = mDisplayContent.getImeInputTarget().getWindowToken();
+            } else {
+                windowToken = null;
+            }
             ImeTracker.forLogging().onProgress(finalStatsToken,
                     ImeTracker.PHASE_WM_POSTING_CHANGED_IME_VISIBILITY);
             mDisplayContent.mWmService.mH.post(() -> {
                 ImeTracker.forLogging().onProgress(finalStatsToken,
                         ImeTracker.PHASE_WM_INVOKING_IME_REQUESTED_LISTENER);
-                imeListener.onImeRequestedChanged(controlTarget.getWindowToken(), imeVisible,
-                        finalStatsToken);
+                imeListener.onImeRequestedChanged(windowToken, imeVisible, finalStatsToken);
             });
         } else {
             ImeTracker.forLogging().onFailed(statsToken,
