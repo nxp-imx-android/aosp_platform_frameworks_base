@@ -2504,15 +2504,16 @@ class PermissionService(private val service: AccessCheckingService) :
             return
         }
 
-        val userIds =
-            if (userId == UserHandle.USER_ALL) {
-                userManagerService.userIdsIncludingPreCreated
-            } else {
-                intArrayOf(userId)
-            }
-        userIds.forEach { service.onPackageUninstalled(packageName, appId, it) }
         val packageState = packageManagerInternal.packageStates[packageName]
-        if (packageState == null) {
+        if (packageState != null) {
+            val userIds =
+                if (userId == UserHandle.USER_ALL) {
+                    userManagerService.userIdsIncludingPreCreated
+                } else {
+                    intArrayOf(userId)
+                }
+            userIds.forEach { service.onPackageUninstalled(packageName, appId, it) }
+        } else {
             service.onPackageRemoved(packageName, appId)
         }
     }
