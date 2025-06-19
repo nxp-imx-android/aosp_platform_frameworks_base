@@ -83,7 +83,6 @@ import com.android.compose.modifiers.padding
 import com.android.compose.modifiers.thenIf
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.ui.graphics.drawInOverlay
-import com.android.systemui.Flags
 import com.android.systemui.biometrics.Utils.toBitmap
 import com.android.systemui.brightness.shared.model.GammaBrightness
 import com.android.systemui.brightness.ui.compose.AnimationSpecs.IconAppearSpec
@@ -115,7 +114,7 @@ fun BrightnessSlider(
     gammaValue: Int,
     valueRange: IntRange,
     iconResProvider: (Float) -> Int,
-    imageLoader: suspend (Int, Context) -> Icon.Loaded,
+    imageLoader: suspend (Int, Context) -> Icon.Loaded?,
     restriction: PolicyRestriction,
     onRestrictedClick: (PolicyRestriction.Restricted) -> Unit,
     onDrag: (Int) -> Unit,
@@ -165,12 +164,14 @@ fun BrightnessSlider(
             key1 = iconRes,
             key2 = context,
         ) {
-            val icon = imageLoader(iconRes, context)
-            // toBitmap is Drawable?.() -> Bitmap? and handles null internally.
-            val bitmap = icon.drawable.toBitmap()!!.asImageBitmap()
-            this@produceState.value = BitmapPainter(bitmap)
+            val icon: Icon.Loaded? = imageLoader(iconRes, context)
+            if (icon != null) {
+                val bitmap = icon.drawable.toBitmap()?.asImageBitmap()
+                if (bitmap != null) {
+                    this@produceState.value = BitmapPainter(bitmap)
+                }
+            }
         }
-
     val activeIconColor = colors.activeTickColor
     val inactiveIconColor = colors.inactiveTickColor
     // Offset from the right

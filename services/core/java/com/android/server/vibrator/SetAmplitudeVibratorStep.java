@@ -42,10 +42,10 @@ final class SetAmplitudeVibratorStep extends AbstractComposedVibratorStep {
     static final int REPEATING_EFFECT_ON_DURATION = 5000; // 5s
 
     SetAmplitudeVibratorStep(VibrationStepConductor conductor, long startTime,
-            VibratorController controller, VibrationEffect.Composed effect, int index,
+            HalVibrator vibrator, VibrationEffect.Composed effect, int index,
             long pendingVibratorOffDeadline) {
         // This step has a fixed startTime coming from the timings of the waveform it's playing.
-        super(conductor, startTime, controller, effect, index, pendingVibratorOffDeadline);
+        super(conductor, startTime, vibrator, effect, index, pendingVibratorOffDeadline);
     }
 
     @NonNull
@@ -123,7 +123,7 @@ final class SetAmplitudeVibratorStep extends AbstractComposedVibratorStep {
                                 + remainingDuration + "ms, for a total of " + onDuration + "ms");
             }
 
-            float expectedAmplitude = controller.getCurrentAmplitude();
+            float expectedAmplitude = vibrator.getCurrentAmplitude();
             long vibratorOnResult = startVibrating(onDuration, expectedAmplitude);
             if (Flags.vibrationThreadHandlingHalFailure() && vibratorOnResult <= 0) {
                 // Error turning vibrator back ON, cancel the waveform playback.
@@ -131,18 +131,18 @@ final class SetAmplitudeVibratorStep extends AbstractComposedVibratorStep {
             }
         }
         // Return this same step to be played at the correct time.
-        return Arrays.asList(new SetAmplitudeVibratorStep(conductor, startTime, controller,
+        return Arrays.asList(new SetAmplitudeVibratorStep(conductor, startTime, vibrator,
                 effect, segmentIndex, mPendingVibratorOffDeadline));
     }
 
     private long startVibrating(long duration, float amplitude) {
         if (VibrationThread.DEBUG) {
             Slog.d(VibrationThread.TAG,
-                    "Turning on vibrator " + controller.getVibratorInfo().getId() + " for "
+                    "Turning on vibrator " + vibrator.getInfo().getId() + " for "
                             + duration + "ms");
         }
         int stepId = conductor.nextVibratorCallbackStepId(getVibratorId());
-        long vibratorOnResult = controller.on(duration, getVibration().id, stepId);
+        long vibratorOnResult = vibrator.on(getVibration().id, stepId, duration);
         handleVibratorOnResult(vibratorOnResult);
         getVibration().stats.reportVibratorOn(vibratorOnResult);
         if (vibratorOnResult > 0) {

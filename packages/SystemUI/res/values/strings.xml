@@ -1914,6 +1914,7 @@
     <string name="stream_dtmf">Dual multi tone frequency</string> <!-- STREAM_DTMF -->
     <string name="stream_tts" translatable="false">Transmitted Through Speaker</string> <!-- STREAM_TTS -->
     <string name="stream_accessibility">Accessibility</string> <!-- STREAM_ACCESSIBILITY -->
+    <string name="stream_assistant">Assistant</string> <!-- STREAM_ASSISTANT -->
 
     <string name="volume_ringer_status_normal">Ring</string>
     <string name="volume_ringer_status_vibrate">Vibrate</string>

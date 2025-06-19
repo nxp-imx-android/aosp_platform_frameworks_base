@@ -16,6 +16,7 @@
 
 package com.android.internal.util.test;
 
+import android.annotation.NonNull;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.UserHandle;
@@ -25,6 +26,7 @@ import android.util.ArrayMap;
 import android.util.Log;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Fake for system settings.
@@ -58,13 +60,6 @@ import java.util.Map;
  * class only fetches the content provider from the passed-in ContentResolver the first time it's
  * used, and after that stores it in a per-process static. If this needs to be used in this case,
  * then call {@link #clearSettingsProvider()} before and after using this.
- *
- * TODO: evaluate implementing settings change notifications. This would require:
- *
- * 1. Making ContentResolver#registerContentObserver non-final and overriding it in
- *    MockContentResolver.
- * 2. Making FakeSettingsProvider take a ContentResolver argument.
- * 3. Calling ContentResolver#notifyChange(getUriFor(table, arg), ...) on every settings change.
  */
 public class FakeSettingsProvider extends MockContentProvider {
 
@@ -81,10 +76,23 @@ public class FakeSettingsProvider extends MockContentProvider {
      */
     private final Map<String, Map<Integer, Map<String, String>>> mDb = new ArrayMap<>();
 
-    public FakeSettingsProvider() {
+    public interface Callback {
+        /** Called whenever a setting's value changes. */
+        void onUriChanged(int userId, Uri uri);
+    }
+
+    private final Callback mCallback;
+
+    public FakeSettingsProvider(@NonNull Callback callback) {
+        Objects.requireNonNull(callback);
         for (int i = 0; i < TABLES.length; i++) {
             mDb.put(TABLES[i], new ArrayMap<>());
         }
+        mCallback = callback;
+    }
+
+    public FakeSettingsProvider() {
+        this((user, uri) -> {});
     }
 
     private Uri getUriFor(String table, String key) {
@@ -160,7 +168,8 @@ public class FakeSettingsProvider extends MockContentProvider {
                 value = extras.getString(Settings.NameValueTable.VALUE, null);
                 final boolean changed;
                 if (value != null) {
-                    changed = !value.equals(mDb.get(table)
+                    changed = !value.equals(
+                            mDb.get(table)
                             .computeIfAbsent(userId, (u) -> new ArrayMap<>())
                             .put(arg, value));
                     if (DBG) {
@@ -175,6 +184,7 @@ public class FakeSettingsProvider extends MockContentProvider {
                                 arg));
                     }
                 }
+                if (changed) mCallback.onUriChanged(userId, getUriFor(table, arg));
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown command " + method);

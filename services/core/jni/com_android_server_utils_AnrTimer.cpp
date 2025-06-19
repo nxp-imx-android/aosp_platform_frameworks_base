@@ -34,20 +34,19 @@
 #define ATRACE_TAG ATRACE_TAG_ACTIVITY_MANAGER
 #define ANR_TIMER_TRACK "AnrTimerTrack"
 
-#include <jni.h>
-#include <nativehelper/JNIHelp.h>
+#include <android-base/logging.h>
+#include <android-base/stringprintf.h>
+#include <android-base/unique_fd.h>
 #include <android_runtime/AndroidRuntime.h>
 #include <core_jni_helpers.h>
-
+#include <jni.h>
+#include <nativehelper/JNIHelp.h>
+#include <nativehelper/ScopedPrimitiveArray.h>
 #include <processgroup/processgroup.h>
 #include <utils/Log.h>
 #include <utils/Mutex.h>
 #include <utils/Timers.h>
 #include <utils/Trace.h>
-
-#include <android-base/logging.h>
-#include <android-base/stringprintf.h>
-#include <android-base/unique_fd.h>
 
 using ::android::base::StringPrintf;
 
@@ -131,6 +130,32 @@ std::string getProcessName(pid_t pid) {
         return std::string("notfound");
     }
 }
+
+/**
+ * Actions that can be taken when a timer reaches a split point.
+ * - Trace: Log the event for debugging
+ * - Expire: Immediately expire the timer
+ * - EarlyNotify: Send early notification to Java layer
+ */
+enum class SplitAction : uint8_t { Trace, Expire, EarlyNotify };
+
+/**
+ * Represents a point during timer execution where an action should be taken.
+ * Split points are defined as percentages of the total timeout.
+ */
+struct SplitPoint {
+    static constexpr uint32_t NOTOKEN = 0;
+    // Percentage of timeout (1-99)
+    uint8_t percent;
+    // Action to take at this point
+    SplitAction action;
+    // Optional token for later identification
+    uint32_t token = NOTOKEN;
+    /* natural sort order, by percent */
+    bool operator<(const SplitPoint& r) const {
+        return percent < r.percent;
+    }
+};
 
 /**
  * This class captures tracing information for processes tracked by an AnrTimer.  A user can
@@ -457,8 +482,8 @@ class AnrTimerService {
     // A notifier is called with a timer ID, the timer's tag, and the client's cookie.  The pid
     // and uid that were originally assigned to the timer are passed as well.  The elapsed time
     // is the time since the timer was scheduled.
-    using notifier_t = bool (*)(timer_id_t, int pid, int uid, nsecs_t elapsed,
-                                void* cookie, jweak object);
+    using notifier_t = bool (*)(timer_id_t, int pid, int uid, nsecs_t elapsed, void* cookie,
+                                jweak object, bool expired, uint32_t token);
 
     enum Status {
         Invalid,
@@ -474,7 +499,7 @@ class AnrTimerService {
      * configuration options.
      */
     AnrTimerService(const char* label, notifier_t notifier, void* cookie, jweak jtimer, Ticker*,
-                    bool extend);
+                    bool extend, std::vector<SplitPoint> splits);
 
     // Delete the service and clean up memory.
     ~AnrTimerService();
@@ -576,6 +601,9 @@ class AnrTimerService {
 
     // The global tracing specification.
     static AnrTimerTracer tracer_;
+
+    // Default split points for any timer in this service
+    std::vector<SplitPoint> defaultSplits_;
 };
 
 AnrTimerTracer AnrTimerService::tracer_;
@@ -634,13 +662,10 @@ class AnrTimerService::Timer {
     const nsecs_t timeout;
     // True if the timer may be extended.
     const bool extend;
-    // This is a percentage between 0 and 100.  If it is non-zero then timer will fire at
-    // timeout*split/100, and the EarlyAction will be invoked.  The timer may continue running
-    // or may expire, depending on the action.  Thus, this value "splits" the timeout into two
-    // pieces.
-    const int split;
-    // The action to take if split (above) is non-zero, when the timer reaches the split point.
-    const AnrTimerTracer::EarlyAction action;
+    // The splits and actions to take before the timer expire
+    std::vector<SplitPoint> splits;
+    // index of the next split to fire
+    uint8_t nextSplit;
 
     // The state of this timer.
     Status status;
@@ -651,11 +676,11 @@ class AnrTimerService::Timer {
     // The scheduled timeout.  This is an absolute time.  It may be extended.
     nsecs_t scheduled;
 
-    // True if this timer is split and in its second half
-    bool splitting;
-
     // True if this timer has been extended.
     bool extended;
+
+    // True if tracing is enabled for this timer.
+    bool traced;
 
     // Bookkeeping for extensions.  The initial state of the process.  This is collected only if
     // the timer is extensible.
@@ -667,36 +692,35 @@ class AnrTimerService::Timer {
 
     // This constructor creates a timer with the specified id and everything else set to
     // "empty".  This can be used as the argument to find().
-    Timer(timer_id_t id) :
-            id(id),
+    Timer(timer_id_t id)
+          : id(id),
             pid(0),
             uid(0),
             timeout(0),
             extend(false),
-            split(0),
-            action(AnrTimerTracer::None),
+            nextSplit(0),
             status(Invalid),
             started(0),
             scheduled(0),
-            splitting(false),
-            extended(false) {
-    }
+            extended(false),
+            traced(false) {}
 
     // Create a new timer.  This starts the timer.
-    Timer(int pid, int uid, nsecs_t timeout, bool extend, AnrTimerTracer::TraceConfig trace) :
-            id(nextId()),
+    Timer(int pid, int uid, nsecs_t timeout, bool extend, AnrTimerTracer::TraceConfig trace,
+          std::vector<SplitPoint> splits)
+          : id(nextId()),
             pid(pid),
             uid(uid),
             timeout(timeout),
             extend(extend),
-            split(trace.earlyTimeout),
-            action(trace.action),
+            splits(buildSplits(std::move(splits), trace)),
+            nextSplit(0),
             status(Running),
             started(now()),
-            scheduled(started + (split > 0 ? (timeout*split)/100 : timeout)),
-            splitting(false),
-            extended(false) {
-
+            scheduled(started +
+                      (splits.size() > 0 ? (timeout * splits[0].percent) / 100 : timeout)),
+            extended(false),
+            traced(trace.enabled) {
         if (extend && pid != 0) {
             initial.fill(pid);
         }
@@ -717,21 +741,26 @@ class AnrTimerService::Timer {
     // Expire a timer. Return true if the timer is expired and false otherwise.  The function
     // returns false if the timer is eligible for extension.  If the function returns false, the
     // scheduled time is updated.
-    bool expire() {
-        if (split > 0 && !splitting) {
-            scheduled = started + timeout;
-            splitting = true;
-            event("split");
-            switch (action) {
-                case AnrTimerTracer::None:
-                case AnrTimerTracer::Trace:
+    std::pair<bool, uint32_t> expire() {
+        if (nextSplit < splits.size()) {
+            const SplitPoint& point = splits[nextSplit++];
+            scheduled = (nextSplit < splits.size())
+                    ? started + timeout * splits[nextSplit].percent / 100
+                    : started + timeout;
+            switch (point.action) {
+                case SplitAction::Trace:
+                    event("split");
                     break;
-                case AnrTimerTracer::Expire:
+                case SplitAction::EarlyNotify:
+                    // notify the timer
+                    return {true, point.token};
+                    break;
+                case SplitAction::Expire:
                     status = Expired;
                     event("expire");
                     break;
             }
-            return status == Expired;
+            return {status == Expired, SplitPoint::NOTOKEN};
         }
 
         nsecs_t extension = 0;
@@ -751,7 +780,7 @@ class AnrTimerService::Timer {
             scheduled += extension;
             event("extend");
         }
-        return status == Expired;
+        return {status == Expired, SplitPoint::NOTOKEN};
     }
 
     // Accept a timeout.  This does nothing other than log the state machine change.
@@ -818,7 +847,7 @@ class AnrTimerService::Timer {
 
     // Log an event, guarded by the debug flag.
     void event(const char* tag, bool verbose) {
-        if (action != AnrTimerTracer::None) {
+        if (traced) {
             char msg[PATH_MAX];
             snprintf(msg, sizeof(msg), "%s(pid=%d)", tag, pid);
             traceEvent(msg);
@@ -836,6 +865,16 @@ class AnrTimerService::Timer {
         ATRACE_INSTANT_FOR_TRACK(ANR_TIMER_TRACK, msg);
     }
 
+    static std::vector<SplitPoint> buildSplits(std::vector<SplitPoint> splits,
+                                               const AnrTimerTracer::TraceConfig& cfg) {
+        if (cfg.earlyTimeout > 0) {
+            SplitAction action = (cfg.action == AnrTimerTracer::Expire) ? SplitAction::Expire
+                                                                        : SplitAction::Trace;
+            splits.emplace_back(static_cast<uint8_t>(cfg.earlyTimeout), action);
+        }
+        std::sort(splits.begin(), splits.end());
+        return splits;
+    }
     // IDs start at 1.  A zero ID is invalid.
     static std::atomic<timer_id_t> idGen;
 };
@@ -1063,16 +1102,15 @@ class AnrTimerService::Ticker {
 
 std::atomic<size_t> AnrTimerService::Ticker::idGen_;
 
-
-AnrTimerService::AnrTimerService(const char* label, notifier_t notifier, void* cookie,
-            jweak jtimer, Ticker* ticker, bool extend) :
-        label_(label),
+AnrTimerService::AnrTimerService(const char* label, notifier_t notifier, void* cookie, jweak jtimer,
+                                 Ticker* ticker, bool extend, std::vector<SplitPoint> splits)
+      : label_(label),
         notifier_(notifier),
         notifierCookie_(cookie),
         notifierObject_(jtimer),
         extend_(extend),
-        ticker_(ticker) {
-
+        ticker_(ticker),
+        defaultSplits_(std::move(splits)) {
     // Zero the statistics
     maxRunning_ = 0;
     memset(&counters_, 0, sizeof(counters_));
@@ -1097,7 +1135,7 @@ const char* AnrTimerService::statusString(Status s) {
 
 AnrTimerService::timer_id_t AnrTimerService::start(int pid, int uid, nsecs_t timeout) {
     AutoMutex _l(lock_);
-    Timer t(pid, uid, timeout, extend_, tracer_.getConfig(pid));
+    Timer t(pid, uid, timeout, extend_, tracer_.getConfig(pid), defaultSplits_);
     insertLocked(t);
     t.start();
     counters_.started++;
@@ -1156,11 +1194,14 @@ void AnrTimerService::expire(timer_id_t timerId) {
     int pid = 0;
     int uid = 0;
     nsecs_t elapsed = 0;
+    bool notify = false;
     bool expired = false;
+    uint32_t token = SplitPoint::NOTOKEN;
     {
         AutoMutex _l(lock_);
         Timer t = removeLocked(timerId);
-        expired = t.expire();
+        std::tie(notify, token) = t.expire();
+        expired = t.status == Expired;
         if (t.status == Invalid) {
             ALOGW_IF(DEBUG_ERROR, "error: expired invalid timer %u", timerId);
             return;
@@ -1181,8 +1222,9 @@ void AnrTimerService::expire(timer_id_t timerId) {
     }
 
     // Deliver the notification outside of the lock.
-    if (expired) {
-        if (!notifier_(timerId, pid, uid, elapsed, notifierCookie_, notifierObject_)) {
+    if (notify) {
+        if (!notifier_(timerId, pid, uid, elapsed, notifierCookie_, notifierObject_, expired,
+                       token)) {
             // Notification failed, which means the listener will never call accept() or
             // discard().  Do not reinsert the timer.
             discard(timerId);
@@ -1250,6 +1292,7 @@ static Mutex gAnrLock;
 struct AnrArgs {
     jclass clazz = NULL;
     jmethodID func = NULL;
+    jmethodID funcEarly = NULL;
     JavaVM* vm = NULL;
     AnrTimerService::Ticker* ticker = nullptr;
 };
@@ -1257,7 +1300,7 @@ static AnrArgs gAnrArgs;
 
 // The cookie is the address of the AnrArgs object to which the notification should be sent.
 static bool anrNotify(AnrTimerService::timer_id_t timerId, int pid, int uid, nsecs_t elapsed,
-                      void* cookie, jweak jtimer) {
+                      void* cookie, jweak jtimer, bool expired, uint32_t token) {
     AutoMutex _l(gAnrLock);
     AnrArgs* target = reinterpret_cast<AnrArgs* >(cookie);
     JNIEnv *env;
@@ -1268,8 +1311,13 @@ static bool anrNotify(AnrTimerService::timer_id_t timerId, int pid, int uid, nse
     jboolean r = false;
     jobject timer = env->NewGlobalRef(jtimer);
     if (timer != nullptr) {
-        // Convert the elsapsed time from ns (native) to ms (Java)
-        r = env->CallBooleanMethod(timer, target->func, timerId, pid, uid, ns2ms(elapsed));
+        if (expired) {
+            r = env->CallBooleanMethod(timer, target->func, timerId, pid, uid, ns2ms(elapsed));
+        } else {
+            env->CallVoidMethod(timer, target->funcEarly, timerId, pid, uid, ns2ms(elapsed), token);
+            r = true;
+        }
+
         env->DeleteGlobalRef(timer);
     }
     target->vm->DetachCurrentThread();
@@ -1280,17 +1328,35 @@ jboolean anrTimerSupported(JNIEnv* env, jclass) {
     return nativeSupportEnabled;
 }
 
-jlong anrTimerCreate(JNIEnv* env, jobject jtimer, jstring jname, jboolean extend) {
+jlong anrTimerCreate(JNIEnv* env, jobject jtimer, jstring jname, jboolean extend, jintArray jperc,
+                     jintArray jtok) {
     if (!nativeSupportEnabled) return 0;
     AutoMutex _l(gAnrLock);
     if (gAnrArgs.ticker == nullptr) {
         gAnrArgs.ticker = new AnrTimerService::Ticker();
     }
 
+    std::vector<SplitPoint> splits;
+    if (jperc && jtok) {
+        const ScopedIntArrayRO percents(env, jperc);
+        const ScopedIntArrayRO tokens(env, jtok);
+
+        // There is a size mismatch, return an error
+        if (percents.size() != tokens.size()) return 0;
+
+        const jsize n = percents.size();
+        splits.reserve(n);
+
+        for (jsize i = 0; i < n; ++i) {
+            splits.emplace_back(percents[i], SplitAction::EarlyNotify, tokens[i]);
+        }
+        std::sort(splits.begin(), splits.end());
+    }
+
     ScopedUtfChars name(env, jname);
     jobject timer = env->NewWeakGlobalRef(jtimer);
-    AnrTimerService* service = new AnrTimerService(name.c_str(),
-        anrNotify, &gAnrArgs, timer, gAnrArgs.ticker, extend);
+    AnrTimerService* service = new AnrTimerService(name.c_str(), anrNotify, &gAnrArgs, timer,
+                                                   gAnrArgs.ticker, extend, std::move(splits));
     return reinterpret_cast<jlong>(service);
 }
 
@@ -1355,15 +1421,15 @@ jobjectArray anrTimerDump(JNIEnv *env, jclass, jlong ptr) {
 }
 
 static const JNINativeMethod methods[] = {
-    {"nativeAnrTimerSupported",   "()Z",        (void*) anrTimerSupported},
-    {"nativeAnrTimerCreate",      "(Ljava/lang/String;Z)J", (void*) anrTimerCreate},
-    {"nativeAnrTimerClose",       "(J)I",       (void*) anrTimerClose},
-    {"nativeAnrTimerStart",       "(JIIJ)I",    (void*) anrTimerStart},
-    {"nativeAnrTimerCancel",      "(JI)Z",      (void*) anrTimerCancel},
-    {"nativeAnrTimerAccept",      "(JI)Z",      (void*) anrTimerAccept},
-    {"nativeAnrTimerDiscard",     "(JI)Z",      (void*) anrTimerDiscard},
-    {"nativeAnrTimerTrace",       "([Ljava/lang/String;)Ljava/lang/String;", (void*) anrTimerTrace},
-    {"nativeAnrTimerDump",        "(J)[Ljava/lang/String;", (void*) anrTimerDump},
+        {"nativeAnrTimerSupported", "()Z", (void*)anrTimerSupported},
+        {"nativeAnrTimerCreate", "(Ljava/lang/String;Z[I[I)J", (void*)anrTimerCreate},
+        {"nativeAnrTimerClose", "(J)I", (void*)anrTimerClose},
+        {"nativeAnrTimerStart", "(JIIJ)I", (void*)anrTimerStart},
+        {"nativeAnrTimerCancel", "(JI)Z", (void*)anrTimerCancel},
+        {"nativeAnrTimerAccept", "(JI)Z", (void*)anrTimerAccept},
+        {"nativeAnrTimerDiscard", "(JI)Z", (void*)anrTimerDiscard},
+        {"nativeAnrTimerTrace", "([Ljava/lang/String;)Ljava/lang/String;", (void*)anrTimerTrace},
+        {"nativeAnrTimerDump", "(J)[Ljava/lang/String;", (void*)anrTimerDump},
 };
 
 } // anonymous namespace
@@ -1381,6 +1447,8 @@ int register_android_server_utils_AnrTimer(JNIEnv* env)
     jclass service = FindClassOrDie(env, className);
     gAnrArgs.clazz = MakeGlobalRefOrDie(env, service);
     gAnrArgs.func = env->GetMethodID(gAnrArgs.clazz, "expire", "(IIIJ)Z");
+    gAnrArgs.funcEarly = env->GetMethodID(gAnrArgs.clazz, "notifyEarly", "(IIIJI)V");
+
     env->GetJavaVM(&gAnrArgs.vm);
 
     return 0;

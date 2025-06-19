@@ -1538,9 +1538,7 @@ public class NotificationStackScrollLayout
             boolean canClip = true;
             if (child instanceof ExpandableNotificationRow row) {
                 if (row.isChildInGroup()) {
-                    ExpandableNotificationRow notifParent = row.getNotificationParent();
-                    canClip = notifParent.isGroupExpanded()
-                            && !notifParent.isGroupExpansionChanging();
+                    canClip = canClipChildRow(row);
                 }
                 if (row.isBackgroundOpaque()) {
                     canClip = false;
@@ -1566,6 +1564,18 @@ public class NotificationStackScrollLayout
             }
         }
         Collections.sort(overlappingList, mNotGoneIndexComparator);
+    }
+
+    private boolean canClipChildRow(ExpandableNotificationRow row) {
+        ExpandableNotificationRow notifParent = row.getNotificationParent();
+        if (NotificationBundleUi.isEnabled()) {
+            return notifParent.isGroupExpanded()
+                    && !notifParent.isGroupExpansionChanging()
+                    && (!notifParent.isChildInGroup() || canClipChildRow(notifParent));
+        } else {
+            return notifParent.isGroupExpanded()
+                    && !notifParent.isGroupExpansionChanging();
+        }
     }
 
     private void updateScrollStateForAddedChildren() {
@@ -6073,6 +6083,18 @@ public class NotificationStackScrollLayout
             mLogger.logAddSwipedOutView(row.getLoggingKey(), mClearAllInProgress);
         }
     }
+
+    void removeSwipedOutView(View v) {
+        logRemoveSwipedOutView(v);
+        mSwipedOutViews.remove(v);
+    }
+
+    private void logRemoveSwipedOutView(View v) {
+        if (mLogger != null && v instanceof ExpandableNotificationRow row) {
+            mLogger.logRemoveSwipedOutView(row.getLoggingKey(), mClearAllInProgress);
+        }
+    }
+
 
     void onSwipeBegin(View viewSwiped) {
         if (!(viewSwiped instanceof ExpandableNotificationRow)) {

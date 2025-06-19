@@ -19,6 +19,7 @@ package com.android.systemui.topwindoweffects.ui.viewmodel
 import android.os.VibrationAttributes
 import android.os.VibrationEffect
 import android.os.VibrationEffect.Composition
+import android.os.VibrationEffect.EFFECT_HEAVY_CLICK
 import android.util.Log
 
 object SqueezeEffectHapticsBuilder {
@@ -131,6 +132,16 @@ object SqueezeEffectHapticsBuilder {
             /*delay=*/ 0,
         )
         return SqueezeEffectHaptics(composition.compose())
+    }
+
+    fun createDefaultAssistantEffect(supportsRiseEffect: Boolean): SqueezeEffectHaptics {
+        if (supportsRiseEffect) {
+            val composition = VibrationEffect.startComposition()
+            addQuickRiseTickEffect(composition)
+            return SqueezeEffectHaptics(composition.compose())
+        } else {
+            return SqueezeEffectHaptics(VibrationEffect.get(EFFECT_HEAVY_CLICK))
+        }
     }
 
     data class SqueezeEffectHaptics(val initialDelay: Int, val vibration: VibrationEffect) {

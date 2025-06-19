@@ -166,11 +166,7 @@ class WindowDecorTaskResourceLoader(
     private fun loadAppResources(taskInfo: RunningTaskInfo): AppResources {
         Trace.beginSection("$TAG#loadAppResources")
         try {
-            val pm =
-                userProfilesContexts
-                .getOrCreate(taskInfo.userId)
-                .createPackageContext(taskInfo.component().packageName, /* flags= */ 0)
-                .packageManager
+            val pm = userProfilesContexts.getOrCreate(taskInfo.userId).packageManager
             val activityInfo = getActivityInfo(taskInfo, pm)
             val appName = pm.getApplicationLabel(activityInfo.applicationInfo)
             val appIconDrawable = iconProvider.getIcon(activityInfo)

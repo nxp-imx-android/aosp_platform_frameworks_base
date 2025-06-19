@@ -188,6 +188,7 @@ public class Watchdog implements Dumpable {
             "android.hardware.health.IHealth/",
             "android.hardware.input.processor.IInputProcessor/",
             "android.hardware.light.ILights/",
+            "android.hardware.media.c2.IComponentStore/",
             "android.hardware.neuralnetworks.IDevice/",
             "android.hardware.power.IPower/",
             "android.hardware.power.stats.IPowerStats/",

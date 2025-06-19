@@ -118,8 +118,10 @@ public class BackupManagerServiceRoboTest {
         LocalServices.removeServiceForTest(UserManagerInternal.class);
         LocalServices.addService(UserManagerInternal.class, mUserManagerInternal);
 
+        when(mUserManagerInternal.getUserInfo(UserHandle.USER_SYSTEM)).thenReturn(mUserInfoMock);
         when(mUserManagerInternal.getUserInfo(mUserOneId)).thenReturn(mUserInfoMock);
         when(mUserManagerInternal.getUserInfo(mUserTwoId)).thenReturn(mUserInfoMock);
+        when(mUserInfoMock.isManagedProfile()).thenReturn(false);
 
         when(mUserOneService.getBackupAgentConnectionManager()).thenReturn(
                 mUserOneBackupAgentConnectionManager);

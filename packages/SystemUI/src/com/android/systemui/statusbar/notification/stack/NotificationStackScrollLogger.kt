@@ -246,6 +246,18 @@ constructor(
         )
     }
 
+    fun logRemoveSwipedOutView(loggingKey: String, clearAllInProgress: Boolean) {
+        notificationRenderBuffer.log(
+            TAG,
+            INFO,
+            {
+                str1 = loggingKey
+                bool1 = clearAllInProgress
+            },
+            { "removeSwipedOutView from NSSL: childKey = $str1 -- clearAllInProgress:$bool1" },
+        )
+    }
+
     fun logOnChildDismissed(loggingKey: String, clearAllInProgress: Boolean) {
         notificationRenderBuffer.log(
             TAG,

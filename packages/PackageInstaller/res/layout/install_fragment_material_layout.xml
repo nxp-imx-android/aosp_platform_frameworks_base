@@ -38,7 +38,7 @@
             android:visibility="gone" />
 
         <TextView
-            style="@style/Widget.PackageInstaller.TextView.CustomMessage"
+            style="?attr/textAppearanceInstallerCustomMessage"
             android:id="@+id/custom_message"
             android:layout_height="wrap_content"
             android:layout_width="match_parent"

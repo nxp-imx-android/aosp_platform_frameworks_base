@@ -93,10 +93,9 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(false)
 
-            val isEffectEnabledAndPowerButtonPressed by
-                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
+            val isEffectEnabled by collectLastValue(underTest.isEffectEnabled)
 
-            assertThat(isEffectEnabledAndPowerButtonPressed).isFalse()
+            assertThat(isEffectEnabled).isFalse()
         }
 
     @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
@@ -105,12 +104,14 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
 
-            val isEffectEnabledAndPowerButtonPressed by
-                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
+            val isEffectEnabled by collectLastValue(underTest.isEffectEnabled)
+            val isPowerButtonPressedAsSingleGesture by
+                collectLastValue(underTest.isPowerButtonPressedAsSingleGesture)
 
             // no events sent from KeyGestureEvent to imitate it was disabled from PWM
 
-            assertThat(isEffectEnabledAndPowerButtonPressed).isFalse()
+            assertThat(isEffectEnabled).isTrue()
+            assertThat(isPowerButtonPressedAsSingleGesture).isFalse()
         }
 
     @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
@@ -119,8 +120,9 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(false)
 
-            val isEffectEnabledAndPowerButtonPressed by
-                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
+            val isEffectEnabled by collectLastValue(underTest.isEffectEnabled)
+            val isPowerButtonPressedAsSingleGesture by
+                collectLastValue(underTest.isPowerButtonPressedAsSingleGesture)
 
             verify(inputManager)
                 .registerKeyGestureEventListener(
@@ -134,7 +136,8 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                     .build()
             keyGestureEventListenerCaptor.value.onKeyGestureEvent(event)
 
-            assertThat(isEffectEnabledAndPowerButtonPressed).isFalse()
+            assertThat(isEffectEnabled).isFalse()
+            assertThat(isPowerButtonPressedAsSingleGesture).isTrue()
         }
 
     @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)
@@ -143,8 +146,9 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
         kosmos.runTest {
             fakeInvocationEffectPreferences.setInvocationEffectEnabledByAssistant(true)
 
-            val isEffectEnabledAndPowerButtonPressed by
-                collectLastValue(underTest.isEffectEnabledAndPowerButtonPressedAsSingleGesture)
+            val isEffectEnabled by collectLastValue(underTest.isEffectEnabled)
+            val isPowerButtonPressedAsSingleGesture by
+                collectLastValue(underTest.isPowerButtonPressedAsSingleGesture)
 
             verify(inputManager)
                 .registerKeyGestureEventListener(
@@ -158,7 +162,8 @@ class SqueezeEffectRepositoryTest : SysuiTestCase() {
                     .build()
             keyGestureEventListenerCaptor.value.onKeyGestureEvent(event)
 
-            assertThat(isEffectEnabledAndPowerButtonPressed).isTrue()
+            assertThat(isEffectEnabled).isTrue()
+            assertThat(isPowerButtonPressedAsSingleGesture).isTrue()
         }
 
     @EnableFlags(Flags.FLAG_ENABLE_LPP_ASSIST_INVOCATION_EFFECT)

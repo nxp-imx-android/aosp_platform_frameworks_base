@@ -25346,6 +25346,7 @@ package android.media {
     method @FlaggedApi("com.android.media.flags.enable_mirroring_in_media_router_2") public void onCreateSystemRoutingSession(long, @NonNull String, @NonNull android.media.MediaRoute2ProviderService.SystemRoutingSessionParams);
     method public abstract void onDeselectRoute(long, @NonNull String, @NonNull String);
     method public void onDiscoveryPreferenceChanged(@NonNull android.media.RouteDiscoveryPreference);
+    method @FlaggedApi("com.android.media.flags.enable_route_visibility_control_api") @RequiresPermission(value=android.Manifest.permission.MEDIA_CONTENT_CONTROL, conditional=true) public void onDiscoveryPreferenceChanged(@NonNull android.media.RouteDiscoveryPreference, @NonNull java.util.Map<java.lang.String,android.media.RouteDiscoveryPreference>);
     method public abstract void onReleaseSession(long, @NonNull String);
     method public abstract void onSelectRoute(long, @NonNull String, @NonNull String);
     method public abstract void onSetRouteVolume(long, @NonNull String, int);

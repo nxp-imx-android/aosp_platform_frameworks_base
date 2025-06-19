@@ -2248,7 +2248,6 @@ public class DisplayContentTests extends WindowTestsBase {
         appWin1.setHasSurface(true);
         assertTrue(appWin1.canBeImeLayeringTarget());
         doReturn(true).when(appWin1.mWinAnimator).getShown();
-        doReturn(true).when(appWin1.mActivityRecord).isSurfaceShowing();
         appWin1.mWinAnimator.mLastAlpha = 1f;
 
         // Test step 1: appWin1 is the current IME layering target and soft-keyboard is visible.

@@ -115,8 +115,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     @Test
     fun testNoProgressWhenSqueezeEffectDisabled() =
         kosmos.runTest {
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                false
+            fakeSqueezeEffectRepository.isEffectEnabled.value = false
 
             underTest.start()
 
@@ -127,8 +126,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     fun testSqueezeEffectStarts_afterInitialDelay() =
         kosmos.runTest {
             val expectedDelay = 100L
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
 
@@ -146,8 +144,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         kosmos.runTest {
             val expectedDelay = 100L
             fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
 
             underTest.start()
@@ -164,8 +161,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
     fun testSqueezeEffectNotStarted_whenUpEventReceivedBefore100Millis() =
         kosmos.runTest {
             val expectedDelay = 100L
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
 
@@ -174,8 +170,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             // subtract 1ms time to simulate initial delay duration is yet not finished
             advanceTime((expectedDelay - 1).milliseconds)
 
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                false
+            fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = false
 
             runCurrent()
             animatorTestRule.advanceTimeBy(1)
@@ -189,8 +184,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         kosmos.runTest {
             val expectedDelay = 100L
             fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
 
             underTest.start()
@@ -199,8 +193,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             advanceTime((expectedDelay + 1).milliseconds)
             animatorTestRule.advanceTimeBy(1)
 
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                false
+            fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = false
             runCurrent()
             animatorTestRule.advanceTimeBy(1)
         }
@@ -211,8 +204,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             val expectedDelay =
                 DEFAULT_INITIAL_DELAY_MILLIS + 750 - DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
             fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
 
             underTest.start()
@@ -222,8 +214,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             animatorTestRule.advanceTimeBy(1)
             val timesCancelledBefore = vibratorHelper.timesCancelled
 
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                false
+            fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = false
 
             runCurrent()
             animatorTestRule.advanceTimeBy(1)
@@ -240,8 +231,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             val expectedDelay =
                 DEFAULT_INITIAL_DELAY_MILLIS + 750 - DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
             fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
 
             underTest.start()
@@ -250,8 +240,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             advanceTime((expectedDelay - 1).milliseconds)
             animatorTestRule.advanceTimeBy(1)
 
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                false
+            fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = false
 
             runCurrent()
 
@@ -266,8 +255,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
                 DEFAULT_INITIAL_DELAY_MILLIS + 750 - DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
             fakeSqueezeEffectRepository.isSqueezeEffectHapticEnabled = true
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = expectedDelay
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                false
+            setInvocationEffectEnabled(false)
 
             underTest.start()
 
@@ -287,8 +275,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
 
             underTest.start()
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             runCurrent()
 
             // Advance time past initial delay to start the animation
@@ -303,8 +290,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             runCurrent() // Process collection of isPowerButtonLongPressed
 
             // Release power button
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                false
+            fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = false
             runCurrent() // Triggers cancelSqueeze, but it should not interrupt
 
             // On long-press the LPP haptic effect plays cancelling any previous haptic effect
@@ -337,8 +323,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
 
             underTest.start()
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             runCurrent()
 
             advanceTime((initialDelay + 1).milliseconds)
@@ -363,8 +348,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             assertThat(vibratorHelper.timesCancelled).isEqualTo(timesCancelledBefore)
 
             // Release power button (should not change anything as animation is finished)
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                false
+            fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = false
             runCurrent()
         }
 
@@ -376,8 +360,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
 
             underTest.start()
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             runCurrent()
             // Advance past initial delay
             advanceTime((initialDelay + 1).milliseconds)
@@ -399,8 +382,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             assertThat(vibratorHelper.hasVibratedWithEffects(zoomOutHaptics.vibration)).isTrue()
 
             // Release power button (does not affect completed animation)
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                false
+            fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = false
             runCurrent()
         }
 
@@ -412,8 +394,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
 
             underTest.start()
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             runCurrent()
 
             // Advance time past initial delay to start the animation
@@ -428,8 +409,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             assertThat(progressBeforeCancel).isLessThan(1f)
 
             // Release power button before long press is detected
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                false
+            fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = false
             runCurrent() // Process button release, triggers cancelSqueeze
 
             // cancelSqueeze calls hapticPlayer.cancel()
@@ -447,8 +427,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         kosmos.runTest {
             // Setup: Enable effect and trigger power button down
             val initialDelay = 50L
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
 
             // Action: Start the effect and advance time past initial delay to start animation
@@ -465,8 +444,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         kosmos.runTest {
             // Setup: Enable effect and trigger power button down
             val initialDelay = 50L
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
 
             // Action: Start the effect
@@ -494,8 +472,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         kosmos.runTest {
             // Setup: Enable effect and trigger power button down
             val initialDelay = 50L
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                true
+            setInvocationEffectEnabled(true)
             fakeSqueezeEffectRepository.invocationEffectInitialDelayMs = initialDelay
 
             // Action: Start the effect
@@ -511,8 +488,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             reset(kosmos.mockTopUiController, kosmos.notificationShadeWindowController)
 
             // Action: Release power button to cancel the animation
-            fakeSqueezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture.value =
-                false
+            fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = false
             runCurrent()
             // Allow cancellation animation to complete
             animatorTestRule.advanceTimeBy(DEFAULT_OUTWARD_EFFECT_DURATION_MS)
@@ -531,5 +507,10 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
             verify(kosmos.notificationShadeWindowController, times(1))
                 .setRequestTopUi(isRequested, TopLevelWindowEffects.TAG)
         }
+    }
+
+    private fun Kosmos.setInvocationEffectEnabled(enabled: Boolean) {
+        fakeSqueezeEffectRepository.isEffectEnabled.value = enabled
+        fakeSqueezeEffectRepository.isPowerButtonPressedAsSingleGesture.value = enabled
     }
 }

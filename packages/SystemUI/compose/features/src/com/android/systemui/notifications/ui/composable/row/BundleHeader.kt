@@ -45,6 +45,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.collapse
+import androidx.compose.ui.semantics.dismiss
+import androidx.compose.ui.semantics.expand
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
@@ -87,6 +91,7 @@ fun BundleHeader(
     modifier: Modifier = Modifier,
     onHeaderClicked: () -> Unit = {},
     onHeaderLongClicked: () -> Unit = {},
+    onA11yDismissAction: () -> Unit = {}, // only for dismissing via accessibility action
 ) {
     val state =
         rememberMutableSceneTransitionLayoutState(
@@ -137,18 +142,37 @@ fun BundleHeader(
 
     Box(modifier) {
         Background(background = viewModel.backgroundDrawable, modifier = Modifier.matchParentSize())
+        fun toggle() {
+            viewModel.onHeaderClicked()
+            onHeaderClicked()
+        }
         SceneTransitionLayout(
             state = state,
             modifier =
                 Modifier.combinedClickable(
-                    onClick = {
-                        viewModel.onHeaderClicked()
-                        onHeaderClicked()
+                        onClick = { toggle() },
+                        onLongClick = { onHeaderLongClicked() },
+                        interactionSource = null,
+                        indication = null,
+                    )
+                    .semantics {
+                        when (state.currentScene) {
+                            BundleHeader.Scenes.Collapsed ->
+                                expand {
+                                    toggle()
+                                    true
+                                }
+                            BundleHeader.Scenes.Expanded ->
+                                collapse {
+                                    toggle()
+                                    true
+                                }
+                        }
+                        dismiss {
+                            onA11yDismissAction()
+                            true
+                        }
                     },
-                    onLongClick = { onHeaderLongClicked() },
-                    interactionSource = null,
-                    indication = null,
-                ),
         ) {
             scene(BundleHeader.Scenes.Collapsed) {
                 BundleHeaderContent(viewModel, collapsed = true)

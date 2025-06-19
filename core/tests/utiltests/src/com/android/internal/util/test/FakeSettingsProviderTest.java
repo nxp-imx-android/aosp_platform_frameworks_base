@@ -16,6 +16,7 @@
 
 package com.android.internal.util.test;
 
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 
 import static org.junit.Assert.assertEquals;
@@ -37,6 +38,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
+
 /**
  * Unit tests for FakeSettingsProvider.
  */
@@ -52,10 +55,13 @@ public class FakeSettingsProviderTest {
 
     private MockContentResolver mCr;
 
+    private ArrayList<String> mCallbacks;
+
     @Before
     public void setUp() throws Exception {
+        FakeSettingsProvider.clearSettingsProvider();
         mCr = new MockContentResolver();
-        mCr.addProvider(Settings.AUTHORITY, new FakeSettingsProvider());
+        mCallbacks = new ArrayList<>();
     }
 
     private void assertSystemSettingNotFound(String name) {
@@ -70,6 +76,7 @@ public class FakeSettingsProviderTest {
     @Test
     @SmallTest
     public void testBasicOperation() throws Exception {
+        mCr.addProvider(Settings.AUTHORITY, new FakeSettingsProvider());
         assertSystemSettingNotFound(SYSTEM_SETTING);
 
         // Check that fake settings can be written and read back.
@@ -101,6 +108,7 @@ public class FakeSettingsProviderTest {
     @Test
     @SmallTest
     public void testMultiUserOperation() {
+        mCr.addProvider(Settings.AUTHORITY, new FakeSettingsProvider());
         Settings.Secure.putStringForUser(mCr, SECURE_SETTING, "user0Setting", 0);
         Settings.Secure.putStringForUser(mCr, SECURE_SETTING, "user1Setting", 1);
         assertEquals("user0Setting", Settings.Secure.getStringForUser(mCr, SECURE_SETTING, 0));
@@ -133,6 +141,49 @@ public class FakeSettingsProviderTest {
 
         Settings.Global.putString(mCr, GLOBAL_SETTING, "newGlobalSetting");
         assertEquals("newGlobalSetting", Settings.Global.getStringForUser(mCr, GLOBAL_SETTING, 42));
+
+    }
+
+    private void assertCallbackReceived(String expectedCallback) {
+        assertFalse("No callbacks received", mCallbacks.isEmpty());
+        assertEquals(expectedCallback, mCallbacks.removeFirst());
+    }
+
+    private void assertNoCallbackReceived() {
+        assertEquals(0, mCallbacks.size());
+    }
+
+    @Test
+    @SmallTest
+    public void testCallbacks() {
+        mCr.addProvider(Settings.AUTHORITY, new FakeSettingsProvider((userId, uri) ->
+                mCallbacks.add(userId + ":" + uri.toString())));
+
+        Settings.Secure.putStringForUser(mCr, SECURE_SETTING, "value", 1);
+        assertCallbackReceived("1:content://settings/secure/bluetooth_name");
+
+        Settings.Secure.putStringForUser(mCr, SECURE_SETTING, "newvalue", 1);
+        assertCallbackReceived("1:content://settings/secure/bluetooth_name");
+
+        Settings.Secure.putStringForUser(mCr, SECURE_SETTING, "value", 2);
+        assertCallbackReceived("2:content://settings/secure/bluetooth_name");
+
+        // Callback is not called if value doesn't change.
+        Settings.Secure.putStringForUser(mCr, SECURE_SETTING, "newvalue", 1);
+        assertNoCallbackReceived();
+
+        Settings.Secure.putStringForUser(mCr, SECURE_SETTING, null, 2);
+        assertCallbackReceived("2:content://settings/secure/bluetooth_name");
+
+        Settings.Secure.putStringForUser(mCr, SECURE_SETTING, null, 1);
+        assertCallbackReceived("1:content://settings/secure/bluetooth_name");
+
+        Settings.Secure.putStringForUser(mCr, SECURE_SETTING, null, 1);
+        assertNoCallbackReceived();
+
+        final int currentUserId = UserHandle.getUserId(Process.myUid());
+        Settings.System.putString(mCr, SYSTEM_SETTING, "value");
+        assertCallbackReceived(currentUserId + ":" + "content://settings/system/screen_brightness");
 
     }
 }

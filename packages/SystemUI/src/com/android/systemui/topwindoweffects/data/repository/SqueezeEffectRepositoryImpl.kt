@@ -21,6 +21,7 @@ import android.content.Context
 import android.hardware.input.InputManager
 import android.hardware.input.KeyGestureEvent
 import android.os.Bundle
+import android.os.SystemProperties
 import android.provider.Settings.Global.POWER_BUTTON_LONG_PRESS_DURATION_MS
 import com.android.internal.annotations.VisibleForTesting
 import com.android.systemui.assist.AssistManager
@@ -46,9 +47,9 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 
 @SysUISingleton
 class SqueezeEffectRepositoryImpl
@@ -89,6 +90,15 @@ constructor(
 
     override fun getInvocationEffectOutAnimationDurationMillis(): Long {
         return preferences.getOutwardAnimationDurationMillis()
+    }
+
+    override fun useHapticRumble(): Boolean {
+        val hapticsOption =
+            SystemProperties.get(
+                /*key=*/ "persist.lpp_invocation.haptics",
+                /*def=*/ "no_rumble",
+            )
+        return hapticsOption == "with_rumble"
     }
 
     private fun setInvocationEffectPreferences(
@@ -166,8 +176,14 @@ constructor(
 
     private var isPowerButtonDownAndPowerKeySingleGestureActive = false
 
+    override val isEffectEnabled: Flow<Boolean> =
+        preferences.isInvocationEffectEnabledByAssistant
+            .map { it && Flags.enableLppAssistInvocationEffect() }
+            .flowOn(coroutineContext)
+            .distinctUntilChanged()
+
     @SuppressLint("MissingPermission")
-    override val isEffectEnabledAndPowerButtonPressedAsSingleGesture: Flow<Boolean> =
+    override val isPowerButtonPressedAsSingleGesture: Flow<Boolean> =
         conflatedCallbackFlow {
                 val listener =
                     InputManager.KeyGestureEventListener { event ->
@@ -181,9 +197,6 @@ constructor(
                 trySendWithFailureLogging(false, TAG, "init showInvocationEffect")
                 inputManager.registerKeyGestureEventListener(executor, listener)
                 awaitClose { inputManager.unregisterKeyGestureEventListener(listener) }
-            }
-            .combine(preferences.isInvocationEffectEnabledByAssistant) { downAndActive, enabled ->
-                downAndActive && enabled && Flags.enableLppAssistInvocationEffect()
             }
             .flowOn(coroutineContext)
             .distinctUntilChanged()

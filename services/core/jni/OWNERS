@@ -40,3 +40,6 @@ per-file *AnrTimer* = file:/PERFORMANCE_OWNERS
 
 # HintManagerService
 per-file com_android_server_hint_HintManagerService.cpp = file:/ADPF_OWNERS
+
+# Long Method Tracer
+per-file com_android_server_utils_LongMethodTracer.cpp = benmiles@google.com, ilkos@google.com, mohamadmahmoud@google.com

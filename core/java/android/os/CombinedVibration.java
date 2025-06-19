@@ -906,6 +906,10 @@ public abstract class CombinedVibration implements Parcelable {
             for (int i = 0; i < mEffects.size(); i++) {
                 CombinedVibration vibration = mEffects.get(i);
                 CombinedVibration newVibration = vibration.adapt(adapter);
+                if (newVibration == null) {
+                    // The vibration effect contains unsupported segments and cannot be played.
+                    return null;
+                }
                 combination.addNext(newVibration, mDelays.get(i));
                 hasSameEffects &= vibration.equals(newVibration);
             }

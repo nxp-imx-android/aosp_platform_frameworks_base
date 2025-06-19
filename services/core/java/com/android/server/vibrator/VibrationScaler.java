@@ -55,13 +55,13 @@ final class VibrationScaler {
     private static final float SCALE_FACTOR_HIGH = 1.2f;
     private static final float SCALE_FACTOR_VERY_HIGH = 1.4f;
 
-    private final VibrationSettings mSettingsController;
+    private final VibrationSettings mVibrationSettings;
     private final int mDefaultVibrationAmplitude;
     private final float mDefaultVibrationScaleLevelGain;
     private final SparseArray<Float> mAdaptiveHapticsScales = new SparseArray<>();
 
-    VibrationScaler(VibrationConfig config, VibrationSettings settingsController) {
-        mSettingsController = settingsController;
+    VibrationScaler(VibrationConfig config, VibrationSettings settings) {
+        mVibrationSettings = settings;
         mDefaultVibrationAmplitude = config.getDefaultVibrationAmplitude();
         mDefaultVibrationScaleLevelGain = config.getDefaultVibrationScaleLevelGain();
     }
@@ -73,8 +73,8 @@ final class VibrationScaler {
      * @return one of ExternalVibrationScale.ScaleLevel.SCALE_*
      */
     public int getScaleLevel(int usageHint) {
-        int defaultIntensity = mSettingsController.getDefaultIntensity(usageHint);
-        int currentIntensity = mSettingsController.getCurrentIntensity(usageHint);
+        int defaultIntensity = mVibrationSettings.getDefaultIntensity(usageHint);
+        int currentIntensity = mVibrationSettings.getCurrentIntensity(usageHint);
         if (currentIntensity == Vibrator.VIBRATION_INTENSITY_OFF) {
             // Bypassing user settings, or it has changed between checking and scaling. Use default.
             return SCALE_NONE;
@@ -223,10 +223,10 @@ final class VibrationScaler {
     }
 
     private int getEffectStrength(int usageHint) {
-        int currentIntensity = mSettingsController.getCurrentIntensity(usageHint);
+        int currentIntensity = mVibrationSettings.getCurrentIntensity(usageHint);
         if (currentIntensity == Vibrator.VIBRATION_INTENSITY_OFF) {
             // Bypassing user settings, or it has changed between checking and scaling. Use default.
-            currentIntensity = mSettingsController.getDefaultIntensity(usageHint);
+            currentIntensity = mVibrationSettings.getDefaultIntensity(usageHint);
         }
 
         return intensityToEffectStrength(currentIntensity);

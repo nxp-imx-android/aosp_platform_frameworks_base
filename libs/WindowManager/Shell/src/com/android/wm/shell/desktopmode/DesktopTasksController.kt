@@ -101,6 +101,7 @@ import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.ExternalInterfaceBinder
 import com.android.wm.shell.common.HomeIntentProvider
+import com.android.wm.shell.common.MultiDisplayDragMoveBoundsCalculator
 import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.common.MultiInstanceHelper.Companion.getComponent
 import com.android.wm.shell.common.RemoteCallable
@@ -4670,10 +4671,24 @@ class DesktopTasksController(
                         displayAreaInfo != null
 
                 if (isCrossDisplayDrag) {
+                    val constrainedBounds =
+                        if (
+                            DesktopExperienceFlags.ENABLE_SHRINK_WINDOW_BOUNDS_AFTER_DRAG.isTrue()
+                        ) {
+                            MultiDisplayDragMoveBoundsCalculator.constrainBoundsForDisplay(
+                                destinationBounds,
+                                displayController.getDisplayLayout(newDisplayId),
+                                taskInfo.isResizeable,
+                                inputCoordinate.x,
+                            )
+                        } else {
+                            Rect(destinationBounds)
+                        }
+
                     moveToDisplay(
                         taskInfo,
                         newDisplayId,
-                        destinationBounds,
+                        constrainedBounds,
                         dragToDisplayTransitionHandler,
                     )
                 } else {

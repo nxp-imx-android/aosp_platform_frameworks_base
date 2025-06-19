@@ -20,6 +20,10 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepository
 import java.io.PrintWriter
 import javax.inject.Inject
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 
 @SysUISingleton
 class SqueezeEffectInteractor
@@ -27,10 +31,28 @@ class SqueezeEffectInteractor
 constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
     val isSqueezeEffectHapticEnabled = squeezeEffectRepository.isSqueezeEffectHapticEnabled
 
-    val isEffectEnabledAndPowerButtonPressedAsSingleGesture =
-        squeezeEffectRepository.isEffectEnabledAndPowerButtonPressedAsSingleGesture
-
     val isPowerButtonLongPressed = squeezeEffectRepository.isPowerButtonLongPressed
+
+    val powerButtonSemantics: Flow<PowerButtonSemantics> =
+        combine(
+                squeezeEffectRepository.isEffectEnabled,
+                squeezeEffectRepository.isPowerButtonPressedAsSingleGesture,
+                isPowerButtonLongPressed,
+            ) { isEnabled, isPowerButtonPressedAsSingleGesture, isPowerButtonLongPressed ->
+                val useInitialRumble = squeezeEffectRepository.useHapticRumble()
+                when {
+                    !isPowerButtonPressedAsSingleGesture -> PowerButtonSemantics.CANCEL_SQUEEZE
+                    isEnabled && isPowerButtonPressedAsSingleGesture && useInitialRumble ->
+                        PowerButtonSemantics.START_SQUEEZE_WITH_RUMBLE
+                    isEnabled && isPowerButtonPressedAsSingleGesture && !useInitialRumble ->
+                        PowerButtonSemantics.START_SQUEEZE_WITHOUT_RUMBLE
+                    !isEnabled && isPowerButtonPressedAsSingleGesture && isPowerButtonLongPressed ->
+                        PowerButtonSemantics.PLAY_DEFAULT_ASSISTANT_HAPTICS
+                    else -> null
+                }
+            }
+            .filterNotNull()
+            .distinctUntilChanged()
 
     fun getInvocationEffectInitialDelayMillis(): Long {
         return squeezeEffectRepository.getInvocationEffectInitialDelayMillis()

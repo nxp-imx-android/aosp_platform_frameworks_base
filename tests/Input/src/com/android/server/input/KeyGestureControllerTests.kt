@@ -18,19 +18,15 @@ package com.android.server.input
 
 import android.Manifest
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.PermissionChecker
 import android.content.pm.PackageManager
-import android.content.res.Resources
 import android.content.res.XmlResourceParser
 import android.hardware.input.AidlKeyGestureEvent
 import android.hardware.input.AppLaunchData
-import android.hardware.input.IInputManager
 import android.hardware.input.IKeyGestureEventListener
 import android.hardware.input.IKeyGestureHandler
 import android.hardware.input.InputGestureData
 import android.hardware.input.InputManager
-import android.hardware.input.InputManagerGlobal
 import android.hardware.input.KeyGestureEvent
 import android.os.Handler
 import android.os.IBinder
@@ -42,6 +38,8 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
 import android.provider.DeviceConfig
+import android.testing.TestableContext
+import android.testing.TestableResources
 import android.util.AtomicFile
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.InputDevice
@@ -69,7 +67,6 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import junitparams.JUnitParamsRunner
 import junitparams.Parameters
-import org.junit.After
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -167,7 +164,11 @@ class KeyGestureControllerTests {
 
     @JvmField @Rule val rule = SetFlagsRule()
 
-    @Mock private lateinit var iInputManager: IInputManager
+    @JvmField
+    @Rule
+    val testableContext = TestableContext(ApplicationProvider.getApplicationContext())
+
+    @Mock private lateinit var inputManager: InputManager
     @Mock private lateinit var packageManager: PackageManager
     @Mock private lateinit var wmCallbacks: WindowManagerCallbacks
     @Mock private lateinit var accessibilityShortcutController: AccessibilityShortcutController
@@ -175,18 +176,15 @@ class KeyGestureControllerTests {
     @Mock private lateinit var windowManagerInternal: WindowManagerInternal
 
     private var currentPid = 0
-    private lateinit var context: Context
-    private lateinit var resources: Resources
+    private lateinit var testableResources: TestableResources
     private lateinit var keyGestureController: KeyGestureController
-    private lateinit var inputManagerGlobalSession: InputManagerGlobal.TestSession
     private lateinit var testLooper: TestLooper
     private lateinit var tempFile: File
     private lateinit var inputDataStore: InputDataStore
 
     @Before
     fun setup() {
-        context = Mockito.spy(ContextWrapper(ApplicationProvider.getApplicationContext()))
-        resources = Mockito.spy(context.resources)
+        testableResources = testableContext.orCreateTestableResources
         setupInputDevices()
         setupBehaviors()
         testLooper = TestLooper()
@@ -225,19 +223,11 @@ class KeyGestureControllerTests {
                     }
                 }
             )
-        startNewInputGlobalTestSession()
-    }
-
-    @After
-    fun teardown() {
-        if (this::inputManagerGlobalSession.isInitialized) {
-            inputManagerGlobalSession.close()
-        }
     }
 
     private fun setupBehaviors() {
         Mockito.`when`(SystemProperties.get("ro.debuggable")).thenReturn("1")
-        Mockito.`when`(resources.getBoolean(R.bool.config_enableScreenshotChord)).thenReturn(true)
+        testableResources.addOverride(R.bool.config_enableScreenshotChord, true)
         ExtendedMockito.`when`(
                 DeviceConfig.getLong(
                     eq(DeviceConfig.NAMESPACE_SYSTEMUI),
@@ -246,50 +236,44 @@ class KeyGestureControllerTests {
                 )
             )
             .thenReturn(SCREENSHOT_CHORD_DELAY)
-        Mockito.`when`(context.resources).thenReturn(resources)
         Mockito.`when`(packageManager.hasSystemFeature(PackageManager.FEATURE_WATCH))
             .thenReturn(true)
         Mockito.`when`(packageManager.hasSystemFeature(PackageManager.FEATURE_LEANBACK))
             .thenReturn(true)
-        Mockito.`when`(context.packageManager).thenReturn(packageManager)
-        Mockito.`when`(resources.getInteger(R.integer.config_searchKeyBehavior))
-            .thenReturn(SEARCH_KEY_BEHAVIOR_TARGET_ACTIVITY)
-        Mockito.`when`(resources.getInteger(R.integer.config_settingsKeyBehavior))
-            .thenReturn(SETTINGS_KEY_BEHAVIOR_SETTINGS_ACTIVITY)
+        testableContext.setMockPackageManager(packageManager)
+        testableResources.addOverride(
+            R.integer.config_searchKeyBehavior,
+            SEARCH_KEY_BEHAVIOR_TARGET_ACTIVITY,
+        )
+        testableResources.addOverride(
+            R.integer.config_settingsKeyBehavior,
+            SETTINGS_KEY_BEHAVIOR_SETTINGS_ACTIVITY,
+        )
     }
 
     private fun setupBookmarks(bookmarkRes: Int) {
-        val testBookmarks: XmlResourceParser = context.resources.getXml(bookmarkRes)
-        Mockito.`when`(resources.getXml(R.xml.bookmarks)).thenReturn(testBookmarks)
+        val testBookmarks: XmlResourceParser = testableContext.resources.getXml(bookmarkRes)
+        testableResources.addOverride(R.xml.bookmarks, testBookmarks)
     }
 
     private fun setupInputDevices() {
-        val correctIm = context.getSystemService(InputManager::class.java)!!
+        val correctIm = testableContext.getSystemService(InputManager::class.java)!!
         val virtualDevice = correctIm.getInputDevice(KeyCharacterMap.VIRTUAL_KEYBOARD)!!
         val kcm = virtualDevice.keyCharacterMap!!
         val keyboardDevice = InputDevice.Builder().setId(DEVICE_ID).build()
-        Mockito.`when`(iInputManager.inputDeviceIds).thenReturn(intArrayOf(DEVICE_ID))
-        Mockito.`when`(iInputManager.getInputDevice(DEVICE_ID)).thenReturn(keyboardDevice)
+        testableContext.addMockSystemService(Context.INPUT_SERVICE, inputManager)
+        Mockito.`when`(inputManager.inputDeviceIds).thenReturn(intArrayOf(DEVICE_ID))
+        Mockito.`when`(inputManager.getInputDevice(DEVICE_ID)).thenReturn(keyboardDevice)
         // Need to mock KCM, to allow AppLaunchShortcutManager correctly initialize
         // bookmarks (for legacy bookmarks we use "character" instead of keycodes to define
         // key combinations, so we use Virtual KCM to reverse map character to keycodes)
         ExtendedMockito.`when`(KeyCharacterMap.load(anyInt())).thenReturn(kcm)
     }
 
-    private fun startNewInputGlobalTestSession() {
-        if (this::inputManagerGlobalSession.isInitialized) {
-            inputManagerGlobalSession.close()
-        }
-        inputManagerGlobalSession = InputManagerGlobal.createTestSession(iInputManager)
-        val inputManager = InputManager(context)
-        Mockito.`when`(context.getSystemService(Mockito.eq(Context.INPUT_SERVICE)))
-            .thenReturn(inputManager)
-    }
-
     private fun setupKeyGestureController() {
         keyGestureController =
             KeyGestureController(
-                context,
+                testableContext,
                 testLooper.looper,
                 testLooper.looper,
                 inputDataStore,
@@ -306,12 +290,16 @@ class KeyGestureControllerTests {
                     }
                 },
             )
-        Mockito.`when`(iInputManager.registerKeyGestureHandler(any(), any())).thenAnswer {
+        Mockito.`when`(inputManager.registerKeyGestureEventHandler(any(), any())).thenAnswer {
             val args = it.arguments
             if (args[0] != null) {
+                val gestures = args[0] as List<Int>
+                val handler = args[1] as InputManager.KeyGestureEventHandler
                 keyGestureController.registerKeyGestureHandler(
-                    args[0] as IntArray,
-                    args[1] as IKeyGestureHandler,
+                    gestures.toIntArray(),
+                    KeyGestureHandler { event, token ->
+                        handler.handleKeyGestureEvent(KeyGestureEvent(event), token)
+                    },
                     SYSTEM_PID,
                 )
             }
@@ -322,8 +310,11 @@ class KeyGestureControllerTests {
                 accessibilityShortcutController.isAccessibilityShortcutAvailable(anyBoolean())
             )
             .thenReturn(true)
-        Mockito.`when`(iInputManager.appLaunchBookmarks)
-            .thenReturn(keyGestureController.appLaunchBookmarks)
+        Mockito.`when`(inputManager.appLaunchBookmarks).thenAnswer {
+            keyGestureController.appLaunchBookmarks.map {
+                bookmark -> InputGestureData(bookmark)
+            }
+        }
         keyGestureController.systemRunning()
         testLooper.dispatchAll()
     }
@@ -538,8 +529,10 @@ class KeyGestureControllerTests {
 
     @Test
     fun testSearchKeyGestures_defaultSearch() {
-        Mockito.`when`(resources.getInteger(R.integer.config_searchKeyBehavior))
-            .thenReturn(SEARCH_KEY_BEHAVIOR_DEFAULT_SEARCH)
+        testableResources.addOverride(
+            R.integer.config_searchKeyBehavior,
+            SEARCH_KEY_BEHAVIOR_DEFAULT_SEARCH,
+        )
         setupKeyGestureController()
         testKeyGestureNotProduced(
             KeyGestureData(
@@ -553,8 +546,10 @@ class KeyGestureControllerTests {
 
     @Test
     fun testSettingKeyGestures_doNothing() {
-        Mockito.`when`(resources.getInteger(R.integer.config_settingsKeyBehavior))
-            .thenReturn(SETTINGS_KEY_BEHAVIOR_NOTHING)
+        testableResources.addOverride(
+            R.integer.config_settingsKeyBehavior,
+            SETTINGS_KEY_BEHAVIOR_NOTHING,
+        )
         setupKeyGestureController()
 
         testKeyGestureNotProduced(
@@ -577,8 +572,10 @@ class KeyGestureControllerTests {
 
     @Test
     fun testSettingKeyGestures_notificationPanel() {
-        Mockito.`when`(resources.getInteger(R.integer.config_settingsKeyBehavior))
-            .thenReturn(SETTINGS_KEY_BEHAVIOR_NOTIFICATION_PANEL)
+        testableResources.addOverride(
+            R.integer.config_settingsKeyBehavior,
+            SETTINGS_KEY_BEHAVIOR_NOTIFICATION_PANEL,
+        )
         setupKeyGestureController()
         testKeyGestureProduced(
             KeyGestureData(
@@ -695,7 +692,6 @@ class KeyGestureControllerTests {
         testLooper.dispatchAll()
 
         // Reinitialize the gesture controller simulating a login/logout for the user.
-        startNewInputGlobalTestSession()
         setupKeyGestureController()
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()
@@ -740,7 +736,6 @@ class KeyGestureControllerTests {
 
         // Delete the old data and reinitialize the controller simulating a "fresh" install.
         tempFile.delete()
-        startNewInputGlobalTestSession()
         setupKeyGestureController()
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()
@@ -867,7 +862,6 @@ class KeyGestureControllerTests {
         testLooper.dispatchAll()
 
         // Reinitialize the gesture controller simulating a login/logout for the user.
-        startNewInputGlobalTestSession()
         setupKeyGestureController()
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()
@@ -906,7 +900,6 @@ class KeyGestureControllerTests {
 
         // Delete the old data and reinitialize the controller simulating a "fresh" install.
         tempFile.delete()
-        startNewInputGlobalTestSession()
         setupKeyGestureController()
         keyGestureController.setCurrentUserId(userId)
         testLooper.dispatchAll()

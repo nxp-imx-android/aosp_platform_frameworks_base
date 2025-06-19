@@ -28,7 +28,9 @@ oneway interface IMediaRoute2ProviderService {
     // Note: When changing this file, match the order of methods below with
     // MediaRoute2ProviderService#MediaRoute2ProviderServiceStub for readability.
     void setCallback(IMediaRoute2ProviderServiceCallback callback);
-    void updateDiscoveryPreference(in RouteDiscoveryPreference discoveryPreference);
+    void updateDiscoveryPreference(
+            in RouteDiscoveryPreference discoveryPreference,
+            in Map<String, RouteDiscoveryPreference> perAppPreferences);
     void setRouteVolume(long requestId, String routeId, int volume);
 
     void requestCreateSession(long requestId, String packageName, String routeId,

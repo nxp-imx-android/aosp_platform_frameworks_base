@@ -26,10 +26,13 @@ class FakeSqueezeEffectRepository : SqueezeEffectRepository {
     var invocationEffectInitialDelayMs = DEFAULT_LONG_PRESS_POWER_DURATION_MILLIS
     var invocationEffectInwardsAnimationDurationMs = DEFAULT_INWARD_EFFECT_DURATION_MILLIS
     var invocationEffectOutwardsAnimationDurationMs = DEFAULT_OUTWARD_EFFECT_DURATION_MS
+    var shouldUseHapticRumble = false
 
     override var isSqueezeEffectHapticEnabled = false
 
-    override val isEffectEnabledAndPowerButtonPressedAsSingleGesture = MutableStateFlow(false)
+    override val isEffectEnabled = MutableStateFlow(true)
+
+    override val isPowerButtonPressedAsSingleGesture = MutableStateFlow(false)
 
     override val isPowerButtonLongPressed = MutableStateFlow(false)
 
@@ -40,6 +43,8 @@ class FakeSqueezeEffectRepository : SqueezeEffectRepository {
 
     override fun getInvocationEffectOutAnimationDurationMillis() =
         invocationEffectOutwardsAnimationDurationMs
+
+    override fun useHapticRumble(): Boolean = shouldUseHapticRumble
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         // empty

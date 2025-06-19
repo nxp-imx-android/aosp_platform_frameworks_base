@@ -24,7 +24,6 @@ import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_BUTTON_TEXT
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_MESSAGE;
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_TITLE;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -42,6 +41,7 @@ import androidx.fragment.app.DialogFragment;
 import com.android.packageinstaller.R;
 import com.android.packageinstaller.v2.model.PackageUtil.AppSnippet;
 import com.android.packageinstaller.v2.model.UninstallUserActionRequired;
+import com.android.packageinstaller.v2.ui.UiUtil;
 import com.android.packageinstaller.v2.ui.UninstallActionListener;
 
 /**
@@ -115,16 +115,12 @@ public class UninstallConfirmationFragment extends DialogFragment {
             mKeepData = keepDataLayout.requireViewById(R.id.keep_data_checkbox);
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
-                .setTitle(mDialogData.getTitle())
-                .setView(dialogView)
-                .setPositiveButton(mDialogData.getButtonText(),
-                    (dialogInt, which) -> mUninstallActionListener.onPositiveResponse(
-                        mKeepData != null && mKeepData.isChecked()))
-                .setNegativeButton(R.string.button_cancel,
-                    (dialogInt, which) -> mUninstallActionListener.onNegativeResponse());
-
-        return builder.create();
+        return UiUtil.getAlertDialog(requireContext(), mDialogData.getTitle(), dialogView,
+                mDialogData.getButtonText(), getString(R.string.button_cancel),
+                (dialogInt, which) -> mUninstallActionListener.onPositiveResponse(
+                        mKeepData != null && mKeepData.isChecked()),
+                (dialogInt, which) ->
+                        mUninstallActionListener.onNegativeResponse());
     }
 
     @Override

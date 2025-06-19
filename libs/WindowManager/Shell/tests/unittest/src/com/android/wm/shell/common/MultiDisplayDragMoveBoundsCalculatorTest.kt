@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.wm.shell.common
 
 import android.content.res.Configuration
@@ -80,5 +79,155 @@ class MultiDisplayDragMoveBoundsCalculatorTest : ShellTestCase() {
 
         val expectedBoundsPx = Rect(100, 1300, 400, 1500)
         assertEquals(expectedBoundsPx, actualBoundsPx)
+    }
+
+    @Test
+    fun constrainBoundsForDisplay_nullDisplayLayout_returnsOriginalBounds() {
+        val originalBounds = Rect(10, 20, 110, 120)
+        val result =
+            MultiDisplayDragMoveBoundsCalculator.constrainBoundsForDisplay(
+                originalBounds,
+                displayLayout = null,
+                isResizeable = false,
+                pointerX = 50f,
+            )
+        assertEquals(originalBounds, result)
+    }
+
+    @Test
+    fun constrainBoundsForDisplay_fullyContained_returnsOriginalBounds() {
+        // displayBounds: (0, 0, 100, 300), displayBoundsOverhang: (-24, -24, 124, 324)
+        val displayLayout = TestDisplay.DISPLAY_3.getSpyDisplayLayout(resources.resources)
+        // Fits well within DISPLAY + overhang
+        val originalBounds = Rect(10, 20, 110, 120)
+
+        val result =
+            MultiDisplayDragMoveBoundsCalculator.constrainBoundsForDisplay(
+                originalBounds,
+                displayLayout,
+                isResizeable = true,
+                pointerX = 50f,
+            )
+
+        assertEquals(originalBounds, result)
+    }
+
+    @Test
+    fun constrainBoundsForDisplay_resizableExceedsOverhang_returnsIntersection() {
+        // displayBounds: (0, 0, 100, 300), displayBoundsOverhang: (-24, -24, 124, 324)
+        val displayLayout = TestDisplay.DISPLAY_3.getSpyDisplayLayout(resources.resources)
+        // Window bounds exceeds right and bottom of overhang
+        val originalBounds = Rect(10, 20, 250, 400)
+
+        val result =
+            MultiDisplayDragMoveBoundsCalculator.constrainBoundsForDisplay(
+                originalBounds,
+                displayLayout,
+                isResizeable = true,
+                pointerX = 10f,
+            )
+
+        val expectedBounds = Rect(10, 20, 124, 324)
+        assertEquals(expectedBounds, result)
+    }
+
+    @Test
+    fun constrainBoundsForDisplay_nonResizableTopEdgeContained_scaleBasedOnPointer() {
+        // displayBounds: (0, 0, 100, 300), displayBoundsOverhang: (-24, -24, 124, 324)
+        val displayLayout = TestDisplay.DISPLAY_3.getSpyDisplayLayout(resources.resources)
+        // width=50, height=100, exceeding bottom.
+        val originalBounds = Rect(10, 254, 60, 354)
+
+        val result =
+            MultiDisplayDragMoveBoundsCalculator.constrainBoundsForDisplay(
+                originalBounds,
+                displayLayout,
+                isResizeable = false,
+                pointerX = 40f,
+            )
+
+        // width=35, height=70
+        val expectedBounds = Rect(19, 254, 54, 324)
+        assertEquals(expectedBounds, result)
+    }
+
+    @Test
+    fun constrainBoundsForDisplay_nonResizableTopLeftCornerInside_scaleBasedOnTopLeftCorner() {
+        // displayBounds: (0, 0, 100, 300), displayBoundsOverhang: (-24, -24, 124, 324)
+        val displayLayout = TestDisplay.DISPLAY_3.getSpyDisplayLayout(resources.resources)
+        // width=88, height=100, exceeding right.
+        val originalBounds = Rect(80, 100, 168, 200)
+
+        val result =
+            MultiDisplayDragMoveBoundsCalculator.constrainBoundsForDisplay(
+                originalBounds,
+                displayLayout,
+                isResizeable = false,
+                pointerX = 100f,
+            )
+
+        // width=44, height=50
+        val expectedBounds = Rect(80, 100, 124, 150)
+        assertEquals(expectedBounds, result)
+    }
+
+    @Test
+    fun constrainBoundsForDisplay_nonResizableTopRightCornerInside_scaleBasedOnTopRightCorner() {
+        // displayBounds: (0, 0, 100, 300), displayBoundsOverhang: (-24, -24, 124, 324)
+        val displayLayout = TestDisplay.DISPLAY_3.getSpyDisplayLayout(resources.resources)
+        // width=106, height=200, exceeding left and bottom.
+        val originalBounds = Rect(-30, 224, 76, 424)
+
+        val result =
+            MultiDisplayDragMoveBoundsCalculator.constrainBoundsForDisplay(
+                originalBounds,
+                displayLayout,
+                isResizeable = false,
+                pointerX = 100f,
+            )
+
+        // width=53, height=100
+        val expectedBounds = Rect(23, 224, 76, 324)
+        assertEquals(expectedBounds, result)
+    }
+
+    @Test
+    fun constrainBoundsForDisplay_nonResizableBothTopCornersOutsideHeightLimited_scaleBasedOnPointer() {
+        // displayBounds: (0, 0, 100, 300), displayBoundsOverhang: (-24, -24, 124, 324)
+        val displayLayout = TestDisplay.DISPLAY_3.getSpyDisplayLayout(resources.resources)
+        // width=180, height=200, exceeding left, right and bottom.
+        val originalBounds = Rect(-30, 224, 150, 424)
+
+        val result =
+            MultiDisplayDragMoveBoundsCalculator.constrainBoundsForDisplay(
+                originalBounds,
+                displayLayout,
+                isResizeable = false,
+                pointerX = 40f,
+            )
+
+        // width=90, height=100
+        val expectedBounds = Rect(5, 224, 95, 324)
+        assertEquals(expectedBounds, result)
+    }
+
+    @Test
+    fun constrainBoundsForDisplay_nonResizableBothTopCornersOutsideWidthLimited_scaleToFitDisplay() {
+        // displayBounds: (0, 0, 100, 300), displayBoundsOverhang: (-24, -24, 124, 324)
+        val displayLayout = TestDisplay.DISPLAY_3.getSpyDisplayLayout(resources.resources)
+        // width=296, height=100, exceeding left, right and bottom.
+        val originalBounds = Rect(-30, 54, 266, 154)
+
+        val result =
+            MultiDisplayDragMoveBoundsCalculator.constrainBoundsForDisplay(
+                originalBounds,
+                displayLayout,
+                isResizeable = false,
+                pointerX = 40f,
+            )
+
+        // width=148, height=50
+        val expectedBounds = Rect(-24, 54, 124, 104)
+        assertEquals(expectedBounds, result)
     }
 }

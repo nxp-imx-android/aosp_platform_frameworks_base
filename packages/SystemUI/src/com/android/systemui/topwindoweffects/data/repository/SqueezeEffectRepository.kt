@@ -23,7 +23,9 @@ interface SqueezeEffectRepository {
 
     val isSqueezeEffectHapticEnabled: Boolean
 
-    val isEffectEnabledAndPowerButtonPressedAsSingleGesture: Flow<Boolean>
+    val isEffectEnabled: Flow<Boolean>
+
+    val isPowerButtonPressedAsSingleGesture: Flow<Boolean>
 
     val isPowerButtonLongPressed: Flow<Boolean>
 
@@ -32,6 +34,8 @@ interface SqueezeEffectRepository {
     fun getInvocationEffectInAnimationDurationMillis(): Long
 
     fun getInvocationEffectOutAnimationDurationMillis(): Long
+
+    fun useHapticRumble(): Boolean
 
     fun dump(pw: PrintWriter, args: Array<out String>)
 }

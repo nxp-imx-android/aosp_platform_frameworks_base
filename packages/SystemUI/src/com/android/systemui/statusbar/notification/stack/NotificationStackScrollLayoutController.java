@@ -710,6 +710,9 @@ public class NotificationStackScrollLayoutController implements Dumpable {
                 public void onChildNotDismissed(View v, boolean animationCancelled,
                         boolean viewWasRemoved) {
                     logOnChildNotDismissed(v, animationCancelled, viewWasRemoved);
+                    if (!viewWasRemoved) {
+                        mView.removeSwipedOutView(v);
+                    }
                 }
 
                 private void logOnChildNotDismissed(View v, boolean animationCancelled,

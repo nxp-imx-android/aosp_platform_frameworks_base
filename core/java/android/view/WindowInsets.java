@@ -1847,15 +1847,17 @@ public final class WindowInsets {
         static final int MANDATORY_SYSTEM_GESTURES = 1 << 5;
         static final int TAPPABLE_ELEMENT = 1 << 6;
         static final int DISPLAY_CUTOUT = 1 << 7;
-        static final int WINDOW_DECOR = 1 << 8;
-        static final int SYSTEM_OVERLAYS = 1 << 9;
+        static final int SYSTEM_OVERLAYS = 1 << 8;
         @InsetsType
         static final int FIRST = STATUS_BARS;
         @InsetsType
         static final int LAST = SYSTEM_OVERLAYS;
-        static final int SIZE = 10;
+        static final int SIZE = 9;
+
         @InsetsType
-        static final int DEFAULT_VISIBLE = ~IME;
+        static final int ALL = ((1 << SIZE) - 1);
+        @InsetsType
+        static final int DEFAULT_VISIBLE = ALL & ~IME;
 
         static int indexOf(@InsetsType int type) {
             switch (type) {
@@ -1875,10 +1877,8 @@ public final class WindowInsets {
                     return 6;
                 case DISPLAY_CUTOUT:
                     return 7;
-                case WINDOW_DECOR:
-                    return 8;
                 case SYSTEM_OVERLAYS:
-                    return 9;
+                    return 8;
                 default:
                     throw new IllegalArgumentException("type needs to be >= FIRST and <= LAST,"
                             + " type=" + type);
@@ -1890,7 +1890,7 @@ public final class WindowInsets {
         @NonNull
         @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
         public static String toString(@InsetsType int types) {
-            StringBuilder result = new StringBuilder();
+            final StringBuilder result = new StringBuilder();
             if ((types & STATUS_BARS) != 0) {
                 result.append("statusBars ");
             }
@@ -1915,9 +1915,6 @@ public final class WindowInsets {
             if ((types & DISPLAY_CUTOUT) != 0) {
                 result.append("displayCutout ");
             }
-            if ((types & WINDOW_DECOR) != 0) {
-                result.append("windowDecor ");
-            }
             if ((types & SYSTEM_OVERLAYS) != 0) {
                 result.append("systemOverlays ");
             }
@@ -1941,7 +1938,6 @@ public final class WindowInsets {
                 MANDATORY_SYSTEM_GESTURES,
                 TAPPABLE_ELEMENT,
                 DISPLAY_CUTOUT,
-                WINDOW_DECOR,
                 SYSTEM_OVERLAYS,
         })
         public @interface InsetsType {
@@ -2081,7 +2077,7 @@ public final class WindowInsets {
          */
         @InsetsType
         public static int all() {
-            return 0xFFFFFFFF;
+            return ALL;
         }
 
         /**
@@ -2124,6 +2120,28 @@ public final class WindowInsets {
         @InsetsSide
         public static int all() {
             return LEFT | TOP | RIGHT | BOTTOM;
+        }
+
+        /** @hide */
+        @NonNull
+        public static String toString(@InsetsSide int sides) {
+            final StringBuilder result = new StringBuilder();
+            if ((sides & LEFT) != 0) {
+                result.append("LEFT ");
+            }
+            if ((sides & TOP) != 0) {
+                result.append("TOP ");
+            }
+            if ((sides & RIGHT) != 0) {
+                result.append("RIGHT ");
+            }
+            if ((sides & BOTTOM) != 0) {
+                result.append("BOTTOM ");
+            }
+            if (result.length() > 0) {
+                result.delete(result.length() - 1, result.length());
+            }
+            return result.toString();
         }
     }
 }

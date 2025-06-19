@@ -18,13 +18,12 @@ package com.android.server.input
 
 import android.Manifest
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.pm.PackageManagerInternal
 import android.hardware.display.DisplayManager
 import android.hardware.display.DisplayViewport
 import android.hardware.display.VirtualDisplay
+import android.hardware.input.IKeyEventActivityListener
 import android.hardware.input.InputManager
-import android.hardware.input.InputManagerGlobal
 import android.hardware.input.InputSettings
 import android.hardware.input.KeyGestureEvent
 import android.os.InputEventInjectionSync
@@ -36,21 +35,20 @@ import android.platform.test.annotations.EnableFlags
 import android.platform.test.annotations.Presubmit
 import android.platform.test.flag.junit.SetFlagsRule
 import android.provider.Settings
-import android.test.mock.MockContentResolver
+import android.testing.TestableContext
 import android.view.InputDevice
 import android.view.KeyCharacterMap
 import android.view.KeyEvent
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View.OnKeyListener
-import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.core.app.ApplicationProvider
 import com.android.compatibility.common.util.SystemUtil.runWithShellPermissionIdentity
 import com.android.dx.mockito.inline.extended.ExtendedMockito
 import com.android.internal.util.test.FakeSettingsProvider
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
 import com.google.common.truth.Truth.assertThat
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -62,14 +60,11 @@ import org.mockito.ArgumentMatchers.anyFloat
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.eq
 import org.mockito.Mock
-import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
-import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
-import org.mockito.Mockito.verifyNoMoreInteractions
 import org.mockito.Mockito.`when`
 import org.mockito.stubbing.OngoingStubbing
 
@@ -105,6 +100,10 @@ class InputManagerServiceTests {
             .mockStatic(InputSettings::class.java)
             .build()!!
 
+    @JvmField
+    @Rule
+    val testableContext = TestableContext(ApplicationProvider.getApplicationContext())
+
     @get:Rule val setFlagsRule = SetFlagsRule()
 
     @get:Rule val fakeSettingsProviderRule = FakeSettingsProvider.rule()!!
@@ -121,35 +120,26 @@ class InputManagerServiceTests {
     private lateinit var kbdController: InputManagerService.KeyboardBacklightControllerInterface
 
     @Mock private lateinit var kcm: KeyCharacterMap
+    @Mock private lateinit var inputManager: InputManager
 
     private lateinit var service: InputManagerService
     private lateinit var localService: InputManagerInternal
-    private lateinit var context: Context
     private lateinit var testLooper: TestLooper
-    private lateinit var contentResolver: MockContentResolver
-    private lateinit var inputManagerGlobalSession: InputManagerGlobal.TestSession
     private lateinit var fakePermissionEnforcer: FakePermissionEnforcer
 
     @Before
     fun setup() {
-        context = spy(ContextWrapper(InstrumentationRegistry.getInstrumentation().getContext()))
         fakePermissionEnforcer = FakePermissionEnforcer()
-        doReturn(Context.PERMISSION_ENFORCER_SERVICE)
-            .`when`(context)
-            .getSystemServiceName(eq(PermissionEnforcer::class.java))
-        doReturn(fakePermissionEnforcer)
-            .`when`(context)
-            .getSystemService(eq(Context.PERMISSION_ENFORCER_SERVICE))
+        testableContext.addMockSystemService(PermissionEnforcer::class.java, fakePermissionEnforcer)
 
-        contentResolver = MockContentResolver(context)
-        contentResolver.addProvider(Settings.AUTHORITY, FakeSettingsProvider())
-        whenever(context.contentResolver).thenReturn(contentResolver)
+        testableContext.contentResolver.addProvider(Settings.AUTHORITY, FakeSettingsProvider())
         testLooper = TestLooper()
+        whenever(inputManager.inputDeviceIds).thenReturn(intArrayOf())
         service =
             InputManagerService(
                 object :
                     InputManagerService.Injector(
-                        context,
+                        testableContext,
                         testLooper.looper,
                         testLooper.looper,
                         uEventManager,
@@ -172,10 +162,8 @@ class InputManagerServiceTests {
                 },
                 fakePermissionEnforcer,
             )
-        inputManagerGlobalSession = InputManagerGlobal.createTestSession(service)
-        val inputManager = InputManager(context)
-        whenever(context.getSystemService(InputManager::class.java)).thenReturn(inputManager)
-        whenever(context.getSystemService(Context.INPUT_SERVICE)).thenReturn(inputManager)
+        testableContext.addMockSystemService(InputManager::class.java, inputManager)
+        testableContext.addMockSystemService(Context.INPUT_SERVICE, inputManager)
         fakePermissionEnforcer.grant(Manifest.permission.MANAGE_KEY_GESTURES)
 
         ExtendedMockito.doReturn(packageManagerInternal).`when` {
@@ -185,13 +173,6 @@ class InputManagerServiceTests {
 
         assertTrue("Local service must be registered", this::localService.isInitialized)
         service.setWindowManagerCallbacks(wmCallbacks)
-    }
-
-    @After
-    fun tearDown() {
-        if (this::inputManagerGlobalSession.isInitialized) {
-            inputManagerGlobalSession.close()
-        }
     }
 
     @Test
@@ -277,30 +258,31 @@ class InputManagerServiceTests {
     @EnableFlags(com.android.hardware.input.Flags.FLAG_KEY_EVENT_ACTIVITY_DETECTION)
     fun testKeyActivenessNotifyEventsLifecycle() {
         service.systemRunning()
-
         fakePermissionEnforcer.grant(android.Manifest.permission.LISTEN_FOR_KEY_ACTIVITY)
 
-        val inputManager = context.getSystemService(InputManager::class.java)
-
         /* register for key event activeness */
-        var listener = mock(InputManager.KeyEventActivityListener::class.java)
-        assertEquals(true, inputManager.registerKeyEventActivityListener(listener))
+        var callback = 0
+        val listener = KeyEventListener {
+            callback++
+            true
+        }
+        assertEquals(true, service.registerKeyEventActivityListener(listener))
 
         /* mimic key event pressed */
         val event = createKeycodeAEvent(createInputDevice(), KeyEvent.ACTION_DOWN)
         service.interceptKeyBeforeQueueing(event, 0)
 
         /* verify onKeyEventActivity callback called */
-        verify(listener, times(1)).onKeyEventActivity()
+        assertEquals(1, callback)
 
         /* unregister for key event activeness */
-        assertEquals(true, inputManager.unregisterKeyEventActivityListener(listener))
+        assertEquals(true, service.unregisterKeyEventActivityListener(listener))
 
         /* mimic key event pressed */
         service.interceptKeyBeforeQueueing(event, /* policyFlags */ 0)
 
         /* verify onKeyEventActivity callback not called */
-        verifyNoMoreInteractions(listener)
+        assertEquals(1, callback)
     }
 
     private class AutoClosingVirtualDisplays(val displays: List<VirtualDisplay>) : AutoCloseable {
@@ -315,7 +297,7 @@ class InputManagerServiceTests {
 
     private fun createVirtualDisplays(count: Int): AutoClosingVirtualDisplays {
         val displayManager: DisplayManager =
-            context.getSystemService(DisplayManager::class.java) as DisplayManager
+            testableContext.getSystemService(DisplayManager::class.java) as DisplayManager
         val virtualDisplays = mutableListOf<VirtualDisplay>()
         for (i in 0 until count) {
             virtualDisplays.add(
@@ -570,6 +552,13 @@ class InputManagerServiceTests {
         service.handleKeyGestureEvent(toggleCapsLockEvent)
 
         verify(native).toggleCapsLock(anyInt())
+    }
+
+    inner class KeyEventListener(private var listener: () -> Boolean) :
+        IKeyEventActivityListener.Stub() {
+        override fun onKeyEventActivity() {
+            listener.invoke()
+        }
     }
 }
 

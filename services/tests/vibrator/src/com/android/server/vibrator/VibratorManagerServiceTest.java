@@ -349,10 +349,8 @@ public class VibratorManagerServiceTest {
                     }
 
                     @Override
-                    VibratorController createVibratorController(int vibratorId,
-                            VibratorController.OnVibrationCompleteListener listener) {
-                        return mVibratorProviders.get(vibratorId)
-                                .newVibratorController(vibratorId, listener);
+                    HalVibrator createHalVibrator(int vibratorId) {
+                        return mVibratorProviders.get(vibratorId).newVibratorController(vibratorId);
                     }
 
                     @Override
@@ -415,7 +413,8 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
-    public void createService_doNotCrashIfUsedBeforeSystemReady() {
+    @DisableFlags(Flags.FLAG_REMOVE_HIDL_SUPPORT)
+    public void createService_withVibratorInfoAvailable_doNotCrashIfUsedBeforeSystemReady() {
         mockVibrators(1, 2);
         mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_ALWAYS_ON_CONTROL);
         mVibratorProviders.get(2).setCapabilities(IVibrator.CAP_ALWAYS_ON_CONTROL);
@@ -427,6 +426,30 @@ public class VibratorManagerServiceTest {
 
         CombinedVibration effect = CombinedVibration.createParallel(
                 VibrationEffect.createPredefined(EFFECT_CLICK));
+        vibrate(service, effect, HAPTIC_FEEDBACK_ATTRS);
+        service.cancelVibrate(VibrationAttributes.USAGE_FILTER_MATCH_ALL, service);
+
+        assertTrue(service.setAlwaysOnEffect(UID, PACKAGE_NAME, 1, effect, ALARM_ATTRS));
+
+        IVibratorStateListener listener = mockVibratorStateListener();
+        assertTrue(service.registerVibratorStateListener(1, listener));
+        assertTrue(service.unregisterVibratorStateListener(1, listener));
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REMOVE_HIDL_SUPPORT)
+    public void createService_doNotCrashIfUsedBeforeSystemReady() {
+        mockVibrators(1, 2);
+        mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_ALWAYS_ON_CONTROL);
+        mVibratorProviders.get(2).setCapabilities(IVibrator.CAP_ALWAYS_ON_CONTROL);
+        VibratorManagerService service = createService();
+
+        assertNotNull(service.getVibratorIds());
+        assertNull(service.getVibratorInfo(1));
+        assertFalse(service.isVibrating(1));
+
+        CombinedVibration effect = CombinedVibration.createParallel(
+                VibrationEffect.createPredefined(VibrationEffect.EFFECT_CLICK));
         vibrate(service, effect, HAPTIC_FEEDBACK_ATTRS);
         service.cancelVibrate(VibrationAttributes.USAGE_FILTER_MATCH_ALL, service);
 
@@ -475,6 +498,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REMOVE_HIDL_SUPPORT)
     public void getVibratorInfo_vibratorSuccessfulLoadBeforeSystemReady_returnsInfoForVibrator() {
         mockVibrators(1);
         FakeVibratorControllerProvider vibrator = mVibratorProviders.get(1);
@@ -499,6 +523,7 @@ public class VibratorManagerServiceTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_REMOVE_HIDL_SUPPORT)
     public void getVibratorInfo_vibratorFailedThenSuccessfulLoad_returnsNullThenInfo() {
         mockVibrators(1);
         mVibratorProviders.get(1).setVibratorInfoLoadSuccessful(false);
@@ -514,6 +539,16 @@ public class VibratorManagerServiceTest {
         assertNotNull(info);
         assertEquals(1, info.getId());
         assertEquals(123.f, info.getResonantFrequencyHz(), 0.01 /*tolerance*/);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_REMOVE_HIDL_SUPPORT)
+    public void getVibratorInfo_beforeSystemReady_returnsNull() {
+        mockVibrators(1);
+        FakeVibratorControllerProvider vibrator = mVibratorProviders.get(1);
+        vibrator.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
+        VibratorInfo info = createService().getVibratorInfo(1);
+        assertNull(info);
     }
 
     @Test
@@ -1313,10 +1348,10 @@ public class VibratorManagerServiceTest {
         VibratorManagerService service = createSystemReadyService();
 
         IBinder firstToken = mock(IBinder.class);
-        IExternalVibrationController controller = mock(IExternalVibrationController.class);
+        IExternalVibrationController externalVibratonController =
+                mock(IExternalVibrationController.class);
         ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_ALARM_ATTRS,
-                controller, firstToken);
+                AUDIO_ALARM_ATTRS, externalVibratonController, firstToken);
         ExternalVibrationScale scale =
                 mExternalVibratorService.onExternalVibrationStart(externalVibration);
 
@@ -1324,7 +1359,7 @@ public class VibratorManagerServiceTest {
 
         assertNotEquals(ExternalVibrationScale.ScaleLevel.SCALE_MUTE, scale.scaleLevel);
         // The external vibration should have been cancelled
-        verify(controller).mute();
+        verify(externalVibratonController).mute();
         assertEquals(Arrays.asList(false, true, false),
                 mVibratorProviders.get(1).getExternalControlStates());
         // The new vibration should have recorded that the vibrators were turned on.
@@ -1466,7 +1501,7 @@ public class VibratorManagerServiceTest {
         // VibrationThread will start this vibration async, so wait before triggering callbacks.
         assertTrue(waitUntil(s -> s.isVibrating(1), service, TEST_TIMEOUT_MILLIS));
 
-        // Trigger callbacks from controller.
+        // Trigger callbacks from vibrator.
         mTestLooper.moveTimeForward(50);
         mTestLooper.dispatchAll();
 
@@ -2381,11 +2416,12 @@ public class VibratorManagerServiceTest {
 
         IBinder firstToken = mock(IBinder.class);
         IBinder secondToken = mock(IBinder.class);
-        IExternalVibrationController firstController = mock(IExternalVibrationController.class);
-        IExternalVibrationController secondController = mock(IExternalVibrationController.class);
+        IExternalVibrationController firstExternalVibrationController =
+                mock(IExternalVibrationController.class);
+        IExternalVibrationController secondExternalVibrationController =
+                mock(IExternalVibrationController.class);
         ExternalVibration firstVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_ALARM_ATTRS,
-                firstController, firstToken);
+                AUDIO_ALARM_ATTRS, firstExternalVibrationController, firstToken);
         ExternalVibrationScale firstScale =
                 mExternalVibratorService.onExternalVibrationStart(firstVibration);
 
@@ -2393,14 +2429,14 @@ public class VibratorManagerServiceTest {
                 .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
                 .build();
         ExternalVibration secondVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                ringtoneAudioAttrs, secondController, secondToken);
+                ringtoneAudioAttrs, secondExternalVibrationController, secondToken);
         ExternalVibrationScale secondScale =
                 mExternalVibratorService.onExternalVibrationStart(secondVibration);
 
         assertNotEquals(ExternalVibrationScale.ScaleLevel.SCALE_MUTE, firstScale.scaleLevel);
         assertNotEquals(ExternalVibrationScale.ScaleLevel.SCALE_MUTE, secondScale.scaleLevel);
-        verify(firstController).mute();
-        verify(secondController, never()).mute();
+        verify(firstExternalVibrationController).mute();
+        verify(secondExternalVibrationController, never()).mute();
         // Set external control called for each vibration independently.
         assertEquals(Arrays.asList(false, true, false, true),
                 mVibratorProviders.get(1).getExternalControlStates());
@@ -2432,8 +2468,7 @@ public class VibratorManagerServiceTest {
         assertTrue(waitUntil(s -> s.isVibrating(1), service, TEST_TIMEOUT_MILLIS));
 
         ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_ALARM_ATTRS,
-                mock(IExternalVibrationController.class));
+                AUDIO_ALARM_ATTRS, mock(IExternalVibrationController.class));
         ExternalVibrationScale scale =
                 mExternalVibratorService.onExternalVibrationStart(externalVibration);
         assertNotEquals(ExternalVibrationScale.ScaleLevel.SCALE_MUTE, scale.scaleLevel);
@@ -2460,8 +2495,7 @@ public class VibratorManagerServiceTest {
         assertTrue(waitUntil(s -> s.isVibrating(1), service, TEST_TIMEOUT_MILLIS));
 
         ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_ALARM_ATTRS,
-                mock(IExternalVibrationController.class));
+                AUDIO_ALARM_ATTRS, mock(IExternalVibrationController.class));
         ExternalVibrationScale scale =
                 mExternalVibratorService.onExternalVibrationStart(externalVibration);
         // External vibration is ignored.
@@ -2546,8 +2580,7 @@ public class VibratorManagerServiceTest {
         assertTrue(waitUntil(s -> s.isVibrating(1), service, TEST_TIMEOUT_MILLIS));
 
         ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_NOTIFICATION_ATTRS,
-                mock(IExternalVibrationController.class));
+                AUDIO_NOTIFICATION_ATTRS, mock(IExternalVibrationController.class));
         ExternalVibrationScale scale =
                 mExternalVibratorService.onExternalVibrationStart(externalVibration);
         // New vibration is ignored.
@@ -2680,8 +2713,7 @@ public class VibratorManagerServiceTest {
                 VibrationParamGenerator.generateVibrationParams(vibrationScales),
                 mFakeVibratorController);
         ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_ALARM_ATTRS,
-                mock(IExternalVibrationController.class));
+                AUDIO_ALARM_ATTRS, mock(IExternalVibrationController.class));
         ExternalVibrationScale scale =
                 mExternalVibratorService.onExternalVibrationStart(externalVibration);
         mExternalVibratorService.onExternalVibrationStop(externalVibration);
@@ -2690,8 +2722,7 @@ public class VibratorManagerServiceTest {
         verify(mVibratorFrameworkStatsLoggerMock).logVibrationAdaptiveHapticScale(UID, 0.7f);
 
         externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_NOTIFICATION_ATTRS,
-                mock(IExternalVibrationController.class));
+                AUDIO_NOTIFICATION_ATTRS, mock(IExternalVibrationController.class));
         scale = mExternalVibratorService.onExternalVibrationStart(externalVibration);
         mExternalVibratorService.onExternalVibrationStop(externalVibration);
 
@@ -2702,8 +2733,7 @@ public class VibratorManagerServiceTest {
                 .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
                 .build();
         externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                ringtoneAudioAttrs,
-                mock(IExternalVibrationController.class));
+                ringtoneAudioAttrs, mock(IExternalVibrationController.class));
         scale = mExternalVibratorService.onExternalVibrationStart(externalVibration);
         mExternalVibratorService.onExternalVibrationStop(externalVibration);
 
@@ -2727,8 +2757,7 @@ public class VibratorManagerServiceTest {
                 VibrationParamGenerator.generateVibrationParams(vibrationScales),
                 mFakeVibratorController);
         ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_ALARM_ATTRS,
-                mock(IExternalVibrationController.class));
+                AUDIO_ALARM_ATTRS, mock(IExternalVibrationController.class));
         ExternalVibrationScale scale =
                 mExternalVibratorService.onExternalVibrationStart(externalVibration);
         mExternalVibratorService.onExternalVibrationStop(externalVibration);
@@ -2736,8 +2765,7 @@ public class VibratorManagerServiceTest {
         assertEquals(scale.adaptiveHapticsScale, 1f, 0);
 
         externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_NOTIFICATION_ATTRS,
-                mock(IExternalVibrationController.class));
+                AUDIO_NOTIFICATION_ATTRS, mock(IExternalVibrationController.class));
         scale = mExternalVibratorService.onExternalVibrationStart(externalVibration);
         mExternalVibratorService.onExternalVibrationStop(externalVibration);
 
@@ -3270,10 +3298,10 @@ public class VibratorManagerServiceTest {
         IVibrationSessionCallback callback = mockSessionCallbacks();
 
         IBinder firstToken = mock(IBinder.class);
-        IExternalVibrationController controller = mock(IExternalVibrationController.class);
+        IExternalVibrationController externalVibrationController =
+                mock(IExternalVibrationController.class);
         ExternalVibration externalVibration = new ExternalVibration(UID, PACKAGE_NAME,
-                AUDIO_ALARM_ATTRS,
-                controller, firstToken);
+                AUDIO_ALARM_ATTRS, externalVibrationController, firstToken);
         ExternalVibrationScale scale =
                 mExternalVibratorService.onExternalVibrationStart(externalVibration);
 
@@ -3284,7 +3312,7 @@ public class VibratorManagerServiceTest {
 
         assertNotEquals(ExternalVibrationScale.ScaleLevel.SCALE_MUTE, scale.scaleLevel);
         // The external vibration should have been cancelled
-        verify(controller).mute();
+        verify(externalVibrationController).mute();
         assertEquals(Arrays.asList(false, true, false),
                 mVibratorProviders.get(1).getExternalControlStates());
         verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] { 1 }));

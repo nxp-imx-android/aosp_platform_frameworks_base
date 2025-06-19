@@ -36,6 +36,6 @@
         android:id="@+id/app_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        style="@style/Widget.PackageInstaller.TextView.AppLabel"/>
+        style="?attr/textAppearanceInstallerAppLabel"/>
 
 </LinearLayout>
