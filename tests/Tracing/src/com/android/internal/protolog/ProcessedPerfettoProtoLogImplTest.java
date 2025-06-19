@@ -33,7 +33,6 @@ import static org.mockito.Mockito.when;
 
 import static java.io.File.createTempFile;
 
-import android.os.Handler;
 import android.os.SystemClock;
 import android.platform.test.annotations.Presubmit;
 import android.tools.ScenarioBuilder;
@@ -72,6 +71,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -1002,7 +1002,7 @@ public class ProcessedPerfettoProtoLogImplTest {
         final CountDownLatch releaseExecutorLatch = new CountDownLatch(1);
 
         // Submit task to block the executor.
-        sProtoLog.mBackgroundHandler.post(() -> {
+        sProtoLog.mSingleThreadedExecutor.execute(() -> {
             executorBlockedLatch.countDown();
             try {
                 if (!releaseExecutorLatch.await(60, TimeUnit.SECONDS)) {
@@ -1099,7 +1099,7 @@ public class ProcessedPerfettoProtoLogImplTest {
                     sProtoLog.isProtoEnabled());
 
             // Submit a task that will block the executor queue.
-            sProtoLog.mBackgroundHandler.post(() -> {
+            sProtoLog.mSingleThreadedExecutor.execute(() -> {
                 try {
                     blockingTaskStartedExecution.set(true);
                     processingHasStartedLatch.countDown(); // Signal that this task has started
@@ -1141,7 +1141,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             allowProcessingToContinueLatch.countDown();
 
             // Stop tracing immediately. The implementation should wait for the
-            // mBackgroundHandler to process all queued messages (including the
+            // mSingleThreadedExecutor to process all queued messages (including the
             // now-unblocked first task and all subsequent log messages).
         } finally {
             // Ensure the latch is always counted down if an exception occurred before stop,
@@ -1179,11 +1179,11 @@ public class ProcessedPerfettoProtoLogImplTest {
         final StringBuilder mutableArg = new StringBuilder(initialValue);
         final String logMessageFormat = "Test with mutable arg: %s";
 
-        final Handler backgroundHandler = sProtoLog.mBackgroundHandler;
+        final ExecutorService backgroundHandler = sProtoLog.mSingleThreadedExecutor;
 
         // Task to pause the background thread.
         final CountDownLatch backgroundThreadPausedLatch = new CountDownLatch(1);
-        backgroundHandler.post(() -> {
+        backgroundHandler.execute(() -> {
             try {
                 backgroundThreadPausedLatch.await();
             } catch (InterruptedException e) {
