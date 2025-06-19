@@ -98,7 +98,6 @@ import com.android.systemui.statusbar.policy.IndividualSensorPrivacyControllerIm
 import com.android.systemui.statusbar.policy.SensorPrivacyController;
 import com.android.systemui.statusbar.policy.SensorPrivacyControllerImpl;
 import com.android.systemui.toast.ToastModule;
-import com.android.systemui.topwindoweffects.dagger.SqueezeEffectRepositoryModule;
 import com.android.systemui.topwindoweffects.dagger.TopLevelWindowEffectsModule;
 import com.android.systemui.touchpad.tutorial.TouchpadTutorialModule;
 import com.android.systemui.unfold.SysUIUnfoldStartableModule;
@@ -174,7 +173,6 @@ import javax.inject.Provider;
         StatusBarPhoneModule.class,
         SystemActionsModule.class,
         ShadeModule.class,
-        SqueezeEffectRepositoryModule.class,
         StartCentralSurfacesModule.class,
         SceneContainerFrameworkModule.class,
         SysUICoroutinesModule.class,
