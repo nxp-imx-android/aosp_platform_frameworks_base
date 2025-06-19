@@ -32,4 +32,14 @@
         <attr name="circle_radius_pressed_percent" format="fraction" />
     </declare-styleable>
     <!-- END: Ported from WearableSupport -->
+
+    <!-- Text color, typeface, size, and style for "app label" text. -->
+    <attr name="textAppearanceInstallerAppLabel" format="reference" />
+    <!-- Text color, typeface, size, and style for "custom message" text. -->
+    <attr name="textAppearanceInstallerCustomMessage" format="reference" />
+    <!-- Text color, typeface, size, and style for "keep data heading" text. -->
+    <attr name="textAppearanceInstallerKeepDataHeading" format="reference" />
+    <!-- Text color, typeface, size, and style for "keep data sub heading" text. -->
+    <attr name="textAppearanceInstallerKeepDataSubHeading" format="reference" />
+
 </resources>
