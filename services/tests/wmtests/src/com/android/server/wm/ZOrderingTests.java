@@ -538,6 +538,7 @@ public class ZOrderingTests extends WindowTestsBase {
 
         assertEquals(imeAppTarget, mDisplayContent.mImeScreenshot.getImeTarget());
         assertNotNull(mDisplayContent.mImeScreenshot);
+        assertNotNull(imeBuffer);
         assertZOrderGreaterThan(mTransaction, mDisplayContent.mImeScreenshot.getSurface(),
                 imeAppTarget.mSurfaceControl);
     }
