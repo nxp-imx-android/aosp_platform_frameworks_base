@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.systemstatusicons.connecteddisplay.ui.vie
 
 import android.content.testableContext
 import android.platform.test.annotations.EnableFlags
+import android.view.Display
 import android.view.Display.FLAG_SECURE
 import android.view.Display.TYPE_EXTERNAL
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -35,6 +36,8 @@ import com.android.systemui.res.R
 import com.android.systemui.statusbar.systemstatusicons.SystemStatusIconsInCompose
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.runBlocking
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -49,6 +52,9 @@ class ConnectedDisplayIconViewModelTest : SysuiTestCase() {
         kosmos.connectedDisplayIconViewModelFactory.create(kosmos.testableContext).apply {
             activateIn(kosmos.testScope)
         }
+
+    @Before
+    fun setUp() = runBlocking { kosmos.displayRepository.removeDisplay(Display.DEFAULT_DISPLAY) }
 
     @Test
     fun icon_visible_isCorrect() =

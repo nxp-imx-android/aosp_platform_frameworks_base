@@ -31,7 +31,6 @@ val Kosmos.systemUIDialogFactory: SystemUIDialogFactory by
         SystemUIDialogFactory(
             applicationContext,
             systemUIDialogManager,
-            sysuiStateInteractor,
             broadcastDispatcher,
             dialogTransitionAnimator,
         )
@@ -45,7 +44,6 @@ val Kosmos.systemUIDialogDotFactory by
         SystemUIDialog.Factory(
             applicationContext,
             systemUIDialogManager,
-            sysuiStateInteractor,
             broadcastDispatcher,
             dialogTransitionAnimator,
         )

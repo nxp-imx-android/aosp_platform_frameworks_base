@@ -45,12 +45,27 @@ constructor(
         if (SysUiState.DEBUG) {
             Log.d(TAG, "Setting flags $stateChanges only for display $targetDisplayId")
         }
+        setFlagsExclusivelyToDisplays(setOf(targetDisplayId), stateChanges)
+    }
+
+    /**
+     * Sets the flags based on [stateChanges] on the given [displays] while making sure that those
+     * flags are cleared (i.e., set to false) on all other displays.
+     *
+     * In other words, this function makes sure that any change introduced by [stateChanges] in the
+     * [SysUiState] is only present on displays represented by [displays] and is not present on any
+     * other display's [SysUiState].
+     */
+    fun setFlagsExclusivelyToDisplays(displays: Set<Int>, stateChanges: StateChange) {
+        if (SysUiState.DEBUG) {
+            Log.d(TAG, "Setting flags $stateChanges exclusively to displays $displays")
+        }
         displayRepository.displays.value
             .mapNotNull { sysUIStateRepository[it.displayId] }
             .apply {
                 // Let's first modify all states, without committing changes ...
                 forEach { displaySysUIState ->
-                    if (displaySysUIState.displayId == targetDisplayId) {
+                    if (displaySysUIState.displayId in displays) {
                         stateChanges.applyTo(displaySysUIState)
                     } else {
                         stateChanges.clearFrom(displaySysUIState)

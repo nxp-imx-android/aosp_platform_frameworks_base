@@ -26,7 +26,6 @@ import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.bluetooth.ui.viewModel.BluetoothDetailsContentViewModel
-import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor
 import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.shade.data.repository.shadeDialogContextInteractor
@@ -34,10 +33,7 @@ import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
 import com.android.systemui.testKosmos
-import com.android.systemui.util.mockito.any
-import com.android.systemui.util.mockito.whenever
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.TestScope
 import org.junit.Before
 import org.junit.Rule
@@ -49,6 +45,8 @@ import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.junit.MockitoJUnit
 import org.mockito.junit.MockitoRule
+import org.mockito.kotlin.any
+import org.mockito.kotlin.whenever
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -73,7 +71,6 @@ class BluetoothTileDialogDelegateTest : SysuiTestCase() {
 
     @Mock private lateinit var sysuiDialogFactory: SystemUIDialog.Factory
     @Mock private lateinit var dialogManager: SystemUIDialogManager
-    @Mock private lateinit var sysUIStateDisplaysInteractor: SysUIStateDisplaysInteractor
     @Mock private lateinit var dialogTransitionAnimator: DialogTransitionAnimator
 
     private val uiProperties =
@@ -82,7 +79,6 @@ class BluetoothTileDialogDelegateTest : SysuiTestCase() {
             isAutoOnToggleFeatureAvailable = ENABLED,
         )
 
-    private lateinit var scheduler: TestCoroutineScheduler
     private lateinit var dispatcher: CoroutineDispatcher
     private lateinit var testScope: TestScope
     private lateinit var mBluetoothTileDialogDelegate: BluetoothTileDialogDelegate
@@ -106,19 +102,17 @@ class BluetoothTileDialogDelegateTest : SysuiTestCase() {
                 kosmos.shadeModeInteractor,
             )
 
-        whenever(sysuiDialogFactory.create(any(SystemUIDialog.Delegate::class.java), any()))
-            .thenAnswer {
-                SystemUIDialog(
-                    mContext,
-                    0,
-                    SystemUIDialog.DEFAULT_DISMISS_ON_DEVICE_LOCK,
-                    dialogManager,
-                    sysUIStateDisplaysInteractor,
-                    fakeBroadcastDispatcher,
-                    dialogTransitionAnimator,
-                    it.getArgument(0),
-                )
-            }
+        whenever(sysuiDialogFactory.create(any<SystemUIDialog.Delegate>(), any())).thenAnswer {
+            SystemUIDialog(
+                mContext,
+                0,
+                SystemUIDialog.DEFAULT_DISMISS_ON_DEVICE_LOCK,
+                dialogManager,
+                fakeBroadcastDispatcher,
+                dialogTransitionAnimator,
+                it.getArgument(0),
+            )
+        }
 
         whenever(bluetoothDetailsContentManagerFactory.create(any(), anyInt(), anyBoolean(), any()))
             .thenReturn(bluetoothDetailsContentManager)

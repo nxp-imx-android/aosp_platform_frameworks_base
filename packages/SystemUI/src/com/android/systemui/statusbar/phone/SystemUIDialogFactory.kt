@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.phone
 import android.content.Context
 import com.android.systemui.animation.DialogTransitionAnimator
 import com.android.systemui.broadcast.BroadcastDispatcher
-import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteractor
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.util.Assert
 import javax.inject.Inject
@@ -30,7 +29,6 @@ class SystemUIDialogFactory
 constructor(
     @Application val applicationContext: Context,
     private val dialogManager: SystemUIDialogManager,
-    private val sysuiStateInteractor: SysUIStateDisplaysInteractor,
     private val broadcastDispatcher: BroadcastDispatcher,
     private val dialogTransitionAnimator: DialogTransitionAnimator,
 ) {
@@ -57,7 +55,6 @@ constructor(
             theme,
             dismissOnDeviceLock,
             dialogManager,
-            sysuiStateInteractor,
             broadcastDispatcher,
             dialogTransitionAnimator,
             dialogDelegate,

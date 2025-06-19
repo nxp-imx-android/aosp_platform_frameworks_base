@@ -50,7 +50,7 @@ class SystemUIBottomSheetDialogTest : SysuiTestCase() {
     private val configurationController = mock<ConfigurationController>()
     private val config = mock<Configuration>()
     private val delegate = mock<DialogDelegate<Dialog>>()
-    private val dialogManager = kosmos.systemUIDialogManager
+    private val dialogManager = kosmos.mockSystemUIDialogManager
     private val defaultDisplaySysuiState = kosmos.sysUiState
 
     private lateinit var dialog: SystemUIBottomSheetDialog

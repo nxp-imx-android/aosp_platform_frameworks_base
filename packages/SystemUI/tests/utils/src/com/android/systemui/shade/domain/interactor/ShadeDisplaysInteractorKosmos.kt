@@ -27,7 +27,7 @@ import com.android.systemui.shade.data.repository.fakeShadeDisplaysRepository
 import com.android.systemui.shade.data.repository.shadeExpansionIntent
 import com.android.systemui.statusbar.notification.domain.interactor.activeNotificationsInteractor
 import com.android.systemui.statusbar.notification.stack.notificationStackRebindingHider
-import com.android.systemui.statusbar.phone.systemUIDialogManager
+import com.android.systemui.statusbar.phone.mockSystemUIDialogManager
 import com.android.systemui.statusbar.policy.configurationController
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -66,7 +66,7 @@ val Kosmos.shadeDisplaysInteractor by
 val Kosmos.shadeDisplayDialogInteractor by
     Kosmos.Fixture {
         ShadeDisplaysDialogInteractor(
-            systemUIDialogManager,
+            mockSystemUIDialogManager,
             fakeShadeDisplaysRepository,
             testScope.backgroundScope,
         )
