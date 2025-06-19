@@ -142,8 +142,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 public class VibratorManagerServiceTest {
@@ -188,8 +186,6 @@ public class VibratorManagerServiceTest {
     public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Mock
-    private VibratorManagerService.NativeWrapper mNativeWrapperMock;
-    @Mock
     private PackageManagerInternal mPackageManagerInternalMock;
     @Mock
     private PowerManagerInternal mPowerManagerInternalMock;
@@ -224,6 +220,7 @@ public class VibratorManagerServiceTest {
     private Context mContextSpy;
     private TestLooper mTestLooper;
     private FakeVibrator mVibrator;
+    private HalVibratorManagerHelper mHalVibratorManagerHelper;
     private FakeVibratorController mFakeVibratorController;
     private PowerManagerInternal.LowPowerModeListener mRegisteredPowerModeListener;
     private VibratorManagerService.ExternalVibratorService mExternalVibratorService;
@@ -239,6 +236,7 @@ public class VibratorManagerServiceTest {
         mInputManagerGlobalSession = InputManagerGlobal.createTestSession(mIInputManagerMock);
         mVibrationConfig = new VibrationConfig(mContextSpy.getResources());
         mFakeVibratorController = new FakeVibratorController(mTestLooper.getLooper());
+        mHalVibratorManagerHelper = new HalVibratorManagerHelper(mTestLooper.getLooper());
 
         ContentResolver contentResolver = mSettingsProviderRule.mockContentResolver(mContextSpy);
         when(mContextSpy.getContentResolver()).thenReturn(contentResolver);
@@ -329,11 +327,6 @@ public class VibratorManagerServiceTest {
                 mContextSpy,
                 new VibratorManagerService.Injector() {
                     @Override
-                    VibratorManagerService.NativeWrapper getNativeWrapper() {
-                        return mNativeWrapperMock;
-                    }
-
-                    @Override
                     Handler createHandler(Looper looper) {
                         return new Handler(mTestLooper.getLooper());
                     }
@@ -351,6 +344,11 @@ public class VibratorManagerServiceTest {
                     @Override
                     HalVibrator createHalVibrator(int vibratorId) {
                         return mVibratorProviders.get(vibratorId).newVibratorController(vibratorId);
+                    }
+
+                    @Override
+                    HalVibratorManager createHalVibratorManager() {
+                        return mHalVibratorManagerHelper.newNativeHalVibratorManager();
                     }
 
                     @Override
@@ -394,9 +392,9 @@ public class VibratorManagerServiceTest {
     public void createService_initializesNativeManagerServiceAndVibrators() {
         mockVibrators(1, 2);
         createService();
-        verify(mNativeWrapperMock).init(any());
-        assertTrue(mVibratorProviders.get(1).isInitialized());
-        assertTrue(mVibratorProviders.get(2).isInitialized());
+        assertThat(mHalVibratorManagerHelper.getConnectCount()).isEqualTo(1);
+        assertThat(mVibratorProviders.get(1).isInitialized()).isTrue();
+        assertThat(mVibratorProviders.get(2).isInitialized()).isTrue();
     }
 
     @Test
@@ -410,6 +408,16 @@ public class VibratorManagerServiceTest {
         assertEquals(1, mVibratorProviders.get(2).getOffCount());
         assertEquals(Arrays.asList(false), mVibratorProviders.get(1).getExternalControlStates());
         assertEquals(Arrays.asList(false), mVibratorProviders.get(2).getExternalControlStates());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
+    public void createService_resetsVibratorManager() {
+        mockVibrators(1, 2);
+
+        createService();
+        assertThat(mHalVibratorManagerHelper.getCancelSyncedCount()).isEqualTo(1);
+        assertThat(mHalVibratorManagerHelper.getClearSessionsCount()).isEqualTo(1);
     }
 
     @Test
@@ -462,7 +470,7 @@ public class VibratorManagerServiceTest {
 
     @Test
     public void getVibratorIds_withNullResultFromNative_returnsEmptyArray() {
-        when(mNativeWrapperMock.getVibratorIds()).thenReturn(null);
+        mHalVibratorManagerHelper.setVibratorIds(null);
         assertArrayEquals(new int[0], createSystemReadyService().getVibratorIds());
     }
 
@@ -1524,34 +1532,21 @@ public class VibratorManagerServiceTest {
         // The native callback will be dispatched manually in this test.
         mTestLooper.stopAutoDispatchAndIgnoreExceptions();
 
-        ArgumentCaptor<VibratorManagerService.VibratorManagerNativeCallbacks> listenerCaptor =
-                ArgumentCaptor.forClass(
-                        VibratorManagerService.VibratorManagerNativeCallbacks.class);
-        verify(mNativeWrapperMock).init(listenerCaptor.capture());
-
-        CountDownLatch triggerCountDown = new CountDownLatch(1);
-        // Mock trigger callback on registered listener right after the synced vibration starts.
-        when(mNativeWrapperMock.prepareSynced(eq(new int[]{1, 2}))).thenReturn(true);
-        when(mNativeWrapperMock.triggerSynced(anyLong())).then(answer -> {
-            listenerCaptor.getValue().onSyncedVibrationComplete(answer.getArgument(0));
-            triggerCountDown.countDown();
-            return true;
-        });
-
         VibrationEffect composed = VibrationEffect.startComposition()
                 .addPrimitive(PRIMITIVE_CLICK, 1, 100)
                 .compose();
         CombinedVibration effect = CombinedVibration.createParallel(composed);
 
-        vibrate(service, effect, ALARM_ATTRS);
-        // VibrationThread will start this vibration async, so wait until vibration is triggered.
-        triggerCountDown.await(TEST_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+        vibrateAndWaitUntilFinished(service, effect, ALARM_ATTRS);
 
-        verify(mNativeWrapperMock).prepareSynced(eq(new int[]{1, 2}));
-        verify(mNativeWrapperMock).triggerSynced(anyLong());
-        PrimitiveSegment expected = new PrimitiveSegment(PRIMITIVE_CLICK, 1, 100);
-        assertEquals(Arrays.asList(expected), mVibratorProviders.get(1).getAllEffectSegments());
-        assertEquals(Arrays.asList(expected), mVibratorProviders.get(2).getAllEffectSegments());
+        PrimitiveSegment expected = new PrimitiveSegment(
+                VibrationEffect.Composition.PRIMITIVE_CLICK, 1, 100);
+        assertThat(mHalVibratorManagerHelper.getPrepareSyncedCount()).isEqualTo(1);
+        assertThat(mHalVibratorManagerHelper.getTriggerSyncedCount()).isEqualTo(1);
+        assertThat(mVibratorProviders.get(1).getAllEffectSegments())
+                .containsExactly(expected).inOrder();
+        assertThat(mVibratorProviders.get(2).getAllEffectSegments())
+                .containsExactly(expected).inOrder();
 
         // VibrationThread needs some time to react to native callbacks and stop the vibrator.
         assertTrue(waitUntil(s -> !s.isVibrating(1), service, TEST_TIMEOUT_MILLIS));
@@ -1564,8 +1559,6 @@ public class VibratorManagerServiceTest {
                 IVibratorManager.CAP_PREPARE_COMPOSE, IVibratorManager.CAP_MIXED_TRIGGER_PERFORM,
                 IVibratorManager.CAP_MIXED_TRIGGER_COMPOSE);
         mockVibrators(1, 2);
-        when(mNativeWrapperMock.prepareSynced(eq(new int[]{1, 2}))).thenReturn(true);
-        when(mNativeWrapperMock.triggerSynced(anyLong())).thenReturn(true);
         FakeVibratorControllerProvider fakeVibrator1 = mVibratorProviders.get(1);
         fakeVibrator1.setSupportedEffects(EFFECT_CLICK);
         mVibratorProviders.get(2).setCapabilities(IVibrator.CAP_COMPOSE_EFFECTS);
@@ -1580,9 +1573,8 @@ public class VibratorManagerServiceTest {
                 .combine();
         vibrateAndWaitUntilFinished(service, effect, ALARM_ATTRS);
 
-        verify(mNativeWrapperMock).prepareSynced(eq(new int[]{1, 2}));
-        verify(mNativeWrapperMock).triggerSynced(anyLong());
-        verify(mNativeWrapperMock).cancelSynced(); // Trigger on service creation only.
+        assertThat(mHalVibratorManagerHelper.getPrepareSyncedCount()).isEqualTo(1);
+        assertThat(mHalVibratorManagerHelper.getTriggerSyncedCount()).isEqualTo(1);
     }
 
     @Test
@@ -1602,17 +1594,17 @@ public class VibratorManagerServiceTest {
                 .combine();
         vibrateAndWaitUntilFinished(service, effect, ALARM_ATTRS);
 
-        verify(mNativeWrapperMock, never()).prepareSynced(any());
-        verify(mNativeWrapperMock, never()).triggerSynced(anyLong());
-        verify(mNativeWrapperMock).cancelSynced(); // Trigger on service creation only.
+        assertThat(mHalVibratorManagerHelper.getPrepareSyncedCount()).isEqualTo(0);
+        assertThat(mHalVibratorManagerHelper.getTriggerSyncedCount()).isEqualTo(0);
     }
 
     @Test
     public void vibrate_withMultipleVibratorsPrepareFailed_skipTrigger() throws Exception {
         mockCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_PREPARE_ON);
         mockVibrators(1, 2);
-        when(mNativeWrapperMock.prepareSynced(any())).thenReturn(false);
+        mHalVibratorManagerHelper.setPrepareSyncedToFail();
         VibratorManagerService service = createSystemReadyService();
+        assertThat(mHalVibratorManagerHelper.getCancelSyncedCount()).isEqualTo(1);
 
         CombinedVibration effect = CombinedVibration.startParallel()
                 .addVibrator(1, VibrationEffect.createOneShot(10, 50))
@@ -1620,18 +1612,17 @@ public class VibratorManagerServiceTest {
                 .combine();
         vibrateAndWaitUntilFinished(service, effect, ALARM_ATTRS);
 
-        verify(mNativeWrapperMock).prepareSynced(eq(new int[]{1, 2}));
-        verify(mNativeWrapperMock, never()).triggerSynced(anyLong());
-        verify(mNativeWrapperMock).cancelSynced(); // Trigger on service creation only.
+        assertThat(mHalVibratorManagerHelper.getTriggerSyncedCount()).isEqualTo(0);
+        assertThat(mHalVibratorManagerHelper.getCancelSyncedCount()).isEqualTo(1); // Not triggered
     }
 
     @Test
     public void vibrate_withMultipleVibratorsTriggerFailed_cancelPreparedSynced() throws Exception {
         mockCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_PREPARE_ON);
         mockVibrators(1, 2);
-        when(mNativeWrapperMock.prepareSynced(eq(new int[]{1, 2}))).thenReturn(true);
-        when(mNativeWrapperMock.triggerSynced(anyLong())).thenReturn(false);
+        mHalVibratorManagerHelper.setTriggerSyncedToFail();
         VibratorManagerService service = createSystemReadyService();
+        assertThat(mHalVibratorManagerHelper.getCancelSyncedCount()).isEqualTo(1);
 
         CombinedVibration effect = CombinedVibration.startParallel()
                 .addVibrator(1, VibrationEffect.createOneShot(10, 50))
@@ -1639,9 +1630,8 @@ public class VibratorManagerServiceTest {
                 .combine();
         vibrateAndWaitUntilFinished(service, effect, ALARM_ATTRS);
 
-        verify(mNativeWrapperMock).prepareSynced(eq(new int[]{1, 2}));
-        verify(mNativeWrapperMock).triggerSynced(anyLong());
-        verify(mNativeWrapperMock, times(2)).cancelSynced(); // Trigger on service creation too.
+        assertThat(mHalVibratorManagerHelper.getPrepareSyncedCount()).isEqualTo(1);
+        assertThat(mHalVibratorManagerHelper.getCancelSyncedCount()).isEqualTo(2); // Triggered
     }
 
     @Test
@@ -2889,7 +2879,7 @@ public class VibratorManagerServiceTest {
         mockVibrators(vibratorId);
         VibratorManagerService service = createSystemReadyService();
 
-        IVibrationSessionCallback callback = mock(IVibrationSessionCallback.class);
+        IVibrationSessionCallback callback = mockSessionCallbacks();
         assertThrows("Expected starting session without feature flag to fail!",
                 UnsupportedOperationException.class,
                 () -> startSession(service, RINGTONE_ATTRS, callback, vibratorId));
@@ -2897,7 +2887,7 @@ public class VibratorManagerServiceTest {
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
 
-        verify(mNativeWrapperMock, never()).startSession(anyLong(), any(int[].class));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(0);
         verify(mVibratorFrameworkStatsLoggerMock, never())
                 .logVibrationVendorSessionStarted(anyInt());
         verify(mVibratorFrameworkStatsLoggerMock, never())
@@ -2916,7 +2906,7 @@ public class VibratorManagerServiceTest {
         mockVibrators(vibratorId);
         VibratorManagerService service = createSystemReadyService();
 
-        IVibrationSessionCallback callback = mock(IVibrationSessionCallback.class);
+        IVibrationSessionCallback callback = mockSessionCallbacks();
         VendorVibrationSession session = startSession(service, RINGTONE_ATTRS,
                 callback, vibratorId);
 
@@ -2924,7 +2914,7 @@ public class VibratorManagerServiceTest {
         stopAutoDispatcherAndDispatchAll();
 
         assertThat(session.getStatus()).isEqualTo(Status.IGNORED_UNSUPPORTED);
-        verify(mNativeWrapperMock, never()).startSession(anyLong(), any(int[].class));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(0);
         verify(mVibratorFrameworkStatsLoggerMock, never())
                 .logVibrationVendorSessionStarted(anyInt());
         verify(mVibratorFrameworkStatsLoggerMock, never())
@@ -2951,7 +2941,7 @@ public class VibratorManagerServiceTest {
         stopAutoDispatcherAndDispatchAll();
 
         assertThat(session).isNull();
-        verify(mNativeWrapperMock, never()).startSession(anyLong(), any(int[].class));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(0);
         verify(mVibratorFrameworkStatsLoggerMock, never())
                 .logVibrationVendorSessionStarted(anyInt());
         verify(mVibratorFrameworkStatsLoggerMock, never())
@@ -2968,7 +2958,7 @@ public class VibratorManagerServiceTest {
         VibratorManagerService service = createSystemReadyService();
 
         int[] nullIds = null;
-        IVibrationSessionCallback callback = mock(IVibrationSessionCallback.class);
+        IVibrationSessionCallback callback = mockSessionCallbacks();
         VendorVibrationSession session = startSession(service, RINGTONE_ATTRS, callback, nullIds);
         assertThat(session.getStatus()).isEqualTo(Status.IGNORED_UNSUPPORTED);
 
@@ -2979,7 +2969,7 @@ public class VibratorManagerServiceTest {
         stopAutoDispatcherAndDispatchAll();
 
         assertThat(session.getStatus()).isEqualTo(Status.IGNORED_UNSUPPORTED);
-        verify(mNativeWrapperMock, never()).startSession(anyLong(), any(int[].class));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(0);
         verify(mVibratorFrameworkStatsLoggerMock, never())
                 .logVibrationVendorSessionStarted(anyInt());
         verify(mVibratorFrameworkStatsLoggerMock, never())
@@ -2996,14 +2986,8 @@ public class VibratorManagerServiceTest {
     public void startVibrationSession_badVibratorId_failsToStart() throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1, 2);
-        when(mNativeWrapperMock.startSession(anyLong(), any(int[].class))).thenReturn(false);
-        doReturn(false).when(mNativeWrapperMock).startSession(anyLong(), eq(new int[] {1, 3}));
-        doReturn(true).when(mNativeWrapperMock).startSession(anyLong(), eq(new int[] {1, 2}));
         VibratorManagerService service = createSystemReadyService();
-
-        IBinder token = mock(IBinder.class);
-        IVibrationSessionCallback callback = mock(IVibrationSessionCallback.class);
-        doReturn(token).when(callback).asBinder();
+        IVibrationSessionCallback callback = mockSessionCallbacks();
 
         VendorVibrationSession session = startSession(service, RINGTONE_ATTRS, callback, 1, 3);
 
@@ -3011,7 +2995,7 @@ public class VibratorManagerServiceTest {
         stopAutoDispatcherAndDispatchAll();
 
         assertThat(session.getStatus()).isEqualTo(Status.IGNORED_UNSUPPORTED);
-        verify(mNativeWrapperMock, never()).startSession(anyLong(), any(int[].class));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(0);
         verify(mVibratorFrameworkStatsLoggerMock, never())
                 .logVibrationVendorSessionStarted(anyInt());
         verify(mVibratorFrameworkStatsLoggerMock, never())
@@ -3029,16 +3013,17 @@ public class VibratorManagerServiceTest {
     public void startVibrationSession_thenFinish_returnsSuccessAfterCallback() throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1, 2);
-        VibratorManagerService service = createSystemReadyService();
         int sessionFinishDelayMs = 200;
-        IVibrationSessionCallback callback = mockSessionCallbacks(sessionFinishDelayMs);
+        mHalVibratorManagerHelper.setSessionEndDelayMs(sessionFinishDelayMs);
+        VibratorManagerService service = createSystemReadyService();
+        IVibrationSessionCallback callback = mockSessionCallbacks();
 
         VendorVibrationSession session = startSession(service, RINGTONE_ATTRS, callback, 1, 2);
 
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
 
-        verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] {1, 2}));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
         ArgumentCaptor<IVibrationSession> captor = ArgumentCaptor.forClass(IVibrationSession.class);
         verify(callback).onStarted(captor.capture());
 
@@ -3056,6 +3041,8 @@ public class VibratorManagerServiceTest {
         verify(callback).onFinishing();
         verify(callback).onFinished(eq(android.os.vibrator.VendorVibrationSession.STATUS_SUCCESS));
 
+        assertThat(mHalVibratorManagerHelper.getEndSessionCount()).isEqualTo(1);
+        assertThat(mHalVibratorManagerHelper.getAbortSessionCount()).isEqualTo(0);
         verify(mVibratorFrameworkStatsLoggerMock).logVibrationVendorSessionStarted(eq(UID));
         verify(mVibratorFrameworkStatsLoggerMock)
                 .logVibrationVendorSessionVibrations(eq(UID), eq(0));
@@ -3068,16 +3055,17 @@ public class VibratorManagerServiceTest {
     public void startVibrationSession_thenSendCancelSignal_cancelsSession() throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1, 2);
-        VibratorManagerService service = createSystemReadyService();
         int sessionFinishDelayMs = 200;
-        IVibrationSessionCallback callback = mockSessionCallbacks(sessionFinishDelayMs);
+        mHalVibratorManagerHelper.setSessionEndDelayMs(sessionFinishDelayMs);
+        VibratorManagerService service = createSystemReadyService();
+        IVibrationSessionCallback callback = mockSessionCallbacks();
 
         VendorVibrationSession session = startSession(service, RINGTONE_ATTRS, callback, 1, 2);
 
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
 
-        verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] {1, 2}));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
         ArgumentCaptor<IVibrationSession> captor = ArgumentCaptor.forClass(IVibrationSession.class);
         verify(callback).onStarted(captor.capture());
 
@@ -3088,6 +3076,8 @@ public class VibratorManagerServiceTest {
         verify(callback).onFinishing();
         verify(callback).onFinished(eq(android.os.vibrator.VendorVibrationSession.STATUS_CANCELED));
 
+        assertThat(mHalVibratorManagerHelper.getEndSessionCount()).isEqualTo(0);
+        assertThat(mHalVibratorManagerHelper.getAbortSessionCount()).isEqualTo(1);
         verify(mVibratorFrameworkStatsLoggerMock).logVibrationVendorSessionStarted(eq(UID));
         verify(mVibratorFrameworkStatsLoggerMock)
                 .logVibrationVendorSessionVibrations(eq(UID), eq(0));
@@ -3100,6 +3090,7 @@ public class VibratorManagerServiceTest {
     public void startVibrationSession_thenCancel_returnsCancelStatus() throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1, 2);
+        mHalVibratorManagerHelper.setSessionEndDelayMs(TEST_TIMEOUT_MILLIS);
         VibratorManagerService service = createSystemReadyService();
         IVibrationSessionCallback callback = mockSessionCallbacks();
 
@@ -3108,7 +3099,7 @@ public class VibratorManagerServiceTest {
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
 
-        verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] {1, 2}));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
         ArgumentCaptor<IVibrationSession> captor = ArgumentCaptor.forClass(IVibrationSession.class);
         verify(callback).onStarted(captor.capture());
 
@@ -3118,6 +3109,8 @@ public class VibratorManagerServiceTest {
         assertThat(session.getStatus()).isEqualTo(Status.CANCELLED_BY_USER);
         verify(callback).onFinishing();
         verify(callback).onFinished(eq(android.os.vibrator.VendorVibrationSession.STATUS_CANCELED));
+        assertThat(mHalVibratorManagerHelper.getEndSessionCount()).isEqualTo(0);
+        assertThat(mHalVibratorManagerHelper.getAbortSessionCount()).isEqualTo(1);
     }
 
     @Test
@@ -3126,6 +3119,7 @@ public class VibratorManagerServiceTest {
             throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1, 2);
+        mHalVibratorManagerHelper.setSessionEndDelayMs(TEST_TIMEOUT_MILLIS);
         VibratorManagerService service = createSystemReadyService();
         IVibrationSessionCallback callback = mockSessionCallbacks();
 
@@ -3134,7 +3128,7 @@ public class VibratorManagerServiceTest {
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
 
-        verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] {1, 2}));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
         ArgumentCaptor<IVibrationSession> captor = ArgumentCaptor.forClass(IVibrationSession.class);
         verify(callback).onStarted(captor.capture());
 
@@ -3148,6 +3142,9 @@ public class VibratorManagerServiceTest {
         assertThat(session.getStatus()).isEqualTo(Status.FINISHED);
         verify(callback).onFinishing();
         verify(callback).onFinished(eq(android.os.vibrator.VendorVibrationSession.STATUS_SUCCESS));
+
+        assertThat(mHalVibratorManagerHelper.getEndSessionCount()).isEqualTo(1);
+        assertThat(mHalVibratorManagerHelper.getAbortSessionCount()).isEqualTo(1);
     }
 
     @Test
@@ -3158,12 +3155,6 @@ public class VibratorManagerServiceTest {
         mockVibrators(1, 2);
 
         VibratorManagerService service = createSystemReadyService();
-        ArgumentCaptor<VibratorManagerService.VibratorManagerNativeCallbacks> listenerCaptor =
-                ArgumentCaptor.forClass(
-                        VibratorManagerService.VibratorManagerNativeCallbacks.class);
-        verify(mNativeWrapperMock).init(listenerCaptor.capture());
-        doReturn(true).when(mNativeWrapperMock).startSession(anyLong(), any(int[].class));
-
         IBinder token = mock(IBinder.class);
         IVibrationSessionCallback callback = mock(IVibrationSessionCallback.class);
         doReturn(token).when(callback).asBinder();
@@ -3172,17 +3163,19 @@ public class VibratorManagerServiceTest {
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
 
-        verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] {1, 2}));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
         verify(callback).onStarted(any(IVibrationSession.class));
 
         // Mock HAL ending session unexpectedly.
-        listenerCaptor.getValue().onVibrationSessionComplete(session.getSessionId());
+        mHalVibratorManagerHelper.endSessionAbruptly(session.getSessionId());
         mTestLooper.dispatchAll();
 
         assertThat(session.getStatus()).isEqualTo(Status.CANCELLED_BY_UNKNOWN_REASON);
         verify(callback).onFinishing();
         verify(callback).onFinished(eq(android.os.vibrator.VendorVibrationSession.STATUS_CANCELED));
 
+        assertThat(mHalVibratorManagerHelper.getEndSessionCount()).isEqualTo(0);
+        assertThat(mHalVibratorManagerHelper.getAbortSessionCount()).isEqualTo(0);
         verify(mVibratorFrameworkStatsLoggerMock).logVibrationVendorSessionStarted(eq(UID));
         verify(mVibratorFrameworkStatsLoggerMock)
                 .logVibrationVendorSessionVibrations(eq(UID), eq(0));
@@ -3194,12 +3187,14 @@ public class VibratorManagerServiceTest {
     public void startVibrationSession_withPowerMode_usesPowerModeState() throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1);
+        mHalVibratorManagerHelper.setSessionEndDelayMs(TEST_TIMEOUT_MILLIS);
         VibratorManagerService service = createSystemReadyService();
         IVibrationSessionCallback callback = mockSessionCallbacks();
 
         mRegisteredPowerModeListener.onLowPowerModeChanged(LOW_POWER_STATE);
-        VendorVibrationSession session1 = startSession(service, HAPTIC_FEEDBACK_ATTRS, callback, 1);
-        VendorVibrationSession session2 = startSession(service, RINGTONE_ATTRS, callback, 1);
+        // Will be ignored for power mode.
+        startSession(service, HAPTIC_FEEDBACK_ATTRS, callback, 1);
+        startSession(service, RINGTONE_ATTRS, callback, 1);
 
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
@@ -3209,14 +3204,13 @@ public class VibratorManagerServiceTest {
         captor.getValue().cancelSession();
         mTestLooper.dispatchAll();
 
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
+
         mRegisteredPowerModeListener.onLowPowerModeChanged(NORMAL_POWER_STATE);
-        VendorVibrationSession session3 = startSession(service, HAPTIC_FEEDBACK_ATTRS, callback, 1);
+        startSession(service, HAPTIC_FEEDBACK_ATTRS, callback, 1);
         mTestLooper.dispatchAll();
 
-        verify(mNativeWrapperMock, never())
-                .startSession(eq(session1.getSessionId()), any(int[].class));
-        verify(mNativeWrapperMock).startSession(eq(session2.getSessionId()), eq(new int[] {1}));
-        verify(mNativeWrapperMock).startSession(eq(session3.getSessionId()), eq(new int[] {1}));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(2);
     }
 
     @Test
@@ -3225,6 +3219,7 @@ public class VibratorManagerServiceTest {
             throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1);
+        mHalVibratorManagerHelper.setSessionEndDelayMs(TEST_TIMEOUT_MILLIS);
         FakeVibratorControllerProvider fakeVibrator = mVibratorProviders.get(1);
         fakeVibrator.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
         VibratorManagerService service = createSystemReadyService();
@@ -3244,8 +3239,7 @@ public class VibratorManagerServiceTest {
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
 
-        verify(mNativeWrapperMock, never())
-                .startSession(eq(session.getSessionId()), any(int[].class));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(0);
         assertThat(session.getStatus()).isEqualTo(Status.IGNORED_FOR_HIGHER_IMPORTANCE);
         verify(callback, never()).onFinishing();
         verify(callback).onFinished(eq(android.os.vibrator.VendorVibrationSession.STATUS_IGNORED));
@@ -3257,6 +3251,7 @@ public class VibratorManagerServiceTest {
             throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1);
+        mHalVibratorManagerHelper.setSessionEndDelayMs(TEST_TIMEOUT_MILLIS);
         FakeVibratorControllerProvider fakeVibrator = mVibratorProviders.get(1);
         fakeVibrator.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
         fakeVibrator.setSupportedEffects(EFFECT_CLICK);
@@ -3281,7 +3276,7 @@ public class VibratorManagerServiceTest {
 
         assertThat(vibration.getStatus()).isEqualTo(Status.CANCELLED_SUPERSEDED);
         assertThat(session.getStatus()).isEqualTo(Status.RUNNING);
-        verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] { 1 }));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
         verify(callback).onStarted(any(IVibrationSession.class));
     }
 
@@ -3291,6 +3286,7 @@ public class VibratorManagerServiceTest {
             throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1);
+        mHalVibratorManagerHelper.setSessionEndDelayMs(TEST_TIMEOUT_MILLIS);
         mVibratorProviders.get(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
         mVibratorProviders.get(1).setSupportedEffects(EFFECT_CLICK);
         setRingerMode(AudioManager.RINGER_MODE_NORMAL);
@@ -3315,7 +3311,7 @@ public class VibratorManagerServiceTest {
         verify(externalVibrationController).mute();
         assertEquals(Arrays.asList(false, true, false),
                 mVibratorProviders.get(1).getExternalControlStates());
-        verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] { 1 }));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
         verify(callback).onStarted(any(IVibrationSession.class));
     }
 
@@ -3324,17 +3320,18 @@ public class VibratorManagerServiceTest {
     public void vibrateInSession_afterCancel_vibrationIgnored() throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1, 2);
+        int sessionFinishDelayMs = 200;
+        mHalVibratorManagerHelper.setSessionEndDelayMs(sessionFinishDelayMs);
         FakeVibratorControllerProvider fakeVibrator1 = mVibratorProviders.get(1);
         fakeVibrator1.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
         VibratorManagerService service = createSystemReadyService();
-        int sessionFinishDelayMs = 200;
-        IVibrationSessionCallback callback = mockSessionCallbacks(sessionFinishDelayMs);
+        IVibrationSessionCallback callback = mockSessionCallbacks();
         VendorVibrationSession session = startSession(service, RINGTONE_ATTRS, callback, 1, 2);
 
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
 
-        verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] {1, 2}));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
         ArgumentCaptor<IVibrationSession> captor = ArgumentCaptor.forClass(IVibrationSession.class);
         verify(callback).onStarted(captor.capture());
 
@@ -3352,6 +3349,8 @@ public class VibratorManagerServiceTest {
         mTestLooper.moveTimeForward(sessionFinishDelayMs);
         mTestLooper.dispatchAll();
 
+        assertThat(mHalVibratorManagerHelper.getEndSessionCount()).isEqualTo(0);
+        assertThat(mHalVibratorManagerHelper.getAbortSessionCount()).isEqualTo(1);
         assertThat(session.getStatus()).isEqualTo(Status.CANCELLED_BY_USER);
         verify(callback).onFinishing();
         verify(callback).onFinished(eq(android.os.vibrator.VendorVibrationSession.STATUS_CANCELED));
@@ -3362,17 +3361,18 @@ public class VibratorManagerServiceTest {
     public void vibrateInSession_afterFinish_vibrationIgnored() throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1, 2);
+        int sessionFinishDelayMs = 200;
+        mHalVibratorManagerHelper.setSessionEndDelayMs(sessionFinishDelayMs);
         FakeVibratorControllerProvider fakeVibrator1 = mVibratorProviders.get(1);
         fakeVibrator1.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
         VibratorManagerService service = createSystemReadyService();
-        int sessionFinishDelayMs = 200;
-        IVibrationSessionCallback callback = mockSessionCallbacks(sessionFinishDelayMs);
+        IVibrationSessionCallback callback = mockSessionCallbacks();
         VendorVibrationSession session = startSession(service, RINGTONE_ATTRS, callback, 1, 2);
 
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
 
-        verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] {1, 2}));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
         ArgumentCaptor<IVibrationSession> captor = ArgumentCaptor.forClass(IVibrationSession.class);
         verify(callback).onStarted(captor.capture());
 
@@ -3395,6 +3395,8 @@ public class VibratorManagerServiceTest {
         mTestLooper.moveTimeForward(sessionFinishDelayMs);
         mTestLooper.dispatchAll();
 
+        assertThat(mHalVibratorManagerHelper.getEndSessionCount()).isEqualTo(1);
+        assertThat(mHalVibratorManagerHelper.getAbortSessionCount()).isEqualTo(0);
         assertThat(session.getStatus()).isEqualTo(Status.FINISHED);
         verify(callback).onFinishing();
         verify(callback).onFinished(eq(android.os.vibrator.VendorVibrationSession.STATUS_SUCCESS));
@@ -3405,17 +3407,18 @@ public class VibratorManagerServiceTest {
     public void vibrateInSession_repeatingVibration_vibrationIgnored() throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1, 2);
+        int sessionFinishDelayMs = 200;
+        mHalVibratorManagerHelper.setSessionEndDelayMs(sessionFinishDelayMs);
         FakeVibratorControllerProvider fakeVibrator1 = mVibratorProviders.get(1);
         fakeVibrator1.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
         VibratorManagerService service = createSystemReadyService();
-        int sessionFinishDelayMs = 200;
-        IVibrationSessionCallback callback = mockSessionCallbacks(sessionFinishDelayMs);
+        IVibrationSessionCallback callback = mockSessionCallbacks();
         VendorVibrationSession session = startSession(service, RINGTONE_ATTRS, callback, 1, 2);
 
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
 
-        verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] {1, 2}));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
         ArgumentCaptor<IVibrationSession> captor = ArgumentCaptor.forClass(IVibrationSession.class);
         verify(callback).onStarted(captor.capture());
 
@@ -3436,6 +3439,8 @@ public class VibratorManagerServiceTest {
         mTestLooper.moveTimeForward(sessionFinishDelayMs);
         mTestLooper.dispatchAll();
 
+        assertThat(mHalVibratorManagerHelper.getEndSessionCount()).isEqualTo(1);
+        assertThat(mHalVibratorManagerHelper.getAbortSessionCount()).isEqualTo(0);
         assertThat(session.getStatus()).isEqualTo(Status.FINISHED);
         assertThat(service.isVibrating(1)).isFalse();
         assertThat(service.isVibrating(2)).isFalse();
@@ -3448,19 +3453,20 @@ public class VibratorManagerServiceTest {
     public void vibrateInSession_singleVibration_playsAllVibrateCommands() throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1, 2);
+        int sessionFinishDelayMs = 200;
+        mHalVibratorManagerHelper.setSessionEndDelayMs(sessionFinishDelayMs);
         FakeVibratorControllerProvider fakeVibrator1 = mVibratorProviders.get(1);
         fakeVibrator1.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
         FakeVibratorControllerProvider fakeVibrator2 = mVibratorProviders.get(1);
         fakeVibrator2.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
         VibratorManagerService service = createSystemReadyService();
-        int sessionFinishDelayMs = 200;
-        IVibrationSessionCallback callback = mockSessionCallbacks(sessionFinishDelayMs);
+        IVibrationSessionCallback callback = mockSessionCallbacks();
         VendorVibrationSession session = startSession(service, RINGTONE_ATTRS, callback, 1, 2);
 
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
 
-        verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] {1, 2}));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
         ArgumentCaptor<IVibrationSession> captor = ArgumentCaptor.forClass(IVibrationSession.class);
         verify(callback).onStarted(captor.capture());
 
@@ -3490,6 +3496,8 @@ public class VibratorManagerServiceTest {
         verify(callback).onFinishing();
         verify(callback).onFinished(eq(android.os.vibrator.VendorVibrationSession.STATUS_SUCCESS));
 
+        assertThat(mHalVibratorManagerHelper.getEndSessionCount()).isEqualTo(1);
+        assertThat(mHalVibratorManagerHelper.getAbortSessionCount()).isEqualTo(0);
         verify(mVibratorFrameworkStatsLoggerMock).logVibrationVendorSessionStarted(eq(UID));
         verify(mVibratorFrameworkStatsLoggerMock)
                 .logVibrationVendorSessionVibrations(eq(UID), eq(1));
@@ -3500,17 +3508,18 @@ public class VibratorManagerServiceTest {
     public void vibrateInSession_multipleVibrations_playsAllVibrations() throws Exception {
         mockCapabilities(IVibratorManager.CAP_START_SESSIONS);
         mockVibrators(1, 2);
+        int sessionFinishDelayMs = 200;
+        mHalVibratorManagerHelper.setSessionEndDelayMs(sessionFinishDelayMs);
         FakeVibratorControllerProvider fakeVibrator1 = mVibratorProviders.get(1);
         fakeVibrator1.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
         VibratorManagerService service = createSystemReadyService();
-        int sessionFinishDelayMs = 200;
-        IVibrationSessionCallback callback = mockSessionCallbacks(sessionFinishDelayMs);
+        IVibrationSessionCallback callback = mockSessionCallbacks();
         VendorVibrationSession session = startSession(service, RINGTONE_ATTRS, callback, 1, 2);
 
         // Make sure all messages are processed before asserting on the session callbacks.
         stopAutoDispatcherAndDispatchAll();
 
-        verify(mNativeWrapperMock).startSession(eq(session.getSessionId()), eq(new int[] {1, 2}));
+        assertThat(mHalVibratorManagerHelper.getStartSessionCount()).isEqualTo(1);
         ArgumentCaptor<IVibrationSession> captor = ArgumentCaptor.forClass(IVibrationSession.class);
         verify(callback).onStarted(captor.capture());
 
@@ -3545,6 +3554,8 @@ public class VibratorManagerServiceTest {
         verify(callback).onFinishing();
         verify(callback).onFinished(eq(android.os.vibrator.VendorVibrationSession.STATUS_SUCCESS));
 
+        assertThat(mHalVibratorManagerHelper.getEndSessionCount()).isEqualTo(1);
+        assertThat(mHalVibratorManagerHelper.getAbortSessionCount()).isEqualTo(0);
         verify(mVibratorFrameworkStatsLoggerMock).logVibrationVendorSessionStarted(eq(UID));
         verify(mVibratorFrameworkStatsLoggerMock)
                 .logVibrationVendorSessionVibrations(eq(UID), eq(2));
@@ -3942,40 +3953,19 @@ public class VibratorManagerServiceTest {
     }
 
     private void mockCapabilities(long... capabilities) {
-        when(mNativeWrapperMock.getCapabilities()).thenReturn(
+        mHalVibratorManagerHelper.setCapabilities(
                 Arrays.stream(capabilities).reduce(0, (a, b) -> a | b));
     }
 
     private void mockVibrators(int... vibratorIds) {
+        mHalVibratorManagerHelper.setVibratorIds(vibratorIds);
         for (int vibratorId : vibratorIds) {
             mVibratorProviders.put(vibratorId,
                     new FakeVibratorControllerProvider(mTestLooper.getLooper()));
         }
-        when(mNativeWrapperMock.getVibratorIds()).thenReturn(vibratorIds);
     }
 
     private IVibrationSessionCallback mockSessionCallbacks() {
-        return mockSessionCallbacks(/* delayToEndSessionMillis= */ TEST_TIMEOUT_MILLIS);
-    }
-
-    private IVibrationSessionCallback mockSessionCallbacks(long delayToEndSessionMillis) {
-        Handler handler = new Handler(mTestLooper.getLooper());
-        ArgumentCaptor<VibratorManagerService.VibratorManagerNativeCallbacks> listenerCaptor =
-                ArgumentCaptor.forClass(
-                        VibratorManagerService.VibratorManagerNativeCallbacks.class);
-        verify(mNativeWrapperMock).init(listenerCaptor.capture());
-        doReturn(true).when(mNativeWrapperMock).startSession(anyLong(), any(int[].class));
-        doAnswer(args -> {
-            handler.postDelayed(
-                    () -> listenerCaptor.getValue().onVibrationSessionComplete(args.getArgument(0)),
-                    delayToEndSessionMillis);
-            return null;
-        }).when(mNativeWrapperMock).endSession(anyLong(), eq(false));
-        doAnswer(args -> {
-            listenerCaptor.getValue().onVibrationSessionComplete(args.getArgument(0));
-            return null;
-        }).when(mNativeWrapperMock).endSession(anyLong(), eq(true));
-
         IBinder token = mock(IBinder.class);
         IVibrationSessionCallback callback = mock(IVibrationSessionCallback.class);
         doReturn(token).when(callback).asBinder();

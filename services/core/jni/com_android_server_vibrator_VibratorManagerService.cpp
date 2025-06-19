@@ -255,7 +255,7 @@ static void nativeClearSessions(JNIEnv* env, jclass /* clazz */, jlong servicePt
 }
 
 inline static constexpr auto sNativeInitMethodSignature =
-        "(Lcom/android/server/vibrator/VibratorManagerService$VibratorManagerNativeCallbacks;)J";
+        "(Lcom/android/server/vibrator/HalVibratorManager$Callbacks;)J";
 
 static const JNINativeMethod method_table[] = {
         {"nativeInit", sNativeInitMethodSignature, (void*)nativeInit},
@@ -272,8 +272,7 @@ static const JNINativeMethod method_table[] = {
 
 int register_android_server_vibrator_VibratorManagerService(JavaVM* jvm, JNIEnv* env) {
     sJvm = jvm;
-    auto listenerClassName =
-            "com/android/server/vibrator/VibratorManagerService$VibratorManagerNativeCallbacks";
+    auto listenerClassName = "com/android/server/vibrator/HalVibratorManager$Callbacks";
     jclass listenerClass = FindClassOrDie(env, listenerClassName);
     sMethodIdOnSyncedVibrationComplete =
             GetMethodIDOrDie(env, listenerClass, "onSyncedVibrationComplete", "(J)V");
