@@ -4,9 +4,6 @@
       "name": "WMShellFlickerTestsDesktopMode-CatchAll"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-DesktopModeBaseTest"
-    },
-    {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-CloseAllAppsViaAppHeaderExitTest"
     },
     {
