@@ -67,12 +67,8 @@ interface SnapEventHandler {
 
     /**
      * Notifies the snap event handler of a display disconnect event.
-     *
-     * [desktopModeSupportedOnNewDisplay] is a boolean that indicates whether a display supports
-     * desktop mode after the external display disconnection, for example a tablet or a secondary
-     * display.
      */
-    fun onDisplayDisconnected(disconnectedDisplayId: Int, desktopModeSupportedOnNewDisplay: Boolean)
+    fun onDisplayDisconnected(disconnectedDisplayId: Int)
 
     /**
      * Notifies the snap event handler of a desk being activated.

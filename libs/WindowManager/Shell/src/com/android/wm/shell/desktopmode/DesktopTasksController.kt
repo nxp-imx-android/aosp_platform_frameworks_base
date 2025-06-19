@@ -172,6 +172,7 @@ import com.android.wm.shell.windowdecor.extension.isFullscreen
 import com.android.wm.shell.windowdecor.extension.isMultiWindow
 import com.android.wm.shell.windowdecor.extension.requestingImmersive
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
+import com.android.wm.shell.windowdecor.tiling.TilingDisplayReconnectEventHandler
 import java.io.PrintWriter
 import java.util.Optional
 import java.util.concurrent.Executor
@@ -710,7 +711,7 @@ class DesktopTasksController(
                     "destinationDisplayId=$destinationDisplayId"
             )
         }
-        snapEventHandler.onDisplayDisconnected(disconnectedDisplayId, desktopModeSupportedOnDisplay)
+        snapEventHandler.onDisplayDisconnected(disconnectedDisplayId)
         removeWallpaperTask(wct, disconnectedDisplayId)
         removeHomeTask(wct, disconnectedDisplayId)
         userRepositories.forAllRepositories { desktopRepository ->
@@ -822,7 +823,13 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         var runOnTransitStart: RunOnTransitStart? = null
         val destDisplayLayout = displayController.getDisplayLayout(displayId) ?: return
-
+        val tilingReconnectHandler =
+            TilingDisplayReconnectEventHandler(
+                taskRepository,
+                snapEventHandler,
+                transitions,
+                displayId,
+            )
         mainScope.launch {
             preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
                 val newDeskId =
@@ -835,8 +842,8 @@ class DesktopTasksController(
                     "restoreDisplay: created new desk deskId=$newDeskId " +
                         "from preserved deskId=$preservedDeskId"
                 )
-
-                if (preservedDeskId == activeDeskId) {
+                val isActiveDesk = preservedDeskId == activeDeskId
+                if (isActiveDesk) {
                     runOnTransitStart = addDeskActivationChanges(deskId = newDeskId, wct = wct)
                 }
 
@@ -850,8 +857,22 @@ class DesktopTasksController(
                         boundsByTaskId[taskId],
                     )
                 }
+
+                val preservedTilingData =
+                    taskRepository.getPreservedTilingData(uniqueDisplayId, preservedDeskId)
+                if (preservedTilingData != null) {
+                    tilingReconnectHandler.addTilingDisplayReconnectSession(
+                        TilingDisplayReconnectEventHandler.TilingDisplayReconnectSession(
+                            preservedTilingData.leftTiledTask,
+                            preservedTilingData.rightTiledTask,
+                            newDeskId,
+                            isActiveDesk,
+                        )
+                    )
+                }
             }
             val transition = transitions.startTransition(TRANSIT_CHANGE, wct, null)
+            tilingReconnectHandler.activationBinder = transition
             runOnTransitStart?.invoke(transition)
             taskRepository.removePreservedDisplay(uniqueDisplayId)
         }

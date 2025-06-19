@@ -967,7 +967,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (!mDesktopTilingDecorViewModel.onDeskActivated(deskId)) {
             return;
         }
-
         final DesktopRepository repository = mDesktopUserRepositories.getCurrent();
         final Integer leftTaskId = repository.getLeftTiledTask(deskId);
         final Integer rightTaskId =  repository.getRightTiledTask(deskId);
@@ -1024,10 +1023,8 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     }
 
     @Override
-    public void onDisplayDisconnected(int disconnectedDisplayId,
-            boolean desktopModeSupportedOnNewDisplay) {
-        mDesktopTilingDecorViewModel.onDisplayDisconnected(disconnectedDisplayId,
-                desktopModeSupportedOnNewDisplay);
+    public void onDisplayDisconnected(int disconnectedDisplayId) {
+        mDesktopTilingDecorViewModel.onDisplayDisconnected(disconnectedDisplayId);
     }
 
     @Override
