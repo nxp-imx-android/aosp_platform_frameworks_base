@@ -16,7 +16,6 @@
 
 package android.app.admin;
 
-import static android.app.admin.flags.Flags.FLAG_SPLIT_CREATE_MANAGED_PROFILE_ENABLED;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.LOCK_DEVICE;
@@ -58,9 +57,10 @@ import static android.Manifest.permission.SET_TIME_ZONE;
 import static android.app.admin.DeviceAdminInfo.HEADLESS_DEVICE_OWNER_MODE_UNSUPPORTED;
 import static android.app.admin.flags.Flags.FLAG_DEVICE_THEFT_API_ENABLED;
 import static android.app.admin.flags.Flags.FLAG_REMOVE_MANAGED_PROFILE_ENABLED;
+import static android.app.admin.flags.Flags.FLAG_SECONDARY_LOCKSCREEN_API_ENABLED;
+import static android.app.admin.flags.Flags.FLAG_SPLIT_CREATE_MANAGED_PROFILE_ENABLED;
 import static android.app.admin.flags.Flags.onboardingBugreportV2Enabled;
 import static android.app.admin.flags.Flags.onboardingConsentlessBugreports;
-import static android.app.admin.flags.Flags.FLAG_SECONDARY_LOCKSCREEN_API_ENABLED;
 import static android.content.Intent.LOCAL_FLAG_FROM_SYSTEM;
 import static android.net.NetworkCapabilities.NET_ENTERPRISE_ID_1;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
@@ -10766,8 +10766,8 @@ public class DevicePolicyManager {
      * in the calling user, as well as the parent user of an organization-owned managed profile via
      * the {@link DevicePolicyManager} instance returned by
      * {@link #getParentProfileInstance(ComponentName)}. App restrictions set by the device policy
-     * management role holder are not returned by
-     * {@link UserManager#getApplicationRestrictions(String)}. The target application should use
+     * management role holder are returned by
+     * {@link UserManager#getApplicationRestrictions(String)} but the target application should use
      * {@link android.content.RestrictionsManager#getApplicationRestrictionsPerAdmin} to retrieve
      * them, alongside any app restrictions the profile or device owner might have set.
      *
@@ -10790,6 +10790,42 @@ public class DevicePolicyManager {
             try {
                 mService.setApplicationRestrictions(admin, mContext.getPackageName(), packageName,
                         settings, mParentInstance);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+    }
+
+    /**
+     * Similar to the public variant of {@link #setApplicationRestrictions} but for use by the
+     * system.
+     *
+     * <p>Called by a system service only, meaning that the caller's UID must be equal to
+     * {@link Process#SYSTEM_UID}.
+     *
+     * @throws SecurityException if caller is not permitted to set Mte policy
+     * @throws UnsupportedOperationException if the device does not support MTE
+     * @param systemEntity  The service entity that adds the restriction. A application restriction
+     *                     set by a service entity can only be cleared by the same entity. This can
+     *                     be just the calling package name, or any string of the caller's choice
+     *                     can be used.
+     * @param packageName The name of the package to update restricted settings for.
+     * @param settings A {@link Bundle} to be parsed by the receiving application, conveying a new
+     *            set of active restrictions.
+     * @throws SecurityException if {@code admin} is not a device or profile owner.
+     * @see #setDelegatedScopes
+     * @see #DELEGATION_APP_RESTRICTIONS
+     * @see UserManager#KEY_RESTRICTIONS_PENDING
+     * @hide
+     */
+    @WorkerThread
+    public void setApplicationRestrictionsBySystem(
+            @NonNull String systemEntity, String packageName, Bundle settings) {
+        throwIfParentInstance("setApplicationRestrictions");
+        if (mService != null) {
+            try {
+                mService.setApplicationRestrictionsBySystem(
+                    systemEntity, packageName, myUserId(), settings);
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
@@ -12215,6 +12251,40 @@ public class DevicePolicyManager {
             try {
                 return mService.getApplicationRestrictions(admin, mContext.getPackageName(),
                         packageName, mParentInstance);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Similar to the public variant of {@link #getApplicationRestrictions} but for use by the
+     * system.
+     *
+     * <p>Called by a system service only, meaning that the caller's UID must be equal to
+     * {@link Process#SYSTEM_UID}.
+     *
+     * @param systemEntity  The service entity that adds the restriction. A application restriction
+     *                     set by a service entity can only be cleared by the same entity. This can
+     *                     be just the calling package name, or any string of the caller's choice
+     *                     can be used.
+     * @param packageName The name of the package to fetch restricted settings of.
+     * @return {@link Bundle} of settings corresponding to what was set last time
+     *         {@link DevicePolicyManager#setApplicationRestrictions} was called, or an empty
+     *         {@link Bundle} if no restrictions have been set.
+     * @throws SecurityException if {@code admin} is not a device or profile owner.
+     * @see #setDelegatedScopes
+     * @see #DELEGATION_APP_RESTRICTIONS
+     * @hide
+     */
+    @WorkerThread
+    public @NonNull Bundle getApplicationRestrictionsBySystem(
+            @NonNull String systemEntity, @NonNull String packageName) {
+        if (mService != null) {
+            try {
+                return mService.getApplicationRestrictionsBySystem(
+                        systemEntity, packageName, myUserId());
             } catch (RemoteException e) {
                 throw e.rethrowFromSystemServer();
             }
