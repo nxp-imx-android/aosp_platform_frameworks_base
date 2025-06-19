@@ -56,19 +56,18 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
     }
 
     @Test
-    fun `With TaskInfo taskBounds are calculated from endAbsBounds and endRelOffset`() {
+    fun `With TaskInfo taskBounds are calculated from endAbsBounds`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
                 inputChange {
-                    endAbsBounds = Rect(0, 0, 500, 1000)
-                    endRelOffset = Point(100, 200)
+                    endAbsBounds = Rect(100, 200, 2000, 1000)
                 }
                 validateCanHandle { canHandle ->
                     assert(canHandle == true)
                 }
                 validateCreateLifecycleEvent { event ->
                     assert(event != null)
-                    assert(event?.taskBounds == Rect(100, 200, 500, 1000))
+                    assert(event?.taskBounds == Rect(0, 0, 1900, 1800))
                 }
             }
         }
@@ -83,7 +82,6 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
                         ti.appCompatTaskInfo.isTopActivityLetterboxed = false
                     }
                     endAbsBounds = Rect(0, 0, 500, 1000)
-                    endRelOffset = Point(100, 200)
                 }
                 validateCanHandle { canHandle ->
                     assert(canHandle == true)
@@ -103,17 +101,16 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
                 inputChange {
                     runningTaskInfo { ti ->
                         ti.appCompatTaskInfo.isTopActivityLetterboxed = true
-                        ti.appCompatTaskInfo.topActivityLetterboxBounds = Rect(1, 2, 3, 4)
+                        ti.appCompatTaskInfo.topActivityLetterboxBounds = Rect(300, 200, 2300, 1200)
                     }
-                    endAbsBounds = Rect(0, 0, 500, 1000)
-                    endRelOffset = Point(100, 200)
+                    endAbsBounds = Rect(100, 50, 2500, 1500)
                 }
                 validateCanHandle { canHandle ->
                     assert(canHandle == true)
                 }
                 validateCreateLifecycleEvent { event ->
                     assert(event != null)
-                    assert(event?.letterboxBounds == Rect(1, 2, 3, 4))
+                    assert(event?.letterboxBounds == Rect(200, 150, 2400, 1150))
                 }
             }
         }
