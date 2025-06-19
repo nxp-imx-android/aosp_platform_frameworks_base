@@ -5317,6 +5317,15 @@ final class ActivityRecord extends WindowToken {
         }
     }
 
+    @Nullable
+    private ActivityRecord getSharedStartingWindowOwnerIfTaskDrawn() {
+        if (task.getActivity(r -> r.isVisibleRequested() && !r.firstWindowDrawn) == null) {
+            // The last drawn activity may not be the one that owns the starting window.
+            return task.getActivity(ar -> ar.mStartingData != null);
+        }
+        return null;
+    }
+
     /**
      * This is the only place that writes {@link #mVisibleRequested} (except unit test). The caller
      * outside of this class should use {@link #setVisibility}.
@@ -5337,6 +5346,13 @@ final class ActivityRecord extends WindowToken {
                     && mDisplayContent.mInputMethodWindow != null
                     && mDisplayContent.mInputMethodWindow.isVisible();
             finishOrAbortReplacingWindow();
+            if (Flags.ensureStartingWindowRemoveFromTask() && !firstWindowDrawn && task != null
+                    && task.mSharedStartingData != null) {
+                final ActivityRecord r = getSharedStartingWindowOwnerIfTaskDrawn();
+                if (r != null) {
+                    r.removeStartingWindow();
+                }
+            }
         }
         return true;
     }
@@ -6443,12 +6459,20 @@ final class ActivityRecord extends WindowToken {
         final Task associatedTask = task.mSharedStartingData != null ? task : null;
         if (associatedTask == null) {
             removeStartingWindow();
-        } else if (associatedTask.getActivity(
-                r -> r.isVisibleRequested() && !r.firstWindowDrawn) == null) {
-            // The last drawn activity may not be the one that owns the starting window.
-            final ActivityRecord r = associatedTask.getActivity(ar -> ar.mStartingData != null);
-            if (r != null) {
-                r.removeStartingWindow();
+        } else {
+            if (Flags.ensureStartingWindowRemoveFromTask()) {
+                final ActivityRecord r = getSharedStartingWindowOwnerIfTaskDrawn();
+                if (r != null) {
+                    r.removeStartingWindow();
+                }
+            } else if (associatedTask.getActivity(
+                    r -> r.isVisibleRequested() && !r.firstWindowDrawn) == null) {
+                // The last drawn activity may not be the one that owns the starting window.
+                final ActivityRecord r = associatedTask.getActivity(
+                        ar -> ar.mStartingData != null);
+                if (r != null) {
+                    r.removeStartingWindow();
+                }
             }
         }
         updateReportedVisibilityLocked();

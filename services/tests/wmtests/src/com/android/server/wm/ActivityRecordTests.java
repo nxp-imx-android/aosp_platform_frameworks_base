@@ -3095,7 +3095,18 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
-    public void testStartingWindowInTaskFragment() {
+    @EnableFlags(Flags.FLAG_ENSURE_STARTING_WINDOW_REMOVE_FROM_TASK)
+    public void testStartingWindowInTaskFragment_RemoveAfterTrampolineInvisible() {
+        testStartingWindowInTaskFragment_RemoveFrom(false, true);
+    }
+
+    @Test
+    public void testStartingWindowInTaskFragment_RemoveAfterWindowDrawn() {
+        testStartingWindowInTaskFragment_RemoveFrom(true, false);
+    }
+
+    private void testStartingWindowInTaskFragment_RemoveFrom(boolean firstWindowDrawn,
+            boolean requestedInvisible) {
         final ActivityRecord activity1 = new ActivityBuilder(mAtm).setCreateTask(true)
                 .setVisible(false).build();
         final WindowState startingWindow = createWindowState(
@@ -3147,7 +3158,12 @@ public class ActivityRecordTests extends WindowTestsBase {
         // The starting window is only removed when all embedded activities are drawn.
         final WindowState activityWindow = mock(WindowState.class);
         activity1.onFirstWindowDrawn(activityWindow);
-        activity2.onFirstWindowDrawn(activityWindow);
+        if (firstWindowDrawn) {
+            activity2.onFirstWindowDrawn(activityWindow);
+        }
+        if (requestedInvisible) {
+            activity2.setVisibleRequested(false);
+        }
         assertNull(activity1.mStartingWindow);
         assertNull(task.mSharedStartingData);
     }

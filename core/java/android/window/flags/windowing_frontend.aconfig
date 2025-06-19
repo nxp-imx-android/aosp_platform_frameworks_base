@@ -479,3 +479,14 @@ flag {
     description: "Removes restriction that only one back callback with PRIORITY_SYSTEM_NAVIGATION_OBSERVER can be registered"
     bug: "424146227"
 }
+
+flag {
+    name: "ensure_starting_window_remove_from_task"
+    namespace: "windowing_frontend"
+    description: "Trigger the removal of the starting window from the task in case the shared starting data is not attached to itself."
+    bug: "405253899"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
