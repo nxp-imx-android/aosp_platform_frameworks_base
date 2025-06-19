@@ -208,7 +208,7 @@ public class ProcessedPerfettoProtoLogImpl extends PerfettoProtoLogImpl {
         // Load in background to avoid delay in boot process.
         // The caveat is that any log message that is also logged to logcat will not be
         // successfully decoded until this completes.
-        mBackgroundHandler.post(() -> {
+        mSingleThreadedExecutor.execute(() -> {
             mViewerConfigReader.loadViewerConfig(groupsLoggingToLogcat.toArray(new String[0]));
             readyToLogToLogcat();
         });
