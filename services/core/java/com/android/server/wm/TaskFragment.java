@@ -28,7 +28,6 @@ import static android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN;
 import static android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED;
-import static android.app.WindowConfiguration.isFloating;
 import static android.content.pm.ActivityInfo.FLAG_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING;
 import static android.content.pm.ActivityInfo.FLAG_RESUME_WHILE_PAUSING;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSET;
@@ -2437,23 +2436,16 @@ class TaskFragment extends WindowContainer<WindowContainer> {
             inOutConfig.windowConfiguration.setAppBounds(mTmpFullBounds);
             outAppBounds = inOutConfig.windowConfiguration.getAppBounds();
 
-            // Floating tasks shouldn't be restricted by containing app bounds.
-            if (!customContainerPolicy && !isFloating(windowingMode)) {
-                final Rect containingAppBounds;
-                if (insideParentBounds) {
-                    containingAppBounds = useOverrideInsetsForConfig
-                            ? overrideHint.mParentAppBoundsOverride
-                            : parentConfig.windowConfiguration.getAppBounds();
-                } else {
-                    // Restrict appBounds to display non-decor rather than parent because the
-                    // override bounds are beyond the parent. Otherwise, it won't match the
-                    // overridden bounds.
-                    final TaskDisplayArea displayArea = getDisplayArea();
-                    containingAppBounds = displayArea != null
-                            ? displayArea.getWindowConfiguration().getAppBounds() : null;
-                }
-                if (containingAppBounds != null && !containingAppBounds.isEmpty()) {
-                    outAppBounds.intersect(containingAppBounds);
+            if (insideParentBounds && useOverrideInsetsForConfig && !customContainerPolicy
+                    && overrideHint.mParentAppBoundsOverride != null
+                    && !WindowConfiguration.isFloating(windowingMode)) {
+                // Clip decor insets for legacy apps (no INSETS_DECOUPLED_CONFIGURATION_ENFORCED).
+                outAppBounds.intersectUnchecked(overrideHint.mParentAppBoundsOverride);
+            } else if (resolvedBounds.isEmpty()) {
+                // Inherit from parent if there is no override bounds.
+                final Rect parentAppBounds = parentConfig.windowConfiguration.getAppBounds();
+                if (parentAppBounds != null) {
+                    outAppBounds.set(parentAppBounds);
                 }
             }
         }
