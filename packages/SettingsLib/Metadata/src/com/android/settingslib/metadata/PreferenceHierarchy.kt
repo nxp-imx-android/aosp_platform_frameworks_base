@@ -19,6 +19,7 @@ package com.android.settingslib.metadata
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import androidx.annotation.VisibleForTesting
 import java.util.concurrent.CancellationException
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
@@ -56,7 +57,7 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
      * Each item is either [PreferenceHierarchyNode], [PreferenceHierarchy] or [Deferred] (async sub
      * hierarchy).
      */
-    private val children = mutableListOf<Any>()
+    @VisibleForTesting internal val children = mutableListOf<Any>()
 
     internal constructor(context: Context, group: PreferenceGroup) : super(group) {
         this.context = context
@@ -95,7 +96,7 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
      */
     infix fun String.args(args: Bundle) = createPreferenceScreenHierarchy(this, args)
 
-    operator fun PreferenceHierarchyNode.unaryPlus() = also { children.add(it) }
+    operator fun PreferenceHierarchyNode.unaryPlus() = also { add(it) }
 
     /** Specifies preference order in the hierarchy. */
     infix fun PreferenceHierarchyNode.order(order: Int) = apply { this.order = order }
@@ -108,8 +109,24 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
     fun add(metadata: PreferenceMetadata, order: Int? = null) {
         PreferenceHierarchyNode(metadata).also {
             it.order = order
-            children.add(it)
+            add(it)
         }
+    }
+
+    private fun add(node: PreferenceHierarchyNode) {
+        if (node.isFlagEnabled()) children.add(node)
+    }
+
+    private fun add(index: Int, node: PreferenceHierarchyNode) {
+        if (node.isFlagEnabled()) children.add(index, node)
+    }
+
+    private fun PreferenceHierarchyNode.isFlagEnabled(): Boolean {
+        if ((metadata as? PreferenceScreenMetadata)?.isFlagEnabled(context) == false) {
+            Log.w(TAG, "$metadata is not added to hierarchy as it is not enabled")
+            return false
+        }
+        return true
     }
 
     /**
@@ -143,25 +160,25 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
     /** Adds a preference to the hierarchy before given key. */
     fun addBefore(key: String, metadata: PreferenceMetadata) {
         val (hierarchy, index) = findPreference(key) ?: (this to children.size)
-        hierarchy.children.add(index, PreferenceHierarchyNode(metadata))
+        hierarchy.add(index, PreferenceHierarchyNode(metadata))
     }
 
     /** Adds a preference group to the hierarchy before given key. */
     fun addGroupBefore(key: String, group: PreferenceGroup): PreferenceHierarchy {
         val (hierarchy, index) = findPreference(key) ?: (this to children.size)
-        return PreferenceHierarchy(context, group).also { hierarchy.children.add(index, it) }
+        return PreferenceHierarchy(context, group).also { hierarchy.add(index, it) }
     }
 
     /** Adds a preference to the hierarchy after given key. */
     fun addAfter(key: String, metadata: PreferenceMetadata) {
         val (hierarchy, index) = findPreference(key) ?: (this to children.size - 1)
-        hierarchy.children.add(index + 1, PreferenceHierarchyNode(metadata))
+        hierarchy.add(index + 1, PreferenceHierarchyNode(metadata))
     }
 
     /** Adds a preference group to the hierarchy after given key. */
     fun addGroupAfter(key: String, group: PreferenceGroup): PreferenceHierarchy {
         val (hierarchy, index) = findPreference(key) ?: (this to children.size - 1)
-        return PreferenceHierarchy(context, group).also { hierarchy.children.add(index + 1, it) }
+        return PreferenceHierarchy(context, group).also { hierarchy.add(index + 1, it) }
     }
 
     /** Manipulates hierarchy on a preference group with given key. */
@@ -181,15 +198,14 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
     }
 
     /** Adds a preference group to the hierarchy. */
-    operator fun PreferenceGroup.unaryPlus() =
-        PreferenceHierarchy(context, this).also { children.add(it) }
+    operator fun PreferenceGroup.unaryPlus() = PreferenceHierarchy(context, this).also { add(it) }
 
     /** Adds a preference group and returns its preference hierarchy. */
     @JvmOverloads
     fun addGroup(group: PreferenceGroup, order: Int? = null): PreferenceHierarchy =
         PreferenceHierarchy(context, group).also {
-            this.order = order
-            children.add(it)
+            it.order = order
+            add(it)
         }
 
     /**
@@ -214,7 +230,7 @@ class PreferenceHierarchy : PreferenceHierarchyNode {
     fun addPreferenceScreen(screenKey: String) = addPreferenceScreen(screenKey, null)
 
     private fun addPreferenceScreen(screenKey: String, args: Bundle?): PreferenceHierarchyNode =
-        createPreferenceScreenHierarchy(screenKey, args).also { children.add(it) }
+        createPreferenceScreenHierarchy(screenKey, args).also { add(it) }
 
     private fun createPreferenceScreenHierarchy(screenKey: String, args: Bundle?) =
         PreferenceHierarchyNode(PreferenceScreenRegistry.create(context, screenKey, args)!!)
