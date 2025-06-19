@@ -245,7 +245,7 @@ public interface ServiceConnector<I extends IInterface> {
      * @param <I> see {@link ServiceConnector}
      */
     class Impl<I extends IInterface> extends ArrayDeque<Job<I, ?>>
-            implements ServiceConnector<I>, ServiceConnection, IBinder.DeathRecipient, Runnable {
+            implements ServiceConnector<I>, ServiceConnection, Runnable {
 
         static final boolean DEBUG = false;
         final String LOG_TAG = this.getClass().getSimpleName();
@@ -580,7 +580,6 @@ public interface ServiceConnector<I extends IInterface> {
             }
             if (wasBound) {
                 dispatchOnServiceConnectionStatusChanged(service, false);
-                service.asBinder().unlinkToDeath(this, 0);
                 mService = null;
             }
             mBinding = false;
@@ -624,11 +623,6 @@ public interface ServiceConnector<I extends IInterface> {
             I service = binderAsInterface(binder);
             mService = service;
             mBinding = false;
-            try {
-                binder.linkToDeath(ServiceConnector.Impl.this, 0);
-            } catch (RemoteException e) {
-                Log.e(LOG_TAG, "onServiceConnected " + name + ": ", e);
-            }
             dispatchOnServiceConnectionStatusChanged(service, true);
             processQueue();
         }
@@ -638,30 +632,7 @@ public interface ServiceConnector<I extends IInterface> {
             if (DEBUG) {
                 logTrace();
             }
-            mBinding = true;
-            I service = mService;
-            if (service != null) {
-                dispatchOnServiceConnectionStatusChanged(service, false);
-                mService = null;
-            }
-        }
-
-        @Override
-        public void onBindingDied(@NonNull ComponentName name) {
-            if (DEBUG) {
-                logTrace();
-            }
-            binderDied();
-        }
-
-        @Override
-        public void binderDied() {
-            if (DEBUG) {
-                logTrace();
-            }
-            mService = null;
             unbind();
-            dispatchOnBinderDied();
         }
 
         protected void dispatchOnBinderDied() {
