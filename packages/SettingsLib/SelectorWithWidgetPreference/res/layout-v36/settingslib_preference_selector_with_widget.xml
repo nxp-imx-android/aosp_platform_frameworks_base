@@ -92,12 +92,9 @@
         android:layout_height="match_parent"
         android:orientation="horizontal"
         android:gravity="center_vertical">
-        <View
-            android:layout_width=".75dp"
-            android:layout_height="32dp"
-            android:layout_marginTop="@dimen/settingslib_expressive_space_small1"
-            android:layout_marginBottom="@dimen/settingslib_expressive_space_small1"
-            android:background="?android:attr/dividerVertical"/>
+
+        <include layout="@layout/settingslib_expressive_two_target_divider" />
+
         <ImageView
             android:id="@+id/selector_extra_widget"
             android:layout_width="match_parent"
