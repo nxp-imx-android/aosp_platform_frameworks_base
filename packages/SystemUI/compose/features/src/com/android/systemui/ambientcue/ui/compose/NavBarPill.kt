@@ -44,6 +44,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,8 +62,10 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
@@ -140,6 +143,12 @@ fun NavBarPill(
             if (expanded) 0f else 1f,
             animationSpec = tween(250, delayMillis = 200),
             label = "expansion",
+        )
+    val config = LocalConfiguration.current
+    val isBoldTextEnabled by remember { derivedStateOf { config.fontWeightAdjustment > 0 } }
+    val actionTextStyle =
+        MaterialTheme.typography.labelMedium.copy(
+            fontWeight = if (isBoldTextEnabled) FontWeight.Bold else FontWeight.Medium
         )
 
     Box(
@@ -262,7 +271,7 @@ fun NavBarPill(
                                     ) {
                                         Text(
                                             text = action.label,
-                                            style = MaterialTheme.typography.labelMedium,
+                                            style = actionTextStyle,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                             color = MaterialTheme.colorScheme.onSurface,
@@ -271,7 +280,7 @@ fun NavBarPill(
                                         if (action.icon.repeatCount > 0) {
                                             Text(
                                                 text = "+${action.icon.repeatCount}",
-                                                style = MaterialTheme.typography.labelMedium,
+                                                style = actionTextStyle,
                                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 modifier = Modifier.padding(end = 3.dp),
                                             )
@@ -279,7 +288,7 @@ fun NavBarPill(
                                     } else if (action.icon.repeatCount == 0) {
                                         Text(
                                             text = action.label,
-                                            style = MaterialTheme.typography.labelMedium,
+                                            style = actionTextStyle,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,
                                             color = MaterialTheme.colorScheme.onSurface,
