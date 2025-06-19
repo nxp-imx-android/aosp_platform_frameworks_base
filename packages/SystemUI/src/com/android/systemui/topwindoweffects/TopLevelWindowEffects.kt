@@ -17,7 +17,6 @@
 package com.android.systemui.topwindoweffects
 
 import android.os.Handler
-import android.os.SystemProperties
 import android.view.Choreographer
 import androidx.annotation.VisibleForTesting
 import androidx.core.animation.Animator
@@ -32,6 +31,7 @@ import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.topui.TopUiController
 import com.android.systemui.topui.TopUiControllerRefactor
+import com.android.systemui.topwindoweffects.domain.interactor.PowerButtonSemantics
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectHapticPlayer
 import com.android.wm.shell.appzoomout.AppZoomOut
@@ -80,20 +80,17 @@ constructor(
 
     override fun start() {
         applicationScope.launch {
-            squeezeEffectInteractor.isEffectEnabledAndPowerButtonPressedAsSingleGesture
-                .collectLatest { enabledAndPressed ->
-                    if (enabledAndPressed) {
-                        val hapticsOption =
-                            SystemProperties.get(
-                                /*key=*/ "persist.lpp_invocation.haptics",
-                                /*def=*/ "no_rumble",
-                            )
-                        val useHapticRumble = hapticsOption == "with_rumble"
-                        startSqueeze(useHapticRumble)
-                    } else {
-                        cancelSqueeze()
-                    }
+            squeezeEffectInteractor.powerButtonSemantics.collectLatest { semantics ->
+                when (semantics) {
+                    PowerButtonSemantics.START_SQUEEZE_WITH_RUMBLE ->
+                        startSqueeze(useHapticRumble = true)
+                    PowerButtonSemantics.START_SQUEEZE_WITHOUT_RUMBLE ->
+                        startSqueeze(useHapticRumble = false)
+                    PowerButtonSemantics.CANCEL_SQUEEZE -> cancelSqueeze()
+                    PowerButtonSemantics.PLAY_DEFAULT_ASSISTANT_HAPTICS ->
+                        playDefaultAssistantHaptic()
                 }
+            }
         }
     }
 
@@ -186,6 +183,8 @@ constructor(
             }
         }
     }
+
+    private fun playDefaultAssistantHaptic() = hapticPlayer?.playDefaultAssistantEffect()
 
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         pw.println("$TAG:")

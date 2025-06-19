@@ -51,6 +51,11 @@ constructor(
 
     private val lppIndicationEffect = SqueezeEffectHapticsBuilder.createLppIndicatorEffect()
 
+    private val defaultAssistantEffect =
+        SqueezeEffectHapticsBuilder.createDefaultAssistantEffect(
+            supportsRiseEffect = primitiveDurations[1] != 0 && primitiveDurations[2] != 0
+        )
+
     private var vibrationJob: Job? = null
 
     fun startZoomOutEffect(durationMillis: Int) {
@@ -83,6 +88,8 @@ constructor(
         vibratorHelper.cancel()
         vibrate(lppIndicationEffect)
     }
+
+    fun playDefaultAssistantEffect() = vibrate(defaultAssistantEffect)
 
     fun cancel() {
         vibrationJob?.cancel()
