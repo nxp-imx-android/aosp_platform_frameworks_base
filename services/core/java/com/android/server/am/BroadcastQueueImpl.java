@@ -1312,7 +1312,9 @@ class BroadcastQueueImpl extends BroadcastQueue {
         BroadcastAnrTimer(@NonNull Handler handler) {
             super(Objects.requireNonNull(handler),
                     MSG_DELIVERY_TIMEOUT, "BROADCAST_TIMEOUT",
-                    new AnrTimer.Args().extend(true));
+                    new AnrTimer.Args()
+                            .extend(true)
+                            .longMethodTracing(Flags.enableLongMethodTracingOnAnrTimer()));
         }
 
         @Override

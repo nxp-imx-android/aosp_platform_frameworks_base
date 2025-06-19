@@ -251,3 +251,11 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_long_method_tracing_on_anr_timer"
+    namespace: "stability"
+    description: "Enable Long Method Tracing for ANR Timer"
+    bug: "419753987"
+    is_fixed_read_only: true
+}

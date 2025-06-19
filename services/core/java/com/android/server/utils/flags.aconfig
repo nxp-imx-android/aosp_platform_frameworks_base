@@ -15,3 +15,11 @@ flag {
      description: "Use AnrTimer to signal ANRs in JobScheduler"
      bug: "408440679"
 }
+
+flag {
+     name: "long_method_trace"
+     namespace: "stability"
+     is_fixed_read_only: true
+     description: "Enable long method tracing when true"
+     bug: "419753987"
+}
