@@ -41,6 +41,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * View Model for a brightness slider.
@@ -102,14 +103,16 @@ constructor(
         falsingInteractor.isFalseTouch(Classifier.BRIGHTNESS_SLIDER)
     }
 
-    suspend fun loadImage(@DrawableRes resId: Int, context: Context): Icon.Loaded {
-        return imageLoader
-            .loadDrawable(
-                android.graphics.drawable.Icon.createWithResource(context, resId),
-                maxHeight = 200,
-                maxWidth = 200,
-            )!!
-            .asIcon(null, resId)
+    suspend fun loadImage(@DrawableRes resId: Int, context: Context): Icon.Loaded? {
+        return withTimeoutOrNull(500L) {
+            imageLoader
+                .loadDrawable(
+                    android.graphics.drawable.Icon.createWithResource(context, resId),
+                    maxHeight = 200,
+                    maxWidth = 200,
+                )
+                ?.asIcon(null, resId)
+        }
     }
 
     /**

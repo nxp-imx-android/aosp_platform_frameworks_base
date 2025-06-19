@@ -16,6 +16,7 @@
 
 package com.android.systemui.brightness.ui.viewmodel
 
+import android.graphics.drawable.Icon
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.settingslib.display.BrightnessUtils
@@ -27,6 +28,7 @@ import com.android.systemui.brightness.shared.model.GammaBrightness
 import com.android.systemui.brightness.shared.model.LinearBrightness
 import com.android.systemui.classifier.domain.interactor.falsingInteractor
 import com.android.systemui.coroutines.collectLastValue
+import com.android.systemui.graphics.ImageLoader
 import com.android.systemui.graphics.imageLoader
 import com.android.systemui.haptics.slider.sliderHapticsViewModelFactory
 import com.android.systemui.kosmos.Kosmos
@@ -37,11 +39,15 @@ import com.android.systemui.settings.brightness.domain.interactor.brightnessMirr
 import com.android.systemui.settings.brightness.ui.brightnessWarningToast
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doSuspendableAnswer
+import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -225,7 +231,35 @@ class BrightnessSliderViewModelTest : SysuiTestCase() {
         }
     }
 
-    private fun Kosmos.create(supportsMirror: Boolean = true): BrightnessSliderViewModel {
+    @Test
+    fun loadImage_timesOutAndReturnsNull_whenLoaderHangs() =
+        with(kosmos) {
+            testScope.runTest {
+                // GIVEN: a mock ImageLoader that simulates a long-running operation
+                val hangingImageLoader: ImageLoader = mock {
+                    onBlocking {
+                        loadDrawable(any<Icon>(), any(), any(), any(), any())
+                    } doSuspendableAnswer
+                        {
+                            delay(10_000)
+                            mock<android.graphics.drawable.Drawable>()
+                        }
+                }
+
+                val underTest = create(imageLoader = hangingImageLoader)
+
+                // WHEN: we load the image
+                val loadedIcon = underTest.loadImage(R.drawable.ic_brightness_full, context)
+
+                // THEN: return null due to timeout
+                assertThat(loadedIcon).isNull()
+            }
+        }
+
+    private fun Kosmos.create(
+        supportsMirror: Boolean = true,
+        imageLoader: ImageLoader = this.imageLoader,
+    ): BrightnessSliderViewModel {
         return BrightnessSliderViewModel(
             screenBrightnessInteractor,
             brightnessPolicyEnforcementInteractor,
