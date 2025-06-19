@@ -127,6 +127,7 @@ public class VolumeDialogControllerImpl implements VolumeDialogController, Dumpa
         STREAMS.put(AudioSystem.STREAM_SYSTEM_ENFORCED, R.string.stream_system_enforced);
         STREAMS.put(AudioSystem.STREAM_TTS, R.string.stream_tts);
         STREAMS.put(AudioSystem.STREAM_VOICE_CALL, R.string.stream_voice_call);
+        STREAMS.put(AudioSystem.STREAM_ASSISTANT, R.string.stream_assistant);
     }
 
     private final W mWorker;
