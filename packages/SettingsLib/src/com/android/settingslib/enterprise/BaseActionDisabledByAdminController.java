@@ -22,6 +22,7 @@ import android.annotation.UserIdInt;
 import android.app.admin.EnforcingAdmin;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.android.internal.util.Preconditions;
 import com.android.settingslib.RestrictedLockUtils.EnforcedAdmin;
@@ -34,7 +35,7 @@ abstract class BaseActionDisabledByAdminController
 
     protected @UserIdInt int mEnforcementAdminUserId;
     protected EnforcedAdmin mEnforcedAdmin;
-    protected EnforcingAdmin mEnforcingAdmin;
+    protected @Nullable EnforcingAdmin mEnforcingAdmin;
     protected ActionDisabledLearnMoreButtonLauncher mLauncher;
     protected final DeviceAdminStringProvider mStringProvider;
 
@@ -55,9 +56,9 @@ abstract class BaseActionDisabledByAdminController
     }
 
     @Override
-    public final void updateEnforcingAdmin(@NonNull EnforcingAdmin admin) {
+    public final void updateEnforcingAdmin(@Nullable EnforcingAdmin admin) {
         assertInitialized();
-        mEnforcingAdmin = requireNonNull(admin, "admin cannot be null");
+        mEnforcingAdmin = admin;
     }
 
     protected final void assertInitialized() {
