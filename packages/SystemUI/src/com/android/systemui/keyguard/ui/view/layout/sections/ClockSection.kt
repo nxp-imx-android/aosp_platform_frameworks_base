@@ -293,7 +293,9 @@ constructor(
                 )
             } else {
                 clockInteractor.setNotificationStackDefaultTop(
-                    (smallClockBottom + marginBetweenSmartspaceAndNotification).toFloat()
+                    (keyguardClockViewModel.getSmallClockTopMargin() +
+                            marginBetweenSmartspaceAndNotification)
+                        .toFloat()
                 )
             }
         }
