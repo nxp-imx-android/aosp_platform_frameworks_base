@@ -247,6 +247,19 @@ public final class NetworkSecurityConfig {
     }
 
     /**
+     * Return a {@link Builder} for localhost.
+     *
+     * @hide
+     */
+    public static Builder getLocalhostBuilder() {
+        Builder builder = new Builder()
+                .setCleartextTrafficPermitted(true)
+                .setHstsEnforced(false)
+                .setCertificateTransparencyVerificationRequired(false);
+        return builder;
+    }
+
+    /**
      * Builder for creating {@code NetworkSecurityConfig} objects.
      * @hide
      */

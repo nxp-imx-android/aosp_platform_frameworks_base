@@ -16,11 +16,24 @@
 
 package android.security.net.config;
 
+import android.annotation.Nullable;
 import android.util.Pair;
+
 import java.util.Set;
 
 /** @hide */
 public interface ConfigSource {
+
+    /** Returns the set of configurations that are associated with a Domain. */
+    @Nullable
     Set<Pair<Domain, NetworkSecurityConfig>> getPerDomainConfigs();
+
+    /** Returns the default NetworkSecurityConfig */
     NetworkSecurityConfig getDefaultConfig();
+
+    /** Returns the NetworkSecurityConfig associated with localhost.
+     *  See {@link Domain#isLocalhost()} for the exact definition.
+     */
+    @Nullable
+    NetworkSecurityConfig getLocalhostConfig();
 }
