@@ -27,8 +27,6 @@ import android.provider.Settings;
 import android.service.ondeviceintelligence.IOnDeviceSandboxedInferenceService;
 import android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService;
 
-import com.android.internal.infra.ServiceConnector;
-
 import java.util.concurrent.TimeUnit;
 
 

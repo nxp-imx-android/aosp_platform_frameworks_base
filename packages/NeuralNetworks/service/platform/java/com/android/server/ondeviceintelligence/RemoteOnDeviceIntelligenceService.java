@@ -27,8 +27,6 @@ import android.provider.Settings;
 import android.service.ondeviceintelligence.IOnDeviceIntelligenceService;
 import android.service.ondeviceintelligence.OnDeviceIntelligenceService;
 
-import com.android.internal.infra.ServiceConnector;
-
 import java.util.concurrent.TimeUnit;
 
 /**
