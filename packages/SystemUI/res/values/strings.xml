@@ -4422,4 +4422,7 @@
     right edge of the display to expand the Quick Settings shade panel.
     -->
     <string name="dual_shade_educational_tooltip_qs">Swipe from the top right to open Quick Settings</string>
+
+    <!-- Content of button shown on the bouncer screen to navigate back to keyguard. [CHAR LIMIT=NONE] -->
+    <string name="back_button_on_bouncer">Back</string>
 </resources>

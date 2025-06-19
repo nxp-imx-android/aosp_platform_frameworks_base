@@ -24,8 +24,6 @@ import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.dialog.QSResetDialogDelegate
 import com.android.systemui.qs.panels.ui.viewmodel.PaginatableViewModel.Companion.splitInRows
 import com.android.systemui.qs.pipeline.shared.TileSpec
-import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
-import com.android.systemui.shade.shared.model.ShadeMode
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.awaitCancellation
@@ -40,7 +38,6 @@ constructor(
     val squishinessViewModel: TileSquishinessViewModel,
     val snapshotViewModelFactory: InfiniteGridSnapshotViewModel.Factory,
     val resetDialogDelegateFactory: QSResetDialogDelegate.Factory,
-    val shadeModeInteractor: ShadeModeInteractor,
 ) : ExclusiveActivatable(), PaginatableViewModel {
     private val hydrator = Hydrator("InfiniteGridViewModel.hydrator")
 
@@ -54,11 +51,6 @@ constructor(
                 columnsWithMediaViewModel.largeSpan,
                 iconTilesViewModel.largeTilesState.value,
             )
-
-    private val shadeMode by hydrator.hydratedStateOf("shadeMode", shadeModeInteractor.shadeMode)
-
-    val isDualShade: Boolean
-        get() = shadeMode == ShadeMode.Dual
 
     override fun splitIntoPages(tiles: List<TileViewModel>, rows: Int): List<List<TileViewModel>> {
         return splitInRows(

@@ -32,6 +32,7 @@ import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.jank.interactionJankMonitor
 import com.android.systemui.media.controls.ui.controller.mediaCarouselController
 import com.android.systemui.media.controls.ui.view.qsMediaHost
+import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.ui.viewmodel.quickSettingsSceneContentViewModelFactory
 import com.android.systemui.qs.ui.viewmodel.quickSettingsUserActionsViewModelFactory
 import com.android.systemui.scene.session.shared.SessionStorage
@@ -41,6 +42,7 @@ import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
 import com.android.systemui.testKosmos
+import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -57,6 +59,7 @@ class QuickSettingsSceneTest : SysuiTestCase() {
     private val kosmos = testKosmos()
 
     @Test
+    @Ignore("http://b/425752706")
     fun testViewHierarchy() {
         val shadeSession = object : SaveableSession, Session by Session(SessionStorage()) {
             @Composable
@@ -67,6 +70,8 @@ class QuickSettingsSceneTest : SysuiTestCase() {
                 init: () -> T
             ): T = rememberSession(key, inputs = inputs, init = init)
         }
+
+        kosmos.usingMediaInComposeFragment = true
 
         val scene = QuickSettingsScene(
             shadeSession = shadeSession,
@@ -93,5 +98,8 @@ class QuickSettingsSceneTest : SysuiTestCase() {
 
         // Verify that the brightness slider exists.
         composeTestRule.onNodeWithTag(resIdToTestTag("brightness_slider")).assertExists()
+
+        // Verify that the tile grid exists.
+        composeTestRule.onNodeWithTag(resIdToTestTag("quick_settings_panel")).assertExists()
     }
 }

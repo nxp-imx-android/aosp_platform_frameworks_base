@@ -1244,14 +1244,27 @@ private fun SecondaryActionContent(
     val sharedModifier = modifier.size(48.dp).padding(13.dp)
     when (viewModel) {
         is MediaSecondaryActionViewModel.Action ->
-            PlatformIconButton(
-                onClick = viewModel.onClick ?: {},
-                iconResource = (viewModel.icon as Icon.Resource).res,
-                contentDescription = viewModel.icon.contentDescription?.load(),
-                colors = IconButtonDefaults.iconButtonColors(contentColor = iconColor),
-                enabled = viewModel.onClick != null,
-                modifier = sharedModifier,
-            )
+            when (viewModel.icon) {
+                is Icon.Resource ->
+                    PlatformIconButton(
+                        onClick = viewModel.onClick ?: {},
+                        modifier = sharedModifier,
+                        enabled = viewModel.onClick != null,
+                        colors = IconButtonDefaults.iconButtonColors(contentColor = iconColor),
+                        iconResource = viewModel.icon.res,
+                        contentDescription = viewModel.icon.contentDescription?.load(),
+                    )
+
+                is Icon.Loaded ->
+                    PlatformIconButton(
+                        onClick = viewModel.onClick ?: {},
+                        modifier = sharedModifier,
+                        enabled = viewModel.onClick != null,
+                        colors = IconButtonDefaults.iconButtonColors(contentColor = iconColor),
+                        iconDrawable = viewModel.icon.drawable,
+                        contentDescription = viewModel.icon.contentDescription?.load(),
+                    )
+            }
 
         is MediaSecondaryActionViewModel.ReserveSpace -> Spacer(modifier = sharedModifier)
 

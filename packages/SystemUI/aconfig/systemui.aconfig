@@ -141,14 +141,6 @@ flag {
 }
 
 flag {
-    name: "notifications_live_data_store_refactor"
-    namespace: "systemui"
-    description: "Replaces NotifLiveDataStore with ActiveNotificationListRepository, and updates consumers. "
-        "Should not bring any behavior changes."
-    bug: "308623704"
-}
-
-flag {
    name: "notification_transparent_header_fix"
    namespace: "systemui"
    description: "fix the transparent group header issue for async header inflation."
@@ -399,16 +391,6 @@ flag {
 }
 
 flag {
-    name: "status_bar_swipe_over_chip"
-    namespace: "systemui"
-    description: "Allow users to swipe over the status bar chip to open the shade"
-    bug: "185897191"
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "status_bar_always_check_underlying_networks"
     namespace: "systemui"
     description: "For status bar connectivity UI, always check underlying networks for wifi and "
@@ -468,6 +450,16 @@ flag {
     description: "Have status bar track the location of app handles so that tappable status bar "
         "content doesn't overlap"
     bug: "397506207"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "status_bar_inflate_carrier_merged"
+    namespace: "systemui"
+    description: "Allow the status bar to inflate the levels of the carrier merged connection"
+    bug: "423686800"
     metadata {
       purpose: PURPOSE_BUGFIX
     }
@@ -2039,4 +2031,14 @@ flag {
     namespace: "systemui"
     description: "Migrate from the old remote animation APIs to the new Shell RemoteTransition-based ones."
     bug: "397180418"
+}
+
+flag {
+    name: "lowlight_clock_uses_keyguard_charging_status"
+    namespace: "systemui"
+    description: "Make sure keyguard and low-light clock show the same charging status."
+    bug: "424297980"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
 }

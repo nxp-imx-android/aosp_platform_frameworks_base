@@ -102,10 +102,7 @@ constructor(context: Context, @Assisted private val display: Display) {
             clipChildren = false
             clipToPadding = false
             // ignore system bar insets for the purpose of window layout
-            setOnApplyWindowInsetsListener { _, _ ->
-                decorView.post { decorView.invalidate() }
-                WindowInsets.CONSUMED
-            }
+            setOnApplyWindowInsetsListener { _, _ -> WindowInsets.CONSUMED }
         }
     }
 

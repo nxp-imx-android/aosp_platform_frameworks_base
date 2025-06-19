@@ -472,28 +472,26 @@ public class GraphicsEnvironment {
         Log.v(TAG, packageName + " is not listed in per-application setting");
 
         // Check the per-device allowlist shipped in the platform
-        if (android.os.Flags.enableAngleAllowList()) {
-            String[] angleAllowListPackages =
-                    context.getResources().getStringArray(R.array.config_angleAllowList);
+        String[] angleAllowListPackages =
+                context.getResources().getStringArray(R.array.config_angleAllowList);
 
-            String allowListPackageList = String.join(" ", angleAllowListPackages);
-            Log.v(TAG, "ANGLE allowlist from config: " + allowListPackageList);
+        String allowListPackageList = String.join(" ", angleAllowListPackages);
+        Log.v(TAG, "ANGLE allowlist from config: " + allowListPackageList);
 
-            for (String allowedPackage : angleAllowListPackages) {
-                if (allowedPackage.equals(packageName)) {
-                    Log.v(
-                            TAG,
-                            "Package name "
-                                    + packageName
-                                    + " is listed in config_angleAllowList, enabling ANGLE");
-                    return ANGLE_GL_DRIVER_CHOICE_ANGLE;
-                }
+        for (String allowedPackage : angleAllowListPackages) {
+            if (allowedPackage.equals(packageName)) {
+                Log.v(
+                        TAG,
+                        "Package name "
+                                + packageName
+                                + " is listed in config_angleAllowList, enabling ANGLE");
+                return ANGLE_GL_DRIVER_CHOICE_ANGLE;
             }
-            Log.v(
-                    TAG,
-                    packageName
-                            + " is not listed in ANGLE allowlist or settings, returning default");
         }
+        Log.v(
+                TAG,
+                packageName
+                        + " is not listed in ANGLE allowlist or settings, returning default");
 
         // The user either chose default or an invalid value; go with the default driver.
         return ANGLE_GL_DRIVER_CHOICE_DEFAULT;

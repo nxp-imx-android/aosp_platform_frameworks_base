@@ -36,7 +36,6 @@ import androidx.annotation.NonNull;
 
 import com.android.internal.policy.SystemBarUtils;
 import com.android.systemui.Dependency;
-import com.android.systemui.Flags;
 import com.android.systemui.Gefingerpoken;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.ShadeExpandsOnStatusBarLongPress;
@@ -260,14 +259,8 @@ public class PhoneStatusBarView extends FrameLayout {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
-        if (Flags.statusBarSwipeOverChip()) {
-            return mTouchEventHandler.onInterceptTouchEvent(event);
-        } else {
-            mTouchEventHandler.onInterceptTouchEvent(event);
-            return super.onInterceptTouchEvent(event);
-        }
+        return mTouchEventHandler.onInterceptTouchEvent(event);
     }
-
     public void updateResources() {
         mCutoutSideNudge = getResources().getDimensionPixelSize(
                 R.dimen.display_cutout_margin_consumption);

@@ -37,7 +37,6 @@ import com.android.app.tracing.coroutines.TrackTracer
 import com.android.systemui.Dumpable
 import com.android.systemui.Flags
 import com.android.systemui.Flags.spatialModelAppPushback
-import com.android.systemui.Flags.spatialModelPushbackInShader
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
@@ -282,10 +281,8 @@ constructor(
             shadeRadius = 0f
         }
 
-        if (spatialModelAppPushback() || spatialModelPushbackInShader()) {
-            // Brightness slider removes blur
-            shadeRadius *= (1 - brightnessMirrorSpring.ratio)
-        }
+        // Brightness slider removes blur
+        shadeRadius *= (1 - brightnessMirrorSpring.ratio)
 
         var blur = shadeRadius.toInt()
 
@@ -307,13 +304,6 @@ constructor(
 
         if (!blurUtils.supportsBlursOnWindows()) {
             blur = 0
-        }
-
-        if (!spatialModelAppPushback() && !spatialModelPushbackInShader()) {
-            // Brightness slider removes blur, but doesn't affect zooms. This is the legacy behavior
-            // that zoom out is only applied to the wallpaper (no homescreen, app or all apps
-            // zoom out). The new behavior is under the same flag when it's on a few lines above.
-            blur = (blur * (1f - brightnessMirrorSpring.ratio)).toInt()
         }
 
         return Pair(blur, zoomOut)
@@ -338,8 +328,7 @@ constructor(
 
     @VisibleForTesting
     fun zoomOutAsScale(zoomOutProgress: Float): Float =
-        if (!spatialModelPushbackInShader()) 1.0f
-        else 1.0f - zoomOutProgress * getPushbackScale(isHomeFocused)
+        1.0f - zoomOutProgress * getPushbackScale(isHomeFocused)
 
     private fun getPushbackScale(isHomeFocused: Boolean): Float =
         if (isHomeFocused) PUSHBACK_SCALE_FOR_LAUNCHER else PUSHBACK_SCALE_FOR_APP
@@ -367,13 +356,7 @@ constructor(
     private fun onZoomOutChanged(zoomOutFromShadeRadius: Float) {
         TrackTracer.instantForGroup("shade", "zoom_out", zoomOutFromShadeRadius)
         Log.v(TAG, "onZoomOutChanged $zoomOutFromShadeRadius")
-        if (!spatialModelPushbackInShader()) {
-            wallpaperController.setNotificationShadeZoom(zoomOutFromShadeRadius)
-        }
         if (spatialModelAppPushback()) {
-            appZoomOutOptional.ifPresent { appZoomOut ->
-                appZoomOut.setProgress(zoomOutFromShadeRadius)
-            }
             keyguardInteractor.setZoomOut(zoomOutFromShadeRadius)
         }
     }
@@ -480,10 +463,8 @@ constructor(
         }
         shadeAnimation.setStiffness(SpringForce.STIFFNESS_LOW)
         shadeAnimation.setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
-        if (spatialModelAppPushback() || spatialModelPushbackInShader()) {
-            brightnessMirrorSpring.setStiffness(SpringForce.STIFFNESS_LOW)
-            brightnessMirrorSpring.setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
-        }
+        brightnessMirrorSpring.setStiffness(SpringForce.STIFFNESS_LOW)
+        brightnessMirrorSpring.setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY)
         applicationScope.launch {
             focusedDisplayRepository.globallyFocusedTask.collect { focusedTask ->
                 if (focusedTask == null || focusedTask.displayId != DEFAULT_DISPLAY) return@collect

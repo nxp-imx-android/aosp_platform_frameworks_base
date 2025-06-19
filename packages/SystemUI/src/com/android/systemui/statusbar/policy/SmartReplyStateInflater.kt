@@ -59,7 +59,7 @@ import com.android.systemui.statusbar.NotificationUiAdjustment
 import com.android.systemui.statusbar.SmartReplyController
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager
-import com.android.systemui.statusbar.notification.logging.NotificationLogger
+import com.android.systemui.statusbar.notification.stack.shared.getNotificationLocation
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil
 import com.android.systemui.statusbar.policy.InflatedSmartReplyState.SuppressedActions
 import com.android.systemui.statusbar.policy.SmartReplyView.SmartActions
@@ -78,7 +78,7 @@ fun shouldShowSmartReplyView(
     smartReplyState: InflatedSmartReplyState,
 ): Boolean {
     if (sbn == null) {
-        return false;
+        return false
     }
     if (smartReplyState.smartReplies == null && smartReplyState.smartActions == null) {
         // There are no smart replies and no smart actions.
@@ -86,10 +86,7 @@ fun shouldShowSmartReplyView(
     }
     // If we are showing the spinner we don't want to add the buttons.
     val showingSpinner =
-        sbn.notification.extras.getBoolean(
-            Notification.EXTRA_SHOW_REMOTE_INPUT_SPINNER,
-            false,
-        )
+        sbn.notification.extras.getBoolean(Notification.EXTRA_SHOW_REMOTE_INPUT_SPINNER, false)
     if (showingSpinner) {
         return false
     }
@@ -144,7 +141,7 @@ constructor(
 
     private fun getSortedButtons(
         smartReplyButtons: List<Button>,
-        smartActionButtons: List<Button>
+        smartActionButtons: List<Button>,
     ): List<Button> {
         val finalCombinedButtons: List<Button>
 
@@ -152,28 +149,28 @@ constructor(
             // Order is Animated Replies -> Animated Actions -> Smart Replies -> Smart Actions
 
             // Filter buttons based on their type for the animated treatment
-            val animatedReplyButtons = smartReplyButtons.filter {
-                it.getButtonType() == SmartButtonType.ANIMATED_REPLY
-            }
-            val regularReplyButtons = smartReplyButtons.filter {
-                it.getButtonType() == SmartButtonType.REPLY
-            }
+            val animatedReplyButtons =
+                smartReplyButtons.filter { it.getButtonType() == SmartButtonType.ANIMATED_REPLY }
+            val regularReplyButtons =
+                smartReplyButtons.filter { it.getButtonType() == SmartButtonType.REPLY }
 
-            val animatedActionButtons = smartActionButtons.filter {
-                it.getButtonType() == SmartButtonType.ANIMATED_ACTION
-            }
-            val regularActionButtons = smartActionButtons.filter {
-                it.getButtonType() == SmartButtonType.ACTION
-            }
+            val animatedActionButtons =
+                smartActionButtons.filter { it.getButtonType() == SmartButtonType.ANIMATED_ACTION }
+            val regularActionButtons =
+                smartActionButtons.filter { it.getButtonType() == SmartButtonType.ACTION }
 
             finalCombinedButtons =
-                animatedReplyButtons + animatedActionButtons + regularReplyButtons + regularActionButtons
+                animatedReplyButtons +
+                    animatedActionButtons +
+                    regularReplyButtons +
+                    regularActionButtons
         } else {
             // Order is Smart Replies -> Smart Actions
             finalCombinedButtons = smartReplyButtons + smartActionButtons
         }
         return finalCombinedButtons
     }
+
     override fun inflateSmartReplyViewHolder(
         sysuiContext: Context,
         notifPackageContext: Context,
@@ -199,44 +196,49 @@ constructor(
         val smartReplies = newSmartReplyState.smartReplies
         smartReplyView.setSmartRepliesGeneratedByAssistant(smartReplies?.fromAssistant ?: false)
         val smartReplyButtons =
-            smartReplies?.let {
-                smartReplies.choices.asSequence().mapIndexed { index, choice ->
-                    smartRepliesInflater.inflateReplyButton(
-                        smartReplyView,
-                        entry,
-                        smartReplies,
-                        index,
-                        choice,
-                        delayOnClickListener,
-                    )
-                }
-            } ?.toList() ?: emptyList()
-
-        val smartActionButtons =
-            newSmartReplyState.smartActions?.let { smartActions ->
-                val themedPackageContext =
-                    ContextThemeWrapper(notifPackageContext, sysuiContext.theme)
-                smartActions.actions
-                    .asSequence()
-                    .filter { it.actionIntent != null }
-                    .mapIndexed { index, action ->
-                        smartActionsInflater.inflateActionButton(
+            smartReplies
+                ?.let {
+                    smartReplies.choices.asSequence().mapIndexed { index, choice ->
+                        smartRepliesInflater.inflateReplyButton(
                             smartReplyView,
                             entry,
-                            smartActions,
+                            smartReplies,
                             index,
-                            action,
+                            choice,
                             delayOnClickListener,
-                            themedPackageContext,
                         )
                     }
-            }?.toList() ?: emptyList()
+                }
+                ?.toList() ?: emptyList()
+
+        val smartActionButtons =
+            newSmartReplyState.smartActions
+                ?.let { smartActions ->
+                    val themedPackageContext =
+                        ContextThemeWrapper(notifPackageContext, sysuiContext.theme)
+                    smartActions.actions
+                        .asSequence()
+                        .filter { it.actionIntent != null }
+                        .mapIndexed { index, action ->
+                            smartActionsInflater.inflateActionButton(
+                                smartReplyView,
+                                entry,
+                                smartActions,
+                                index,
+                                action,
+                                delayOnClickListener,
+                                themedPackageContext,
+                            )
+                        }
+                }
+                ?.toList() ?: emptyList()
 
         return InflatedSmartReplyViewHolder(
             smartReplyView,
-            getSortedButtons(smartReplyButtons, smartActionButtons)
+            getSortedButtons(smartReplyButtons, smartActionButtons),
         )
     }
+
     /**
      * Chose what smart replies and smart actions to display. App generated suggestions take
      * precedence. So if the app provides any smart replies, we don't show any replies or actions
@@ -293,9 +295,9 @@ constructor(
             val entryActions = entry.smartActions
             if (
                 entryReplies.isNotEmpty() &&
-                freeformRemoteInputActionPair != null &&
-                freeformRemoteInputActionPair.second.allowGeneratedReplies &&
-                freeformRemoteInputActionPair.second.actionIntent != null
+                    freeformRemoteInputActionPair != null &&
+                    freeformRemoteInputActionPair.second.allowGeneratedReplies &&
+                    freeformRemoteInputActionPair.second.actionIntent != null
             ) {
                 smartReplies =
                     SmartReplies(
@@ -320,7 +322,7 @@ constructor(
         val hasPhishingAction =
             smartActions?.actions?.any {
                 it.isContextual &&
-                        it.semanticAction ==
+                    it.semanticAction ==
                         Notification.Action.SEMANTIC_ACTION_CONVERSATION_IS_PHISHING
             } ?: false
         var suppressedActions: SuppressedActions? = null
@@ -402,9 +404,9 @@ private fun loadIconDrawableWithTimeout(
     }
     val bitmap =
         runCatching {
-            iconTaskThreadPool.execute(bitmapTask)
-            bitmapTask.get(ICON_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS)
-        }
+                iconTaskThreadPool.execute(bitmapTask)
+                bitmapTask.get(ICON_TASK_TIMEOUT_MS, TimeUnit.MILLISECONDS)
+            }
             .getOrElse { ex ->
                 Log.e(TAG, "Failed to load $icon: $ex")
                 bitmapTask.cancel(true)
@@ -443,8 +445,8 @@ constructor(
     ): Button {
         val isAnimatedAction =
             Flags.notificationAnimatedActionsTreatment() &&
-                    smartActions.fromAssistant &&
-                    action.extras.getBoolean(Notification.Action.EXTRA_IS_ANIMATED, false)
+                smartActions.fromAssistant &&
+                action.extras.getBoolean(Notification.Action.EXTRA_IS_ANIMATED, false)
         val layoutRes =
             if (isAnimatedAction) {
                 R.layout.animated_action_button
@@ -462,11 +464,16 @@ constructor(
                 // We received the Icon from the application - so use the Context of the application
                 // to
                 // reference icon resources.
-                val newIconSize = if (isAnimatedAction) {
-                    context.resources.getDimensionPixelSize(R.dimen.animated_action_button_icon_size)
-                } else {
-                    context.resources.getDimensionPixelSize(R.dimen.smart_action_button_icon_size)
-                }
+                val newIconSize =
+                    if (isAnimatedAction) {
+                        context.resources.getDimensionPixelSize(
+                            R.dimen.animated_action_button_icon_size
+                        )
+                    } else {
+                        context.resources.getDimensionPixelSize(
+                            R.dimen.smart_action_button_icon_size
+                        )
+                    }
                 val iconDrawable =
                     loadIconDrawableWithTimeout(action.getIcon(), packageContext, newIconSize)
                         ?: GradientDrawable()
@@ -502,7 +509,7 @@ constructor(
     ) =
         if (
             smartActions.fromAssistant &&
-            SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY == action.semanticAction
+                SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY == action.semanticAction
         ) {
             entry.row.doSmartActionClick(
                 entry.row.x.toInt() / 2,
@@ -556,14 +563,17 @@ constructor(
         choice: CharSequence,
         delayOnClickListener: Boolean,
     ): Button {
-        val enableAnimatedReply = Flags.notificationAnimatedActionsTreatment() &&
-                smartReplies.fromAssistant && isAnimatedReply(choice)
-        val layoutRes = if (enableAnimatedReply) {
-            R.layout.animated_action_button
-        } else {
-            if (notificationsRedesignTemplates()) R.layout.notification_2025_smart_reply_button
-            else R.layout.smart_reply_button
-        }
+        val enableAnimatedReply =
+            Flags.notificationAnimatedActionsTreatment() &&
+                smartReplies.fromAssistant &&
+                isAnimatedReply(choice)
+        val layoutRes =
+            if (enableAnimatedReply) {
+                R.layout.animated_action_button
+            } else {
+                if (notificationsRedesignTemplates()) R.layout.notification_2025_smart_reply_button
+                else R.layout.smart_reply_button
+            }
 
         return (LayoutInflater.from(parent.context).inflate(layoutRes, parent, false) as Button)
             .apply {
@@ -577,7 +587,9 @@ constructor(
                     text = fullTextWithAttribution
                     // Add the icon to the Animated Reply button
                     val animatedReplyIconSize =
-                        context.resources.getDimensionPixelSize(R.dimen.animated_action_button_icon_size)
+                        context.resources.getDimensionPixelSize(
+                            R.dimen.animated_action_button_icon_size
+                        )
                     val iconDrawable =
                         AppCompatResources.getDrawable(context, R.drawable.ic_content_paste_spark)
                     if (iconDrawable != null) {
@@ -597,7 +609,7 @@ constructor(
                             replyIndex,
                             parent,
                             this,
-                            choiceToDeliver
+                            choiceToDeliver,
                         )
                     }
                 setOnClickListener(
@@ -655,7 +667,7 @@ constructor(
                     entry,
                     replyIndex,
                     if (Flags.notificationAnimatedActionsTreatment()) choice else button.text,
-                    NotificationLogger.getNotificationLocation(entry).toMetricsEventEnum(),
+                    getNotificationLocation(entry).toMetricsEventEnum(),
                     false, /* modifiedBeforeSending */
                 )
                 entry.setHasSentReply()
@@ -721,7 +733,7 @@ constructor(
                         ForegroundColorSpan(colorInt),
                         choice.length,
                         spannableWithColor.length,
-                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                        Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,
                     )
                     return spannableWithColor
                 }

@@ -348,7 +348,9 @@ public class NavigationBarControllerImpl implements
                     }
                     Display display = mDisplayManager.getDisplay(displayId);
                     mIsLargeScreen = isLargeScreen(mContext);
-                    createNavigationBar(display, null /* savedState */, null /* result */);
+                    if (mNavigationBars.get(displayId) == null) {
+                        createNavigationBar(display, null /* savedState */, null /* result */);
+                    }
                 }};
 
     /**

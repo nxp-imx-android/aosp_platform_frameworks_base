@@ -42,6 +42,13 @@ import androidx.annotation.VisibleForTesting;
 import com.android.internal.R;
 import com.android.internal.policy.SystemBarUtils;
 
+/**
+ * Manages the UI panel for selecting autoclick types.
+ * This panel allows users to choose different autoclick behaviors (e.g., left
+ * click, right click), pause/resume autoclick, and reposition the panel on the
+ * screen. It interacts with {@link AutoclickController} to update the autoclick
+ * behavior.
+ */
 public class AutoclickTypePanel {
 
     private final String TAG = AutoclickTypePanel.class.getSimpleName();
@@ -53,6 +60,9 @@ public class AutoclickTypePanel {
     public static final int AUTOCLICK_TYPE_SCROLL = 4;
     public static final int AUTOCLICK_TYPE_LONG_PRESS = 5;
 
+    // Defines the possible corner positions for the autoclick panel.
+    // These constants are used to determine where the panel is anchored on the
+    // screen.
     public static final int CORNER_BOTTOM_RIGHT = 0;
     public static final int CORNER_BOTTOM_LEFT = 1;
     public static final int CORNER_TOP_LEFT = 2;
@@ -87,6 +97,9 @@ public class AutoclickTypePanel {
     })
     public @interface AutoclickType {}
 
+    // Defines the possible corner positions for the autoclick panel.
+    // These constants are used to determine where the panel is anchored on the
+    // screen.
     @IntDef({
             CORNER_BOTTOM_RIGHT,
             CORNER_BOTTOM_LEFT,
@@ -95,14 +108,15 @@ public class AutoclickTypePanel {
     })
     public @interface Corner {}
 
-    // An interface exposed to {@link AutoclickController) to handle different actions on the panel,
-    // including changing autoclick type, pausing/resuming autoclick.
+    // An interface exposed to {@link AutoclickController} to handle different
+    // actions on the panel, including changing autoclick type, pausing/resuming
+    // autoclick, and repositioning the panel.
     public interface ClickPanelControllerInterface {
         /**
          * Allows users to change a different autoclick type.
          *
-         * @param clickType The new autoclick type to use. Should be one of the values defined in
-         *                  {@link AutoclickType}.
+         * @param clickType The new autoclick type to use. Should be one of the
+         *                  values defined in {@link AutoclickType}.
          */
         void handleAutoclickTypeChange(@AutoclickType int clickType);
 
@@ -174,6 +188,7 @@ public class AutoclickTypePanel {
         mClickPanelController = clickPanelController;
         mParams = getDefaultLayoutParams();
 
+        // Load drawables for buttons.
         mPauseButtonDrawable = mContext.getDrawable(
                 R.drawable.accessibility_autoclick_pause);
         mResumeButtonDrawable = mContext.getDrawable(
@@ -187,6 +202,7 @@ public class AutoclickTypePanel {
         mPositionBottomRightDrawable = mContext.getDrawable(
                 R.drawable.accessibility_autoclick_position_bottom_right);
 
+        // Inflate the panel layout.
         mContentView =
                 (AutoclickLinearLayout) LayoutInflater.from(context)
                         .inflate(R.layout.accessibility_autoclick_type_panel, null);
@@ -243,6 +259,11 @@ public class AutoclickTypePanel {
         return false;
     }
 
+    /**
+     * Snaps the panel to the nearest screen edge after a drag operation.
+     * It determines whether the panel is closer to the left or right edge and adjusts its
+     * position accordingly, maintaining vertical position within screen bounds.
+     */
     private void snapToNearestEdge(WindowManager.LayoutParams params) {
         // Get screen width to determine which side to snap to.
         // TODO(b/397944891): Handle device rotation case.
@@ -284,6 +305,9 @@ public class AutoclickTypePanel {
         updatePositionButtonIcon(getVisualCorner());
     }
 
+    /**
+     * Initializes the state and listeners for all buttons on the panel.
+     */
     private void initializeButtonState() {
         // Use `createButtonListener()` to append extra pause logic to each button's click.
         mLeftClickButton.setOnClickListener(
@@ -313,7 +337,7 @@ public class AutoclickTypePanel {
         adjustPanelSpacing(/* isExpanded= */ true);
     }
 
-    /** Reset panel as collapsed state and only displays selelcted button. */
+    /** Reset panel as collapsed state and only displays selected button. */
     public void collapsePanelWithClickType(@AutoclickType int clickType) {
         hideAllClickTypeButtons();
         final LinearLayout selectedButton = getButtonFromClickType(clickType);
@@ -389,10 +413,16 @@ public class AutoclickTypePanel {
         mWindowManager.removeView(mContentView);
     }
 
+    /**
+     * Checks if autoclick is currently paused.
+     */
     public boolean isPaused() {
         return mPaused;
     }
 
+    /**
+     * Checks if the panel is currently being hovered over by the mouse pointer.
+     */
     public boolean isHovered() {
         return mContentView.isHovered();
     }
@@ -415,6 +445,9 @@ public class AutoclickTypePanel {
         }
     }
 
+    /**
+     * Toggles the pause/resume state of the autoclick feature and updates the pause button UI.
+     */
     private void togglePause() {
         mPaused = !mPaused;
         mClickPanelController.toggleAutoclickPause(mPaused);
@@ -453,6 +486,11 @@ public class AutoclickTypePanel {
         mLongPressButton.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Retrieves the LinearLayout corresponding to the given autoclick type.
+     * @param clickType The autoclick type.
+     * @return The LinearLayout for the specified click type.
+     */
     private LinearLayout getButtonFromClickType(@AutoclickType int clickType) {
         return switch (clickType) {
             case AUTOCLICK_TYPE_LEFT_CLICK -> mLeftClickButton;
@@ -475,6 +513,11 @@ public class AutoclickTypePanel {
         updatePositionButtonIcon(mCurrentCorner);
     }
 
+    /**
+     * Sets the panel's gravity and initial x/y offsets based on the specified corner.
+     * @param params The WindowManager.LayoutParams to modify.
+     * @param corner The corner to position the panel in.
+     */
     private void setPanelPositionForCorner(WindowManager.LayoutParams params, @Corner int corner) {
         // TODO(b/396402941): Current values are experimental and may not work correctly across
         // different device resolutions and configurations.
@@ -498,6 +541,9 @@ public class AutoclickTypePanel {
         }
     }
 
+    /**
+     * Saves the panel's current position (gravity, x, y, corner) to secure settings.
+     */
     private void savePanelPosition() {
         String positionString = TextUtils.join(POSITION_DELIMITER, new String[]{
                 String.valueOf(mParams.gravity),
@@ -538,6 +584,11 @@ public class AutoclickTypePanel {
         mCurrentCorner = Integer.parseInt(parts[3]);
     }
 
+    /**
+     * Validates the parsed position parts from settings.
+     * @param parts The string array of position parts ("gravity,x,y,corner").
+     * @return {@code true} if the parts are valid, {@code false} otherwise.
+     */
     private boolean isValidPositionParts(String[] parts) {
         // Check basic array validity.
         if (parts == null || parts.length != 4) {
@@ -571,7 +622,12 @@ public class AutoclickTypePanel {
         return true;
     }
 
-    /* Appends a check of the pause state to the button's listener. */
+    /**
+     * Wraps an existing OnClickListener to add logic for unpausing autoclick if it's paused
+     * when a click type button (excluding the pause button itself) is clicked.
+     * @param listener The original OnClickListener for the button.
+     * @return A new OnClickListener that includes the unpausing logic.
+     */
     private View.OnClickListener wrapWithTogglePauseListener(View.OnClickListener listener) {
         return v -> {
             listener.onClick(v);
@@ -583,6 +639,10 @@ public class AutoclickTypePanel {
         };
     }
 
+    /**
+     * Updates the icon of the position button based on the current corner.
+     * @param corner The corner to set the icon for.
+     */
     private void updatePositionButtonIcon(@Corner int corner) {
         ImageButton imageButton = (ImageButton) mPositionButton.getChildAt(/* index= */ 0);
         switch (corner) {

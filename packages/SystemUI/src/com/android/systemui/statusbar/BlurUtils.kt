@@ -219,7 +219,7 @@ constructor(
     }
 
     private fun shouldScaleWithTransaction(): Boolean {
-        return Flags.spatialModelPushbackInShader() && Flags.spatialModelAppPushback()
+        return Flags.spatialModelAppPushback()
     }
 
     /**

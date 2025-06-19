@@ -441,7 +441,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                     mStartPos = touchPos;
                     mMoving = true;
                     if (Flags.enableFlexibleTwoAppSplit()) {
-                        updateSnapOnMove(displacement, isLeftRightSplit);
+                        initSnapOnMove(displacement, isLeftRightSplit);
                     }
                 }
                 if (mMoving) {
@@ -512,7 +512,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
     }
 
     /** Performs snapping and haptic clicks based on current divider displacement. */
-    private void updateSnapOnMove(int displacement, boolean isLeftRightSplit) {
+    private void initSnapOnMove(int displacement, boolean isLeftRightSplit) {
         // Move gesture is confirmed, create framework for magnetic snap
         InputDirection direction =
                 displacement > 0 ? InputDirection.Max : InputDirection.Min;
@@ -520,7 +520,7 @@ public class DividerView extends FrameLayout implements View.OnTouchListener {
                 direction);
         mViewMotionValue = new ViewMotionValue(mStartPos,
                 mDistanceGestureContext,
-                mSplitLayout.mDividerSnapAlgorithm.getMotionSpec(),
+                mSplitLayout.mDividerSnapAlgorithm.getMotionSpec(getResources()),
                 "dividerView::pos" /* label */);
         mLastHoveredOverSnapPosition = mSplitLayout.calculateCurrentSnapPosition();
         // Set a "starting region" in which we don't want to show the tooltip yet.

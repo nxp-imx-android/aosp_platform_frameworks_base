@@ -176,7 +176,11 @@ private fun HeaderComposeViewContent(
             row.setBundleHeaderViewModel(viewModel)
             onDispose { row.setBundleHeaderViewModel(null) }
         }
-        BundleHeader(viewModel, onHeaderClicked = { row.expandNotification() })
+        BundleHeader(
+            viewModel,
+            onHeaderClicked = { row.expandNotification() },
+            onHeaderLongClicked = { row.performLongClick() },
+        )
     }
 }
 

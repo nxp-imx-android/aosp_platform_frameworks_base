@@ -142,6 +142,6 @@ constructor(
 
     companion object {
         private const val ACTION_CORNER_DP = 8f
-        private val DEBOUNCE_DELAY = 200.milliseconds
+        private val DEBOUNCE_DELAY = 50.milliseconds
     }
 }

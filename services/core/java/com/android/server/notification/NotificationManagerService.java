@@ -12275,7 +12275,7 @@ public class NotificationManagerService extends SystemService {
                     smartReplies = null;
                 }
             }
-            NotificationChannel effectiveChannel = record.getChannel().copy();
+            NotificationChannel effectiveChannel = record.getChannel();
             if (notificationClassificationUi()) {
                 // special handling for a notification's channel visibility when bundled: if the
                 // notification's original channel had a more strict visibility than the current
@@ -12285,6 +12285,7 @@ public class NotificationManagerService extends SystemService {
                     int currentChannelVis = record.getChannel().getLockscreenVisibility();
                     if (currentChannelVis == VISIBILITY_NO_OVERRIDE
                             || record.getOriginalChannelVisibility() < currentChannelVis) {
+                        effectiveChannel = record.getChannel().copy();
                         effectiveChannel.setLockscreenVisibility(
                                 record.getOriginalChannelVisibility());
                     }

@@ -146,7 +146,12 @@ class AudioSharingRepositoryImpl(
             isAudioSharingProfilesReady.flatMapLatest { ready ->
                 if (ready) {
                     btManager.profileManager.leAudioProfile.onBroadcastToUnicastFallbackGroupChanged
-                        .onStart { emit(BluetoothCsipSetCoordinator.GROUP_ID_INVALID) }
+                        .onStart {
+                            emit(
+                                btManager.profileManager
+                                    .leAudioProfile.broadcastToUnicastFallbackGroup
+                            )
+                        }
                         .flowOn(backgroundCoroutineContext)
                 } else {
                     flowOf(BluetoothCsipSetCoordinator.GROUP_ID_INVALID)

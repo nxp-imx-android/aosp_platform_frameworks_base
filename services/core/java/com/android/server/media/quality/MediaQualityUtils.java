@@ -279,15 +279,15 @@ public final class MediaQualityUtils {
                         pp.getColorTemperature());
             }
             if (pp.getColorTemperatureRedGain() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN,
+                bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_GAIN,
                         pp.getColorTemperatureRedGain());
             }
             if (pp.getColorTemperatureGreenGain() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN,
+                bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN,
                         pp.getColorTemperatureGreenGain());
             }
             if (pp.getColorTemperatureBlueGain() > -1) {
-                bundle.putInt(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN,
+                bundle.putInt(PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_GAIN,
                         pp.getColorTemperatureBlueGain());
             }
             if (pp.getLevelRange() > -1) {
@@ -484,11 +484,11 @@ public final class MediaQualityUtils {
                         pp.getElevenPointRed());
             }
             if (pp.getElevenPointBlue() != null) {
-                bundle.putIntArray(PictureQuality.PARAMETER_ELEVEN_POINT_RED,
+                bundle.putIntArray(PictureQuality.PARAMETER_ELEVEN_POINT_BLUE,
                         pp.getElevenPointBlue());
             }
             if (pp.getElevenPointGreen() != null) {
-                bundle.putIntArray(PictureQuality.PARAMETER_ELEVEN_POINT_RED,
+                bundle.putIntArray(PictureQuality.PARAMETER_ELEVEN_POINT_GREEN,
                         pp.getElevenPointGreen());
             }
         }
@@ -692,20 +692,20 @@ public final class MediaQualityUtils {
                     PictureQuality.PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED)));
             params.remove(PictureQuality.PARAMETER_AUTO_SUPER_RESOLUTION_ENABLED);
         }
-        if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN)) {
+        if (params.containsKey(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_GAIN)) {
             pictureParams.add(PictureParameter.colorTemperatureRedGain(params.getInt(
                     PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN)));
-            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN);
+            params.remove(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_GAIN);
         }
-        if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN)) {
+        if (params.containsKey(PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN)) {
             pictureParams.add(PictureParameter.colorTemperatureGreenGain(params.getInt(
-                    PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN)));
-            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_GREEN_GAIN);
+                    PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN);
         }
-        if (params.containsKey(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN)) {
+        if (params.containsKey(PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_GAIN)) {
             pictureParams.add(PictureParameter.colorTemperatureBlueGain(params.getInt(
-                    PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN)));
-            params.remove(PictureQuality.PARAMETER_COLOR_TUNER_BLUE_GAIN);
+                    PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_GAIN)));
+            params.remove(PictureQuality.PARAMETER_COLOR_TEMPERATURE_BLUE_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_LEVEL_RANGE)) {
             String levelRangeString = params.getString(PictureQuality.PARAMETER_LEVEL_RANGE);

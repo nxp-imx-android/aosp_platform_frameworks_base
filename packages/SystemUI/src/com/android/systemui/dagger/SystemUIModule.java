@@ -132,6 +132,7 @@ import com.android.systemui.statusbar.chips.StatusBarChipsModule;
 import com.android.systemui.statusbar.connectivity.ConnectivityModule;
 import com.android.systemui.statusbar.dagger.StatusBarModule;
 import com.android.systemui.statusbar.disableflags.dagger.DisableFlagsModule;
+import com.android.systemui.statusbar.domain.interactor.StatusBarRegionSamplingInteractorModule;
 import com.android.systemui.statusbar.events.StatusBarEventsModule;
 import com.android.systemui.statusbar.events.SystemStatusAnimationScheduler;
 import com.android.systemui.statusbar.featurepods.av.AvControlsChipModule;
@@ -167,6 +168,7 @@ import com.android.systemui.topui.TopUiController;
 import com.android.systemui.topui.TopUiModule;
 import com.android.systemui.touchpad.TouchpadModule;
 import com.android.systemui.tuner.dagger.TunerModule;
+import com.android.systemui.uimode.data.UiModeModule;
 import com.android.systemui.user.UserModule;
 import com.android.systemui.user.domain.UserDomainLayerModule;
 import com.android.systemui.util.EventLogModule;
@@ -282,6 +284,7 @@ import javax.inject.Named;
         StatusBarChipsModule.class,
         StatusBarPipelineModule.class,
         StatusBarPolicyModule.class,
+        StatusBarRegionSamplingInteractorModule.class,
         StatusBarViewBinderModule.class,
         StatusBarWindowModule.class,
         SystemPropertiesFlagsModule.class,
@@ -295,6 +298,7 @@ import javax.inject.Named;
         TopUiModule.class,
         TouchpadModule.class,
         TunerModule.class,
+        UiModeModule.class,
         UserDomainLayerModule.class,
         UserModule.class,
         UtilModule.class,

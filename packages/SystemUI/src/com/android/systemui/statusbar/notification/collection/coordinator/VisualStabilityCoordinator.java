@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.notification.collection.coordinator;
 import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_ASLEEP;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import com.android.systemui.Dumpable;
@@ -47,6 +48,7 @@ import com.android.systemui.statusbar.notification.collection.listbuilder.plugga
 import com.android.systemui.statusbar.notification.collection.provider.VisualStabilityProvider;
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository;
 import com.android.systemui.statusbar.notification.domain.interactor.SeenNotificationsInteractor;
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi;
 import com.android.systemui.statusbar.notification.shared.NotificationMinimalism;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.util.concurrency.DelayableExecutor;
@@ -109,6 +111,7 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     // value: runnable that when run removes its associated RemoveOverrideSuppressionRunnable
     // from the DelayableExecutor's queue
     private Map<String, Runnable> mEntriesThatCanChangeSection = new HashMap<>();
+    private Map<String, Runnable> mEntriesThatCanMoveFreely = new HashMap<>();
 
     @VisibleForTesting
     protected static final long ALLOW_SECTION_CHANGE_TIMEOUT = 500;
@@ -324,10 +327,12 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                         isGroupChangeAllowedForEntry =
                                 isEveryChangeAllowed()
                                         || canReorderNotificationEntry(entry)
-                                        || canMoveForHeadsUp(entry);
+                                        || canMoveForHeadsUp(entry)
+                                        || canFreelyMoveEntry(entry);
                     } else {
                         isGroupChangeAllowedForEntry = mReorderingAllowed
-                                || canMoveForHeadsUp(entry);
+                                || canMoveForHeadsUp(entry)
+                                || canFreelyMoveEntry(entry);
                     }
                     mIsSuppressingParentChange |= !isGroupChangeAllowedForEntry;
                     return isGroupChangeAllowedForEntry;
@@ -335,7 +340,8 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
 
                 @Override
                 public boolean isParentChangeAllowed(@NonNull GroupEntry entry) {
-                    final boolean isBundleChangeAllowedForGroup = isEveryChangeAllowed();
+                    final boolean isBundleChangeAllowedForGroup = isEveryChangeAllowed()
+                            || canFreelyMoveEntry(entry);
                     mIsSuppressingParentChange |= !isBundleChangeAllowedForGroup;
                     return isBundleChangeAllowedForGroup;
                 }
@@ -387,7 +393,9 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                         }
 
                         return canReorderNotificationEntry(notificationEntry)
-                                || canMoveForHeadsUp(notificationEntry);
+                                || canMoveForHeadsUp(notificationEntry)
+                                || (notificationEntry != null
+                                        && canFreelyMoveEntry(notificationEntry));
                     } else {
                         return mReorderingAllowed || canMoveForHeadsUp(notificationEntry);
                     }
@@ -498,6 +506,41 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
     }
 
     /**
+     * Allows this notification entry to be re-ordered and re-parented in the notification list
+     * temporarily until the timeout has passed.
+     *
+     * Typically this is allowed because the user has directly changed something about the
+     * notification and we are reordering based on the user's change.
+     *
+     * @param entry notification entry that can move freely even if it would be otherwise suppressed
+     * @param now current time SystemClock.elapsedRealtime
+     */
+    public void temporarilyAllowFreeMovement(@NonNull NotificationEntry entry, long now) {
+        if (NotificationBundleUi.isUnexpectedlyInLegacyMode()) {
+            return;
+        }
+        final String entryKey = entry.getKey();
+        final Runnable existing = mEntriesThatCanMoveFreely.get(entryKey);
+        final boolean wasAllowedToMoveFreely = existing != null;
+
+        // If it exists, cancel previous timeout
+        if (wasAllowedToMoveFreely) {
+            existing.run();
+        }
+
+        // Schedule & store new timeout cancellable
+        mEntriesThatCanMoveFreely.put(
+                entryKey,
+                mDelayableExecutor.executeAtTime(
+                        () -> mEntriesThatCanMoveFreely.remove(entryKey),
+                        now + ALLOW_SECTION_CHANGE_TIMEOUT));
+
+        if (!wasAllowedToMoveFreely) {
+            mNotifStabilityManager.invalidateList("temporarilyAllowFreeMovement");
+        }
+    }
+
+    /**
      * Allows this notification entry to be re-ordered in the notification list temporarily until
      * the timeout has passed.
      *
@@ -526,6 +569,25 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
 
         if (!wasSectionChangeAllowed) {
             mNotifStabilityManager.invalidateList("temporarilyAllowSectionChanges");
+        }
+    }
+
+    private boolean canFreelyMoveEntry(@NonNull GroupEntry entry) {
+        if (!NotificationBundleUi.isEnabled()) {
+            return false;
+        }
+        @Nullable NotificationEntry representativeEntry = entry.getRepresentativeEntry();
+        if (representativeEntry == null) {
+            return false;
+        }
+        return canFreelyMoveEntry(representativeEntry);
+    }
+
+    private boolean canFreelyMoveEntry(@NonNull NotificationEntry entry) {
+        if (NotificationBundleUi.isEnabled()) {
+            return mEntriesThatCanMoveFreely.containsKey(entry.getKey());
+        } else {
+            return false;
         }
     }
 

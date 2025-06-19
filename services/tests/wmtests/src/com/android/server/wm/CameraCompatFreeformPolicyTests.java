@@ -672,8 +672,8 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
 
         private void setupAppCompatConfiguration() {
             applyOnConf((c) -> {
-                c.enableCameraCompatTreatment(true);
-                c.enableCameraCompatTreatmentAtBuildTime(true);
+                c.enableCameraCompatForceRotateTreatment(true);
+                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
                 c.enableCameraCompatRefresh(true);
                 c.enableCameraCompatRefreshCycleThroughStop(true);
                 c.enableCameraCompatSplitScreenAspectRatio(false);

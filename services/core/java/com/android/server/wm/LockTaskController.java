@@ -912,8 +912,8 @@ public class LockTaskController {
         }
 
         try {
-            statusBar.disable(flags1, mToken, mContext.getPackageName());
-            statusBar.disable2(flags2, mToken, mContext.getPackageName());
+            statusBar.disableForUser(flags1, mToken, mContext.getPackageName(), userId);
+            statusBar.disable2ForUser(flags2, mToken, mContext.getPackageName(), userId);
         } catch (RemoteException e) {
             Slog.e(TAG, "Failed to set status bar flags", e);
         }

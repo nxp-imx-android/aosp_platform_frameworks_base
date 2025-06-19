@@ -36,9 +36,11 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 /**
  * Models UI state needed for rendering the content of the quick settings scene.
@@ -84,6 +86,10 @@ constructor(
             launch { hydrator.activate() }
 
             launch { qsContainerViewModel.activate() }
+            qsContainerViewModel.editModeViewModel.isEditing
+                .filter { it }
+                .onEach { sceneInteractor.changeScene(Scenes.QSEditMode, loggingReason = "") }
+                .launchIn(this)
 
             launch(context = mainDispatcher) {
                 shadeModeInteractor.shadeMode.collect { shadeMode ->

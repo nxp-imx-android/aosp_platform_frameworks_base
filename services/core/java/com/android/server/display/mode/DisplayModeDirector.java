@@ -1479,36 +1479,51 @@ public class DisplayModeDirector {
 
         public void observe() {
             mInjector.registerDisplayListener(this, mHandler);
-
-            // Populate existing displays
-            SparseArray<Display.Mode[]> modes = new SparseArray<>();
-            SparseArray<Display.Mode[]> appModes = new SparseArray<>();
-            SparseArray<Display.Mode> defaultModes = new SparseArray<>();
-            Display[] displays = mInjector.getDisplays();
-            for (Display d : displays) {
-                final int displayId = d.getDisplayId();
-                DisplayInfo info = getDisplayInfo(displayId);
-                modes.put(displayId, info.supportedModes);
-                appModes.put(displayId, info.appsSupportedModes);
-                defaultModes.put(displayId, info.getDefaultMode());
-            }
-            DisplayDeviceConfig defaultDisplayConfig = mDisplayDeviceConfigProvider
-                    .getDisplayDeviceConfig(Display.DEFAULT_DISPLAY);
-            synchronized (mLock) {
-                final int size = modes.size();
-                for (int i = 0; i < size; i++) {
-                    mSupportedModesByDisplay.put(modes.keyAt(i), modes.valueAt(i));
-                    mAppSupportedModesByDisplay.put(appModes.keyAt(i), appModes.valueAt(i));
-                    mDefaultModeByDisplay.put(defaultModes.keyAt(i), defaultModes.valueAt(i));
+            if (mDisplayManagerFlags.isOnDisplayAddedInObserverEnabled()) {
+                final var enabledDisplays = mInjector.getEnabledDisplays();
+                // Populate existing displays
+                if (enabledDisplays != null && enabledDisplays.length > 0) {
+                    mHandler.post(() -> {
+                        for (Display d : enabledDisplays) {
+                            onDisplayAdded(d.getDisplayId());
+                        }
+                    });
                 }
-                mDisplayDeviceConfigByDisplay.put(Display.DEFAULT_DISPLAY, defaultDisplayConfig);
+            } else {
+                // Populate existing displays
+                SparseArray<Display.Mode[]> modes = new SparseArray<>();
+                SparseArray<Display.Mode[]> appModes = new SparseArray<>();
+                SparseArray<Display.Mode> defaultModes = new SparseArray<>();
+                Display[] displays = mInjector.getDisplays();
+                for (Display d : displays) {
+                    final int displayId = d.getDisplayId();
+                    DisplayInfo info = getDisplayInfo(displayId);
+                    modes.put(displayId, info.supportedModes);
+                    appModes.put(displayId, info.appsSupportedModes);
+                    defaultModes.put(displayId, info.getDefaultMode());
+                }
+                DisplayDeviceConfig defaultDisplayConfig = mDisplayDeviceConfigProvider
+                        .getDisplayDeviceConfig(Display.DEFAULT_DISPLAY);
+                synchronized (mLock) {
+                    final int size = modes.size();
+                    for (int i = 0; i < size; i++) {
+                        mSupportedModesByDisplay.put(modes.keyAt(i), modes.valueAt(i));
+                        mAppSupportedModesByDisplay.put(appModes.keyAt(i), appModes.valueAt(i));
+                        mDefaultModeByDisplay.put(defaultModes.keyAt(i), defaultModes.valueAt(i));
+                    }
+                    mDisplayDeviceConfigByDisplay.put(Display.DEFAULT_DISPLAY,
+                            defaultDisplayConfig);
+                }
             }
         }
 
         @Override
         public void onDisplayAdded(int displayId) {
-            updateDisplayDeviceConfig(displayId);
             DisplayInfo displayInfo = getDisplayInfo(displayId);
+            if (displayInfo == null) {
+                return;
+            }
+            updateDisplayDeviceConfig(displayId);
             registerExternalDisplay(displayInfo);
             updateDisplayModes(displayId, displayInfo);
             updateHasArrSupport(displayId, displayInfo);
@@ -1535,8 +1550,11 @@ public class DisplayModeDirector {
 
         @Override
         public void onDisplayChanged(int displayId) {
-            updateDisplayDeviceConfig(displayId);
             DisplayInfo displayInfo = getDisplayInfo(displayId);
+            if (displayInfo == null) {
+                return;
+            }
+            updateDisplayDeviceConfig(displayId);
             updateHasArrSupport(displayId, displayInfo);
             updateDisplayModes(displayId, displayInfo);
             updateLayoutLimitedFrameRate(displayId, displayInfo);
@@ -3139,6 +3157,8 @@ public class DisplayModeDirector {
 
         Display[] getDisplays();
 
+        Display[] getEnabledDisplays();
+
         boolean getDisplayInfo(int displayId, DisplayInfo displayInfo);
 
         BrightnessInfo getBrightnessInfo(int displayId);
@@ -3217,6 +3237,11 @@ public class DisplayModeDirector {
         @Override
         public Display[] getDisplays() {
             return getDisplayManager().getDisplays(DISPLAY_CATEGORY_ALL_INCLUDING_DISABLED);
+        }
+
+        @Override
+        public Display[] getEnabledDisplays() {
+            return getDisplayManager().getDisplays();
         }
 
         @Override

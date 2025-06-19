@@ -439,3 +439,13 @@ flag {
   description: "Check for enterprise management indicator in carrier privileges of an eSIM profile"
   bug: "373466339"
 }
+
+flag {
+  name: "policy_transparency_refactor_enabled"
+  namespace: "enterprise"
+  description: "Refactor policy transparency to use new generic policy transparency API."
+  bug: "414733570"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}

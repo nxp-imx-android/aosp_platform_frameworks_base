@@ -52,6 +52,7 @@ import android.content.pm.SharedLibraryInfo;
 import android.content.pm.SuspendDialogInfo;
 import android.content.pm.UserInfo;
 import android.content.pm.UserPackage;
+import android.content.pm.verify.developer.DeveloperVerificationStatus;
 import android.os.BaseBundle;
 import android.os.Build;
 import android.os.Message;
@@ -84,6 +85,7 @@ import com.android.server.pm.pkg.ArchiveState;
 import com.android.server.pm.pkg.PackageUserState;
 import com.android.server.pm.pkg.PackageUserStateInternal;
 import com.android.server.pm.pkg.SuspendParams;
+import com.android.server.pm.verify.developer.DeveloperVerificationStatusInternal;
 import com.android.server.pm.verify.domain.DomainVerificationManagerInternal;
 import com.android.server.testutils.TestHandler;
 import com.android.server.utils.Watchable;
@@ -2173,6 +2175,50 @@ public class PackageManagerSettingsTests {
 
         assertThat(settings.readLPw(computer, createFakeUsers()), is(true));
         assertNull(settings.getPackageLPr(PACKAGE_NAME_1).getOldPaths());
+    }
+
+    @Test
+    public void testDeveloperVerificationStatus_nothingChangedAfterReboot() {
+        Settings settings = makeSettings();
+        final PackageSetting ps1 = createPackageSetting(PACKAGE_NAME_1);
+        ps1.setAppId(Process.FIRST_APPLICATION_UID);
+        ps1.setPkg(PackageImpl.forTesting(PACKAGE_NAME_1).hideAsParsed()
+                .setUid(ps1.getAppId())
+                .hideAsFinal());
+        ps1.setDeveloperVerificationStatusInternal(new DeveloperVerificationStatusInternal(
+                DeveloperVerificationStatusInternal.STATUS_INCOMPLETE_UNKNOWN,
+                DeveloperVerificationStatus.APP_METADATA_VERIFICATION_STATUS_BAD,
+                /* isLiteVerification= */ true));
+        settings.mPackages.put(PACKAGE_NAME_1, ps1);
+        settings.writeLPr(computer, /*sync=*/ true);
+        // Simulate a reboot
+        settings.mPackages.clear();
+        assertThat(settings.readLPw(computer, createFakeUsers()), is(true));
+        DeveloperVerificationStatusInternal developerVerificationStatusInternal =
+                settings.getPackageLPr(PACKAGE_NAME_1).getDeveloperVerificationStatusInternal();
+        assertThat(developerVerificationStatusInternal, notNullValue());
+        assertThat(developerVerificationStatusInternal.getInternalStatus(),
+                is(DeveloperVerificationStatusInternal.STATUS_INCOMPLETE_UNKNOWN));
+        assertThat(developerVerificationStatusInternal.getAppMetadataVerificationStatus(),
+                is(DeveloperVerificationStatus.APP_METADATA_VERIFICATION_STATUS_BAD));
+        assertThat(developerVerificationStatusInternal.isLiteVerification(), is(true));
+    }
+
+    @Test
+    public void testDeveloperVerificationStatus_isNullBeforeAndAfterReboot() {
+        Settings settings = makeSettings();
+        final PackageSetting ps1 = createPackageSetting(PACKAGE_NAME_1);
+        ps1.setAppId(Process.FIRST_APPLICATION_UID);
+        ps1.setPkg(PackageImpl.forTesting(PACKAGE_NAME_1).hideAsParsed()
+                .setUid(ps1.getAppId())
+                .hideAsFinal());
+        ps1.setDeveloperVerificationStatusInternal(null);
+        settings.mPackages.put(PACKAGE_NAME_1, ps1);
+        settings.writeLPr(computer, /*sync=*/ true);
+        // Simulate a reboot
+        settings.mPackages.clear();
+        assertThat(settings.readLPw(computer, createFakeUsers()), is(true));
+        assertNull(settings.getPackageLPr(PACKAGE_NAME_1).getDeveloperVerificationStatusInternal());
     }
 
     private void verifyUserState(PackageUserState userState,

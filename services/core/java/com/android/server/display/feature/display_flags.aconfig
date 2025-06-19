@@ -567,3 +567,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "enable_on_display_added_in_observer"
+    namespace: "display_manager"
+    description: "On display added should be called after the display listener is registered."
+    bug: "414778119"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

@@ -93,6 +93,7 @@ import com.android.systemui.notifications.ui.composable.NotificationScrollingSta
 import com.android.systemui.notifications.ui.composable.NotificationStackCutoffGuideline
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
 import com.android.systemui.qs.ui.composable.BrightnessMirror
+import com.android.systemui.qs.panels.ui.compose.QuickQuickSettings
 import com.android.systemui.qs.ui.composable.QuickSettings
 import com.android.systemui.qs.ui.composable.QuickSettings.SharedValues.MediaLandscapeTopOffset
 import com.android.systemui.res.R
@@ -331,13 +332,19 @@ private fun ContentScope.SingleShade(
                 Box(
                     Modifier.element(QuickSettings.Elements.QuickQuickSettings)
                         .layoutId(SingleShadeMeasurePolicy.LayoutId.QuickSettings)
-                        .padding(horizontal = shadeHorizontalPadding)
+                        .padding(
+                            horizontal =
+                                shadeHorizontalPadding +
+                                        dimensionResource(id = R.dimen.qs_horizontal_margin)
+                        )
                 ) {
-                    QuickSettings(
-                        viewModel.qsSceneAdapter,
-                        { viewModel.qsSceneAdapter.qqsHeight },
-                        isSplitShade = false,
-                        squishiness = { tileSquishiness },
+                    val qqsViewModel = rememberViewModel(traceName = "shade_scene_qqs") {
+                        viewModel.quickQuickSettingsViewModel.create()
+                    }
+                    QuickQuickSettings(
+                        qqsViewModel,
+                        listening = { true },
+                        modifier = Modifier.sysuiResTag("quick_qs_panel")
                     )
                 }
 

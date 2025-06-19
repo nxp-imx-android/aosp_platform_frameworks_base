@@ -41,8 +41,6 @@ import com.android.systemui.statusbar.notification.VisibilityLocationProvider;
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactory;
 import com.android.systemui.statusbar.notification.collection.EntryAdapterFactoryImpl;
 import com.android.systemui.statusbar.notification.collection.NotifInflaterImpl;
-import com.android.systemui.statusbar.notification.collection.NotifLiveDataStore;
-import com.android.systemui.statusbar.notification.collection.NotifLiveDataStoreImpl;
 import com.android.systemui.statusbar.notification.collection.NotifPipeline;
 import com.android.systemui.statusbar.notification.collection.NotifPipelineChoreographerModule;
 import com.android.systemui.statusbar.notification.collection.coordinator.ShadeEventCoordinator;
@@ -95,6 +93,7 @@ import com.android.systemui.statusbar.notification.stack.MagneticNotificationRow
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
 import com.android.systemui.statusbar.notification.stack.NotificationSectionsManager;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController;
+import com.android.systemui.statusbar.notification.stack.OnboardingAffordanceCommands;
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
 import com.android.systemui.statusbar.phone.StatusBarNotificationActivityStarter;
@@ -128,6 +127,7 @@ import javax.inject.Provider;
                 NotificationSectionHeadersModule.class,
                 NotificationStatsLoggerModule.class,
                 NotificationsLogModule.class,
+                OnboardingAffordanceCommands.Module.class,
         }
 )
 public interface NotificationsModule {
@@ -264,10 +264,6 @@ public interface NotificationsModule {
     /** */
     @Binds
     BindEventManager bindBindEventManagerImpl(BindEventManagerImpl bindEventManagerImpl);
-
-    /** */
-    @Binds
-    NotifLiveDataStore bindNotifLiveDataStore(NotifLiveDataStoreImpl notifLiveDataStoreImpl);
 
     /** */
     @Binds

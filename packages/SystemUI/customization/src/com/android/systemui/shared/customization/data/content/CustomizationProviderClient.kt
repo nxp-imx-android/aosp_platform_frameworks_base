@@ -34,6 +34,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -296,11 +297,21 @@ class CustomizationProviderClientImpl(
     }
 
     override fun observeSlots(): Flow<List<CustomizationProviderClient.Slot>> {
-        return observeUri(Contract.LockScreenQuickAffordances.SlotTable.URI).map { querySlots() }
+        return try {
+            observeUri(Contract.LockScreenQuickAffordances.SlotTable.URI).map { querySlots() }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Failed to observe the slots", e)
+            emptyFlow()
+        }
     }
 
     override fun observeFlags(): Flow<List<CustomizationProviderClient.Flag>> {
-        return observeUri(Contract.FlagsTable.URI).map { queryFlags() }
+        return try {
+            observeUri(Contract.FlagsTable.URI).map { queryFlags() }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Failed to observe the flags", e)
+            emptyFlow()
+        }
     }
 
     override suspend fun queryAffordances(): List<CustomizationProviderClient.Affordance> {
@@ -394,8 +405,13 @@ class CustomizationProviderClientImpl(
     }
 
     override fun observeAffordances(): Flow<List<CustomizationProviderClient.Affordance>> {
-        return observeUri(Contract.LockScreenQuickAffordances.AffordanceTable.URI).map {
-            queryAffordances()
+        return try {
+            observeUri(Contract.LockScreenQuickAffordances.AffordanceTable.URI).map {
+                queryAffordances()
+            }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Failed to observe the affordances", e)
+            emptyFlow()
         }
     }
 
@@ -448,8 +464,13 @@ class CustomizationProviderClientImpl(
     }
 
     override fun observeSelections(): Flow<List<CustomizationProviderClient.Selection>> {
-        return observeUri(Contract.LockScreenQuickAffordances.SelectionTable.URI).map {
-            querySelections()
+        return try {
+            observeUri(Contract.LockScreenQuickAffordances.SelectionTable.URI).map {
+                querySelections()
+            }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Failed to observe the selections", e)
+            emptyFlow()
         }
     }
 

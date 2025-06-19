@@ -64,6 +64,7 @@ import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntOffset
@@ -96,7 +97,9 @@ import com.android.systemui.media.dagger.MediaModule
 import com.android.systemui.notifications.ui.composable.HeadsUpNotificationSpace
 import com.android.systemui.notifications.ui.composable.NotificationScrollingStack
 import com.android.systemui.notifications.ui.composable.NotificationStackCutoffGuideline
+import com.android.systemui.qs.composefragment.ui.GridAnchor
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
+import com.android.systemui.qs.panels.ui.compose.TileGrid
 import com.android.systemui.qs.shared.ui.ElementKeys
 import com.android.systemui.qs.ui.composable.QuickSettings.SharedValues.MediaLandscapeTopOffset
 import com.android.systemui.qs.ui.composable.QuickSettings.SharedValues.MediaOffset.InQS
@@ -354,7 +357,11 @@ private fun ContentScope.QuickSettingsScene(
                             CollapsedShadeHeader(viewModel = headerViewModel, isSplitShade = false)
                     }
                     Spacer(modifier = Modifier.height(16.dp))
-                    Column(modifier = Modifier.element(ElementKeys.QuickSettingsContent)) {
+                    Column(
+                        modifier = Modifier
+                            .element(ElementKeys.QuickSettingsContent)
+                            .padding(horizontal = dimensionResource(id = R.dimen.qs_horizontal_margin))
+                    ) {
                         BrightnessSliderContainer(
                             viewModel.qsContainerViewModel.brightnessSliderViewModel,
                             containerColors =
@@ -363,17 +370,17 @@ private fun ContentScope.QuickSettingsScene(
                                     ContainerColors.defaultContainerColor,
                                 ),
                             modifier = Modifier.padding(
-                                horizontal =
-                                    dimensionResource(id = R.dimen.qs_horizontal_margin)
+                                vertical = dimensionResource(id = R.dimen.qs_brightness_margin_top),
                             )
                         )
+                        GridAnchor()
                         // This view has its own horizontal padding
                         val content: @Composable () -> Unit = {
-                            QuickSettings(
-                                viewModel.qsSceneAdapter,
-                                { viewModel.qsSceneAdapter.qsHeight },
-                                isSplitShade = false,
-                                modifier = Modifier.layoutId(QSMediaMeasurePolicy.LayoutId.QS),
+                            TileGrid(
+                                viewModel.qsContainerViewModel.tileGridViewModel,
+                                modifier = Modifier
+                                    .sysuiResTag("quick_settings_panel")
+                                    .layoutId(QSMediaMeasurePolicy.LayoutId.QS),
                             )
 
                             MediaCarousel(

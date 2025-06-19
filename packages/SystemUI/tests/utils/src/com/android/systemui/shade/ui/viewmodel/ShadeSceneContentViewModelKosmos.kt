@@ -22,6 +22,7 @@ import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 import com.android.systemui.qs.footerActionsController
 import com.android.systemui.qs.footerActionsViewModelFactory
+import com.android.systemui.qs.panels.ui.viewmodel.quickQuickSettingsViewModelFactory
 import com.android.systemui.qs.ui.adapter.qsSceneAdapter
 import com.android.systemui.scene.domain.interactor.sceneInteractor
 import com.android.systemui.settings.brightness.ui.viewmodel.brightnessMirrorViewModelFactory
@@ -32,6 +33,7 @@ import com.android.systemui.unfold.domain.interactor.unfoldTransitionInteractor
 val Kosmos.shadeSceneContentViewModel: ShadeSceneContentViewModel by Fixture {
     ShadeSceneContentViewModel(
         shadeHeaderViewModelFactory = shadeHeaderViewModelFactory,
+        quickQuickSettingsViewModel = quickQuickSettingsViewModelFactory,
         qsSceneAdapter = qsSceneAdapter,
         brightnessMirrorViewModelFactory = brightnessMirrorViewModelFactory,
         mediaCarouselInteractor = mediaCarouselInteractor,
@@ -43,4 +45,12 @@ val Kosmos.shadeSceneContentViewModel: ShadeSceneContentViewModel by Fixture {
         deviceEntryInteractor = deviceEntryInteractor,
         sceneInteractor = sceneInteractor,
     )
+}
+
+val Kosmos.shadeSceneContentViewModelFactory : ShadeSceneContentViewModel.Factory by Fixture {
+    object : ShadeSceneContentViewModel.Factory {
+        override fun create(): ShadeSceneContentViewModel {
+            return shadeSceneContentViewModel
+        }
+    }
 }

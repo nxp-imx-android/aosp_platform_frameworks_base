@@ -277,7 +277,7 @@ final class DisplayRotationCompatPolicy implements AppCompatCameraStatePolicy,
      * </ul>
      */
     private boolean isTreatmentEnabledForDisplay() {
-        return mWmService.mAppCompatConfiguration.isCameraCompatTreatmentEnabled()
+        return mWmService.mAppCompatConfiguration.isCameraCompatForceRotateTreatmentEnabled()
                 && mDisplayContent.getIgnoreOrientationRequest()
                 // TODO(b/225928882): Support camera compat rotation for external displays
                 && mDisplayContent.getDisplay().getType() == TYPE_INTERNAL;

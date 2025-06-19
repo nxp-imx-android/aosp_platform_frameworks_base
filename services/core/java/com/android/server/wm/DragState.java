@@ -415,14 +415,13 @@ class DragState {
     }
 
     class InputInterceptor {
-        InputChannel mClientChannel;
         DragInputEventReceiver mInputEventReceiver;
         InputApplicationHandle mDragApplicationHandle;
         InputWindowHandle mDragWindowHandle;
 
         InputInterceptor(Display display) {
-            mClientChannel = mService.mInputManager.createInputChannel("drag");
-            mInputEventReceiver = new DragInputEventReceiver(mClientChannel,
+            InputChannel clientChannel = mService.mInputManager.createInputChannel("drag");
+            mInputEventReceiver = new DragInputEventReceiver(clientChannel,
                     mService.mH.getLooper(), mDragDropController);
 
             mDragApplicationHandle = new InputApplicationHandle(new Binder(), "drag",
@@ -431,7 +430,7 @@ class DragState {
             mDragWindowHandle = new InputWindowHandle(mDragApplicationHandle,
                     display.getDisplayId());
             mDragWindowHandle.name = "drag";
-            mDragWindowHandle.token = mClientChannel.getToken();
+            mDragWindowHandle.token = mInputEventReceiver.getToken();
             mDragWindowHandle.layoutParamsType = WindowManager.LayoutParams.TYPE_DRAG;
             mDragWindowHandle.dispatchingTimeoutMillis = DEFAULT_DISPATCHING_TIMEOUT_MILLIS;
             mDragWindowHandle.ownerPid = MY_PID;
@@ -450,11 +449,9 @@ class DragState {
         }
 
         void tearDown() {
-            mService.mInputManager.removeInputChannel(mClientChannel.getToken());
+            mService.mInputManager.removeInputChannel(mInputEventReceiver.getToken());
             mInputEventReceiver.dispose();
             mInputEventReceiver = null;
-            mClientChannel.dispose();
-            mClientChannel = null;
 
             mDragWindowHandle = null;
             mDragApplicationHandle = null;
@@ -472,10 +469,10 @@ class DragState {
     }
 
     IBinder getInputToken() {
-        if (mInputInterceptor == null || mInputInterceptor.mClientChannel == null) {
+        if (mInputInterceptor == null || mInputInterceptor.mInputEventReceiver == null) {
             return null;
         }
-        return mInputInterceptor.mClientChannel.getToken();
+        return mInputInterceptor.mInputEventReceiver.getToken();
     }
 
     /**

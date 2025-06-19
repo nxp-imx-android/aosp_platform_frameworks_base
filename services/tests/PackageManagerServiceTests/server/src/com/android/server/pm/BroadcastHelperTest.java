@@ -199,7 +199,7 @@ public class BroadcastHelperTest {
 
         mBroadcastHelper.sendPackageChangedBroadcast(mMockSnapshot,
                 PACKAGE_CHANGED_TEST_PACKAGE_NAME, true /* dontKillApp */, componentNames,
-                UserHandle.USER_SYSTEM, "test" /* reason */, "test" /* reasonForTrace */,
+                UserHandle.USER_SYSTEM, "test" /* reason */, PackageMetrics.STRING_TEST,
                 Binder.getCallingUid());
     }
 }

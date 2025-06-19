@@ -36,6 +36,7 @@ import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.coordinator.dagger.CoordinatorScope
+import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeFinalizeFilterListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.OnBeforeRenderListListener
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.Invalidator
 import com.android.systemui.statusbar.notification.collection.listbuilder.pluggable.NotifBundler
@@ -190,18 +191,17 @@ constructor(
      * counted.
      */
     @get:VisibleForTesting
-    val bundleCountUpdater = OnBeforeRenderListListener { entries ->
+    val bundleCountUpdater = OnBeforeFinalizeFilterListener { entries ->
         entries.forEachBundleEntry { bundleEntry ->
-            val notifEntrySet = mutableSetOf<NotificationEntry>()
-            fun collectNotifEntry(listEntries: List<ListEntry>) {
+            fun countNotifications(listEntries: List<ListEntry>): Int {
+                var count = 0
                 for (entry in listEntries) {
                     when (entry) {
                         is NotificationEntry -> {
-                            notifEntrySet.add(entry)
+                            count++
                         }
                         is GroupEntry -> {
-                            // Do not count group summary NotifEntry
-                            collectNotifEntry(entry.children)
+                            count += entry.children.size
                         }
                         else -> {
                             error(
@@ -212,9 +212,9 @@ constructor(
                         }
                     }
                 }
+                return count
             }
-            collectNotifEntry(bundleEntry.children)
-            bundleEntry.bundleRepository.numberOfChildren = notifEntrySet.size
+            bundleEntry.bundleRepository.numberOfChildren = countNotifications(bundleEntry.children)
         }
     }
 
@@ -311,8 +311,8 @@ constructor(
         if (NotificationBundleUi.isEnabled) {
             pipeline.setNotifBundler(bundler)
             pipeline.addOnBeforeFinalizeFilterListener(this::inflateAllBundleEntries)
+            pipeline.addOnBeforeFinalizeFilterListener(bundleCountUpdater)
             pipeline.addFinalizeFilter(bundleFilter)
-            pipeline.addOnBeforeRenderListListener(bundleCountUpdater)
             pipeline.addOnBeforeRenderListListener(bundleMembershipUpdater)
             pipeline.addOnBeforeRenderListListener(bundleAppDataUpdater)
             bindOnboardingAffordanceInvalidator(pipeline)

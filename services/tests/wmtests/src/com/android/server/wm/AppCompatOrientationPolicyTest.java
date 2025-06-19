@@ -269,8 +269,8 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
     public void testOverrideOrientationIfNeeded_whenCameraNotActive_isUnchanged() {
         runTestScenario((robot) -> {
             robot.applyOnConf((c)-> {
-                c.enableCameraCompatTreatment(true);
-                c.enableCameraCompatTreatmentAtBuildTime(true);
+                c.enableCameraCompatForceRotateTreatment(true);
+                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
             });
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponentInNewTaskAndDisplay();
@@ -288,8 +288,8 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
     public void testOverrideOrientationIfNeeded_whenCameraActive_returnsPortrait() {
         runTestScenario((robot) -> {
             robot.applyOnConf((c) -> {
-                c.enableCameraCompatTreatment(true);
-                c.enableCameraCompatTreatmentAtBuildTime(true);
+                c.enableCameraCompatForceRotateTreatment(true);
+                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
             });
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponentInNewTaskAndDisplay();
@@ -318,8 +318,8 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
     public void testOverrideOrientationIfNeeded_fullscreenOverride_cameraActivity_unchanged() {
         runTestScenario((robot) -> {
             robot.applyOnConf((c) -> {
-                c.enableCameraCompatTreatment(true);
-                c.enableCameraCompatTreatmentAtBuildTime(true);
+                c.enableCameraCompatForceRotateTreatment(true);
+                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
             });
             robot.applyOnActivity((a) -> {
                 a.createActivityWithComponentInNewTaskAndDisplay();
@@ -438,8 +438,8 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
     public void testShouldIgnoreRequestedOrientation_cameraCompatTreatment_returnsTrue() {
         runTestScenario((robot) -> {
             robot.applyOnConf((c) -> {
-                c.enableCameraCompatTreatment(true);
-                c.enableCameraCompatTreatmentAtBuildTime(true);
+                c.enableCameraCompatForceRotateTreatment(true);
+                c.enableCameraCompatForceRotateTreatmentAtBuildTime(true);
                 c.enablePolicyForIgnoringRequestedOrientation(true);
             });
             robot.applyOnActivity((a) -> {

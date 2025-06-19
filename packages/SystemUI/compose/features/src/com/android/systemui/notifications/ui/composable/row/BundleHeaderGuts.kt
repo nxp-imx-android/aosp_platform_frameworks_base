@@ -37,12 +37,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
@@ -113,7 +117,10 @@ private fun ContentRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier 
                     color = MaterialTheme.colorScheme.secondaryContainer,
                     shape = RoundedCornerShape(size = 20.dp),
                 )
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .minimumInteractiveComponentSize()
+                .clickable { viewModel.switchState = !viewModel.switchState }
+                .semantics(mergeDescendants = true) { role = Role.Button },
     ) {
         Column(Modifier.weight(1f)) {
             Text(
@@ -137,7 +144,7 @@ private fun ContentRow(viewModel: BundleHeaderGutsViewModel, modifier: Modifier 
 
         Switch(
             checked = viewModel.switchState,
-            onCheckedChange = { viewModel.switchState = !viewModel.switchState },
+            onCheckedChange = null, // handled at the Row level above
             thumbContent = {
                 Icon(
                     imageVector = Icons.Default.Check,

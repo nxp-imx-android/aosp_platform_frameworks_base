@@ -38,7 +38,6 @@ class NotifCoordinatorsImpl
 @Inject
 constructor(
     sectionStyleProvider: SectionStyleProvider,
-    dataStoreCoordinator: DataStoreCoordinator,
     hideLocallyDismissedNotifsCoordinator: HideLocallyDismissedNotifsCoordinator,
     hideNotifsForOtherUsersCoordinator: HideNotifsForOtherUsersCoordinator,
     keyguardCoordinator: KeyguardCoordinator,
@@ -77,9 +76,6 @@ constructor(
 
     /** Creates all the coordinators. */
     init {
-        // Attach core coordinators.
-        mCoreCoordinators.add(dataStoreCoordinator)
-
         // Attach normal coordinators.
         mCoordinators.add(hideLocallyDismissedNotifsCoordinator)
         mCoordinators.add(hideNotifsForOtherUsersCoordinator)

@@ -26,6 +26,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
@@ -57,6 +58,7 @@ import android.window.InputTransferToken;
 import com.android.internal.R;
 import com.android.internal.util.Preconditions;
 import com.android.internal.widget.floatingtoolbar.FloatingToolbar;
+import com.android.server.FgThread;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -133,6 +135,7 @@ public final class RemoteSelectionToolbar {
     private List<ToolbarMenuItem> mMenuItems;
     private SurfaceControlViewHost mSurfaceControlViewHost;
     private SurfaceControlViewHost.SurfacePackage mSurfacePackage;
+    private final Handler mFgHandler;
 
     /**
      * @see OverflowPanelViewHelper#preparePopupContent()
@@ -187,6 +190,7 @@ public final class RemoteSelectionToolbar {
                 .getDimensionPixelSize(R.dimen.floating_toolbar_height);
         mIconTextSpacing = mContext.getResources()
                 .getDimensionPixelSize(R.dimen.floating_toolbar_icon_text_spacing);
+        mFgHandler = FgThread.getHandler();
 
         // Interpolators
         mLogAccelerateInterpolator = new LogAccelerateInterpolator();
@@ -250,14 +254,18 @@ public final class RemoteSelectionToolbar {
                 0,  // startDelay
                 null); // TODO(b/215497659): should handle hide after animation
         mMenuItemButtonOnClickListener = v -> {
-            Object tag = v.getTag();
-            if (tag instanceof ToolbarMenuItem toolbarMenuItem) {
-                if (toolbarMenuItem.itemId == R.id.paste
-                        || toolbarMenuItem.itemId == R.id.pasteAsPlainText) {
-                    mOnPasteActionCallback.onPasteAction(mCallingUid);
+            // Post the callback to fg thread because the onPasteAction() callback
+            // needs to be synchronous but it shouldn't block the main thread.
+            mFgHandler.post(() -> {
+                Object tag = v.getTag();
+                if (tag instanceof ToolbarMenuItem toolbarMenuItem) {
+                    if (toolbarMenuItem.itemId == R.id.paste
+                            || toolbarMenuItem.itemId == R.id.pasteAsPlainText) {
+                        mOnPasteActionCallback.onPasteAction(mCallingUid);
+                    }
+                    mCallbackWrapper.onMenuItemClicked(toolbarMenuItem.itemIndex);
                 }
-                mCallbackWrapper.onMenuItemClicked(toolbarMenuItem.itemIndex);
-            }
+            });
         };
     }
 

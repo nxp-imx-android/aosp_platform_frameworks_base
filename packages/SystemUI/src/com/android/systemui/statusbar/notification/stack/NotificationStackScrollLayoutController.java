@@ -117,7 +117,6 @@ import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpTouchHelper.HeadsUpNotificationViewController;
 import com.android.systemui.statusbar.notification.headsup.OnHeadsUpChangedListener;
 import com.android.systemui.statusbar.notification.init.NotificationsController;
-import com.android.systemui.statusbar.notification.logging.NotificationLogger;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
 import com.android.systemui.statusbar.notification.row.ActivatableNotificationView;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
@@ -2080,12 +2079,6 @@ public class NotificationStackScrollLayoutController implements Dumpable {
         @Override
         public void cleanUpViewStateForEntry(NotificationEntry entry) {
             mView.cleanUpViewStateForEntry(entry);
-        }
-
-        @Override
-        public void setChildLocationsChangedListener(
-                NotificationLogger.OnChildLocationsChangedListener listener) {
-            mView.setChildLocationsChangedListener(listener);
         }
 
         public boolean hasPulsingNotifications() {

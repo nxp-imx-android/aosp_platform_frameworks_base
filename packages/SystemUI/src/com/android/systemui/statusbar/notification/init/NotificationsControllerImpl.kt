@@ -26,7 +26,6 @@ import com.android.systemui.statusbar.NotificationPresenter
 import com.android.systemui.statusbar.notification.AnimatedImageNotificationManager
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.NotificationClicker
-import com.android.systemui.statusbar.notification.collection.NotifLiveDataStore
 import com.android.systemui.statusbar.notification.collection.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.TargetSdkResolver
@@ -35,7 +34,6 @@ import com.android.systemui.statusbar.notification.collection.init.NotifPipeline
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection
 import com.android.systemui.statusbar.notification.collection.notifcollection.NotifCollectionListener
 import com.android.systemui.statusbar.notification.row.NotifBindPipelineInitializer
-import com.android.systemui.statusbar.notification.shared.NotificationsLiveDataStoreRefactor
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer
 import dagger.Lazy
 import javax.inject.Inject
@@ -54,7 +52,6 @@ constructor(
     private val notificationListener: NotificationListener,
     private val commonNotifCollection: Lazy<CommonNotifCollection>,
     private val notifPipeline: Lazy<NotifPipeline>,
-    private val notifLiveDataStore: NotifLiveDataStore,
     private val targetSdkResolver: TargetSdkResolver,
     private val notifPipelineInitializer: Lazy<NotifPipelineInitializer>,
     private val notifBindPipelineInitializer: NotifBindPipelineInitializer,
@@ -117,10 +114,5 @@ constructor(
                 snoozeOption.minutesToSnoozeFor * 60 * 1000.toLong(),
             )
         }
-    }
-
-    override fun getActiveNotificationsCount(): Int {
-        NotificationsLiveDataStoreRefactor.assertInLegacyMode()
-        return notifLiveDataStore.activeNotifCount.value
     }
 }

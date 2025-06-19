@@ -15,33 +15,16 @@
  */
 package com.android.systemui.statusbar.notification.row
 
-import android.app.INotificationManager
-import android.app.NotificationChannel.NEWS_ID
-import android.app.NotificationChannel.PROMOTIONS_ID
-import android.app.NotificationChannel.RECS_ID
-import android.app.NotificationChannel.SOCIAL_MEDIA_ID
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.RemoteException
 import android.service.notification.Adjustment
-import android.service.notification.NotificationListenerService
-import android.service.notification.StatusBarNotification
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.android.internal.logging.MetricsLogger
-import com.android.internal.logging.UiEventLogger
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.notification.AssistantFeedbackController
-import com.android.systemui.statusbar.notification.collection.EntryAdapter
-import com.android.systemui.statusbar.notification.collection.NotificationEntry
-import com.android.systemui.statusbar.notification.promoted.domain.interactor.PackageDemotionInteractor
-import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
-import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.google.android.material.materialswitch.MaterialSwitch
-
 
 /**
  * The guts of a notification revealed when performing a long press, specifically for notifications
@@ -63,20 +46,16 @@ class BundledNotificationInfo(context: Context?, attrs: AttributeSet?) :
         toggle.setOnCheckedChangeListener { buttonView, isChecked ->
             val isAChange = isChecked != enabled
             val done = findViewById<TextView>(R.id.done)
-            done.setText(
-                if (isAChange)
-                    R.string.inline_ok_button
-                else
-                    R.string.inline_done_button
-            )
+            done.setText(if (isAChange) R.string.inline_ok_button else R.string.inline_done_button)
         }
 
         val done = findViewById<TextView>(R.id.done)
         done.setOnClickListener {
             try {
                 if (NotificationBundleUi.isEnabled) {
-                    mEntryAdapter.markForUserTriggeredMovement(true)
-                    mEntryAdapter.onImportanceChanged()
+                    if (enabled && !toggle.isChecked) {
+                        mEntryAdapter.onBundleDisabled()
+                    }
                 } else {
                     mEntry.markForUserTriggeredMovement(true)
                     mOnUserInteractionCallback.onImportanceChanged(mEntry)
@@ -92,27 +71,18 @@ class BundledNotificationInfo(context: Context?, attrs: AttributeSet?) :
                 throw RuntimeException(e)
             }
         }
-        done.setText(
-            if (enabled)
-                R.string.inline_done_button
-            else
-                R.string.inline_ok_button
-        )
+        done.setText(if (enabled) R.string.inline_done_button else R.string.inline_ok_button)
         done.setAccessibilityDelegate(mGutsContainer.accessibilityDelegate)
         val toggleWrapper = findViewById<ViewGroup>(R.id.classification_toggle)
-        toggleWrapper.setOnClickListener {
-            toggle.performClick()
-        }
+        toggleWrapper.setOnClickListener { toggle.performClick() }
 
-        findViewById<TextView>(R.id.feature_summary).setText(
-            resources.getString(R.string.notification_guts_bundle_summary, mAppName));
+        findViewById<TextView>(R.id.feature_summary)
+            .setText(resources.getString(R.string.notification_guts_bundle_summary, mAppName))
 
         val dismissButton = findViewById<View>(R.id.inline_dismiss)
         dismissButton.setOnClickListener(mOnCloseClickListener)
-        dismissButton.visibility = if (dismissButton.hasOnClickListeners() && mIsDismissable)
-            VISIBLE
-        else
-            GONE
+        dismissButton.visibility =
+            if (dismissButton.hasOnClickListeners() && mIsDismissable) VISIBLE else GONE
     }
 
     companion object {

@@ -147,6 +147,8 @@ import com.android.wm.shell.unfold.ShellUnfoldProgressProvider;
 
 import dagger.Lazy;
 
+import kotlin.Unit;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -160,8 +162,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
-
-import kotlin.Unit;
 
 /**
  * Bubbles are a special type of content that can "float" on top of other apps or System UI.
@@ -973,12 +973,20 @@ public class BubbleController implements ConfigurationChangeListener,
         }
     }
 
+    // TODO(b/411505605) remove all related code
     /**
      * Show bubble bar pin view given location.
      */
     public void showBubbleBarPinAtLocation(@Nullable BubbleBarLocation bubbleBarLocation) {
         if (isShowingAsBubbleBar() && mBubbleStateListener != null) {
             mBubbleStateListener.showBubbleBarPillowAt(bubbleBarLocation);
+        }
+    }
+
+    /** Show bubble bar drop target at provided location or hide it if null. */
+    public void showBubbleBarDropTargetAt(@Nullable BubbleBarLocation bubbleBarLocation) {
+        if (isShowingAsBubbleBar() && mBubbleStateListener != null) {
+            mBubbleStateListener.showBubbleBarDropTargetAt(bubbleBarLocation);
         }
     }
 
@@ -1751,8 +1759,8 @@ public class BubbleController implements ConfigurationChangeListener,
 
         Bubble b = mBubbleData.getBubbleInStackWithTaskId(taskInfo.taskId);
         if (b != null) {
-            // Reuse the existing bubble
-            mBubbleData.setSelectedBubbleAndExpandStack(b, BubbleBarLocation.DEFAULT);
+            // Reuse the existing bubble; pass null for location to use existing location.
+            mBubbleData.setSelectedBubbleAndExpandStack(b, null /* bubbleBarLocation */);
         } else {
             // Create a new bubble and show it, remove from overflow
             b = mBubbleData.getOrCreateBubble(taskInfo);
@@ -1971,7 +1979,13 @@ public class BubbleController implements ConfigurationChangeListener,
                     return;
                 }
                 bubble.inflate(
-                        (b) -> mBubbleData.overflowBubble(Bubbles.DISMISS_RELOAD_FROM_DISK, bubble),
+                        (b) -> {
+                            if (Flags.enableOptionalBubbleOverflow()) {
+                                mBubbleData.addOverflowBubbleFromDisk(bubble);
+                            } else {
+                                mBubbleData.doOverflow(Bubbles.DISMISS_RELOAD_FROM_DISK, bubble);
+                            }
+                        },
                         mContext,
                         mExpandedViewManager,
                         mBubbleTaskViewFactory,
@@ -2666,8 +2680,7 @@ public class BubbleController implements ConfigurationChangeListener,
                 mSysuiProxy.requestNotificationShadeTopUi(true, TAG);
             }
 
-            if (Flags.enableBubbleSwipeUpCleanup() && !update.removedBubbles.isEmpty()
-                    && !mBubbleData.hasBubbles()) {
+            if (!update.removedBubbles.isEmpty() && !mBubbleData.hasBubbles()) {
                 // This update removed all the bubbles. Send an update to SystemUI to mark the stack
                 // collapsed. This should be sent by the UI classes (BubbleStackView or
                 // BubbleBarLayerView), but if we fail to send this, home gesture stops working.
@@ -3080,6 +3093,11 @@ public class BubbleController implements ConfigurationChangeListener,
                     @Override
                     public void showBubbleBarPillowAt(@Nullable BubbleBarLocation location) {
                         mListener.call(l -> l.showBubbleBarPillowAt(location));
+                    }
+
+                    @Override
+                    public void showBubbleBarDropTargetAt(@Nullable BubbleBarLocation location) {
+                        mListener.call(l -> l.showBubbleBarDropTargetAt(location));
                     }
                 };
 

@@ -54,6 +54,7 @@ import com.android.internal.content.InstallLocationUtils;
 import com.android.internal.content.NativeLibraryHelper;
 import com.android.internal.pm.parsing.PackageParser2;
 import com.android.internal.util.Preconditions;
+import com.android.server.pm.verify.developer.DeveloperVerificationStatusInternal;
 
 import libcore.io.IoUtils;
 
@@ -105,6 +106,7 @@ class InstallingSession {
     @Nullable final String mDexoptCompilerFilter;
     final boolean mDependencyInstallerEnabled;
     final int mMissingSharedLibraryCount;
+    @Nullable final DeveloperVerificationStatusInternal mDeveloperVerificationStatus;
 
     // For move install
     InstallingSession(OriginInfo originInfo, MoveInfo moveInfo, IPackageInstallObserver2 observer,
@@ -142,6 +144,7 @@ class InstallingSession {
         mDexoptCompilerFilter = null;
         mDependencyInstallerEnabled = false;
         mMissingSharedLibraryCount = 0;
+        mDeveloperVerificationStatus = null;
     }
 
     InstallingSession(int sessionId, File stagedDir, IPackageInstallObserver2 observer,
@@ -149,7 +152,8 @@ class InstallingSession {
             UserHandle user, SigningDetails signingDetails, int installerUid,
             PackageLite packageLite, DomainSet preVerifiedDomains, PackageManagerService pm,
             boolean hasAppMetadatafile, boolean dependencyInstallerEnabled,
-            int missingSharedLibraryCount) {
+            int missingSharedLibraryCount,
+            DeveloperVerificationStatusInternal developerVerificationStatus) {
         mPm = pm;
         mUser = user;
         mOriginInfo = OriginInfo.fromStagedFile(stagedDir);
@@ -182,6 +186,7 @@ class InstallingSession {
         mDexoptCompilerFilter = sessionParams.dexoptCompilerFilter;
         mDependencyInstallerEnabled = dependencyInstallerEnabled;
         mMissingSharedLibraryCount = missingSharedLibraryCount;
+        mDeveloperVerificationStatus = developerVerificationStatus;
     }
 
     @Override

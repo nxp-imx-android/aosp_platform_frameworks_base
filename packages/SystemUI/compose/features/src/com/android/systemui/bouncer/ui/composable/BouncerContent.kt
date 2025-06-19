@@ -48,13 +48,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.windowsizeclass.WindowHeightSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -253,6 +256,24 @@ fun ContentScope.BouncerContent(
         }
 
         Dialog(bouncerViewModel = viewModel, dialogFactory = dialogFactory)
+
+        if (viewModel.showBackButton) {
+            TextButton(
+                onClick = viewModel::navigateBack,
+                modifier =
+                    Modifier.align(Alignment.BottomStart)
+                        .padding(horizontal = 48.dp, vertical = 40.dp)
+                        .testTag("BackButton"),
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowBack,
+                    null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                Text(text = stringResource(R.string.back_button_on_bouncer), fontSize = 14.sp)
+            }
+        }
     }
 }
 
@@ -662,6 +683,7 @@ private fun ContentScope.FoldableScene(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun StatusMessage(viewModel: BouncerMessageViewModel, modifier: Modifier = Modifier) {
     val message: MessageViewModel? by viewModel.message.collectAsStateWithLifecycle()
@@ -685,16 +707,14 @@ private fun StatusMessage(viewModel: BouncerMessageViewModel, modifier: Modifier
                 Text(
                     text = it.text,
                     color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 18.sp,
-                    lineHeight = 24.sp,
+                    style = MaterialTheme.typography.titleLargeEmphasized,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Spacer(modifier = Modifier.size(10.dp))
                 Text(
                     text = it.secondaryText ?: "",
                     color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
+                    style = MaterialTheme.typography.titleMediumEmphasized,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 2,
                 )

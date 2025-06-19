@@ -25,10 +25,12 @@ import android.content.Intent
 import android.content.res.ColorStateList
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.graphics.PixelFormat
 import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Bundle
+import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -38,11 +40,13 @@ import android.view.View
 import android.view.View.OnClickListener
 import android.view.ViewGroup
 import android.view.WindowInsets.Type.systemBars
-import android.view.WindowManager
+import android.view.WindowManager.LayoutParams
+import android.view.WindowlessWindowManager
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.Space
+import android.window.DesktopExperienceFlags
 import android.window.DesktopModeFlags
 import android.window.SurfaceSyncGroup
 import androidx.annotation.StringRes
@@ -64,8 +68,10 @@ import com.android.wm.shell.shared.bubbles.ContextUtils.isRtl
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource.APP_HANDLE_MENU_BUTTON
 import com.android.wm.shell.shared.split.SplitScreenConstants
 import com.android.wm.shell.splitscreen.SplitScreenController
+import com.android.wm.shell.windowdecor.WindowDecoration2.SurfaceControlViewHostFactory
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalSystemViewContainer
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewContainer
+import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewHostViewContainer
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 import com.android.wm.shell.windowdecor.common.DrawableInsets
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
@@ -77,7 +83,6 @@ import com.android.wm.shell.windowdecor.extension.isPinned
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.MainCoroutineDispatcher
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -91,10 +96,14 @@ import kotlinx.coroutines.withContext
  * Windowing Options(Proto 2 only): Buttons to change windowing modes.
  * Additional Options: Miscellaneous functions including screenshot and closing task.
  */
-class HandleMenu(
+class HandleMenu private constructor(
     @ShellMainThread private val mainDispatcher: CoroutineDispatcher,
     @ShellBackgroundThread private val bgScope: CoroutineScope,
-    private val parentDecor: DesktopModeWindowDecoration,
+    private val context: Context,
+    private val taskInfo: RunningTaskInfo,
+    private val parentSurface: SurfaceControl,
+    private val display: Display,
+    private val parentDecor: DesktopModeWindowDecoration?,
     private val windowManagerWrapper: WindowManagerWrapper,
     private val windowDecorationActions: WindowDecorationActions,
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
@@ -112,11 +121,11 @@ class HandleMenu(
     private val captionWidth: Int,
     private val captionHeight: Int,
     captionX: Int,
-    captionY: Int
+    captionY: Int,
+    private val surfaceControlBuilderSupplier: () -> SurfaceControl.Builder,
+    private val surfaceControlTransactionSupplier: () -> SurfaceControl.Transaction,
+    private val surfaceControlViewHostFactory: SurfaceControlViewHostFactory,
 ) {
-    private val context: Context = parentDecor.mDecorWindowContext
-    private val taskInfo: RunningTaskInfo = parentDecor.mTaskInfo
-
     private val isViewAboveStatusBar: Boolean
         get() = (DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue() && !taskInfo.isFreeform)
 
@@ -151,8 +160,8 @@ class HandleMenu(
 
     private val shouldShowMoreActionsPill: Boolean
         get() = SHOULD_SHOW_SCREENSHOT_BUTTON || shouldShowNewWindowButton ||
-            shouldShowManageWindowsButton || shouldShowChangeAspectRatioButton ||
-            shouldShowRestartButton
+                shouldShowManageWindowsButton || shouldShowChangeAspectRatioButton ||
+                shouldShowRestartButton
 
     private var loadAppInfoJob: Job? = null
 
@@ -237,6 +246,7 @@ class HandleMenu(
         }
         val x = handleMenuPosition.x.toInt()
         val y = handleMenuPosition.y.toInt()
+        val lpFlags = LayoutParams.FLAG_NOT_FOCUSABLE or LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH
         handleMenuViewContainer =
             if ((!taskInfo.isFreeform && DesktopModeFlags.ENABLE_HANDLE_INPUT_FIX.isTrue())
                 || forceShowSystemBars
@@ -248,8 +258,7 @@ class HandleMenu(
                     y = y,
                     width = menuWidth,
                     height = menuHeight,
-                    flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                            WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH,
+                    flags = lpFlags,
                     view = handleMenuView.rootView,
                     forciblyShownTypes = if (forceShowSystemBars) {
                         systemBars()
@@ -259,13 +268,67 @@ class HandleMenu(
                     ignoreCutouts = Flags.showAppHandleLargeScreens()
                             || BubbleAnythingFlagHelper.enableBubbleToFullscreen()
                 )
+            } else if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue) {
+                createAdditionalViewHostViewContainer(
+                    handleMenuView.rootView, t, x, y, menuWidth, menuHeight, lpFlags
+                )
             } else {
-                parentDecor.addWindow(
+                val decor = checkNotNull(parentDecor) { "Expected non-null parent decoration" }
+                decor.addWindow(
                     handleMenuView.rootView, "Handle Menu", t, ssg, x, y, menuWidth, menuHeight
                 )
             }
 
         this.handleMenuView = handleMenuView
+    }
+
+    /** Creates and returns an [AdditionalViewHostViewContainer] for the handle menu. */
+    private fun createAdditionalViewHostViewContainer(
+        v: View,
+        t: SurfaceControl.Transaction,
+        xPos: Int,
+        yPos: Int,
+        width: Int,
+        height: Int,
+        flags: Int,
+    ): AdditionalViewHostViewContainer {
+        val builder = surfaceControlBuilderSupplier()
+        val windowSurfaceControl = builder
+            .setName("Handle menu of Task=" + taskInfo.taskId)
+            .setContainerLayer()
+            .setParent(parentSurface)
+            .setCallsite("HandleMenu.createAdditionalViewHostViewContainer")
+            .build()
+        t.setPosition(windowSurfaceControl, xPos.toFloat(), yPos.toFloat())
+            .setWindowCrop(windowSurfaceControl, width, height)
+            .show(windowSurfaceControl)
+        val lp = LayoutParams(
+            width,
+            height,
+            LayoutParams.TYPE_APPLICATION,
+            flags,
+            PixelFormat.TRANSPARENT
+        ).apply {
+            title = "Handle menu of task=" + taskInfo.taskId
+            setTrustedOverlay()
+        }
+        val windowManager = WindowlessWindowManager(
+            taskInfo.configuration,
+            windowSurfaceControl,
+            /* hostInputTransferToken= */ null
+        )
+        val viewHost = surfaceControlViewHostFactory.create(
+            context,
+            display,
+            windowManager
+        ).apply {
+            setView(v, lp)
+        }
+        return AdditionalViewHostViewContainer(
+            windowSurfaceControl,
+            viewHost,
+            surfaceControlTransactionSupplier,
+        )
     }
 
     /**
@@ -429,7 +492,8 @@ class HandleMenu(
         }
         if (!shouldShowRestartButton) {
             menuHeight -= loadDimensionPixelSize(
-                R.dimen.desktop_mode_handle_menu_restart_button_height)
+                R.dimen.desktop_mode_handle_menu_restart_button_height
+            )
         }
         if (!shouldShowMoreActionsPill) {
             menuHeight -= pillTopMargin
@@ -753,7 +817,7 @@ class HandleMenu(
             appIconView.setImageBitmap(icon)
         }
 
-        /** Animates the menu openInAppOrBrowserg. */
+        /** Animates the menu opening. */
         fun animateOpenMenu() {
             if (taskInfo.isFullscreen || taskInfo.isMultiWindow) {
                 animator.animateCaptionHandleExpandToOpen()
@@ -929,7 +993,8 @@ class HandleMenu(
                             topRadius, topRadius, topRadius, topRadius,
                             bottomRadius, bottomRadius, bottomRadius, bottomRadius
                         ),
-                        drawableInsets = DrawableInsets())
+                        drawableInsets = DrawableInsets()
+                    )
                 }
             }
             // The restart button is nested to show an error icon on the right. Update the
@@ -956,7 +1021,8 @@ class HandleMenu(
                 background = createBackgroundDrawable(
                     color = style.textColor,
                     cornerRadius = handleMenuCornerRadius,
-                    drawableInsets = DrawableInsets())
+                    drawableInsets = DrawableInsets()
+                )
                 textView.apply {
                     text = btnText
                     setTextColor(style.textColor)
@@ -971,7 +1037,8 @@ class HandleMenu(
                 background = createBackgroundDrawable(
                     color = style.textColor,
                     cornerRadius = iconButtonRippleRadius,
-                    drawableInsets = iconButtonDrawableInsetEnd)
+                    drawableInsets = iconButtonDrawableInsetEnd
+                )
             }
         }
 
@@ -1003,63 +1070,109 @@ class HandleMenu(
         fun shouldShowRestartButton(taskInfo: RunningTaskInfo): Boolean =
             taskInfo.appCompatTaskInfo.isRestartMenuEnabledForDisplayMove
     }
-}
 
-/** A factory interface to create a [HandleMenu]. */
-interface HandleMenuFactory {
-    fun create(
-        @ShellMainThread mainDispatcher: MainCoroutineDispatcher,
-        @ShellBackgroundThread bgScope: CoroutineScope,
-        parentDecor: DesktopModeWindowDecoration,
-        windowManagerWrapper: WindowManagerWrapper,
-        windowDecorationActions: WindowDecorationActions,
-        taskResourceLoader: WindowDecorTaskResourceLoader,
-        layoutResId: Int,
-        splitScreenController: SplitScreenController,
-        shouldShowWindowingPill: Boolean,
-        shouldShowNewWindowButton: Boolean,
-        shouldShowManageWindowsButton: Boolean,
-        shouldShowChangeAspectRatioButton: Boolean,
-        shouldShowDesktopModeButton: Boolean,
-        shouldShowRestartButton: Boolean,
-        isBrowserApp: Boolean,
-        openInAppOrBrowserIntent: Intent?,
-        desktopModeUiEventLogger: DesktopModeUiEventLogger,
-        captionWidth: Int,
-        captionHeight: Int,
-        captionX: Int,
-        captionY: Int,
-    ): HandleMenu
-}
-
-/** A [HandleMenuFactory] implementation that creates a [HandleMenu].  */
-object DefaultHandleMenuFactory : HandleMenuFactory {
-    override fun create(
-        @ShellMainThread mainDispatcher: MainCoroutineDispatcher,
-        @ShellBackgroundThread bgScope: CoroutineScope,
-        parentDecor: DesktopModeWindowDecoration,
-        windowManagerWrapper: WindowManagerWrapper,
-        windowDecorationActions: WindowDecorationActions,
-        taskResourceLoader: WindowDecorTaskResourceLoader,
-        layoutResId: Int,
-        splitScreenController: SplitScreenController,
-        shouldShowWindowingPill: Boolean,
-        shouldShowNewWindowButton: Boolean,
-        shouldShowManageWindowsButton: Boolean,
-        shouldShowChangeAspectRatioButton: Boolean,
-        shouldShowDesktopModeButton: Boolean,
-        shouldShowRestartButton: Boolean,
-        isBrowserApp: Boolean,
-        openInAppOrBrowserIntent: Intent?,
-        desktopModeUiEventLogger: DesktopModeUiEventLogger,
-        captionWidth: Int,
-        captionHeight: Int,
-        captionX: Int,
-        captionY: Int,
-    ): HandleMenu {
-        return HandleMenu(
+    /** Factory to create a new [HandleMenu].  */
+    object HandleMenuFactory {
+        @JvmOverloads
+        fun create(
+            @ShellMainThread mainDispatcher: CoroutineDispatcher,
+            @ShellBackgroundThread bgScope: CoroutineScope,
+            context: Context,
+            taskInfo: RunningTaskInfo,
+            parentSurface: SurfaceControl,
+            display: Display,
+            windowManagerWrapper: WindowManagerWrapper,
+            windowDecorationActions: WindowDecorationActions,
+            taskResourceLoader: WindowDecorTaskResourceLoader,
+            layoutResId: Int,
+            splitScreenController: SplitScreenController,
+            shouldShowWindowingPill: Boolean,
+            shouldShowNewWindowButton: Boolean,
+            shouldShowManageWindowsButton: Boolean,
+            shouldShowChangeAspectRatioButton: Boolean,
+            shouldShowDesktopModeButton: Boolean,
+            shouldShowRestartButton: Boolean,
+            isBrowserApp: Boolean,
+            openInAppOrBrowserIntent: Intent?,
+            desktopModeUiEventLogger: DesktopModeUiEventLogger,
+            captionWidth: Int,
+            captionHeight: Int,
+            captionX: Int,
+            captionY: Int,
+            surfaceControlBuilderSupplier: () -> SurfaceControl.Builder =
+                { SurfaceControl.Builder() },
+            surfaceControlTransactionSupplier: () -> SurfaceControl.Transaction =
+                { SurfaceControl.Transaction() },
+            surfaceControlViewHostFactory: SurfaceControlViewHostFactory =
+                object : SurfaceControlViewHostFactory {},
+        ): HandleMenu = HandleMenu(
             mainDispatcher,
             bgScope,
+            context,
+            taskInfo,
+            parentSurface,
+            display,
+            parentDecor = null,
+            windowManagerWrapper,
+            windowDecorationActions,
+            taskResourceLoader,
+            layoutResId,
+            splitScreenController,
+            shouldShowWindowingPill,
+            shouldShowNewWindowButton,
+            shouldShowManageWindowsButton,
+            shouldShowChangeAspectRatioButton,
+            shouldShowDesktopModeButton,
+            shouldShowRestartButton,
+            isBrowserApp,
+            openInAppOrBrowserIntent,
+            desktopModeUiEventLogger,
+            captionWidth,
+            captionHeight,
+            captionX,
+            captionY,
+            surfaceControlBuilderSupplier,
+            surfaceControlTransactionSupplier,
+            surfaceControlViewHostFactory,
+        )
+
+        @Deprecated("Handle menu should no longer have reference to window decoration")
+        @JvmOverloads
+        fun create(
+            @ShellMainThread mainDispatcher: CoroutineDispatcher,
+            @ShellBackgroundThread bgScope: CoroutineScope,
+            parentDecor: DesktopModeWindowDecoration,
+            windowManagerWrapper: WindowManagerWrapper,
+            windowDecorationActions: WindowDecorationActions,
+            taskResourceLoader: WindowDecorTaskResourceLoader,
+            layoutResId: Int,
+            splitScreenController: SplitScreenController,
+            shouldShowWindowingPill: Boolean,
+            shouldShowNewWindowButton: Boolean,
+            shouldShowManageWindowsButton: Boolean,
+            shouldShowChangeAspectRatioButton: Boolean,
+            shouldShowDesktopModeButton: Boolean,
+            shouldShowRestartButton: Boolean,
+            isBrowserApp: Boolean,
+            openInAppOrBrowserIntent: Intent?,
+            desktopModeUiEventLogger: DesktopModeUiEventLogger,
+            captionWidth: Int,
+            captionHeight: Int,
+            captionX: Int,
+            captionY: Int,
+            surfaceControlBuilderSupplier: () -> SurfaceControl.Builder =
+                { SurfaceControl.Builder() },
+            surfaceControlTransactionSupplier: () -> SurfaceControl.Transaction =
+                { SurfaceControl.Transaction() },
+            surfaceControlViewHostFactory: SurfaceControlViewHostFactory =
+                object : SurfaceControlViewHostFactory {}
+        ): HandleMenu = HandleMenu(
+            mainDispatcher,
+            bgScope,
+            parentDecor.mDecorWindowContext,
+            parentDecor.mTaskInfo,
+            parentDecor.mDecorationContainerSurface,
+            parentDecor.mDisplay,
             parentDecor,
             windowManagerWrapper,
             windowDecorationActions,
@@ -1079,6 +1192,9 @@ object DefaultHandleMenuFactory : HandleMenuFactory {
             captionHeight,
             captionX,
             captionY,
+            surfaceControlBuilderSupplier,
+            surfaceControlTransactionSupplier,
+            surfaceControlViewHostFactory,
         )
     }
 }

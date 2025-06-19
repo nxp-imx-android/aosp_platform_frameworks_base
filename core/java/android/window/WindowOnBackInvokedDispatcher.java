@@ -18,6 +18,7 @@ package android.window;
 
 import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFINED;
 
+import static com.android.window.flags.Flags.multipleSystemNavigationObserverCallbacks;
 import static com.android.window.flags.Flags.predictiveBackSystemOverrideCallback;
 import static com.android.window.flags.Flags.predictiveBackPrioritySystemNavigationObserver;
 import static com.android.window.flags.Flags.predictiveBackTimestampApi;
@@ -54,7 +55,9 @@ import java.io.PrintWriter;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -111,6 +114,8 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
 
     @VisibleForTesting
     public OnBackInvokedCallback mSystemNavigationObserverCallback = null;
+    @VisibleForTesting
+    public Set<OnBackInvokedCallback> mSystemNavigationObserverCallbacks = new HashSet<>();
 
     private Checker mChecker;
     private final Object mLock = new Object();
@@ -189,7 +194,11 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                 }
                 removeCallbackInternal(callback);
             }
-            mSystemNavigationObserverCallback = callback;
+            if (multipleSystemNavigationObserverCallbacks()) {
+                mSystemNavigationObserverCallbacks.add(callback);
+            } else {
+                mSystemNavigationObserverCallback = callback;
+            }
         }
     }
 
@@ -240,11 +249,21 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                 Integer prevPriority = mAllCallbacks.get(callback);
                 mOnBackInvokedCallbacks.get(prevPriority).remove(callback);
             }
-            if (mSystemNavigationObserverCallback == callback) {
-                mSystemNavigationObserverCallback = null;
-                if (DEBUG) {
-                    Log.i(TAG, "Callback already registered (as system-navigation-observer "
-                            + "callback). Removing and re-adding it.");
+            if (multipleSystemNavigationObserverCallbacks()) {
+                if (mSystemNavigationObserverCallbacks.contains(callback)) {
+                    mSystemNavigationObserverCallbacks.remove(callback);
+                    if (DEBUG) {
+                        Log.i(TAG, "Callback already registered (as system-navigation-observer "
+                                + "callback). Removing and re-adding it.");
+                    }
+                }
+            } else {
+                if (mSystemNavigationObserverCallback == callback) {
+                    mSystemNavigationObserverCallback = null;
+                    if (DEBUG) {
+                        Log.i(TAG, "Callback already registered (as system-navigation-observer "
+                                + "callback). Removing and re-adding it.");
+                    }
                 }
             }
 
@@ -266,9 +285,16 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                 mImeDispatcher.unregisterOnBackInvokedCallback(callback);
                 return;
             }
-            if (mSystemNavigationObserverCallback == callback) {
-                mSystemNavigationObserverCallback = null;
-                return;
+            if (multipleSystemNavigationObserverCallbacks()) {
+                if (mSystemNavigationObserverCallbacks.contains(callback)) {
+                    mSystemNavigationObserverCallbacks.remove(callback);
+                    return;
+                }
+            } else {
+                if (mSystemNavigationObserverCallback == callback) {
+                    mSystemNavigationObserverCallback = null;
+                    return;
+                }
             }
             if (callback instanceof ImeOnBackInvokedDispatcher.DefaultImeOnBackAnimationCallback) {
                 callback = mImeBackAnimationController;
@@ -373,6 +399,7 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
             mAllCallbacks.clear();
             mOnBackInvokedCallbacks.clear();
             mSystemNavigationObserverCallback = null;
+            mSystemNavigationObserverCallbacks.clear();
         }
     }
 
@@ -385,11 +412,11 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
     }
 
     /**
-     * Tries to call {@link OnBackInvokedCallback#onBackInvoked} on the system navigation observer
-     * callback (if one is set and if the top-most regular callback has
+     * Tries to call {@link OnBackInvokedCallback#onBackInvoked} on all system navigation observer
+     * callback (if any are registered and if the top-most regular callback has
      * {@link OnBackInvokedDispatcher#PRIORITY_SYSTEM})
      */
-    public void tryInvokeSystemNavigationObserverCallback() {
+    public void tryInvokeSystemNavigationObserverCallbacks() {
         OnBackInvokedCallback topCallback = getTopCallback();
         Integer callbackPriority = mAllCallbacks.getOrDefault(topCallback, null);
         final boolean isSystemOverride = topCallback instanceof SystemOverrideOnBackInvokedCallback;
@@ -399,8 +426,18 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
     }
 
     private void invokeSystemNavigationObserverCallback() {
-        if (mSystemNavigationObserverCallback != null) {
-            mSystemNavigationObserverCallback.onBackInvoked();
+        if (multipleSystemNavigationObserverCallbacks()) {
+            Set<OnBackInvokedCallback> observerCallbacks;
+            synchronized (mLock) {
+                observerCallbacks = new HashSet<>(mSystemNavigationObserverCallbacks);
+            }
+            for (OnBackInvokedCallback callback : observerCallbacks) {
+                callback.onBackInvoked();
+            }
+        } else {
+            if (mSystemNavigationObserverCallback != null) {
+                mSystemNavigationObserverCallback.onBackInvoked();
+            }
         }
     }
 

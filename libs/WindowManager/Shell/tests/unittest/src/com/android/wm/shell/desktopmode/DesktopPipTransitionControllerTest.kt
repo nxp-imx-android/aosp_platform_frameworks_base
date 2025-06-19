@@ -291,6 +291,16 @@ class DesktopPipTransitionControllerTest(flags: FlagsParameterization) : ShellTe
         verifyPerformDesktopExitCleanupAfterPip(isCalled = true)
     }
 
+    @Test
+    fun handlePipTransition_multiActivityPip_minimizeMultiActivityPipTask() {
+        taskInfo.numActivities = 2
+
+        controller.handlePipTransition(wct, transition, taskInfo)
+
+        verify(mockDesktopTasksController)
+            .minimizeMultiActivityPipTask(wct = wct, deskId = DESK_ID, task = taskInfo)
+    }
+
     private fun verifyPerformDesktopExitCleanupAfterPip(isCalled: Boolean) {
         if (isCalled) {
             verify(mockDesktopTasksController)

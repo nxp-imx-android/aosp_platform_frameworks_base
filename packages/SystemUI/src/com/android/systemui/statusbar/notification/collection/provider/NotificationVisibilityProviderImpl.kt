@@ -18,12 +18,11 @@ package com.android.systemui.statusbar.notification.collection.provider
 
 import com.android.internal.statusbar.NotificationVisibility
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.statusbar.notification.collection.NotifLiveDataStore
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection
 import com.android.systemui.statusbar.notification.collection.render.NotificationVisibilityProvider
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
-import com.android.systemui.statusbar.notification.logging.NotificationLogger
+import com.android.systemui.statusbar.notification.stack.shared.getNotificationLocation
 import javax.inject.Inject
 
 /** pipeline-agnostic implementation for getting [NotificationVisibility]. */
@@ -32,7 +31,6 @@ class NotificationVisibilityProviderImpl
 @Inject
 constructor(
     private val activeNotificationsInteractor: ActiveNotificationsInteractor,
-    private val notifDataStore: NotifLiveDataStore,
     private val notifCollection: CommonNotifCollection,
 ) : NotificationVisibilityProvider {
 
@@ -40,7 +38,7 @@ constructor(
         val count: Int = getCount()
         val rank = entry.ranking.rank
         val hasRow = entry.row != null
-        val location = NotificationLogger.getNotificationLocation(entry)
+        val location = getNotificationLocation(entry)
         return NotificationVisibility.obtain(entry.key, rank, count, visible && hasRow, location)
     }
 
@@ -50,7 +48,7 @@ constructor(
         } ?: NotificationVisibility.obtain(key, -1, getCount(), false)
 
     override fun getLocation(key: String): NotificationVisibility.NotificationLocation =
-        NotificationLogger.getNotificationLocation(notifCollection.getEntry(key))
+        getNotificationLocation(notifCollection.getEntry(key))
 
     private fun getCount() = activeNotificationsInteractor.allNotificationsCountValue
 }

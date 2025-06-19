@@ -31,7 +31,6 @@ import com.android.systemui.statusbar.notification.shelf.ui.viewmodel.notificati
 import com.android.systemui.statusbar.notification.stack.domain.interactor.headsUpNotificationInteractor
 import com.android.systemui.statusbar.notification.stack.domain.interactor.notificationStackInteractor
 import com.android.systemui.statusbar.policy.domain.interactor.userSetupInteractor
-import java.util.Optional
 
 val Kosmos.notificationListViewModel by Fixture {
     NotificationListViewModel(
@@ -42,7 +41,7 @@ val Kosmos.notificationListViewModel by Fixture {
         emptyShadeViewModelFactory = emptyShadeViewModelFactory,
         bundleOnboarding = bundleOnboardingViewModel,
         summarizationOnboarding = summarizationOnboardingViewModel,
-        logger = Optional.of(notificationListLoggerViewModel),
+        logger = notificationListLoggerViewModel,
         activeNotificationsInteractor = activeNotificationsInteractor,
         notificationStackInteractor = notificationStackInteractor,
         headsUpNotificationInteractor = headsUpNotificationInteractor,

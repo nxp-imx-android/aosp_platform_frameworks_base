@@ -75,21 +75,27 @@ class AppCompatCameraOverrides {
         mAppCompatCameraOverridesState = new AppCompatCameraOverridesState();
         mAllowMinAspectRatioOverrideOptProp = optPropBuilder.create(
                 PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE);
-        final BooleanSupplier isCameraCompatTreatmentEnabled = AppCompatUtils.asLazy(
-                mAppCompatConfiguration::isCameraCompatTreatmentEnabled);
+        final BooleanSupplier isCameraCompatForceRotateTreatmentEnabled = AppCompatUtils.asLazy(
+                mAppCompatConfiguration::isCameraCompatForceRotateTreatmentEnabled);
+        final BooleanSupplier isCameraCompatSimulateRequestedOrientationTreatmentEnabled =
+                AppCompatUtils.asLazy(mAppCompatConfiguration
+                        ::isCameraCompatSimulateRequestedOrientationTreatmentEnabled);
+        final BooleanSupplier isAnyCameraCompatTreatmentEnabled = AppCompatUtils.asLazy(
+                mAppCompatConfiguration::isAnyCameraCompatTreatmentEnabled);
+
         mCameraCompatAllowRefreshOptProp = optPropBuilder.create(
                 PROPERTY_CAMERA_COMPAT_ALLOW_REFRESH,
-                isCameraCompatTreatmentEnabled);
+                isAnyCameraCompatTreatmentEnabled);
         mCameraCompatEnableRefreshViaPauseOptProp = optPropBuilder.create(
                 PROPERTY_CAMERA_COMPAT_ENABLE_REFRESH_VIA_PAUSE,
-                isCameraCompatTreatmentEnabled);
+                isAnyCameraCompatTreatmentEnabled);
         mCameraCompatAllowForceRotationOptProp = optPropBuilder.create(
                 PROPERTY_CAMERA_COMPAT_ALLOW_FORCE_ROTATION,
-                isCameraCompatTreatmentEnabled);
+                isCameraCompatForceRotateTreatmentEnabled);
         mCameraCompatAllowOrientationTreatmentOptProp =
                 Flags.enableCameraCompatForDesktopWindowingOptOut() ? optPropBuilder.create(
                 PROPERTY_CAMERA_COMPAT_ALLOW_SIMULATE_REQUESTED_ORIENTATION,
-                isCameraCompatTreatmentEnabled) : null;
+                        isCameraCompatSimulateRequestedOrientationTreatmentEnabled) : null;
     }
 
     /**
@@ -179,14 +185,16 @@ class AppCompatCameraOverrides {
      */
     boolean shouldApplyFreeformTreatmentForCameraCompat() {
         return DesktopModeFlags.ENABLE_CAMERA_COMPAT_SIMULATE_REQUESTED_ORIENTATION.isTrue()
-                && (shouldEnableCameraCompatFreeformTreatmentForApp()
-                || shouldEnableCameraCompatFreeformTreatmentForAllApps());
+                && (shouldEnableCameraCompatSimulateRequestedOrientationTreatmentForApp()
+                || shouldForceEnableCameraCompatSimulateRequestedOrientationTreatment());
     }
 
-    private boolean shouldEnableCameraCompatFreeformTreatmentForApp() {
+    private boolean shouldEnableCameraCompatSimulateRequestedOrientationTreatmentForApp() {
         if (mCameraCompatAllowOrientationTreatmentOptProp != null) {
             // OptProp is not-null iff the opt-out flag is on.
-            return mCameraCompatAllowOrientationTreatmentOptProp
+            return mAppCompatConfiguration
+                    .isCameraCompatSimulateRequestedOrientationTreatmentEnabled()
+                    && mCameraCompatAllowOrientationTreatmentOptProp
                     .shouldEnableWithOptOutOverrideAndProperty(isChangeEnabled(mActivityRecord,
                             OVERRIDE_CAMERA_COMPAT_DISABLE_SIMULATE_REQUESTED_ORIENTATION));
         } else {
@@ -201,9 +209,9 @@ class AppCompatCameraOverrides {
      *
      * <p>This can be enabled via adb only.
      */
-    private boolean shouldEnableCameraCompatFreeformTreatmentForAllApps() {
+    private boolean shouldForceEnableCameraCompatSimulateRequestedOrientationTreatment() {
         return mActivityRecord.mWmService.mAppCompatConfiguration
-                .isCameraCompatFreeformWindowingTreatmentEnabled();
+                .isCameraCompatSimReqOrientationTreatmentForceEnabled();
     }
 
     boolean isOverrideOrientationOnlyForCameraEnabled() {

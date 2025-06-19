@@ -551,6 +551,10 @@ public final class Message implements Parcelable {
     }
 
     /*package*/ static int compareMessages(@NonNull Message m1, @NonNull Message m2) {
+        if (m1 == m2) {
+            return 0;
+        }
+
         // Primary queue order is by when.
         // Messages with an earlier when should come first in the queue.
         final long whenDiff = m1.when - m2.when;

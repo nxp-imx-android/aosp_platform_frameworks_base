@@ -364,18 +364,11 @@ public final class CarrierAppUtils {
     }
 
     private static boolean shouldUpdateEnabledState(ApplicationInfo appInfo, int enabledSetting) {
-        if (Flags.cleanupCarrierAppUpdateEnabledStateLogic()) {
-            return !isUpdatedSystemApp(appInfo)
-                    && (enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
-                            || enabledSetting
-                                    == PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED
-                            || (appInfo.flags & ApplicationInfo.FLAG_INSTALLED) == 0);
-        } else {
-            return !isUpdatedSystemApp(appInfo)
-                            && enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
-                    || enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED
-                    || (appInfo.flags & ApplicationInfo.FLAG_INSTALLED) == 0;
-        }
+        return !isUpdatedSystemApp(appInfo)
+                && (enabledSetting == PackageManager.COMPONENT_ENABLED_STATE_DEFAULT
+                        || enabledSetting
+                                == PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED
+                        || (appInfo.flags & ApplicationInfo.FLAG_INSTALLED) == 0);
     }
 
     /**

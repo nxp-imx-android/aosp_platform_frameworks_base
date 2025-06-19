@@ -1398,8 +1398,13 @@ public abstract class WallpaperService extends Service {
                     final DisplayCutout rawCutout = mInsetsState.getDisplayCutout();
                     final Rect visibleFrame = new Rect(mWinFrames.frame);
                     visibleFrame.intersect(mInsetsState.getDisplayFrame());
+                    // A wallpaper usually doesn't have a host window bounds, except when it's shown
+                    // as a preview in a freeform window, like in a wallpaper picker.
+                    // Host bounds needs to be the accurate value when it has one. The value doesn't
+                    // matter when there's no actual host window.
+                    final Rect hostBounds = config.windowConfiguration.getBounds();
                     WindowInsets windowInsets = mInsetsState.calculateInsets(visibleFrame,
-                            null /* hostBounds */, null /* ignoringVisibilityState */,
+                            hostBounds, null /* ignoringVisibilityState */,
                             config.isScreenRound(), mLayout.softInputMode, mLayout.flags,
                             SYSTEM_UI_FLAG_VISIBLE, mLayout.type,
                             config.windowConfiguration.getActivityType(), null /* idSideMap */);

@@ -29,3 +29,11 @@ val Kosmos.shadeUserActionsViewModel: ShadeUserActionsViewModel by Fixture {
         sceneBackInteractor = sceneBackInteractor,
     )
 }
+
+val Kosmos.shadeUserAcionsViewModelFactory : ShadeUserActionsViewModel.Factory by Fixture {
+    object : ShadeUserActionsViewModel.Factory {
+        override fun create(): ShadeUserActionsViewModel {
+            return shadeUserActionsViewModel
+        }
+    }
+}

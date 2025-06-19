@@ -57,7 +57,7 @@ constructor(
                         isClickable = true
                         isFocusable = true
                         isEnabled = true
-                        defaultFocusHighlightEnabled = false
+                        defaultFocusHighlightEnabled = true
                         fitsSystemWindows = false
                     }
                 setContent {

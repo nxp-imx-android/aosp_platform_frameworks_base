@@ -101,13 +101,13 @@ constructor(val promptSelectorInteractor: PromptSelectorInteractor) {
      * option. If credential is allowed and identity Check is enabled, this counts as another option
      */
     val optionCount: Flow<Int> =
-        combine(credentialAllowed, identityCheckActive, fallbackOptions) {
-            credentialAllowed,
+        combine(showCredential, identityCheckActive, fallbackOptions) {
+            showCredential,
             identityCheckEnabled,
             fallbackOptions ->
             var total = 0
-            if (credentialAllowed) total++
-            if (identityCheckEnabled && credentialAllowed) total++
+            if (showCredential) total++
+            if (identityCheckEnabled && showCredential) total++
             total += fallbackOptions.size
             total
         }

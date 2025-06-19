@@ -43,7 +43,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
-import org.mockito.kotlin.clearInvocations
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
@@ -93,6 +92,16 @@ class DragToBubbleControllerTest {
     }
 
     @Test
+    fun dragStarted_isDropHandled_cleared() {
+        dragToBubbleController.isDropHandled = true
+
+        dragToBubbleController.onDragStarted()
+
+        // Once drag is started again isDropHandled should be cleared
+        assertThat(dragToBubbleController.isDropHandled).isFalse()
+    }
+
+    @Test
     fun dragStarted_multipleTimes_dropZoneAddedOnlyOnce() {
         repeat(10) { dragToBubbleController.onDragStarted() }
 
@@ -118,146 +127,6 @@ class DragToBubbleControllerTest {
     }
 
     @Test
-    fun draggedToTheRightDropZone_noBubbles_dropTargetViewShown_bubbleBarDropTargetShowRequested() {
-        dragToBubbleController.onDragStarted()
-
-        runOnMainSync {
-            dragToBubbleController.onDragUpdate(rightDropRect.centerX(), rightDropRect.centerY())
-            animatorTestRule.advanceTimeBy(250)
-        }
-
-        assertThat(dropTargetView.alpha).isEqualTo(1f)
-        verify(bubbleController).showBubbleBarPinAtLocation(BubbleBarLocation.RIGHT)
-        verify(bubbleController, never()).animateBubbleBarLocation(any())
-    }
-
-    @Test
-    fun draggedToTheRightDropZone_bubbleOnTheRight_dropTargetShown_locationUpdatedNotRequested() {
-        prepareBubbleController(hasBubbles = true, bubbleBarLocation = BubbleBarLocation.RIGHT)
-        dragToBubbleController.onDragStarted()
-
-        runOnMainSync {
-            dragToBubbleController.onDragUpdate(rightDropRect.centerX(), rightDropRect.centerY())
-            animatorTestRule.advanceTimeBy(250)
-        }
-
-        assertThat(dropTargetView.alpha).isEqualTo(1f)
-        verify(bubbleController, never()).showBubbleBarPinAtLocation(any())
-        verify(bubbleController, never()).showBubbleBarPinAtLocation(any())
-    }
-
-    @Test
-    fun draggedToTheLeftDropZone_hasBubblesOnTheRight_bubbleBarLocationChangeRequested() {
-        prepareBubbleController(hasBubbles = true, bubbleBarLocation = BubbleBarLocation.RIGHT)
-        dragToBubbleController.onDragStarted()
-
-        runOnMainSync {
-            dragToBubbleController.onDragUpdate(leftDropRect.centerX(), leftDropRect.centerY())
-            animatorTestRule.advanceTimeBy(250)
-        }
-        verify(bubbleController).animateBubbleBarLocation(BubbleBarLocation.LEFT)
-    }
-
-    @Test
-    fun draggedToTheLeftDropZone_dragEnded_noBubblesOnTheRight_pinViewHideRequested() {
-        val bubbleBarOriginalLocation = BubbleBarLocation.RIGHT
-        prepareBubbleController(hasBubbles = false, bubbleBarLocation = bubbleBarOriginalLocation)
-        dragToBubbleController.onDragStarted()
-
-        runOnMainSync {
-            dragToBubbleController.onDragUpdate(leftDropRect.centerX(), leftDropRect.centerY())
-            dragToBubbleController.onDragEnded()
-        }
-
-        verify(bubbleController).showBubbleBarPinAtLocation(BubbleBarLocation.LEFT)
-        verify(bubbleController).showBubbleBarPinAtLocation(null)
-        assertThat(dropTargetContainer.childCount).isEqualTo(1)
-
-        runOnMainSync { animatorTestRule.advanceTimeBy(250) }
-        assertThat(dropTargetContainer.childCount).isEqualTo(0)
-    }
-
-    @Test
-    fun draggedToTheLeftDropZone_dragEnded_hasBubblesOnTheRight_locationRestored() {
-        val bubbleBarOriginalLocation = BubbleBarLocation.RIGHT
-        prepareBubbleController(hasBubbles = true, bubbleBarLocation = bubbleBarOriginalLocation)
-        dragToBubbleController.onDragStarted()
-
-        runOnMainSync {
-            dragToBubbleController.onDragUpdate(leftDropRect.centerX(), leftDropRect.centerY())
-            dragToBubbleController.onDragEnded()
-        }
-
-        verify(bubbleController).animateBubbleBarLocation(BubbleBarLocation.LEFT)
-        verify(bubbleController).animateBubbleBarLocation(bubbleBarOriginalLocation)
-        assertThat(dropTargetContainer.childCount).isEqualTo(1)
-
-        runOnMainSync { animatorTestRule.advanceTimeBy(250) }
-        assertThat(dropTargetContainer.childCount).isEqualTo(0)
-    }
-
-    @Test
-    fun dragBetweenLeftAndRightDropZones_hasBubblesOnRight_bubbleBarAnimatesCorrectly() {
-        val bubbleBarOriginalLocation = BubbleBarLocation.RIGHT
-        prepareBubbleController(hasBubbles = true, bubbleBarLocation = bubbleBarOriginalLocation)
-        dragToBubbleController.onDragStarted()
-
-        runOnMainSync {
-            dragToBubbleController.onDragUpdate(leftDropRect.centerX(), leftDropRect.centerY())
-            animatorTestRule.advanceTimeBy(250)
-        }
-        verify(bubbleController).animateBubbleBarLocation(BubbleBarLocation.LEFT)
-
-        runOnMainSync {
-            // drag to no zone
-            dragToBubbleController.onDragUpdate(0, 0)
-            animatorTestRule.advanceTimeBy(250)
-        }
-        // should return to original position
-        verify(bubbleController).animateBubbleBarLocation(bubbleBarOriginalLocation)
-        clearInvocations(bubbleController)
-
-        runOnMainSync {
-            // drag to the same zone as bubble bar
-            dragToBubbleController.onDragUpdate(rightDropRect.centerX(), rightDropRect.centerY())
-            animatorTestRule.advanceTimeBy(250)
-        }
-        // should not trigger any call to animate bubble bar
-        verify(bubbleController, never()).animateBubbleBarLocation(any())
-    }
-
-    @Test
-    fun dragBetweenLeftAndRightDropZones_noBubblesOnRight_bubbleDropTargetShowRequestedCorrectly() {
-        val bubbleBarOriginalLocation = BubbleBarLocation.RIGHT
-        prepareBubbleController(hasBubbles = false, bubbleBarLocation = bubbleBarOriginalLocation)
-        dragToBubbleController.onDragStarted()
-
-        runOnMainSync {
-            dragToBubbleController.onDragUpdate(leftDropRect.centerX(), leftDropRect.centerY())
-            animatorTestRule.advanceTimeBy(250)
-        }
-        // should request displaying pin on left
-        verify(bubbleController).showBubbleBarPinAtLocation(BubbleBarLocation.LEFT)
-
-        runOnMainSync {
-            // drag to no zone
-            dragToBubbleController.onDragUpdate(0, 0)
-            animatorTestRule.advanceTimeBy(250)
-        }
-        // should hide pin view
-        verify(bubbleController).showBubbleBarPinAtLocation(null)
-        clearInvocations(bubbleController)
-
-        runOnMainSync {
-            // drag to the same zone as bubble bar
-            dragToBubbleController.onDragUpdate(rightDropRect.centerX(), rightDropRect.centerY())
-            animatorTestRule.advanceTimeBy(250)
-        }
-        // should request displaying pin at right
-        verify(bubbleController).showBubbleBarPinAtLocation(BubbleBarLocation.RIGHT)
-    }
-
-    @Test
     fun droppedItemWithIntentAtTheLeftDropZone_noBubblesOnTheRight_bubbleCreationRequested() {
         val bubbleBarOriginalLocation = BubbleBarLocation.RIGHT
         prepareBubbleController(hasBubbles = false, bubbleBarLocation = bubbleBarOriginalLocation)
@@ -273,6 +142,7 @@ class DragToBubbleControllerTest {
 
         verify(bubbleController)
             .expandStackAndSelectBubble(pendingIntent, userHandle, BubbleBarLocation.LEFT)
+        assertThat(dragToBubbleController.isDropHandled).isTrue()
     }
 
     @Test
@@ -289,6 +159,25 @@ class DragToBubbleControllerTest {
         }
 
         verify(bubbleController).expandStackAndSelectBubble(shortcutInfo, BubbleBarLocation.LEFT)
+        assertThat(dragToBubbleController.isDropHandled).isTrue()
+    }
+
+    @Test
+    fun droppedItem_afterNewDragStartedOnItemDropCleared() {
+        val bubbleBarOriginalLocation = BubbleBarLocation.RIGHT
+        prepareBubbleController(hasBubbles = false, bubbleBarLocation = bubbleBarOriginalLocation)
+        val shortcutInfo = ShortcutInfo.Builder(context, "id").setLongLabel("Shortcut").build()
+        runOnMainSync {
+            dragToBubbleController.onDragStarted()
+            dragToBubbleController.onDragUpdate(leftDropRect.centerX(), leftDropRect.centerY())
+            dragToBubbleController.onItemDropped(shortcutInfo)
+            assertThat(dragToBubbleController.isDropHandled).isTrue()
+            dragToBubbleController.onDragEnded()
+            animatorTestRule.advanceTimeBy(250)
+
+            dragToBubbleController.onDragStarted()
+        }
+        assertThat(dragToBubbleController.isDropHandled).isFalse()
     }
 
     @Test

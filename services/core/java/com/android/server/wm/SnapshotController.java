@@ -167,10 +167,10 @@ class SnapshotController {
             final ArrayList<ActivityRecord> mCloseActivities = new ArrayList<>();
 
             void add(ActivityRecord ar) {
-                if (ar.isVisibleRequested()) {
-                    mOpenActivities.add(ar);
-                } else {
-                    mCloseActivities.add(ar);
+                final ArrayList<ActivityRecord> targetList = ar.isVisibleRequested()
+                        ? mOpenActivities : mCloseActivities;
+                if (!targetList.contains(ar)) {
+                    targetList.add(ar);
                 }
             }
 

@@ -98,7 +98,8 @@ import java.util.concurrent.Executor;
 public final class AppFunctionManager {
 
     /**
-     * Activity action: Launch UI to manage App Function access.
+     * Activity action: Launch UI that shows list of all agents and provides management of App
+     * Function access of those agents.
      * <p>
      * Input: Nothing.
      * </p>
@@ -112,7 +113,8 @@ public final class AppFunctionManager {
             "android.app.appfunctions.action.MANAGE_APP_FUNCTION_ACCESS";
 
     /**
-     * Activity action: Launch UI to manage App Function access for a specific agent app.
+     * Activity action: Launch UI that shows a list of all targets that the specified agent package
+     * can access, and provides management of App Function access of those targets.
      * <p>
      * Input: {@link android.content.Intent#EXTRA_PACKAGE_NAME} specifies the package whose access
      * will be managed by the launched UI.
@@ -129,7 +131,8 @@ public final class AppFunctionManager {
             "android.app.appfunctions.action.MANAGE_AGENT_APP_FUNCTION_ACCESS";
 
     /**
-     * Activity action: Launch UI to manage App Function access for a specific target app.
+     * Activity action: Launch UI that shows list of all agents for a specific target and
+     * provides management of App Function access by those agents.
      * <p>
      * Input: {@link android.content.Intent#EXTRA_PACKAGE_NAME} specifies the package whose access
      * will be managed by the launched UI.
@@ -146,7 +149,7 @@ public final class AppFunctionManager {
             "android.app.appfunctions.action.MANAGE_TARGET_APP_FUNCTION_ACCESS";
 
     /**
-     * Activity action: Launch UI to request App Function access of a specified app.
+     * Activity action: Launch UI to for an agent to request App Function access of a target.
      * <p>
      * Input: {@link android.content.Intent#EXTRA_PACKAGE_NAME} specifies the package for which the
      * calling agent is requesting access of.

@@ -2445,8 +2445,8 @@
         <!-- Optional: specify if valid purpose is required for this permission. True indicates
              it is required, false or not specifying the element indicates optional.
 
-             <p>If set to true, use {@link #AndroidManifestValidPurpose valid-purpose} tag to
-             specify the valid set of purpose(s). As a result of doing that, to prevent automatic
+             <p>If set to true, {@link #AndroidManifestValidPurpose valid-purpose} tag must be used
+             to specify at least one valid purpose. As a result of doing that, to prevent automatic
              revocation at install time, all permission requests made using the
              {@link #AndroidManifestUsesPermission uses-permission} tag will need to specify at
              least one of these configured valid purposes. This enforcement of purpose validation

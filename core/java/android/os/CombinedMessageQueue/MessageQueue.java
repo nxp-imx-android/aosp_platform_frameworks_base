@@ -16,13 +16,19 @@
 
 package android.os;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
+import android.app.compat.CompatChanges;
 import android.app.ActivityThread;
 import android.app.Instrumentation;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.Disabled;
+import android.compat.annotation.EnabledAfter;
+import android.compat.annotation.Overridable;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
@@ -67,6 +73,16 @@ public final class MessageQueue {
     private static final String TAG_L = "LegacyMessageQueue";
     private static final String TAG_C = "ConcurrentMessageQueue";
     private static final boolean DEBUG = false;
+
+    /**
+     * Enables concurrent message queue implementation in all applications.
+     *
+     * @hide
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = android.os.Build.VERSION_CODES.BAKLAVA)
+    @Overridable // Can be overridden on user builds
+    public static final long USE_NEW_MESSAGEQUEUE = 421623328L;
 
     // True if the message queue can be quit.
     @UnsupportedAppUsage
@@ -165,6 +181,9 @@ public final class MessageQueue {
     }
 
     private static boolean computeUseConcurrent() {
+        if (CompatChanges.isChangeEnabled(USE_NEW_MESSAGEQUEUE)) {
+            return true;
+        }
         if (Flags.useConcurrentMessageQueueInApps()) {
             // b/379472827: Robolectric tests use reflection to access MessageQueue.mMessages.
             // This is a hack to allow Robolectric tests to use the legacy implementation.
@@ -2899,9 +2918,8 @@ public final class MessageQueue {
                     + " now: " + SystemClock.uptimeMillis());
         }
 
-        final Looper myLooper = Looper.myLooper();
         /* If we are running on the looper thread we can add directly to the priority queue */
-        if (myLooper != null && myLooper.getQueue() == this) {
+        if (Thread.currentThread() == mLooperThread) {
             if (getQuitting()) {
                 logDeadThread(msg);
                 return false;

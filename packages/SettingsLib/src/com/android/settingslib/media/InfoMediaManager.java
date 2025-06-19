@@ -46,6 +46,7 @@ import static android.media.MediaRoute2Info.TYPE_WIRED_HEADSET;
 import static android.media.session.MediaController.PlaybackInfo;
 
 import static com.android.media.flags.Flags.avoidBinderCallsDuringRender;
+import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTED;
 import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING;
 import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_CONNECTING_FAILED;
 import static com.android.settingslib.media.LocalMediaManager.MediaDeviceState.STATE_DISCONNECTED;
@@ -140,7 +141,7 @@ public abstract class InfoMediaManager {
     }
 
     /**
-     * Wrapper class around SuggestedDeviceInfo and the corresponsing connection state of the
+     * Wrapper class around SuggestedDeviceInfo and the corresponding connection state of the
      * suggestion.
      */
     public static class SuggestedDeviceState {
@@ -833,18 +834,15 @@ public abstract class InfoMediaManager {
         }
     }
 
-    final void onConnectionAttemptCompletedForSuggestion(@NonNull SuggestedDeviceState suggestion) {
+    final void onConnectionAttemptCompletedForSuggestion(
+            @NonNull SuggestedDeviceState suggestion, boolean success) {
         if (!Objects.equals(suggestion, mSuggestedDeviceState)) {
             return;
         }
-        if (mSuggestedDeviceState.getConnectionState() == STATE_CONNECTING
-                || mSuggestedDeviceState.getConnectionState() == STATE_GROUPING) {
-            mSuggestedDeviceState =
-                    new SuggestedDeviceState(
-                            mSuggestedDeviceState.getSuggestedDeviceInfo(),
-                            STATE_CONNECTING_FAILED);
-            dispatchOnSuggestedDeviceUpdated();
-        }
+        int state = success ? STATE_CONNECTED : STATE_CONNECTING_FAILED;
+        mSuggestedDeviceState =
+                new SuggestedDeviceState(mSuggestedDeviceState.getSuggestedDeviceInfo(), state);
+        dispatchOnSuggestedDeviceUpdated();
     }
 
     private void dispatchOnSuggestedDeviceUpdated() {

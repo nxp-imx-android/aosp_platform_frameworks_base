@@ -304,6 +304,8 @@ fun getInheritedExistingTaskBounds(
         currentTaskTopActivity == null -> null
         // Top task is not an instance of the launching activity, do not inherit its bounds.
         lastTaskTopActivity.packageName != currentTaskTopActivity.packageName -> null
+        // Tasks belong to different users, do not inherit.
+        task.userId != lastTask.userId -> null
         // Top task is an instance of launching activity. Activity will be launching in a new
         // task with the existing task also being closed. Inherit existing task bounds to
         // prevent new task jumping.

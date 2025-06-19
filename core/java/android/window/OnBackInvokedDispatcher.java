@@ -74,12 +74,22 @@ public interface OnBackInvokedDispatcher {
      * Priority level of {@link OnBackInvokedCallback}s designed to observe system-level back
      * handling.
      *
-     * <p>Callbacks registered with this priority do not consume back events. They receive back
-     * events whenever the system handles a back navigation and have no impact on the normal back
-     * navigation flow. Useful for logging or analytics.
+     * <p>Callbacks registered with this priority are invoked only when a back event is not
+     * consumed by any other registered {@link OnBackInvokedCallback} with a priority of
+     * {@link #PRIORITY_DEFAULT} or higher. This means they are called when the system is about
+     * to perform its default back navigation action, such as finishing the current activity or
+     * executing a back-to-home animation.
      *
-     * <p>Only one callback with {@link #PRIORITY_SYSTEM_NAVIGATION_OBSERVER} can be registered at a
-     * time.
+     * <p>These callbacks are purely observational. They do not consume the back event and
+     * cannot intercept it. Their invocation has no impact on the normal back navigation flow,
+     * making them suitable for logging, analytics, or triggering actions that should not
+     * prevent the system's own back handling.
+     *
+     * <p>The invocation order for multiple callbacks registered with this priority is undefined.
+     *
+     * <p>On API level 36 only, there is a restriction that only one callback with
+     * {@link #PRIORITY_SYSTEM_NAVIGATION_OBSERVER} can be registered at a time. On API level 37 and
+     * higher, the number of registered observer callbacks is unrestricted.
      */
     @FlaggedApi(Flags.FLAG_PREDICTIVE_BACK_PRIORITY_SYSTEM_NAVIGATION_OBSERVER)
     int PRIORITY_SYSTEM_NAVIGATION_OBSERVER = -2;

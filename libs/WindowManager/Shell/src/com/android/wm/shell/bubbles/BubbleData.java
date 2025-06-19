@@ -850,7 +850,7 @@ public class BubbleData {
         ProtoLog.d(WM_SHELL_BUBBLES, "doRemove=%s reason=%s", bubbleToRemove.getKey(),
                 dismissReasonToString(reason));
         bubbleToRemove.stopInflation();
-        overflowBubble(reason, bubbleToRemove);
+        doOverflow(reason, bubbleToRemove);
 
         if (mBubbles.size() == 1) {
             setExpandedInternal(false);
@@ -947,7 +947,7 @@ public class BubbleData {
         }
     }
 
-    void overflowBubble(@DismissReason int reason, Bubble bubble) {
+    void doOverflow(@DismissReason int reason, Bubble bubble) {
         boolean isOverflowReason = reason == Bubbles.DISMISS_AGED
                 || reason == Bubbles.DISMISS_USER_GESTURE
                 || reason == Bubbles.DISMISS_USER_GESTURE_FROM_LAUNCHER
@@ -1038,6 +1038,14 @@ public class BubbleData {
             }
             dispatchPendingChanges();
         }
+    }
+
+    /**
+     * Adds a bubble loaded from the saved bubbles xml file to the overflow.
+     */
+    public void addOverflowBubbleFromDisk(Bubble bubble) {
+        doOverflow(Bubbles.DISMISS_RELOAD_FROM_DISK, bubble);
+        dispatchPendingChanges();
     }
 
     /**

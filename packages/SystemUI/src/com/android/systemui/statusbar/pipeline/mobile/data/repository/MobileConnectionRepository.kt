@@ -29,6 +29,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -200,6 +201,27 @@ interface MobileConnectionRepository {
                     }
                 }
                 .stateIn(scope, SharingStarted.WhileSubscribed(), default)
+        }
+
+        /**
+         * Automatically implements [MobileConnectionRepository.numberOfLevels] based on the
+         * [inflateSignalStrength] value.
+         *
+         * @param default The default number of levels to use if [inflateSignalStrength] is false.
+         */
+        fun createNumberOfLevelsFlow(
+            scope: CoroutineScope,
+            inflateSignalStrength: Flow<Boolean>,
+            default: StateFlow<Int>,
+        ): StateFlow<Int> {
+            return combine(default, inflateSignalStrength) { defaultNumberOfLevels, shouldInflate ->
+                    if (shouldInflate) {
+                        defaultNumberOfLevels + 1
+                    } else {
+                        defaultNumberOfLevels
+                    }
+                }
+                .stateIn(scope, SharingStarted.WhileSubscribed(), default.value)
         }
     }
 }
