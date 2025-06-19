@@ -44,11 +44,11 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     exclude_filters: [
-        "com.android.wm.shell.flicker.DesktopModeBaseTest",
         "com.android.wm.shell.flicker.fundamentals.CloseAllAppsViaAppHeaderExitTest",
         "com.android.wm.shell.flicker.fundamentals.CloseAllAppsWithBackNavigationTest",
         "com.android.wm.shell.flicker.fundamentals.EnterDesktopFromSplitScreenWithAppHandleMenuFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.EnterDesktopWithAppHandleMenuFlickerTest",
+        "com.android.wm.shell.flicker.fundamentals.EnterSplitScreenWithAppHandleMenuFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.ExitDesktopToFullScreenWithAppHeaderMenuFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.ExitDesktopToSplitScreenWithAppHeaderMenuFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.OpenAppFromAllAppsFlickerTest",
@@ -68,13 +68,6 @@ test_module_config {
         "com.android.wm.shell.flicker.tiling.TilingDividerShownHiddenFlickerTest",
         "com.android.wm.shell.flicker.tiling.TilingPairBrokenWhenEnteringPipFlickerTest",
     ],
-}
-
-test_module_config {
-    name: "WMShellFlickerTestsDesktopMode-DesktopModeBaseTest",
-    base: "WMShellFlickerTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.flicker.DesktopModeBaseTest"],
 }
 
 test_module_config {
@@ -103,6 +96,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.fundamentals.EnterDesktopWithAppHandleMenuFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-fundamentals-EnterSplitScreenWithAppHandleMenuFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.EnterSplitScreenWithAppHandleMenuFlickerTest"],
 }
 
 test_module_config {
