@@ -696,7 +696,6 @@ public class MediaQualityService extends SystemService {
             if (!hasGlobalPictureQualityServicePermission(callingUid, callingPid)) {
                 mMqManagerNotifier.notifyOnPictureProfileError(
                         null, PictureProfile.ERROR_NO_PERMISSION, callingUid, callingPid);
-                return -1;
             }
             String[] columns = {BaseParameters.PARAMETER_ID};
             String selection = BaseParameters.PARAMETER_TYPE + " = ? AND ("
