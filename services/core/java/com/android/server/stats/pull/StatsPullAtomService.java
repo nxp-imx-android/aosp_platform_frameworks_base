@@ -43,6 +43,7 @@ import static android.os.Process.SYSTEM_UID;
 import static android.os.Process.getUidForPid;
 import static android.os.storage.VolumeInfo.TYPE_PRIVATE;
 import static android.os.storage.VolumeInfo.TYPE_PUBLIC;
+import static android.permission.flags.Flags.enableAllSqliteAppopsAccesses;
 import static android.provider.Settings.Global.NETSTATS_UID_BUCKET_DURATION;
 import static android.telephony.TelephonyManager.UNKNOWN_CARRIER_ID;
 import static android.util.MathUtils.constrain;
@@ -1035,8 +1036,10 @@ public class StatsPullAtomService extends SystemService {
         registerExternalStorageInfo();
         registerAppsOnExternalStorageInfo();
         registerFaceSettings();
-        registerAppOps();
-        registerAttributedAppOps();
+        if (!enableAllSqliteAppopsAccesses()) {
+            registerAppOps();
+            registerAttributedAppOps();
+        }
         registerRuntimeAppOpAccessMessage();
         registerNotificationRemoteViews();
         registerDangerousPermissionState();
@@ -4051,6 +4054,9 @@ public class StatsPullAtomService extends SystemService {
     }
 
     int pullAppOpsLocked(int atomTag, List<StatsEvent> pulledData) {
+        if (enableAllSqliteAppopsAccesses()) {
+            return StatsManager.PULL_SKIP;
+        }
         final long token = Binder.clearCallingIdentity();
         try {
             AppOpsManager appOps = mContext.getSystemService(AppOpsManager.class);
@@ -4130,6 +4136,9 @@ public class StatsPullAtomService extends SystemService {
     }
 
     int pullAttributedAppOpsLocked(int atomTag, List<StatsEvent> pulledData) {
+        if (enableAllSqliteAppopsAccesses()) {
+            return StatsManager.PULL_SKIP;
+        }
         final long token = Binder.clearCallingIdentity();
         try {
             AppOpsManager appOps = mContext.getSystemService(AppOpsManager.class);
