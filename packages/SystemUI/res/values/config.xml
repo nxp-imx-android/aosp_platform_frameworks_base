@@ -1150,4 +1150,7 @@
     <string name="config_growthReceiverClassName" translatable="false" />
     <!-- Delay in milliseconds before sending the broadcast to the growth app. -->
     <integer name="config_growthBroadcastDelayMillis">10000</integer>
+
+    <!-- Whether minmode is enabled on the device. -->
+    <bool name="config_minmode_enabled">false</bool>
 </resources>
