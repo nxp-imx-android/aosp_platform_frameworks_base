@@ -27,12 +27,13 @@ import com.android.wm.shell.compatui.letterbox.LetterboxController
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy
 import com.android.wm.shell.compatui.letterbox.LetterboxKey
 import com.android.wm.shell.compatui.letterbox.asMode
-import java.util.function.Consumer
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import java.util.function.Consumer
 
 /**
  * Tests for [LetterboxLifecycleControllerImpl].
@@ -65,6 +66,7 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
                     letterboxBounds = Rect(500, 0, 800, 1800)
                 )
             )
+            r.verifyStrategyIsInvoked(expected = true)
             r.verifyCreateLetterboxSurface(expected = true)
         }
     }
@@ -79,6 +81,7 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
                     eventTaskLeash = null
                 )
             )
+            r.verifyStrategyIsInvoked(expected = false)
             r.verifyCreateLetterboxSurface(expected = false)
         }
     }
@@ -216,6 +219,13 @@ class LetterboxLifecycleControllerImplTest : ShellTestCase() {
                 eq(taskBounds),
                 eq(letterboxBounds)
             )
+        }
+
+        fun verifyStrategyIsInvoked(expected: Boolean = true) {
+            verify(
+                letterboxModeStrategy,
+                expected.asMode()
+            ).configureLetterboxMode(any<LetterboxLifecycleEvent>())
         }
     }
 }
