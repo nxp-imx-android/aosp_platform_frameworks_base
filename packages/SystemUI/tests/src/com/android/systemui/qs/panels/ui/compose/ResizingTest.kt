@@ -16,26 +16,29 @@
 
 package com.android.systemui.qs.panels.ui.compose
 
+import android.platform.test.flag.junit.FlagsParameterization
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.click
+import androidx.compose.ui.test.junit4.ComposeContentTestRule
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performCustomAccessibilityActionWithLabel
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeRight
 import androidx.compose.ui.text.AnnotatedString
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
+import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.DefaultEditTileGrid
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.EditAction
 import com.android.systemui.qs.panels.ui.model.GridCell
@@ -50,11 +53,18 @@ import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @OptIn(ExperimentalTestApi::class)
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class ResizingTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+class ResizingTest(flags: FlagsParameterization) : SysuiTestCase() {
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
     @get:Rule val composeRule = createComposeRule()
 
     private val kosmos = testKosmos()
@@ -90,13 +100,27 @@ class ResizingTest : SysuiTestCase() {
         }
     }
 
+    private fun ComposeContentTestRule.setEditContent(
+        listState: EditTileListState,
+        tiles: List<EditTileViewModel> = TestEditTiles,
+        largeTiles: Set<TileSpec> = TestLargeTilesSpecs,
+        onResize: (EditAction.ResizeTile) -> Unit = {},
+    ) {
+        setContent { EditTileGridUnderTest(listState, tiles, largeTiles, onResize) }
+        waitForIdle()
+
+        if (QsEditModeTabs.isEnabled) {
+            // Tap on Layout tab to select
+            onNodeWithText("Layout").performClick()
+        }
+    }
+
     @Test
     fun toggleIconTileWithA11yAction_shouldBeLarge() {
         val listState =
             EditTileListState(TestEditTiles, TestLargeTilesSpecs, columns = 4, largeTilesSpan = 2)
         var resizedAction: EditAction.ResizeTile? = null
-        composeRule.setContent { EditTileGridUnderTest(listState) { resizedAction = it } }
-        composeRule.waitForIdle()
+        composeRule.setEditContent(listState) { resizedAction = it }
 
         composeRule
             .onNodeWithContentDescription("tileA")
@@ -114,8 +138,7 @@ class ResizingTest : SysuiTestCase() {
         val listState =
             EditTileListState(TestEditTiles, TestLargeTilesSpecs, columns = 4, largeTilesSpan = 2)
         var resizedAction: EditAction.ResizeTile? = null
-        composeRule.setContent { EditTileGridUnderTest(listState) { resizedAction = it } }
-        composeRule.waitForIdle()
+        composeRule.setEditContent(listState) { resizedAction = it }
 
         composeRule
             .onNodeWithContentDescription("tileD_large")
@@ -133,8 +156,7 @@ class ResizingTest : SysuiTestCase() {
         val listState =
             EditTileListState(TestEditTiles, TestLargeTilesSpecs, columns = 4, largeTilesSpan = 2)
         var resizedAction: EditAction.ResizeTile? = null
-        composeRule.setContent { EditTileGridUnderTest(listState) { resizedAction = it } }
-        composeRule.waitForIdle()
+        composeRule.setEditContent(listState) { resizedAction = it }
 
         composeRule
             .onNodeWithContentDescription("tileA")
@@ -154,8 +176,7 @@ class ResizingTest : SysuiTestCase() {
         val listState =
             EditTileListState(TestEditTiles, TestLargeTilesSpecs, columns = 4, largeTilesSpan = 2)
         var resizedAction: EditAction.ResizeTile? = null
-        composeRule.setContent { EditTileGridUnderTest(listState) { resizedAction = it } }
-        composeRule.waitForIdle()
+        composeRule.setEditContent(listState) { resizedAction = it }
 
         composeRule
             .onNodeWithContentDescription("tileD_large")
@@ -175,8 +196,7 @@ class ResizingTest : SysuiTestCase() {
         val listState =
             EditTileListState(TestEditTiles, TestLargeTilesSpecs, columns = 4, largeTilesSpan = 2)
         var resizedAction: EditAction.ResizeTile? = null
-        composeRule.setContent { EditTileGridUnderTest(listState) { resizedAction = it } }
-        composeRule.waitForIdle()
+        composeRule.setEditContent(listState) { resizedAction = it }
 
         composeRule
             .onNodeWithContentDescription("tileA")
@@ -196,8 +216,7 @@ class ResizingTest : SysuiTestCase() {
         val listState =
             EditTileListState(TestEditTiles, TestLargeTilesSpecs, columns = 4, largeTilesSpan = 2)
         var resizedAction: EditAction.ResizeTile? = null
-        composeRule.setContent { EditTileGridUnderTest(listState) { resizedAction = it } }
-        composeRule.waitForIdle()
+        composeRule.setEditContent(listState) { resizedAction = it }
 
         composeRule
             .onNodeWithContentDescription("tileD_large")
@@ -224,10 +243,7 @@ class ResizingTest : SysuiTestCase() {
         val listState = EditTileListState(testTiles, emptySet(), columns = 4, largeTilesSpan = 2)
         var resizedAction: EditAction.ResizeTile? = null
 
-        composeRule.setContent {
-            EditTileGridUnderTest(listState, testTiles) { resizedAction = it }
-        }
-        composeRule.waitForIdle()
+        composeRule.setEditContent(listState, testTiles) { resizedAction = it }
 
         composeRule
             .onNodeWithContentDescription("tileD")
@@ -250,6 +266,11 @@ class ResizingTest : SysuiTestCase() {
     }
 
     companion object {
+
+        @Parameters(name = "{0}")
+        @JvmStatic
+        fun data() = FlagsParameterization.progressionOf(QsEditModeTabs.FLAG_NAME)
+
         private fun createEditTile(tileSpec: String): EditTileViewModel {
             return EditTileViewModel(
                 tileSpec = TileSpec.create(tileSpec),
