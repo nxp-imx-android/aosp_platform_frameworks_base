@@ -901,6 +901,8 @@ class ActivityClientController extends IActivityClientController.Stub {
                 if (r == null) {
                     return;
                 }
+                EventLogTags.writeWmSetRequestedOrientation(requestedOrientation,
+                        r.shortComponentName);
                 // A new Transition need to be started in case the orientation update
                 // won't make the Display to rotate.
                 Transition transition = null;
