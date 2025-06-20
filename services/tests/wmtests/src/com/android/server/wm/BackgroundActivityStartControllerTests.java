@@ -16,7 +16,6 @@
 
 package com.android.server.wm;
 
-import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_PENDING_INTENT;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_PERMISSION;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_ALLOW_VISIBLE_WINDOW;
 import static com.android.server.wm.BackgroundActivityStartController.BAL_BLOCK;
@@ -177,7 +176,13 @@ public class BackgroundActivityStartControllerTests {
         }
 
         public void setRealCallerVerdict(BalVerdict verdict) {
-            this.mRealCallerVerdict = Optional.of(verdict);
+            if (verdict == null) {
+                this.mRealCallerVerdict = Optional.empty();
+            } else if (verdict.isImmutable()) {
+                this.mRealCallerVerdict = Optional.of(verdict);
+            } else {
+                this.mRealCallerVerdict = Optional.of(verdict.setBasedOnRealCaller());
+            }
         }
 
         @Override
@@ -488,8 +493,9 @@ public class BackgroundActivityStartControllerTests {
 
         // assertions
         assertThat(verdict).isEqualTo(realCallerVerdict);
+        assertThat(verdict.isBasedOnRealCaller()).isTrue();
         assertThat(mBalAllowedLogs).containsExactly(
-                new BalAllowedLog("package.app3/someClass", BAL_ALLOW_PENDING_INTENT));
+                new BalAllowedLog("package.app3/someClass", BAL_ALLOW_VISIBLE_WINDOW));
 
     }
 
