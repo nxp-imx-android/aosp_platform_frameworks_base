@@ -75,7 +75,9 @@ object BubbleTestUtils {
     /** Verifies the [WindowContainerTransaction] to exit Bubble. */
     @JvmStatic
     fun verifyExitBubbleTransaction(
-        wct: WindowContainerTransaction, taskToken: IBinder, captionInsetsOwner: IBinder?
+        wct: WindowContainerTransaction,
+        taskToken: IBinder,
+        captionInsetsOwner: IBinder? = null,
     ) {
         // Verify hierarchy ops
 
