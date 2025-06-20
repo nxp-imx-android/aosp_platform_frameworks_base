@@ -178,6 +178,7 @@ public final class AppsFilterImpl extends AppsFilterLocked implements Watchable,
         // be invalid.
         PackageManager.invalidatePackageInfoCache();
         ApplicationPackageManager.invalidateGetPackagesForUidCache();
+        ApplicationPackageManager.invalidateQueryIntentActivitiesCache();
         dispatchChange(this);
     }
 

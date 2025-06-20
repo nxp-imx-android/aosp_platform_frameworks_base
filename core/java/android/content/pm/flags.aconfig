@@ -332,3 +332,11 @@ flag {
     is_fixed_read_only: true
 }
 
+flag {
+    name: "cache_query_intent_activities_in_client_side"
+    namespace: "package_manager_service"
+    description: "Feature flag to implement client side caching for queryIntentActivities."
+    bug: "339648913"
+    is_fixed_read_only: true
+}
+

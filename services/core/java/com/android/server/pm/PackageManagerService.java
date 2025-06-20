@@ -772,6 +772,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             ApplicationPackageManager.disableGetPackagesForUidCache();
             ApplicationPackageManager.invalidateHasSystemFeatureCache();
             PackageManager.corkPackageInfoCache();
+            ApplicationPackageManager.invalidateQueryIntentActivitiesCache();
+            ApplicationPackageManager.disableQueryIntentActivitiesCacheForCurrentProcess();
         }
 
         @Override
@@ -1580,6 +1582,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         // coalesce settings writes, this strategy would have us invalidate the cache too late.
         // Invalidating on schedule addresses this problem.
         invalidatePackageInfoCache();
+        ApplicationPackageManager.invalidateQueryIntentActivitiesCache();
         if (!mHandler.hasMessages(WRITE_SETTINGS)) {
             mHandler.sendEmptyMessageDelayed(WRITE_SETTINGS, WRITE_SETTINGS_DELAY);
         }
@@ -1587,6 +1590,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
 
     void scheduleWritePackageListLocked(int userId) {
         invalidatePackageInfoCache();
+        ApplicationPackageManager.invalidateQueryIntentActivitiesCache();
         if (!mHandler.hasMessages(WRITE_PACKAGE_LIST)) {
             Message msg = mHandler.obtainMessage(WRITE_PACKAGE_LIST);
             msg.arg1 = userId;
