@@ -135,7 +135,25 @@ public class ExpandableNotificationRowDragControllerTest extends SysuiTestCase {
         } else {
             verify(mNotificationPanelLogger, never())
                     .logNotificationDrag(any(NotificationEntry.class));
-        }    }
+        }
+    }
+
+    @Test
+    public void testCleanUpDragListenerOnDragFailed() {
+        ExpandableNotificationRowDragController controller = createSpyController();
+        mRow.setDragController(controller);
+        mRow.setHeadsUp(true);
+        mRow.setPinnedStatus(PinnedStatus.PinnedBySystem);
+
+        // Simulate a failure to initiate drag and drop
+        doReturn(false).when(mRow).startDragAndDrop(any(), any(), any(), anyInt());
+
+        mRow.doLongClickCallback(0, 0);
+        mRow.doDragCallback(0, 0);
+
+        // Verify that we've reset the listener
+        verify(mRow).setOnDragListener(null);
+    }
 
     private ExpandableNotificationRowDragController createSpyController() {
         return spy(mController);

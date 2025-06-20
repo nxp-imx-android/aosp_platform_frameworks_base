@@ -144,6 +144,7 @@ public class ExpandableNotificationRowDragController {
         boolean result = view.startDragAndDrop(dragData, myShadow, null, View.DRAG_FLAG_GLOBAL
                 | View.DRAG_FLAG_REQUEST_SURFACE_FOR_RETURN_ANIMATION);
         if (result) {
+            Log.d(TAG, "Starting drag from notification view=" + view);
             // Log notification drag only if it succeeds
             if (NotificationBundleUi.isEnabled()) {
                 mNotificationPanelLogger.logNotificationDrag(enr.getEntryAdapter());
@@ -156,6 +157,9 @@ public class ExpandableNotificationRowDragController {
             } else {
                 dismissShade();
             }
+        } else {
+            Log.w(TAG, "Failed to starting drag from notification view=" + view);
+            view.setOnDragListener(null);
         }
     }
 
@@ -255,6 +259,9 @@ public class ExpandableNotificationRowDragController {
             }
 
             private void cleanUpSurface() {
+                if (!dragSurface.isValid()) {
+                    return;
+                }
                 tx.remove(dragSurface);
                 tx.apply();
                 tx.close();
