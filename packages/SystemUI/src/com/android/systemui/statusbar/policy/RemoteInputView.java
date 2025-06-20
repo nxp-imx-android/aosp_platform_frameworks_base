@@ -85,7 +85,6 @@ import com.android.systemui.Dependency;
 import com.android.systemui.Flags;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.RemoteInputController;
-import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.RemoteInputEntryAdapter;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.wrapper.NotificationViewWrapper;
@@ -535,6 +534,8 @@ public class RemoteInputView extends LinearLayout implements View.OnClickListene
         if (mRow.isChangingPosition() || isTemporarilyDetached()) {
             return;
         }
+        unregisterBackCallback();
+
         // RemoteInputView can be detached from window before IME close event in some cases like
         // remote input view removal with notification update. As a result of this, RemoteInputView
         // will stop ime animation updates, which results in never removing remote input. That's why
@@ -1013,6 +1014,9 @@ public class RemoteInputView extends LinearLayout implements View.OnClickListene
                     if (mRemoteInputView != null) {
                         mRemoteInputView.mRemoteInputEntryAdapter.setRemoteInputText(getText());
                     }
+                }
+                if (mRemoteInputView != null) {
+                    mRemoteInputView.unregisterBackCallback();
                 }
                 return;
             }
