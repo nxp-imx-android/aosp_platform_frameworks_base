@@ -268,7 +268,7 @@ abstract class StatusBarPipelineModule {
         @SysUISingleton
         @MobileSummaryLog
         fun provideMobileSummaryLogBuffer(factory: TableLogBufferFactory): TableLogBuffer {
-            return factory.create("MobileSummaryLog", 100)
+            return factory.create("MobileSummaryLog", 200)
         }
 
         @Provides
