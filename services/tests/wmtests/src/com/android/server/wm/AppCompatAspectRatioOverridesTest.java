@@ -470,17 +470,14 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
      * Runs a test scenario providing a Robot.
      */
     void runTestScenario(@NonNull Consumer<AspectRatioOverridesRobotTest> consumer) {
-        final AspectRatioOverridesRobotTest robot =
-                new AspectRatioOverridesRobotTest(mWm, mAtm, mSupervisor);
+        final AspectRatioOverridesRobotTest robot = new AspectRatioOverridesRobotTest(this);
         consumer.accept(robot);
     }
 
     private static class AspectRatioOverridesRobotTest extends AppCompatRobotBase {
 
-        AspectRatioOverridesRobotTest(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor) {
-            super(wm, atm, supervisor);
+        AspectRatioOverridesRobotTest(@NonNull WindowTestsBase windowTestBase) {
+            super(windowTestBase);
         }
 
         @Override

@@ -131,7 +131,7 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
      */
     void runTestScenario(@NonNull Consumer<CameraStateMonitorRobotTests> consumer) {
         final CameraStateMonitorRobotTests robot =
-                new CameraStateMonitorRobotTests(mWm, mAtm, mSupervisor, this);
+                new CameraStateMonitorRobotTests(this);
         consumer.accept(robot);
     }
 
@@ -147,11 +147,8 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
 
         private CameraManager.AvailabilityCallback mCameraAvailabilityCallback;
 
-        CameraStateMonitorRobotTests(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor,
-                @NonNull WindowTestsBase windowTestsBase) {
-            super(wm, atm, supervisor);
+        CameraStateMonitorRobotTests(@NonNull WindowTestsBase windowTestsBase) {
+            super(windowTestsBase);
             mWindowTestsBase = windowTestsBase;
             setupCameraManager();
             setupAppCompatConfiguration();

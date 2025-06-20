@@ -145,7 +145,7 @@ public class AppCompatCameraStateStrategyForPackageTests extends WindowTestsBase
     void runTestScenario(@NonNull Consumer<AppCompatCameraStateStrategyForPackageRobotTest>
             consumer) {
         final AppCompatCameraStateStrategyForPackageRobotTest robot =
-                new AppCompatCameraStateStrategyForPackageRobotTest(mWm, mAtm, mSupervisor);
+                new AppCompatCameraStateStrategyForPackageRobotTest(this);
         consumer.accept(robot);
     }
 
@@ -156,10 +156,8 @@ public class AppCompatCameraStateStrategyForPackageTests extends WindowTestsBase
 
         private Set<FakeAppCompatCameraStatePolicy> mRegisteredPolicies = new ArraySet<>();
 
-        AppCompatCameraStateStrategyForPackageRobotTest(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor) {
-            super(wm, atm, supervisor);
+        AppCompatCameraStateStrategyForPackageRobotTest(@NonNull WindowTestsBase windowTestBase) {
+            super(windowTestBase);
             setupAppCompatConfiguration();
             configureActivityAndDisplay();
         }

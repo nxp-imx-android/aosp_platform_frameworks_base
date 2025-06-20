@@ -167,23 +167,19 @@ public class AppCompatCameraStateStrategyForTaskTests extends WindowTestsBase {
      */
     void runTestScenario(@NonNull Consumer<AppCompatCameraStateStrategyForTaskRobotTest> consumer) {
         final AppCompatCameraStateStrategyForTaskRobotTest robot =
-                new AppCompatCameraStateStrategyForTaskRobotTest(mWm, mAtm, mSupervisor, this);
+                new AppCompatCameraStateStrategyForTaskRobotTest(this);
         consumer.accept(robot);
     }
 
     private static class AppCompatCameraStateStrategyForTaskRobotTest extends AppCompatRobotBase {
         private final WindowTestsBase mWindowTestsBase;
-
         private FakeAppCompatCameraStatePolicy mFakePolicyCannotCloseOnce;
         private FakeAppCompatCameraStatePolicy mFakePolicyCanClose;
 
         private Set<FakeAppCompatCameraStatePolicy> mRegisteredPolicies = new ArraySet<>();
 
-        AppCompatCameraStateStrategyForTaskRobotTest(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor,
-                @NonNull WindowTestsBase windowTestsBase) {
-            super(wm, atm, supervisor);
+        AppCompatCameraStateStrategyForTaskRobotTest(@NonNull WindowTestsBase windowTestsBase) {
+            super(windowTestsBase);
             mWindowTestsBase = windowTestsBase;
             setupAppCompatConfiguration();
             configureActivityAndDisplay();

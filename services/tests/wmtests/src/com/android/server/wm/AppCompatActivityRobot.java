@@ -82,6 +82,8 @@ class AppCompatActivityRobot {
     private final TestComponentStack<ActivityRecord> mActivityStack;
     @NonNull
     private final TestComponentStack<Task> mTaskStack;
+    @NonNull
+    private final WindowTestsBase mWindowTestsBase;
 
     private final int mDisplayWidth;
     private final int mDisplayHeight;
@@ -95,13 +97,13 @@ class AppCompatActivityRobot {
     @Nullable
     private Consumer<DisplayContent> mOnPostDisplayContentCreation;
 
-    AppCompatActivityRobot(@NonNull WindowManagerService wm,
-            @NonNull ActivityTaskManagerService atm, @NonNull ActivityTaskSupervisor supervisor,
+    AppCompatActivityRobot(@NonNull WindowTestsBase windowTestBase,
             int displayWidth, int displayHeight,
             @Nullable Consumer<ActivityRecord> onPostActivityCreation,
             @Nullable Consumer<DisplayContent> onPostDisplayContentCreation) {
-        mAtm = atm;
-        mSupervisor = supervisor;
+        mAtm = windowTestBase.mAtm;
+        mSupervisor = windowTestBase.mSupervisor;
+        mWindowTestsBase = windowTestBase;
         mDisplayWidth = displayWidth;
         mDisplayHeight = displayHeight;
         mActivityStack = new TestComponentStack<>();
@@ -111,16 +113,14 @@ class AppCompatActivityRobot {
         createNewDisplay();
     }
 
-    AppCompatActivityRobot(@NonNull WindowManagerService wm,
-            @NonNull ActivityTaskManagerService atm, @NonNull ActivityTaskSupervisor supervisor,
+    AppCompatActivityRobot(@NonNull WindowTestsBase windowTestBase,
             int displayWidth, int displayHeight) {
-        this(wm, atm, supervisor, displayWidth, displayHeight, /* onPostActivityCreation */ null,
+        this(windowTestBase, displayWidth, displayHeight, /* onPostActivityCreation */ null,
                 /* onPostDisplayContentCreation */ null);
     }
 
-    AppCompatActivityRobot(@NonNull WindowManagerService wm,
-            @NonNull ActivityTaskManagerService atm, @NonNull ActivityTaskSupervisor supervisor) {
-        this(wm, atm, supervisor, DEFAULT_DISPLAY_WIDTH, DEFAULT_DISPLAY_HEIGHT);
+    AppCompatActivityRobot(@NonNull WindowTestsBase windowTestBase) {
+        this(windowTestBase, DEFAULT_DISPLAY_WIDTH, DEFAULT_DISPLAY_HEIGHT);
     }
 
     void createActivityWithComponent() {
@@ -187,6 +187,11 @@ class AppCompatActivityRobot {
     @NonNull
     DisplayContent displayContent() {
         return mDisplayContent;
+    }
+
+    @NonNull
+    WindowTestsBase testBase() {
+        return mWindowTestsBase;
     }
 
     @NonNull
