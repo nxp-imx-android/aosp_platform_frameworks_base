@@ -49,6 +49,7 @@ import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPOR
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_SMARTSPACE_DOORBELL;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_START_RECENTS_ANIMATION;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_SWITCH_DISPLAY_UNFOLD;
+import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_SWITCH_DISPLAY_FOLD;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_TOGGLE_RECENTS;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_TURN_ON_SCREEN;
 import static com.android.internal.util.FrameworkStatsLog.UIACTION_LATENCY_REPORTED__ACTION__ACTION_UDFPS_ILLUMINATE;
@@ -311,6 +312,15 @@ public class LatencyTracker {
      */
     public static final int ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE = 33;
 
+    /**
+     * Time it takes to turn on the outer screen for a foldable device after fold.
+     * <p>
+     * Starts when the device is folded, signaled by device-state change event.
+     * Ends when the outer screen is turned on, signaled by power interactor emitting SCREEN_ON
+     * event.
+     */
+    public static final int ACTION_SWITCH_DISPLAY_FOLD = 34;
+
     private static final int[] ACTIONS_ALL = {
         ACTION_EXPAND_PANEL,
         ACTION_TOGGLE_RECENTS,
@@ -346,6 +356,7 @@ public class LatencyTracker {
         ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU,
         ACTION_DESKTOP_MODE_EXIT_MODE,
         ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE,
+        ACTION_SWITCH_DISPLAY_FOLD,
     };
 
     /** @hide */
@@ -384,6 +395,7 @@ public class LatencyTracker {
         ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU,
         ACTION_DESKTOP_MODE_EXIT_MODE,
         ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE,
+        ACTION_SWITCH_DISPLAY_FOLD,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Action {}
@@ -424,6 +436,7 @@ public class LatencyTracker {
             UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_ENTER_APP_HANDLE_MENU,
             UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_EXIT_MODE,
             UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE,
+            UIACTION_LATENCY_REPORTED__ACTION__ACTION_SWITCH_DISPLAY_FOLD,
     };
 
     private final Object mLock = new Object();
@@ -636,6 +649,8 @@ public class LatencyTracker {
                 return "ACTION_DESKTOP_MODE_EXIT_MODE";
             case UIACTION_LATENCY_REPORTED__ACTION__ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE:
                 return "ACTION_DESKTOP_MODE_EXIT_MODE_ON_LAST_WINDOW_CLOSE";
+            case UIACTION_LATENCY_REPORTED__ACTION__ACTION_SWITCH_DISPLAY_FOLD:
+                return "ACTION_SWITCH_DISPLAY_FOLD";
             default:
                 throw new IllegalArgumentException("Invalid action");
         }

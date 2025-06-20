@@ -24,6 +24,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.R
 import com.android.internal.util.LatencyTracker
+import com.android.internal.util.LatencyTracker.ACTION_SWITCH_DISPLAY_FOLD
 import com.android.internal.util.LatencyTracker.ACTION_SWITCH_DISPLAY_UNFOLD
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.deviceStateManager
@@ -228,7 +229,25 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
     }
 
     @Test
-    fun unfoldingDevice_startsLatencyTracking() {
+    fun foldToScreenOff_foldTrackingNotSent() {
+        testScope.runTest {
+            setDisplaySwitchState(Idle(HALF_FOLDED))
+            isAodAvailable.emit(false)
+
+            setDisplaySwitchState(Switching(HALF_FOLDED))
+
+            powerInteractor.setAsleepForTest(sleepReason = GO_TO_SLEEP_REASON_DEVICE_FOLD)
+            powerInteractor.setScreenPowerState(SCREEN_OFF)
+
+            setDisplaySwitchState(Idle(FOLDED))
+
+            verify(latencyTracker).onActionCancel(ACTION_SWITCH_DISPLAY_FOLD)
+            verify(latencyTracker, never()).onActionEnd(ACTION_SWITCH_DISPLAY_FOLD)
+        }
+    }
+
+    @Test
+    fun unfoldingDevice_startsUnfoldLatencyTracking() {
         testScope.runTest {
             setDisplaySwitchState(Switching(HALF_FOLDED))
 
@@ -237,7 +256,18 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
     }
 
     @Test
-    fun foldingDevice_doesntTrackLatency() {
+    fun foldingDevice_startsFoldLatencyTracking() {
+        testScope.runTest {
+            setDisplaySwitchState(Idle(UNFOLDED))
+
+            setDisplaySwitchState(Switching(FOLDED))
+
+            verify(latencyTracker).onActionStart(ACTION_SWITCH_DISPLAY_FOLD)
+        }
+    }
+
+    @Test
+    fun foldingDevice_doesntTrackUnfoldLatency() {
         testScope.runTest {
             setDisplaySwitchState(Idle(UNFOLDED))
 
@@ -248,7 +278,16 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
     }
 
     @Test
-    fun unfoldingDevice_endsLatencyWhenSwitchFinished() {
+    fun unfoldingDevice_doesntTrackFoldLatency() {
+        testScope.runTest {
+            setDisplaySwitchState(Switching(HALF_FOLDED))
+
+            verify(latencyTracker, never()).onActionStart(ACTION_SWITCH_DISPLAY_FOLD)
+        }
+    }
+
+    @Test
+    fun unfoldingDevice_endsUnfoldLatencyWhenSwitchFinished() {
         testScope.runTest {
             setDisplaySwitchState(Switching(HALF_FOLDED))
 
@@ -259,7 +298,20 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
     }
 
     @Test
-    fun unfoldingDevice_doesntEndLatencyTrackingWhenSwitchNotFinished() {
+    fun foldingDevice_endsFoldLatencyWhenSwitchFinished() {
+        testScope.runTest {
+            setDisplaySwitchState(Idle(HALF_FOLDED))
+
+            setDisplaySwitchState(Switching(FOLDED))
+            powerInteractor.setScreenPowerState(SCREEN_ON)
+            setDisplaySwitchState(Idle(FOLDED))
+
+            verify(latencyTracker).onActionEnd(ACTION_SWITCH_DISPLAY_FOLD)
+        }
+    }
+
+    @Test
+    fun unfoldingDevice_doesntEndUnfoldLatencyTrackingWhenSwitchNotFinished() {
         testScope.runTest {
             setDisplaySwitchState(Switching(HALF_FOLDED))
 
@@ -268,7 +320,18 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
     }
 
     @Test
-    fun displaySwitchInterrupted_newDeviceState_trackingNotSent() {
+    fun foldingDevice_doesntEndFoldLatencyTrackingWhenSwitchNotFinished() {
+        testScope.runTest {
+            setDisplaySwitchState(Idle(UNFOLDED))
+
+            setDisplaySwitchState(Switching(FOLDED))
+
+            verify(latencyTracker, never()).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun displaySwitchInterrupted_newDeviceState_unfoldTrackingNotSent() {
         testScope.runTest {
             setDisplaySwitchState(Switching(HALF_FOLDED))
 
@@ -281,17 +344,48 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
     }
 
     @Test
-    fun interruptedDisplaySwitchFinished_coolDownPassed_trackingWorksAsUsual() {
+    fun displaySwitchInterrupted_newDeviceState_foldTrackingNotSent() {
+        testScope.runTest {
+            setDisplaySwitchState(Switching(HALF_FOLDED))
+
+            setDisplaySwitchState(Corrupted(HALF_FOLDED))
+            powerInteractor.setScreenPowerState(SCREEN_ON)
+            setDisplaySwitchState(Idle(UNFOLDED))
+
+            verify(latencyTracker).onActionCancel(ACTION_SWITCH_DISPLAY_FOLD)
+            verify(latencyTracker, never()).onActionEnd(ACTION_SWITCH_DISPLAY_FOLD)
+        }
+    }
+
+    @Test
+    fun interruptedDisplaySwitchFinished_coolDownPassed_unfoldTrackingWorksAsUsual() {
         testScope.runTest {
             setDisplaySwitchState(Switching(HALF_FOLDED))
             setDisplaySwitchState(Corrupted(HALF_FOLDED))
             setDisplaySwitchState(Idle(FOLDED))
+            powerInteractor.setScreenPowerState(SCREEN_ON)
 
             setDisplaySwitchState(Switching(HALF_FOLDED))
             setDisplaySwitchState(Idle(UNFOLDED))
 
             verify(latencyTracker, times(2)).onActionStart(ACTION_SWITCH_DISPLAY_UNFOLD)
             verify(latencyTracker).onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun interruptedDisplaySwitchFinished_coolDownPassed_foldTrackingWorksAsUsual() {
+        testScope.runTest {
+            setDisplaySwitchState(Switching(FOLDED))
+            setDisplaySwitchState(Corrupted(FOLDED))
+            setDisplaySwitchState(Idle(UNFOLDED))
+
+            setDisplaySwitchState(Switching(FOLDED))
+            powerInteractor.setScreenPowerState(SCREEN_ON)
+            setDisplaySwitchState(Idle(FOLDED))
+
+            verify(latencyTracker, times(2)).onActionStart(ACTION_SWITCH_DISPLAY_FOLD)
+            verify(latencyTracker).onActionEnd(ACTION_SWITCH_DISPLAY_FOLD)
         }
     }
 
@@ -312,13 +406,25 @@ class DisplaySwitchLatencyTrackerTest : SysuiTestCase() {
     }
 
     @Test
-    fun displaySwitchTimedOut_trackingCancelled() {
+    fun displaySwitchTimedOut_unfoldTrackingCancelled() {
         testScope.runTest {
             setDisplaySwitchState(Switching(HALF_FOLDED))
 
             setDisplaySwitchState(Idle(UNFOLDED, timedOut = true))
 
             verify(latencyTracker).onActionCancel(ACTION_SWITCH_DISPLAY_UNFOLD)
+        }
+    }
+
+    @Test
+    fun displaySwitchTimedOut_foldTrackingCancelled() {
+        testScope.runTest {
+            setDisplaySwitchState(Switching(HALF_FOLDED))
+            powerInteractor.setScreenPowerState(SCREEN_ON)
+
+            setDisplaySwitchState(Idle(FOLDED, timedOut = true))
+
+            verify(latencyTracker).onActionCancel(ACTION_SWITCH_DISPLAY_FOLD)
         }
     }
 
