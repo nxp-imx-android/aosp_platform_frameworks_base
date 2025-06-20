@@ -30,6 +30,16 @@ flag {
 }
 
 flag {
+  name: "wait_for_present_fence_on_display_switch"
+  namespace: "windowing_frontend"
+  description: "Wait for start transaction's present fence when folding/unfolding"
+  bug: "370719724"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
   name: "enforce_edge_to_edge"
   is_exported: true
   namespace: "windowing_frontend"
