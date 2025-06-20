@@ -10392,10 +10392,14 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     caller, who, userHandle, hasIncompatibleAccountsOrNonAdb);
             final ActiveAdmin admin = getActiveAdminUncheckedLocked(who, userHandle);
             Preconditions.checkArgument(
-                    isPackageInstalledForUser(who.getPackageName(), userHandle)
-                            && admin != null
-                            && !getUserData(userHandle).mRemovingAdmins.contains(who),
-                    "Not active admin: " + who);
+                    isPackageInstalledForUser(who.getPackageName(), userHandle),
+                    "Package %s not installed in user %d"
+                            .formatted(who.getPackageName(), userHandle));
+            Preconditions.checkArgument(admin != null, "Not active admin: " + who);
+            Preconditions.checkArgument(
+                    !getUserData(userHandle).mRemovingAdmins.contains(who),
+                    "Admin %s is being removed from user %d"
+                            .formatted(who, userHandle));
 
             final int parentUserId = getProfileParentId(userHandle);
             // When trying to set a profile owner on a new user, it may be that this user is
