@@ -1296,6 +1296,53 @@ public class InfoMediaManagerTest {
 
     @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
     @Test
+    public void onSuggestionsUpdated_suggestedIsAlreadySelected_suggestionCleared() {
+        MediaRoute2Info selectedRoute =
+                new MediaRoute2Info.Builder(TEST_ID_2, "selected_device")
+                        .setSystemRoute(true)
+                        .addFeature(MediaRoute2Info.FEATURE_LIVE_AUDIO)
+                        .build();
+        SuggestedDeviceInfo initialSuggestedDeviceInfo =
+                new SuggestedDeviceInfo.Builder("initial_suggested_device", TEST_ID_1, 0)
+                        .build();
+        MediaRoute2Info initialSuggestionRoute =
+                new MediaRoute2Info.Builder(TEST_ID_1, "initial_suggested_device_route")
+                        .setSystemRoute(false)
+                        .addFeature(MediaRoute2Info.FEATURE_LIVE_AUDIO)
+                        .build();
+        when(mRoutingController.getSelectedRoutes()).thenReturn(List.of(selectedRoute));
+        when(mRouter2.getRoutes()).thenReturn(List.of(selectedRoute, initialSuggestionRoute));
+        RouterInfoMediaManager mediaManager = createRouterInfoMediaManager();
+        mediaManager.registerCallback(mCallback);
+        verify(mRouter2).registerDeviceSuggestionsUpdatesCallback(any(),
+                mDeviceSuggestionsUpdatesCallback.capture());
+        clearInvocations(mCallback);
+        mDeviceSuggestionsUpdatesCallback
+                .getValue()
+                .onSuggestionsUpdated(TEST_PACKAGE_NAME, List.of(initialSuggestedDeviceInfo));
+        verify(mCallback).onSuggestedDeviceUpdated(mSuggestedDeviceStateCaptor.capture());
+        assertThat(mSuggestedDeviceStateCaptor.getValue()).isNotNull();
+        assertThat(mediaManager.getSuggestedDevice().getSuggestedDeviceInfo().getRouteId())
+                .isEqualTo(TEST_ID_1);
+
+        // --- Now, trigger the scenario where the suggested device becomes selected ---
+        SuggestedDeviceInfo newSuggestedDeviceInfo =
+                new SuggestedDeviceInfo.Builder("suggested_selected_device", TEST_ID_2, 0)
+                        .build();
+        mediaManager.refreshDevices();
+        clearInvocations(mCallback);
+
+        mDeviceSuggestionsUpdatesCallback
+                .getValue()
+                .onSuggestionsUpdated(TEST_PACKAGE_NAME, List.of(newSuggestedDeviceInfo));
+
+        verify(mCallback).onSuggestedDeviceUpdated(mSuggestedDeviceStateCaptor.capture());
+        assertThat(mSuggestedDeviceStateCaptor.getValue()).isNull();
+        assertThat(mediaManager.getSuggestedDevice()).isNull();
+    }
+
+    @EnableFlags(Flags.FLAG_ENABLE_SUGGESTED_DEVICE_API)
+    @Test
     public void setDeviceState_suggestionListenerNotified() {
         SuggestedDeviceInfo suggestedDeviceInfo =
                 new SuggestedDeviceInfo.Builder("device_name", TEST_ID_3, 0).build();

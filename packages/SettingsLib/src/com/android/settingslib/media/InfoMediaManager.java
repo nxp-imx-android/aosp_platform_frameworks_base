@@ -752,11 +752,24 @@ public abstract class InfoMediaManager {
                 newSuggestedDeviceState = new SuggestedDeviceState(topSuggestion);
             }
         }
+        if (newSuggestedDeviceState != null && isSuggestedDeviceSelected(newSuggestedDeviceState)) {
+            newSuggestedDeviceState = null;
+        }
         if (!Objects.equals(previousState, newSuggestedDeviceState)) {
             mSuggestedDeviceState = newSuggestedDeviceState;
             return true;
         }
         return false;
+    }
+
+    private boolean isSuggestedDeviceSelected(
+            @NonNull SuggestedDeviceState newSuggestedDeviceState) {
+        return getSelectedMediaDevices().stream().anyMatch(device ->
+                Objects.equals(
+                        device.getId(),
+                        newSuggestedDeviceState
+                                .getSuggestedDeviceInfo()
+                                .getRouteId()));
     }
 
     final void onConnectionAttemptedForSuggestion(@NonNull SuggestedDeviceState suggestion) {
