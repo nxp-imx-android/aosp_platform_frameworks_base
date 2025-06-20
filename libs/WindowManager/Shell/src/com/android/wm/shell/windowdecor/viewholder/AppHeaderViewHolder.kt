@@ -182,6 +182,8 @@ class AppHeaderViewHolder(
 
     val appNameTextWidth: Int
         get() = appNameTextView.width
+    val maximizeButtonWidth: Int
+        get() = maximizeButtonView.width
 
     private val a11yAnnounceTextMaximize: String =
         context.getString(R.string.app_header_talkback_action_maximize_button_text)
@@ -675,6 +677,13 @@ class AppHeaderViewHolder(
         maximizeWindowButton.post {
             maximizeWindowButton.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
         }
+    }
+
+    /** Returns the current position of the maximize button relative to the caption. */
+    fun getMaximizeButtonPosition(): IntArray {
+        val maximizeButtonLocation = IntArray(2)
+        maximizeWindowButton.getLocationInWindow(maximizeButtonLocation)
+        return maximizeButtonLocation
     }
 
     @DrawableRes
