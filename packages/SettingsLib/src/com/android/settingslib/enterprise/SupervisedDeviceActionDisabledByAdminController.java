@@ -76,8 +76,8 @@ final class SupervisedDeviceActionDisabledByAdminController
     @Nullable
     @Override
     public DialogInterface.OnClickListener getPositiveButtonListener(@NonNull Context context,
-            @NonNull EnforcingAdmin enforcingAdmin) {
-        if (TextUtils.isEmpty(enforcingAdmin.getPackageName())) {
+            @Nullable EnforcingAdmin enforcingAdmin) {
+        if (enforcingAdmin == null || TextUtils.isEmpty(enforcingAdmin.getPackageName())) {
             return null;
         }
         return getPositiveButtonListener(context, enforcingAdmin.getPackageName());
