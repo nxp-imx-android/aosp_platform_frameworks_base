@@ -38,9 +38,9 @@ import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.launch
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -51,19 +51,53 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos()
     private val viewModel = kosmos.ambientCueViewModelFactory.create()
 
-    @Before
-    fun setUp() {
-        viewModel.activateIn(kosmos.testScope)
-    }
-
     @Test
     fun isVisible_timesOut() =
         kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
             initializeIsVisible()
             assertThat(viewModel.isVisible).isTrue()
 
             // Times out when there's no interaction
-            advanceTimeBy(AmbientCueViewModel.AMBIENT_CUE_TIMEOUT_SEC)
+            advanceTimeBy(AmbientCueViewModel.AMBIENT_CUE_TIMEOUT_MS.milliseconds)
+            runCurrent()
+            ambientCueRepository.fake.updateRootViewAttached()
+            runCurrent()
+
+            assertThat(viewModel.isVisible).isFalse()
+        }
+
+    @Test
+    fun isVisible_setTimeoutAs60sec_stillVisibleAfter30sec() =
+        kosmos.runTest {
+            ambientCueRepository.fake.setAmbientCueTimeoutMs(60_000)
+            viewModel.activateIn(kosmos.testScope)
+            initializeIsVisible()
+            assertThat(viewModel.isVisible).isTrue()
+
+            runCurrent()
+            advanceTimeBy(30.seconds)
+            runCurrent()
+            ambientCueRepository.fake.updateRootViewAttached()
+            runCurrent()
+
+            assertThat(viewModel.isVisible).isTrue()
+        }
+
+    @Test
+    fun isVisible_setTimeoutAs60sec_invisibleAfter60sec() =
+        kosmos.runTest {
+            ambientCueRepository.fake.setAmbientCueTimeoutMs(60_000)
+            viewModel.activateIn(kosmos.testScope)
+            initializeIsVisible()
+            assertThat(viewModel.isVisible).isTrue()
+
+            advanceTimeBy(30.seconds)
+            runCurrent()
+            ambientCueRepository.fake.updateRootViewAttached()
+            runCurrent()
+            assertThat(viewModel.isVisible).isTrue()
+            advanceTimeBy(30.seconds)
             runCurrent()
             ambientCueRepository.fake.updateRootViewAttached()
             runCurrent()
@@ -74,6 +108,7 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun isVisible_imeNotVisible_true() =
         kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
             ambientCueRepository.fake.setActions(testActions(applicationContext))
             ambientCueInteractor.setDeactivated(false)
 
@@ -87,6 +122,7 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun isVisible_imeVisible_false() =
         kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
             initializeIsVisible()
             assertThat(viewModel.isVisible).isTrue()
 
@@ -100,6 +136,7 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun isVisible_isOccludedBySystemUi_true() =
         kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
             initializeIsVisible()
             assertThat(viewModel.isVisible).isTrue()
 
@@ -112,6 +149,7 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun isVisible_isOccludedBySystemUi_false() =
         kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
             initializeIsVisible()
             assertThat(viewModel.isVisible).isTrue()
 
@@ -124,6 +162,7 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun onClick_collapses() =
         kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
             ambientCueRepository.fake.setActions(testActions(applicationContext))
             ambientCueInteractor.setDeactivated(false)
             viewModel.expand()
@@ -140,6 +179,10 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun delayAndDeactivateCueBar_refreshTimeout() =
         kosmos.runTest {
+            ambientCueRepository.fake.setAmbientCueTimeoutMs(
+                AmbientCueViewModel.AMBIENT_CUE_TIMEOUT_MS
+            )
+            viewModel.activateIn(kosmos.testScope)
             ambientCueInteractor.setDeactivated(false)
             testScope.backgroundScope.launch { viewModel.delayAndDeactivateCueBar() }
             advanceTimeBy(10.seconds)
@@ -147,7 +190,7 @@ class AmbientCueViewModelTest : SysuiTestCase() {
             assertThat(ambientCueRepository.isDeactivated.value).isFalse()
 
             testScope.backgroundScope.launch { viewModel.delayAndDeactivateCueBar() }
-            advanceTimeBy(AmbientCueViewModel.AMBIENT_CUE_TIMEOUT_SEC - 10.seconds)
+            advanceTimeBy(AmbientCueViewModel.AMBIENT_CUE_TIMEOUT_MS.milliseconds - 10.seconds)
             runCurrent()
             // 5 seconds after calling delayAndDeactivateCueBar() again (totally 15 seconds after
             // test begins), isDeactivated should still be false.
@@ -162,6 +205,7 @@ class AmbientCueViewModelTest : SysuiTestCase() {
 
     fun pillStyle_gestureNav_isInNavbarMode() =
         kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
             ambientCueRepository.fake.setIsGestureNav(true)
             ambientCueRepository.fake.setTaskBarVisible(false)
 
@@ -172,6 +216,7 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun pillStyle_gestureNavAndTaskBar_shortPillEndAligned() =
         kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
             ambientCueRepository.fake.setIsGestureNav(true)
             ambientCueRepository.fake.setTaskBarVisible(true)
 
@@ -183,6 +228,7 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun pillStyle_3ButtonNav_shortPill() =
         kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
             val recentsButtonPosition = Rect(10, 20, 30, 40)
             ambientCueRepository.fake.setIsGestureNav(false)
             ambientCueRepository.fake.setTaskBarVisible(true)
@@ -196,6 +242,7 @@ class AmbientCueViewModelTest : SysuiTestCase() {
     @Test
     fun pillStyle_3ButtonNavAndTaskBar_shortPill() =
         kosmos.runTest {
+            viewModel.activateIn(kosmos.testScope)
             ambientCueRepository.fake.setIsGestureNav(false)
             ambientCueRepository.fake.setTaskBarVisible(false)
 

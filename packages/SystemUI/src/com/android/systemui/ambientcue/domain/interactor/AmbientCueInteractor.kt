@@ -47,6 +47,7 @@ constructor(
     val recentsButtonPosition: StateFlow<Rect?> = repository.recentsButtonPosition
     val isTaskBarVisible: StateFlow<Boolean> = repository.isTaskBarVisible
     val isAmbientCueEnabled: StateFlow<Boolean> = repository.isAmbientCueEnabled
+    val ambientCueTimeoutMs: StateFlow<Int> = repository.ambientCueTimeoutMs
 
     fun setDeactivated(isDeactivated: Boolean) {
         repository.isDeactivated.update { isDeactivated }

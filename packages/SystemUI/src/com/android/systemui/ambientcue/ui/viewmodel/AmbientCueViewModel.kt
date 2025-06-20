@@ -31,7 +31,7 @@ import com.android.systemui.util.kotlin.launchAndDispose
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.io.PrintWriter
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.awaitCancellation
@@ -69,6 +69,13 @@ constructor(
             traceName = "isOccludedBySystemUi",
             initialValue = false,
             source = ambientCueInteractor.isOccludedBySystemUi,
+        )
+
+    private val ambientCueTimeoutMs: Int by
+        hydrator.hydratedStateOf(
+            traceName = "ambientCueTimeoutMs",
+            initialValue = AMBIENT_CUE_TIMEOUT_MS,
+            source = ambientCueInteractor.ambientCueTimeoutMs,
         )
 
     val isVisible: Boolean
@@ -162,7 +169,7 @@ constructor(
 
         coroutineScopeTraced("AmbientCueViewModel") {
             deactivateCueBarJob = launch {
-                delay(AMBIENT_CUE_TIMEOUT_SEC)
+                delay(ambientCueTimeoutMs.milliseconds)
                 // TODO(b/425279501) Log ambient cue timeout status.
                 ambientCueInteractor.setDeactivated(true)
             }
@@ -198,6 +205,7 @@ constructor(
         pw.println("pillStyle: $pillStyle")
         pw.println("deactivateCueBarJob: $deactivateCueBarJob")
         pw.println("actions: $actions")
+        pw.println("ambientCueTimeoutMs: $ambientCueTimeoutMs")
     }
 
     @AssistedFactory
@@ -207,6 +215,6 @@ constructor(
 
     companion object {
         private const val TAG = "AmbientCueViewModel"
-        @VisibleForTesting val AMBIENT_CUE_TIMEOUT_SEC = 30.seconds
+        @VisibleForTesting const val AMBIENT_CUE_TIMEOUT_MS = 30_000
     }
 }
