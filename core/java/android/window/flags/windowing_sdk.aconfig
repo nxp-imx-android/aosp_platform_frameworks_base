@@ -77,9 +77,9 @@ flag {
 
 flag {
     namespace: "aaos_core_contrib"
-    name: "safe_region_letterboxing"
+    name: "safe_region_letterboxing_v1"
     description: "Enables letterboxing for a safe region"
-    bug: "380132497"
+    bug: "425949809"
 }
 
 flag {

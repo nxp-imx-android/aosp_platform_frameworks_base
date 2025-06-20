@@ -102,7 +102,7 @@ public class AppCompatUtilsTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void getLetterboxReasonString_isLetterboxedForSafeRegionOnly() {
         runTestScenario((robot) -> {
             robot.applyOnActivity((a) -> {

@@ -1612,7 +1612,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testSetSafeRegionBoundsOnRootTask() {
         Task rootTask = mWm.mAtmService.mTaskOrganizerController.createRootTask(
                 mDisplayContent, WINDOWING_MODE_FULLSCREEN, null);
@@ -1630,7 +1630,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testSetSafeRegionBoundsOnRootTask_resetSafeRegionBounds() {
         Task rootTask = mWm.mAtmService.mTaskOrganizerController.createRootTask(
                 mDisplayContent, WINDOWING_MODE_FULLSCREEN, null);

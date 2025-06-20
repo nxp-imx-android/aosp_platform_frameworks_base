@@ -1542,7 +1542,7 @@ public interface WindowManager extends ViewManager {
      * </pre>
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @FlaggedApi(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     String PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING =
             "android.window.PROPERTY_COMPAT_ALLOW_SAFE_REGION_LETTERBOXING";
 

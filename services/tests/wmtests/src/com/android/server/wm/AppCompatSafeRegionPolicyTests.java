@@ -40,7 +40,7 @@ import java.util.function.Consumer;
  */
 @Presubmit
 @RunWith(WindowTestRunner.class)
-@EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+@EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
 public class AppCompatSafeRegionPolicyTests extends WindowTestsBase {
 
     @Test
