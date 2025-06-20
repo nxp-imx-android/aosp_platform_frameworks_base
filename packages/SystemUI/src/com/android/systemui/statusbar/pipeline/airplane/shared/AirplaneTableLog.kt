@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.statusbar.pipeline.dagger
+package com.android.systemui.statusbar.pipeline.airplane.shared
 
 import javax.inject.Qualifier
 
 /** Airplane mode logs in table format. */
 @Qualifier
 @MustBeDocumented
-@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
+@Retention(AnnotationRetention.RUNTIME)
 annotation class AirplaneTableLog
