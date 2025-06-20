@@ -97,6 +97,8 @@ class AppCompatActivityRobot {
     @Nullable
     private Consumer<DisplayContent> mOnPostDisplayContentCreation;
 
+    private int mNextPid = 1;
+
     AppCompatActivityRobot(@NonNull WindowTestsBase windowTestBase,
             int displayWidth, int displayHeight,
             @Nullable Consumer<ActivityRecord> onPostActivityCreation,
@@ -598,11 +600,17 @@ class AppCompatActivityRobot {
         if (inNewTask) {
             createNewTask();
         }
+        final ComponentName componentName = ComponentName.createRelative(mAtm.mContext,
+                TEST_COMPONENT_NAME);
         final WindowTestsBase.ActivityBuilder activityBuilder =
                 new WindowTestsBase.ActivityBuilder(mAtm).setOnTop(true)
-                // Set the component to be that of the test class in order
-                // to enable compat changes
-                .setComponent(ComponentName.createRelative(mAtm.mContext, TEST_COMPONENT_NAME));
+                        // Set the component to be that of the test class in order
+                        // to enable compat changes
+                        .setComponent(componentName)
+                        .setUseProcess(SystemServicesTestRule.addProcess(mAtm,
+                                componentName.getPackageName(),
+                                componentName.getPackageName() + "Proc",
+                                getNextPid(), /* uid= */ 0));
         if (!mTaskStack.isEmpty()) {
             // We put the Activity in the current task if any.
             activityBuilder.setTask(mTaskStack.top());
@@ -659,5 +667,9 @@ class AppCompatActivityRobot {
     private void pushActivity(@NonNull ActivityRecord activity) {
         mActivityStack.push(activity);
         onPostActivityCreation(activity);
+    }
+
+    private int getNextPid() {
+        return mNextPid++;
     }
 }

@@ -16,8 +16,6 @@
 
 package com.android.server.wm;
 
-import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
-
 import static com.android.window.flags.Flags.FLAG_ENABLE_CAMERA_COMPAT_TRACK_TASK_AND_APP_BUGFIX;
 
 import static org.junit.Assert.assertEquals;
@@ -172,7 +170,6 @@ public class AppCompatCameraStateStrategyForTaskTests extends WindowTestsBase {
     }
 
     private static class AppCompatCameraStateStrategyForTaskRobotTest extends AppCompatRobotBase {
-        private final WindowTestsBase mWindowTestsBase;
         private FakeAppCompatCameraStatePolicy mFakePolicyCannotCloseOnce;
         private FakeAppCompatCameraStatePolicy mFakePolicyCanClose;
 
@@ -180,7 +177,6 @@ public class AppCompatCameraStateStrategyForTaskTests extends WindowTestsBase {
 
         AppCompatCameraStateStrategyForTaskRobotTest(@NonNull WindowTestsBase windowTestsBase) {
             super(windowTestsBase);
-            mWindowTestsBase = windowTestsBase;
             setupAppCompatConfiguration();
             configureActivityAndDisplay();
         }
@@ -191,15 +187,6 @@ public class AppCompatCameraStateStrategyForTaskTests extends WindowTestsBase {
             mRegisteredPolicies = new ArraySet<>();
             mFakePolicyCannotCloseOnce = new FakeAppCompatCameraStatePolicy(true);
             mFakePolicyCanClose = new FakeAppCompatCameraStatePolicy(false);
-        }
-
-        @Override
-        void onPostActivityCreation(@NonNull ActivityRecord activity) {
-            super.onPostActivityCreation(activity);
-
-            // Adds activity to process map.
-            final WindowState win = mWindowTestsBase.newWindowBuilder("app1",
-                    TYPE_APPLICATION).setWindowToken(activity).build();
         }
 
         private void configureActivityAndDisplay() {
