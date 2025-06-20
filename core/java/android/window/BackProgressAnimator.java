@@ -20,7 +20,6 @@ import static android.window.BackEvent.EDGE_NONE;
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.window.flags.Flags.predictiveBackTimestampApi;
-import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -132,10 +131,8 @@ public class BackProgressAnimator implements DynamicAnimation.OnAnimationUpdateL
         if (!mBackAnimationInProgress) {
             return;
         }
-        if (predictiveBackSwipeEdgeNoneApi()) {
-            if (event.getSwipeEdge() == EDGE_NONE) {
-                return;
-            }
+        if (event.getSwipeEdge() == EDGE_NONE) {
+            return;
         }
         mLastBackEvent = event;
         if (mSpring == null) {
@@ -171,16 +168,12 @@ public class BackProgressAnimator implements DynamicAnimation.OnAnimationUpdateL
         mBackAnimationInProgress = true;
         updateProgressValue(/* progress */ 0, /* velocity */ 0,
                 /* frameTime */ System.nanoTime() / TimeUtils.NANOS_PER_MS);
-        if (predictiveBackSwipeEdgeNoneApi()) {
-            if (event.getSwipeEdge() == EDGE_NONE) {
-                mButtonSpringForce.setStiffness(BUTTON_SPRING_STIFFNESS);
-                mSpring.setSpring(mButtonSpringForce);
-                mSpring.animateToFinalPosition(SCALE_FACTOR);
-            } else {
-                mSpring.setSpring(mGestureSpringForce);
-                onBackProgressed(event);
-            }
+        if (event.getSwipeEdge() == EDGE_NONE) {
+            mButtonSpringForce.setStiffness(BUTTON_SPRING_STIFFNESS);
+            mSpring.setSpring(mButtonSpringForce);
+            mSpring.animateToFinalPosition(SCALE_FACTOR);
         } else {
+            mSpring.setSpring(mGestureSpringForce);
             onBackProgressed(event);
         }
     }
