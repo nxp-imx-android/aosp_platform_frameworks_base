@@ -26,6 +26,7 @@ import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.companion.AssociationInfo;
 import android.companion.IOnMessageReceivedListener;
+import android.companion.IOnTransportEventListener;
 import android.companion.IOnTransportsChangedListener;
 import android.content.Context;
 import android.os.Build;
@@ -69,6 +70,16 @@ public class CompanionTransportManager {
     private final RemoteCallbackList<IOnTransportsChangedListener> mTransportsListeners =
             new RemoteCallbackList<>();
 
+    /** Association ID -> IOnTransportEventListener
+     * Can be registered even if the transport for a given association ID doesn't exist yet.
+     * The transport manager will retroactively add newly registered listeners to an existing
+     * transport and also add all registered listeners to a new transport.
+     */
+    @GuardedBy("mEventListeners")
+    @NonNull
+    private final SparseArray<Set<IOnTransportEventListener>> mEventListeners =
+            new SparseArray<>();
+
     /** Message type -> IOnMessageReceivedListener */
     @GuardedBy("mMessageListeners")
     @NonNull
@@ -98,6 +109,24 @@ public class CompanionTransportManager {
     }
 
     /**
+     * Add a listener to receive callbacks when transport reports an event
+     */
+    public void addListener(int associationId, IOnTransportEventListener listener) {
+        synchronized (mEventListeners) {
+            if (!mEventListeners.contains(associationId)) {
+                mEventListeners.put(associationId, new HashSet<IOnTransportEventListener>());
+            }
+            mEventListeners.get(associationId).add(listener);
+        }
+        synchronized (mTransports) {
+            if (!mTransports.contains(associationId)) {
+                return;
+            }
+            mTransports.get(associationId).addListener(listener);
+        }
+    }
+
+    /**
      * Add a listener to receive callbacks when any of the transports is changed
      */
     public void addListener(IOnTransportsChangedListener listener) {
@@ -114,6 +143,33 @@ public class CompanionTransportManager {
                     }
                 }
             });
+        }
+    }
+
+    /**
+     * Remove the listener for transport events. Ignore if there is no transport for the given ID.
+     */
+    public void removeListener(int associationId, IOnTransportEventListener listener) {
+        synchronized (mEventListeners) {
+            if (!mEventListeners.contains(associationId)) {
+                return;
+            }
+            mEventListeners.get(associationId).remove(listener);
+        }
+        synchronized (mTransports) {
+            if (!mTransports.contains(associationId)) {
+                return;
+            }
+            mTransports.get(associationId).removeListener(listener);
+        }
+    }
+
+    /**
+     * Remove all listeners for a given association (for clean up during disassociation).
+     */
+    public void removeListeners(int associationId) {
+        synchronized (mEventListeners) {
+            mEventListeners.delete(associationId);
         }
     }
 
@@ -257,7 +313,7 @@ public class CompanionTransportManager {
             transport = new SecureTransport(associationId, fd, mContext, flags);
         }
 
-        addMessageListenersToTransport(transport);
+        addListenersToTransport(transport);
         transport.setOnTransportClosedListener(this::detachSystemDataTransport);
         transport.start();
         synchronized (mTransports) {
@@ -312,7 +368,7 @@ public class CompanionTransportManager {
             FileDescriptor fd = new FileDescriptor();
             ParcelFileDescriptor pfd = new ParcelFileDescriptor(fd);
             EmulatedTransport transport = new EmulatedTransport(associationId, pfd, mContext);
-            addMessageListenersToTransport(transport);
+            addListenersToTransport(transport);
             mTransports.put(associationId, transport);
             notifyOnTransportsChanged();
             return transport;
@@ -348,11 +404,20 @@ public class CompanionTransportManager {
         return mSecureTransportEnabled;
     }
 
-    private void addMessageListenersToTransport(Transport transport) {
+    private void addListenersToTransport(Transport transport) {
         synchronized (mMessageListeners) {
             for (int i = 0; i < mMessageListeners.size(); i++) {
                 for (IOnMessageReceivedListener listener : mMessageListeners.valueAt(i)) {
                     transport.addListener(mMessageListeners.keyAt(i), listener);
+                }
+            }
+        }
+        synchronized (mEventListeners) {
+            int associationId = transport.getAssociationId();
+            Set<IOnTransportEventListener> listeners = mEventListeners.get(associationId);
+            if (listeners != null) {
+                for (IOnTransportEventListener listener : listeners) {
+                    transport.addListener(listener);
                 }
             }
         }

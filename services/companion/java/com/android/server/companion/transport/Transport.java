@@ -25,8 +25,10 @@ import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_PING;
 import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_REMOTE_AUTHENTICATION;
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.companion.IOnMessageReceivedListener;
+import android.companion.IOnTransportEventListener;
 import android.content.Context;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
@@ -41,6 +43,8 @@ import libcore.util.EmptyArray;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -65,6 +69,30 @@ public abstract class Transport {
     protected final OutputStream mRemoteOut;
     protected final Context mContext;
 
+    /** @hide */
+    @IntDef(value = {
+            SUCCESSFUL_CONNECTION,
+            ERROR_UPDATE_REQUIRED,
+            ERROR_UNKNOWN,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TransportEvent {}
+
+    /**
+     * Indicates channel is connected and ready to exchange messages.
+     */
+    public static final int SUCCESSFUL_CONNECTION = 200;
+
+    /**
+     * Reserved for AVF patch level difference error.
+     */
+    public static final int ERROR_UPDATE_REQUIRED = 427;
+
+    /**
+     * Fallback error code.
+     */
+    public static final int ERROR_UNKNOWN = 500;
+
     /**
      * Message type -> Listener
      *
@@ -74,6 +102,9 @@ public abstract class Transport {
      */
     @GuardedBy("mListeners")
     private final SparseArray<Set<IOnMessageReceivedListener>> mListeners = new SparseArray<>();
+
+    @GuardedBy("mEventListeners")
+    private final Set<IOnTransportEventListener> mEventListeners = new HashSet<>();
 
     private OnTransportClosedListener mOnTransportClosed;
 
@@ -113,6 +144,25 @@ public abstract class Transport {
                 mListeners.put(message, new HashSet<IOnMessageReceivedListener>());
             }
             mListeners.get(message).add(listener);
+        }
+    }
+
+    /**
+     * Add a listener for transport events
+     * @param listener Executes when this transport reports an event
+     */
+    void addListener(IOnTransportEventListener listener) {
+        synchronized (mEventListeners) {
+            mEventListeners.add(listener);
+        }
+    }
+
+    /**
+     * Remove registered event listener.
+     */
+    void removeListener(IOnTransportEventListener listener) {
+        synchronized (mEventListeners) {
+            mEventListeners.remove(listener);
         }
     }
 
@@ -237,6 +287,17 @@ public abstract class Transport {
             processResponse(message, sequence, data);
         } else {
             Slog.w(TAG, "Unknown message 0x" + Integer.toHexString(message));
+        }
+    }
+
+    protected final void eventCallback(@TransportEvent int event) {
+        synchronized (mEventListeners) {
+            for (IOnTransportEventListener listener : mEventListeners) {
+                try {
+                    listener.onTransportEvent(event);
+                } catch (RemoteException ignored) {
+                }
+            }
         }
     }
 

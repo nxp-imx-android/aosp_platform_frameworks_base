@@ -64,6 +64,7 @@ import android.companion.IAssociationRequestCallback;
 import android.companion.ICompanionDeviceManager;
 import android.companion.IOnAssociationsChangedListener;
 import android.companion.IOnMessageReceivedListener;
+import android.companion.IOnTransportEventListener;
 import android.companion.IOnTransportsChangedListener;
 import android.companion.ISystemDataTransferCallback;
 import android.companion.ObservingDevicePresenceRequest;
@@ -416,6 +417,24 @@ public class CompanionDeviceManagerService extends SystemService {
             removeOnMessageReceivedListener_enforcePermission();
 
             mTransportManager.removeListener(messageType, listener);
+        }
+
+        @Override
+        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        public void addOnTransportEventListener(int associationId,
+                IOnTransportEventListener listener) {
+            addOnTransportEventListener_enforcePermission();
+
+            mTransportManager.addListener(associationId, listener);
+        }
+
+        @Override
+        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        public void removeOnTransportEventListener(int associationId,
+                                                IOnTransportEventListener listener) {
+            removeOnTransportEventListener_enforcePermission();
+
+            mTransportManager.removeListener(associationId, listener);
         }
 
         /**
