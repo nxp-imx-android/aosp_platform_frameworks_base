@@ -3197,6 +3197,8 @@ public class ActivityManager {
      *
      * @param displayId Target display ID
      * @return Whether the windowing mode active on display with given ID allows task repositioning
+     *
+     * @throws IllegalArgumentException if there is no display with given display ID
      */
     @FlaggedApi(com.android.window.flags.Flags.FLAG_ENABLE_WINDOW_REPOSITIONING_API)
     @SuppressLint("RequiresPermission")
