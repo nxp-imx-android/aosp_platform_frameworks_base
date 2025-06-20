@@ -139,7 +139,7 @@ abstract class BubbleFlickerTestBase : BubbleFlickerSubjects {
      * consecutive entries
      */
     @Test
-    fun visibleLayersShownMoreThanOneConsecutiveEntry() {
+    open fun visibleLayersShownMoreThanOneConsecutiveEntry() {
         layersTraceSubject
             .visibleLayersShownMoreThanOneConsecutiveEntry()
             .forAllEntries()

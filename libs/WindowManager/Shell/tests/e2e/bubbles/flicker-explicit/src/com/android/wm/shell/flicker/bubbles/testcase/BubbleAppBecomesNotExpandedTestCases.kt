@@ -17,6 +17,7 @@
 package com.android.wm.shell.flicker.bubbles.testcase
 
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
+import com.android.wm.shell.flicker.bubbles.DismissExpandedBubbleViaBubbleViewTest.Companion.testApp
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
 import org.junit.Test
 
@@ -48,6 +49,31 @@ interface BubbleAppBecomesNotExpandedTestCases : BubbleFlickerSubjects {
             .then()
             .isInvisible(testApp)
             .forAllEntries()
+    }
+
+    /**
+     * Verifies the [testApp] window has rounded corner at the start of the transition.
+     */
+    @Test
+    fun appWindowHasRoundedCornerAtStart() {
+        layerTraceEntrySubjectAtStart.hasRoundedCorners(testApp)
+    }
+
+    /**
+     * Verifies bubble app window is invisible at the end of the transition.
+     */
+    @Test
+    fun appWindowIsInvisibleAtEnd() {
+        wmStateSubjectAtEnd.isAppWindowInvisible(testApp)
+    }
+
+    /**
+     * Verifies bubble app layer is invisible at the end of the transition.
+     */
+    @Test
+    fun appLayerIsInvisibleAtEnd() {
+        // TestApp may be gone if it's in dismissed state.
+        layerTraceEntrySubjectAtEnd.isInvisible(testApp)
     }
 
     /**
