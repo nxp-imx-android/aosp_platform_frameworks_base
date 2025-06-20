@@ -212,10 +212,7 @@ public class SettingsHelper {
         }
 
         // Get datatype for B&R metrics logging.
-        String datatype = "";
-        if (areAgentMetricsEnabled()) {
-            datatype = SettingsBackupRestoreKeys.getKeyFromUri(destination);
-        }
+        String datatype = SettingsBackupRestoreKeys.getKeyFromUri(destination);
 
         sendBroadcast = sBroadcastOnRestore.contains(name);
         sendBroadcastSystemUI = sBroadcastOnRestoreSystemUI.contains(name);
@@ -299,7 +296,7 @@ public class SettingsHelper {
             contentValues.put(Settings.NameValueTable.NAME, name);
             contentValues.put(Settings.NameValueTable.VALUE, value);
             cr.insert(destination, contentValues);
-            if (areAgentMetricsEnabled()) {
+            if (mBackupRestoreEventLogger != null) {
                 mBackupRestoreEventLogger.logItemsRestored(datatype, /* count= */ 1);
             }
         } catch (Exception e) {
@@ -308,7 +305,7 @@ public class SettingsHelper {
             sendBroadcastSystemUI = false;
             sendBroadcastAccessibility = false;
             Log.e(TAG, "Failed to restore setting name: " + name + " + value: " + value, e);
-            if (areAgentMetricsEnabled()) {
+            if (mBackupRestoreEventLogger != null) {
                 mBackupRestoreEventLogger.logItemsRestoreFailed(
                     datatype, /* count= */ 1, ERROR_FAILED_TO_RESTORE_SETTING);
             }
@@ -792,12 +789,12 @@ public class SettingsHelper {
 
             am.updatePersistentConfigurationWithAttribution(config, mContext.getOpPackageName(),
                     mContext.getAttributionTag());
-            if (areAgentMetricsEnabled()) {
+            if (mBackupRestoreEventLogger != null) {
                 mBackupRestoreEventLogger
                     .logItemsRestored(SettingsBackupRestoreKeys.KEY_LOCALE, localeList.size());
             }
         } catch (RemoteException e) {
-            if (areAgentMetricsEnabled()) {
+            if (mBackupRestoreEventLogger != null) {
                 mBackupRestoreEventLogger
                     .logItemsRestoreFailed(
                         SettingsBackupRestoreKeys.KEY_LOCALE,
@@ -823,9 +820,5 @@ public class SettingsHelper {
      */
     void setBackupRestoreEventLogger(BackupRestoreEventLogger backupRestoreEventLogger) {
         mBackupRestoreEventLogger = backupRestoreEventLogger;
-    }
-
-    private boolean areAgentMetricsEnabled() {
-        return Flags.enableMetricsSettingsBackupAgents() && mBackupRestoreEventLogger != null;
     }
 }
