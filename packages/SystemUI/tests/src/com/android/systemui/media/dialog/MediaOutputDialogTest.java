@@ -351,7 +351,8 @@ public class MediaOutputDialogTest extends SysuiTestCase {
                 mUiEventLogger,
                 mContext.getMainExecutor(),
                 ThreadUtils.getBackgroundExecutor(),
-                true);
+                true,
+                null);
     }
 
     private void withTestDialog(

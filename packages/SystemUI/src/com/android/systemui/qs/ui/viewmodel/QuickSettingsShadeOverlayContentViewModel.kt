@@ -29,6 +29,7 @@ import com.android.systemui.development.ui.viewmodel.BuildNumberViewModel
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.qs.flags.QsDetailedView
+import com.android.systemui.qs.panels.domain.interactor.QSPanelAppearanceInteractor
 import com.android.systemui.qs.panels.ui.viewmodel.toolbar.ToolbarViewModel
 import com.android.systemui.qs.tiles.dialog.AudioDetailsViewModel
 import com.android.systemui.res.R
@@ -81,6 +82,7 @@ constructor(
     @Assisted private val volumeSliderCoroutineScope: CoroutineScope?,
     val toolbarViewModelFactory: ToolbarViewModel.Factory,
     windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
+    private val qsPanelAppearanceInteractor: QSPanelAppearanceInteractor,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("QuickSettingsShadeOverlayContentViewModel.hydrator")
@@ -179,6 +181,7 @@ constructor(
 
     /** Notifies that the bounds of the QuickSettings panel have changed. */
     fun onPanelShapeInWindowChanged(shape: ShadeScrimShape?) {
+        qsPanelAppearanceInteractor.setQsPanelShape(shape)
         notificationStackAppearanceInteractor.setQsPanelShapeInWindow(shape)
     }
 

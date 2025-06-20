@@ -20,7 +20,9 @@ import static com.android.media.flags.Flags.enableOutputSwitcherPersonalAudioSha
 import static com.android.media.flags.Flags.enableOutputSwitcherRedesign;
 
 import android.annotation.Nullable;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.media.RoutingSessionInfo;
 import android.os.Bundle;
 import android.view.View;
@@ -45,6 +47,7 @@ import java.util.concurrent.Executor;
 public class MediaOutputDialog extends MediaOutputBaseDialog {
     private final DialogTransitionAnimator mDialogTransitionAnimator;
     private final UiEventLogger mUiEventLogger;
+    @Nullable private final OnDialogEventListener mOnDialogEventListener;
 
     MediaOutputDialog(
             Context context,
@@ -55,7 +58,8 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
             UiEventLogger uiEventLogger,
             Executor mainExecutor,
             Executor backgroundExecutor,
-            boolean includePlaybackAndAppMetadata) {
+            boolean includePlaybackAndAppMetadata,
+            @Nullable OnDialogEventListener onDialogEventListener) {
         super(context, broadcastSender, mediaSwitchingController, includePlaybackAndAppMetadata);
         mDialogTransitionAnimator = dialogTransitionAnimator;
         mUiEventLogger = uiEventLogger;
@@ -63,6 +67,7 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
                 ? new MediaOutputAdapter(mMediaSwitchingController)
                 : new MediaOutputAdapterLegacy(mMediaSwitchingController, mainExecutor,
                         backgroundExecutor);
+        mOnDialogEventListener = onDialogEventListener;
         if (!aboveStatusbar) {
             getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
         }
@@ -72,6 +77,18 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mUiEventLogger.log(MediaOutputEvent.MEDIA_OUTPUT_DIALOG_SHOW);
+
+        if (mOnDialogEventListener != null) {
+            mOnDialogEventListener.onCreate(this);
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        if (mOnDialogEventListener != null) {
+            mOnDialogEventListener.onConfigurationChanged(this, configuration);
+        }
     }
 
     @Override
@@ -161,5 +178,14 @@ public class MediaOutputDialog extends MediaOutputBaseDialog {
                     mContext.getText(R.string.media_output_dialog_button_stop_sharing);
             default -> null;
         };
+    }
+
+    /** Callback for configuration changes . */
+    public interface OnDialogEventListener{
+        /** Will be called inside onConfigurationChanged. */
+        void onConfigurationChanged(Dialog dialog, Configuration newConfig);
+
+        /** Will be called when the dialog is created. */
+        void onCreate(Dialog dialog);
     }
 }
