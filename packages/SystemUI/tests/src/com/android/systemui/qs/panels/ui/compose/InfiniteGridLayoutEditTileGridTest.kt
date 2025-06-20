@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.panels.ui.compose
 
+import android.platform.test.flag.junit.FlagsParameterization
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -31,7 +32,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTouchInput
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.theme.PlatformTheme
 import com.android.systemui.SysuiTestCase
@@ -40,6 +40,7 @@ import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
+import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.data.repository.defaultLargeTilesRepository
 import com.android.systemui.qs.panels.domain.interactor.iconTilesInteractor
 import com.android.systemui.qs.panels.ui.compose.infinitegrid.infiniteGridLayout
@@ -53,10 +54,17 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
-class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
+@RunWith(ParameterizedAndroidJunit4::class)
+class InfiniteGridLayoutEditTileGridTest(flags: FlagsParameterization) : SysuiTestCase() {
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
     @get:Rule val composeRule = createComposeRule()
 
     private val kosmos =
@@ -96,6 +104,11 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
         kosmos.runTest {
             composeRule.setContent { TestEditTileGrid() }
             composeRule.waitForIdle()
+
+            if (QsEditModeTabs.isEnabled) {
+                // Tap on Layout tab to select
+                composeRule.onNodeWithText("Layout").performClick()
+            }
 
             val stateOnFirstMove =
                 listOf(
@@ -243,6 +256,11 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
             composeRule.setContent { TestEditTileGrid() }
             composeRule.waitForIdle()
 
+            if (QsEditModeTabs.isEnabled) {
+                // Tap on Layout tab to select
+                composeRule.onNodeWithText("Layout").performClick()
+            }
+
             // Resize tileA to large
             composeRule
                 .onNodeWithContentDescription("internet")
@@ -285,6 +303,11 @@ class InfiniteGridLayoutEditTileGridTest : SysuiTestCase() {
         }
 
     companion object {
+
+        @Parameters(name = "{0}")
+        @JvmStatic
+        fun data() = FlagsParameterization.progressionOf(QsEditModeTabs.FLAG_NAME)
+
         private const val AVAILABLE_TILES_GRID_TEST_TAG = "AvailableTilesGrid"
         private val TestEditTiles =
             listOf(
