@@ -4110,10 +4110,10 @@ public final class DisplayManagerService extends SystemService {
                 SensorManager sensorManager, DisplayBlanker blanker, LogicalDisplay logicalDisplay,
                 BrightnessTracker brightnessTracker, BrightnessSetting brightnessSetting,
                 Runnable onBrightnessChangeRunnable, HighBrightnessModeMetadata hbmMetadata,
-                boolean bootCompleted, DisplayManagerFlags flags) {
+                boolean bootCompleted, DisplayManagerFlags flags, PluginManager pluginManager) {
             return new DisplayPowerController(context, injector, callbacks, handler, sensorManager,
                     blanker, logicalDisplay, brightnessTracker, brightnessSetting,
-                    onBrightnessChangeRunnable, hbmMetadata, bootCompleted, flags);
+                    onBrightnessChangeRunnable, hbmMetadata, bootCompleted, flags, pluginManager);
         }
 
         boolean isDesktopModeSupportedOnInternalDisplay(Context context) {
@@ -4178,7 +4178,8 @@ public final class DisplayManagerService extends SystemService {
         displayPowerController = mInjector.getDisplayPowerController(
                 mContext, /* injector= */ null, mDisplayPowerCallbacks, mPowerHandler,
                 mSensorManager, mDisplayBlanker, display, mBrightnessTracker, brightnessSetting,
-                () -> handleBrightnessChange(display), hbmMetadata, mBootCompleted, mFlags);
+                () -> handleBrightnessChange(display), hbmMetadata, mBootCompleted, mFlags,
+                mPluginManager);
         mDisplayPowerControllers.append(display.getDisplayIdLocked(), displayPowerController);
         return displayPowerController;
     }

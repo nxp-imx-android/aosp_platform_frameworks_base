@@ -1230,7 +1230,7 @@ public class DisplayDeviceConfig {
     }
 
     /**
-     * Calculate the HDR brightness for the specified SDR brightenss, restricted by the
+     * Calculate the HDR brightness for the specified SDR brightness, restricted by the
      * maxDesiredHdrSdrRatio (the ratio between the HDR luminance and SDR luminance) and specific
      * sdrToHdrSpline
      *
@@ -1241,30 +1241,52 @@ public class DisplayDeviceConfig {
         if (sdrToHdrSpline == null) {
             return PowerManager.BRIGHTNESS_INVALID;
         }
-
         float backlight = getBacklightFromBrightness(brightness);
         float nits = getNitsFromBacklight(backlight);
-        if (nits == INVALID_NITS) {
-            return PowerManager.BRIGHTNESS_INVALID;
-        }
 
         float rawRatio = sdrToHdrSpline.interpolate(nits);
         float scaledRatio = (rawRatio - 1) * ratioScaleFactor + 1;
         float ratio = Math.min(scaledRatio, maxDesiredHdrSdrRatio);
-        float hdrNits = nits * ratio;
-        if (getNitsToBacklightSpline() == null) {
-            return PowerManager.BRIGHTNESS_INVALID;
-        }
-
-        float hdrBacklight = getBacklightFromNits(hdrNits);
-        hdrBacklight = Math.max(mBacklightMinimum, Math.min(mBacklightMaximum, hdrBacklight));
-        float hdrBrightness = getBrightnessFromBacklight(hdrBacklight);
-
         if (DEBUG) {
             Slog.d(TAG, "getHdrBrightnessFromSdr: sdr brightness " + brightness
                     + " backlight " + backlight
                     + " nits " + nits
-                    + " ratio " + ratio
+            );
+        }
+        return getHdrBrightnessFromSdrFromNits(nits, ratio);
+    }
+
+    /**
+     * Calculate the HDR brightness for the specified SDR brightness
+     *
+     * @return the HDR brightness or BRIGHTNESS_INVALID when no mapping exists.
+     */
+    public float getHdrBrightnessFromSdr(float brightness, float hdrSdrRatio) {
+        float backlight = getBacklightFromBrightness(brightness);
+        float nits = getNitsFromBacklight(backlight);
+        if (DEBUG) {
+            Slog.d(TAG, "getHdrBrightnessFromSdr: sdr brightness " + brightness
+                    + " backlight " + backlight
+                    + " nits " + nits
+            );
+        }
+        return getHdrBrightnessFromSdrFromNits(nits, hdrSdrRatio);
+    }
+
+    private float getHdrBrightnessFromSdrFromNits(float nits, float hdrSdrRatio) {
+        if (nits == INVALID_NITS) {
+            return PowerManager.BRIGHTNESS_INVALID;
+        }
+        float hdrNits = nits * hdrSdrRatio;
+        if (getNitsToBacklightSpline() == null) {
+            return PowerManager.BRIGHTNESS_INVALID;
+        }
+        float hdrBacklight = getBacklightFromNits(hdrNits);
+        hdrBacklight = Math.max(mBacklightMinimum, Math.min(mBacklightMaximum, hdrBacklight));
+        float hdrBrightness = getBrightnessFromBacklight(hdrBacklight);
+        if (DEBUG) {
+            Slog.d(TAG, "getHdrBrightnessFromSdr:"
+                    + " hdrSdrRatio " + hdrSdrRatio
                     + " hdrNits " + hdrNits
                     + " hdrBacklight " + hdrBacklight
                     + " hdrBrightness " + hdrBrightness

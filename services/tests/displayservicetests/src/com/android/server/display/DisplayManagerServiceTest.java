@@ -158,7 +158,6 @@ import android.view.SurfaceControl;
 import android.window.DisplayWindowPolicyController;
 
 import androidx.test.core.app.ApplicationProvider;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.FlakyTest;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -181,6 +180,7 @@ import com.android.server.display.config.SensorData;
 import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.notifications.DisplayNotificationManager;
+import com.android.server.display.plugin.PluginManager;
 import com.android.server.input.InputManagerInternal;
 import com.android.server.lights.LightsManager;
 import com.android.server.policy.WindowManagerPolicy;
@@ -3854,7 +3854,7 @@ public class DisplayManagerServiceTest {
                     LogicalDisplay logicalDisplay, BrightnessTracker brightnessTracker,
                     BrightnessSetting brightnessSetting, Runnable onBrightnessChangeRunnable,
                     HighBrightnessModeMetadata hbmMetadata, boolean bootCompleted,
-                    DisplayManagerFlags flags) {
+                    DisplayManagerFlags flags, PluginManager pluginManager) {
                 return dpc;
             }
         };
