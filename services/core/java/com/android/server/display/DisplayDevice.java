@@ -316,6 +316,14 @@ abstract class DisplayDevice {
     }
 
     /**
+     * Returns whether content should be automatically mirrored on the display when no content is
+     * currently being shown.
+     */
+    boolean shouldAutoMirror() {
+        return false;
+    }
+
+    /**
      * Sets the display layer stack while in a transaction.
      */
     public final void setLayerStackLocked(SurfaceControl.Transaction t, int layerStack,
