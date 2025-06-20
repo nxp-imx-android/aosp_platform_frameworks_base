@@ -45,6 +45,7 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
@@ -72,6 +73,7 @@ class DesktopTilingDecorViewModel(
     private val mainExecutor: ShellExecutor,
     private val desktopState: DesktopState,
     private val shellInit: ShellInit,
+    private val shellController: ShellController,
 ) : DisplayChangeController.OnDisplayChangingListener {
     @VisibleForTesting
     var tilingHandlerByUserAndDeskId = SparseArray<SparseArray<DesktopTilingWindowDecoration>>()
@@ -120,6 +122,7 @@ class DesktopTilingDecorViewModel(
                             focusTransitionObserver,
                             mainExecutor,
                             desktopState,
+                            shellController,
                         )
                         .also { userHandlerList[deskId] = it }
                 }
@@ -163,11 +166,6 @@ class DesktopTilingDecorViewModel(
         } finally {
             currentUserId = userId
         }
-    }
-
-    fun onTaskInfoChange(taskInfo: RunningTaskInfo) {
-        val deskId = getCurrentActiveDeskForDisplay(taskInfo.displayId) ?: return
-        tilingHandlerByUserAndDeskId[currentUserId]?.get(deskId)?.onTaskInfoChange(taskInfo)
     }
 
     override fun onDisplayChange(

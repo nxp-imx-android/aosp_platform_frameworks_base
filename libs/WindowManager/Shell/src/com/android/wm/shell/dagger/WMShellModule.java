@@ -990,7 +990,8 @@ public abstract class WMShellModule {
             FocusTransitionObserver focusTransitionObserver,
             @ShellMainThread ShellExecutor mainExecutor,
             DesktopState desktopState,
-            ShellInit shellInit) {
+            ShellInit shellInit,
+            ShellController shellController) {
         return new DesktopTilingDecorViewModel(
                 context,
                 mainDispatcher,
@@ -1008,7 +1009,8 @@ public abstract class WMShellModule {
                 focusTransitionObserver,
                 mainExecutor,
                 desktopState,
-                shellInit
+                shellInit,
+                shellController
         );
     }
 

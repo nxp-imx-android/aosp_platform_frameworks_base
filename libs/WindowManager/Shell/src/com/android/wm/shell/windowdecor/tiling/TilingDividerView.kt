@@ -35,7 +35,6 @@ import com.android.wm.shell.common.split.DividerHandleView
 import com.android.wm.shell.common.split.DividerRoundedCorner
 import com.android.wm.shell.shared.animation.Interpolators
 import com.android.wm.shell.windowdecor.DragDetector
-import com.android.wm.shell.windowdecor.common.DecorThemeUtil
 
 /** Divider for tiling split screen, currently mostly a copy of [DividerView]. */
 class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.MotionEventHandler {
@@ -56,7 +55,6 @@ class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.Motion
     private var canResize = false
     private var resized = false
     private var isDarkMode = false
-    private var decorThemeUtil = DecorThemeUtil(context)
 
     /**
      * Tracks divider bar visible bounds in screen-based coordination. Used to calculate with
@@ -121,8 +119,7 @@ class TilingDividerView : FrameLayout, View.OnTouchListener, DragDetector.Motion
         invalidate()
     }
 
-    fun onTaskInfoChange() {
-        decorThemeUtil = DecorThemeUtil(context)
+    fun onThemeChanged() {
         val newColor = getDividerColor()
         if (paint.color != newColor) {
             paint.color = newColor

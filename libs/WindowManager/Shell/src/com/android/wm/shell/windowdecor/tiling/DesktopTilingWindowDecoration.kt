@@ -56,6 +56,8 @@ import com.android.wm.shell.shared.FocusTransitionListener
 import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.desktopmode.DesktopState
+import com.android.wm.shell.sysui.ConfigurationChangeListener
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TRANSIT_MINIMIZE
@@ -91,6 +93,7 @@ class DesktopTilingWindowDecoration(
     private val focusTransitionObserver: FocusTransitionObserver,
     @ShellMainThread private val mainExecutor: ShellExecutor,
     private val desktopState: DesktopState,
+    private val shellController: ShellController,
     private val transactionSupplier: Supplier<Transaction> = Supplier { Transaction() },
 ) :
     Transitions.TransitionHandler,
@@ -98,7 +101,8 @@ class DesktopTilingWindowDecoration(
     ShellTaskOrganizer.TaskVanishedListener,
     DragEventListener,
     Transitions.TransitionObserver,
-    FocusTransitionListener {
+    FocusTransitionListener,
+    ConfigurationChangeListener {
     companion object {
         private val TAG: String = DesktopTilingWindowDecoration::class.java.simpleName
         private const val TILING_DIVIDER_TAG = "Tiling Divider"
@@ -114,6 +118,7 @@ class DesktopTilingWindowDecoration(
     private var isResizing = false
     private var isTilingFocused = false
     private var hiddenByOverviewAnimation = false
+    private lateinit var configuration: Configuration
 
     fun onAppTiled(
         taskInfo: RunningTaskInfo,
@@ -139,7 +144,8 @@ class DesktopTilingWindowDecoration(
         val isTiled = destinationBounds != taskInfo.configuration.windowConfiguration.bounds
 
         initTilingApps(resizeMetadata, position, taskInfo)
-        isDarkMode = isTaskInDarkMode(taskInfo)
+        configuration = shellController.lastConfiguration
+        isDarkMode = isInDarkMode(configuration.uiMode)
         // Observe drag resizing to break tiling if a task is drag resized.
         desktopModeWindowDecoration.addDragResizeListener(this)
         val callback: () -> Unit = {
@@ -233,6 +239,7 @@ class DesktopTilingWindowDecoration(
                 )
         } else if (firstTiledApp) {
             shellTaskOrganizer.addTaskVanishedListener(this)
+            shellController.addConfigurationChangeListener(this)
         }
     }
 
@@ -381,17 +388,8 @@ class DesktopTilingWindowDecoration(
         transitions.startTransition(TRANSIT_CHANGE, wct, this)
     }
 
-    fun onTaskInfoChange(taskInfo: RunningTaskInfo) {
-        val isCurrentTaskInDarkMode = isTaskInDarkMode(taskInfo)
-        desktopTilingDividerWindowManager?.onTaskInfoChange()
-        if (isCurrentTaskInDarkMode == isDarkMode || !isTilingManagerInitialised) return
-        isDarkMode = isCurrentTaskInDarkMode
-        desktopTilingDividerWindowManager?.onUiModeChange(isDarkMode)
-    }
-
-    fun isTaskInDarkMode(taskInfo: RunningTaskInfo): Boolean =
-        (taskInfo.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
-            Configuration.UI_MODE_NIGHT_YES
+    fun isInDarkMode(uiMode: Int): Boolean =
+        (uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 
     override fun startAnimation(
         transition: IBinder,
@@ -735,6 +733,35 @@ class DesktopTilingWindowDecoration(
         removeTaskIfTiled(taskId, taskVanished = true, shouldDelayUpdate = true)
     }
 
+    override fun onConfigurationChanged(newConfiguration: Configuration?) {
+        val config =
+            checkNotNull(configuration) { "Expected non null tiling config for desk: $deskId" }
+        checkForUiModeChange(config)
+        configuration = config
+    }
+
+    override fun onThemeChanged() {
+        desktopTilingDividerWindowManager?.onThemeChange()
+    }
+
+    override fun onDensityOrFontScaleChanged() {
+        val config =
+            checkNotNull(configuration) { "Expected non null tiling config for desk: $deskId" }
+        desktopTilingDividerWindowManager?.release()
+        desktopTilingDividerWindowManager = initTilingManagerForDisplay(displayId, config)
+    }
+
+    private fun checkForUiModeChange(config: Configuration?) {
+        val uiMode = config?.uiMode ?: return
+        val isDeviceInDarkMode = isInDarkMode(uiMode)
+        try {
+            if (isDeviceInDarkMode == isDarkMode || !isTilingManagerInitialised) return
+            desktopTilingDividerWindowManager?.onUiModeChange(isDeviceInDarkMode)
+        } finally {
+            isDarkMode = isDeviceInDarkMode
+        }
+    }
+
     fun hideDividerBar() {
         desktopTilingDividerWindowManager?.hideDividerBar()
     }
@@ -885,6 +912,7 @@ class DesktopTilingWindowDecoration(
 
         if (leftTaskResizingHelper == null && rightTaskResizingHelper == null) {
             shellTaskOrganizer.removeTaskVanishedListener(this)
+            shellController.removeConfigurationChangeListener(this)
         }
         isTilingFocused = false
         isTilingManagerInitialised = false
