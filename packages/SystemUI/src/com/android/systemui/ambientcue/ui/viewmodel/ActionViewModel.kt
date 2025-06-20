@@ -33,4 +33,4 @@ enum class ActionType {
     Unknown,
 }
 
-data class IconViewModel(val drawable: Drawable, val iconId: String, val repeated: Boolean)
+data class IconViewModel(val drawable: Drawable, val iconId: String, val repeatCount: Int)
