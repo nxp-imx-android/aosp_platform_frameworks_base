@@ -1793,8 +1793,10 @@ public class ActivityOptions extends ComponentOptions {
     /**
      * Sets the id of the display where the activity should be launched.
      * An app can launch activities on public displays or displays where the app already has
-     * activities. Otherwise, trying to launch on a private display or providing an invalid display
-     * id will result in an exception.
+     * activities. Otherwise, trying to launch on a display for which
+     * {@link android.app.ActivityManager#isActivityStartAllowedOnDisplay(Context, int, Intent)}
+     * returns {@code false} (such as a private display or providing an invalid display id) will
+     * result in an exception.
      * <p>
      * Setting launch display id will be ignored on devices that don't have
      * {@link android.content.pm.PackageManager#FEATURE_ACTIVITIES_ON_SECONDARY_DISPLAYS}.
