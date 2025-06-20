@@ -87,6 +87,10 @@ public class CollapsingToolbarDelegate {
     @NonNull
     private Toolbar mToolbar;
     @Nullable
+    private MaterialButton mPrimaryButton;
+    @Nullable
+    private MaterialButton mSecondaryButton;
+    @Nullable
     private MaterialButton mActionButton;
     @NonNull
     private FrameLayout mContentFrameLayout;
@@ -152,7 +156,7 @@ public class CollapsingToolbarDelegate {
 
         initCollapsingToolbar(mCollapsingToolbarLayout, mAppBarLayout);
         mContentFrameLayout = view.findViewById(R.id.content_frame);
-        mActionButton = view.findViewById(R.id.action_button);
+
         if (activity instanceof AppCompatActivity) {
             Log.d(TAG, "onCreateView: from AppCompatActivity and sub-class.");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -174,6 +178,10 @@ public class CollapsingToolbarDelegate {
                 actionBar.setDisplayShowTitleEnabled(true);
             }
         }
+
+        mPrimaryButton = view.findViewById(R.id.primary_button);
+        mSecondaryButton = view.findViewById(R.id.secondary_button);
+        mActionButton = view.findViewById(R.id.action_button);
 
         initFloatingToolbar(context, view.findViewById(R.id.floating_toolbar));
         return view;
@@ -318,8 +326,12 @@ public class CollapsingToolbarDelegate {
         if (mCollapsingToolbarLayout == null) {
             return;
         }
-        mCollapsingToolbarLayout.removeAllViews();
-        inflater.inflate(R.layout.support_toolbar, mCollapsingToolbarLayout);
+
+        if (!SettingsThemeHelper.isExpressiveTheme(inflater.getContext())) {
+            mCollapsingToolbarLayout.removeAllViews();
+            inflater.inflate(R.layout.support_toolbar, mCollapsingToolbarLayout);
+        }
+
         final androidx.appcompat.widget.Toolbar supportToolbar =
                 mCollapsingToolbarLayout.findViewById(R.id.support_action_bar);
         final androidx.appcompat.app.ActionBar actionBar =
@@ -352,6 +364,80 @@ public class CollapsingToolbarDelegate {
     }
 
     /**
+     * Show/Hide the primary button on the Toolbar.
+     * @param enabled true to show the button, otherwise it's hidden.
+     */
+    public void setPrimaryButtonEnabled(boolean enabled) {
+        if (mPrimaryButton == null) {
+            return;
+        }
+        int visibility = enabled ? View.VISIBLE : View.GONE;
+        mPrimaryButton.setVisibility(visibility);
+    }
+
+    /** Set the icon to the primary button */
+    public void setPrimaryButtonIcon(@NonNull Context context, @DrawableRes int drawableRes) {
+        if (mPrimaryButton == null) {
+            return;
+        }
+        mPrimaryButton.setIcon(
+                context.getResources().getDrawable(drawableRes, context.getTheme()));
+    }
+
+    /** Set the OnClick listener to the primary button */
+    public void setPrimaryButtonOnClickListener(@Nullable View.OnClickListener listener) {
+        if (mPrimaryButton == null) {
+            return;
+        }
+        mPrimaryButton.setOnClickListener(listener);
+    }
+
+    /** Set the content description to the primary button */
+    public void setPrimaryButtonContentDescription(@Nullable CharSequence contentDescription) {
+        if (mPrimaryButton == null) {
+            return;
+        }
+        mPrimaryButton.setContentDescription(contentDescription);
+    }
+
+    /**
+     * Show/Hide the secondary button on the Toolbar.
+     * @param enabled true to show the button, otherwise it's hidden.
+     */
+    public void setSecondaryButtonEnabled(boolean enabled) {
+        if (mSecondaryButton == null) {
+            return;
+        }
+        int visibility = enabled ? View.VISIBLE : View.GONE;
+        mSecondaryButton.setVisibility(visibility);
+    }
+
+    /** Set the icon to the secondary button */
+    public void setSecondaryButtonIcon(@NonNull Context context, @DrawableRes int drawableRes) {
+        if (mSecondaryButton == null) {
+            return;
+        }
+        mSecondaryButton.setIcon(
+                context.getResources().getDrawable(drawableRes, context.getTheme()));
+    }
+
+    /** Set the OnClick listener to the secondary button */
+    public void setSecondaryButtonOnClickListener(@Nullable View.OnClickListener listener) {
+        if (mSecondaryButton == null) {
+            return;
+        }
+        mSecondaryButton.setOnClickListener(listener);
+    }
+
+    /** Set the content description to the secondary button */
+    public void setSecondaryButtonContentDescription(@Nullable CharSequence contentDescription) {
+        if (mSecondaryButton == null) {
+            return;
+        }
+        mSecondaryButton.setContentDescription(contentDescription);
+    }
+
+    /**
      * Show/Hide the action button on the Toolbar.
      * @param enabled true to show the button, otherwise it's hidden.
      */
@@ -361,6 +447,17 @@ public class CollapsingToolbarDelegate {
         }
         int visibility = enabled ? View.VISIBLE : View.GONE;
         mActionButton.setVisibility(visibility);
+    }
+
+    /**
+     * Enable/Disable the action button on the Toolbar (being clickable or not).
+     * @param clickable true to enable the button, otherwise it's disabled.
+     */
+    public void setActionButtonClickable(boolean clickable) {
+        if (mActionButton == null) {
+            return;
+        }
+        mActionButton.setEnabled(clickable);
     }
 
     /** Set the icon to the action button */
@@ -385,6 +482,14 @@ public class CollapsingToolbarDelegate {
             return;
         }
         mActionButton.setOnClickListener(listener);
+    }
+
+    /** Set the content description to the action button */
+    public void setActionButtonContentDescription(@Nullable CharSequence contentDescription) {
+        if (mActionButton == null) {
+            return;
+        }
+        mActionButton.setContentDescription(contentDescription);
     }
 
     private void autoSetCollapsingToolbarLayoutScrolling(AppBarLayout appBarLayout) {
