@@ -20,6 +20,7 @@ import static android.content.pm.ActivityInfo.OVERRIDE_MIN_ASPECT_RATIO;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_3_2;
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_FULLSCREEN;
+import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Surface.ROTATION_90;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE;
@@ -32,6 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import android.compat.testing.PlatformCompatChangeRule;
+import android.content.pm.ActivityInfo;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 
@@ -378,6 +380,61 @@ public class AppCompatAspectRatioOverridesTest extends WindowTestsBase {
 
                 a.checkTopActivityInSizeCompatMode(true);
             });
+        });
+    }
+
+
+    @Test
+    @EnableFlags(Flags.FLAG_LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY)
+    @EnableCompatChanges(ActivityInfo.OVERRIDE_ANY_ORIENTATION_TO_USER)
+    public void testSystemFullscreenOverride_isDefaultDisplay_true() {
+        runTestScenario((robot) -> {
+            robot.applyOnActivity((a) -> {
+                a.setDisplayId(DEFAULT_DISPLAY);
+                a.createActivityWithComponent();
+                a.setIgnoreOrientationRequest(true);
+                a.configureTopActivity(/* minAspect */ -1f, /* maxAspect */-1f,
+                        SCREEN_ORIENTATION_LANDSCAPE, true);
+            });
+
+            robot.checkHasFullscreenOverride(true);
+        });
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY)
+    @EnableCompatChanges(ActivityInfo.OVERRIDE_ANY_ORIENTATION_TO_USER)
+    public void testSystemFullscreenOverride_notDefaultDisplay_false() {
+        runTestScenario((robot) -> {
+            robot.applyOnActivity((a) -> {
+                a.setDisplayId(DEFAULT_DISPLAY + 2);
+                a.createActivityWithComponent();
+                a.setIgnoreOrientationRequest(true);
+                a.configureTopActivity(/* minAspect */ -1f, /* maxAspect */-1f,
+                        SCREEN_ORIENTATION_LANDSCAPE, true);
+            });
+
+            robot.checkHasFullscreenOverride(false);
+        });
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY)
+    @EnableCompatChanges(ActivityInfo.OVERRIDE_ANY_ORIENTATION_TO_USER)
+    public void testSystemFullscreenOverride_movedOutOfDefaultDisplay_true() {
+        runTestScenario((robot) -> {
+            robot.applyOnActivity((a) -> {
+                a.setDisplayId(DEFAULT_DISPLAY);
+                a.createActivityWithComponent();
+                a.setIgnoreOrientationRequest(true);
+                a.configureTopActivity(/* minAspect */ -1f, /* maxAspect */-1f,
+                        SCREEN_ORIENTATION_LANDSCAPE, true);
+
+                // Simulate display move.
+                a.setDisplayId(DEFAULT_DISPLAY + 2);
+            });
+
+            robot.checkHasFullscreenOverride(true);
         });
     }
 
