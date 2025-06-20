@@ -1,0 +1,340 @@
+/*
+ * Copyright (C) 2020 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.android.server.vibrator;
+
+import static android.os.VibrationEffect.Composition.PRIMITIVE_CLICK;
+import static android.os.VibrationEffect.Composition.PRIMITIVE_TICK;
+import static android.os.VibrationEffect.EFFECT_CLICK;
+import static android.os.VibrationEffect.EFFECT_STRENGTH_MEDIUM;
+
+import static com.google.common.truth.Truth.assertThat;
+
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
+import android.hardware.vibrator.IVibrator;
+import android.os.IBinder;
+import android.os.IVibratorStateListener;
+import android.os.VibrationEffect;
+import android.os.test.TestLooper;
+import android.os.vibrator.PrebakedSegment;
+import android.os.vibrator.PrimitiveSegment;
+import android.os.vibrator.PwlePoint;
+import android.os.vibrator.RampSegment;
+import android.os.vibrator.StepSegment;
+
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+
+/** Base test class for {@link HalVibrator} implementations. */
+public abstract class HalVibratorTestCase {
+    static final int VIBRATOR_ID = 0;
+
+    @Rule public MockitoRule rule = MockitoJUnit.rule();
+
+    @Mock private HalVibrator.Callbacks mCallbacksMock;
+    @Mock private IVibratorStateListener mVibratorStateListenerMock;
+    @Mock private IBinder mVibratorStateListenerBinderMock;
+
+    private final TestLooper mTestLooper = new TestLooper();
+    final HalVibratorHelper mHelper = new HalVibratorHelper(mTestLooper.getLooper());
+
+    abstract HalVibrator newVibrator(int vibratorId);
+
+    HalVibrator newInitializedVibrator(int vibratorId) {
+        HalVibrator vibrator = newVibrator(vibratorId);
+        vibrator.init(mCallbacksMock);
+        vibrator.onSystemReady();
+        return vibrator;
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        when(mVibratorStateListenerMock.asBinder()).thenReturn(mVibratorStateListenerBinderMock);
+    }
+
+    @Test
+    public void init_initializesVibratorAndSetsId() {
+        HalVibrator vibrator = newVibrator(VIBRATOR_ID);
+        vibrator.init(mCallbacksMock);
+
+        assertThat(mHelper.isInitialized()).isTrue();
+        assertThat(vibrator.getInfo().getId()).isEqualTo(VIBRATOR_ID);
+    }
+
+    @Test
+    public void init_turnsOffVibratorAndDisablesExternalControl() {
+        mHelper.setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        HalVibrator vibrator = newVibrator(VIBRATOR_ID);
+        vibrator.init(mCallbacksMock);
+
+        assertThat(vibrator.isVibrating()).isFalse();
+        assertThat(mHelper.getOffCount()).isEqualTo(1);
+        assertThat(mHelper.getExternalControlStates()).containsExactly(false).inOrder();
+    }
+
+    @Test
+    public void onSystemReady_loadSucceeded_doesNotReload() {
+        mHelper.setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        HalVibrator vibrator = newVibrator(VIBRATOR_ID);
+
+        vibrator.init(mCallbacksMock);
+        assertThat(vibrator.getInfo().getCapabilities()).isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
+
+        mHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL); // will be ignored
+        vibrator.onSystemReady();
+        assertThat(vibrator.getInfo().getCapabilities()).isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
+    }
+
+    @Test
+    public void onSystemReady_loadFailed_reloadsVibratorInfo() {
+        mHelper.setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        mHelper.setLoadInfoToFail();
+        HalVibrator vibrator = newVibrator(VIBRATOR_ID);
+
+        vibrator.init(mCallbacksMock);
+        assertThat(vibrator.getInfo().getCapabilities()).isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
+
+        mHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL); // will be loaded
+        vibrator.onSystemReady();
+        assertThat(vibrator.getInfo().getCapabilities()).isEqualTo(IVibrator.CAP_AMPLITUDE_CONTROL);
+    }
+
+    @Test
+    public void setExternalControl_withCapability_enablesExternalControl() {
+        mHelper.setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+        assertThat(vibrator.isVibrating()).isFalse();
+
+        vibrator.setExternalControl(true);
+        assertThat(vibrator.isVibrating()).isTrue();
+
+        vibrator.setExternalControl(false);
+        assertThat(vibrator.isVibrating()).isFalse();
+
+        assertThat(mHelper.getExternalControlStates())
+                .containsExactly(false, true, false).inOrder();
+    }
+
+    @Test
+    public void setExternalControl_withNoCapability_ignoresExternalControl() {
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+        assertThat(vibrator.isVibrating()).isFalse();
+
+        vibrator.setExternalControl(true);
+        assertThat(vibrator.isVibrating()).isFalse();
+
+        assertThat(mHelper.getExternalControlStates()).isEmpty();
+    }
+
+    @Test
+    public void setAlwaysOn_withCapability_enablesAndDisablesAlwaysOnEffect() {
+        mHelper.setCapabilities(IVibrator.CAP_ALWAYS_ON_CONTROL);
+        mHelper.setSupportedEffects(EFFECT_CLICK);
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+
+        PrebakedSegment prebaked = createPrebaked(EFFECT_CLICK, EFFECT_STRENGTH_MEDIUM);
+
+        vibrator.setAlwaysOn(1, prebaked);
+        assertThat(mHelper.getAlwaysOnEffect(1)).isEqualTo(prebaked);
+
+        vibrator.setAlwaysOn(1, null);
+        assertThat(mHelper.getAlwaysOnEffect(1)).isNull();
+    }
+
+    @Test
+    public void setAlwaysOn_withoutCapability_ignoresEffect() {
+        mHelper.setSupportedEffects(EFFECT_CLICK);
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+        PrebakedSegment prebaked = createPrebaked(EFFECT_CLICK, EFFECT_STRENGTH_MEDIUM);
+
+        vibrator.setAlwaysOn(1, prebaked);
+        assertThat(mHelper.getAlwaysOnEffect(1)).isNull();
+    }
+
+    @Test
+    public void setAmplitude_vibratorIdle_ignoresAmplitude() {
+        mHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+        assertThat(vibrator.isVibrating()).isFalse();
+
+        vibrator.setAmplitude(1);
+        assertThat(vibrator.getCurrentAmplitude()).isEqualTo(0f);
+        assertThat(mHelper.getAmplitudes()).containsExactly(1f).inOrder();
+    }
+
+    @Test
+    public void setAmplitude_vibratorUnderExternalControl_ignoresAmplitude() {
+        mHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL, IVibrator.CAP_EXTERNAL_CONTROL);
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+
+        vibrator.setExternalControl(true);
+        assertThat(vibrator.isVibrating()).isTrue();
+        assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
+
+        vibrator.setAmplitude(1);
+        assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
+        assertThat(mHelper.getAmplitudes()).containsExactly(1f).inOrder();
+    }
+
+    @Test
+    public void setAmplitude_vibratorVibrating_setsAmplitude() {
+        mHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+        vibrator.on(1, 1, /* milliseconds= */ 100);
+        assertThat(vibrator.isVibrating()).isTrue();
+        assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
+
+        vibrator.setAmplitude(1);
+        assertThat(vibrator.getCurrentAmplitude()).isEqualTo(1f);
+        assertThat(mHelper.getAmplitudes()).containsExactly(1f).inOrder();
+    }
+
+    @Test
+    public void on_withDuration_turnsVibratorOn() {
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+
+        assertThat(vibrator.on(1, 1, /* milliseconds= */ 100)).isEqualTo(100L);
+        assertThat(vibrator.isVibrating()).isTrue();
+        assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
+        assertThat(mHelper.getEffectSegments(1)).containsExactly(createStep(100)).inOrder();
+    }
+
+    @Test
+    public void on_withPrebaked_performsEffect() {
+        mHelper.setSupportedEffects(EFFECT_CLICK);
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+        PrebakedSegment prebaked = createPrebaked(EFFECT_CLICK, EFFECT_STRENGTH_MEDIUM);
+
+        assertThat(vibrator.on(1, 1, prebaked)).isEqualTo(HalVibratorHelper.EFFECT_DURATION);
+        assertThat(vibrator.isVibrating()).isTrue();
+        assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
+        assertThat(mHelper.getEffectSegments(1)).containsExactly(prebaked).inOrder();
+    }
+
+    @Test
+    public void on_withComposed_performsEffect() {
+        mHelper.setCapabilities(IVibrator.CAP_COMPOSE_EFFECTS);
+        mHelper.setSupportedPrimitives(PRIMITIVE_CLICK, PRIMITIVE_TICK);
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+        PrimitiveSegment[] primitives = new PrimitiveSegment[]{
+                new PrimitiveSegment(PRIMITIVE_CLICK, 0.5f, 10),
+                new PrimitiveSegment(PRIMITIVE_TICK, 0.7f, 100),
+        };
+
+        long expectedDuration = 2 * HalVibratorHelper.EFFECT_DURATION + 10 + 100;
+        assertThat(vibrator.on(1, 1, primitives)).isEqualTo(expectedDuration);
+        assertThat(vibrator.isVibrating()).isTrue();
+        assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
+        assertThat(mHelper.getEffectSegments(1)).containsExactlyElementsIn(primitives).inOrder();
+    }
+
+    @Test
+    public void on_withComposedPwle_performsEffect() {
+        mHelper.setCapabilities(IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+        RampSegment[] ramps = new RampSegment[]{
+                new RampSegment(/* startAmplitude= */ 0, /* endAmplitude= */ 1,
+                        /* startFrequencyHz= */ 100, /* endFrequencyHz= */ 200, /* duration= */ 10)
+        };
+
+        assertThat(vibrator.on(1, 1, ramps)).isEqualTo(10L);
+        assertThat(vibrator.isVibrating()).isTrue();
+        assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
+        assertThat(mHelper.getEffectSegments(1)).containsExactlyElementsIn(ramps).inOrder();
+    }
+
+    @Test
+    public void on_withComposedPwleV2_performsEffect() {
+        mHelper.setCapabilities(IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2);
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+        PwlePoint[] points = new PwlePoint[]{
+                new PwlePoint(/*amplitude=*/ 0, /*frequencyHz=*/ 100, /*timeMillis=*/ 0),
+                new PwlePoint(/*amplitude=*/ 1, /*frequencyHz=*/ 200, /*timeMillis=*/ 30)
+        };
+
+        assertThat(vibrator.on(1, 1, points)).isEqualTo(30L);
+        assertThat(vibrator.isVibrating()).isTrue();
+        assertThat(vibrator.getCurrentAmplitude()).isEqualTo(-1f);
+        assertThat(mHelper.getEffectPwlePoints(1)).containsExactlyElementsIn(points).inOrder();
+    }
+
+    @Test
+    public void off_turnsOffVibrator() {
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+
+        vibrator.on(1, 1, /* milliseconds= */ 100);
+        assertThat(vibrator.isVibrating()).isTrue();
+
+        vibrator.off();
+        vibrator.off();
+        assertThat(vibrator.isVibrating()).isFalse();
+        assertThat(mHelper.getOffCount()).isEqualTo(3); // one extra call from system ready.
+    }
+
+    @Test
+    public void registerVibratorStateListener_callbacksAreTriggered() throws Exception {
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+
+        vibrator.registerVibratorStateListener(mVibratorStateListenerMock);
+        vibrator.on(1, 1, /* milliseconds= */ 10);
+        vibrator.on(2, 1, /* milliseconds= */ 100);
+        vibrator.off();
+        vibrator.off();
+
+        InOrder inOrderVerifier = inOrder(mVibratorStateListenerMock);
+        // First notification done when listener is registered.
+        inOrderVerifier.verify(mVibratorStateListenerMock).onVibrating(false);
+        inOrderVerifier.verify(mVibratorStateListenerMock).onVibrating(eq(true));
+        inOrderVerifier.verify(mVibratorStateListenerMock).onVibrating(eq(false));
+        inOrderVerifier.verifyNoMoreInteractions();
+    }
+
+    @Test
+    public void unregisterVibratorStateListener_callbackNotTriggeredAfter() throws Exception {
+        HalVibrator vibrator = newInitializedVibrator(VIBRATOR_ID);
+
+        vibrator.registerVibratorStateListener(mVibratorStateListenerMock);
+        verify(mVibratorStateListenerMock).onVibrating(false);
+
+        vibrator.on(1, 1, /* milliseconds= */ 10);
+        verify(mVibratorStateListenerMock).onVibrating(true);
+
+        vibrator.unregisterVibratorStateListener(mVibratorStateListenerMock);
+        Mockito.clearInvocations(mVibratorStateListenerMock);
+
+        vibrator.on(2, 1, /* milliseconds= */ 100);
+        verifyNoMoreInteractions(mVibratorStateListenerMock);
+    }
+
+    private PrebakedSegment createPrebaked(int effectId, int effectStrength) {
+        return new PrebakedSegment(effectId, /* shouldFallback= */ false, effectStrength);
+    }
+
+    private StepSegment createStep(int millis) {
+        return new StepSegment(VibrationEffect.DEFAULT_AMPLITUDE, 0f, millis);
+    }
+}
