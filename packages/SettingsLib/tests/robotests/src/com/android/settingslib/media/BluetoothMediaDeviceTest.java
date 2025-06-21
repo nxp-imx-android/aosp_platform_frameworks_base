@@ -134,7 +134,6 @@ public class BluetoothMediaDeviceTest {
         assertThat(mBluetoothMediaDevice.getId()).isEqualTo(TEST_ADDRESS);
     }
 
-    @EnableFlags(Flags.FLAG_AVOID_BINDER_CALLS_DURING_RENDER)
     @Test
     public void getName_hasRouteInfo_usesNameFromRoute() {
         when(mRouteInfo.getName()).thenReturn(TEST_ROUTE_NAME);
@@ -145,7 +144,6 @@ public class BluetoothMediaDeviceTest {
         assertThat(bluetoothMediaDevice.getName()).isEqualTo(TEST_ROUTE_NAME);
     }
 
-    @EnableFlags(Flags.FLAG_AVOID_BINDER_CALLS_DURING_RENDER)
     @Test
     public void getName_noRouteInfo_usesNameFromCachedDevice() {
         when(mDevice.getName()).thenReturn(TEST_CACHED_DEVICE_NAME);

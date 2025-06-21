@@ -15,7 +15,6 @@
  */
 package com.android.settingslib.media;
 
-import static com.android.media.flags.Flags.avoidBinderCallsDuringRender;
 import static com.android.media.flags.Flags.avoidBinderCallsForMutingExpectedDevice;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER;
 
@@ -71,17 +70,14 @@ public class BluetoothMediaDevice extends MediaDevice {
 
     @Override
     public String getName() {
-        if (avoidBinderCallsDuringRender()) {
-            if (mRouteInfo != null) {
-                // Prefer name from route info since CachedBluetoothDevice#getName results in an
-                // IPC call.
-                return mRouteInfo.getName().toString();
-            } else {
-                return mCachedDevice.getName();
-            }
+        if (mRouteInfo != null) {
+            // Prefer name from route info since CachedBluetoothDevice#getName results in an
+            // IPC call.
+            return mRouteInfo.getName().toString();
+        } else {
+            return mCachedDevice.getName();
         }
 
-        return mCachedDevice.getName();
     }
 
     @Override

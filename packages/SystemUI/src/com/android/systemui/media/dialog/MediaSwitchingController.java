@@ -20,7 +20,6 @@ import static android.media.RouteListingPreference.ACTION_TRANSFER_MEDIA;
 import static android.media.RouteListingPreference.EXTRA_ROUTE_ID;
 import static android.provider.Settings.ACTION_BLUETOOTH_SETTINGS;
 
-import static com.android.media.flags.Flags.avoidBinderCallsDuringRender;
 import static com.android.media.flags.Flags.avoidBinderCallsForMutingExpectedDevice;
 
 import android.annotation.CallbackExecutor;
@@ -276,9 +275,7 @@ public class MediaSwitchingController
         if (enableInputRouting()) {
             mInputRouteManager.registerCallback(mInputDeviceCallback);
         }
-        if (avoidBinderCallsDuringRender()) {
-            mHasAdjustVolumeUserRestriction = checkIfAdjustVolumeRestrictionEnforced();
-        }
+        mHasAdjustVolumeUserRestriction = checkIfAdjustVolumeRestrictionEnforced();
     }
 
     public boolean isRefreshing() {
@@ -866,10 +863,7 @@ public class MediaSwitchingController
     }
 
     boolean hasAdjustVolumeUserRestriction() {
-        if (avoidBinderCallsDuringRender()) {
-            return mHasAdjustVolumeUserRestriction;
-        }
-        return checkIfAdjustVolumeRestrictionEnforced();
+        return mHasAdjustVolumeUserRestriction;
     }
 
     private boolean checkIfAdjustVolumeRestrictionEnforced() {
