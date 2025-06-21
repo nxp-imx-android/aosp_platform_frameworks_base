@@ -54,7 +54,7 @@
     <string name="accessibility_action_divider_top_50" formatted="false" msgid="1038204315880066213">"५०% वर, ५०% खाली"</string>
     <string name="accessibility_action_divider_top_70" formatted="false" msgid="5125673390883238862">"७०% वर, ३०% खाली"</string>
     <string name="accessibility_action_divider_top_90" formatted="false" msgid="7662868544020662698">"९०% वर, १०% खाली"</string>
-    <string name="accessibility_action_divider_bottom_full" msgid="6437134983210745664">"तळाशी असलेले अ‍ॅप फुल स्क्रीन करा"</string>
+    <string name="accessibility_action_divider_bottom_full" msgid="6437134983210745664">"खाली असलेले अ‍ॅप फुल स्क्रीन करा"</string>
     <string name="accessibility_split_left" msgid="1713683765575562458">"डावीकडे स्प्लिट करा"</string>
     <string name="accessibility_split_right" msgid="8441001008181296837">"उजवीकडे स्प्लिट करा"</string>
     <string name="accessibility_split_top" msgid="2789329702027147146">"सर्वात वरती स्प्लिट करा"</string>
