@@ -18,7 +18,6 @@ package android.tracing.perfetto;
 
 import static java.io.File.createTempFile;
 
-import android.tools.ScenarioBuilder;
 import android.tools.traces.io.ResultWriter;
 
 import java.io.File;
@@ -34,8 +33,7 @@ public class TestUtils {
     public static ResultWriter createTempWriter(File tracingDirectory) {
         try {
             return new ResultWriter()
-                    .forScenario(new ScenarioBuilder()
-                            .forClass(createTempFile("temp", "").getName()).build())
+                    .withName(createTempFile("temp", "").getName())
                     .withOutputDir(tracingDirectory)
                     .setRunComplete();
         } catch (IOException e) {

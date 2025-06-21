@@ -21,7 +21,6 @@ import android.os.Trace
 import android.perftests.utils.BenchmarkState
 import android.perftests.utils.PerfStatusReporter
 import android.platform.test.annotations.Postsubmit
-import android.tools.ScenarioBuilder
 import android.tools.traces.busyWaitForDataSourceRegistration
 import android.tools.traces.busyWaitTracingSessionDoesntExist
 import android.tools.traces.busyWaitTracingSessionExists
@@ -483,7 +482,7 @@ class DataSourcePerfTest {
     // Helper to create a dummy ResultWriter
     private fun createDummyWriter(scenarioDir: File): ResultWriter {
         return ResultWriter()
-            .forScenario(ScenarioBuilder().forClass("DataSourcePerfTest").build())
+            .withName("DataSourcePerfTest")
             .withOutputDir(scenarioDir)
             .setRunComplete()
     }

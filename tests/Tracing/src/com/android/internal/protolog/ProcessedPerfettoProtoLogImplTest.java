@@ -36,7 +36,6 @@ import static perfetto.protos.TracePacketOuterClass.TracePacket.SequenceFlags.SE
 
 import android.os.SystemClock;
 import android.platform.test.annotations.Presubmit;
-import android.tools.ScenarioBuilder;
 import android.tools.Tag;
 import android.tools.io.TraceType;
 import android.tools.traces.TraceConfig;
@@ -1081,12 +1080,12 @@ public class ProcessedPerfettoProtoLogImplTest {
         releaseExecutorLatch.countDown();
 
         var writer0 = new ResultWriter()
-                .forScenario(new ScenarioBuilder().forClass("scenario0").build())
+                .withName("scenario0")
                 .withOutputDir(mTracingDirectory).setRunComplete();
         traceMonitor0.stop(writer0);
 
         var writer1 = new ResultWriter()
-                .forScenario(new ScenarioBuilder().forClass("scenario1").build())
+                .withName("scenario1")
                 .withOutputDir(mTracingDirectory).setRunComplete();
         traceMonitor1.stop(writer1);
         busyWaitTracingSessionDoesntExist("test_session1");
