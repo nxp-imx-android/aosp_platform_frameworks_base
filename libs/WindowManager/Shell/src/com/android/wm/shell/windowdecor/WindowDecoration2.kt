@@ -65,6 +65,7 @@ import com.android.wm.shell.windowdecor.extension.isVisible
  * @param <T> The type of the root view
  */
 abstract class WindowDecoration2<T>(
+    var taskInfo: RunningTaskInfo,
     private val context: Context,
     private val displayController: DisplayController,
     taskSurface: SurfaceControl,
@@ -77,16 +78,13 @@ abstract class WindowDecoration2<T>(
         { SurfaceControl.Transaction() },
     private val windowContainerTransactionSupplier: () -> WindowContainerTransaction =
         { WindowContainerTransaction() },
-    private val surfaceControlViewHostFactory: SurfaceControlViewHostFactory =
-        object : SurfaceControlViewHostFactory {}
 ) : AutoCloseable where T : View, T : TaskFocusStateConsumer {
 
-    private lateinit var captionController: CaptionController<T>
-    private var display: Display? = null
-    protected lateinit var windowDecorConfig: Configuration
-    private lateinit var taskInfo: RunningTaskInfo
+    protected var captionController: CaptionController<T>? = null
+    protected var display: Display? = displayController.getDisplay(taskInfo.displayId)
+    protected var windowDecorConfig: Configuration? = null
     protected lateinit var decorWindowContext: Context
-    private var hasGlobalFocus = false
+    protected var hasGlobalFocus = false
     private val exclusionRegion = Region.obtain()
     private val onDisplaysChangedListener: OnDisplaysChangedListener =
         object : OnDisplaysChangedListener {
@@ -98,25 +96,26 @@ abstract class WindowDecoration2<T>(
                 relayout(taskInfo, hasGlobalFocus, exclusionRegion)
             }
         }
-
     /** The surface control of the task that owns this decoration. */
-    private val taskSurface = cloneSurfaceControl(taskSurface, surfaceControlSupplier)
-    private var decorationContainerSurface: SurfaceControl? = null
-    private var taskDragResizer: TaskDragResizer? = null
+    protected val taskSurface = cloneSurfaceControl(taskSurface, surfaceControlSupplier)
+    protected var decorationContainerSurface: SurfaceControl? = null
+    /** Sets the [TaskDragResizer] which allows task to be drag-resized. */
+    protected var taskDragResizer: TaskDragResizer? = null
 
-    private var isKeyguardVisibleAndOccluded = false
-    private var isStatusBarVisible = false
+    protected var isKeyguardVisibleAndOccluded = false
+    protected var isStatusBarVisible = displayController.getInsetsState(taskInfo.displayId)
+        ?.isVisible(WindowInsets.Type.statusBars()) ?: false
 
     /**
      * Used by the [DragPositioningCallback] associated with the implementing class to
-     * enforce drags ending in a valid position.
+     * enforce drags ending in a valid position. Returns null if task cannot be dragged.
      */
-    abstract fun calculateValidDragArea(): Rect
+    abstract fun calculateValidDragArea(): Rect?
 
     /** Creates the correct caption controller for the [CaptionType]. */
     abstract fun createCaptionController(
         captionType: CaptionController.CaptionType
-    ): CaptionController<T>
+    ): CaptionController<T>?
 
     /** Updates the window decorations when limited information is available. */
     abstract fun relayout(
@@ -209,7 +208,8 @@ abstract class WindowDecoration2<T>(
             )
         }
 
-        val captionResult = getOrCreateCaptionController(params.captionType).relayout(
+        val controller = getOrCreateCaptionController(params.captionType) ?: return null
+        val captionResult = controller.relayout(
             params = params,
             parentContainer = checkNotNull(decorationContainerSurface) {
                 "expected non-null decoration container surface control"
@@ -234,13 +234,12 @@ abstract class WindowDecoration2<T>(
 
     private fun getOrCreateCaptionController(
         captionType: CaptionController.CaptionType
-    ): CaptionController<T> {
-        if (!this::captionController.isInitialized) {
-            return createCaptionController(captionType)
-        }
-        if (captionController.captionType != captionType) {
+    ): CaptionController<T>? {
+        if (captionController == null) {
+            captionController = createCaptionController(captionType)
+        } else if (captionController?.captionType != captionType) {
             releaseCaptionController()
-            return createCaptionController(captionType)
+            captionController = createCaptionController(captionType)
         }
         return captionController
     }
@@ -248,7 +247,7 @@ abstract class WindowDecoration2<T>(
     private fun releaseCaptionController() {
         val wct = windowContainerTransactionSupplier()
         val t = surfaceControlTransactionSupplier()
-        captionController.releaseViews(wct, t)
+        captionController?.releaseViews(wct, t)
         t.apply()
         taskOrganizer.applyTransaction(wct)
     }
@@ -271,12 +270,59 @@ abstract class WindowDecoration2<T>(
                 .setPosition(taskSurface, taskPosition.x.toFloat(), taskPosition.y.toFloat())
         }
 
+        if (params.setTaskVisibilityPositionAndCrop) {
+            startT.show(taskSurface)
+        }
+
+        if (params.shouldSetBackground) {
+            val backgroundColorInt = taskInfo.taskDescription?.backgroundColor ?: Color.BLACK
+            val tmpColor = floatArrayOf(
+                Color.red(backgroundColorInt).toFloat() / 255f,
+                Color.green(backgroundColorInt).toFloat() / 255f,
+                Color.blue(backgroundColorInt).toFloat() / 255f
+            )
+            startT.setColor(taskSurface, tmpColor)
+        } else {
+            startT.unsetColor(taskSurface)
+        }
+
+        updateTaskSurfaceOutline(
+            params,
+            startT,
+            finishT,
+            borderSettings,
+            boxShadowSettings,
+            shadowRadius,
+            cornerRadius,
+        )
+    }
+
+    private fun updateTaskSurfaceOutline(
+        params: RelayoutParams,
+        startT: SurfaceControl.Transaction,
+        finishT: SurfaceControl.Transaction,
+        borderSettings: BorderSettings?,
+        boxShadowSettings: BoxShadowSettings?,
+        shadowRadius: Int,
+        cornerRadius: Int,
+    ) {
+        if ((DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue
+                    || DesktopExperienceFlags.ENABLE_FREEFORM_BOX_SHADOWS.isTrue)
+            && !params.inSyncWithTransition
+        ) {
+            // Update these outline properties only when the relayout is driven by Transition
+            // callbacks because they must be updated together with some of other properties (e.g.,
+            // position) which is set by transition handler although the outline properties are
+            // expected to be set by WindowDecoration instead of the transition handler.
+            return
+        }
+
         if (borderSettings != null && borderSettings.strokeWidth > 0) {
             startT.setBorderSettings(taskSurface, borderSettings)
             finishT.setBorderSettings(taskSurface, borderSettings)
         }
 
-        if (boxShadowSettings != null && boxShadowSettings.boxShadows.size > 0) {
+        if (boxShadowSettings != null && boxShadowSettings.boxShadows.isNotEmpty()) {
             startT.setBoxShadowSettings(taskSurface, boxShadowSettings)
             finishT.setBoxShadowSettings(taskSurface, boxShadowSettings)
         }
@@ -286,35 +332,16 @@ abstract class WindowDecoration2<T>(
                 startT.setShadowRadius(taskSurface, shadowRadius.toFloat())
                 finishT.setShadowRadius(taskSurface, shadowRadius.toFloat())
             }
-        } else {
-            if (params.shadowRadius != INVALID_SHADOW_RADIUS) {
-                startT.setShadowRadius(taskSurface, params.shadowRadius.toFloat())
-                finishT.setShadowRadius(taskSurface, params.shadowRadius.toFloat())
-            }
-        }
 
-        if (params.setTaskVisibilityPositionAndCrop) {
-            startT.show(taskSurface)
-        }
-
-        if (params.shouldSetBackground) {
-            val backgroundColorInt = taskInfo.taskDescription?.backgroundColor ?: Color.BLACK
-            val color = floatArrayOf(
-                Color.red(backgroundColorInt).toFloat() / 255f,
-                Color.green(backgroundColorInt).toFloat() / 255f,
-                Color.blue(backgroundColorInt).toFloat() / 255f
-            )
-            startT.setColor(taskSurface, color)
-        } else {
-            startT.unsetColor(taskSurface)
-        }
-
-        if (DesktopExperienceFlags.ENABLE_DYNAMIC_RADIUS_COMPUTATION_BUGFIX.isTrue) {
             if (cornerRadius != INVALID_CORNER_RADIUS) {
                 startT.setCornerRadius(taskSurface, cornerRadius.toFloat())
                 finishT.setCornerRadius(taskSurface, cornerRadius.toFloat())
             }
         } else {
+            if (params.shadowRadius != INVALID_SHADOW_RADIUS) {
+                startT.setShadowRadius(taskSurface, params.shadowRadius.toFloat())
+                finishT.setShadowRadius(taskSurface, params.shadowRadius.toFloat())
+            }
             if (params.cornerRadius != INVALID_CORNER_RADIUS) {
                 startT.setCornerRadius(taskSurface, params.cornerRadius.toFloat())
                 finishT.setCornerRadius(taskSurface, params.cornerRadius.toFloat())
@@ -338,6 +365,7 @@ abstract class WindowDecoration2<T>(
 
             startT.setTrustedOverlay(containerSurface, true)
                 .setLayer(containerSurface, TaskConstants.TASK_CHILD_LAYER_WINDOW_DECORATIONS)
+            decorationContainerSurface = containerSurface
         }
         val containerSurface = checkNotNull(decorationContainerSurface) {
             "expected non-null decoration container surface"
@@ -351,25 +379,24 @@ abstract class WindowDecoration2<T>(
         params: RelayoutParams,
         wct: WindowContainerTransaction,
     ) = traceSection("WindowDecoration2#relayout-releaseViewsIfNeeded") {
-        val fontScaleChanged = windowDecorConfig.fontScale != taskInfo.configuration.fontScale
-        val localeListChanged = windowDecorConfig.locales != taskInfo.getConfiguration().locales
-        val oldDensityDpi = if (::windowDecorConfig.isInitialized)
-            windowDecorConfig.densityDpi
-        else
-            Configuration.DENSITY_DPI_UNDEFINED
-        val oldNightMode = if (::windowDecorConfig.isInitialized)
-            (windowDecorConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK)
-        else
-            Configuration.UI_MODE_NIGHT_UNDEFINED
+        val windowDecorConfigInitialized = windowDecorConfig != null
+        val fontScaleChanged = windowDecorConfig?.fontScale != taskInfo.configuration.fontScale
+        val localeListChanged = windowDecorConfig?.locales != taskInfo.getConfiguration().locales
+        val oldDensityDpi = windowDecorConfig?.densityDpi ?: Configuration.DENSITY_DPI_UNDEFINED
+        val oldNightMode = windowDecorConfig?.let {
+            it.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        } ?: Configuration.UI_MODE_NIGHT_UNDEFINED
         windowDecorConfig = params.windowDecorConfig ?: taskInfo.getConfiguration()
-        val newDensityDpi = windowDecorConfig.densityDpi
-        val newNightMode = windowDecorConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        val config = checkNotNull(windowDecorConfig)
+        {"Expected Non-null Configuration for Window Decoration"}
+        val newDensityDpi = config.densityDpi
+        val newNightMode = config.uiMode and Configuration.UI_MODE_NIGHT_MASK
 
         if (oldDensityDpi != newDensityDpi
             || display == null
             || display?.displayId != taskInfo.displayId
             || oldNightMode != newNightMode
-            || (!::decorWindowContext.isInitialized)
+            || !windowDecorConfigInitialized
             || fontScaleChanged
             || localeListChanged
         ) {
@@ -377,7 +404,7 @@ abstract class WindowDecoration2<T>(
             if (!obtainDisplayOrRegisterListener()) {
                 return
             }
-            decorWindowContext = context.createConfigurationContext(windowDecorConfig)
+            decorWindowContext = context.createConfigurationContext(config)
             decorWindowContext.setTheme(context.themeResId)
         }
     }
@@ -404,7 +431,7 @@ abstract class WindowDecoration2<T>(
     }
 
     /** Updates the window decorations when exclusion region changes. */
-    private fun onExclusionRegionChanged(exclusionRegion: Region) {
+    protected open fun onExclusionRegionChanged(exclusionRegion: Region) {
         relayout(taskInfo, hasGlobalFocus, exclusionRegion)
     }
 
@@ -428,11 +455,6 @@ abstract class WindowDecoration2<T>(
         return true
     }
 
-    /** Sets the [TaskDragResizer] which allows task to be drag-resized. */
-    fun setTaskDragResizer(taskDragResizer: TaskDragResizer) {
-        this.taskDragResizer = taskDragResizer
-    }
-
     /** Releases all window decoration views. */
     private fun releaseViews(wct: WindowContainerTransaction) {
         val t = surfaceControlTransactionSupplier()
@@ -444,7 +466,7 @@ abstract class WindowDecoration2<T>(
             released = true
         }
 
-        released = captionController?.releaseViews(wct, t) ?: released
+        released = released or (captionController?.releaseViews(wct, t) == true)
 
         if (released) {
             t.apply()
@@ -454,6 +476,7 @@ abstract class WindowDecoration2<T>(
     override fun close() = traceSection("WindowDecoration2#close") {
         displayController.removeDisplayWindowListener(onDisplaysChangedListener)
         taskDragResizer?.close()
+        captionController?.close()
         val wct = windowContainerTransactionSupplier()
         releaseViews(wct)
         taskOrganizer.applyTransaction(wct)
@@ -469,9 +492,7 @@ abstract class WindowDecoration2<T>(
     data class RelayoutParams(
         val runningTaskInfo: RunningTaskInfo,
         val captionType: CaptionController.CaptionType,
-        val captionWidthId: Int = Resources.ID_NULL,
         val occludingCaptionElements: MutableList<OccludingCaptionElement> = ArrayList(),
-        val limitTouchRegionToSystemAreas: Boolean = false,
         val inputFeatures: Int = 0,
         val isInsetSource: Boolean = true,
         @InsetsSource.Flags val insetSourceFlags: Int = 0,
@@ -482,7 +503,6 @@ abstract class WindowDecoration2<T>(
         val cornerRadiusId: Int = Resources.ID_NULL,
         val borderSettingsId: Int = Resources.ID_NULL,
         val boxShadowSettingsIds: IntArray? = null,
-        val captionTopPadding: Int = 0,
         val isCaptionVisible: Boolean = false,
         val windowDecorConfig: Configuration? = null,
         val asyncViewHost: Boolean = false,
@@ -491,6 +511,7 @@ abstract class WindowDecoration2<T>(
         val hasGlobalFocus: Boolean = false,
         val shouldSetAppBounds: Boolean = false,
         val shouldSetBackground: Boolean = false,
+        val inSyncWithTransition: Boolean = false
     ) {
 
         /** Returns true if caption input should fall through to the app. */
@@ -551,11 +572,11 @@ abstract class WindowDecoration2<T>(
         /**
          * Invalid corner radius that signifies that corner radius should not be set.
          */
-        private const val INVALID_CORNER_RADIUS: Int = -1
+        const val INVALID_CORNER_RADIUS: Int = -1
 
         /**
          * Invalid corner radius that signifies that shadow radius should not be set.
          */
-        private const val INVALID_SHADOW_RADIUS: Int = -1
+        const val INVALID_SHADOW_RADIUS: Int = -1
     }
 }

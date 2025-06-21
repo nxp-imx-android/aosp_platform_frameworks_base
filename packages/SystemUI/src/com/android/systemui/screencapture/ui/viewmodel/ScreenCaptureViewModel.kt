@@ -16,12 +16,16 @@
 
 package com.android.systemui.screencapture.ui.viewmodel
 
-import androidx.compose.runtime.getValue
-import com.android.systemui.lifecycle.ExclusiveActivatable
-import com.android.systemui.lifecycle.Hydrator
+import android.content.Context
+import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.lifecycle.HydratedActivatable
+import com.android.systemui.res.R
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 
 enum class ScreenCaptureType {
     SCREENSHOT,
@@ -35,27 +39,39 @@ enum class ScreenCaptureRegion {
 }
 
 /** Models state for the Screen Capture UI */
-class ScreenCaptureViewModel @AssistedInject constructor() : ExclusiveActivatable() {
-    private val hydrator = Hydrator("ScreenCaptureViewModel.hydrator")
-
+class ScreenCaptureViewModel
+@AssistedInject
+constructor(
+    @Application private val context: Context,
+    private val iconProvider: ScreenCaptureIconProvider,
+) : HydratedActivatable() {
     private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
     private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
 
-    // TODO(b/423697394) Init default value to be user's previously selected option
-    val captureType by
-        hydrator.hydratedStateOf(
-            traceName = "captureType",
-            initialValue = ScreenCaptureType.SCREENSHOT,
-            source = captureTypeSource,
-        )
+    val icons: ScreenCaptureIcons? by iconProvider.icons.hydratedStateOf()
 
     // TODO(b/423697394) Init default value to be user's previously selected option
-    val captureRegion by
-        hydrator.hydratedStateOf(
-            traceName = "captureRegion",
-            initialValue = ScreenCaptureRegion.FULLSCREEN,
-            source = captureRegionSource,
-        )
+    val captureType: ScreenCaptureType by captureTypeSource.hydratedStateOf()
+
+    // TODO(b/423697394) Init default value to be user's previously selected option
+    val captureRegion: ScreenCaptureRegion by captureRegionSource.hydratedStateOf()
+
+    val captureTypeButtonViewModels: List<RadioButtonGroupItemViewModel> by
+        combine(captureTypeSource, iconProvider.icons) { selectedType, icons ->
+                generateCaptureTypeButtonViewModels(selectedType, icons)
+            }
+            .hydratedStateOf(
+                initialValue = generateCaptureTypeButtonViewModels(captureTypeSource.value, null)
+            )
+
+    val captureRegionButtonViewModels: List<RadioButtonGroupItemViewModel> by
+        combine(captureRegionSource, iconProvider.icons) { selectedRegion, icons ->
+                generateCaptureRegionButtonViewModels(selectedRegion, icons)
+            }
+            .hydratedStateOf(
+                initialValue =
+                    generateCaptureRegionButtonViewModels(captureRegionSource.value, null)
+            )
 
     fun updateCaptureType(selectedType: ScreenCaptureType) {
         captureTypeSource.value = selectedType
@@ -65,8 +81,51 @@ class ScreenCaptureViewModel @AssistedInject constructor() : ExclusiveActivatabl
         captureRegionSource.value = selectedRegion
     }
 
-    override suspend fun onActivated(): Nothing {
-        hydrator.activate()
+    override suspend fun onActivated() {
+        coroutineScope { launch { iconProvider.collectIcons() } }
+    }
+
+    private fun generateCaptureTypeButtonViewModels(
+        selectedType: ScreenCaptureType,
+        icons: ScreenCaptureIcons?,
+    ): List<RadioButtonGroupItemViewModel> {
+        return listOf(
+            RadioButtonGroupItemViewModel(
+                icon = icons?.screenRecord,
+                label = context.getString(R.string.screen_capture_toolbar_record_button),
+                isSelected = selectedType == ScreenCaptureType.SCREEN_RECORD,
+                onClick = { updateCaptureType(ScreenCaptureType.SCREEN_RECORD) },
+            ),
+            RadioButtonGroupItemViewModel(
+                icon = icons?.screenshot,
+                label = context.getString(R.string.screen_capture_toolbar_capture_button),
+                isSelected = selectedType == ScreenCaptureType.SCREENSHOT,
+                onClick = { updateCaptureType(ScreenCaptureType.SCREENSHOT) },
+            ),
+        )
+    }
+
+    private fun generateCaptureRegionButtonViewModels(
+        selectedRegion: ScreenCaptureRegion,
+        icons: ScreenCaptureIcons?,
+    ): List<RadioButtonGroupItemViewModel> {
+        return listOf(
+            RadioButtonGroupItemViewModel(
+                icon = icons?.appWindow,
+                isSelected = (selectedRegion == ScreenCaptureRegion.APP_WINDOW),
+                onClick = { updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW) },
+            ),
+            RadioButtonGroupItemViewModel(
+                icon = icons?.region,
+                isSelected = (selectedRegion == ScreenCaptureRegion.PARTIAL),
+                onClick = { updateCaptureRegion(ScreenCaptureRegion.PARTIAL) },
+            ),
+            RadioButtonGroupItemViewModel(
+                icon = icons?.fullscreen,
+                isSelected = (selectedRegion == ScreenCaptureRegion.FULLSCREEN),
+                onClick = { updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN) },
+            ),
+        )
     }
 
     @AssistedFactory

@@ -63,4 +63,46 @@ class ScreenCaptureViewModelTest : SysuiTestCase() {
             viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
             assertThat(viewModel.captureRegion).isEqualTo(ScreenCaptureRegion.PARTIAL)
         }
+
+    @Test
+    fun updateCaptureType_updatesSelectedCaptureTypeButtonViewModel() =
+        testScope.runTest {
+            // Screenshot type is default selected
+            val (screenRecordButton, screenshotButton) = viewModel.captureTypeButtonViewModels
+            assertThat(screenRecordButton.isSelected).isFalse()
+            assertThat(screenshotButton.isSelected).isTrue()
+
+            viewModel.updateCaptureType(ScreenCaptureType.SCREEN_RECORD)
+
+            val (screenRecordButton2, screenshotButton2) = viewModel.captureTypeButtonViewModels
+            assertThat(screenRecordButton2.isSelected).isTrue()
+            assertThat(screenshotButton2.isSelected).isFalse()
+        }
+
+    @Test
+    fun updateCaptureRegion_updatesSelectedCaptureRegionButtonViewModel() =
+        testScope.runTest {
+            // Default region is fullscreen
+            val (appWindowButton, partialButton, fullscreenButton) =
+                viewModel.captureRegionButtonViewModels
+            assertThat(appWindowButton.isSelected).isFalse()
+            assertThat(partialButton.isSelected).isFalse()
+            assertThat(fullscreenButton.isSelected).isTrue()
+
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
+
+            val (appWindowButton2, partialButton2, fullscreenButton2) =
+                viewModel.captureRegionButtonViewModels
+            assertThat(appWindowButton2.isSelected).isFalse()
+            assertThat(partialButton2.isSelected).isTrue()
+            assertThat(fullscreenButton2.isSelected).isFalse()
+
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW)
+
+            val (appWindowButton3, partialButton3, fullscreenButton3) =
+                viewModel.captureRegionButtonViewModels
+            assertThat(appWindowButton3.isSelected).isTrue()
+            assertThat(partialButton3.isSelected).isFalse()
+            assertThat(fullscreenButton3.isSelected).isFalse()
+        }
 }
