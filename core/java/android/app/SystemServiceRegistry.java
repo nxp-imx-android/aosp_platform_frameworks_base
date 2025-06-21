@@ -1062,11 +1062,6 @@ public final class SystemServiceRegistry {
                     @Override
                     public AuthenticationPolicyManager createService(ContextImpl ctx)
                             throws ServiceNotFoundException {
-                        if (!android.security.Flags.secureLockdown()) {
-                            throw new ServiceNotFoundException(
-                                    Context.AUTHENTICATION_POLICY_SERVICE);
-                        }
-
                         final IBinder binder = ServiceManager.getServiceOrThrow(
                                 Context.AUTHENTICATION_POLICY_SERVICE);
                         final IAuthenticationPolicyService service =
