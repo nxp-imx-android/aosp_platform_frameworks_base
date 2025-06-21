@@ -18,6 +18,7 @@ package com.android.wm.shell.windowdecor.tiling
 import android.app.ActivityManager
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Rect
 import android.os.IBinder
@@ -48,6 +49,7 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TRANSIT_START_RECENTS_TRANSITION
@@ -114,7 +116,9 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     private val bgScope: CoroutineScope = mock()
     private val taskResourceLoader: WindowDecorTaskResourceLoader = mock()
     private val focusTransitionObserver: FocusTransitionObserver = mock()
+    private val shellController: ShellController = mock()
     private val mainExecutor: ShellExecutor = mock()
+    private val configuration: Configuration = mock()
     private lateinit var tilingDecoration: DesktopTilingWindowDecoration
     private lateinit var desktopState: FakeDesktopState
 
@@ -147,9 +151,11 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
                 focusTransitionObserver,
                 mainExecutor,
                 desktopState,
+                shellController,
             )
         whenever(context.createContextAsUser(any(), any())).thenReturn(context)
         whenever(userRepositories.current).thenReturn(desktopRepository)
+        whenever(shellController.lastConfiguration).thenReturn(configuration)
     }
 
     @Test
@@ -680,6 +686,55 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
         )
 
         verify(desktopTilingDividerWindowManager, times(1)).showDividerBar(equals(false))
+    }
+
+    fun themeChange_notifiesTilingManager() {
+        tilingDecoration.desktopTilingDividerWindowManager = desktopTilingDividerWindowManager
+        tilingDecoration.onThemeChanged()
+
+        verify(desktopTilingDividerWindowManager, times(1)).onThemeChange()
+    }
+
+    fun uiModeChange_notifiesTilingManager() {
+        whenever(configuration.uiMode).thenReturn(Configuration.UI_MODE_NIGHT_YES)
+        val newConfig: Configuration = mock()
+        whenever(configuration.uiMode).thenReturn(-1)
+        tilingDecoration.desktopTilingDividerWindowManager = desktopTilingDividerWindowManager
+        tilingDecoration.isTilingManagerInitialised = true
+        tilingDecoration.onConfigurationChanged(newConfig)
+        verify(desktopTilingDividerWindowManager, times(1)).onThemeChange()
+    }
+
+    // Construction of a tiling divider with null config expects a null pointer here
+    // which is a sign a new divider is being created due to dpi changes.
+    @Test(expected = NullPointerException::class)
+    fun tilingDividerDestroyed_whenDpiChanges() {
+        val task1 = createVisibleTask()
+        val additionalTaskHelper: DesktopTilingWindowDecoration.AppResizingHelper = mock()
+        whenever(tiledTaskHelper.taskInfo).thenReturn(task1)
+        whenever(tiledTaskHelper.desktopModeWindowDecoration).thenReturn(desktopWindowDecoration)
+        val stableBounds = STABLE_BOUNDS_MOCK
+        whenever(displayController.getDisplayLayout(any())).thenReturn(displayLayout)
+        whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
+            (i.arguments.first() as Rect).set(stableBounds)
+        }
+        whenever(context.resources).thenReturn(resources)
+        whenever(displayController.getDisplayContext(any())).thenReturn(context)
+        whenever(resources.getDimensionPixelSize(any())).thenReturn(split_divider_width)
+
+        tilingDecoration.onAppTiled(
+            task1,
+            desktopWindowDecoration,
+            DesktopTasksController.SnapPosition.LEFT,
+            BOUNDS,
+            destinationBoundsOverride = null,
+        )
+
+        tilingDecoration.leftTaskResizingHelper = tiledTaskHelper
+        tilingDecoration.desktopTilingDividerWindowManager = desktopTilingDividerWindowManager
+        tilingDecoration.onDensityOrFontScaleChanged()
+
+        verify(desktopTilingDividerWindowManager, times(1)).release()
     }
 
     @Test

@@ -35,6 +35,7 @@ import android.widget.TextView
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
+import com.android.media.flags.Flags
 import com.android.settingslib.media.InputMediaDevice
 import com.android.settingslib.media.MediaDevice
 import com.android.systemui.FontStyles.GSF_TITLE_MEDIUM_EMPHASIZED
@@ -58,7 +59,12 @@ class MediaOutputAdapter(controller: MediaSwitchingController) :
     override fun updateItems() {
         if (mGroupSelectedItems == null) {
             // Decide whether to group devices only during the initial render.
-            mGroupSelectedItems = mController.selectedMediaDevice.size > 1
+            // Avoid grouping broadcast devices because grouped volume control is not available for
+            // broadcast session.
+            mGroupSelectedItems =
+                mController.selectedMediaDevice.size > 1 &&
+                    (!Flags.enableOutputSwitcherPersonalAudioSharing() ||
+                        mController.isVolumeControlEnabledForSession)
         }
 
         val newList =

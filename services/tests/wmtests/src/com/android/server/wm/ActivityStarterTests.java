@@ -70,6 +70,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -1067,6 +1068,32 @@ public class ActivityStarterTests extends WindowTestsBase {
 
         // Ensure secondary display only creates one stack.
         verify(secondaryTaskContainer, times(1)).createRootTask(anyInt(), anyInt(), anyBoolean());
+    }
+
+    /**
+     * This test ensures that activity launch on a secondary display that cannot host tasks is
+     * disallowed, and a SecurityException should be thrown.
+     */
+    @Test
+    public void testStartActivityOnDisplayCannotHostTasks() {
+        final ActivityStarter starter = prepareStarter(0);
+
+        // Create a display that cannot host tasks.
+        final TestDisplayContent secondaryDisplay =
+                new TestDisplayContent.Builder(mAtm, 1000, 1500)
+                        .setCanHostTasks(false).build();
+
+        final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
+
+        final ActivityOptions options = ActivityOptions.makeBasic()
+                .setLaunchDisplayId(secondaryDisplay.mDisplayId);
+
+        assertThrows(SecurityException.class,
+                () -> starter.setReason("testStartActivityOnDisplayCannotHostTasks")
+                        .setIntent(activity.intent)
+                        .setActivityOptions(options.toBundle(), Binder.getCallingPid(),
+                                Binder.getCallingUid())
+                        .execute());
     }
 
     @Test

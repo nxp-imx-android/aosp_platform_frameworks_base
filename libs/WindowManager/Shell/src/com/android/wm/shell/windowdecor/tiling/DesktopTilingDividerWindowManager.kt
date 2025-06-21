@@ -194,8 +194,8 @@ class DesktopTilingDividerWindowManager(
     }
 
     /** Notifies the divider view of task info change and possible color change. */
-    fun onTaskInfoChange() {
-        tilingDividerView?.onTaskInfoChange()
+    fun onThemeChange() {
+        tilingDividerView?.onThemeChanged()
     }
 
     /** Hides the divider bar. */
@@ -215,6 +215,7 @@ class DesktopTilingDividerWindowManager(
         runningAnimator?.cancel()
         runningAnimator = null
     }
+
     /** Shows the divider bar. */
     fun showDividerBar(isTilingVisibleAfterRecents: Boolean) {
         if (dividerShown || runningAnimator != null) return

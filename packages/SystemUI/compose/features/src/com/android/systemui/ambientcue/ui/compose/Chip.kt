@@ -33,14 +33,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
@@ -51,6 +56,12 @@ import com.android.systemui.res.R
 @Composable
 fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
     val backgroundColor = if (isSystemInDarkTheme()) Color.Black else Color.White
+    val config = LocalConfiguration.current
+    val isBoldTextEnabled by remember { derivedStateOf { config.fontWeightAdjustment > 0 } }
+    val chipTextStyle =
+        MaterialTheme.typography.labelLarge.copy(
+            fontWeight = if (isBoldTextEnabled) FontWeight.Bold else FontWeight.Medium
+        )
 
     val haptics = LocalHapticFeedback.current
     Row(
@@ -94,7 +105,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
             val hasAttribution = action.attribution != null
             Text(
                 action.label,
-                style = MaterialTheme.typography.labelLarge,
+                style = chipTextStyle,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = if (hasAttribution) 1 else 2,
                 overflow = TextOverflow.Ellipsis,
@@ -102,7 +113,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
             if (hasAttribution) {
                 Text(
                     action.attribution!!,
-                    style = MaterialTheme.typography.labelLarge,
+                    style = chipTextStyle,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     modifier = Modifier.alpha(0.8f),

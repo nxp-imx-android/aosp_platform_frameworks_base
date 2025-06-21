@@ -452,6 +452,7 @@ class SnapshotPersistQueue {
             proto.topActivityComponent = mSnapshot.getTopActivityComponent().flattenToString();
             proto.uiMode = mSnapshot.getUiMode();
             proto.id = mSnapshot.getId();
+            proto.densityDpi = mSnapshot.getDensityDpi();
             final byte[] bytes = TaskSnapshotProto.toByteArray(proto);
             final File file = mPersistInfoProvider.getProtoFile(mId, mUserId);
             final AtomicFile atomicFile = new AtomicFile(file);

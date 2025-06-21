@@ -141,7 +141,10 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun getItemId_forDeviceGroup_returnsItemType() {
-        mMediaSwitchingController.stub { on { isGroupListCollapsed } doReturn true }
+        mMediaSwitchingController.stub {
+            on { isGroupListCollapsed } doReturn true
+            on { isVolumeControlEnabledForSession } doReturn true
+        }
         initializeSession()
 
         assertThat(mMediaOutputAdapter.getItemId(1))
@@ -326,7 +329,10 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun onBindViewHolder_bindDeselectableDevice_verifyView() {
-        mMediaSwitchingController.stub { on { isGroupListCollapsed } doReturn false }
+        mMediaSwitchingController.stub {
+            on { isGroupListCollapsed } doReturn false
+            on { isVolumeControlEnabledForSession } doReturn true
+        }
         mMediaSwitchingController.stub {
             on { selectedMediaDevice } doReturn listOf(mMediaDevice1, mMediaDevice2)
             on { deselectableMediaDevice } doReturn listOf(mMediaDevice1, mMediaDevice2)
@@ -655,7 +661,10 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun multipleSelectedDevices_listCollapsed_verifyItemTypes() {
-        mMediaSwitchingController.stub { on { isGroupListCollapsed } doReturn true }
+        mMediaSwitchingController.stub {
+            on { isGroupListCollapsed } doReturn true
+            on { isVolumeControlEnabledForSession } doReturn true
+        }
         initializeSession()
 
         with(mMediaOutputAdapter) {
@@ -666,8 +675,27 @@ class MediaOutputAdapterTest : SysuiTestCase() {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_PERSONAL_AUDIO_SHARING)
+    fun multipleSelectedDevices_volumeControlDisabled_notCollapseList() {
+        mMediaSwitchingController.stub {
+            on { isGroupListCollapsed } doReturn true
+            on { isVolumeControlEnabledForSession } doReturn false
+        }
+        initializeSession()
+
+        with(mMediaOutputAdapter) {
+            assertThat(itemCount).isEqualTo(2)
+            assertThat(getItemViewType(0)).isEqualTo(MediaItemType.TYPE_DEVICE)
+            assertThat(getItemViewType(1)).isEqualTo(MediaItemType.TYPE_DEVICE)
+        }
+    }
+
+    @Test
     fun multipleSelectedDevices_listCollapsed_verifySessionControl() {
-        mMediaSwitchingController.stub { on { isGroupListCollapsed } doReturn true }
+        mMediaSwitchingController.stub {
+            on { isGroupListCollapsed } doReturn true
+            on { isVolumeControlEnabledForSession } doReturn true
+        }
         initializeSession()
 
         createAndBindDeviceViewHolder(position = 1).apply {
@@ -698,7 +726,10 @@ class MediaOutputAdapterTest : SysuiTestCase() {
 
     @Test
     fun multipleSelectedDevices_expandIconClicked_verifyIndividualDevices() {
-        mMediaSwitchingController.stub { on { isGroupListCollapsed } doReturn true }
+        mMediaSwitchingController.stub {
+            on { isGroupListCollapsed } doReturn true
+            on { isVolumeControlEnabledForSession } doReturn true
+        }
         initializeSession()
 
         val groupDividerViewHolder =

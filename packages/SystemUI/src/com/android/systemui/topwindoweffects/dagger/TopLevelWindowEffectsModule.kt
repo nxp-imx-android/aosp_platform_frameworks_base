@@ -24,7 +24,7 @@ import dagger.Provides
 import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 
-@Module
+@Module(includes = [SqueezeEffectRepositoryModule::class])
 object TopLevelWindowEffectsModule {
 
     @Provides

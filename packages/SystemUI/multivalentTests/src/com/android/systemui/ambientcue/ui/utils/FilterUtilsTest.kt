@@ -42,7 +42,7 @@ class FilterUtilsTest : SysuiTestCase() {
     fun setUp() {
         calendarAction1 =
             ActionViewModel(
-                icon = IconViewModel(mock(), "calendar_icon", false),
+                icon = IconViewModel(mock(), "calendar_icon", 0),
                 label = "Sunday Morning",
                 attribution = null,
                 onClick = {},
@@ -51,7 +51,7 @@ class FilterUtilsTest : SysuiTestCase() {
             )
         calendarAction2 =
             ActionViewModel(
-                icon = IconViewModel(mock(), "calendar_icon", false),
+                icon = IconViewModel(mock(), "calendar_icon", 0),
                 label = "Sunday Evening",
                 attribution = null,
                 onClick = {},
@@ -60,7 +60,7 @@ class FilterUtilsTest : SysuiTestCase() {
             )
         mapsAction =
             ActionViewModel(
-                icon = IconViewModel(mock(), "map_icon", false),
+                icon = IconViewModel(mock(), "map_icon", 0),
                 label = "Philz Coffee San Carlos",
                 onClick = {},
                 onLongClick = {},
@@ -82,7 +82,7 @@ class FilterUtilsTest : SysuiTestCase() {
         val filterActions = FilterUtils.filterActions(listOf(calendarAction1, calendarAction2))
 
         assertThat(filterActions.size).isEqualTo(1)
-        assertThat(filterActions[0].label).isEqualTo("Sunday Morning Sunday Evening")
-        assertThat(filterActions[0].icon.repeated).isTrue()
+        assertThat(filterActions[0].label).isEqualTo("Sunday Morning")
+        assertThat(filterActions[0].icon.repeatCount).isEqualTo(1)
     }
 }

@@ -39,6 +39,8 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import com.airbnb.lottie.Lottie;
+import com.airbnb.lottie.LottieConfig;
 import com.android.internal.protolog.ProtoLog;
 import com.android.systemui.dagger.GlobalRootComponent;
 import com.android.systemui.dagger.SysUIComponent;
@@ -143,7 +145,11 @@ public class SystemUIApplication extends Application implements
         View.setTracedRequestLayoutClassClass(
                 rootComponent.getSystemPropertiesHelper()
                         .get("persist.debug.trace_request_layout_class", null));
-
+        // Have Lottie emit trace slices if tracing is enabled.
+        Lottie.initialize(new LottieConfig.Builder()
+                .setEnableSystraceMarkers(Trace.isTagEnabled(Trace.TRACE_TAG_APP))
+                .setEnableNetworkCache(false)
+                .build());
         if (Flags.enableLayoutTracing()) {
             View.setTraceLayoutSteps(true);
         }

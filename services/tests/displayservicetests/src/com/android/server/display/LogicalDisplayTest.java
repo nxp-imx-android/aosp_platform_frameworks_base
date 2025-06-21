@@ -692,4 +692,32 @@ public class LogicalDisplayTest {
         mLogicalDisplay.setCanHostTasksLocked(false);
         assertTrue(mLogicalDisplay.canHostTasksLocked());
     }
+
+    @Test
+    public void testSetCanHostTasks_nonDefaultShouldAlwaysShowSysDecors() {
+        mDisplayDeviceInfo.flags = DisplayDeviceInfo.FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS;
+        mLogicalDisplay =
+                new LogicalDisplay(Display.DEFAULT_DISPLAY + 1, LAYER_STACK, mDisplayDevice);
+
+        mLogicalDisplay.setCanHostTasksLocked(true);
+        assertTrue(mLogicalDisplay.canHostTasksLocked());
+
+        mLogicalDisplay.setCanHostTasksLocked(false);
+        assertTrue(mLogicalDisplay.canHostTasksLocked());
+    }
+
+    @Test
+    public void testSetCanHostTasks_nonDefaultNeverBlank() {
+        mDisplayDeviceInfo.type = Display.TYPE_VIRTUAL;
+        when(mDisplayDevice.shouldAutoMirror()).thenReturn(true);
+        mLogicalDisplay =
+                new LogicalDisplay(Display.DEFAULT_DISPLAY + 1, LAYER_STACK, mDisplayDevice);
+        mLogicalDisplay.updateLocked(mDeviceRepo, mSyntheticModeManager);
+
+        mLogicalDisplay.setCanHostTasksLocked(true);
+        assertTrue(mLogicalDisplay.canHostTasksLocked());
+
+        mLogicalDisplay.setCanHostTasksLocked(false);
+        assertTrue(mLogicalDisplay.canHostTasksLocked());
+    }
 }

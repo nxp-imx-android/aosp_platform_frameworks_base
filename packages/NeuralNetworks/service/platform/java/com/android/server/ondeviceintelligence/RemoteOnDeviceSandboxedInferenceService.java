@@ -27,8 +27,6 @@ import android.provider.Settings;
 import android.service.ondeviceintelligence.IOnDeviceSandboxedInferenceService;
 import android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService;
 
-import com.android.internal.infra.ServiceConnector;
-
 import java.util.concurrent.TimeUnit;
 
 
@@ -73,22 +71,5 @@ public class RemoteOnDeviceSandboxedInferenceService extends
                 Settings.Secure.ON_DEVICE_INFERENCE_UNBIND_TIMEOUT_MS,
                 TimeUnit.SECONDS.toMillis(30),
                 mContext.getUserId());
-    }
-
-    @Override
-    public void onBindingDied(@NonNull ComponentName name) {
-        // When the binding dies, unbind to allow the service to be re-bound.
-        unbind();
-    }
-
-    @Override
-    public void binderDied() {
-        // When the binder dies, dispatch the event to the clients
-        // and cancel pending jobs.
-        getJobHandler().post(() -> {
-            dispatchOnBinderDied();
-            cancelTimeout();
-            cancelPendingJobs(); // TODO:418214801 - Evaluate if this can be removed.
-        });
     }
 }

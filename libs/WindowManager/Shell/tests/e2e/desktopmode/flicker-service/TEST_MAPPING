@@ -4,9 +4,6 @@
       "name": "WMShellFlickerTestsDesktopMode-CatchAll"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-DesktopModeBaseTest"
-    },
-    {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-CloseAllAppsViaAppHeaderExitTest"
     },
     {
@@ -17,6 +14,9 @@
     },
     {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-EnterDesktopWithAppHandleMenuFlickerTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-EnterSplitScreenWithAppHandleMenuFlickerTest"
     },
     {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-ExitDesktopToFullScreenWithAppHeaderMenuFlickerTest"

@@ -448,6 +448,14 @@ public class KeyguardTransitionHandler
             final WindowContainerTransaction wct = new WindowContainerTransaction();
             wct.addKeyguardState(new KeyguardState.Builder().setKeyguardShowing(keyguardShowing)
                     .setAodShowing(aodShowing).build());
+
+            if (ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS && dismissDreamOnKeyguardDismiss()
+                    && !keyguardShowing && mDreamToken != null) {
+                // Dismiss the dream in the same transaction, so that it isn't visible once the
+                // device is unlocked.
+                wct.removeTask(mDreamToken);
+            }
+
             mMainExecutor.execute(() -> {
                 mTransitions.startTransition(keyguardShowing ? TRANSIT_TO_FRONT : TRANSIT_TO_BACK,
                         wct, KeyguardTransitionHandler.this);

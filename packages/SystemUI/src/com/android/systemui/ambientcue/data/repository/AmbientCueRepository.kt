@@ -27,6 +27,7 @@ import android.app.smartspace.SmartspaceManager
 import android.app.smartspace.SmartspaceSession.OnTargetsAvailableListener
 import android.content.Context
 import android.graphics.Rect
+import android.provider.Settings
 import android.util.Log
 import android.view.autofill.AutofillId
 import android.view.autofill.AutofillManager
@@ -97,6 +98,9 @@ interface AmbientCueRepository {
 
     /* If AmbientCue is enabled. */
     val isAmbientCueEnabled: StateFlow<Boolean>
+
+    /* The timeout for Ambient Cue to disappear. */
+    val ambientCueTimeoutMs: StateFlow<Int>
 }
 
 @SysUISingleton
@@ -362,6 +366,20 @@ constructor(
                 initialValue = false,
             )
 
+    override val ambientCueTimeoutMs: StateFlow<Int> =
+        secureSettingsRepository
+            .intSetting(
+                name = Settings.Secure.ACCESSIBILITY_INTERACTIVE_UI_TIMEOUT_MS,
+                AMBIENT_CUE_DEFAULT_TIMEOUT_MS,
+            )
+            .map { if (it == 0) AMBIENT_CUE_DEFAULT_TIMEOUT_MS else it }
+            .flowOn(backgroundDispatcher)
+            .stateIn(
+                scope = backgroundScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = AMBIENT_CUE_DEFAULT_TIMEOUT_MS,
+            )
+
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         pw.println("isRootViewAttached: ${isRootViewAttached.value}")
         pw.println("targetTaskId: ${targetTaskId.value}")
@@ -373,6 +391,7 @@ constructor(
         pw.println("isGestureNav: ${isGestureNav.value}")
         pw.println("actions: ${actions.value}")
         pw.println("isAmbientCueEnabled: ${isAmbientCueEnabled.value}")
+        pw.println("ambientCueTimeoutMs: ${ambientCueTimeoutMs.value}")
     }
 
     companion object {
@@ -390,9 +409,11 @@ constructor(
         private const val DEBUG = false
         private const val INVALID_TASK_ID = ActivityTaskManager.INVALID_TASK_ID
         @VisibleForTesting const val AMBIENT_CUE_SETTING = "spoonBarOptedIn"
+        @VisibleForTesting const val AMBIENT_CUE_TIMEOUT_SETTING = "ambientCueTimeoutSec"
         @VisibleForTesting const val OPTED_IN = 0x10
         @VisibleForTesting const val OPTED_OUT = 0x01
         const val DEBOUNCE_DELAY_MS = 100L
+        private const val AMBIENT_CUE_DEFAULT_TIMEOUT_MS = 30_000
         @VisibleForTesting const val MA_ACTION_TYPE_NAME = "ma"
         @VisibleForTesting const val MR_ACTION_TYPE_NAME = "mr"
     }

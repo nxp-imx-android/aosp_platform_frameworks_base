@@ -30,6 +30,7 @@ import com.android.systemui.shared.Flags.FLAG_STATUS_BAR_CONNECTED_DISPLAYS
 import com.android.window.flags.Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS
 import com.android.wm.shell.Utils
 import org.junit.Assume
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -65,6 +66,12 @@ abstract class EnableDisplayMirroringSwitch : TestScenarioBase() {
         // TODO(b/420573458): Move assertions to flicker test
         wmHelper.StateSyncBuilder().withEmptyDisplay(connectedDisplayRule.addedDisplays[0])
             .waitForAndVerify()
+    }
+
+    @After
+    fun teardown() {
+        // Ensure the mirroring switch is disabled after running the test.
+        Settings.Secure.putInt(instrumentation.context.contentResolver, MIRROR_SETTING, 0)
     }
 
     private companion object {

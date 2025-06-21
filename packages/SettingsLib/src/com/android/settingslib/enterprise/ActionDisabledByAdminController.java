@@ -63,7 +63,7 @@ public interface ActionDisabledByAdminController {
     /**
      * Updates the enforcing admin
      */
-    void updateEnforcingAdmin(@NonNull EnforcingAdmin admin);
+    void updateEnforcingAdmin(@Nullable EnforcingAdmin admin);
 
     /**
      * Returns a listener for handling positive button clicks.
@@ -80,7 +80,7 @@ public interface ActionDisabledByAdminController {
      */
     @Nullable
     default DialogInterface.OnClickListener getPositiveButtonListener(@NonNull Context context,
-            @NonNull EnforcingAdmin enforcingAdmin) {
+            @Nullable EnforcingAdmin enforcingAdmin) {
         return null;
     }
 }

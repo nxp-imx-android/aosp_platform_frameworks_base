@@ -195,4 +195,29 @@ class BubbleTaskStackListenerTest {
         verifyNoInteractions(taskOrganizer)
         verifyNoInteractions(taskViewTaskController)
     }
+
+    @Test
+    @EnableFlags(
+        FLAG_ENABLE_CREATE_ANY_BUBBLE,
+        FLAG_ENABLE_BUBBLE_ANYTHING,
+        FLAG_EXCLUDE_TASK_FROM_RECENTS,
+        FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES,
+    )
+    fun onTaskMovedToFront_inStackAppBubbleToFullscreen_notifiesTaskRemoval() {
+        task.configuration.windowConfiguration.windowingMode = WINDOWING_MODE_FULLSCREEN
+        bubbleData.stub {
+            on { getBubbleInStackWithTaskId(bubbleTaskId) } doReturn bubble
+        }
+
+        bubbleTaskStackListener.onTaskMovedToFront(task)
+
+        val taskViewTaskController = bubble.taskView.controller
+        val taskOrganizer = taskViewTaskController.taskOrganizer
+        val wct = argumentCaptor<WindowContainerTransaction>().let { wctCaptor ->
+            verify(taskOrganizer).applyTransaction(wctCaptor.capture())
+            wctCaptor.lastValue
+        }
+        verifyExitBubbleTransaction(wct, bubbleTaskToken.asBinder())
+        verify(taskViewTaskController).notifyTaskRemovalStarted(task)
+    }
 }

@@ -18,6 +18,7 @@ package com.android.wm.shell.compatui.letterbox
 
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode.MULTIPLE_SURFACES
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy.LetterboxMode.SINGLE_SURFACE
+import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEvent
 import com.android.wm.shell.dagger.WMSingleton
 import javax.inject.Inject
 
@@ -36,7 +37,7 @@ class LetterboxControllerStrategy @Inject constructor(
     @Volatile
     private var currentMode: LetterboxMode = SINGLE_SURFACE
 
-    fun configureLetterboxMode() {
+    fun configureLetterboxMode(event: LetterboxLifecycleEvent) {
         // TODO(b/377875146): Define criteria for switching between [LetterboxMode]s.
         // At the moment, we use the presence of rounded corners to understand if to use a single
         // surface or multiple surfaces for the letterbox areas. This rule will change when
@@ -44,11 +45,14 @@ class LetterboxControllerStrategy @Inject constructor(
         // [MULTIPLE_SURFACES] option.
         // The chosen strategy will depend on performance considerations,
         // including surface memory usage and the impact of the rounded corners solution.
-        currentMode = if (letterboxConfiguration.isLetterboxActivityCornersRounded()) {
-            SINGLE_SURFACE
-        } else {
-            MULTIPLE_SURFACES
-        }
+        // In case of Bubble we always use a single surface as simple optimisation for no
+        // transparent activities.
+        currentMode =
+            if (event.isBubble || letterboxConfiguration.isLetterboxActivityCornersRounded()) {
+                SINGLE_SURFACE
+            } else {
+                MULTIPLE_SURFACES
+            }
     }
 
     /**

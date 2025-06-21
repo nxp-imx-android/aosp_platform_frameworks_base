@@ -17,6 +17,7 @@
 package android.app;
 
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
+import static android.hardware.serial.flags.Flags.enableSerialApi;
 import static android.provider.flags.Flags.newStoragePublicApi;
 import static android.server.Flags.removeGameManagerServiceFromWear;
 import static android.service.chooser.Flags.interactiveChooser;
@@ -107,10 +108,8 @@ import android.devicelock.DeviceLockFrameworkInitializer;
 import android.graphics.fonts.FontManager;
 import android.hardware.ConsumerIrManager;
 import android.hardware.ISensorPrivacyManager;
-import android.hardware.ISerialManager;
 import android.hardware.SensorManager;
 import android.hardware.SensorPrivacyManager;
-import android.hardware.SerialManager;
 import android.hardware.SystemSensorManager;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.IAuthService;
@@ -805,13 +804,29 @@ public final class SystemServiceRegistry {
                         return new AdbManager(ctx, IAdbManager.Stub.asInterface(b));
                     }});
 
-        registerService(Context.SERIAL_SERVICE, SerialManager.class,
-                new CachedServiceFetcher<SerialManager>() {
-            @Override
-            public SerialManager createService(ContextImpl ctx) throws ServiceNotFoundException {
-                IBinder b = ServiceManager.getServiceOrThrow(Context.SERIAL_SERVICE);
-                return new SerialManager(ctx, ISerialManager.Stub.asInterface(b));
-            }});
+        if (enableSerialApi()) {
+            registerService(Context.SERIAL_SERVICE, android.hardware.serial.SerialManager.class,
+                    new CachedServiceFetcher<android.hardware.serial.SerialManager>() {
+                        @Override
+                        public android.hardware.serial.SerialManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            IBinder b = ServiceManager.getServiceOrThrow(Context.SERIAL_SERVICE);
+                            return new android.hardware.serial.SerialManager(ctx,
+                                    android.hardware.serial.ISerialManager.Stub.asInterface(b));
+                        }
+                    });
+        } else {
+            registerService(Context.SERIAL_SERVICE, android.hardware.SerialManager.class,
+                    new CachedServiceFetcher<android.hardware.SerialManager>() {
+                        @Override
+                        public android.hardware.SerialManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                            IBinder b = ServiceManager.getServiceOrThrow(Context.SERIAL_SERVICE);
+                            return new android.hardware.SerialManager(ctx,
+                                    android.hardware.ISerialManager.Stub.asInterface(b));
+                        }
+                    });
+        }
 
         registerService(Context.VIBRATOR_MANAGER_SERVICE, VibratorManager.class,
                 new CachedServiceFetcher<VibratorManager>() {

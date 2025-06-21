@@ -998,6 +998,22 @@ final class LogicalDisplay {
             return true;
         }
 
+        // The display that should always show system decorations can always host tasks.
+        // See DisplayDeviceInfo#FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS.
+        final boolean shouldAlwaysShowSysDecors =
+                (mPrimaryDisplayDevice.getDisplayDeviceInfoLocked().flags
+                        & DisplayDeviceInfo.FLAG_SHOULD_SHOW_SYSTEM_DECORATIONS) != 0;
+        if (shouldAlwaysShowSysDecors) {
+            return true;
+        }
+
+        // The display that should auto mirror can always host tasks.
+        // TODO(b/426331944): Change the behavior of VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR and returns
+        // false for this
+        if (mPrimaryDisplayDevice.shouldAutoMirror()) {
+            return true;
+        }
+
         return canHostTasks;
     }
 

@@ -36,6 +36,7 @@ import static android.hardware.display.DisplayManager.VIRTUAL_DISPLAY_FLAG_TRUST
 import android.annotation.Nullable;
 import android.content.Context;
 import android.graphics.Point;
+import android.hardware.display.DisplayManager;
 import android.hardware.display.IBrightnessListener;
 import android.hardware.display.IVirtualDisplayCallback;
 import android.hardware.display.VirtualDisplayConfig;
@@ -545,6 +546,14 @@ public class VirtualDisplayAdapter extends DisplayAdapter {
         @Override
         public boolean shouldOnlyMirror() {
             return mProjection != null;
+        }
+
+        /**
+         * See {@link DisplayManager#VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR}.
+         */
+        @Override
+        boolean shouldAutoMirror() {
+            return (mFlags & VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR) != 0;
         }
 
         public void setSurfaceLocked(Surface surface) {

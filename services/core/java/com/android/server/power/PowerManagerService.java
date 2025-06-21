@@ -5701,7 +5701,8 @@ public final class PowerManagerService extends SystemService
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();
-            sb.append(getLockLevelString());
+            // Pad to 33 chars (longest wakelock name)
+            sb.append(String.format("%-33s", PowerManagerInternal.getLockLevelString(mFlags)));
             sb.append(" '");
             sb.append(mTag);
             sb.append("'");
@@ -5760,30 +5761,6 @@ public final class PowerManagerService extends SystemService
                 mWorkSource.dumpDebug(proto, WakeLockProto.WORK_SOURCE);
             }
             proto.end(wakeLockToken);
-        }
-
-        @SuppressWarnings("deprecation")
-        private String getLockLevelString() {
-            switch (mFlags & PowerManager.WAKE_LOCK_LEVEL_MASK) {
-                case PowerManager.FULL_WAKE_LOCK:
-                    return "FULL_WAKE_LOCK                   ";
-                case PowerManager.SCREEN_BRIGHT_WAKE_LOCK:
-                    return "SCREEN_BRIGHT_WAKE_LOCK          ";
-                case PowerManager.SCREEN_DIM_WAKE_LOCK:
-                    return "SCREEN_DIM_WAKE_LOCK             ";
-                case PowerManager.PARTIAL_WAKE_LOCK:
-                    return "PARTIAL_WAKE_LOCK                ";
-                case PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK:
-                    return "PROXIMITY_SCREEN_OFF_WAKE_LOCK   ";
-                case PowerManager.DOZE_WAKE_LOCK:
-                    return "DOZE_WAKE_LOCK                   ";
-                case PowerManager.DRAW_WAKE_LOCK:
-                    return "DRAW_WAKE_LOCK                   ";
-                case PowerManager.SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK:
-                    return "SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK";
-                default:
-                    return "???                              ";
-            }
         }
 
         private String getLockFlagsString() {

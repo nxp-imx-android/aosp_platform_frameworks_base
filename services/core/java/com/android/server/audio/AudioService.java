@@ -9830,8 +9830,8 @@ public class AudioService extends IAudioService.Stub
     }
 
     // NOTE: Locking order for synchronized objects related to volume or ringer mode management:
-    //  1 mScoclient OR mSafeMediaVolumeState
-    //  2   mSetModeLock
+    //  1   AudioDeviceBroker#mSetModeLock
+    //  2    AudioDeviceBroker#mDeviceStateLock
     //  3     mSettingsLock
     //  4       mVolumeStateLock
     /*package*/ class VolumeStreamState {

@@ -4767,7 +4767,7 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testIsLetterboxedForSafeRegionOnlyAllowed_noManifestProperty_returnsTrue() {
         setUpLandscapeLargeScreenDisplayWithApp();
 
@@ -4786,7 +4786,7 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testIsLetterboxedForSafeRegionOnlyAllowed_allowedForActivity_returnsTrue() {
         setUpLandscapeLargeScreenDisplayWithApp();
 
@@ -4812,7 +4812,7 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testIsLetterboxedForSafeRegionOnly_appPropUnset_allowedForActivity_returnsTrue()
             throws PackageManager.NameNotFoundException {
         setUpLandscapeLargeScreenDisplayWithApp();
@@ -4840,7 +4840,7 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testIsLetterboxedForSafeRegionOnlyAllowed_notAllowedForActivity_returnsFalse() {
         setUpLandscapeLargeScreenDisplayWithApp();
 
@@ -4865,7 +4865,7 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testIsLetterboxedForSafeRegionOnlyAllowed_notAllowedForApplication_returnsFalse() {
         setUpLandscapeLargeScreenDisplayWithApp();
 
@@ -4890,7 +4890,7 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testIsLetterboxedForSafeRegionOnlyAllowed_allowedForApplication_returnsTrue() {
         setUpLandscapeLargeScreenDisplayWithApp();
 
@@ -4953,7 +4953,7 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testAreBoundsLetterboxed_letterboxedForSafeRegionAndFixedOrientation_returnTrue() {
         setUpLandscapeLargeScreenDisplayWithApp();
         mActivity.mDisplayContent.setIgnoreOrientationRequest(true /* ignoreOrientationRequest */);
@@ -4977,7 +4977,7 @@ public class SizeCompatTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING)
+    @EnableFlags(Flags.FLAG_SAFE_REGION_LETTERBOXING_V1)
     public void testAreBoundsLetterboxed_letterboxedForSafeRegionAndAspectRatio_returnTrue() {
         setUpPortraitLargeScreenDisplayWithApp();
 

@@ -29,6 +29,7 @@ import com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTEN
 import com.android.systemui.shared.Flags.FLAG_STATUS_BAR_CONNECTED_DISPLAYS
 import com.android.window.flags.Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS
 import com.android.wm.shell.Utils
+import org.junit.After
 import org.junit.Assume
 import org.junit.Before
 import org.junit.Rule
@@ -66,6 +67,13 @@ abstract class DisableDisplayMirroringSwitch : TestScenarioBase() {
         wmHelper.StateSyncBuilder().withDesktopModeOnDisplay(connectedDisplayRule.addedDisplays[0])
             .waitForAndVerify()
     }
+
+    @After
+    fun teardown() {
+        // Ensure the mirroring switch is disabled after running the test.
+        Settings.Secure.putInt(instrumentation.context.contentResolver, MIRROR_SETTING, 0)
+    }
+
     private companion object {
         const val MIRROR_SETTING = Settings.Secure.MIRROR_BUILT_IN_DISPLAY
     }

@@ -85,7 +85,6 @@ import android.util.Slog;
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.infra.AndroidFuture;
-import com.android.internal.infra.ServiceConnector;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.SystemService;

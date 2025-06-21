@@ -76,23 +76,23 @@ class EnforcePermissionDetector : Detector(), SourceCodeScanner {
 
     private fun areAnnotationsEquivalent(
         context: JavaContext,
-        anno1: PsiAnnotation,
-        anno2: PsiAnnotation
+        overridingAnnotation: PsiAnnotation,
+        overriddenAnnotation: PsiAnnotation
     ): Boolean {
-        if (anno1.qualifiedName != anno2.qualifiedName) {
+        if (overridingAnnotation.qualifiedName != overriddenAnnotation.qualifiedName) {
             return false
         }
-        val attr1 = anno1.parameterList.attributes
-        val attr2 = anno2.parameterList.attributes
-        if (attr1.size != attr2.size) {
+        val overridingAttributes = overridingAnnotation.parameterList.attributes
+        val overriddenAttributes = overriddenAnnotation.parameterList.attributes
+        if (overridingAttributes.size != overriddenAttributes.size) {
             return false
         }
-        for (i in attr1.indices) {
-            if (attr1[i].name != attr2[i].name) {
+        for (i in overridingAttributes.indices) {
+            if (overridingAttributes[i].name != overriddenAttributes[i].name) {
                 return false
             }
-            val value1 = attr1[i].value ?: return false
-            val value2 = attr2[i].value ?: return false
+            val value1 = overridingAttributes[i].value ?: return false
+            val value2 = overriddenAttributes[i].value ?: return false
             // Try to compare values directly with each other.
             val v1 = ConstantEvaluator.evaluate(context, value1)
             val v2 = ConstantEvaluator.evaluate(context, value2)

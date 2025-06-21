@@ -16,6 +16,7 @@
 
 package com.android.server.media;
 
+import static android.Manifest.permission.BLUETOOTH_PRIVILEGED;
 import static android.Manifest.permission.MODIFY_AUDIO_ROUTING;
 
 import static com.android.server.media.AudioRoutingUtils.ATTRIBUTES_MEDIA;
@@ -52,6 +53,7 @@ import android.os.HandlerThread;
 import android.os.TestLooperManager;
 import android.os.UserHandle;
 import android.platform.test.annotations.EnableFlags;
+import android.platform.test.flag.junit.SetFlagsRule;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -61,6 +63,7 @@ import com.google.common.collect.ImmutableList;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -75,6 +78,7 @@ import java.util.Set;
 
 @RunWith(JUnit4.class)
 public class AudioManagerRouteControllerTest {
+    @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     private static final String FAKE_ROUTE_NAME = "fake name";
     private static final String FAKE_BT_ROUTE_ADDRESS = "11:22:33:44:55:66";
@@ -123,7 +127,9 @@ public class AudioManagerRouteControllerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mInstrumentation = InstrumentationRegistry.getInstrumentation();
-        mInstrumentation.getUiAutomation().adoptShellPermissionIdentity(MODIFY_AUDIO_ROUTING);
+        mInstrumentation
+                .getUiAutomation()
+                .adoptShellPermissionIdentity(BLUETOOTH_PRIVILEGED, MODIFY_AUDIO_ROUTING);
         Resources mockResources = Mockito.mock(Resources.class);
         when(mockResources.getText(anyInt())).thenReturn(FAKE_ROUTE_NAME);
         mRealContext = mInstrumentation.getContext();

@@ -1552,18 +1552,29 @@ public class ApplicationPackageManager extends PackageManager {
     @SuppressWarnings("unchecked")
     public List<ResolveInfo> queryIntentActivitiesAsUser(Intent intent, ResolveInfoFlags flags,
             int userId) {
-        try {
-            ParceledListSlice<ResolveInfo> parceledList = mPM.queryIntentActivities(
-                    intent,
-                    intent.resolveTypeIfNeeded(mContext.getContentResolver()),
-                    updateFlagsForComponent(flags.getValue(), userId, intent),
-                    userId);
-            if (parceledList == null) {
+        if (android.content.pm.Flags.cacheQueryIntentActivitiesInClientSide()) {
+            List<ResolveInfo> resolveInfos = sQueryIntentActivitiesCache.query(
+                    new IntentActivitiesQuery(intent,
+                            intent.resolveTypeIfNeeded(mContext.getContentResolver()),
+                            updateFlagsForComponent(flags.getValue(), userId, intent), userId));
+            if (resolveInfos == null) {
                 return Collections.emptyList();
             }
-            return parceledList.getList();
-        } catch (RemoteException e) {
-            throw e.rethrowFromSystemServer();
+            return resolveInfos;
+        } else {
+            try {
+                ParceledListSlice<ResolveInfo> parceledList = mPM.queryIntentActivities(
+                        intent,
+                        intent.resolveTypeIfNeeded(mContext.getContentResolver()),
+                        updateFlagsForComponent(flags.getValue(), userId, intent),
+                        userId);
+                if (parceledList == null) {
+                    return Collections.emptyList();
+                }
+                return parceledList.getList();
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
         }
     }
 
@@ -4257,5 +4268,102 @@ public class ApplicationPackageManager extends PackageManager {
             Log.e(TAG, "Error parsing: " + info.packageName, e);
             return null;
         }
+    }
+
+    private static final class IntentActivitiesQuery {
+        final Intent mIntent;
+        final String mResolvedType;
+        final long mFlags;
+        final int mUserId;
+
+        IntentActivitiesQuery(Intent intent, String resolvedType, long flags, int userId) {
+            this.mIntent = intent;
+            this.mResolvedType = resolvedType;
+            this.mFlags = flags;
+            this.mUserId = userId;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = mIntent.filterHashCode();
+            hash = hash * 13 + Objects.hashCode(mResolvedType);
+            hash = hash * 13 + Long.hashCode(mFlags);
+            hash = hash * 13 + mUserId;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(@Nullable Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            ApplicationPackageManager.IntentActivitiesQuery other;
+            try {
+                other = (ApplicationPackageManager.IntentActivitiesQuery) obj;
+            } catch (ClassCastException ex) {
+                return false;
+            }
+            return mIntent.filterEquals(other.mIntent)
+                    && Objects.equals(mResolvedType, other.mResolvedType)
+                    && mFlags == other.mFlags
+                    && mUserId == other.mUserId;
+        }
+    }
+
+    private static final String CACHE_KEY_QUERY_INTENT_ACTIVITIES_API = "query_intent_activities";
+
+    /** @hide */
+    @VisibleForTesting
+    public static final PropertyInvalidatedCache<IntentActivitiesQuery, List<ResolveInfo>>
+            sQueryIntentActivitiesCache = new PropertyInvalidatedCache<>(
+                    new PropertyInvalidatedCache.Args(MODULE_SYSTEM).maxEntries(1024).api(
+                            CACHE_KEY_QUERY_INTENT_ACTIVITIES_API).cacheNulls(true),
+                    CACHE_KEY_QUERY_INTENT_ACTIVITIES_API, null) {
+                @Override
+                public List<ResolveInfo> recompute(IntentActivitiesQuery query) {
+                    try {
+                        ParceledListSlice<ResolveInfo> parceledList =
+                                ActivityThread.currentActivityThread().getPackageManager()
+                                        .queryIntentActivities(
+                                        query.mIntent,
+                                        query.mResolvedType,
+                                        query.mFlags,
+                                        query.mUserId);
+                        if (parceledList == null) {
+                            return Collections.emptyList();
+                        }
+                        return parceledList.getList();
+                    } catch (RemoteException e) {
+                        throw e.rethrowFromSystemServer();
+                    }
+                }
+
+                @Override
+                public String queryToString(IntentActivitiesQuery query) {
+                    StringBuilder b = new StringBuilder(128);
+                    b.append("Query { ");
+                    b.append("intent=").append(query.mIntent.toString());
+                    b.append(", resolvedType=").append(query.mResolvedType);
+                    b.append(", flags=").append(Long.toHexString(query.mFlags));
+                    b.append(", userId=").append(query.mUserId);
+                    b.append(" }");
+                    return b.toString();
+                }
+            };
+
+    /** @hide */
+    public static void disableQueryIntentActivitiesCacheForCurrentProcess() {
+        if (!android.content.pm.Flags.cacheQueryIntentActivitiesInClientSide()) {
+            return;
+        }
+        sQueryIntentActivitiesCache.disableForCurrentProcess();
+    }
+
+    /** @hide */
+    public static void invalidateQueryIntentActivitiesCache() {
+        if (!android.content.pm.Flags.cacheQueryIntentActivitiesInClientSide()) {
+            return;
+        }
+        sQueryIntentActivitiesCache.invalidateCache();
     }
 }

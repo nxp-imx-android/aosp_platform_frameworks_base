@@ -225,9 +225,7 @@ public class A11yMenuOverlayLayout {
         if (shortcutId == A11yMenuShortcut.ShortcutId.ID_BRIGHTNESS_DOWN_VALUE.ordinal()
                 || shortcutId == A11yMenuShortcut.ShortcutId.ID_BRIGHTNESS_UP_VALUE.ordinal()) {
             if (userManager.hasUserRestriction(DISALLOW_CONFIG_BRIGHTNESS)
-                    || (com.android.systemui.Flags.enforceBrightnessBaseUserRestriction()
-                    && userManager.hasBaseUserRestriction(
-                            DISALLOW_CONFIG_BRIGHTNESS, userHandle))) {
+                    || userManager.hasBaseUserRestriction(DISALLOW_CONFIG_BRIGHTNESS, userHandle)) {
                 return true;
             }
         }

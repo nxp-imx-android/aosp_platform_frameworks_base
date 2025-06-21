@@ -108,6 +108,14 @@ public class TaskConstants {
             TASK_CHILD_LAYER_REGION_SIZE / 10;
 
     /**
+     * The layer to use for the rounded corners used in the Letterbox surfaces implementation
+     * in Shell.
+     * @hide
+     */
+    public static final int TASK_CHILD_SHELL_LAYER_LETTERBOX_ROUNDED_CORNERS =
+            TASK_CHILD_LAYER_REGION_SIZE / 5;
+
+    /**
      * Z-orders of task child layers other than activities, task fragments and layers interleaved
      * with them, e.g. IME windows. [-10000, 10000) is reserved for these layers.
      * @hide

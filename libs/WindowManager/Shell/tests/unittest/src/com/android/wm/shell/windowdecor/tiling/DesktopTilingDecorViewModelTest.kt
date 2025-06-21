@@ -16,6 +16,7 @@
 package com.android.wm.shell.windowdecor.tiling
 
 import android.content.Context
+import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Rect
 import android.testing.AndroidTestingRunner
@@ -36,6 +37,7 @@ import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.ReturnToDragStartAnimator
 import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
+import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
@@ -86,6 +88,8 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
     private val displayLayout: DisplayLayout = mock()
     private val mainExecutor: ShellExecutor = mock()
     private val shellInit: ShellInit = mock()
+    private val shellController: ShellController = mock()
+    private val configuration: Configuration = mock()
     private lateinit var desktopTilingDecorViewModel: DesktopTilingDecorViewModel
     @Captor private lateinit var callbackCaptor: ArgumentCaptor<Runnable>
 
@@ -111,6 +115,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
                 mainExecutor,
                 desktopState,
                 shellInit,
+                shellController,
             )
         whenever(contextMock.createContextAsUser(any(), any())).thenReturn(contextMock)
         whenever(displayControllerMock.getDisplayLayout(any())).thenReturn(displayLayout)
@@ -121,6 +126,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         whenever(contextMock.resources).thenReturn(resourcesMock)
         whenever(resourcesMock.getDimensionPixelSize(any())).thenReturn(10)
         whenever(userRepositories.current).thenReturn(desktopRepository)
+        whenever(shellController.lastConfiguration).thenReturn(configuration)
     }
 
     @Test

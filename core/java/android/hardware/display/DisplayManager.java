@@ -1613,9 +1613,8 @@ public final class DisplayManager {
      * Gets the brightness of the specified display in the specified brightness unit.
      * @param displayId The display of which brightness value to get from.
      * @param unit The unit of the brightness value
-     *
-     * @hide
      */
+    @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
     public float getBrightness(int displayId, @BrightnessUnit int unit) {
         return mGlobal.getBrightness(displayId, unit);
     }

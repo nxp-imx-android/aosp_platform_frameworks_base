@@ -158,7 +158,7 @@ class SourceTransformerTest {
             val visitor = invocation.arguments[1] as ProtoLogCallVisitor
 
             visitor.processCall(code.findAll(MethodCallExpr::class.java)[0], "test %d %f",
-                    LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST"), 123)
+                    LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST", 1), 123)
 
             listOf<CodeProcessingException>()
         }
@@ -195,11 +195,11 @@ class SourceTransformerTest {
 
             val calls = code.findAll(MethodCallExpr::class.java)
             visitor.processCall(calls[0], "test %d %f",
-                    LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST"), 456)
+                    LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST", 1), 456)
             visitor.processCall(calls[1], "test %d %f",
-                    LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST"), 789)
+                    LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST", 1), 789)
             visitor.processCall(calls[2], "test %d %f",
-                    LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST"), 123)
+                    LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST", 1), 123)
 
             listOf<CodeProcessingException>()
         }
@@ -236,7 +236,7 @@ class SourceTransformerTest {
 
             visitor.processCall(code.findAll(MethodCallExpr::class.java)[0],
                     "test %d %f abc %s\n test", LogLevel.WARN, LogGroup("TEST_GROUP",
-                    true, true, "WM_TEST"), 123)
+                    true, true, "WM_TEST", 1), 123)
 
             listOf<CodeProcessingException>()
         }
@@ -273,7 +273,7 @@ class SourceTransformerTest {
             val visitor = invocation.arguments[1] as ProtoLogCallVisitor
 
             visitor.processCall(code.findAll(MethodCallExpr::class.java)[0], "test",
-                    LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST"), 456)
+                    LogLevel.WARN, LogGroup("TEST_GROUP", true, true, "WM_TEST", 1), 456)
 
             listOf<CodeProcessingException>()
         }
@@ -307,7 +307,7 @@ class SourceTransformerTest {
             val visitor = invocation.arguments[1] as ProtoLogCallVisitor
 
             visitor.processCall(code.findAll(MethodCallExpr::class.java)[0], "test %d %f",
-                    LogLevel.WARN, LogGroup("TEST_GROUP", true, false, "WM_TEST"), 789)
+                    LogLevel.WARN, LogGroup("TEST_GROUP", true, false, "WM_TEST", 1), 789)
 
             listOf<CodeProcessingException>()
         }
@@ -344,7 +344,7 @@ class SourceTransformerTest {
 
             visitor.processCall(code.findAll(MethodCallExpr::class.java)[0],
                     "test %d %f abc %s\n test", LogLevel.WARN, LogGroup("TEST_GROUP",
-                    true, false, "WM_TEST"), 123)
+                    true, false, "WM_TEST", 1), 123)
 
             listOf<CodeProcessingException>()
         }

@@ -298,7 +298,6 @@ public class ShellController {
             ProtoLog.v(WM_SHELL_SYSUI_EVENTS, "Initial Configuration: %s", newConfig);
             return;
         }
-
         final int diff = newConfig.diff(mLastConfiguration);
         ProtoLog.v(WM_SHELL_SYSUI_EVENTS, "New configuration change: %s", newConfig);
         ProtoLog.v(WM_SHELL_SYSUI_EVENTS, "\tchanges=%s",
@@ -358,6 +357,10 @@ public class ShellController {
         for (UserChangeListener listener : mUserChangeListeners) {
             listener.onUserChanged(newUserId, userContext);
         }
+    }
+
+    public Configuration getLastConfiguration() {
+        return mLastConfiguration;
     }
 
     @VisibleForTesting

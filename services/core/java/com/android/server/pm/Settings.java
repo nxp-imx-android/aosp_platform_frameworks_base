@@ -37,6 +37,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
+import android.app.ApplicationPackageManager;
 import android.app.compat.ChangeIdStateCache;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -833,6 +834,7 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
     }
 
     private void invalidatePackageCache() {
+        ApplicationPackageManager.invalidateQueryIntentActivitiesCache();
         PackageManagerService.invalidatePackageInfoCache();
         ChangeIdStateCache.invalidate();
         onChanged();

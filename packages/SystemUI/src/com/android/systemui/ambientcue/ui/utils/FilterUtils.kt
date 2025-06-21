@@ -16,12 +16,13 @@
 
 package com.android.systemui.ambientcue.ui.utils
 
+import com.android.systemui.ambientcue.ui.viewmodel.ActionType
 import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 
 object FilterUtils {
     /**
      * Filters a list of actions, combining actions with the same icon id. The labels of the
-     * combined actions are concatenated, and the icon is marked as repeated.
+     * combined actions uses the first action label, and the icon repeatCount increases.
      *
      * @param actions The list of actions to filter.
      * @return A new list of filtered actions.
@@ -35,12 +36,22 @@ object FilterUtils {
                     if (existingAction !== action) {
                         filteredActionMap[action.icon.iconId] =
                             existingAction.copy(
-                                label = existingAction.label + " " + action.label,
-                                icon = existingAction.icon.copy(repeated = true),
+                                icon =
+                                    existingAction.icon.copy(
+                                        repeatCount = existingAction.icon.repeatCount + 1
+                                    )
                             )
                     }
                 }
         }
-        return filteredActionMap.values.toList()
+        val filteredList = mutableListOf<ActionViewModel>()
+        for (action in filteredActionMap.values) {
+            if (action.actionType == ActionType.MR) {
+                filteredList.add(0, action)
+            } else {
+                filteredList.add(action)
+            }
+        }
+        return filteredList
     }
 }

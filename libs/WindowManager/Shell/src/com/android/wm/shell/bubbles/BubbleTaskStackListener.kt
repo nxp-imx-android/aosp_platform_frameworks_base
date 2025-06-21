@@ -34,11 +34,12 @@ import dagger.Lazy
 import java.util.Optional
 
 /**
- * Listens for task stack changes and handles bubble interactions when activities are restarted.
+ * Listens for task stack changes to manage associated bubble interactions.
  *
- * This class monitors task stack events to determine how bubbles should behave when their
- * associated activities are restarted. It handles scenarios where bubbles should be expanded
- * or moved to fullscreen based on the task's windowing mode.
+ * This class monitors task stack events, including task restarts and movements to the front,
+ * to determine how bubbles should behave. It handles scenarios where bubbles should be expanded
+ * or moved to fullscreen based on the task's windowing mode. This includes skipping split
+ * task restarts, as they are handled by the split screen controller.
  *
  * @property bubbleController The [BubbleController] to manage bubble promotions and expansions.
  * @property bubbleData The [BubbleData] to access and update bubble information.
@@ -55,16 +56,29 @@ class BubbleTaskStackListener(
         clearedTask: Boolean,
         wasVisible: Boolean,
     ) {
+        val taskId = task.taskId
         ProtoLog.d(
             WM_SHELL_BUBBLES_NOISY,
             "BubbleTaskStackListener.onActivityRestartAttempt(): taskId=%d",
-            task.taskId)
-        val taskId = task.taskId
+            taskId)
         bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
             when {
                 isBubbleToFullscreen(task) -> moveCollapsedInStackBubbleToFullscreen(bubble, task)
                 isBubbleToSplit(task) -> return // skip split task restarts
                 !isAppBubbleMovingToFront(task) -> selectAndExpandInStackBubble(bubble, task)
+            }
+        }
+    }
+
+    override fun onTaskMovedToFront(task: ActivityManager.RunningTaskInfo) {
+        val taskId = task.taskId
+        ProtoLog.d(
+            WM_SHELL_BUBBLES_NOISY,
+            "BubbleTaskStackListener.onTaskMovedToFront(): taskId=%d",
+            taskId)
+        bubbleData.getBubbleInStackWithTaskId(taskId)?.let { bubble ->
+            when {
+                isBubbleToFullscreen(task) -> moveCollapsedInStackBubbleToFullscreen(bubble, task)
             }
         }
     }
@@ -112,18 +126,6 @@ class BubbleTaskStackListener(
             task.taskId,
             bubble.key
         )
-        collapsedBubbleToFullscreenInternal(bubble, task)
-    }
-
-    /** Internal function to move a collapsed bubble to fullscreen task. */
-    private fun collapsedBubbleToFullscreenInternal(
-        bubble: Bubble,
-        task: ActivityManager.RunningTaskInfo,
-    ) {
-        ProtoLog.d(
-            WM_SHELL_BUBBLES_NOISY,
-            "BubbleTaskStackListener.collapsedBubbleToFullscreenInternal(): taskId=%d",
-            task.taskId)
         val taskViewTaskController: TaskViewTaskController = bubble.taskView.controller
         val taskOrganizer: ShellTaskOrganizer = taskViewTaskController.taskOrganizer
 

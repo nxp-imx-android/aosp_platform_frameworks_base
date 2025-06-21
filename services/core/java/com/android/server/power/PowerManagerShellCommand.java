@@ -32,7 +32,8 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.ShellCommand;
 import android.os.SystemClock;
-import android.util.SparseArray;
+import android.util.ArrayMap;
+import android.util.Pair;
 import android.view.Display;
 
 import com.android.server.LocalServices;
@@ -40,9 +41,11 @@ import com.android.server.pm.pkg.AndroidPackage;
 
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Locale;
 
 class PowerManagerShellCommand extends ShellCommand {
     private static final int LOW_POWER_MODE_ON = 1;
+    private static final int INVALID_WAKELOCK = -1;
 
     private final Context mContext;
     private final PowerManagerService.BinderService mService;
@@ -66,7 +69,8 @@ class PowerManagerShellCommand extends ShellCommand {
     }
     private final PowerManagerShellCommandAlarmListener mAlarmListener;
 
-    private SparseArray<WakeLock> mProxWakelocks = new SparseArray<>();
+    // Mapping of Pair<DisplayId, WakelockType> -> Wakelock
+    private final ArrayMap<Pair<Integer, Integer>, WakeLock> mWakelocks = new ArrayMap<>();
 
     PowerManagerShellCommand(Context context, PowerManagerService.BinderService service) {
         mContext = context;
@@ -97,6 +101,8 @@ class PowerManagerShellCommand extends ShellCommand {
                     return runListAmbientDisplaySuppressionTokens();
                 case "set-prox":
                     return runSetProx();
+                case "set-wakelock":
+                    return runSetWakelock(/* proxForLegacy= */ false);
                 case "set-face-down-detector":
                     return runSetFaceDownDetector();
                 case "sleep":
@@ -192,14 +198,21 @@ class PowerManagerShellCommand extends ShellCommand {
         return 0;
     }
 
-    /** TODO: Consider updating this code to support all wakelock types. */
     private int runSetProx() throws RemoteException {
+        return runSetWakelock(/* proxForLegacy= */ true);
+    }
+
+    private int runSetWakelock(boolean proxForLegacy) throws RemoteException {
         PrintWriter pw = getOutPrintWriter();
         final boolean acquire;
         switch (getNextArgRequired().toLowerCase()) {
             case "list":
                 pw.println("Wakelocks:");
-                pw.println(mProxWakelocks);
+                for (int i = 0; i < mWakelocks.size(); i++) {
+                    pw.println("Display " + mWakelocks.keyAt(i).first + ", wakelock type: "
+                            + PowerManagerInternal.getLockLevelString(mWakelocks.keyAt(i).second)
+                            + ": " + mWakelocks.valueAt(i));
+                }
                 return 0;
             case "acquire":
                 acquire = true;
@@ -208,7 +221,7 @@ class PowerManagerShellCommand extends ShellCommand {
                 acquire = false;
                 break;
             default:
-                pw.println("Error: Allowed options are 'list' 'enable' and 'disable'.");
+                pw.println("Error: Allowed options are 'list' 'acquire' and 'release'.");
                 return -1;
         }
 
@@ -222,15 +235,9 @@ class PowerManagerShellCommand extends ShellCommand {
                 return -1;
             }
         }
-
-        int wakelockIndex = displayId + 1; // SparseArray doesn't support negative indexes
-        WakeLock wakelock = mProxWakelocks.get(wakelockIndex);
-        if (wakelock == null) {
-            PowerManager pm = mContext.getSystemService(PowerManager.class);
-            wakelock = pm.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK,
-                        "PowerManagerShellCommand[" + displayId + "]", displayId);
-            mProxWakelocks.put(wakelockIndex, wakelock);
-        }
+        String wakelockTypeString = proxForLegacy ? PowerManagerInternal.getLockLevelString(
+                PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK) : getNextArg().toUpperCase(Locale.US);
+        WakeLock wakelock = getWakelock(displayId, wakelockTypeString);
 
         if (acquire) {
             wakelock.acquire();
@@ -239,6 +246,40 @@ class PowerManagerShellCommand extends ShellCommand {
         }
         pw.println(wakelock);
         return 0;
+    }
+
+    private WakeLock getWakelock(int displayId, String wakelockString) {
+        int wakelockType = stringToWakelockType(wakelockString);
+        if (wakelockType == INVALID_WAKELOCK) {
+            throw new IllegalArgumentException("Wakelock type invalid: " + wakelockString);
+        }
+        Pair<Integer, Integer> wakelockIdentifier = new Pair<>(displayId, wakelockType);
+
+        WakeLock wakelockForDisplay = mWakelocks.get(wakelockIdentifier);
+
+        if (wakelockForDisplay == null) {
+            PowerManager pm = mContext.getSystemService(PowerManager.class);
+            wakelockForDisplay = pm.newWakeLock(wakelockType,
+                    "PowerManagerShellCommand[" + displayId + ":"
+                            + "0x" + Integer.toHexString(wakelockType) + "]", displayId);
+            mWakelocks.put(wakelockIdentifier, wakelockForDisplay);
+        }
+        return wakelockForDisplay;
+    }
+
+    private int stringToWakelockType(String string) {
+        return switch (string) {
+            case "PARTIAL_WAKE_LOCK" -> PowerManager.PARTIAL_WAKE_LOCK;
+            case "SCREEN_DIM_WAKE_LOCK" -> PowerManager.SCREEN_DIM_WAKE_LOCK;
+            case "SCREEN_BRIGHT_WAKE_LOCK" -> PowerManager.SCREEN_BRIGHT_WAKE_LOCK;
+            case "FULL_WAKE_LOCK" -> PowerManager.FULL_WAKE_LOCK;
+            case "DOZE_WAKE_LOCK" -> PowerManager.DOZE_WAKE_LOCK;
+            case "DRAW_WAKE_LOCK" -> PowerManager.DRAW_WAKE_LOCK;
+            case "SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK" ->
+                    PowerManager.SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK;
+            case "PROXIMITY_SCREEN_OFF_WAKE_LOCK" -> PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK;
+            default -> INVALID_WAKELOCK;
+        };
     }
 
     /**
@@ -375,6 +416,11 @@ class PowerManagerShellCommand extends ShellCommand {
         pw.println("    Acquires the proximity sensor wakelock. Wakelock is associated with");
         pw.println("    a specific display if specified. 'list' lists wakelocks previously");
         pw.println("    created by set-prox including their held status.");
+        pw.println("  set-wakelock [list|acquire|release] (-d <display_id>) [wakelock type]");
+        pw.println("    Acquires the specified wakelock. Wakelock is associated with");
+        pw.println("    a specific display if specified. 'list' lists wakelocks previously");
+        pw.println("    created by set-wakelock including their held status.");
+        pw.println("    Available wakelocks are described in PowerManager.*_WAKE_LOCK.");
         pw.println("  set-face-down-detector [true|false]");
         pw.println("    sets whether we use face down detector timeouts or not");
         pw.println("  sleep (--disable-wakelocks)");
