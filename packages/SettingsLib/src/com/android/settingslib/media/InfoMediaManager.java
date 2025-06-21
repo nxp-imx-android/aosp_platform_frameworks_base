@@ -372,6 +372,7 @@ public abstract class InfoMediaManager {
         synchronized (mLock) {
             buildAvailableRoutes();
         }
+        updateDeviceSuggestion();
     }
 
     protected final void notifyCurrentConnectedDeviceChanged() {
@@ -698,7 +699,7 @@ public abstract class InfoMediaManager {
                 || sessionInfo.getVolumeHandling() != MediaRoute2Info.PLAYBACK_VOLUME_FIXED;
     }
 
-    protected void updateDeviceSuggestion(
+    protected void notifyDeviceSuggestionUpdated(
             String suggestingPackageName, @Nullable List<SuggestedDeviceInfo> suggestions) {
         if (suggestions == null) {
             mSuggestedDeviceMap.remove(suggestingPackageName);
@@ -708,9 +709,21 @@ public abstract class InfoMediaManager {
         updateDeviceSuggestion();
     }
 
-    protected final void updateDeviceSuggestion() {
+    private void updateDeviceSuggestion() {
         if (!com.android.media.flags.Flags.enableSuggestedDeviceApi()) {
             return;
+        }
+        if (updateSuggestedDeviceState()) {
+            dispatchOnSuggestedDeviceUpdated();
+        }
+        if (updateMediaDevicesSuggestionState()) {
+            dispatchDeviceListAdded(mMediaDevices);
+        }
+    }
+
+    private boolean updateSuggestedDeviceState() {
+        if (!com.android.media.flags.Flags.enableSuggestedDeviceApi()) {
+            return false;
         }
         SuggestedDeviceInfo topSuggestion = null;
         SuggestedDeviceState newSuggestedDeviceState = null;
@@ -720,11 +733,13 @@ public abstract class InfoMediaManager {
             topSuggestion = suggestions.get(0);
         }
         if (topSuggestion != null) {
-            for (MediaDevice device : mMediaDevices) {
-                if (Objects.equals(device.getId(), topSuggestion.getRouteId())) {
-                    newSuggestedDeviceState =
-                            new SuggestedDeviceState(topSuggestion, device.getState());
-                    break;
+            synchronized (mLock) {
+                for (MediaDevice device : mMediaDevices) {
+                    if (Objects.equals(device.getId(), topSuggestion.getRouteId())) {
+                        newSuggestedDeviceState =
+                                new SuggestedDeviceState(topSuggestion, device.getState());
+                        break;
+                    }
                 }
             }
             if (newSuggestedDeviceState == null) {
@@ -732,18 +747,16 @@ public abstract class InfoMediaManager {
                         && topSuggestion
                                 .getRouteId()
                                 .equals(previousState.getSuggestedDeviceInfo().getRouteId())) {
-                    return;
+                    return false;
                 }
                 newSuggestedDeviceState = new SuggestedDeviceState(topSuggestion);
             }
         }
-        if (updateMediaDevicesSuggestionState()) {
-            dispatchDeviceListAdded(mMediaDevices);
-        }
         if (!Objects.equals(previousState, newSuggestedDeviceState)) {
             mSuggestedDeviceState = newSuggestedDeviceState;
-            dispatchOnSuggestedDeviceUpdated();
+            return true;
         }
+        return false;
     }
 
     final void onConnectionAttemptedForSuggestion(@NonNull SuggestedDeviceState suggestion) {
@@ -798,6 +811,9 @@ public abstract class InfoMediaManager {
 
     // Go through all current MediaDevices, and update the ones that are suggested.
     private boolean updateMediaDevicesSuggestionState() {
+        if (!com.android.media.flags.Flags.enableSuggestedDeviceApi()) {
+            return false;
+        }
         Set<String> suggestedDevices = new HashSet<>();
         // Prioritize suggestions from the package, otherwise pick any.
         List<SuggestedDeviceInfo> suggestions = getSuggestions();
@@ -807,32 +823,34 @@ public abstract class InfoMediaManager {
             }
         }
         boolean didUpdate = false;
-        for (MediaDevice device : mMediaDevices) {
-            if (device.isSuggestedDevice()) {
-                if (!suggestedDevices.contains(device.getId())) {
-                    device.setIsSuggested(false);
-                    // Case 1: Device was suggested only by setDeviceSuggestions(), and has been
-                    // updated to no longer be suggested.
-                    if (!device.isSuggestedByRouteListingPreferences()) {
-                        didUpdate = true;
+        synchronized (mLock) {
+            for (MediaDevice device : mMediaDevices) {
+                if (device.isSuggestedDevice()) {
+                    if (!suggestedDevices.contains(device.getId())) {
+                        device.setIsSuggested(false);
+                        // Case 1: Device was suggested only by setDeviceSuggestions(), and has been
+                        // updated to no longer be suggested.
+                        if (!device.isSuggestedByRouteListingPreferences()) {
+                            didUpdate = true;
+                        }
+                        // Case 2: Device was suggested by both setDeviceSuggestions() and RLP.
+                        // Since it's still suggested by RLP, no update.
+                    } else {
+                        // Case 3: Device was suggested (either by RLP or by
+                        // setDeviceSuggestions()), and should still be suggested.
+                        device.setIsSuggested(true);
                     }
-                    // Case 2: Device was suggested by both setDeviceSuggestions() and RLP. Since
-                    // it's still suggested by RLP, no update.
                 } else {
-                    // Case 3: Device was suggested (either by RLP or by setDeviceSuggestions()),
-                    // and should still be suggested.
-                    device.setIsSuggested(true);
-                }
-            } else {
-                if (suggestedDevices.contains(device.getId())) {
-                    // Case 4: Device was not suggested by either RLP or setDeviceSuggestions() but
-                    // is now suggested.
-                    device.setIsSuggested(true);
-                    didUpdate = true;
-                } else {
-                    // Case 5: Device was not suggested by either RLP or setDeviceSuggestions() and
-                    // is still not suggested.
-                    device.setIsSuggested(false);
+                    if (suggestedDevices.contains(device.getId())) {
+                        // Case 4: Device was not suggested by either RLP or setDeviceSuggestions()
+                        // but is now suggested.
+                        device.setIsSuggested(true);
+                        didUpdate = true;
+                    } else {
+                        // Case 5: Device was not suggested by either RLP or setDeviceSuggestions()
+                        // and is still not suggested.
+                        device.setIsSuggested(false);
+                    }
                 }
             }
         }
@@ -864,7 +882,6 @@ public abstract class InfoMediaManager {
             // First device on the list is always the first selected route.
             mCurrentConnectedDevice = mMediaDevices.get(0);
         }
-        updateDeviceSuggestion();
     }
 
     private synchronized List<MediaRoute2Info> getAvailableRoutes(
@@ -909,8 +926,8 @@ public abstract class InfoMediaManager {
                 getDynamicRouteAttributes(activeSession, route);
         MediaDevice mediaDevice = createMediaDeviceFromRoute(route, dynamicRouteAttributes);
         if (mediaDevice != null) {
-            if (activeSession.getSelectedRoutes().contains(route.getId())) {
-                setDeviceState(mediaDevice, STATE_SELECTED);
+            if (mediaDevice.isSelected()) {
+                mediaDevice.setState(STATE_SELECTED);
             }
             mMediaDevices.add(mediaDevice);
         }
@@ -973,7 +990,9 @@ public abstract class InfoMediaManager {
         }
         device.setState(state);
         if (device.isSuggestedDevice()) {
-            updateDeviceSuggestion();
+            if (updateSuggestedDeviceState()) {
+                dispatchOnSuggestedDeviceUpdated();
+            }
         }
     }
 
