@@ -20,6 +20,7 @@ import com.android.systemui.biometrics.domain.interactor.FacePropertyInteractor
 import com.android.systemui.biometrics.domain.interactor.FingerprintPropertyInteractor
 import com.android.systemui.biometrics.shared.model.BiometricModalities
 import com.android.systemui.biometrics.shared.model.SensorStrength
+import com.android.systemui.biometrics.ui.viewmodel.PromptAuthState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBiometricSettingsInteractor
@@ -76,7 +77,51 @@ constructor(
     /** Whether the secure lock device biometric auth UI should be shown. */
     val shouldShowBiometricAuth: StateFlow<Boolean> = _shouldShowBiometricAuth.asStateFlow()
 
+    /**
+     * The timestamp of the last strong face authentication success, or null otherwise. This is used
+     * to ensure that a stale face authentication success will not re-authenticate the user if
+     * secure lock device biometric auth is interrupted (e.g. power press, back gesture, etc) after
+     * authenticating a user's face but before the user confirms the authentication on the UI.
+     */
+    var lastProcessedFaceAuthSuccessTime: Long? = null
+
+    /**
+     * If the user has successfully authenticated a strong biometric in the secure lock device UI
+     * (and explicitly confirmed if required).
+     */
+    private val _strongBiometricAuthenticationComplete = MutableStateFlow(false)
+
     private val _isFullyUnlockedAndReadyToDismiss = MutableStateFlow<Boolean>(false)
+    /**
+     * Whether the user completed successful two-factor authentication (primary + strong biometric)
+     * in secure lock device, and the device should be considered unlocked. This is true when the
+     * strong biometric does not require confirmation (e.g. fingerprint) or when the strong
+     * biometric does require confirmation (e.g. face) but the user has completed confirmation on
+     * the UI, and the confirmation animation has played, so the UI is ready to be dismissed.
+     */
+    val isFullyUnlockedAndReadyToDismiss: StateFlow<Boolean> =
+        _isFullyUnlockedAndReadyToDismiss.asStateFlow()
+
+    /**
+     * Whether the user has completed two-factor authentication (primary authentication and active
+     * strong biometric authentication or confirmed passive strong biometric authentication)
+     */
+    val isAuthenticatedButPendingDismissal: StateFlow<Boolean> =
+        combine(_strongBiometricAuthenticationComplete, isFullyUnlockedAndReadyToDismiss) {
+                strongBiometricAuthenticationComplete,
+                isFullyUnlockedAndReadyToDismiss ->
+                strongBiometricAuthenticationComplete || isFullyUnlockedAndReadyToDismiss
+            }
+            .stateIn(
+                scope = applicationScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
+
+    /** Called upon updates to strong biometric authenticated status. */
+    fun onBiometricAuthenticatedStateUpdated(authState: PromptAuthState) {
+        _strongBiometricAuthenticationComplete.value = authState.isAuthenticatedAndConfirmed
+    }
 
     /**
      * Called after the user completes successful two-factor authentication (primary + strong

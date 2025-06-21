@@ -22,7 +22,14 @@ import androidx.annotation.VisibleForTesting
 import com.android.systemui.biometrics.shared.model.BiometricModality
 import com.android.systemui.biometrics.ui.viewmodel.BiometricAuthIconViewModel
 import com.android.systemui.biometrics.ui.viewmodel.PromptAuthState
+import com.android.systemui.bouncer.ui.helper.BouncerHapticPlayer
+import com.android.systemui.deviceentry.domain.interactor.BiometricMessageInteractor
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFingerprintAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.SystemUIDeviceEntryFaceAuthInteractor
+import com.android.systemui.deviceentry.shared.model.FaceMessage
+import com.android.systemui.deviceentry.shared.model.FingerprintMessage
+import com.android.systemui.deviceentry.shared.model.SuccessFaceAuthenticationStatus
+import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.securelockdevice.domain.interactor.SecureLockDeviceInteractor
@@ -39,6 +46,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -50,7 +58,10 @@ class SecureLockDeviceBiometricAuthContentViewModel
 constructor(
     accessibilityManager: AccessibilityManager,
     biometricAuthIconViewModelFactory: BiometricAuthIconViewModel.Factory,
+    biometricMessageInteractor: BiometricMessageInteractor,
+    private val bouncerHapticPlayer: BouncerHapticPlayer,
     private val deviceEntryFaceAuthInteractor: SystemUIDeviceEntryFaceAuthInteractor,
+    deviceEntryFingerprintAuthInteractor: DeviceEntryFingerprintAuthInteractor,
     private val secureLockDeviceInteractor: SecureLockDeviceInteractor,
 ) : ExclusiveActivatable() {
     private var mDisappearAnimationFinishedRunnable: Runnable? = null
@@ -112,6 +123,43 @@ constructor(
         )
     }
 
+    /** Face help message. */
+    @VisibleForTesting
+    val faceHelpMessage: Flow<FaceMessage> = biometricMessageInteractor.faceHelpMessage
+
+    /** Face error message. */
+    @VisibleForTesting
+    val faceErrorMessage: Flow<FaceMessage> = biometricMessageInteractor.faceErrorMessage
+
+    /** Face failure message. */
+    @VisibleForTesting
+    val faceFailureMessage: Flow<FaceMessage> = biometricMessageInteractor.faceFailureMessage
+
+    /** Fingerprint help message. */
+    @VisibleForTesting
+    val fingerprintHelpMessage: Flow<FingerprintMessage> =
+        biometricMessageInteractor.fingerprintHelpMessage
+
+    /** Fingerprint error message. */
+    @VisibleForTesting
+    val fingerprintErrorMessage: Flow<FingerprintMessage> =
+        biometricMessageInteractor.fingerprintErrorMessage
+
+    /** Fingerprint failure message. */
+    @VisibleForTesting
+    val fingerprintFailureMessage: Flow<FingerprintMessage> =
+        biometricMessageInteractor.fingerprintFailMessage
+
+    /** Fingerprint success status. */
+    private val fingerprintSuccessStatus: Flow<SuccessFingerprintAuthenticationStatus> =
+        deviceEntryFingerprintAuthInteractor.fingerprintSuccess
+
+    /** Emits on face authentication success. */
+    private val faceSuccessStatus: Flow<SuccessFaceAuthenticationStatus> =
+        deviceEntryFaceAuthInteractor.faceSuccess
+
+    private val _lastAnimatedFaceAuthSuccessTime = MutableStateFlow<Long?>(null)
+
     private var displayErrorJob: Job? = null
 
     // When a11y enabled, increase message delay to ensure messages get read
@@ -144,6 +192,10 @@ constructor(
         _isAuthenticating.value = false
         _showingError.value = true
         _isAuthenticated.value = PromptAuthState(false)
+
+        if (hapticFeedback) {
+            bouncerHapticPlayer.playAuthenticationFeedback(/* authenticationSucceeded= */ false)
+        }
 
         displayErrorJob?.cancel()
         displayErrorJob = launch {
@@ -197,6 +249,10 @@ constructor(
         val needsUserConfirmation = needsExplicitConfirmation(modality)
         _isAuthenticated.value = PromptAuthState(true, modality, needsUserConfirmation)
 
+        if (!needsUserConfirmation) {
+            bouncerHapticPlayer.playAuthenticationFeedback(/* authenticationSucceeded= */ true)
+        }
+
         _showingError.value = false
         displayErrorJob?.cancel()
         displayErrorJob = null
@@ -220,15 +276,78 @@ constructor(
 
     private fun CoroutineScope.listenForFaceMessages() {
         // Listen for any events from face authentication and update the child view models
-        // TODO: showTemporaryError on face auth error, failure, help
-        // TODO: showAuthenticated on face auth success
+        launch {
+            faceErrorMessage.collectLatest {
+                showTemporaryError(
+                    authenticateAfterError = hasFingerprint(),
+                    failedModality = BiometricModality.Face,
+                )
+            }
+        }
+
+        launch {
+            faceFailureMessage.collectLatest {
+                showTemporaryError(
+                    authenticateAfterError = hasFingerprint(),
+                    failedModality = BiometricModality.Face,
+                )
+            }
+        }
+
+        launch {
+            faceHelpMessage.collectLatest {
+                showTemporaryError(
+                    authenticateAfterError = hasFingerprint(),
+                    hapticFeedback = false,
+                )
+            }
+        }
+
+        // This is required to ensure that a stale face authentication success will not
+        // re-authenticate the user (e.g. if secure lock device biometric auth is interrupted
+        // after authenticating a user's face but before the user confirmation)
+        launch {
+            faceSuccessStatus.debounce(DEBOUNCE_FACE_AUTH_SUCCESS_MS).collectLatest {
+                if (it.createdAt != secureLockDeviceInteractor.lastProcessedFaceAuthSuccessTime) {
+                    showAuthenticated(modality = BiometricModality.Face)
+                    _lastAnimatedFaceAuthSuccessTime.value = it.createdAt
+                }
+            }
+        }
     }
 
     private fun CoroutineScope.listenForFingerprintMessages() {
         // Listen for any events from fingerprint authentication and update the child view
         // models
-        // TODO: showTemporaryError on fingerprint auth error, failure, help
-        // TODO: showAuthenticated on fingerprint auth success
+        launch {
+            fingerprintErrorMessage.collectLatest {
+                showTemporaryError(
+                    authenticateAfterError = true,
+                    failedModality = BiometricModality.Fingerprint,
+                )
+            }
+        }
+
+        launch {
+            fingerprintFailureMessage.collectLatest {
+                showTemporaryError(
+                    authenticateAfterError = true,
+                    failedModality = BiometricModality.Fingerprint,
+                )
+            }
+        }
+
+        launch {
+            fingerprintHelpMessage.collectLatest {
+                showTemporaryError(authenticateAfterError = true, hapticFeedback = false)
+            }
+        }
+
+        launch {
+            fingerprintSuccessStatus.collectLatest {
+                showAuthenticated(modality = BiometricModality.Fingerprint)
+            }
+        }
     }
 
     @AssistedFactory
@@ -257,6 +376,12 @@ constructor(
 
                         listenForFaceMessages()
                         listenForFingerprintMessages()
+
+                        launch {
+                            isAuthenticated.collectLatest {
+                                secureLockDeviceInteractor.onBiometricAuthenticatedStateUpdated(it)
+                            }
+                        }
 
                         launch {
                             isReadyToDismissBiometricAuth
@@ -308,5 +433,6 @@ constructor(
 
     companion object {
         const val TAG = "SecureLockDeviceBiometricAuthContentViewModel"
+        const val DEBOUNCE_FACE_AUTH_SUCCESS_MS = 500L
     }
 }
