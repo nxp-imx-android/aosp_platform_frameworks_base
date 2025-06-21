@@ -26,10 +26,8 @@ import android.bluetooth.BluetoothProfile;
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.MediaRoute2Info;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 
-import com.android.media.flags.Flags;
 import com.android.settingslib.bluetooth.CachedBluetoothDevice;
 
 import org.junit.Before;
@@ -153,7 +151,6 @@ public class BluetoothMediaDeviceTest {
         assertThat(bluetoothMediaDevice.getName()).isEqualTo(TEST_CACHED_DEVICE_NAME);
     }
 
-    @EnableFlags(Flags.FLAG_AVOID_BINDER_CALLS_FOR_MUTING_EXPECTED_DEVICE)
     @Test
     public void getIsMutingExpectedDevice_dependsOnConstructorArgument() {
         MediaDevice bluetoothMediaDevice = new BluetoothMediaDevice(mContext, mDevice,

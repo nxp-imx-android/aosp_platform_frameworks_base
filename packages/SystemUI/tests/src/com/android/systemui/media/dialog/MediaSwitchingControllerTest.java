@@ -706,7 +706,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         verify(mCb).onDeviceListChanged();
     }
 
-    @EnableFlags(Flags.FLAG_AVOID_BINDER_CALLS_FOR_MUTING_EXPECTED_DEVICE)
     @Test
     public void onDeviceListUpdate_withMutingExpectedDevice_putItOnTop() {
         when(mMediaDevice1.isSuggestedDevice()).thenReturn(false);
@@ -723,7 +722,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         assertThat(mMediaSwitchingController.hasMutingExpectedDevice()).isTrue();
     }
 
-    @EnableFlags(Flags.FLAG_AVOID_BINDER_CALLS_FOR_MUTING_EXPECTED_DEVICE)
     @Test
     public void onDeviceListUpdate_noMutingExpectedDevice_processListNormally() {
         when(mMediaDevice1.isSuggestedDevice()).thenReturn(false);

@@ -20,8 +20,6 @@ import static android.media.RouteListingPreference.ACTION_TRANSFER_MEDIA;
 import static android.media.RouteListingPreference.EXTRA_ROUTE_ID;
 import static android.provider.Settings.ACTION_BLUETOOTH_SETTINGS;
 
-import static com.android.media.flags.Flags.avoidBinderCallsForMutingExpectedDevice;
-
 import android.annotation.CallbackExecutor;
 import android.app.AlertDialog;
 import android.app.KeyguardManager;
@@ -165,9 +163,9 @@ public class MediaSwitchingController
     @VisibleForTesting
     MediaOutputMetricLogger mMetricLogger;
     private int mCurrentState;
-    private FeatureFlags mFeatureFlags;
-    private UserTracker mUserTracker;
-    private VolumePanelGlobalStateInteractor mVolumePanelGlobalStateInteractor;
+    private final FeatureFlags mFeatureFlags;
+    private final UserTracker mUserTracker;
+    private final VolumePanelGlobalStateInteractor mVolumePanelGlobalStateInteractor;
     @NonNull private MediaOutputColorScheme mMediaOutputColorScheme;
     @NonNull private MediaOutputColorSchemeLegacy mMediaOutputColorSchemeLegacy;
     private boolean mIsGroupListCollapsed = true;
@@ -374,11 +372,8 @@ public class MediaSwitchingController
      * Checks if there's any muting expected devices in the current MediaItem list.
      */
     public boolean hasMutingExpectedDevice() {
-        if (avoidBinderCallsForMutingExpectedDevice()) {
-            return mOutputMediaItemListProxy.getOutputMediaItemList().stream().anyMatch(
-                    MediaItem::isMutingExpectedDevice);
-        }
-        return mAudioManager.getMutingExpectedDevice() != null;
+        return mOutputMediaItemListProxy.getOutputMediaItemList().stream().anyMatch(
+                MediaItem::isMutingExpectedDevice);
     }
 
     /**
@@ -622,12 +617,8 @@ public class MediaSwitchingController
 
             // For the first time building list, to make sure the top device is the connected
             // device.
-            boolean hasMutingExpectedDevice =
-                    avoidBinderCallsForMutingExpectedDevice()
-                            ? containsMutingExpectedDevice(devices)
-                            : hasMutingExpectedDevice();
             boolean needToHandleMutingExpectedDevice =
-                    hasMutingExpectedDevice && !isCurrentConnectedDeviceRemote();
+                    containsMutingExpectedDevice(devices) && !isCurrentConnectedDeviceRemote();
             final MediaDevice connectedMediaDevice =
                     needToHandleMutingExpectedDevice ? null : getCurrentConnectedMediaDevice();
             mOutputMediaItemListProxy.updateMediaDevices(

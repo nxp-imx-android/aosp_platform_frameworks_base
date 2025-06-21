@@ -15,7 +15,6 @@
  */
 package com.android.settingslib.media;
 
-import static com.android.media.flags.Flags.avoidBinderCallsForMutingExpectedDevice;
 import static com.android.settingslib.media.MediaDevice.SelectionBehavior.SELECTION_BEHAVIOR_TRANSFER;
 
 import android.annotation.NonNull;
@@ -154,11 +153,7 @@ public class BluetoothMediaDevice extends MediaDevice {
 
     @Override
     public boolean isMutingExpectedDevice() {
-        if (avoidBinderCallsForMutingExpectedDevice()) {
-            return mIsMutingExpectedDevice;
-        }
-        return mAudioManager.getMutingExpectedDevice() != null && mCachedDevice.getAddress().equals(
-                mAudioManager.getMutingExpectedDevice().getAddress());
+        return mIsMutingExpectedDevice;
     }
 
     @Override
