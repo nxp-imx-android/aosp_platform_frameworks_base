@@ -125,6 +125,12 @@ final class PackageManagerNative extends IPackageManagerNative.Stub {
         return mPm.snapshotComputer().getPackageUid(packageName, flags, userId);
     }
 
+    @Override
+    public int checkPermission(String permName, String packageName, int userId)
+            throws RemoteException {
+        return mPm.checkPermission(permName, packageName, userId);
+    }
+
     // NB: this differentiates between preloads and sideloads
     @Override
     public String getInstallerForPackage(String packageName) throws RemoteException {
