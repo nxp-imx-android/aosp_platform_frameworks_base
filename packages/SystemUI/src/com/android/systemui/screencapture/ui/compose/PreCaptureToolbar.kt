@@ -24,13 +24,8 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.IconToggleButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.common.ui.compose.Icon
-import com.android.systemui.res.R
-import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureRegion
-import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureType
 import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -41,55 +36,20 @@ fun PreCaptureToolbar(
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // TODO(b/422855266): Preload icons in the view model to avoid loading icons in UI thread and
-    // improve performance
-    val screenshotIcon =
-        IconModel.Resource(res = R.drawable.ic_screen_capture_camera, contentDescription = null)
-    val screenRecordIcon =
-        IconModel.Resource(res = R.drawable.ic_screenrecord, contentDescription = null)
-    val screenshotFullscreenIcon =
-        IconModel.Resource(res = R.drawable.ic_screen_capture_fullscreen, contentDescription = null)
-    val screenshotRegionIcon =
-        IconModel.Resource(res = R.drawable.ic_screen_capture_region, contentDescription = null)
-    val screenshotWindowIcon =
-        IconModel.Resource(res = R.drawable.ic_screen_capture_window, contentDescription = null)
-    val moreOptionsIcon =
-        IconModel.Resource(res = R.drawable.ic_more_vert, contentDescription = null)
+    val captureTypeButtonItems =
+        viewModel.captureTypeButtonViewModels.map {
+            RadioButtonGroupItem(
+                label = it.label,
+                icon = it.icon,
+                isSelected = it.isSelected,
+                onClick = it.onClick,
+            )
+        }
 
     val captureRegionButtonItems =
-        listOf(
-            RadioButtonGroupItem(
-                isSelected = (viewModel.captureRegion == ScreenCaptureRegion.APP_WINDOW),
-                onClick = { viewModel.updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW) },
-                icon = screenshotWindowIcon,
-            ),
-            RadioButtonGroupItem(
-                isSelected = (viewModel.captureRegion == ScreenCaptureRegion.PARTIAL),
-                onClick = { viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL) },
-                icon = screenshotRegionIcon,
-            ),
-            RadioButtonGroupItem(
-                isSelected = (viewModel.captureRegion == ScreenCaptureRegion.FULLSCREEN),
-                onClick = { viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN) },
-                icon = screenshotFullscreenIcon,
-            ),
-        )
-
-    val captureTypeButtonItems =
-        listOf(
-            RadioButtonGroupItem(
-                isSelected = (viewModel.captureType == ScreenCaptureType.SCREEN_RECORD),
-                onClick = { viewModel.updateCaptureType(ScreenCaptureType.SCREEN_RECORD) },
-                icon = screenRecordIcon,
-                label = stringResource(id = R.string.screen_capture_toolbar_record_button),
-            ),
-            RadioButtonGroupItem(
-                isSelected = (viewModel.captureType == ScreenCaptureType.SCREENSHOT),
-                onClick = { viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT) },
-                icon = screenshotIcon,
-                label = stringResource(id = R.string.screen_capture_toolbar_capture_button),
-            ),
-        )
+        viewModel.captureRegionButtonViewModels.map {
+            RadioButtonGroupItem(icon = it.icon, isSelected = it.isSelected, onClick = it.onClick)
+        }
 
     Toolbar(expanded = expanded, onCloseClick = onCloseClick, modifier = modifier) {
         Row {
@@ -98,7 +58,7 @@ fun PreCaptureToolbar(
                 onCheckedChange = {},
                 shape = IconButtonDefaults.smallSquareShape,
             ) {
-                Icon(icon = moreOptionsIcon)
+                viewModel.icons?.let { Icon(icon = it.moreOptions) }
             }
 
             Spacer(Modifier.size(8.dp))

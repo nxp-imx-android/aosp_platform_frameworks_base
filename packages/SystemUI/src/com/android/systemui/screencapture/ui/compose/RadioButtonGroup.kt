@@ -47,13 +47,7 @@ data class RadioButtonGroupItem(
     val onClick: () -> Unit,
     val icon: IconModel? = null,
     val label: String? = null,
-) {
-    init {
-        require(icon != null || label != null) {
-            "A ButtonItem must have at least an icon or a label (or both)."
-        }
-    }
-}
+)
 
 /** A group of N icon buttons where any single icon button is selected at a time. */
 @Composable
