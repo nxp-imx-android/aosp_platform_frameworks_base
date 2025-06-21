@@ -2562,29 +2562,20 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"এপ্লিকেশ্বন"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"আপোনাৰ ফিংগাৰপ্ৰিণ্ট আৰু চিনাক্ত কৰিব নোৱাৰি। ফিংগাৰপ্ৰিণ্ট আনলক পুনৰ ছেট আপ কৰক।"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"সুৰক্ষা আৰু গোপনীয়তা"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"প্ৰথমে আপোনাৰ স্ক্ৰীনখন আনলক কৰক"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"স্ক্ৰীনখন আনলক কৰি পুনৰ সংযোগ কৰক"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"সুৰক্ষা সম্পৰ্কীয় উন্নত সুবিধাটোৰ বাবে USBৰ ডেটা স্থানান্তৰণৰ বাবে আপোনাৰ সচৰাচৰ স্ক্ৰীন আনলক কৰি ৰাখিব লাগে"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"সুৰক্ষা সম্পৰ্কীয় উন্নত সুবিধাটোৰ বাবে USBৰ ডেটা স্থানান্তৰণৰ বাবে আপোনাৰ সচৰাচৰ স্ক্ৰীন আনলক কৰি ৰাখিব লাগে"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"সুৰক্ষা সম্পৰ্কীয় উন্নত সুবিধাটোৰ বাবে USBৰ স্থানান্তৰণ বা দ্ৰুত চাৰ্জিঙৰ বাবে আপোনাৰ সচৰাচৰ স্ক্ৰীন আনলক কৰি ৰাখিব লাগে"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"সুৰক্ষা সম্পৰ্কীয় উন্নত সুবিধাটোৰ বাবে USBৰ স্থানান্তৰণ বা দ্ৰুত চাৰ্জিঙৰ বাবে আপোনাৰ সচৰাচৰ স্ক্ৰীন আনলক কৰি ৰাখিব লাগে"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"সুৰক্ষা সম্পৰ্কীয় উন্নত সুবিধাটোৰ বাবে USBৰ দ্ৰুত চাৰ্জিঙৰ বাবে আপোনাৰ সচৰাচৰ স্ক্ৰীন আনলক কৰি ৰাখিব লাগে"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"সুৰক্ষা সম্পৰ্কীয় উন্নত সুবিধাটোৰ বাবে USBৰ দ্ৰুত চাৰ্জিঙৰ বাবে আপোনাৰ সচৰাচৰ স্ক্ৰীন আনলক কৰি ৰাখিব লাগে"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"নীৰৱ কৰক"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"জাননী নীৰৱ কৰি ৰখা হৈছে"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"আপুনি আপোনাৰ ডিভাইচটো ৰিষ্টাৰ্ট নকৰা পৰ্যন্ত সুৰক্ষা সম্পৰ্কীয় উন্নত সুবিধাৰ USB জাননী নীৰৱ কৰি ৰখা হৈছে"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"সন্দেহজনক USBৰ কাৰ্যকলাপ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ডেটা ছিগনেল অক্ষম কৰা হৈছে।"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ফিংগাৰপ্ৰিন্ট আনলকৰ ক্ষেত্ৰত কিবা অসুবিধা পাইছে নেকি?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"আপুনি আনলক কৰাৰ অভিজ্ঞতা উন্নত কৰাৰ পৰামৰ্শসমূহ পৰ্যালোচনা কৰিবলৈ টিপক"</string>
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ব্লিংক নকৰিব"</string>
 </resources>

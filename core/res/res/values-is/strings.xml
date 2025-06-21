@@ -2562,29 +2562,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Forrit"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Ekki er lengur hægt að bera kennsl á fingraförin þín. Settu fingrafarskenni upp aftur."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Öryggi og persónuvernd"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"Taktu skjáinn fyrst úr lás"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"Taka skjá úr lás og tengja aftur"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"Ítarleg vernd krefst þess að skjárinn sé tekinn úr lás með venjulegum hætti fyrir USB-gagnaflutning"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"Ítarleg vernd krefst þess að skjárinn sé tekinn úr lás með venjulegum hætti fyrir USB-gagnaflutning"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"Ítarleg vernd krefst þess að skjárinn sé tekinn úr lás fyrir USB-flutning eða -hraðhleðslu"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"Ítarleg vernd krefst þess að skjárinn sé tekinn úr lás fyrir USB-flutning eða -hraðhleðslu"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"Ítarleg vernd krefst þess að skjárinn sé tekinn úr lás með venjulegum hætti fyrir USB-hraðhleðslu"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"Ítarleg vernd krefst þess að skjárinn sé tekinn úr lás með venjulegum hætti fyrir USB-hraðhleðslu"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Þagga"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Tilkynningar þaggaðar"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"USB-tilkynningar ítarlegrar verndar þaggaðar þar til þú endurræsir tækið"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Grunsamleg USB-virkni"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Slökkt var á USB-gagnamerki."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Er fingrafarskenni að valda þér vandræðum?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Ýttu til að sjá ábendingar um hvernig þú getur bætt ferlið við að taka tækið úr lás"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>

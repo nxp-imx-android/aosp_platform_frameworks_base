@@ -76,14 +76,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanje usklajenosti oblike zapisa APK ni uspelo. Ta aplikacija bo delovala v načinu, združljivem z velikostjo pomnilniške strani. Za najboljšo združljivost znova prevedite aplikacijo s podporo za pomnilniško stran velikosti 16 KB. Za več informacij si oglejte &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanje usklajenosti oblike zapisa ELF ni uspelo. Ta aplikacija bo delovala v načinu, združljivem z velikostjo pomnilniške strani. Za najboljšo združljivost znova prevedite aplikacijo s podporo za pomnilniško stran velikosti 16 KB. Za več informacij si oglejte &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanja usklajenosti oblik zapisov APK in ELF niso uspela. Ta aplikacija bo delovala v načinu, združljivem z velikostjo pomnilniške strani. Za najboljšo združljivost znova prevedite aplikacijo s podporo za pomnilniško stran velikosti 16 KB. Za več informacij si oglejte &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"To opozorilo je prikazano, ker je to aplikacija z možnostjo odpravljanja napak, ki je trenutno v fazi preizkušanja. Če niste njen razvijalec, to sporočite razvijalcu in ga prosite za aplikacijo, ki ne omogoča odpravljanja napak. Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanje usklajenosti oblike zapisa APK ni uspelo. Upoštevajte navodila na naslovu &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"To opozorilo je prikazano, ker je to aplikacija z možnostjo odpravljanja napak, ki je trenutno v fazi preizkušanja. Če niste njen razvijalec, to sporočite razvijalcu in ga prosite za aplikacijo, ki ne omogoča odpravljanja napak. Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanje usklajenosti oblike zapisa ELF ni uspelo. Upoštevajte navodila na naslovu &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"To opozorilo je prikazano, ker je to aplikacija z možnostjo odpravljanja napak, ki je trenutno v fazi preizkušanja. Če niste njen razvijalec, to sporočite razvijalcu in ga prosite za aplikacijo, ki ne omogoča odpravljanja napak. Ta aplikacija ni združljiva s pomnilniško stranjo velikosti 16 KB. Preverjanja usklajenosti oblik zapisov APK in ELF niso uspela. Upoštevajte navodila na naslovu &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"Tega ne prikaži več"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Storitev ni nastavljena in omogočena."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Ne morete spremeniti nastavitve ID-ja klicatelja."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Prenos podatkov je preklopljen na operaterja <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -687,10 +683,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Aplikaciji omogoča dostop do zelo podrobnih podatkov o spremljanju vaše neposredne okolice."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"dostop do podatkov razširjene resničnosti (RR), ko se aplikacija ne izvaja v ospredju"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Aplikaciji omogoča dostop do podatkov razširjene resničnosti (RR), ko se aplikacija ne izvaja v ospredju."</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"zajemanje tipk"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Aplikaciji omogoča zajemanje tipk, preden lahko sistem obdela sistemske bližnjice in dejanja."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Uporaba biometrike"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Uporaba biometrike ali odklepanja s poverilnico"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Potrdite, da ste res vi"</string>
@@ -2574,29 +2568,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikacije"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Vaših prstnih odtisov ni več mogoče prepoznati. Znova nastavite odklepanje s prstnim odtisom."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Varnost in zasebnost"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"Najprej odklenite zaslon"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"Odklenite zaslon in znova vzpostavite povezavo"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"Dodatna zaščita zahteva, da za prenose podatkov prek USB-ja uporabite običajni način za odklepanje zaslona."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"Dodatna zaščita zahteva, da za prenose podatkov prek USB-ja uporabite običajni način za odklepanje zaslona."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"Dodatna zaščita zahteva, da za prenos ali hitro polnjenje prek USB-ja uporabite običajni način za odklepanje zaslona."</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"Dodatna zaščita zahteva, da za prenos ali hitro polnjenje prek USB-ja uporabite običajni način za odklepanje zaslona."</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"Dodatna zaščita zahteva, da za hitro polnjenje prek USB-ja uporabite običajni način za odklepanje zaslona."</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"Dodatna zaščita zahteva, da za hitro polnjenje prek USB-ja uporabite običajni način za odklepanje zaslona."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Utišaj"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Obvestila so utišana"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"Obvestila dodatne zaščite o USB-ju so utišana do vnovičnega zagona naprave"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Sumljiva dejavnost USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Podatkovni signal USB je bil onemogočen."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Imate težave z odklepanjem s prstnim odtisom?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Dotaknite se, če si želite ogledati nasvete za izboljšanje izkušnje odklepanja"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>

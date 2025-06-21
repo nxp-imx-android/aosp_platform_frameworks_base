@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Aplikasi ini tidak kompatibel dengan 16 KB. Pemeriksaan keselarasan APK gagal. Aplikasi ini akan dijalankan menggunakan mode yang kompatibel dengan ukuran halaman. Untuk kompatibilitas terbaik, kompilasi ulang aplikasi dengan dukungan 16 KB. Untuk mengetahui informasi selengkapnya, lihat &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Aplikasi ini tidak kompatibel dengan 16 KB. Pemeriksaan keselarasan ELF gagal. Aplikasi ini akan dijalankan menggunakan mode yang kompatibel dengan ukuran halaman. Untuk kompatibilitas terbaik, kompilasi ulang aplikasi dengan dukungan 16 KB. Untuk mengetahui informasi selengkapnya, lihat &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Aplikasi ini tidak kompatibel dengan 16 KB. Pemeriksaan keselarasan APK dan ELF gagal. Aplikasi ini akan dijalankan menggunakan mode yang kompatibel dengan ukuran halaman. Untuk kompatibilitas terbaik, kompilasi ulang aplikasi dengan dukungan 16 KB. Untuk mengetahui informasi selengkapnya, lihat &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Peringatan ini ditampilkan karena aplikasi ini dapat di-debug dan saat ini sedang diuji. Jika Anda bukan developer, laporkan hal ini kepada developer dan minta versi aplikasi yang tidak dapat di-debug. Aplikasi ini tidak kompatibel dengan ukuran halaman 16 KB. Pemeriksaan keselarasan APK gagal. Ikuti langkah-langkah di &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Peringatan ini ditampilkan karena aplikasi ini dapat di-debug dan saat ini sedang diuji. Jika Anda bukan developer, laporkan hal ini kepada developer dan minta versi aplikasi yang tidak dapat di-debug. Aplikasi ini tidak kompatibel dengan ukuran halaman 16 KB. Pemeriksaan keselarasan ELF gagal. Ikuti langkah-langkah di &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Peringatan ini ditampilkan karena aplikasi ini dapat di-debug dan saat ini sedang diuji. Jika Anda bukan developer, laporkan hal ini kepada developer dan minta versi aplikasi yang tidak dapat di-debug. Aplikasi ini tidak kompatibel dengan ukuran halaman 16 KB. Pemeriksaan keselarasan APK dan ELF gagal. Ikuti langkah-langkah di &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"Jangan Tampilkan Lagi"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Layanan tidak diperlengkapi."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Anda tidak dapat mengubah setelan ID penelepon."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Mengalihkan data seluler ke <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Mengizinkan aplikasi mengakses data pelacakan tentang lingkungan di sekitar Anda secara mendetail."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"mengakses data XR saat tidak berada di latar depan"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Mengizinkan aplikasi mengakses data XR saat tidak berada di latar depan."</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"mendeteksi tombol"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Mengizinkan aplikasi mendeteksi tombol sebelum sistem dapat memproses tindakan dan pintasan sistem."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Gunakan biometrik"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Gunakan biometrik atau kunci layar"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Verifikasi diri Anda"</string>
@@ -2568,29 +2562,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Aplikasi"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Sidik jari Anda tidak dapat dikenali lagi. Siapkan Buka dengan Sidik Jari lagi."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Keamanan &amp; privasi"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"Buka kunci layar Anda terlebih dahulu"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"Buka kunci layar &amp; hubungkan kembali"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"Perlindungan Lanjutan memerlukan pembukaan kunci layar seperti biasa untuk transfer data USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"Perlindungan Lanjutan memerlukan pembukaan kunci layar seperti biasa untuk transfer data USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"Perlindungan Lanjutan memerlukan pembukaan kunci layar untuk transfer USB atau pengisian daya cepat"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"Perlindungan Lanjutan memerlukan pembukaan kunci layar untuk transfer USB atau pengisian daya cepat"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"Perlindungan Lanjutan memerlukan pembukaan kunci layar seperti biasa untuk pengisian daya cepat USB"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"Perlindungan Lanjutan memerlukan pembukaan kunci layar seperti biasa untuk pengisian daya cepat USB"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Senyapkan"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Notifikasi disenyapkan"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"Notifikasi USB Perlindungan Lanjutan disenyapkan hingga perangkat dimulai ulang"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Aktivitas USB yang mencurigakan"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Sinyal data USB telah dinonaktifkan."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Mengalami masalah terkait fitur Buka dengan Sidik Jari?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Ketuk untuk meninjau tips guna meningkatkan pengalaman membuka kunci"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>

@@ -2564,29 +2564,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Праграмы"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Вашы адбіткі пальцаў больш не распазнаюцца. Паўторна наладзьце разблакіроўку адбіткам пальца."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Бяспека і прыватнасць"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"Спачатку трэба разблакіраваць экран"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"Разблакіруйце экран і падключыце прыладу зноў"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"Для перадачы даных праз USB Палепшаная абарона патрабуе разблакіраваць экран звычайным спосабам"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"Для перадачы даных праз USB Палепшаная абарона патрабуе разблакіраваць экран звычайным спосабам"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"Для перадачы даных або хуткай зарадкі праз USB Палепшаная абарона патрабуе разблакіраваць экран"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"Для перадачы даных або хуткай зарадкі праз USB Палепшаная абарона патрабуе разблакіраваць экран"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"Для хуткай зарадкі праз USB Палепшаная абарона патрабуе разблакіраваць экран звычайным спосабам"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"Для хуткай зарадкі праз USB Палепшаная абарона патрабуе разблакіраваць экран звычайным спосабам"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Выключыць гук"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Гук апавяшчэнняў выключаны"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"Гук апавяшчэнняў пра USB ад Палепшанай абароны выключаны да перазапуску прылады"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Падазроная актыўнасць на USB-прыладзе"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Сігнал даных USB адключаны."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Узніклі праблемы з разблакіроўкай адбіткам пальца?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Краніце, каб атрымаць парады па выкарыстанні функцыі разблакіроўкі"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>

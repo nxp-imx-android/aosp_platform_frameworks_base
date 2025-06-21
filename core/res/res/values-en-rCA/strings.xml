@@ -2577,4 +2577,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB data signal has been disabled."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Having trouble with Fingerprint Unlock?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Tap to review tips to improve your unlocking experience"</string>
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Don\'t blink"</string>
 </resources>
