@@ -119,7 +119,7 @@ abstract class BasePermissionPolicyTest {
                     requiresPurposeTargetSdkVersion =
                         parsedPermission.requiresPurposeTargetSdkVersion
                     validPurposes =
-                        parsedPermission.validPurposes.associate { it ->
+                        parsedPermission.validPurposes.associate {
                             it.name to ValidPurposeInfo(it.name, it.maxTargetSdkVersion)
                         }
                 }

@@ -160,6 +160,12 @@ class AppIdPermissionPolicy : SchemePolicy() {
         trimPermissions(packageName, changedPermissionNames)
         if (appId in newState.externalState.appIdPackageNames) {
             trimPermissionStates(appId)
+            // The removed package could be the reason why other packages sharing the same UID might
+            // have been granted a permission. As a result, all permissions requested by the app ID
+            // must be re-evaluated.
+            if (Flags.purposeDeclarationEnabled()) {
+                evaluateAllPermissionStatesForAppId(appId)
+            }
         }
         changedPermissionNames.forEachIndexed { _, permissionName ->
             evaluatePermissionStateForAllPackages(permissionName, null)
@@ -944,6 +950,18 @@ class AppIdPermissionPolicy : SchemePolicy() {
                 permissionName,
                 installedPackageState,
             )
+        }
+    }
+
+    private fun MutateStateScope.evaluateAllPermissionStatesForAppId(appId: Int) {
+        val requestedPermissions = MutableIndexedSet<String>()
+        forEachPackageInAppId(appId) {
+            requestedPermissions += it.androidPackage!!.requestedPermissions
+        }
+        newState.externalState.userIds.forEachIndexed { _, userId ->
+            requestedPermissions.forEachIndexed { _, permissionName ->
+                evaluatePermissionState(appId, userId, permissionName, null)
+            }
         }
     }
 
