@@ -17,12 +17,21 @@
 package com.android.systemui.ambientcue.ui.viewmodel
 
 import com.android.systemui.ambientcue.domain.interactor.ambientCueInteractor
+import com.android.systemui.domain.interactor.sharedPreferencesInteractor
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.testScope
+import com.android.systemui.util.time.fakeSystemClock
 
 private val Kosmos.ambientCueViewModel by Fixture {
-    AmbientCueViewModel(ambientCueInteractor, dumpManager)
+    AmbientCueViewModel(
+        ambientCueInteractor = ambientCueInteractor,
+        systemClock = fakeSystemClock,
+        dumpManager = dumpManager,
+        sharedPreferencesInteractor = sharedPreferencesInteractor,
+        scope = testScope.backgroundScope,
+    )
 }
 
 val Kosmos.ambientCueViewModelFactory by Fixture {
