@@ -138,10 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Je neemt op dit moment je hele scherm op"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Je neemt op dit moment <xliff:g id="APP_NAME">%1$s</xliff:g> op"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Opname stoppen"</string>
-    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
-    <skip />
+    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Vastleggen"</string>
+    <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Opnemen"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Scherm delen"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Content delen"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Scherm delen stoppen?"</string>
@@ -211,14 +209,10 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Op een andere manier verifiëren"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Identiteitscontrole beheren"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"Je kunt geen pincode gebruiken voor verificatie omdat Identiteitscontrole aanstaat en biometrische gegevens vereist. Meer informatie over Identiteitscontrole"</string>
-    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Je kunt geen patroon gebruiken voor verificatie omdat Identiteitscontrole aanstaat en biometrische gegevens vereist. Meer informatie over Identiteitscontrole"</string>
+    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Je kunt geen wachtwoord gebruiken voor verificatie omdat Identiteitscontrole aanstaat en biometrische gegevens vereist. Meer informatie over Identiteitscontrole"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Risico beoordelen..."</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Niet beschikbaar"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Pincode gebruiken"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Patroon gebruiken"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Wachtwoord gebruiken"</string>
@@ -756,6 +750,8 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"Frequentie voor tweevoudige multitoon"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"Toe­gankelijk­heid"</string>
+    <!-- no translation found for stream_assistant (2163992770504149386) -->
+    <skip />
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"Beltoon"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Trillen"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Geluid staat uit"</string>
@@ -826,7 +822,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelliet, verbinding beschikbaar"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS via satelliet"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Alleen noodoproepen of SOS"</string>
-    <string name="satellite_network_title_text" msgid="4825315858295910999">"Satellietnetwerk"</string>
+    <string name="satellite_network_title_text" msgid="1483004114819442028">"Satellietnetwerken"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"geen signaal"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"1 streepje"</string>
@@ -955,8 +951,7 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"Snelkoppelingen tonen die apps openen"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"Snelkoppelingen voor de huidige app tonen"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Meldingen bekijken"</string>
-    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
-    <skip />
+    <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Snelle instellingen bekijken"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Screenshot maken"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Sneltoetsen tonen"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Terug"</string>
@@ -982,8 +977,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Venster naar rechts verplaatsen"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Venster maximaliseren"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Venster minimaliseren"</string>
-    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
-    <skip />
+    <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Wisselen tussen bureaubladen"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Invoer"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Overschakelen naar volgende taal"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"Overschakelen naar vorige taal"</string>
@@ -1012,8 +1006,7 @@
     <string name="battery" msgid="769686279459897127">"Batterij"</string>
     <string name="headset" msgid="4485892374984466437">"Headset"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"Instellingen openen"</string>
-    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
-    <skip />
+    <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"Meer details openen"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"Koptelefoon aangesloten"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"Headset aangesloten"</string>
     <string name="data_saver" msgid="3484013368530820763">"Databesparing"</string>
@@ -1049,14 +1042,10 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Houd een tegel ingedrukt en sleep om die toe te voegen"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Houd een tegel ingedrukt en sleep om die te verplaatsen"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Selecteer tegels om de volgorde en het formaat te wijzigen"</string>
-    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
-    <skip />
-    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
-    <skip />
-    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
-    <skip />
-    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
-    <skip />
+    <string name="tap_to_remove_tiles" msgid="76564688376603718">"Tik om tegels te verwijderen"</string>
+    <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Formaat aanpassen en indeling opnieuw rangschikken"</string>
+    <string name="qs_edit_edit_tab" msgid="467315123555871860">"Bewerken"</string>
+    <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Indeling"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Tik om de tegel te positioneren"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Sleep hier naartoe om te verwijderen"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Je hebt minimaal <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> tegels nodig"</string>
@@ -1342,8 +1331,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"Uitvoer"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Stop je gedeelde sessie om media naar een ander apparaat te verplaatsen"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Stoppen"</string>
-    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
-    <skip />
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Delen stoppen"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Hoe uitzenden werkt"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"Uitzending"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Mensen bij jou in de buurt met geschikte bluetooth-apparaten kunnen luisteren naar de media die je uitzendt"</string>
@@ -1530,8 +1518,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"Scherm mirroren"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Sluiten"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Scherm verbonden"</string>
-    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
-    <skip />
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"Microfoon, camera en locatie"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Recent app-gebruik"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Recente toegang bekijken"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Klaar"</string>
@@ -1590,6 +1577,8 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Snelkoppeling toevoegen"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Snelkoppeling verwijderen"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"Je hebt het maximum van 10 aangepaste snelkoppelingen voor apps bereikt"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"Verwijder een snelkoppeling om een nieuwe te kunnen toevoegen"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Navigeren met je toetsenbord"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Leren werken met sneltoetsen"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Navigeren met je touchpad"</string>
@@ -1667,6 +1656,9 @@
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> toont geen live updates meer. Je kunt dit op elk moment wijzigen in Instellingen."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Sluiten"</string>
+    <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"Icoon voor omgevingssuggesties"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Swipe vanaf de linkerbovenhoek om meldingen te openen"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Swipe vanaf de rechterbovenhoek om Snelle instellingen te openen"</string>
+    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
+    <skip />
 </resources>

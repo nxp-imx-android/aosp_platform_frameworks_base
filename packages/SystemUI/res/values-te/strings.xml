@@ -138,10 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"మీరు ప్రస్తుతం మీ మొత్తం స్క్రీన్‌ను రికార్డ్ చేస్తున్నారు"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"మీరు ప్రస్తుతం <xliff:g id="APP_NAME">%1$s</xliff:g>‌ను రికార్డ్ చేస్తున్నారు"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"రికార్డింగ్‌ను ఆపివేయండి"</string>
-    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
-    <skip />
+    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"క్యాప్చర్ చేయండి"</string>
+    <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"రికార్డ్ చేయండి"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"స్క్రీన్‌ను షేర్ చేస్తోంది"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"కంటెంట్‌ను షేర్ చేస్తోంది"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"స్క్రీన్‌ను షేర్ చేయడం ఆపివేయాలా?"</string>
@@ -211,14 +209,10 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"మరొక మార్గంలో వెరిఫై చేయండి"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ఐడెంటిటీ చెక్‌ను మేనేజ్ చేయండి"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ఐడెంటిటీ చెక్ ఆన్‌లో ఉన్నందున, అలాగే దానికి బయోమెట్రిక్ అవసరం కాబట్టి వెరిఫికేషన్ కోసం PINను ఉపయోగించలేరు. ఐడెంటిటీ చెక్ గురించి మరింత తెలుసుకోండి"</string>
-    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"ఐడెంటిటీ చెక్ ఆన్‌లో ఉన్నందున, అలాగే దానికి బయోమెట్రిక్ అవసరం కాబట్టి వెరిఫికేషన్ కోసం ఆకృతిని ఉపయోగించలేరు. ఐడెంటిటీ చెక్ గురించి మరింత తెలుసుకోండి"</string>
+    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"ఐడెంటిటీ చెక్ ఆన్‌లో ఉన్నందున, అలాగే దానికి బయోమెట్రిక్ అవసరం కాబట్టి వెరిఫికేషన్ కోసం పాస్‌వర్డ్‌ను ఉపయోగించలేరు. ఐడెంటిటీ చెక్ గురించి మరింత తెలుసుకోండి"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"ప్రమాదాన్ని అంచనా వేస్తోంది..."</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"అందుబాటులో లేదు"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PINను ఉపయోగించండి"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ఆకృతిని ఉపయోగించండి"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"పాస్‌వర్డ్‌ను ఉపయోగించండి"</string>
@@ -756,6 +750,8 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"బ్లూటూత్"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"డ్యూయల్ మల్టీ టోన్ ఫ్రీక్వెన్సీ"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"యాక్సెసిబిలిటీ"</string>
+    <!-- no translation found for stream_assistant (2163992770504149386) -->
+    <skip />
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"రింగ్"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"వైబ్రేట్"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"మ్యూట్"</string>
@@ -826,7 +822,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"శాటిలైట్, కనెక్షన్ అందుబాటులో ఉంది"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"ఎమర్జెన్సీ శాటిలైట్ సహాయం"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"ఎమర్జెన్సీ కాల్స్ లేదా SOS మాత్రమే"</string>
-    <string name="satellite_network_title_text" msgid="4825315858295910999">"శాటిలైట్ నెట్‌వర్క్"</string>
+    <string name="satellite_network_title_text" msgid="1483004114819442028">"శాటిలైట్ నెట్‌వర్క్‌లు"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"సిగ్నల్ లేదు"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"సిగ్నల్ ఒక బార్ ఉంది"</string>
@@ -955,8 +951,7 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"యాప్‌లను తెరిచే షార్ట్‌కట్‌లను చూపుతోంది"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"ప్రస్తుత యాప్ కోసం షార్ట్‌కట్‌లను చూపుతోంది"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"నోటిఫికేషన్‌లను చూడండి"</string>
-    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
-    <skip />
+    <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"క్విక్ సెట్టింగ్‌లను చూడండి"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"స్క్రీన్‌షాట్‌ను తీయండి"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"షార్ట్‌కట్‌లను చూపించండి"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"వెనుకకు వెళ్లండి"</string>
@@ -982,8 +977,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"విండోను కుడి వైపునకు తరలించండి"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"విండోను విస్తరించండి"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"విండోను కుదించండి"</string>
-    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
-    <skip />
+    <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"డెస్క్‌టాప్‌ల మధ్య మారండి"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ఇన్‌పుట్"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"తర్వాతి భాషకు మారండి"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"మునుపటి భాషకు మారండి"</string>
@@ -1012,8 +1006,7 @@
     <string name="battery" msgid="769686279459897127">"బ్యాటరీ"</string>
     <string name="headset" msgid="4485892374984466437">"హెడ్‌సెట్"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"సెట్టింగ్‌లను తెరవండి"</string>
-    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
-    <skip />
+    <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"మరిన్ని వివరాలను తెరవండి"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"హెడ్‌ఫోన్‌లు కనెక్ట్ చేయబడ్డాయి"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"హెడ్‌సెట్ కనెక్ట్ చేయబడింది"</string>
     <string name="data_saver" msgid="3484013368530820763">"డేటా సేవర్"</string>
@@ -1049,14 +1042,10 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"టైల్స్‌ను జోడించడానికి పట్టుకుని, లాగండి"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"టైల్స్‌ను వేరే క్రమంలో అమర్చడానికి వాటిని పట్టుకుని, లాగండి"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"క్రమాన్ని, సైజ్‌ను మార్చడానికి టైల్స్‌ను ఎంచుకోండి"</string>
-    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
-    <skip />
-    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
-    <skip />
-    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
-    <skip />
-    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
-    <skip />
+    <string name="tap_to_remove_tiles" msgid="76564688376603718">"టైల్స్‌ను తీసివేయడానికి ట్యాప్ చేయండి"</string>
+    <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"లేఅవుట్ సైజ్‌ను మార్చి, మళ్లీ ఆర్డర్‌లో ఉంచండి"</string>
+    <string name="qs_edit_edit_tab" msgid="467315123555871860">"ఎడిట్ చేయండి"</string>
+    <string name="qs_edit_layout_tab" msgid="1935366846617681520">"లేఅవుట్"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"పొజిషన్ టైల్‌ను ట్యాప్ చేయండి"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"తీసివేయడానికి ఇక్కడికి లాగండి"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"మీ వద్ద కనీసం <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> టైల్‌లు ఉండాలి"</string>
@@ -1342,8 +1331,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"అవుట్‌పుట్"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"మీడియాను మరొక పరికరానికి తరలించడానికి మీ షేర్ చేసిన సెషన్‌ను ఆపండి"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"ఆపండి"</string>
-    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
-    <skip />
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"షేరింగ్ ఆపివేయండి"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"ప్రసారం కావడం అనేది ఎలా పని చేస్తుంది"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"ప్రసారం"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"మీకు సమీపంలో ఉన్న వ్యక్తులు అనుకూలత ఉన్న బ్లూటూత్ పరికరాలతో మీరు ప్రసారం చేస్తున్న మీడియాను వినగలరు"</string>
@@ -1530,8 +1518,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"మిర్రర్ డిస్‌ప్లే"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"విస్మరించండి"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"డిస్‌ప్లే కనెక్ట్ చేయబడింది"</string>
-    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
-    <skip />
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"మైక్రోఫోన్, కెమెరా &amp; లొకేషన్"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"ఇటీవలి యాప్ వినియోగం"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"ఇటీవలి యాక్సెస్‌ను చూడండి"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"పూర్తయింది"</string>
@@ -1590,6 +1577,10 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"షార్ట్‌కట్‌ను జోడించండి"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"షార్ట్‌కట్‌ను తొలగించండి"</string>
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
+    <skip />
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
+    <skip />
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"మీ కీబోర్డ్ ఉపయోగించి నావిగేట్ చేయండి"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"కీబోర్డ్ షార్ట్‌కట్‌లను నేర్చుకోండి"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"మీ టచ్‌ప్యాడ్‌ను ఉపయోగించి నావిగేట్ చేయండి"</string>
@@ -1667,6 +1658,10 @@
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ఇకపై లైవ్ అప్‌డేట్‌లను చూపించదు. మీరు దీన్ని ఎప్పుడైనా సెట్టింగ్‌లలో మార్చవచ్చు."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"మూసివేయండి"</string>
+    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
+    <skip />
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"పైన ఎడమ వైపు నుండి స్వైప్ చేసి నోటిఫికేషన్‌లను తెరవండి"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ఎగువ కుడి వైపు నుండి స్వైప్ చేసి క్విక్ సెట్టింగ్‌లను తెరవండి"</string>
+    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
+    <skip />
 </resources>

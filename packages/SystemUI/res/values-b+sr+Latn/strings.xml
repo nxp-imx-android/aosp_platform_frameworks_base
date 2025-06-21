@@ -209,14 +209,10 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Verifikujte na drugi način"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Upravljajte Proverom identiteta"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"PIN ne može da se koristi za verifikaciju jer je Provera identiteta uključena i zahteva biometriju. Saznajte više o Proveri identiteta"</string>
-    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Šablon ne može da se koristi za verifikaciju jer je Provera identiteta uključena i zahteva biometriju. Saznajte više o Proveri identiteta"</string>
+    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Lozinka ne može da se koristi za verifikaciju jer je Provera identiteta uključena i zahteva biometriju. Saznajte više o Proveri identiteta"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Procenjuje se rizik…"</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Nedostupno"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Koristi PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Koristite šablon"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Koristite lozinku"</string>
@@ -754,6 +750,8 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"Višestruka frekvencija dualnog tona"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"Pristupačnost"</string>
+    <!-- no translation found for stream_assistant (2163992770504149386) -->
+    <skip />
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"Aktiviraj zvono"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Vibriraj"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Isključi zvuk"</string>
@@ -824,7 +822,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelit, veza je dostupna"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Hitna pomoć preko satelita"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Samo hitni pozivi ili hitna pomoć"</string>
-    <string name="satellite_network_title_text" msgid="4825315858295910999">"Satelitska mreža"</string>
+    <string name="satellite_network_title_text" msgid="1483004114819442028">"Satelitske mreže"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"nema signala"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"jedna crta"</string>
@@ -953,8 +951,7 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"Prikazuju se prečice za otvaranje aplikacija"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"Prikazuju se prečice za aktuelnu aplikaciju"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Prikaži obaveštenja"</string>
-    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
-    <skip />
+    <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Prikaži brza podešavanja"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Napravi snimak ekrana"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Prikaži prečice"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Nazad"</string>
@@ -980,8 +977,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Pomerite prozor nadesno"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Povećajte prozor"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Smanjite prozor"</string>
-    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
-    <skip />
+    <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Prelazi sa jedne radne površine na drugu"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Unos"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Pređi na sledeći jezik"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"Pređi na prethodni jezik"</string>
@@ -1046,14 +1042,10 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Zadržite i prevucite da biste dodali pločice"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Zadržite i prevucite da biste promenili raspored pločica"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Izaberite pločice da biste im promenili raspored i veličinu"</string>
-    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
-    <skip />
-    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
-    <skip />
-    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
-    <skip />
-    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
-    <skip />
+    <string name="tap_to_remove_tiles" msgid="76564688376603718">"Dodirnite da biste uklonili pločice"</string>
+    <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Promenite veličinu i redosled rasporeda"</string>
+    <string name="qs_edit_edit_tab" msgid="467315123555871860">"Izmeni"</string>
+    <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Raspored"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Dodirnite da biste postavili pločicu"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Prevucite ovde da biste uklonili"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Minimalan broj pločica je <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
@@ -1339,8 +1331,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"Izlaz"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Zaustavite deljenu sesiju da biste premestili medijski sadržaj na drugi uređaj"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Zaustavi"</string>
-    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
-    <skip />
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Zaustavi deljenje"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Kako funkcioniše emitovanje"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"Emitovanje"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Ljudi u blizini sa kompatibilnim Bluetooth uređajima mogu da slušaju medijski sadržaj koji emitujete"</string>
@@ -1586,6 +1577,10 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Dodajte prečicu"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Izbrišite prečicu"</string>
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
+    <skip />
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
+    <skip />
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Krećite se pomoću tastature"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Saznajte više o tasterskim prečicama"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Krećite se pomoću tačpeda"</string>
@@ -1663,6 +1658,10 @@
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> više neće prikazivati novosti uživo. Ovo možete da promenite u svakom trenutku u Podešavanjima."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Zatvori"</string>
+    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
+    <skip />
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Prevucite od gornjeg levog ugla da biste otvorili obaveštenja"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Prevucite od gornjeg desnog ugla da biste otvorili Brza podešavanja"</string>
+    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
+    <skip />
 </resources>

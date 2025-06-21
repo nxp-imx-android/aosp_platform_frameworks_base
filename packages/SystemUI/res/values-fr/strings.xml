@@ -138,10 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Vous enregistrez actuellement l\'intégralité de votre écran"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Vous enregistrez actuellement <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Arrêter l\'enregistrement"</string>
-    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
-    <skip />
+    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Capturer"</string>
+    <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Enregistrer"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Partage de l\'écran…"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Partage de contenu"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Arrêter le partage d\'écran ?"</string>
@@ -211,14 +209,10 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Autre méthode de validation"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Gérer la vérification de l\'identité"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"Vous ne pouvez pas utiliser le code pour la validation, car la vérification de l\'identité est activée et nécessite des données biométriques. En savoir plus sur la vérification de l\'identité"</string>
-    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Vous ne pouvez pas utiliser de schéma pour la validation, car la vérification de l\'identité est activée et nécessite des données biométriques. En savoir plus sur la vérification de l\'identité"</string>
+    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Vous ne pouvez pas utiliser de mot de passe pour la validation, car la vérification de l\'identité est activée et nécessite des données biométriques. En savoir plus sur la vérification de l\'identité"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Évaluation des risques…"</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Indisponible"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Utiliser un code"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Utiliser un schéma"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Utiliser un mot de passe"</string>
@@ -756,6 +750,8 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"DTMF"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"Accessibilité"</string>
+    <!-- no translation found for stream_assistant (2163992770504149386) -->
+    <skip />
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"Sonnerie"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Vibreur"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Couper le son"</string>
@@ -826,7 +822,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Connexion satellite disponible"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS par satellite"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Appels d\'urgence ou SOS uniquement"</string>
-    <string name="satellite_network_title_text" msgid="4825315858295910999">"Réseau satellite"</string>
+    <string name="satellite_network_title_text" msgid="1483004114819442028">"Réseaux satellites"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"aucun signal"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"faible"</string>
@@ -955,8 +951,7 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"Affichage des raccourcis pour ouvrir les applications"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"Affichage des raccourcis pour l\'application actuelle"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Afficher les notifications"</string>
-    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
-    <skip />
+    <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Afficher les Réglages rapides"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Prendre une capture d\'écran"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Afficher les raccourcis"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Retour"</string>
@@ -982,8 +977,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Déplacer la fenêtre vers la droite"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Agrandir la fenêtre"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Réduire la fenêtre"</string>
-    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
-    <skip />
+    <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Passer d\'un bureau à l\'autre"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Saisie"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Passer à la langue suivante"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"Revenir à la langue précédente"</string>
@@ -1012,8 +1006,7 @@
     <string name="battery" msgid="769686279459897127">"Batterie"</string>
     <string name="headset" msgid="4485892374984466437">"Casque"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"Ouvrir les paramètres"</string>
-    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
-    <skip />
+    <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"Afficher plus de détails"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"Casque connecté"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"Casque connecté"</string>
     <string name="data_saver" msgid="3484013368530820763">"Économiseur de données"</string>
@@ -1049,14 +1042,10 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Faites glisser les blocs pour les ajouter"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Faites glisser les blocs pour les réorganiser"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Sélectionnez les blocs à réorganiser et à redimensionner"</string>
-    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
-    <skip />
-    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
-    <skip />
-    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
-    <skip />
-    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
-    <skip />
+    <string name="tap_to_remove_tiles" msgid="76564688376603718">"Appuyer pour supprimer les blocs"</string>
+    <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Redimensionner et réorganiser la mise en page"</string>
+    <string name="qs_edit_edit_tab" msgid="467315123555871860">"Modifier"</string>
+    <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Mise en page"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Appuyez pour positionner le bloc"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Faites glisser les blocs ici pour les supprimer"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Au minimum <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> tuiles sont nécessaires"</string>
@@ -1342,8 +1331,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"Sortie"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Arrêter votre session partagée pour déplacer des contenus multimédias vers un autre appareil"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Arrêter"</string>
-    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
-    <skip />
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Arrêter le partage"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Fonctionnement des annonces"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"Annonce"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Les personnes à proximité équipées d\'appareils Bluetooth compatibles peuvent écouter le contenu multimédia que vous diffusez"</string>
@@ -1530,8 +1518,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"Dupliquer l\'écran"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Fermer"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Écran connecté"</string>
-    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
-    <skip />
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"Micro, appareil photo et position"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Utilisation récente par les applis"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Consulter les accès récents"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"OK"</string>
@@ -1590,6 +1577,8 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Ajouter un raccourci"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Supprimer le raccourci"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"La limite de 10 raccourcis d\'applications personnalisés a été atteinte"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"Supprimez-en un pour pouvoir en ajouter un autre"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Naviguer à l\'aide du clavier"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Apprenez les raccourcis clavier"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Naviguer à l\'aide de votre pavé tactile"</string>
@@ -1667,6 +1656,9 @@
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> n\'affichera plus les mises à jour en temps réel. Vous pouvez modifier cela à tout moment dans les paramètres."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Fermer"</string>
+    <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"Icône de suggestions pour le mode ambiant"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Balayez l\'écran depuis le coin supérieur gauche pour ouvrir les notifications"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Balayez l\'écran depuis le coin supérieur droit pour ouvrir les réglages rapides"</string>
+    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
+    <skip />
 </resources>

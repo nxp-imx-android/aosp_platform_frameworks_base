@@ -138,10 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"ਤੁਸੀਂ ਫ਼ਿਲਹਾਲ ਆਪਣੀ ਪੂਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਰਿਕਾਰਡ ਕਰ ਰਹੇ ਹੋ"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"ਤੁਸੀਂ ਫ਼ਿਲਹਾਲ <xliff:g id="APP_NAME">%1$s</xliff:g> ਨੂੰ ਰਿਕਾਰਡ ਕਰ ਰਹੇ ਹੋ"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ਰਿਕਾਰਡਿੰਗ ਬੰਦ ਕਰੋ"</string>
-    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
-    <skip />
+    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"ਕੈਪਚਰ ਕਰੋ"</string>
+    <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ਰਿਕਾਰਡ ਕਰੋ"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ਸਕ੍ਰੀਨ ਸਾਂਝੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"ਸਮੱਗਰੀ ਸਾਂਝੀ ਕੀਤੀ ਜਾ ਰਹੀ ਹੈ"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"ਕੀ ਸਕ੍ਰੀਨ ਨੂੰ ਸਾਂਝਾ ਕਰਨਾ ਬੰਦ ਕਰਨਾ ਹੈ?"</string>
@@ -211,14 +209,10 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"ਕਿਸੇ ਹੋਰ ਢੰਗ ਨਾਲ ਪੁਸ਼ਟੀ ਕਰੋ"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ਪਛਾਣ ਦੀ ਜਾਂਚ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ਪਿੰਨ ਨੂੰ ਪੁਸ਼ਟੀਕਰਨ ਲਈ ਨਹੀਂ ਵਰਤਿਆ ਜਾ ਸਕਦਾ ਕਿਉਂਕਿ ਪਛਾਣ ਦੀ ਜਾਂਚ ਚਾਲੂ ਹੈ ਅਤੇ ਇਸਦੇ ਲਈ ਬਾਇਓਮੈਟ੍ਰਿਕ ਦੀ ਲੋੜ ਹੈ। ਪਛਾਣ ਦੀ ਜਾਂਚ ਬਾਰੇ ਹੋਰ ਜਾਣੋ"</string>
-    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"ਪੈਟਰਨ ਨੂੰ ਪੁਸ਼ਟੀਕਰਨ ਲਈ ਨਹੀਂ ਵਰਤਿਆ ਜਾ ਸਕਦਾ ਕਿਉਂਕਿ ਪਛਾਣ ਦੀ ਜਾਂਚ ਚਾਲੂ ਹੈ ਅਤੇ ਇਸਦੇ ਲਈ ਬਾਇਓਮੈਟ੍ਰਿਕ ਦੀ ਲੋੜ ਹੈ। ਪਛਾਣ ਦੀ ਜਾਂਚ ਬਾਰੇ ਹੋਰ ਜਾਣੋ"</string>
+    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"ਪਾਸਵਰਡ ਨੂੰ ਪੁਸ਼ਟੀਕਰਨ ਲਈ ਨਹੀਂ ਵਰਤਿਆ ਜਾ ਸਕਦਾ ਕਿਉਂਕਿ ਪਛਾਣ ਦੀ ਜਾਂਚ ਚਾਲੂ ਹੈ ਅਤੇ ਇਸਦੇ ਲਈ ਬਾਇਓਮੈਟ੍ਰਿਕ ਦੀ ਲੋੜ ਹੈ। ਪਛਾਣ ਦੀ ਜਾਂਚ ਬਾਰੇ ਹੋਰ ਜਾਣੋ"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"ਜੋਖਮ ਦਾ ਮੁਲਾਂਕਣ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ..."</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"ਉਪਲਬਧ ਨਹੀਂ"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"ਪਿੰਨ ਵਰਤੋ"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"ਪੈਟਰਨ ਵਰਤੋ"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"ਪਾਸਵਰਡ ਵਰਤੋ"</string>
@@ -756,6 +750,8 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"ਬਲੂਟੁੱਥ"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"ਦੂਹਰੀ ਮਲਟੀ ਟੋਨ ਆਵਰਤੀ"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"ਪਹੁੰਚਯੋਗਤਾ"</string>
+    <!-- no translation found for stream_assistant (2163992770504149386) -->
+    <skip />
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"ਘੰਟੀ"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"ਥਰਥਰਾਹਟ"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"ਮਿਊਟ"</string>
@@ -826,7 +822,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"ਸੈਟੇਲਾਈਟ, ਕਨੈਕਸ਼ਨ ਉਪਲਬਧ ਹੈ"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"ਸੈਟੇਲਾਈਟ SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"ਸਿਰਫ਼ ਐਮਰਜੈਂਸੀ ਕਾਲਾਂ ਜਾਂ ਸਹਾਇਤਾ"</string>
-    <string name="satellite_network_title_text" msgid="4825315858295910999">"ਸੈਟੇਲਾਈਟ ਨੈੱਟਵਰਕ"</string>
+    <string name="satellite_network_title_text" msgid="1483004114819442028">"ਸੈਟੇਲਾਈਟ ਨੈੱਟਵਰਕ"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"ਕੋਈ ਸਿਗਨਲ ਨਹੀਂ"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"ਇੱਕ ਸਿਗਨਲ ਪੱਟੀ"</string>
@@ -955,8 +951,7 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"ਐਪਾਂ ਨੂੰ ਖੋਲ੍ਹਣ ਵਾਲੇ ਸ਼ਾਰਟਕੱਟ ਦਿਖਾਏ ਜਾ ਰਹੇ ਹਨ"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"ਮੌਜੂਦਾ ਐਪ ਦੇ ਸ਼ਾਰਟਕੱਟ ਦਿਖਾਏ ਜਾ ਰਹੇ ਹਨ"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"ਸੂਚਨਾਵਾਂ ਦੇਖੋ"</string>
-    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
-    <skip />
+    <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"ਤਤਕਾਲ ਸੈਟਿੰਗਾਂ ਦੇਖੋ"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"ਸਕ੍ਰੀਨਸ਼ਾਟ ਲਓ"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"ਸ਼ਾਰਟਕੱਟ ਦਿਖਾਓ"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"ਵਾਪਸ ਜਾਓ"</string>
@@ -982,8 +977,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"ਵਿੰਡੋ ਨੂੰ ਸੱਜੇ ਪਾਸੇ ਲਿਜਾਓ"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"ਵਿੰਡੋ ਨੂੰ ਵੱਡਾ ਕਰੋ"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"ਵਿੰਡੋ ਨੂੰ ਛੋਟਾ ਕਰੋ"</string>
-    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
-    <skip />
+    <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"ਵੱਖ-ਵੱਖ ਡੈਸਕਟਾਪਾਂ ਵਿਚਕਾਰ ਸਵਿੱਚ ਕਰੋ"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"ਇਨਪੁੱਟ"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"ਅਗਲੀ ਭਾਸ਼ਾ \'ਤੇ ਸਵਿੱਚ ਕਰੋ"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"ਪਿਛਲੀ ਭਾਸ਼ਾ \'ਤੇ ਸਵਿੱਚ ਕਰੋ"</string>
@@ -1012,8 +1006,7 @@
     <string name="battery" msgid="769686279459897127">"ਬੈਟਰੀ"</string>
     <string name="headset" msgid="4485892374984466437">"ਹੈੱਡਸੈੱਟ"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ"</string>
-    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
-    <skip />
+    <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"ਹੋਰ ਵੇਰਵੇ ਖੋਲ੍ਹੋ"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"ਹੈੱਡਫ਼ੋਨ ਨੂੰ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"ਹੈੱਡਸੈੱਟ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
     <string name="data_saver" msgid="3484013368530820763">"ਡਾਟਾ ਸੇਵਰ"</string>
@@ -1049,14 +1042,10 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"ਟਾਇਲਾਂ ਸ਼ਾਮਲ ਕਰਨ ਲਈ ਫੜ੍ਹ ਕੇ ਘਸੀਟੋ"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"ਟਾਇਲਾਂ ਨੂੰ ਮੁੜ-ਵਿਵਸਥਿਤ ਕਰਨ ਲਈ ਫੜ੍ਹ ਕੇ ਘਸੀਟੋ"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"ਮੁੜ-ਵਿਵਸਥਿਤ ਕਰਨ ਅਤੇ ਆਕਾਰ ਬਦਲਣ ਲਈ ਟਾਇਲਾਂ ਨੂੰ ਚੁਣੋ"</string>
-    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
-    <skip />
-    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
-    <skip />
-    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
-    <skip />
-    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
-    <skip />
+    <string name="tap_to_remove_tiles" msgid="76564688376603718">"ਟਾਈਲਾਂ ਨੂੰ ਹਟਾਉਣ ਲਈ ਟੈਪ ਕਰੋ"</string>
+    <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"ਖਾਕੇ ਦਾ ਆਕਾਰ ਬਦਲੋ ਅਤੇ ਮੁੜ-ਕ੍ਰਮਬੱਧ ਕਰੋ"</string>
+    <string name="qs_edit_edit_tab" msgid="467315123555871860">"ਸੰਪਾਦਨ ਕਰੋ"</string>
+    <string name="qs_edit_layout_tab" msgid="1935366846617681520">"ਖਾਕਾ"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"ਟਾਇਲ ਨੂੰ ਸਥਿਤੀ \'ਤੇ ਰੱਖਣ ਲਈ ਟੈਪ ਕਰੋ"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"ਹਟਾਉਣ ਲਈ ਇੱਥੇ ਘਸੀਟੋ"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"ਤੁਹਾਨੂੰ ਘੱਟੋ-ਘੱਟ <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> ਟਾਇਲਾਂ ਦੀ ਲੋੜ ਪਵੇਗੀ"</string>
@@ -1342,8 +1331,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"ਆਊਟਪੁੱਟ"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"ਮੀਡੀਆ ਨੂੰ ਕਿਸੇ ਹੋਰ ਡੀਵਾਈਸ \'ਤੇ ਲਿਜਾਉਣ ਲਈ ਆਪਣੇ ਸਾਂਝੇ ਕੀਤੇ ਸੈਸ਼ਨ ਨੂੰ ਬੰਦ ਕਰੋ"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"ਬੰਦ ਕਰੋ"</string>
-    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
-    <skip />
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"ਸਾਂਝਾਕਰਨ ਬੰਦ ਕਰੋ"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"ਪ੍ਰਸਾਰਨ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"ਪ੍ਰਸਾਰਨ"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"ਅਨੁਰੂਪ ਬਲੂਟੁੱਥ ਡੀਵਾਈਸਾਂ ਨਾਲ ਨਜ਼ਦੀਕੀ ਲੋਕ ਤੁਹਾਡੇ ਵੱਲੋਂ ਪ੍ਰਸਾਰਨ ਕੀਤੇ ਜਾ ਰਹੇ ਮੀਡੀਆ ਨੂੰ ਸੁਣ ਸਕਦੇ ਹਨ"</string>
@@ -1530,8 +1518,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"ਡਿਸਪਲੇ ਨੂੰ ਪ੍ਰਤਿਬਿੰਬਿਤ ਕਰੋ"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"ਖਾਰਜ ਕਰੋ"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"ਡਿਸਪਲੇ ਨੂੰ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
-    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
-    <skip />
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"ਮਾਈਕ੍ਰੋਫ਼ੋਨ, ਕੈਮਰਾ ਅਤੇ ਟਿਕਾਣਾ"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"ਹਾਲ ਹੀ ਵਿੱਚ ਵਰਤੋਂ ਕਰਨ ਵਾਲੀ ਐਪ"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"ਹਾਲੀਆ ਪਹੁੰਚ ਦੇਖੋ"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"ਹੋ ਗਿਆ"</string>
@@ -1590,6 +1577,10 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"ਸ਼ਾਰਟਕੱਟ ਸ਼ਾਮਲ ਕਰੋ"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"ਸ਼ਾਰਟਕੱਟ ਮਿਟਾਓ"</string>
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
+    <skip />
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
+    <skip />
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"ਆਪਣੇ ਕੀ-ਬੋਰਡ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਨੈਵੀਗੇਟ ਕਰੋ"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"ਕੀ-ਬੋਰਡ ਸ਼ਾਰਟਕੱਟਾਂ ਬਾਰੇ ਜਾਣੋ"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"ਆਪਣੇ ਟੱਚਪੈਡ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਨੈਵੀਗੇਟ ਕਰੋ"</string>
@@ -1667,6 +1658,10 @@
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ਵੱਲੋਂ ਹੁਣ ਲਾਈਵ ਅੱਪਡੇਟ ਨਹੀਂ ਦਿਖਾਏ ਜਾਣਗੇ। ਤੁਸੀਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਜਾ ਕੇ ਕਿਸੇ ਵੇਲੇ ਵੀ ਇਸਨੂੰ ਬਦਲ ਸਕਦੇ ਹੋ।"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"ਬੰਦ ਕਰੋ"</string>
+    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
+    <skip />
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"ਸੂਚਨਾਵਾਂ ਖੋਲ੍ਹਣ ਲਈ ਸਿਖਰਲੇ ਖੱਬੇ ਪਾਸੇ ਤੋਂ ਸਵਾਈਪ ਕਰੋ"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ਤਤਕਾਲ ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹਣ ਲਈ ਸਿਖਰਲੇ ਸੱਜੇ ਪਾਸੇ ਤੋਂ ਸਵਾਈਪ ਕਰੋ"</string>
+    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
+    <skip />
 </resources>
