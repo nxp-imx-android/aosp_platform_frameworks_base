@@ -39,8 +39,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.android.systemui.common.shared.model.Icon as IconModel
+import com.android.systemui.res.R
 
 /**
  * An enum to identify each of the four corners of the rectangle.
@@ -177,6 +180,11 @@ private fun ResizableRectangle(
     onDragEnd: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // TODO(b/422855266): Preload icons in the view model to avoid loading icons in UI thread and
+    // improve performance
+    val screenshotIcon =
+        IconModel.Resource(res = R.drawable.ic_screen_capture_camera, contentDescription = null)
+
     // The diameter of the resizable knob on each corner of the region box.
     val knobDiameter = 8.dp
     // The width of the border stroke around the region box.
@@ -222,8 +230,17 @@ private fun ResizableRectangle(
                                     onBoxDrag(dragAmount, screenWidth, screenHeight)
                                 },
                             )
-                        }
-            )
+                        },
+                contentAlignment = Alignment.Center,
+            ) {
+                PrimaryButton(
+                    text = stringResource(id = R.string.screen_capture_region_selection_button),
+                    onClick = {
+                        // TODO(b/417534202): trigger a screenshot of the selected area.
+                    },
+                    icon = screenshotIcon,
+                )
+            }
 
             // The offset is half of the knob diameter so that it is centered.
             val knobOffset = knobDiameter / 2

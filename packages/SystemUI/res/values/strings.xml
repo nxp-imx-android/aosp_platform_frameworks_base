@@ -348,6 +348,8 @@
     <!-- Button to stop a screen recording [CHAR LIMIT=35] -->
     <string name="screenrecord_stop_dialog_button">Stop recording</string>
 
+    <!-- Button text in the region select box for triggering a screenshot of the selected area. [CHAR LIMIT=35] -->
+    <string name="screen_capture_region_selection_button">Capture selected area</string>
     <!-- Button text in the toolbar for choosing the screenshot type. [CHAR LIMIT=35] -->
     <string name="screen_capture_toolbar_capture_button">Capture</string>
     <!-- Button text in the toolbar for choosing the screen recording type. [CHAR LIMIT=35] -->
