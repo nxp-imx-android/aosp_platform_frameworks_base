@@ -26,6 +26,7 @@ import static android.companion.CompanionDeviceManager.MESSAGE_REQUEST_REMOTE_AU
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
 
 import android.annotation.NonNull;
+import android.companion.AssociationRequest;
 import android.companion.IOnMessageReceivedListener;
 import android.content.Context;
 import android.os.Build;
@@ -51,6 +52,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * This class represents the channel established between two devices.
  */
 public abstract class Transport {
+    /**
+     * Flag to extend attestation patch validation allowance to 2 years instead of 1 year.
+     * Requires {@link AssociationRequest#DEVICE_PROFILE_WEARABLE_SENSING} device profile.
+     */
+    public static final int FLAG_EXTEND_PATCH_DIFF = 1;
+
     protected static final String TAG = "CDM_CompanionTransport";
     protected static final boolean DEBUG = Build.IS_DEBUGGABLE;
 

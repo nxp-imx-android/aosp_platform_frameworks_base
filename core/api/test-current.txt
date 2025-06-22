@@ -939,6 +939,7 @@ package android.companion {
     method @NonNull public android.companion.AssociationInfo.Builder setSelfManaged(boolean);
     method @NonNull public android.companion.AssociationInfo.Builder setSystemDataSyncFlags(int);
     method @NonNull public android.companion.AssociationInfo.Builder setTimeApproved(long);
+    method @NonNull public android.companion.AssociationInfo.Builder setTransportFlags(int);
   }
 
   public final class AssociationRequest implements android.os.Parcelable {

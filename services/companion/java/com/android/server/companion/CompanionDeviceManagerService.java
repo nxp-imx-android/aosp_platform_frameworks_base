@@ -594,10 +594,10 @@ public class CompanionDeviceManagerService extends SystemService {
         @Override
         @EnforcePermission(DELIVER_COMPANION_MESSAGES)
         public void attachSystemDataTransport(String packageName, int userId, int associationId,
-                                              ParcelFileDescriptor fd, int flags) {
+                                              ParcelFileDescriptor fd) {
             attachSystemDataTransport_enforcePermission();
 
-            mTransportManager.attachSystemDataTransport(associationId, fd, flags);
+            mTransportManager.attachSystemDataTransport(associationId, fd);
         }
 
         @Override
