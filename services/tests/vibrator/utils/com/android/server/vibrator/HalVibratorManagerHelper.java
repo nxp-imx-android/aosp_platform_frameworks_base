@@ -16,9 +16,20 @@
 
 package com.android.server.vibrator;
 
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.hardware.vibrator.IVibrationSession;
+import android.hardware.vibrator.IVibrator;
+import android.hardware.vibrator.IVibratorCallback;
 import android.hardware.vibrator.IVibratorManager;
+import android.hardware.vibrator.VibrationSessionConfig;
+import android.os.Binder;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
+import android.os.RemoteException;
+
+import com.android.server.vibrator.VintfHalVibratorManager.DefaultHalVibratorManager;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,7 +40,9 @@ import java.util.List;
  */
 public class HalVibratorManagerHelper {
     private final Handler mHandler;
-    private final FakeNativeWrapper mNativeWrapper;
+
+    private FakeVibrationSession mLastSession;
+    private IVibratorCallback mLastTriggerSyncedCallback;
 
     private int mConnectCount;
     private int mPrepareSyncedCount;
@@ -49,12 +62,17 @@ public class HalVibratorManagerHelper {
 
     public HalVibratorManagerHelper(Looper looper) {
         mHandler = new Handler(looper);
-        mNativeWrapper = new FakeNativeWrapper();
     }
 
     /** Create new {@link VibratorManagerService.NativeHalVibratorManager} for testing. */
     public VibratorManagerService.NativeHalVibratorManager newNativeHalVibratorManager() {
-        return new VibratorManagerService.NativeHalVibratorManager(mNativeWrapper);
+        return new VibratorManagerService.NativeHalVibratorManager(new FakeNativeWrapper());
+    }
+
+    /** Create new {@link DefaultHalVibratorManager} for testing. */
+    public DefaultHalVibratorManager newDefaultVibratorManager() {
+        FakeVibratorManager fakeManager = new FakeVibratorManager();
+        return new DefaultHalVibratorManager(new FakeVibratorManagerSupplier(fakeManager));
     }
 
     public void setCapabilities(long capabilities) {
@@ -84,9 +102,24 @@ public class HalVibratorManagerHelper {
         mStartSessionShouldFail = true;
     }
 
-    /** Trigger session callback for given session id. */
-    public void endSessionAbruptly(long sessionId) {
-        mHandler.post(() -> mNativeWrapper.mCallbacks.onVibrationSessionComplete(sessionId));
+    /** Trigger session callback for last synced vibration triggered. */
+    public void endLastSyncedVibration() {
+        if (mLastTriggerSyncedCallback != null) {
+            mHandler.post(() -> {
+                try {
+                    mLastTriggerSyncedCallback.onComplete();
+                } catch (RemoteException e) {
+                    e.rethrowAsRuntimeException();
+                }
+            });
+        }
+    }
+
+    /** Trigger session callback for last started session. */
+    public void endLastSessionAbruptly() {
+        if (mLastSession != null) {
+            mHandler.post(mLastSession::onComplete);
+        }
     }
 
     public int getConnectCount() {
@@ -170,7 +203,8 @@ public class HalVibratorManagerHelper {
             }
             mTriggerSyncedCount++;
             if (hasCapability(IVibratorManager.CAP_SYNC)) {
-                mHandler.post(() -> mCallbacks.onSyncedVibrationComplete(vibrationId));
+                mLastTriggerSyncedCallback = new FakeVibratorCallback(
+                        () -> mCallbacks.onSyncedVibrationComplete(vibrationId));
                 return true;
             }
             return false;
@@ -187,24 +221,213 @@ public class HalVibratorManagerHelper {
                 return false;
             }
             mStartSessionCount++;
-            return hasCapability(IVibratorManager.CAP_START_SESSIONS)
-                    && areVibratorIdsValid(vibratorIds);
+            if (hasCapability(IVibratorManager.CAP_START_SESSIONS)
+                    && areVibratorIdsValid(vibratorIds)) {
+                mLastSession = new FakeVibrationSession(new FakeVibratorCallback(
+                        () -> mCallbacks.onVibrationSessionComplete(sessionId)));
+                return true;
+            }
+            return false;
         }
 
         @Override
         public void endSession(long sessionId, boolean shouldAbort) {
-            if (shouldAbort) {
-                mAbortSessionCount++;
+            FakeVibrationSession session = mLastSession;
+            if (session != null) {
+                if (shouldAbort) {
+                    session.abort();
+                } else {
+                    session.close();
+                }
             } else {
-                mEndSessionCount++;
+                if (shouldAbort) {
+                    mAbortSessionCount++;
+                } else {
+                    mEndSessionCount++;
+                }
             }
-            mHandler.postDelayed(() -> mCallbacks.onVibrationSessionComplete(sessionId),
-                    shouldAbort ? 0 : mSessionEndDelayMs);
         }
 
         @Override
         public void clearSessions() {
             mClearSessionsCount++;
+            endLastSessionAbruptly();
+        }
+    }
+
+    /** Provides fake implementation of {@link IVibratorManager} for testing. */
+    public final class FakeVibratorManager extends IVibratorManager.Stub {
+        @Override
+        public int getCapabilities() throws RemoteException {
+            return (int) mCapabilities;
+        }
+
+        @Override
+        public int[] getVibratorIds() throws RemoteException {
+            return mVibratorIds;
+        }
+
+        @Override
+        public IVibrator getVibrator(int vibratorId) throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public void prepareSynced(int[] vibratorIds) throws RemoteException {
+            if (mPrepareSyncedShouldFail) {
+                throw new RemoteException();
+            }
+            mPrepareSyncedCount++;
+            if (!hasCapability(IVibratorManager.CAP_SYNC)) {
+                throw new UnsupportedOperationException();
+            }
+            if (!areVibratorIdsValid(vibratorIds)) {
+                throw new IllegalArgumentException();
+            }
+        }
+
+        @Override
+        public void triggerSynced(IVibratorCallback callback) throws RemoteException {
+            if (mTriggerSyncedShouldFail) {
+                throw new RemoteException();
+            }
+            mTriggerSyncedCount++;
+            mLastTriggerSyncedCallback = callback;
+            if (!hasCapability(IVibratorManager.CAP_SYNC)) {
+                throw new UnsupportedOperationException();
+            }
+        }
+
+        @Override
+        public void cancelSynced() throws RemoteException {
+            mCancelSyncedCount++;
+            if (!hasCapability(IVibratorManager.CAP_SYNC)) {
+                throw new UnsupportedOperationException();
+            }
+        }
+
+        @Override
+        public IVibrationSession startSession(int[] vibratorIds, VibrationSessionConfig config,
+                IVibratorCallback callback) throws RemoteException {
+            if (mStartSessionShouldFail) {
+                throw new RemoteException();
+            }
+            mStartSessionCount++;
+            if (!hasCapability(IVibratorManager.CAP_START_SESSIONS)) {
+                throw new UnsupportedOperationException();
+            }
+            if (!areVibratorIdsValid(vibratorIds)) {
+                throw new IllegalArgumentException();
+            }
+            mLastSession = new FakeVibrationSession(callback);
+            return mLastSession;
+        }
+
+        @Override
+        public void clearSessions() throws RemoteException {
+            mClearSessionsCount++;
+            if (!hasCapability(IVibratorManager.CAP_START_SESSIONS)) {
+                throw new UnsupportedOperationException();
+            }
+            endLastSessionAbruptly();
+        }
+
+        @Override
+        public int getInterfaceVersion() {
+            return IVibratorManager.VERSION;
+        }
+
+        @Override
+        public String getInterfaceHash() {
+            return IVibratorManager.HASH;
+        }
+    }
+
+    /** Provides fake implementation of {@link IVibrationSession} for testing. */
+    public final class FakeVibrationSession extends IVibrationSession.Stub {
+        private final IVibratorCallback mCallback;
+
+        public FakeVibrationSession(IVibratorCallback callback) {
+            mCallback = callback;
+        }
+
+        @Override
+        public void close() {
+            mEndSessionCount++;
+            mHandler.postDelayed(this::onComplete, mSessionEndDelayMs);
+        }
+
+        @Override
+        public void abort() {
+            mAbortSessionCount++;
+            mHandler.post(this::onComplete);
+        }
+
+        @Override
+        public int getInterfaceVersion() {
+            return IVibrationSession.VERSION;
+        }
+
+        @Override
+        public String getInterfaceHash() {
+            return IVibrationSession.HASH;
+        }
+
+        private void onComplete() {
+            try {
+                mCallback.onComplete();
+            } catch (RemoteException e) {
+                e.rethrowAsRuntimeException();
+            }
+        }
+    }
+
+    /** Provides fake implementation of {@link IVibratorCallback} for testing. */
+    public final class FakeVibratorCallback extends IVibratorCallback.Stub {
+        private final Runnable mRunnable;
+
+        public FakeVibratorCallback(Runnable runnable) {
+            mRunnable = runnable;
+        }
+
+        @Override
+        public void onComplete() {
+            mHandler.post(mRunnable);
+        }
+
+        @Override
+        public int getInterfaceVersion() throws RemoteException {
+            return IVibratorCallback.VERSION;
+        }
+
+        @Override
+        public String getInterfaceHash() throws RemoteException {
+            return IVibratorCallback.HASH;
+        }
+    }
+
+    /** Provides fake implementation of {@link VintfUtils.VintfSupplier} for testing. */
+    public final class FakeVibratorManagerSupplier extends
+            VintfUtils.VintfSupplier<IVibratorManager> {
+        private final IBinder mToken;
+        private final IVibratorManager mManager;
+
+        public FakeVibratorManagerSupplier(IVibratorManager manager) {
+            mToken = new Binder();
+            mManager = manager;
+        }
+
+        @Nullable
+        @Override
+        IBinder connectToService() {
+            mConnectCount++;
+            return mToken;
+        }
+
+        @NonNull
+        @Override
+        IVibratorManager castService(@NonNull IBinder binder) {
+            return mManager;
         }
     }
 }
