@@ -2022,7 +2022,8 @@ public final class DisplayManagerService extends SystemService {
 
         if (callingUid != Process.SYSTEM_UID
                 && (flags & VIRTUAL_DISPLAY_FLAG_OWN_DISPLAY_GROUP) != 0) {
-            if (!checkCallingPermission(ADD_TRUSTED_DISPLAY, "createVirtualDisplay()")) {
+            if (!(checkCallingPermission(ADD_TRUSTED_DISPLAY, "createVirtualDisplay()")
+                    || checkCallingPermission(ACCESS_COMPUTER_CONTROL, "createVirtualDisplay()"))) {
                 throw new SecurityException("Requires ADD_TRUSTED_DISPLAY permission to "
                         + "create a virtual display which is not in the default DisplayGroup.");
             }
@@ -2036,10 +2037,11 @@ public final class DisplayManagerService extends SystemService {
             flags &= ~VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED;
         }
 
-        if ((flags & VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED) != 0) {
-            if (callingUid != Process.SYSTEM_UID
-                    && !checkCallingPermission(ADD_ALWAYS_UNLOCKED_DISPLAY,
-                    "createVirtualDisplay()")) {
+        if (callingUid != Process.SYSTEM_UID
+                && (flags & VIRTUAL_DISPLAY_FLAG_ALWAYS_UNLOCKED) != 0) {
+            if (!(checkCallingPermission(ADD_ALWAYS_UNLOCKED_DISPLAY, "createVirtualDisplay()")
+                     || checkCallingPermission(ACCESS_COMPUTER_CONTROL,
+                    "createVirtualDisplay()"))) {
                 throw new SecurityException(
                         "Requires ADD_ALWAYS_UNLOCKED_DISPLAY permission to "
                                 + "create an always unlocked virtual display.");
