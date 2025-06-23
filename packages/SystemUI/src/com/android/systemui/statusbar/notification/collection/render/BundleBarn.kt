@@ -74,13 +74,13 @@ constructor(
 
     /** Build view and controller for BundleEntry. */
     fun inflateBundleEntry(bundleEntry: BundleEntry) {
-        iconManager.createIcons(context, bundleEntry)
         debugBundleLog(TAG) { "inflateBundleEntry: ${bundleEntry.key}" }
         if (keyToControllerMap.containsKey(bundleEntry.key)) {
             // Skip if bundle is inflating or inflated.
             debugBundleLog(TAG) { "already in map: ${bundleEntry.key}" }
             return
         }
+        iconManager.createIcons(context, bundleEntry)
         val parent: ViewGroup = listContainer.getViewParentForNotification()
         val inflationFinishedListener: (ExpandableNotificationRow) -> Unit = { row ->
             // A subset of NotificationRowBinderImpl.inflateViews
