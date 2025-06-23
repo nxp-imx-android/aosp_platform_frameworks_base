@@ -36,7 +36,6 @@ import com.android.systemui.ActivityIntentHelper
 import com.android.systemui.Flags
 import com.android.systemui.animation.ActivityTransitionAnimator
 import com.android.systemui.animation.DelegateTransitionAnimatorController
-import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.assist.AssistManager
 import com.android.systemui.camera.CameraIntents
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
@@ -113,8 +112,6 @@ constructor(
         controllerFactory: ActivityTransitionAnimator.ControllerFactory,
         scope: CoroutineScope,
     ) {
-        check(TransitionAnimator.longLivedReturnAnimationsEnabled())
-
         val factory =
             object :
                 ActivityTransitionAnimator.ControllerFactory(
@@ -143,7 +140,6 @@ constructor(
     }
 
     override fun unregisterTransition(cookie: ActivityTransitionAnimator.TransitionCookie) {
-        check(TransitionAnimator.longLivedReturnAnimationsEnabled())
         activityTransitionAnimator.unregister(cookie)
     }
 

@@ -20,7 +20,6 @@ import android.os.Bundle
 import android.os.UserHandle
 import android.view.View
 import com.android.systemui.animation.ActivityTransitionAnimator
-import com.android.systemui.animation.TransitionAnimator
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.plugins.ActivityStarter
@@ -55,12 +54,10 @@ constructor(
         controllerFactory: ActivityTransitionAnimator.ControllerFactory,
         scope: CoroutineScope,
     ) {
-        if (!TransitionAnimator.longLivedReturnAnimationsEnabled()) return
         activityStarterInternal.registerTransition(cookie, controllerFactory, scope)
     }
 
     override fun unregisterTransition(cookie: ActivityTransitionAnimator.TransitionCookie) {
-        if (!TransitionAnimator.longLivedReturnAnimationsEnabled()) return
         activityStarterInternal.unregisterTransition(cookie)
     }
 
