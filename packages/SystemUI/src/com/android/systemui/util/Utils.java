@@ -136,7 +136,10 @@ public class Utils {
 
     /**
      * Returns {@code true} if screen capture is enabled and the device is a desktop.
+     *
+     * @deprecated use ScreenCaptureRecordFeatureInteractor instead.
      */
+    @Deprecated
     public static boolean isDesktopScreenCaptureEnabled(Context context) {
         return com.android.systemui.Flags.desktopScreenCapture()
                 && context.getResources().getBoolean(R.bool.config_enableDesktopScreenCapture);
