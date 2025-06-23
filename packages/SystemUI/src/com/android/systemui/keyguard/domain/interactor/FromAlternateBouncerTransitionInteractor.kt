@@ -25,7 +25,6 @@ import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
-import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -196,10 +195,7 @@ constructor(
                 .filterRelevantKeyguardState()
                 .collect {
                     val editModeState = communalSceneInteractor.editModeState.value
-                    if (
-                        Flags.hubEditModeTransition() && editModeState == EditModeState.STARTING ||
-                            editModeState == EditModeState.SHOWING
-                    ) {
+                    if (Flags.hubEditModeTransition() && editModeState != null) {
                         Log.i(
                             TAG,
                             "Ignoring isKeyguardGoingAway due to editModeState: $editModeState",

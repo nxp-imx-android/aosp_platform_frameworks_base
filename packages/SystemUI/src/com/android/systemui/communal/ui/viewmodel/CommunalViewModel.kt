@@ -32,6 +32,7 @@ import com.android.systemui.communal.shared.log.CommunalMetricsLogger
 import com.android.systemui.communal.shared.log.CommunalSceneLogger
 import com.android.systemui.communal.shared.model.CommunalBackgroundType
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -162,7 +163,7 @@ constructor(
                 logger.d({ "Content updated: $str1" }) { str1 = models.joinToString { it.key } }
             }
 
-    override val isCommunalContentVisible: Flow<Boolean> = MutableStateFlow(true)
+    override val isCommunalContentVisible: Flow<Boolean> = flowOf(true)
 
     /**
      * Freeze the content flow, when an activity is about to show, like starting a timer via voice:
@@ -421,6 +422,17 @@ constructor(
     /** The type of background to use for the hub. */
     val communalBackground: Flow<CommunalBackgroundType> =
         communalSettingsInteractor.communalBackground
+
+    /**
+     * Whether to show a temporary background for edit mode transition.
+     *
+     * This is for coordinating the transition to and from edit mode; the background hides the
+     * activity entry and exit animations below the SystemUI window.
+     */
+    val showBackgroundForEditModeTransition: Flow<Boolean> =
+        if (Flags.hubEditModeTransition())
+            communalSceneInteractor.editModeState.map { it != null && it > EditModeState.STARTING }
+        else flowOf(false)
 
     /** See [CommunalSettingsInteractor.isV2FlagEnabled] */
     fun v2FlagEnabled(): Boolean = communalSettingsInteractor.isV2FlagEnabled()

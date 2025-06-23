@@ -28,6 +28,7 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.Flags
 import com.android.systemui.communal.dagger.CommunalModule.Companion.LAUNCHER_PACKAGE
 import com.android.systemui.communal.data.model.CommunalWidgetCategories
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
@@ -61,6 +62,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
@@ -97,11 +99,14 @@ constructor(
 
     override val isEditMode = true
 
-    override val isCommunalContentVisible: Flow<Boolean> =
+    private val editModeShowing =
         communalSceneInteractor.editModeState.map { it == EditModeState.SHOWING }
 
+    override val isCommunalContentVisible: Flow<Boolean> =
+        if (Flags.hubEditModeTransition()) flowOf(true) else editModeShowing
+
     val showDisclaimer: Flow<Boolean> =
-        allOf(isCommunalContentVisible, not(communalInteractor.isDisclaimerDismissed))
+        allOf(editModeShowing, not(communalInteractor.isDisclaimerDismissed))
 
     fun onDisclaimerDismissed() {
         communalInteractor.setDisclaimerDismissed()

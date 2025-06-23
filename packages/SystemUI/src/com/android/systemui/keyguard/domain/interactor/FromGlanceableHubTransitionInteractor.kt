@@ -24,7 +24,6 @@ import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.CommunalTransitionKeys
-import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -223,10 +222,7 @@ constructor(
                 .filterRelevantKeyguardStateAnd { isKeyguardGoingAway -> isKeyguardGoingAway }
                 .collect {
                     val editModeState = communalSceneInteractor.editModeState.value
-                    if (
-                        editModeState == EditModeState.STARTING ||
-                            editModeState == EditModeState.SHOWING
-                    ) {
+                    if (editModeState != null) {
                         if (Flags.hubEditModeTransition()) {
                             // If transitioning to edit mode, do nothing here. Scene change is
                             // handled by the edit mode activity.

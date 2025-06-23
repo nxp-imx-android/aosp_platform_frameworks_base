@@ -87,6 +87,10 @@ object TransitionDuration {
         EDIT_MODE_TO_HUB_GRID_DELAY_MS + EDIT_MODE_TO_HUB_CONTENT_MS
     const val HUB_TO_EDIT_MODE_CONTENT_MS = 250
     const val TO_GLANCEABLE_HUB_DURATION_MS = 1000
+
+    // The duration in milliseconds to animate in and our of the background for edit mode
+    // transition.
+    const val EDIT_MODE_BACKGROUND_ANIM_DURATION_MS = 300
 }
 
 val sceneTransitionsV2 = transitions {
@@ -140,6 +144,14 @@ val sceneTransitionsV2 = transitions {
             }
         }
         timestampRange(startMillis = 167, endMillis = 334) { fade(Communal.Elements.Scrim) }
+    }
+    to(CommunalScenes.Blank, key = CommunalTransitionKeys.ToEditMode) {
+        spec = tween(durationMillis = TransitionDuration.BETWEEN_HUB_AND_EDIT_MODE_MS)
+        fade(AllElements)
+    }
+    to(CommunalScenes.Communal, key = CommunalTransitionKeys.FromEditMode) {
+        spec = tween(durationMillis = TransitionDuration.BETWEEN_HUB_AND_EDIT_MODE_MS)
+        fade(AllElements)
     }
 }
 
