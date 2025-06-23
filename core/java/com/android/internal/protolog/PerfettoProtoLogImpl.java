@@ -613,6 +613,8 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 return;
             }
 
+            boolean needsIncrementalState = false;
+
             if (args != null) {
                 // Intern all string params before creating the trace packet for the proto
                 // message so that the interned strings appear before in the trace to make the
@@ -621,6 +623,7 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 for (Object o : args) {
                     int type = LogDataType.bitmaskToLogDataType(message.getMessageMask(), argIndex);
                     if (type == LogDataType.STRING) {
+                        needsIncrementalState = true;
                         if (o == null) {
                             internStringArg(ctx, NULL_STRING);
                         } else {
@@ -636,10 +639,9 @@ public abstract class PerfettoProtoLogImpl extends IProtoLogClient.Stub implemen
                 // Intern stackstraces before creating the trace packet for the proto message so
                 // that the interned stacktrace strings appear before in the trace to make the
                 // trace processing easier.
+                needsIncrementalState = true;
                 internedStacktrace = internStacktraceString(ctx, stacktrace);
             }
-
-            boolean needsIncrementalState = false;
 
             long messageHash = 0;
             if (message.mMessageHash != null) {
