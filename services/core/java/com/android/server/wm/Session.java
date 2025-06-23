@@ -117,7 +117,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
     boolean mCanForceShowingInsets;
     private final boolean mCanStartTasksFromRecents;
 
-    final boolean mCanCreateSystemApplicationOverlay;
+    private boolean mCanCreateSystemApplicationOverlay;
     final boolean mCanHideNonSystemOverlayWindows;
     final boolean mCanSetUnrestrictedGestureExclusion;
     final boolean mCanAlwaysUpdateWallpaper;
@@ -157,15 +157,7 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
                 HIDE_NON_SYSTEM_OVERLAY_WINDOWS) == PERMISSION_GRANTED
                 || service.mContext.checkCallingOrSelfPermission(HIDE_OVERLAY_WINDOWS)
                 == PERMISSION_GRANTED;
-        mCanCreateSystemApplicationOverlay =
-                com.android.media.projection.flags.Flags.recordingOverlay()
-                ? service.mContext.getSystemService(
-                        PermissionManager.class).checkPermissionForPreflight(
-                        Manifest.permission.SYSTEM_APPLICATION_OVERLAY,
-                        new AttributionSource(mUid, mPackageName, null))
-                        == PermissionManager.PERMISSION_GRANTED
-                : service.mContext.checkCallingOrSelfPermission(SYSTEM_APPLICATION_OVERLAY)
-                        == PERMISSION_GRANTED;
+        updateCanCreateSystemApplicationOverlay(service.mPermissionManager);
         mCanStartTasksFromRecents = service.mContext.checkCallingOrSelfPermission(
                 START_TASKS_FROM_RECENTS) == PERMISSION_GRANTED;
         mSetsUnrestrictedKeepClearAreas =
@@ -200,6 +192,23 @@ class Session extends IWindowSession.Stub implements IBinder.DeathRecipient {
             mCallback.asBinder().linkToDeath(this, 0);
         } catch (RemoteException e) {
             mClientDead = true;
+        }
+    }
+
+    boolean canCreateSystemApplicationOverlay() {
+        return mCanCreateSystemApplicationOverlay;
+    }
+
+    void updateCanCreateSystemApplicationOverlay(PermissionManager permissionManager) {
+        if (com.android.media.projection.flags.Flags.recordingOverlay()) {
+            mCanCreateSystemApplicationOverlay = permissionManager.checkPermissionForPreflight(
+                    Manifest.permission.SYSTEM_APPLICATION_OVERLAY,
+                    new AttributionSource(mUid, mPackageName, null))
+                    == PermissionManager.PERMISSION_GRANTED;
+        } else {
+            mCanCreateSystemApplicationOverlay = mService.mContext.checkCallingOrSelfPermission(
+                    SYSTEM_APPLICATION_OVERLAY)
+                    == PERMISSION_GRANTED;
         }
     }
 

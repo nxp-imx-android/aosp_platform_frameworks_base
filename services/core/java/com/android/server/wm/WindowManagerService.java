@@ -233,6 +233,7 @@ import android.os.SystemProperties;
 import android.os.SystemService;
 import android.os.Trace;
 import android.os.UserHandle;
+import android.permission.PermissionManager;
 import android.provider.DeviceConfigInterface;
 import android.provider.Settings;
 import android.service.vr.IVrManager;
@@ -605,6 +606,7 @@ public class WindowManagerService extends IWindowManager.Stub
     final ActivityManagerInternal mAmInternal;
     final UserManagerInternal mUmInternal;
 
+    final PermissionManager mPermissionManager;
     final AppOpsManager mAppOps;
     final PackageManagerInternal mPmInternal;
     private final TestUtilityService mTestUtilityService;
@@ -1418,15 +1420,36 @@ public class WindowManagerService extends IWindowManager.Stub
         mActivityManager = ActivityManager.getService();
         mAmInternal = LocalServices.getService(ActivityManagerInternal.class);
         mUmInternal = LocalServices.getService(UserManagerInternal.class);
-        mAppOps = (AppOpsManager)context.getSystemService(Context.APP_OPS_SERVICE);
-        AppOpsManager.OnOpChangedInternalListener opListener =
+        mPermissionManager = context.getSystemService(PermissionManager.class);
+        mAppOps = context.getSystemService(AppOpsManager.class);
+        mAppOps.startWatchingMode(OP_SYSTEM_ALERT_WINDOW, null,
                 new AppOpsManager.OnOpChangedInternalListener() {
-                    @Override public void onOpChanged(int op, String packageName) {
+                    @Override
+                    public void onOpChanged(int op, String packageName) {
                         updateAppOpsState();
                     }
-                };
-        mAppOps.startWatchingMode(OP_SYSTEM_ALERT_WINDOW, null, opListener);
-        mAppOps.startWatchingMode(AppOpsManager.OP_TOAST_WINDOW, null, opListener);
+                });
+        mAppOps.startWatchingMode(AppOpsManager.OP_TOAST_WINDOW, null,
+                new AppOpsManager.OnOpChangedInternalListener() {
+                    @Override
+                    public void onOpChanged(int op, String packageName) {
+                        updateAppOpsState();
+                    }
+                });
+        mAppOps.startWatchingMode(AppOpsManager.OPSTR_SYSTEM_APPLICATION_OVERLAY, null,
+                new AppOpsManager.OnOpChangedInternalListener() {
+                    @Override
+                    public void onOpChanged(int op, String packageName) {
+                        if (op == AppOpsManager.OP_SYSTEM_APPLICATION_OVERLAY) {
+                            synchronized (mGlobalLock) {
+                                for (Session session : mSessions) {
+                                    session.updateCanCreateSystemApplicationOverlay(
+                                            mPermissionManager);
+                                }
+                            }
+                        }
+                    }
+                });
 
         mPmInternal = LocalServices.getService(PackageManagerInternal.class);
         mTestUtilityService = LocalServices.getService(TestUtilityService.class);
