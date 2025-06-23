@@ -143,9 +143,7 @@ public class MediaQualityService extends SystemService {
     private final Object mUserStateLock = new Object();
     // A global lock for ambient backlight objects.
     private final Object mAmbientBacklightLock = new Object();
-
-    private final Map<Long, PictureProfile> mHandleToPictureProfile = new HashMap<>();
-    private final BiMap<Long, Long> mCurrentPictureHandleToOriginal = new BiMap<>();
+    private final StreamStatusMapping mStreamStatusMapping = new StreamStatusMapping();
     private final Set<Long> mPictureProfileForHal = new HashSet<>();
 
     public MediaQualityService(Context context) {
@@ -543,7 +541,7 @@ public class MediaQualityService extends SystemService {
             );
             if (defaultPictureProfileId != -1) {
                 PictureProfile currentDefaultPictureProfile =
-                        mHandleToPictureProfile.get(defaultPictureProfileId);
+                        mStreamStatusMapping.getCurrent(defaultPictureProfileId);
                 if (currentDefaultPictureProfile != null) {
                     return currentDefaultPictureProfile;
                 } else {
@@ -725,7 +723,7 @@ public class MediaQualityService extends SystemService {
                     PictureProfile p = MediaQualityUtils.convertCursorToPictureProfileWithTempId(
                             cursor, mPictureProfileTempIdMap);
                     handle = p.getHandle().getId();
-                    PictureProfile current = mHandleToPictureProfile.get(handle);
+                    PictureProfile current = mStreamStatusMapping.getCurrent(handle);
                     if (current != null) {
                         long currentHandle = current.getHandle().getId();
                         mHalNotifier.notifyHalOnPictureProfileChange(
@@ -1939,12 +1937,7 @@ public class MediaQualityService extends SystemService {
             // TODO: only notify HAL when the profile is active / being used
             if (mPpChangedListener != null) {
                 try {
-                    Long idForHal = dbId;
-                    Long originalHandle = mCurrentPictureHandleToOriginal.getValue(dbId);
-                    if (originalHandle != null) {
-                        // the original id is used in HAL because of status change
-                        idForHal = originalHandle;
-                    }
+                    Long idForHal = mStreamStatusMapping.getOriginal(dbId);
                     mPpChangedListener.onPictureProfileChanged(convertToHalPictureProfile(idForHal,
                             params));
                 } catch (RemoteException e) {
@@ -2056,8 +2049,7 @@ public class MediaQualityService extends SystemService {
                     if (param.getTag() == PictureParameter.activeProfile
                             && !param.getActiveProfile()) {
                         synchronized (mPictureProfileLock) {
-                            mHandleToPictureProfile.remove(dbId);
-                            mCurrentPictureHandleToOriginal.removeValue(dbId);
+                            mStreamStatusMapping.removeMapping(dbId);
                         }
                         break;
                     }
@@ -2122,7 +2114,7 @@ public class MediaQualityService extends SystemService {
             mHandler.post(() -> {
                 synchronized (mPictureProfileLock) {
                     // get from map if exists
-                    PictureProfile previous = mHandleToPictureProfile.get(profileHandle);
+                    PictureProfile previous = mStreamStatusMapping.getCurrent(profileHandle);
                     if (previous == null) {
                         Slog.d(TAG, "Previous profile not in the map");
                         // get from DB if not exists
@@ -2151,10 +2143,12 @@ public class MediaQualityService extends SystemService {
                         Slog.d(TAG, "The new status is " + newStatus);
                         String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
                                 + BaseParameters.PARAMETER_PACKAGE + " = ? AND "
+                                + BaseParameters.PARAMETER_INPUT_ID + " = ? AND "
                                 + BaseParameters.PARAMETER_NAME + " = ?";
                         String[] selectionArguments = {
                                 Integer.toString(previous.getProfileType()),
                                 previous.getPackageName(),
+                                previous.getInputId(),
                                 profileName + "/" + newStatus
                         };
                         List<PictureProfile> list =
@@ -2175,10 +2169,7 @@ public class MediaQualityService extends SystemService {
                             PersistableBundle currentSdrParameter = currentSdr.getParameters();
                             currentSdrParameter.putString(
                                     STREAM_STATUS_NOT_CREATED, newStatus);
-                            mHandleToPictureProfile.put(profileHandle, currentSdr);
-                            mCurrentPictureHandleToOriginal.removeValue(profileHandle);
-                            mCurrentPictureHandleToOriginal.put(
-                                    currentSdr.getHandle().getId(), profileHandle);
+                            mStreamStatusMapping.setCurrent(profileHandle, currentSdr);
                             mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
                                     currentSdrParameter);
 
@@ -2191,10 +2182,7 @@ public class MediaQualityService extends SystemService {
                         // Add previous stream status information so that application can use this
                         // flag to indicate that there is a onStreamStatusChange.
                         currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
-                        mHandleToPictureProfile.put(profileHandle, current);
-                        mCurrentPictureHandleToOriginal.removeValue(profileHandle);
-                        mCurrentPictureHandleToOriginal.put(
-                                current.getHandle().getId(), profileHandle);
+                        mStreamStatusMapping.setCurrent(profileHandle, current);
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
                                 current.getProfileId(), current, Process.INVALID_UID,
                                 Process.INVALID_PID);
@@ -2213,7 +2201,6 @@ public class MediaQualityService extends SystemService {
                         // to SDR
                         PictureProfile current = getSdrPictureProfile(profileName, previous);
                         if (current == null) {
-                            Slog.d(TAG, "The current SDR profile is null");
                             return;
                         }
                         PersistableBundle currentProfileParameters = current.getParameters();
@@ -2222,10 +2209,7 @@ public class MediaQualityService extends SystemService {
                         // Add previous stream status information so that application can use this
                         // flag to indicate that there is a onStreamStatusChange.
                         currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
-                        mHandleToPictureProfile.put(profileHandle, current);
-                        mCurrentPictureHandleToOriginal.removeValue(profileHandle);
-                        mCurrentPictureHandleToOriginal.put(
-                                current.getHandle().getId(), profileHandle);
+                        mStreamStatusMapping.setCurrent(profileHandle, current);
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
                                 current.getProfileId(), current, Process.INVALID_UID,
                                 Process.INVALID_PID);
@@ -2593,12 +2577,14 @@ public class MediaQualityService extends SystemService {
 
     private PictureProfile getSdrPictureProfile(String profileName, PictureProfile previous) {
         String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
-                + BaseParameters.PARAMETER_PACKAGE + " = ? AND ("
+                + BaseParameters.PARAMETER_PACKAGE + " = ? AND "
+                + BaseParameters.PARAMETER_INPUT_ID + " = ? AND ("
                 + BaseParameters.PARAMETER_NAME + " = ? OR "
                 + BaseParameters.PARAMETER_NAME + " = ?)";
         String[] selectionArguments = {
                 Integer.toString(previous.getProfileType()),
                 previous.getPackageName(),
+                previous.getInputId(),
                 profileName,
                 profileName + "/" + PictureProfile.STATUS_SDR
         };
