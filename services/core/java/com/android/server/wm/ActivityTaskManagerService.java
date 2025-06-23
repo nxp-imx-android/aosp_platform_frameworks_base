@@ -1551,6 +1551,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
 
         final ActivityOptions options = ActivityOptions.makeBasic();
+        // DreamService does not support multi-display yet, always launch on default display.
+        options.setLaunchDisplayId(DEFAULT_DISPLAY);
         options.setLaunchActivityType(ACTIVITY_TYPE_DREAM);
 
         synchronized (mGlobalLock) {
