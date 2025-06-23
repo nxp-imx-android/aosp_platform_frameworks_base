@@ -24,7 +24,6 @@ import android.os.IBinder
 import android.os.SystemClock
 import android.os.SystemProperties
 import android.os.UserHandle
-import android.util.Size
 import android.view.Choreographer
 import android.view.SurfaceControl
 import android.view.SurfaceControl.Transaction
@@ -1398,11 +1397,7 @@ constructor(
             state.draggedTaskChange ?: error("Expected non-null change of dragged task")
         val draggedTaskLeash = draggedTaskChange.leash
         val freeformTaskChanges = state.freeformTaskChanges
-        val startSize =
-            Size(
-                draggedTaskChange.startAbsBounds.width(),
-                draggedTaskChange.startAbsBounds.height(),
-            )
+        val startBounds = draggedTaskChange.startAbsBounds
         val endBounds = draggedTaskChange.endAbsBounds
         val currentVelocity = state.dragAnimator.computeCurrentVelocity()
 
@@ -1413,18 +1408,13 @@ constructor(
         // end value, animate scale to 1.
         val startScale = state.dragAnimator.scale
         val startPosition = state.dragAnimator.position
-        val startBounds =
-            Rect(
-                startPosition.x.toInt(),
-                startPosition.y.toInt(),
-                startPosition.x.toInt() + startSize.width,
-                startPosition.x.toInt() + startSize.height,
-            )
+        val startBoundsWithOffset =
+            Rect(startBounds).apply { offset(startPosition.x.toInt(), startPosition.y.toInt()) }
 
         logV(
-            "animateEndDragToDesktop: startSize=$startSize, endBounds=$endBounds, " +
+            "animateEndDragToDesktop: startBounds=$startBounds, endBounds=$endBounds, " +
                 "startScale=$startScale, startPosition=$startPosition, " +
-                "startBounds=$startBounds"
+                "startBoundsWithOffset=$startBoundsWithOffset"
         )
 
         dragToDesktopStateListener?.onCommitToDesktopAnimationStart()
@@ -1434,11 +1424,11 @@ constructor(
         onTaskResizeAnimationListener.onAnimationStart(
             state.draggedTaskId,
             startTransaction,
-            startBounds,
+            startBoundsWithOffset,
         )
 
         val tx: SurfaceControl.Transaction = transactionSupplier.get()
-        PhysicsAnimator.getInstance(startBounds)
+        PhysicsAnimator.getInstance(startBoundsWithOffset)
             .spring(
                 FloatProperties.RECT_X,
                 endBounds.left.toFloat(),
