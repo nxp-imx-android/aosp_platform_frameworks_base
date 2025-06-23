@@ -17,6 +17,7 @@ package com.android.wm.shell.desktopmode.multidesks
 
 import android.app.ActivityTaskManager.INVALID_TASK_ID
 import android.os.IBinder
+import android.os.Trace
 import android.view.Display.INVALID_DISPLAY
 import android.view.WindowManager.TRANSIT_CHANGE
 import android.view.WindowManager.TRANSIT_TO_BACK
@@ -67,7 +68,10 @@ class DesksTransitionObserver(
      * observer.
      */
     fun onTransitionReady(transition: IBinder, info: TransitionInfo) =
-        traceSection("DesksTransitionObserver#onTransitionReady") {
+        traceSection(
+            traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+            name = "DesksTransitionObserver#onTransitionReady",
+        ) {
             if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) return
             val deskTransitions = deskTransitions.remove(transition)
             deskTransitions?.forEach { deskTransition ->

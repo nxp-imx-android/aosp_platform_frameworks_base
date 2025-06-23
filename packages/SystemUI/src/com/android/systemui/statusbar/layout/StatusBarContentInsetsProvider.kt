@@ -267,7 +267,7 @@ constructor(
     }
 
     override fun getStatusBarContentInsetsForRotation(@Rotation rotation: Int): Insets =
-        traceSection(tag = "StatusBarContentInsetsProvider.getStatusBarContentInsetsForRotation") {
+        traceSection("StatusBarContentInsetsProvider.getStatusBarContentInsetsForRotation") {
             val sysUICutout = sysUICutoutProvider.cutoutInfoForCurrentDisplayAndRotation()
             val displayCutout = sysUICutout?.cutout
             val key = getCacheKey(rotation, displayCutout)
