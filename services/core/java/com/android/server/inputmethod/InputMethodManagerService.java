@@ -1041,12 +1041,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         @Override
         public void onStart() {
             mService.publishLocalService();
-            IInputMethodManagerImpl.Callback service;
-            if (Flags.useZeroJankProxy()) {
-                service = new ZeroJankProxy(mService.mHandler::post, mService);
-            } else {
-                service = mService;
-            }
+            IInputMethodManagerImpl.Callback service =
+                    new ZeroJankProxy(mService.mHandler::post, mService);
             publishBinderService(Context.INPUT_METHOD_SERVICE,
                     IInputMethodManagerImpl.create(service), false /*allowIsolated*/,
                     DUMP_FLAG_PRIORITY_CRITICAL | DUMP_FLAG_PRIORITY_NORMAL | DUMP_FLAG_PROTO);
@@ -2229,12 +2225,6 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             @UserIdInt int userId) {
         if (bindingController.hasMainConnection()) {
             if (bindingController.getCurMethod() != null) {
-                if (!Flags.useZeroJankProxy()) {
-                    // Return to client, and we will get back with it when
-                    // we have had a session made for it.
-                    requestClientSessionLocked(cs, userId);
-                    requestClientSessionForAccessibilityLocked(cs);
-                }
                 return new InputBindResult(
                         InputBindResult.ResultCode.SUCCESS_WAITING_IME_SESSION,
                         null, null, null,
@@ -3502,8 +3492,8 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         return imeClientFocus == WindowManagerInternal.ImeClientFocusResult.HAS_IME_FOCUS;
     }
 
-    //TODO(b/293640003): merge with startInputOrWindowGainedFocus once Flags.useZeroJankProxy()
-    // is enabled.
+    //TODO(b/418839448): merge with startInputOrWindowGainedFocus once WINDOW_FOCUS_GAIN_REPORT_ONLY
+    // uses async method.
     @Override
     public void startInputOrWindowGainedFocusAsync(
             @StartInputReason int startInputReason, IInputMethodClient client, IBinder windowToken,

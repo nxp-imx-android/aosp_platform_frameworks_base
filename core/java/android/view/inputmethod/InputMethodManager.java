@@ -958,6 +958,7 @@ public final class InputMethodManager {
 
                 // ignore the result
                 Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMM.startInputOrWindowGainedFocus");
+                //TODO(b/418839448): use async method.
                 IInputMethodManagerGlobalInvoker.startInputOrWindowGainedFocus(
                         StartInputReason.WINDOW_FOCUS_GAIN_REPORT_ONLY, mClient,
                         viewForWindowFocus.getWindowToken(), startInputFlags, softInputMode,
@@ -3044,6 +3045,7 @@ public final class InputMethodManager {
                 delegateView.getHandwritingDelegateFlags());
     }
 
+    // TODO (b/418839728): deprecate this method since zeroJankProxy is enabled by default.
     /**
      * Accepts and starts a stylus handwriting session on the delegate view, if handwriting
      * initiation delegation was previously requested using
@@ -3066,7 +3068,6 @@ public final class InputMethodManager {
      * @see #acceptStylusHandwritingDelegation(View)
      * @see #startConnectionlessStylusHandwritingForDelegation(View, CursorAnchorInfo, String,
      *     Executor, ConnectionlessHandwritingCallback)
-     * TODO (b/293640003): deprecate this method once flag is enabled.
      */
     public boolean acceptStylusHandwritingDelegation(
             @NonNull View delegateView, @NonNull String delegatorPackageName) {
@@ -3390,8 +3391,6 @@ public final class InputMethodManager {
         final InputConnection ic = connectionPair.first;
         final EditorInfo editorInfo = connectionPair.second;
         final Handler icHandler;
-        InputBindResult res = null;
-        final boolean hasServedView;
         final boolean imeRequestedVisible;
         synchronized (mH) {
             // Now that we are locked again, validate that our state hasn't
@@ -3474,8 +3473,8 @@ public final class InputMethodManager {
                     && previouslyServedConnection == null
                     && ic == null
                     && isSwitchingBetweenEquivalentNonEditableViews(
-                            mPreviousViewFocusParameters, startInputFlags,
-                            startInputReason, softInputMode, windowFlags);
+                    mPreviousViewFocusParameters, startInputFlags,
+                    startInputReason, softInputMode, windowFlags);
             mPreviousViewFocusParameters = new ViewFocusParameterInfo(mCurrentEditorInfo,
                     startInputFlags, startInputReason, softInputMode, windowFlags);
             if (canSkip) {
@@ -3488,112 +3487,42 @@ public final class InputMethodManager {
                     ? editorInfo.targetInputMethodUser.getIdentifier() : UserHandle.myUserId();
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "IMM.startInputOrWindowGainedFocus");
 
-            int startInputSeq = INVALID_SEQ_ID;
-            if (Flags.useZeroJankProxy()) {
-                // async result delivered via MSG_START_INPUT_RESULT.
-                startInputSeq = IInputMethodManagerGlobalInvoker.startInputOrWindowGainedFocusAsync(
-                        startInputReason, mClient, windowGainingFocus, startInputFlags,
-                        softInputMode, windowFlags, editorInfo, servedInputConnection,
-                        servedInputConnection == null ? null
-                                : servedInputConnection.asIRemoteAccessibilityInputConnection(),
-                        view.getContext().getApplicationInfo().targetSdkVersion, targetUserId,
-                        mImeDispatcher, imeRequestedVisible, mAsyncShowHideMethodEnabled);
-            } else {
-                res = IInputMethodManagerGlobalInvoker.startInputOrWindowGainedFocus(
-                        startInputReason, mClient, windowGainingFocus, startInputFlags,
-                        softInputMode, windowFlags, editorInfo, servedInputConnection,
-                        servedInputConnection == null ? null
-                                : servedInputConnection.asIRemoteAccessibilityInputConnection(),
-                        view.getContext().getApplicationInfo().targetSdkVersion, targetUserId,
-                        mImeDispatcher, imeRequestedVisible);
-            }
+            // async result delivered via MSG_START_INPUT_RESULT.
+            final int startInputSeq =
+                    IInputMethodManagerGlobalInvoker.startInputOrWindowGainedFocusAsync(
+                            startInputReason, mClient, windowGainingFocus, startInputFlags,
+                            softInputMode, windowFlags, editorInfo, servedInputConnection,
+                            servedInputConnection == null ? null
+                                    : servedInputConnection.asIRemoteAccessibilityInputConnection(),
+                            view.getContext().getApplicationInfo().targetSdkVersion, targetUserId,
+                            mImeDispatcher, imeRequestedVisible, mAsyncShowHideMethodEnabled);
+
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
-            if (Flags.useZeroJankProxy()) {
-                // Create a runnable for delayed notification to the app that the InputConnection is
-                // initialized and ready for use.
-                if (ic != null) {
-                    final int seqId = startInputSeq;
-                    if (Flags.invalidateInputCallsRestart()) {
-                        mLastPendingStartSeqId = seqId;
-                    }
-                    mReportInputConnectionOpenedRunner =
-                            new ReportInputConnectionOpenedRunner(startInputSeq) {
-                                @Override
-                                public void run() {
-                                    if (DEBUG) {
-                                        Log.v(TAG, "Calling View.onInputConnectionOpened: view= "
-                                                + view
-                                                + ", ic=" + ic + ", editorInfo=" + editorInfo
-                                                + ", handler="
-                                                + icHandler + ", startInputSeq=" + seqId);
-                                    }
-                                    reportInputConnectionOpened(ic, editorInfo, icHandler, view);
+            // Create a runnable for delayed notification to the app that the InputConnection is
+            // initialized and ready for use.
+            if (ic != null) {
+                final int seqId = startInputSeq;
+                if (Flags.invalidateInputCallsRestart()) {
+                    mLastPendingStartSeqId = seqId;
+                }
+                mReportInputConnectionOpenedRunner =
+                        new ReportInputConnectionOpenedRunner(startInputSeq) {
+                            @Override
+                            public void run() {
+                                if (DEBUG) {
+                                    Log.v(TAG, "Calling View.onInputConnectionOpened: view= "
+                                            + view
+                                            + ", ic=" + ic + ", editorInfo=" + editorInfo
+                                            + ", handler="
+                                            + icHandler + ", startInputSeq=" + seqId);
                                 }
-                            };
-                } else {
-                    mReportInputConnectionOpenedRunner = null;
-                }
-                return true;
+                                reportInputConnectionOpened(ic, editorInfo, icHandler, view);
+                            }
+                        };
+            } else {
+                mReportInputConnectionOpenedRunner = null;
             }
-
-            if (DEBUG) Log.v(TAG, "Starting input: Bind result=" + res);
-            if (res == null) {
-                Log.wtf(TAG, "startInputOrWindowGainedFocus must not return"
-                        + " null. startInputReason="
-                        + InputMethodDebug.startInputReasonToString(startInputReason)
-                        + " editorInfo=" + editorInfo
-                        + " startInputFlags="
-                        + InputMethodDebug.startInputFlagsToString(startInputFlags));
-                return false;
-            }
-            if (res.id != null) {
-                updateInputChannelLocked(res.channel);
-                mCurMethod = res.method; // for @UnsupportedAppUsage
-                mCurBindState = new BindState(res);
-                mAccessibilityInputMethodSession.clear();
-                if (res.accessibilitySessions != null) {
-                    for (int i = 0; i < res.accessibilitySessions.size(); i++) {
-                        IAccessibilityInputMethodSessionInvoker wrapper =
-                                IAccessibilityInputMethodSessionInvoker.createOrNull(
-                                        res.accessibilitySessions.valueAt(i));
-                        if (wrapper != null) {
-                            mAccessibilityInputMethodSession.append(
-                                    res.accessibilitySessions.keyAt(i), wrapper);
-                        }
-                    }
-                }
-                mCurId = res.id; // for @UnsupportedAppUsage
-            } else if (res.channel != null && res.channel != mCurChannel) {
-                res.channel.dispose();
-            }
-
-            switch (res.result) {
-                case InputBindResult.ResultCode.ERROR_NOT_IME_TARGET_WINDOW:
-                    mRestartOnNextWindowFocus = true;
-                    if (initiationWithoutInputConnection()) {
-                        mServedView.getViewRootImpl().getHandwritingInitiator().clearFocusedView(
-                                mServedView);
-                    }
-                    mServedView = null;
-                    break;
-            }
-            if (mCompletions != null) {
-                if (isImeSessionAvailableLocked()) {
-                    mCurBindState.mImeSession.displayCompletions(mCompletions);
-                }
-            }
-            hasServedView = mServedView != null;
         }
-
-        // Notify the app that the InputConnection is initialized and ready for use.
-        if (ic != null && res != null && res.method != null && hasServedView) {
-            if (DEBUG) {
-                Log.v(TAG, "Calling View.onInputConnectionOpened: view= " + view
-                        + ", ic=" + ic + ", editorInfo=" + editorInfo + ", handler=" + icHandler);
-            }
-            reportInputConnectionOpened(ic, editorInfo, icHandler, view);
-        }
-
         return true;
     }
 
