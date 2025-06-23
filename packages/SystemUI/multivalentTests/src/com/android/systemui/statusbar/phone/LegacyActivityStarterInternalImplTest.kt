@@ -153,10 +153,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         `when`(shadeDialogContextInteractor.context).thenReturn(context)
     }
 
-    @EnableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun registerTransition_registers() {
         with(kosmos) {
@@ -173,10 +170,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         }
     }
 
-    @DisableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @DisableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun registerTransition_throws_whenFlagsAreDisabled() {
         with(kosmos) {
@@ -194,10 +188,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         }
     }
 
-    @EnableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @EnableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun unregisterTransition_unregisters() {
         val cookie = mock(ActivityTransitionAnimator.TransitionCookie::class.java)
@@ -207,10 +198,7 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         verify(activityTransitionAnimator).unregister(eq(cookie))
     }
 
-    @DisableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
+    @DisableFlags(SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED)
     @Test
     fun unregisterTransition_throws_whenFlagsAreDisabled() {
         val cookie = mock(ActivityTransitionAnimator.TransitionCookie::class.java)

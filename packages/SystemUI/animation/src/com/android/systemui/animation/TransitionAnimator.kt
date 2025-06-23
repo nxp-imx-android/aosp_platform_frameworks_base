@@ -41,7 +41,6 @@ import com.android.internal.dynamicanimation.animation.SpringAnimation
 import com.android.internal.dynamicanimation.animation.SpringForce
 import com.android.systemui.Flags
 import com.android.systemui.Flags.moveTransitionAnimationLayer
-import com.android.systemui.shared.Flags.returnAnimationFrameworkLibrary
 import com.android.systemui.shared.Flags.returnAnimationFrameworkLongLived
 import java.util.concurrent.Executor
 import kotlin.math.abs
@@ -118,15 +117,6 @@ class TransitionAnimator(
             )
         }
 
-        fun assertReturnAnimations() {
-            check(returnAnimationsEnabled()) {
-                "isLaunching cannot be false when the returnAnimationFrameworkLibrary flag " +
-                    "is disabled"
-            }
-        }
-
-        fun returnAnimationsEnabled() = returnAnimationFrameworkLibrary()
-
         fun assertLongLivedReturnAnimations() {
             check(longLivedReturnAnimationsEnabled()) {
                 "Long-lived registrations cannot be used when the " +
@@ -135,8 +125,7 @@ class TransitionAnimator(
             }
         }
 
-        fun longLivedReturnAnimationsEnabled() =
-            returnAnimationFrameworkLibrary() && returnAnimationFrameworkLongLived()
+        fun longLivedReturnAnimationsEnabled() = returnAnimationFrameworkLongLived()
 
         internal fun WindowAnimationState.toTransitionState() =
             State().also {
@@ -527,7 +516,6 @@ class TransitionAnimator(
         startVelocity: PointF? = null,
         startFrameTime: Long = -1,
     ): Animation {
-        if (!controller.isLaunching) assertReturnAnimations()
         if (startVelocity != null) assertLongLivedReturnAnimations()
 
         // We add an extra layer with the same color as the dialog/app splash screen background
