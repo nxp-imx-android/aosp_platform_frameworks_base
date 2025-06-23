@@ -56,6 +56,7 @@ import com.android.wm.shell.common.DisplayInsetsController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.common.MultiInstanceHelper
+import com.android.wm.shell.common.UserProfileContexts
 import com.android.wm.shell.common.SyncTransactionQueue
 import com.android.wm.shell.compatui.api.CompatUIHandler
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler
@@ -177,6 +178,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected lateinit var desktopState: FakeDesktopState
     protected lateinit var shellDesktopState: FakeShellDesktopState
     protected lateinit var desktopConfig: FakeDesktopConfig
+    private val mockUserProfileContexts = mock<UserProfileContexts>()
 
     private val transactionFactory = Supplier<SurfaceControl.Transaction> {
         SurfaceControl.Transaction()
@@ -215,6 +217,8 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
         whenever(display.type).thenReturn(Display.TYPE_INTERNAL)
         whenever(mockDesktopUserRepositories.getProfile(anyInt()))
             .thenReturn(mockDesktopRepository)
+        whenever(mockUserProfileContexts[anyInt()]).thenReturn(spyContext)
+        whenever(mockUserProfileContexts.getOrCreate(anyInt())).thenReturn(spyContext)
         desktopModeCompatPolicy = DesktopModeCompatPolicy(spyContext)
         appHandleAndHeaderVisibilityHelper = AppHandleAndHeaderVisibilityHelper(
             displayController = mockDisplayController,
@@ -273,6 +277,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             mockDesksOrganizer,
             shellDesktopState,
             desktopConfig,
+            mockUserProfileContexts,
         )
         desktopModeWindowDecorViewModel.setSplitScreenController(mockSplitScreenController)
         whenever(mockDisplayController.getDisplayLayout(any())).thenReturn(mockDisplayLayout)
