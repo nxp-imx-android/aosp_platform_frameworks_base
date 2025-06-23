@@ -99,6 +99,7 @@ import android.os.UserHandle;
 import android.text.TextUtils;
 import android.text.format.TimeMigrationUtils;
 import android.util.ArraySet;
+import android.util.IntArray;
 import android.util.KeyValueListParser;
 import android.util.Log;
 import android.util.Slog;
@@ -393,7 +394,7 @@ public class ShortcutService extends IShortcutService.Stub {
     final SparseLongArray mUidLastForegroundElapsedTime = new SparseLongArray();
 
     @GuardedBy("mServiceLock")
-    private List<Integer> mDirtyUserIds = new ArrayList<>();
+    private IntArray mDirtyUserIds = new IntArray();
 
     private final AtomicBoolean mBootCompleted = new AtomicBoolean();
     private final AtomicBoolean mShutdown = new AtomicBoolean();
@@ -1235,14 +1236,29 @@ public class ShortcutService extends IShortcutService.Stub {
         if (DEBUG || DEBUG_REBOOT) {
             Slog.d(TAG, "Scheduling to save for userId=" + userId);
         }
+        addDirtyUserId(userId);
+        // If already scheduled, remove that and re-schedule in N seconds.
+        mHandler.removeCallbacks(mSaveDirtyInfoRunner);
+        mHandler.postDelayed(mSaveDirtyInfoRunner, mSaveDelayMillis);
+    }
+
+    @VisibleForTesting
+    void addDirtyUserId(int userId) {
         synchronized (mServiceLock) {
             if (!mDirtyUserIds.contains(userId)) {
                 mDirtyUserIds.add(userId);
             }
         }
-        // If already scheduled, remove that and re-schedule in N seconds.
-        mHandler.removeCallbacks(mSaveDirtyInfoRunner);
-        mHandler.postDelayed(mSaveDirtyInfoRunner, mSaveDelayMillis);
+    }
+
+    private IntArray getDirtyUserIds() {
+        IntArray dirtyUserIds = new IntArray();
+        synchronized (mServiceLock) {
+            IntArray tmp = mDirtyUserIds;
+            mDirtyUserIds = dirtyUserIds;
+            dirtyUserIds = tmp;
+        }
+        return dirtyUserIds;
     }
 
     @VisibleForTesting
@@ -1255,12 +1271,7 @@ public class ShortcutService extends IShortcutService.Stub {
         }
         try {
             Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "shortcutSaveDirtyInfo");
-            List<Integer> dirtyUserIds = new ArrayList<>();
-            synchronized (mServiceLock) {
-                List<Integer> tmp = mDirtyUserIds;
-                mDirtyUserIds = dirtyUserIds;
-                dirtyUserIds = tmp;
-            }
+            IntArray dirtyUserIds = getDirtyUserIds();
             for (int i = dirtyUserIds.size() - 1; i >= 0; i--) {
                 final int userId = dirtyUserIds.get(i);
                 if (userId == UserHandle.USER_NULL) { // USER_NULL for base state.
@@ -3706,8 +3717,7 @@ public class ShortcutService extends IShortcutService.Stub {
     /**
      * Called when a user is unlocked.
      * - Check all known packages still exist, and otherwise perform cleanup.
-     * - If a package still exists, check the version code.  If it's been updated, may need to
-     * update timestamps of its shortcuts.
+     * - Rescan installed packages for manifest shortcuts.
      */
     @VisibleForTesting
     void checkPackageChanges(@UserIdInt int ownerUserId) {
@@ -3748,7 +3758,8 @@ public class ShortcutService extends IShortcutService.Stub {
                     }
                 }
 
-                rescanUpdatedPackagesLocked(ownerUserId, user.getLastAppScanTime());
+                // Rescan all packages
+                rescanUpdatedPackagesLocked(ownerUserId, /* lastScanTime= */ 0);
             }
         } finally {
             logDurationStat(Stats.CHECK_PACKAGE_CHANGES, start);
