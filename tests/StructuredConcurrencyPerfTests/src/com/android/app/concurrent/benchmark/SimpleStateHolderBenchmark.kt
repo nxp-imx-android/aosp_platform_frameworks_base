@@ -17,6 +17,8 @@ package com.android.app.concurrent.benchmark
 
 import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark
 import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark.Companion.ExecutorThreadBuilder
+import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark.Companion.HandlerImmediateThreadBuilder
+import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark.Companion.HandlerThreadBuilder
 import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark.Companion.UnconfinedThreadBuilder
 import com.android.app.concurrent.benchmark.base.ChainedStateCollectBenchmark
 import com.android.app.concurrent.benchmark.base.StateCollectBenchmark
@@ -40,7 +42,10 @@ class SimpleStateHolderCombineBenchmark(param: ThreadFactory<Any, Executor>) :
     BaseSimpleStateHolderBenchmark(param), StateCombineBenchmark {
 
     companion object {
-        @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = threadBuilders
+        @Parameters(name = "{0}")
+        @JvmStatic
+        fun getDispatchers() =
+            listOf(ExecutorThreadBuilder, HandlerThreadBuilder, HandlerImmediateThreadBuilder)
     }
 }
 

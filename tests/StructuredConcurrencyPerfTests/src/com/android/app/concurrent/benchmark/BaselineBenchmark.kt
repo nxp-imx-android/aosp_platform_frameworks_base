@@ -21,6 +21,9 @@ import androidx.benchmark.BlackHole
 import androidx.benchmark.ExperimentalBlackHoleApi
 import com.android.app.concurrent.benchmark.base.BaseConcurrentBenchmark
 import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark
+import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.ExecutorThreadScopeBuilder
+import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.HandlerThreadImmediateScopeBuilder
+import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.HandlerThreadScopeBuilder
 import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark
 import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark.Companion.ExecutorThreadBuilder
 import com.android.app.concurrent.benchmark.base.BaseExecutorBenchmark.Companion.HandlerThreadBuilder
@@ -201,7 +204,14 @@ class LaunchCoroutineBaselineBenchmark(param: ThreadFactory<Any, CoroutineScope>
     BaseCoroutineBenchmark(param) {
 
     companion object {
-        @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = threadBuilders
+        @Parameters(name = "{0}")
+        @JvmStatic
+        fun getDispatchers() =
+            listOf(
+                ExecutorThreadScopeBuilder,
+                HandlerThreadScopeBuilder,
+                HandlerThreadImmediateScopeBuilder,
+            )
     }
 
     @Test
@@ -226,7 +236,14 @@ class MutableStateFlowBaselineBenchmark(param: ThreadFactory<Any, CoroutineScope
     BaseCoroutineBenchmark(param) {
 
     companion object {
-        @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = threadBuilders
+        @Parameters(name = "{0}")
+        @JvmStatic
+        fun getDispatchers() =
+            listOf(
+                ExecutorThreadScopeBuilder,
+                HandlerThreadScopeBuilder,
+                HandlerThreadImmediateScopeBuilder,
+            )
     }
 
     @Test
