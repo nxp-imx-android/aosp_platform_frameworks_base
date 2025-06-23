@@ -59,6 +59,7 @@ import com.android.systemui.dreams.ui.viewmodel.DreamViewModel;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToLockscreenTransitionViewModel;
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenToGlanceableHubTransitionViewModel;
+import com.android.systemui.keyguard.ui.viewmodel.OccludedToLockscreenTransitionViewModel;
 import com.android.systemui.log.core.LogLevel;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.res.R;
@@ -161,6 +162,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
     private final CommunalSceneInteractor mCommunalSceneInteractor;
     private final GlanceableHubToLockscreenTransitionViewModel mHubToLockscreenTransitionViewModel;
     private final LockscreenToGlanceableHubTransitionViewModel mLockscreenToHubTransitionViewModel;
+    private final OccludedToLockscreenTransitionViewModel mOccludedToLockscreenTransitionViewModel;
     private final DreamViewModel mDreamViewModel;
     private final KeyguardInteractor mKeyguardInteractor;
 
@@ -383,6 +385,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                     glanceableHubToLockscreenTransitionViewModel,
             LockscreenToGlanceableHubTransitionViewModel
                     lockscreenToGlanceableHubTransitionViewModel,
+            OccludedToLockscreenTransitionViewModel occludedToLockscreenTransitionViewModel,
             DreamViewModel dreamViewModel,
             KeyguardInteractor keyguardInteractor
     ) {
@@ -417,6 +420,7 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         mCommunalSceneInteractor = communalSceneInteractor;
         mHubToLockscreenTransitionViewModel = glanceableHubToLockscreenTransitionViewModel;
         mLockscreenToHubTransitionViewModel = lockscreenToGlanceableHubTransitionViewModel;
+        mOccludedToLockscreenTransitionViewModel = occludedToLockscreenTransitionViewModel;
         mDreamViewModel = dreamViewModel;
         mKeyguardInteractor = keyguardInteractor;
 
@@ -513,6 +517,8 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
         }
         collectFlow(mView, mDreamViewModel.getStatusBarAlpha(),
                 this::setAlpha, mCoroutineDispatcher);
+        collectFlow(mView, mOccludedToLockscreenTransitionViewModel.getStatusBarAlpha(),
+                    (alpha) -> setAlpha(alpha), mCoroutineDispatcher);
         if (Flags.bouncerUiRevamp()) {
             collectFlow(mView, mKeyguardInteractor.primaryBouncerShowing, x -> updateViewState());
         }
@@ -709,7 +715,6 @@ public class KeyguardStatusBarViewController extends ViewController<KeyguardStat
                         && !hideForBypass
                         && !mDisableStateTracker.isDisabled()
                         ? View.VISIBLE : View.INVISIBLE;
-
         updateViewState(newAlpha, newVisibility);
     }
 
