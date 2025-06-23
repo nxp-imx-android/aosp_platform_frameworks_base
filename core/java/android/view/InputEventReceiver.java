@@ -55,12 +55,12 @@ public abstract class InputEventReceiver {
     private static native void nativeDispose(long receiverPtr);
     private static native void nativeFinishInputEvent(long receiverPtr, int seq, boolean handled);
     private static native boolean nativeProbablyHasInput(long receiverPtr);
-    private static native void nativeReportTimeline(long receiverPtr, int inputEventId,
-            long gpuCompletedTime, long presentTime);
     private static native boolean nativeConsumeBatchedInputEvents(long receiverPtr,
             long frameTimeNanos);
     private static native IBinder nativeGetToken(long receiverPtr);
+    private static native long nativeGetFrameMetricsObserver(long receiverPtr);
     private static native String nativeDump(long receiverPtr, String prefix);
+
 
     /**
      * Creates an input event receiver bound to the specified input channel.
@@ -235,15 +235,6 @@ public abstract class InputEventReceiver {
     }
 
     /**
-     * Report the timing / latency information for a specific input event.
-     */
-    public final void reportTimeline(int inputEventId, long gpuCompletedTime, long presentTime) {
-        Trace.traceBegin(Trace.TRACE_TAG_INPUT, "reportTimeline");
-        nativeReportTimeline(mReceiverPtr, inputEventId, gpuCompletedTime, presentTime);
-        Trace.traceEnd(Trace.TRACE_TAG_INPUT);
-    }
-
-    /**
      * Consumes all pending batched input events.
      * Must be called on the same Looper thread to which the receiver is attached.
      *
@@ -263,6 +254,10 @@ public abstract class InputEventReceiver {
             return nativeConsumeBatchedInputEvents(mReceiverPtr, frameTimeNanos);
         }
         return false;
+    }
+
+    protected final long getNativeFrameMetricsObserver() {
+        return nativeGetFrameMetricsObserver(mReceiverPtr);
     }
 
     /**
