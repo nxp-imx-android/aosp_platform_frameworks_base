@@ -297,6 +297,14 @@ object KeyguardBouncerViewBinder {
                     }
 
                     launch {
+                        viewModel.showConfirmBiometricAuthButton.collect { showConfirmButton ->
+                            if (showConfirmButton) {
+                                bouncerMessageInteractor.onSecureLockDevicePendingConfirmation()
+                            }
+                        }
+                    }
+
+                    launch {
                         viewModel.startingToHide.collect {
                             securityContainerController.onStartingToHide()
                         }

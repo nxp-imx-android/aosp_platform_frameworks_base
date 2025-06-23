@@ -16,13 +16,20 @@
 package com.android.systemui.securelockdevice.ui.composable
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
@@ -30,21 +37,31 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieClipSpec
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.android.compose.animation.Easings
 import com.android.compose.modifiers.height
 import com.android.compose.modifiers.width
 import com.android.systemui.Flags.bpColors
 import com.android.systemui.biometrics.BiometricAuthIconAssets
+import com.android.systemui.bouncer.shared.model.SecureLockDeviceBouncerActionButtonModel
 import com.android.systemui.lifecycle.rememberActivated
 import com.android.systemui.res.R
 import com.android.systemui.securelockdevice.ui.viewmodel.SecureLockDeviceBiometricAuthContentViewModel
@@ -99,6 +116,13 @@ fun SecureLockDeviceContent(
         exit = fadeOut(tween(durationMillis = TO_GONE_DURATION.toInt(DurationUnit.MILLISECONDS))),
         modifier = modifier,
     ) {
+        Box(modifier = modifier.background(color = Color.Transparent).fillMaxSize()) {
+            ButtonArea(
+                viewModel = secureLockDeviceViewModel,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 12.dp),
+            )
+        }
+
         val iconSize: Pair<Int, Int> = secureLockDeviceViewModel.iconViewModel.iconSizeState
         val iconBottomPadding =
             dimensionResource(R.dimen.biometric_prompt_portrait_medium_bottom_padding)
@@ -123,8 +147,14 @@ private fun BiometricIconLottie(
 ) {
     val iconViewModel = viewModel.iconViewModel
     val iconState = viewModel.iconViewModel.hydratedIconState
-    val iconContentDescription = stringResource(iconState.contentDescriptionId)
+    if (iconState.asset == -1) {
+        return
+    }
+    val iconContentDescription =
+        if (iconState.contentDescriptionId != -1) stringResource(iconState.contentDescriptionId)
+        else ""
     val showingError = iconViewModel.showingErrorState
+    val isPendingConfirmation = iconViewModel.isPendingConfirmationState
 
     val lottie by
         rememberLottieComposition(
@@ -149,18 +179,110 @@ private fun BiometricIconLottie(
             1
         }
 
+    val progress by
+        animateLottieCompositionAsState(
+            composition = lottie,
+            isPlaying = iconState.shouldAnimate && lottie != null,
+            iterations = numIterations,
+            clipSpec = LottieClipSpec.Frame(min = minFrame),
+        )
+    if (progress == 1f) {
+        viewModel.onIconAnimationFinished()
+    }
+
     LottieAnimation(
         composition = lottie,
         dynamicProperties = LottieColorUtils.getDynamicProperties(bpColors()),
         modifier =
             modifier
                 .graphicsLayer { rotationZ = iconState.rotation }
-                .semantics { contentDescription = iconContentDescription },
-        isPlaying = iconState.shouldAnimate,
-        iterations = numIterations,
-        clipSpec = LottieClipSpec.Frame(min = minFrame),
+                .semantics { contentDescription = iconContentDescription }
+                .then(
+                    if (isPendingConfirmation) {
+                        Modifier.clickable(
+                            role = Role.Button,
+                            onClick = { viewModel.onConfirmButtonClicked() },
+                        )
+                    } else {
+                        Modifier
+                    }
+                ),
+        progress = { progress },
         contentScale = ContentScale.FillBounds,
     )
 
     SideEffect { iconViewModel.setPreviousIconWasError(showingError) }
+}
+
+@Composable
+fun ButtonArea(
+    viewModel: SecureLockDeviceBiometricAuthContentViewModel,
+    modifier: Modifier = Modifier,
+) {
+    val actionButton: SecureLockDeviceBouncerActionButtonModel? = viewModel.actionButton
+    val appearFadeInAnimatable = remember { Animatable(0f) }
+    val appearMoveAnimatable = remember { Animatable(0f) }
+    val appearAnimationInitialOffset = with(LocalDensity.current) { 80.dp.roundToPx() }
+
+    actionButton?.let { actionButtonModel ->
+        LaunchedEffect(Unit) {
+            appearFadeInAnimatable.animateTo(
+                targetValue = 1f,
+                animationSpec =
+                    tween(
+                        durationMillis = 450,
+                        delayMillis = 133,
+                        easing = Easings.LegacyDecelerate,
+                    ),
+            )
+        }
+        LaunchedEffect(Unit) {
+            appearMoveAnimatable.animateTo(
+                targetValue = 1f,
+                animationSpec =
+                    tween(
+                        durationMillis = 450,
+                        delayMillis = 133,
+                        easing = Easings.StandardDecelerate,
+                    ),
+            )
+        }
+
+        val textColor =
+            colorResource(id = com.android.internal.R.color.materialColorOnSecondaryContainer)
+        val backgroundColor =
+            colorResource(id = com.android.internal.R.color.materialColorSecondaryContainer)
+        val contentDescription = actionButtonModel.contentDescriptionId?.let { stringResource(it) }
+
+        Box(
+            modifier =
+                modifier
+                    .graphicsLayer {
+                        // Translate the button up from an initially pushed-down position:
+                        translationY =
+                            (1 - appearMoveAnimatable.value) * appearAnimationInitialOffset
+                        // Fade the button in:
+                        alpha = appearFadeInAnimatable.value
+                    }
+                    .height(56.dp)
+                    .semantics {
+                        if (contentDescription != null) {
+                            this.contentDescription = contentDescription
+                        }
+                    }
+                    .clip(ButtonDefaults.shape)
+                    .background(color = backgroundColor)
+                    .semantics { role = Role.Button }
+                    .clickable(
+                        onClick = { actionButton.let { viewModel.onActionButtonClicked(it) } }
+                    )
+        ) {
+            Text(
+                text = stringResource(id = actionButtonModel.labelResId),
+                style = MaterialTheme.typography.titleMedium,
+                color = textColor,
+                modifier = Modifier.align(Alignment.Center).padding(ButtonDefaults.ContentPadding),
+            )
+        }
+    }
 }

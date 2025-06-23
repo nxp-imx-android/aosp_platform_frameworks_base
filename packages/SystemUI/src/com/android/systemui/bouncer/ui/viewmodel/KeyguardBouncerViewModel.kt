@@ -95,6 +95,14 @@ constructor(
             flowOf(false)
         }
 
+    /** Whether secure lock device is showing the confirm biometric auth button. */
+    val showConfirmBiometricAuthButton: Flow<Boolean> =
+        if (secureLockDevice()) {
+            secureLockDeviceInteractor.get().showConfirmBiometricAuthButton
+        } else {
+            flowOf(false)
+        }
+
     /** Observe whether bouncer is starting to hide. */
     val startingToHide: Flow<Unit> = interactor.startingToHide
 

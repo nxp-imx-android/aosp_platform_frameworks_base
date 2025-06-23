@@ -183,6 +183,11 @@ constructor(
             { str1 = authState.toString() },
             { "onBiometricAuthenticatedStateUpdated: authState=$str1" },
         )
+        val pendingConfirmation = authState.needsUserConfirmation
+        _showConfirmBiometricAuthButton.value = pendingConfirmation
+        deviceEntryFaceAuthInteractor.onSecureLockDeviceConfirmButtonShowingChanged(
+            pendingConfirmation
+        )
         _strongBiometricAuthenticationComplete.value = authState.isAuthenticatedAndConfirmed
     }
 
@@ -202,14 +207,26 @@ constructor(
         secureLockDeviceRepository.suppressBouncerMessageUpdates.value = true
     }
 
+    private val _showConfirmBiometricAuthButton = MutableStateFlow<Boolean>(false)
+
+    /**
+     * Indicates a confirm button should be displayed on the UI for the user to confirm a successful
+     * strong biometric authentication during secure lock device.
+     */
+    val showConfirmBiometricAuthButton: StateFlow<Boolean> =
+        _showConfirmBiometricAuthButton.asStateFlow()
+
     /**
      * Whether the device should listen for biometric auth while secure lock device is enabled. The
      * device should stop listening when pending authentication, when authenticated, or when the
      * biometric auth screen is exited without authenticating.
      */
     val shouldListenForBiometricAuth: Flow<Boolean> =
-        // TODO (b/405120698, b/405120700): update to consider confirm / try again buttons
-        requiresStrongBiometricAuthForSecureLockDevice
+        combine(requiresStrongBiometricAuthForSecureLockDevice, showConfirmBiometricAuthButton) {
+            requiresBiometricAuth,
+            confirmButtonShowing ->
+            requiresBiometricAuth && !confirmButtonShowing
+        }
 
     /** Strong biometric modalities enrolled and enabled on the device. */
     val enrolledStrongBiometricModalities: Flow<BiometricModalities> =
@@ -266,6 +283,7 @@ constructor(
         logBuffer.log(TAG, LogLevel.DEBUG, "resetBiometricAuthState")
         secureLockDeviceRepository.suppressBouncerMessageUpdates.value = true
         _isBiometricAuthVisible.value = false
+        _showConfirmBiometricAuthButton.value = false
     }
 
     /** Called when the biometric auth view or overlay is hidden. */

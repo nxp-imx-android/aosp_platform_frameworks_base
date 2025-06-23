@@ -27,8 +27,10 @@ import com.android.systemui.biometrics.data.repository.fakeFingerprintPropertyRe
 import com.android.systemui.biometrics.faceSensorPropertiesInternal
 import com.android.systemui.biometrics.fingerprintSensorPropertiesInternal
 import com.android.systemui.biometrics.shared.model.BiometricModalities
+import com.android.systemui.biometrics.shared.model.BiometricModality
 import com.android.systemui.biometrics.shared.model.toFaceSensorInfo
 import com.android.systemui.biometrics.shared.model.toFingerprintSensorInfo
+import com.android.systemui.biometrics.ui.viewmodel.PromptAuthState
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.keyguard.data.repository.biometricSettingsRepository
 import com.android.systemui.kosmos.testScope
@@ -159,6 +161,58 @@ class SecureLockDeviceInteractorTest : SysuiTestCase() {
             kosmos.fakeSecureLockDeviceRepository.suppressBouncerMessageUpdates.value = false
             runCurrent()
             assertThat(suppressBouncerMessageUpdates).isFalse()
+        }
+    }
+
+    @Test
+    fun showsConfirmButtonOnPendingFaceAuth_hidesOnBiometricAuthHidden() {
+        testScope.runTest {
+            val showingConfirmButton by collectLastValue(underTest.showConfirmBiometricAuthButton)
+
+            underTest.onBiometricAuthRequested()
+            runCurrent()
+            assertThat(showingConfirmButton).isFalse()
+
+            underTest.onBiometricAuthenticatedStateUpdated(
+                PromptAuthState(
+                    isAuthenticated = true,
+                    authenticatedModality = BiometricModality.Face,
+                    needsUserConfirmation = true,
+                )
+            )
+            runCurrent()
+            assertThat(showingConfirmButton).isTrue()
+
+            underTest.onBiometricAuthUiHidden()
+            runCurrent()
+            assertThat(showingConfirmButton).isFalse()
+        }
+    }
+
+    @Test
+    fun stopsListeningForBiometricAuth_whileConfirmButtonIsShown() {
+        testScope.runTest {
+            val shouldListenForBiometricAuth by
+                collectLastValue(underTest.shouldListenForBiometricAuth)
+            val showingConfirmButton by collectLastValue(underTest.showConfirmBiometricAuthButton)
+
+            kosmos.fakeSecureLockDeviceRepository.setRequiresStrongBiometricAuthForSecureLockDevice(
+                true
+            )
+            underTest.onBiometricAuthRequested()
+            runCurrent()
+            assertThat(shouldListenForBiometricAuth).isTrue()
+
+            underTest.onBiometricAuthenticatedStateUpdated(
+                PromptAuthState(
+                    isAuthenticated = true,
+                    authenticatedModality = BiometricModality.Face,
+                    needsUserConfirmation = true,
+                )
+            )
+            runCurrent()
+            assertThat(showingConfirmButton).isTrue()
+            assertThat(shouldListenForBiometricAuth).isFalse()
         }
     }
 }

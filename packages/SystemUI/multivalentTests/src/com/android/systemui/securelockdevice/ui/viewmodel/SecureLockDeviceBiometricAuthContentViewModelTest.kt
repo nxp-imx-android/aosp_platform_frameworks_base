@@ -106,7 +106,7 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun updatesState_onFaceSuccess() =
+    fun updatesState_onFaceSuccess_andPlaysHapticsOnConfirm() =
         testScope.runTest {
             val isAuthenticating by collectLastValue(underTest.isAuthenticating)
             val isAuthenticated by collectLastValue(underTest.isAuthenticated)
@@ -122,6 +122,15 @@ class SecureLockDeviceBiometricAuthContentViewModelTest : SysuiTestCase() {
             assertThat(isAuthenticated?.isAuthenticated).isTrue()
             assertThat(isAuthenticated?.isAuthenticatedAndExplicitlyConfirmed).isFalse()
             assertThat(kosmos.fakeMSDLPlayer.latestTokenPlayed).isNull()
+
+            underTest.onConfirmButtonClicked()
+            runCurrent()
+
+            // Verify internal state updated to show confirmed
+            assertThat(isAuthenticating).isFalse()
+            assertThat(showingError).isFalse()
+            assertThat(isAuthenticated?.isAuthenticatedAndExplicitlyConfirmed).isTrue()
+            assertThat(kosmos.fakeMSDLPlayer.latestTokenPlayed).isEqualTo(MSDLToken.UNLOCK)
         }
 
     @Test

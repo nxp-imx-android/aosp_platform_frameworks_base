@@ -18,17 +18,21 @@ package com.android.systemui.securelockdevice.ui.viewmodel
 
 import android.view.accessibility.accessibilityManager
 import com.android.systemui.biometrics.ui.viewmodel.biometricAuthIconViewModelFactory_secureLockDevice
+import com.android.systemui.bouncer.domain.interactor.bouncerActionButtonInteractor
 import com.android.systemui.deviceentry.domain.interactor.biometricMessageInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFaceAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryFingerprintAuthInteractor
 import com.android.systemui.haptics.msdl.bouncerHapticPlayer
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 
 var Kosmos.secureLockDeviceBiometricAuthContentViewModel by Fixture {
     SecureLockDeviceBiometricAuthContentViewModel(
+        applicationScope = applicationCoroutineScope,
         accessibilityManager = accessibilityManager,
+        actionButtonInteractor = bouncerActionButtonInteractor,
         biometricAuthIconViewModelFactory = biometricAuthIconViewModelFactory_secureLockDevice,
         biometricMessageInteractor = biometricMessageInteractor,
         bouncerHapticPlayer = bouncerHapticPlayer,

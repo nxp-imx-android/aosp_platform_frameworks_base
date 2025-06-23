@@ -17,13 +17,18 @@
 package com.android.systemui.securelockdevice.ui.viewmodel
 
 import android.hardware.biometrics.BiometricPrompt
+import android.security.Flags.secureLockDevice
+import android.util.Log
 import android.view.accessibility.AccessibilityManager
 import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.getValue
 import com.android.systemui.biometrics.shared.model.BiometricModality
 import com.android.systemui.biometrics.ui.viewmodel.BiometricAuthIconViewModel
 import com.android.systemui.biometrics.ui.viewmodel.PromptAuthState
+import com.android.systemui.bouncer.domain.interactor.BouncerActionButtonInteractor
+import com.android.systemui.bouncer.shared.model.SecureLockDeviceBouncerActionButtonModel
 import com.android.systemui.bouncer.ui.helper.BouncerHapticPlayer
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.BiometricMessageInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFingerprintAuthInteractor
 import com.android.systemui.deviceentry.domain.interactor.SystemUIDeviceEntryFaceAuthInteractor
@@ -57,7 +62,9 @@ import kotlinx.coroutines.launch
 class SecureLockDeviceBiometricAuthContentViewModel
 @AssistedInject
 constructor(
+    @Application private val applicationScope: CoroutineScope,
     accessibilityManager: AccessibilityManager,
+    private val actionButtonInteractor: BouncerActionButtonInteractor,
     biometricAuthIconViewModelFactory: BiometricAuthIconViewModel.Factory,
     biometricMessageInteractor: BiometricMessageInteractor,
     private val bouncerHapticPlayer: BouncerHapticPlayer,
@@ -65,8 +72,6 @@ constructor(
     deviceEntryFingerprintAuthInteractor: DeviceEntryFingerprintAuthInteractor,
     private val secureLockDeviceInteractor: SecureLockDeviceInteractor,
 ) : HydratedActivatable() {
-    private var mDisappearAnimationFinishedRunnable: Runnable? = null
-
     /** @see SecureLockDeviceInteractor.isSecureLockDeviceEnabled */
     val isSecureLockDeviceEnabled = secureLockDeviceInteractor.isSecureLockDeviceEnabled
 
@@ -130,6 +135,14 @@ constructor(
             secureLockDeviceViewModel = this,
         )
     }
+
+    private val _actionButton = MutableStateFlow<SecureLockDeviceBouncerActionButtonModel?>(null)
+
+    /**
+     * The bouncer action button (Confirm / Try again). If `null`, the button should not be shown.
+     */
+    val actionButton: SecureLockDeviceBouncerActionButtonModel? by
+        _actionButton.hydratedStateOf(traceName = "actionButton", initialValue = null)
 
     /** Face help message. */
     @VisibleForTesting
@@ -236,7 +249,7 @@ constructor(
 
     /** Show the user that biometrics are actively running and set [isAuthenticating]. */
     @VisibleForTesting
-    fun showAuthenticating() {
+    fun showAuthenticating(isRetry: Boolean = false) {
         _isAuthenticating.value = true
         deviceEntryFaceAuthInteractor.onSecureLockDeviceBiometricAuthRequested()
 
@@ -278,6 +291,27 @@ constructor(
         }
         // fingerprint only never requires confirmation
         return false
+    }
+
+    /**
+     * Set the prompt's auth state to authenticated and confirmed.
+     *
+     * This should only be used after [showAuthenticated] when the operation requires explicit user
+     * confirmation.
+     */
+    private suspend fun confirmAuthenticated() = coroutineScope {
+        val authState = _isAuthenticated.value
+        if (authState.isNotAuthenticated) {
+            Log.w(TAG, "Cannot confirm authenticated when not authenticated")
+            return@coroutineScope
+        }
+        secureLockDeviceInteractor.suppressBouncerMessages()
+        _isAuthenticated.value = authState.asExplicitlyConfirmed()
+        bouncerHapticPlayer.playAuthenticationFeedback(/* authenticationSucceeded= */ true)
+
+        _showingError.value = false
+        displayErrorJob?.cancel()
+        displayErrorJob = null
     }
 
     private suspend fun hasFingerprint(): Boolean {
@@ -360,6 +394,25 @@ constructor(
         }
     }
 
+    /** Notifies that the user has confirmed the strong face authentication success on the UI. */
+    fun onConfirmButtonClicked() {
+        applicationScope.launch { confirmAuthenticated() }
+    }
+
+    /**
+     * Listener for confirm or try again button click events during secure lock device biometric
+     * auth.
+     */
+    fun onActionButtonClicked(actionButtonModel: SecureLockDeviceBouncerActionButtonModel) {
+        when (actionButtonModel) {
+            is SecureLockDeviceBouncerActionButtonModel.ConfirmStrongBiometricAuthButtonModel -> {
+                if (secureLockDevice()) {
+                    onConfirmButtonClicked()
+                }
+            }
+        }
+    }
+
     @AssistedFactory
     interface Factory {
         fun create(): SecureLockDeviceBiometricAuthContentViewModel
@@ -389,6 +442,16 @@ constructor(
 
                         listenForFaceMessages()
                         listenForFingerprintMessages()
+
+                        launch {
+                            actionButtonInteractor.secureLockDeviceActionButton.collect {
+                                when (it) {
+                                    is SecureLockDeviceBouncerActionButtonModel.ConfirmStrongBiometricAuthButtonModel ->
+                                        _actionButton.value = it
+                                    else -> _actionButton.value = null
+                                }
+                            }
+                        }
 
                         launch {
                             isAuthenticated.collectLatest {
@@ -444,6 +507,25 @@ constructor(
      */
     private fun onReadyToDismissBiometricAuth() {
         _isReadyToDismissBiometricAuth.value = true
+    }
+
+    /**
+     * Indicates the pending face authentication confirmation animation has played and updates
+     * [SecureLockDeviceInteractor.lastProcessedFaceAuthSuccessTime]
+     */
+    private fun onPendingConfirmationAnimationPlayed() {
+        if (_lastAnimatedFaceAuthSuccessTime.value != null) {
+            secureLockDeviceInteractor.lastProcessedFaceAuthSuccessTime =
+                _lastAnimatedFaceAuthSuccessTime.value
+        }
+    }
+
+    fun onIconAnimationFinished() {
+        if (iconViewModel.isPendingConfirmationState) {
+            onPendingConfirmationAnimationPlayed()
+        } else if (isAuthenticationComplete) {
+            onReadyToDismissBiometricAuth()
+        }
     }
 
     companion object {
