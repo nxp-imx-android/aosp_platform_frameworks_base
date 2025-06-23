@@ -1456,7 +1456,7 @@ public final class MediaQualityUtils {
                 } else if (value instanceof Boolean) {
                     json.put(key, bundle.getBoolean(key));
                 } else if (value instanceof Double) {
-                    json.put(key, bundle.getDouble(key));
+                    json.put(key, Double.toString(bundle.getDouble(key)));
                 }
             } catch (JSONException e) {
                 Log.e(TAG, "Unable to serialize ", e);
@@ -1478,7 +1478,15 @@ public final class MediaQualityUtils {
                     Object value = jsonObject.get(key);
 
                     if (value instanceof String) {
-                        bundle.putString(key, (String) value);
+                        if (key.equals(PictureQuality.PARAMETER_BRIGHTNESS)) {
+                            try {
+                                bundle.putDouble(key, Double.parseDouble((String) value));
+                            } catch (NumberFormatException e) {
+                                Log.e(TAG, "Error when parsing brightness value as double");
+                            }
+                        } else {
+                            bundle.putString(key, (String) value);
+                        }
                     } else if (value instanceof Integer) {
                         bundle.putInt(key, (Integer) value);
                     } else if (value instanceof Boolean) {
