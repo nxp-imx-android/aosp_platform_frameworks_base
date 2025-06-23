@@ -664,10 +664,14 @@ public class MediaQualityService extends SystemService {
                     value = mPackageDefaultPictureProfileHandleMap.get(packageName);
 
                     if (value == null) {
-                        Log.v(TAG,
-                                "Package default for " + packageName
-                                        + " fallback to global default.");
-                        value = getDefaultPictureProfile().getHandle().getId();
+                        Long defaultPictureProfileId = mPictureProfileSharedPreference.getLong(
+                                DEFAULT_PICTURE_PROFILE_ID, -1);
+                        if (defaultPictureProfileId != -1) {
+                          Log.v(TAG,
+                                  "Default picture profile handle value for " + packageName
+                                  + " not found. Fallback to return global default.");
+                          value = defaultPictureProfileId;
+                        }
                     }
 
                     if (value != null) {
