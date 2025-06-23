@@ -18,6 +18,7 @@
 package com.android.systemui.biometrics.ui.binder
 
 import android.content.res.Resources
+import android.hardware.biometrics.Flags.bpFallbackOptions
 import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
@@ -47,46 +48,73 @@ object PromptIconViewBinder {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.onConfigurationChanged(iconView.context.resources.configuration)
 
-                launch {
-                    viewModel.iconAsset
-                        .sample(
-                            combine(
-                                viewModel.activeAuthType,
-                                viewModel.shouldAnimateIconView,
-                                viewModel.shouldLoopIconView,
-                                viewModel.showingError,
-                                ::Quad,
-                            ),
-                            ::toQuint,
-                        )
-                        .collect {
-                            (
-                                iconAsset,
-                                activeAuthType,
-                                shouldAnimateIconView,
-                                shouldLoopIconView,
-                                showingError) ->
-                            if (iconAsset != -1) {
+                if (bpFallbackOptions()) {
+                    launch {
+                        viewModel.iconState.collect { state ->
+                            if (state.asset != -1) {
                                 iconView.updateAsset(
                                     "iconAsset",
+                                    state.asset,
+                                    state.shouldAnimate,
+                                    state.shouldLoop,
+                                    state.authType,
+                                )
+                            }
+
+                            if (state.contentDescriptionId != -1) {
+                                iconView.contentDescription =
+                                    iconView.context.getString(state.contentDescriptionId)
+                            }
+
+                            iconView.rotation = state.rotation
+
+                            viewModel.setPreviousIconWasError(state.showingError)
+                        }
+                    }
+                } else {
+                    launch {
+                        viewModel.iconAsset
+                            .sample(
+                                combine(
+                                    viewModel.activeAuthType,
+                                    viewModel.shouldAnimateIconView,
+                                    viewModel.shouldLoopIconView,
+                                    viewModel.showingError,
+                                    ::Quad,
+                                ),
+                                ::toQuint,
+                            )
+                            .collect {
+                                (
                                     iconAsset,
+                                    activeAuthType,
                                     shouldAnimateIconView,
                                     shouldLoopIconView,
-                                    activeAuthType,
-                                )
-                                viewModel.setPreviousIconWasError(showingError)
+                                    showingError) ->
+                                if (iconAsset != -1) {
+                                    iconView.updateAsset(
+                                        "iconAsset",
+                                        iconAsset,
+                                        shouldAnimateIconView,
+                                        shouldLoopIconView,
+                                        activeAuthType,
+                                    )
+                                    viewModel.setPreviousIconWasError(showingError)
+                                }
                             }
+                    }
+
+                    launch {
+                        viewModel.iconViewRotation.collect { rotation ->
+                            iconView.rotation = rotation
                         }
-                }
+                    }
 
-                launch {
-                    viewModel.iconViewRotation.collect { rotation -> iconView.rotation = rotation }
-                }
-
-                launch {
-                    viewModel.contentDescriptionId.collect { id ->
-                        if (id != -1) {
-                            iconView.contentDescription = iconView.context.getString(id)
+                    launch {
+                        viewModel.contentDescriptionId.collect { id ->
+                            if (id != -1) {
+                                iconView.contentDescription = iconView.context.getString(id)
+                            }
                         }
                     }
                 }

@@ -16,16 +16,19 @@
 
 package com.android.systemui.biometrics.domain.interactor
 
-import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.BiometricManager.Authenticators
+import android.hardware.biometrics.Flags
 import android.hardware.biometrics.PromptContentViewWithMoreOptionsButton
 import android.hardware.biometrics.PromptInfo
 import android.hardware.biometrics.PromptVerticalListContentView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
+import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PASSWORD
+import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PATTERN
+import com.android.internal.widget.LockPatternUtils.CREDENTIAL_TYPE_PIN
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.biometrics.data.repository.FakeDisplayStateRepository
 import com.android.systemui.biometrics.data.repository.FakeFingerprintPropertyRepository
@@ -172,6 +175,7 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
         val isCredentialAllowed by collectLastValue(interactor.isCredentialAllowed)
         val credentialKind by collectLastValue(interactor.credentialKind)
         val isConfirmationRequired by collectLastValue(interactor.isConfirmationRequired)
+        val currentView by collectLastValue(interactor.currentView)
 
         assertThat(currentPrompt).isNull()
 
@@ -192,6 +196,7 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
         assertThat(currentPrompt?.subtitle).isEqualTo(SUBTITLE)
         assertThat(currentPrompt?.negativeButtonText).isEqualTo(NEGATIVE_TEXT)
         assertThat(currentPrompt?.opPackageName).isEqualTo(OP_PACKAGE_NAME)
+        assertThat(currentView).isEqualTo(BiometricPromptView.BIOMETRIC)
         assertThat(promptKind!!.isBiometric()).isTrue()
         assertThat(currentPrompt?.componentNameForConfirmDeviceCredentialActivity)
             .isEqualTo(
@@ -204,7 +209,11 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
             assertThat(credentialKind).isSameInstanceAs(PromptKind.Password)
             assertThat(isCredentialAllowed).isTrue()
         } else {
-            assertThat(credentialKind).isEqualTo(PromptKind.None)
+            if (Flags.bpFallbackOptions()) {
+                assertThat(credentialKind).isEqualTo(PromptKind.Password)
+            } else {
+                assertThat(credentialKind).isEqualTo(PromptKind.None)
+            }
             assertThat(isCredentialAllowed).isFalse()
         }
         assertThat(isConfirmationRequired).isEqualTo(confirmationRequired)
@@ -282,11 +291,13 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
             setUserCredentialType(isPassword = true)
 
             val promptKind by collectLastValue(interactor.promptKind)
+            val currentView by collectLastValue(interactor.currentView)
             assertThat(promptKind).isEqualTo(PromptKind.None)
 
             setPrompt(onSwitchToCredential = true)
 
             assertThat(promptKind).isEqualTo(PromptKind.Password)
+            assertThat(currentView).isEqualTo(BiometricPromptView.CREDENTIAL)
 
             interactor.resetPrompt(REQUEST_ID)
             verifyUnset()
@@ -303,11 +314,13 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
                 }
 
             val promptKind by collectLastValue(interactor.promptKind)
+            val currentView by collectLastValue(interactor.currentView)
             assertThat(promptKind).isEqualTo(PromptKind.None)
 
             setPrompt(info)
 
             assertThat(promptKind).isEqualTo(PromptKind.Password)
+            assertThat(currentView).isEqualTo(BiometricPromptView.CREDENTIAL)
 
             interactor.resetPrompt(REQUEST_ID)
             verifyUnset()
@@ -328,11 +341,13 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
                 }
 
             val promptKind by collectLastValue(interactor.promptKind)
+            val currentView by collectLastValue(interactor.currentView)
             assertThat(promptKind).isEqualTo(PromptKind.None)
 
             setPrompt(info)
 
             assertThat(promptKind).isEqualTo(PromptKind.Password)
+            assertThat(currentView).isEqualTo(BiometricPromptView.CREDENTIAL)
 
             interactor.resetPrompt(REQUEST_ID)
             verifyUnset()
@@ -351,11 +366,13 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
                 }
 
             val promptKind by collectLastValue(interactor.promptKind)
+            val currentView by collectLastValue(interactor.currentView)
             assertThat(promptKind).isEqualTo(PromptKind.None)
 
             setPrompt(info)
 
             assertThat(promptKind?.isOnePaneNoSensorLandscapeBiometric()).isTrue()
+            assertThat(currentView).isEqualTo(BiometricPromptView.BIOMETRIC)
 
             interactor.resetPrompt(REQUEST_ID)
             verifyUnset()
@@ -413,7 +430,17 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
 
         // not using biometrics, should be null with no fallback option
         assertThat(currentPrompt).isNull()
-        assertThat(credentialKind).isEqualTo(PromptKind.None)
+        if (Flags.bpFallbackOptions()) {
+            if (kind == PromptKind.Password) {
+                assertThat(credentialKind).isEqualTo(PromptKind.Password)
+            } else if (kind == PromptKind.Pin) {
+                assertThat(credentialKind).isEqualTo(PromptKind.Pin)
+            } else {
+                assertThat(credentialKind).isEqualTo(PromptKind.Pattern)
+            }
+        } else {
+            assertThat(credentialKind).isEqualTo(PromptKind.None)
+        }
 
         interactor.resetPrompt(REQUEST_ID)
         verifyUnset()
@@ -434,12 +461,12 @@ class PromptSelectorInteractorImplTest : SysuiTestCase() {
     }
 
     private fun setUserCredentialType(isPin: Boolean = false, isPassword: Boolean = false) {
-        whenever(lockPatternUtils.getKeyguardStoredPasswordQuality(any()))
+        whenever(lockPatternUtils.getCredentialTypeForUser(any()))
             .thenReturn(
                 when {
-                    isPin -> DevicePolicyManager.PASSWORD_QUALITY_NUMERIC
-                    isPassword -> DevicePolicyManager.PASSWORD_QUALITY_ALPHABETIC
-                    else -> DevicePolicyManager.PASSWORD_QUALITY_SOMETHING
+                    isPin -> CREDENTIAL_TYPE_PIN
+                    isPassword -> CREDENTIAL_TYPE_PASSWORD
+                    else -> CREDENTIAL_TYPE_PATTERN
                 }
             )
     }

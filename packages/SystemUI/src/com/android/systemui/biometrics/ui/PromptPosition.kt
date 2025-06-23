@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.biometrics.ui.viewmodel
+package com.android.systemui.biometrics.ui
 
 /** The position of a biometric prompt */
 enum class PromptPosition {

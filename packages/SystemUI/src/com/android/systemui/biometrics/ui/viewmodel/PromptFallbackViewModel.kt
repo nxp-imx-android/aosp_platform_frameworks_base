@@ -81,11 +81,8 @@ constructor(val promptSelectorInteractor: PromptSelectorInteractor) {
 
     /** Whether the credential fallback button should be shown */
     val showCredential: Flow<Boolean> =
-        combine(credentialAllowed, credentialKind, identityCheckActive) {
-            credentialAllowed,
-            credentialKind,
-            identityCheckActive ->
-            credentialAllowed && credentialKind.isCredential() && !identityCheckActive
+        combine(credentialAllowed, identityCheckActive) { credentialAllowed, identityCheckActive ->
+            credentialAllowed && !identityCheckActive
         }
 
     /** Whether to show the manage identity check button */

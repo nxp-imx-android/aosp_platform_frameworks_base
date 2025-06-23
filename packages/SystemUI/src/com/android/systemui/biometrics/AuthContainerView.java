@@ -350,9 +350,10 @@ public class AuthContainerView extends LinearLayout
         final boolean isLandscape = mContext.getResources().getConfiguration().orientation
                 == Configuration.ORIENTATION_LANDSCAPE;
         mPromptSelectorInteractorProvider = promptSelectorInteractorProvider;
+        // If the intro (animation) is being skipped, don't reset the prompt
         mPromptSelectorInteractorProvider.get().setPrompt(mConfig.mPromptInfo, mConfig.mUserId,
                 getRequestId(), biometricModalities, mConfig.mOperationId, mConfig.mOpPackageName,
-                false /*onSwitchToCredential*/, isLandscape);
+                false /*onSwitchToCredential*/, isLandscape, !mConfig.mSkipIntro);
 
         final LayoutInflater layoutInflater = LayoutInflater.from(mContext);
         final PromptKind kind = mPromptViewModel.getPromptKind().getValue();
@@ -364,10 +365,16 @@ public class AuthContainerView extends LinearLayout
                 mLayout = (ConstraintLayout) layoutInflater.inflate(
                         R.layout.biometric_prompt_one_pane_layout, this, false /* attachToRoot */);
             }
+
+            // Setting visibility here to avoid unflagged layout changes
+            if (Flags.bpFallbackOptions()) {
+                mLayout.findViewById(R.id.auth_screen).setVisibility(View.GONE);
+            }
         } else {
             mLayout = (FrameLayout) layoutInflater.inflate(
                     R.layout.auth_container_view, this, false /* attachToRoot */);
         }
+
         addView(mLayout);
         mBackgroundView = mLayout.findViewById(R.id.background);
 

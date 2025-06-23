@@ -21,6 +21,7 @@ import android.annotation.RawRes
 import android.content.res.Configuration
 import com.android.systemui.biometrics.domain.interactor.PromptSelectorInteractor
 import com.android.systemui.biometrics.shared.model.FingerprintSensorType
+import com.android.systemui.biometrics.ui.PromptIconState
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.shared.model.DisplayRotation
 import com.android.systemui.res.R
@@ -497,7 +498,7 @@ class PromptIconViewModel(
             isAuthenticated ||
             showingError
 
-    /* Used to rotate the iconView for assets reused across rotations. */
+    /** Used to rotate the iconView for assets reused across rotations. */
     val iconViewRotation: Flow<Float> =
         combine(iconAsset, displayStateInteractor.currentRotation) {
             icon: Int,
@@ -513,6 +514,21 @@ class PromptIconViewModel(
                 0f
             }
         }
+
+    /** Current icon state */
+    val iconState: Flow<PromptIconState> =
+        combine(
+                iconAsset,
+                shouldAnimateIconView,
+                shouldLoopIconView,
+                contentDescriptionId,
+                iconViewRotation,
+                activeAuthType,
+                showingError,
+            ) { asset, shouldAnimate, shouldLoop, descId, rotation, auth, error ->
+                PromptIconState(asset, shouldAnimate, shouldLoop, descId, rotation, auth, error)
+            }
+            .distinctUntilChanged()
 
     private fun assetReusedAcrossRotations(asset: Int): Boolean {
         return asset in assetsReusedAcrossRotations
