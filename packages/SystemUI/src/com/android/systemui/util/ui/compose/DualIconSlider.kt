@@ -100,6 +100,7 @@ fun DualIconSlider(
     iconResProvider: (Float) -> Int,
     imageLoader: suspend (Int, Context) -> Icon.Loaded,
     hapticsViewModelFactory: SliderHapticsViewModel.Factory,
+    colors: SliderColors = defaultColors(),
     onDrag: (Int) -> Unit = {},
     onStop: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -124,7 +125,6 @@ fun DualIconSlider(
                 SeekableSliderTrackerConfig(),
             )
         }
-    val colors = colors()
 
     // The value state is recreated every time gammaValue changes, so we recreate this derivedState
     // We have to use value as that's the value that changes when the user is dragging (gammaValue
@@ -234,7 +234,7 @@ object SliderMotionTestKeys {
 }
 
 @Composable
-private fun colors(): SliderColors {
+fun defaultColors(): SliderColors {
     return SliderDefaults.colors()
         .copy(
             inactiveTrackColor = LocalAndroidColorScheme.current.surfaceEffect1,
