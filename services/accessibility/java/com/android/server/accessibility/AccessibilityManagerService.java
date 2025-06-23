@@ -182,6 +182,7 @@ import com.android.internal.accessibility.AccessibilityShortcutController;
 import com.android.internal.accessibility.AccessibilityShortcutController.ExtraDimFrameworkFeatureInfo;
 import com.android.internal.accessibility.AccessibilityShortcutController.FrameworkFeatureInfo;
 import com.android.internal.accessibility.AccessibilityShortcutController.LaunchableFrameworkFeatureInfo;
+import com.android.internal.accessibility.common.KeyGestureEventConstants;
 import com.android.internal.accessibility.common.ShortcutConstants;
 import com.android.internal.accessibility.common.ShortcutConstants.FloatingMenuSize;
 import com.android.internal.accessibility.dialog.AccessibilityButtonChooserActivity;
@@ -282,6 +283,11 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     @VisibleForTesting
     static final String ACTION_LAUNCH_HEARING_DEVICES_DIALOG =
             "com.android.systemui.action.LAUNCH_HEARING_DEVICES_DIALOG";
+
+    /** An intent action to launch first time use dialog. */
+    @VisibleForTesting
+    static final String ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG =
+            "com.android.systemui.action.LAUNCH_KEY_GESTURE_CONFIRM_DIALOG";
 
     private static final char COMPONENT_NAME_SEPARATOR = ':';
 
@@ -807,15 +813,20 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         List<String> shortcutTargets = getAccessibilityShortcutTargets(
                 KEY_GESTURE, userId);
         if (!shortcutTargets.contains(targetName)) {
-            // TODO(b/377752960): Add dialog to confirm enabling the service and to
-            //  activate the first time.
-            enableShortcutForTargets(true, UserShortcutType.KEY_GESTURE,
-                    List.of(targetName), userId);
-
-            // Do not perform action on first press since it was just registered. Eventually,
-            // this will be a separate dialog that appears that requires the user to confirm
-            // which will resolve this race condition. For now, just require two presses the
-            // first time it is activated.
+            // For the key gesture types above, there is one and only one keyCode.
+            int[] keyCodes = event.getKeycodes();
+            if (keyCodes.length != 1) {
+                Slog.w(
+                        LOG_TAG,
+                        "Can't continue launching the dialog, because there should be one"
+                                + " and only one keyCode for the gesture type instead of "
+                                + keyCodes.length);
+                return;
+            }
+            // Launch a systemui dialog to confirm enabling the service and to activate the first
+            // time.
+            launchKeyGestureConfirmDialog(
+                    gestureType, event.getModifierState(), keyCodes[0], targetName);
             return;
         }
 
@@ -2538,6 +2549,21 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
         intent.setFlags(Intent.FLAG_RECEIVER_FOREGROUND);
         intent.setPackage(
                 mContext.getString(com.android.internal.R.string.config_systemUi));
+        mContext.sendBroadcastAsUser(intent, UserHandle.SYSTEM);
+    }
+
+    private void launchKeyGestureConfirmDialog(
+            @KeyGestureEvent.KeyGestureType int type,
+            int metaState,
+            int keyCode,
+            String targetName) {
+        final Intent intent = new Intent(ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG);
+        intent.setFlags(Intent.FLAG_RECEIVER_FOREGROUND);
+        intent.setPackage(mContext.getString(com.android.internal.R.string.config_systemUi));
+        intent.putExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, type);
+        intent.putExtra(KeyGestureEventConstants.META_STATE, metaState);
+        intent.putExtra(KeyGestureEventConstants.KEY_CODE, keyCode);
+        intent.putExtra(KeyGestureEventConstants.TARGET_NAME, targetName);
         mContext.sendBroadcastAsUser(intent, UserHandle.SYSTEM);
     }
 

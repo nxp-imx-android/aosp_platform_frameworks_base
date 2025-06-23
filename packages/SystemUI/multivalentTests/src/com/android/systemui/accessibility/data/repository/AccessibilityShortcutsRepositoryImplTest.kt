@@ -24,6 +24,8 @@ import android.content.pm.ResolveInfo
 import android.content.pm.ServiceInfo
 import android.content.res.mainResources
 import android.hardware.input.KeyGestureEvent
+import android.text.Annotation
+import android.text.Spanned
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -77,66 +79,70 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
     }
 
     @Test
-    fun getKeyGestureConfirmInfo_nonExistTypeReceived_isNull() {
+    fun getTitleToContentForKeyGestureDialog_nonExistTypeReceived_isNull() {
         testScope.runTest {
             // Just test a random non-accessibility service type
-            val keyGestureConfirmInfo =
-                underTest.getKeyGestureConfirmInfoByType(
+            val titleToContent =
+                underTest.getTitleToContentForKeyGestureDialog(
                     KeyGestureEvent.KEY_GESTURE_TYPE_HOME,
                     0,
                     0,
                     "empty",
                 )
 
-            assertThat(keyGestureConfirmInfo).isNull()
+            assertThat(titleToContent).isNull()
         }
     }
 
     @Test
-    fun getKeyGestureConfirmInfo_onMagnificationTypeReceived_getExpectedInfo() {
+    fun getTitleToContentForKeyGestureDialog_onMagnificationTypeReceived_getExpectedInfo() {
         testScope.runTest {
             val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
 
-            val keyGestureConfirmInfo =
-                underTest.getKeyGestureConfirmInfoByType(
+            val titleToContent =
+                underTest.getTitleToContentForKeyGestureDialog(
                     KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
                     metaState,
                     KeyEvent.KEYCODE_M,
                     getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION),
                 )
 
-            assertThat(keyGestureConfirmInfo).isNotNull()
-            assertThat(keyGestureConfirmInfo?.title).isEqualTo("Turn on Magnification?")
-            assertThat(keyGestureConfirmInfo?.contentText)
+            assertThat(titleToContent).isNotNull()
+            assertThat(titleToContent?.first).isEqualTo("Turn on Magnification?")
+            val contentText = titleToContent?.second
+            assertThat(hasExpectedAnnotation(contentText)).isTrue()
+            // `contentText` here is an instance of SpannableStringBuilder, so we only need to
+            // compare its value here.
+            assertThat(contentText?.toString())
                 .isEqualTo(
-                    "Action + Alt + M is the keyboard shortcut to use Magnification. " +
-                        "This allows you to quickly zoom in on the screen to make content larger."
+                    "Action icon + Alt + M is the keyboard shortcut to use Magnification." +
+                        " This allows you to quickly zoom in on the screen to make content larger."
                 )
         }
     }
 
     @Test
-    fun getKeyGestureConfirmInfo_serviceUninstalled_isNull() {
+    fun getTitleToContentForKeyGestureDialog_serviceUninstalled_isNull() {
         testScope.runTest {
             val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
             // If voice access isn't installed on device.
             whenever(accessibilityManager.getInstalledServiceInfoWithComponentName(anyOrNull()))
                 .thenReturn(null)
 
-            val keyGestureConfirmInfo =
-                underTest.getKeyGestureConfirmInfoByType(
+            val titleToContent =
+                underTest.getTitleToContentForKeyGestureDialog(
                     KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
                     metaState,
                     KeyEvent.KEYCODE_V,
                     getTargetNameByType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS),
                 )
 
-            assertThat(keyGestureConfirmInfo).isNull()
+            assertThat(titleToContent).isNull()
         }
     }
 
     @Test
-    fun getKeyGestureConfirmInfo_onVoiceAccessTypeReceived_getExpectedInfo() {
+    fun getTitleToContentForKeyGestureDialog_onVoiceAccessTypeReceived_getExpectedInfo() {
         testScope.runTest {
             val metaState = KeyEvent.META_META_ON or KeyEvent.META_ALT_ON
             val type = KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS
@@ -150,20 +156,24 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
                 )
                 .thenReturn(a11yServiceInfo)
 
-            val keyGestureConfirmInfo =
-                underTest.getKeyGestureConfirmInfoByType(
+            val titleToContent =
+                underTest.getTitleToContentForKeyGestureDialog(
                     type,
                     metaState,
                     KeyEvent.KEYCODE_V,
                     getTargetNameByType(type),
                 )
 
-            assertThat(keyGestureConfirmInfo).isNotNull()
-            assertThat(keyGestureConfirmInfo?.title).isEqualTo("Turn on Voice access?")
-            assertThat(keyGestureConfirmInfo?.contentText)
+            assertThat(titleToContent).isNotNull()
+            assertThat(titleToContent?.first).isEqualTo("Turn on Voice access?")
+            val contentText = titleToContent?.second
+            assertThat(hasExpectedAnnotation(contentText)).isTrue()
+            // `contentText` here is an instance of SpannableStringBuilder, so we only need to
+            // compare its value here.
+            assertThat(contentText?.toString())
                 .isEqualTo(
-                    "Action + Alt + V is the keyboard shortcut to use Voice access. " +
-                        "Voice access Intro."
+                    "Action icon + Alt + V is the keyboard shortcut to use Voice access." +
+                        " Voice access Intro."
                 )
         }
     }
@@ -268,5 +278,20 @@ class AccessibilityShortcutsRepositoryImplTest : SysuiTestCase() {
 
             else -> ""
         }
+    }
+
+    // Return true if the text contains the expected annotation.
+    private fun hasExpectedAnnotation(text: CharSequence?): Boolean {
+        if (text == null || text !is Spanned) {
+            return false
+        }
+
+        val annotations = text.getSpans(0, text.length, Annotation::class.java)
+        for (annotation in annotations) {
+            if (annotation.key == "id" && annotation.value == "action_key_icon") {
+                return true
+            }
+        }
+        return false
     }
 }
