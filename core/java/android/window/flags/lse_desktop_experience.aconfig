@@ -927,6 +927,16 @@ flag {
 }
 
 flag {
+    name: "enable_non_default_display_split_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Fixes desktop to split screen on non default displays"
+    bug: "390231697"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "enable_opaque_background_for_transparent_windows"
   namespace: "lse_desktop_experience"
   description: "Whether an opaque background should be forcefully set for windows with only transparent background."
