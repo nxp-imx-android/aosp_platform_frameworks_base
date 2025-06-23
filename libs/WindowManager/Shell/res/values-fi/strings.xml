@@ -47,7 +47,7 @@
     <string name="accessibility_action_divider_left_90" formatted="false" msgid="3525922058426249817">"90 % vasemmalla, 10 % oikealla"</string>
     <string name="accessibility_action_divider_right_full" msgid="4162106720432709858">"Avaa oikealla näkyvä sovellus koko näytöllä"</string>
     <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"Vaihda ylä- ja alareunan sovellukset, säilytä nykyinen jako"</string>
-    <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"Vaihda vasemmalla näkyvä sovellus oikeallalla olevaan sovellukseen, säilytä nykyinen jako"</string>
+    <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"Vaihda vasemmalla näkyvä sovellus oikealla olevaan sovellukseen, säilytä nykyinen jako"</string>
     <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"Koko näytön sovellus"</string>
     <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"10 % yläpuolella, 90 % alapuolella"</string>
     <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"30 % yläpuolella, 70 % alapuolella"</string>

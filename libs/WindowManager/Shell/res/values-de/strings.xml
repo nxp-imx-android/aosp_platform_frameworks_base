@@ -49,11 +49,11 @@
     <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"Obere und untere App vertauschen, aktuelle Aufteilung beibehalten"</string>
     <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"Linke und rechte App vertauschen, aktuelle Aufteilung beibehalten"</string>
     <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"Obere App im Vollbildmodus anzeigen"</string>
-    <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"Oben: 10 % | Unten: 90 %"</string>
-    <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"Oben: 30 % | Unten: 70 %"</string>
-    <string name="accessibility_action_divider_top_50" formatted="false" msgid="1038204315880066213">"Oben: 50 % | Unten: 50 %"</string>
-    <string name="accessibility_action_divider_top_70" formatted="false" msgid="5125673390883238862">"Oben: 70 % | Unten: 30 %"</string>
-    <string name="accessibility_action_divider_top_90" formatted="false" msgid="7662868544020662698">"Oben: 90 % | Unten: 10 %"</string>
+    <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"Obere: 10 % | Untere: 90 %"</string>
+    <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"Obere: 30 % | Untere: 70 %"</string>
+    <string name="accessibility_action_divider_top_50" formatted="false" msgid="1038204315880066213">"Obere: 50 % | Untere: 50 %"</string>
+    <string name="accessibility_action_divider_top_70" formatted="false" msgid="5125673390883238862">"Obere: 70 % | Untere: 30 %"</string>
+    <string name="accessibility_action_divider_top_90" formatted="false" msgid="7662868544020662698">"Obere: 90 % | Untere: 10 %"</string>
     <string name="accessibility_action_divider_bottom_full" msgid="6437134983210745664">"Untere App im Vollbildmodus anzeigen"</string>
     <string name="accessibility_split_left" msgid="1713683765575562458">"Links positionieren"</string>
     <string name="accessibility_split_right" msgid="8441001008181296837">"Rechts positionieren"</string>

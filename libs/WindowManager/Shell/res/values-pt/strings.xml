@@ -49,11 +49,11 @@
     <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"Trocar o app de cima pelo de baixo mantendo a divisão atual"</string>
     <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"Trocar o app da esquerda pelo da direita mantendo a divisão atual"</string>
     <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"Abrir o app de cima em tela cheia"</string>
-    <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"Parte de cima: 10%, Parte de baixo: 90%"</string>
-    <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"Parte de cima: 30%, Parte de baixo: 70%"</string>
-    <string name="accessibility_action_divider_top_50" formatted="false" msgid="1038204315880066213">"Parte de cima: 50%, Parte de baixo: 50%"</string>
-    <string name="accessibility_action_divider_top_70" formatted="false" msgid="5125673390883238862">"Parte de cima: 70%, Parte de baixo: 30%"</string>
-    <string name="accessibility_action_divider_top_90" formatted="false" msgid="7662868544020662698">"Parte de cima: 90%, Parte de baixo: 10%"</string>
+    <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"Parte de cima: 10%, parte de baixo: 90%"</string>
+    <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"Parte de cima: 30%, parte de baixo: 70%"</string>
+    <string name="accessibility_action_divider_top_50" formatted="false" msgid="1038204315880066213">"Parte de cima: 50%, parte de baixo: 50%"</string>
+    <string name="accessibility_action_divider_top_70" formatted="false" msgid="5125673390883238862">"Parte de cima: 70%, parte de baixo: 30%"</string>
+    <string name="accessibility_action_divider_top_90" formatted="false" msgid="7662868544020662698">"Parte de cima: 90%, parte de baixo: 10%"</string>
     <string name="accessibility_action_divider_bottom_full" msgid="6437134983210745664">"Abrir o app de baixo em tela cheia"</string>
     <string name="accessibility_split_left" msgid="1713683765575562458">"Dividir para a esquerda"</string>
     <string name="accessibility_split_right" msgid="8441001008181296837">"Dividir para a direita"</string>

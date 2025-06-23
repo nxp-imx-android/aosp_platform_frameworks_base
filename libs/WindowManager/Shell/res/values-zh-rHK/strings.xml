@@ -48,13 +48,13 @@
     <string name="accessibility_action_divider_right_full" msgid="4162106720432709858">"將右側應用程式切換至全螢幕"</string>
     <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"對調頂部和底部的應用程式，並維持目前的分割畫面比例"</string>
     <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"對調左側和右側的應用程式，並維持目前的分割畫面比例"</string>
-    <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"將頂部應用程式切換至全螢幕"</string>
+    <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"將頂部應用程式放大至全螢幕"</string>
     <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"頂部 10%，底部 90%"</string>
     <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"頂部 30%，底部 70%"</string>
     <string name="accessibility_action_divider_top_50" formatted="false" msgid="1038204315880066213">"頂部 50%，底部 50%"</string>
     <string name="accessibility_action_divider_top_70" formatted="false" msgid="5125673390883238862">"頂部 70%，底部 30%"</string>
     <string name="accessibility_action_divider_top_90" formatted="false" msgid="7662868544020662698">"頂部 90%，底部 10%"</string>
-    <string name="accessibility_action_divider_bottom_full" msgid="6437134983210745664">"將底部應用程式切換至全螢幕"</string>
+    <string name="accessibility_action_divider_bottom_full" msgid="6437134983210745664">"將底部應用程式放大至全螢幕"</string>
     <string name="accessibility_split_left" msgid="1713683765575562458">"分割左側區域"</string>
     <string name="accessibility_split_right" msgid="8441001008181296837">"分割右側區域"</string>
     <string name="accessibility_split_top" msgid="2789329702027147146">"分割上方區域"</string>
