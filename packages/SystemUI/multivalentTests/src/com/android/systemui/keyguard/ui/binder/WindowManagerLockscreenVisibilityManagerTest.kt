@@ -27,6 +27,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.WindowManagerLockscreenVisibilityManager
 import com.android.systemui.keyguard.domain.interactor.KeyguardDismissTransitionInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardShowWhileAwakeInteractor
@@ -36,6 +37,7 @@ import com.android.systemui.util.concurrency.FakeExecutor
 import com.android.systemui.util.time.FakeSystemClock
 import com.android.window.flags.Flags
 import com.android.wm.shell.keyguard.KeyguardTransitions
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -74,6 +76,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     @Mock private lateinit var lockPatternUtils: LockPatternUtils
     @Mock private lateinit var keyguardShowWhileAwakeInteractor: KeyguardShowWhileAwakeInteractor
     @Mock private lateinit var selectedUserInteractor: SelectedUserInteractor
+    @Mock private lateinit var deviceEntryInteractor: DeviceEntryInteractor
 
     @Before
     fun setUp() {
@@ -93,6 +96,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
                 selectedUserInteractor = selectedUserInteractor,
                 lockPatternUtils = lockPatternUtils,
                 keyguardShowWhileAwakeInteractor = keyguardShowWhileAwakeInteractor,
+                deviceEntryInteractor = { deviceEntryInteractor },
             )
     }
 
@@ -286,6 +290,10 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
         doAnswer { invocation -> (invocation.getArgument(1) as (() -> Unit)).invoke() }
             .whenever(keyguardDismissTransitionInteractor)
             .startDismissKeyguardTransition(any(), any())
+
+        // Or, if flexiglass is enabled, return that the device is already entered so that we call
+        // the callback immediately.
+        whenever(deviceEntryInteractor.isDeviceEntered).thenReturn(MutableStateFlow(true))
 
         whenever(selectedUserInteractor.getSelectedUserId()).thenReturn(-1)
 
