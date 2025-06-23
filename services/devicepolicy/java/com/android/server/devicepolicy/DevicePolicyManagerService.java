@@ -10343,7 +10343,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         saveSettingsLocked(UserHandle.USER_SYSTEM);
         clearUserPoliciesLocked(userId);
         clearOverrideApnUnchecked();
-        clearApplicationRestrictions(userId);
+        if (!Flags.setApplicationRestrictionsCoexistence()) {
+            clearApplicationRestrictions(userId);
+        }
 
         mOwners.clearDeviceOwner();
         mOwners.writeDeviceOwner();
@@ -11854,7 +11856,82 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     }
 
     @Override
-    public void setApplicationRestrictions(ComponentName who, String callerPackage,
+    public void setApplicationRestrictions(ComponentName who, String callerPackageName,
+            String packageName, Bundle restrictions, boolean parent) {
+        if (!Flags.setApplicationRestrictionsCoexistence()) {
+            setApplicationRestrictionsPreCoexistence(
+                    who, callerPackageName, packageName, restrictions, parent);
+            return;
+        }
+
+        checkCanExecuteOrThrowUnsafe(DevicePolicyManager.OPERATION_SET_APPLICATION_RESTRICTIONS);
+
+        String validationResult = FrameworkParsingPackageUtils.validateName(
+                packageName, /* requireSeparator */ false, /* requireFilename */false);
+        if (validationResult != null) {
+            throw new IllegalArgumentException("Invalid package name: " + validationResult);
+        }
+
+        CallerIdentity caller = getCallerIdentity(who, callerPackageName);
+
+        int affectedUserId;
+        if (parent) {
+            Preconditions.checkCallAuthorization(isCallerDevicePolicyManagementRoleHolder(caller));
+            Preconditions.checkState(isOrganizationOwnedDeviceWithManagedProfile(),
+                    "Role Holder can only operate parent app restriction on COPE devices");
+            affectedUserId = getProfileParentId(caller.getUserId());
+        } else {
+            affectedUserId = caller.getUserId();
+        }
+
+        enforcePermission(MANAGE_DEVICE_POLICY_APP_RESTRICTIONS, caller.getPackageName());
+        EnforcingAdmin enforcingAdmin =  getEnforcingAdminForCaller(who, caller.getPackageName());
+
+        if (restrictions == null || restrictions.isEmpty()) {
+            mDevicePolicyEngine.removeLocalPolicy(
+                    PolicyDefinition.APPLICATION_RESTRICTIONS(packageName), enforcingAdmin,
+                    affectedUserId);
+        } else {
+            mDevicePolicyEngine.setLocalPolicy(
+                    PolicyDefinition.APPLICATION_RESTRICTIONS(packageName), enforcingAdmin,
+                    new BundlePolicyValue(restrictions), affectedUserId);
+        }
+
+        DevicePolicyEventLogger
+                .createEvent(DevicePolicyEnums.SET_APPLICATION_RESTRICTIONS)
+                .setAdmin(caller.getPackageName())
+                .setBoolean(/* isDelegate */ isCallerDelegate(caller))
+                .setStrings(packageName)
+                .write();
+    }
+
+    @Override
+    public void setApplicationRestrictionsBySystem(
+            @NonNull String systemEntity, String packageName, @UserIdInt int userId,
+            Bundle restrictions) {
+        Objects.requireNonNull(systemEntity);
+        final CallerIdentity caller = getCallerIdentity();
+
+        Preconditions.checkCallAuthorization(isSystemUid(caller),
+                "Only system services can call setApplicationRestrictionsBySystem");
+
+        EnforcingAdmin enforcingAdmin = EnforcingAdmin.createSystemEnforcingAdmin(systemEntity);
+
+        if (restrictions == null || restrictions.isEmpty()) {
+            mDevicePolicyEngine.removeLocalPolicy(
+                    PolicyDefinition.APPLICATION_RESTRICTIONS(packageName),
+                    enforcingAdmin,
+                    userId);
+        } else {
+            mDevicePolicyEngine.setLocalPolicy(
+                    PolicyDefinition.APPLICATION_RESTRICTIONS(packageName),
+                    enforcingAdmin,
+                    new BundlePolicyValue(restrictions),
+                    userId);
+        }
+    }
+
+    public void setApplicationRestrictionsPreCoexistence(ComponentName who, String callerPackage,
             String packageName, Bundle restrictions, boolean parent) {
         final CallerIdentity caller = getCallerIdentity(who, callerPackage);
         checkCanExecuteOrThrowUnsafe(DevicePolicyManager.OPERATION_SET_APPLICATION_RESTRICTIONS);
@@ -11895,12 +11972,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             int affectedUserId = parent
                     ? getProfileParentId(caller.getUserId()) : caller.getUserId();
             if (restrictions == null || restrictions.isEmpty()) {
-                mDevicePolicyEngine.removeLocalPolicy(
+                CompletableFuture<Integer> unused = mDevicePolicyEngine.removeLocalPolicy(
                         PolicyDefinition.APPLICATION_RESTRICTIONS(packageName),
                         enforcingAdmin,
                         affectedUserId);
             } else {
-                mDevicePolicyEngine.setLocalPolicy(
+                CompletableFuture<Integer> unused = mDevicePolicyEngine.setLocalPolicy(
                         PolicyDefinition.APPLICATION_RESTRICTIONS(packageName),
                         enforcingAdmin,
                         new BundlePolicyValue(restrictions),
@@ -13289,7 +13366,33 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
     }
 
     @Override
-    public Bundle getApplicationRestrictions(ComponentName who, String callerPackage,
+    public Bundle getApplicationRestrictions(ComponentName who, String callerPackageName,
+            String packageName, boolean parent) {
+        if (!Flags.setApplicationRestrictionsCoexistence()) {
+            return getApplicationRestrictionsPreCoexistence(
+                    who, callerPackageName, packageName, parent);
+        }
+
+        CallerIdentity caller = getCallerIdentity(who, callerPackageName);
+        if (parent) {
+            Preconditions.checkCallAuthorization(isCallerDevicePolicyManagementRoleHolder(caller));
+            Preconditions.checkState(isOrganizationOwnedDeviceWithManagedProfile(),
+                    "Role Holder can only operate parent app restriction on COPE devices");
+        }
+
+        int affectedUserId = parent
+                ? getProfileParentId(caller.getUserId()) : caller.getUserId();
+
+        enforcePermission(MANAGE_DEVICE_POLICY_APP_RESTRICTIONS, caller.getPackageName());
+        EnforcingAdmin enforcingAdmin =  getEnforcingAdminForCaller(who, caller.getPackageName());
+
+        Bundle bundle = mDevicePolicyEngine.getLocalPolicySetByAdmin(
+                        PolicyDefinition.APPLICATION_RESTRICTIONS(packageName), enforcingAdmin,
+                        affectedUserId);
+        return bundle != null ? bundle : Bundle.EMPTY;
+    }
+
+    public Bundle getApplicationRestrictionsPreCoexistence(ComponentName who, String callerPackage,
             String packageName, boolean parent) {
         final CallerIdentity caller = getCallerIdentity(who, callerPackage);
 
@@ -13335,6 +13438,23 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                 return bundle != null ? bundle : Bundle.EMPTY;
             });
         }
+    }
+
+    @Override
+    public Bundle getApplicationRestrictionsBySystem(
+            @NonNull String systemEntity, @NonNull String packageName, @UserIdInt int userId) {
+        Objects.requireNonNull(systemEntity);
+        final CallerIdentity caller = getCallerIdentity();
+
+        Preconditions.checkCallAuthorization(isSystemUid(caller),
+                "Only system services can call getApplicationRestrictionsBySystem");
+
+        EnforcingAdmin enforcingAdmin = EnforcingAdmin.createSystemEnforcingAdmin(systemEntity);
+
+        Bundle bundle = mDevicePolicyEngine.getLocalPolicySetByAdmin(
+                        PolicyDefinition.APPLICATION_RESTRICTIONS(packageName), enforcingAdmin,
+                        userId);
+        return bundle != null ? bundle : Bundle.EMPTY;
     }
 
     /**
@@ -16326,26 +16446,43 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     mDevicePolicyEngine.getLocalPoliciesSetByAdmins(
                             PolicyDefinition.APPLICATION_RESTRICTIONS(packageName),
                             userId);
+
             List<Bundle> restrictions = new ArrayList<>();
-            for (PolicyValue<Bundle> policyValue: policies.values()) {
-                Bundle value = policyValue.getValue();
-                // Probably not necessary since setApplicationRestrictions only sets non-empty
-                // Bundle, but just in case.
-                if (value != null && !value.isEmpty()) {
-                    restrictions.add(value);
+            if (Flags.setApplicationRestrictionsCoexistence()) {
+                for (Map.Entry<EnforcingAdmin, PolicyValue<Bundle>> entry : policies.entrySet()) {
+                    Bundle value = entry.getValue().getValue();
+                    if (value == null || value.isEmpty()) {
+                        continue;
+                    }
+                    if (entry.getKey().hasAuthority(EnforcingAdmin.DPC_AUTHORITY)) {
+                        // App restrictions set by the DPC are always put at the front of the
+                        // returned list.
+                        restrictions.addFirst(value);
+                    } else {
+                        restrictions.add(value);
+                    }
                 }
+            } else {
+                for (PolicyValue<Bundle> policyValue: policies.values()) {
+                    Bundle value = policyValue.getValue();
+                    // Probably not necessary since setApplicationRestrictions only sets non-empty
+                    // Bundle, but just in case.
+                    if (value != null && !value.isEmpty()) {
+                        restrictions.add(value);
+                    }
+                }
+                mInjector.binderWithCleanCallingIdentity(() -> {
+                    // Could be a device that has a DPC that hasn't migrated yet, so also return any
+                    // restrictions saved in userManager.
+                    Bundle bundle = mUserManager.getApplicationRestrictions(
+                            packageName, UserHandle.of(userId));
+                    if (bundle != null && !bundle.isEmpty()) {
+                        restrictions.add(bundle);
+                    }
+                });
             }
 
-            return mInjector.binderWithCleanCallingIdentity(() -> {
-                // Could be a device that has a DPC that hasn't migrated yet, so also return any
-                // restrictions saved in userManager.
-                Bundle bundle = mUserManager.getApplicationRestrictions(
-                        packageName, UserHandle.of(userId));
-                if (bundle != null && !bundle.isEmpty()) {
-                    restrictions.add(bundle);
-                }
-                return restrictions;
-            });
+            return restrictions;
         }
 
         public List<EnforcingUser> getUserRestrictionSources(String restriction,
@@ -24558,7 +24695,58 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
             Slogf.i(LOG_TAG, "Backup made: " + permissionBackupId);
         }
 
+        String appRestrictionsBackupId = "37.2.application-restrictions";
+        boolean appRestrictionsMigrated =
+                maybeMigrateApplicationRestrictionsLocked(appRestrictionsBackupId);
+        if (appRestrictionsMigrated) {
+            Slogf.i(LOG_TAG, "Backup made: " + appRestrictionsBackupId);
+        }
+
         // Additional migration steps should repeat the pattern above with a new backupId.
+    }
+
+    @GuardedBy("getLockObject()")
+    private boolean maybeMigrateApplicationRestrictionsLocked(String backupId) {
+        Slog.i(LOG_TAG, "Migrating application restrictions to policy engine");
+        if (!Flags.setApplicationRestrictionsCoexistence()) {
+            return false;
+        }
+        if (mOwners.isSetApplicationRestrictionsMigrated()) {
+            return false;
+        }
+
+        // Create backup if none exists
+        mDevicePolicyEngine.createBackup(backupId);
+        try {
+            Binder.withCleanCallingIdentity(() -> {
+                List<UserInfo> users = mUserManager.getUsers();
+                for (UserInfo userInfo : users) {
+                    ActiveAdmin admin = getProfileOwnerOrDeviceOwnerLocked(userInfo.id);
+
+                    // If admin is null, it means the user doesn't have a DPC. Otherwise, the user
+                    // can still be a restricted user managed by Settings app.
+                    EnforcingAdmin enforcingAdmin = admin != null
+                            ? EnforcingAdmin.createEnterpriseEnforcingAdmin(
+                                    admin.info.getComponent(), userInfo.id)
+                            : EnforcingAdmin.createSystemEnforcingAdmin(
+                                    "com.android.settings");
+                    mUserManagerInternal.getApplicationRestrictionsForUser(userInfo.id).forEach(
+                            (packageName, restrictions) -> {
+                        var unused = mDevicePolicyEngine.setLocalPolicy(
+                                PolicyDefinition.APPLICATION_RESTRICTIONS(packageName),
+                                enforcingAdmin,
+                                new BundlePolicyValue(restrictions),
+                                userInfo.id);
+                    });
+                }
+            });
+        } catch (Exception e) {
+            Slog.wtf(LOG_TAG, "Failed to migrate application restrictions to policy engine", e);
+        }
+
+        Slog.i(LOG_TAG, "Marking set application restrictions migration complete");
+        mOwners.markSetApplicationRestrictionsMigrated();
+        return true;
     }
 
     @GuardedBy("getLockObject()")
@@ -24578,7 +24766,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
                     return;
                 }
                 int userId = enforcingAdmin.getUserId();
-                mDevicePolicyEngine.setLocalPolicy(
+                var unused = mDevicePolicyEngine.setLocalPolicy(
                         PolicyDefinition.KEYGUARD_DISABLED_FEATURES,
                         enforcingAdmin,
                         new IntegerPolicyValue(admin.disabledKeyguardFeatures),
