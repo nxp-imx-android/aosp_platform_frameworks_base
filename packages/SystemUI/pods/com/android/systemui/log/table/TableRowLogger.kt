@@ -23,13 +23,13 @@ package com.android.systemui.log.table
  * to individual fields using the [logChange] methods. All logged changes will be associated with
  * the same timestamp.
  */
-interface TableRowLogger {
+public interface TableRowLogger {
     /** Logs a change to a string value. */
-    fun logChange(columnName: String, value: String?)
+    public fun logChange(columnName: String, value: String?)
 
     /** Logs a change to a boolean value. */
-    fun logChange(columnName: String, value: Boolean)
+    public fun logChange(columnName: String, value: Boolean)
 
     /** Logs a change to an int value. */
-    fun logChange(columnName: String, value: Int)
+    public fun logChange(columnName: String, value: Int)
 }
