@@ -61,6 +61,9 @@ class DesktopRepository(
     /** Specific [TaskInfo] data related to top transparent fullscreen task handling. */
     data class TopTransparentFullscreenTaskData(val taskId: Int, val token: WindowContainerToken)
 
+    /** Tiling data preserved after a display got disconnected. */
+    data class PreservedTiledAppData(val leftTiledTask: Int?, val rightTiledTask: Int?)
+
     /**
      * Task data tracked per desk.
      *
@@ -227,6 +230,17 @@ class DesktopRepository(
     /** Returns the active desk on the preserved display for the specified unique display id. */
     fun getPreservedActiveDesk(uniqueDisplayId: String): Int? =
         preservedDisplaysByUniqueId[uniqueDisplayId]?.activeDeskId
+
+    /** Returns a preserved desk data post a display reconnect event. */
+    fun getPreservedTilingData(
+        uniqueDisplayId: String,
+        preservedDeskId: Int?,
+    ): PreservedTiledAppData? =
+        preservedDisplaysByUniqueId[uniqueDisplayId]
+            ?.orderedDesks
+            ?.firstOrNull { desk -> desk.deskId == preservedDeskId }
+            ?.let { PreservedTiledAppData(it.leftTiledTaskId, it.rightTiledTaskId) }
+            ?.takeIf { it.leftTiledTask != null || it.rightTiledTask != null }
 
     /**
      * Checks if the provided task is minimized on the preserved display with the provided

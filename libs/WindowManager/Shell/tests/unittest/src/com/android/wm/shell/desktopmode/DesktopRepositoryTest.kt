@@ -1731,12 +1731,15 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             isVisible = true,
             taskBounds = secondTaskBounds,
         )
-
+        repo.addRightTiledTaskToDesk(SECOND_DISPLAY, 12, 7)
+        repo.addLeftTiledTaskToDesk(SECOND_DISPLAY, 13, 7)
         repo.preserveDisplay(SECOND_DISPLAY, UNIQUE_DISPLAY_ID)
 
         assertThat(repo.getPreservedTaskBounds(UNIQUE_DISPLAY_ID))
             .isEqualTo(mapOf(12 to TEST_TASK_BOUNDS, 13 to secondTaskBounds))
         assertThat(repo.getPreservedDeskIds(UNIQUE_DISPLAY_ID)).containsExactly(7)
+        assertThat(repo.getPreservedTilingData(UNIQUE_DISPLAY_ID, 7))
+            .isEqualTo(DesktopRepository.PreservedTiledAppData(13, 12))
     }
 
     @Test
