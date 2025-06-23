@@ -136,6 +136,7 @@ import java.util.concurrent.ConcurrentMap;
  *             last_time_connected="1634641160229"
  *             time_approved="1634389553216"
  *             system_data_sync_flags="0"
+ *             transport_flags="0"
  *             device_icon="device_icon">
  *             <device_id
  *                 custom_device_id="1234"/>
@@ -154,6 +155,7 @@ import java.util.concurrent.ConcurrentMap;
  *             last_time_connected="1634641160229"
  *             time_approved="1634641160229"
  *             system_data_sync_flags="1"
+ *             transport_flags="0"
  *             device_icon="device_icon">
  *             <device_id
  *                 custom_device_id="1234"/>
@@ -199,6 +201,7 @@ public final class AssociationDiskStore {
     private static final String XML_ATTR_TIME_APPROVED = "time_approved";
     private static final String XML_ATTR_LAST_TIME_CONNECTED = "last_time_connected";
     private static final String XML_ATTR_SYSTEM_DATA_SYNC_FLAGS = "system_data_sync_flags";
+    private static final String XML_ATTR_TRANSPORT_FLAGS = "transport_flags";
     private static final String XML_ATTR_DEVICE_ICON = "device_icon";
     private static final String XML_ATTR_CUSTOM_DEVICE_ID = "custom_device_id";
     private static final String XML_ATTR_MAC_ADDRESS_DEVICE_ID = "mac_address_device_id";
@@ -538,6 +541,8 @@ public final class AssociationDiskStore {
                 parser, XML_ATTR_LAST_TIME_CONNECTED, Long.MAX_VALUE);
         final int systemDataSyncFlags = readIntAttribute(parser,
                 XML_ATTR_SYSTEM_DATA_SYNC_FLAGS, 0);
+        final int transportFlags = readIntAttribute(parser,
+                XML_ATTR_TRANSPORT_FLAGS, 0);
         final Icon deviceIcon = byteArrayToIcon(
                 readByteArrayAttribute(parser, XML_ATTR_DEVICE_ICON));
 
@@ -633,6 +638,7 @@ public final class AssociationDiskStore {
         writeLongAttribute(
                 serializer, XML_ATTR_LAST_TIME_CONNECTED, a.getLastTimeConnectedMs());
         writeIntAttribute(serializer, XML_ATTR_SYSTEM_DATA_SYNC_FLAGS, a.getSystemDataSyncFlags());
+        writeIntAttribute(serializer, XML_ATTR_TRANSPORT_FLAGS, a.getTransportFlags());
         writeByteArrayAttribute(
                 serializer, XML_ATTR_DEVICE_ICON, iconToByteArray(a.getDeviceIcon()));
 

@@ -79,6 +79,7 @@ import android.util.Slog;
 
 import com.android.internal.R;
 import com.android.server.companion.CompanionDeviceManagerService;
+import com.android.server.companion.transport.Transport;
 import com.android.server.companion.utils.PackageUtils;
 
 import java.util.ArrayList;
@@ -314,6 +315,13 @@ public class AssociationRequestsProcessor {
         final int id = mAssociationStore.getNextId();
         final long timestamp = System.currentTimeMillis();
 
+        // Automatically set transport flags based on device profile.
+        int transportFlags = 0;
+        if (AssociationRequest.DEVICE_PROFILE_WEARABLE_SENSING.equals(deviceProfile)) {
+            // Wearable sensing devices are always granted extended patch diff.
+            transportFlags |= Transport.FLAG_EXTEND_PATCH_DIFF;
+        }
+
         final AssociationInfo association =
                 new AssociationInfo.Builder(id, userId, packageName)
                         .setDeviceMacAddress(macAddress)
@@ -327,6 +335,7 @@ public class AssociationRequestsProcessor {
                         .setTimeApproved(timestamp)
                         .setLastTimeConnected(Long.MAX_VALUE)
                         .setSystemDataSyncFlags(0)
+                        .setTransportFlags(transportFlags)
                         .setDeviceIcon(deviceIcon)
                         .setDeviceId(null)
                         .setPackagesToNotify(null)
