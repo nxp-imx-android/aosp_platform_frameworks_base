@@ -16,12 +16,21 @@
 
 package com.android.server.vibrator;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.hardware.vibrator.CompositeEffect;
+import android.hardware.vibrator.CompositePwleV2;
+import android.hardware.vibrator.FrequencyAccelerationMapEntry;
 import android.hardware.vibrator.IVibrator;
+import android.hardware.vibrator.IVibratorCallback;
+import android.hardware.vibrator.PrimitivePwle;
+import android.os.Binder;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Parcel;
 import android.os.PersistableBundle;
+import android.os.RemoteException;
 import android.os.VibrationEffect;
 import android.os.VibrationEffect.VendorEffect;
 import android.os.VibratorInfo;
@@ -31,6 +40,8 @@ import android.os.vibrator.PwlePoint;
 import android.os.vibrator.RampSegment;
 import android.os.vibrator.StepSegment;
 import android.os.vibrator.VibrationEffectSegment;
+
+import com.android.server.vibrator.VintfHalVibrator.DefaultHalVibrator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -74,8 +85,10 @@ public final class HalVibratorHelper {
     private int[] mSupportedEffects;
     private int[] mSupportedBraking;
     private int[] mSupportedPrimitives;
+    private int mCompositionDelayMax;
     private int mCompositionSizeMax;
     private int mPwleSizeMax;
+    private int mPwlePrimitiveDurationMax;
     private int mMaxEnvelopeEffectSize;
     private int mMinEnvelopeEffectControlPointDurationMillis;
     private int mMaxEnvelopeEffectControlPointDurationMillis;
@@ -96,6 +109,12 @@ public final class HalVibratorHelper {
     /** Return new {@link VibratorController} instance. */
     public VibratorController newVibratorController(int vibratorId) {
         return new VibratorController(vibratorId, new FakeNativeWrapper());
+    }
+
+    /** Return new {@link DefaultHalVibrator} instance. */
+    public DefaultHalVibrator newDefaultVibrator(int vibratorId) {
+        FakeVibratorSupplier supplier = new FakeVibratorSupplier(new FakeVibrator());
+        return new DefaultHalVibrator(vibratorId, supplier);
     }
 
     /** Return new {@link HalVibrator} instance. */
@@ -193,6 +212,11 @@ public final class HalVibratorHelper {
         mSupportedPrimitives = primitives;
     }
 
+    /** Set the maximum composition delay duration in fake vibrator hardware. */
+    public void setCompositionDelayMax(int millis) {
+        mCompositionDelayMax = millis;
+    }
+
     /** Set the max number of primitives allowed in a composition by the fake vibrator hardware. */
     public void setCompositionSizeMax(int limit) {
         mCompositionSizeMax = limit;
@@ -201,6 +225,11 @@ public final class HalVibratorHelper {
     /** Set the max number of PWLEs allowed in a composition by the fake vibrator hardware. */
     public void setPwleSizeMax(int limit) {
         mPwleSizeMax = limit;
+    }
+
+    /** Set the max duration of PWLE primitives in a composition by the fake vibrator hardware. */
+    public void setPwlePrimitiveDurationMax(int millis) {
+        mPwlePrimitiveDurationMax = millis;
     }
 
     /** Set the resonant frequency of the fake vibrator hardware. */
@@ -300,7 +329,6 @@ public final class HalVibratorHelper {
 
     /** Returns a list of all vendor effects, for all vibration IDs. */
     public synchronized List<VendorEffect> getAllVendorEffects() {
-        // Returns segments in order of vibrationId, which increases over time. TreeMap gives order.
         ArrayList<VendorEffect> result = new ArrayList<>();
         for (List<VendorEffect> subList : mVendorEffects.values()) {
             result.addAll(subList);
@@ -354,6 +382,16 @@ public final class HalVibratorHelper {
     private static <T> List<T> getRecordsForVibration(
             Map<Long, List<T>> records, long vibrationId) {
         return records.computeIfAbsent(vibrationId, unused -> new ArrayList<>());
+    }
+
+    private void applyLatency(long latencyMillis) {
+        try {
+            if (latencyMillis > 0) {
+                Thread.sleep(latencyMillis);
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /** Fake {@link VibratorController.NativeWrapper} implementation for testing. */
@@ -508,43 +546,261 @@ public final class HalVibratorHelper {
         @Override
         public boolean getInfo(VibratorInfo.Builder infoBuilder) {
             infoBuilder.setCapabilities(mCapabilities);
-            infoBuilder.setSupportedBraking(mSupportedBraking);
-            infoBuilder.setPwleSizeMax(mPwleSizeMax);
             infoBuilder.setSupportedEffects(mSupportedEffects);
-            if (mSupportedPrimitives != null) {
-                for (int primitive : mSupportedPrimitives) {
-                    infoBuilder.setSupportedPrimitive(primitive, (int) mPrimitiveDuration);
+            if ((mCapabilities & IVibrator.CAP_COMPOSE_EFFECTS) != 0) {
+                if (mSupportedPrimitives != null) {
+                    for (int primitive : mSupportedPrimitives) {
+                        infoBuilder.setSupportedPrimitive(primitive, (int) mPrimitiveDuration);
+                    }
                 }
+                infoBuilder.setPrimitiveDelayMax(mCompositionDelayMax);
+                infoBuilder.setCompositionSizeMax(mCompositionSizeMax);
             }
-            infoBuilder.setCompositionSizeMax(mCompositionSizeMax);
-            infoBuilder.setQFactor(mQFactor);
-            infoBuilder.setFrequencyProfileLegacy(new VibratorInfo.FrequencyProfileLegacy(
-                    mResonantFrequency, mMinFrequency, mFrequencyResolution, mMaxAmplitudes));
-            infoBuilder.setFrequencyProfile(
-                    new VibratorInfo.FrequencyProfile(mResonantFrequency, mFrequenciesHz,
-                            mOutputAccelerationsGs));
-            infoBuilder.setMaxEnvelopeEffectSize(mMaxEnvelopeEffectSize);
-            infoBuilder.setMinEnvelopeEffectControlPointDurationMillis(
-                    mMinEnvelopeEffectControlPointDurationMillis);
-            infoBuilder.setMaxEnvelopeEffectControlPointDurationMillis(
-                    mMaxEnvelopeEffectControlPointDurationMillis);
+            if ((mCapabilities & IVibrator.CAP_GET_Q_FACTOR) != 0) {
+                infoBuilder.setQFactor(mQFactor);
+            }
+            float resonantFrequency =
+                    ((mCapabilities & IVibrator.CAP_GET_RESONANT_FREQUENCY) != 0)
+                            ? mResonantFrequency
+                            : Float.NaN;
+            if ((mCapabilities & IVibrator.CAP_FREQUENCY_CONTROL) != 0) {
+                infoBuilder.setFrequencyProfile(
+                        new VibratorInfo.FrequencyProfile(resonantFrequency, mFrequenciesHz,
+                                mOutputAccelerationsGs));
+                infoBuilder.setFrequencyProfileLegacy(new VibratorInfo.FrequencyProfileLegacy(
+                        resonantFrequency, mMinFrequency, mFrequencyResolution, mMaxAmplitudes));
+            } else {
+                infoBuilder.setFrequencyProfile(
+                        new VibratorInfo.FrequencyProfile(resonantFrequency, null, null));
+                infoBuilder.setFrequencyProfileLegacy(new VibratorInfo.FrequencyProfileLegacy(
+                        resonantFrequency, Float.NaN, Float.NaN, null));
+            }
+            if ((mCapabilities & IVibrator.CAP_COMPOSE_PWLE_EFFECTS) != 0) {
+                infoBuilder.setSupportedBraking(mSupportedBraking);
+                infoBuilder.setPwleSizeMax(mPwleSizeMax);
+                infoBuilder.setPwlePrimitiveDurationMax(mPwlePrimitiveDurationMax);
+            }
+            if ((mCapabilities & IVibrator.CAP_COMPOSE_PWLE_EFFECTS_V2) != 0) {
+                infoBuilder.setMaxEnvelopeEffectSize(mMaxEnvelopeEffectSize);
+                infoBuilder.setMinEnvelopeEffectControlPointDurationMillis(
+                        mMinEnvelopeEffectControlPointDurationMillis);
+                infoBuilder.setMaxEnvelopeEffectControlPointDurationMillis(
+                        mMaxEnvelopeEffectControlPointDurationMillis);
+            }
             return !mLoadInfoShouldFail;
-        }
-
-        private void applyLatency(long latencyMillis) {
-            try {
-                if (latencyMillis > 0) {
-                    Thread.sleep(latencyMillis);
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
         }
 
         private void scheduleListener(long vibrationDuration, long vibrationId, long stepId) {
             mHandler.postDelayed(
                     () -> listener.onVibrationStepComplete(vibratorId, vibrationId, stepId),
                     vibrationDuration + mCompletionCallbackLatency);
+        }
+    }
+
+    /** Provides fake implementation of {@link IVibrator} for testing. */
+    public final class FakeVibrator extends IVibrator.Stub {
+
+        @Override
+        public int getCapabilities() throws RemoteException {
+            return mCapabilities;
+        }
+
+        @Override
+        public int[] getSupportedEffects() throws RemoteException {
+            return mSupportedEffects;
+        }
+
+        @Override
+        public void setAmplitude(float amplitude) throws RemoteException {
+            mAmplitudes.add(amplitude);
+            applyLatency(mOnLatency);
+        }
+
+        @Override
+        public void setExternalControl(boolean enabled) throws RemoteException {
+            mExternalControlStates.add(enabled);
+        }
+
+        @Override
+        public int getCompositionDelayMax() throws RemoteException {
+            return mCompositionDelayMax;
+        }
+
+        @Override
+        public int getCompositionSizeMax() throws RemoteException {
+            return mCompositionSizeMax;
+        }
+
+        @Override
+        public int[] getSupportedPrimitives() throws RemoteException {
+            return mSupportedPrimitives;
+        }
+
+        @Override
+        public int getPrimitiveDuration(int primitive) throws RemoteException {
+            return (int) mPrimitiveDuration;
+        }
+
+        @Override
+        public int[] getSupportedAlwaysOnEffects() throws RemoteException {
+            return mSupportedEffects;
+        }
+
+        @Override
+        public void alwaysOnEnable(int id, int effect, byte strength) throws RemoteException {
+            PrebakedSegment prebaked = new PrebakedSegment(effect, false, strength);
+            mEnabledAlwaysOnEffects.put((long) id, prebaked);
+        }
+
+        @Override
+        public void alwaysOnDisable(int id) throws RemoteException {
+            mEnabledAlwaysOnEffects.remove((long) id);
+        }
+
+        @Override
+        public float getResonantFrequency() throws RemoteException {
+            return mResonantFrequency;
+        }
+
+        @Override
+        public float getQFactor() throws RemoteException {
+            return mQFactor;
+        }
+
+        @Override
+        public float getFrequencyResolution() throws RemoteException {
+            return mFrequencyResolution;
+        }
+
+        @Override
+        public float getFrequencyMinimum() throws RemoteException {
+            return mMinFrequency;
+        }
+
+        @Override
+        public float[] getBandwidthAmplitudeMap() throws RemoteException {
+            return mMaxAmplitudes;
+        }
+
+        @Override
+        public int getPwlePrimitiveDurationMax() throws RemoteException {
+            return mPwlePrimitiveDurationMax;
+        }
+
+        @Override
+        public int getPwleCompositionSizeMax() throws RemoteException {
+            return mPwleSizeMax;
+        }
+
+        @Override
+        public int[] getSupportedBraking() throws RemoteException {
+            return mSupportedBraking;
+        }
+
+        @Override
+        public List<FrequencyAccelerationMapEntry> getFrequencyToOutputAccelerationMap()
+                throws RemoteException {
+            List<FrequencyAccelerationMapEntry> entries = new ArrayList<>();
+            if (mFrequenciesHz == null || mOutputAccelerationsGs == null) {
+                return entries;
+            }
+            for (int i = 0; i < mFrequenciesHz.length; i++) {
+                FrequencyAccelerationMapEntry entry = new FrequencyAccelerationMapEntry();
+                entry.frequencyHz = mFrequenciesHz[i];
+                entry.maxOutputAccelerationGs = mOutputAccelerationsGs[i];
+                entries.add(entry);
+            }
+            return entries;
+        }
+
+        @Override
+        public int getPwleV2PrimitiveDurationMaxMillis() throws RemoteException {
+            return mMaxEnvelopeEffectControlPointDurationMillis;
+        }
+
+        @Override
+        public int getPwleV2CompositionSizeMax() throws RemoteException {
+            return mMaxEnvelopeEffectSize;
+        }
+
+        @Override
+        public int getPwleV2PrimitiveDurationMinMillis() throws RemoteException {
+            return mMinEnvelopeEffectControlPointDurationMillis;
+        }
+
+        @Override
+        public void on(int timeoutMs, IVibratorCallback callback) throws RemoteException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int perform(int effect, byte strength, IVibratorCallback callback)
+                throws RemoteException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void performVendorEffect(android.hardware.vibrator.VendorEffect vendorEffect,
+                IVibratorCallback callback) throws RemoteException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void compose(CompositeEffect[] composite, IVibratorCallback callback)
+                throws RemoteException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void composePwle(PrimitivePwle[] composite, IVibratorCallback callback)
+                throws RemoteException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void composePwleV2(CompositePwleV2 composite, IVibratorCallback callback)
+                throws RemoteException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void off() throws RemoteException {
+            mOffCount++;
+            applyLatency(mOffLatency);
+        }
+
+        @Override
+        public int getInterfaceVersion() {
+            return IVibrator.VERSION;
+        }
+
+        @Override
+        public String getInterfaceHash() {
+            return IVibrator.HASH;
+        }
+    }
+
+    /** Provides fake implementation of {@link VintfUtils.VintfSupplier} for testing. */
+    public final class FakeVibratorSupplier extends VintfUtils.VintfSupplier<IVibrator> {
+        private final IBinder mToken;
+        private final IVibrator mVibrator;
+
+        public FakeVibratorSupplier(IVibrator vibrator) {
+            mToken = new Binder();
+            mVibrator = vibrator;
+        }
+
+        @Nullable
+        @Override
+        IBinder connectToService() {
+            mConnectCount++;
+            return mToken;
+        }
+
+        @NonNull
+        @Override
+        IVibrator castService(@NonNull IBinder binder) {
+            return mVibrator;
         }
     }
 }
