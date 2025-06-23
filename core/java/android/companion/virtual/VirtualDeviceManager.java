@@ -26,7 +26,6 @@ import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
-import android.annotation.SdkConstant;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
@@ -326,8 +325,9 @@ public final class VirtualDeviceManager {
     /**
      * Returns the device policy for the given virtual device and policy type.
      *
-     * <p>In case the virtual device identifier is not valid, or there's no explicitly specified
-     * policy for that device and policy type, then
+     * <p>In case the virtual device identifier is not valid,
+     * {@link VirtualDeviceParams#DEVICE_POLICY_INVALID} is returned. If there's no explicitly
+     * specified policy for that device and policy type, then
      * {@link VirtualDeviceParams#DEVICE_POLICY_DEFAULT} is returned.
      *
      * @hide

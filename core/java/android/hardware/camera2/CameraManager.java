@@ -16,7 +16,9 @@
 
 package android.hardware.camera2;
 
+import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALID;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_CAMERA;
 import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.content.Context.DEVICE_ID_INVALID;
@@ -614,7 +616,7 @@ public final class CameraManager {
             mVirtualDeviceManager = context.getSystemService(VirtualDeviceManager.class);
         }
         return mVirtualDeviceManager == null
-                ? DEVICE_POLICY_DEFAULT
+                ? DEVICE_POLICY_INVALID
                 : mVirtualDeviceManager.getDevicePolicy(context.getDeviceId(), POLICY_TYPE_CAMERA);
     }
 
@@ -2626,7 +2628,10 @@ public final class CameraManager {
                 // Don't hide default-device cameras for a default-policy virtual device.
                 return false;
             }
-
+            // We can have cameras only for default or custom policies.
+            if (devicePolicy != DEVICE_POLICY_DEFAULT && devicePolicy != DEVICE_POLICY_CUSTOM) {
+                return true;
+            }
             return currentDeviceId != info.mDeviceId;
         }
 
