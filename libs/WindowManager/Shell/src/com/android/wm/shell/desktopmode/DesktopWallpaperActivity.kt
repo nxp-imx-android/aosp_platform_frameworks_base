@@ -16,13 +16,14 @@
 
 package com.android.wm.shell.desktopmode
 
-import android.app.Activity
 import android.app.TaskInfo
 import android.content.ComponentName
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
 import android.window.DesktopExperienceFlags
+import androidx.activity.addCallback
+import androidx.fragment.app.FragmentActivity
 
 /**
  * A transparent activity used in the desktop mode to show the wallpaper under the freeform windows.
@@ -33,7 +34,7 @@ import android.window.DesktopExperienceFlags
  * Note! This activity should NOT interact directly with any other code in the Shell without calling
  * onto the shell main thread. Activities are always started on the main thread.
  */
-class DesktopWallpaperActivity : Activity() {
+class DesktopWallpaperActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,6 +48,13 @@ class DesktopWallpaperActivity : Activity() {
         // (entering through an empty desk may result in a reversed bug: unfocusable when we wanted
         // it to be focusable).
         updateFocusableFlag(focusable = false)
+
+        if (
+            DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue &&
+                DesktopExperienceFlags.ENABLE_EMPTY_DESK_ON_MINIMIZE.isTrue
+        ) {
+            onBackPressedDispatcher.addCallback(this) { moveTaskToBack(true) }
+        }
     }
 
     override fun onTopResumedActivityChanged(isTopResumedActivity: Boolean) {
