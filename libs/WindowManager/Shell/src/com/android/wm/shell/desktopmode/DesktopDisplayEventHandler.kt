@@ -17,6 +17,7 @@
 package com.android.wm.shell.desktopmode
 
 import android.content.Context
+import android.os.Trace
 import android.os.UserHandle
 import android.os.UserManager
 import android.view.Display
@@ -25,6 +26,7 @@ import android.window.DesktopExperienceFlags
 import android.window.DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_ACTIVATION_IN_DESKTOP_FIRST_DISPLAYS
 import android.window.DesktopModeFlags
 import android.window.DisplayAreaInfo
+import com.android.app.tracing.traceSection
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer.RootTaskDisplayAreaListener
@@ -101,34 +103,48 @@ class DesktopDisplayEventHandler(
         }
     }
 
-    override fun onDisplayAdded(displayId: Int) {
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            rootTaskDisplayAreaOrganizer.registerListener(displayId, onDisplayAreaChangeListener)
-        }
-        if (displayId != DEFAULT_DISPLAY) {
-            desktopDisplayModeController.updateExternalDisplayWindowingMode(displayId)
-            // The default display's windowing mode depends on the availability of the external
-            // display. So updating the default display's windowing mode here.
-            desktopDisplayModeController.updateDefaultDisplayWindowingMode()
-        }
-        if (DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue) {
-            // TODO - b/365873835: Restore a display if a uniqueId match is found in
-            //  the desktop repository.
-            displayController.getDisplay(displayId)?.uniqueId?.let { uniqueId ->
-                uniqueIdByDisplayId[displayId] = uniqueId
+    override fun onDisplayAdded(displayId: Int) =
+        traceSection(
+            Trace.TRACE_TAG_WINDOW_MANAGER,
+            "DesktopDisplayEventHandler#onDisplayAdded: $displayId",
+        ) {
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                rootTaskDisplayAreaOrganizer.registerListener(
+                    displayId,
+                    onDisplayAreaChangeListener,
+                )
+            }
+            if (displayId != DEFAULT_DISPLAY) {
+                desktopDisplayModeController.updateExternalDisplayWindowingMode(displayId)
+                // The default display's windowing mode depends on the availability of the external
+                // display. So updating the default display's windowing mode here.
+                desktopDisplayModeController.updateDefaultDisplayWindowingMode()
+            }
+            if (DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue) {
+                // TODO - b/365873835: Restore a display if a uniqueId match is found in
+                //  the desktop repository.
+                displayController.getDisplay(displayId)?.uniqueId?.let { uniqueId ->
+                    uniqueIdByDisplayId[displayId] = uniqueId
+                }
             }
         }
-    }
 
-    override fun onDisplayRemoved(displayId: Int) {
-        if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            rootTaskDisplayAreaOrganizer.unregisterListener(displayId, onDisplayAreaChangeListener)
+    override fun onDisplayRemoved(displayId: Int): Unit =
+        traceSection(
+            Trace.TRACE_TAG_WINDOW_MANAGER,
+            "DesktopDisplayEventHandler#onDisplayRemoved: $displayId",
+        ) {
+            if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                rootTaskDisplayAreaOrganizer.unregisterListener(
+                    displayId,
+                    onDisplayAreaChangeListener,
+                )
+            }
+            if (displayId != DEFAULT_DISPLAY) {
+                desktopDisplayModeController.updateDefaultDisplayWindowingMode()
+            }
+            uniqueIdByDisplayId.remove(displayId)
         }
-        if (displayId != DEFAULT_DISPLAY) {
-            desktopDisplayModeController.updateDefaultDisplayWindowingMode()
-        }
-        uniqueIdByDisplayId.remove(displayId)
-    }
 
     override fun requestPreserveDisplay(displayId: Int) {
         logV("requestPreserveDisplay displayId=%d", displayId)

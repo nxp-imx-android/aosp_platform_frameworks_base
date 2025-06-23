@@ -23,6 +23,7 @@ import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.Handler
+import android.os.Trace
 import android.view.Display
 import android.view.MotionEvent
 import android.view.SurfaceControl
@@ -174,7 +175,10 @@ class AppHeaderController(
         startT: SurfaceControl.Transaction,
         finishT: SurfaceControl.Transaction,
         wct: WindowContainerTransaction,
-    ): CaptionRelayoutResult = traceSection("AppHeaderController#relayout") {
+    ): CaptionRelayoutResult = traceSection(
+        traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+        name = "AppHeaderController#relayout",
+    ) {
         val captionLayout = super.relayout(
             params,
             parentContainer,

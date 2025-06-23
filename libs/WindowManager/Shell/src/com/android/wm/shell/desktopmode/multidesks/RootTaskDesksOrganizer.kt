@@ -23,6 +23,7 @@ import android.app.WindowConfiguration.ACTIVITY_TYPE_UNDEFINED
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.app.WindowConfiguration.WINDOWING_MODE_UNDEFINED
 import android.app.WindowConfiguration.windowingModeToString
+import android.os.Trace
 import android.util.SparseArray
 import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_TO_FRONT
@@ -157,9 +158,9 @@ class RootTaskDesksOrganizer(
                 .setDisplayId(displayId)
                 .setWindowingMode(WINDOWING_MODE_FREEFORM)
                 .setRemoveWithTaskOrganizer(true)
-                .setReparentOnDisplayRemoval(DesktopExperienceFlags
-                    .ENABLE_DISPLAY_DISCONNECT_INTERACTION
-                    .isTrue),
+                .setReparentOnDisplayRemoval(
+                    DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue
+                ),
             this,
         )
     }
@@ -208,6 +209,10 @@ class RootTaskDesksOrganizer(
     }
 
     override fun activateDesk(wct: WindowContainerTransaction, deskId: Int, skipReorder: Boolean) {
+        Trace.instant(
+            Trace.TRACE_TAG_WINDOW_MANAGER,
+            "RootTaskDesksOrganizer#activateDesk: $deskId",
+        )
         logV("activateDesk %d", deskId)
         val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
         if (!skipReorder) wct.reorder(root.token, /* onTop= */ true)
@@ -220,6 +225,10 @@ class RootTaskDesksOrganizer(
         deskId: Int,
         skipReorder: Boolean,
     ) {
+        Trace.instant(
+            Trace.TRACE_TAG_WINDOW_MANAGER,
+            "RootTaskDesksOrganizer#deactivateDesk: $deskId",
+        )
         logV("deactivateDesk %d", deskId)
         val root = checkNotNull(deskRootsByDeskId[deskId]) { "Root not found for desk: $deskId" }
         if (!skipReorder) wct.reorder(root.taskInfo.token, /* onTop= */ false)
@@ -624,9 +633,9 @@ class RootTaskDesksOrganizer(
                 .setDisplayId(displayId)
                 .setWindowingMode(WINDOWING_MODE_FREEFORM)
                 .setRemoveWithTaskOrganizer(true)
-                .setReparentOnDisplayRemoval(DesktopExperienceFlags
-                    .ENABLE_DISPLAY_DISCONNECT_INTERACTION
-                    .isTrue),
+                .setReparentOnDisplayRemoval(
+                    DesktopExperienceFlags.ENABLE_DISPLAY_DISCONNECT_INTERACTION.isTrue
+                ),
             this,
         )
     }

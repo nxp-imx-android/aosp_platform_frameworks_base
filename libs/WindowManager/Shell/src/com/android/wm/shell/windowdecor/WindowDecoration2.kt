@@ -26,6 +26,7 @@ import android.graphics.Region
 import android.gui.BorderSettings
 import android.gui.BoxShadowSettings
 import android.os.Handler
+import android.os.Trace
 import android.view.Display
 import android.view.InsetsSource
 import android.view.InsetsState
@@ -140,7 +141,10 @@ abstract class WindowDecoration2<T>(
         startT: SurfaceControl.Transaction,
         finishT: SurfaceControl.Transaction,
         wct: WindowContainerTransaction,
-    ): RelayoutResult<T>? = traceSection("WindowDecoration2#relayout") {
+    ): RelayoutResult<T>? = traceSection(
+        traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+        name = "WindowDecoration2#relayout",
+    ) {
         taskInfo = params.runningTaskInfo
         hasGlobalFocus = params.hasGlobalFocus
         exclusionRegion.set(params.displayExclusionRegion)
@@ -193,7 +197,10 @@ abstract class WindowDecoration2<T>(
                 )
             } else INVALID_SHADOW_RADIUS
 
-        traceSection("WindowDecoration2#relayout-updateSurfacesAndInsets") {
+        traceSection(
+            traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+            name = "WindowDecoration2#relayout-updateSurfacesAndInsets",
+        ) {
             updateDecorationContainerSurface(startT, taskWidth, taskHeight)
             updateTaskSurface(
                 params,
@@ -378,7 +385,10 @@ abstract class WindowDecoration2<T>(
     private fun releaseViewsIfNeeded(
         params: RelayoutParams,
         wct: WindowContainerTransaction,
-    ) = traceSection("WindowDecoration2#relayout-releaseViewsIfNeeded") {
+    ) = traceSection(
+        traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+        name = "WindowDecoration2#relayout-releaseViewsIfNeeded",
+    ) {
         val windowDecorConfigInitialized = windowDecorConfig != null
         val fontScaleChanged = windowDecorConfig?.fontScale != taskInfo.configuration.fontScale
         val localeListChanged = windowDecorConfig?.locales != taskInfo.getConfiguration().locales
@@ -473,7 +483,10 @@ abstract class WindowDecoration2<T>(
         }
     }
 
-    override fun close() = traceSection("WindowDecoration2#close") {
+    override fun close() = traceSection(
+        traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+        name = "WindowDecoration2#close",
+    ) {
         displayController.removeDisplayWindowListener(onDisplaysChangedListener)
         taskDragResizer?.close()
         captionController?.close()
