@@ -34,8 +34,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -45,7 +43,6 @@ import com.android.systemui.Flags
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.smartspace.SmartspaceInteractionHandler
 import com.android.systemui.communal.ui.compose.extensions.consumeHorizontalDragGestures
-import com.android.systemui.communal.ui.compose.section.CommunalLockSection
 import com.android.systemui.communal.ui.compose.section.CommunalPopupSection
 import com.android.systemui.communal.ui.compose.section.HubOnboardingSection
 import com.android.systemui.communal.ui.view.layout.sections.CommunalAppWidgetSection
@@ -56,8 +53,6 @@ import com.android.systemui.keyguard.ui.composable.layout.LockIconAlignmentLines
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
 import javax.inject.Inject
-import kotlin.math.min
-import kotlin.math.roundToInt
 
 /** Renders the content of the glanceable hub. */
 class CommunalContent
@@ -68,7 +63,6 @@ constructor(
     private val communalSettingsInteractor: CommunalSettingsInteractor,
     private val dialogFactory: SystemUIDialogFactory,
     private val lockElement: LockElement,
-    private val communalLockSection: CommunalLockSection,
     private val indicationAreaElement: IndicationAreaElement,
     private val communalPopupSection: CommunalPopupSection,
     private val widgetSection: CommunalAppWidgetSection,
@@ -77,6 +71,8 @@ constructor(
 
     @Composable
     fun ContentScope.Content(modifier: Modifier = Modifier) {
+        val showLockIcon = !communalSettingsInteractor.isV2FlagEnabled()
+
         CommunalTouchableSurface(viewModel = viewModel, modifier = modifier) {
             val orientation = LocalConfiguration.current.orientation
             var gridRegion by remember { mutableStateOf<Rect?>(null) }
@@ -104,11 +100,7 @@ constructor(
                         )
                         with(hubOnboardingSection) { BottomSheet() }
                     }
-                    if (communalSettingsInteractor.isV2FlagEnabled()) {
-                        with(communalLockSection) {
-                            LockIcon(modifier = Modifier.element(Communal.Elements.LockIcon))
-                        }
-                    } else {
+                    if (showLockIcon) {
                         with(lockElement) {
                             LockIcon(
                                 overrideColor = MaterialTheme.colorScheme.onPrimaryContainer,
@@ -129,39 +121,15 @@ constructor(
                 },
             ) { measurables, constraints ->
                 val communalGridMeasurable = measurables[0]
-                val lockIconMeasurable = measurables[1]
-                val bottomAreaMeasurable = measurables[2]
+                val lockIconMeasurable = if (showLockIcon) measurables[1] else null
+                val bottomAreaMeasurable = measurables[if (showLockIcon) 2 else 1]
 
                 val noMinConstraints = constraints.copy(minWidth = 0, minHeight = 0)
 
-                val lockIconPlaceable =
-                    if (communalSettingsInteractor.isV2FlagEnabled()) {
-                        val lockIconSizeInt = lockIconSize.roundToPx()
-                        lockIconMeasurable.measure(
-                            Constraints.fixed(width = lockIconSizeInt, height = lockIconSizeInt)
-                        )
-                    } else {
-                        lockIconMeasurable.measure(noMinConstraints)
-                    }
+                val lockIconPlaceable = lockIconMeasurable?.measure(noMinConstraints)
                 val lockIconBounds =
-                    if (communalSettingsInteractor.isV2FlagEnabled()) {
-                        val lockIconDistanceFromBottom =
-                            min(
-                                (constraints.maxHeight * lockIconPercentDistanceFromBottom)
-                                    .roundToInt(),
-                                lockIconMinDistanceFromBottom.roundToPx(),
-                            )
-                        val x = constraints.maxWidth / 2 - lockIconPlaceable.width / 2
-                        val y =
-                            constraints.maxHeight -
-                                lockIconDistanceFromBottom -
-                                lockIconPlaceable.height
-                        IntRect(
-                            left = x,
-                            top = y,
-                            right = x + lockIconPlaceable.width,
-                            bottom = y + lockIconPlaceable.height,
-                        )
+                    if (lockIconPlaceable == null) {
+                        null
                     } else {
                         IntRect(
                             left = lockIconPlaceable[LockIconAlignmentLines.Left],
@@ -176,7 +144,12 @@ constructor(
                 val communalGridMaxHeight: Int
                 val communalGridPositionY: Int
                 if (Flags.communalResponsiveGrid()) {
-                    val communalGridVerticalMargin = constraints.maxHeight - lockIconBounds.top
+                    val communalGridVerticalMargin =
+                        if (lockIconBounds == null) {
+                            0
+                        } else {
+                            constraints.maxHeight - lockIconBounds.top
+                        }
                     // Bias the widgets up by a small offset for visual balance in landscape
                     // orientation
                     val verticalOffset =
@@ -186,7 +159,7 @@ constructor(
                     communalGridMaxHeight = constraints.maxHeight - communalGridVerticalMargin * 2
                     communalGridPositionY = communalGridVerticalMargin + verticalOffset
                 } else {
-                    communalGridMaxHeight = lockIconBounds.top
+                    communalGridMaxHeight = lockIconBounds?.top ?: constraints.maxHeight
                     communalGridPositionY = 0
                 }
                 val communalGridPlaceable =
@@ -196,20 +169,14 @@ constructor(
 
                 layout(constraints.maxWidth, constraints.maxHeight) {
                     communalGridPlaceable.place(x = 0, y = communalGridPositionY)
-                    lockIconPlaceable.place(x = lockIconBounds.left, y = lockIconBounds.top)
+                    if (lockIconBounds != null) {
+                        lockIconPlaceable!!.place(x = lockIconBounds.left, y = lockIconBounds.top)
+                    }
 
                     val bottomAreaTop = constraints.maxHeight - bottomAreaPlaceable.height
                     bottomAreaPlaceable.place(x = 0, y = bottomAreaTop)
                 }
             }
         }
-    }
-
-    companion object {
-        // TODO(b/382739998): Remove these hardcoded values once lock icon size and bottom area
-        // position are sorted.
-        private val lockIconSize: Dp = 54.dp
-        private val lockIconPercentDistanceFromBottom = 0.1f
-        private val lockIconMinDistanceFromBottom = 70.dp
     }
 }
