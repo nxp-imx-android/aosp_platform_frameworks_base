@@ -138,10 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"اکنون درحال ضبط کل صفحه‌نمایش هستید"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"اکنون درحال ضبط <xliff:g id="APP_NAME">%1$s</xliff:g> هستید"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"توقف ضبط"</string>
-    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
-    <skip />
+    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"ثبت کردن"</string>
+    <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ضبط کردن"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"درحال هم‌رسانی صفحه"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"هم‌رسانی محتوا"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"هم‌رسانی صفحه متوقف شود؟"</string>
@@ -211,14 +209,10 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"درستی‌سنجی با روشی دیگر"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"مدیریت «احراز هویت»"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ازآنجا که «احراز هویت» روشن است و به زیست‌سنجشی نیاز دارد، نمی‌توان از پین برای درستی‌سنجی استفاده کرد. درباره «احراز هویت» بیشتر بدانید"</string>
-    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"ازآنجا که «احراز هویت» روشن است و به زیست‌سنجشی نیاز دارد، نمی‌توان از الگو برای درستی‌سنجی استفاده کرد. درباره «احراز هویت» بیشتر بدانید"</string>
+    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"ازآنجا که «احراز هویت» روشن است و به زیست‌سنجشی نیاز دارد، نمی‌توان از گذرواژه برای درستی‌سنجی استفاده کرد. درباره «احراز هویت» بیشتر بدانید"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"درحال ارزیابی مخاطرات…"</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"دردسترس نیست"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"استفاده از پین"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"استفاده از الگو"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"استفاده از گذرواژه"</string>
@@ -756,6 +750,8 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"بلوتوث"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"فرکانس دوتایی چند نوایی"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"دسترس‌پذیری"</string>
+    <!-- no translation found for stream_assistant (2163992770504149386) -->
+    <skip />
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"زنگ زدن"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"لرزش"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"صامت"</string>
@@ -826,7 +822,8 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"ماهواره، اتصال دردسترس است"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"درخواست کمک ماهواره‌ای"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"فقط تماس اضطراری یا درخواست کمک اضطراری"</string>
-    <string name="satellite_network_title_text" msgid="4825315858295910999">"شبکه ماهواره"</string>
+    <!-- no translation found for satellite_network_title_text (1483004114819442028) -->
+    <skip />
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"‫<xliff:g id="CARRIER_NAME">%1$s</xliff:g>، <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"سیگنال وجود ندارد"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"یک خط"</string>
@@ -1012,8 +1009,7 @@
     <string name="battery" msgid="769686279459897127">"باتری"</string>
     <string name="headset" msgid="4485892374984466437">"هدست"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"باز کردن تنظیمات"</string>
-    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
-    <skip />
+    <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"بازکردن جزئیات بیشتر"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"هدفون وصل شد"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"هدست وصل شد"</string>
     <string name="data_saver" msgid="3484013368530820763">"صرفه‌جویی داده"</string>
@@ -1342,8 +1338,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"برونداد"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"جلسه مشترک برای انتقال رسانه به دستگاهی دیگر متوقف می‌شود"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"توقف"</string>
-    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
-    <skip />
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"توقف هم‌رسانی"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"همه‌فرتستی چطور کار می‌کند"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"همه‌فرستی"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"‏افرادی که در اطرافتان دستگاه‌های Bluetooth سازگار دارند می‌توانند به رسانه‌ای که همه‌فرستی می‌کنید گوش کنند"</string>
@@ -1530,8 +1525,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"قرینه‌سازی نمایشگر"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"بستن"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"نمایشگر متصل شد"</string>
-    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
-    <skip />
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"میکروفون، دوربین، و مکان"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"استفاده اخیر از برنامه"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"دیدن دسترسی اخیر"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"تمام"</string>
@@ -1590,6 +1584,10 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"افزودن میان‌بر"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"حذف میان‌بر"</string>
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
+    <skip />
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
+    <skip />
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"پیمایش کردن بااستفاده از صفحه‌کلید"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"با میان‌برهای صفحه‌کلید آشنا شوید"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"پیمایش کردن بااستفاده از صفحه لمسی"</string>
@@ -1667,6 +1665,10 @@
     <string name="demote_explain_text" msgid="3942301497888762295">"‫<xliff:g id="APPLICATION">%1$s</xliff:g> دیگر «به‌روزرسانی‌های زنده» را نشان نخواهد داد. هروقت خواستید می‌توانید آن را در «تنظیمات» تغییر دهید."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>، <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"بستن"</string>
+    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
+    <skip />
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"برای باز کردن «اعلان‌ها»، از بالا سمت چپ تند بکشید"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"برای باز کردن «تنظیمات فوری»، از بالا سمت راست تند بکشید"</string>
+    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
+    <skip />
 </resources>

@@ -138,10 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Ara mateix estàs gravant tota la pantalla"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Ara mateix estàs gravant <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Atura la gravació"</string>
-    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
-    <skip />
+    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Captura"</string>
+    <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Grava"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"S\'està compartint la pantalla"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"S\'està compartint contingut"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Vols deixar de compartir la pantalla?"</string>
@@ -211,29 +209,19 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Verifica d\'una altra manera"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Gestiona Comprovació d\'identitat"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"El PIN no es pot utilitzar per a la verificació perquè la funció Comprovació d\'identitat està activada i requereix una biometria. Més informació sobre Comprovació d\'identitat."</string>
-    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"El patró no es pot utilitzar per a la verificació perquè la funció Comprovació d\'identitat està activada i requereix dades biomètriques. Més informació sobre Comprovació d\'identitat."</string>
+    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"La contrasenya no es pot utilitzar per a la verificació perquè la funció Comprovació d\'identitat està activada i requereix dades biomètriques. Més informació sobre Comprovació d\'identitat."</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"S\'està avaluant el risc..."</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"No disponible"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Utilitza el PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Utilitza el patró"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Utilitza la contrasenya"</string>
-    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
-    <skip />
+    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"Introdueix el PIN"</string>
+    <string name="biometric_dialog_enter_password" msgid="200503318983048202">"Introdueix la contrasenya"</string>
+    <string name="biometric_dialog_enter_pattern" msgid="3065746760277739487">"Introdueix el patró"</string>
+    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"Es requereix el PIN per recuperar les dades biomètriques després de massa intents fallits"</string>
+    <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"Es requereix el patró per recuperar les dades biomètriques després de massa intents fallits"</string>
+    <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"Es requereix la contrasenya per recuperar les dades biomètriques després de massa intents fallits"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"PIN incorrecte"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"Patró incorrecte"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"Contrasenya incorrecta"</string>
@@ -762,6 +750,8 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"Marcatge per tons"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"Accessibilitat"</string>
+    <!-- no translation found for stream_assistant (2163992770504149386) -->
+    <skip />
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"Fes sonar"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Vibra"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Silencia"</string>
@@ -832,7 +822,8 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satèl·lit, connexió disponible"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS per satèl·lit"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Només SOS o trucades d\'emergència"</string>
-    <string name="satellite_network_title_text" msgid="4825315858295910999">"Xarxa per satèl·lit"</string>
+    <!-- no translation found for satellite_network_title_text (1483004114819442028) -->
+    <skip />
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"no hi ha senyal"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"una barra"</string>
@@ -1018,8 +1009,7 @@
     <string name="battery" msgid="769686279459897127">"Bateria"</string>
     <string name="headset" msgid="4485892374984466437">"Auriculars"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"Obre la configuració"</string>
-    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
-    <skip />
+    <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"Obre més detalls"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"Auriculars connectats"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"Auriculars connectats"</string>
     <string name="data_saver" msgid="3484013368530820763">"Estalvi de dades"</string>
@@ -1348,8 +1338,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"Sortida"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Atura la sessió compartida per moure contingut multimèdia a un altre dispositiu"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Atura"</string>
-    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
-    <skip />
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Deixa de compartir"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Com funciona l\'emissió"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"Emet"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Les persones properes amb dispositius Bluetooth compatibles poden escoltar el contingut multimèdia que emets"</string>
@@ -1536,8 +1525,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"Duplica la pantalla"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Ignora"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Pantalla connectada"</string>
-    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
-    <skip />
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"Micròfon, càmera i ubicació"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Ús recent en aplicacions"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Mostra l\'accés recent"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Fet"</string>
@@ -1596,6 +1584,8 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Afegeix una drecera"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Suprimeix la drecera"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"S\'ha esgotat el límit de 10 dreceres personalitzades d\'aplicacions"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"Suprimeix una drecera per poder afegir-ne una de nova"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Navega amb el teclat"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Aprèn les tecles de drecera"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Navega amb el ratolí tàctil"</string>
@@ -1673,6 +1663,9 @@
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ja no mostrarà les actualitzacions en temps real. Pots canviar aquesta opció en qualsevol moment a Configuració."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Tanca"</string>
+    <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"Icona de suggeriments d\'ambient"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Llisca des de la part superior esquerra per obrir les notificacions"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Llisca des de la part superior dreta per obrir la configuració ràpida"</string>
+    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
+    <skip />
 </resources>

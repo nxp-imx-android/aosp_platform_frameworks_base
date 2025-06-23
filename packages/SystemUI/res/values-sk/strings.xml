@@ -138,10 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Momentálne nahrávate celú obrazovku"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Momentálne nahrávate aplikáciu <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Zastaviť nahrávanie"</string>
-    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
-    <skip />
+    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Nasnímať"</string>
+    <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Nahrať"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Zdieľa sa obrazovka"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Obsah sa zdieľa"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Chcete prestať zdieľať obrazovku?"</string>
@@ -211,29 +209,19 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Overiť iným spôsobom"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Spravovať overenie totožnosti"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"PIN sa nedá použiť na overenie, pretože je zapnuté overenie totožnosti a vyžaduje sa biometria. Ďalšie informácie o overení totožnosti"</string>
-    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Vzor sa nedá použiť na overenie, pretože je zapnuté overenie totožnosti a vyžaduje sa biometria. Ďalšie informácie o overení totožnosti"</string>
+    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Heslo sa nedá použiť na overenie, pretože je zapnuté overenie totožnosti a vyžaduje sa biometria. Ďalšie informácie o overení totožnosti"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Vyhodnocuje sa riziko…"</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Nedostupné"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Použiť PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Použiť vzor"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Použiť heslo"</string>
-    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
-    <skip />
+    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"Zadajte PIN"</string>
+    <string name="biometric_dialog_enter_password" msgid="200503318983048202">"Zadajte heslo"</string>
+    <string name="biometric_dialog_enter_pattern" msgid="3065746760277739487">"Zadajte vzor"</string>
+    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"Po príliš veľkom počte neúspešných pokusov sa vyžaduje PIN na obnovenie biometrie"</string>
+    <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"Po príliš veľkom počte neúspešných pokusov sa vyžaduje vzor na obnovenie biometrie"</string>
+    <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"Po príliš veľkom počte neúspešných pokusov sa vyžaduje heslo na obnovenie biometrie"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"Nesprávny PIN"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"Nesprávny vzor"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"Nesprávne heslo"</string>
@@ -762,6 +750,8 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"Dvojtónová multifrekvencia"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"Dostupnosť"</string>
+    <!-- no translation found for stream_assistant (2163992770504149386) -->
+    <skip />
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"Prezvoniť"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Vibrovať"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Vypnúť zvuk"</string>
@@ -832,7 +822,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelit, pripojenie je k dispozícii"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Pomoc cez satelit"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Len tiesňové volania alebo pomoc v tiesni"</string>
-    <string name="satellite_network_title_text" msgid="4825315858295910999">"Satelitná sieť"</string>
+    <string name="satellite_network_title_text" msgid="1483004114819442028">"Satelitné siete"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"žiadny signál"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"jedna čiarka"</string>
@@ -852,7 +842,7 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"Ak chcete klávesnicu pripojiť k tabletu, najprv musíte zapnúť Bluetooth."</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Zapnúť"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Zapnuté – podľa tváre"</string>
-    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Vypnutie zvuku a zoskupenie"</string>
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Vypínať zvuk a zoskupovať"</string>
     <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"Používanie nástroja na usporiadanie upozornení"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Pre <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Zľavy, nové funkcie a ďalší obsah"</string>
@@ -961,8 +951,7 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"Zobrazujú sa skratky na otvorenie aplikácií"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"Zobrazujú sa skratky aktuálnej aplikácie"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Zobraziť upozornenia"</string>
-    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
-    <skip />
+    <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Zobrazenie rýchlych nastavení"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Vytvoriť snímku obrazovky"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Zobraziť skratky"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Späť"</string>
@@ -988,8 +977,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Presun okna doprava"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximalizovanie okna"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Minimalizovanie okna"</string>
-    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
-    <skip />
+    <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Prechádzanie medzi plochami"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Vstup"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Prepnúť na ďalší jazyk"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"Prepnúť na predchádzajúci jazyk"</string>
@@ -1018,8 +1006,7 @@
     <string name="battery" msgid="769686279459897127">"Batéria"</string>
     <string name="headset" msgid="4485892374984466437">"Náhlavná súprava"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"Otvoriť nastavenia"</string>
-    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
-    <skip />
+    <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"Otvoriť ďalšie podrobnosti"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"Slúchadlá pripojené"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"Náhlavná súprava pripojená"</string>
     <string name="data_saver" msgid="3484013368530820763">"Šetrič dát"</string>
@@ -1055,14 +1042,10 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Pridržaním a presunutím pridáte karty"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Karty môžete usporiadať pridržaním a presunutím"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Vyberte karty na zmenu usporiadania a veľkosti"</string>
-    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
-    <skip />
-    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
-    <skip />
-    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
-    <skip />
-    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
-    <skip />
+    <string name="tap_to_remove_tiles" msgid="76564688376603718">"Karty odstránite klepnutím"</string>
+    <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Zmena veľkosti a poradia rozloženia"</string>
+    <string name="qs_edit_edit_tab" msgid="467315123555871860">"Úprava"</string>
+    <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Rozloženie"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Klepnutím umiestnite kartu"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Presunutím sem odstránite"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Minimálny počet vyžadovaných dlaždíc: <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
@@ -1348,8 +1331,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"Výstup"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Ak chcete preniesť médiá do iného zariadenia, ukončite zdieľanú reláciu"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Ukončiť"</string>
-    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
-    <skip />
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Prestať zdieľať"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Ako vysielanie funguje"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"Vysielanie"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Ľudia v okolí s kompatibilnými zariadeniami s rozhraním Bluetooth si môžu vypočuť médiá, ktoré vysielate"</string>
@@ -1536,8 +1518,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"Zrkadliť obrazovku"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Zavrieť"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Obrazovka je pripojená"</string>
-    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
-    <skip />
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"Mikrofón, kamera a poloha"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Nedávne použitie aplikáciami"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Zobraziť nedávny prístup"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Hotovo"</string>
@@ -1596,6 +1577,10 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Pridať skratku"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Odstrániť skratku"</string>
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
+    <skip />
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
+    <skip />
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Pohybujte sa v systéme pomocou klávesnice"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Naučte sa klávesové skratky"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Pohybujte sa v systéme pomocou touchpadu"</string>
@@ -1673,6 +1658,10 @@
     <string name="demote_explain_text" msgid="3942301497888762295">"Aplikácia <xliff:g id="APPLICATION">%1$s</xliff:g> už nebude zobrazovať aktuality naživo. Kedykoľvek to môžete zmeniť v Nastaveniach."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Zavrieť"</string>
+    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
+    <skip />
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Upozornenia otvoríte potiahnutím z ľavého horného rohu"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Rýchle nastavenia otvoríte potiahnutím z pravého horného rohu"</string>
+    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
+    <skip />
 </resources>
