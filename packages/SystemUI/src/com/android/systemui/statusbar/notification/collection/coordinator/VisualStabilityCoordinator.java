@@ -368,12 +368,14 @@ public class VisualStabilityCoordinator implements Coordinator, Dumpable {
                                 isEveryChangeAllowed()
                                         || canReorderNotificationEntry(entry)
                                         || canMoveForHeadsUp(entry)
-                                        || mEntriesThatCanChangeSection.containsKey(entry.getKey());
+                                        || mEntriesThatCanChangeSection.containsKey(entry.getKey())
+                                        || canFreelyMoveEntry(entry);
                     } else {
                         isSectionChangeAllowedForEntry =
                                 mReorderingAllowed
                                         || canMoveForHeadsUp(entry)
-                                        || mEntriesThatCanChangeSection.containsKey(entry.getKey());
+                                        || mEntriesThatCanChangeSection.containsKey(entry.getKey())
+                                        || canFreelyMoveEntry(entry);
                     }
 
                     if (!isSectionChangeAllowedForEntry) {
