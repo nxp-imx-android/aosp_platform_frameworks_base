@@ -178,12 +178,10 @@ class SnapshotPersistQueue {
 
     private void addToQueueInternal(WriteQueueItem item, boolean insertToFront) {
         if (Flags.extendingPersistenceSnapshotQueueDepth()) {
-            Slog.d(TAG, "SPQ#addToQueueInternal item " + item);
             final Iterator<WriteQueueItem> iterator = mWriteQueue.iterator();
             while (iterator.hasNext()) {
                 final WriteQueueItem next = iterator.next();
                 if (item.isDuplicateOrExclusiveItem(next)) {
-                    Slog.d(TAG, "SPQ#addToQueueInternal remove " + item);
                     iterator.remove();
                     break;
                 }
@@ -229,7 +227,6 @@ class SnapshotPersistQueue {
         // Rules for store queue depth:
         //  - Hardware render involved items < MAX_HW_STORE_QUEUE_DEPTH
         //  - Total (SW + HW) items < mMaxTotalStoreQueue
-        Slog.d(TAG, "SPQ#ensureStoreQueueDepthLocked now=" + mStoreQueueItems);
         int hwStoreCount = 0;
         int totalStoreCount = 0;
         // Use descending iterator to keep the latest items.
@@ -358,9 +355,6 @@ class SnapshotPersistQueue {
 
     static boolean mustPersistByHardwareRender(@NonNull TaskSnapshot snapshot) {
         final HardwareBuffer hwBuffer = snapshot.getHardwareBuffer();
-        if (hwBuffer.isClosed()) {
-            Slog.d(TAG, "SPQ#mustPersistByHardwareRender snapshot is closed=" + snapshot);
-        }
         final int pixelFormat = hwBuffer.getFormat();
         return !Flags.extendingPersistenceSnapshotQueueDepth()
                 || (pixelFormat != PixelFormat.RGB_565 && pixelFormat != PixelFormat.RGBA_8888)
@@ -391,9 +385,6 @@ class SnapshotPersistQueue {
             // Remove duplicate request.
             mStoreQueueItems.removeIf(item -> {
                 if (item.equals(this) && item.mSnapshot != mSnapshot) {
-                    if (Flags.extendingPersistenceSnapshotQueueDepth()) {
-                        Slog.d(TAG, "SPQ#onQueuedLocked remove item " + item + " this " + this);
-                    }
                     item.mSnapshot.removeReference(TaskSnapshot.REFERENCE_PERSIST);
                     return true;
                 }
@@ -586,7 +577,6 @@ class SnapshotPersistQueue {
             if (equals(testItem)) {
                 final StoreWriteQueueItem swqi = (StoreWriteQueueItem) testItem;
                 if (swqi.mSnapshot != mSnapshot) {
-                    Slog.d(TAG, "SPQ#onRemovedFromWriteQueue add=" + this + " remove=" + swqi);
                     swqi.onRemovedFromWriteQueue();
                     return true;
                 }
@@ -643,7 +633,6 @@ class SnapshotPersistQueue {
                 final StoreWriteQueueItem swqi = (StoreWriteQueueItem) testItem;
                 if (swqi.mId == mId && swqi.mUserId == mUserId
                         && swqi.mPersistInfoProvider == mPersistInfoProvider) {
-                    Slog.d(TAG, "SPQ#onRemovedFromWriteQueue add=" + this + " remove=" + swqi);
                     swqi.onRemovedFromWriteQueue();
                     return true;
                 }
