@@ -915,8 +915,9 @@ public class AutoclickController extends BaseEventStreamTransformation {
             boolean inScrollMode =
                     mActiveClickType == AUTOCLICK_TYPE_SCROLL && mAutoclickScrollPanel != null
                             && mAutoclickScrollPanel.isVisible();
-            // Only reset if the user is not dragging and is not in scroll mode.
-            if (!stillDragging && !inScrollMode) {
+            // Reset only if the user is not dragging, not in scroll mode, and not hovering over
+            // the panel.
+            if (!stillDragging && !inScrollMode && !mHoveredState) {
                 resetSelectedClickTypeIfNecessary();
             }
         }
