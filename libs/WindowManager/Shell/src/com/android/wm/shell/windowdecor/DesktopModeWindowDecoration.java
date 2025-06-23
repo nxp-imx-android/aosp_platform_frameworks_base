@@ -1272,7 +1272,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         if (isOpenByDefaultDialogActive()) return;
         mOpenByDefaultDialog = new OpenByDefaultDialog(
                 mContext,
-                mUserContext,
                 mTaskInfo,
                 mTaskSurface,
                 mDisplayController,

@@ -107,7 +107,6 @@ import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController;
 import com.android.wm.shell.common.MultiInstanceHelper;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
-import com.android.wm.shell.common.UserProfileContexts;
 import com.android.wm.shell.compatui.CompatUIController;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.impl.CompatUIRequests;
@@ -263,7 +262,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final MultiDisplayDragMoveIndicatorController mMultiDisplayDragMoveIndicatorController;
     private final LatencyTracker mLatencyTracker;
     private final CompatUIHandler mCompatUI;
-    private final UserProfileContexts mUserProfileContexts;
 
     public DesktopModeWindowDecorViewModel(
             Context context,
@@ -308,8 +306,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             CompatUIHandler compatUI,
             DesksOrganizer desksOrganizer,
             ShellDesktopState shellDesktopState,
-            DesktopConfig desktopConfig,
-            UserProfileContexts userProfileContexts) {
+            DesktopConfig desktopConfig) {
         this(
                 context,
                 shellExecutor,
@@ -360,8 +357,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 compatUI,
                 desksOrganizer,
                 shellDesktopState,
-                desktopConfig,
-                userProfileContexts);
+                desktopConfig);
     }
 
     @VisibleForTesting
@@ -415,8 +411,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             CompatUIHandler compatUI,
             DesksOrganizer desksOrganizer,
             ShellDesktopState shellDesktopState,
-            DesktopConfig desktopConfig,
-            UserProfileContexts userProfileContexts) {
+            DesktopConfig desktopConfig) {
         mContext = context;
         mMainExecutor = shellExecutor;
         mMainHandler = mainHandler;
@@ -458,7 +453,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mAssistContentRequester = assistContentRequester;
         mWindowDecorViewHostSupplier = windowDecorViewHostSupplier;
         mCompatUI = compatUI;
-        mUserProfileContexts = userProfileContexts;
         mOnDisplayChangingListener = (displayId, fromRotation, toRotation, displayAreaInfo, t) -> {
             DesktopModeWindowDecoration decoration;
             RunningTaskInfo taskInfo;
@@ -1917,7 +1911,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                         DesktopExperienceFlags.ENABLE_BUG_FIXES_FOR_SECONDARY_DISPLAY.isTrue()
                                 ? mDisplayController.getDisplayContext(taskInfo.displayId)
                                 : mContext,
-                        mUserProfileContexts.getOrCreate(taskInfo.userId),
+                        mContext.createContextAsUser(UserHandle.of(taskInfo.userId), 0 /* flags */),
                         mDisplayController,
                         mTaskResourceLoader,
                         mSplitScreenController,
