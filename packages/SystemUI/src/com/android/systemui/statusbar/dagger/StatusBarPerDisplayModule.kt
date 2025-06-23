@@ -16,9 +16,6 @@
 
 package com.android.systemui.statusbar.dagger
 
-import android.content.Context
-import com.android.systemui.common.ui.ConfigurationState
-import com.android.systemui.common.ui.ConfigurationStateImpl
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
@@ -26,7 +23,6 @@ import com.android.systemui.statusbar.data.repository.StatusBarConfigurationCont
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractorImpl
-import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -57,33 +53,11 @@ interface StatusBarPerDisplayModule {
         @PerDisplaySingleton
         @DisplayAware
         fun provideStatusBarConfigurationController(
-            @DisplayAware displayId: Int,
+            @SystemUIDisplaySubcomponent.DisplayAware displayId: Int,
             configurationControllerStore: StatusBarConfigurationControllerStore,
         ): StatusBarConfigurationController {
             return configurationControllerStore.forDisplay(displayId)
                 ?: error("No configuration controller for display $displayId")
-        }
-
-        @Provides
-        @PerDisplaySingleton
-        @DisplayAware
-        fun systemBarUtilsState(
-            @DisplayAware context: Context,
-            @DisplayAware configurationController: StatusBarConfigurationController,
-            factory: SystemBarUtilsState.Factory,
-        ): SystemBarUtilsState {
-            return factory.create(context, configurationController)
-        }
-
-        @Provides
-        @PerDisplaySingleton
-        @DisplayAware
-        fun configurationState(
-            configStateFactory: ConfigurationStateImpl.Factory,
-            @DisplayAware configurationController: StatusBarConfigurationController,
-            @DisplayAware context: Context,
-        ): ConfigurationState {
-            return configStateFactory.create(context, configurationController)
         }
     }
 }

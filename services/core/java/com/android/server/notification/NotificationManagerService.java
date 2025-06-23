@@ -10293,6 +10293,13 @@ public class NotificationManagerService extends SystemService {
 
                     int buzzBeepBlinkLoggingCode = 0;
                     if (!r.isHidden()) {
+                        if (notificationClassification()) {
+                            if (mGroupHelper.isSummaryWithAllChildrenBundled(r, mNotificationList,
+                                    mEnqueuedNotifications)) {
+                                notification.flags |= Notification.FLAG_SILENT;
+                            }
+                        }
+
                         buzzBeepBlinkLoggingCode = mAttentionHelper.buzzBeepBlinkLocked(r,
                                 new NotificationAttentionHelper.Signals(
                                         mUserProfiles.isCurrentProfile(r.getUserId()),

@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.compatui.letterbox.lifecycle
 
+import android.graphics.Rect
 import android.window.TransitionInfo.Change
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskInfoRepository
@@ -36,25 +37,34 @@ class ActivityLetterboxLifecycleEventFactory(
 
     override fun canHandle(change: Change): Boolean = change.activityTransitionInfo != null
 
+    // TODO(b/382423480): Extract common behaviour from different LetterboxLifecycleEventFactories.
     override fun createLifecycleEvent(change: Change): LetterboxLifecycleEvent? {
         val activityTransitionInfo = change.activityTransitionInfo
-        val taskBounds = change.endAbsBounds
+        val taskBoundsAbs = change.endAbsBounds
 
         val letterboxBoundsTmp = activityTransitionInfo?.appCompatTransitionInfo?.letterboxBounds
         val taskId = activityTransitionInfo?.taskId ?: -1
-        taskRepository.find(taskId)?.let {
-            val isLetterboxed = letterboxBoundsTmp != taskBounds
+        taskRepository.find(taskId)?.let { taskItem ->
+            val isLetterboxed = letterboxBoundsTmp != taskBoundsAbs
             // Letterbox bounds are null when the activity is not letterboxed.
-            val letterboxBounds = if (isLetterboxed) letterboxBoundsTmp else null
-            val taskToken = it.containerToken
-            val taskLeash = it.containerLeash
+            val letterboxBoundsAbs = if (isLetterboxed) letterboxBoundsTmp else null
+
+            val taskBounds = Rect(taskBoundsAbs).apply {
+                offset(-taskBoundsAbs.left, -taskBoundsAbs.top)
+            }
+            val letterboxBounds = letterboxBoundsAbs?.let { absBounds ->
+                Rect(absBounds).apply {
+                    offset(-taskBoundsAbs.left, -taskBoundsAbs.top)
+                }
+            }
+
             return LetterboxLifecycleEvent(
                 type = change.asLetterboxLifecycleEventType(),
                 taskId = taskId,
                 taskBounds = taskBounds,
                 letterboxBounds = letterboxBounds,
-                taskLeash = taskLeash,
-                containerToken = taskToken
+                taskLeash = taskItem.containerLeash,
+                containerToken = taskItem.containerToken
             )
         }
         ProtoLog.w(WM_SHELL_APP_COMPAT, "$TAG: Task not found for taskId: $taskId")

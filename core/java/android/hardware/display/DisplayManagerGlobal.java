@@ -1456,7 +1456,6 @@ public final class DisplayManagerGlobal {
     /**
      * @see DisplayManager#getDisplayTopology
      */
-    @RequiresPermission(MANAGE_DISPLAYS)
     @Nullable
     public DisplayTopology getDisplayTopology() {
         try {
@@ -1484,7 +1483,6 @@ public final class DisplayManagerGlobal {
     /**
      * @see DisplayManager#registerTopologyListener
      */
-    @RequiresPermission(MANAGE_DISPLAYS)
     public void registerTopologyListener(@NonNull @CallbackExecutor Executor executor,
             @NonNull Consumer<DisplayTopology> listener, String packageName) {
         if (!DesktopExperienceFlags.DISPLAY_TOPOLOGY.isTrue()) {
@@ -1511,7 +1509,6 @@ public final class DisplayManagerGlobal {
     /**
      * @see DisplayManager#unregisterTopologyListener
      */
-    @RequiresPermission(MANAGE_DISPLAYS)
     public void unregisterTopologyListener(@NonNull Consumer<DisplayTopology> listener) {
         if (!DesktopExperienceFlags.DISPLAY_TOPOLOGY.isTrue()) {
             return;
@@ -1900,10 +1897,6 @@ public final class DisplayManagerGlobal {
 
     private long mapPrivateEventFlags(@DisplayManager.PrivateEventType long privateEventFlags) {
         long baseEventMask = 0;
-        if ((privateEventFlags & DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS) != 0) {
-            baseEventMask |= INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED;
-        }
-
         if ((privateEventFlags & DisplayManager.PRIVATE_EVENT_TYPE_HDR_SDR_RATIO_CHANGED) != 0) {
             baseEventMask |= INTERNAL_EVENT_FLAG_DISPLAY_HDR_SDR_RATIO_CHANGED;
         }
@@ -1944,6 +1937,10 @@ public final class DisplayManagerGlobal {
             if ((eventFlags & DisplayManager.EVENT_TYPE_DISPLAY_STATE) != 0) {
                 baseEventMask |= INTERNAL_EVENT_FLAG_DISPLAY_STATE;
             }
+        }
+
+        if ((eventFlags & DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS) != 0) {
+            baseEventMask |= INTERNAL_EVENT_FLAG_DISPLAY_BRIGHTNESS_CHANGED;
         }
 
         return baseEventMask;

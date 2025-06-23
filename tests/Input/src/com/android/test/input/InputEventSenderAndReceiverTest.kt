@@ -16,6 +16,7 @@
 
 package com.android.test.input
 
+import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.view.InputChannel
@@ -124,18 +125,19 @@ class InputEventSenderAndReceiverTest {
         assertEquals(sent, received)
     }
 
-    // If an invalid timeline is sent, the channel should get closed. This helps surface any
-    // app-originating bugs early, and forces the work-around to happen in the early stages of the
-    // event processing.
+    // If an invalid timeline is sent, the channel should not get closed. We simply discard it and
+    // move on.
     @Test
     fun testSendAndReceiveInvalidTimeline() {
         val sent =
             SpyInputEventSender.Timeline(inputEventId = 1, gpuCompletedTime = 3, presentTime = 2)
         mReceiver.reportTimeline(sent.inputEventId, sent.gpuCompletedTime, sent.presentTime)
-        mSender.assertNoEvents()
-        // Sender will no longer receive callbacks for this fd, even if receiver sends a valid
-        // timeline later
-        mReceiver.reportTimeline(2 /*inputEventId*/, 3 /*gpuCompletedTime*/, 4 /*presentTime*/)
+        // This bad timeline will not be reported, but subsequent valid ones will be.
+        val sent2 =
+            SpyInputEventSender.Timeline(inputEventId = 2, gpuCompletedTime = 3, presentTime = 4)
+        mReceiver.reportTimeline(sent2.inputEventId, sent2.gpuCompletedTime, sent2.presentTime)
+        val received = mSender.getTimeline()
+        assertEquals(sent2, received)
         mSender.assertNoEvents()
     }
 
@@ -213,5 +215,57 @@ class InputEventSenderAndReceiverTest {
         // Clean up
         sender.dispose()
         receiverThread.quitSafely()
+    }
+
+    /**
+     * If a receiver calls "dispose" while processing an input event, this should not cause a crash.
+     *
+     * In this test, we are reusing the 'mHandlerThread', but we are creating new sender and
+     * receiver.
+     */
+    @Test
+    fun testDisposingReceiverDoesNotCrash() {
+        val channels = InputChannel.openInputChannelPair("TestChannel2")
+        val sender = SpyInputEventSender(channels[0], mHandlerThread.getLooper())
+
+        // Need a separate thread for the receiver so that the sender can still get the response
+        // after the receiver crashes
+        val receiverThread = HandlerThread("Dispose when input event comes in")
+        receiverThread.start()
+        val disposingReceiver = DisposingInputEventReceiver(channels[1], receiverThread.getLooper())
+
+        val key = getTestKeyEvent()
+        val seq = 11
+        sender.sendInputEvent(seq, key)
+        // We can't check for sure whether the 'finish' event was received by the sender because
+        // 'dispose' could have been processed sooner than the 'finish' call was completed, but the
+        // key should definitely have been received.
+        disposingReceiver.assertReceivedKey(withKeyCode(key.keyCode))
+
+        // Clean up
+        sender.dispose()
+        receiverThread.quitSafely()
+    }
+
+    /** After 'dispose' is called, the receiver should not get any more events. */
+    @Test
+    fun testSendEventAfterDispose() {
+        val key = getTestKeyEvent()
+        val seq = 10
+        mSender.sendInputEvent(seq, key)
+        // Check receiver
+        mReceiver.assertReceivedKey(withKeyCode(key.keyCode))
+        mSender.assertReceivedFinishedSignal(seq, handled = true)
+
+        // After the receiver is disposed, there should not be any more events.
+        // Invoke the "dispose" call on the looper thread.
+        val handler = Handler(mHandlerThread.looper)
+        handler.runWithScissors(mReceiver::dispose, 0)
+
+        val key2 = getTestKeyEvent()
+        val seq2 = 11
+        mSender.sendInputEvent(seq2, key2)
+        mReceiver.assertNoEvents()
+        mSender.assertNoEvents()
     }
 }

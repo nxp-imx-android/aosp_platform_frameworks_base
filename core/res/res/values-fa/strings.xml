@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"‏این برنامه با صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی تراز APK ناموفق بود. این برنامه بااستفاده از حالت سازگار اندازه صفحه اجرا خواهد شد. برای بهترین سازگاری، لطفاً برنامه را با پشتیبانی از صفحه ۱۶ کیلوبایتی دوباره ترجمه کنید. برای اطلاعات بیشتر، به &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; مراجعه کنید"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"‏این برنامه با صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی تراز ELF ناموفق بود. این برنامه بااستفاده از حالت سازگار اندازه صفحه اجرا خواهد شد. برای بهترین سازگاری، لطفاً برنامه را با پشتیبانی از صفحه ۱۶ کیلوبایتی دوباره ترجمه کنید. برای اطلاعات بیشتر، به &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; مراجعه کنید"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"‏این برنامه با صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی‌های تراز APK و ELF ناموفق بود. این برنامه بااستفاده از حالت سازگار اندازه صفحه اجرا خواهد شد. برای بهترین سازگاری، لطفاً برنامه را با پشتیبانی از صفحه ۱۶ کیلوبایتی دوباره ترجمه کنید. برای اطلاعات بیشتر، به &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; مراجعه کنید"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"‏این هشدار نشان داده شده است زیرا این یک برنامه قابل‌اشکال‌زدایی است که درحال آزمایش شدن است. اگر شما توسعه‌دهنده نیستید، لطفاً این موضوع را به توسعه‌دهنده گزارش کنید و برنامه غیرقابل‌اشکال‌زدایی درخواست کنید. این برنامه با حالت ۱۶ کیلوبایتی سازگار نیست. بررسی تراز APK ناموفق بود. لطفاً مراحل ارائه‌شده در &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; را دنبال کنید"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"‏این هشدار نشان داده شده است زیرا این یک برنامه قابل‌اشکال‌زدایی است که درحال آزمایش شدن است. اگر شما توسعه‌دهنده نیستید، لطفاً این موضوع را به توسعه‌دهنده گزارش کنید و برنامه غیرقابل‌اشکال‌زدایی درخواست کنید. این برنامه با حالت ۱۶ کیلوبایتی سازگار نیست. بررسی تراز ELF ناموفق بود. لطفاً مراحل ارائه‌شده در &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; را دنبال کنید"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"‏این هشدار نشان داده شده است زیرا این یک برنامه قابل‌اشکال‌زدایی است که درحال آزمایش شدن است. اگر شما توسعه‌دهنده نیستید، لطفاً این موضوع را به توسعه‌دهنده گزارش کنید و برنامه غیرقابل‌اشکال‌زدایی درخواست کنید. این برنامه با حالت ۱۶ کیلوبایتی سازگار نیست. بررسی‌های تراز APK و ELF ناموفق بود. لطفاً مراحل ارائه‌شده در &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; را دنبال کنید"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"دوباره نشان داده نشود"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"سرویس دارای مجوز نیست."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"‏شما می‎توانید تنظیم شناسه تماس‌گیرنده را تغییر دهید."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"داده به <xliff:g id="CARRIERDISPLAY">%s</xliff:g> تغییر کرد"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"به برنامه اجازه می‌دهد به داده‌های ردگیری مربوط به محیط مجاور شما با جزئیات بسیار بالا دسترسی داشته باشد."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"دسترسی به داده‌های واقعیت گسترده هنگام اجرا نشدن در پیش‌زمینه"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"به برنامه اجازه می‌دهد هنگام اجرا نشدن در پیش‌زمینه به داده‌های واقعیت گسترده دسترسی داشته باشد."</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"ضبط کلیدها"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"به برنامه امکان می‌دهد پیش‌از آنکه سیستم بتواند کنش‌ها و میان‌برهای سیستم را پردازش کند، کلیدها را ضبط کند."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"استفاده از داده‌های زیست‌سنجشی"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"استفاده از داده‌های زیست‌سنجشی یا قفل صفحه"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"تأیید کنید این شمایید"</string>
@@ -2568,29 +2562,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"برنامه‌ها"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"اثر انگشتانتان دیگر قابل‌شناسایی نیست. «قفل‌گشایی با اثر انگشت» را دوباره راه‌اندازی کنید."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"امنیت و حریم خصوصی"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"ابتدا قفل صفحه را باز کنید"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"قفل صفحه را باز کنید و دوباره متصل شوید"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"‏«حفاظت پیشرفته» برای انتقال داده‌های USB نیاز دارد قفل صفحه با روش معمول باز شود"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"‏«حفاظت پیشرفته» برای انتقال داده‌های USB نیاز دارد قفل صفحه با روش معمول باز شود"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"‏«حفاظت پیشرفته» برای انتقال داده USB یا شارژ سریع نیاز دارد قفل صفحه باز شود"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"‏«حفاظت پیشرفته» برای انتقال داده USB یا شارژ سریع نیاز دارد قفل صفحه باز شود"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"‏«حفاظت پیشرفته» برای شارژ سریع USB نیاز دارد قفل صفحه با روش معمول باز شود"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"‏«حفاظت پیشرفته» برای شارژ سریع USB نیاز دارد قفل صفحه با روش معمول باز شود"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"بی‌صدا کردن"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"اعلان‌ها بی‌صدا شده است"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"‏اعلان‌های «حفاظت پیشرفته» USB تا زمان راه‌اندازی مجدد دستگاه بی‌صدا شده است"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"‏فعالیت مشکوک USB"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"‏نشانِ داده USB غیرفعال شده است."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"برای «قفل‌گشایی با اثر انگشت» با مشکل روبرو هستید؟"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"برای بازبینی نکات مربوط به بهبود تجربه قفل‌گشایی، تک‌ضرب بزنید"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>

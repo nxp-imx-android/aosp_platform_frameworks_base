@@ -3984,8 +3984,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 mMergedLocalInsetsSources.valueAt(i).dumpDebug(proto, MERGED_LOCAL_INSETS_SOURCES);
             }
         }
-        if (getDimController() != null) {
-            final Rect dimBounds = getDimController().getDimBounds();
+        final var dimController = getDimController();
+        if (dimController != null) {
+            final Rect dimBounds = dimController.getDimBounds();
             if (dimBounds != null) {
                 dimBounds.dumpDebug(proto, DIM_BOUNDS);
             }

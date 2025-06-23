@@ -44,6 +44,7 @@ import static android.app.Notification.FLAG_NO_DISMISS;
 import static android.app.Notification.FLAG_ONGOING_EVENT;
 import static android.app.Notification.FLAG_ONLY_ALERT_ONCE;
 import static android.app.Notification.FLAG_PROMOTED_ONGOING;
+import static android.app.Notification.FLAG_SILENT;
 import static android.app.Notification.FLAG_USER_INITIATED_JOB;
 import static android.app.Notification.GROUP_ALERT_CHILDREN;
 import static android.app.Notification.VISIBILITY_PRIVATE;
@@ -19898,6 +19899,120 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
         verify(mPreferencesHelper).updateReservedChannels(disabledUserIds.capture(),
                 eq(List.of(Adjustment.TYPE_SOCIAL_MEDIA)), eq(false));
         assertThat(disabledUserIds.getValue()).containsExactly(mUserId, 111);
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testNoChildrenYet_summaryNotSilent() throws Exception {
+        // Post summary
+        final String originalGroupName = "originalGroup";
+        final int summaryId = 0;
+        final NotificationRecord summary = generateNotificationRecord(mTestNotificationChannel,
+                summaryId, originalGroupName, true);
+        mService.addEnqueuedNotification(summary);
+        mService.new PostNotificationRunnable(summary.getKey(), summary.getSbn().getPackageName(),
+                summary.getUid(), mPostNotificationTrackerFactory.newTracker(null)).run();
+        waitForIdle();
+
+        // Check that the summary does NOT have FLAG_SILENT set
+        NotificationRecord s = mService.findNotificationLocked(summary.getSbn().getPackageName(),
+                summary.getSbn().getTag(), summary.getSbn().getId(), summary.getSbn().getUserId());
+        assertThat(s).isNotNull();
+        assertThat(s.getNotification().flags & FLAG_SILENT).isEqualTo(0);
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testSomeChildrenBundled_summaryNotSilent() throws Exception {
+        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
+                anyString())).thenReturn(true);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+
+        // Create a group with an enqueued not bundled notification
+        final String originalGroupName = "originalGroup";
+        final int summaryId = 0;
+        final NotificationRecord r1 = generateNotificationRecord(mTestNotificationChannel,
+                summaryId + 1, originalGroupName, false);
+        mService.addEnqueuedNotification(r1);
+
+        // And a posted bundled notification
+        final NotificationRecord r2 = generateNotificationRecord(mTestNotificationChannel,
+                summaryId + 2, originalGroupName, false);
+        mService.addNotification(r2);
+        Bundle signals = new Bundle();
+        signals.putInt(KEY_TYPE, TYPE_PROMOTION);
+        Adjustment adjustment = new Adjustment(r2.getSbn().getPackageName(), r2.getKey(), signals,
+                "", r2.getUser().getIdentifier());
+        mBinderService.applyAdjustmentFromAssistant(null, adjustment);
+        waitForIdle();
+        r2.applyAdjustments();
+        assertThat(r2.getChannel().getId()).isEqualTo(PROMOTIONS_ID);
+
+        // Post summary
+        final NotificationRecord summary = generateNotificationRecord(mTestNotificationChannel,
+                summaryId, originalGroupName, true);
+        mService.addEnqueuedNotification(summary);
+        mService.new PostNotificationRunnable(summary.getKey(), summary.getSbn().getPackageName(),
+                summary.getUid(), mPostNotificationTrackerFactory.newTracker(null)).run();
+        waitForIdle();
+
+        // Check that the summary does NOT have FLAG_SILENT set
+        NotificationRecord s = mService.findNotificationLocked(summary.getSbn().getPackageName(),
+                summary.getSbn().getTag(), summary.getSbn().getId(), summary.getSbn().getUserId());
+        assertThat(s).isNotNull();
+        assertThat(s.getNotification().flags & FLAG_SILENT).isEqualTo(0);
+    }
+
+    @Test
+    @EnableFlags(FLAG_NOTIFICATION_CLASSIFICATION)
+    public void testAllChildrenBundled_summaryIsSilent() throws Exception {
+        when(mAssistants.isClassificationTypeAllowed(anyInt(), anyInt())).thenReturn(true);
+        when(mAssistants.isAdjustmentAllowedForPackage(anyInt(), anyString(),
+                anyString())).thenReturn(true);
+        when(mAssistants.isSameUser(any(), anyInt())).thenReturn(true);
+        when(mAssistants.isServiceTokenValidLocked(any())).thenReturn(true);
+
+        // Create a group with a posted bundled notification and an enqueued bundled notification
+        final String originalGroupName = "originalGroup";
+        final int summaryId = 0;
+        final NotificationRecord r1 = generateNotificationRecord(mTestNotificationChannel,
+                summaryId + 1, originalGroupName, false);
+        mService.addEnqueuedNotification(r1);
+        Bundle signals = new Bundle();
+        signals.putInt(KEY_TYPE, TYPE_NEWS);
+        Adjustment adjustment = new Adjustment(r1.getSbn().getPackageName(), r1.getKey(), signals,
+                "", r1.getUser().getIdentifier());
+        mBinderService.applyEnqueuedAdjustmentFromAssistant(null, adjustment);
+        waitForIdle();
+        r1.applyAdjustments();
+        assertThat(r1.getChannel().getId()).isEqualTo(NEWS_ID);
+
+        final NotificationRecord r2 = generateNotificationRecord(mTestNotificationChannel,
+                summaryId + 2, originalGroupName, false);
+        mService.addNotification(r2);
+        signals.putInt(KEY_TYPE, TYPE_PROMOTION);
+        adjustment = new Adjustment(r2.getSbn().getPackageName(), r2.getKey(), signals,
+                "", r2.getUser().getIdentifier());
+        mBinderService.applyAdjustmentFromAssistant(null, adjustment);
+        waitForIdle();
+        r2.applyAdjustments();
+        assertThat(r2.getChannel().getId()).isEqualTo(PROMOTIONS_ID);
+
+        // Post summary
+        final NotificationRecord summary = generateNotificationRecord(mTestNotificationChannel,
+                summaryId, originalGroupName, true);
+        mService.addEnqueuedNotification(summary);
+        mService.new PostNotificationRunnable(summary.getKey(), summary.getSbn().getPackageName(),
+                summary.getUid(), mPostNotificationTrackerFactory.newTracker(null)).run();
+        waitForIdle();
+
+        // Check that the summary has FLAG_SILENT set
+        NotificationRecord s = mService.findNotificationLocked(summary.getSbn().getPackageName(),
+                summary.getSbn().getTag(), summary.getSbn().getId(), summary.getSbn().getUserId());
+        assertThat(s).isNotNull();
+        assertThat(s.getNotification().flags & FLAG_SILENT).isEqualTo(FLAG_SILENT);
     }
 
     @Test

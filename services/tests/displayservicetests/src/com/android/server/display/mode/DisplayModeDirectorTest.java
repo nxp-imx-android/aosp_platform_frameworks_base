@@ -1214,8 +1214,8 @@ public class DisplayModeDirectorTest {
                 ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(displayListenerCaptor.capture(),
                 any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener displayListener = displayListenerCaptor.getValue();
 
         setBrightness(10, 10, displayListener);
@@ -1245,8 +1245,8 @@ public class DisplayModeDirectorTest {
                 ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(displayListenerCaptor.capture(),
                 any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener displayListener = displayListenerCaptor.getValue();
 
         setBrightness(10, 10, displayListener);
@@ -1280,8 +1280,8 @@ public class DisplayModeDirectorTest {
                 ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(displayListenerCaptor.capture(),
                 any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener displayListener = displayListenerCaptor.getValue();
 
         setBrightness(10, 10, displayListener);
@@ -1315,8 +1315,8 @@ public class DisplayModeDirectorTest {
                   ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(displayListenerCaptor.capture(),
                 any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener displayListener = displayListenerCaptor.getValue();
 
         ArgumentCaptor<SensorEventListener> sensorListenerCaptor =
@@ -1426,8 +1426,8 @@ public class DisplayModeDirectorTest {
                 ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(displayListenerCaptor.capture(),
                 any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener displayListener = displayListenerCaptor.getValue();
 
         ArgumentCaptor<SensorEventListener> sensorListenerCaptor =
@@ -1487,8 +1487,8 @@ public class DisplayModeDirectorTest {
                   ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(displayListenerCaptor.capture(),
                 any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener displayListener = displayListenerCaptor.getValue();
 
         ArgumentCaptor<SensorEventListener> listenerCaptor =
@@ -1659,8 +1659,8 @@ public class DisplayModeDirectorTest {
                 ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(displayListenerCaptor.capture(),
                 any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener displayListener = displayListenerCaptor.getValue();
 
         // Get the sensor listener so that we can give it new light sensor events
@@ -1759,8 +1759,8 @@ public class DisplayModeDirectorTest {
                   ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(displayListenerCaptor.capture(),
                 any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_CHANGED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener displayListener = displayListenerCaptor.getValue();
 
         // Get the sensor listener so that we can give it new light sensor events
@@ -2908,8 +2908,8 @@ public class DisplayModeDirectorTest {
         ArgumentCaptor<DisplayListener> captor =
                   ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(captor.capture(), any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_REMOVED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_REMOVED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener listener = captor.getValue();
 
         // Specify Limitation
@@ -3031,8 +3031,8 @@ public class DisplayModeDirectorTest {
         ArgumentCaptor<DisplayListener> captor =
                   ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(captor.capture(), any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_REMOVED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_REMOVED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener listener = captor.getValue();
 
         final int initialRefreshRate = 60;
@@ -3106,8 +3106,8 @@ public class DisplayModeDirectorTest {
         ArgumentCaptor<DisplayListener> captor =
                   ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(captor.capture(), any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_REMOVED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_REMOVED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener listener = captor.getValue();
 
         // Specify Limitation for different display
@@ -3146,8 +3146,8 @@ public class DisplayModeDirectorTest {
         ArgumentCaptor<DisplayListener> captor =
                   ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(captor.capture(), any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_REMOVED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_REMOVED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener listener = captor.getValue();
 
         // Specify Limitation
@@ -3231,8 +3231,8 @@ public class DisplayModeDirectorTest {
 
         ArgumentCaptor<DisplayListener> captor = ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(captor.capture(), any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_REMOVED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_REMOVED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener listener = captor.getValue();
 
         // Specify Sunlight limitations
@@ -3270,8 +3270,8 @@ public class DisplayModeDirectorTest {
         ArgumentCaptor<DisplayListener> captor =
                   ArgumentCaptor.forClass(DisplayListener.class);
         verify(mInjector).registerDisplayListener(captor.capture(), any(Handler.class),
-                eq(DisplayManager.EVENT_TYPE_DISPLAY_REMOVED),
-                eq(DisplayManager.PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS));
+                eq(DisplayManager.EVENT_TYPE_DISPLAY_REMOVED
+                        | DisplayManager.EVENT_TYPE_DISPLAY_BRIGHTNESS));
         DisplayListener listener = captor.getValue();
 
         // Specify Limitation for different display

@@ -45,6 +45,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.SystemProperties
+import android.os.Trace
 import android.os.UserHandle
 import android.os.UserManager
 import android.util.Slog
@@ -82,6 +83,7 @@ import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import androidx.annotation.BinderThread
+import com.android.app.tracing.traceSection
 import com.android.internal.annotations.VisibleForTesting
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_HOLD
 import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_ENTER_APP_HANDLE_DRAG_RELEASE
@@ -173,6 +175,7 @@ import com.android.wm.shell.windowdecor.extension.isFullscreen
 import com.android.wm.shell.windowdecor.extension.isMultiWindow
 import com.android.wm.shell.windowdecor.extension.requestingImmersive
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler
+import com.android.wm.shell.windowdecor.tiling.TilingDisplayReconnectEventHandler
 import java.io.PrintWriter
 import java.util.Optional
 import java.util.concurrent.Executor
@@ -711,7 +714,7 @@ class DesktopTasksController(
                     "destinationDisplayId=$destinationDisplayId"
             )
         }
-        snapEventHandler.onDisplayDisconnected(disconnectedDisplayId, desktopModeSupportedOnDisplay)
+        snapEventHandler.onDisplayDisconnected(disconnectedDisplayId)
         removeWallpaperTask(wct, disconnectedDisplayId)
         removeHomeTask(wct, disconnectedDisplayId)
         userRepositories.forAllRepositories { desktopRepository ->
@@ -823,7 +826,13 @@ class DesktopTasksController(
         val wct = WindowContainerTransaction()
         var runOnTransitStart: RunOnTransitStart? = null
         val destDisplayLayout = displayController.getDisplayLayout(displayId) ?: return
-
+        val tilingReconnectHandler =
+            TilingDisplayReconnectEventHandler(
+                taskRepository,
+                snapEventHandler,
+                transitions,
+                displayId,
+            )
         mainScope.launch {
             preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
                 val newDeskId =
@@ -836,8 +845,8 @@ class DesktopTasksController(
                     "restoreDisplay: created new desk deskId=$newDeskId " +
                         "from preserved deskId=$preservedDeskId"
                 )
-
-                if (preservedDeskId == activeDeskId) {
+                val isActiveDesk = preservedDeskId == activeDeskId
+                if (isActiveDesk) {
                     runOnTransitStart = addDeskActivationChanges(deskId = newDeskId, wct = wct)
                 }
 
@@ -851,8 +860,22 @@ class DesktopTasksController(
                         boundsByTaskId[taskId],
                     )
                 }
+
+                val preservedTilingData =
+                    taskRepository.getPreservedTilingData(uniqueDisplayId, preservedDeskId)
+                if (preservedTilingData != null) {
+                    tilingReconnectHandler.addTilingDisplayReconnectSession(
+                        TilingDisplayReconnectEventHandler.TilingDisplayReconnectSession(
+                            preservedTilingData.leftTiledTask,
+                            preservedTilingData.rightTiledTask,
+                            newDeskId,
+                            isActiveDesk,
+                        )
+                    )
+                }
             }
             val transition = transitions.startTransition(TRANSIT_CHANGE, wct, null)
+            tilingReconnectHandler.activationBinder = transition
             runOnTransitStart?.invoke(transition)
             taskRepository.removePreservedDisplay(uniqueDisplayId)
         }
@@ -4148,73 +4171,77 @@ class DesktopTasksController(
         deskId: Int,
         remoteTransition: RemoteTransition? = null,
         taskIdToReorderToFront: Int? = null,
-    ) {
-        logD(
-            "activateDesk deskId=%d taskIdToReorderToFront=%d remoteTransition=%s",
-            deskId,
-            taskIdToReorderToFront,
-            remoteTransition,
-        )
-        if (!taskRepository.getAllDeskIds().contains(deskId)) {
-            logW(
-                "Request to activate desk=%d but desk not found for user=%d",
-                deskId,
-                taskRepository.userId,
-            )
-            return
-        }
-        if (
-            taskIdToReorderToFront != null &&
-                taskRepository.getDeskIdForTask(taskIdToReorderToFront) != deskId
+    ) =
+        traceSection(
+            Trace.TRACE_TAG_WINDOW_MANAGER,
+            "DesktopTasksController#activateDesk: $deskId",
         ) {
-            logW(
-                "activeDesk taskIdToReorderToFront=%d not on the desk %d",
-                taskIdToReorderToFront,
+            logD(
+                "activateDesk deskId=%d taskIdToReorderToFront=%d remoteTransition=%s",
                 deskId,
+                taskIdToReorderToFront,
+                remoteTransition,
             )
-            return
-        }
-
-        val newTaskInFront =
-            taskIdToReorderToFront?.let { taskId ->
-                shellTaskOrganizer.getRunningTaskInfo(taskId)
-                    ?: recentTasksController?.findTaskInBackground(taskId)
+            if (!taskRepository.getAllDeskIds().contains(deskId)) {
+                logW(
+                    "Request to activate desk=%d but desk not found for user=%d",
+                    deskId,
+                    taskRepository.userId,
+                )
+                return
+            }
+            if (
+                taskIdToReorderToFront != null &&
+                    taskRepository.getDeskIdForTask(taskIdToReorderToFront) != deskId
+            ) {
+                logW(
+                    "activeDesk taskIdToReorderToFront=%d not on the desk %d",
+                    taskIdToReorderToFront,
+                    deskId,
+                )
+                return
             }
 
-        val wct = WindowContainerTransaction()
-        val runOnTransitStart = addDeskActivationChanges(deskId, wct, newTaskInFront)
+            val newTaskInFront =
+                taskIdToReorderToFront?.let { taskId ->
+                    shellTaskOrganizer.getRunningTaskInfo(taskId)
+                        ?: recentTasksController?.findTaskInBackground(taskId)
+                }
 
-        // Put task with [taskIdToReorderToFront] to front.
-        when (newTaskInFront) {
-            is RunningTaskInfo -> {
-                // Task is running, reorder it.
-                if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-                    desksOrganizer.reorderTaskToFront(wct, deskId, newTaskInFront)
-                } else {
-                    wct.reorder(newTaskInFront.token, /* onTop= */ true)
+            val wct = WindowContainerTransaction()
+            val runOnTransitStart = addDeskActivationChanges(deskId, wct, newTaskInFront)
+
+            // Put task with [taskIdToReorderToFront] to front.
+            when (newTaskInFront) {
+                is RunningTaskInfo -> {
+                    // Task is running, reorder it.
+                    if (DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
+                        desksOrganizer.reorderTaskToFront(wct, deskId, newTaskInFront)
+                    } else {
+                        wct.reorder(newTaskInFront.token, /* onTop= */ true)
+                    }
+                }
+                is RecentTaskInfo -> {
+                    // Task is not running, start it.
+                    wct.startTask(
+                        taskIdToReorderToFront,
+                        createActivityOptionsForStartTask().toBundle(),
+                    )
+                }
+                else -> {
+                    logW("activateDesk taskIdToReorderToFront=%d not found", taskIdToReorderToFront)
                 }
             }
-            is RecentTaskInfo -> {
-                // Task is not running, start it.
-                wct.startTask(
-                    taskIdToReorderToFront,
-                    createActivityOptionsForStartTask().toBundle(),
-                )
-            }
-            else -> {
-                logW("activateDesk taskIdToReorderToFront=%d not found", taskIdToReorderToFront)
-            }
-        }
 
-        val transitionType = transitionType(remoteTransition)
-        val handler =
-            remoteTransition?.let {
-                OneShotRemoteHandler(transitions.mainExecutor, remoteTransition)
-            }
+            val transitionType = transitionType(remoteTransition)
+            val handler =
+                remoteTransition?.let {
+                    OneShotRemoteHandler(transitions.mainExecutor, remoteTransition)
+                }
 
-        val transition = transitions.startTransition(transitionType, wct, handler)
-        handler?.setTransition(transition)
-        runOnTransitStart?.invoke(transition)
+            val transition = transitions.startTransition(transitionType, wct, handler)
+            handler?.setTransition(transition)
+            runOnTransitStart?.invoke(transition)
 
         // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
         if (!desktopState.enableMultipleDesktops) {

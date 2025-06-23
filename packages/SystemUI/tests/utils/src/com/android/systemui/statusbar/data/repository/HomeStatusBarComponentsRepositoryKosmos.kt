@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.systemui.accessibility.data.model
+package com.android.systemui.statusbar.data.repository
 
-data class KeyGestureConfirmInfo(
-    val title: CharSequence,
-    val contentText: CharSequence,
-    val targetName: String,
-)
+import com.android.systemui.kosmos.Kosmos
+
+val Kosmos.homeStatusBarComponentsRepository by
+    Kosmos.Fixture { HomeStatusBarComponentsRepository() }

@@ -60,7 +60,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
-import android.platform.test.annotations.EnableFlags;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
 import android.view.IRemoteAnimationRunner;
@@ -556,8 +555,6 @@ public class BackAnimationControllerTest extends ShellTestCase {
         verify(mAnimatorCallback, never()).onBackInvoked();
     }
 
-    @EnableFlags({com.android.systemui.shared.Flags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-            com.android.systemui.shared.Flags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED})
     @Test
     public void appCallback_receivesTakeoverHandler_whenAvailable() throws RemoteException {
         registerAnimation(BackNavigationInfo.TYPE_CROSS_TASK);

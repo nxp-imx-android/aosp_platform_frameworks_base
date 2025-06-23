@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"ଏହି ଆପ 16 KB ପାଇଁ କମ୍ପାଟିବିଲ ନୁହେଁ। APK ଏବଂ ELF ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚଗୁଡ଼ିକ ବିଫଳ ହୋଇଛି। ପୃଷ୍ଠା ସାଇଜ କମ୍ପାଟିବିଲ ମୋଡ ବ୍ୟବହାର କରି ଏହି ଆପକୁ ଚଲାଯିବ। ସର୍ବୋତ୍ତମ କମ୍ପାଟିବିଲିଟୀ ପାଇଁ ଦୟାକରି 16 KB ସପୋର୍ଟ ସହ ଆପ୍ଲିକେସନକୁ ପୁଣି କମ୍ପାଇଲ କରନ୍ତୁ। ଅଧିକ ସୂଚନା ପାଇଁ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;କୁ ଦେଖନ୍ତୁ"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"ଏହି ଆପ 16 KB ପାଇଁ କମ୍ପାଟିବିଲ ନୁହେଁ। APK ଏବଂ ELF ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚଗୁଡ଼ିକ ବିଫଳ ହୋଇଛି। ପୃଷ୍ଠା ସାଇଜ କମ୍ପାଟିବିଲ ମୋଡ ବ୍ୟବହାର କରି ଏହି ଆପକୁ ଚଲାଯିବ। ସର୍ବୋତ୍ତମ କମ୍ପାଟିବିଲିଟୀ ପାଇଁ ଦୟାକରି 16 KB ସପୋର୍ଟ ସହ ଆପ୍ଲିକେସନକୁ ପୁଣି କମ୍ପାଇଲ କରନ୍ତୁ। ଅଧିକ ସୂଚନା ପାଇଁ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;କୁ ଦେଖନ୍ତୁ"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"ଏହି ଆପ 16 KB ପାଇଁ କମ୍ପାଟିବିଲ ନୁହେଁ। APK ଏବଂ ELF ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚଗୁଡ଼ିକ ବିଫଳ ହୋଇଛି। ପୃଷ୍ଠା ସାଇଜ କମ୍ପାଟିବିଲ ମୋଡ ବ୍ୟବହାର କରି ଏହି ଆପକୁ ଚଲାଯିବ। ସର୍ବୋତ୍ତମ କମ୍ପାଟିବିଲିଟୀ ପାଇଁ ଦୟାକରି 16 KB ସପୋର୍ଟ ସହ ଆପ୍ଲିକେସନକୁ ପୁଣି କମ୍ପାଇଲ କରନ୍ତୁ। ଅଧିକ ସୂଚନା ପାଇଁ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;କୁ ଦେଖନ୍ତୁ"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"ଏହା ବର୍ତ୍ତମାନ ପରୀକ୍ଷା କରାଯାଉଥିବା ଏକ ଡିବଗେବୁଲ ଆପ ହୋଇଥିବା ଯୋଗୁଁ ଏହି ଚେତାବନୀ ଦେଖାଯାଉଛି। ଯଦି ଆପଣ ଡେଭେଲପର ନୁହଁନ୍ତି, ତେବେ ଦୟାକରି ଡେଭେଲପରଙ୍କୁ ଏହାର ରିପୋର୍ଟ କରନ୍ତୁ ଏବଂ ଏକ ଅଣ-ଡିବଗେବୁଲ ଆପ ପାଇଁ ଅନୁରୋଧ କରନ୍ତୁ। ଏହି ଆପ 16 KB କମ୍ପାଟିବଲ ନୁହେଁ। APK ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚ ବିଫଳ ହୋଇଛି। ଦୟାକରି &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ରେ ଥିବା ଷ୍ଟେପଗୁଡ଼ିକୁ ଫଲୋ କରନ୍ତୁ"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"ଏହା ବର୍ତ୍ତମାନ ପରୀକ୍ଷା କରାଯାଉଥିବା ଏକ ଡିବଗେବୁଲ ଆପ ହୋଇଥିବା ଯୋଗୁଁ ଏହି ଚେତାବନୀ ଦେଖାଯାଉଛି। ଯଦି ଆପଣ ଡେଭେଲପର ନୁହଁନ୍ତି, ତେବେ ଦୟାକରି ଡେଭେଲପରଙ୍କୁ ଏହାର ରିପୋର୍ଟ କରନ୍ତୁ ଏବଂ ଏକ ଅଣ-ଡିବଗେବୁଲ ଆପ ପାଇଁ ଅନୁରୋଧ କରନ୍ତୁ। ଏହି ଆପ 16 KB କମ୍ପାଟିବଲ ନୁହେଁ। ELF ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚ ବିଫଳ ହୋଇଛି। ଦୟାକରି &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ରେ ଥିବା ଷ୍ଟେପଗୁଡ଼ିକୁ ଫଲୋ କରନ୍ତୁ"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"ଏହା ବର୍ତ୍ତମାନ ପରୀକ୍ଷା କରାଯାଉଥିବା ଏକ ଡିବଗେବୁଲ ଆପ ହୋଇଥିବା ଯୋଗୁଁ ଏହି ଚେତାବନୀ ଦେଖାଯାଉଛି। ଯଦି ଆପଣ ଡେଭେଲପର ନୁହଁନ୍ତି, ତେବେ ଦୟାକରି ଡେଭେଲପରଙ୍କୁ ଏହାର ରିପୋର୍ଟ କରନ୍ତୁ ଏବଂ ଏକ ଅଣ-ଡିବଗେବୁଲ ଆପ ପାଇଁ ଅନୁରୋଧ କରନ୍ତୁ। ଏହି ଆପ 16 KB କମ୍ପାଟିବଲ ନୁହେଁ। APK ଏବଂ ELF ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚଗୁଡ଼ିକ ବିଫଳ ହୋଇଛି। ଦୟାକରି &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ରେ ଥିବା ଷ୍ଟେପଗୁଡ଼ିକୁ ଫଲୋ କରନ୍ତୁ"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"ପୁଣି ଦେଖାନ୍ତୁ ନାହିଁ"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ସେବାର ସୁବିଧା ନାହିଁ।"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"ଆପଣ କଲର୍‍ ID ସେଟିଙ୍ଗ ବଦଳାଇପାରିବେ ନାହିଁ।"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g>କୁ ଡାଟା ସ୍ୱିଚ କରାଯାଇଛି"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"ବହୁତ ଅଧିକ ସହ ଆପଣଙ୍କ ଚାରିପାଖର ପରିବେଶ ବିଷୟରେ ଟ୍ରାକିଂ ଡାଟା ଆକ୍ସେସ କରିବା ପାଇଁ ଆପକୁ ଅନୁମତି ଦିଅନ୍ତୁ।"</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"ଫୋରଗ୍ରାଉଣ୍ଡରେ ନଥିବା ବେଳେ XR ଡାଟା ଆକ୍ସେସ କରନ୍ତୁ"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"ଫୋରଗ୍ରାଉଣ୍ଡରେ ନଥିବା ବେଳେ XR ଡାଟା ଆକ୍ସେସ କରିବା ପାଇଁ ଆପକୁ ଅନୁମତି ଦିଅନ୍ତୁ।"</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"କୀଗୁଡ଼ିକୁ କେପଚର କରନ୍ତୁ"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"ସିଷ୍ଟମ ସର୍ଟକଟ ଏବଂ କାର୍ଯ୍ୟଗୁଡ଼ିକୁ ସିଷ୍ଟମ ପ୍ରକ୍ରିୟାନ୍ୱିତ କରିବା ପୂର୍ବରୁ ଆପକୁ କୀଗୁଡ଼ିକୁ କେପଚର କରିବାକୁ ଅନୁମତି ଦିଏ।"</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"ବାୟୋମେଟ୍ରିକ୍ସ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"ବାୟୋମେଟ୍ରିକ୍ସ ବା ସ୍କ୍ରିନ୍ ଲକ୍ ବ୍ୟବହାର କରନ୍ତୁ"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"ଏହା ଆପଣ ବୋଲି ଯାଞ୍ଚ କରନ୍ତୁ"</string>
@@ -2568,29 +2562,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ଆପ୍ଲିକେସନ"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"ଆପଣଙ୍କ ଟିପଚିହ୍ନକୁ ଆଉ ଚିହ୍ନଟ କରାଯାଇପାରିବ ନାହିଁ। ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକ ପୁଣି ସେଟ ଅପ କରନ୍ତୁ।"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"ସୁରକ୍ଷା ଏବଂ ଗୋପନୀୟତା"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"ପ୍ରଥମେ ଆପଣଙ୍କ ସ୍କ୍ରିନକୁ ଅନଲକ କରନ୍ତୁ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"ସ୍କ୍ରିନକୁ ଅନଲକ କରି ପୁଣି କନେକ୍ଟ କରନ୍ତୁ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"USB ଡାଟା ଟ୍ରାନ୍ସଫର ପାଇଁ ଆଡଭାନ୍ସଡ ପ୍ରୋଟେକସନ ଆପଣଙ୍କର ସାଧାରଣ ସ୍କ୍ରିନ ଅନଲକ ଆବଶ୍ୟକ କରେ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"USB ଡାଟା ଟ୍ରାନ୍ସଫର ପାଇଁ ଆଡଭାନ୍ସଡ ପ୍ରୋଟେକସନ ଆପଣଙ୍କର ସାଧାରଣ ସ୍କ୍ରିନ ଅନଲକ ଆବଶ୍ୟକ କରେ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"USB ଟ୍ରାନ୍ସଫର କିମ୍ବା ଫାଷ୍ଟ ଚାର୍ଜିଂ ପାଇଁ ଆଡଭାନ୍ସଡ ପ୍ରୋଟେକସନ ଆପଣଙ୍କ ସ୍କ୍ରିନ ଅନଲକ ଆବଶ୍ୟକ କରେ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"USB ଟ୍ରାନ୍ସଫର କିମ୍ବା ଫାଷ୍ଟ ଚାର୍ଜିଂ ପାଇଁ ଆଡଭାନ୍ସଡ ପ୍ରୋଟେକସନ ଆପଣଙ୍କ ସ୍କ୍ରିନ ଅନଲକ ଆବଶ୍ୟକ କରେ"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"USB ଫାଷ୍ଟ ଚାର୍ଜିଂ ପାଇଁ ଆଡଭାନ୍ସଡ ପ୍ରୋଟେକସନ ଆପଣଙ୍କ ସାଧାରଣ ସ୍କ୍ରିନ ଅନଲକ ଆବଶ୍ୟକ କରେ"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"USB ଫାଷ୍ଟ ଚାର୍ଜିଂ ପାଇଁ ଆଡଭାନ୍ସଡ ପ୍ରୋଟେକସନ ଆପଣଙ୍କ ସାଧାରଣ ସ୍କ୍ରିନ ଅନଲକ ଆବଶ୍ୟକ କରେ"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"ନୀରବ କରନ୍ତୁ"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ନୀରବ କରାଯାଇଛି"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"ଆପଣ ଡିଭାଇସକୁ ରିଷ୍ଟାର୍ଟ ନକରିବା ପର୍ଯ୍ୟନ୍ତ ଆଡଭାନ୍ସଡ ପ୍ରୋଟେକସନ USB ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ ନୀରବ ରହିବ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"ସନ୍ଦେହଜନକ USB କାର୍ଯ୍ୟକଳାପ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ଡାଟା ସିଗନାଲକୁ ଅକ୍ଷମ କରାଯାଇଛି।"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ଫିଙ୍ଗରପ୍ରିଣ୍ଟ ଅନଲକରେ ଅସୁବିଧାର ସମ୍ମୁଖୀନ ହେଉଛନ୍ତି?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ଆପଣଙ୍କ ଅନଲକ କରିବାର ଅନୁଭୂତିକୁ ଉନ୍ନତ କରିବା ପାଇଁ ଟିପ୍ସର ସମୀକ୍ଷା କରିବାକୁ ଟାପ କରନ୍ତୁ"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>

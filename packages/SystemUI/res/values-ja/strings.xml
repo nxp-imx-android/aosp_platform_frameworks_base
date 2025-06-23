@@ -209,14 +209,10 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"別の方法で検証"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"ID チェックの管理"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"ID チェックが ON になっているため、PIN は確認に使用できません。生体認証が必要です。ID チェックの詳細"</string>
-    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"ID チェックが ON になっているため、パターンは確認に使用できません。生体認証が必要です。ID チェックの詳細"</string>
+    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"ID チェックが ON になっているため、パスワードは確認に使用できません。生体認証が必要です。ID チェックの詳細"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"リスクを評価しています..."</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"使用不可"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"PIN を使用"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"パターンを使用"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"パスワードを使用"</string>
@@ -756,6 +752,8 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"デュアルトーン マルチ周波数"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"ユーザー補助機能"</string>
+    <!-- no translation found for stream_assistant (2163992770504149386) -->
+    <skip />
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"着信音"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"バイブレーション"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"ミュート"</string>
@@ -826,7 +824,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"衛生、接続利用可能"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"衛星 SOS"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"緊急通報または SOS のみ"</string>
-    <string name="satellite_network_title_text" msgid="4825315858295910999">"衛星ネットワーク"</string>
+    <string name="satellite_network_title_text" msgid="1483004114819442028">"衛星ネットワーク"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>、<xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>。"</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"圏外"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"レベル 1"</string>
@@ -846,7 +844,7 @@
     <string name="enable_bluetooth_message" msgid="6740938333772779717">"タブレットでキーボードに接続するには、最初にBluetoothをONにする必要があります。"</string>
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ONにする"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ON - 顔ベース"</string>
-    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"ミュートしてまとめる"</string>
+    <string name="notification_guts_bundle_title" msgid="5252530007273079591">"まとめてミュートする"</string>
     <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"通知オーガナイザーを使用する"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"対象: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"セールス情報、新機能など"</string>
@@ -955,8 +953,7 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"アプリを開くショートカットを表示しています"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"現在のアプリのショートカットを表示しています"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"お知らせを表示する"</string>
-    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
-    <skip />
+    <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"クイック設定の表示"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"スクリーンショットを撮る"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"ショートカットを表示する"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"戻る"</string>
@@ -982,8 +979,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"ウィンドウを右に移動する"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"ウィンドウを最大化する"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"ウィンドウを最小化する"</string>
-    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
-    <skip />
+    <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"デスクトップ間の移動"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"入力"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"次の言語に切り替える"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"前の言語に切り替える"</string>
@@ -1048,14 +1044,10 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"タイルを追加するには長押ししてドラッグ"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"タイルを並べ替えるには長押ししてドラッグ"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"並べ替えとサイズ変更するタイルを選択"</string>
-    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
-    <skip />
-    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
-    <skip />
-    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
-    <skip />
-    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
-    <skip />
+    <string name="tap_to_remove_tiles" msgid="76564688376603718">"タイルを削除するにはタップしてください"</string>
+    <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"レイアウトのサイズ変更と並べ替え"</string>
+    <string name="qs_edit_edit_tab" msgid="467315123555871860">"編集"</string>
+    <string name="qs_edit_layout_tab" msgid="1935366846617681520">"レイアウト"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"タップしてタイルを配置"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"削除するにはここにドラッグ"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"タイルは <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g> 個以上必要です"</string>
@@ -1341,8 +1333,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"出力"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"メディアを他のデバイスに移動する共有中のセッションを停止します。"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"停止"</string>
-    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
-    <skip />
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"共有を停止"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"ブロードキャストの仕組み"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"ブロードキャスト"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Bluetooth 対応デバイスを持っている付近のユーザーは、あなたがブロードキャストしているメディアを聴けます"</string>
@@ -1588,6 +1579,8 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"ショートカットを追加"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"ショートカットを削除"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"アプリのカスタム ショートカット数の上限（10 個）に達しました"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"いずれかのショートカットを削除すると、新しいショートカットを追加できるようになります"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"キーボードを使用して移動する"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"キーボード ショートカットについて"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"タッチパッドを使用して移動する"</string>
@@ -1665,6 +1658,9 @@
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> のライブ情報は表示されなくなります。これは [設定] でいつでも変更できます。"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>、<xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"閉じる"</string>
+    <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"Ambient Suggestions のアイコン"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"左上から下にスワイプして通知を開きます"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"右上から下にスワイプしてクイック設定を開きます"</string>
+    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
+    <skip />
 </resources>

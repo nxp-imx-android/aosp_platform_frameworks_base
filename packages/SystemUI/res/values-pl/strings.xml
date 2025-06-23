@@ -138,10 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Obecnie nagrywasz cały widok ekranu"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Obecnie nagrywasz widok aplikacji <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Zatrzymaj nagrywanie"</string>
-    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
-    <skip />
+    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Zrób zrzut ekranu"</string>
+    <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Nagrywaj"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Udostępniam ekran"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Udostępniasz treści"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Zatrzymać udostępnianie ekranu?"</string>
@@ -211,29 +209,19 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Zweryfikuj w inny sposób"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Zarządzaj potwierdzeniem tożsamości"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"Nie można użyć kodu PIN do weryfikacji, ponieważ potwierdzenie tożsamości jest włączone i wymaga danych biometrycznych. Więcej informacji o potwierdzeniu tożsamości"</string>
-    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Nie można użyć wzoru do weryfikacji, ponieważ włączone jest potwierdzenie tożsamości, które wymaga danych biometrycznych. Więcej informacji o potwierdzeniu tożsamości"</string>
+    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Nie można użyć hasła do weryfikacji, ponieważ włączone jest potwierdzenie tożsamości, które wymaga danych biometrycznych. Więcej informacji o potwierdzeniu tożsamości"</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Oceniam ryzyko…"</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Niedostępne"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Użyj kodu PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Użyj wzoru"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Użyj hasła"</string>
-    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
-    <skip />
+    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"Wpisz kod PIN"</string>
+    <string name="biometric_dialog_enter_password" msgid="200503318983048202">"Wpisz hasło"</string>
+    <string name="biometric_dialog_enter_pattern" msgid="3065746760277739487">"Narysuj wzór"</string>
+    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"Aby przywrócić biometrię po zbyt wielu nieudanych próbach, należy podać kod PIN"</string>
+    <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"Aby przywrócić biometrię po zbyt wielu nieudanych próbach, należy narysować wzór"</string>
+    <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"Aby przywrócić biometrię po zbyt wielu nieudanych próbach, należy podać hasło"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"Nieprawidłowy kod PIN"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"Nieprawidłowy wzór"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"Nieprawidłowe hasło"</string>
@@ -762,6 +750,8 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"DTMF"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"Ułatwienia dostępu"</string>
+    <!-- no translation found for stream_assistant (2163992770504149386) -->
+    <skip />
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"Dzwonek"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Wibracje"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Wyciszenie"</string>
@@ -832,7 +822,8 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelita – połączenie dostępne"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"Satelitarne połączenie alarmowe"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Tylko połączenia alarmowe lub SOS"</string>
-    <string name="satellite_network_title_text" msgid="4825315858295910999">"Sieć satelitarna"</string>
+    <!-- no translation found for satellite_network_title_text (1483004114819442028) -->
+    <skip />
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"brak sygnału"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"1 pasek"</string>
@@ -1018,8 +1009,7 @@
     <string name="battery" msgid="769686279459897127">"Bateria"</string>
     <string name="headset" msgid="4485892374984466437">"Zestaw słuchawkowy"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"Otwórz ustawienia"</string>
-    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
-    <skip />
+    <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"Otwórz więcej szczegółów"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"Słuchawki są podłączone"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"Zestaw słuchawkowy jest podłączony"</string>
     <string name="data_saver" msgid="3484013368530820763">"Oszczędzanie danych"</string>
@@ -1348,8 +1338,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"Urządzenie wyjściowe"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Zatrzymaj udostępnianie sesji, aby przenieść multimedia na inne urządzenie"</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Zatrzymaj"</string>
-    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
-    <skip />
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Przestań udostępniać"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Jak działa transmitowanie"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"Transmisja"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Osoby w pobliżu ze zgodnymi urządzeniami Bluetooth mogą słuchać transmitowanych przez Ciebie multimediów"</string>
@@ -1536,8 +1525,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"Powielaj obraz"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Zamknij"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Wyświetlacz podłączony"</string>
-    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
-    <skip />
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"Mikrofon, aparat i lokalizacja"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Aplikacje korzystające w ostatnim czasie"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Zobacz ostatni dostęp"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Gotowe"</string>
@@ -1596,6 +1584,10 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Dodaj skrót"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Usuń skrót"</string>
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
+    <skip />
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
+    <skip />
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Nawiguj za pomocą klawiatury"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Poznaj skróty klawiszowe"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Nawiguj za pomocą touchpada"</string>
@@ -1673,6 +1665,10 @@
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> nie będzie już wyświetlać aktualizacji na żywo. Możesz to zmienić w dowolnej chwili w Ustawieniach."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Zamknij"</string>
+    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
+    <skip />
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Przesuń palcem z lewego górnego rogu ekranu, aby otworzyć powiadomienia"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Przesuń palcem z prawego górnego rogu ekranu, aby otworzyć Szybkie ustawienia"</string>
+    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
+    <skip />
 </resources>

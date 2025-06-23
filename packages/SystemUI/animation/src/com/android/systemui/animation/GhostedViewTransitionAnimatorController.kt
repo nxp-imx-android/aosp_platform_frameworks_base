@@ -213,15 +213,11 @@ constructor(
 
         background = findBackground(ghostedView)
 
-        if (TransitionAnimator.returnAnimationsEnabled() && isEphemeral) {
-            ghostedView.addOnAttachStateChangeListener(detachListener)
-        }
+        if (isEphemeral) ghostedView.addOnAttachStateChangeListener(detachListener)
     }
 
     override fun onDispose() {
-        if (TransitionAnimator.returnAnimationsEnabled()) {
-            ghostedView.removeOnAttachStateChangeListener(detachListener)
-        }
+        ghostedView.removeOnAttachStateChangeListener(detachListener)
         transitionToken?.let { token -> transitionRegistry?.unregister(token) }
     }
 

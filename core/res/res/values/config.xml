@@ -2878,10 +2878,10 @@
     <bool name="config_onlyShowGlanceableHubWhenWirelessChargingDefault">false</bool>
 
     <!-- Whether or not low light display behavior is enabled -->
-    <bool name="config_lowLightDisplayBehaviorEnabledDefault">false</bool>
+    <bool name="config_lowLightDisplayBehaviorEnabledDefault">true</bool>
 
-    <!-- The default low light display behavior. 1 represents screen off. -->
-    <integer name="config_lowLightDisplayBehaviorDefault">1</integer>
+    <!-- The default low light display behavior. 2 represents the low-light clock. -->
+    <integer name="config_lowLightDisplayBehaviorDefault">2</integer>
 
     <!-- The duration in milliseconds of the dream opening animation.  -->
     <integer name="config_dreamOpenAnimationDuration">250</integer>

@@ -168,10 +168,11 @@ public class AccessibilityInteractionControllerTest {
 
     @Test
     @DisableFlags(android.view.accessibility.Flags.FLAG_IGNORE_UNIMPORTANT_ROOT)
-    public void getRootView_isUnimportant_returnsNotNull() {
+    public void getRootView_isUnimportant_returnsRoot() {
         mViewRootImpl.getView().setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
 
-        assertThat(mAccessibilityInteractionController.getRootView()).isNotNull();
+        assertThat(mAccessibilityInteractionController.getRootView())
+                .isEqualTo(mViewRootImpl.getView());
     }
 
     private void launchActivity() {

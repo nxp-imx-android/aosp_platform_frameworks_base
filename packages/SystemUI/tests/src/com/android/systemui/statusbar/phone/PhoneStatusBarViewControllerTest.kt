@@ -83,6 +83,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
+import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
@@ -422,6 +423,25 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
     @Test
     @EnableSceneContainer
+    fun handleInterceptTouchEventFromStatusBar_swipeDown_dispatchesCachedEvents() {
+        val downEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 10f, 0)
+        view.onInterceptTouchEvent(downEvent)
+
+        val moveEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_MOVE, 0f, 100f, 0)
+        view.onInterceptTouchEvent(moveEvent)
+
+        // Verify that the cached ACTION_DOWN and the new ACTION_MOVE events are dispatched.
+        val captor = argumentCaptor<MotionEvent>()
+        verify(windowRootView, times(2)).dispatchTouchEvent(captor.capture())
+
+        val capturedEvents = captor.allValues
+        assertThat(capturedEvents).hasSize(2)
+        assertThat(capturedEvents[0].action).isEqualTo(MotionEvent.ACTION_DOWN)
+        assertThat(capturedEvents[1].action).isEqualTo(MotionEvent.ACTION_MOVE)
+    }
+
+    @Test
+    @EnableSceneContainer
     fun handleInterceptTouchEventFromStatusBar_smallSwipe_doesNotIntercept() {
         val downEvent = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 10f, 0)
         view.onInterceptTouchEvent(downEvent)
@@ -444,6 +464,42 @@ class PhoneStatusBarViewControllerTest(flags: FlagsParameterization) : SysuiTest
 
         assertThat(intercepted).isFalse()
         verify(windowRootView, never()).dispatchTouchEvent(any())
+    }
+
+    @Test
+    @EnableSceneContainer
+    fun handleInterceptTouchEventFromStatusBar_clearsCacheBetweenGestures() {
+        // Gesture 1: A short tap/swipe that does NOT trigger interception.
+        val downEvent1 = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 0f, 10f, 0)
+        view.onInterceptTouchEvent(downEvent1)
+
+        val moveEvent1 = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_MOVE, 0f, 15f, 0)
+        view.onInterceptTouchEvent(moveEvent1)
+
+        val upEvent1 = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_UP, 0f, 15f, 0)
+        view.onInterceptTouchEvent(upEvent1)
+
+        // Verify that no events were dispatched.
+        verify(windowRootView, never()).dispatchTouchEvent(any())
+
+        // Gesture 2: A clear swipe down that triggers interception.
+        val downEvent2 = MotionEvent.obtain(100L, 100L, MotionEvent.ACTION_DOWN, 50f, 20f, 0)
+        view.onInterceptTouchEvent(downEvent2)
+
+        // Move a large amount, greater than the touch slop.
+        val moveEvent2 = MotionEvent.obtain(100L, 100L, MotionEvent.ACTION_MOVE, 50f, 150f, 0)
+        view.onInterceptTouchEvent(moveEvent2)
+
+        val captor = argumentCaptor<MotionEvent>()
+        verify(windowRootView, times(2)).dispatchTouchEvent(captor.capture())
+
+        val capturedEvents = captor.allValues
+        assertThat(capturedEvents).hasSize(2)
+
+        assertThat(capturedEvents[0].action).isEqualTo(MotionEvent.ACTION_DOWN)
+        assertThat(capturedEvents[0].downTime).isEqualTo(100L)
+        assertThat(capturedEvents[1].action).isEqualTo(MotionEvent.ACTION_MOVE)
+        assertThat(capturedEvents[1].y).isEqualTo(150f)
     }
 
     @Test

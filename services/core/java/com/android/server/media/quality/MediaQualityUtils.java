@@ -694,7 +694,7 @@ public final class MediaQualityUtils {
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_GAIN)) {
             pictureParams.add(PictureParameter.colorTemperatureRedGain(params.getInt(
-                    PictureQuality.PARAMETER_COLOR_TUNER_RED_GAIN)));
+                    PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_GAIN)));
             params.remove(PictureQuality.PARAMETER_COLOR_TEMPERATURE_RED_GAIN);
         }
         if (params.containsKey(PictureQuality.PARAMETER_COLOR_TEMPERATURE_GREEN_GAIN)) {

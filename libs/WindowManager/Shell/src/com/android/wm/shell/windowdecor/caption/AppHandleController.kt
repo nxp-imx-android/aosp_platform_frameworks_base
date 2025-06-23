@@ -23,6 +23,7 @@ import android.graphics.Point
 import android.graphics.PointF
 import android.graphics.Rect
 import android.os.Handler
+import android.os.Trace
 import android.view.Display
 import android.view.MotionEvent
 import android.view.SurfaceControl
@@ -154,7 +155,10 @@ class AppHandleController(
         startT: SurfaceControl.Transaction,
         finishT: SurfaceControl.Transaction,
         wct: WindowContainerTransaction,
-    ): CaptionRelayoutResult = traceSection("AppHandleController#relayout") {
+    ): CaptionRelayoutResult = traceSection(
+        traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+        name = "AppHandleController#relayout",
+    ) {
         val captionLayout = super.relayout(
             params,
             parentContainer,

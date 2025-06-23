@@ -17,8 +17,10 @@
 package com.android.systemui.screenshot.dagger;
 
 import android.app.Service;
+import android.content.Context;
 import android.view.accessibility.AccessibilityManager;
 
+import com.android.internal.util.ScreenshotHelper;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.screenshot.ImageCapture;
 import com.android.systemui.screenshot.ImageCaptureImpl;
@@ -92,5 +94,11 @@ public abstract class ScreenshotModule {
     static InteractiveScreenshotHandler.Factory providesScreenshotController(
             ScreenshotController.Factory screenshotController) {
         return screenshotController;
+    }
+
+    @Provides
+    @SysUISingleton
+    static ScreenshotHelper provideScreenshotHelper(Context context) {
+        return new ScreenshotHelper(context);
     }
 }

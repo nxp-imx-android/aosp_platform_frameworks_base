@@ -54,7 +54,7 @@
     <string name="accessibility_action_divider_top_50" formatted="false" msgid="1038204315880066213">"50% ಮೇಲೆ, 50% ಕೆಳಗೆ"</string>
     <string name="accessibility_action_divider_top_70" formatted="false" msgid="5125673390883238862">"70% ಮೇಲೆ, 30% ಕೆಳಗೆ"</string>
     <string name="accessibility_action_divider_top_90" formatted="false" msgid="7662868544020662698">"90% ಮೇಲೆ, 10% ಕೆಳಗೆ"</string>
-    <string name="accessibility_action_divider_bottom_full" msgid="6437134983210745664">"ಕೆಳಗಿನ ಆ್ಯಪ್ ಅನ್ನು ಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಮಾಡಿ"</string>
+    <string name="accessibility_action_divider_bottom_full" msgid="6437134983210745664">"ಕೆಳಗಿನ ಆ್ಯಪ್ ಅನ್ನು ಫುಲ್ ಸ್ಕ್ರೀನ್ ಮಾಡಿ"</string>
     <string name="accessibility_split_left" msgid="1713683765575562458">"ಎಡಕ್ಕೆ ವಿಭಜಿಸಿ"</string>
     <string name="accessibility_split_right" msgid="8441001008181296837">"ಬಲಕ್ಕೆ ವಿಭಜಿಸಿ"</string>
     <string name="accessibility_split_top" msgid="2789329702027147146">"ಮೇಲಕ್ಕೆ ವಿಭಜಿಸಿ"</string>

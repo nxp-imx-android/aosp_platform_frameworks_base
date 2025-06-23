@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"এই অ্যাপ ১৬ কেবির সাথে মানানসই নয়। APK অ্যালাইনমেন্ট চেক করা যায়নি। এই অ্যাপ পৃষ্ঠার সাইজের সাথে মানানসই মোড ব্যবহার করে চলবে। সবচেয়ে ভালো মানানসই হিসেবে কাজ করার জন্য অ্যাপ্লিকেশনকে ১৬ কেবি সাপোর্টের সাথে আবার কম্পাইল করুন। আরও তথ্যের জন্য, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; দেখুন"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"এই অ্যাপ ১৬ কেবির সাথে মানানসই নয়। ELF অ্যালাইনমেন্ট চেক করা যায়নি। এই অ্যাপ পৃষ্ঠার সাইজের সাথে মানানসই মোড ব্যবহার করে চলবে। সবচেয়ে ভালো মানানসই হিসেবে কাজ করার জন্য অ্যাপ্লিকেশনকে ১৬ কেবি সাপোর্টের সাথে আবার কম্পাইল করুন। আরও তথ্যের জন্য, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; দেখুন"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"এই অ্যাপ ১৬ কেবির সাথে মানানসই নয়। APK ও ELF অ্যালাইনমেন্ট পরীক্ষা করা যায়নি। এই অ্যাপ পৃষ্ঠার সাইজের সাথে মানানসই মোড ব্যবহার করে চলবে। সবচেয়ে ভালো মানানসই হিসেবে কাজ করার জন্য অ্যাপ্লিকেশনকে ১৬ কেবি সাপোর্টের সাথে আবার কম্পাইল করুন। আরও তথ্যের জন্য, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; দেখুন"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"এই সতর্কতা দেখানো হচ্ছে কারণ এটি এমন একটি অ্যাপ যা ডিবাগ করা যাবে এবং বর্তমানে পরীক্ষা করা হচ্ছে। যদি আপনি ডেভেলপার না হন, তাহলে অনুগ্রহ করে ডেভেলপারকে এটি রিপোর্ট করুন এবং ডিবাগ করা যাবে না এমন একটি অ্যাপের জন্য অনুরোধ করুন। এই অ্যাপটি ১৬ কেবির সাথে মানানসই নয়। APK অ্যালাইনমেন্ট চেক করা যায়নি। &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; থেকে ধাপগুলি ফলো করুন"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"এই সতর্কতা দেখানো হচ্ছে কারণ এটি এমন একটি অ্যাপ যা ডিবাগ করা যাবে এবং বর্তমানে পরীক্ষা করা হচ্ছে। যদি আপনি ডেভেলপার না হন, তাহলে অনুগ্রহ করে ডেভেলপারকে এটি রিপোর্ট করুন এবং ডিবাগ করা যাবে না এমন একটি অ্যাপের জন্য অনুরোধ করুন। এই অ্যাপটি ১৬ কেবির সাথে মানানসই নয়। ELF অ্যালাইনমেন্ট চেক করা যায়নি। &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; থেকে ধাপগুলি ফলো করুন"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"এই সতর্কতা দেখানো হচ্ছে কারণ এটি এমন একটি অ্যাপ যা ডিবাগ করা যাবে এবং বর্তমানে পরীক্ষা করা হচ্ছে। যদি আপনি ডেভেলপার না হন, তাহলে অনুগ্রহ করে ডেভেলপারকে এটি রিপোর্ট করুন এবং ডিবাগ করা যাবে না এমন একটি অ্যাপের জন্য অনুরোধ করুন। এই অ্যাপটি ১৬ কেবির সাথে মানানসই নয়। APK ও ELF অ্যালাইনমেন্ট পরীক্ষা করা যায়নি। &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; থেকে ধাপগুলি ফলো করুন"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"আর দেখতে চাই না"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"পরিষেবা প্রস্তুত নয়৷"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"আপনি কলার আইডি এর সেটিংস পরিবর্তন করতে পারবেন না৷"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g>-এর ডেটা ব্যবহার করা হয়েছে"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"অ্যাপটিকে সরাসরি আপনার চারপাশের পরিবেশ সম্পর্কে সূক্ষ্ম বিবরণ সহ ট্র্যাকিং ডেটা অ্যাক্সেস করার অনুমতি দেয়।"</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"ফোরগ্রাউন্ডে না থাকাকালীন XR ডেটা অ্যাক্সেস করুন"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"অ্যাপটিকে ফোরগ্রাউন্ডে না থাকাকালীন XR ডেটা অ্যাক্সেস করার অনুমতি দেয়।"</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"\'কী\' ক্যাপচার করুন"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"এটি সিস্টেম শর্টকাট এবং অ্যাকশন প্রসেস করার আগে অ্যাপটিকে \'কী\' ক্যাপচার করার অনুমতি দেয়।"</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"বায়োমেট্রিক্স ব্যবহার করুন"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"বায়োমেট্রিক্স অথবা স্ক্রিন লক ব্যবহার করুন"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"আপনার পরিচয় যাচাই করুন"</string>
@@ -2568,29 +2562,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"অ্যাপ্লিকেশন"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"আপনার ফিঙ্গারপ্রিন্ট আর শনাক্ত করা যাবে না। \'ফিঙ্গারপ্রিন্ট আনলক\' ফিচার আবার সেট-আপ করুন।"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"নিরাপত্তা এবং গোপনীয়তা"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"প্রথমে আপনার স্ক্রিন আনলক করুন"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"স্ক্রিন আনলক &amp; আবার কানেক্ট করুন"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"USB ডেটা ট্রান্সফারের জন্য \'উন্নত সুরক্ষা\' সেটিংয়ের ক্ষেত্রে আপনাকে স্বাভাবিকভাবে স্ক্রিন আনলক করতে হবে"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"USB ডেটা ট্রান্সফারের জন্য \'উন্নত সুরক্ষা\' সেটিংয়ের ক্ষেত্রে আপনাকে স্বাভাবিকভাবে স্ক্রিন আনলক করতে হবে"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"USB ট্রান্সফার বা ফাস্ট চার্জিংয়ের জন্য \'উন্নত সুরক্ষা\' সেটিংয়ের ক্ষেত্রে আপনাকে স্বাভাবিকভাবে স্ক্রিন আনলক করতে হবে"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"USB ট্রান্সফার বা ফাস্ট চার্জিংয়ের জন্য \'উন্নত সুরক্ষা\' সেটিংয়ের ক্ষেত্রে আপনাকে স্বাভাবিকভাবে স্ক্রিন আনলক করতে হবে"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"USB ফাস্ট চার্জিংয়ের জন্য \'উন্নত সুরক্ষা\' সেটিংয়ের ক্ষেত্রে আপনাকে স্বাভাবিকভাবে স্ক্রিন আনলক করতে হবে"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"USB ফাস্ট চার্জিংয়ের জন্য \'উন্নত সুরক্ষা\' সেটিংয়ের ক্ষেত্রে আপনাকে স্বাভাবিকভাবে স্ক্রিন আনলক করতে হবে"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"সাইলেন্স"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"বিজ্ঞপ্তি মিউট করা হয়েছে"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"ডিভাইস রিস্টার্ট না করা পর্যন্ত \'উন্নত সুরক্ষা\' সেটিংয়ের ক্ষেত্রে USB সম্পর্কিত বিজ্ঞপ্তি মিউট করা থাকবে"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"সন্দেহজনক USB অ্যাক্টিভিটি"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ডেটা সিগন্যাল বন্ধ করা হয়েছে।"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"\'ফিঙ্গারপ্রিন্ট আনলক\' ফিচারে সমস্যা হচ্ছে?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"আপনার আনলক করার অভিজ্ঞতা উন্নত করতে রিভিউ সংক্রান্ত পরামর্শে ট্যাপ করুন"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>

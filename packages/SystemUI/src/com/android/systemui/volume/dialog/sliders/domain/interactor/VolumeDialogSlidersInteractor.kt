@@ -66,8 +66,10 @@ constructor(
                 sliderTypes.apply { addAll(newSliderTypes) }
             }
             .map { sliderTypes ->
+                val primarySlider = sliderTypes.firstOrNull()
+                primarySlider ?: return@map null
                 VolumeDialogSlidersModel(
-                    slider = sliderTypes.first(),
+                    slider = primarySlider,
                     floatingSliders = sliderTypes.drop(1),
                 )
             }

@@ -1,5 +1,3 @@
-set noparent
-
 # Bug component: 78010
 
 per-file {**/,}Android.bp = set noparent

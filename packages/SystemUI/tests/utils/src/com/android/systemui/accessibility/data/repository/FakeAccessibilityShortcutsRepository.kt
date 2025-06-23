@@ -17,26 +17,29 @@
 package com.android.systemui.accessibility.data.repository
 
 import android.hardware.input.KeyGestureEvent
-import com.android.systemui.accessibility.data.model.KeyGestureConfirmInfo
 
 class FakeAccessibilityShortcutsRepository : AccessibilityShortcutsRepository {
-    override suspend fun getKeyGestureConfirmInfoByType(
+    override suspend fun getTitleToContentForKeyGestureDialog(
         keyGestureType: Int,
         metaState: Int,
         keyCode: Int,
         targetName: String,
-    ): KeyGestureConfirmInfo? {
+    ): Pair<String, CharSequence>? {
         return when (keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
             KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,
             KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER -> {
                 // return a fake data
-                KeyGestureConfirmInfo("fakeTitle", "fakeContentText", targetName)
+                Pair("fakeTitle", "fakeContentText")
             }
 
             else -> null
         }
+    }
+
+    override fun getActionKeyIconResId(): Int {
+        return 0
     }
 
     override fun enableShortcutsForTargets(targetName: String) {}

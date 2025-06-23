@@ -26,42 +26,6 @@ import com.android.systemui.util.kotlin.pairwiseBy
 import kotlinx.coroutines.flow.Flow
 
 /**
- * An interface that enables logging the difference between values in table format.
- *
- * Many objects that we want to log are data-y objects with a collection of fields. When logging
- * these objects, we want to log each field separately. This allows ABT (Android Bug Tool) to easily
- * highlight changes in individual fields.
- *
- * See [TableLogBuffer].
- */
-interface Diffable<T> {
-    /**
-     * Finds the differences between [prevVal] and this object and logs those diffs to [row].
-     *
-     * Each implementer should determine which individual fields have changed between [prevVal] and
-     * this object, and only log the fields that have actually changed. This helps save buffer
-     * space.
-     *
-     * For example, if:
-     * - prevVal = Object(val1=100, val2=200, val3=300)
-     * - this = Object(val1=100, val2=200, val3=333)
-     *
-     * Then only the val3 change should be logged.
-     */
-    fun logDiffs(prevVal: T, row: TableRowLogger)
-
-    /**
-     * Logs all the relevant fields of this object to [row].
-     *
-     * As opposed to [logDiffs], this method should log *all* fields.
-     *
-     * Implementation is optional. This method will only be used with [logDiffsForTable] in order to
-     * fully log the initial value of the flow.
-     */
-    fun logFull(row: TableRowLogger) {}
-}
-
-/**
  * Each time the flow is updated with a new value, logs the differences between the previous value
  * and the new value to the given [tableLogBuffer].
  *

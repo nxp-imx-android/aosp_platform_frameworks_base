@@ -21,6 +21,7 @@ import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.graphics.Region
 import android.os.Binder
+import android.os.Trace
 import android.view.Display
 import android.view.MotionEvent
 import android.view.SurfaceControl
@@ -106,7 +107,10 @@ abstract class CaptionController<T>(
         startT: SurfaceControl.Transaction,
         finishT: SurfaceControl.Transaction,
         wct: WindowContainerTransaction,
-    ): CaptionRelayoutResult = traceSection("CaptionController#relayout") {
+    ): CaptionRelayoutResult = traceSection(
+        traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+        name = "CaptionController#relayout",
+    ) {
         taskInfo = params.runningTaskInfo
         hasGlobalFocus = params.hasGlobalFocus
         this.decorWindowContext = decorWindowContext
@@ -131,7 +135,10 @@ abstract class CaptionController<T>(
         val customizableCaptionRegion =
             updateCaptionInsets(params, decorWindowContext, wct, captionHeight, taskBounds)
 
-        traceSection("CaptionController#relayout-updateViewHost") {
+        traceSection(
+            traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+            name = "CaptionController#relayout-updateViewHost",
+        ) {
             viewHolder.setTopPadding(captionTopPadding)
             viewHolder.setTaskFocusState(params.hasGlobalFocus)
             val localCaptionBounds = Rect(
@@ -178,7 +185,10 @@ abstract class CaptionController<T>(
         captionHeight: Int,
         startT: SurfaceControl.Transaction,
         touchableRegion: Region?
-    ) = traceSection("CaptionController#updateViewHierarchy") {
+    ) = traceSection(
+        traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+        name = "CaptionController#updateViewHierarchy",
+    ) {
         val lp = WindowManager.LayoutParams(
             captionWidth,
             captionHeight,
@@ -476,7 +486,10 @@ abstract class CaptionController<T>(
     private fun getOrCreateViewHost(
         context: Context,
         display: Display
-    ): WindowDecorViewHost = traceSection("CaptionController#getOrCreateViewHost") {
+    ): WindowDecorViewHost = traceSection(
+        traceTag = Trace.TRACE_TAG_WINDOW_MANAGER,
+        name = "CaptionController#getOrCreateViewHost",
+    ) {
         val viewHost = captionViewHost ?: windowDecorViewHostSupplier.acquire(context, display)
         captionViewHost = viewHost
         return viewHost

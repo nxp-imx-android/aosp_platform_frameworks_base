@@ -41,8 +41,6 @@ import com.android.internal.dynamicanimation.animation.SpringAnimation
 import com.android.internal.dynamicanimation.animation.SpringForce
 import com.android.systemui.Flags
 import com.android.systemui.Flags.moveTransitionAnimationLayer
-import com.android.systemui.shared.Flags.returnAnimationFrameworkLibrary
-import com.android.systemui.shared.Flags.returnAnimationFrameworkLongLived
 import java.util.concurrent.Executor
 import kotlin.math.abs
 import kotlin.math.max
@@ -117,26 +115,6 @@ class TransitionAnimator(
                 1.0f,
             )
         }
-
-        fun assertReturnAnimations() {
-            check(returnAnimationsEnabled()) {
-                "isLaunching cannot be false when the returnAnimationFrameworkLibrary flag " +
-                    "is disabled"
-            }
-        }
-
-        fun returnAnimationsEnabled() = returnAnimationFrameworkLibrary()
-
-        fun assertLongLivedReturnAnimations() {
-            check(longLivedReturnAnimationsEnabled()) {
-                "Long-lived registrations cannot be used when the " +
-                    "returnAnimationFrameworkLibrary or the " +
-                    "returnAnimationFrameworkLongLived flag are disabled"
-            }
-        }
-
-        fun longLivedReturnAnimationsEnabled() =
-            returnAnimationFrameworkLibrary() && returnAnimationFrameworkLongLived()
 
         internal fun WindowAnimationState.toTransitionState() =
             State().also {
@@ -527,9 +505,6 @@ class TransitionAnimator(
         startVelocity: PointF? = null,
         startFrameTime: Long = -1,
     ): Animation {
-        if (!controller.isLaunching) assertReturnAnimations()
-        if (startVelocity != null) assertLongLivedReturnAnimations()
-
         // We add an extra layer with the same color as the dialog/app splash screen background
         // color, which is usually the same color of the app background. We first fade in this layer
         // to hide the expanding view, then we fade it out with SRC mode to draw a hole in the

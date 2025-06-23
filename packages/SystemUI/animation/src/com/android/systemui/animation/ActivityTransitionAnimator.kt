@@ -65,10 +65,6 @@ import com.android.systemui.Flags.animationLibraryDelayLeashCleanup
 import com.android.systemui.Flags.animationLibraryShellMigration
 import com.android.systemui.Flags.instantHideShade
 import com.android.systemui.Flags.moveTransitionAnimationLayer
-import com.android.systemui.animation.TransitionAnimator.Companion.assertLongLivedReturnAnimations
-import com.android.systemui.animation.TransitionAnimator.Companion.assertReturnAnimations
-import com.android.systemui.animation.TransitionAnimator.Companion.longLivedReturnAnimationsEnabled
-import com.android.systemui.animation.TransitionAnimator.Companion.returnAnimationsEnabled
 import com.android.systemui.animation.TransitionAnimator.Companion.toTransitionState
 import com.android.wm.shell.shared.IShellTransitions
 import com.android.wm.shell.shared.ShellTransitions
@@ -506,11 +502,7 @@ constructor(
             // If we expect an animation, post a timeout to cancel it in case the remote animation
             // is never started.
             if (willAnimate) {
-                if (longLivedReturnAnimationsEnabled()) {
-                    runner.postTimeouts()
-                } else {
-                    runnerDelegate!!.postTimeouts()
-                }
+                runner.postTimeouts()
 
                 // Hide the keyguard using the launch animation instead of the default unlock
                 // animation.
@@ -714,8 +706,6 @@ constructor(
         launchController: Controller,
         transitionRegister: TransitionRegister?,
     ) {
-        if (!returnAnimationsEnabled()) return
-
         var cleanUpRunnable: Runnable? = null
         val returnRunner =
             createEphemeralRunner(
@@ -806,7 +796,6 @@ constructor(
         scope: CoroutineScope,
         forLaunch: Boolean,
     ): Runner {
-        assertLongLivedReturnAnimations()
         return Runner(scope, callback!!, transitionAnimator, lifecycleListener) {
             controllerFactory.createController(forLaunch)
         }
@@ -1020,8 +1009,6 @@ constructor(
         controllerFactory: ControllerFactory,
         scope: CoroutineScope,
     ) {
-        assertLongLivedReturnAnimations()
-
         if (transitionRegister == null) {
             throw IllegalStateException(
                 "A RemoteTransitionRegister must be provided when creating this animator in " +
@@ -1371,10 +1358,6 @@ constructor(
     private inner class LegacyOriginTransition(private val runner: Runner) : IRemoteTransition {
         private val delegate = RemoteAnimationRunnerCompat.wrap(runner)
 
-        init {
-            assertLongLivedReturnAnimations()
-        }
-
         override fun startAnimation(
             token: IBinder?,
             info: TransitionInfo?,
@@ -1597,7 +1580,6 @@ constructor(
             startTransaction: SurfaceControl.Transaction,
             finishedCallback: IRemoteAnimationFinishedCallback?,
         ) {
-            assertLongLivedReturnAnimations()
             initAndRun(finishedCallback) { delegate ->
                 delegate.takeOverAnimation(
                     apps,
@@ -1811,19 +1793,17 @@ constructor(
 
             for ((index, it) in info.changes.withIndex()) {
                 if (targetModes.contains(it.mode)) {
-                    if (returnAnimationsEnabled()) {
-                        // If the controller contains a cookie, _only_ match if either the candidate
-                        // contains the matching cookie, or a component is also defined and is a
-                        // match.
-                        if (
-                            controller.transitionCookie != null &&
-                                it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
-                                    true &&
-                                (controller.component == null ||
-                                    it.taskInfo?.topActivity != controller.component)
-                        ) {
-                            continue
-                        }
+                    // If the controller contains a cookie, _only_ match if either the candidate
+                    // contains the matching cookie, or a component is also defined and is a
+                    // match.
+                    if (
+                        controller.transitionCookie != null &&
+                            it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
+                                true &&
+                            (controller.component == null ||
+                                it.taskInfo?.topActivity != controller.component)
+                    ) {
+                        continue
                     }
 
                     if (candidate == null) {
@@ -1948,19 +1928,17 @@ constructor(
 
             for ((index, it) in apps.withIndex()) {
                 if (it.mode == targetMode) {
-                    if (returnAnimationsEnabled()) {
-                        // If the controller contains a cookie, _only_ match if either the
-                        // candidate contains the matching cookie, or a component is also
-                        // defined and is a match.
-                        if (
-                            controller.transitionCookie != null &&
-                                it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
-                                    true &&
-                                (controller.component == null ||
-                                    it.taskInfo?.topActivity != controller.component)
-                        ) {
-                            continue
-                        }
+                    // If the controller contains a cookie, _only_ match if either the
+                    // candidate contains the matching cookie, or a component is also
+                    // defined and is a match.
+                    if (
+                        controller.transitionCookie != null &&
+                            it.taskInfo?.launchCookies?.contains(controller.transitionCookie) !=
+                                true &&
+                            (controller.component == null ||
+                                it.taskInfo?.topActivity != controller.component)
+                    ) {
+                        continue
                     }
 
                     if (
@@ -2116,12 +2094,6 @@ constructor(
             )
         }
 
-        init {
-            // We do this check here to cover all entry points, including Launcher which doesn't
-            // call startIntentWithAnimation()
-            if (!controller.isLaunching) assertReturnAnimations()
-        }
-
         @UiThread
         fun postTimeouts() {
             if (timeoutHandler != null) {
@@ -2145,7 +2117,7 @@ constructor(
         ) {
             val window = setUpAnimation(resolveAnimatedWindow, onAnimationFinished) ?: return
 
-            if (controller.windowAnimatorState == null || !longLivedReturnAnimationsEnabled()) {
+            if (controller.windowAnimatorState == null) {
                 startAnimation(
                     window,
                     startTransaction = startTransaction,
@@ -2271,21 +2243,7 @@ constructor(
             val controller =
                 object : Controller by delegate {
                     override fun createAnimatorState(): TransitionAnimator.State {
-                        if (isLaunching) {
-                            return delegate.createAnimatorState()
-                        } else if (!longLivedReturnAnimationsEnabled()) {
-                            return delegate.windowAnimatorState?.toTransitionState()
-                                ?: getWindowRadius(isExpandingFullyAbove).let {
-                                    TransitionAnimator.State(
-                                        top = windowBounds.top.roundToInt(),
-                                        bottom = windowBounds.bottom.roundToInt(),
-                                        left = windowBounds.left.roundToInt(),
-                                        right = windowBounds.right.roundToInt(),
-                                        topCornerRadius = it,
-                                        bottomCornerRadius = it,
-                                    )
-                                }
-                        }
+                        if (isLaunching) return delegate.createAnimatorState()
 
                         // TODO(b/323863002): use the timestamp and velocity to update the initial
                         //   position.
@@ -2449,7 +2407,7 @@ constructor(
                     }
                 }
             val velocityPxPerS =
-                if (longLivedReturnAnimationsEnabled() && windowState?.velocityPxPerMs != null) {
+                if (windowState?.velocityPxPerMs != null) {
                     val xVelocityPxPerS = windowState.velocityPxPerMs.x * 1000
                     val yVelocityPxPerS = windowState.velocityPxPerMs.y * 1000
                     PointF(xVelocityPxPerS, yVelocityPxPerS)

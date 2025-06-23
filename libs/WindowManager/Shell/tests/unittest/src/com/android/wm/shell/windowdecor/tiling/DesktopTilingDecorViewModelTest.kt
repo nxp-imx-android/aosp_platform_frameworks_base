@@ -273,7 +273,6 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
 
         desktopTilingDecorViewModel.onDisplayDisconnected(
             disconnectedDisplayId = 1,
-            desktopModeSupportedOnNewDisplay = true,
         )
 
         // Each tiling session should be reset.
@@ -285,18 +284,20 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
     @Test
     fun displayDisconnected_newDisplayDoesntSupportTiling_shouldPersistTilingData() {
         val decorationByDeskId = SparseArray<DesktopTilingWindowDecoration>()
+        val desktopTilingDecoration2: DesktopTilingWindowDecoration = mock()
         decorationByDeskId.put(1, desktopTilingDecoration)
-        decorationByDeskId.put(2, desktopTilingDecoration)
+        decorationByDeskId.put(2, desktopTilingDecoration2)
         whenever(desktopTilingDecoration.displayId).thenReturn(1)
+        whenever(desktopTilingDecoration2.displayId).thenReturn(1)
         desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDeskId)
 
         desktopTilingDecorViewModel.onDisplayDisconnected(
             disconnectedDisplayId = 1,
-            desktopModeSupportedOnNewDisplay = false,
         )
 
         // Each tiling session should be reset.
-        verify(desktopTilingDecoration, times(2)).resetTilingSession(false)
+        verify(desktopTilingDecoration, times(1)).resetTilingSession(true)
+        verify(desktopTilingDecoration2, times(1)).resetTilingSession(true)
     }
 
     @Test

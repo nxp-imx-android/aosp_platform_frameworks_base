@@ -261,6 +261,8 @@ private constructor(
         private val touchSlop = ViewConfiguration.get(mView.context).scaledTouchSlop
         private var initialTouchX = 0f
         private var initialTouchY = 0f
+        private var isIntercepting = false
+        private val cachedEvents = mutableListOf<MotionEvent>()
 
         override fun onInterceptTouchEvent(event: MotionEvent): Boolean {
             if (event.action == MotionEvent.ACTION_DOWN) {
@@ -274,16 +276,31 @@ private constructor(
 
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    isIntercepting = false
+                    clearCachedEvents()
                     initialTouchX = event.x
                     initialTouchY = event.y
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val dy = event.y - initialTouchY
                     if (dy > touchSlop) {
+                        if (!isIntercepting) {
+                            isIntercepting = true
+                            dispatchCachedEvents()
+                        }
                         windowRootView.get().dispatchTouchEvent(event)
                         return true
                     }
                 }
+                MotionEvent.ACTION_UP,
+                MotionEvent.ACTION_CANCEL -> {
+                    clearCachedEvents()
+                    isIntercepting = false
+                }
+            }
+
+            if (!isIntercepting) {
+                cacheEvent(event)
             }
             return false
         }
@@ -331,6 +348,20 @@ private constructor(
             }
 
             return shadeViewController.handleExternalTouch(event)
+        }
+
+        private fun cacheEvent(event: MotionEvent) {
+            cachedEvents.add(MotionEvent.obtain(event))
+        }
+
+        private fun dispatchCachedEvents() {
+            cachedEvents.forEach { windowRootView.get()?.dispatchTouchEvent(it) }
+            clearCachedEvents()
+        }
+
+        private fun clearCachedEvents() {
+            cachedEvents.forEach { it.recycle() }
+            cachedEvents.clear()
         }
     }
 

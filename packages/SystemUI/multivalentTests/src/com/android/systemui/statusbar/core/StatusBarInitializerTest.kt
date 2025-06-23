@@ -78,7 +78,7 @@ class StatusBarInitializerTest : SysuiTestCase() {
             collapsedStatusBarFragmentProvider = { mock(CollapsedStatusBarFragment::class.java) },
             statusBarRootFactory = mock(StatusBarRootFactory::class.java),
             componentFactory = mock(HomeStatusBarComponent.Factory::class.java),
-            creationListeners = setOf(),
+            lifecycleListeners = setOf(),
             statusBarModePerDisplayRepository = statusBarModePerDisplayRepository,
             darkIconDispatcher = kosmos.fakeDarkIconDispatcher,
             statusBarConfigurationController = kosmos.statusBarConfigurationController,

@@ -21,8 +21,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.UserHandle
 import androidx.annotation.VisibleForTesting
-import com.android.systemui.accessibility.data.model.KeyGestureConfirmInfo
+import com.android.internal.accessibility.common.KeyGestureEventConstants
 import com.android.systemui.accessibility.data.repository.AccessibilityShortcutsRepository
+import com.android.systemui.accessibility.keygesture.domain.model.KeyGestureConfirmInfo
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
@@ -59,20 +60,31 @@ constructor(
 
     private suspend fun processDialogRequest(intent: Intent): KeyGestureConfirmInfo? {
         return withContext(backgroundDispatcher) {
-            val keyGestureType = intent.getIntExtra(EXTRA_KEY_GESTURE_TYPE, 0)
-            val targetName = intent.getStringExtra(EXTRA_TARGET_NAME)
-            val metaState = intent.getIntExtra(EXTRA_META_STATE, 0)
-            val keyCode = intent.getIntExtra(EXTRA_KEY_CODE, 0)
+            val keyGestureType = intent.getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0)
+            val targetName = intent.getStringExtra(KeyGestureEventConstants.TARGET_NAME)
+            val metaState = intent.getIntExtra(KeyGestureEventConstants.META_STATE, 0)
+            val keyCode = intent.getIntExtra(KeyGestureEventConstants.KEY_CODE, 0)
 
             if (isInvalidDialogRequest(keyGestureType, metaState, keyCode, targetName)) {
                 null
             } else {
-                repository.getKeyGestureConfirmInfoByType(
-                    keyGestureType,
-                    metaState,
-                    keyCode,
-                    targetName as String,
-                )
+                val titleToContent =
+                    repository.getTitleToContentForKeyGestureDialog(
+                        keyGestureType,
+                        metaState,
+                        keyCode,
+                        targetName as String,
+                    )
+                if (titleToContent == null) {
+                    null
+                } else {
+                    KeyGestureConfirmInfo(
+                        titleToContent.first,
+                        titleToContent.second,
+                        targetName,
+                        repository.getActionKeyIconResId(),
+                    )
+                }
             }
         }
     }
@@ -89,9 +101,5 @@ constructor(
     companion object {
         @VisibleForTesting
         const val ACTION = "com.android.systemui.action.LAUNCH_KEY_GESTURE_CONFIRM_DIALOG"
-        @VisibleForTesting const val EXTRA_KEY_GESTURE_TYPE = "EXTRA_KEY_GESTURE_TYPE"
-        @VisibleForTesting const val EXTRA_META_STATE = "EXTRA_META_STATE"
-        @VisibleForTesting const val EXTRA_KEY_CODE = "EXTRA_KEY_CODE"
-        @VisibleForTesting const val EXTRA_TARGET_NAME = "EXTRA_TARGET_NAME"
     }
 }

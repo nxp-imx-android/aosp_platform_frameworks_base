@@ -31,11 +31,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static perfetto.protos.TracePacketOuterClass.TracePacket.SequenceFlags.SEQ_NEEDS_INCREMENTAL_STATE;
+
 import static java.io.File.createTempFile;
 
 import android.os.SystemClock;
 import android.platform.test.annotations.Presubmit;
 import android.tools.ScenarioBuilder;
+import android.tools.Tag;
+import android.tools.io.TraceType;
 import android.tools.traces.TraceConfig;
 import android.tools.traces.TraceConfigs;
 import android.tools.traces.io.ResultReader;
@@ -65,6 +69,7 @@ import org.mockito.stubbing.Answer;
 
 import perfetto.protos.Protolog;
 import perfetto.protos.ProtologCommon;
+import perfetto.protos.TraceOuterClass.Trace;
 
 import java.io.File;
 import java.io.IOException;
@@ -154,6 +159,13 @@ public class ProcessedPerfettoProtoLogImplTest {
                                 .setLevel(ProtologCommon.ProtoLogLevel.PROTOLOG_LEVEL_WTF)
                                 .setGroupId(1)
                                 .setLocation("com/test/MyTestClass.java:192")
+                ).addMessages(
+                        Protolog.ProtoLogViewerConfig.MessageData.newBuilder()
+                                .setMessageId(6)
+                                .setMessage("My Test String Arg Message %s")
+                                .setLevel(ProtologCommon.ProtoLogLevel.PROTOLOG_LEVEL_DEBUG)
+                                .setGroupId(1)
+                                .setLocation("com/test/MyTestClass.java:193")
                 );
 
         ViewerConfigInputStreamProvider viewerConfigInputStreamProvider = Mockito.mock(
@@ -1216,6 +1228,73 @@ public class ProcessedPerfettoProtoLogImplTest {
         final String expectedLoggedMessage = String.format(logMessageFormat, initialValue);
         Truth.assertThat(protologTrace.messages.getFirst().getMessage())
                 .isEqualTo(expectedLoggedMessage);
+    }
+
+    @Test
+    public void incrementalStateFlagSetForStackTrace() throws IOException {
+        PerfettoTraceMonitor traceMonitor = PerfettoTraceMonitor.newBuilder()
+                .enableProtoLog(
+                        true,
+                        List.of(new PerfettoTraceMonitor.Builder.ProtoLogGroupOverride(
+                                TestProtoLogGroup.TEST_GROUP.toString(), LogLevel.DEBUG,
+                                true)), // enable stacktrace
+                        TEST_PROTOLOG_DATASOURCE_NAME
+                ).build();
+        try {
+            traceMonitor.start();
+
+            // Log a message with a stacktrace but no string arguments. The stacktrace is the only
+            // interned data.
+            sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP, 1,
+                    LogDataType.BOOLEAN, new Object[]{true});
+        } finally {
+            traceMonitor.stop(mWriter);
+        }
+
+        final ResultReader reader = new ResultReader(mWriter.write(), mTraceConfig);
+        final var traceBytes = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
+        final var trace = Trace.parseFrom(traceBytes);
+        final var protoLogMessagePackets = trace.getPacketList().stream()
+                .filter(it -> it.hasProtologMessage()
+                        && it.getProtologMessage().getMessageId() == 1)
+                .toList();
+
+        Truth.assertThat(protoLogMessagePackets).hasSize(1);
+        final var sequenceFlag = protoLogMessagePackets.getFirst().getSequenceFlags();
+        final var incrementalStateFlag = SEQ_NEEDS_INCREMENTAL_STATE.getNumber();
+        Truth.assertWithMessage("SEQ_NEEDS_INCREMENTAL_STATE flag should be set")
+                .that(sequenceFlag & incrementalStateFlag).isEqualTo(incrementalStateFlag);
+    }
+
+    @Test
+    public void incrementalStateFlagSetForStringArg() throws IOException {
+        PerfettoTraceMonitor traceMonitor = PerfettoTraceMonitor.newBuilder()
+                .enableProtoLog(true, List.of(), TEST_PROTOLOG_DATASOURCE_NAME)
+                .build();
+        try {
+            traceMonitor.start();
+
+            // Log a message with a string argument. The argument is the only
+            // interned data.
+            sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP, 6,
+                    LogDataType.STRING, new Object[]{"test_string"});
+        } finally {
+            traceMonitor.stop(mWriter);
+        }
+
+        final ResultReader reader = new ResultReader(mWriter.write(), mTraceConfig);
+        final var traceBytes = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
+        final var trace = Trace.parseFrom(traceBytes);
+        final var protoLogMessagePackets = trace.getPacketList().stream()
+                .filter(it -> it.hasProtologMessage()
+                        && it.getProtologMessage().getMessageId() == 6)
+                .toList();
+
+        Truth.assertThat(protoLogMessagePackets).hasSize(1);
+        final var sequenceFlag = protoLogMessagePackets.getFirst().getSequenceFlags();
+        final var incrementalStateFlag = SEQ_NEEDS_INCREMENTAL_STATE.getNumber();
+        Truth.assertWithMessage("SEQ_NEEDS_INCREMENTAL_STATE flag should be set")
+                .that(sequenceFlag & incrementalStateFlag).isEqualTo(incrementalStateFlag);
     }
 
     private enum TestProtoLogGroup implements IProtoLogGroup {

@@ -47,7 +47,7 @@
     <string name="accessibility_action_divider_left_90" formatted="false" msgid="3525922058426249817">"90% links, 10% rechts"</string>
     <string name="accessibility_action_divider_right_full" msgid="4162106720432709858">"App aan rechterkant op volledig scherm zetten"</string>
     <string name="accessibility_action_divider_swap_vertical" msgid="8673406394251984853">"Apps bovenaan en onderaan omwisselen, huidige splitsing behouden"</string>
-    <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"Apps links en rechts omwisselen, huidige splitsing behouden"</string>
+    <string name="accessibility_action_divider_swap_horizontal" msgid="588604748596242580">"De app links en de app rechts omwisselen, huidige splitsing behouden"</string>
     <string name="accessibility_action_divider_top_full" msgid="3986693999427747701">"Bovenste app op volledig scherm zetten"</string>
     <string name="accessibility_action_divider_top_10" formatted="false" msgid="6898920573675831044">"10% boven, 90% onder"</string>
     <string name="accessibility_action_divider_top_30" formatted="false" msgid="6515643651303176050">"30% boven, 70% onder"</string>

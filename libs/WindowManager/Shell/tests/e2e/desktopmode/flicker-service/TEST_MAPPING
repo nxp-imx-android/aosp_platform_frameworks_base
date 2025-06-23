@@ -1,9 +1,6 @@
 {
   "wm": [
     {
-      "name": "WMShellFlickerTestsDesktopMode-CatchAll"
-    },
-    {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-CloseAllAppsViaAppHeaderExitTest"
     },
     {

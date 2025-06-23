@@ -77,6 +77,10 @@ constructor(
         )
     }
 
+    override suspend fun onDisplayRemovalAction(instance: StatusBarInitializer) {
+        instance.stop()
+    }
+
     override val instanceClass = StatusBarInitializer::class.java
 }
 

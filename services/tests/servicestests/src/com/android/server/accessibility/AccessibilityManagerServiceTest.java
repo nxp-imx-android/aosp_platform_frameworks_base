@@ -40,6 +40,7 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType.SOFTWARE;
 import static com.android.internal.accessibility.dialog.AccessibilityButtonChooserActivity.EXTRA_TYPE_TO_CHOOSE;
 import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_HEARING_DEVICES_DIALOG;
+import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG;
 import static com.android.server.accessibility.Flags.FLAG_ENABLE_MAGNIFICATION_KEYBOARD_CONTROL;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -116,6 +117,7 @@ import android.util.ArraySet;
 import android.view.Display;
 import android.view.DisplayAdjustments;
 import android.view.DisplayInfo;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityWindowAttributes;
@@ -129,6 +131,7 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.compatibility.common.util.TestUtils;
 import com.android.internal.R;
 import com.android.internal.accessibility.AccessibilityShortcutController;
+import com.android.internal.accessibility.common.KeyGestureEventConstants;
 import com.android.internal.accessibility.common.ShortcutConstants;
 import com.android.internal.accessibility.common.ShortcutConstants.FloatingMenuSize;
 import com.android.internal.accessibility.common.ShortcutConstants.UserShortcutType;
@@ -2102,20 +2105,22 @@ public class AccessibilityManagerServiceTest {
         assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,
                 mA11yms.getCurrentUserIdLocked())).isEmpty();
 
-        mA11yms.handleKeyGestureEvent(new KeyGestureEvent.Builder().setKeyGestureType(
-                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION).setAction(
-                        KeyGestureEvent.ACTION_GESTURE_COMPLETE).build());
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION,
+                KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                KeyEvent.KEYCODE_M);
 
-        assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,
-                mA11yms.getCurrentUserIdLocked())).containsExactly(MAGNIFICATION_CONTROLLER_NAME);
-
-        // The magnifier will only be toggled on the second event received since the first is
-        // used to toggle the feature on.
-        mA11yms.handleKeyGestureEvent(new KeyGestureEvent.Builder().setKeyGestureType(
-                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION).setAction(
-                KeyGestureEvent.ACTION_GESTURE_COMPLETE).build());
-
-        verify(mInputFilter).notifyMagnificationShortcutTriggered(anyInt());
+        // Send the expetced broadcast for launching the system ui dialog
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mTestableContext.getMockContext())
+                .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.SYSTEM));
+        assertThat(intentCaptor.getValue().getAction())
+                .isEqualTo(ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG);
+        assertThat(
+                        intentCaptor
+                                .getValue()
+                                .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
+                .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MAGNIFICATION);
     }
 
     @Test
@@ -2139,13 +2144,22 @@ public class AccessibilityManagerServiceTest {
         assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,
                 mA11yms.getCurrentUserIdLocked())).isEmpty();
 
-        mA11yms.handleKeyGestureEvent(new KeyGestureEvent.Builder().setKeyGestureType(
-                KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK).setAction(
-                KeyGestureEvent.ACTION_GESTURE_COMPLETE).build());
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK,
+                KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                KeyEvent.KEYCODE_S);
 
-        assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,
-                mA11yms.getCurrentUserIdLocked())).containsExactly(
-                trustedService.getComponentName().flattenToString());
+        // Send the expetced broadcast for launching the system ui dialog
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mTestableContext.getMockContext())
+                .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.SYSTEM));
+        assertThat(intentCaptor.getValue().getAction())
+                .isEqualTo(ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG);
+        assertThat(
+                        intentCaptor
+                                .getValue()
+                                .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
+                .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_ACTIVATE_SELECT_TO_SPEAK);
     }
 
     @Test
@@ -2279,13 +2293,22 @@ public class AccessibilityManagerServiceTest {
         assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,
                 mA11yms.getCurrentUserIdLocked())).isEmpty();
 
-        mA11yms.handleKeyGestureEvent(new KeyGestureEvent.Builder().setKeyGestureType(
-                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS).setAction(
-                KeyGestureEvent.ACTION_GESTURE_COMPLETE).build());
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS,
+                KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                KeyEvent.KEYCODE_V);
 
-        assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,
-                mA11yms.getCurrentUserIdLocked())).containsExactly(
-                trustedService.getComponentName().flattenToString());
+        // Send the expetced broadcast for launching the system ui dialog
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mTestableContext.getMockContext())
+                .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.SYSTEM));
+        assertThat(intentCaptor.getValue().getAction())
+                .isEqualTo(ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG);
+        assertThat(
+                        intentCaptor
+                                .getValue()
+                                .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
+                .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_VOICE_ACCESS);
     }
 
     @Test
@@ -2309,13 +2332,22 @@ public class AccessibilityManagerServiceTest {
         assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,
                 mA11yms.getCurrentUserIdLocked())).isEmpty();
 
-        mA11yms.handleKeyGestureEvent(new KeyGestureEvent.Builder().setKeyGestureType(
-                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER).setAction(
-                KeyGestureEvent.ACTION_GESTURE_COMPLETE).build());
+        sendKeyGestureEventComplete(
+                KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER,
+                KeyEvent.META_META_ON | KeyEvent.META_ALT_ON,
+                KeyEvent.KEYCODE_T);
 
-        assertThat(ShortcutUtils.getShortcutTargetsFromSettings(mTestableContext, KEY_GESTURE,
-                mA11yms.getCurrentUserIdLocked())).containsExactly(
-                trustedService.getComponentName().flattenToString());
+        // Send the expetced broadcast for launching the system ui dialog
+        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
+        verify(mTestableContext.getMockContext())
+                .sendBroadcastAsUser(intentCaptor.capture(), eq(UserHandle.SYSTEM));
+        assertThat(intentCaptor.getValue().getAction())
+                .isEqualTo(ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG);
+        assertThat(
+                        intentCaptor
+                                .getValue()
+                                .getIntExtra(KeyGestureEventConstants.KEY_GESTURE_TYPE, 0))
+                .isEqualTo(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER);
     }
 
     @Test
@@ -2504,6 +2536,16 @@ public class AccessibilityManagerServiceTest {
                 .putExtra(Intent.EXTRA_SETTING_NEW_VALUE, newValue);
         sendBroadcastToAccessibilityManagerService(intent, userId);
         mTestableLooper.processAllMessages();
+    }
+
+    private void sendKeyGestureEventComplete(int gestureType, int modifierState, int keyCode) {
+        mA11yms.handleKeyGestureEvent(
+                new KeyGestureEvent.Builder()
+                        .setKeyGestureType(gestureType)
+                        .setModifierState(modifierState)
+                        .setKeycodes(new int[] {keyCode})
+                        .setAction(KeyGestureEvent.ACTION_GESTURE_COMPLETE)
+                        .build());
     }
 
     private static AccessibilityServiceInfo mockAccessibilityServiceInfo(

@@ -5773,10 +5773,8 @@ public final class DisplayManagerService extends SystemService {
             return ddc.getDefaultDozeBrightness();
         }
 
-        @EnforcePermission(MANAGE_DISPLAYS)
         @Override // Binder call
         public DisplayTopology getDisplayTopology() {
-            getDisplayTopology_enforcePermission();
             if (mDisplayTopologyCoordinator == null) {
                 return null;
             }

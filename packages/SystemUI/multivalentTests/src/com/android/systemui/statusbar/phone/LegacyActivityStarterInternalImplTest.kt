@@ -23,8 +23,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.RemoteException
 import android.os.UserHandle
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.view.View
 import android.widget.FrameLayout
 import android.window.SplashScreen.SPLASH_SCREEN_STYLE_SOLID_COLOR
@@ -48,7 +46,6 @@ import com.android.systemui.shade.data.repository.FakeShadeRepository
 import com.android.systemui.shade.data.repository.ShadeAnimationRepository
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractorLegacyImpl
 import com.android.systemui.shade.domain.interactor.ShadeDialogContextInteractor
-import com.android.systemui.shared.Flags as SharedFlags
 import com.android.systemui.statusbar.CommandQueue
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
 import com.android.systemui.statusbar.NotificationShadeWindowController
@@ -65,7 +62,6 @@ import com.google.common.truth.Truth.assertThat
 import java.util.Optional
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -153,10 +149,6 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         `when`(shadeDialogContextInteractor.context).thenReturn(context)
     }
 
-    @EnableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
     @Test
     fun registerTransition_registers() {
         with(kosmos) {
@@ -173,31 +165,6 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         }
     }
 
-    @DisableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
-    @Test
-    fun registerTransition_throws_whenFlagsAreDisabled() {
-        with(kosmos) {
-            testScope.runTest {
-                val cookie = mock(ActivityTransitionAnimator.TransitionCookie::class.java)
-                val controllerFactory =
-                    mock(ActivityTransitionAnimator.ControllerFactory::class.java)
-
-                assertThrows(IllegalStateException::class.java) {
-                    underTest.registerTransition(cookie, controllerFactory, testScope)
-                }
-
-                verify(activityTransitionAnimator, never()).register(any(), any(), any())
-            }
-        }
-    }
-
-    @EnableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
     @Test
     fun unregisterTransition_unregisters() {
         val cookie = mock(ActivityTransitionAnimator.TransitionCookie::class.java)
@@ -205,19 +172,6 @@ class LegacyActivityStarterInternalImplTest : SysuiTestCase() {
         underTest.unregisterTransition(cookie)
 
         verify(activityTransitionAnimator).unregister(eq(cookie))
-    }
-
-    @DisableFlags(
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LIBRARY,
-        SharedFlags.FLAG_RETURN_ANIMATION_FRAMEWORK_LONG_LIVED,
-    )
-    @Test
-    fun unregisterTransition_throws_whenFlagsAreDisabled() {
-        val cookie = mock(ActivityTransitionAnimator.TransitionCookie::class.java)
-
-        assertThrows(IllegalStateException::class.java) { underTest.unregisterTransition(cookie) }
-
-        verify(activityTransitionAnimator, never()).unregister(eq(cookie))
     }
 
     @Test

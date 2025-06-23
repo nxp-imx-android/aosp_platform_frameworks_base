@@ -106,6 +106,18 @@ constructor(
                 .map { 0f },
         )
 
+    /**
+     * Emit 0f to prevent overlap with non-keyguard status bars. Sending -1f onFinish indicates a
+     * reset.
+     */
+    val statusBarAlpha: Flow<Float> =
+        transitionAnimation.sharedFlow(
+            duration = TO_LOCKSCREEN_DURATION,
+            onStep = { 0f },
+            onCancel = { -1f },
+            onFinish = { -1f },
+        )
+
     val deviceEntryBackgroundViewAlpha: Flow<Float> =
         transitionAnimation.immediatelyTransitionTo(1f)
 

@@ -45,7 +45,7 @@ import kotlinx.coroutines.sync.withLock
  *
  * Useful for code that needs to compare the current value to the previous value.
  */
-fun <T, R> Flow<T>.pairwiseBy(transform: suspend (old: T, new: T) -> R): Flow<R> = flow {
+public fun <T, R> Flow<T>.pairwiseBy(transform: suspend (old: T, new: T) -> R): Flow<R> = flow {
     val noVal = Any()
     var previousValue: Any? = noVal
     collect { newVal ->
@@ -62,7 +62,7 @@ fun <T, R> Flow<T>.pairwiseBy(transform: suspend (old: T, new: T) -> R): Flow<R>
  *
  * Useful for code that needs to compare the current value to the previous value.
  */
-fun <S, T : S, R> Flow<T>.pairwiseBy(
+public fun <S, T : S, R> Flow<T>.pairwiseBy(
     initialValue: S,
     transform: suspend (previousValue: S, newValue: T) -> R,
 ): Flow<R> = pairwiseBy(getInitialValue = { initialValue }, transform)
@@ -76,7 +76,7 @@ fun <S, T : S, R> Flow<T>.pairwiseBy(
  *
  * Useful for code that needs to compare the current value to the previous value.
  */
-fun <S, T : S, R> Flow<T>.pairwiseBy(
+public fun <S, T : S, R> Flow<T>.pairwiseBy(
     getInitialValue: suspend () -> S,
     transform: suspend (previousValue: S, newValue: T) -> R,
 ): Flow<R> = flow {
@@ -93,7 +93,7 @@ fun <S, T : S, R> Flow<T>.pairwiseBy(
  *
  * Useful for code that needs to compare the current value to the previous value.
  */
-fun <T> Flow<T>.pairwise(): Flow<WithPrev<T, T>> = pairwiseBy(::WithPrev)
+public fun <T> Flow<T>.pairwise(): Flow<WithPrev<T, T>> = pairwiseBy(::WithPrev)
 
 /**
  * Returns a new [Flow] that produces the two most recent emissions from [this]. [initialValue] will
@@ -101,14 +101,14 @@ fun <T> Flow<T>.pairwise(): Flow<WithPrev<T, T>> = pairwiseBy(::WithPrev)
  *
  * Useful for code that needs to compare the current value to the previous value.
  */
-fun <S, T : S> Flow<T>.pairwise(initialValue: S): Flow<WithPrev<S, T>> =
+public fun <S, T : S> Flow<T>.pairwise(initialValue: S): Flow<WithPrev<S, T>> =
     pairwiseBy(initialValue, ::WithPrev)
 
 /** Holds a [newValue] emitted from a [Flow], along with the [previousValue] emitted value. */
-data class WithPrev<out S, out T : S>(val previousValue: S, val newValue: T)
+public data class WithPrev<out S, out T : S>(val previousValue: S, val newValue: T)
 
 /** Emits a [Unit] only when the number of downstream subscribers of this flow increases. */
-fun <T> MutableSharedFlow<T>.onSubscriberAdded(): Flow<Unit> {
+public fun <T> MutableSharedFlow<T>.onSubscriberAdded(): Flow<Unit> {
     return subscriptionCount
         .pairwise(initialValue = 0)
         .filter { (previous, current) -> current > previous }
@@ -126,7 +126,7 @@ fun <T> MutableSharedFlow<T>.onSubscriberAdded(): Flow<Unit> {
  * If [emitFirstEvent] is `false`, then the first emission is ignored and no changes are emitted
  * until a second [Set] has been emitted from the upstream [Flow].
  */
-fun <T, R> Flow<Set<T>>.setChangesBy(
+public fun <T, R> Flow<Set<T>>.setChangesBy(
     transform: suspend (removed: Set<T>, added: Set<T>) -> R,
     emitFirstEvent: Boolean = true,
 ): Flow<R> =
@@ -150,11 +150,11 @@ fun <T, R> Flow<Set<T>>.setChangesBy(
  * If [emitFirstEvent] is `false`, then the first emission is ignored and no changes are emitted
  * until a second [Set] has been emitted from the upstream [Flow].
  */
-fun <T> Flow<Set<T>>.setChanges(emitFirstEvent: Boolean = true): Flow<SetChanges<T>> =
+public fun <T> Flow<Set<T>>.setChanges(emitFirstEvent: Boolean = true): Flow<SetChanges<T>> =
     setChangesBy(::SetChanges, emitFirstEvent)
 
 /** Contains the difference in elements between two [Set]s. */
-data class SetChanges<T>(
+public data class SetChanges<T>(
     /** Elements that are present in the first [Set] but not in the second. */
     val removed: Set<T>,
     /** Elements that are present in the second [Set] but not in the first. */
@@ -167,20 +167,22 @@ data class SetChanges<T>(
  *
  * Note that the returned Flow will not emit anything until [other] has emitted at least one value.
  */
-fun <A, B, C> Flow<A>.sample(other: Flow<B>, transform: suspend (A, B) -> C): Flow<C> = flow {
-    coroutineScope {
-        val noVal = Any()
-        val sampledRef = AtomicReference(noVal)
-        val job = launch(context = Dispatchers.Unconfined) { other.collect { sampledRef.set(it) } }
-        collect {
-            val sampled = sampledRef.get()
-            if (sampled != noVal) {
-                @Suppress("UNCHECKED_CAST") emit(transform(it, sampled as B))
+public fun <A, B, C> Flow<A>.sample(other: Flow<B>, transform: suspend (A, B) -> C): Flow<C> =
+    flow {
+        coroutineScope {
+            val noVal = Any()
+            val sampledRef = AtomicReference(noVal)
+            val job =
+                launch(context = Dispatchers.Unconfined) { other.collect { sampledRef.set(it) } }
+            collect {
+                val sampled = sampledRef.get()
+                if (sampled != noVal) {
+                    @Suppress("UNCHECKED_CAST") emit(transform(it, sampled as B))
+                }
             }
+            job.cancel()
         }
-        job.cancel()
     }
-}
 
 /**
  * Returns a new [Flow] that emits at the same rate as [this], but emits the most recently emitted
@@ -188,7 +190,7 @@ fun <A, B, C> Flow<A>.sample(other: Flow<B>, transform: suspend (A, B) -> C): Fl
  *
  * Note that the returned Flow will not emit anything until [other] has emitted at least one value.
  */
-fun <A> Flow<*>.sample(other: Flow<A>): Flow<A> = sample(other) { _, a -> a }
+public fun <A> Flow<*>.sample(other: Flow<A>): Flow<A> = sample(other) { _, a -> a }
 
 /**
  * Returns a flow that mirrors the original flow, but delays values following emitted values for the
@@ -216,7 +218,7 @@ fun <A> Flow<*>.sample(other: Flow<A>): Flow<A> = sample(other) { _, a -> a }
  * 1 (t=0ms), 3 (t=1000ms), 4 (t=2000ms), 5 (t=3000ms)
  * ```
  */
-fun <T> Flow<T>.throttle(periodMs: Long, clock: SystemClock): Flow<T> = channelFlow {
+public fun <T> Flow<T>.throttle(periodMs: Long, clock: SystemClock): Flow<T> = channelFlow {
     coroutineScope {
         var previousEmitTimeMs = 0L
         var delayJob: Job? = null
@@ -247,7 +249,7 @@ fun <T> Flow<T>.throttle(periodMs: Long, clock: SystemClock): Flow<T> = channelF
     }
 }
 
-inline fun <T1, T2, T3, T4, T5, T6, R> combine(
+public inline fun <T1, T2, T3, T4, T5, T6, R> combine(
     flow: Flow<T1>,
     flow2: Flow<T2>,
     flow3: Flow<T3>,
@@ -270,7 +272,7 @@ inline fun <T1, T2, T3, T4, T5, T6, R> combine(
     }
 }
 
-inline fun <T1, T2, T3, T4, T5, T6, T7, R> combine(
+public inline fun <T1, T2, T3, T4, T5, T6, T7, R> combine(
     flow: Flow<T1>,
     flow2: Flow<T2>,
     flow3: Flow<T3>,
@@ -295,7 +297,7 @@ inline fun <T1, T2, T3, T4, T5, T6, T7, R> combine(
     }
 }
 
-inline fun <T1, T2, T3, T4, T5, T6, T7, T8, R> combine(
+public inline fun <T1, T2, T3, T4, T5, T6, T7, T8, R> combine(
     flow: Flow<T1>,
     flow2: Flow<T2>,
     flow3: Flow<T3>,
@@ -322,7 +324,7 @@ inline fun <T1, T2, T3, T4, T5, T6, T7, T8, R> combine(
     }
 }
 
-inline fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, R> combine(
+public inline fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, R> combine(
     flow: Flow<T1>,
     flow2: Flow<T2>,
     flow3: Flow<T3>,
@@ -365,7 +367,7 @@ inline fun <T1, T2, T3, T4, T5, T6, T7, T8, T9, R> combine(
  * [Flow] as normal.
  */
 @Suppress("NOTHING_TO_INLINE")
-inline fun Flow<Unit>.emitOnStart(): Flow<Unit> = onStart { emit(Unit) }
+public inline fun Flow<Unit>.emitOnStart(): Flow<Unit> = onStart { emit(Unit) }
 
 /**
  * Transforms a Flow<T> into a Flow<List<T>> by implementing a sliding window algorithm.
@@ -382,7 +384,7 @@ inline fun Flow<Unit>.emitOnStart(): Flow<Unit> = onStart { emit(Unit) }
  * @param windowDuration The duration of the sliding window.
  * @return A Flow that emits Lists of elements within the current sliding window.
  */
-fun <T> Flow<T>.slidingWindow(windowDuration: Duration, clock: SystemClock): Flow<List<T>> =
+public fun <T> Flow<T>.slidingWindow(windowDuration: Duration, clock: SystemClock): Flow<List<T>> =
     channelFlow {
         require(windowDuration.isPositive()) { "Window duration must be positive" }
 

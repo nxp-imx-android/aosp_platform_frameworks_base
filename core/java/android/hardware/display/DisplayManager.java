@@ -601,7 +601,8 @@ public final class DisplayManager {
             EVENT_TYPE_DISPLAY_CHANGED,
             EVENT_TYPE_DISPLAY_REMOVED,
             EVENT_TYPE_DISPLAY_REFRESH_RATE,
-            EVENT_TYPE_DISPLAY_STATE
+            EVENT_TYPE_DISPLAY_STATE,
+            EVENT_TYPE_DISPLAY_BRIGHTNESS
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface EventType {}
@@ -610,7 +611,6 @@ public final class DisplayManager {
      * @hide
      */
     @LongDef(flag = true, prefix = {"PRIVATE_EVENT_TYPE_"}, value = {
-            PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS,
             PRIVATE_EVENT_TYPE_HDR_SDR_RATIO_CHANGED,
             PRIVATE_EVENT_TYPE_DISPLAY_CONNECTION_CHANGED,
             PRIVATE_EVENT_TYPE_DISPLAY_COMMITTED_STATE_CHANGED
@@ -679,11 +679,10 @@ public final class DisplayManager {
      * through the {@link DisplayListener#onDisplayChanged} callback method. New brightness
      * values can be retrieved via {@link android.view.Display#getBrightnessInfo()}.
      *
-     * @see #registerDisplayListener(DisplayListener, Handler, long, long)
-     *
-     * @hide
+     * @see #registerDisplayListener(Executor, long, DisplayListener)
      */
-    public static final long PRIVATE_EVENT_TYPE_DISPLAY_BRIGHTNESS = 1L << 0;
+    @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
+    public static final long EVENT_TYPE_DISPLAY_BRIGHTNESS = 1L << 5;
 
     /**
      * Event type to register for a display's hdr/sdr ratio changes. This notification is sent
@@ -696,7 +695,7 @@ public final class DisplayManager {
      *
      * @hide
      */
-    public static final long PRIVATE_EVENT_TYPE_HDR_SDR_RATIO_CHANGED = 1L << 1;
+    public static final long PRIVATE_EVENT_TYPE_HDR_SDR_RATIO_CHANGED = 1L << 0;
 
     /**
      * Event type to register for a display's connection changed.
@@ -704,7 +703,7 @@ public final class DisplayManager {
      * @see #registerDisplayListener(DisplayListener, Handler, long, long)
      * @hide
      */
-    public static final long PRIVATE_EVENT_TYPE_DISPLAY_CONNECTION_CHANGED = 1L << 2;
+    public static final long PRIVATE_EVENT_TYPE_DISPLAY_CONNECTION_CHANGED = 1L << 1;
 
     /**
      * Event type to register for a display's committed state changes.
@@ -712,7 +711,7 @@ public final class DisplayManager {
      * @see #registerDisplayListener(DisplayListener, Handler, long, long)
      * @hide
      */
-    public static final long PRIVATE_EVENT_TYPE_DISPLAY_COMMITTED_STATE_CHANGED = 1L << 3;
+    public static final long PRIVATE_EVENT_TYPE_DISPLAY_COMMITTED_STATE_CHANGED = 1L << 2;
 
     /**
      * Brightness value type where the value is in the range [0, 100] and when set, the brightness
@@ -1995,7 +1994,6 @@ public final class DisplayManager {
      * @return The current display topology that represents the relative positions of extended
      * displays.
      */
-    @RequiresPermission(MANAGE_DISPLAYS)
     @Nullable
     @FlaggedApi(Flags.FLAG_DISPLAY_TOPOLOGY_API)
     public DisplayTopology getDisplayTopology() {
@@ -2018,7 +2016,6 @@ public final class DisplayManager {
      * @param executor The executor specifying the thread on which the callbacks will be invoked
      * @param listener The listener
      */
-    @RequiresPermission(MANAGE_DISPLAYS)
     @FlaggedApi(Flags.FLAG_DISPLAY_TOPOLOGY_API)
     public void registerTopologyListener(@NonNull @CallbackExecutor Executor executor,
             @NonNull Consumer<DisplayTopology> listener) {
@@ -2029,7 +2026,6 @@ public final class DisplayManager {
      * Unregister a display topology listener.
      * @param listener The listener to unregister
      */
-    @RequiresPermission(MANAGE_DISPLAYS)
     @FlaggedApi(Flags.FLAG_DISPLAY_TOPOLOGY_API)
     public void unregisterTopologyListener(@NonNull Consumer<DisplayTopology> listener) {
         mGlobal.unregisterTopologyListener(listener);

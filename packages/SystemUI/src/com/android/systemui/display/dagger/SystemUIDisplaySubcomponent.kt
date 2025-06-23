@@ -16,12 +16,10 @@
 
 package com.android.systemui.display.dagger
 
-import com.android.systemui.common.ui.ConfigurationState
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.data.repository.DisplayStateRepository
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
-import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import dagger.BindsInstance
 import dagger.Subcomponent
 import javax.inject.Qualifier
@@ -50,10 +48,6 @@ interface SystemUIDisplaySubcomponent {
     @get:DisplayAware val statusBarIconRefreshInteractor: StatusBarIconRefreshInteractor
 
     @get:DisplayAware val lifecycleListeners: Set<LifecycleListener>
-
-    @get:DisplayAware val systemBarUtilsState: SystemBarUtilsState
-
-    @get:DisplayAware val configurationState: ConfigurationState
 
     @Subcomponent.Factory
     interface Factory {

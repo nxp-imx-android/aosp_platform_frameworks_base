@@ -274,17 +274,25 @@ public class AutoclickScrollPanelTest {
 
     @Test
     public void showPanel_normalCase() {
-        // Normal case, position at (10, 10).
-        int cursorX = 10;
-        int cursorY = 10;
+        // Normal case, position at (100, 100).
+        int cursorX = 100;
+        int cursorY = 100;
 
         // Capture the current layout params before positioning.
         WindowManager.LayoutParams params = mScrollPanel.getLayoutParamsForTesting();
         mScrollPanel.positionPanelAtCursor(cursorX, cursorY);
 
-        // Panel should be at cursor position (gravity is LEFT|TOP).
-        assertThat(params.x).isEqualTo(cursorX);
-        assertThat(params.y).isEqualTo(cursorY);
+        // Calculate expected position for bottom-right placement.
+        int margin = 10;
+        int xOffset = mScrollPanel.getPanelWidthForTesting() / 2 + margin;
+        int yOffset = mScrollPanel.getPanelHeightForTesting() / 2 + margin;
+        int expectedX = cursorX + xOffset - mScrollPanel.getPanelWidthForTesting() / 2;
+        int expectedY = (cursorY - mScrollPanel.getStatusBarHeightForTesting()) + yOffset
+                - mScrollPanel.getPanelHeightForTesting() / 2;
+
+        // Verify panel's position.
+        assertThat(params.x).isEqualTo(expectedX);
+        assertThat(params.y).isEqualTo(expectedY);
     }
 
     @Test
@@ -316,7 +324,7 @@ public class AutoclickScrollPanelTest {
         mScrollPanel.positionPanelAtCursor(cursorX, cursorY);
 
         // Panel should be above cursor.
-        assertThat(params.y).isLessThan(cursorY);
+        assertThat(params.y).isLessThan(cursorY - mScrollPanel.getStatusBarHeightForTesting());
     }
 
     @Test
@@ -333,7 +341,31 @@ public class AutoclickScrollPanelTest {
 
         // Panel should be left of and above cursor.
         assertThat(params.x).isLessThan(cursorX);
-        assertThat(params.y).isLessThan(cursorY);
+        assertThat(params.y).isLessThan(cursorY - mScrollPanel.getStatusBarHeightForTesting());
+    }
+
+    @Test
+    public void showPanel_closeToEdge_withinBounds() {
+        // Test edge case where cursor is very close to edge, panel should still be positioned
+        // within PANEL_EDGE_MARGIN (15px).
+        int edgeMargin = 15;
+
+        // Near bottom-right corner case.
+        // 10px from right edge.
+        int cursorX = mScreenWidth - 10;
+        // 10px from bottom edge.
+        int cursorY = mScreenHeight - 10;
+
+        WindowManager.LayoutParams params = mScrollPanel.getLayoutParamsForTesting();
+        mScrollPanel.positionPanelAtCursor(cursorX, cursorY);
+
+        // Verify panel is within bounds with margin.
+        assertThat(params.x).isGreaterThan(edgeMargin);
+        assertThat(params.y).isGreaterThan(edgeMargin);
+        assertThat(params.x + mScrollPanel.getPanelWidthForTesting() + edgeMargin)
+                .isLessThan(mScreenWidth);
+        assertThat(params.y + mScrollPanel.getPanelHeightForTesting() + edgeMargin)
+                .isLessThan(mScreenHeight);
     }
 
     @Test

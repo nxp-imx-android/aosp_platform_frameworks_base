@@ -77,6 +77,49 @@ class OccludedToLockscreenTransitionViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun statusBarAlphaEmitsZero() =
+        testScope.runTest {
+            val values by collectValues(underTest.statusBarAlpha)
+            runCurrent()
+
+            keyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    step(0f, TransitionState.STARTED),
+                    step(0.1f),
+                    step(0.5f),
+                    step(1f, TransitionState.FINISHED),
+                ),
+                testScope,
+            )
+
+            assertThat(values.size).isEqualTo(3)
+            assertThat(values[0]).isEqualTo(0f)
+            assertThat(values[1]).isEqualTo(0f)
+            assertThat(values[2]).isEqualTo(-1f)
+        }
+
+    @Test
+    fun statusBarAlphaOnCancel() =
+        testScope.runTest {
+            val values by collectValues(underTest.statusBarAlpha)
+            runCurrent()
+
+            keyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    step(0f, TransitionState.STARTED),
+                    step(0.1f),
+                    step(0.5f, TransitionState.CANCELED),
+                ),
+                testScope,
+            )
+
+            assertThat(values.size).isEqualTo(3)
+            assertThat(values[0]).isEqualTo(0f)
+            assertThat(values[1]).isEqualTo(0f)
+            assertThat(values[2]).isEqualTo(-1f)
+        }
+
+    @Test
     fun lockscreenTranslationY() =
         testScope.runTest {
             configurationRepository.setDimensionPixelSize(

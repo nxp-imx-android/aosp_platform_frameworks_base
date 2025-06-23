@@ -138,10 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Trenutno snemate celotni zaslon"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Trenutno snemate aplikacijo <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Ustavi snemanje"</string>
-    <!-- no translation found for screen_capture_toolbar_capture_button (8512731007891496030) -->
-    <skip />
-    <!-- no translation found for screen_capture_toolbar_record_button (7533814143351870339) -->
-    <skip />
+    <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Zajemi"</string>
+    <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Snemaj"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Deljenje zaslona"</string>
     <string name="share_to_app_chip_accessibility_label_generic" msgid="5517431657924536133">"Deljenje vsebine"</string>
     <string name="share_to_app_stop_dialog_title" msgid="9212915050910250438">"Želite ustaviti deljenje zaslona?"</string>
@@ -211,29 +209,19 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"Preveri na drugačen način"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"Upravljanje preverjanja identitete"</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"Kode PIN ni mogoče uporabiti za preverjanje, ker je vklopljeno preverjanje identitete, ki zahteva biometrične podatke. Preberite več o preverjanju identitete."</string>
-    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"Vzorca ni mogoče uporabiti za preverjanje, ker je vklopljeno preverjanje identitete, ki zahteva biometrične podatke. Preberite več o preverjanju identitete."</string>
+    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"Gesla ni mogoče uporabiti za preverjanje, ker je vklopljeno preverjanje identitete, ki zahteva biometrične podatke. Preberite več o preverjanju identitete."</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"Ocena tveganja …"</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"Ni na voljo"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"Uporabi kodo PIN"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"Uporabi vzorec"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"Uporabi geslo"</string>
-    <!-- no translation found for biometric_dialog_enter_pin (8625265944863623975) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_password (200503318983048202) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_enter_pattern (3065746760277739487) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pin (5798389437594195177) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_pattern (382786088892502550) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_recovery_password (8288127966207678230) -->
-    <skip />
+    <string name="biometric_dialog_enter_pin" msgid="8625265944863623975">"Vnesite kodo PIN"</string>
+    <string name="biometric_dialog_enter_password" msgid="200503318983048202">"Vnesite geslo"</string>
+    <string name="biometric_dialog_enter_pattern" msgid="3065746760277739487">"Vnesite vzorec"</string>
+    <string name="biometric_dialog_recovery_pin" msgid="5798389437594195177">"Po preveč neuspešnih poskusih je za obnovitev biometričnih podatkov treba vnesti kodo PIN"</string>
+    <string name="biometric_dialog_recovery_pattern" msgid="382786088892502550">"Po preveč neuspešnih poskusih je za obnovitev biometričnih podatkov treba vnesti vzorec"</string>
+    <string name="biometric_dialog_recovery_password" msgid="8288127966207678230">"Po preveč neuspešnih poskusih je za obnovitev biometričnih podatkov treba vnesti geslo"</string>
     <string name="biometric_dialog_wrong_pin" msgid="1878539073972762803">"Napačna koda PIN"</string>
     <string name="biometric_dialog_wrong_pattern" msgid="8954812279840889029">"Napačen vzorec"</string>
     <string name="biometric_dialog_wrong_password" msgid="69477929306843790">"Napačno geslo"</string>
@@ -764,6 +752,8 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"Dvojna večtonska frekvenca"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"Dostopnost"</string>
+    <!-- no translation found for stream_assistant (2163992770504149386) -->
+    <skip />
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"Zvonjenje"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Vibriranje"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Utišano"</string>
@@ -835,7 +825,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelit, povezava je na voljo"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS prek satelita"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Samo klici v sili ali SOS"</string>
-    <!-- no translation found for satellite_network_title_text (4825315858295910999) -->
+    <!-- no translation found for satellite_network_title_text (1483004114819442028) -->
     <skip />
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"ni signala"</string>
@@ -1022,8 +1012,7 @@
     <string name="battery" msgid="769686279459897127">"Baterija"</string>
     <string name="headset" msgid="4485892374984466437">"Slušalke z mikrofonom"</string>
     <string name="accessibility_long_click_tile" msgid="210472753156768705">"Odpri nastavitve"</string>
-    <!-- no translation found for accessibility_long_click_tile_details (3408103115710601894) -->
-    <skip />
+    <string name="accessibility_long_click_tile_details" msgid="3408103115710601894">"prikaz več podrobnosti"</string>
     <string name="accessibility_status_bar_headphones" msgid="1304082414912647414">"Slušalke priključene"</string>
     <string name="accessibility_status_bar_headset" msgid="2699275863720926104">"Slušalke z mikrofonom priključene"</string>
     <string name="data_saver" msgid="3484013368530820763">"Varčevanje s podatki"</string>
@@ -1352,8 +1341,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"Izhod"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"Ustavi deljeno sejo za premik predstavnosti v drugo napravo."</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"Ustavi"</string>
-    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
-    <skip />
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"Ustavi deljenje"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"Kako deluje oddajanje"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"Oddajanje"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"Osebe v bližini z združljivo napravo Bluetooth lahko poslušajo predstavnost, ki jo oddajate."</string>
@@ -1540,8 +1528,7 @@
     <string name="mirror_display" msgid="2515262008898122928">"Zrcali zaslon"</string>
     <string name="dismiss_dialog" msgid="2195508495854675882">"Opusti"</string>
     <string name="connected_display_icon_desc" msgid="6373560639989971997">"Zaslon je povezan"</string>
-    <!-- no translation found for privacy_dialog_title (5201413527644766025) -->
-    <skip />
+    <string name="privacy_dialog_title" msgid="5201413527644766025">"Mikrofon, fotoaparat in lokacija"</string>
     <string name="privacy_dialog_summary" msgid="2458769652125995409">"Nedavna uporaba v aplikacijah"</string>
     <string name="privacy_dialog_more_button" msgid="7610604080293562345">"Ogled nedavnih dostopov"</string>
     <string name="privacy_dialog_done_button" msgid="4504330708531434263">"Končano"</string>
@@ -1600,6 +1587,10 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Dodajanje bližnjice"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Izbris bližnjice"</string>
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
+    <skip />
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
+    <skip />
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Krmarjenje s tipkovnico"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Učenje bližnjičnih tipk"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Krmarjenje s sledilno ploščico"</string>
@@ -1677,6 +1668,10 @@
     <string name="demote_explain_text" msgid="3942301497888762295">"Aplikacija <xliff:g id="APPLICATION">%1$s</xliff:g> ne bo več prikazovala sprotnih obvestil. To lahko kadar koli spremenite v nastavitvah."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Zapri"</string>
+    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
+    <skip />
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Povlecite iz zgornjega levega kota, da odprete obvestila."</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Povlecite iz zgornjega desnega kota, da odprete hitre nastavitve"</string>
+    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
+    <skip />
 </resources>

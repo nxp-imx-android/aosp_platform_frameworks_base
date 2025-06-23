@@ -209,14 +209,10 @@
     <string name="biometric_dialog_fallback_button" msgid="7808939083554391449">"إثبات الهوية بطريقة أخرى"</string>
     <string name="biometric_dialog_manage_identity_check" msgid="6283423571297422689">"إدارة ميزة \"التحقّق من الهوية\""</string>
     <string name="biometric_dialog_identity_check_pin_footer" msgid="2943916725380489626">"لا يمكن استخدام رقم التعريف الشخصي لإثبات الهوية لأنّ ميزة \"التحقّق من الهوية\" مفعَّلة وتتطلّب استخدام مقياس حيوي. مزيد من المعلومات حول ميزة \"التحقّق من الهوية\""</string>
-    <!-- no translation found for biometric_dialog_identity_check_pattern_footer (8695014155334581855) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_password_footer (6818380955155542018) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_identity_check_watch_ranging (4600194412220409723) -->
-    <skip />
-    <!-- no translation found for biometric_dialog_unavailable (8242160331783709764) -->
-    <skip />
+    <string name="biometric_dialog_identity_check_pattern_footer" msgid="8695014155334581855">"لا يمكن استخدام النقش للتأكُّد من الهوية لأنّ ميزة \"التحقّق من الهوية\" مفعَّلة وتتطلّب استخدام مقياس حيوي. مزيد من المعلومات حول ميزة \"التحقّق من الهوية\""</string>
+    <string name="biometric_dialog_identity_check_password_footer" msgid="6818380955155542018">"لا يمكن استخدام كلمة المرور للتأكُّد من الهوية لأنّ ميزة \"التحقّق من الهوية\" مفعَّلة وتتطلّب استخدام مقياس حيوي. مزيد من المعلومات حول ميزة \"التحقّق من الهوية\""</string>
+    <string name="biometric_dialog_identity_check_watch_ranging" msgid="4600194412220409723">"جارٍ تقييم المخاطر..."</string>
+    <string name="biometric_dialog_unavailable" msgid="8242160331783709764">"غير متوفّر"</string>
     <string name="biometric_dialog_use_pin" msgid="8385294115283000709">"استخدام رقم تعريف شخصي"</string>
     <string name="biometric_dialog_use_pattern" msgid="2315593393167211194">"استخدام النقش"</string>
     <string name="biometric_dialog_use_password" msgid="3445033859393474779">"استخدام كلمة المرور"</string>
@@ -754,6 +750,8 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"بلوتوث"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"تردد ثنائي متعدد النغمات"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"سهولة الاستخدام"</string>
+    <!-- no translation found for stream_assistant (2163992770504149386) -->
+    <skip />
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"استصدار رنين"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"اهتزاز"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"كتم الصوت"</string>
@@ -824,7 +822,8 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"قمر صناعي، الاتصال متوفّر"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"اتصالات الطوارئ بالقمر الصناعي"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"مكالمات الطوارئ أو اتصالات الطوارئ فقط"</string>
-    <string name="satellite_network_title_text" msgid="4825315858295910999">"شبكة القمر الصناعي"</string>
+    <!-- no translation found for satellite_network_title_text (1483004114819442028) -->
+    <skip />
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"‫\"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>\"، <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>"</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"ما مِن أشرطة إشارة"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"شريط إشارة واحد"</string>
@@ -1339,8 +1338,7 @@
     <string name="media_output_group_title" msgid="6789001895863332576">"الإخراج"</string>
     <string name="media_output_end_session_dialog_summary" msgid="5954520685989877347">"أوقِف الجلسة المشتركة لنقل الوسائط إلى جهاز آخر."</string>
     <string name="media_output_end_session_dialog_stop" msgid="208189434474624412">"إيقاف"</string>
-    <!-- no translation found for media_output_dialog_button_stop_sharing (5043482739689716185) -->
-    <skip />
+    <string name="media_output_dialog_button_stop_sharing" msgid="5043482739689716185">"إيقاف المشاركة"</string>
     <string name="media_output_first_broadcast_title" msgid="6292237789860753022">"كيفية عمل البث"</string>
     <string name="media_output_broadcast" msgid="3555580945878071543">"البث"</string>
     <string name="media_output_first_notify_broadcast_message" msgid="6353857724136398494">"يمكن للأشخاص القريبين منك الذين لديهم أجهزة متوافقة تتضمّن بلوتوث الاستماع إلى الوسائط التي تبثها."</string>
@@ -1586,6 +1584,10 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"إضافة اختصار"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"حذف الاختصار"</string>
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
+    <skip />
+    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
+    <skip />
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"التنقّل باستخدام لوحة المفاتيح"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"لنتعرّف على اختصارات لوحة المفاتيح"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"التنقّل باستخدام لوحة اللمس"</string>
@@ -1663,6 +1665,10 @@
     <string name="demote_explain_text" msgid="3942301497888762295">"لن يعرض تطبيق \"<xliff:g id="APPLICATION">%1$s</xliff:g>\" التغطية المباشرة للأخبار بعد الآن. يمكنك تغيير ذلك في أي وقت من خلال \"الإعدادات\"."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"\"<xliff:g id="STREAM_NAME">%1$s</xliff:g>\"، <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"إغلاق"</string>
+    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
+    <skip />
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"لفتح الإشعارات، عليك التمرير سريعًا من أعلى يمين الشاشة"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"لفتح \"الإعدادات السريعة\"، عليك التمرير سريعًا من أعلى يسار الشاشة"</string>
+    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
+    <skip />
 </resources>
