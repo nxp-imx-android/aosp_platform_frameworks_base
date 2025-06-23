@@ -16,15 +16,12 @@
 
 package com.android.systemui.statusbar.ui
 
-import android.content.Context
 import com.android.internal.policy.SystemBarUtils
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.statusbar.policy.onConfigChanged
-import dagger.assisted.Assisted
-import dagger.assisted.AssistedFactory
-import dagger.assisted.AssistedInject
+import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.conflate
@@ -38,12 +35,11 @@ import kotlinx.coroutines.flow.onStart
  * using [SystemBarUtils] directly.
  */
 class SystemBarUtilsState
-@AssistedInject
+@Inject
 constructor(
-    @Assisted context: Context,
     @Background bgContext: CoroutineContext,
     @Main mainContext: CoroutineContext,
-    @Assisted configurationController: ConfigurationController,
+    configurationController: ConfigurationController,
     proxy: SystemBarUtilsProxy,
 ) {
     /** @see SystemBarUtils.getStatusBarHeight */
@@ -52,7 +48,7 @@ constructor(
             .onStart<Any> { emit(Unit) }
             .flowOn(mainContext)
             .conflate()
-            .map { proxy.getStatusBarHeight(context) }
+            .map { proxy.getStatusBarHeight() }
             .distinctUntilChanged()
             .flowOn(bgContext)
             .conflate()
@@ -62,16 +58,8 @@ constructor(
             .onStart<Any> { emit(Unit) }
             .flowOn(mainContext)
             .conflate()
-            .map { proxy.getStatusBarHeaderHeightKeyguard(context) }
+            .map { proxy.getStatusBarHeaderHeightKeyguard() }
             .distinctUntilChanged()
             .flowOn(bgContext)
             .conflate()
-
-    @AssistedFactory
-    interface Factory {
-        fun create(
-            context: Context,
-            configurationController: ConfigurationController,
-        ): SystemBarUtilsState
-    }
 }
