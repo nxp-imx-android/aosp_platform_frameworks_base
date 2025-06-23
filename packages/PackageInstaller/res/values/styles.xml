@@ -156,4 +156,8 @@
     <style name="TextAppearance.PackageInstaller.Material.KeepData.SubHeading" parent="@style/TextAppearance.PackageInstaller.BodyMedium">
         <item name="android:textColor">?android:attr/textColorSecondary</item>
     </style>
+
+    <style name="ShapeAppearance">
+        <item name="cornerSize">@dimen/alert_dialog_radius</item>
+    </style>
 </resources>
