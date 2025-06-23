@@ -1456,7 +1456,6 @@ public final class DisplayManagerGlobal {
     /**
      * @see DisplayManager#getDisplayTopology
      */
-    @RequiresPermission(MANAGE_DISPLAYS)
     @Nullable
     public DisplayTopology getDisplayTopology() {
         try {
@@ -1484,7 +1483,6 @@ public final class DisplayManagerGlobal {
     /**
      * @see DisplayManager#registerTopologyListener
      */
-    @RequiresPermission(MANAGE_DISPLAYS)
     public void registerTopologyListener(@NonNull @CallbackExecutor Executor executor,
             @NonNull Consumer<DisplayTopology> listener, String packageName) {
         if (!DesktopExperienceFlags.DISPLAY_TOPOLOGY.isTrue()) {
@@ -1511,7 +1509,6 @@ public final class DisplayManagerGlobal {
     /**
      * @see DisplayManager#unregisterTopologyListener
      */
-    @RequiresPermission(MANAGE_DISPLAYS)
     public void unregisterTopologyListener(@NonNull Consumer<DisplayTopology> listener) {
         if (!DesktopExperienceFlags.DISPLAY_TOPOLOGY.isTrue()) {
             return;
