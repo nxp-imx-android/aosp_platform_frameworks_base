@@ -17,18 +17,15 @@
 package com.android.internal.protolog;
 
 import static android.tools.traces.Utils.busyWaitForDataSourceRegistration;
+import static android.tracing.perfetto.TestUtils.createTempWriter;
 
 import static perfetto.protos.TracePacketOuterClass.TracePacket.SequenceFlags.SEQ_NEEDS_INCREMENTAL_STATE;
 
-import static java.io.File.createTempFile;
-
-import android.tools.ScenarioBuilder;
 import android.tools.Tag;
 import android.tools.io.TraceType;
 import android.tools.traces.TraceConfig;
 import android.tools.traces.TraceConfigs;
 import android.tools.traces.io.ResultReader;
-import android.tools.traces.io.ResultWriter;
 import android.tools.traces.monitors.PerfettoTraceMonitor;
 import android.tracing.perfetto.DataSourceParams;
 
@@ -56,12 +53,6 @@ public class UnprocessedPerfettoProtoLogImplTest {
 
     private final File mTracingDirectory = InstrumentationRegistry.getInstrumentation()
             .getTargetContext().getFilesDir();
-
-    private final ResultWriter mWriter = new ResultWriter()
-            .forScenario(new ScenarioBuilder()
-                    .forClass(createTempFile("temp", "").getName()).build())
-            .withOutputDir(mTracingDirectory)
-            .setRunComplete();
 
     private final TraceConfigs mTraceConfig = new TraceConfigs(
             new TraceConfig(false, true, false),
@@ -108,6 +99,8 @@ public class UnprocessedPerfettoProtoLogImplTest {
         PerfettoTraceMonitor traceMonitor = PerfettoTraceMonitor.newBuilder()
                 .enableProtoLog(true, List.of(), TEST_PROTOLOG_DATASOURCE_NAME)
                 .build();
+
+        final var writer = createTempWriter(mTracingDirectory);
         try {
             traceMonitor.start();
 
@@ -116,10 +109,10 @@ public class UnprocessedPerfettoProtoLogImplTest {
             sProtoLog.log(LogLevel.DEBUG, TestProtoLogGroup.TEST_GROUP,
                     "My Unprocessed Message");
         } finally {
-            traceMonitor.stop(mWriter);
+            traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(mWriter.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
         final var traceBytes = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
         final var trace = Trace.parseFrom(traceBytes);
 
