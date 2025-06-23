@@ -2562,29 +2562,20 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"แอปพลิเคชัน"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"ระบบจะไม่จดจำลายนิ้วมือของคุณอีกต่อไป ตั้งค่าการปลดล็อกด้วยลายนิ้วมืออีกครั้ง"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"ความปลอดภัยและความเป็นส่วนตัว"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"ปลดล็อกหน้าจอก่อน"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"ปลดล็อกหน้าจอและเชื่อมต่ออีกครั้ง"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"การปกป้องขั้นสูงกำหนดให้คุณต้องปลดล็อกหน้าจอตามปกติเพื่อโอนข้อมูลผ่าน USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"การปกป้องขั้นสูงกำหนดให้คุณต้องปลดล็อกหน้าจอตามปกติเพื่อโอนข้อมูลผ่าน USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"การปกป้องขั้นสูงกำหนดให้คุณต้องปลดล็อกหน้าจอเพื่อโอนข้อมูลหรือชาร์จเร็วผ่าน USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"การปกป้องขั้นสูงกำหนดให้คุณต้องปลดล็อกหน้าจอเพื่อโอนข้อมูลหรือชาร์จเร็วผ่าน USB"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"การปกป้องขั้นสูงกำหนดให้คุณต้องปลดล็อกหน้าจอตามปกติเพื่อชาร์จเร็วผ่าน USB"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"การปกป้องขั้นสูงกำหนดให้คุณต้องปลดล็อกหน้าจอตามปกติเพื่อชาร์จเร็วผ่าน USB"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"ปิดเสียง"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"ปิดเสียงการแจ้งเตือนแล้ว"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"ปิดเสียงการแจ้งเตือน USB ของการปกป้องขั้นสูงไว้จนกว่าคุณจะรีสตาร์ทอุปกรณ์"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"กิจกรรม USB ที่น่าสงสัย"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"สัญญาณข้อมูล USB ปิดอยู่"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"หากพบปัญหาในการปลดล็อกด้วยลายนิ้วมือ"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"แตะเพื่อดูเคล็ดลับในการปรับปรุงประสบการณ์การปลดล็อก"</string>
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ไม่ต้องกะพริบ"</string>
 </resources>

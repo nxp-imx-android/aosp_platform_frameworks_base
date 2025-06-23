@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"यह ऐप्लिकेशन 16 केबी वाले पेजों के साथ काम नहीं करता. APK के अलाइनमेंट की जांच नहीं की जा सकी. यह ऐप्लिकेशन, पेज साइज़ के साथ काम करने वाले मोड का इस्तेमाल करके चलेगा. पेज साइज़ के साथ बेहतर तरीके से काम के लिए, कृपया 16 केबी वाले पेजों के साथ ऐप्लिकेशन को फिर से कंपाइल करें. ज़्यादा जानकारी के लिए, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर जाएं"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"यह ऐप्लिकेशन 16 केबी वाले पेज साइज़ के साथ काम नहीं करता. इसके लिए ज़रूरी ईएलएफ़ अलाइनमेंट की जांच भी पूरी नहीं हो सकी. यह ऐप्लिकेशन, इस पेज साइज़ के साथ काम करने वाले मोड का इस्तेमाल करके चलेगा. इस पेज साइज़ के साथ बेहतर तरीके से काम के लिए, कृपया ऐप्लिकेशन को 16 केबी वाले पेज साइज़ के साथ फिर से कंपाइल करें. ज़्यादा जानकारी के लिए, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर जाएं"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"यह ऐप्लिकेशन 16 केबी वाले पेज साइज़ के साथ काम नहीं करता. APK और ईएलएफ़ के अलाइनमेंट से जुड़ी ज़रूरी जांच भी पूरी नहीं हो सकी. यह ऐप्लिकेशन, इस पेज साइज़ के साथ काम करने वाले मोड का इस्तेमाल करके चलेगा. इस पेज साइज़ के साथ बेहतर तरीके से काम के लिए, कृपया ऐप्लिकेशन को 16 केबी वाले पेज साइज़ के साथ फिर से कंपाइल करें. ज़्यादा जानकारी के लिए, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर जाएं"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"यह चेतावनी इसलिए दिख रही है, क्योंकि इस ऐप्लिकेशन को डीबग किया जा सकता है. फ़िलहाल, इसकी जांच की जा रही है. अगर आप डेवलपर नहीं हैं, तो कृपया डेवलपर को इसकी जानकारी दें और ऐसा ऐप्लिकेशन उपलब्ध कराने के लिए कहें जिसे डीबग नहीं किया जा सकता. यह ऐप्लिकेशन, 16 केबी वाले पेज साइज़ के साथ काम नहीं करता है. APK के अलाइनमेंट की जांच नहीं की जा सकी. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर दिए गए निर्देशों का पालन करें"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"यह चेतावनी इसलिए दिख रही है, क्योंकि इस ऐप्लिकेशन को डीबग किया जा सकता है. फ़िलहाल, इसकी जांच की जा रही है. अगर आप डेवलपर नहीं हैं, तो कृपया डेवलपर को इसकी जानकारी दें और ऐसा ऐप्लिकेशन उपलब्ध कराने के लिए कहें जिसे डीबग नहीं किया जा सकता. यह ऐप्लिकेशन, 16 केबी वाले पेज साइज़ के साथ काम नहीं करता है. ईएलएफ़ अलाइनमेंट की जांच नहीं की जा सकी. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर दिए गए निर्देशों का पालन करें"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"यह चेतावनी इसलिए दिख रही है, क्योंकि इस ऐप्लिकेशन को डीबग किया जा सकता है. फ़िलहाल, इसकी जांच की जा रही है. अगर आप डेवलपर नहीं हैं, तो कृपया डेवलपर को इसकी जानकारी दें और ऐसा ऐप्लिकेशन उपलब्ध कराने के लिए कहें जिसे डीबग नहीं किया जा सकता. यह ऐप्लिकेशन, 16 केबी वाले पेज साइज़ के साथ काम नहीं करता है. APK और ईएलएफ़ के अलाइनमेंट की जांच नहीं की जा सकी. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर दिए गए निर्देशों का पालन करें"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"फिर से न दिखाएं"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"सेवा प्रावधान की हुई नहीं है."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"आप कॉलर आईडी सेटिंग नहीं बदल सकते."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"डेटा को <xliff:g id="CARRIERDISPLAY">%s</xliff:g> पर स्विच किया गया"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"इससे ऐप्लिकेशन को, आपके आस-पास के माहौल के बारे में छोटी से छोटी जानकारी के साथ ट्रैकिंग डेटा ऐक्सेस करने की अनुमति मिलती है."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"ऐप्लिकेशन पर, फ़ोरग्राउंड के काम न करने पर भी एक्सआर डेटा ऐक्सेस करें"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"इससे ऐप्लिकेशन को, एक्सआर डेटा ऐक्सेस करने की अनुमति मिलती है, भले ही उसमें फ़ोरग्राउंड में काम न कर रहा हो."</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"बटन कैप्चर करें"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"इससे ऐप्लिकेशन को सिस्टम के शॉर्टकट और कार्रवाइयों को प्रोसेस करने से पहले बटन कैप्चर करने की अनुमति मिलती है."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"बायोमेट्रिक्स इस्तेमाल करें"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"बायोमेट्रिक्स या स्क्रीन लॉक का क्रेडेंशियल इस्तेमाल करें"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"अपनी पहचान की पुष्टि करें"</string>
@@ -2568,29 +2562,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ऐप्लिकेशन"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"अब आपके फ़िंगरप्रिंट की पहचान नहीं की जा सकती. फ़िंगरप्रिंट अनलॉक की सुविधा को दोबारा सेट अप करें."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"सुरक्षा और निजता"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"सबसे पहले स्क्रीन को अनलॉक करें"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"डिवाइस की स्क्रीन अनलॉक करें और फिर से कनेक्ट करें"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"जब ऐडवांस सुरक्षा चालू हो, तो यूएसबी से डेटा ट्रांसफ़र करने के लिए स्क्रीन को सामान्य तरीके से अनलॉक करें"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"जब ऐडवांस सुरक्षा चालू हो, तो यूएसबी से डेटा ट्रांसफ़र करने के लिए स्क्रीन को सामान्य तरीके से अनलॉक करें"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"जब ऐडवांस सुरक्षा चालू हो, तो यूएसबी से डेटा ट्रांसफ़र या तेज़ी से चार्ज करने के लिए स्क्रीन को अनलॉक करें"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"जब ऐडवांस सुरक्षा चालू हो, तो यूएसबी से डेटा ट्रांसफ़र या तेज़ी से चार्ज करने के लिए स्क्रीन को अनलॉक करें"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"जब ऐडवांस सुरक्षा चालू हो, तो यूएसबी से तेज़ी से चार्ज करने के लिए स्क्रीन को सामान्य तरीके से अनलॉक करें"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"जब ऐडवांस सुरक्षा चालू हो, तो यूएसबी से तेज़ी से चार्ज करने के लिए स्क्रीन को सामान्य तरीके से अनलॉक करें"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"आवाज़ बंद करें"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"सूचनाओं की आवाज़ या वाइब्रेशन को बंद कर दिया गया"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"ऐडवांस सुरक्षा के ज़रिए यूएसबी से जुड़ी सूचनाओं की आवाज़ या वाइब्रेशन की सुविधा तब तक बंद रहेगी, जब तक डिवाइस को रीस्टार्ट नहीं किया जाता"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"यूएसबी से कोई संदिग्ध गतिविधि की गई"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"यूएसबी से डेटा सिग्नल भेजने की प्रोसेस बंद कर दी गई है."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"क्या आपको फ़िंगरप्रिंट अनलॉक की सुविधा का इस्तेमाल करने में समस्या आ रही है?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"डिवाइस को अनलॉक करने का अनुभव बेहतर बनाने की सलाह देखने के लिए टैप करें"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>

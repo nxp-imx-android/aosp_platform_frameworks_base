@@ -2562,29 +2562,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"កម្មវិធី"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"លែងអាចសម្គាល់ស្នាមម្រាមដៃរបស់អ្នកបានទៀតហើយ។ សូមរៀបចំការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃម្ដងទៀត។"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"សុវត្ថិភាព និងឯកជនភាព"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"ដោះសោអេក្រង់របស់អ្នកជាមុនសិន"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"ដោះសោអេក្រង់ និងភ្ជាប់ឡើងវិញ"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"ការ​ការពារ​កម្រិតខ្ពស់តម្រូវឱ្យដោះសោអេក្រង់ធម្មតារបស់អ្នក ដើម្បីធ្វើការផ្ទេរទិន្នន័យតាម USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"ការ​ការពារ​កម្រិតខ្ពស់តម្រូវឱ្យដោះសោអេក្រង់ធម្មតារបស់អ្នក ដើម្បីធ្វើការផ្ទេរទិន្នន័យតាម USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"ការ​ការពារ​កម្រិតខ្ពស់តម្រូវឱ្យដោះសោអេក្រង់របស់អ្នក ដើម្បីធ្វើការផ្ទេរ ឬធ្វើការសាកថ្មរហ័សតាម USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"ការ​ការពារ​កម្រិតខ្ពស់តម្រូវឱ្យដោះសោអេក្រង់របស់អ្នក ដើម្បីធ្វើការផ្ទេរ ឬធ្វើការសាកថ្មរហ័សតាម USB"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"ការ​ការពារ​កម្រិតខ្ពស់តម្រូវឱ្យដោះសោអេក្រង់ធម្មតារបស់អ្នក ដើម្បីធ្វើការសាកថ្មរហ័សតាម USB"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"ការ​ការពារ​កម្រិតខ្ពស់តម្រូវឱ្យដោះសោអេក្រង់ធម្មតារបស់អ្នក ដើម្បីធ្វើការសាកថ្មរហ័សតាម USB"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"បិទ​សំឡេង"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"បានបិទសំឡេងជូនដំណឹង"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"បានបិទសំឡេងជូនដំណឹងអំពី USB ដែលមានការ​ការពារ​កម្រិតខ្ពស់ រហូតទាល់តែអ្នកចាប់ផ្ដើមឧបករណ៍ឡើងវិញ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"សកម្មភាព USB ដែលគួរឱ្យសង្ស័យ"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"សញ្ញាទិន្នន័យ USB ត្រូវបានបិទ។"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"មានបញ្ហាពាក់ព័ន្ធនឹងការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃឬ?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ចុច ដើម្បីពិនិត្យមើលគន្លឹះសម្រាប់កែលម្អបទពិសោធដោះសោរបស់អ្នក"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>

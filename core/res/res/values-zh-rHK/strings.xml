@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"此應用程式不兼容 16KB。未能通過 APK 一致性檢查。此應用程式將使用頁面大小兼容模式運行。為達至最佳的兼容性，請將應用程式重新編譯為支援 16KB。詳情請瀏覽 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"此應用程式不兼容 16KB。未能通過電子商務記錄格式一致性檢查。此應用程式將使用頁面大小兼容模式運行。為達至最佳的兼容性，請將應用程式重新編譯為支援 16KB。詳情請瀏覽 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"此應用程式不兼容 16KB。未能通過 APK 和電子商務記錄格式一致性檢查。此應用程式將使用頁面大小兼容模式運行。為達至最佳的兼容性，請將應用程式重新編譯為支援 16KB。詳情請瀏覽 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"由於目前測試的是可偵錯應用程式，因此系統發出此警示。如你不是相關的開發人員，請向相關的開發人員報告此情況，並要求使用非可偵錯應用程式。此應用程式不兼容 16KB，未能通過 APK 一致性檢查。請按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 的步驟操作。"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"由於目前測試的是可偵錯應用程式，因此系統發出此警示。如你不是相關的開發人員，請向相關的開發人員報告此情況，並要求使用非可偵錯應用程式。此應用程式不兼容 16KB，未能通過電子商務記錄格式一致性檢查。請按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 的步驟操作。"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"由於目前測試的是可偵錯應用程式，因此系統發出此警示。如你不是相關的開發人員，請向相關的開發人員報告此情況，並要求使用非可偵錯應用程式。此應用程式不兼容 16KB，未能通過 APK 和電子商務記錄格式一致性檢查。請按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 的步驟操作。"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"不要再顯示"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"未提供此服務。"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"你無法更改來電顯示設定。"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"流動數據已切換至「<xliff:g id="CARRIERDISPLAY">%s</xliff:g>」"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"允許應用程式存取與你周遭環境相關的極詳細追蹤資料。"</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"在非前景執行時存取 XR 資料"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"允許應用程式在非前景執行時存取 XR 資料。"</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"擷取密鑰"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"允許應用程式在系統處理系統捷徑和操作前擷取密鑰。"</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"使用生物識別"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"使用生物識別或螢幕鎖定"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"驗證是你本人"</string>
@@ -2568,29 +2562,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"應用程式"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"無法再辨識你的指紋。請重新設定「指紋解鎖」功能。"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"安全性和私隱權"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"請先解鎖螢幕"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"解鎖螢幕並重新連接"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"「進階保護功能」要求你用平時的方式解鎖螢幕以使用 USB 資料轉移功能"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"「進階保護功能」要求你用平時的方式解鎖螢幕以使用 USB 資料轉移功能"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"「進階保護功能」要求你解鎖螢幕以使用 USB 轉移或快速充電功能"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"「進階保護功能」要求你解鎖螢幕以使用 USB 轉移或快速充電功能"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"「進階保護功能」要求你用平時的方式解鎖螢幕以使用 USB 快速充電功能"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"「進階保護功能」要求你用平時的方式解鎖螢幕以使用 USB 快速充電功能"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"靜音"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"通知已設定為靜音"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"「USB 進階保護功能」通知已設定為靜音，直至你重新啟動裝置為止"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"可疑的 USB 活動"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB 資料訊號已停用。"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"使用「指紋解鎖」時遇到問題嗎？"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"輕按即可查看關於改善解鎖體驗的貼士"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>

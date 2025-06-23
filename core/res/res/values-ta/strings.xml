@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. APK சீரமைவைச் சரிபார்க்க முடியவில்லை. பக்க அளவுடனான இணக்கத்தன்மைப் பயன்முறையைப் பயன்படுத்தி இந்த ஆப்ஸ் இயக்கப்படும். சிறந்த இணக்கத்தன்மைக்கு, ஆப்ஸை 16 KB ஆதரவுடன் ரீ-கம்பைல் செய்யவும். கூடுதல் தகவல்களுக்கு, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; எனும் பக்கத்தைப் பார்க்கவும்."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. ELF சீரமைவைச் சரிபார்க்க முடியவில்லை. பக்க அளவுடனான இணக்கத்தன்மைப் பயன்முறையைப் பயன்படுத்தி இந்த ஆப்ஸ் இயக்கப்படும். சிறந்த இணக்கத்தன்மைக்கு, ஆப்ஸை 16 KB ஆதரவுடன் ரீ-கம்பைல் செய்யவும். கூடுதல் தகவல்களுக்கு, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; எனும் பக்கத்தைப் பார்க்கவும்."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. APK மற்றும் ELF சீரமைவுகளைச் சரிபார்க்க முடியவில்லை. பக்க அளவுடனான இணக்கத்தன்மைப் பயன்முறையைப் பயன்படுத்தி இந்த ஆப்ஸ் இயக்கப்படும். சிறந்த இணக்கத்தன்மைக்கு, ஆப்ஸை 16 KB ஆதரவுடன் ரீ-கம்பைல் செய்யவும். கூடுதல் தகவல்களுக்கு, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; எனும் பக்கத்தைப் பார்க்கவும்."</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"இது ஒரு பிழைதிருத்தி ஆப்ஸ் என்பதால் இந்த எச்சரிக்கை காட்டப்படுகிறது, இது தற்போது பரிசோதனையில் உள்ளது. நீங்கள் டெவெலப்பர் இல்லையென்றால் இதை டெவெலப்பரிடம் புகாரளித்து, பிழைதிருத்தி அல்லாத ஆப்ஸைக் கேளுங்கள். இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. APK சீரமைவைச் சரிபார்க்க முடியவில்லை. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; பக்கத்தில் உள்ள படிகளைப் பின்பற்றவும்."</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"இது ஒரு பிழைதிருத்தி ஆப்ஸ் என்பதால் இந்த எச்சரிக்கை காட்டப்படுகிறது, இது தற்போது பரிசோதனையில் உள்ளது. நீங்கள் டெவெலப்பர் இல்லையென்றால் இதை டெவெலப்பரிடம் புகாரளித்து, பிழைதிருத்தி அல்லாத ஆப்ஸைக் கேளுங்கள். இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. ELF சீரமைவைச் சரிபார்க்க முடியவில்லை. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; பக்கத்தில் உள்ள படிகளைப் பின்பற்றவும்."</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"இது ஒரு பிழைதிருத்தி ஆப்ஸ் என்பதால் இந்த எச்சரிக்கை காட்டப்படுகிறது, இது தற்போது பரிசோதனையில் உள்ளது. நீங்கள் டெவெலப்பர் இல்லையென்றால் இதை டெவெலப்பரிடம் புகாரளித்து, பிழைதிருத்தி அல்லாத ஆப்ஸைக் கேளுங்கள். இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. APK மற்றும் ELF சீரமைவுகளைச் சரிபார்க்க முடியவில்லை. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; பக்கத்தில் உள்ள படிகளைப் பின்பற்றவும்."</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"மீண்டும் காட்டாதே"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"சேவை ஒதுக்கப்படவில்லை."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"அழைப்பாளர் ஐடி அமைப்பை மாற்ற முடியாது."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"டேட்டா <xliff:g id="CARRIERDISPLAY">%s</xliff:g>க்கு மாற்றப்பட்டது"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"உங்கள் சுற்றுச்சூழல் பற்றிய மிக விரிவான விவரங்களுடன் கூடிய தரவை நேரடியாக அணுக ஆப்ஸை அனுமதிக்கும்."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"முன்புலத்தில் இல்லாதபோது XR தரவை அணுகுதல்"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"முன்புலத்தில் இல்லாதபோது XR தரவை அணுக ஆப்ஸை அனுமதிக்கும்."</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"பட்டன்களைக் கட்டுப்படுத்துதல்"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"சிஸ்டம் ஷார்ட்கட்களையும் செயல்களையும் சிஸ்டம் செயலாக்குவதற்கு முன் பட்டன்களைக் கட்டுப்படுத்த ஆப்ஸை அனுமதிக்கும்."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"பயோமெட்ரிக்ஸைப் பயன்படுத்து"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"பயோமெட்ரிக்ஸையோ திரைப் பூட்டையோ பயன்படுத்து"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"நீங்கள்தான் என உறுதிசெய்க"</string>
@@ -2568,29 +2562,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"ஆப்ஸ்"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"உங்கள் கைரேகைகளை இனி அடையாளம் காண முடியாது. கைரேகை அன்லாக் அம்சத்தை மீண்டும் அமையுங்கள்."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"பாதுகாப்பு &amp; தனியுரிமை"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"முதலில் உங்கள் திரையை அன்லாக் செய்யுங்கள்"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"திரையை அன்லாக் செய்தலும் மீண்டும் இணைத்தலும்"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"USB தரவுப் பரிமாற்றத்திற்கு உங்கள் திரையை வழக்கமான முறையில் அன்லாக் செய்யும்படி மேம்பட்ட பாதுகாப்பு கேட்கிறது"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"USB தரவுப் பரிமாற்றத்திற்கு உங்கள் திரையை வழக்கமான முறையில் அன்லாக் செய்யும்படி மேம்பட்ட பாதுகாப்பு கேட்கிறது"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"USB மாற்றம் அல்லது விரைவு சார்ஜிங்கிற்கு உங்கள் திரையை அன்லாக் செய்யும்படி மேம்பட்ட பாதுகாப்பு கேட்கிறது"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"USB மாற்றம் அல்லது விரைவு சார்ஜிங்கிற்கு உங்கள் திரையை அன்லாக் செய்யும்படி மேம்பட்ட பாதுகாப்பு கேட்கிறது"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"USB விரைவு சார்ஜிங்கிற்கு உங்கள் திரையை வழக்கமான முறையில் அன்லாக் செய்யும்படி மேம்பட்ட பாதுகாப்பு கேட்கிறது"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"USB விரைவு சார்ஜிங்கிற்கு உங்கள் திரையை வழக்கமான முறையில் அன்லாக் செய்யும்படி மேம்பட்ட பாதுகாப்பு கேட்கிறது"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"ஒலியடக்கு"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"அறிவிப்புகள் ஒலியடக்கப்பட்டன"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"சாதனத்தை மீண்டும் தொடங்கும் வரை மேம்பட்ட பாதுகாப்பு அமைப்பு USB அறிவிப்புகளை ஒலியடக்கியுள்ளது"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"சந்தேகத்திற்குரிய USB செயல்பாடு"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB தரவு சிக்னல் முடக்கப்பட்டுள்ளது."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"கைரேகை அன்லாக் அம்சத்தில் ஏதேனும் சிக்கலை எதிர்கொள்கிறீர்களா?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"அன்லாக் செய்யும் அனுபவத்தை மேம்படுத்தும் உதவிக்குறிப்புகளைப் பார்க்க தட்டவும்"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>

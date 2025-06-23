@@ -74,14 +74,10 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"See rakendus ei ole suurusega 16 kB ühilduv. APK joonduse kontroll ebaõnnestus. Seda rakendust käitatakse lehesuurusega ühilduvas režiimis. Parima ühilduvuse tagamiseks kompileerige rakendus 16 kB toega uuesti. Lisateave: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"See rakendus ei ole suurusega 16 kB ühilduv. ELF-i joonduse kontroll ebaõnnestus. Seda rakendust käitatakse lehesuurusega ühilduvas režiimis. Parima ühilduvuse tagamiseks kompileerige rakendus 16 kB toega uuesti. Lisateave: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"See rakendus ei ole suurusega 16 kB ühilduv. APK ja ELF-i joonduse kontroll ebaõnnestus. Seda rakendust käitatakse lehesuurusega ühilduvas režiimis. Parima ühilduvuse tagamiseks kompileerige rakendus 16 kB toega uuesti. Lisateave: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (2104642120436642689) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (8038334656395476900) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5417036941497610850) -->
-    <skip />
-    <!-- no translation found for page_size_compat_never_show (3391282612422783097) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"See hoiatus kuvatakse, kuna see on silutav rakendus, mida praegu testitakse. Kui te pole arendaja, teavitage sellest arendajat ja paluge mittesilutavat rakendust. See rakendus pole 16 kB-ga ühilduv. APK joonduse kontroll ebaõnnestus. Järgige juhiseid saidil &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"See hoiatus kuvatakse, kuna see on silutav rakendus, mida praegu testitakse. Kui te pole arendaja, teavitage sellest arendajat ja paluge mittesilutavat rakendust. See rakendus pole 16 kB-ga ühilduv. ELF-i joonduse kontroll ebaõnnestus. Järgige juhiseid saidil &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"See hoiatus kuvatakse, kuna see on silutav rakendus, mida praegu testitakse. Kui te pole arendaja, teavitage sellest arendajat ja paluge mittesilutavat rakendust. See rakendus pole 16 kB-ga ühilduv. APK ja ELF-i joonduse kontroll ebaõnnestus. Järgige juhiseid saidil &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ära kuva uuesti"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Teenus pole ette valmistatud."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Helistaja ID seadet ei saa muuta."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Mobiilne andmeside lülitati operaatorile <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -681,10 +677,8 @@
     <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"Võimaldab rakendusel pääseda juurde teie ümbruskonna üksikasjalikele jälgimisandmetele."</string>
     <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"juurdepääs XR-i andmetele, kui rakendus pole esiplaanil"</string>
     <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"Võimaldab rakendusel pääseda juurde XR-i andmetele, kui rakendus pole esiplaanil."</string>
-    <!-- no translation found for permlab_capture_keyboard (4076894823382693032) -->
-    <skip />
-    <!-- no translation found for permdesc_capture_keyboard (4192269470684407219) -->
-    <skip />
+    <string name="permlab_capture_keyboard" msgid="4076894823382693032">"võtmete haldamine"</string>
+    <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Võimaldab rakendusel hallata võtmeid enne, kui süsteem saab töödelda süsteemi otseteid ja toiminguid."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Biomeetria kasutamine"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"Biomeetria või ekraaniluku kasutamine"</string>
     <string name="biometric_dialog_default_title" msgid="55026799173208210">"Kinnitage oma isik"</string>
@@ -2568,29 +2562,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Rakendused"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Teie sõrmejälgi ei saa enam tuvastada. Seadistage sõrmejäljega avamine uuesti."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Turvalisus ja privaatsus"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"Avage esmalt ekraan"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"Avage ekraan ja ühendage uuesti"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"Täiustatud kaitse nõuab USB andmete edastamiseks teie tavalist ekraaniluku avamist"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"Täiustatud kaitse nõuab USB andmete edastamiseks teie tavalist ekraaniluku avamist"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"Täiustatud kaitse nõuab USB edastuseks või kiirlaadimiseks ekraani avamist"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"Täiustatud kaitse nõuab USB edastuseks või kiirlaadimiseks ekraani avamist"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"Täiustatud kaitse nõuab USB kiirlaadimiseks teie tavapärast ekraani avamist"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"Täiustatud kaitse nõuab USB kiirlaadimiseks teie tavapärast ekraani avamist"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Vaigista"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Märguanded on vaigistatud"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"Täiustatud kaitse USB märguanded vaigistatakse kuni seadme taaskäivitamiseni"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Kahtlane tegevus USB-ga"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB andmesignaal on keelatud."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Kas teil on sõrmejäljega avamisega probleeme?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Puudutage, et vaadata üle nõuanded lukust avamise kogemuse täiustamiseks"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>

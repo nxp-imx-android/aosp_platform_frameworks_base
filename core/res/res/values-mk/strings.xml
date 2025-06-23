@@ -2562,29 +2562,21 @@
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Апликации"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"Вашите отпечатоци веќе не може да се препознаат. Поставете „Отклучување со отпечаток“ повторно."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Безбедност и приватност"</string>
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_title (7202983697003493711) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_title (2648733588653060170) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_notification_text (1628936399413661929) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_replug_notification_text (608846071408348658) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text (1240936298914360256) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text (6370672468652821937) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_notification_text (1673711307740787848) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_plugged_in_for_power_brick_replug_notification_text (1244847752922938852) -->
-    <skip />
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_title" msgid="7202983697003493711">"Прво отклучете го екранот"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_title" msgid="2648733588653060170">"Отклучете и поврзете одново"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_notification_text" msgid="1628936399413661929">"„Напредна заштита“ бара да го отклучите екранот стандардно за пренос на податоци преку USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_replug_notification_text" msgid="608846071408348658">"„Напредна заштита“ бара да го отклучите екранот стандардно за пренос на податоци преку USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_notification_text" msgid="1240936298914360256">"„Напредна заштита“ бара да го отклучите екранот за пренос или брзо полнење преку USB"</string>
+    <string name="usb_apm_usb_plugged_in_when_locked_low_power_charge_replug_notification_text" msgid="6370672468652821937">"„Напредна заштита“ бара да го отклучите екранот за пренос или брзо полнење преку USB"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_notification_text" msgid="1673711307740787848">"„Напредна заштита“ бара да го отклучите екранот стандардно за брзо полнење преку USB"</string>
+    <string name="usb_apm_usb_plugged_in_for_power_brick_replug_notification_text" msgid="1244847752922938852">"„Напредна заштита“ бара да го отклучите екранот стандардно за брзо полнење преку USB"</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_silence_action_text" msgid="5495539757631669634">"Исклучи го звукот"</string>
-    <!-- no translation found for usb_apm_usb_notification_silenced_title (5114203793430169863) -->
-    <skip />
-    <!-- no translation found for usb_apm_usb_notification_silenced_text (6414815636131602513) -->
-    <skip />
+    <string name="usb_apm_usb_notification_silenced_title" msgid="5114203793430169863">"Звукот на известувањата е исклучен"</string>
+    <string name="usb_apm_usb_notification_silenced_text" msgid="6414815636131602513">"Звукот на известувањата за „Напредна заштита“ за USB е исклучен додека не го рестартирате уредот"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_title" msgid="3461195995882871461">"Сомнителна активност на USB-уредот"</string>
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Сигналот со податоци преку USB е оневозможен."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Имате проблем со „Отклучување со отпечаток“?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Допрете за да прегледате совети за подобрување на доживувањето со отклучување"</string>
+    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
+    <skip />
 </resources>
