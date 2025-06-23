@@ -331,7 +331,11 @@ fun ActionList(
             Chip(
                 action = action,
                 modifier =
-                    Modifier.onSizeChanged { childHeights[index] = it.height }
+                    Modifier.onSizeChanged {
+                            if (index < childHeights.size) {
+                                childHeights[index] = it.height
+                            }
+                        }
                         .graphicsLayer {
                             translationY = (1f - translation) * appxColumnY
                             scaleX = scale
