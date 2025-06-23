@@ -6043,7 +6043,7 @@ public class Notification implements Parcelable
             contentView.setDrawableTint(
                     R.id.phishing_alert,
                     false /* targetBackground */,
-                    getColors(p).getErrorColor(),
+                    getPrimaryTextColor(p),
                     PorterDuff.Mode.SRC_ATOP);
         }
 
