@@ -552,8 +552,17 @@ public class PhoneWindowManager implements WindowManagerPolicy {
      * is expected that the screen will be on in a short time. Then it is unnecessary to acquire
      * screen-off-sleep-token, so it can avoid intermediate visibility or lifecycle changes.
      */
-    volatile boolean mIsGoingToSleepDefaultDisplay;
+    volatile boolean mIsGoingToSleep;
 
+    // We are only tracking the current pending sleeping or waking group and not all the groups.
+    // This is because these updates are coming from power thread via the notifier thread. As such,
+    // we DON'T expect
+    // 1. group 1 to start sleeping, and then group 2 to also start sleeping before group 1 could
+    // finish sleeping
+    // 2. group 1 to start waking, and then group 2 to also start waking before group 1 could
+    // finish waking
+    volatile int mPendingSleepingGroup;
+    volatile int mPendingWakeupGroup;
     volatile boolean mRecentsVisible;
     volatile boolean mNavBarVirtualKeyHapticFeedbackEnabled = true;
     volatile boolean mPictureInPictureVisible;
@@ -5289,8 +5298,42 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         boolean areAllDefaultAdjacentGroupsNonInteractive =
                 !mPowerManagerInternal.isAnyDefaultAdjacentGroupInteractive();
         boolean isDefaultGroupNonInteractive =
-                !mPowerManagerInternal.isGroupInteractive(DEFAULT_DISPLAY);
+                !mPowerManagerInternal.isGroupInteractive(Display.DEFAULT_DISPLAY_GROUP);
         return areAllDefaultAdjacentGroupsNonInteractive && isDefaultGroupNonInteractive;
+    }
+
+    private boolean shouldFinishSleeping(int displayGroupId) {
+        if (!com.android.server.display.feature.flags.Flags.separateTimeouts()) {
+            return displayGroupId == Display.DEFAULT_DISPLAY_GROUP;
+        }
+
+        return mPendingSleepingGroup == displayGroupId;
+    }
+
+    private boolean shouldFinishWakingUp(int displayGroupId) {
+        if (!com.android.server.display.feature.flags.Flags.separateTimeouts()) {
+            return displayGroupId == Display.DEFAULT_DISPLAY_GROUP;
+        }
+
+        return mPendingWakeupGroup == displayGroupId;
+    }
+
+    private void setPendingSleepingGroup(int displayGroupId) {
+        if (displayGroupId != Display.INVALID_DISPLAY_GROUP
+                && mPendingSleepingGroup != Display.INVALID_DISPLAY_GROUP) {
+            Log.wtf(TAG, "Unexpected pending sleeping group. Requested Group "
+                    + displayGroupId + " Current Sleeping group " + mPendingSleepingGroup);
+        }
+        mPendingSleepingGroup = displayGroupId;
+    }
+
+    private void setPendingWakingUpGroup(int displayGroupId) {
+        if (displayGroupId != Display.INVALID_DISPLAY_GROUP
+                && mPendingWakeupGroup != Display.INVALID_DISPLAY_GROUP) {
+            Log.wtf(TAG, "Unexpected pending wakeup group. Requested Group "
+                    + displayGroupId + " Current Waking up group " + mPendingWakeupGroup);
+        }
+        mPendingWakeupGroup = displayGroupId;
     }
 
     // Either of the default or default adjacent groups should be interactive
@@ -5309,7 +5352,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 mPowerManagerInternal.isAnyDefaultAdjacentGroupInteractive();
         boolean isDefaultGroupInteractive = mPowerManagerInternal
                 .isGroupInteractive(DEFAULT_DISPLAY);
-
         return isAnyDefaultAdjacentGroupInteractive || isDefaultGroupInteractive;
     }
 
@@ -5329,7 +5371,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         mRequestedOrSleepingDefaultDisplay = true;
-        mIsGoingToSleepDefaultDisplay = true;
+        mIsGoingToSleep = true;
+        setPendingSleepingGroup(displayGroupId);
 
         if (mKeyguardDelegate != null) {
             mKeyguardDelegate.onStartedGoingToSleep(pmSleepReason);
@@ -5340,7 +5383,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     @Override
     public void finishedGoingToSleep(int displayGroupId,
             @PowerManager.GoToSleepReason int pmSleepReason) {
-        if (!isReadyToSignalSleep(displayGroupId)) {
+        if (!shouldFinishSleeping(displayGroupId)) {
             return;
         }
 
@@ -5354,7 +5397,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         MetricsLogger.histogram(mContext, "screen_timeout", mLockScreenTimeout / 1000);
 
         mRequestedOrSleepingDefaultDisplay = false;
-        mIsGoingToSleepDefaultDisplay = false;
+        mIsGoingToSleep = false;
+        setPendingSleepingGroup(Display.INVALID_DISPLAY_GROUP);
+
         mDefaultDisplayPolicy.setAwake(false);
 
         // We must get this work done here because the power manager will drop
@@ -5392,7 +5437,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
         EventLogTags.writeScreenToggled(1);
 
-        mIsGoingToSleepDefaultDisplay = false;
+        mIsGoingToSleep = false;
+        setPendingWakingUpGroup(displayGroupId);
         mDefaultDisplayPolicy.setAwake(true);
 
         // Since goToSleep performs these functions synchronously, we must
@@ -5422,10 +5468,11 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                                     pmWakeReason)) + ")");
         }
 
-        if (!isReadyToSignalWakeup(displayGroupId)) {
+        if (!shouldFinishWakingUp(displayGroupId)) {
             return;
         }
 
+        setPendingWakingUpGroup(Display.INVALID_DISPLAY_GROUP);
         if (mKeyguardDelegate != null) {
             mKeyguardDelegate.onFinishedWakingUp();
         }
@@ -5499,7 +5546,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (DEBUG_WAKEUP) Slog.i(TAG, "Display" + displayId + " turned off...");
 
         if (displayId == DEFAULT_DISPLAY) {
-            final boolean acquireSleepToken = !isSwappingDisplay || mIsGoingToSleepDefaultDisplay;
+            final boolean acquireSleepToken = !isSwappingDisplay || mIsGoingToSleep;
             mRequestedOrSleepingDefaultDisplay = false;
             mDefaultDisplayPolicy.screenTurnedOff(acquireSleepToken);
             synchronized (mLock) {
