@@ -27,6 +27,7 @@ import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_DENIED;
 import static android.app.ActivityOptions.MODE_BACKGROUND_ACTIVITY_START_SYSTEM_DEFINED;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.os.Build.VERSION_CODES.BAKLAVA;
 import static android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
 import static android.os.Process.INVALID_PID;
 import static android.os.Process.INVALID_UID;
@@ -35,7 +36,6 @@ import static android.os.Process.SYSTEM_UID;
 import static android.provider.DeviceConfig.NAMESPACE_WINDOW_MANAGER;
 import static android.security.Flags.asmOptSystemIntoEnforcement;
 
-import static com.android.server.wm.ActivityStarter.ASM_RESTRICTIONS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_ACTIVITY_STARTS;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -141,6 +141,10 @@ public class BackgroundActivityStartController {
     @EnabledAfter(targetSdkVersion = UPSIDE_DOWN_CAKE)
     private static final long DEFAULT_RESCIND_BAL_PRIVILEGES_FROM_PENDING_INTENT_CREATOR =
             296478951;
+    /**  Feature flag for go/activity-security rules */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = BAKLAVA)
+    static final long ASM_RESTRICTIONS = 230590090L;
     public static final ActivityOptions ACTIVITY_OPTIONS_SYSTEM_DEFINED =
             ActivityOptions.makeBasic()
                     .setPendingIntentBackgroundActivityStartMode(

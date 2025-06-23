@@ -105,8 +105,6 @@ import android.app.WindowConfiguration;
 import android.app.WindowConfiguration.WindowingMode;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
-import android.compat.annotation.Disabled;
-import android.compat.annotation.EnabledSince;
 import android.compat.annotation.Overridable;
 import android.content.Context;
 import android.content.IIntentSender;
@@ -121,7 +119,6 @@ import android.content.pm.ResolveInfo;
 import android.content.pm.UserInfo;
 import android.content.res.Configuration;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.OperationCanceledException;
@@ -181,20 +178,6 @@ class ActivityStarter {
      * launching too many activities in a task.
      */
     private static final long MAX_TASK_WEIGHT_FOR_ADDING_ACTIVITY = 300;
-
-    /**
-     * Feature flag to protect PendingIntent being abused to start background activity.
-     */
-    @ChangeId
-    @EnabledSince(targetSdkVersion = Build.VERSION_CODES.TIRAMISU)
-    static final long ENABLE_PENDING_INTENT_BAL_OPTION = 192341120L;
-
-    /**
-     * Feature flag for go/activity-security rules
-     */
-    @ChangeId
-    @Disabled
-    static final long ASM_RESTRICTIONS = 230590090L;
 
     @ChangeId
     @Overridable
