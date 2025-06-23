@@ -436,6 +436,70 @@ android_library {
     ],
 }
 
+// Defaults for both SystemUI-core and SystemUI-application, used while we migrate code to pods.
+java_defaults {
+    name: "SystemUI-srcs-defaults",
+    product_variables: {
+        debuggable: {
+            srcs: [":DebugJavaFiles"],
+            exclude_srcs: [":ReleaseJavaFiles"],
+        },
+    },
+    use_resource_processor: true,
+    resource_dirs: [],
+    libs: [
+        "keepanno-annotations",
+    ],
+    javacflags: [
+        "-Adagger.fastInit=enabled",
+        "-Adagger.explicitBindingConflictsWithInject=ERROR",
+        "-Adagger.strictMultibindingValidation=enabled",
+        "-Adagger.useBindingGraphFix=ENABLED",
+        "-Aroom.schemaLocation=frameworks/base/packages/SystemUI/schemas",
+    ],
+    kotlincflags: [
+        "-Xjvm-default=all",
+        "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+        "-P plugin:androidx.compose.compiler.plugins.kotlin:sourceInformation=true",
+    ],
+    plugins: [
+        "androidx.room_room-compiler-plugin",
+        "dagger2-compiler",
+    ],
+    lint: {
+        extra_check_modules: ["SystemUILintChecker"],
+        warning_checks: ["MissingApacheLicenseDetector"],
+        baseline_filename: "lint-baseline.xml",
+    },
+}
+
+// The set of sources that instantiate the AOSP System UI Application (including Dagger graph)
+filegroup {
+    name: "SystemUI-application-srcs",
+    srcs: [
+        "src/com/android/systemui/SystemUIService.java",
+        "src/com/android/systemui/SystemUIInitializer.java",
+        "src/com/android/systemui/SystemUIInitializerImpl.kt",
+        "src/com/android/systemui/SystemUIAppComponentFactoryBase.kt",
+        "src/com/android/systemui/PhoneSystemUIAppComponentFactory.kt",
+        "src/com/android/systemui/application/ApplicationContextInitializer.kt",
+        "src/com/android/systemui/application/ApplicationContextAvailableCallback.kt",
+        "src/com/android/systemui/application/impl/SystemUIApplicationImpl.java",
+        "src/com/android/systemui/dagger/DefaultComponentBinder.java",
+        "src/com/android/systemui/dagger/DefaultServiceBinder.java",
+        "src/com/android/systemui/dagger/SystemUIModule.java",
+        "src/com/android/systemui/dagger/SysUIComponent.java",
+        "src/com/android/systemui/dagger/ReferenceSysUIComponent.java",
+        "src/com/android/systemui/dagger/ReferenceGlobalRootComponent.java",
+        "src/com/android/systemui/dagger/GlobalRootComponent.java",
+        "src/com/android/systemui/dagger/GlobalModule.java",
+        "src/com/android/systemui/screenshot/policy/ScreenshotPolicyModule.kt",
+        "src/com/android/systemui/screenshot/dagger/ScreenshotModule.java",
+    ],
+    path: "src",
+    visibility: ["//visibility:private"],
+}
+
 filegroup {
     name: "SystemUI-core-srcs",
     srcs: [
@@ -443,6 +507,8 @@ filegroup {
         "src/**/*.java",
         "src/**/I*.aidl",
     ],
+    // See SystemUI-application for why these are excluded
+    exclude_srcs: [":SystemUI-application-srcs"],
     path: "src",
     visibility: ["//visibility:private"],
 }
@@ -455,17 +521,10 @@ android_library {
         "compose/features/src/**/*.kt",
         "compose/facade/enabled/src/**/*.kt",
     ],
-    product_variables: {
-        debuggable: {
-            srcs: [":DebugJavaFiles"],
-            exclude_srcs: [":ReleaseJavaFiles"],
-        },
-    },
-    use_resource_processor: true,
-    resource_dirs: [],
+    defaults: ["SystemUI-srcs-defaults"],
     static_libs: [
         "//frameworks/libs/systemui:compilelib",
-        "com.android.systemui.pods-aosp-handheld",
+        "com.android.systemui.pods-api-aosp-handheld",
         "SystemUI-res",
         "WifiTrackerLib",
         "WindowManager-Shell",
@@ -541,39 +600,30 @@ android_library {
         "displaylib",
         "aconfig_settings_flags_lib",
     ],
-    libs: [
-        "keepanno-annotations",
-    ],
-    manifest: "AndroidManifest.xml",
-
-    javacflags: [
-        "-Adagger.fastInit=enabled",
-        "-Adagger.explicitBindingConflictsWithInject=ERROR",
-        "-Adagger.strictMultibindingValidation=enabled",
-        "-Adagger.useBindingGraphFix=ENABLED",
-        "-Aroom.schemaLocation=frameworks/base/packages/SystemUI/schemas",
-    ],
-    kotlincflags: [
-        "-Xjvm-default=all",
-        "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
-        "-P plugin:androidx.compose.compiler.plugins.kotlin:sourceInformation=true",
-    ],
-
-    plugins: [
-        "androidx.room_room-compiler-plugin",
-        "dagger2-compiler",
-    ],
-
-    lint: {
-        extra_check_modules: ["SystemUILintChecker"],
-        warning_checks: ["MissingApacheLicenseDetector"],
-        baseline_filename: "lint-baseline.xml",
-    },
 }
 
 platform_compat_config {
-    name: "SystemUI-core-compat-config",
-    src: ":SystemUI-core",
+    name: "SystemUI-application-compat-config",
+    src: ":SystemUI-application",
+}
+
+// The top-level build target that creates AOSP System UI Application (including Dagger graph).
+// This is kept separate from SystemUI-core as part of our modularization effort. (See
+// go/podularization for more details on our modularization effort.)
+// Any implementation code inside modules (com/android/systemui/pods/**) is not part of
+// SystemUI-core, which means changes to those files don't require re-building the massive
+// SystemUI-core target.
+android_library {
+    name: "SystemUI-application",
+    srcs: [":SystemUI-application-srcs"],
+    defaults: ["SystemUI-srcs-defaults"],
+    static_libs: [
+        "SystemUI-core",
+        "com.android.systemui.pods-api-aosp-handheld",
+        "com.android.systemui.pods-impl-aosp-handheld",
+
+    ],
+    manifest: "AndroidManifest.xml",
 }
 
 filegroup {
@@ -778,6 +828,7 @@ android_library {
     srcs: [
         "tests/src/**/*.kt",
         "tests/src/**/*.java",
+        ":SystemUI-application-srcs",
         ":SystemUI-core-srcs",
         ":ReleaseJavaFiles",
         ":SystemUI-tests-multivalent",
@@ -787,7 +838,8 @@ android_library {
     ],
     static_libs: [
         "//frameworks/libs/systemui:compilelib",
-        "com.android.systemui.pods-aosp-handheld",
+        "com.android.systemui.pods-api-aosp-handheld",
+        "com.android.systemui.pods-impl-aosp-handheld",
         "SystemUI-tests-base",
         "androidx.test.uiautomator_uiautomator",
         "androidx.core_core-animation-testing",
@@ -851,6 +903,7 @@ android_app {
         "//frameworks/libs/systemui:compilelib",
         "SystemUI-tests-base",
         "androidx.compose.runtime_runtime",
+        "SystemUI-application",
         "SystemUI-core",
     ],
     libs: [
@@ -978,6 +1031,7 @@ android_ravenwood_test {
         ":SystemUI-tests-res{.aapt.srcjar}",
     ],
     static_libs: [
+        "SystemUI-application",
         "SystemUI-core",
         "SystemUI-tests-base",
         "androidx.test.uiautomator_uiautomator",
@@ -1044,7 +1098,7 @@ android_app {
         "wmshell_defaults",
     ],
     static_libs: [
-        "SystemUI-core",
+        "SystemUI-application",
     ],
     resource_dirs: [],
 
