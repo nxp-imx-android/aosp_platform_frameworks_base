@@ -1715,7 +1715,10 @@ public final class CameraManager {
     @TestApi
     public static int getRotationOverrideInternal(@Nullable Context context,
             @Nullable PackageManager packageManager, @Nullable String packageName) {
-        // Check if WindowManager has requested camera compat mode.
+        if (!CameraManagerGlobal.sLandscapeToPortrait) {
+            return ICameraService.ROTATION_OVERRIDE_NONE;
+        }
+
         // Isolated process does not have access to ActivityTaskManager service, which is used
         // indirectly in `ActivityManager.getAppTasks()`.
         if (context != null && !Process.isIsolated()) {
@@ -1734,11 +1737,6 @@ public final class CameraManager {
                     }
                 }
             }
-        }
-
-        // Check static landscape-to-portrait override.
-        if (!CameraManagerGlobal.sLandscapeToPortrait) {
-            return ICameraService.ROTATION_OVERRIDE_NONE;
         }
 
         if (packageManager != null && packageName != null) {
