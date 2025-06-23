@@ -33,6 +33,9 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".activities.BlurOnOffActivity" />
+        <activity android:name=".activities.BlurRegionActivity" />
+        <activity android:name=".activities.MovingLayerActivity" />
         <activity android:name=".activities.TrivialActivity" />
 
     </application>
