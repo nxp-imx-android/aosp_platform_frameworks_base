@@ -29,7 +29,7 @@ import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.server.wm.flicker.helpers.KeyEventHelper
 import com.android.server.wm.flicker.helpers.NonResizeableAppHelper
 import com.android.server.wm.flicker.helpers.SimpleAppHelper
-import com.android.window.flags.Flags
+import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import com.android.wm.shell.Utils
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import org.junit.After
@@ -42,14 +42,15 @@ import org.junit.Test
 @Ignore("Test Base Class")
 abstract class SnapResizeAppWindowWithKeyboardShortcuts(
     private val toLeft: Boolean = true,
-    isResizable: Boolean = true
+    isResizable: Boolean = true,
+    val rotation: Rotation = Rotation.ROTATION_0
 ) : TestScenarioBase() {
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val keyEventHelper = KeyEventHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val testApp = if (isResizable) {
+    val testApp = if (isResizable) {
         DesktopModeAppHelper(SimpleAppHelper(instrumentation))
     } else {
         DesktopModeAppHelper(NonResizeableAppHelper(instrumentation))
@@ -57,7 +58,7 @@ abstract class SnapResizeAppWindowWithKeyboardShortcuts(
 
     @Rule
     @JvmField
-    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, Rotation.ROTATION_90)
+    val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, rotation)
 
     @Before
     fun setup() {
@@ -66,7 +67,11 @@ abstract class SnapResizeAppWindowWithKeyboardShortcuts(
                 .isDesktopModeSupportedOnDisplay(DEFAULT_DISPLAY)
         )
         Assume.assumeTrue(DesktopModeFlags.ENABLE_TASK_RESIZING_KEYBOARD_SHORTCUTS.isTrue)
-        testApp.enterDesktopMode(wmHelper, device)
+        tapl.setEnableRotation(true)
+        tapl.setExpectedRotation(rotation.value)
+        tapl.enableTransientTaskbar(false)
+        ChangeDisplayOrientationRule.setRotation(rotation)
+        testApp.enterDesktopMode(wmHelper, device, shouldUseDragToDesktop = true)
     }
 
     @Test
