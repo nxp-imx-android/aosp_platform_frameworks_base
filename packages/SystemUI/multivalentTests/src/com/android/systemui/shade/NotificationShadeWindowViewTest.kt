@@ -50,6 +50,7 @@ import com.android.systemui.shade.data.repository.ShadeAnimationRepository
 import com.android.systemui.shade.data.repository.ShadeRepositoryImpl
 import com.android.systemui.shade.domain.interactor.PanelExpansionInteractor
 import com.android.systemui.shade.domain.interactor.ShadeAnimationInteractorLegacyImpl
+import com.android.systemui.shade.domain.interactor.shadeStatusBarComponentsInteractor
 import com.android.systemui.statusbar.BlurUtils
 import com.android.systemui.statusbar.DragDownHelper
 import com.android.systemui.statusbar.LockscreenShadeTransitionController
@@ -67,6 +68,7 @@ import com.android.systemui.statusbar.phone.ConfigurationForwarder
 import com.android.systemui.statusbar.phone.DozeScrimController
 import com.android.systemui.statusbar.phone.DozeServiceHost
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
+import com.android.systemui.testKosmos
 import com.android.systemui.unfold.SysUIUnfoldComponent
 import com.android.systemui.unfold.UnfoldTransitionProgressProvider
 import com.android.systemui.util.mockito.any
@@ -96,6 +98,8 @@ import org.mockito.kotlin.mock
 @RunWithLooper(setAsMainLooper = true)
 @SmallTest
 class NotificationShadeWindowViewTest : SysuiTestCase() {
+
+    private val kosmos = testKosmos()
 
     @Mock private lateinit var choreographer: Choreographer
     @Mock private lateinit var blurUtils: BlurUtils
@@ -221,6 +225,7 @@ class NotificationShadeWindowViewTest : SysuiTestCase() {
                 { configurationForwarder },
                 brightnessMirrorShowingInteractor,
                 UnconfinedTestDispatcher(),
+                kosmos.shadeStatusBarComponentsInteractor,
             )
 
         controller.setupExpandedStatusBar()

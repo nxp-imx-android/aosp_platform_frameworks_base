@@ -197,10 +197,6 @@ constructor(
                     if (displayId != Display.DEFAULT_DISPLAY) {
                         return
                     }
-                    // TODO(b/373310629): shade should be display id aware
-                    notificationShadeWindowViewControllerLazy
-                        .get()
-                        .setStatusBarViewController(statusBarViewController)
                     // Ensure we re-propagate panel expansion values to the panel controller and
                     // any listeners it may have, such as PanelBar. This will also ensure we
                     // re-display the notification panel if necessary (for example, if

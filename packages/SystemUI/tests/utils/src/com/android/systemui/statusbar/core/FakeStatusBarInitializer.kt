@@ -42,6 +42,8 @@ class FakeStatusBarInitializer : StatusBarInitializer {
         initializedByCentralSurfaces = true
     }
 
+    override fun stop() {}
+
     override fun start() {
         startedByCoreStartable = true
     }
