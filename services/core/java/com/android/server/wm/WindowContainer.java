@@ -3209,8 +3209,7 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         // set first, since we don't want rotation included in this (for now).
         mLastSurfacePosition.set(mTmpPos.x, mTmpPos.y);
 
-        if (mTransitionController.isShellTransitionsEnabled()
-                && !mTransitionController.useShellTransitionsRotation()) {
+        if (!mTransitionController.useShellTransitionsRotation()) {
             if (deltaRotation != Surface.ROTATION_0) {
                 updateSurfaceRotation(t, deltaRotation, null /* positionLeash */);
                 mDisplayContent.setFixedTransformHint(getPendingTransaction(), mSurfaceControl,
@@ -3233,13 +3232,18 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
         // parent must be non-null otherwise deltaRotation would be 0.
         RotationUtils.rotateSurface(t, mSurfaceControl, deltaRotation);
         mTmpPos.set(mLastSurfacePosition.x, mLastSurfacePosition.y);
-        final Rect parentBounds = getParent().getBounds();
         final boolean flipped = (deltaRotation % 2) != 0;
+        final Rect parentBounds = getParentBoundsForSurfaceRotation(flipped);
         RotationUtils.rotatePoint(mTmpPos, deltaRotation,
                 flipped ? parentBounds.height() : parentBounds.width(),
                 flipped ? parentBounds.width() : parentBounds.height());
         t.setPosition(positionLeash != null ? positionLeash : mSurfaceControl,
                 mTmpPos.x, mTmpPos.y);
+    }
+
+    /** This is used to calculate the offset of rotated surface in the parent. */
+    Rect getParentBoundsForSurfaceRotation(boolean flipped) {
+        return getParent().getBounds();
     }
 
     @VisibleForTesting
