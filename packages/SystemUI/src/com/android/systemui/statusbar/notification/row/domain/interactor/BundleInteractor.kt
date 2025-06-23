@@ -27,10 +27,12 @@ import com.android.compose.animation.scene.MutableSceneTransitionLayoutState
 import com.android.compose.animation.scene.SceneKey
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.notifications.ui.composable.row.BundleHeader
+import com.android.systemui.res.R
 import com.android.systemui.statusbar.notification.row.dagger.BundleRowScope
 import com.android.systemui.statusbar.notification.row.data.model.AppData
 import com.android.systemui.statusbar.notification.row.data.repository.BundleRepository
 import com.android.systemui.statusbar.notification.row.icon.AppIconProvider
+import com.android.systemui.util.icuMessageFormat
 import com.android.systemui.util.time.SystemClock
 import com.android.systemui.utils.coroutines.flow.mapLatestConflated
 import javax.inject.Inject
@@ -61,6 +63,14 @@ constructor(
     @get:DrawableRes
     val bundleIcon: Int
         get() = repository.bundleIcon
+
+    val numberOfChildrenContentDescription: String
+        get() =
+            icuMessageFormat(
+                context.resources,
+                R.string.notification_bundle_header_counter,
+                numberOfChildren ?: 0,
+            )
 
     /** Filters the list of AppData based on time of last collapse by user. */
     private fun filterByCollapseTime(
