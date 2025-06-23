@@ -1638,6 +1638,49 @@ public class GroupHelper {
         return numChildren;
     }
 
+    /**
+     *  Checks if all the group child notifications have been bundled
+     *  (and if the summary alert should be muted)
+     * @return if the all children have been bundled
+     */
+    protected boolean isSummaryWithAllChildrenBundled(final NotificationRecord summary,
+            final List<NotificationRecord> postedNotificationsList,
+            final List<NotificationRecord> enqueuedNotificationsList) {
+        // Skip aggregate groups because the summary has GROUP_ALERT_CHILDREN flag
+        if (isAggregatedGroup(summary)) {
+            return false;
+        }
+        if (!summary.getNotification().isGroupSummary()) {
+            return false;
+        }
+
+        final String groupKey = summary.getSbn().getGroup();
+        int numChildren = 0;
+        int numBundledChildren = 0;
+        // Find all posted children for this summary
+        for (NotificationRecord r : postedNotificationsList) {
+            if (!r.getNotification().isGroupSummary()
+                    && groupKey.equals(r.getSbn().getGroup())) {
+                numChildren++;
+                if (isInBundleSection(r)) {
+                    numBundledChildren++;
+                }
+            }
+        }
+        // Find all enqueued children for this summary
+        for (NotificationRecord r : enqueuedNotificationsList) {
+            if (!r.getNotification().isGroupSummary()
+                    && groupKey.equals(r.getSbn().getGroup())) {
+                numChildren++;
+                if (isInBundleSection(r)) {
+                    numBundledChildren++;
+                }
+            }
+        }
+
+        return (numChildren > 0 && numBundledChildren == numChildren);
+    }
+
     private static boolean isGroupSummaryWithoutChildren(final NotificationRecord record,
             final List<NotificationRecord> notificationList) {
         final StatusBarNotification sbn = record.getSbn();
