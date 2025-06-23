@@ -59,7 +59,6 @@ import com.android.systemui.statusbar.phone.ConfigurationForwarder
 import com.android.systemui.statusbar.phone.domain.interactor.ShadeDarkIconInteractor
 import com.android.systemui.statusbar.phone.domain.interactor.ShadeDarkIconInteractorImpl
 import com.android.systemui.statusbar.policy.ConfigurationController
-import com.android.systemui.statusbar.ui.SystemBarUtilsState
 import com.android.systemui.utils.windowmanager.WindowManagerProvider
 import com.android.window.flags.Flags
 import dagger.Module
@@ -209,17 +208,6 @@ object ShadeDisplayAwareModule {
         } else {
             configurationState
         }
-    }
-
-    @SysUISingleton
-    @Provides
-    @ShadeDisplayAware
-    fun shadeDisplayAwareSystemBarUtilsState(
-        @ShadeDisplayAware context: Context,
-        @ShadeDisplayAware configurationController: ConfigurationController,
-        factory: SystemBarUtilsState.Factory,
-    ): SystemBarUtilsState {
-        return factory.create(context, configurationController)
     }
 
     @SysUISingleton
