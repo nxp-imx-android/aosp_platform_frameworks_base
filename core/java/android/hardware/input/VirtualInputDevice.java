@@ -55,9 +55,6 @@ abstract class VirtualInputDevice implements Closeable {
     @FlaggedApi(com.android.hardware.input.Flags.FLAG_CREATE_VIRTUAL_KEYBOARD_API)
     @SystemApi
     public int getInputDeviceId() {
-        if (!com.android.hardware.input.Flags.createVirtualKeyboardApi()) {
-            throw new UnsupportedOperationException("Required flag is not enabled");
-        }
         try {
             return mVirtualInputDevice.getInputDeviceId();
         } catch (RemoteException e) {
