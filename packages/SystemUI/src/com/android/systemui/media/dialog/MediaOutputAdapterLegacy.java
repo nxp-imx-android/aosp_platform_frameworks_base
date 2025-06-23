@@ -447,7 +447,15 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
                 public void onUnmute() {}
             };
 
-            if (!mController.isVolumeControlEnabledForSession()) {
+            // When Flags.enableOutputSwitcherPersonalAudioSharing() is on, no need to show disabled
+            // seek bar for volume control disabled session because devices won't be collapsed.
+            // This is a side effect of broadcast design: broadcast devices should be controlled
+            // separately so they should not be collapsed, so isVolumeControlEnabledForSession is
+            // added to {@link MediaOutputAdapter#updateItems()}. The logic will spread to casting
+            // devices without group volume control, so disabling seek bar will be unnecessary when
+            // Flags.enableOutputSwitcherPersonalAudioSharing() is on.
+            if (!Flags.enableOutputSwitcherPersonalAudioSharing()
+                    && !mController.isVolumeControlEnabledForSession()) {
                 disableSeekBar();
             } else {
                 enableSeekBar(volumeControl);
