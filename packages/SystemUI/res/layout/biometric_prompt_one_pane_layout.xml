@@ -48,6 +48,16 @@
         app:layout_constraintTop_toTopOf="@+id/topGuideline"
         app:layout_constraintVertical_bias="1.0" />
 
+    <FrameLayout
+        android:id="@+id/credential_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/panel"
+        app:layout_constraintBottom_toBottomOf="@id/panel"
+        app:layout_constraintStart_toStartOf="@id/panel"
+        app:layout_constraintEnd_toEndOf="@id/panel" />
+
     <com.android.systemui.deviceentry.ui.view.UdfpsAccessibilityOverlay
         android:id="@+id/biometric_prompt_udfps_accessibility_overlay"
         android:layout_width="0dp"
