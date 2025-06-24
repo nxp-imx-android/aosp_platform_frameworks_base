@@ -37,6 +37,12 @@ import static android.app.ActivityManager.LOCK_TASK_MODE_NONE;
 import static android.app.ActivityManagerInternal.ALLOW_NON_FULL;
 import static android.app.ActivityTaskManager.INVALID_TASK_ID;
 import static android.app.ActivityTaskManager.RESIZE_MODE_PRESERVE_WINDOW;
+import static android.app.HandoffFailureCode.HANDOFF_FAILURE_EMPTY_TASK;
+import static android.app.HandoffFailureCode.HANDOFF_FAILURE_INTERNAL_ERROR;
+import static android.app.HandoffFailureCode.HANDOFF_FAILURE_TIMEOUT;
+import static android.app.HandoffFailureCode.HANDOFF_FAILURE_UNKNOWN_TASK;
+import static android.app.HandoffFailureCode.HANDOFF_FAILURE_UNSUPPORTED_DEVICE;
+import static android.app.HandoffFailureCode.HANDOFF_FAILURE_UNSUPPORTED_TASK;
 import static android.app.WindowConfiguration.ACTIVITY_TYPE_DREAM;
 import static android.app.WindowConfiguration.WINDOWING_MODE_PINNED;
 import static android.content.Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS;
@@ -149,12 +155,14 @@ import android.app.AnrController;
 import android.app.AppGlobals;
 import android.app.AppOpsManager;
 import android.app.Dialog;
+import android.app.HandoffActivityData;
 import android.app.IActivityClientController;
 import android.app.IActivityController;
 import android.app.IActivityTaskManager;
 import android.app.IAppTask;
 import android.app.IApplicationThread;
 import android.app.IAssistDataReceiver;
+import android.app.IHandoffTaskDataReceiver;
 import android.app.INotificationManager;
 import android.app.IScreenCaptureObserver;
 import android.app.ITaskStackListener;
@@ -466,6 +474,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     // being called for multi-window assist in a single session.
     private int mViSessionId = 1000;
 
+    // How long to wait in requestHandoffTaskData for the activity to respond
+    // with a result.
+    private static final int HANDOFF_TASK_DATA_REQUEST_TIMEOUT = 500;
+
     // How long to wait in getAssistContextExtras for the activity and foreground services
     // to respond with the result.
     private static final int PENDING_ASSIST_EXTRAS_TIMEOUT = 500;
@@ -478,6 +490,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     private static final int PENDING_AUTOFILL_ASSIST_STRUCTURE_TIMEOUT = 2000;
 
     private final ArrayList<PendingAssistExtras> mPendingAssistExtras = new ArrayList<>();
+    private final ArrayList<PendingHandoffTaskDataRequest> mPendingHandoffTaskDataRequests
+        = new ArrayList<>();
 
     // Keeps track of the active voice interaction service component, notified from
     // VoiceInteractionManagerService
@@ -2815,6 +2829,63 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
     }
 
+    private void notifyHandoffTaskDataRequestFailed(
+        IHandoffTaskDataReceiver receiver,
+        int taskId,
+        int failureCode) {
+        try {
+            receiver.onHandoffTaskDataRequestFailed(taskId, failureCode);
+        } catch (RemoteException e) {
+            Slog.e(
+                TAG,
+                "Failed to notify receiver of handoff task data request failure.",
+                e);
+        }
+    }
+
+    @Override
+    public void reportHandoffActivityData(IBinder requestToken, List<HandoffActivityData> data) {
+        Slog.v(TAG, "reportHandoffActivityData");
+        final PendingHandoffTaskDataRequest request = (PendingHandoffTaskDataRequest) requestToken;
+        synchronized (mGlobalLock) {
+            if (!mPendingHandoffTaskDataRequests.remove(request)) {
+                Slog.w(TAG, "PendingHandoffTaskDataRequest was already dequeued.");
+                return;
+            }
+        }
+
+        Slog.v(TAG, "Returning HandoffActivityData to receiver.");
+        for (int i = 0; i < data.size(); i++) {
+            final HandoffActivityData activityData = data.get(i);
+            if (activityData == null) {
+                Slog.w(TAG, "Received null HandoffActivityData from Activity.");
+                notifyHandoffTaskDataRequestFailed(
+                    request.receiver,
+                    request.taskId,
+                    HANDOFF_FAILURE_UNSUPPORTED_TASK);
+                return;
+            }
+        }
+
+        if (data == null) {
+            Slog.w(TAG, "No HandoffActivityData provided.");
+            notifyHandoffTaskDataRequestFailed(
+                request.receiver,
+                request.taskId,
+                HANDOFF_FAILURE_EMPTY_TASK);
+            return;
+        }
+
+        try {
+            request.receiver.onHandoffTaskDataRequestSucceeded(request.taskId, data);
+        } catch (RemoteException e) {
+            Slog.e(
+                TAG,
+                "Failed to notify receiver of handoff task data request success.",
+                e);
+        }
+    }
+
     @Override
     public void reportAssistContextExtras(IBinder assistToken, Bundle extras,
             AssistStructure structure, AssistContent content, Uri referrer) {
@@ -3608,6 +3679,25 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
     }
 
+    private void onHandoffActivityDataRequestTimedOut(PendingHandoffTaskDataRequest request) {
+        Slog.w(TAG, "onHandoffActivityDataRequestTimedOut");
+
+        synchronized (mGlobalLock) {
+            if (!mPendingHandoffTaskDataRequests.remove(request)) {
+                Slog.i(
+                        TAG,
+                        "PendingHandoffTaskDataRequest time out ignored - request has already"
+                            + " completed.");
+                return;
+            }
+        }
+
+        notifyHandoffTaskDataRequestFailed(
+            request.receiver,
+            request.taskId,
+            HANDOFF_FAILURE_TIMEOUT);
+    }
+
     private void pendingAssistExtrasTimedOut(PendingAssistExtras pae) {
         IAssistDataReceiver receiver;
         synchronized (mGlobalLock) {
@@ -3622,6 +3712,117 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             try {
                 pae.receiver.onHandleAssistData(sendBundle);
             } catch (RemoteException e) {
+            }
+        }
+    }
+
+    private class PendingHandoffTaskDataRequest extends Binder implements Runnable {
+
+        public final int taskId;
+        public final IHandoffTaskDataReceiver receiver;
+
+        private PendingHandoffTaskDataRequest(
+            int taskId,
+            @NonNull IHandoffTaskDataReceiver receiver) {
+            this.taskId = taskId;
+            this.receiver = receiver;
+        }
+
+        @Override
+        public void run() {
+            Slog.w(TAG, "getHandoffTaskData failed: timeout");
+            onHandoffActivityDataRequestTimedOut(this);
+        }
+    }
+
+    @VisibleForTesting
+    public void requestHandoffTaskData(int taskId, IHandoffTaskDataReceiver receiver) {
+        synchronized (mGlobalLock) {
+            if (!android.companion.Flags.enableTaskContinuity()) {
+                Slog.w(TAG, "Handoff is not supported on this device.");
+                mH.post(() -> {
+                    notifyHandoffTaskDataRequestFailed(
+                        receiver,
+                        taskId,
+                        HANDOFF_FAILURE_UNSUPPORTED_DEVICE);
+                });
+                return;
+            }
+
+            final Task task = mRootWindowContainer.anyTaskForId(taskId);
+            if (task == null) {
+                Slog.w(TAG, "No task found for taskId: " + taskId);
+                mH.post(() -> {
+                    notifyHandoffTaskDataRequestFailed(
+                        receiver,
+                        taskId,
+                        HANDOFF_FAILURE_UNKNOWN_TASK);
+                });
+                return;
+            }
+
+            final ActivityRecord activity = task.getTopNonFinishingActivity();
+
+            if (activity == null) {
+                Slog.w(TAG, "No activities found for taskId: " + taskId);
+                mH.post(() -> {
+                    notifyHandoffTaskDataRequestFailed(
+                        receiver,
+                        taskId,
+                        HANDOFF_FAILURE_EMPTY_TASK);
+                });
+                return;
+            }
+
+            if (!activity.isHandoffEnabled()) {
+                Slog.w(TAG, "Handoff disabled for activity: " + activity);
+                mH.post(() -> {
+                    notifyHandoffTaskDataRequestFailed(
+                        receiver,
+                        taskId,
+                        HANDOFF_FAILURE_UNSUPPORTED_TASK);
+                });
+                return;
+            }
+
+            if (activity.attachedToProcess() && activity.isState(RESUMED)) {
+                Slog.i(
+                    TAG,
+                    "Requesting HandoffActivityData from running activity: " + activity);
+
+                // Create a pending request object and setup a timeout.
+                final PendingHandoffTaskDataRequest request =
+                    new PendingHandoffTaskDataRequest(taskId, receiver);
+                mPendingHandoffTaskDataRequests.add(request);
+                mH.postDelayed(request, HANDOFF_TASK_DATA_REQUEST_TIMEOUT);
+
+                try {
+                    activity.app.getThread().requestHandoffActivityData(
+                        request,
+                        List.of(activity.token));
+                } catch (RemoteException e) {
+                    Slog.w(
+                        TAG,
+                        "Could not get HandoffActivityData from activity. The app's process may"
+                        + " have died.");
+
+                    mPendingHandoffTaskDataRequests.remove(request);
+                    mH.post(() -> {
+                        notifyHandoffTaskDataRequestFailed(
+                            receiver,
+                            taskId,
+                            HANDOFF_FAILURE_INTERNAL_ERROR);
+                    });
+                }
+            } else {
+                // TODO: Implement pulling HandoffActivityData from
+                // activities in the background.
+                mH.post(() -> {
+                    notifyHandoffTaskDataRequestFailed(
+                        receiver,
+                        taskId,
+                        HANDOFF_FAILURE_INTERNAL_ERROR);
+                });
             }
         }
     }
@@ -7712,6 +7913,13 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         @Override
         public boolean isAssistDataForActivitiesAllowed(List<IBinder> activityTokens) {
             return ActivityTaskManagerService.this.isAssistDataForActivitiesAllowed(activityTokens);
+        }
+
+        @Override
+        public void requestHandoffTaskData(
+            int taskId,
+            @NonNull IHandoffTaskDataReceiver receiver) {
+            ActivityTaskManagerService.this.requestHandoffTaskData(taskId, receiver);
         }
     }
 
