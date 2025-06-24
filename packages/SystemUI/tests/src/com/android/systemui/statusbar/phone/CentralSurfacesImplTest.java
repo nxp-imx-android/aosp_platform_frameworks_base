@@ -1136,7 +1136,8 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @Ignore("b/416718983")
+    // When the scene container is enabled, StatusBarStateController.setState() is no longer needed.
+    @DisableSceneContainer
     public void testKeyguardHideDelayedIfOcclusionAnimationRunning() {
         // Show the keyguard and verify we've done so.
         setKeyguardShowingAndOccluded(true /* showing */, false /* occluded */);
@@ -1156,7 +1157,8 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @Ignore("b/416718983")
+    // When the scene container is enabled, StatusBarStateController.setState() is no longer needed.
+    @DisableSceneContainer
     public void testKeyguardHideNotDelayedIfOcclusionAnimationNotRunning() {
         // Show the keyguard and verify we've done so.
         setKeyguardShowingAndOccluded(true /* showing */, false /* occluded */);
