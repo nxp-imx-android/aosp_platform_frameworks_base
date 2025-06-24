@@ -231,11 +231,6 @@ public class DisplayManagerFlags {
             Flags::enableGetSupportedRefreshRates
     );
 
-    private final FlagState mEnablePluginManagerFlagState = new FlagState(
-            Flags.FLAG_ENABLE_PLUGIN_MANAGER,
-            Flags::enablePluginManager
-    );
-
     private final FlagState mEnableHdrOverridePluginTypeFlagState = new FlagState(
             Flags.FLAG_ENABLE_HDR_OVERRIDE_PLUGIN_TYPE,
             Flags::enableHdrOverridePluginType
@@ -567,10 +562,6 @@ public class DisplayManagerFlags {
         return mGetSupportedRefreshRatesFlagState.isEnabled();
     }
 
-    public boolean isPluginManagerEnabled() {
-        return mEnablePluginManagerFlagState.isEnabled();
-    }
-
     public boolean isHdrOverrideEnabled() {
         return mEnableHdrOverridePluginTypeFlagState.isEnabled();
     }
@@ -710,7 +701,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mHasArrSupport);
         pw.println(" " + mAutoBrightnessModeBedtimeWearFlagState);
         pw.println(" " + mGetSupportedRefreshRatesFlagState);
-        pw.println(" " + mEnablePluginManagerFlagState);
         pw.println(" " + mDisplayListenerPerformanceImprovementsFlagState);
         pw.println(" " + mSubscribeGranularDisplayEvents);
         pw.println(" " + mEnableDisplayContentModeManagementFlagState);
