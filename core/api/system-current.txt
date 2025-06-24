@@ -4324,11 +4324,10 @@ package android.content.pm {
     field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN = 1; // 0x1
     field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN = 2; // 0x2
     field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_POLICY_NONE = 0; // 0x0
-    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL = 1; // 0x1
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT = 1; // 0x1
     field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR = 0; // 0x0
-    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY = 4; // 0x4
-    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_OK = 2; // 0x2
-    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY = 3; // 0x3
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY = 3; // 0x3
+    field @FlaggedApi("android.content.pm.verification_service") public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY = 2; // 0x2
     field public static final String EXTRA_CALLBACK = "android.content.pm.extra.CALLBACK";
     field public static final String EXTRA_DATA_LOADER_TYPE = "android.content.pm.extra.DATA_LOADER_TYPE";
     field @FlaggedApi("android.content.pm.archiving") public static final String EXTRA_DELETE_FLAGS = "android.content.pm.extra.DELETE_FLAGS";
