@@ -3226,6 +3226,13 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
             return false;
         }
 
+        if (DesktopExperienceFlags.ENABLE_MIRROR_DISPLAY_NO_ACTIVITY.isTrue()) {
+            if (task.getTaskDisplayArea().shouldKeepNoTask()) {
+                Slog.w(TAG, "canLaunchOnDisplay(), Task display area should keep no task: " + task);
+                return false;
+            }
+        }
+
         return canLaunchOnDisplay(r, task.getTaskDisplayArea().getDisplayId());
     }
 
