@@ -113,9 +113,7 @@ import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.os.storage.IStorageManager;
 import android.os.storage.StorageManager;
-import android.security.KeyStoreAuthorization;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.ArraySet;
@@ -142,6 +140,7 @@ import com.android.server.LocalServices;
 import com.android.server.SystemService.UserCompletedEventType;
 import com.android.server.SystemServiceManager;
 import com.android.server.am.UserState.KeyEvictedCallback;
+import com.android.server.locksettings.LockSettingsInternal;
 import com.android.server.pm.UserJourneyLogger;
 import com.android.server.pm.UserJourneyLogger.UserJourneySession;
 import com.android.server.pm.UserManagerInternal;
@@ -1650,7 +1649,6 @@ class UserController implements Handler.Callback {
         }
     }
 
-
     private void dispatchUserLocking(@UserIdInt int userId,
             @Nullable List<KeyEvictedCallback> keyEvictedCallbacks) {
         // Evict user secrets that require strong authentication to unlock. This includes locking
@@ -1658,22 +1656,12 @@ class UserController implements Handler.Callback {
         // Performed on FgThread to make it serialized with call to
         // UserManagerService.onBeforeUnlockUser in finishUserUnlocking to prevent data corruption.
         FgThread.getHandler().post(() -> {
-            synchronized (mLock) {
-                if (mStartedUsers.get(userId) != null) {
-                    Slogf.w(TAG, "User was restarted, skipping key eviction");
-                    return;
-                }
+            if (hasStartedUserState(userId)) {
+                Slogf.w(TAG, "User was restarted, skipping key eviction");
+                return;
             }
-            try {
-                Slogf.i(TAG, "Locking CE storage for user #" + userId);
-                mInjector.getStorageManager().lockCeStorage(userId);
-            } catch (RemoteException re) {
-                throw re.rethrowAsRuntimeException();
-            }
-            if (com.android.server.flags.Flags.keystoreInMemoryCleanup()) {
-                // Send communication to keystore to wipe key cache for the given userId.
-                mInjector.getKeyStoreAuthorization().onUserStorageLocked(userId);
-            }
+            mInjector.getLockSettingsInternal().lockUser(userId);
+
             if (keyEvictedCallbacks == null) {
                 return;
             }
@@ -4224,6 +4212,7 @@ class UserController implements Handler.Callback {
         private final ActivityManagerService mService;
         private UserManagerService mUserManager;
         private UserManagerInternal mUserManagerInternal;
+        private LockSettingsInternal mLockSettingsInternal;
         private PowerManagerInternal mPowerManagerInternal;
         private Handler mHandler;
         private final Object mUserSwitchingDialogLock = new Object();
@@ -4314,6 +4303,13 @@ class UserController implements Handler.Callback {
             return mUserManagerInternal;
         }
 
+        LockSettingsInternal getLockSettingsInternal() {
+            if (mLockSettingsInternal == null) {
+                mLockSettingsInternal = LocalServices.getService(LockSettingsInternal.class);
+            }
+            return mLockSettingsInternal;
+        }
+
         PowerManagerInternal getPowerManagerInternal() {
             if (mPowerManagerInternal == null) {
                 mPowerManagerInternal = LocalServices.getService(PowerManagerInternal.class);
@@ -4331,10 +4327,6 @@ class UserController implements Handler.Callback {
 
         KeyguardManager getKeyguardManager() {
             return mService.mContext.getSystemService(KeyguardManager.class);
-        }
-
-        KeyStoreAuthorization getKeyStoreAuthorization() {
-            return KeyStoreAuthorization.getInstance();
         }
 
         void batteryStatsServiceNoteEvent(int code, String name, int uid) {
@@ -4480,10 +4472,6 @@ class UserController implements Handler.Callback {
 
         boolean isCallerRecents(int callingUid) {
             return mService.mAtmInternal.isCallerRecents(callingUid);
-        }
-
-        protected IStorageManager getStorageManager() {
-            return IStorageManager.Stub.asInterface(ServiceManager.getService("mount"));
         }
 
         boolean isHeadlessSystemUserMode() {
