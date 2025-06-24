@@ -42,6 +42,8 @@ import androidx.annotation.VisibleForTesting;
 import com.airbnb.lottie.Lottie;
 import com.airbnb.lottie.LottieConfig;
 import com.android.internal.protolog.ProtoLog;
+import com.android.systemui.application.ApplicationContextAvailableCallback;
+import com.android.systemui.application.ApplicationContextInitializer;
 import com.android.systemui.dagger.GlobalRootComponent;
 import com.android.systemui.dagger.SysUIComponent;
 import com.android.systemui.dump.DumpManager;
@@ -67,7 +69,7 @@ import javax.inject.Provider;
  * Application class for SystemUI.
  */
 public class SystemUIApplication extends Application implements
-        SystemUIAppComponentFactoryBase.ContextInitializer, HasWMComponent {
+        ApplicationContextInitializer, HasWMComponent {
 
     public static final String TAG = "SystemUIService";
     private static final boolean DEBUG = false;
@@ -79,7 +81,7 @@ public class SystemUIApplication extends Application implements
      */
     private CoreStartable[] mServices;
     private boolean mServicesStarted;
-    private SystemUIAppComponentFactoryBase.ContextAvailableCallback mContextAvailableCallback;
+    private ApplicationContextAvailableCallback mContextAvailableCallback;
     private SysUIComponent mSysUIComponent;
     private SystemUIInitializer mInitializer;
     private ProcessWrapper mProcessWrapper;
@@ -492,7 +494,7 @@ public class SystemUIApplication extends Application implements
 
     @Override
     public void setContextAvailableCallback(
-            @NonNull SystemUIAppComponentFactoryBase.ContextAvailableCallback callback) {
+            @NonNull ApplicationContextAvailableCallback callback) {
         mContextAvailableCallback = callback;
     }
 
