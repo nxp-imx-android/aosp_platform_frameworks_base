@@ -1,7 +1,9 @@
 package com.android.systemui.statusbar.policy;
 
+import static android.app.Flags.notificationsRedesignTemplates;
+
 import static java.lang.Float.NaN;
-import com.android.systemui.Flags;
+
 import android.annotation.ColorInt;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -32,6 +34,7 @@ import androidx.annotation.NonNull;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.ContrastColorUtil;
+import com.android.systemui.Flags;
 import com.android.systemui.res.R;
 import com.android.systemui.statusbar.notification.NotificationUtils;
 
@@ -78,6 +81,7 @@ public class SmartReplyView extends ViewGroup {
 
     @ColorInt private int mCurrentBackgroundColor;
     @ColorInt private final int mDefaultBackgroundColor;
+    @ColorInt private final int mTransparentBackgroundColor;
     @ColorInt private final int mDefaultStrokeColor;
     @ColorInt private final int mDefaultTextColor;
     @ColorInt private final int mDefaultTextColorDarkBg;
@@ -107,7 +111,13 @@ public class SmartReplyView extends ViewGroup {
         mHeightUpperLimit = NotificationUtils.getFontScaledHeight(mContext,
             R.dimen.smart_reply_button_max_height);
 
+        // The default color is white, as it helps us ensure ideal contrast. However, the actual
+        // color will be based on the notification background (set in setBackgroundTintColor).
+        // When notificationsRedesignTemplates is on, we use that color to calculate the colors of
+        // the other elements, but we make the button transparent so that the translucent
+        // background of the notification is visible.
         mDefaultBackgroundColor = context.getColor(R.color.smart_reply_button_background);
+        mTransparentBackgroundColor = context.getColor(R.color.transparent);
         mDefaultTextColor = mContext.getColor(R.color.smart_reply_button_text);
         mDefaultTextColorDarkBg = mContext.getColor(R.color.smart_reply_button_text_dark_bg);
         mDefaultStrokeColor = mContext.getColor(R.color.smart_reply_button_stroke);
@@ -781,7 +791,11 @@ public class SmartReplyView extends ViewGroup {
                 Drawable background = ((InsetDrawable) inset).getDrawable();
                 if (background instanceof GradientDrawable) {
                     GradientDrawable gradientDrawable = (GradientDrawable) background;
-                    gradientDrawable.setColor(mCurrentBackgroundColor);
+                    // With the redesign, we let the background be transparent (so the notification
+                    // surface gets through), but all other colors are calculated and applied
+                    // as usual to ensure contrast.
+                    gradientDrawable.setColor(notificationsRedesignTemplates()
+                            ? mTransparentBackgroundColor : mCurrentBackgroundColor);
                     gradientDrawable.setStroke(mStrokeWidth, mCurrentStrokeColor);
                 }
             }
