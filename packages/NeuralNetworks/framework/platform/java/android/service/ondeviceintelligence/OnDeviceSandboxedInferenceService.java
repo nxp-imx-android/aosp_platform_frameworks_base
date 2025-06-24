@@ -18,6 +18,7 @@ package android.service.ondeviceintelligence;
 
 import static android.app.ondeviceintelligence.OnDeviceIntelligenceManager.AUGMENT_REQUEST_CONTENT_BUNDLE_KEY;
 import static android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE;
+import static android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_25Q4;
 
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
 
@@ -431,6 +432,25 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
         }
     }
 
+    /**
+     * Provides access to feature-specific metadata via the {@link OnDeviceIntelligenceService}.
+     *
+     * @param feature Feature for which the associated metadata should be fetched.
+     * @param executor Executor to run the consumer callback on.
+     * @param resultConsumer Consumer to receive the corresponding metadata bundle.
+     */
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_25Q4)
+    public final void fetchFeatureMetadata(
+            @NonNull Feature feature,
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull Consumer<Bundle> resultConsumer) {
+        try {
+            mRemoteStorageService.getFeatureMetadata(
+                    feature, wrapAsBundleRemoteCallback(resultConsumer, executor));
+        } catch (RemoteException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     /**
      * Returns the {@link Executor} to use for incoming IPC from request sender into your service
@@ -463,6 +483,18 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
                         pfdMap.put(key, result.getParcelable(key,
                                 ParcelFileDescriptor.class)));
                 executor.execute(() -> resultConsumer.accept(pfdMap));
+            }
+        });
+    }
+
+    private RemoteCallback wrapAsBundleRemoteCallback(
+        @NonNull Consumer<Bundle> resultConsumer,
+        @NonNull Executor executor) {
+        return new RemoteCallback(result -> {
+            if (result == null) {
+                executor.execute(() -> resultConsumer.accept(Bundle.EMPTY));
+            } else {
+                executor.execute(() -> resultConsumer.accept(result));
             }
         });
     }

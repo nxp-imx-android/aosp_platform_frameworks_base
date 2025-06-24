@@ -17,6 +17,7 @@
 package android.service.ondeviceintelligence;
 
 import static android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE;
+import static android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_25Q4;
 
 import static com.android.internal.util.function.pooled.PooledLambda.obtainMessage;
 
@@ -136,7 +137,8 @@ public abstract class OnDeviceIntelligenceService extends Service {
                     mHandler.executeOrSendMessage(
                             obtainMessage(
                                     OnDeviceIntelligenceService::onGetVersion,
-                                    OnDeviceIntelligenceService.this, l -> {
+                                    OnDeviceIntelligenceService.this,
+                                    l -> {
                                         Bundle b = new Bundle();
                                         b.putLong(
                                                 OnDeviceIntelligenceManager.API_VERSION_BUNDLE_KEY,
@@ -226,6 +228,19 @@ public abstract class OnDeviceIntelligenceService extends Service {
                                         remoteCallback.sendResult(bundle);
                                         tryClosePfds(parcelFileDescriptorMap.values());
                                     }));
+                }
+
+                @Override
+                public void getFeatureMetadata(
+                        Feature feature, RemoteCallback remoteCallback) {
+                    Objects.requireNonNull(feature);
+                    Objects.requireNonNull(remoteCallback);
+                    mHandler.executeOrSendMessage(
+                            obtainMessage(
+                                    OnDeviceIntelligenceService::onGetFeatureMetadata,
+                                    OnDeviceIntelligenceService.this,
+                                    feature,
+                                    remoteCallback::sendResult));
                 }
 
                 @Override
@@ -400,7 +415,6 @@ public abstract class OnDeviceIntelligenceService extends Service {
         };
     }
 
-
     private DownloadCallback wrapDownloadCallback(IDownloadCallback downloadCallback) {
         return new DownloadCallback() {
             @Override
@@ -478,6 +492,17 @@ public abstract class OnDeviceIntelligenceService extends Service {
         });
     }
 
+
+    /**
+     * Provide implementation for a scenario when caller wants to get feature-specific metadata.
+     *
+     * @param feature the feature for which metadata needs to be fetched.
+     * @param metadataConsumer callback to be populated with the corresponding metadata bundle.
+     */
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_25Q4)
+    public void onGetFeatureMetadata(
+            @NonNull Feature feature, @NonNull Consumer<Bundle> metadataConsumer) {}
+
     /**
      * Provide implementation for a scenario when caller wants to get all feature related
      * file-descriptors that might be required for processing a request for the corresponding the
@@ -497,7 +522,7 @@ public abstract class OnDeviceIntelligenceService extends Service {
      * the download completes successfully, success callback should be populated.
      *
      * @param callerUid          UID of the caller that initiated this call chain.
-     * @param feature            the feature for which files need to be downlaoded.
+     * @param feature            the feature for which files need to be downloaded.
      *                           process.
      * @param cancellationSignal signal to attach a listener to, and receive cancellation signals
      *                           from thw client.

@@ -48,4 +48,5 @@ oneway interface IOnDeviceIntelligenceService {
     void notifyInferenceServiceConnected();
     void notifyInferenceServiceDisconnected();
     void ready();
+    void getFeatureMetadata(in Feature feature, in RemoteCallback remoteCallback);
 }
