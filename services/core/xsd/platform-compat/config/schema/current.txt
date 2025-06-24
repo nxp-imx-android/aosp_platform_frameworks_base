@@ -9,6 +9,7 @@ package com.android.server.compat.config {
     method public int getEnableSinceTargetSdk();
     method public long getId();
     method public boolean getLoggingOnly();
+    method public boolean getNoLogging();
     method public String getName();
     method public boolean getOverridable();
     method public String getValue();
