@@ -16,8 +16,6 @@
 
 package com.android.systemui.statusbar.pipeline.mobile.domain.interactor
 
-import android.platform.test.annotations.DisableFlags
-import android.platform.test.annotations.EnableFlags
 import android.telephony.CellSignalStrength
 import android.telephony.TelephonyManager.NETWORK_TYPE_UNKNOWN
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -636,28 +634,6 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
         assertThat(latest).isInstanceOf(SignalIconModel.Satellite::class.java)
     }
 
-    @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
-    @Test
-    // See b/346904529 for more context
-    fun satBasedIcon_doesNotInflateSignalStrength_flagOff() = runTest {
-        val latest by underTest.signalLevelIcon.collectLastValue()
-
-        // GIVEN a satellite connection
-        connectionRepo.isNonTerrestrial.setValue(true)
-        // GIVEN this carrier has set INFLATE_SIGNAL_STRENGTH
-        connectionRepo.inflateSignalStrength.setValue(true)
-
-        connectionRepo.primaryLevel.setValue(4)
-        assertThat(latest!!.level).isEqualTo(4)
-
-        connectionRepo.inflateSignalStrength.setValue(true)
-        connectionRepo.primaryLevel.setValue(4)
-
-        // Icon level is unaffected
-        assertThat(latest!!.level).isEqualTo(4)
-    }
-
-    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     // See b/346904529 for more context
     fun satBasedIcon_doesNotInflateSignalStrength_flagOn() = runTest {
@@ -678,23 +654,6 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
         assertThat(latest!!.level).isEqualTo(4)
     }
 
-    @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
-    @Test
-    fun satBasedIcon_usesPrimaryLevel_flagOff() = runTest {
-        val latest by underTest.signalLevelIcon.collectLastValue()
-
-        // GIVEN a satellite connection
-        connectionRepo.isNonTerrestrial.setValue(true)
-
-        // GIVEN primary level is set
-        connectionRepo.primaryLevel.setValue(4)
-        connectionRepo.satelliteLevel.setValue(0)
-
-        // THEN icon uses the primary level because the flag is off
-        assertThat(latest!!.level).isEqualTo(4)
-    }
-
-    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     fun satBasedIcon_usesSatelliteLevel_flagOn() = runTest {
         val latest by underTest.signalLevelIcon.collectLastValue()
@@ -708,30 +667,6 @@ class MobileIconInteractorKairosTest : SysuiTestCase() {
 
         // THEN icon uses the satellite level because the flag is on
         assertThat(latest!!.level).isEqualTo(4)
-    }
-
-    /**
-     * Context (b/377518113), this test will not be needed after FLAG_CARRIER_ROAMING_NB_IOT_NTN is
-     * rolled out. The new API should report 0 automatically if not in service.
-     */
-    @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
-    @Test
-    fun satBasedIcon_reportsLevelZeroWhenOutOfService() = runTest {
-        val latest by underTest.signalLevelIcon.collectLastValue()
-
-        // GIVEN a satellite connection
-        connectionRepo.isNonTerrestrial.setValue(true)
-        // GIVEN this carrier has set INFLATE_SIGNAL_STRENGTH
-        connectionRepo.inflateSignalStrength.setValue(true)
-
-        connectionRepo.primaryLevel.setValue(4)
-        assertThat(latest!!.level).isEqualTo(4)
-
-        connectionRepo.isInService.setValue(false)
-        connectionRepo.primaryLevel.setValue(4)
-
-        // THEN level reports 0, by policy
-        assertThat(latest!!.level).isEqualTo(0)
     }
 
     companion object {

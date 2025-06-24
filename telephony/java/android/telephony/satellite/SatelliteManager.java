@@ -1898,7 +1898,6 @@ public final class SatelliteManager {
                                                 provisioned)));
                             }
 
-                            @FlaggedApi(Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
                             @Override
                             public void onSatelliteSubscriptionProvisionStateChanged(
                                     @NonNull List<SatelliteSubscriberProvisionStatus>
