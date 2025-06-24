@@ -843,7 +843,8 @@ public final class Display {
     }
 
     /**
-     * Check if this is a built-in display.
+     * Check if this is a built-in display, i.e. one that is physically part of the device rather
+     * than one connected via an external cable, or a Wi-Fi/Overlay/Virtual one.
      */
     @FlaggedApi(FLAG_DISPLAY_TOPOLOGY_API)
     public boolean isInternal() {
