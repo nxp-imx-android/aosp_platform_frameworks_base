@@ -57,6 +57,32 @@ fun LegacyFlickerTest.appLayerHasMaxDisplayWidthAtEnd(component: IComponentMatch
     }
 }
 
+fun LegacyFlickerTest.appLayerHasMaxBoundsInOnlyOneDimension(component: IComponentMatcher) {
+    assertWmEnd {
+        val maxDisplayBounds = WindowUtils.getInsetDisplayBounds(scenario.startRotation)
+        val windowBounds = visibleRegion(component).region.bounds
+
+        val hasMaxHeight =
+            windowBounds.top == maxDisplayBounds.top &&
+                windowBounds.bottom == maxDisplayBounds.bottom
+        val hasMaxWidth =
+            windowBounds.left == maxDisplayBounds.left &&
+                windowBounds.right == maxDisplayBounds.right
+        val isMaxInOneDimension = hasMaxHeight.xor(hasMaxWidth)
+
+        check { "only one max bounds" }.that(isMaxInOneDimension).isEqual(true)
+    }
+}
+
+fun LegacyFlickerTest.appLayerMaintainsAspectRatioAlways(component: IComponentMatcher) {
+    assertLayers {
+        val desktopWindowLayerList = layers { component.layerMatchesAnyOf(it) && it.isVisible }
+        desktopWindowLayerList.zipWithNext { previous, current ->
+            current.visibleRegion.isSameAspectRatio(previous.visibleRegion)
+        }
+    }
+}
+
 fun LegacyFlickerTest.resizeVeilKeepsIncreasingInSize(component: IComponentMatcher) {
     assertLayers {
         val layerList = layers {
