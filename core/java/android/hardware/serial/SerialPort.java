@@ -16,17 +16,22 @@
 
 package android.hardware.serial;
 
+import static android.system.OsConstants.ENOENT;
+
+import static java.lang.annotation.RetentionPolicy.SOURCE;
+
 import android.annotation.FlaggedApi;
+import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.os.OutcomeReceiver;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.system.ErrnoException;
-import android.system.OsConstants;
 
 import com.android.internal.annotations.VisibleForTesting;
 
 import java.io.IOException;
+import java.lang.annotation.Retention;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
@@ -40,6 +45,52 @@ public final class SerialPort {
      * serial port isn't a USB device.
      */
     public static final int INVALID_ID = -1;
+
+    /** @hide */
+    @Retention(SOURCE)
+    @IntDef(flag = true, prefix = {"OPEN_FLAG_"}, value = {OPEN_FLAG_READ_ONLY,
+            OPEN_FLAG_WRITE_ONLY, OPEN_FLAG_READ_WRITE, OPEN_FLAG_NONBLOCK, OPEN_FLAG_DATA_SYNC,
+            OPEN_FLAG_SYNC})
+    public @interface OpenFlags {}
+
+    // Note: for FLAG_* constants we use the current "typical" values of the corresponding
+    // OsConstants.O_*: they depend on the Linux distro and can differ for exotic distros.
+    // We decided not to use an independent set of constants, because it might overlap with the O_*
+    // constants, and a user might by mistake use O_* constants with unpredictable results.
+
+    /**
+     * For use with {@link #requestOpen}: open for reading only.
+     */
+    public static final int OPEN_FLAG_READ_ONLY = 0;
+
+    /**
+     * For use with {@link #requestOpen}: open for writing only.
+     */
+    public static final int OPEN_FLAG_WRITE_ONLY = 1;
+
+    /**
+     * For use with {@link #requestOpen}: open for reading and writing.
+     */
+    public static final int OPEN_FLAG_READ_WRITE = 1 << 1;
+
+    /**
+     * For use with {@link #requestOpen}: when possible, the file is opened in nonblocking mode.
+     */
+    public static final int OPEN_FLAG_NONBLOCK = 1 << 11;
+
+    /**
+     * For use with {@link #requestOpen}: write operations on the file will complete according to
+     * the requirements of synchronized I/O data integrity completion (while file metadata may not
+     * be synchronized).
+     */
+    public static final int OPEN_FLAG_DATA_SYNC = 1 << 12;
+
+    /**
+     * For use with {@link #requestOpen}: write operations on the file will complete according to
+     * the requirements of synchronized I/O file integrity completion (by contrast with the
+     * synchronized I/O data integrity completion provided by FLAG_DATA_SYNC).
+     */
+    public static final int OPEN_FLAG_SYNC = 1 << 20;
 
     private final @NonNull SerialPortInfo mInfo;
     private final @NonNull ISerialManager mService;
@@ -75,10 +126,9 @@ public final class SerialPort {
     }
 
     /**
-     * Request to open the port. The flags must set
-     * {@link android.system.OsConstants#O_NOCTTY}.
+     * Request to open the port.
      *
-     * Exceptions passed to {@code receiver} may be
+     * <p>Exceptions passed to {@code receiver} may be
      * <ul>
      * <li> {@link ErrnoException} with ENOENT if the port is detached or any syscall to open the
      * port fails that come with an errno</li>
@@ -86,18 +136,15 @@ public final class SerialPort {
      * <li> {@link SecurityException} if the user rejects the open request</li>
      * </ul>
      *
-     * @param flags     flags passed to open(2)
+     * @param flags     open flags that define read/write mode and other options.
      * @param exclusive whether the app needs exclusive access with TIOCEXCL(2const)
      * @param executor  the executor used to run receiver
      * @param receiver  the outcome receiver
-     * @throws IllegalArgumentException if the flags doesn't set {@link OsConstants#O_NOCTTY}, or
-     *                                  any other parameters are {@code null}.
+     * @throws IllegalArgumentException if the set of flags is not correct.
+     * @throws NullPointerException     if any parameters are {@code null}.
      */
-    public void requestOpen(int flags, boolean exclusive, @NonNull Executor executor,
+    public void requestOpen(@OpenFlags int flags, boolean exclusive, @NonNull Executor executor,
             @NonNull OutcomeReceiver<SerialPortResponse, Exception> receiver) {
-        if ((flags & OsConstants.O_NOCTTY) == 0) {
-            throw new IllegalArgumentException("The flags must set OsConstants.O_NOCTTY");
-        }
         Objects.requireNonNull(executor, "Executor must not be null");
         Objects.requireNonNull(receiver, "Receiver must not be null");
         try {
@@ -134,8 +181,7 @@ public final class SerialPort {
         private static Exception getException(int errorCode, int errno, String message) {
             return switch (errorCode) {
                 case ErrorCode.ERROR_READING_DRIVERS -> new IOException(message);
-                case ErrorCode.ERROR_PORT_NOT_FOUND -> new ErrnoException(message,
-                        OsConstants.ENOENT);
+                case ErrorCode.ERROR_PORT_NOT_FOUND -> new ErrnoException(message, ENOENT);
                 case ErrorCode.ERROR_OPENING_PORT -> new ErrnoException(message, errno);
                 default -> new IllegalStateException("Unexpected errorCode " + errorCode);
             };

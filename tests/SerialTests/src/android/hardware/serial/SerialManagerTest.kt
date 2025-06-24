@@ -81,8 +81,8 @@ class SerialManagerTest {
         val info1 = SerialPortInfo("ttyUSB0", 1234, 5678)
         val info2 = SerialPortInfo("test", -1, -1)
 
-        serialManager.registerSerialPortListener(listener1, executor)
-        serialManager.registerSerialPortListener(listener2, executor)
+        serialManager.registerSerialPortListener(executor, listener1)
+        serialManager.registerSerialPortListener(executor, listener2)
         verify(backendService).registerSerialPortListener(backendSerialPortListener.capture())
         backendSerialPortListener.value.onSerialPortConnected(info1)
         backendSerialPortListener.value.onSerialPortDisconnected(info2)
@@ -103,8 +103,8 @@ class SerialManagerTest {
         val executor = Executor { r -> r.run() }
         val info1 = SerialPortInfo("ttyUSB0", 1234, 5678)
         val info2 = SerialPortInfo("test", -1, -1)
-        serialManager.registerSerialPortListener(listener1, executor)
-        serialManager.registerSerialPortListener(listener2, executor)
+        serialManager.registerSerialPortListener(executor, listener1)
+        serialManager.registerSerialPortListener(executor, listener2)
         verify(backendService).registerSerialPortListener(backendSerialPortListener.capture())
 
         serialManager.unregisterSerialPortListener(listener2)

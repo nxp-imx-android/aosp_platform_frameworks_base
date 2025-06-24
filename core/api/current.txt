@@ -21323,7 +21323,7 @@ package android.hardware.serial {
 
   @FlaggedApi("android.hardware.serial.flags.enable_serial_api") public final class SerialManager {
     method @NonNull public java.util.List<android.hardware.serial.SerialPort> getSerialPorts();
-    method public void registerSerialPortListener(@NonNull android.hardware.serial.SerialPortListener, @NonNull java.util.concurrent.Executor);
+    method public void registerSerialPortListener(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.serial.SerialPortListener);
     method public void unregisterSerialPortListener(@NonNull android.hardware.serial.SerialPortListener);
   }
 
@@ -21333,6 +21333,12 @@ package android.hardware.serial {
     method public int getVendorId();
     method public void requestOpen(int, boolean, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.hardware.serial.SerialPortResponse,java.lang.Exception>);
     field public static final int INVALID_ID = -1; // 0xffffffff
+    field public static final int OPEN_FLAG_DATA_SYNC = 4096; // 0x1000
+    field public static final int OPEN_FLAG_NONBLOCK = 2048; // 0x800
+    field public static final int OPEN_FLAG_READ_ONLY = 0; // 0x0
+    field public static final int OPEN_FLAG_READ_WRITE = 2; // 0x2
+    field public static final int OPEN_FLAG_SYNC = 1048576; // 0x100000
+    field public static final int OPEN_FLAG_WRITE_ONLY = 1; // 0x1
   }
 
   @FlaggedApi("android.hardware.serial.flags.enable_serial_api") public interface SerialPortListener {
