@@ -24,7 +24,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.stub
 
 @RunWith(AndroidJUnit4::class)
 class PreferenceHierarchyTest {
@@ -35,43 +34,20 @@ class PreferenceHierarchyTest {
     private val preference = mock<PreferenceMetadata> { on { key } doReturn "key" }
 
     @Test
-    fun addScreen_flagDisabled() {
-        subScreen.stub { on { isFlagEnabled(context) } doReturn false }
+    fun addMetadata() {
         val hierarchy =
             screen.preferenceHierarchy(context) {
-                +subScreen
+                +subScreen order 1
                 +preference
-                add(subScreen, 1)
-                addBefore(preference.key, subScreen)
-                addAfter(preference.key, subScreen)
-                addGroup(subScreen)
-                addGroupBefore(preference.key, subScreen)
-                addGroupAfter(preference.key, subScreen)
             }
-        assertThat(hierarchy.children).hasSize(1)
-        (hierarchy.children[0] as PreferenceHierarchyNode).apply {
-            assertThat(metadata).isSameInstanceAs(preference)
-        }
-    }
-
-    @Test
-    fun addScreen_flagEnabled() {
-        subScreen.stub { on { isFlagEnabled(context) } doReturn true }
-        val hierarchy = screen.preferenceHierarchy(context) { +subScreen }
-        assertThat(hierarchy.children).hasSize(1)
-        (hierarchy.children[0] as PreferenceHierarchyNode).apply {
-            assertThat(metadata).isSameInstanceAs(subScreen)
-        }
-    }
-
-    @Test
-    fun addScreen_flagEnabled_withOrder() {
-        subScreen.stub { on { isFlagEnabled(context) } doReturn true }
-        val hierarchy = screen.preferenceHierarchy(context) { +subScreen order 1 }
-        assertThat(hierarchy.children).hasSize(1)
+        assertThat(hierarchy.children).hasSize(2)
         (hierarchy.children[0] as PreferenceHierarchyNode).apply {
             assertThat(metadata).isSameInstanceAs(subScreen)
             assertThat(order).isEqualTo(1)
+        }
+        (hierarchy.children[1] as PreferenceHierarchyNode).apply {
+            assertThat(metadata).isSameInstanceAs(preference)
+            assertThat(order).isNull()
         }
     }
 }
