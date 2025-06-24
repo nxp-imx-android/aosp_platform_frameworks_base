@@ -1887,15 +1887,16 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
             userData.mBoundToMethod = true;
         }
 
+        final var focusedWindow = userData.mImeBindingState.mFocusedWindow;
         final Binder startInputToken = new Binder();
-        mImeTargetWindowMap.put(startInputToken, userData.mImeBindingState.mFocusedWindow);
+        mImeTargetWindowMap.put(startInputToken, focusedWindow);
         final boolean restarting = !initial;
         final StartInputInfo info = new StartInputInfo(userId,
                 bindingController.getCurToken(), bindingController.getCurTokenDisplayId(),
                 bindingController.getCurId(), startInputReason,
                 restarting, UserHandle.getUserId(userData.mCurClient.mUid),
                 userData.mCurClient.mSelfReportedDisplayId,
-                userData.mImeBindingState.mFocusedWindow, userData.mCurEditorInfo,
+                focusedWindow, userData.mCurEditorInfo,
                 userData.mImeBindingState.mFocusedWindowSoftInputMode,
                 bindingController.getSequenceNumber());
         mStartInputHistory.addEntry(info);
@@ -1917,15 +1918,20 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
         setEnabledSessionLocked(session, userData);
         session.mMethod.startInput(startInputToken, userData.mCurInputConnection,
                 userData.mCurEditorInfo, restarting, navButtonFlags, userData.mCurImeDispatcher);
-        if (isShowRequestedForCurrentWindow(userId)
-                && userData.mImeBindingState.mFocusedWindow != null) {
+        if (Flags.optimizeImeInputTargetUpdate()) {
+            if (focusedWindow != null) {
+                mWindowManagerInternal.updateImeTargetWindow(focusedWindow);
+            }
+            userData.mVisibilityStateComputer.setLastImeTargetWindow(focusedWindow);
+        }
+        if (isShowRequestedForCurrentWindow(userId) && focusedWindow != null) {
             ProtoLog.v(IMMS_DEBUG, "Attach new input asks to show input");
             // Re-use current statsToken, if it exists.
             final var statsToken = userData.mCurStatsToken != null ? userData.mCurStatsToken
                     : createStatsTokenForFocusedClient(true /* show */,
                             SoftInputShowHideReason.ATTACH_NEW_INPUT, userId);
             userData.mCurStatsToken = null;
-            showCurrentInputInternal(userData.mImeBindingState.mFocusedWindow, statsToken);
+            showCurrentInputInternal(focusedWindow, statsToken);
         }
 
         final var curId = bindingController.getCurId();
@@ -2777,6 +2783,9 @@ public final class InputMethodManagerService implements IInputMethodManagerImpl.
     @BinderThread
     @GuardedBy("ImfLock.class")
     private void reportStartInputLocked(IBinder startInputToken, @NonNull UserData userData) {
+        if (Flags.optimizeImeInputTargetUpdate()) {
+            return;
+        }
         final IBinder targetWindowToken = mImeTargetWindowMap.get(startInputToken);
         if (targetWindowToken != null) {
             mWindowManagerInternal.updateImeTargetWindow(targetWindowToken);
