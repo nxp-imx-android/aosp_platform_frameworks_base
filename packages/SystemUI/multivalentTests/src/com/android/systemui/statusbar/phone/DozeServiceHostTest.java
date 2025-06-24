@@ -197,13 +197,15 @@ public class DozeServiceHostTest extends SysuiTestCase {
                         DozeLog.REASON_SENSOR_QUICK_PICKUP,
                         DozeLog.PULSE_REASON_FINGERPRINT_ACTIVATED,
                         DozeLog.REASON_SENSOR_TAP,
-                        DozeLog.PULSE_REASON_MINMODE));
+                        DozeLog.PULSE_REASON_MINMODE,
+                        DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS, // auth interrupt occurs elsewhere
+                        DozeLog.PULSE_REASON_FINGERPRINT_PULSE_SHOW_FULL_UI,
+                        DozeLog.PULSE_REASON_FINGERPRINT_PULSE_SHOW_AUTH_UI));
+        // These are full wakeups, not pulses:
         HashSet<Integer> reasonsThatDontPulse = new HashSet<>(
                 Arrays.asList(DozeLog.REASON_SENSOR_PICKUP,
                         DozeLog.REASON_SENSOR_DOUBLE_TAP,
-                        DozeLog.REASON_SENSOR_TAP,
-                        DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS,
-                        DozeLog.PULSE_REASON_FINGERPRINT_PULSE));
+                        DozeLog.REASON_SENSOR_TAP));
 
         doAnswer(invocation -> {
             DozeHost.PulseCallback callback = invocation.getArgument(0);
@@ -261,6 +263,7 @@ public class DozeServiceHostTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
     @EnableFlags(Flags.FLAG_UDFPS_SCREEN_OFF_UNLOCK_FLICKER)
     public void testCollectingUsUdfpsPulseEvents_shouldNotCollect() {
         // Should not collect pulse events if not usudfps.
@@ -291,7 +294,10 @@ public class DozeServiceHostTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags(Flags.FLAG_UDFPS_SCREEN_OFF_UNLOCK_FLICKER)
+    @DisableFlags({
+            Flags.FLAG_UDFPS_SCREEN_OFF_UNLOCK_FLICKER,
+            Flags.FLAG_NEW_DOZING_KEYGUARD_STATES
+    })
     public void testCollectingUsUdfpsPulseEvents_shouldNotCollect_flagDisabled() {
         // Should not collect pulse events if the bug flag is disabled.
         mKosmos.getFingerprintPropertyRepository().setProperties(
@@ -308,6 +314,7 @@ public class DozeServiceHostTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_NEW_DOZING_KEYGUARD_STATES)
     @EnableFlags(Flags.FLAG_UDFPS_SCREEN_OFF_UNLOCK_FLICKER)
     public void testCollectingUsUdfpsPulseEvents() {
         mKosmos.getFingerprintPropertyRepository().setProperties(

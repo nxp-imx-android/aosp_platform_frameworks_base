@@ -575,23 +575,26 @@ public final class DozeServiceHost implements DozeHost {
     }
 
     private boolean listenForScreenOffFingerprintPulseEvents() {
-        return com.android.systemui.Flags.newDozingKeyguardStates()
-                && mDeviceEntryFingerprintAuthInteractor.isSensorUnderDisplay().getValue();
+        return mDeviceEntryFingerprintAuthInteractor.isSensorUnderDisplay().getValue()
+                && mAmbientDisplayConfiguration.screenOffUdfpsEnabled(mContext.getUserId())
+                && !mAmbientDisplayConfiguration.alwaysOnEnabled(mContext.getUserId());
     }
 
     private void startCollectingScreenOffFingerprintPulseEvents() {
-        if (listenForScreenOffFingerprintPulseEvents()) {
-            if (mUdfpsScreenOffFingerprintPulseEventCollectingJob != null) return;
-            mUdfpsScreenOffFingerprintPulseEventCollectingJob = JavaAdapterKt.collectFlow(
-                    mScope,
-                    mScope.getCoroutineContext(),
-                    mDeviceEntryFingerprintAuthInteractor.getFingerprintHelp(),
-                    state -> {
-                        for (Callback callback : mCallbacks) {
-                            callback.onFingerprintPulseWhileScreenOff(state);
+        if (com.android.systemui.Flags.newDozingKeyguardStates()) {
+            if (listenForScreenOffFingerprintPulseEvents()) {
+                if (mUdfpsScreenOffFingerprintPulseEventCollectingJob != null) return;
+                mUdfpsScreenOffFingerprintPulseEventCollectingJob = JavaAdapterKt.collectFlow(
+                        mScope,
+                        mScope.getCoroutineContext(),
+                        mDeviceEntryFingerprintAuthInteractor.getFingerprintHelp(),
+                        state -> {
+                            for (Callback callback : mCallbacks) {
+                                callback.onFingerprintPulseWhileScreenOff(state);
+                            }
                         }
-                    }
-            );
+                );
+            }
             return;
         }
 

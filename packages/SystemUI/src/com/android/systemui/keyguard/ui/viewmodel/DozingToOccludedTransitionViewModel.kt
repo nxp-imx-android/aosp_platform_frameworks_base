@@ -19,6 +19,7 @@ package com.android.systemui.keyguard.ui.viewmodel
 import android.util.MathUtils
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.domain.interactor.FromAodTransitionInteractor
+import com.android.systemui.keyguard.domain.interactor.FromDozingTransitionInteractor.Companion.TO_OCCLUDED_DURATION
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
 import com.android.systemui.keyguard.shared.model.KeyguardState.OCCLUDED
@@ -65,6 +66,14 @@ constructor(animationFlow: KeyguardTransitionAnimationFlow) : DeviceEntryIconTra
             onStep = { MathUtils.lerp(currentAlpha, 0f, it) },
         )
     }
+
+    val nonAuthUIAlpha: Flow<Float> =
+        transitionAnimation.sharedFlow(
+            duration = TO_OCCLUDED_DURATION,
+            onStep = { null },
+            onCancel = { 1f },
+            onFinish = { 1f },
+        )
 
     override val deviceEntryParentViewAlpha = transitionAnimation.immediatelyTransitionTo(0f)
 }

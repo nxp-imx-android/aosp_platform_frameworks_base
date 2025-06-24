@@ -49,7 +49,7 @@ class DozingTransitionFlowsTest : SysuiTestCase() {
     @Test
     fun lockscreenAlpha_dozing_dozePulsing() =
         testScope.runTest {
-            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha)
+            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha(null))
             // Last startedKeyguardTransitionStep is to DOZING
             kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
                 lockscreenToDozingStep(0f, STARTED)
@@ -65,7 +65,7 @@ class DozingTransitionFlowsTest : SysuiTestCase() {
     @Test
     fun lockscreenAlpha_dozing_dozePulsingAuthUI() =
         testScope.runTest {
-            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha)
+            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha(null))
             // Last startedKeyguardTransitionStep is to DOZING
             kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
                 lockscreenToDozingStep(0f, STARTED)
@@ -81,7 +81,7 @@ class DozingTransitionFlowsTest : SysuiTestCase() {
     @Test
     fun lockscreenAlpha_keyguardStateDozing_dozeTransitionModelDoze() =
         testScope.runTest {
-            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha)
+            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha(null))
             // Last startedKeyguardTransitionStep is to DOZING
             kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
                 lockscreenToDozingStep(0f, STARTED)
@@ -97,7 +97,7 @@ class DozingTransitionFlowsTest : SysuiTestCase() {
     @Test
     fun lockscreenAlpha_keyguardStateDozing_dozeTransitionModelDozePulsingWithoutUI() =
         testScope.runTest {
-            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha)
+            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha(null))
             // Last startedKeyguardTransitionStep is to DOZING
             kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
                 lockscreenToDozingStep(0f, STARTED)
@@ -113,7 +113,7 @@ class DozingTransitionFlowsTest : SysuiTestCase() {
     @Test
     fun lockscreenAlpha_keyguardStateDozing_dozeTransitionModelUnhandledStates() =
         testScope.runTest {
-            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha)
+            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha(null))
             // Last startedKeyguardTransitionStep is to DOZING
             kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
                 lockscreenToDozingStep(0f, STARTED)
@@ -140,7 +140,7 @@ class DozingTransitionFlowsTest : SysuiTestCase() {
     @Test
     fun lockscreenAlpha_notKeyguardStateDozing_nothingEmits() =
         testScope.runTest {
-            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha)
+            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha(null))
             // Last startedKeyguardTransitionStep is to AOD (not DOZING)
             kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
                 lockscreenToAodStep(0f, STARTED)
@@ -156,6 +156,131 @@ class DozingTransitionFlowsTest : SysuiTestCase() {
             )
             runCurrent()
             assertThat(lockscreenAlpha).isNull()
+        }
+
+    @Test
+    fun nonAuthUIAlpha_dozing_dozePulsing() =
+        testScope.runTest {
+            val nonAuthUIAlpha by collectLastValue(underTest.nonAuthUIAlpha(null))
+            // Last startedKeyguardTransitionStep is to DOZING
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
+                lockscreenToDozingStep(0f, STARTED)
+            )
+            runCurrent()
+            kosmos.fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(to = DozeStateModel.DOZE_PULSING)
+            )
+            runCurrent()
+            assertThat(nonAuthUIAlpha).isEqualTo(1f)
+        }
+
+    @Test
+    fun nonAuthUIAlpha_dozing_dozePulsingAuthUI() =
+        testScope.runTest {
+            val nonAuthUIAlpha by collectLastValue(underTest.nonAuthUIAlpha(null))
+            // Last startedKeyguardTransitionStep is to DOZING
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
+                lockscreenToDozingStep(0f, STARTED)
+            )
+            runCurrent()
+            kosmos.fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(to = DozeStateModel.DOZE_PULSING_AUTH_UI)
+            )
+            runCurrent()
+            assertThat(nonAuthUIAlpha).isEqualTo(0f)
+        }
+
+    @Test
+    fun nonAuthUIAlpha_notKeyguardStateDozing_nothingEmits() =
+        testScope.runTest {
+            val nonAuthUIAlpha by collectLastValue(underTest.nonAuthUIAlpha(null))
+            // Last startedKeyguardTransitionStep is to AOD (not DOZING)
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
+                lockscreenToAodStep(0f, STARTED)
+            )
+            runCurrent()
+            kosmos.fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(to = DozeStateModel.DOZE_PULSING)
+            )
+            runCurrent()
+            assertThat(nonAuthUIAlpha).isNull()
+            kosmos.fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(to = DozeStateModel.DOZE_PULSING_BRIGHT)
+            )
+            runCurrent()
+            assertThat(nonAuthUIAlpha).isNull()
+        }
+
+    @Test
+    fun wasHiddenAuthUIShowingWhileDozing_falseFromLockscreenAlpha() =
+        testScope.runTest {
+            val wasHiddenAuthUIShowingWhileDozing by
+                collectLastValue(underTest.wasHiddenAuthUIShowingWhileDozing)
+            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha(null))
+
+            // Last startedKeyguardTransitionStep is to DOZING
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
+                lockscreenToDozingStep(0f, STARTED)
+            )
+            runCurrent()
+            kosmos.fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(to = DozeStateModel.DOZE)
+            )
+            runCurrent()
+
+            // GIVEN lockscreen alpha is 0f
+            assertThat(lockscreenAlpha).isEqualTo(0f)
+
+            // THEN wasHiddenAuthUIShowingWhileDozing should be false
+            assertThat(wasHiddenAuthUIShowingWhileDozing).isEqualTo(false)
+        }
+
+    @Test
+    fun wasHiddenAuthUIShowingWhileDozing_falseFromNonAuthUIAlpha() =
+        testScope.runTest {
+            val wasHiddenAuthUIShowingWhileDozing by
+                collectLastValue(underTest.wasHiddenAuthUIShowingWhileDozing)
+            val nonAuthUIAlpha by collectLastValue(underTest.nonAuthUIAlpha(null))
+            // Last startedKeyguardTransitionStep is to DOZING
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
+                lockscreenToDozingStep(0f, STARTED)
+            )
+            runCurrent()
+            kosmos.fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(to = DozeStateModel.DOZE_PULSING_AUTH_UI)
+            )
+            runCurrent()
+
+            // GIVEN nonAuthUIAlpha alpha is 0f
+            assertThat(nonAuthUIAlpha).isEqualTo(0f)
+
+            // THEN wasHiddenAuthUIShowingWhileDozing should be false
+            assertThat(wasHiddenAuthUIShowingWhileDozing).isEqualTo(false)
+        }
+
+    @Test
+    fun wasHiddenAuthUIShowingWhileDozing_true() =
+        testScope.runTest {
+            val wasHiddenAuthUIShowingWhileDozing by
+                collectLastValue(underTest.wasHiddenAuthUIShowingWhileDozing)
+            val nonAuthUIAlpha by collectLastValue(underTest.nonAuthUIAlpha(null))
+            val lockscreenAlpha by collectLastValue(underTest.lockscreenAlpha(null))
+            // Last startedKeyguardTransitionStep is to DOZING
+            kosmos.fakeKeyguardTransitionRepository.sendTransitionStep(
+                lockscreenToDozingStep(0f, STARTED)
+            )
+            runCurrent()
+            kosmos.fakeKeyguardRepository.setDozeTransitionModel(
+                DozeTransitionModel(to = DozeStateModel.DOZE_PULSING)
+            )
+            runCurrent()
+
+            // GIVEN nonAuthUIAlpha and lockscreen alphas are 1f
+            assertThat(nonAuthUIAlpha).isEqualTo(1f)
+            assertThat(lockscreenAlpha).isEqualTo(1f)
+
+            // THEN wasHiddenAuthUIShowingWhileDozing should be true
+            assertThat(wasHiddenAuthUIShowingWhileDozing).isEqualTo(true)
         }
 
     private fun lockscreenToDozingStep(value: Float, transitionState: TransitionState = RUNNING) =

@@ -60,6 +60,8 @@ constructor(
             )
         }
 
+    val nonAuthUIAlpha: Flow<Float> = dozingTransitionFlows.nonAuthUIAlpha(from = OCCLUDED)
+
     val deviceEntryBackgroundViewAlpha: Flow<Float> =
         transitionAnimation.immediatelyTransitionTo(0f)
 
