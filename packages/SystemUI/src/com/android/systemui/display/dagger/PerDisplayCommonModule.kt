@@ -29,7 +29,10 @@ import com.android.systemui.display.data.repository.DisplayStateRepository
 import com.android.systemui.display.data.repository.DisplayStateRepositoryImpl
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.display.domain.interactor.DisplayStateInteractorImpl
+import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.dagger.StatusBarPerDisplayModule
+import com.android.systemui.statusbar.data.repository.DarkIconDispatcherStore
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -55,7 +58,22 @@ interface PerDisplayCommonModule {
     @DisplayAware
     fun bindsDisplayStateInteractor(impl: DisplayStateInteractorImpl): DisplayStateInteractor
 
+    @Binds
+    @DisplayAware
+    fun statusBarRootFactory(statusBarRootFactory: StatusBarRootFactory): StatusBarRootFactory
+
     companion object {
+        @Provides
+        @PerDisplaySingleton
+        @DisplayAware
+        fun darkIconDispatcher(
+            @DisplayId displayId: Int,
+            darkIconDispatcherStore: DarkIconDispatcherStore,
+        ): DarkIconDispatcher {
+            return darkIconDispatcherStore.forDisplay(displayId)
+                ?: error("No DarkIconDispatcher for display $displayId")
+        }
+
         @Provides
         @PerDisplaySingleton
         fun provideDisplay(

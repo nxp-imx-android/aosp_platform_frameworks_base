@@ -124,6 +124,7 @@ interface StatusBarPhoneModule {
                 statusBarConfigurationControllerStore.defaultDisplay,
                 darkIconDispatcherStore.defaultDisplay,
                 systemUIDisplaySubcomponent.statusBarFragmentProvider,
+                systemUIDisplaySubcomponent.statusBarRootFactory,
                 systemUIDisplaySubcomponent.homeStatusBarComponentFactory,
             )
         }
