@@ -282,6 +282,13 @@ public class ConditionProviders extends ManagedServices {
         return rt;
     }
 
+    @VisibleForTesting
+    ConditionRecord getRecord(Uri id, ComponentName component) {
+        synchronized (mMutex) {
+            return getRecordLocked(id, component, false);
+        }
+    }
+
     private ConditionRecord getRecordLocked(Uri id, ComponentName component, boolean create) {
         if (id == null || component == null) return null;
         final int N = mRecords.size();
@@ -432,7 +439,7 @@ public class ConditionProviders extends ManagedServices {
         return info == null ? null : (IConditionProvider) info.service;
     }
 
-    private static class ConditionRecord {
+    static class ConditionRecord {
         public final Uri id;
         public final ComponentName component;
         public Condition condition;
