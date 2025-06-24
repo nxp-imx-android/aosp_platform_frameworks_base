@@ -64,7 +64,9 @@ sealed interface BatteryColors {
         }
 
         data object Charging : LightTheme() {
-            override val fill = Color(0xFF18CC47)
+            override val glyph = Color.White.copy(alpha = 0.9f)
+            override val fill = Color(0xFF00631C)
+            override val backgroundWithGlyph = highAlphaBg
         }
 
         data object Error : LightTheme() {
