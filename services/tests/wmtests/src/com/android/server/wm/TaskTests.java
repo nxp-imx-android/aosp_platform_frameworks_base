@@ -913,6 +913,14 @@ public class TaskTests extends WindowTestsBase {
         assertEquals(800, inOutConfig.screenHeightDp); // 960/(192/160) = 800
         assertEquals(450, inOutConfig.screenWidthDp); // 540/(192/160) = 450
 
+        // Shift the bounds to be half outside the display (e.g. flexible/offscreen split).
+        inOutConfig.windowConfiguration.getBounds().offset(0, -longSide / 2);
+        inOutConfig.windowConfiguration.setAppBounds(null);
+        task.computeConfigResourceOverrides(inOutConfig, parentConfig);
+        assertEquals("Shifted override bounds should not be clipped by parent",
+                inOutConfig.windowConfiguration.getBounds().height(),
+                inOutConfig.windowConfiguration.getAppBounds().height());
+
         inOutConfig.setToDefaults();
         // Landscape bounds.
         final Rect largerLandscapeBounds = new Rect(0, 0, longSide, shortSide);
