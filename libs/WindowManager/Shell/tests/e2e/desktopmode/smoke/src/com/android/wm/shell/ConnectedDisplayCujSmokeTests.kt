@@ -761,7 +761,7 @@ class ConnectedDisplayCujSmokeTests {
         const val RECENTS_BUTTON_RES_ID = "recent_apps"
         const val CLOSE_BUTTON = "close_window"
         const val DISPLAY_TOPOLOGY_PANE_CONTENT_RES_ID = "display_topology_pane_content"
-        const val EXTERNAL_DISPLAY_TEXT = "External Display"
+        const val EXTERNAL_DISPLAY_TEXT = "External display"
         const val CONNECTED_DEVICES_TEXT = "Connected devices"
         const val SETTINGS_PACKAGE = "com.android.settings"
         const val SCROLL_RETRY_MAX = 5
