@@ -6321,6 +6321,13 @@ public class Notification implements Parcelable
                 // If there is no title, the text (or big_text) needs to wrap around the image
                 result.mTitleMarginSet.applyToView(contentView, p.mTextViewId);
                 contentView.setInt(p.mTextViewId, "setNumIndentLines", p.hasTitle() ? 0 : 1);
+            } else if (notificationsRedesignTemplates() && !p.mCompact) {
+                // In the collapsed view (except for compact HUNs), the top line needs to
+                // accommodate both the expander and large icon (when present)
+                result.mHeadingFullMarginSet.applyToView(contentView, R.id.notification_top_line);
+                // The text underneath can flow below the expander, but only if there's no large
+                // icon to leave space for (similar to the title in the expanded version).
+                result.mTitleMarginSet.applyToView(contentView, R.id.notification_main_column);
             }
             // The expand button uses paddings rather than margins, so we'll adjust it
             // separately.
@@ -6435,7 +6442,7 @@ public class Notification implements Parcelable
                 contentView.setImageViewIcon(R.id.right_icon, rightIcon);
                 contentView.setIntTag(R.id.right_icon, R.id.tag_keep_when_showing_left_icon,
                         isPromotedPicture ? 1 : 0);
-                if ((notificationsRedesignTemplates() || Flags.uiRichOngoing()) && !p.mHeaderless) {
+                if (notificationsRedesignTemplates() || Flags.uiRichOngoing()) {
                     contentView.setViewLayoutMargin(R.id.right_icon,
                             RemoteViews.MARGIN_END, getLargeIconMarginEnd(p), COMPLEX_UNIT_PX);
                 }
@@ -6464,7 +6471,7 @@ public class Notification implements Parcelable
 
             if (notificationsRedesignTemplates()) {
                 int rightIconMarginPx = res.getDimensionPixelSize(
-                        R.dimen.notification_2025_right_icon_expanded_margin_end);
+                        R.dimen.notification_2025_right_icon_margin_end);
                 int extraSpaceForExpanderPx = res.getDimensionPixelSize(
                         R.dimen.notification_2025_extra_space_for_expander);
                 return rightIconMarginPx + extraSpaceForExpanderPx;
@@ -7172,6 +7179,7 @@ public class Notification implements Parcelable
 
             final StandardTemplateParams p = mParams.reset()
                     .viewType(StandardTemplateParams.VIEW_TYPE_HEADS_UP)
+                    .compact(true)
                     .fillTextsFrom(this);
             // Notification text is shown as secondary header text
             // for the minimal hun when it is provided.
@@ -8431,12 +8439,16 @@ public class Notification implements Parcelable
             customContent = customContent.clone();
             if (p.mHeaderless) {
                 template.removeFromParent(R.id.notification_top_line);
-                // We do not know how many lines ar emote view has, so we presume it has 2;  this
+                // We do not know how many lines a remote view has, so we presume it has 2;  this
                 // ensures that we don't under-pad the content, which could lead to abuse, at the
                 // cost of making single-line custom content over-padded.
                 Builder.setHeaderlessVerticalMargins(template, p, true /* hasSecondLine */);
+                if (notificationsRedesignTemplates()) {
+                    // also update the end margin to account for the large icon or expander
+                    result.mHeadingFullMarginSet.applyToView(template,
+                            R.id.notification_main_column);
+                }
             } else {
-                // also update the end margin to account for the large icon or expander
                 Resources resources = context.getResources();
                 result.mTitleMarginSet.applyToView(template, R.id.notification_main_column,
                         resources.getDimension(R.dimen.notification_content_margin_end)
@@ -16505,6 +16517,7 @@ public class Notification implements Parcelable
 
         int mViewType = VIEW_TYPE_UNSPECIFIED;
         boolean mHeaderless;
+        boolean mCompact;
         boolean mHideAppName;
         boolean mHideTitle;
         boolean mHideSubText;
@@ -16530,6 +16543,7 @@ public class Notification implements Parcelable
         final StandardTemplateParams reset() {
             mViewType = VIEW_TYPE_UNSPECIFIED;
             mHeaderless = false;
+            mCompact = false;
             mHideAppName = false;
             mHideTitle = false;
             mHideSubText = false;
@@ -16565,6 +16579,11 @@ public class Notification implements Parcelable
 
         public StandardTemplateParams headerless(boolean headerless) {
             mHeaderless = headerless;
+            return this;
+        }
+
+        public StandardTemplateParams compact(boolean compact) {
+            mCompact = compact;
             return this;
         }
 
