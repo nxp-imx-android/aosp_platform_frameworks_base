@@ -28,7 +28,6 @@ import static java.nio.file.Files.createTempDirectory;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
-import android.tools.ScenarioBuilder;
 import android.tools.Tag;
 import android.tools.io.TraceType;
 import android.tools.traces.TraceConfig;
@@ -110,8 +109,7 @@ public class ProtoLogConfigurationServiceTest {
     private final File mTracingDirectory = createTempDirectory("temp").toFile();
 
     private final ResultWriter mWriter = new ResultWriter()
-            .forScenario(new ScenarioBuilder()
-                    .forClass(createTempFile("temp", "").getName()).build())
+            .withName(createTempFile("temp", "").getName())
             .withOutputDir(mTracingDirectory)
             .setRunComplete();
 

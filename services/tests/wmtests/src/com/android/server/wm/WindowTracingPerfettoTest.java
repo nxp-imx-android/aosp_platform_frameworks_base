@@ -35,7 +35,6 @@ import static java.io.File.createTempFile;
 import static java.nio.file.Files.createTempDirectory;
 
 import android.platform.test.annotations.Presubmit;
-import android.tools.ScenarioBuilder;
 import android.tools.traces.io.ResultWriter;
 import android.tools.traces.monitors.PerfettoTraceMonitor;
 import android.util.Log;
@@ -206,8 +205,7 @@ public class WindowTracingPerfettoTest {
         }
 
         ResultWriter writer = new ResultWriter()
-                .forScenario(new ScenarioBuilder()
-                        .forClass(createTempFile("temp", "").getName()).build())
+                .withName(createTempFile("temp", "").getName())
                 .withOutputDir(createTempDirectory("temp").toFile())
                 .setRunComplete();
 

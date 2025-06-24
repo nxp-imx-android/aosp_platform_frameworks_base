@@ -20,8 +20,8 @@ import static android.internal.perfetto.protos.TestEventOuterClass.TestEvent.PAY
 import static android.internal.perfetto.protos.TestEventOuterClass.TestEvent.TestPayload.SINGLE_INT;
 import static android.internal.perfetto.protos.TracePacketOuterClass.TracePacket.FOR_TESTING;
 import static android.tools.traces.Utils.busyWaitForDataSourceRegistration;
-import static android.tools.traces.Utils.busyWaitTracingSessionExists;
 import static android.tools.traces.Utils.busyWaitTracingSessionDoesntExist;
+import static android.tools.traces.Utils.busyWaitTracingSessionExists;
 import static android.tracing.perfetto.TestUtils.createTempWriter;
 
 import static java.io.File.createTempFile;
@@ -29,7 +29,6 @@ import static java.nio.file.Files.createTempDirectory;
 
 import android.internal.perfetto.protos.DataSourceConfigOuterClass.DataSourceConfig;
 import android.internal.perfetto.protos.TestConfigOuterClass.TestConfig;
-import android.tools.ScenarioBuilder;
 import android.tools.Tag;
 import android.tools.io.TraceType;
 import android.tools.traces.TraceConfig;
@@ -370,8 +369,7 @@ public class DataSourceTest {
 
         for (int i = 0; i < instanceCount; i++) {
             final ResultWriter writer = new ResultWriter()
-                    .forScenario(new ScenarioBuilder()
-                            .forClass(createTempFile("temp", "").getName()).build())
+                    .withName(createTempFile("temp", "").getName())
                     .withOutputDir(mTracingDirectory)
                     .setRunComplete();
             writers.add(writer);
