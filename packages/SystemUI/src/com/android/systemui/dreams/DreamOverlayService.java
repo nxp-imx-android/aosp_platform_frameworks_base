@@ -57,6 +57,7 @@ import com.android.internal.logging.UiEventLogger;
 import com.android.internal.policy.PhoneWindow;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
+import com.android.systemui.Flags;
 import com.android.systemui.ambient.touch.TouchHandler;
 import com.android.systemui.ambient.touch.TouchMonitor;
 import com.android.systemui.ambient.touch.dagger.AmbientTouchComponent;
@@ -72,6 +73,7 @@ import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.dreams.complication.dagger.DreamComplicationComponent;
 import com.android.systemui.dreams.dagger.DreamModule;
 import com.android.systemui.dreams.dagger.DreamOverlayComponent;
+import com.android.systemui.dreams.touch.DismissTouchHandler;
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor;
 import com.android.systemui.navigationbar.gestural.domain.GestureInteractor;
 import com.android.systemui.navigationbar.gestural.domain.TaskMatcher;
@@ -548,6 +550,15 @@ public class DreamOverlayService extends android.service.dreams.DreamOverlayServ
             // to hub swipe gesture.
             touchHandlers.add(dreamOverlayComponent.getCommunalTouchHandler());
         }
+        if (isDreamInPreviewMode() && Flags.dreamPreviewTapDismiss()) {
+            touchHandlers.add(new DismissTouchHandler(new DismissTouchHandler.DismissCallback() {
+                @Override
+                public void onDismissed() {
+                    mExecutor.execute(DreamOverlayService.this::requestExit);
+                }
+            }));
+        }
+
         final AmbientTouchComponent ambientTouchComponent = mAmbientTouchComponentFactory.create(
                 mLifecycleOwner, new HashSet<>(touchHandlers), TAG, SURFACE_DREAM);
 
