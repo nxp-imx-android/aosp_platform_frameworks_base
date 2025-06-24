@@ -32,6 +32,7 @@ import com.android.server.companion.datatransfer.continuity.messages.HandoffRequ
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
+import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.tasks.RemoteTaskStore;
 
@@ -130,6 +131,11 @@ public final class TaskContinuityManagerService extends SystemService {
                 mRemoteTaskStore.removeTask(
                     associationId,
                     remoteTaskRemovedMessage.taskId());
+                break;
+            case RemoteTaskUpdatedMessage remoteTaskUpdatedMessage:
+                mRemoteTaskStore.updateTask(
+                    associationId,
+                    remoteTaskUpdatedMessage.getTask());
                 break;
             case HandoffRequestResultMessage handoffRequestResultMessage:
                 mOutboundHandoffRequestController.onHandoffRequestResultMessageReceived(
