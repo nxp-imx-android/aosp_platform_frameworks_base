@@ -585,8 +585,15 @@ public final class ApduServiceInfo implements Parcelable {
             return true;
         }
         boolean isPattern = plf.contains("?") || plf.contains("*");
-        List<Pattern> patternMatches = mAutoTransactPatterns.keySet().stream().filter(
-            p -> isPattern ? p.toString().equals(plf) : p.matcher(plf).matches()).toList();
+
+        // Create a copy of the key set to avoid ConcurrentModificationException
+        List<Pattern> patternKeys = new ArrayList<>(mAutoTransactPatterns.keySet());
+
+        List<Pattern> patternMatches =
+                patternKeys.stream()
+                        .filter(p
+                                -> isPattern ? p.toString().equals(plf) : p.matcher(plf).matches())
+                        .toList();
 
         if (patternMatches == null || patternMatches.size() == 0) {
             return false;
