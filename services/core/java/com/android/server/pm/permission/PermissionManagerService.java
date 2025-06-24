@@ -78,6 +78,8 @@ import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.Preconditions;
 import com.android.server.LocalServices;
 import com.android.server.companion.virtual.VirtualDeviceManagerInternal;
+import com.android.server.pm.PackageManagerService;
+import com.android.server.pm.PackageMetrics;
 import com.android.server.pm.UserManagerService;
 import com.android.server.pm.permission.PermissionManagerServiceInternal.CheckPermissionDelegate;
 import com.android.server.pm.permission.PermissionManagerServiceInternal.HotwordDetectionServiceProvider;
@@ -143,7 +145,8 @@ public class PermissionManagerService extends IPermissionManager.Stub {
         // The package info cache is the cache for package and permission information.
         // Disable the package info and package permission caches locally but leave the
         // checkPermission cache active.
-        PackageManager.invalidatePackageInfoCache();
+        PackageManagerService.invalidatePackageInfoCache(
+                PackageMetrics.INVALIDATION_REASON_PERMISSION_MANAGER_SERVICE_INIT);
         PermissionManager.disablePackageNamePermissionCache();
 
         mContext = context;

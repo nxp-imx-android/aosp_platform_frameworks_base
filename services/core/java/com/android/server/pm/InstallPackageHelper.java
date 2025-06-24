@@ -104,7 +104,6 @@ import android.annotation.UserIdInt;
 import android.apex.ApexInfo;
 import android.app.AppOpsManager;
 import android.app.ApplicationExitInfo;
-import android.app.ApplicationPackageManager;
 import android.app.BroadcastOptions;
 import android.app.admin.DevicePolicyManagerInternal;
 import android.app.backup.IBackupManager;
@@ -2536,7 +2535,8 @@ final class InstallPackageHelper {
             }
             installRequest.onCommitFinished();
         }
-        ApplicationPackageManager.invalidateGetPackagesForUidCache();
+        PackageManagerService.invalidateGetPackagesForUidCache(
+                PackageMetrics.INVALIDATION_REASON_INSTALL_PACKAGE);
     }
 
     @GuardedBy("mPm.mLock")
