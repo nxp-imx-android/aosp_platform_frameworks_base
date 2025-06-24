@@ -156,11 +156,11 @@ class InsetsPolicy {
         final Resources r = mPolicy.getContext().getResources();
         mHideNavBarForKeyboard = r.getBoolean(R.bool.config_hideNavBarForKeyboard);
         mShowingTransientControlTarget = new ControlTarget(
-                displayContent, true /* showing */, false /* permanent */);
+                this, true /* showing */, false /* permanent */);
         mShowingPermanentControlTarget = new ControlTarget(
-                displayContent, true /* showing */, true /* permanent */);
+                this, true /* showing */, true /* permanent */);
         mHidingPermanentControlTarget = new ControlTarget(
-                displayContent, false /* showing */, true /* permanent */);
+                this, false /* showing */, true /* permanent */);
     }
 
     /** Updates the target which can control system bars. */
@@ -209,6 +209,17 @@ class InsetsPolicy {
 
         mStatusBar.updateVisibility(statusControlTarget, Type.statusBars());
         mNavBar.updateVisibility(navControlTarget, Type.navigationBars());
+
+        if (((mHidingTransientTypes & Type.statusBars()) != 0
+                        && mHidingTransientStatusControlTarget != mFakeStatusControlTarget
+                        && mHidingTransientStatusControlTarget != statusControlTarget)
+                || ((mHidingTransientTypes & Type.navigationBars()) != 0
+                        && mHidingTransientNavControlTarget != mFakeNavControlTarget
+                        && mHidingTransientNavControlTarget != navControlTarget)) {
+            // The target responsible for playing the animation of hiding transient bars is gone.
+            // Here aborts the transient state.
+            abortTransient();
+        }
     }
 
     boolean hasHiddenSources(@InsetsType int types) {
@@ -243,6 +254,7 @@ class InsetsPolicy {
         }
         if (mShowingTransientTypes != showingTransientTypes) {
             mShowingTransientTypes = showingTransientTypes;
+            mHidingTransientTypes &= ~showingTransientTypes;
             StatusBarManagerInternal statusBarManagerInternal =
                     mPolicy.getStatusBarManagerInternal();
             if (statusBarManagerInternal != null) {
@@ -599,10 +611,10 @@ class InsetsPolicy {
      * updateBarControlTarget(mFocusedWin) after this invocation.
      */
     private void abortTransient() {
-        if (mShowingTransientTypes == 0) {
+        if (mShowingTransientTypes == 0 && mHidingTransientTypes == 0) {
             return;
         }
-        sendAbortTransient(mShowingTransientTypes);
+        sendAbortTransient(mShowingTransientTypes | mHidingTransientTypes);
         mShowingTransientTypes = 0;
         mHidingTransientTypes = 0;
         mHidingTransientStatusControlTarget = null;
@@ -925,6 +937,8 @@ class InsetsPolicy {
         @NonNull
         private final InsetsState mState = new InsetsState();
         @NonNull
+        private final InsetsPolicy mInsetsPolicy;
+        @NonNull
         private final InsetsStateController mStateController;
         @NonNull
         private final InsetsController mInsetsController;
@@ -932,15 +946,19 @@ class InsetsPolicy {
         private final int mRequestedVisibleTypes;
         @NonNull
         private final String mName;
+        @InsetsType
+        private int mAnimatingTypes;
 
-        ControlTarget(@NonNull DisplayContent displayContent, boolean showing, boolean permanent) {
+        ControlTarget(@NonNull InsetsPolicy insetsPolicy, boolean showing, boolean permanent) {
             final String name = String.format(FORMAT,
                     showing ? "Showing" : "Hiding",
                     permanent ? "Permanent" : "Transient");
+            final DisplayContent displayContent = insetsPolicy.mDisplayContent;
             mHandler = displayContent.mWmService.mH;
             mGlobalLock = displayContent.mWmService.mGlobalLock;
             mStateController = displayContent.getInsetsStateController();
-            mInsetsController = new InsetsController(new Host(mHandler, name));
+            mInsetsPolicy = insetsPolicy;
+            mInsetsController = new InsetsController(new Host(mHandler, name, this));
             mRequestedVisibleTypes = Type.defaultVisible() & ~(showing ? 0 : Type.systemBars());
             if (!showing) {
                 mInsetsController.hide(Type.systemBars());
@@ -978,6 +996,19 @@ class InsetsPolicy {
             return mRequestedVisibleTypes;
         }
 
+        @InsetsType
+        @Override
+        public int getAnimatingTypes() {
+            return mAnimatingTypes;
+        }
+
+        @Override
+        public void setAnimatingTypes(@InsetsType int animatingTypes,
+                @Nullable ImeTracker.Token statsToken) {
+            mInsetsPolicy.onAnimatingTypesChanged(this, mAnimatingTypes, animatingTypes);
+            mAnimatingTypes = animatingTypes;
+        }
+
         @NonNull
         @Override
         public String toString() {
@@ -993,10 +1024,13 @@ class InsetsPolicy {
         private final Handler mHandler;
         @NonNull
         private final String mName;
+        @NonNull
+        private final InsetsControlTarget mControlTarget;
 
-        Host(@NonNull Handler handler, @NonNull String name) {
+        Host(@NonNull Handler handler, @NonNull String name, @NonNull InsetsControlTarget target) {
             mHandler = handler;
             mName = name;
+            mControlTarget = target;
         }
 
         @NonNull
@@ -1040,6 +1074,12 @@ class InsetsPolicy {
             }
             t.apply();
             t.close();
+        }
+
+        @Override
+        public void updateAnimatingTypes(@InsetsType int animatingTypes,
+                @Nullable ImeTracker.Token statsToken) {
+            mControlTarget.setAnimatingTypes(animatingTypes, statsToken);
         }
 
         @Override
