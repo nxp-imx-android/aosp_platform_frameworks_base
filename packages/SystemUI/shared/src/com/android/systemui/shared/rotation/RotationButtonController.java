@@ -17,6 +17,8 @@
 package com.android.systemui.shared.rotation;
 
 import static android.content.pm.PackageManager.FEATURE_PC;
+import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_INNER_PRIMARY;
+import static android.hardware.devicestate.DeviceState.PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_OUTER_PRIMARY;
 import static android.view.Display.DEFAULT_DISPLAY;
 
 import static com.android.internal.view.RotationPolicy.NATURAL_ROTATION;
@@ -36,6 +38,8 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
+import android.hardware.devicestate.DeviceState;
+import android.hardware.devicestate.DeviceStateManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
@@ -70,6 +74,7 @@ import com.android.systemui.shared.system.TaskStackChangeListeners;
 import com.android.window.flags.Flags;
 
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -308,8 +313,8 @@ public class RotationButtonController {
             // Ignore if we can't read the setting for the current user
             return;
         }
-        if (Flags.enableDeviceStateAutoRotateSettingRefactor()) {
-            RotationPolicy.setRotationAtAngleIfLocked(rotationSuggestion, caller);
+        if (isFoldable() && Flags.enableDeviceStateAutoRotateSettingRefactor()) {
+            RotationPolicy.setRotationAtAngleIfAllowed(rotationSuggestion, caller);
             return;
         }
 
@@ -698,6 +703,27 @@ public class RotationButtonController {
         if (numSuggestions < NUM_ACCEPTED_ROTATION_SUGGESTIONS_FOR_INTRODUCTION) {
             Settings.Secure.putInt(cr, Settings.Secure.NUM_ROTATION_SUGGESTIONS_ACCEPTED,
                     numSuggestions + 1);
+        }
+    }
+
+    private boolean isFoldable() {
+        if (android.hardware.devicestate.feature.flags.Flags.deviceStatePropertyMigration()) {
+            final DeviceStateManager deviceStateManager = mContext.getSystemService(
+                    DeviceStateManager.class);
+            if (deviceStateManager == null) return false;
+            List<DeviceState> deviceStates = deviceStateManager.getSupportedDeviceStates();
+            for (int i = 0; i < deviceStates.size(); i++) {
+                DeviceState state = deviceStates.get(i);
+                if (state.hasProperty(PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_OUTER_PRIMARY)
+                        || state.hasProperty(
+                        PROPERTY_FOLDABLE_DISPLAY_CONFIGURATION_INNER_PRIMARY)) {
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return mContext.getResources().getIntArray(
+                    com.android.internal.R.array.config_foldedDeviceStates).length != 0;
         }
     }
 

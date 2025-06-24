@@ -393,7 +393,7 @@ public class DeviceStateRotationLockSettingControllerTest extends SysuiTestCase 
         }
 
         @Override
-        public void setRotationAtAngleIfLocked(int rotation, String caller) {
+        public void setRotationAtAngleIfAllowed(int rotation, String caller) {
             throw new AssertionError("Not implemented");
         }
 
