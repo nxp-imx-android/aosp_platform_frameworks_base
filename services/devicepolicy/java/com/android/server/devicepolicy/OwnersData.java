@@ -95,8 +95,6 @@ class OwnersData {
             "resetPasswordWithTokenMigrated";
     private static final String ATTR_MEMORY_TAGGING_MIGRATED =
             "memoryTaggingMigrated";
-    private static final String ATTR_SET_APPLICATION_RESTRICTIONS_MIGRATED =
-            "setApplicationRestrictionsMigrated";
     private static final String ATTR_SET_KEYGUARD_DISABLED_FEATURES_MIGRATED =
             "setKeyguardDisabledFeaturesMigrated";
     private static final String ATTR_PERMISSION_GRANT_STATE_MIGRATED =
@@ -135,7 +133,6 @@ class OwnersData {
     boolean mSuspendedPackagesMigrated = false;
     boolean mResetPasswordWithTokenMigrated = false;
     boolean mMemoryTaggingMigrated = false;
-    boolean mSetApplicationRestrictionsMigrated = false;
     boolean mSetKeyguardDisabledFeaturesMigrated = false;
     boolean mPermissionGrantStateMigrated = false;
 
@@ -439,10 +436,6 @@ class OwnersData {
                 out.attributeBoolean(null, ATTR_RESET_PASSWORD_WITH_TOKEN_MIGRATED,
                         mResetPasswordWithTokenMigrated);
             }
-            if (Flags.setApplicationRestrictionsCoexistence()) {
-                out.attributeBoolean(null, ATTR_SET_APPLICATION_RESTRICTIONS_MIGRATED,
-                        mSetApplicationRestrictionsMigrated);
-            }
             out.attributeBoolean(null, ATTR_MEMORY_TAGGING_MIGRATED,
                     mMemoryTaggingMigrated);
             if (Flags.setKeyguardDisabledFeaturesCoexistence()) {
@@ -528,10 +521,6 @@ class OwnersData {
                             ATTR_RESET_PASSWORD_WITH_TOKEN_MIGRATED, false);
                     mMemoryTaggingMigrated = parser.getAttributeBoolean(null,
                             ATTR_MEMORY_TAGGING_MIGRATED, false);
-                    mSetApplicationRestrictionsMigrated =
-                            Flags.setApplicationRestrictionsCoexistence()
-                                    && parser.getAttributeBoolean(null,
-                                    ATTR_SET_APPLICATION_RESTRICTIONS_MIGRATED, false);
                     mSetKeyguardDisabledFeaturesMigrated =
                             Flags.setKeyguardDisabledFeaturesCoexistence()
                                     && parser.getAttributeBoolean(null,
