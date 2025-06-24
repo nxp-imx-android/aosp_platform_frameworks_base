@@ -2143,19 +2143,25 @@ public class MediaQualityService extends SystemService {
                         Slog.d(TAG, "The new status is " + newStatus);
                         String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
                                 + BaseParameters.PARAMETER_PACKAGE + " = ? AND "
-                                + BaseParameters.PARAMETER_INPUT_ID + " = ? AND "
                                 + BaseParameters.PARAMETER_NAME + " = ?";
-                        String[] selectionArguments = {
-                                Integer.toString(previous.getProfileType()),
-                                previous.getPackageName(),
-                                previous.getInputId(),
-                                profileName + "/" + newStatus
-                        };
+                        List<String> selectionArguments = new ArrayList<>();
+                        selectionArguments.add(Integer.toString(previous.getProfileType()));
+                        selectionArguments.add(previous.getPackageName());
+                        selectionArguments.add(profileName + "/" + newStatus);
+                        if (previous.getInputId() != null) {
+                            Log.d(TAG, "onStreamStatusChanged: "
+                                    + "The input is not null for previous picture profile");
+                            selection += " AND " + BaseParameters.PARAMETER_INPUT_ID + " = ?";
+                            selectionArguments.add(previous.getInputId());
+                        }
+                        Log.d(TAG, "onStreamStatusChanged: "
+                                + "The selection is " + selection
+                                + " The selection argument is " + selectionArguments);
                         List<PictureProfile> list =
                                 mMqDatabaseUtils.getPictureProfilesBasedOnConditions(
                                         MediaQualityUtils.getMediaProfileColumns(true),
                                         selection,
-                                        selectionArguments);
+                                        selectionArguments.toArray(new String[0]));
                         if (list.isEmpty()) {
                             Slog.d(TAG, "The picture profile list is empty");
                             // Short term solution for b/422302653.
@@ -2583,22 +2589,28 @@ public class MediaQualityService extends SystemService {
 
     private PictureProfile getSdrPictureProfile(String profileName, PictureProfile previous) {
         String selection = BaseParameters.PARAMETER_TYPE + " = ? AND "
-                + BaseParameters.PARAMETER_PACKAGE + " = ? AND "
-                + BaseParameters.PARAMETER_INPUT_ID + " = ? AND ("
+                + BaseParameters.PARAMETER_PACKAGE + " = ? AND ("
                 + BaseParameters.PARAMETER_NAME + " = ? OR "
                 + BaseParameters.PARAMETER_NAME + " = ?)";
-        String[] selectionArguments = {
-                Integer.toString(previous.getProfileType()),
-                previous.getPackageName(),
-                previous.getInputId(),
-                profileName,
-                profileName + "/" + PictureProfile.STATUS_SDR
-        };
+        List<String> selectionArguments = new ArrayList<>();
+        selectionArguments.add(Integer.toString(previous.getProfileType()));
+        selectionArguments.add(previous.getPackageName());
+        selectionArguments.add(profileName);
+        selectionArguments.add(profileName + "/" + PictureProfile.STATUS_SDR);
+        if (previous.getInputId() != null) {
+            Log.d(TAG, "getSdrPictureProfile: "
+                    + "The input is not null for previous picture profile");
+            selection += " AND " + BaseParameters.PARAMETER_INPUT_ID + " = ?";
+            selectionArguments.add(previous.getInputId());
+        }
+        Log.d(TAG, "getSdrPictureProfile: "
+                + "The selection is " + selection
+                + " The selection argument is " + selectionArguments);
         List<PictureProfile> list =
                 mMqDatabaseUtils.getPictureProfilesBasedOnConditions(
                         MediaQualityUtils.getMediaProfileColumns(true),
                         selection,
-                        selectionArguments);
+                        selectionArguments.toArray(new String[0]));
         if (list.isEmpty()) {
             return null;
         }
