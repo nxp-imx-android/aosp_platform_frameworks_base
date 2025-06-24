@@ -18,7 +18,6 @@ package com.android.wm.shell.common.split;
 
 import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_FIXED_RATIO;
 import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_FLEXIBLE_HYBRID;
-import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_FLEXIBLE_SPLIT;
 import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_MODE_16_9;
 import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_MODE_MINIMIZED;
 import static com.android.wm.shell.common.split.DividerSnapAlgorithm.SNAP_ONLY_1_1;
@@ -30,7 +29,9 @@ import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_9
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_3_10_45_45;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_3_33_33_33;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_3_45_45_10;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_END_AND_DISMISS;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_MINIMIZE;
+import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_START_AND_DISMISS;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.stateToString;
 
 import android.graphics.Rect;
@@ -68,6 +69,8 @@ public class SplitSpec {
     public static final List<Integer> FIVE_TARGETS =
             List.of(SNAP_TO_2_10_90, SNAP_TO_2_33_66, SNAP_TO_2_50_50, SNAP_TO_2_66_33,
                     SNAP_TO_2_90_10);
+    public static final List<Integer> DISMISS_TARGETS =
+            List.of(SNAP_TO_START_AND_DISMISS, SNAP_TO_END_AND_DISMISS);
 
     private final boolean mIsLeftRightSplit;
     /** The physical size of the display. */
@@ -207,20 +210,34 @@ public class SplitSpec {
     }
 
     /**
-     * Returns the expected layout of snap targets for a particular snap mode as a List of
-     * SnapPositions.
+     * Returns the expected layout of snap targets as a List of SnapPositions.
+     * @param snapMode An int representing the "type" of snapping currently active on this device.
+     * @param areOffscreenRatiosSupported {@code true} if the current {@code snapMode} and display
+     *                                                size allow for apps to go flexibly offscreen.
+     * @param bigEnoughFor33 {@code true} if the display is large enough for apps to be shown at
+     *                                   33% of their full size without violating minimum app size
+     *                                   requirements.
+     * @return An ordered List of ints representing the number and type of SnapTargets that should
+     *        be created.
      */
     public static List<Integer> getSnapTargetLayout(
-            int snapMode, boolean areOffscreenRatiosSupported) {
-        return switch (snapMode) {
-            case SNAP_ONLY_1_1 -> ONE_TARGET;
-            case SNAP_MODE_MINIMIZED -> ONE_TARGET_MINIMIZED;
-            case SNAP_MODE_16_9, SNAP_FIXED_RATIO -> THREE_TARGETS_ONSCREEN;
-            case SNAP_FLEXIBLE_SPLIT ->
-                    areOffscreenRatiosSupported ? THREE_TARGETS_OFFSCREEN : THREE_TARGETS_ONSCREEN;
-            case SNAP_FLEXIBLE_HYBRID ->
-                    areOffscreenRatiosSupported ? FIVE_TARGETS : THREE_TARGETS_ONSCREEN;
-            default -> throw new IllegalStateException("unrecognized snap mode");
-        };
+            int snapMode, boolean areOffscreenRatiosSupported, boolean bigEnoughFor33) {
+        switch (snapMode) {
+            case SNAP_ONLY_1_1:
+                return ONE_TARGET;
+            case SNAP_MODE_MINIMIZED:
+                return ONE_TARGET_MINIMIZED;
+            case SNAP_MODE_16_9:
+            case SNAP_FIXED_RATIO:
+                return bigEnoughFor33 ? THREE_TARGETS_ONSCREEN : ONE_TARGET;
+            case SNAP_FLEXIBLE_HYBRID:
+                if (areOffscreenRatiosSupported) {
+                    return bigEnoughFor33 ? FIVE_TARGETS : THREE_TARGETS_OFFSCREEN;
+                } else {
+                    return bigEnoughFor33 ? THREE_TARGETS_ONSCREEN : ONE_TARGET;
+                }
+            default:
+                throw new IllegalStateException("unrecognized snap mode");
+        }
     }
 }
