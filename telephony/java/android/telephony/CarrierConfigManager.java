@@ -1485,6 +1485,15 @@ public class CarrierConfigManager {
             "is_ims_conference_size_enforced_bool";
 
     /**
+     * Determine whether multi-party anchor conference calls are supported by a carrier. When
+     * {@code true}, merging a locally hosted conference call with a remotely hosted conference
+     * into a multi-party anchor conference call is permitted, {@code false otherwise}.
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_MULTI_PARTY_ANCHOR_CONF)
+    public static final String KEY_SUPPORT_MULTI_PARTY_ANCHOR_CONFERENCE_BOOL =
+            "support_multi_anchor_conf_bool";
+
+    /**
      * Determines the maximum number of participants the carrier supports for a conference call.
      * This number is exclusive of the current device. A conference between 3 devices, for example,
      * would have a size limit of 2 participants.
@@ -10952,6 +10961,7 @@ public class CarrierConfigManager {
         sDefaults.putBoolean(KEY_SUPPORTS_DEVICE_TO_DEVICE_COMMUNICATION_USING_DTMF_BOOL, false);
         sDefaults.putBoolean(KEY_SUPPORT_VIDEO_CONFERENCE_CALL_BOOL, false);
         sDefaults.putBoolean(KEY_IS_IMS_CONFERENCE_SIZE_ENFORCED_BOOL, false);
+        sDefaults.putBoolean(KEY_SUPPORT_MULTI_PARTY_ANCHOR_CONFERENCE_BOOL, false);
         sDefaults.putInt(KEY_IMS_CONFERENCE_SIZE_LIMIT_INT, 5);
         sDefaults.putBoolean(KEY_DISPLAY_HD_AUDIO_PROPERTY_BOOL, true);
         sDefaults.putBoolean(KEY_EDITABLE_ENHANCED_4G_LTE_BOOL, true);
