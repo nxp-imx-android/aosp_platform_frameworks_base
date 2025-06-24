@@ -18,7 +18,6 @@ package com.android.systemui.ambient.statusbar.dagger
 
 import com.android.systemui.ambient.statusbar.ui.AmbientStatusBarView
 import com.android.systemui.ambient.statusbar.ui.AmbientStatusBarViewController
-import com.android.systemui.touch.TouchInsetManager
 import dagger.BindsInstance
 import dagger.Subcomponent
 
@@ -32,7 +31,6 @@ interface AmbientStatusBarComponent {
     interface Factory {
         fun create(
             @BindsInstance view: AmbientStatusBarView,
-            @BindsInstance touchInsetSession: TouchInsetManager.TouchInsetSession?,
         ): AmbientStatusBarComponent
     }
 

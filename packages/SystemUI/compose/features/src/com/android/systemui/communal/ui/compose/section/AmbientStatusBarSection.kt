@@ -44,9 +44,7 @@ constructor(private val factory: AmbientStatusBarComponent.Factory) {
                         ) as AmbientStatusBarView)
                     .apply {
                         visibility = View.VISIBLE
-                        factory.create(this, touchInsetSession = null).getController().apply {
-                            init()
-                        }
+                        factory.create(this).getController().apply { init() }
                     }
             },
             modifier = modifier.element(Communal.Elements.StatusBar),
