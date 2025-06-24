@@ -55,9 +55,6 @@
       "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragWindowsLimitTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-ExitDesktopToFullScreenWithAppHeaderMenuTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-ExitDesktopWithDragToTopDragZoneTest"
     },
     {
@@ -65,9 +62,6 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-FocusAppFromTaskbarTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-MaximizeAppWindowTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-MaximizeAppWindowWithDragToTopDragZoneInDesktopFirstTest"
@@ -92,9 +86,6 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-OpenAppWithExternalDisplayConnectedTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-OpenAppsInDesktopModeTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-OpenTrampolineAppInDesktopModeTaskLimitTest"
@@ -130,13 +121,25 @@
       "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopFromSplitScreenWithAppHandleMenuTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-EnterSplitScreenWithAppHandleMenuTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-ExitDesktopToFullScreenWithAppHeaderMenuTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-fundamentals-ExitDesktopToSplitScreenWithAppHeaderMenuTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-MaximizeAppWindowTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppFromAllAppsTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppFromTaskbarTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppsInDesktopModeTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-QuickSwitchBetweenDesktopAndFullscreenTest"
@@ -167,6 +170,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-SnapResizeAppWindowWithDragTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-resizing-SnapResizeAppWindowWithKeyboardTest"
     }
   ]
 }
