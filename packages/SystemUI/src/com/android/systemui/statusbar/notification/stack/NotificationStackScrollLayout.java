@@ -1535,13 +1535,10 @@ public class NotificationStackScrollLayout
                 // we never overlap / clip the shelf
                 continue;
             }
-            boolean canClip = true;
+            boolean canClip = !child.isBackgroundOpaque();
             if (child instanceof ExpandableNotificationRow row) {
-                if (row.isChildInGroup()) {
+                if (canClip && row.isChildInGroup()) {
                     canClip = canClipChildRow(row);
-                }
-                if (row.isBackgroundOpaque()) {
-                    canClip = false;
                 }
                 // handle the notGoneIndex for the children as well
                 List<ExpandableNotificationRow> children = row.getAttachedChildren();
