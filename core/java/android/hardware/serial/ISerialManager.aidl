@@ -25,12 +25,12 @@ interface ISerialManager {
     /** Returns a list of all available serial ports */
     List<SerialPortInfo> getSerialPorts();
 
-	/** Registers a listener to monitor serial port connections and disconnections. */
-	void registerSerialPortListener(in ISerialPortListener listener);
+    /** Registers a listener to monitor serial port connections and disconnections. */
+    void registerSerialPortListener(in ISerialPortListener listener);
 
-	/** Unregisters a listener to monitor serial port connections and disconnections. */
-	void unregisterSerialPortListener(in ISerialPortListener listener);
+    /** Unregisters a listener to monitor serial port connections and disconnections. */
+    void unregisterSerialPortListener(in ISerialPortListener listener);
 
     /** Requests opening a file descriptor for the serial port. */
-    void requestOpen(in String portName, in int flags, in ISerialPortResponseCallback callback);
+    void requestOpen(in String portName, in int flags, in boolean exclusive, in ISerialPortResponseCallback callback);
 }
