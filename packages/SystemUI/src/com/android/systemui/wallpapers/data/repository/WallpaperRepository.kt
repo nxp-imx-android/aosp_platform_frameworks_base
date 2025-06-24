@@ -137,7 +137,7 @@ constructor(
             .map {
                 val aodEnabled = secureSettings.getInt(Settings.Secure.DOZE_ALWAYS_ON, 0) == 1
                 val wallpaperEnabled =
-                    secureSettings.getInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 1) == 1
+                    secureSettings.getInt(Settings.Secure.DOZE_ALWAYS_ON_WALLPAPER_ENABLED, 0) == 1
                 aodEnabled && wallpaperEnabled && configEnabled() && ambientAod()
             }
             .flowOn(bgDispatcher)
