@@ -99,7 +99,7 @@ public record RemoteTaskInfo(int id, String label, long lastUsedTimeMillis, byte
         return new RemoteTask.Builder(id())
                 .setLabel(label())
                 .setDeviceId(deviceId)
-                .setLastUsedTimestampMillis((int) lastUsedTimeMillis())
+                .setLastUsedTimestampMillis(lastUsedTimeMillis())
                 .setSourceDeviceName(deviceName)
                 .setIcon(taskIcon)
                 .build();
