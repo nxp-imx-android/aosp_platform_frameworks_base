@@ -1737,7 +1737,7 @@ public final class OutputConfiguration implements Parcelable {
      * HardwareBuffer format and dataspace. If the combination is not supported
      * by the camera APIs, this function returns ImageFormat.UNKNOWN.</p>
      *
-     * @return {@link android.graphics.ImageFormat#Format} associated with this
+     * @return {@link android.graphics.ImageFormat} associated with this
      *         {@link OutputConfiguration}.
      */
     @FlaggedApi(Flags.FLAG_OUTPUT_CONFIGURATION_GETTER)
