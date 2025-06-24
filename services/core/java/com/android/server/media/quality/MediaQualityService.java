@@ -2182,7 +2182,10 @@ public class MediaQualityService extends SystemService {
                         // Add previous stream status information so that application can use this
                         // flag to indicate that there is a onStreamStatusChange.
                         currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
+                        current.addStringParameter(STREAM_STATUS, newStatus);
+                        current.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);
                         mStreamStatusMapping.setCurrent(profileHandle, current);
+                        // TODO: use package name to notify
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
                                 current.getProfileId(), current, Process.INVALID_UID,
                                 Process.INVALID_PID);
@@ -2209,7 +2212,10 @@ public class MediaQualityService extends SystemService {
                         // Add previous stream status information so that application can use this
                         // flag to indicate that there is a onStreamStatusChange.
                         currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
+                        current.addStringParameter(STREAM_STATUS, PictureProfile.STATUS_SDR);
+                        current.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);
                         mStreamStatusMapping.setCurrent(profileHandle, current);
+                        // TODO: use package name to notify
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
                                 current.getProfileId(), current, Process.INVALID_UID,
                                 Process.INVALID_PID);
