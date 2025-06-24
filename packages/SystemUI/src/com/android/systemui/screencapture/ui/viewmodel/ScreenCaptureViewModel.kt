@@ -20,6 +20,7 @@ import android.content.Context
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.domain.interactor.ScreenshotInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.coroutineScope
@@ -42,8 +43,9 @@ enum class ScreenCaptureRegion {
 class ScreenCaptureViewModel
 @AssistedInject
 constructor(
-    @Application private val context: Context,
+    @Application private val applicationContext: Context,
     private val iconProvider: ScreenCaptureIconProvider,
+    private val screenshotInteractor: ScreenshotInteractor,
 ) : HydratedActivatable() {
     private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
     private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
@@ -81,6 +83,15 @@ constructor(
         captureRegionSource.value = selectedRegion
     }
 
+    suspend fun takeFullscreenScreenshot() {
+        require(captureTypeSource.value == ScreenCaptureType.SCREENSHOT)
+        require(captureRegionSource.value == ScreenCaptureRegion.FULLSCREEN)
+
+        screenshotInteractor.takeFullscreenScreenshot()
+
+        // TODO(b/427500006) Close the window after requesting a fullscreen screenshot.
+    }
+
     override suspend fun onActivated() {
         coroutineScope { launch { iconProvider.collectIcons() } }
     }
@@ -92,13 +103,14 @@ constructor(
         return listOf(
             RadioButtonGroupItemViewModel(
                 icon = icons?.screenRecord,
-                label = context.getString(R.string.screen_capture_toolbar_record_button),
+                label = applicationContext.getString(R.string.screen_capture_toolbar_record_button),
                 isSelected = selectedType == ScreenCaptureType.SCREEN_RECORD,
                 onClick = { updateCaptureType(ScreenCaptureType.SCREEN_RECORD) },
             ),
             RadioButtonGroupItemViewModel(
                 icon = icons?.screenshot,
-                label = context.getString(R.string.screen_capture_toolbar_capture_button),
+                label =
+                    applicationContext.getString(R.string.screen_capture_toolbar_capture_button),
                 isSelected = selectedType == ScreenCaptureType.SCREENSHOT,
                 onClick = { updateCaptureType(ScreenCaptureType.SCREENSHOT) },
             ),

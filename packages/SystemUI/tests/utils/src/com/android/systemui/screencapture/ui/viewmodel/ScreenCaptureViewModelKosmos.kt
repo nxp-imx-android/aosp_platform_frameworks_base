@@ -19,10 +19,12 @@ package com.android.systemui.screencapture.ui.viewmodel
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.screencapture.domain.interactor.screenshotInteractor
 
 val Kosmos.screenCaptureViewModel by Fixture {
     ScreenCaptureViewModel(
-        context = applicationContext,
+        applicationContext = applicationContext,
         iconProvider = screenCaptureIconProviderKosmos,
+        screenshotInteractor = screenshotInteractor,
     )
 }
