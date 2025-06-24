@@ -323,9 +323,7 @@ public abstract class DevicePolicyManagerInternal {
 
     /**
      * Returns a map of admin to {@link Bundle} map of restrictions set by the admins for the
-     * provided {@code packageName} in the provided {@code userId}.
-     *
-     * <p> App restrictions set by the DPC are always put at the front of the returned list.
+     * provided {@code packageName} in the provided {@code userId}
      */
     public abstract List<Bundle> getApplicationRestrictionsPerAdminForUser(
             String packageName, @UserIdInt int userId);

@@ -642,19 +642,6 @@ class Owners {
         }
     }
 
-    void markSetApplicationRestrictionsMigrated() {
-        synchronized (mData) {
-            mData.mSetApplicationRestrictionsMigrated = true;
-            mData.writeDeviceOwner();
-        }
-    }
-
-    boolean isSetApplicationRestrictionsMigrated() {
-        synchronized (mData) {
-            return mData.mSetApplicationRestrictionsMigrated;
-        }
-    }
-
     void markSetKeyguardDisabledFeaturesMigrated() {
         synchronized (mData) {
             mData.mSetKeyguardDisabledFeaturesMigrated = true;
