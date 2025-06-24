@@ -57,7 +57,7 @@ public class ZenDeviceEffectsTest extends UiServiceTestCase {
                         .setShouldUseNightLight(true)
                         .setShouldSuppressAmbientDisplay(false)
                         .setShouldSuppressAmbientDisplay(true)
-                        .setBrightnessPercentageCap(50f)
+                        .setBrightnessCap(0.5f)
                         .addExtraEffect("WILL BE GONE")
                         .setExtraEffects(ImmutableSet.of("1", "2"))
                         .addExtraEffects(ImmutableSet.of("3", "4"))
@@ -75,7 +75,7 @@ public class ZenDeviceEffectsTest extends UiServiceTestCase {
         assertThat(deviceEffects.shouldMinimizeRadioUsage()).isFalse();
         assertThat(deviceEffects.shouldUseNightMode()).isFalse();
         assertThat(deviceEffects.shouldSuppressAmbientDisplay()).isTrue();
-        assertThat(deviceEffects.getBrightnessPercentageCap()).isEqualTo(50f);
+        assertThat(deviceEffects.getBrightnessCap()).isEqualTo(0.5f);
         assertThat(deviceEffects.getExtraEffects()).containsExactly("1", "2", "3", "4", "5");
     }
 
@@ -129,7 +129,7 @@ public class ZenDeviceEffectsTest extends UiServiceTestCase {
                         .setShouldDisplayGrayscale(true)
                         .setShouldUseNightMode(false)
                         .setShouldUseNightLight(true)
-                        .setBrightnessPercentageCap(50f)
+                        .setBrightnessCap(0.5f)
                         .addExtraEffect("2")
                         .build();
 
@@ -139,7 +139,7 @@ public class ZenDeviceEffectsTest extends UiServiceTestCase {
         assertThat(modified.shouldUseNightLight()).isTrue(); // updated
         assertThat(modified.shouldUseNightMode()).isFalse(); // updated
         assertThat(modified.shouldSuppressAmbientDisplay()).isTrue(); // from original
-        assertThat(modified.getBrightnessPercentageCap()).isEqualTo(50f); // updated
+        assertThat(modified.getBrightnessCap()).isEqualTo(0.5f); // updated
         assertThat(modified.getExtraEffects()).containsExactly("1", "2"); // updated
     }
 
@@ -200,16 +200,13 @@ public class ZenDeviceEffectsTest extends UiServiceTestCase {
     @Test
     @EnableFlags(android.service.notification.Flags.FLAG_APPLY_BRIGHTNESS_CLAMPING_FOR_MODES)
     public void builder_add_retainsLowerBrightnessCap() {
-        ZenDeviceEffects zde1 =
-                new ZenDeviceEffects.Builder().setBrightnessPercentageCap(50f).build();
-        ZenDeviceEffects zde2 =
-                new ZenDeviceEffects.Builder().setBrightnessPercentageCap(60f).build();
+        ZenDeviceEffects zde1 = new ZenDeviceEffects.Builder().setBrightnessCap(0.5f).build();
+        ZenDeviceEffects zde2 = new ZenDeviceEffects.Builder().setBrightnessCap(0.6f).build();
 
         ZenDeviceEffects add1 = new ZenDeviceEffects.Builder().add(zde1).add(zde2).build();
         ZenDeviceEffects add2 = new ZenDeviceEffects.Builder().add(zde2).add(zde1).build();
 
-        ZenDeviceEffects expected =
-                new ZenDeviceEffects.Builder().setBrightnessPercentageCap(50f).build();
+        ZenDeviceEffects expected = new ZenDeviceEffects.Builder().setBrightnessCap(0.5f).build();
         assertThat(add1).isEqualTo(expected);
         assertThat(add2).isEqualTo(expected);
     }
@@ -224,7 +221,7 @@ public class ZenDeviceEffectsTest extends UiServiceTestCase {
                         .setShouldMinimizeRadioUsage(true)
                         .setShouldUseNightMode(true)
                         .setShouldSuppressAmbientDisplay(true)
-                        .setBrightnessPercentageCap(50f)
+                        .setBrightnessCap(0.5f)
                         .setExtraEffects(ImmutableSet.of("1", "2", "3"))
                         .build();
 
@@ -244,7 +241,7 @@ public class ZenDeviceEffectsTest extends UiServiceTestCase {
         assertThat(copy.shouldUseNightMode()).isTrue();
         assertThat(copy.shouldSuppressAmbientDisplay()).isTrue();
         assertThat(copy.shouldDisplayGrayscale()).isFalse();
-        assertThat(copy.getBrightnessPercentageCap()).isEqualTo(50f);
+        assertThat(copy.getBrightnessCap()).isEqualTo(0.5f);
         assertThat(copy.getExtraEffects()).containsExactly("1", "2", "3");
     }
 
@@ -305,12 +302,11 @@ public class ZenDeviceEffectsTest extends UiServiceTestCase {
     @Test
     @EnableFlags(android.service.notification.Flags.FLAG_APPLY_BRIGHTNESS_CLAMPING_FOR_MODES)
     public void hasEffects_brightnessCapSet_returnsTrue() {
-        ZenDeviceEffects effects =
-                new ZenDeviceEffects.Builder().setBrightnessPercentageCap(50f).build();
+        ZenDeviceEffects effects = new ZenDeviceEffects.Builder().setBrightnessCap(0.5f).build();
         assertThat(effects.hasEffects()).isTrue();
-        effects = new ZenDeviceEffects.Builder().setBrightnessPercentageCap(0f).build();
+        effects = new ZenDeviceEffects.Builder().setBrightnessCap(0f).build();
         assertThat(effects.hasEffects()).isTrue();
-        effects = new ZenDeviceEffects.Builder().setBrightnessPercentageCap(100f).build();
+        effects = new ZenDeviceEffects.Builder().setBrightnessCap(1f).build();
         assertThat(effects.hasEffects()).isTrue();
     }
 
@@ -342,14 +338,13 @@ public class ZenDeviceEffectsTest extends UiServiceTestCase {
     @SuppressLint("Range")
     @EnableFlags(android.service.notification.Flags.FLAG_APPLY_BRIGHTNESS_CLAMPING_FOR_MODES)
     public void validate_brightnessCapRange() {
-        ZenDeviceEffects okay =
-                new ZenDeviceEffects.Builder().setBrightnessPercentageCap(50f).build();
+        ZenDeviceEffects okay = new ZenDeviceEffects.Builder().setBrightnessCap(0.5f).build();
 
         ZenDeviceEffects lessThanZeroFixed =
-                new ZenDeviceEffects.Builder().setBrightnessPercentageCap(-10f).build();
+                new ZenDeviceEffects.Builder().setBrightnessCap(-0.1f).build();
 
         ZenDeviceEffects moreThanOneFixed =
-                new ZenDeviceEffects.Builder().setBrightnessPercentageCap(110f).build();
+                new ZenDeviceEffects.Builder().setBrightnessCap(1.1f).build();
 
         okay.validate(); // No exception.
         assertThrows(IllegalArgumentException.class, lessThanZeroFixed::validate);
