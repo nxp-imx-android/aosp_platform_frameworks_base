@@ -51,6 +51,9 @@ import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.dagger.MediaModule.QS_PANEL
 import com.android.systemui.media.dagger.MediaModule.QUICK_QS_PANEL
+import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
+import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.qs.FooterActionsController
 import com.android.systemui.qs.QSEvent
@@ -116,14 +119,17 @@ constructor(
     @Named(QSFragmentComposeModule.QS_USING_MEDIA_PLAYER) private val usingMedia: Boolean,
     private val uiEventLogger: UiEventLogger,
     @Assisted private val lifecycleScope: LifecycleCoroutineScope,
-    private val mediaCarouselInteractor: MediaCarouselInteractor,
+    val mediaCarouselInteractor: MediaCarouselInteractor,
+    val mediaViewModelFactory: MediaViewModel.Factory,
 ) : Dumpable, ExclusiveActivatable() {
 
     val containerViewModel = containerViewModelFactory.create(supportsBrightnessMirroring = true)
     val quickQuickSettingsViewModel = quickQuickSettingsViewModelFactory.create()
 
-    private val qqsMediaInRowViewModel = mediaInRowInLandscapeViewModelFactory.create(LOCATION_QQS)
-    private val qsMediaInRowViewModel = mediaInRowInLandscapeViewModelFactory.create(LOCATION_QS)
+    private val qqsMediaInRowViewModel =
+        mediaInRowInLandscapeViewModelFactory.create(LOCATION_QQS, qqsMediaUiBehavior)
+    private val qsMediaInRowViewModel =
+        mediaInRowInLandscapeViewModelFactory.create(LOCATION_QS, qsMediaUiBehavior)
 
     private val hydrator = Hydrator("QSFragmentComposeViewModel.hydrator", tableLogBuffer)
 
@@ -274,11 +280,25 @@ constructor(
             initialValue = usingMedia,
             source =
                 if (usingMedia) {
-                    mediaHostVisible(qqsMediaHost, mediaCarouselInteractor)
+                    mediaHostVisible(qqsMediaHost, qqsMediaUiBehavior, mediaCarouselInteractor)
                 } else {
                     flowOf(false)
                 },
         )
+
+    val qsMediaUiBehavior: MediaUiBehavior
+        get() =
+            MediaUiBehavior(
+                isCarouselDismissible = false,
+                carouselVisibility = MediaCarouselVisibility.WhenNotEmpty,
+            )
+
+    val qqsMediaUiBehavior: MediaUiBehavior
+        get() =
+            MediaUiBehavior(
+                isCarouselDismissible = true,
+                carouselVisibility = MediaCarouselVisibility.WhenAnyCardIsActive,
+            )
 
     val qqsMediaInRow: Boolean
         get() = qqsMediaInRowViewModel.shouldMediaShowInRow
@@ -289,7 +309,7 @@ constructor(
             initialValue = usingMedia,
             source =
                 if (usingMedia) {
-                    mediaHostVisible(qsMediaHost, mediaCarouselInteractor)
+                    mediaHostVisible(qsMediaHost, qsMediaUiBehavior, mediaCarouselInteractor)
                 } else {
                     flowOf(false)
                 },
@@ -622,10 +642,13 @@ private val SHORT_PARALLAX_AMOUNT = 0.1f
  */
 private fun mediaHostVisible(
     mediaHost: MediaHost,
+    mediaUiBehavior: MediaUiBehavior,
     mediaCarouselInteractor: MediaCarouselInteractor,
 ): Flow<Boolean> {
     if (Flags.mediaControlsInCompose()) {
-        return if (mediaHost.showsOnlyActiveMedia) {
+        return if (
+            mediaUiBehavior.carouselVisibility == MediaCarouselVisibility.WhenAnyCardIsActive
+        ) {
             mediaCarouselInteractor.hasActiveMedia
         } else {
             mediaCarouselInteractor.hasAnyMedia

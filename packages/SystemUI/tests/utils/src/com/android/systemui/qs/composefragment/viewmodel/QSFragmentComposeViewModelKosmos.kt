@@ -28,6 +28,7 @@ import com.android.systemui.log.table.logcatTableLogBuffer
 import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 import com.android.systemui.media.controls.ui.view.qqsMediaHost
 import com.android.systemui.media.controls.ui.view.qsMediaHost
+import com.android.systemui.media.remedia.ui.viewmodel.factory.mediaViewModelFactory
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.footerActionsController
 import com.android.systemui.qs.footerActionsViewModelFactory
@@ -71,6 +72,7 @@ val Kosmos.qsFragmentComposeViewModelFactory by
                     uiEventLoggerFake,
                     lifecycleScope,
                     mediaCarouselInteractor,
+                    mediaViewModelFactory,
                 )
             }
         }

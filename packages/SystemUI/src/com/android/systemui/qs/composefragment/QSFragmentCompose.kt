@@ -125,8 +125,13 @@ import com.android.systemui.keyboard.shortcut.ui.composable.ProvideShortcutHelpe
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.lifecycle.setSnapshotBinding
 import com.android.systemui.log.table.TableLogBuffer
+import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.controls.ui.controller.MediaViewLogger
 import com.android.systemui.media.controls.ui.view.MediaHost
+import com.android.systemui.media.remedia.ui.compose.Media
+import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
+import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.plugins.qs.QS
 import com.android.systemui.plugins.qs.QSContainerController
 import com.android.systemui.qs.composefragment.SceneKeys.QuickQuickSettings
@@ -748,6 +753,9 @@ constructor(
                                 modifier = Modifier.requiredHeightIn(max = Dp.Infinity),
                                 mediaHost = viewModel.qqsMediaHost,
                                 mediaLogger = mediaLogger,
+                                mediaCarouselInteractor = viewModel.mediaCarouselInteractor,
+                                mediaViewModelFactory = viewModel.mediaViewModelFactory,
+                                behavior = viewModel.qqsMediaUiBehavior,
                             )
                         }
                     }
@@ -904,6 +912,9 @@ constructor(
                                     MediaObject(
                                         mediaHost = viewModel.qsMediaHost,
                                         mediaLogger = mediaLogger,
+                                        mediaViewModelFactory = viewModel.mediaViewModelFactory,
+                                        mediaCarouselInteractor = viewModel.mediaCarouselInteractor,
+                                        behavior = viewModel.qsMediaUiBehavior,
                                         update = { translationY = viewModel.qsMediaTranslationY },
                                     )
                                 }
@@ -1384,39 +1395,56 @@ private fun MediaObject(
     mediaHost: MediaHost,
     modifier: Modifier = Modifier,
     mediaLogger: MediaViewLogger,
+    mediaViewModelFactory: MediaViewModel.Factory,
+    mediaCarouselInteractor: MediaCarouselInteractor,
+    behavior: MediaUiBehavior,
     update: UniqueObjectHostView.() -> Unit = {},
 ) {
-    Box {
-        AndroidView(
+    if (Flags.mediaControlsInCompose()) {
+        Media(
+            viewModelFactory = mediaViewModelFactory,
+            presentationStyle = MediaPresentationStyle.Default,
+            behavior = behavior,
+            onDismissed = { mediaCarouselInteractor.onSwipeToDismiss() },
             modifier = modifier,
-            factory = {
-                mediaHost.hostView.apply {
-                    layoutParams =
-                        FrameLayout.LayoutParams(
-                            FrameLayout.LayoutParams.MATCH_PARENT,
-                            FrameLayout.LayoutParams.WRAP_CONTENT,
-                        )
-                }
-            },
-            update = { view ->
-                view.update()
-                // Update layout params if host view bounds are higher than its child.
-                val height = mediaHost.hostView.height
-                val width = mediaHost.hostView.width
-                var measure = false
-                mediaHost.hostView.children.forEach { child ->
-                    if (child is FrameLayout && (height > child.height || width > child.width)) {
-                        measure = true
-                        child.layoutParams = FrameLayout.LayoutParams(width, height)
-                    }
-                }
-                if (measure) {
-                    mediaHost.hostView.measurementManager.onMeasure(MeasurementInput(width, height))
-                    mediaLogger.logMediaSize("update size in compose", width, height)
-                }
-            },
-            onReset = {},
         )
+    } else {
+        Box {
+            AndroidView(
+                modifier = modifier,
+                factory = {
+                    mediaHost.hostView.apply {
+                        layoutParams =
+                            FrameLayout.LayoutParams(
+                                FrameLayout.LayoutParams.MATCH_PARENT,
+                                FrameLayout.LayoutParams.WRAP_CONTENT,
+                            )
+                    }
+                },
+                update = { view ->
+                    view.update()
+                    // Update layout params if host view bounds are higher than its child.
+                    val height = mediaHost.hostView.height
+                    val width = mediaHost.hostView.width
+                    var measure = false
+                    mediaHost.hostView.children.forEach { child ->
+                        if (
+                            child is FrameLayout && (height > child.height || width > child.width)
+                        ) {
+                            measure = true
+                            child.layoutParams = FrameLayout.LayoutParams(width, height)
+                        }
+                    }
+                    if (measure) {
+                        mediaHost.hostView.measurementManager.onMeasure(
+                            MeasurementInput(width, height)
+                        )
+                        mediaLogger.logMediaSize("update size in compose", width, height)
+                    }
+                },
+                onReset = {},
+            )
+        }
     }
 }
 
