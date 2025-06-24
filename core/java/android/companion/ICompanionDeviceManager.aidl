@@ -20,6 +20,7 @@ import android.app.PendingIntent;
 import android.companion.IAssociationRequestCallback;
 import android.companion.IOnAssociationsChangedListener;
 import android.companion.IOnMessageReceivedListener;
+import android.companion.IOnTransportEventListener;
 import android.companion.IOnTransportsChangedListener;
 import android.companion.ISystemDataTransferCallback;
 import android.companion.AssociationInfo;
@@ -97,6 +98,12 @@ interface ICompanionDeviceManager {
 
     @EnforcePermission("USE_COMPANION_TRANSPORTS")
     void removeOnMessageReceivedListener(int messageType, IOnMessageReceivedListener listener);
+
+    @EnforcePermission("USE_COMPANION_TRANSPORTS")
+    void addOnTransportEventListener(int associationId, IOnTransportEventListener listener);
+
+    @EnforcePermission("USE_COMPANION_TRANSPORTS")
+    void removeOnTransportEventListener(int associationId, IOnTransportEventListener listener);
 
     @EnforcePermission("REQUEST_COMPANION_SELF_MANAGED")
     void notifySelfManagedDeviceAppeared(int associationId);

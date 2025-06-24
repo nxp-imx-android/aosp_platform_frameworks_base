@@ -419,6 +419,11 @@ public final class CompanionDeviceManager {
     private final ArrayList<OnTransportsChangedListenerProxy> mTransportsChangedListeners =
             new ArrayList<>();
 
+    /** Association ID -> List of listeners */
+    @GuardedBy("mTransportEventListeners")
+    private final SparseArray<List<OnTransportEventListenerProxy>> mTransportEventListeners =
+            new SparseArray<>();
+
     @GuardedBy("mMessageReceivedListeners")
     private final SparseArray<Set<OnMessageReceivedListenerProxy>> mMessageReceivedListeners =
             new SparseArray<>();
@@ -1180,6 +1185,73 @@ public final class CompanionDeviceManager {
                 if (proxy.mListener == listener) {
                     try {
                         mService.removeOnMessageReceivedListener(messageType, proxy);
+                    } catch (RemoteException e) {
+                        throw e.rethrowFromSystemServer();
+                    }
+                    iterator.remove();
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds a listener for an event reported by attached transport.
+     *
+     * @param executor The executor which will be used to invoke the listener.
+     * @param listener Called when a transport reports an event.
+     * @see com.android.server.companion.transport.Transport
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    public void addOnTransportEventListener(
+            @NonNull @CallbackExecutor Executor executor,
+            int associationId,
+            @NonNull Consumer<Integer> listener) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+
+        synchronized (mTransportsChangedListeners) {
+            final OnTransportEventListenerProxy proxy = new OnTransportEventListenerProxy(
+                    executor, listener);
+            try {
+                mService.addOnTransportEventListener(associationId, proxy);
+            } catch (RemoteException e) {
+                throw e.rethrowFromSystemServer();
+            }
+            if (!mTransportEventListeners.contains(associationId)) {
+                mTransportEventListeners.put(associationId, new ArrayList<>());
+            }
+            mTransportEventListeners.get(associationId).add(proxy);
+        }
+    }
+
+    /**
+     * Removes the registered listener for transport events.
+     * @see com.android.server.companion.transport.Transport
+     * @hide
+     */
+    @RequiresPermission(android.Manifest.permission.USE_COMPANION_TRANSPORTS)
+    public void removeOnTransportEventListener(int associationId,
+            @NonNull Consumer<Integer> listener) {
+        if (mService == null) {
+            Log.w(TAG, "CompanionDeviceManager service is not available.");
+            return;
+        }
+
+        synchronized (mTransportEventListeners) {
+            if (!mTransportEventListeners.contains(associationId)) {
+                throw new IllegalArgumentException("Association id=[" + associationId
+                        + "] doesn't have any registered event listener.");
+            }
+            final Iterator<OnTransportEventListenerProxy> iterator =
+                    mTransportEventListeners.get(associationId).iterator();
+            while (iterator.hasNext()) {
+                final OnTransportEventListenerProxy proxy = iterator.next();
+                if (proxy.mListener == listener) {
+                    try {
+                        mService.removeOnTransportEventListener(associationId, proxy);
                     } catch (RemoteException e) {
                         throw e.rethrowFromSystemServer();
                     }
@@ -2000,6 +2072,23 @@ public final class CompanionDeviceManager {
         @Override
         public void onMessageReceived(int associationId, byte[] data) {
             mExecutor.execute(() -> mListener.accept(associationId, data));
+        }
+    }
+
+    private static class OnTransportEventListenerProxy
+            extends IOnTransportEventListener.Stub {
+        private final Executor mExecutor;
+        private final Consumer<Integer> mListener;
+
+        private OnTransportEventListenerProxy(Executor executor,
+                                              Consumer<Integer> listener) {
+            mExecutor = executor;
+            mListener = listener;
+        }
+
+        @Override
+        public void onTransportEvent(int eventCode) {
+            mExecutor.execute(() -> mListener.accept(eventCode));
         }
     }
 
