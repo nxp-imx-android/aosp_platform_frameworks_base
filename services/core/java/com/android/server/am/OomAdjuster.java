@@ -84,7 +84,6 @@ import static com.android.server.am.ActivityManagerService.TAG_LRU;
 import static com.android.server.am.ActivityManagerService.TAG_OOM_ADJ;
 import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
 import static com.android.server.am.AppProfiler.TAG_PSS;
-import static com.android.server.am.PlatformCompatCache.CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME;
 import static com.android.server.am.ProcessList.CACHED_APP_IMPORTANCE_LEVELS;
 import static com.android.server.am.ProcessList.CACHED_APP_MAX_ADJ;
 import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
@@ -105,6 +104,7 @@ import static com.android.server.am.ProcessList.SERVICE_ADJ;
 import static com.android.server.am.ProcessList.TAG_PROCESS_OBSERVERS;
 import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 import static com.android.server.am.ProcessList.VISIBLE_APP_ADJ;
+import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_SWITCH;
 
 import android.annotation.NonNull;
@@ -116,9 +116,6 @@ import android.app.ActivityThread;
 import android.app.AppProtoEnums;
 import android.app.ApplicationExitInfo;
 import android.app.usage.UsageEvents;
-import android.compat.annotation.ChangeId;
-import android.compat.annotation.EnabledAfter;
-import android.compat.annotation.EnabledSince;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -143,7 +140,8 @@ import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
-import com.android.server.am.PlatformCompatCache.CachedCompatChangeId;
+import com.android.server.am.psc.PlatformCompatCache;
+import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 import com.android.server.wm.WindowProcessController;
 
 import java.io.PrintWriter;
@@ -276,38 +274,6 @@ public abstract class OomAdjuster {
                 return "_unknown";
         }
     }
-
-    /**
-     * Flag {@link android.content.Context#BIND_INCLUDE_CAPABILITIES} is used
-     * to pass while-in-use capabilities from client process to bound service. In targetSdkVersion
-     * R and above, if client is a TOP activity, when this flag is present, bound service gets all
-     * while-in-use capabilities; when this flag is not present, bound service gets no while-in-use
-     * capability from client.
-     */
-    @ChangeId
-    @EnabledAfter(targetSdkVersion=android.os.Build.VERSION_CODES.Q)
-    static final long PROCESS_CAPABILITY_CHANGE_ID = 136274596L;
-
-    /**
-     * In targetSdkVersion R and above, foreground service has camera and microphone while-in-use
-     * capability only when the {@link android.R.attr#foregroundServiceType} is configured as
-     * {@link android.content.pm.ServiceInfo#FOREGROUND_SERVICE_TYPE_CAMERA} and
-     * {@link android.content.pm.ServiceInfo#FOREGROUND_SERVICE_TYPE_MICROPHONE} respectively in the
-     * manifest file.
-     * In targetSdkVersion below R, foreground service automatically have camera and microphone
-     * capabilities.
-     */
-    @ChangeId
-    @EnabledAfter(targetSdkVersion=android.os.Build.VERSION_CODES.Q)
-    static final long CAMERA_MICROPHONE_CAPABILITY_CHANGE_ID = 136219221L;
-
-    /**
-     * For apps targeting S+, this determines whether to use a shorter timeout before elevating the
-     * standby bucket to ACTIVE when apps start a foreground service.
-     */
-    @ChangeId
-    @EnabledSince(targetSdkVersion = android.os.Build.VERSION_CODES.S)
-    static final long USE_SHORT_FGS_USAGE_INTERACTION_TIME = 183972877L;
 
     /**
      * Service for optimizing resource usage from background apps.
