@@ -1166,6 +1166,10 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             mMotionEvent = e;
             final int id = v.getId();
             final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(mTaskId);
+            if (decoration == null) {
+                return false;
+            }
+            final ActivityManager.RunningTaskInfo taskInfo = decoration.mTaskInfo;
             final boolean touchscreenSource =
                     (e.getSource() & SOURCE_TOUCHSCREEN) == SOURCE_TOUCHSCREEN;
             // Disable long click during events from a non-touchscreen source
@@ -1177,7 +1181,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     && id != R.id.maximize_window && id != R.id.minimize_window) {
                 return false;
             }
-            final boolean isAppHandle = !getTaskInfo().isFreeform();
+            final boolean isAppHandle = !taskInfo.isFreeform();
             final int actionMasked = e.getActionMasked();
             final boolean isDown = actionMasked == MotionEvent.ACTION_DOWN;
             final boolean isUpOrCancel = actionMasked == MotionEvent.ACTION_CANCEL
@@ -1190,7 +1194,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 //  task surface to the top of other tasks and reorder once the user releases the
                 //  gesture together with the bounds' WCT. This is probably still valid for other
                 //  gestures like simple clicks.
-                moveTaskToFront(decoration.mTaskInfo);
+                moveTaskToFront(taskInfo);
 
                 final boolean downInCustomizableCaptionRegion =
                         decoration.checkTouchEventInCustomizableRegion(e);
@@ -1199,7 +1203,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 final boolean downInExclusionRegion =
                         exclusionRegion.contains((int) e.getRawX(), (int) e.getRawY());
                 final boolean isTransparentCaption =
-                        TaskInfoKt.isTransparentCaptionBarAppearance(decoration.mTaskInfo);
+                        TaskInfoKt.isTransparentCaptionBarAppearance(taskInfo);
                 // MotionEvent's coordinates are relative to view, we want location in window
                 // to offset position relative to caption as a whole.
                 int[] viewLocation = new int[2];
@@ -1309,12 +1313,6 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             } else {
                 return handleFreeformMotionEvent(decoration, taskInfo, v, e);
             }
-        }
-
-        @NonNull
-        private RunningTaskInfo getTaskInfo() {
-            final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(mTaskId);
-            return decoration.mTaskInfo;
         }
 
         private boolean handleNonFreeformMotionEvent(DesktopModeWindowDecoration decoration,
