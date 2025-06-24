@@ -222,8 +222,7 @@ public class TopologyUpdateDeliveryTest extends EventDeliveryTestBase {
     /**
      * The app is frozen and the test verifies that no updates are delivered to the frozen app.
      */
-    @RequiresFlagsEnabled({com.android.server.am.Flags.FLAG_DEFER_DISPLAY_EVENTS_WHEN_FROZEN,
-            com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY})
+    @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY)
     @Test
     public void testTopologyUpdateFrozen() {
         assumeTrue(isAppFreezerEnabled());
@@ -233,8 +232,7 @@ public class TopologyUpdateDeliveryTest extends EventDeliveryTestBase {
     /**
      * The app is cached and frozen and the test verifies that no updates are delivered to the app.
      */
-    @RequiresFlagsEnabled({com.android.server.am.Flags.FLAG_DEFER_DISPLAY_EVENTS_WHEN_FROZEN,
-            com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY})
+    @RequiresFlagsEnabled(com.android.server.display.feature.flags.Flags.FLAG_DISPLAY_TOPOLOGY)
     @Test
     public void testTopologyUpdateCachedFrozen() {
         assumeTrue(isAppFreezerEnabled());
