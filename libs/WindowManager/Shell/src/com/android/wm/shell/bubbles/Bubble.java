@@ -172,6 +172,7 @@ public class Bubble implements BubbleViewProvider {
     @Nullable
     private Icon mIcon;
     private boolean mIsBubble;
+    private boolean mIsTopActivityFixedOrientationLandscape;
     private boolean mIsTextChanged;
     private boolean mIsDismissable;
     private boolean mShouldSuppressNotificationDot;
@@ -1047,6 +1048,13 @@ public class Bubble implements BubbleViewProvider {
     }
 
     /**
+     * Sets whether the task's top activity is fixed orientation landscape.
+     */
+    public void setIsTopActivityFixedOrientationLandscape(boolean isLandscape) {
+        mIsTopActivityFixedOrientationLandscape = isLandscape;
+    }
+
+    /**
      * Whether the bubble for this notification should show a dot indicating updated content.
      */
     @Override
@@ -1275,6 +1283,10 @@ public class Bubble implements BubbleViewProvider {
 
     public int getFlags() {
         return mFlags;
+    }
+
+    public boolean isTopActivityFixedOrientationLandscape() {
+        return mIsTopActivityFixedOrientationLandscape;
     }
 
     @Override
