@@ -454,7 +454,7 @@ public class Notifier {
             int ownerUid, int ownerPid, WorkSource workSource, String historyTag,
             IWakeLockCallback callback) {
         onWakeLockReleased(flags, tag, packageName, ownerUid, ownerPid, workSource, historyTag,
-                callback, ScreenTimeoutOverridePolicy.RELEASE_REASON_UNKNOWN);
+                callback, ScreenTimeoutOverridePolicy.RELEASE_REASON_NOT_ACQUIRED);
     }
 
     /**
