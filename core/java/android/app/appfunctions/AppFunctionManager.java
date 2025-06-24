@@ -539,7 +539,7 @@ public final class AppFunctionManager {
 
     /**
      * Checks whether the given agent has access to app functions of the given target app, or if
-     * the access is not {@link #getSelfAppFunctionAccessRequestState valid}. Requires the
+     * the access is not {@link #getAccessRequestState(String) valid}. Requires the
      * {@link Manifest.permission.MANAGE_APP_FUNCTION_ACCESS} permission if the
      * {@param agentPackageName} is not the calling app.
      *
@@ -553,10 +553,10 @@ public final class AppFunctionManager {
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @RequiresPermission(value = MANAGE_APP_FUNCTION_ACCESS, conditional = true)
     @AppFunctionAccessState
-    public int getAppFunctionAccessRequestState(@NonNull String agentPackageName,
+    public int getAccessRequestState(@NonNull String agentPackageName,
             @NonNull String targetPackageName) {
         try {
-            return mService.getAppFunctionAccessRequestState(agentPackageName,
+            return mService.getAccessRequestState(agentPackageName,
                     mContext.getUserId(), targetPackageName, mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
@@ -578,14 +578,14 @@ public final class AppFunctionManager {
      */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @AppFunctionAccessState
-    public int getSelfAppFunctionAccessRequestState(@NonNull String targetPackageName) {
-        return getAppFunctionAccessRequestState(mContext.getOpPackageName(), targetPackageName);
+    public int getAccessRequestState(@NonNull String targetPackageName) {
+        return getAccessRequestState(mContext.getOpPackageName(), targetPackageName);
     }
 
     /**
      * Get the access flags for a given agent and target. These flags include extra information
      * about the access state (whether it is pregranted, if the user has set state, etc.). Returns
-     * 0 if the access is not {@link #getSelfAppFunctionAccessRequestState valid}.
+     * 0 if the access is not {@link #getAccessRequestState(String) valid}.
      *
      * @param agentPackageName  The package name of the agent
      * @param targetPackageName The package name of the target
@@ -596,10 +596,10 @@ public final class AppFunctionManager {
     @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
     @AppFunctionAccessFlags
-    public int getAppFunctionAccessFlags(@NonNull String agentPackageName,
+    public int getAccessFlags(@NonNull String agentPackageName,
             @NonNull String targetPackageName) {
         try {
-            return mService.getAppFunctionAccessFlags(agentPackageName,
+            return mService.getAccessFlags(agentPackageName,
                     mContext.getUserId(), targetPackageName, mContext.getUserId());
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
@@ -608,7 +608,7 @@ public final class AppFunctionManager {
 
     /**
      * Updates the access flags for the given agent and target. If the access is not
-     * {@link #getSelfAppFunctionAccessRequestState valid}, this method is a no-op.
+     * {@link #getAccessRequestState(String) valid}, this method is a no-op.
      *
      * @param agentPackageName  The package name of the agent
      * @param targetPackageName The package name of the target
@@ -623,11 +623,11 @@ public final class AppFunctionManager {
     @SystemApi
     @RequiresPermission(MANAGE_APP_FUNCTION_ACCESS)
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    public void updateAppFunctionAccessFlags(@NonNull String agentPackageName,
+    public void updateAccessFlags(@NonNull String agentPackageName,
             @NonNull String targetPackageName, @AppFunctionAccessFlags int flagMask,
             @AppFunctionAccessFlags int flags) {
         try {
-            mService.updateAppFunctionAccessFlags(agentPackageName,
+            mService.updateAccessFlags(agentPackageName,
                     mContext.getUserId(), targetPackageName, mContext.getUserId(),
                     flagMask, flags);
         } catch (RemoteException e) {
@@ -641,9 +641,9 @@ public final class AppFunctionManager {
      *                          to.
      */
     @FlaggedApi(Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED)
-    public void revokeSelfAppFunctionAccess(@NonNull String targetPackageName) {
+    public void revokeSelfAccess(@NonNull String targetPackageName) {
         try {
-            mService.revokeSelfAppFunctionAccess(targetPackageName);
+            mService.revokeSelfAccess(targetPackageName);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
@@ -651,7 +651,7 @@ public final class AppFunctionManager {
 
 
     /**
-     * Gets all {@link #getSelfAppFunctionAccessRequestState valid} agents.
+     * Gets all {@link #getAccessRequestState(String) valid} agents.
      * @return A list of all valid agent package names
      * @hide
      */
@@ -667,7 +667,7 @@ public final class AppFunctionManager {
     }
 
     /**
-     * Gets all {@link #getSelfAppFunctionAccessRequestState valid} target apps.
+     * Gets all {@link #getAccessRequestState(String) valid} target apps.
      * @return A list of all target app package names in the current user that the agent can
      * request access for
      * @hide

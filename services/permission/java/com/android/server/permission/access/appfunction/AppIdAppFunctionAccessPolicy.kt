@@ -52,7 +52,7 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
 
     private val upgrade = AppIdAppFunctionAccessUpgrade(this)
 
-    fun GetStateScope.getAppFunctionAccessFlags(
+    fun GetStateScope.getAccessFlags(
         agentAppId: Int,
         agentUserId: Int,
         targetAppId: Int,
@@ -64,7 +64,7 @@ class AppIdAppFunctionAccessPolicy : SchemePolicy() {
             ?.get(targetUid) ?: 0
     }
 
-    fun MutateStateScope.updateAppFunctionAccessFlags(
+    fun MutateStateScope.updateAccessFlags(
         agentAppId: Int,
         agentUserId: Int,
         targetAppId: Int,
