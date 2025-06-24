@@ -66,7 +66,7 @@
 
     <!-- Material design -->
     <style name="Widget.PackageInstaller.Material.ButtonBar" parent="">
-        <item name="android:paddingBottom">10dp</item>
+        <item name="android:paddingBottom">16dp</item>
         <item name="android:textAppearance">@android:style/TextAppearance.DeviceDefault.Widget.Button</item>
     </style>
 
@@ -88,6 +88,7 @@
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
         <item name="android:layout_marginStart">8dp</item>
+        <item name="android:paddingHorizontal">16dp</item>
         <item name="android:textAppearance">@style/TextAppearance.PackageInstaller.LabelLarge</item>
     </style>
 
@@ -98,6 +99,7 @@
         <item name="android:insetTop">0dp</item>
         <item name="android:insetBottom">0dp</item>
         <item name="android:layout_marginStart">8dp</item>
+        <item name="android:paddingHorizontal">16dp</item>
         <item name="android:textAppearance">@style/TextAppearance.PackageInstaller.LabelLarge</item>
     </style>
 
