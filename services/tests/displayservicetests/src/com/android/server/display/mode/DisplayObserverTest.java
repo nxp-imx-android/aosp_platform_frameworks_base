@@ -520,6 +520,9 @@ public class DisplayObserverTest {
 
         when(mInjector.getDisplays()).thenReturn(new Display[] {mDefaultDisplay, mExternalDisplay});
 
+        when(mInjector.getModeChangeObserver(any(), any()))
+                .thenReturn(mock(ModeChangeObserver.class));
+
         mDmd = new DisplayModeDirector(mContext, mHandler, mInjector,
                 mDisplayManagerFlags, mDisplayDeviceConfigProvider);
         mDmd.start(null);
