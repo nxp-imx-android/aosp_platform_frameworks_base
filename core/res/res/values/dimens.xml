@@ -151,6 +151,9 @@
     <!-- Copied from SysUI's @dimen/key_button_ripple_max_width for the embedded nav bar in the
          IME. -->
     <dimen name="input_method_nav_key_button_ripple_max_width">95dp</dimen>
+    <!-- Height of the IME navigation bar; this matches the height of the system navigation bar
+         in three button navigation mode. -->
+    <dimen name="input_method_navigation_bar_height">@dimen/navigation_bar_frame_height</dimen>
 
     <!-- Width of the window of the divider bar used to resize docked stacks. -->
     <dimen name="docked_stack_divider_thickness">48dp</dimen>
