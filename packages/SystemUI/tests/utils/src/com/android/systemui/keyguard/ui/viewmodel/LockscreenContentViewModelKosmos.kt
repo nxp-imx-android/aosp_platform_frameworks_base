@@ -48,6 +48,7 @@ val Kosmos.lockscreenContentViewModelFactory by Fixture {
                     keyguardTransitionAnimationCallbackDelegator,
                 keyguardMediaViewModelFactory = keyguardMediaViewModelFactory,
                 keyguardSmartspaceViewModel = keyguardSmartspaceViewModel,
+                keyguardClockViewModel = keyguardClockViewModel,
                 activeNotificationsInteractor = activeNotificationsInteractor,
                 keyguardTransitionAnimationCallback = keyguardTransitionAnimationCallback,
                 wallpaperFocalAreaInteractor = wallpaperFocalAreaInteractor,

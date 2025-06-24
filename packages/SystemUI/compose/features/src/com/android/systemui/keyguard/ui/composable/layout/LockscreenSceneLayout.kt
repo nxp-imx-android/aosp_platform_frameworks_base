@@ -63,6 +63,8 @@ interface LockscreenLayoutViewModel {
      * This value is meaningless if [isDynamicClockEnabled] is `false`.
      */
     val isDateAndWeatherVisibleWithLargeClock: Boolean
+    /** Whether date and weather should currently be visible. */
+    val isDateAndWeatherVisible: Boolean
     /** Whether smart space should currently be showing. */
     val isSmartSpaceVisible: Boolean
     /** Whether media should currently be showing. */
@@ -76,6 +78,11 @@ interface LockscreenLayoutViewModel {
     val isUdfpsSupported: Boolean
     /** Amount of horizontal translation that should be applied to elements in the scene. */
     val unfoldTranslations: UnfoldTranslations
+    /**
+     * Whether date and weather should be below the small clock. If `false`, the date and weather
+     * should be next to the small clock.
+     */
+    val shouldDateWeatherBeBelowSmallClock: Boolean
 }
 
 @Immutable
@@ -189,6 +196,8 @@ fun LockscreenSceneLayout(
             ContentColumn(
                 isSmallClockVisible = layout.isSmallClockVisible,
                 smallClock = smallClock,
+                isDateAndWeatherVisible = viewModel.isDateAndWeatherVisible,
+                shouldDateWeatherBeBelowSmallClock = viewModel.shouldDateWeatherBeBelowSmallClock,
                 dateAndWeather = dateAndWeather,
                 isSmartSpaceVisible = viewModel.isSmartSpaceVisible,
                 smartSpace = smartSpace,
@@ -497,6 +506,8 @@ private fun ShortcutArea(
 private fun ContentColumn(
     isSmallClockVisible: Boolean,
     smallClock: @Composable () -> Unit,
+    isDateAndWeatherVisible: Boolean,
+    shouldDateWeatherBeBelowSmallClock: Boolean,
     dateAndWeather: @Composable (Orientation) -> Unit,
     isSmartSpaceVisible: Boolean,
     smartSpace: @Composable () -> Unit,
@@ -514,8 +525,15 @@ private fun ContentColumn(
                 modifier = Modifier.padding(bottom = 24.dp),
             ) {
                 smallClock()
-                dateAndWeather(Orientation.Vertical)
+
+                if (isDateAndWeatherVisible && !shouldDateWeatherBeBelowSmallClock) {
+                    dateAndWeather(Orientation.Vertical)
+                }
             }
+        }
+
+        if (isDateAndWeatherVisible && shouldDateWeatherBeBelowSmallClock) {
+            dateAndWeather(Orientation.Horizontal)
         }
 
         AnimatedVisibility(isSmartSpaceVisible) {
