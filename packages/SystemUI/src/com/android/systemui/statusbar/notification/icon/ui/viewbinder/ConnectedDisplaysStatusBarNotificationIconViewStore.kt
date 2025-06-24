@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.notification.icon.ui.viewbinder
 
 import android.util.Log
-import com.android.dream.lowlight.dagger.qualifiers.Main
 import com.android.systemui.display.domain.interactor.DisplayWindowPropertiesInteractor
 import com.android.systemui.lifecycle.Activatable
 import com.android.systemui.statusbar.StatusBarIconView
@@ -31,10 +30,8 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.concurrent.ConcurrentHashMap
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.withContext
 
 /** [IconViewStore] for the status bar on multiple displays. */
 class ConnectedDisplaysStatusBarNotificationIconViewStore
@@ -45,7 +42,6 @@ constructor(
     private val iconManager: IconManager,
     private val displayWindowPropertiesInteractor: DisplayWindowPropertiesInteractor,
     private val notifPipeline: NotifPipeline,
-    @Main private val mainDispatcher: CoroutineDispatcher,
 ) : IconViewStore, Activatable {
 
     private val cachedIcons = ConcurrentHashMap<String, StatusBarIconView>()
@@ -83,16 +79,11 @@ constructor(
     }
 
     override suspend fun activate() = coroutineScope {
-        // In case activate is being invoked off the main thread, make sure to switch to the main
-        // thread to do the work here as some of the downstream calls assert they've been called on
-        // the main thread.
-        withContext(mainDispatcher) {
-            start()
-            try {
-                awaitCancellation()
-            } finally {
-                stop()
-            }
+        start()
+        try {
+            awaitCancellation()
+        } finally {
+            stop()
         }
     }
 
