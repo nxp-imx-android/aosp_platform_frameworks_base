@@ -3805,6 +3805,13 @@ public final class ProcessList {
             }
 
         }
+
+        if (Flags.removeLruSpamPrevention()) {
+            // Return early to disable the LRU spam prevention implemented below, as it's breaking
+            // the LRU by spreading processes.
+            return;
+        }
+
         // To keep it from spamming the LRU list (by making a bunch of clients),
         // we will distribute other entries owned by it to be in-between other apps.
         int i = endIndex;
