@@ -103,6 +103,7 @@ import android.os.UserManager;
 import android.os.storage.IStorageManager;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.util.ArraySet;
 import android.util.Log;
 import android.util.StringBuilderPrinter;
 import android.util.TimeUtils;
@@ -1014,6 +1015,32 @@ public class UserControllerTest {
         assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID1);
 
         // TEST_USER_ID1 should be stopped. But TEST_USER_ID shouldn't, since it was playing audio.
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID);
+    }
+
+    /** Test scheduling stopping of background users - reschedule if user has visible activity. */
+    @Test
+    public void testScheduleStopOfBackgroundUser_rescheduleIfVisibleActivity() throws Exception {
+        mSetFlagsRule.enableFlags(
+                android.multiuser.Flags.FLAG_RESCHEDULE_STOP_IF_VISIBLE_ACTIVITIES,
+                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER,
+                android.multiuser.Flags.FLAG_SCHEDULE_STOP_OF_BACKGROUND_USER_BY_DEFAULT);
+        assumeFalse(UserManager.isVisibleBackgroundUsersEnabled());
+
+        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 10, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ 2);
+
+        setUpAndStartUserInBackground(TEST_USER_ID);
+        setUpAndStartUserInBackground(TEST_USER_ID1);
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID, TEST_USER_ID1);
+
+        doReturn(new ArraySet(List.of(TEST_USER_ID))).when(mInjector).getVisibleActivityUsers();
+
+        assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID);
+        assertAndProcessScheduledStopBackgroundUser(true, TEST_USER_ID1);
+
+        // TEST_USER_ID1 should be stopped. But TEST_USER_ID shouldn't as it has a visible activity.
         assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID);
     }
 
