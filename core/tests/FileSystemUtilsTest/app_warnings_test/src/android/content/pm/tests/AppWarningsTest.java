@@ -51,7 +51,7 @@ public class AppWarningsTest {
             "/data/local/tmp/pagesizewarnings/app_with_4kb_elf_no_override.apk";
     private static final String PACKAGE_INSTALLED_ACTION =
             "com.example.android.testing.PACKAGE_INSTALLED";
-    private static final String WARNING_TEXT = "PageSizeCompatTestApp";
+    private static final String WARNING_TEXT = "Android App Compatibility";
     private static final long TIMEOUT = 5000;
     private static final String TEST_APP_PACKAGE = "android.test.pagesizecompat";
 

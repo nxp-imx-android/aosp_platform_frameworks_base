@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
 
 @RunWith(AndroidJUnit4.class)
 public class PageSizeCompatTest {
-    private static final String WARNING_TEXT = "PageSizeCompatTestApp";
+    private static final String WARNING_TEXT = "Android App Compatibility";
     private static final long TIMEOUT = 5000;
 
     public void testPageSizeCompat_appLaunch(boolean shouldPass) throws Exception {

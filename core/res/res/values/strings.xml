@@ -249,6 +249,7 @@
     </string>
     <!--Confirmation text for page size mismatch dialog to never show-->
     <string name="page_size_compat_never_show"> Don\'t Show Again</string>
+    <string name="page_size_compat_title">Android App Compatibility</string>
 
     <string name="page_size_compat_elf_not_aligned">&amp;#8226; %1$s : LOAD segment not aligned</string>
     <string name="page_size_compat_apk_not_aligned">&amp;#8226; %1$s : Uncompressed library not aligned</string>
