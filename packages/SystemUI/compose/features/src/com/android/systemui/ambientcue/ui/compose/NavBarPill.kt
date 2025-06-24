@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -44,7 +45,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -145,10 +145,15 @@ fun NavBarPill(
             label = "expansion",
         )
     val config = LocalConfiguration.current
-    val isBoldTextEnabled by remember { derivedStateOf { config.fontWeightAdjustment > 0 } }
+    val isBoldTextEnabled = config.fontWeightAdjustment > 0
+    val fontScale = config.fontScale
     val actionTextStyle =
         MaterialTheme.typography.labelMedium.copy(
-            fontWeight = if (isBoldTextEnabled) FontWeight.Bold else FontWeight.Medium
+            fontWeight = if (isBoldTextEnabled) FontWeight.Bold else FontWeight.Medium,
+            fontSize =
+                with(density) {
+                    (MaterialTheme.typography.labelMedium.fontSize.value * fontScale).dp.toSp()
+                },
         )
 
     Box(
@@ -254,7 +259,8 @@ fun NavBarPill(
                                                     Color.Transparent
                                                 }
                                             )
-                                            .padding(4.dp),
+                                            .height(28.dp)
+                                            .padding(start = 6.dp, end = 6.dp),
                                 ) {
                                     Image(
                                         painter = rememberDrawablePainter(action.icon.drawable),
