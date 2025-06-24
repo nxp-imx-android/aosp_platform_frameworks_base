@@ -19,6 +19,7 @@ package com.android.wm.shell.flicker.bubbles.utils
 import android.tools.flicker.rules.RemoveAllTasksButHomeRule.Companion.removeAllTasksButHome
 import android.tools.io.Reader
 import android.util.Log
+import org.junit.AssumptionViolatedException
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.MultipleFailureException
@@ -64,7 +65,10 @@ class RecordTraceWithTransitionRule(
                 } catch (e: Throwable) {
                     errors.add(e)
                 }
-                MultipleFailureException.assertEmpty(errors)
+                // If the tests should be skipped, don't need to throw exceptions.
+                if (!errors.any {e -> e is AssumptionViolatedException}) {
+                    MultipleFailureException.assertEmpty(errors)
+                }
             }
         }
     }

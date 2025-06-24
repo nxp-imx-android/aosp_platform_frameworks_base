@@ -18,19 +18,20 @@ package com.android.wm.shell.flicker.bubbles
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
+import android.tools.NavBar
 import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
+import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesExpandedTestCases
+import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.setUpBeforeTransition
-import org.junit.ClassRule
 import org.junit.FixMethodOrder
+import org.junit.Rule
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 
 /**
@@ -49,23 +50,25 @@ import org.junit.runners.MethodSorters
  * - Bubble becomes visible
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
-@RunWith(AndroidJUnit4::class)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-open class EnterBubbleViaBubbleMenuTest :
+open class EnterBubbleViaBubbleMenuTest(navBar: NavBar) :
     BubbleFlickerTestBase(), BubbleAppBecomesExpandedTestCases {
 
     companion object : FlickerPropertyInitializer() {
-
-        @ClassRule
-        @JvmField
-        val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
+        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = { setUpBeforeTransition(instrumentation, wmHelper) },
             transition = { launchBubbleViaBubbleMenu(testApp, tapl, wmHelper) },
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
     }
+
+    @get:Rule
+    open val setUpRule = ApplyPerParameterRule(
+        Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
+        params = arrayOf(navBar)
+    )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader

@@ -18,9 +18,11 @@ package com.android.wm.shell.flicker.bubbles
 
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
-import androidx.test.ext.junit.runners.AndroidJUnit4
+import android.tools.NavBar
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
+import com.android.wm.shell.Utils
+import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.collapseBubbleAppViaBackKey
@@ -29,9 +31,8 @@ import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.setUpBeforeTransition
 import org.junit.Assume.assumeFalse
 import org.junit.Before
-import org.junit.ClassRule
 import org.junit.FixMethodOrder
-import org.junit.runner.RunWith
+import org.junit.Rule
 import org.junit.runners.MethodSorters
 
 /**
@@ -52,16 +53,13 @@ import org.junit.runners.MethodSorters
  * - [ExpandBubbleTestBase]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
-@RunWith(AndroidJUnit4::class)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class ExpandBubbleViaBubbleStackTest : ExpandBubbleTestBase() {
+class ExpandBubbleViaBubbleStackTest(navBar: NavBar) : ExpandBubbleTestBase() {
 
     companion object : FlickerPropertyInitializer() {
-        @ClassRule
-        @JvmField
-        val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
+        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = {
                 setUpBeforeTransition(instrumentation, wmHelper)
                 launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
@@ -72,11 +70,18 @@ class ExpandBubbleViaBubbleStackTest : ExpandBubbleTestBase() {
         )
     }
 
+    @get:Rule
+    val setUpRule = ApplyPerParameterRule(
+        Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
+        params = arrayOf(navBar)
+    )
+
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
 
     @Before
-    fun setUp() {
+    override fun setUp() {
         assumeFalse(tapl.isTablet)
+        super.setUp()
     }
 }
