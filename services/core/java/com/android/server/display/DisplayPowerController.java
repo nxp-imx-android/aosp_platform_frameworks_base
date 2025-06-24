@@ -95,6 +95,7 @@ import com.android.server.display.config.HighBrightnessModeData;
 import com.android.server.display.config.HysteresisLevels;
 import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.display.layout.Layout;
+import com.android.server.display.plugin.PluginManager;
 import com.android.server.display.state.DisplayStateController;
 import com.android.server.display.utils.DebugUtils;
 import com.android.server.display.utils.SensorUtils;
@@ -515,7 +516,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             SensorManager sensorManager, DisplayBlanker blanker, LogicalDisplay logicalDisplay,
             BrightnessTracker brightnessTracker, BrightnessSetting brightnessSetting,
             Runnable onBrightnessChangeRunnable, HighBrightnessModeMetadata hbmMetadata,
-            boolean bootCompleted, DisplayManagerFlags flags) {
+            boolean bootCompleted, DisplayManagerFlags flags, PluginManager pluginManager) {
         final Resources resources = context.getResources();
 
         mFlags = flags;
@@ -611,7 +612,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                         thermalBrightnessThrottlingDataId,
                         logicalDisplay.getPowerThrottlingDataIdLocked(),
                         mDisplayDeviceConfig, displayDeviceInfo.width, displayDeviceInfo.height,
-                        displayToken, mDisplayId), mContext, flags, mSensorManager,
+                        displayToken, mDisplayId), mContext, flags, mSensorManager, pluginManager,
                         mDisplayBrightnessController.getCurrentBrightness());
         // Seed the cached brightness
         saveBrightnessInfo(getScreenBrightnessSetting());
@@ -3377,10 +3378,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         BrightnessClamperController getBrightnessClamperController(Handler handler,
                 BrightnessClamperController.ClamperChangeListener clamperChangeListener,
                 BrightnessClamperController.DisplayDeviceData data, Context context,
-                DisplayManagerFlags flags, SensorManager sensorManager, float currentBrightness) {
+                DisplayManagerFlags flags, SensorManager sensorManager,
+                PluginManager pluginManager, float currentBrightness) {
 
             return new BrightnessClamperController(handler, clamperChangeListener, data, context,
-                    flags, sensorManager, currentBrightness);
+                    flags, sensorManager, pluginManager, currentBrightness);
         }
 
         DisplayWhiteBalanceController getDisplayWhiteBalanceController(Handler handler,
