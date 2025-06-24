@@ -2453,7 +2453,11 @@
              is currently only supported for normal permissions defined within the platform
              manifest. -->
         <attr name="requiresPurpose" format="boolean" />
-    </declare-styleable>
+        <!-- Required to be set when {@code requiresPurpose} is {@code true}; optional otherwise.
+             Use it to specify the app's minimum target SDK version for which purpose validation
+             should be enforced in order to prevent app compatibility issues. -->
+        <attr name="requiresPurposeTargetSdkVersion"  format="integer" />
+</declare-styleable>
 
     <!-- The <code>valid-purpose</code> tag is used to specify valid purpose(s) for a permission.
          If there are multiple valid purposes, use multiple <code>valid-purpose</code> tags.
@@ -2463,6 +2467,12 @@
     <declare-styleable name="AndroidManifestValidPurpose" parent="AndroidManifestPermission">
         <!-- Specify the name of the valid purpose. -->
         <attr name="name" />
+        <!-- Optional: This is mainly intended to deprecate a pre-defined purpose. Specify the max
+             target SDK version for which this purpose is valid. Not specifying this attribute
+             signifies the purpose is valid indefinitely. To avoid app compatibility issues, DO NOT
+             simply delete the purpose from the manifest. Note that deprecation of purposes cannot
+             be done retroactively on older platform versions. -->
+        <attr name="maxTargetSdkVersion" format="integer" />
     </declare-styleable>
 
     <!-- The <code>permission-group</code> tag declares a logical grouping of
