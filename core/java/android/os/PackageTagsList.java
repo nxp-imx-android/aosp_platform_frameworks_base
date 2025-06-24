@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A list of packages and associated attribution tags that supports easy membership checks. Supports
@@ -39,6 +40,7 @@ import java.util.Set;
  *
  * @hide
  */
+@SuppressLint("UnflaggedApi") // TestApi
 @TestApi
 @Immutable
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
@@ -63,7 +65,8 @@ public final class PackageTagsList implements Parcelable {
      * does not imply anything about whether any given attribution tag under the given package name
      * is present.
      */
-    public boolean includes(@NonNull String packageName) {
+    @SuppressLint("UnflaggedApi") // TestApi
+    public boolean containsPackage(@NonNull String packageName) {
         return mPackageTags.containsKey(packageName);
     }
 
@@ -74,7 +77,7 @@ public final class PackageTagsList implements Parcelable {
      *
      * @hide
      */
-    public boolean includesTag(@NonNull String attributionTag) {
+    public boolean containsTag(@NonNull String attributionTag) {
         final int size = mPackageTags.size();
         for (int i = 0; i < size; i++) {
             ArraySet<String> tags = mPackageTags.valueAt(i);
@@ -90,7 +93,8 @@ public final class PackageTagsList implements Parcelable {
      * Returns true if all attribution tags under the given package are contained within this
      * instance.
      */
-    public boolean containsAll(@NonNull String packageName) {
+    @SuppressLint("UnflaggedApi") // TestApi
+    public boolean containsPackageWithAllTags(@NonNull String packageName) {
         Set<String> tags = mPackageTags.get(packageName);
         return tags != null && tags.isEmpty();
     }
@@ -110,10 +114,9 @@ public final class PackageTagsList implements Parcelable {
         }
     }
 
-    /**
-     * Returns true if the given PackageTagsList is a subset of this instance.
-     */
-    public boolean contains(@NonNull PackageTagsList packageTagsList) {
+    /** Returns true if the given PackageTagsList is a subset of this instance. */
+    @SuppressLint("UnflaggedApi") // TestApi
+    public boolean containsAll(@NonNull PackageTagsList packageTagsList) {
         int otherSize = packageTagsList.mPackageTags.size();
         if (otherSize > mPackageTags.size()) {
             return false;
@@ -142,15 +145,10 @@ public final class PackageTagsList implements Parcelable {
         return true;
     }
 
-    /**
-     * Returns a list of packages.
-     *
-     * @deprecated Do not use.
-     * @hide
-     */
-    @Deprecated
-    public @NonNull Collection<String> getPackages() {
-        return new ArrayList<>(mPackageTags.keySet());
+    /** Returns all packages that possess at least one attribution tag. */
+    @SuppressLint("UnflaggedApi") // TestApi
+    public @NonNull Set<String> getPackages() {
+        return Set.copyOf(mPackageTags.keySet());
     }
 
     public static final @NonNull Parcelable.Creator<PackageTagsList> CREATOR =
@@ -313,20 +311,18 @@ public final class PackageTagsList implements Parcelable {
             return this;
         }
 
-        /**
-         * Adds the specified {@link PackageTagsList} to the builder.
-         */
-        @SuppressLint("MissingGetterMatchingBuilder")
-        public @NonNull Builder add(@NonNull PackageTagsList packageTagsList) {
-            return add(packageTagsList.mPackageTags);
+        /** Adds the specified {@link PackageTagsList} to the builder. */
+        @SuppressLint({"MissingGetterMatchingBuilder", "UnflaggedApi"}) // TestApi
+        public @NonNull Builder addAll(@NonNull PackageTagsList packageTagsList) {
+            return addAll(packageTagsList.mPackageTags);
         }
 
         /**
          * Adds the given map of package to attribution tags to the builder. An empty set of
          * attribution tags is interpreted to imply all attribution tags under that package.
          */
-        @SuppressLint("MissingGetterMatchingBuilder")
-        public @NonNull Builder add(@NonNull Map<String, ? extends Set<String>> packageTagsMap) {
+        @SuppressLint({"MissingGetterMatchingBuilder", "UnflaggedApi"}) // TestApi
+        public @NonNull Builder addAll(@NonNull Map<String, ? extends Set<String>> packageTagsMap) {
             mPackageTags.ensureCapacity(packageTagsMap.size());
             for (Map.Entry<String, ? extends Set<String>> entry : packageTagsMap.entrySet()) {
                 Set<String> newTags = entry.getValue();
@@ -392,14 +388,14 @@ public final class PackageTagsList implements Parcelable {
 
         /**
          * Removes the specified {@link PackageTagsList} from the builder. If a package contains all
-         * possible attribution tags, it will only be removed if the package in the removed
-         * {@link PackageTagsList} also contains all possible attribution tags.
+         * possible attribution tags, it will only be removed if the package in the removed {@link
+         * PackageTagsList} also contains all possible attribution tags.
          *
          * @hide
          */
         @SuppressLint("MissingGetterMatchingBuilder")
-        public @NonNull Builder remove(@NonNull PackageTagsList packageTagsList) {
-            return remove(packageTagsList.mPackageTags);
+        public @NonNull Builder removeAll(@NonNull PackageTagsList packageTagsList) {
+            return removeAll(packageTagsList.mPackageTags);
         }
 
         /**
@@ -411,7 +407,8 @@ public final class PackageTagsList implements Parcelable {
          * @hide
          */
         @SuppressLint("MissingGetterMatchingBuilder")
-        public @NonNull Builder remove(@NonNull Map<String, ? extends Set<String>> packageTagsMap) {
+        public @NonNull Builder removeAll(
+                @NonNull Map<String, ? extends Set<String>> packageTagsMap) {
             for (Map.Entry<String, ? extends Set<String>> entry : packageTagsMap.entrySet()) {
                 Set<String> removedTags = entry.getValue();
                 if (removedTags.isEmpty()) {
@@ -427,6 +424,8 @@ public final class PackageTagsList implements Parcelable {
 
         /**
          * Clears the builder.
+         *
+         * @hide
          */
         public @NonNull Builder clear() {
             mPackageTags.clear();
