@@ -1879,16 +1879,6 @@ flag {
 }
 
 flag {
-    name: "enable_top_ui_controller"
-    namespace: "systemui"
-    description: "Extracts top ui requests into TopUiController"
-    bug: "411061512"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "qs_tile_transition_interaction_refinement"
     namespace: "systemui"
     description: "Allowing Click Events for Quick Setting Tile while QS dialog is collapsing. This Flag also prevents QS Tile from Dismissal when it is tapped during launch "

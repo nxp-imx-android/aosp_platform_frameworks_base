@@ -77,7 +77,6 @@ import com.android.systemui.statusbar.policy.ConfigurationController;
 import com.android.systemui.statusbar.policy.ConfigurationController.ConfigurationListener;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.topui.TopUiController;
-import com.android.systemui.topui.TopUiControllerRefactor;
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor;
 
 import dagger.Lazy;
@@ -126,7 +125,6 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     private ViewGroup mWindowRootView;
     private LayoutParams mLp;
     private boolean mHasTopUi;
-    private boolean mHasTopUiChanged;
     private float mScreenBrightnessDoze;
     private final NotificationShadeWindowState mCurrentState = new NotificationShadeWindowState();
     private OtherwisedCollapsedListener mListener;
@@ -646,17 +644,6 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
         applyNotTouchable(state);
         applyStatusBarColorSpaceAgnosticFlag(state);
         applyWindowLayoutParams();
-
-        if (!TopUiControllerRefactor.isEnabled() && mHasTopUi != mHasTopUiChanged) {
-            mHasTopUi = mHasTopUiChanged;
-            mBackgroundExecutor.execute(() -> {
-                try {
-                    mActivityManager.setHasTopUi(mHasTopUiChanged);
-                } catch (RemoteException e) {
-                    Log.e(TAG, "Failed to call setHasTopUi", e);
-                }
-            });
-        }
         notifyStateChangedCallbacks();
     }
 
@@ -683,7 +670,6 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
                 state.launchingActivityFromNotification,
                 state.mediaBackdropShowing,
                 state.windowNotTouchable,
-                state.componentsForcingTopUi,
                 state.forceOpenTokens,
                 state.statusBarState,
                 state.remoteInputActive,
@@ -732,15 +718,10 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     }
 
     private void applyHasTopUi(NotificationShadeWindowState state) {
-        if (TopUiControllerRefactor.isEnabled()) {
-            boolean shouldHaveTopUi = isExpanded(state) || state.isSwitchingUsers;
-            if (mHasTopUi != shouldHaveTopUi) {
-                mHasTopUi = shouldHaveTopUi;
-                mTopUiController.setRequestTopUi(mHasTopUi, TAG);
-            }
-        } else {
-            mHasTopUiChanged = !state.componentsForcingTopUi.isEmpty() || isExpanded(state)
-                    || state.isSwitchingUsers;
+        boolean shouldHaveTopUi = isExpanded(state) || state.isSwitchingUsers;
+        if (mHasTopUi != shouldHaveTopUi) {
+            mHasTopUi = shouldHaveTopUi;
+            mTopUiController.setRequestTopUi(mHasTopUi, TAG);
         }
     }
 
@@ -1104,22 +1085,6 @@ public class NotificationShadeWindowControllerImpl implements NotificationShadeW
     @Override
     public void setKeyguardGoingAway(boolean goingAway) {
         mCurrentState.keyguardGoingAway = goingAway;
-        apply(mCurrentState);
-    }
-
-    /**
-     * SystemUI may need top-ui to avoid jank when performing animations.  After the
-     * animation is performed, the component should remove itself from the list of features that
-     * are forcing SystemUI to be top-ui.
-     */
-    @Override
-    public void setRequestTopUi(boolean requestTopUi, String componentTag) {
-        TopUiControllerRefactor.assertInLegacyMode();
-        if (requestTopUi) {
-            mCurrentState.componentsForcingTopUi.add(componentTag);
-        } else {
-            mCurrentState.componentsForcingTopUi.remove(componentTag);
-        }
         apply(mCurrentState);
     }
 

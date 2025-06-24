@@ -98,10 +98,8 @@ import com.android.systemui.shared.system.QuickStepContract.SystemUiStateFlags;
 import com.android.systemui.shared.system.SysUiStatsLog;
 import com.android.systemui.shared.system.TaskStackChangeListener;
 import com.android.systemui.shared.system.TaskStackChangeListeners;
-import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.phone.LightBarController;
 import com.android.systemui.topui.TopUiController;
-import com.android.systemui.topui.TopUiControllerRefactor;
 import com.android.systemui.util.concurrency.BackPanelUiThread;
 import com.android.systemui.util.concurrency.UiThreadContext;
 import com.android.systemui.util.kotlin.JavaAdapter;
@@ -321,7 +319,6 @@ public class EdgeBackGestureHandler {
     private final DesktopState mDesktopState;
 
     private final GestureNavigationSettingsObserver mGestureNavigationSettingsObserver;
-    private final NotificationShadeWindowController mNotificationShadeWindowController;
     private final TopUiController mTopUiController;
 
     private final NavigationEdgeBackPlugin.BackCallback mBackCallback =
@@ -474,7 +471,6 @@ public class EdgeBackGestureHandler {
             FalsingManager falsingManager,
             Provider<BackGestureTfClassifierProvider> backGestureTfClassifierProviderProvider,
             Provider<LightBarController> lightBarControllerProvider,
-            NotificationShadeWindowController notificationShadeWindowController,
             TopUiController topUiController,
             GestureInteractor gestureInteractor,
             JavaAdapter javaAdapter,
@@ -548,7 +544,6 @@ public class EdgeBackGestureHandler {
                 this::onNavigationSettingsChanged);
 
         updateCurrentUserResources();
-        mNotificationShadeWindowController = notificationShadeWindowController;
         mTopUiController = topUiController;
     }
 
@@ -1513,13 +1508,8 @@ public class EdgeBackGestureHandler {
             backAnimation.setPilferPointerCallback(
                     () -> uiThreadExecutor.execute(() -> pilferPointers(mLastDownEventDisplayId)));
             backAnimation.setTopUiRequestCallback(
-                    (requestTopUi, tag) -> uiThreadExecutor.execute(() -> {
-                        if (TopUiControllerRefactor.isEnabled()) {
-                            mTopUiController.setRequestTopUi(requestTopUi, tag);
-                        } else {
-                            mNotificationShadeWindowController.setRequestTopUi(requestTopUi, tag);
-                        }
-                    }));
+                    (requestTopUi, tag) -> uiThreadExecutor.execute(
+                            () -> mTopUiController.setRequestTopUi(requestTopUi, tag)));
             updateBackAnimationThresholds();
             if (mLightBarControllerProvider.get() != null) {
                 mBackAnimation.setStatusBarCustomizer((appearance) ->

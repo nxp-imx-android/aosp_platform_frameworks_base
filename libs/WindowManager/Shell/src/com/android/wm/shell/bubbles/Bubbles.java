@@ -407,7 +407,7 @@ public interface Bubbles {
 
         void setNotificationInterruption(String key);
 
-        void requestNotificationShadeTopUi(boolean requestTopUi, String componentTag);
+        void requestTopUi(boolean requestTopUi, String componentTag);
 
         void notifyRemoveNotification(String key, int reason);
 

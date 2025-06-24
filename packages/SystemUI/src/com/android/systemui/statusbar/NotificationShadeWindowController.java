@@ -186,13 +186,6 @@ public interface NotificationShadeWindowController extends RemoteInputController
     default void setKeyguardGoingAway(boolean goingAway) {}
 
     /**
-     * SystemUI may need top-ui to avoid jank when performing animations.  After the
-     * animation is performed, the component should remove itself from the list of features that
-     * are forcing SystemUI to be top-ui.
-     */
-    default void setRequestTopUi(boolean requestTopUi, String componentTag) {}
-
-    /**
      * If {@link LightRevealScrim} obscures the UI.
      * @param opaque if the scrim is opaque
      */

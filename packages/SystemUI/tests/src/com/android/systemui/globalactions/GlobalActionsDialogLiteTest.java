@@ -76,7 +76,6 @@ import com.android.systemui.plugins.GlobalActions;
 import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeController;
-import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.statusbar.phone.LightBarController;
 import com.android.systemui.statusbar.policy.ConfigurationController;
@@ -132,7 +131,6 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
     @Mock private SysuiColorExtractor mColorExtractor;
     @Mock private IStatusBarService mStatusBarService;
     @Mock private LightBarController mLightBarController;
-    @Mock private NotificationShadeWindowController mNotificationShadeWindowController;
     @Mock private TopUiController mTopUiController;
     @Mock private StatusBarWindowController mStatusBarWindowController;
     @Mock private StatusBarWindowControllerStore mStatusBarWindowControllerStore;
@@ -199,7 +197,6 @@ public class GlobalActionsDialogLiteTest extends SysuiTestCase {
                 mColorExtractor,
                 mStatusBarService,
                 mLightBarController,
-                mNotificationShadeWindowController,
                 mTopUiController,
                 mStatusBarWindowControllerStore,
                 mWindowManager,

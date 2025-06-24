@@ -226,7 +226,6 @@ import com.android.systemui.statusbar.window.StatusBarWindowControllerStore;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.surfaceeffects.ripple.RippleShader.RippleShape;
 import com.android.systemui.topui.TopUiController;
-import com.android.systemui.topui.TopUiControllerRefactor;
 import com.android.systemui.util.DumpUtilsKt;
 import com.android.systemui.util.WallpaperController;
 import com.android.systemui.util.concurrency.DelayableExecutor;
@@ -1092,14 +1091,8 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 }, OverlayPlugin.class, true /* Allow multiple plugins */);
 
         mStartingSurfaceOptional.ifPresent(startingSurface -> startingSurface.setSysuiProxy(
-                (requestTopUi, componentTag) -> mMainExecutor.execute(() -> {
-                            if (TopUiControllerRefactor.isEnabled()) {
-                                mTopUiController.setRequestTopUi(requestTopUi, componentTag);
-                            } else {
-                                mNotificationShadeWindowController.setRequestTopUi(requestTopUi,
-                                        componentTag);
-                            }
-                        }
+                (requestTopUi, componentTag) -> mMainExecutor.execute(
+                        () -> mTopUiController.setRequestTopUi(requestTopUi, componentTag)
                 )));
     }
 
@@ -1711,20 +1704,12 @@ public class CentralSurfacesImpl implements CoreStartable, CentralSurfaces {
                 new WirelessChargingAnimation.Callback() {
                     @Override
                     public void onAnimationStarting() {
-                        if (TopUiControllerRefactor.isEnabled()) {
-                            mTopUiController.setRequestTopUi(true, TAG);
-                        } else {
-                            mNotificationShadeWindowController.setRequestTopUi(true, TAG);
-                        }
+                        mTopUiController.setRequestTopUi(true, TAG);
                     }
 
                     @Override
                     public void onAnimationEnded() {
-                        if (TopUiControllerRefactor.isEnabled()) {
-                            mTopUiController.setRequestTopUi(false, TAG);
-                        } else {
-                            mNotificationShadeWindowController.setRequestTopUi(false, TAG);
-                        }
+                        mTopUiController.setRequestTopUi(false, TAG);
                     }
                 }, /* isDozing= */ false, RippleShape.CIRCLE,
                 sUiEventLogger, mWindowManager, mWindowManagerProvider).show(animationDelay);
