@@ -586,6 +586,18 @@ public class TaskDisplayAreaTests extends WindowTestsBase {
         assertTrue(defaultTaskDisplayArea.mChildren.contains(task));
     }
 
+    @Test
+    public void testPrepareForRemoval_childTaskDisplayAreaShouldKeepNoTask() {
+        final TaskDisplayArea parentTDA = mDefaultDisplay.getDefaultTaskDisplayArea();
+        final TaskDisplayArea childTDA = new TaskDisplayArea(mWm, "childTDA",
+                FEATURE_VENDOR_FIRST, false /* createdByOrganizer */, true /* canHostHomeTask */);
+        parentTDA.addChild(childTDA, POSITION_TOP);
+        parentTDA.prepareForRemoval();
+
+        assertTrue(parentTDA.shouldKeepNoTask());
+        assertTrue(childTDA.shouldKeepNoTask());
+    }
+
     private void assertGetOrCreateRootTask(int windowingMode, int activityType, Task candidateTask,
             boolean reuseCandidate) {
         final TaskDisplayArea taskDisplayArea = candidateTask.getDisplayArea();
