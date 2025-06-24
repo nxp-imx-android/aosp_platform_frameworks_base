@@ -165,7 +165,7 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
         mUserManager = userManager;
         mBluetoothDeviceProcessor = new BluetoothDeviceProcessor(associationStore,
                 mObservableUuidStore, this);
-        mBleDeviceProcessor = new BleDeviceProcessor(associationStore, this);
+        mBleDeviceProcessor = new BleDeviceProcessor(associationStore, this, this);
         mPowerManagerInternal = powerManagerInternal;
         mCompanionExemptionProcessor = companionExemptionProcessor;
     }
@@ -1109,17 +1109,18 @@ public class DevicePresenceProcessor implements AssociationStore.OnChangeListene
 
     /**
      * The BLE scan can be only stopped if all the devices have been reported
-     * BT connected and BLE presence and are not pending to report BLE lost.
+     * BT connected and are not pending to report BLE lost.
      */
     private boolean canStopBleScan() {
         for (AssociationInfo ai : mAssociationStore.getActiveAssociations()) {
             int id = ai.getId();
             synchronized (mBtDisconnectedDevices) {
                 if (ai.isNotifyOnDeviceNearby() && !(isBtConnected(id)
-                        && isBlePresent(id) && mBtDisconnectedDevices.isEmpty())) {
+                        && mBtDisconnectedDevices.isEmpty())) {
+
                     Slog.i(TAG, "The BLE scan cannot be stopped, "
                             + "device( " + id + " ) is not yet connected "
-                            + "OR the BLE is not current present Or is pending to report BLE lost");
+                            + "Or it is pending to report BLE lost");
                     return false;
                 }
             }
