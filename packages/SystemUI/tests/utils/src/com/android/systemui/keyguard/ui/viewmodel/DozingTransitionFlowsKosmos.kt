@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.systemui.keyguard.ui.viewmodel
 
-import android.platform.test.annotations.Postsubmit
-import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.MaximizeAppWindow
-import org.junit.runner.RunWith
-import org.junit.runners.BlockJUnit4ClassRunner
+import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
 
-/* Functional test for [MaximizeAppWindow]. */
-@RunWith(BlockJUnit4ClassRunner::class)
-@Postsubmit
-@ScreenRecordRule.ScreenRecord
-class MaximizeAppWindowTest : MaximizeAppWindow()
+val Kosmos.dozingTransitionFlows by Fixture {
+    DozingTransitionFlows(
+        keyguardInteractor = keyguardInteractor,
+        keyguardTransitionInteractor = keyguardTransitionInteractor,
+    )
+}

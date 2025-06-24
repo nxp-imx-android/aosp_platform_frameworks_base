@@ -29,6 +29,7 @@ import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
+import android.annotation.TestApi;
 import android.companion.virtual.sensor.IVirtualSensorCallback;
 import android.companion.virtual.sensor.VirtualSensor;
 import android.companion.virtual.sensor.VirtualSensorCallback;
@@ -136,10 +137,21 @@ public final class VirtualDeviceParams implements Parcelable {
     public static final int NAVIGATION_POLICY_DEFAULT_BLOCKED = 1;
 
     /** @hide */
-    @IntDef(prefix = "DEVICE_POLICY_",  value = {DEVICE_POLICY_DEFAULT, DEVICE_POLICY_CUSTOM})
+    @IntDef(prefix = "DEVICE_POLICY_",  value = {DEVICE_POLICY_INVALID, DEVICE_POLICY_DEFAULT,
+            DEVICE_POLICY_CUSTOM})
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
     public @interface DevicePolicy {}
+
+    /**
+     * Indicates that there is no valid virtual device and it should be treated as an error
+     * scenario (or however the caller sees fit).
+     *
+     * @hide
+     */
+    @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
+    @TestApi
+    public static final int DEVICE_POLICY_INVALID = -1;
 
     /**
      * Indicates that there is no special logic for this virtual device and it should be treated

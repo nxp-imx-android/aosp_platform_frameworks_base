@@ -524,7 +524,7 @@ final class NavigationBarController implements Window.DecorCallback,
     private int getImeCaptionBarHeight(boolean imeDrawsImeNavBar) {
         return imeDrawsImeNavBar
                 ? mService.getResources().getDimensionPixelSize(
-                        com.android.internal.R.dimen.navigation_bar_frame_height)
+                        com.android.internal.R.dimen.input_method_navigation_bar_height)
                 : 0;
     }
 

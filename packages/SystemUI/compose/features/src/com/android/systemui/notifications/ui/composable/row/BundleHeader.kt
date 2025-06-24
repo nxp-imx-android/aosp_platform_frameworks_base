@@ -46,6 +46,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.collapse
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.dismiss
 import androidx.compose.ui.semantics.expand
 import androidx.compose.ui.semantics.semantics
@@ -236,7 +237,10 @@ private fun ContentScope.BundleHeaderContent(
         ExpansionControl(
             collapsed = collapsed,
             numberToShow = viewModel.numberOfChildren,
-            modifier = Modifier.padding(start = 8.dp, end = 16.dp),
+            modifier =
+                Modifier.padding(start = 8.dp, end = 16.dp).semantics(mergeDescendants = false) {
+                    contentDescription = viewModel.numberOfChildrenContentDescription
+                },
         )
     }
 }

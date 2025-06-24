@@ -939,6 +939,7 @@ package android.companion {
     method @NonNull public android.companion.AssociationInfo.Builder setSelfManaged(boolean);
     method @NonNull public android.companion.AssociationInfo.Builder setSystemDataSyncFlags(int);
     method @NonNull public android.companion.AssociationInfo.Builder setTimeApproved(long);
+    method @NonNull public android.companion.AssociationInfo.Builder setTransportFlags(int);
   }
 
   public final class AssociationRequest implements android.os.Parcelable {
@@ -968,6 +969,10 @@ package android.companion.virtual {
     method public int getDevicePolicy(int, int);
     method public boolean isVirtualDeviceOwnedMirrorDisplay(int);
     method public void playSoundEffect(int, int);
+  }
+
+  public final class VirtualDeviceParams implements android.os.Parcelable {
+    field public static final int DEVICE_POLICY_INVALID = -1; // 0xffffffff
   }
 
 }
@@ -2529,10 +2534,11 @@ package android.os {
 
   public final class PackageTagsList implements android.os.Parcelable {
     method public boolean contains(@NonNull String, @Nullable String);
-    method public boolean contains(@NonNull android.os.PackageTagsList);
-    method public boolean containsAll(@NonNull String);
+    method public boolean containsAll(@NonNull android.os.PackageTagsList);
+    method public boolean containsPackage(@NonNull String);
+    method public boolean containsPackageWithAllTags(@NonNull String);
     method public int describeContents();
-    method public boolean includes(@NonNull String);
+    method @NonNull public java.util.Set<java.lang.String> getPackages();
     method public boolean isEmpty();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.os.PackageTagsList> CREATOR;
@@ -2543,10 +2549,9 @@ package android.os {
     ctor public PackageTagsList.Builder(int);
     method @NonNull public android.os.PackageTagsList.Builder add(@NonNull String);
     method @NonNull public android.os.PackageTagsList.Builder add(@NonNull String, @Nullable String);
-    method @NonNull public android.os.PackageTagsList.Builder add(@NonNull android.os.PackageTagsList);
-    method @NonNull public android.os.PackageTagsList.Builder add(@NonNull java.util.Map<java.lang.String,? extends java.util.Set<java.lang.String>>);
+    method @NonNull public android.os.PackageTagsList.Builder addAll(@NonNull android.os.PackageTagsList);
+    method @NonNull public android.os.PackageTagsList.Builder addAll(@NonNull java.util.Map<java.lang.String,? extends java.util.Set<java.lang.String>>);
     method @NonNull public android.os.PackageTagsList build();
-    method @NonNull public android.os.PackageTagsList.Builder clear();
   }
 
   @FlaggedApi("android.location.flags.change_get_adas_allowlist_from_hidden_to_system") public final class PackageTagsMap implements android.os.Parcelable {

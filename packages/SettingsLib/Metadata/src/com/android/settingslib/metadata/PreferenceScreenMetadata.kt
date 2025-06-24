@@ -77,10 +77,10 @@ interface PreferenceScreenMetadata : PreferenceGroup {
     fun hasCompleteHierarchy(): Boolean = true
 
     /**
-     * Returns the static hierarchy of preference screen.
+     * Returns the hierarchy of preference screen.
      *
-     * The implementation MUST include all preferences into the hierarchy regardless of the runtime
-     * conditions. DO NOT check any condition (except compile time flag) before adding a preference.
+     * The implementation should include all preferences into the hierarchy but pay attention to the
+     * flag guard when [hasCompleteHierarchy] is false.
      *
      * If the screen has different [PreferenceHierarchy] based on additional information (e.g. app
      * filter, profile), implements [PreferenceHierarchyGenerator]. The UI framework will support

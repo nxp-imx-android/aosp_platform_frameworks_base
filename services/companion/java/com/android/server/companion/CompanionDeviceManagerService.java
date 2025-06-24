@@ -64,6 +64,7 @@ import android.companion.IAssociationRequestCallback;
 import android.companion.ICompanionDeviceManager;
 import android.companion.IOnAssociationsChangedListener;
 import android.companion.IOnMessageReceivedListener;
+import android.companion.IOnTransportEventListener;
 import android.companion.IOnTransportsChangedListener;
 import android.companion.ISystemDataTransferCallback;
 import android.companion.ObservingDevicePresenceRequest;
@@ -418,6 +419,24 @@ public class CompanionDeviceManagerService extends SystemService {
             mTransportManager.removeListener(messageType, listener);
         }
 
+        @Override
+        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        public void addOnTransportEventListener(int associationId,
+                IOnTransportEventListener listener) {
+            addOnTransportEventListener_enforcePermission();
+
+            mTransportManager.addListener(associationId, listener);
+        }
+
+        @Override
+        @EnforcePermission(USE_COMPANION_TRANSPORTS)
+        public void removeOnTransportEventListener(int associationId,
+                                                IOnTransportEventListener listener) {
+            removeOnTransportEventListener_enforcePermission();
+
+            mTransportManager.removeListener(associationId, listener);
+        }
+
         /**
          * @deprecated use {@link #disassociate(int)} instead
          */
@@ -594,10 +613,10 @@ public class CompanionDeviceManagerService extends SystemService {
         @Override
         @EnforcePermission(DELIVER_COMPANION_MESSAGES)
         public void attachSystemDataTransport(String packageName, int userId, int associationId,
-                                              ParcelFileDescriptor fd, int flags) {
+                                              ParcelFileDescriptor fd) {
             attachSystemDataTransport_enforcePermission();
 
-            mTransportManager.attachSystemDataTransport(associationId, fd, flags);
+            mTransportManager.attachSystemDataTransport(associationId, fd);
         }
 
         @Override

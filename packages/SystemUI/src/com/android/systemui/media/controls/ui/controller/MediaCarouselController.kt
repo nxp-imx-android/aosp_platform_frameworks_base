@@ -340,6 +340,7 @@ constructor(
             .stateIn(applicationScope, SharingStarted.Eagerly, true)
 
     init {
+        // TODO(b/397989775): avoid unnecessary setup with media_controls_in_compose enabled
         dumpManager.registerNormalDumpable(TAG, this)
         mediaFrame = inflateMediaCarousel()
         mediaCarousel = mediaFrame.requireViewById(R.id.media_carousel_scroller)
@@ -362,9 +363,7 @@ constructor(
         inflateSettingsButton()
         mediaContent = mediaCarousel.requireViewById(R.id.media_carousel)
         configurationController.addCallback(configListener)
-        if (!SceneContainerFlag.isEnabled) {
-            setUpListeners()
-        } else {
+        if (SceneContainerFlag.isEnabled) {
             val visualStabilityCallback = OnReorderingAllowedListener {
                 mediaCarouselViewModel.onReorderingAllowed()
 
@@ -378,6 +377,8 @@ constructor(
                 mediaCarouselScrollHandler.scrollToStart()
             }
             visualStabilityProvider.addPersistentReorderingAllowedListener(visualStabilityCallback)
+        } else if (!Flags.mediaControlsInCompose()) {
+            setUpListeners()
         }
         mediaFrame.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
             // The pageIndicator is not laid out yet when we get the current state update,

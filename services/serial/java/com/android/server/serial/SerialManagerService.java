@@ -98,7 +98,7 @@ public class SerialManagerService extends ISerialManager.Stub {
     }
 
     @Override
-    public void requestOpen(@NonNull String portName, int flags,
+    public void requestOpen(@NonNull String portName, int flags, boolean exclusive,
             @NonNull ISerialPortResponseCallback callback) throws RemoteException {
         synchronized (mLock) {
             try {

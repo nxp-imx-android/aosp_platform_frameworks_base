@@ -30,7 +30,6 @@ import android.widget.ImageView
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.app.tracing.traceSection
 import com.android.internal.statusbar.StatusBarIcon
-import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -226,6 +225,7 @@ constructor(
      * Update the notification icons.
      *
      * @param entry the notification to read the icon from.
+     * @param usingCache whether to fetch the icon from cache if present
      * @throws InflationException Exception if required icons are not valid or specified
      */
     @Throws(InflationException::class)
@@ -235,14 +235,7 @@ constructor(
                 return@traceSection
             }
 
-            if (usingCache && !Flags.notificationsBackgroundIcons()) {
-                Log.wtf(
-                    TAG,
-                    "Updating using the cache is not supported when the " +
-                        "notifications_background_icons flag is off",
-                )
-            }
-            if (!usingCache || !Flags.notificationsBackgroundIcons()) {
+            if (!usingCache) {
                 entry.icons.smallIconDescriptor = null
                 entry.icons.peopleAvatarDescriptor = null
             }
@@ -524,56 +517,45 @@ constructor(
 
     @Throws(InflationException::class)
     private fun createPeopleAvatar(entry: NotificationEntry): Icon {
-        var ic: Icon? = null
+        // Ideally we want to get the icon from launcher, but this is a binder transaction that may
+        // take longer so let's kick it off on a background thread and use a placeholder in the
+        // meantime.
+        launcherPeopleAvatarIconJobs[entry.key]?.cancel() // cancel the previous job if necessary
+        launcherPeopleAvatarIconJobs[entry.key] =
+            applicationCoroutineScope
+                .launch { getLauncherShortcutIconForPeopleAvatar(entry) }
+                .apply { invokeOnCompletion { launcherPeopleAvatarIconJobs.remove(entry.key) } }
 
-        if (Flags.notificationsBackgroundIcons()) {
-            // Ideally we want to get the icon from launcher, but this is a binder transaction that
-            // may take longer so let's kick it off on a background thread and use a placeholder in
-            // the meantime.
-            // Cancel the previous job if necessary.
-            launcherPeopleAvatarIconJobs[entry.key]?.cancel()
-            launcherPeopleAvatarIconJobs[entry.key] =
-                applicationCoroutineScope
-                    .launch { getLauncherShortcutIconForPeopleAvatar(entry) }
-                    .apply { invokeOnCompletion { launcherPeopleAvatarIconJobs.remove(entry.key) } }
-        } else {
-            val shortcut = entry.ranking.conversationShortcutInfo
-            if (shortcut != null) {
-                ic = launcherApps.getShortcutIcon(shortcut)
-            }
-        }
-
-        // Try to extract from message
-        if (ic == null) {
-            val extras: Bundle = entry.sbn.notification.extras
-            val messages =
-                MessagingStyle.Message.getMessagesFromBundleArray(
-                    extras.getParcelableArray(Notification.EXTRA_MESSAGES)
-                )
-            val user = extras.getParcelable<Person>(Notification.EXTRA_MESSAGING_PERSON)
-            for (i in messages.indices.reversed()) {
-                val message = messages[i]
-                val sender = message.senderPerson
-                if (sender != null && sender !== user) {
-                    ic = message.senderPerson!!.icon
-                    break
-                }
+        var placeholderIcon: Icon? = null
+        // First try to extract from message
+        val extras: Bundle = entry.sbn.notification.extras
+        val messages =
+            MessagingStyle.Message.getMessagesFromBundleArray(
+                extras.getParcelableArray(Notification.EXTRA_MESSAGES)
+            )
+        val user = extras.getParcelable<Person>(Notification.EXTRA_MESSAGING_PERSON)
+        for (i in messages.indices.reversed()) {
+            val message = messages[i]
+            val sender = message.senderPerson
+            if (sender != null && sender !== user) {
+                placeholderIcon = message.senderPerson!!.icon
+                break
             }
         }
 
         // Fall back to notification large icon if available
-        if (ic == null) {
-            ic = entry.sbn.notification.getLargeIcon()
+        if (placeholderIcon == null) {
+            placeholderIcon = entry.sbn.notification.getLargeIcon()
         }
 
         // Revert to small icon if still not available
-        if (ic == null) {
-            ic = entry.sbn.notification.smallIcon
+        if (placeholderIcon == null) {
+            placeholderIcon = entry.sbn.notification.smallIcon
         }
-        if (ic == null) {
+        if (placeholderIcon == null) {
             throw InflationException("No icon in notification from " + entry.sbn.packageName)
         }
-        return ic
+        return placeholderIcon
     }
 
     /**

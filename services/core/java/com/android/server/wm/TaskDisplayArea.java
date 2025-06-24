@@ -1627,7 +1627,14 @@ final class TaskDisplayArea extends DisplayArea<WindowContainer> {
     }
 
     boolean shouldKeepNoTask() {
-        return mShouldKeepNoTask;
+        if (mShouldKeepNoTask) {
+            return true;
+        }
+
+        // A TaskDisplayArea can have another child TaskDisplayArea, so we should check all it's
+        // parent TaskDisplayArea.
+        return getParent() != null && getParent().asTaskDisplayArea() != null
+                && getParent().asTaskDisplayArea().shouldKeepNoTask();
     }
 
     @Override

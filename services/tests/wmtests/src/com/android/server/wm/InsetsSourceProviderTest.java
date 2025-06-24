@@ -74,6 +74,8 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         statusBar.mHasSurface = true;
         mProvider.setWindow(statusBar, null, null);
         mProvider.updateSourceFrame(statusBar.getFrame());
+        // serverVisibility is updated in onPreLayout
+        mProvider.onPreLayout();
         mProvider.onPostLayout();
         assertEquals(new Rect(0, 0, 500, 100), mProvider.getSource().getFrame());
         assertEquals(Insets.of(0, 100, 0, 0), mProvider.getInsetsHint());
@@ -107,6 +109,8 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
                     return 0;
                 }, null);
         mProvider.updateSourceFrame(statusBar.getFrame());
+        // serverVisibility is updated in onPreLayout
+        mProvider.onPreLayout();
         mProvider.onPostLayout();
         assertEquals(new Rect(10, 10, 20, 20), mProvider.getSource().getFrame());
     }
@@ -306,6 +310,8 @@ public class InsetsSourceProviderTest extends WindowTestsBase {
         statusBar.mHasSurface = true;
         mProvider.setWindow(statusBar, null, null);
         mProvider.updateSourceFrame(statusBar.getFrame());
+        // serverVisibility is updated in onPreLayout
+        mProvider.onPreLayout();
         mProvider.onPostLayout();
         assertEquals(new Rect(0, 0, 500, 100), mProvider.getSource().getFrame());
         // Still apply top insets if window overlaps even if it's top doesn't exactly match

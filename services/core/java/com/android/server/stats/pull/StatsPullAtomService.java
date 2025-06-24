@@ -43,6 +43,7 @@ import static android.os.Process.SYSTEM_UID;
 import static android.os.Process.getUidForPid;
 import static android.os.storage.VolumeInfo.TYPE_PRIVATE;
 import static android.os.storage.VolumeInfo.TYPE_PUBLIC;
+import static android.permission.flags.Flags.enableAllSqliteAppopsAccesses;
 import static android.provider.Settings.Global.NETSTATS_UID_BUCKET_DURATION;
 import static android.telephony.TelephonyManager.UNKNOWN_CARRIER_ID;
 import static android.util.MathUtils.constrain;
@@ -808,6 +809,7 @@ public class StatsPullAtomService extends SystemService {
                     case FrameworkStatsLog.BATTERY_LEVEL:
                     case FrameworkStatsLog.REMAINING_BATTERY_CAPACITY:
                     case FrameworkStatsLog.FULL_BATTERY_CAPACITY:
+                    case FrameworkStatsLog.FULL_BATTERY_DESIGN_CAPACITY:
                     case FrameworkStatsLog.BATTERY_VOLTAGE:
                     case FrameworkStatsLog.BATTERY_CYCLE_COUNT:
                     case FrameworkStatsLog.BATTERY_HEALTH:
@@ -1036,8 +1038,10 @@ public class StatsPullAtomService extends SystemService {
         registerExternalStorageInfo();
         registerAppsOnExternalStorageInfo();
         registerFaceSettings();
-        registerAppOps();
-        registerAttributedAppOps();
+        if (!enableAllSqliteAppopsAccesses()) {
+            registerAppOps();
+            registerAttributedAppOps();
+        }
         registerRuntimeAppOpAccessMessage();
         registerNotificationRemoteViews();
         registerDangerousPermissionState();
@@ -1045,6 +1049,7 @@ public class StatsPullAtomService extends SystemService {
         registerBatteryLevel();
         registerRemainingBatteryCapacity();
         registerFullBatteryCapacity();
+        registerFullBatteryDesignCapacity();
         registerBatteryVoltage();
         registerBatteryCycleCount();
         registerBatteryHealth();
@@ -4052,6 +4057,9 @@ public class StatsPullAtomService extends SystemService {
     }
 
     int pullAppOpsLocked(int atomTag, List<StatsEvent> pulledData) {
+        if (enableAllSqliteAppopsAccesses()) {
+            return StatsManager.PULL_SKIP;
+        }
         final long token = Binder.clearCallingIdentity();
         try {
             AppOpsManager appOps = mContext.getSystemService(AppOpsManager.class);
@@ -4131,6 +4139,9 @@ public class StatsPullAtomService extends SystemService {
     }
 
     int pullAttributedAppOpsLocked(int atomTag, List<StatsEvent> pulledData) {
+        if (enableAllSqliteAppopsAccesses()) {
+            return StatsManager.PULL_SKIP;
+        }
         final long token = Binder.clearCallingIdentity();
         try {
             AppOpsManager appOps = mContext.getSystemService(AppOpsManager.class);
@@ -4409,6 +4420,16 @@ public class StatsPullAtomService extends SystemService {
         );
     }
 
+    private void registerFullBatteryDesignCapacity() {
+        int tagId = FrameworkStatsLog.FULL_BATTERY_DESIGN_CAPACITY;
+        mStatsManager.setPullAtomCallback(
+                tagId,
+                null, // use default PullAtomMetadata values
+                DIRECT_EXECUTOR,
+                mStatsCallbackImpl
+        );
+    }
+
     private void registerBatteryVoltage() {
         int tagId = FrameworkStatsLog.BATTERY_VOLTAGE;
         mStatsManager.setPullAtomCallback(
@@ -4468,6 +4489,9 @@ public class StatsPullAtomService extends SystemService {
                 break;
             case FrameworkStatsLog.FULL_BATTERY_CAPACITY:
                 pulledValue = healthInfo.batteryFullChargeUah;
+                break;
+            case FrameworkStatsLog.FULL_BATTERY_DESIGN_CAPACITY:
+                pulledValue = healthInfo.batteryFullChargeDesignCapacityUah;
                 break;
             case FrameworkStatsLog.BATTERY_VOLTAGE:
                 pulledValue = healthInfo.batteryVoltageMillivolts;

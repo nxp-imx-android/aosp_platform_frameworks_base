@@ -184,7 +184,7 @@ class MediaDataProcessor(
         }
 
     override fun start() {
-        if (!SceneContainerFlag.isEnabled) {
+        if (!SceneContainerFlag.isEnabled && !Flags.mediaControlsInCompose()) {
             return
         }
 

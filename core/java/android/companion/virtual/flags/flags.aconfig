@@ -229,3 +229,13 @@ flag {
     bug: "371167033"
     is_exported: true
 }
+
+flag {
+    name: "handle_invalid_device_id"
+    namespace: "virtual_devices"
+    description: "Handle invalid device ids in various system services"
+    bug: "394613051"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

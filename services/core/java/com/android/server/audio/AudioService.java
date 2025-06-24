@@ -10155,7 +10155,7 @@ public class AudioService extends IAudioService.Stub
                     } else {
                         String name = getSettingNameForDevice(device);
                         index = mSettings.getSystemIntForUser(
-                                mContentResolver, name, defaultIndex, UserHandle.USER_CURRENT);
+                                mContentResolver, name, defaultIndex, getVolumePersistenceUserId());
                     }
                     if (index == -1) {
                         continue;
@@ -10455,6 +10455,13 @@ public class AudioService extends IAudioService.Stub
          */
         public int getMinIndex(boolean isPrivileged) {
             return isPrivileged ? mIndexMin : mIndexMinNoPerm;
+        }
+
+        @UserIdInt
+        private int getVolumePersistenceUserId() {
+            return mStreamType == AudioSystem.STREAM_MUSIC && !isPlatformAutomotive()
+                    ? UserHandle.USER_SYSTEM
+                    : UserHandle.USER_CURRENT;
         }
 
         /**
@@ -10899,7 +10906,7 @@ public class AudioService extends IAudioService.Stub
                 mSettings.putSystemIntForUser(mContentResolver,
                         streamState.getSettingNameForDevice(device),
                         (streamState.getIndex(device) + 5) / 10,
-                        UserHandle.USER_CURRENT);
+                        streamState.getVolumePersistenceUserId());
             }
         }
 

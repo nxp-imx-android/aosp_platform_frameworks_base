@@ -266,8 +266,24 @@ constructor(
     /** Is the ambient indication area visible? */
     val ambientIndicationVisible: Flow<Boolean> = repository.ambientIndicationVisible.asStateFlow()
 
-    /** Whether the primary bouncer is showing or not. */
-    @JvmField val primaryBouncerShowing: StateFlow<Boolean> = bouncerRepository.primaryBouncerShow
+    /** Whether the primary bouncer is showing or about to show soon. */
+    @JvmField
+    val primaryBouncerShowing: StateFlow<Boolean> =
+        if (com.android.systemui.Flags.newDozingKeyguardStates()) {
+            combine(
+                    bouncerRepository.primaryBouncerShow,
+                    bouncerRepository.primaryBouncerShowingSoon,
+                ) { showing, showingSoon ->
+                    showing || showingSoon
+                }
+                .stateIn(
+                    scope = applicationScope,
+                    started = SharingStarted.WhileSubscribed(),
+                    initialValue = false,
+                )
+        } else {
+            bouncerRepository.primaryBouncerShow
+        }
 
     /** Whether the alternate bouncer is showing or not. */
     val alternateBouncerShowing: StateFlow<Boolean> = bouncerRepository.alternateBouncerVisible

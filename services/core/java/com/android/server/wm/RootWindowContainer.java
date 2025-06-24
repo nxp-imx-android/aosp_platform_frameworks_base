@@ -46,7 +46,6 @@ import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS_LIGHT;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_KEEP_SCREEN_ON;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SLEEP_TOKEN;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STATES;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_TASKS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WALLPAPER;
@@ -210,12 +209,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     // Map from the PID to the top most app which has a focused window of the process.
     final ArrayMap<Integer, ActivityRecord> mTopFocusedAppByProcess = new ArrayMap<>();
 
-    // The tag for the token to put root tasks on the displays to sleep.
-    private static final String DISPLAY_OFF_SLEEP_TOKEN_TAG = "Display-off";
-
-    /** The token acquirer to put root tasks on the displays to sleep */
-    final ActivityTaskManagerService.SleepTokenAcquirer mDisplayOffTokenAcquirer;
-
     /**
      * The modes which affect which tasks are returned when calling
      * {@link RootWindowContainer#anyTaskForId(int)}.
@@ -259,13 +252,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     SparseArray<IntArray> mUserVisibleRootTasks = new SparseArray<>();
     @Nullable
     DeviceStateAutoRotateSettingController mDeviceStateAutoRotateSettingController;
-
-    /**
-     * A list of tokens that cause the top activity to be put to sleep.
-     * They are used by components that may hide and block interaction with underlying
-     * activities.
-     */
-    final SparseArray<SleepToken> mSleepTokens = new SparseArray<>();
 
     // Whether tasks have moved and we need to rank the tasks before next OOM scoring
     private boolean mTaskLayersChanged = true;
@@ -454,7 +440,6 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         mService = service.mAtmService;
         mTaskSupervisor = mService.mTaskSupervisor;
         mTaskSupervisor.mRootWindowContainer = this;
-        mDisplayOffTokenAcquirer = mService.new SleepTokenAcquirer(DISPLAY_OFF_SLEEP_TOKEN_TAG);
         mDeviceStateController = new DeviceStateController(service.mContext, service.mGlobalLock);
         mDisplayRotationCoordinator = new DisplayRotationCoordinator();
         mDeviceStateAutoRotateSettingController =
@@ -2947,46 +2932,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
 
     void prepareForShutdown() {
         for (int i = 0; i < getChildCount(); i++) {
-            createSleepToken("shutdown", getChildAt(i).mDisplayId);
-        }
-    }
-
-    SleepToken createSleepToken(String tag, int displayId) {
-        final DisplayContent display = getDisplayContent(displayId);
-        if (display == null) {
-            throw new IllegalArgumentException("Invalid display: " + displayId);
-        }
-
-        final int tokenKey = makeSleepTokenKey(tag, displayId);
-        SleepToken token = mSleepTokens.get(tokenKey);
-        if (token == null) {
-            token = new SleepToken(tag, displayId);
-            mSleepTokens.put(tokenKey, token);
-            display.mAllSleepTokens.add(token);
-            ProtoLog.d(WM_DEBUG_SLEEP_TOKEN, "Create SleepToken: tag=%s, displayId=%d",
-                    tag, displayId);
-        } else {
-            throw new RuntimeException("Create the same sleep token twice: " + token);
-        }
-        return token;
-    }
-
-    void removeSleepToken(SleepToken token) {
-        if (mSleepTokens.removeReturnOld(token.mHashKey) == null) {
-            Slog.d(TAG, "Remove non-exist sleep token: " + token + " from " + Debug.getCallers(6));
-        }
-        final DisplayContent display = getDisplayContent(token.mDisplayId);
-        if (display == null) {
-            Slog.d(TAG, "Remove sleep token for non-existing display: " + token + " from "
-                    + Debug.getCallers(6));
-            return;
-        }
-
-        ProtoLog.d(WM_DEBUG_SLEEP_TOKEN, "Remove SleepToken: tag=%s, displayId=%d",
-                token.mTag, token.mDisplayId);
-        display.mAllSleepTokens.remove(token);
-        if (display.mAllSleepTokens.isEmpty()) {
-            mService.updateSleepIfNeededLocked();
+            getChildAt(i).addSleepTokenOnly("shutdown");
         }
     }
 
@@ -3278,6 +3224,13 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         if (!task.isAttached()) {
             Slog.w(TAG, "canLaunchOnDisplay(), Task is not attached: " + task);
             return false;
+        }
+
+        if (DesktopExperienceFlags.ENABLE_MIRROR_DISPLAY_NO_ACTIVITY.isTrue()) {
+            if (task.getTaskDisplayArea().shouldKeepNoTask()) {
+                Slog.w(TAG, "canLaunchOnDisplay(), Task display area should keep no task: " + task);
+                return false;
+            }
         }
 
         return canLaunchOnDisplay(r, task.getTaskDisplayArea().getDisplayId());
@@ -3955,26 +3908,17 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     }
 
     static final class SleepToken {
-        private final String mTag;
+        final String mTag;
         private final long mAcquireTime;
-        private final int mDisplayId;
-        final int mHashKey;
 
-        SleepToken(String tag, int displayId) {
+        SleepToken(String tag) {
             mTag = tag;
-            mDisplayId = displayId;
             mAcquireTime = SystemClock.uptimeMillis();
-            mHashKey = makeSleepTokenKey(mTag, mDisplayId);
-        }
-
-        boolean isScreenOff() {
-            return DISPLAY_OFF_SLEEP_TOKEN_TAG.equals(mTag);
         }
 
         @Override
         public String toString() {
-            return "{\"" + mTag + "\", display " + mDisplayId
-                    + ", acquire at " + TimeUtils.formatUptime(mAcquireTime) + "}";
+            return "{\"" + mTag + "\", acquire at " + TimeUtils.formatUptime(mAcquireTime) + "}";
         }
 
         void writeTagToProto(ProtoOutputStream proto, long fieldId) {

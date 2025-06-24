@@ -490,9 +490,9 @@ final class ContentRecorder implements WindowContainerListener {
         toSearch.add(recordedWindowContainer);
         while (!toSearch.isEmpty()) {
             final WindowContainer<?> wc = toSearch.poll();
-            if (wc != null && wc.getWindow() != null
+            if (wc != null && wc.asWindowState() != null
                     && wc.getWindowType() == WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-                    && wc.getWindow().mOwnerUid
+                    && wc.asWindowState().mOwnerUid
                     == mContentRecordingSession.getRecordingOwnerUid()) {
                 return wc.getSurfaceControl();
             }

@@ -8,6 +8,12 @@
         "core/tests/coretests/src/android/view/inputmethod/.*",
         "core/tests/coretests/src/com/android/internal/inputmethod/.*"
       ]
+    },
+    {
+      "name": "SerialTests",
+      "file_patterns": [
+        "core/java/android/hardware/serial/.*"
+      ]
     }
   ],
   "wear-robolectric-postsubmit": [

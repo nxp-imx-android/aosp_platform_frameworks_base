@@ -35,6 +35,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -60,17 +61,21 @@ constructor(
     cursorRepository: MultiDisplayCursorPositionRepository,
     private val displayWindowPropertiesRepository: DisplayWindowPropertiesRepository,
     pointerDeviceRepository: PointerDeviceRepository,
+    actionCornerSettingRepository: ActionCornerSettingRepository,
     @Background private val backgroundScope: CoroutineScope,
 ) : ActionCornerRepository {
 
     override val actionCornerState: StateFlow<ActionCornerState> =
-        pointerDeviceRepository.isAnyPointerDeviceConnected
-            .flatMapLatest { isConnected ->
-                if (isConnected) {
+        combine(
+                pointerDeviceRepository.isAnyPointerDeviceConnected,
+                actionCornerSettingRepository.isAnyActionConfigured,
+            ) { isConnected, isAnyActionConfigured ->
+                isConnected && isAnyActionConfigured
+            }
+            .flatMapLatest { shouldMonitorCursorPosition ->
+                if (shouldMonitorCursorPosition) {
                     cursorRepository.cursorPositions.map(::mapToActionCornerState)
                 } else {
-                    // When not connected, emit an InactiveActionCorner state and then complete this
-                    // inner flow.
                     flowOf(InactiveActionCorner)
                 }
             }

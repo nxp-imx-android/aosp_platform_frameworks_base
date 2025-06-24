@@ -3,6 +3,7 @@ package com.android.systemui.scene
 import android.view.View
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.classifier.domain.interactor.falsingInteractor
+import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.haptics.msdl.msdlPlayer
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.keyguard.ui.viewmodel.aodBurnInViewModel
@@ -94,6 +95,7 @@ val Kosmos.sceneContainerViewModelFactory by Fixture {
         ): SceneContainerViewModel =
             SceneContainerViewModel(
                 sceneInteractor = sceneInteractor,
+                deviceUnlockedInteractor = deviceUnlockedInteractor,
                 falsingInteractor = falsingInteractor,
                 powerInteractor = powerInteractor,
                 shadeModeInteractor = shadeModeInteractor,

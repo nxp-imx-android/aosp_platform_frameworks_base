@@ -122,7 +122,9 @@ fun Modifier.dragAndDropTileList(
         remember(dragAndDropState) {
             object : DragAndDropTarget {
                 override fun onEnded(event: DragAndDropEvent) {
-                    dragAndDropState.onDrop()
+                    // Drop the tile if the drag ended with a cell still marked as dragged. This can
+                    // happen if no other drag listeners consumed the drop event.
+                    onDropInternal()
                 }
 
                 override fun onExited(event: DragAndDropEvent) {
@@ -148,6 +150,10 @@ fun Modifier.dragAndDropTileList(
                 }
 
                 override fun onDrop(event: DragAndDropEvent): Boolean {
+                    return onDropInternal()
+                }
+
+                private fun onDropInternal(): Boolean {
                     return dragAndDropState.draggedCell?.let {
                         onDrop(it.tile.tileSpec)
                         dragAndDropState.onDrop()
@@ -190,6 +196,8 @@ fun Modifier.dragAndDropTileSource(
             detectDragGesturesAfterLongPress(
                 onDrag = { _, _ -> },
                 onDragStart = {
+                    check(!dragState.dragInProgress)
+
                     dragState.onStarted(sizedTile, dragType)
                     onDragStart()
 
@@ -205,6 +213,13 @@ fun Modifier.dragAndDropTileSource(
                             )
                         )
                     )
+                },
+                onDragEnd = {
+                    check(dragState.dragInProgress)
+
+                    // onDragEnd is only called if the drag is ended before a drag and drop session
+                    // is started. In this case, we clear the drag state.
+                    dragState.onDrop()
                 },
             )
         }

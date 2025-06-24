@@ -2731,7 +2731,9 @@ class MediaRouter2ServiceImpl {
         private List<MediaRoute2Info> getVisibleRoutes(@NonNull List<MediaRoute2Info> routes) {
             List<MediaRoute2Info> filteredRoutes = new ArrayList<>();
             for (MediaRoute2Info route : routes) {
-                if (route.isVisibleTo(mPackageName) && hasPermissionsToSeeRoute(route)) {
+                if (route.isVisibleTo(mPackageName,
+                        mHasMediaRoutingControl || mHasMediaContentControlPermission)
+                        && hasPermissionsToSeeRoute(route)) {
                     filteredRoutes.add(route);
                 }
             }
@@ -2927,7 +2929,8 @@ class MediaRouter2ServiceImpl {
             }
             List<MediaRoute2Info> filteredRoutes = new ArrayList<>();
             for (MediaRoute2Info route : routes) {
-                if (route.isVisibleTo(mTargetPackageName)) {
+                if (route.isVisibleTo(mTargetPackageName,
+                        mHasMediaRoutingControl || mHasMediaContentControl)) {
                     filteredRoutes.add(route);
                 }
             }

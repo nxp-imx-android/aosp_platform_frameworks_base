@@ -19,6 +19,8 @@ import androidx.benchmark.BlackHole
 import androidx.benchmark.ExperimentalBlackHoleApi
 import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark
 import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.ExecutorThreadScopeBuilder
+import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.HandlerThreadImmediateScopeBuilder
+import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.HandlerThreadScopeBuilder
 import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.UnconfinedExecutorThreadScopeBuilder
 import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.UnsafeImmediateThreadScopeBuilder
 import com.android.app.concurrent.benchmark.base.ChainedStateCollectBenchmark
@@ -31,11 +33,15 @@ import com.android.app.concurrent.benchmark.builder.MutableStateFlowBuilder
 import com.android.app.concurrent.benchmark.builder.StateBuilder
 import com.android.app.concurrent.benchmark.util.ThreadFactory
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.conflate
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -52,7 +58,14 @@ class MutableStateFlowCombineBenchmark(param: ThreadFactory<Any, CoroutineScope>
     BaseMutableStateFlowBenchmark(param), StateCombineBenchmark {
 
     companion object {
-        @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = threadBuilders
+        @Parameters(name = "{0}")
+        @JvmStatic
+        fun getDispatchers() =
+            listOf(
+                ExecutorThreadScopeBuilder,
+                HandlerThreadScopeBuilder,
+                HandlerThreadImmediateScopeBuilder,
+            )
     }
 }
 
@@ -107,71 +120,69 @@ class MutableStateFlowUnconfinedBenchmark(
     }
 }
 
+private fun <T1, T2> flowOpParam(
+    name: String,
+    block: (Flow<T1>, Int, CoroutineScope) -> Flow<T2>,
+): (Flow<T1>, Int, CoroutineScope) -> Flow<T2> {
+    return object : (Flow<T1>, Int, CoroutineScope) -> Flow<T2> {
+        override fun invoke(upstream: Flow<T1>, index: Int, scope: CoroutineScope): Flow<T2> {
+            return block(upstream, index, scope)
+        }
+
+        override fun toString(): String {
+            return name
+        }
+    }
+}
+
 @RunWith(Parameterized::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class ChainedFlowBenchmark(
+class FlowOperatorChainBenchmark(
     threadParam: ThreadFactory<Any, CoroutineScope>,
     val chainLength: Int,
-    val intermediateOperator: (CoroutineScope, Flow<Double>) -> Flow<Double>,
+    val intermediateOperator: (Flow<Int>, Int, CoroutineScope) -> Flow<Int>,
 ) : BaseCoroutineBenchmark(threadParam) {
 
     companion object {
+        @OptIn(ExperimentalCoroutinesApi::class)
         @Parameters(name = "{0},{1},{2}")
         @JvmStatic
         fun getDispatchers() =
-            listOf(ExecutorThreadScopeBuilder) *
-                listOf(1, 2, 5, 10, 25) *
+            listOf(
+                ExecutorThreadScopeBuilder,
+                HandlerThreadScopeBuilder,
+                HandlerThreadImmediateScopeBuilder,
+            ) *
+                listOf(5, 10, 25) *
                 listOf(
-                    object : (CoroutineScope, Flow<Double>) -> Flow<Double> {
-                        override fun invoke(
-                            scope: CoroutineScope,
-                            upstream: Flow<Double>,
-                        ): Flow<Double> {
-                            return upstream
-                        }
-
-                        override fun toString(): String {
-                            return "cold"
-                        }
+                    flowOpParam("cold") { upstream, _, _ -> upstream },
+                    flowOpParam("stateIn") { upstream, index, scope ->
+                        upstream.stateIn(
+                            scope,
+                            started = SharingStarted.Eagerly,
+                            initialValue = index,
+                        )
                     },
-                    object : (CoroutineScope, Flow<Double>) -> Flow<Double> {
-                        override fun invoke(
-                            scope: CoroutineScope,
-                            upstream: Flow<Double>,
-                        ): Flow<Double> {
-                            return upstream.stateIn(
-                                scope,
-                                started = SharingStarted.Eagerly,
-                                initialValue = 0.0,
-                            )
-                        }
-
-                        override fun toString(): String {
-                            return "stateIn"
-                        }
+                    flowOpParam("conflate") { upstream, _, _ -> upstream.conflate() },
+                    flowOpParam("buffer-2") { upstream, _, _ -> upstream.buffer(2) },
+                    flowOpParam("buffer-4") { upstream, _, _ -> upstream.buffer(4) },
+                    flowOpParam("distinctUntilChanged") { upstream, _, _ ->
+                        upstream.distinctUntilChanged()
                     },
-                    object : (CoroutineScope, Flow<Double>) -> Flow<Double> {
-                        override fun invoke(
-                            scope: CoroutineScope,
-                            upstream: Flow<Double>,
-                        ): Flow<Double> {
-                            return upstream.conflate()
-                        }
-
-                        override fun toString(): String {
-                            return "conflate"
-                        }
+                    flowOpParam("flatMapLatest-cold") { upstream, _, _ ->
+                        upstream.flatMapLatest { value -> flow { emit(value) } }
                     },
-                    object : (CoroutineScope, Flow<Double>) -> Flow<Double> {
-                        override fun invoke(
-                            scope: CoroutineScope,
-                            upstream: Flow<Double>,
-                        ): Flow<Double> {
-                            return upstream.buffer(2)
-                        }
-
-                        override fun toString(): String {
-                            return "buffer-2"
+                    flowOpParam<Int, Int>("flatMapLatest-state") { upstream, _, _ ->
+                        val odds = MutableStateFlow(0)
+                        val evens = MutableStateFlow(0)
+                        upstream.flatMapLatest { value ->
+                            if (value % 2 == 0) {
+                                evens.value = value
+                                evens
+                            } else {
+                                odds.value = value
+                                odds
+                            }
                         }
                     },
                 )
@@ -180,23 +191,28 @@ class ChainedFlowBenchmark(
     @OptIn(ExperimentalBlackHoleApi::class)
     @Test
     fun benchmark() {
-        val sourceState = MutableStateFlow(0.0)
-        var receivedVal = 0.0
-        val stateChain = mutableListOf<Flow<Double>>()
+        val sourceState = MutableStateFlow(0)
+        var receivedVal = 0
+        val flowChain = mutableListOf<Flow<Int>>()
         repeat(chainLength) { i ->
-            val upstream = if (i == 0) sourceState else stateChain.last()
-            stateChain.add(intermediateOperator(bgScope, upstream.map { it + 1 }))
+            val upstream = if (i == 0) sourceState else flowChain.last()
+            flowChain.add(intermediateOperator(upstream.map { it + 1 }, i, bgScope))
         }
         benchmarkRule.runBenchmark {
             beforeFirstIteration(count = 1) { barrier ->
                 bgScope.launch {
-                    stateChain.last().collect {
+                    flowChain.last().collect {
                         receivedVal = it
                         barrier.countDown()
                     }
                 }
             }
-            mainBlock { n -> sourceState.value = n.toDouble() }
+            mainBlock { n -> sourceState.value = n }
+            stateChecker(
+                isInExpectedState = { n -> receivedVal == n + chainLength },
+                expectedStr = "receivedVal == n + chainLength",
+                expectedCalc = { n -> "$receivedVal == $n + $chainLength" },
+            )
             @OptIn(ExperimentalBlackHoleApi::class)
             afterLastIteration { BlackHole.consume(receivedVal) }
         }

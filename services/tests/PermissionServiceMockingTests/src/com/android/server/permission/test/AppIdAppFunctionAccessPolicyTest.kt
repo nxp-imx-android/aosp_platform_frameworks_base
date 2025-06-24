@@ -129,7 +129,7 @@ class AppIdAppFunctionAccessPolicyTest {
     }
 
     @Test
-    fun testGetAppFunctionAccessFlags() {
+    fun testGetAccessFlags() {
         val agent = mockPackageState(AGENT_APP_ID, AGENT_PKG_NAME)
         val target = mockPackageState(TARGET_APP_ID, TARGET_PKG_NAME)
         addPackageState(agent)
@@ -138,7 +138,7 @@ class AppIdAppFunctionAccessPolicyTest {
         val flags: Int
         GetStateScope(oldState).apply {
             with(appIdAppFunctionPolicy) {
-                flags = getAppFunctionAccessFlags(
+                flags = getAccessFlags(
                     AGENT_APP_ID,
                     USER_ID_0,
                     TARGET_APP_ID,
@@ -151,7 +151,7 @@ class AppIdAppFunctionAccessPolicyTest {
     }
 
     @Test
-    fun testUpdateAppFunctionAccessFlags_invalidFlag_throwsException() {
+    fun testUpdateAccessFlags_invalidFlag_throwsException() {
         val agent = mockPackageState(AGENT_APP_ID, AGENT_PKG_NAME)
         val target = mockPackageState(TARGET_APP_ID, TARGET_PKG_NAME)
         addPackageState(agent)
@@ -159,7 +159,7 @@ class AppIdAppFunctionAccessPolicyTest {
         mutateState {
             with(appIdAppFunctionPolicy) {
                 try {
-                    updateAppFunctionAccessFlags(
+                    updateAccessFlags(
                         AGENT_APP_ID, USER_ID_0, TARGET_APP_ID, USER_ID_0,
                         NONEXISTENT_FLAGS, NONEXISTENT_FLAGS
                     )
@@ -171,7 +171,7 @@ class AppIdAppFunctionAccessPolicyTest {
     }
 
     @Test
-    fun testUpdateAppFunctionAccessFlags_provideFlagNotInMask_throwsException() {
+    fun testUpdateAccessFlags_provideFlagNotInMask_throwsException() {
         val agent = mockPackageState(AGENT_APP_ID, AGENT_PKG_NAME)
         val target = mockPackageState(TARGET_APP_ID, TARGET_PKG_NAME)
         addPackageState(agent)
@@ -179,7 +179,7 @@ class AppIdAppFunctionAccessPolicyTest {
         mutateState {
             with(appIdAppFunctionPolicy) {
                 try {
-                    updateAppFunctionAccessFlags(
+                    updateAccessFlags(
                         AGENT_APP_ID, USER_ID_0, TARGET_APP_ID, USER_ID_0, 0,
                         ACCESS_FLAG_PREGRANTED
                     )
@@ -191,7 +191,7 @@ class AppIdAppFunctionAccessPolicyTest {
     }
 
     @Test
-    fun testUpdateAppFunctionAccessFlags_setOpposingFlags_throwsException() {
+    fun testUpdateAccessFlags_setOpposingFlags_throwsException() {
         val agent = mockPackageState(AGENT_APP_ID, AGENT_PKG_NAME)
         val target = mockPackageState(TARGET_APP_ID, TARGET_PKG_NAME)
         addPackageState(agent)
@@ -199,7 +199,7 @@ class AppIdAppFunctionAccessPolicyTest {
         mutateState {
             with(appIdAppFunctionPolicy) {
                 try {
-                    updateAppFunctionAccessFlags(
+                    updateAccessFlags(
                         AGENT_APP_ID, USER_ID_0, TARGET_APP_ID, USER_ID_0,
                         ACCESS_FLAG_MASK_USER, ACCESS_FLAG_MASK_USER
                     )
@@ -209,7 +209,7 @@ class AppIdAppFunctionAccessPolicyTest {
                 } catch (_: IllegalArgumentException) { }
 
                 try {
-                    updateAppFunctionAccessFlags(
+                    updateAccessFlags(
                         AGENT_APP_ID, USER_ID_0, TARGET_APP_ID, USER_ID_0,
                         ACCESS_FLAG_MASK_OTHER, ACCESS_FLAG_MASK_OTHER
                     )
@@ -222,7 +222,7 @@ class AppIdAppFunctionAccessPolicyTest {
     }
 
     @Test
-    fun testUpdateAppFunctionAccessFlags_setWithoutClearingOpposing_throwsException() {
+    fun testUpdateAccessFlags_setWithoutClearingOpposing_throwsException() {
         val agent = mockPackageState(AGENT_APP_ID, AGENT_PKG_NAME)
         val target = mockPackageState(TARGET_APP_ID, TARGET_PKG_NAME)
         addPackageState(agent)
@@ -231,7 +231,7 @@ class AppIdAppFunctionAccessPolicyTest {
         mutateState {
             with(appIdAppFunctionPolicy) {
                 try {
-                    updateAppFunctionAccessFlags(
+                    updateAccessFlags(
                         AGENT_APP_ID, USER_ID_0, TARGET_APP_ID, USER_ID_0,
                         ACCESS_FLAG_USER_DENIED, ACCESS_FLAG_USER_DENIED
                     )
@@ -242,7 +242,7 @@ class AppIdAppFunctionAccessPolicyTest {
                 } catch (_: IllegalArgumentException) { }
 
                 try {
-                    updateAppFunctionAccessFlags(
+                    updateAccessFlags(
                         AGENT_APP_ID, USER_ID_0, TARGET_APP_ID, USER_ID_0,
                         ACCESS_FLAG_OTHER_DENIED, ACCESS_FLAG_OTHER_DENIED
                     )
@@ -256,7 +256,7 @@ class AppIdAppFunctionAccessPolicyTest {
     }
 
     @Test
-    fun testUpdateAppFunctionAccessFlags_clearSingleOpposing_doesntThrow() {
+    fun testUpdateAccessFlags_clearSingleOpposing_doesntThrow() {
         val agent = mockPackageState(AGENT_APP_ID, AGENT_PKG_NAME)
         val target = mockPackageState(TARGET_APP_ID, TARGET_PKG_NAME)
         addPackageState(agent)
@@ -265,7 +265,7 @@ class AppIdAppFunctionAccessPolicyTest {
 
         mutateState {
             with(appIdAppFunctionPolicy) {
-                updateAppFunctionAccessFlags(
+                updateAccessFlags(
                     AGENT_APP_ID, USER_ID_0, TARGET_APP_ID, USER_ID_0,
                     ACCESS_FLAG_USER_GRANTED, 0)
             }
@@ -273,12 +273,12 @@ class AppIdAppFunctionAccessPolicyTest {
     }
 
     @Test
-    fun testUpdateAppFunctionAccessFlags_agentNotInstalled() {
+    fun testUpdateAccessFlags_agentNotInstalled() {
         val target = mockPackageState(TARGET_APP_ID, TARGET_PKG_NAME)
         addPackageState(target)
         mutateState {
             with(appIdAppFunctionPolicy) {
-                updateAppFunctionAccessFlags(
+                updateAccessFlags(
                     AGENT_APP_ID, USER_ID_0, TARGET_APP_ID, USER_ID_0,
                     ACCESS_FLAG_PREGRANTED, ACCESS_FLAG_PREGRANTED
                 )
@@ -291,12 +291,12 @@ class AppIdAppFunctionAccessPolicyTest {
     }
 
     @Test
-    fun testUpdateAppFunctionAccessFlags_targetNotInstalled() {
+    fun testUpdateAccessFlags_targetNotInstalled() {
         val agent = mockPackageState(AGENT_APP_ID, AGENT_PKG_NAME)
         addPackageState(agent)
         mutateState {
             with(appIdAppFunctionPolicy) {
-                updateAppFunctionAccessFlags(
+                updateAccessFlags(
                     AGENT_APP_ID, USER_ID_0, TARGET_APP_ID, USER_ID_0,
                     ACCESS_FLAG_PREGRANTED, ACCESS_FLAG_PREGRANTED
                 )
@@ -309,14 +309,14 @@ class AppIdAppFunctionAccessPolicyTest {
     }
 
     @Test
-    fun testUpdateAppFunctionAccessFlags_invalidUser() {
+    fun testUpdateAccessFlags_invalidUser() {
         val agent = mockPackageState(AGENT_APP_ID, AGENT_PKG_NAME)
         val target = mockPackageState(TARGET_APP_ID, TARGET_PKG_NAME)
         addPackageState(agent)
         addPackageState(target)
         mutateState {
             with(appIdAppFunctionPolicy) {
-                updateAppFunctionAccessFlags(
+                updateAccessFlags(
                     AGENT_APP_ID, USER_ID_1, TARGET_APP_ID, USER_ID_0,
                     ACCESS_FLAG_PREGRANTED, ACCESS_FLAG_PREGRANTED
                 )
@@ -328,7 +328,7 @@ class AppIdAppFunctionAccessPolicyTest {
             .isEqualTo(0)
     }
     @Test
-    fun testUpdateAppFunctionAccessFlags_validFlagsSet() {
+    fun testUpdateAccessFlags_validFlagsSet() {
         val agent = mockPackageState(AGENT_APP_ID, AGENT_PKG_NAME)
         val target = mockPackageState(TARGET_APP_ID, TARGET_PKG_NAME)
         addPackageState(agent)
@@ -337,7 +337,7 @@ class AppIdAppFunctionAccessPolicyTest {
         val flags = ACCESS_FLAG_USER_GRANTED or ACCESS_FLAG_PREGRANTED
         mutateState {
             with(appIdAppFunctionPolicy) {
-                updateAppFunctionAccessFlags(
+                updateAccessFlags(
                     AGENT_APP_ID, USER_ID_0, TARGET_APP_ID, USER_ID_0,
                     flags or ACCESS_FLAG_USER_DENIED, flags
                 )

@@ -1627,6 +1627,20 @@ public class CarrierConfigManager {
     public static final String KEY_HIDE_IMS_APN_BOOL = "hide_ims_apn_bool";
 
     /**
+     * A boolean flag specifying whether Telephony should bring up a default IMS APN when the
+     * carrier's IMS APN is not configured.
+     *
+     * <p>This is a short-term workaround for certain devices where the modem needs to
+     * handle IMS APN completely on its own and likely should not be used elsewhere.
+     * It's also possible that Telephony should no longer be bringing up a default
+     * IMS APN at all.
+     *
+     * @hide
+     */
+    public static final String KEY_USE_DEFAULT_IMS_APN_WHEN_ABSENT_BOOL =
+            "use_default_ims_apn_when_absent_bool";
+
+    /**
      * Determine whether preferred network type can be shown.
      */
     public static final String KEY_HIDE_PREFERRED_NETWORK_TYPE_BOOL =
@@ -10958,6 +10972,7 @@ public class CarrierConfigManager {
         sDefaults.putBoolean(KEY_HIDE_ENHANCED_4G_LTE_BOOL, false);
         sDefaults.putBoolean(KEY_ENHANCED_4G_LTE_ON_BY_DEFAULT_BOOL, true);
         sDefaults.putBoolean(KEY_HIDE_IMS_APN_BOOL, false);
+        sDefaults.putBoolean(KEY_USE_DEFAULT_IMS_APN_WHEN_ABSENT_BOOL, true);
         sDefaults.putBoolean(KEY_HIDE_PREFERRED_NETWORK_TYPE_BOOL, false);
         sDefaults.putBoolean(KEY_ALLOW_EMERGENCY_VIDEO_CALLS_BOOL, false);
         sDefaults.putStringArray(KEY_ENABLE_APPS_STRING_ARRAY, null);

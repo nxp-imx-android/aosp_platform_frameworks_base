@@ -19,7 +19,6 @@ package com.android.systemui.statusbar.notification.icon.ui.viewbinder
 import android.content.testableContext
 import com.android.systemui.display.domain.interactor.displayWindowPropertiesInteractor
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.statusbar.notification.collection.mockNotifCollection
 import com.android.systemui.statusbar.notification.collection.notifPipeline
 import com.android.systemui.statusbar.notification.icon.iconManager
@@ -37,7 +36,6 @@ var Kosmos.connectedDisplaysStatusBarNotificationIconViewStoreFactory:
                     iconManager,
                     displayWindowPropertiesInteractor,
                     notifPipeline,
-                    testDispatcher,
                 )
             }
         }

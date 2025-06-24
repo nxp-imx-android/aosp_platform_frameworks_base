@@ -38,6 +38,6 @@ val Kosmos.mediaCarouselInteractor by
             mediaDeviceManager = mediaDeviceManager,
             mediaDataCombineLatest = mediaDataCombineLatest,
             mediaDataFilter = mediaDataFilter,
-            mediaFilterRepository = mediaFilterRepository,
+            mediaPipelineRepository = mediaFilterRepository,
         )
     }

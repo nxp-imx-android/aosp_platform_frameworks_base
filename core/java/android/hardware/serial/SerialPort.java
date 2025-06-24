@@ -101,7 +101,7 @@ public final class SerialPort {
         Objects.requireNonNull(executor, "Executor must not be null");
         Objects.requireNonNull(receiver, "Receiver must not be null");
         try {
-            mService.requestOpen(mInfo.getName(), flags,
+            mService.requestOpen(mInfo.getName(), flags, exclusive,
                     new SerialPortResponseCallback(executor, receiver));
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();

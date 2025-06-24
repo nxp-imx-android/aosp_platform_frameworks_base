@@ -19,6 +19,9 @@ package com.android.wm.shell.common.split;
 import static android.view.WindowManager.DOCKED_LEFT;
 import static android.view.WindowManager.DOCKED_RIGHT;
 
+import static com.android.wm.shell.common.split.SplitSpec.DISMISS_TARGETS;
+import static com.android.wm.shell.common.split.SplitSpec.ONE_TARGET;
+import static com.android.wm.shell.common.split.SplitSpec.THREE_TARGETS_ONSCREEN;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_50_50;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_END_AND_DISMISS;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_MINIMIZE;
@@ -33,7 +36,6 @@ import androidx.annotation.Nullable;
 
 import com.android.mechanics.spec.MotionSpec;
 import com.android.wm.shell.Flags;
-import com.android.wm.shell.shared.split.SplitScreenConstants.PersistentSnapPosition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,14 +71,10 @@ public class DividerSnapAlgorithm {
      * 1 snap target: minimized height, (1 - minimized height)
      */
     static final int SNAP_MODE_MINIMIZED = 3;
-
     /**
-     * A mode where apps can be "flexibly offscreen" on smaller displays.
-     */
-    static final int SNAP_FLEXIBLE_SPLIT = 4;
-    /**
-     * A mode combining {@link #SNAP_FIXED_RATIO} with {@link #SNAP_FLEXIBLE_SPLIT}. Has 5
-     * split screen snap points on smaller devices.
+     * A mode that has 5 split screen snap points on smaller devices (10:90, 33:66, 50:50, 66:33,
+     * 90:10). Except if it's *too* small, then it will only have 3 (10:90, 50:50, 90:10). Larger
+     * devices (tablet size) will also have 3 (33:66, 50:50, 66:33).
      */
     static final int SNAP_FLEXIBLE_HYBRID = 5;
 
@@ -102,19 +100,31 @@ public class DividerSnapAlgorithm {
     private final int mDockSide;
 
     /**
-     * The first, and usually only, snap target between the left/top screen edge and center.
+     * The first snap target, counting from the top/left, and not including dismiss targets.
+     * On modes with 5 snap targets, this will refer to the 10% target.
+     * On modes with 3 snap targets, this will refer to the 10% or 33% target.
+     * On modes with only 1 target, it will refer to the middle target.
      */
     private final SnapTarget mFirstSplitTarget;
     /**
-     * Another snap target on the top/left side (closer to center than the "first").
+     * The second snap target, counting from the top/left, and not including dismiss targets.
+     * On modes with 5 snap targets, this will refer to the 33% target.
+     * On modes with 3 snap targets, this will refer to the middle target.
+     * On modes with only 1 target, it will also refer to the middle target.
      */
     private final SnapTarget mSecondSplitTarget;
     /**
-     * The last, and usually only, snap target between the center and the right/bottom screen edge.
+     * The last snap target, counting from the top/left, and not including dismiss targets.
+     * On modes with 5 snap targets, this will refer to the 90% target.
+     * On modes with 3 snap targets, this will refer to the 66% or 90% target.
+     * On modes with only 1 target, it will refer to the middle target.
      */
     private final SnapTarget mLastSplitTarget;
     /**
-     * Another snap target on the right/bottom side (closer to center than the "last").
+     * The second-last snap target, counting from the top/left, and not including dismiss targets.
+     * On modes with 5 snap targets, this will refer to the 66% target.
+     * On modes with 3 snap targets, this will refer to the middle target.
+     * On modes with only 1 target, it will also refer to the middle target.
      */
     private final SnapTarget mSecondLastSplitTarget;
 
@@ -170,16 +180,20 @@ public class DividerSnapAlgorithm {
         mTaskHeightInMinimizedMode = isHomeResizable ? res.getDimensionPixelSize(
                 com.android.internal.R.dimen.task_height_of_minimized_mode) : 0;
         calculateTargets();
-        mFirstSplitTarget = mTargets.get(1);
-        mSecondSplitTarget = mSnapMode == SNAP_FLEXIBLE_HYBRID && areOffscreenRatiosSupported()
-                        ? mTargets.get(2) : null;
-        mSecondLastSplitTarget = mSnapMode == SNAP_FLEXIBLE_HYBRID && areOffscreenRatiosSupported()
-                        ? mTargets.get(mTargets.size() - 3) : null;
-        mLastSplitTarget = mTargets.get(mTargets.size() - 2);
-        mDismissStartTarget = mTargets.get(0);
-        mDismissEndTarget = mTargets.get(mTargets.size() - 1);
         mMiddleTarget = mTargets.get(mTargets.size() / 2);
         mMiddleTarget.isMiddleTarget = true;
+        mDismissStartTarget = mTargets.get(0);
+        mFirstSplitTarget = mTargets.get(1);
+        if (mTargets.size() == ONE_TARGET.size() + DISMISS_TARGETS.size()) {
+            mSecondSplitTarget = mSecondLastSplitTarget = null;
+        } else if (mTargets.size() == THREE_TARGETS_ONSCREEN.size() + DISMISS_TARGETS.size()) {
+            mSecondSplitTarget = mSecondLastSplitTarget = mMiddleTarget;
+        } else {
+            mSecondSplitTarget = mTargets.get(2);
+            mSecondLastSplitTarget = mTargets.get(mTargets.size() - 3);
+        }
+        mLastSplitTarget = mTargets.get(mTargets.size() - 2);
+        mDismissEndTarget = mTargets.get(mTargets.size() - 1);
     }
 
     /**
@@ -340,9 +354,6 @@ public class DividerSnapAlgorithm {
             case SNAP_MODE_MINIMIZED:
                 addMinimizedTarget(mDockSide);
                 break;
-            case SNAP_FLEXIBLE_SPLIT:
-                addFlexSplitTargets(dividerMax);
-                break;
             case SNAP_FLEXIBLE_HYBRID:
                 addFlexHybridSplitTargets(dividerMax);
                 break;
@@ -357,30 +368,14 @@ public class DividerSnapAlgorithm {
      *                  3-target layout, and size 5 for a 5-target layout.) Should always be in
      *                  ascending order.
      */
-    private void addNonDismissingTargets(List<Integer> positions, int dividerMax) {
-        // Get the desired layout for our snap mode.
-        List<Integer> targetSpec =
-                SplitSpec.getSnapTargetLayout(mSnapMode, areOffscreenRatiosSupported());
-
+    private void addNonDismissingTargets(List<Integer> positions, List<Integer> targetSpec) {
         if (positions.size() != targetSpec.size()) {
             throw new IllegalStateException("unexpected number of snap positions");
         }
 
         // Iterate through the spec, adding a target for each.
-        boolean midpointPassed = false;
         for (int i = 0; i < targetSpec.size(); i++) {
-            @PersistentSnapPosition int target = targetSpec.get(i);
-            int position = positions.get(i);
-
-            if (!midpointPassed) {
-                maybeAddTarget(position, position - getStartInset(), target);
-            } else if (target == SNAP_TO_2_50_50) {
-                mTargets.add(new SnapTarget(position, target));
-                midpointPassed = true;
-            } else {
-                maybeAddTarget(position, dividerMax - getEndInset() - (position + mDividerSize),
-                        target);
-            }
+            mTargets.add(new SnapTarget(positions.get(i), targetSpec.get(i)));
         }
     }
 
@@ -397,72 +392,72 @@ public class DividerSnapAlgorithm {
 
         int topPosition = start + size;
         int bottomPosition = end - size - mDividerSize;
-        addNonDismissingTargets(List.of(topPosition, getMiddleTargetPos(), bottomPosition),
-                dividerMax);
-    }
 
-    private void addFlexSplitTargets(int dividerMax) {
-        int start = 0;
-        int end = mIsLeftRightSplit ? mDisplayWidth : mDisplayHeight;
-        int pinnedTaskbarShiftStart = mIsLeftRightSplit
-                ? mPinnedTaskbarInsets.left : mPinnedTaskbarInsets.top;
-        int pinnedTaskbarShiftEnd = mIsLeftRightSplit
-                ? mPinnedTaskbarInsets.right : mPinnedTaskbarInsets.bottom;
+        // Get the desired layout for our current device/display/rotation.
+        boolean bigEnoughFor33 = size >= mMinimalSizeResizableTask;
+        List<Integer> targetSpec = SplitSpec.getSnapTargetLayout(SNAP_FIXED_RATIO,
+                areOffscreenRatiosSupported(), bigEnoughFor33);
 
-        float ratio = areOffscreenRatiosSupported()
-                ? SplitSpec.OFFSCREEN_ASYMMETRIC_RATIO
-                : SplitSpec.ONSCREEN_ONLY_ASYMMETRIC_RATIO;
-
-        // The intended size of the smaller app, in pixels
-        int size = (int) (ratio * (end - start)) - mDividerSize / 2;
-
-        // If there are insets that interfere with the smaller app (visually or blocking touch
-        // targets), make the smaller app bigger by that amount to compensate. This applies to
-        // pinned taskbar, 3-button nav (both create an opaque bar at bottom) and status bar (blocks
-        // touch targets at top).
-        int extraSpace = IntStream.of(
-                getStartInset(), getEndInset(), pinnedTaskbarShiftStart, pinnedTaskbarShiftEnd
-        ).max().getAsInt();
-
-        int leftTopPosition = start + extraSpace + size;
-        int rightBottomPosition = end - extraSpace - size - mDividerSize;
-        addNonDismissingTargets(List.of(leftTopPosition, getMiddleTargetPos(), rightBottomPosition),
-                dividerMax);
+        if (bigEnoughFor33) {
+            // Add 3 targets
+            addNonDismissingTargets(List.of(topPosition, getMiddleTargetPos(), bottomPosition),
+                    targetSpec);
+        } else {
+            // Add 1 target
+            addNonDismissingTargets(List.of(getMiddleTargetPos()), targetSpec);
+        }
     }
 
     private void addFlexHybridSplitTargets(int dividerMax) {
-        int start = 0;
-        int end = mIsLeftRightSplit ? mDisplayWidth : mDisplayHeight;
+        int start = mIsLeftRightSplit ? mInsets.left : mInsets.top;
+        int end = mIsLeftRightSplit
+                ? mDisplayWidth - mInsets.right
+                : mDisplayHeight - mInsets.bottom;
         int pinnedTaskbarShiftStart = mIsLeftRightSplit
                 ? mPinnedTaskbarInsets.left : mPinnedTaskbarInsets.top;
         int pinnedTaskbarShiftEnd = mIsLeftRightSplit
                 ? mPinnedTaskbarInsets.right : mPinnedTaskbarInsets.bottom;
 
-        // If offscreen apps are supported, add 5 targets instead of 3.
+        // If offscreen apps are supported, we are looking to add 3-5 targets.
         if (areOffscreenRatiosSupported()) {
             // Find the desired sizes for a 10% app and a 33% app.
             float ratio10 = SplitSpec.OFFSCREEN_ASYMMETRIC_RATIO;
             float ratio33 = SplitSpec.ONSCREEN_ONLY_ASYMMETRIC_RATIO;
-            int size10 = (int) (ratio10 * (end - start)) - mDividerSize / 2;
-            int size33 = (int) (ratio33 * (end - start)) - mDividerSize / 2;
-
-            // If there are insets that interfere with the smaller app (visually or blocking touch
-            // targets), make the 10% app ratio bigger by that amount to compensate. This applies to
-            // pinned taskbar, 3-button nav (both create an opaque bar at bottom) and status bar
+            // Insets affect where we want to put the snap targets. For the 10% target: If there are
+            // insets that interfere with the divider position (visually or blocking touch targets),
+            // we make the size bigger by that amount to compensate. This happens with an enabled
+            // pinned taskbar, 3-button nav (both create an opaque bar at bottom) or status bar
             // (blocks touch targets at top).
             int extraSpaceFor10 = IntStream.of(
                     getStartInset(), getEndInset(), pinnedTaskbarShiftStart, pinnedTaskbarShiftEnd
             ).max().getAsInt();
+            int size10 = (int) (ratio10 * dividerMax) + extraSpaceFor10 - mDividerSize / 2;
+            // For the 33% target, we bake the insets into the position calculation below.
+            int size33 = (int) (ratio33 * (end - start)) - mDividerSize / 2;
 
-            int leftTop10Position = start + extraSpaceFor10 + size10;
-            int rightBottom10Position = end - extraSpaceFor10 - size10 - mDividerSize;
+            int leftTop10Position = size10;
+            int rightBottom10Position = dividerMax - size10 - mDividerSize;
             int leftTop33Position = start + size33;
             int rightBottom33Position = end - size33 - mDividerSize;
-            addNonDismissingTargets(List.of(leftTop10Position, leftTop33Position,
-                            getMiddleTargetPos(), rightBottom33Position, rightBottom10Position),
-                    dividerMax);
+
+            // Get the desired layout for our current device/display/rotation.
+            boolean bigEnoughFor33 = size33 >= mMinimalSizeResizableTask;
+            List<Integer> targetSpec = SplitSpec.getSnapTargetLayout(SNAP_FLEXIBLE_HYBRID,
+                    areOffscreenRatiosSupported(), bigEnoughFor33);
+
+            if (bigEnoughFor33) {
+                // Add 5 targets
+                addNonDismissingTargets(List.of(leftTop10Position, leftTop33Position,
+                                getMiddleTargetPos(), rightBottom33Position, rightBottom10Position),
+                        targetSpec);
+            } else {
+                // Add 3 targets
+                addNonDismissingTargets(List.of(leftTop10Position, getMiddleTargetPos(),
+                                rightBottom10Position),
+                        targetSpec);
+            }
         } else {
-            // If offscreen apps are not supported, just add the regular 3 targets.
+            // If offscreen apps are not supported, just add the regular 1-3 targets.
             float ratio = SplitSpec.ONSCREEN_ONLY_ASYMMETRIC_RATIO;
 
             // The intended size of the smaller app, in pixels
@@ -470,8 +465,20 @@ public class DividerSnapAlgorithm {
 
             int leftTopPosition = start + size;
             int rightBottomPosition = end - size - mDividerSize;
-            addNonDismissingTargets(List.of(leftTopPosition, getMiddleTargetPos(),
-                    rightBottomPosition), dividerMax);
+
+            // Get the desired layout for our current device/display/rotation.
+            boolean bigEnoughFor33 = size >= mMinimalSizeResizableTask;
+            List<Integer> targetSpec = SplitSpec.getSnapTargetLayout(SNAP_FLEXIBLE_HYBRID,
+                    areOffscreenRatiosSupported(), bigEnoughFor33);
+
+            if (bigEnoughFor33) {
+                // Add 3 targets
+                addNonDismissingTargets(List.of(leftTopPosition, getMiddleTargetPos(),
+                        rightBottomPosition), targetSpec);
+            } else {
+                // Add 1 target
+                addNonDismissingTargets(List.of(getMiddleTargetPos()), targetSpec);
+            }
         }
     }
 
@@ -488,17 +495,19 @@ public class DividerSnapAlgorithm {
         int sizeInt = (int) Math.floor(size);
         int topPosition = start + sizeInt;
         int bottomPosition = end - sizeInt - mDividerSize;
-        addNonDismissingTargets(List.of(topPosition, getMiddleTargetPos(), bottomPosition),
-                dividerMax);
-    }
 
-    /**
-     * Adds a target at {@param position} but only if the area with size of {@param smallerSize}
-     * meets the minimal size requirement.
-     */
-    private void maybeAddTarget(int position, int smallerSize, @SnapPosition int snapPosition) {
-        if (smallerSize >= mMinimalSizeResizableTask || areOffscreenRatiosSupported()) {
-            mTargets.add(new SnapTarget(position, snapPosition));
+        // Get the desired layout for our current device/display/rotation.
+        boolean bigEnoughFor33 = sizeInt >= mMinimalSizeResizableTask;
+        List<Integer> targetSpec = SplitSpec.getSnapTargetLayout(SNAP_MODE_16_9,
+                areOffscreenRatiosSupported(), bigEnoughFor33);
+
+        if (bigEnoughFor33) {
+            // Add 3 targets
+            addNonDismissingTargets(List.of(topPosition, getMiddleTargetPos(), bottomPosition),
+                    targetSpec);
+        } else {
+            // Add 1 target
+            addNonDismissingTargets(List.of(getMiddleTargetPos()), targetSpec);
         }
     }
 
@@ -543,11 +552,11 @@ public class DividerSnapAlgorithm {
     }
 
     public boolean isSecondSplitTargetAvailable() {
-        return mSecondSplitTarget != mMiddleTarget;
+        return mSecondSplitTarget != mMiddleTarget && mSecondSplitTarget != null;
     }
 
     public boolean isSecondLastSplitTargetAvailable() {
-        return mSecondLastSplitTarget != mMiddleTarget;
+        return mSecondLastSplitTarget != mMiddleTarget && mSecondLastSplitTarget != null;
     }
 
     /**

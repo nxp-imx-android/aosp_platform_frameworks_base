@@ -528,42 +528,42 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     @Override
-    public int getAppFunctionAccessFlags(String agentPackageName, int agentUserId,
+    public int getAccessFlags(String agentPackageName, int agentUserId,
             String targetPackageName, int targetUserId) throws RemoteException {
         if (!accessCheckFlagsEnabled()) {
             return 0;
         }
-        return mAppFunctionAccessService.getAppFunctionAccessFlags(agentPackageName, agentUserId,
+        return mAppFunctionAccessService.getAccessFlags(agentPackageName, agentUserId,
                 targetPackageName, targetUserId);
     }
 
     @Override
-    public boolean updateAppFunctionAccessFlags(String agentPackageName, int agentUserId,
+    public boolean updateAccessFlags(String agentPackageName, int agentUserId,
             String targetPackageName, int targetUserId, int flagMask, int flags)
             throws RemoteException {
         if (!accessCheckFlagsEnabled()) {
             return false;
         }
-        return mAppFunctionAccessService.updateAppFunctionAccessFlags(agentPackageName, agentUserId,
+        return mAppFunctionAccessService.updateAccessFlags(agentPackageName, agentUserId,
                 targetPackageName, targetUserId, flagMask, flags);
     }
 
     @Override
-    public void revokeSelfAppFunctionAccess(String targetPackageName) {
+    public void revokeSelfAccess(String targetPackageName) {
         if (!accessCheckFlagsEnabled()) {
             return;
         }
-        mAppFunctionAccessService.revokeSelfAppFunctionAccess(targetPackageName);
+        mAppFunctionAccessService.revokeSelfAccess(targetPackageName);
     }
 
     @Override
-    public int getAppFunctionAccessRequestState(String agentPackageName, int agentUserId,
+    public int getAccessRequestState(String agentPackageName, int agentUserId,
             String targetPackageName, int targetUserId) throws RemoteException {
         if (!accessCheckFlagsEnabled()) {
             return ACCESS_REQUEST_STATE_UNREQUESTABLE;
         }
 
-        return mAppFunctionAccessService.getAppFunctionAccessRequestState(agentPackageName,
+        return mAppFunctionAccessService.getAccessRequestState(agentPackageName,
                 agentUserId, targetPackageName, targetUserId);
     }
 
@@ -580,8 +580,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return List.of();
         }
-        return mAppFunctionAccessService
-                .getValidTargets(userId);
+        return mAppFunctionAccessService.getValidTargets(userId);
     }
 
     private boolean accessCheckFlagsEnabled() {

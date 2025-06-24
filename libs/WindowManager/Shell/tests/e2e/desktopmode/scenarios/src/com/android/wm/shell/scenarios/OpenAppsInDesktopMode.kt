@@ -51,10 +51,12 @@ abstract class OpenAppsInDesktopMode(
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
     private val firstApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    private val secondApp = MailAppHelper(instrumentation)
-    private val thirdApp = NewTasksAppHelper(instrumentation)
-    private val fourthApp = ImeAppHelper(instrumentation)
-    private val fifthApp = NonResizeableAppHelper(instrumentation)
+    private val secondApp = DesktopModeAppHelper(MailAppHelper(instrumentation))
+    private val thirdApp = DesktopModeAppHelper(NewTasksAppHelper(instrumentation))
+    private val fourthApp = DesktopModeAppHelper(ImeAppHelper(instrumentation))
+    val fifthApp = DesktopModeAppHelper(NonResizeableAppHelper(instrumentation))
+
+    val appInDesktop: ArrayList<DesktopModeAppHelper> = ArrayList()
 
     @Rule @JvmField val testSetupRule = Utils.testSetupRule(NavBar.MODE_3BUTTON, rotation)
 
@@ -74,9 +76,13 @@ abstract class OpenAppsInDesktopMode(
     @Test
     open fun openApps() {
         secondApp.launchViaIntent(wmHelper)
+        appInDesktop.add(secondApp)
         thirdApp.launchViaIntent(wmHelper)
+        appInDesktop.add(thirdApp)
         fourthApp.launchViaIntent(wmHelper)
+        appInDesktop.add(fourthApp)
         fifthApp.launchViaIntent(wmHelper)
+        appInDesktop.add(fifthApp)
     }
 
     @After

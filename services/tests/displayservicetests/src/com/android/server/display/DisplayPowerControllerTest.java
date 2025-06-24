@@ -97,6 +97,7 @@ import com.android.server.display.config.HysteresisLevels;
 import com.android.server.display.feature.DisplayManagerFlags;
 import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
+import com.android.server.display.plugin.PluginManager;
 import com.android.server.display.whitebalance.DisplayWhiteBalanceController;
 import com.android.server.policy.WindowManagerPolicy;
 import com.android.server.testutils.OffsettableClock;
@@ -166,6 +167,8 @@ public final class DisplayPowerControllerTest {
     private DisplayWhiteBalanceController mDisplayWhiteBalanceControllerMock;
     @Mock
     private DisplayManagerFlags mDisplayManagerFlagsMock;
+    @Mock
+    private PluginManager mMockPluginManager;
     @Mock
     private DisplayManagerInternal.DisplayOffloadSession mDisplayOffloadSession;
     @Mock
@@ -2705,7 +2708,8 @@ public final class DisplayPowerControllerTest {
                 mSensorManagerMock, mDisplayBlankerMock, display,
                 mBrightnessTrackerMock, brightnessSetting, () -> {
         },
-                hbmMetadata, /* bootCompleted= */ false, mDisplayManagerFlagsMock);
+                hbmMetadata, /* bootCompleted= */ false, mDisplayManagerFlagsMock,
+                mMockPluginManager);
 
         return new DisplayPowerControllerHolder(dpc, display, displayPowerState, brightnessSetting,
                 animator, automaticBrightnessController, wakelockController,
@@ -2906,7 +2910,8 @@ public final class DisplayPowerControllerTest {
         BrightnessClamperController getBrightnessClamperController(Handler handler,
                 BrightnessClamperController.ClamperChangeListener clamperChangeListener,
                 DisplayDeviceData data, Context context,
-                DisplayManagerFlags flags, SensorManager sensorManager, float currentBrightness) {
+                DisplayManagerFlags flags, SensorManager sensorManager,
+                PluginManager pluginManager, float currentBrightness) {
             return mClamperController;
         }
 

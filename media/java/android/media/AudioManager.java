@@ -16,7 +16,7 @@
 
 package android.media;
 
-import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.media.audio.Flags.FLAG_DEPRECATE_STREAM_BT_SCO;
@@ -4253,7 +4253,7 @@ public class AudioManager {
 
         VirtualDeviceManager vdm = getVirtualDeviceManager();
         return vdm != null && vdm.getDevicePolicy(mOriginalContextDeviceId, POLICY_TYPE_AUDIO)
-                != DEVICE_POLICY_DEFAULT;
+                == DEVICE_POLICY_CUSTOM;
     }
 
     /**

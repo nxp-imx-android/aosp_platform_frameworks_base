@@ -19,6 +19,8 @@ package com.android.app.concurrent.benchmark
 
 import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark
 import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.ExecutorThreadScopeBuilder
+import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.HandlerThreadImmediateScopeBuilder
+import com.android.app.concurrent.benchmark.base.BaseCoroutineBenchmark.Companion.HandlerThreadScopeBuilder
 import com.android.app.concurrent.benchmark.base.StateCollectBenchmark
 import com.android.app.concurrent.benchmark.base.StateCombineBenchmark
 import com.android.app.concurrent.benchmark.base.times
@@ -42,7 +44,14 @@ class KairosStateCombineBenchmark(threadParam: ThreadFactory<Any, CoroutineScope
     BaseKairosStateBenchmark(threadParam), StateCombineBenchmark {
 
     companion object {
-        @Parameters(name = "{0}") @JvmStatic fun getDispatchers() = threadBuilders
+        @Parameters(name = "{0}")
+        @JvmStatic
+        fun getDispatchers() =
+            listOf(
+                ExecutorThreadScopeBuilder,
+                HandlerThreadScopeBuilder,
+                HandlerThreadImmediateScopeBuilder,
+            )
     }
 }
 

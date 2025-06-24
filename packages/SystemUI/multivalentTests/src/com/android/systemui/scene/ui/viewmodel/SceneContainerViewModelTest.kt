@@ -25,8 +25,12 @@ import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.DefaultEdgeDetector
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.classifier.fakeFalsingManager
+import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
 import com.android.systemui.flags.EnableSceneContainer
+import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
+import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.currentValue
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -139,7 +143,7 @@ class SceneContainerViewModelTest : SysuiTestCase() {
             assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
 
             sceneContainerConfig.sceneKeys
-                .filter { it != currentScene }
+                .filter { it != currentScene && it != Scenes.Gone }
                 .forEach { toScene ->
                     assertWithMessage("Scene $toScene incorrectly protected when allowed")
                         .that(underTest.canChangeScene(toScene = toScene))
@@ -206,6 +210,31 @@ class SceneContainerViewModelTest : SysuiTestCase() {
                         .that(underTest.canChangeScene(toScene = toScene))
                         .isTrue()
                 }
+        }
+
+    @Test
+    fun canChangeScene_toGone_whenLocked_returnsFalse() =
+        kosmos.runTest {
+            assertThat(currentValue(deviceUnlockedInteractor.deviceUnlockStatus).isUnlocked)
+                .isFalse()
+            val currentScene by collectLastValue(underTest.currentScene)
+            assertThat(currentScene).isNotEqualTo(Scenes.Gone)
+
+            assertThat(underTest.canChangeScene(toScene = Scenes.Gone)).isFalse()
+        }
+
+    @Test
+    fun canChangeScene_toGone_whenUnlocked_returnsTrue() =
+        kosmos.runTest {
+            fakeDeviceEntryFingerprintAuthRepository.setAuthenticationStatus(
+                SuccessFingerprintAuthenticationStatus(0, true)
+            )
+            assertThat(currentValue(deviceUnlockedInteractor.deviceUnlockStatus).isUnlocked)
+                .isTrue()
+            val currentScene by collectLastValue(underTest.currentScene)
+            assertThat(currentScene).isNotEqualTo(Scenes.Gone)
+
+            assertThat(underTest.canChangeScene(toScene = Scenes.Gone)).isTrue()
         }
 
     @Test

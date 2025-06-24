@@ -57,7 +57,6 @@ import com.android.systemui.statusbar.policy.NextAlarmController;
 import com.android.systemui.statusbar.policy.ZenModeController;
 import com.android.systemui.statusbar.window.StatusBarWindowStateController;
 import com.android.systemui.statusbar.window.StatusBarWindowStateListener;
-import com.android.systemui.touch.TouchInsetManager;
 import com.android.systemui.util.ViewController;
 import com.android.systemui.util.time.DateFormatUtil;
 
@@ -101,16 +100,11 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
     private final ConnectedDisplaysStatusBarNotificationIconViewStore.Factory mIconViewStoreFactory;
     private final DreamLogger mLogger;
 
-    @Nullable
-    private final TouchInsetManager.TouchInsetSession mTouchInsetSession;
-
     private boolean mIsAttached;
     private boolean mCommunalVisible;
 
     // Whether dream entry animations are finished.
     private boolean mEntryAnimationsFinished = false;
-
-    @Nullable private ComposeView mOngoingActivityChipsView = null;
 
     private final DreamOverlayStateController.Callback mDreamOverlayStateCallback =
             new DreamOverlayStateController.Callback() {
@@ -175,7 +169,6 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
             CommunalSceneInteractor communalSceneInteractor,
             AmbientStatusBarViewModel.Factory ambientStatusBarViewModelFactory,
             ConnectedDisplaysStatusBarNotificationIconViewStore.Factory iconViewStoreFactory,
-            @Nullable TouchInsetManager.TouchInsetSession touchInsetSession,
             @DreamLog LogBuffer logBuffer) {
         super(view);
         mResources = resources;
@@ -195,7 +188,6 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
         mCommunalSceneInteractor = communalSceneInteractor;
         mAmbientStatusBarViewModelFactory = ambientStatusBarViewModelFactory;
         mIconViewStoreFactory = iconViewStoreFactory;
-        mTouchInsetSession = touchInsetSession;
         mLogger = new DreamLogger(logBuffer, TAG);
     }
 
@@ -222,21 +214,13 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
         mIsAttached = true;
 
         if (OngoingActivityChipsOnDream.isEnabled()) {
-            mOngoingActivityChipsView =
+            final ComposeView ongoingActivityChipsView =
                     mView.findViewById(R.id.dream_overlay_ongoing_activity_chips);
-
-            if (mOngoingActivityChipsView != null) {
-                AmbientStatusBarViewBinder.bindOngoingActivityChipsView(
-                        getContext(),
-                        mOngoingActivityChipsView,
-                        mAmbientStatusBarViewModelFactory,
-                        mIconViewStoreFactory);
-
-                // Allow the ongoing activity chips view to receive touch events.
-                if (mTouchInsetSession != null) {
-                    mTouchInsetSession.addViewToTracking(mOngoingActivityChipsView);
-                }
-            }
+            AmbientStatusBarViewBinder.bindOngoingActivityChipsView(
+                    getContext(),
+                    ongoingActivityChipsView,
+                    mAmbientStatusBarViewModelFactory,
+                    mIconViewStoreFactory);
         }
 
         mFlows.add(collectFlow(
@@ -284,12 +268,6 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
             flow.dispose();
         }
         mFlows.clear();
-
-        if (mTouchInsetSession != null && mOngoingActivityChipsView != null) {
-            mTouchInsetSession.removeViewFromTracking(mOngoingActivityChipsView);
-            mOngoingActivityChipsView = null;
-        }
-
         mIsAttached = false;
     }
 

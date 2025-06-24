@@ -127,6 +127,7 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_IME;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_KEEP_SCREEN_ON;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SCREEN_ON;
+import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SLEEP_TOKEN;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WALLPAPER;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_SHOW_TRANSACTIONS;
 import static com.android.internal.util.LatencyTracker.ACTION_ROTATE_SCREEN;
@@ -314,6 +315,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     source1.setVisible(source2.isVisible());
                 }
             };
+
+    // The tag for the token to put root tasks on the displays to sleep.
+    static final String DISPLAY_OFF_SLEEP_TOKEN_TAG = "Display-off";
 
     final ActivityTaskManagerService mAtmService;
 
@@ -740,7 +744,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
     /** Array of all UIDs that are present on the display. */
     private IntArray mDisplayAccessUIDs = new IntArray();
 
-    /** All tokens used to put activities on this root task to sleep (including mOffToken) */
+    /** All tokens used to put activities on this display to sleep (including mOffToken) */
     final ArrayList<RootWindowContainer.SleepToken> mAllSleepTokens = new ArrayList<>();
 
     private boolean mSleeping;
@@ -1870,7 +1874,16 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 orientation = nextCandidate.getRequestedOrientation();
             }
         }
-        if (orientation == topOrientation || ar.inMultiWindowMode()
+        if (orientation == topOrientation) {
+            if (mFixedRotationLaunchingApp != null
+                    && orientation == mFixedRotationLaunchingApp.getRequestedOrientation()) {
+                // Reuse the transform if the non-top-visible activity has the same orientation as
+                // the rotated launching top.
+                ar.linkFixedRotationTransform(mFixedRotationLaunchingApp);
+            }
+            return;
+        }
+        if (ar.inMultiWindowMode()
                 || ar.getTask().inMultiWindowMode()
                 || ar.getRequestedConfigurationOrientation() == ORIENTATION_UNDEFINED) {
             return;
@@ -3486,7 +3499,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
             mDisplayRotation.onDisplayRemoved();
             mWmService.mAccessibilityController.onDisplayRemoved(mDisplayId);
             mRootWindowContainer.mTaskSupervisor
-                    .getKeyguardController().onDisplayRemoved(mDisplayId);
+                    .getKeyguardController().onDisplayRemoved(this);
             mWallpaperController.resetLargestDisplay(mDisplay);
             mWmService.mDisplayWindowSettings.onDisplayRemoved(this);
             getDisplayUiContext().unregisterComponentCallbacks(mSysUiContextConfigCallback);
@@ -4640,7 +4653,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 t.show(mSurface);
                 if (DEBUG_IME_VISIBILITY) {
                     EventLog.writeEvent(IMF_SHOW_IME_SCREENSHOT, mImeTarget.toString(),
-                            dc.mInputMethodWindow.mTransitFlags, mSurfacePosition.toString());
+                            0 /* unused transition flags */, mSurfacePosition.toString());
                 }
             } else if (!isValid) {
                 removeSurface(t);
@@ -5081,6 +5094,8 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         if ((pendingLayoutChanges & FINISH_LAYOUT_REDO_LAYOUT) != 0) {
             setLayoutNeeded();
         }
+
+        mInsetsStateController.onPreLayout();
 
         // Perform a layout, if needed.
         performLayout(true /* initial */, false /* updateInputWindows */);
@@ -6170,9 +6185,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         final int displayState = mDisplayInfo.state;
         if (displayId != DEFAULT_DISPLAY) {
             if (displayState == Display.STATE_OFF) {
-                mRootWindowContainer.mDisplayOffTokenAcquirer.acquire(mDisplayId);
+                addSleepToken(DISPLAY_OFF_SLEEP_TOKEN_TAG);
             } else if (displayState == Display.STATE_ON) {
-                mRootWindowContainer.mDisplayOffTokenAcquirer.release(mDisplayId);
+                removeSleepToken(DISPLAY_OFF_SLEEP_TOKEN_TAG);
             }
             ProtoLog.v(WM_DEBUG_CONTENT_RECORDING,
                     "Content Recording: Display %d state was (%d), is now (%d), so update "
@@ -6508,8 +6523,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         mDisplayPolicy.release();
 
         if (!mAllSleepTokens.isEmpty()) {
-            mAllSleepTokens.forEach(token ->
-                    mRootWindowContainer.mSleepTokens.remove(token.mHashKey));
             mAllSleepTokens.clear();
             mAtmService.updateSleepIfNeededLocked();
         }
@@ -6549,6 +6562,44 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         return mWmService.mDisplayWindowSettings.getRemoveContentModeLocked(this);
     }
 
+    boolean hasSleepToken(String tag) {
+        for (int i = mAllSleepTokens.size() - 1; i >= 0; i--) {
+            if (tag.equals(mAllSleepTokens.get(i).mTag)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    boolean addSleepTokenOnly(String tag) {
+        if (hasSleepToken(tag)) return false;
+        mAllSleepTokens.add(new RootWindowContainer.SleepToken(tag));
+        ProtoLog.d(WM_DEBUG_SLEEP_TOKEN, "Add SleepToken: tag=%s, displayId=%d", tag, mDisplayId);
+        return true;
+    }
+
+    void addSleepToken(String tag) {
+        if (!addSleepTokenOnly(tag)) return;
+        mAtmService.updateSleepIfNeededLocked();
+    }
+
+    void removeSleepToken(String tag) {
+        ProtoLog.d(WM_DEBUG_SLEEP_TOKEN, "Remove SleepToken: tag=%s, displayId=%d",
+                tag, mDisplayId);
+        int idx = mAllSleepTokens.size() - 1;
+        for (; idx >= 0; idx--) {
+            if (tag.equals(mAllSleepTokens.get(idx).mTag)) break;
+        }
+        if (idx < 0) {
+            Slog.d(TAG, "Remove non-existent sleep token: " + tag + " from " + Debug.getCallers(6));
+            return;
+        }
+        mAllSleepTokens.remove(idx);
+        if (mAllSleepTokens.isEmpty()) {
+            mAtmService.updateSleepIfNeededLocked();
+        }
+    }
+
     boolean shouldSleep() {
         return (getRootTaskCount() == 0 || !mAllSleepTokens.isEmpty())
                 && (mAtmService.mRunningVoice == null);
@@ -6556,11 +6607,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     /** Returns {@code} if the screen is not in a fully interactive state. */
     boolean isScreenSleeping() {
-        for (int i = mAllSleepTokens.size() - 1; i >= 0; i--) {
-            if (mAllSleepTokens.get(i).isScreenOff()) {
-                return true;
-            }
-        }
+        if (hasSleepToken(DISPLAY_OFF_SLEEP_TOKEN_TAG)) return true;
         // If AOD is active, there may be only keyguard sleep token but awake state is false.
         // Then still treat the case as sleeping.
         return !mAllSleepTokens.isEmpty() && !mDisplayPolicy.isAwake();

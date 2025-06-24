@@ -71,6 +71,7 @@ class SerialPortTest {
     fun testRequestOpen_success() {
         val serialPort = SerialPort(info, backendService)
         val flags = OsConstants.O_NOCTTY or OsConstants.O_NONBLOCK
+        val exclusive = true
         val executor = Executor { r -> r.run() }
         var outcomeResult: SerialPortResponse? = null
         var outcomeError: Exception? = null
@@ -85,8 +86,9 @@ class SerialPortTest {
         }
         val pfd: ParcelFileDescriptor = mock()
 
-        serialPort.requestOpen(flags, true, executor, outcomeReceiver)
-        verify(backendService).requestOpen(eq("ttyUSB0"), eq(flags), responseCallback.capture())
+        serialPort.requestOpen(flags, exclusive, executor, outcomeReceiver)
+        verify(backendService).requestOpen(eq("ttyUSB0"), eq(flags), eq(exclusive),
+            responseCallback.capture())
         responseCallback.value.onResult(info, pfd)
 
         assertEquals(outcomeResult?.port, serialPort)
@@ -98,6 +100,7 @@ class SerialPortTest {
     fun testRequestOpen_error() {
         val serialPort = SerialPort(info, backendService)
         val flags = OsConstants.O_NOCTTY or OsConstants.O_NONBLOCK
+        val exclusive = false
         val executor = Executor { r -> r.run() }
         var outcomeResult: SerialPortResponse? = null
         var outcomeError: Exception? = null
@@ -112,8 +115,9 @@ class SerialPortTest {
         }
         val error = Exception("test")
 
-        serialPort.requestOpen(flags, true, executor, outcomeReceiver)
-        verify(backendService).requestOpen(eq("ttyUSB0"), eq(flags), responseCallback.capture())
+        serialPort.requestOpen(flags, exclusive, executor, outcomeReceiver)
+        verify(backendService).requestOpen(eq("ttyUSB0"), eq(flags), eq(exclusive),
+            responseCallback.capture())
         responseCallback.value.onError(
             ISerialPortResponseCallback.ErrorCode.ERROR_READING_DRIVERS, 0, "Test Error"
         )
@@ -125,14 +129,15 @@ class SerialPortTest {
 
 
     @Test
-    fun testRequestOpen_wrongFlags() {
+    fun testRequestOpen_noNocttyInFlags() {
         val serialPort = SerialPort(info, backendService)
         val flags = OsConstants.O_NONBLOCK
+        val exclusive = true
         val executor = Executor { r -> r.run() }
         val outcomeReceiver: OutcomeReceiver<SerialPortResponse, Exception> = mock()
 
         assertThrows(IllegalArgumentException::class.java) {
-            serialPort.requestOpen(flags, true, executor, outcomeReceiver)
+            serialPort.requestOpen(flags, exclusive, executor, outcomeReceiver)
         }
     }
 }

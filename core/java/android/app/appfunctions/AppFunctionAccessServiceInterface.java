@@ -28,22 +28,22 @@ public interface AppFunctionAccessServiceInterface {
 
     /** @see AppFunctionManager#getAppFunctionAccessRequestState(String, String)  */
     @AppFunctionManager.AppFunctionAccessState
-    int getAppFunctionAccessRequestState(@NonNull String agentPackageName, int agentUserId,
+    int getAccessRequestState(@NonNull String agentPackageName, int agentUserId,
             @NonNull String targetPackageName, int targetUserId);
 
-    /** @see AppFunctionManager#getAppFunctionAccessFlags(String, String)  */
+    /** @see AppFunctionManager#getAccessFlags(String, String)  */
     @AppFunctionManager.AppFunctionAccessFlags
-    int getAppFunctionAccessFlags(@NonNull String agentPackageName, int agentUserId,
+    int getAccessFlags(@NonNull String agentPackageName, int agentUserId,
             @NonNull String targetPackageName, int targetUserId);
 
-    /** @see AppFunctionManager#updateAppFunctionAccessFlags(String, String, int, int)  */
-    boolean updateAppFunctionAccessFlags(@NonNull String agentPackageName, int agentUserId,
+    /** @see AppFunctionManager#updateAccessFlags(String, String, int, int)  */
+    boolean updateAccessFlags(@NonNull String agentPackageName, int agentUserId,
             @NonNull String targetPackageName, int targetUserId,
             @AppFunctionManager.AppFunctionAccessFlags int flagMask,
             @AppFunctionManager.AppFunctionAccessFlags int flags) throws IllegalArgumentException;
 
-    /** @see AppFunctionManager#revokeSelfAppFunctionAccess(String) */
-    void revokeSelfAppFunctionAccess(@NonNull String targetPackageName);
+    /** @see AppFunctionManager#revokeSelfAccess(String) */
+    void revokeSelfAccess(@NonNull String targetPackageName);
 
     /** Set the agent allowlist */
     void setAgentAllowlist(@NonNull List<SignedPackage> agentAllowlist);

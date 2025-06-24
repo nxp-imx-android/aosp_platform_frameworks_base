@@ -21,6 +21,7 @@ import static android.security.attestationverification.AttestationVerificationMa
 import android.annotation.NonNull;
 import android.content.Context;
 import android.os.Build;
+import android.security.attestationverification.AttestationVerificationManager;
 import android.util.Slog;
 
 import com.google.security.cryptauth.lib.securegcm.ukey2.AlertException;
@@ -543,17 +544,20 @@ public class SecureChannel {
 
         // Exchange attestation verification result and finish
         byte[] verificationResult = ByteBuffer.allocate(4)
-                .putInt(mVerificationResult)
+                // Do not share the exact failure code with remote device
+                .putInt(mVerificationResult == 0 ? 0 : FLAG_FAILURE_UNKNOWN)
                 .array();
         sendMessage(MessageType.AVF_RESULT, verificationResult);
         byte[] remoteVerificationResult = readMessage(MessageType.AVF_RESULT);
 
         if (ByteBuffer.wrap(remoteVerificationResult).getInt() != 0) {
-            throw new SecureChannelException("Remote device failed to verify local attestation.");
+            throw new AttestationVerificationException(
+                    "Remote device failed to verify local attestation.", FLAG_FAILURE_UNKNOWN);
         }
 
         if (mVerificationResult != 0) {
-            throw new SecureChannelException("Failed to verify remote attestation.");
+            throw new AttestationVerificationException(
+                    "Failed to verify remote attestation.", mVerificationResult);
         }
 
         if (DEBUG) {

@@ -201,7 +201,7 @@ class MediaDataProcessorTest() : SysuiTestCase() {
                 mediaDeviceManager = mediaDeviceManager,
                 mediaDataCombineLatest = mediaDataCombineLatest,
                 mediaDataFilter = mediaDataFilter,
-                mediaFilterRepository = mediaFilterRepository,
+                mediaPipelineRepository = mediaFilterRepository,
             )
         mediaCarouselInteractor.start()
         verify(mediaTimeoutListener).stateCallback = capture(stateCallbackCaptor)

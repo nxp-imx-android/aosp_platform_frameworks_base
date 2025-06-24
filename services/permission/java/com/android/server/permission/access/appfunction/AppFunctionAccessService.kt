@@ -62,7 +62,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
         permissionEnforcer = PermissionEnforcer(context)
     }
 
-    override fun getAppFunctionAccessRequestState(
+    override fun getAccessRequestState(
         agentPackageName: String,
         agentUserId: Int,
         targetPackageName: String,
@@ -96,7 +96,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
         service.getState {
             with(policy) {
                 val flags =
-                    getAppFunctionAccessFlags(
+                    getAccessFlags(
                         agentPackageState.appId,
                         agentUserId,
                         targetPackageState.appId,
@@ -111,7 +111,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
         }
     }
 
-    override fun getAppFunctionAccessFlags(
+    override fun getAccessFlags(
         agentPackageName: String,
         agentUserId: Int,
         targetPackageName: String,
@@ -139,7 +139,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
 
         return service.getState {
             with(policy) {
-                getAppFunctionAccessFlags(
+                getAccessFlags(
                     agentPackageState.appId,
                     agentUserId,
                     targetPackageState.appId,
@@ -153,7 +153,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
         service.onAgentAllowlistChanged(agentAllowlist)
     }
 
-    override fun updateAppFunctionAccessFlags(
+    override fun updateAccessFlags(
         agentPackageName: String,
         agentUserId: Int,
         targetPackageName: String,
@@ -184,7 +184,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
         service.mutateState {
             with(policy) {
                 changed =
-                    updateAppFunctionAccessFlags(
+                    updateAccessFlags(
                         agentPackageState.appId,
                         agentUserId,
                         targetPackageState.appId,
@@ -197,7 +197,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
         return changed
     }
 
-    override fun revokeSelfAppFunctionAccess(targetPackageName: String) {
+    override fun revokeSelfAccess(targetPackageName: String) {
         val methodName = "revokeSelfAppFunctionAccess"
         val userId = UserHandle.getUserId(Binder.getCallingUid())
         val targetPackageState =
@@ -206,14 +206,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
 
         service.getState {
             with(policy) {
-                if (
-                    getAppFunctionAccessFlags(
-                        agentAppId,
-                        userId,
-                        targetPackageState.appId,
-                        userId,
-                    ) == 0
-                ) {
+                if (getAccessFlags(agentAppId, userId, targetPackageState.appId, userId) == 0) {
                     // We have no state, so don't set any
                     return
                 }
@@ -225,7 +218,7 @@ class AppFunctionAccessService(private val service: AccessCheckingService) :
                 // Set the OTHER_DENIED flag, so that, if this package had the PREGRANTED flag set,
                 // This flag will override, and the PREGRANT flag won't be re-added on next
                 // fingerprint change.
-                updateAppFunctionAccessFlags(
+                updateAccessFlags(
                     agentAppId,
                     userId,
                     targetPackageState.appId,

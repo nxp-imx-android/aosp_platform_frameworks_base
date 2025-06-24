@@ -68,19 +68,17 @@
               layout_marginStart on the id/notification_headerless_view_row, we put it on
               id/notification_top_line, making the layout here just a bit different from the base.
               -->
-            <LinearLayout
+            <FrameLayout
                 android:id="@+id/notification_headerless_view_row"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="horizontal"
                 android:clipChildren="false"
                 >
 
                 <LinearLayout
                     android:id="@+id/notification_headerless_view_column"
-                    android:layout_width="0px"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginTop="@dimen/notification_2025_margin"
                     android:layout_marginStart="@dimen/notification_2025_content_margin_start"
                     android:clipChildren="false"
@@ -89,9 +87,10 @@
 
                     <NotificationTopLineView
                         android:id="@+id/notification_top_line"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:minHeight="@dimen/notification_headerless_line_height"
+                        android:layout_marginEnd="@dimen/notification_2025_content_margin_end"
                         android:clipChildren="false"
                         android:theme="@style/Theme.DeviceDefault.Notification"
                         >
@@ -129,6 +128,7 @@
                             android:id="@+id/notification_messaging"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/notification_2025_margin"
                             android:clipChildren="false"
                             android:spacing="@dimen/notification_messaging_spacing" />
                     </LinearLayout>
@@ -136,6 +136,7 @@
                 </LinearLayout>
 
                 <!-- Images -->
+                <!-- The end margin here is a placeholder, as it gets calculated in the layout code. -->
                 <com.android.internal.widget.MessagingLinearLayout
                     android:id="@+id/conversation_image_message_container"
                     android:layout_width="@dimen/notification_right_icon_size"
@@ -143,30 +144,21 @@
                     android:layout_gravity="center_vertical|end"
                     android:layout_marginVertical="@dimen/notification_2025_right_icon_vertical_margin"
                     android:layout_marginStart="@dimen/notification_2025_right_icon_content_margin"
+                    android:layout_marginEnd="@dimen/notification_2025_content_margin_end"
                     android:forceHasOverlappingRendering="false"
                     android:spacing="0dp"
                     android:clipChildren="false"
                     android:visibility="gone"
                     />
 
-                <ImageView
-                    android:id="@+id/right_icon"
-                    android:layout_width="@dimen/notification_right_icon_size"
-                    android:layout_height="@dimen/notification_right_icon_size"
-                    android:layout_gravity="center_vertical|end"
-                    android:layout_marginVertical="@dimen/notification_2025_right_icon_vertical_margin"
-                    android:layout_marginStart="@dimen/notification_2025_right_icon_content_margin"
-                    android:background="@drawable/notification_large_icon_outline"
-                    android:clipToOutline="true"
-                    android:importantForAccessibility="no"
-                    android:scaleType="centerCrop"
-                    />
+                <include layout="@layout/notification_2025_right_icon" />
 
                 <FrameLayout
                     android:id="@+id/expand_button_touch_container"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:minWidth="@dimen/notification_2025_margin"
+                    android:layout_gravity="top|end"
                     >
 
                     <include layout="@layout/notification_2025_expand_button"
@@ -177,7 +169,7 @@
 
                 </FrameLayout>
 
-            </LinearLayout>
+            </FrameLayout>
 
             <include layout="@layout/notification_close_button"
                 android:id="@+id/close_button"

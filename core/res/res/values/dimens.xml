@@ -151,6 +151,9 @@
     <!-- Copied from SysUI's @dimen/key_button_ripple_max_width for the embedded nav bar in the
          IME. -->
     <dimen name="input_method_nav_key_button_ripple_max_width">95dp</dimen>
+    <!-- Height of the IME navigation bar; this matches the height of the system navigation bar
+         in three button navigation mode. -->
+    <dimen name="input_method_navigation_bar_height">@dimen/navigation_bar_frame_height</dimen>
 
     <!-- Width of the window of the divider bar used to resize docked stacks. -->
     <dimen name="docked_stack_divider_thickness">48dp</dimen>
@@ -267,6 +270,10 @@
      fit with it included.
      72dp (content margin) - 12dp (action padding) - 4dp (button inset) -->
     <dimen name="notification_2025_actions_margin_start">56dp</dimen>
+
+    <!-- The margin at the end of the top line in collapsed notifications to accommodate the expader.
+     28dp (notification_2025_expand_button_pill_width) + 2 * 16dp (notification_2025_margin) -->
+    <dimen name="notification_2025_content_margin_end">60dp</dimen>
 
     <!-- The margin on the end of most content views (ignores the expander) -->
     <dimen name="notification_content_margin_end">16dp</dimen>
@@ -407,10 +414,10 @@
     <!-- The absolute size of the notification expand icon. -->
     <dimen name="notification_header_expand_icon_size">56dp</dimen>
 
-    <!-- Margin to allow space for the expand button when showing the right icon in expanded -->
-    <!-- notifications. The notification_2025_extra_space_for_expander should be used in -->
-    <!-- addition to this to ensure the spacing adjusts with the font size accordingly -->
-    <dimen name="notification_2025_right_icon_expanded_margin_end">42dp</dimen>
+    <!-- Margin to allow space for the expand button when showing the right icon. -->
+    <!-- The notification_2025_extra_space_for_expander should be used in addition to this -->
+    <!-- to ensure the spacing adjusts with the font size accordingly -->
+    <dimen name="notification_2025_right_icon_margin_end">42dp</dimen>
 
     <!-- sp-based additional spacing for the expand button, to scale with the font size -->
     <dimen name="notification_2025_extra_space_for_expander">10sp</dimen>

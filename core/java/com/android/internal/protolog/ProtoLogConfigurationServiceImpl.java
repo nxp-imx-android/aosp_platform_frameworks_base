@@ -31,7 +31,9 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemService;
 import android.content.Context;
+import android.os.Binder;
 import android.os.IBinder;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
@@ -258,6 +260,12 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
     public void onShellCommand(@Nullable FileDescriptor in, @Nullable FileDescriptor out,
             @Nullable FileDescriptor err, @NonNull String[] args, @Nullable ShellCallback callback,
             @NonNull ResultReceiver resultReceiver) throws RemoteException {
+        final int callingUid = Binder.getCallingUid();
+        if (callingUid != Process.ROOT_UID && callingUid != Process.SHELL_UID) {
+            resultReceiver.send(-1, null);
+            throw new SecurityException("Shell commands are only callable by ADB");
+        }
+
         new ProtoLogCommandHandler(this)
                 .exec(this, in, out, err, args, callback, resultReceiver);
     }

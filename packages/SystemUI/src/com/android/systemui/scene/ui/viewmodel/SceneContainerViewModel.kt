@@ -31,6 +31,7 @@ import com.android.compose.animation.scene.UserAction
 import com.android.compose.animation.scene.UserActionResult
 import com.android.systemui.classifier.Classifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
+import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.keyguard.ui.viewmodel.AodBurnInViewModel
 import com.android.systemui.keyguard.ui.viewmodel.KeyguardClockViewModel
@@ -63,6 +64,7 @@ class SceneContainerViewModel
 @AssistedInject
 constructor(
     private val sceneInteractor: SceneInteractor,
+    private val deviceUnlockedInteractor: DeviceUnlockedInteractor,
     private val falsingInteractor: FalsingInteractor,
     private val powerInteractor: PowerInteractor,
     private val onBootTransitionInteractor: OnBootTransitionInteractor,
@@ -222,25 +224,39 @@ constructor(
      * it being a false touch.
      */
     fun canChangeScene(toScene: SceneKey): Boolean {
-        return isInteractionAllowedByFalsing(toScene).also { sceneChangeAllowed ->
-            if (sceneChangeAllowed) {
-                // A scene change is guaranteed; log it.
-                logger.logSceneChanged(
-                    from = currentScene.value,
-                    to = toScene,
-                    sceneState = null,
-                    reason = "user interaction",
-                    isInstant = false,
-                )
-            } else {
-                logger.logSceneChangeRejection(
-                    from = currentScene.value,
-                    to = toScene,
-                    originalChangeReason = null,
-                    rejectionReason = "Falsing: false touch detected",
-                )
-            }
+        if (
+            toScene == Scenes.Gone && !deviceUnlockedInteractor.deviceUnlockStatus.value.isUnlocked
+        ) {
+            logger.logSceneChangeRejection(
+                from = currentScene.value,
+                to = toScene,
+                originalChangeReason = null,
+                rejectionReason = "Device not unlocked",
+            )
+
+            return false
         }
+
+        if (!isInteractionAllowedByFalsing(toScene)) {
+            logger.logSceneChangeRejection(
+                from = currentScene.value,
+                to = toScene,
+                originalChangeReason = null,
+                rejectionReason = "Falsing: false touch detected",
+            )
+
+            return false
+        }
+
+        // A scene change is guaranteed; log it.
+        logger.logSceneChanged(
+            from = currentScene.value,
+            to = toScene,
+            sceneState = null,
+            reason = "user interaction",
+            isInstant = false,
+        )
+        return true
     }
 
     /**

@@ -36,8 +36,11 @@ import com.android.systemui.util.settings.repository.UserAwareSecureSettingsRepo
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -64,6 +67,17 @@ constructor(
 
     val bottomRightCornerAction: StateFlow<ActionType> =
         getCornerActionFlow(ACTION_CORNER_BOTTOM_RIGHT_ACTION)
+
+    val isAnyActionConfigured: Flow<Boolean> =
+        combine(
+                topLeftCornerAction,
+                topRightCornerAction,
+                bottomLeftCornerAction,
+                bottomRightCornerAction,
+            ) { topLeft, topRight, bottomLeft, bottomRight ->
+                listOf(topLeft, topRight, bottomLeft, bottomRight).any { action -> action != NONE }
+            }
+            .distinctUntilChanged()
 
     private fun getCornerActionFlow(settingName: String): StateFlow<ActionType> {
         return settingsRepository

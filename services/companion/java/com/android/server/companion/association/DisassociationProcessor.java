@@ -137,7 +137,8 @@ public class DisassociationProcessor {
             return;
         }
 
-        // Detach transport if exists
+        // Detach transports and listeners if exists
+        mTransportManager.removeListeners(id);
         mTransportManager.detachSystemDataTransport(id);
 
         // Association cleanup.

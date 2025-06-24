@@ -157,6 +157,7 @@ public class DisplayPolicyLayoutTests extends DisplayPolicyTestsBase {
         win.getFrame().set(0, 0, 500, 100);
         makeWindowVisible(win);
         win.updateSourceFrame(win.getFrame());
+        mDisplayContent.getInsetsStateController().onPreLayout();
         mDisplayContent.getInsetsStateController().onPostLayout();
 
         assertTrue(win.hasInsetsSourceProvider());

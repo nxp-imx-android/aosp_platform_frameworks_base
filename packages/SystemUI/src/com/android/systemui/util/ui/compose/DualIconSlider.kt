@@ -60,6 +60,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.android.compose.modifiers.sliderPercentage
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.systemui.biometrics.Utils.toBitmap
 import com.android.systemui.common.shared.model.Icon
@@ -100,6 +101,7 @@ fun DualIconSlider(
     iconResProvider: (Float) -> Int,
     imageLoader: suspend (Int, Context) -> Icon.Loaded,
     hapticsViewModelFactory: SliderHapticsViewModel.Factory,
+    colors: SliderColors = defaultColors(),
     onDrag: (Int) -> Unit = {},
     onStop: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
@@ -124,7 +126,6 @@ fun DualIconSlider(
                 SeekableSliderTrackerConfig(),
             )
         }
-    val colors = colors()
 
     // The value state is recreated every time gammaValue changes, so we recreate this derivedState
     // We have to use value as that's the value that changes when the user is dragging (gammaValue
@@ -188,7 +189,12 @@ fun DualIconSlider(
                 onStop(value)
             }
         },
-        modifier = modifier.sysuiResTag("slider"),
+        modifier =
+            modifier
+                .sliderPercentage {
+                    (value - valueRange.first).toFloat() / (valueRange.last - valueRange.first)
+                }
+                .sysuiResTag("slider"),
         interactionSource = interactionSource,
         thumb = {
             SliderDefaults.Thumb(
@@ -234,7 +240,7 @@ object SliderMotionTestKeys {
 }
 
 @Composable
-private fun colors(): SliderColors {
+fun defaultColors(): SliderColors {
     return SliderDefaults.colors()
         .copy(
             inactiveTrackColor = LocalAndroidColorScheme.current.surfaceEffect1,

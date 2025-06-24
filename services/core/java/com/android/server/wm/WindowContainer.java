@@ -83,7 +83,6 @@ import android.view.SurfaceControl;
 import android.view.SurfaceControl.Builder;
 import android.view.SurfaceControlViewHost;
 import android.view.WindowManager;
-import android.view.WindowManager.TransitionOldType;
 import android.window.IWindowContainerToken;
 import android.window.WindowContainerToken;
 
@@ -114,8 +113,7 @@ import java.util.function.Predicate;
  * changes are made to this class.
  */
 class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<E>
-        implements Comparable<WindowContainer>, Animatable,
-        InsetsControlTarget {
+        implements Comparable<WindowContainer>, Animatable {
 
     private static final String TAG = TAG_WITH_CLASS_NAME ? "WindowContainer" : TAG_WM;
 
@@ -239,17 +237,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * selected to suppress an animation, and remove this flag.
      */
     boolean mLaunchTaskBehind;
-
-    /**
-     * If we are running an animation, this determines the transition type.
-     */
-    @TransitionOldType int mTransit;
-
-    /**
-     * If we are running an animation, this determines the flags during this animation. Must be a
-     * bitwise combination of AppTransition.TRANSIT_FLAG_* constants.
-     */
-    int mTransitFlags;
 
     protected final Rect mTmpRect = new Rect();
     final Rect mTmpPrevBounds = new Rect();
@@ -1185,8 +1172,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * checking animating status.
      * e.g. {@code isAnimating(PARENT)} returns {@code true} if either thiscontainer itself or one
      * of its parents is running an animation.
-     *
-     * Note that TRANSITION propagates to parents and children as well.
      *
      * @param flags The combination of bitmask flags to specify targets and condition for
      *              checking animating status.
@@ -3063,8 +3048,6 @@ class WindowContainer<E extends WindowContainer> extends ConfigurationContainer<
      * checking animating status.
      * e.g. {@code isAnimating(PARENT)} returns {@code true} if either this container itself or one
      * of its parents is running an animation.
-     *
-     * Note that TRANSITION propagates to parents and children as well.
      *
      * @param flags The combination of bitmask flags to specify targets and condition for
      *              checking animating status.
