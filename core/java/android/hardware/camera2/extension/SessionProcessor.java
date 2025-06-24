@@ -17,7 +17,9 @@
 package android.hardware.camera2.extension;
 
 import android.annotation.FlaggedApi;
+import android.annotation.IntRange;
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureFailure;
@@ -30,6 +32,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
+import android.util.Pair;
 
 import com.android.internal.camera.flags.Flags;
 
@@ -186,6 +189,11 @@ public abstract class SessionProcessor {
          */
         void onCaptureCompleted(long shutterTimestamp, int requestId,
                 @NonNull Map<CaptureResult.Key, Object> results);
+
+        @FlaggedApi(Flags.FLAG_EFV_CAPTURE_LATENCY)
+        default void onCaptureProcessProgressUpdated(@IntRange(from = 0, to = 100) int progress) {
+            throw new UnsupportedOperationException("Subclasses must override this method");
+        }
     }
 
     /**
@@ -227,6 +235,46 @@ public abstract class SessionProcessor {
             @NonNull String cameraId, @NonNull CharacteristicsMap map,
             @NonNull CameraOutputSurface previewSurface,
             @NonNull CameraOutputSurface imageCaptureSurface);
+
+    /**
+     * Initializes the session for the extension. This is where the
+     * extension implementations allocate resources for
+     * preparing a CameraCaptureSession. After initSession() is called,
+     * the camera ID, cameraCharacteristics and context will not change
+     * until deInitSession() has been called.
+     *
+     * <p>The framework specifies the output surface configurations for
+     * via the config argument and implementations must
+     * return a {@link ExtensionConfiguration} which consists of a list of
+     * {@link CameraOutputSurface} and session parameters. The {@link
+     * ExtensionConfiguration} will be used to configure the
+     * CameraCaptureSession.
+     *
+     * <p>Implementations are responsible for outputting correct camera
+     * images output to these output surfaces.</p>
+     *
+     * @param token Binder token that can be used to register a death
+     *              notifier callback
+     * @param cameraId  The camera2 id string of the camera.
+     * @param map Maps camera ids to camera characteristics
+     * @param config contains output surface for preview, still capture and postview
+     *
+     * @return a {@link ExtensionConfiguration} consisting of a list of
+     * {@link CameraOutputConfig} and session parameters which will decide
+     * the  {@link android.hardware.camera2.params.SessionConfiguration}
+     * for configuring the CameraCaptureSession. Please note that the
+     * OutputConfiguration list may not be part of any
+     * supported or mandatory stream combination BUT implementations must
+     * ensure this list will always  produce a valid camera capture
+     * session.
+     */
+    @FlaggedApi(Flags.FLAG_EFV_CAPTURE_LATENCY)
+    @NonNull
+    public ExtensionConfiguration initSession(@NonNull IBinder token,
+            @NonNull String cameraId, @NonNull CharacteristicsMap map,
+            @NonNull CameraConfiguration config) {
+        throw new UnsupportedOperationException("Subclasses must override this method");
+    }
 
     /**
      * Notify to de-initialize the extension. This callback will be
@@ -294,17 +342,17 @@ public abstract class SessionProcessor {
     public abstract void stopRepeating();
 
     /**
-     * Start a multi-frame capture.
+     * Starts a multi-frame capture.
      *
-     * When the capture is completed, {@link
+     * <p>When the capture is completed, {@link
      * CaptureCallback#onCaptureSequenceCompleted}
      * is called and {@code OnImageAvailableListener#onImageAvailable}
      * will also be called on the ImageReader that creates the image
-     * capture output surface.
+     * capture output surface.</p>
      *
      * <p>Only one capture can perform at a time. Starting a capture when
      * another capture is running  will cause onCaptureFailed to be called
-     * immediately.
+     * immediately.</p>
      *
      * @param executor the executor which will be used for
      *                 invoking the callbacks
@@ -313,6 +361,55 @@ public abstract class SessionProcessor {
      */
     public abstract int startMultiFrameCapture(@NonNull Executor executor,
             @NonNull CaptureCallback callback);
+
+    /**
+     * Starts a multi-frame capture.
+     *
+     * <p>When the capture is completed, {@link
+     * CaptureCallback#onCaptureSequenceCompleted}
+     * is called and {@code OnImageAvailableListener#onImageAvailable}
+     * will also be called on the ImageReader that creates the image
+     * capture output surface.</p>
+     *
+     * <p>Only one capture can perform at a time. Starting a capture when
+     * another capture is running  will cause onCaptureFailed to be called
+     * immediately.</p>
+     *
+     * @param isPostviewRequested Indicates whether extension client requests
+     *                            the postview output.
+     * @param executor the executor which will be used for
+     *                 invoking the callbacks
+     * @param callback a callback to report the status.
+     * @return the id of the capture sequence.
+     */
+    @FlaggedApi(Flags.FLAG_EFV_CAPTURE_LATENCY)
+    public int startMultiFrameCapture(boolean isPostviewRequested,
+            @NonNull Executor executor, @NonNull CaptureCallback callback) {
+        throw new UnsupportedOperationException("Subclasses must override this method");
+    }
+
+    /**
+     * Returns the realtime still {@link #startMultiFrameCapture(Executor, CaptureCallback)}
+     * latency.
+     *
+     * <p>The estimation will take into account the current environment conditions, the camera
+     * state and will include the time spent processing the multi-frame capture request along with
+     * any additional time for encoding of the processed buffer if necessary.</p>
+     *
+     * @return {@code null} if the estimation is not supported or a pair that includes the estimated
+     * input frame/frames camera capture latency as the * first field. This is the time between
+     * {@link CaptureCallback#onCaptureStarted} and
+     * {@link CaptureCallback#onCaptureProcessStarted}. The second field value includes the
+     * estimated post-processing latency. This is the time between
+     * {@link CaptureCallback#onCaptureProcessStarted} until * the processed frame returns back to
+     * the client registered surface. Both first and second values will be in milliseconds. The
+     * total still capture latency will be the sum of both the first and second values of the pair.
+     */
+    @FlaggedApi(Flags.FLAG_EFV_CAPTURE_LATENCY)
+    @Nullable
+    public Pair<Long, Long> getRealtimeStillCaptureLatency() {
+        throw new UnsupportedOperationException("Subclasses must override this method");
+    }
 
     /**
      * The camera framework will call these APIs to pass parameters from
@@ -357,10 +454,21 @@ public abstract class SessionProcessor {
             mPreviewSurface = previewSurface;
             mPostviewSurface = postviewSurface;
             mImageCaptureSurface = imageCaptureSurface;
-            ExtensionConfiguration config = SessionProcessor.this.initSession(token, cameraId,
-                    new CharacteristicsMap(charsMap),
-                    new CameraOutputSurface(previewSurface),
-                    new CameraOutputSurface(imageCaptureSurface));
+
+            ExtensionConfiguration config;
+            if (Flags.efvCaptureLatency()) {
+                CameraConfiguration cameraConfig = new CameraConfiguration(
+                        new CameraOutputSurface(previewSurface),
+                        new CameraOutputSurface(imageCaptureSurface),
+                        new CameraOutputSurface(postviewSurface));
+                config = SessionProcessor.this.initSession(token, cameraId,
+                        new CharacteristicsMap(charsMap), cameraConfig);
+            } else {
+                config = SessionProcessor.this.initSession(token, cameraId,
+                        new CharacteristicsMap(charsMap),
+                        new CameraOutputSurface(previewSurface),
+                        new CameraOutputSurface(imageCaptureSurface));
+            }
             if (config == null) {
                 throw  new  IllegalArgumentException("Invalid extension configuration");
             }
@@ -423,9 +531,15 @@ public abstract class SessionProcessor {
         @Override
         public int startCapture(ICaptureCallback callback, boolean isPostviewRequested)
                 throws RemoteException {
-            return SessionProcessor.this.startMultiFrameCapture(
-                    new HandlerExecutor(new Handler(Looper.getMainLooper())),
-                    new CaptureCallbackImpl(callback, mVendorId));
+            if (Flags.efvCaptureLatency()) {
+                return SessionProcessor.this.startMultiFrameCapture(isPostviewRequested,
+                        new HandlerExecutor(new Handler(Looper.getMainLooper())),
+                        new CaptureCallbackImpl(callback, mVendorId));
+            } else {
+                return SessionProcessor.this.startMultiFrameCapture(
+                        new HandlerExecutor(new Handler(Looper.getMainLooper())),
+                        new CaptureCallbackImpl(callback, mVendorId));
+            }
         }
 
         @Override
@@ -443,7 +557,16 @@ public abstract class SessionProcessor {
 
         @Override
         public LatencyPair getRealtimeCaptureLatency() throws RemoteException {
-            // Feature is not supported
+            if (Flags.efvCaptureLatency()) {
+                Pair<Long, Long> pair = SessionProcessor.this.getRealtimeStillCaptureLatency();
+                if (pair == null) {
+                    return null;
+                }
+                LatencyPair ret = new LatencyPair();
+                ret.first = pair.first;
+                ret.second = pair.second;
+                return ret;
+            }
             return null;
         }
     }
@@ -514,6 +637,17 @@ public abstract class SessionProcessor {
                 mCaptureCallback.onCaptureCompleted(shutterTimestamp, requestId, captureResults);
             } catch (RemoteException e) {
                 Log.e(TAG, "Failed to notify capture complete due to remote exception!");
+            }
+        }
+
+        @FlaggedApi(Flags.FLAG_EFV_CAPTURE_LATENCY)
+        @Override
+        public void onCaptureProcessProgressUpdated(int progress) {
+            try {
+                mCaptureCallback.onCaptureProcessProgressed(progress);
+            } catch (RemoteException e) {
+                Log.e(TAG, "Failed to notify capture progress due to remote" +
+                        " exception!");
             }
         }
     }
