@@ -17,26 +17,18 @@ package com.android.server.accessibility.integration
 
 import android.app.Instrumentation
 import android.app.UiAutomation.FLAG_DONT_SUPPRESS_ACCESSIBILITY_SERVICES
-import android.content.Context
 import android.graphics.Point
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.Settings
 import android.view.Display.DEFAULT_DISPLAY
-import android.view.WindowManager
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
-import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.Configurator
 import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.UiObject2
-import androidx.test.uiautomator.Until
-import com.android.compatibility.common.util.PollingCheck
-import com.android.compatibility.common.util.PollingCheck.waitFor
 import com.android.compatibility.common.util.SettingsStateChangerRule
 import com.android.server.accessibility.Flags
-import kotlin.time.Duration.Companion.seconds
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -68,8 +60,6 @@ class AutoclickPanelTests {
     val desktopMouseTestRule = DesktopMouseTestRule()
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
-    private val context: Context = instrumentation.context
-    private val windowManager: WindowManager = context.getSystemService(WindowManager::class.java)
 
     private lateinit var uiDevice: UiDevice
 
@@ -82,50 +72,22 @@ class AutoclickPanelTests {
         desktopMouseTestRule.move(DEFAULT_DISPLAY, 0, 0)
     }
 
-    private fun findObject(selector: BySelector): UiObject2 {
-        return uiDevice.wait(Until.findObject(selector), FIND_OBJECT_TIMEOUT.inWholeMilliseconds)
-    }
-
     private fun clickPauseButton() {
         findObject(
+            uiDevice,
             By.res(PAUSE_BUTTON_LAYOUT_ID)
         ).click()
     }
 
-    private fun clickClickTypeButton(resourceId: String) {
-        findObject(By.res(resourceId)).click()
-        // The delay is needed to let the animation of the panel opening/closing complete before
-        // querying for the next element.
-        uiDevice.waitForIdle(DELAY_FOR_ANIMATION.inWholeMilliseconds)
-    }
-
-    private fun clickLongPressButton() {
-
-        if (!isAutoclickPanelOpen()) {
-            clickClickTypeButton(CLICK_TYPE_BUTTON_GROUP_ID)
-
-            // Wait for the panel to fully open before attempting to select a click type.
-            waitAndAssert {
-                isAutoclickPanelOpen()
-            }
-        }
-
-        clickClickTypeButton(LONG_PRESS_BUTTON_LAYOUT_ID)
-
-        // Wait for the panel to close as the signal that the click type was selected.
-        waitAndAssert {
-            !isAutoclickPanelOpen()
-        }
-    }
-
     private fun clickPositionButton() {
-        clickClickTypeButton(POSITION_BUTTON_LAYOUT_ID)
+        findObject(uiDevice, By.res(POSITION_BUTTON_LAYOUT_ID)).click()
     }
 
     // The panel is considered open when every click type button is showing.
     private fun isAutoclickPanelOpen(): Boolean {
         val PANEL_OPEN_CLICK_TYPE_COUNT = 6
         val clickTypeButtonGroupContainer = findObject(
+            uiDevice,
             By.res(CLICK_TYPE_BUTTON_GROUP_ID)
         )
         return clickTypeButtonGroupContainer.childCount == PANEL_OPEN_CLICK_TYPE_COUNT
@@ -133,12 +95,9 @@ class AutoclickPanelTests {
 
     private fun getAutoclickPanelPosition(): Point {
         return findObject(
+            uiDevice,
             By.res(AUTOCLICK_PANEL_ID)
         ).visibleCenter
-    }
-
-    private fun waitAndAssert(condition: PollingCheck.PollingCheckCondition) {
-        waitFor(FIND_OBJECT_TIMEOUT.inWholeMilliseconds, condition)
     }
 
     @Test
@@ -146,6 +105,7 @@ class AutoclickPanelTests {
         // Expect the panel to start with the pause button.
         assertNotNull(
             findObject(
+                uiDevice,
                 By.res(PAUSE_BUTTON_IMAGE_ID).desc("Pause")
             )
         )
@@ -154,6 +114,7 @@ class AutoclickPanelTests {
         clickPauseButton()
         assertNotNull(
             findObject(
+                uiDevice,
                 By.res(PAUSE_BUTTON_IMAGE_ID).desc("Resume")
             )
         )
@@ -162,6 +123,7 @@ class AutoclickPanelTests {
         clickPauseButton()
         assertNotNull(
             findObject(
+                uiDevice,
                 By.res(PAUSE_BUTTON_IMAGE_ID).desc("Pause")
             )
         )
@@ -171,9 +133,9 @@ class AutoclickPanelTests {
     fun switchClickType_LongPressClickTypeIsSelected() {
         // Click the long press button then verify only the long press button is visible with all
         // other click type buttons hidden.
-        clickLongPressButton()
+        changeClickType(uiDevice, desktopMouseTestRule, LONG_PRESS_BUTTON_LAYOUT_ID)
         assertNotNull(
-            findObject(By.res(LONG_PRESS_BUTTON_LAYOUT_ID))
+            findObject(uiDevice, By.res(LONG_PRESS_BUTTON_LAYOUT_ID))
         )
         assertFalse(isAutoclickPanelOpen())
     }
@@ -209,22 +171,5 @@ class AutoclickPanelTests {
         // Confirm the panel moved around the screen and finished in the starting location.
         val fifthPosition = getAutoclickPanelPosition()
         assertEquals(startingPosition, fifthPosition)
-    }
-
-    private companion object {
-        private val FIND_OBJECT_TIMEOUT = 30.seconds
-        private val DELAY_FOR_ANIMATION = 2.seconds
-
-        // Resource ids
-        private val PAUSE_BUTTON_LAYOUT_ID = "android:id/accessibility_autoclick_pause_layout"
-        private val PAUSE_BUTTON_IMAGE_ID = "android:id/accessibility_autoclick_pause_button"
-        private val LEFT_CLICK_BUTTON_LAYOUT_ID =
-            "android:id/accessibility_autoclick_left_click_layout"
-        private val LONG_PRESS_BUTTON_LAYOUT_ID =
-            "android:id/accessibility_autoclick_long_press_layout"
-        private val POSITION_BUTTON_LAYOUT_ID = "android:id/accessibility_autoclick_position_layout"
-        private val CLICK_TYPE_BUTTON_GROUP_ID =
-            "android:id/accessibility_autoclick_click_type_button_group_container"
-        private val AUTOCLICK_PANEL_ID = "android:id/accessibility_autoclick_type_panel"
     }
 }
