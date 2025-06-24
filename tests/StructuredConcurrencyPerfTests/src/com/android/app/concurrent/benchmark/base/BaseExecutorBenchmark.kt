@@ -80,10 +80,6 @@ abstract class BaseExecutorBenchmark(val threadParam: ThreadFactory<Any, Executo
                 getScheduler = { Executor { r -> r.run() } },
                 stopThread = {},
             )
-
-        @JvmStatic
-        val threadBuilders: List<ThreadFactory<Any, Executor>> =
-            listOf(HandlerThreadBuilder, HandlerImmediateThreadBuilder, ExecutorThreadBuilder)
     }
 
     lateinit var executor: Executor

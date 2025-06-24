@@ -112,13 +112,6 @@ abstract class BaseCoroutineBenchmark(val threadParam: ThreadFactory<Any, Corout
                 quitScheduler = { scope -> scope.cancel() },
                 stopThread = {},
             )
-
-        val threadBuilders =
-            listOf(
-                HandlerThreadScopeBuilder,
-                HandlerThreadImmediateScopeBuilder,
-                ExecutorThreadScopeBuilder,
-            )
     }
 
     protected lateinit var bgScope: CoroutineScope
