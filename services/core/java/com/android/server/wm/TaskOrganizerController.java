@@ -1139,10 +1139,21 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
         }
     }
 
-    public boolean handleInterceptBackPressedOnTaskRoot(Task task) {
-        if (!shouldInterceptBackPressedOnRootTask(task)) {
+    public boolean handleInterceptBackPressedOnTaskRoot(ActivityRecord r) {
+        // Intercept are set on the root task
+        if (!shouldInterceptBackPressedOnRootTask(r.getRootTask())) {
             return false;
         }
+
+        // Task for which back event is received will be send as part of onBackPressedOnTaskRoot
+        Task task = r.getTask();
+
+        if (task.mTaskOrganizer == null) {
+            Slog.w(TAG, "Cannot handle BackPressedOnTaskRoot because task organizer is "
+                    + "not present for taskId: " + task.mTaskId);
+            return false;
+        }
+
         final TaskOrganizerPendingEventsQueue pendingEventsQueue =
                 mTaskOrganizerStates.get(task.mTaskOrganizer.asBinder())
                         .mPendingEventsQueue;
