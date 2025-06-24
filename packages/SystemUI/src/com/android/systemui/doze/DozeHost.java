@@ -147,6 +147,11 @@ public interface DozeHost {
          * Called when ultrasonic fingerprint auth events want the screen on to show info.
          */
         default void onUltrasonicUdfpsPulseWhileScreenOff(FingerprintAuthenticationStatus state) {}
+
+        /**
+         * Called when fingerprint auth events want the screen on to show info.
+         */
+        default void onFingerprintPulseWhileScreenOff(FingerprintAuthenticationStatus state) {}
     }
 
     interface PulseCallback {

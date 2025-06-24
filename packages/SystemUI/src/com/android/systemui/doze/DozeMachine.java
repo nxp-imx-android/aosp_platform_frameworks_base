@@ -81,6 +81,11 @@ public class DozeMachine {
         DOZE_PULSING,
         /** Pulse is showing with bright wallpaper. Device is awake and showing UI. */
         DOZE_PULSING_BRIGHT,
+        /** Device is awake and not showing any UI. */
+        DOZE_PULSING_WITHOUT_UI,
+        /** Device is awake and showing authentication UI (any relevant biometric UI and auth
+         * messages. */
+        DOZE_PULSING_AUTH_UI,
         /** Pulse is done showing. Followed by transition to DOZE or DOZE_AOD. */
         DOZE_PULSE_DONE,
         /** Doze is done. DozeService is finished. */
@@ -119,6 +124,8 @@ public class DozeMachine {
                 case DOZE_REQUEST_PULSE:
                 case DOZE_PULSING:
                 case DOZE_PULSING_BRIGHT:
+                case DOZE_PULSING_WITHOUT_UI:
+                case DOZE_PULSING_AUTH_UI:
                 case DOZE_AOD_DOCKED:
                 case DOZE_AOD_MINMODE:
                     return true;
@@ -145,6 +152,8 @@ public class DozeMachine {
                 case DOZE_SUSPEND_TRIGGERS:
                     return Display.STATE_OFF;
                 case DOZE_PULSING:
+                case DOZE_PULSING_WITHOUT_UI:
+                case DOZE_PULSING_AUTH_UI:
                 case DOZE_PULSING_BRIGHT:
                 case DOZE_AOD_DOCKED:
                 case DOZE_AOD_MINMODE:
@@ -377,12 +386,28 @@ public class DozeMachine {
                     Preconditions.checkState(mState == State.UNINITIALIZED);
                     break;
                 case DOZE_PULSING:
+                    Preconditions.checkState(
+                            mState == State.DOZE_REQUEST_PULSE
+                            || mState == State.DOZE_PULSING_AUTH_UI
+                            || mState == State.DOZE_PULSING_WITHOUT_UI
+                    );
+                    break;
+                case DOZE_PULSING_WITHOUT_UI:
                     Preconditions.checkState(mState == State.DOZE_REQUEST_PULSE);
+                    break;
+                case DOZE_PULSING_AUTH_UI:
+                    Preconditions.checkState(
+                            mState == State.DOZE_REQUEST_PULSE
+                            || mState == State.DOZE_PULSING_WITHOUT_UI
+                    );
                     break;
                 case DOZE_PULSE_DONE:
                     Preconditions.checkState(
-                            mState == State.DOZE_REQUEST_PULSE || mState == State.DOZE_PULSING
-                                    || mState == State.DOZE_PULSING_BRIGHT);
+                            mState == State.DOZE_REQUEST_PULSE
+                                    || mState == State.DOZE_PULSING
+                                    || mState == State.DOZE_PULSING_BRIGHT
+                                    || mState == State.DOZE_PULSING_WITHOUT_UI
+                                    || mState == State.DOZE_PULSING_AUTH_UI);
                     break;
                 default:
                     break;

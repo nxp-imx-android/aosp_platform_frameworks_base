@@ -27,10 +27,16 @@ enum class DozeStateModel {
     DOZE_SUSPEND_TRIGGERS,
     /** Always-on doze. Device is asleep, showing UI and listening for pulse triggers. */
     DOZE_AOD,
-    /** Pulse has been requested. Device is awake and preparing UI */
+    /** Pulse has been requested. Display is on and preparing UI */
     DOZE_REQUEST_PULSE,
-    /** Pulse is showing. Device is awake and showing UI. */
+    /** Pulse is showing. Display is on and showing UI. */
     DOZE_PULSING,
+    /** Display is on and not showing any UI. */
+    DOZE_PULSING_WITHOUT_UI,
+    /**
+     * Device is awake and showing authentication UI (any relevant biometric UI and auth messages.
+     */
+    DOZE_PULSING_AUTH_UI,
     /** Pulse is showing with bright wallpaper. Device is awake and showing UI. */
     DOZE_PULSING_BRIGHT,
     /** Pulse is done showing. Followed by transition to DOZE or DOZE_AOD. */

@@ -21,6 +21,7 @@ import android.graphics.Point
 import android.util.MathUtils
 import android.view.View.VISIBLE
 import com.android.app.tracing.coroutines.flow.traceAs
+import com.android.systemui.Flags
 import com.android.systemui.common.shared.model.NotificationContainerBounds
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
 import com.android.systemui.dagger.SysUISingleton
@@ -140,6 +141,11 @@ constructor(
     private val primaryBouncerToGoneTransitionViewModel: PrimaryBouncerToGoneTransitionViewModel,
     private val primaryBouncerToLockscreenTransitionViewModel:
         PrimaryBouncerToLockscreenTransitionViewModel,
+    private val primaryBouncerToDozingTransitionViewModel:
+        PrimaryBouncerToDozingTransitionViewModel,
+    private val alternateBouncerToDozingTransitionViewModel:
+        AlternateBouncerToDozingTransitionViewModel,
+    private val glanceableHubToDozingTransitionViewModel: GlanceableHubToDozingTransitionViewModel,
     private val screenOffAnimationController: ScreenOffAnimationController,
     private val aodBurnInViewModel: AodBurnInViewModel,
     shadeInteractor: ShadeInteractor,
@@ -249,6 +255,7 @@ constructor(
                         alphaOnShadeExpansion,
                         keyguardInteractor.dismissAlpha,
                         alternateBouncerToAodTransitionViewModel.lockscreenAlpha(viewState),
+                        alternateBouncerToDozingTransitionViewModel.lockscreenAlpha,
                         alternateBouncerToGoneTransitionViewModel.lockscreenAlpha(viewState),
                         alternateBouncerToLockscreenTransitionViewModel.lockscreenAlpha(viewState),
                         alternateBouncerToPrimaryBouncerTransitionViewModel.lockscreenAlpha,
@@ -260,12 +267,17 @@ constructor(
                         aodToGlanceableHubTransitionViewModel.lockscreenAlpha(viewState),
                         dozingToDreamingTransitionViewModel.lockscreenAlpha,
                         dozingToGoneTransitionViewModel.lockscreenAlpha(viewState),
-                        dozingToLockscreenTransitionViewModel.lockscreenAlpha,
+                        if (Flags.newDozingKeyguardStates()) {
+                            dozingToLockscreenTransitionViewModel.lockscreenAlpha(viewState)
+                        } else {
+                            dozingToLockscreenTransitionViewModel.lockscreenAlpha
+                        },
                         dozingToOccludedTransitionViewModel.lockscreenAlpha(viewState),
                         dozingToPrimaryBouncerTransitionViewModel.lockscreenAlpha,
                         dreamingToAodTransitionViewModel.lockscreenAlpha,
                         dreamingToGoneTransitionViewModel.lockscreenAlpha,
                         dreamingToLockscreenTransitionViewModel.lockscreenAlpha,
+                        glanceableHubToDozingTransitionViewModel.lockscreenAlpha,
                         glanceableHubToLockscreenTransitionViewModel.keyguardAlpha,
                         glanceableHubToAodTransitionViewModel.lockscreenAlpha,
                         goneToAodTransitionViewModel.enterFromTopAnimationAlpha,
@@ -279,7 +291,11 @@ constructor(
                         lockscreenToGlanceableHubTransitionViewModel.keyguardAlpha,
                         lockscreenToGoneTransitionViewModel.lockscreenAlpha(viewState),
                         lockscreenToOccludedTransitionViewModel.lockscreenAlpha,
-                        lockscreenToPrimaryBouncerTransitionViewModel.lockscreenAlpha,
+                        if (Flags.newDozingKeyguardStates()) {
+                            lockscreenToPrimaryBouncerTransitionViewModel.lockscreenAlpha(viewState)
+                        } else {
+                            lockscreenToPrimaryBouncerTransitionViewModel.lockscreenAlpha
+                        },
                         occludedToAlternateBouncerTransitionViewModel.lockscreenAlpha,
                         occludedToAodTransitionViewModel.lockscreenAlpha,
                         occludedToDozingTransitionViewModel.lockscreenAlpha,
@@ -287,6 +303,7 @@ constructor(
                         occludedToPrimaryBouncerTransitionViewModel.lockscreenAlpha,
                         offToLockscreenTransitionViewModel.lockscreenAlpha,
                         primaryBouncerToAodTransitionViewModel.lockscreenAlpha,
+                        primaryBouncerToDozingTransitionViewModel.lockscreenAlpha,
                         primaryBouncerToGoneTransitionViewModel.lockscreenAlpha,
                         primaryBouncerToLockscreenTransitionViewModel.lockscreenAlpha(viewState),
                     )

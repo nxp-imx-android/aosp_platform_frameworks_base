@@ -16,6 +16,7 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryUdfpsInteractor
 import com.android.systemui.keyguard.domain.interactor.FromOccludedTransitionInteractor
@@ -39,6 +40,7 @@ class OccludedToDozingTransitionViewModel
 constructor(
     deviceEntryUdfpsInteractor: DeviceEntryUdfpsInteractor,
     animationFlow: KeyguardTransitionAnimationFlow,
+    dozingTransitionFlows: DozingTransitionFlows,
 ) : DeviceEntryIconTransition {
     private val transitionAnimation =
         animationFlow.setup(
@@ -48,11 +50,15 @@ constructor(
 
     /** Lockscreen views alpha */
     val lockscreenAlpha: Flow<Float> =
-        transitionAnimation.sharedFlow(
-            startTime = 233.milliseconds,
-            duration = 250.milliseconds,
-            onStep = { it },
-        )
+        if (Flags.newDozingKeyguardStates()) {
+            dozingTransitionFlows.lockscreenAlpha(from = OCCLUDED)
+        } else {
+            transitionAnimation.sharedFlow(
+                startTime = 233.milliseconds,
+                duration = 250.milliseconds,
+                onStep = { it },
+            )
+        }
 
     val deviceEntryBackgroundViewAlpha: Flow<Float> =
         transitionAnimation.immediatelyTransitionTo(0f)

@@ -123,6 +123,7 @@ public final class DozeServiceHost implements DozeHost {
     private final DozeInteractor mDozeInteractor;
     private final DeviceEntryFingerprintAuthInteractor mDeviceEntryFingerprintAuthInteractor;
     private final CoroutineScope mScope;
+    private Job mUdfpsScreenOffFingerprintPulseEventCollectingJob = null;
     private Job mUsUdfpsScreenOffPulseEventCollectingJob = null;
     private final Context mContext;
     private final AmbientDisplayConfiguration mAmbientDisplayConfiguration;
@@ -253,7 +254,7 @@ public final class DozeServiceHost implements DozeHost {
         if (!mDozingRequested) {
             mDozingRequested = true;
             updateDozing();
-            startCollectingUsUdfpsScreenOffPulseEvents();
+            startCollectingScreenOffFingerprintPulseEvents();
             mDozeLog.traceDozing(mStatusBarStateController.isDozing());
             // This is initialized in a CoreStartable, but binder calls from DreamManagerService can
             // arrive earlier
@@ -573,7 +574,27 @@ public final class DozeServiceHost implements DozeHost {
         return mUsUdfpsScreenOffPulseEventCollectingJob != null;
     }
 
-    private void startCollectingUsUdfpsScreenOffPulseEvents() {
+    private boolean listenForScreenOffFingerprintPulseEvents() {
+        return com.android.systemui.Flags.newDozingKeyguardStates()
+                && mDeviceEntryFingerprintAuthInteractor.isSensorUnderDisplay().getValue();
+    }
+
+    private void startCollectingScreenOffFingerprintPulseEvents() {
+        if (listenForScreenOffFingerprintPulseEvents()) {
+            if (mUdfpsScreenOffFingerprintPulseEventCollectingJob != null) return;
+            mUdfpsScreenOffFingerprintPulseEventCollectingJob = JavaAdapterKt.collectFlow(
+                    mScope,
+                    mScope.getCoroutineContext(),
+                    mDeviceEntryFingerprintAuthInteractor.getFingerprintHelp(),
+                    state -> {
+                        for (Callback callback : mCallbacks) {
+                            callback.onFingerprintPulseWhileScreenOff(state);
+                        }
+                    }
+            );
+            return;
+        }
+
         // Only do this for ultrasonic udfps.
         if (!udfpsScreenOffUnlockFlicker()
                 || !mDeviceEntryFingerprintAuthInteractor.isUltrasonic().getValue()
@@ -594,6 +615,11 @@ public final class DozeServiceHost implements DozeHost {
     }
 
     private void stopCollectingUsUdfpsScreenOffPulseEvents() {
+        if (mUdfpsScreenOffFingerprintPulseEventCollectingJob != null) {
+            mUdfpsScreenOffFingerprintPulseEventCollectingJob.cancel(
+                    new CancellationException("Stop monitoring"));
+            mUdfpsScreenOffFingerprintPulseEventCollectingJob = null;
+        }
         if (!udfpsScreenOffUnlockFlicker()) return;
         if (isCollectingUsUdfpsScreenOffPulseEvents()) {
             mUsUdfpsScreenOffPulseEventCollectingJob.cancel(

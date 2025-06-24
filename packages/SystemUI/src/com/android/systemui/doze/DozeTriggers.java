@@ -425,7 +425,9 @@ public class DozeTriggers implements DozeMachine.Part {
         final boolean aod = (state == DozeMachine.State.DOZE_AOD);
 
         if (state == DozeMachine.State.DOZE_PULSING
-                || state == DozeMachine.State.DOZE_PULSING_BRIGHT) {
+                || state == DozeMachine.State.DOZE_PULSING_BRIGHT
+                || state == State.DOZE_PULSING_WITHOUT_UI
+                || state == State.DOZE_PULSING_AUTH_UI) {
             mDozeLog.traceSetIgnoreTouchWhilePulsing(near);
             mDozeHost.onIgnoreTouchWhilePulsing(near);
         }
@@ -512,6 +514,8 @@ public class DozeTriggers implements DozeMachine.Part {
                 mWantProxSensor = true;
                 break;
             case DOZE_PULSING:
+            case DOZE_PULSING_WITHOUT_UI:
+            case DOZE_PULSING_AUTH_UI:
             case DOZE_PULSING_BRIGHT:
                 mWantProxSensor = true;
                 mWantTouchScreenSensors = false;
@@ -584,7 +588,11 @@ public class DozeTriggers implements DozeMachine.Part {
 
         // When already pulsing we're allowed to show the wallpaper directly without
         // requesting a new pulse.
-        if (dozeState == DozeMachine.State.DOZE_PULSING
+        final boolean selectiveUiPulsing = dozeState == State.DOZE_PULSING_WITHOUT_UI
+                || dozeState == State.DOZE_PULSING_AUTH_UI;
+        final boolean alreadyPulsing = dozeState == DozeMachine.State.DOZE_PULSING
+                || selectiveUiPulsing;
+        if (alreadyPulsing
                 && reason == DozeLog.PULSE_REASON_SENSOR_WAKE_REACH) {
             mMachine.requestState(DozeMachine.State.DOZE_PULSING_BRIGHT);
             return;
@@ -594,6 +602,18 @@ public class DozeTriggers implements DozeMachine.Part {
         if (dozeState == State.DOZE_PULSING && reason == DozeLog.PULSE_REASON_NOTIFICATION) {
             return;
         }
+
+        // When we're already showing selective UI (or no UI) while pulsing, we can directly
+        // go to other pulsing states.
+        if (selectiveUiPulsing) {
+            if (reason == DozeLog.PULSE_REASON_FINGERPRINT_PULSE) {
+                mMachine.requestState(State.DOZE_PULSING_AUTH_UI);
+            }  else {
+                mMachine.requestState(State.DOZE_PULSING);
+            }
+            return;
+        }
+
 
         if (!mAllowPulseTriggers || mDozeHost.isPulsePending()
                 || !canPulse(dozeState, performedProxCheck)) {
@@ -725,6 +745,7 @@ public class DozeTriggers implements DozeMachine.Part {
     }
 
     private DozeHost.Callback mHostCallback = new DozeHost.Callback() {
+        private int mUdfpsHelpMessagesThisAodSession = 0;
         @Override
         public void onNotificationAlerted(Runnable onPulseSuppressedListener) {
             onNotification(onPulseSuppressedListener);
@@ -739,7 +760,16 @@ public class DozeTriggers implements DozeMachine.Part {
         public void onUltrasonicUdfpsPulseWhileScreenOff(FingerprintAuthenticationStatus state) {
             if (!udfpsScreenOffUnlockFlicker()) return;
             mDozeLog.traceUltrasonicScreenOffPulseEvent(state);
-            requestPulse(DozeLog.REASON_USUDFPS_PULSE, true, null);
+            requestPulse(DozeLog.PULSE_REASON_FINGERPRINT_PULSE, true, null);
+
+        }
+        @Override
+        public void onFingerprintPulseWhileScreenOff(FingerprintAuthenticationStatus state) {
+            mUdfpsHelpMessagesThisAodSession++;
+            mDozeLog.traceFingerprintScreenOffPulseEvent(state, mUdfpsHelpMessagesThisAodSession);
+            if (mUdfpsHelpMessagesThisAodSession >= 3) {
+                requestPulse(DozeLog.PULSE_REASON_FINGERPRINT_PULSE, true, null);
+            }
         }
     };
 }

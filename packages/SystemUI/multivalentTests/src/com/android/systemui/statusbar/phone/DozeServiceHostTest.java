@@ -203,7 +203,7 @@ public class DozeServiceHostTest extends SysuiTestCase {
                         DozeLog.REASON_SENSOR_DOUBLE_TAP,
                         DozeLog.REASON_SENSOR_TAP,
                         DozeLog.REASON_SENSOR_UDFPS_LONG_PRESS,
-                        DozeLog.REASON_USUDFPS_PULSE));
+                        DozeLog.PULSE_REASON_FINGERPRINT_PULSE));
 
         doAnswer(invocation -> {
             DozeHost.PulseCallback callback = invocation.getArgument(0);

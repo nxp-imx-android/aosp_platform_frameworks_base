@@ -189,7 +189,10 @@ constructor(
                             transitionToGlanceableHub()
                         }
                     } else {
-                        startTransitionTo(KeyguardState.LOCKSCREEN)
+                        startTransitionTo(
+                            KeyguardState.LOCKSCREEN,
+                            ownerReason = "listenForDozingToAny",
+                        )
                     }
                 }
         }
