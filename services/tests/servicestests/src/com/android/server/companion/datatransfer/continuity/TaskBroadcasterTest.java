@@ -22,8 +22,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.never;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 
+import static com.android.server.companion.datatransfer.contextsync.BitmapUtils.renderDrawableToByteArray;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createMockContext;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createMockCompanionDeviceManager;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createAssociationInfo;
@@ -44,6 +46,10 @@ import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
 import android.companion.AssociationInfo;
 import android.companion.datatransfer.continuity.RemoteTask;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.testing.TestableLooper;
@@ -58,6 +64,9 @@ import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskI
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
+
+import com.android.frameworks.servicestests.R;
+
 
 import org.junit.Before;
 import org.junit.Test;
@@ -90,6 +99,10 @@ public class TaskBroadcasterTest {
 
     private TaskBroadcaster mTaskBroadcaster;
 
+    private Drawable mTaskIcon;
+    private byte[] mSerializedTaskIcon;
+
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -100,6 +113,11 @@ public class TaskBroadcasterTest {
             .thenReturn(mMockActivityTaskManager);
 
         when(mMockContext.getPackageManager()).thenReturn(mMockPackageManager);
+
+        Bitmap bitmap = BitmapFactory.decodeResource(
+                mMockContext.getResources(), R.drawable.black_32x32);
+        mTaskIcon = new BitmapDrawable(mMockContext.getResources(), bitmap);
+        mSerializedTaskIcon = renderDrawableToByteArray(mTaskIcon);
 
         // Create TaskBroadcaster.
         mTaskBroadcaster = new TaskBroadcaster(
@@ -173,7 +191,7 @@ public class TaskBroadcasterTest {
             taskInfo.taskId,
             expectedLabel,
             0,
-            new byte[0]);
+            mSerializedTaskIcon);
         assertThat(continuityDeviceConnected.getRemoteTasks().get(0))
             .isEqualTo(expectedTaskInfo);
     }
@@ -210,8 +228,12 @@ public class TaskBroadcasterTest {
         assertThat(taskContinuityMessage.getData()).isInstanceOf(RemoteTaskAddedMessage.class);
         RemoteTaskAddedMessage remoteTaskAddedMessage =
                 (RemoteTaskAddedMessage) taskContinuityMessage.getData();
-        RemoteTaskInfo expectedTaskInfo = new RemoteTaskInfo(taskId, taskLabel, 0, new byte[0]);
-        assertThat(remoteTaskAddedMessage.getTask()).isEqualTo(expectedTaskInfo);
+        RemoteTaskInfo expectedTaskInfo = new RemoteTaskInfo(
+            taskId,
+            taskLabel,
+            0,
+            mSerializedTaskIcon);
+        assertEquals(expectedTaskInfo, remoteTaskAddedMessage.getTask());
     }
 
         @Test
@@ -266,7 +288,12 @@ public class TaskBroadcasterTest {
         RemoteTaskUpdatedMessage remoteTaskUpdated
             = (RemoteTaskUpdatedMessage) actualMessage.getData();
 
-        RemoteTaskInfo expectedTaskInfo = new RemoteTaskInfo(taskId, taskLabel, 0, new byte[0]);
+        RemoteTaskInfo expectedTaskInfo = new RemoteTaskInfo(
+            taskId,
+            taskLabel,
+            0,
+            mSerializedTaskIcon);
+
         assertThat(remoteTaskUpdated.getTask()).isEqualTo(expectedTaskInfo);
     }
 
@@ -289,6 +316,9 @@ public class TaskBroadcasterTest {
             .thenReturn(packageInfo);
         when(mMockPackageManager.getApplicationLabel(any(ApplicationInfo.class)))
             .thenReturn(label);
+
+        when(mMockPackageManager.getApplicationIcon(any(ApplicationInfo.class)))
+            .thenReturn(mTaskIcon);
 
         return taskInfo;
     }
