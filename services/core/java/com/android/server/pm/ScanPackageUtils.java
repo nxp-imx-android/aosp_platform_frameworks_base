@@ -1113,9 +1113,15 @@ final class ScanPackageUtils {
         }
     }
 
-    private static boolean enableAlignmentChecks(ParsedPackage parsedPackage, Context context,
-            String initiatingPackage) {
-        if (Flags.appCompatWarnings16kb()) {
+    private static boolean enableAlignmentChecks(@NonNull ParsedPackage parsedPackage,
+            Context context, String initiatingPackage) {
+        // Run alignment checks when feature flag is enabled
+        if (!Flags.appCompatWarnings16kb()) {
+            return false;
+        }
+
+        if (context == null) {
+            Slog.w(TAG, "Provided context is null!");
             return false;
         }
 
