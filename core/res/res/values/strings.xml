@@ -446,9 +446,15 @@
     <!-- Title of the safety center issue and notification when the phone's identifier is shared over the network. -->
     <string name="scIdentifierDisclosureIssueTitle">Device ID accessed</string>
     <!-- Summary of the safety center notification when the phone's identifier is shared over the network. -->
-    <string name="scIdentifierDisclosureIssueSummaryNotification">At <xliff:g id="disclosure_time">%1$s</xliff:g>, a nearby network recorded your device\'s unique ID (IMSI or IMEI) while using your <xliff:g id="disclosure_network">%2$s</xliff:g> SIM</string>
+    <string name="scIDIssueSummaryNotificationWithCellularID">At <xliff:g id="disclosure_time">%1$s</xliff:g>, a nearby network recorded your device\'s unique ID (<xliff:g id="cellular_identifier">%2$s</xliff:g>) while using your <xliff:g id="disclosure_network">%3$s</xliff:g> SIM</string>
+    <string name="scIdentifierDisclosureIssueSummaryNotification">At <xliff:g id="disclosure_time">%1$s</xliff:g>, a nearby network recorded your device\'s unique ID while using your <xliff:g id="disclosure_network">%3$s</xliff:g> SIM</string>
     <!-- Summary of the safety center detail card when the phone's identifier is shared over the network. -->
-    <string name="scIdentifierDisclosureIssueSummary">At <xliff:g id="disclosure_time">%1$s</xliff:g>, a nearby network recorded your device\'s unique ID (IMSI or IMEI) while using your <xliff:g id="disclosure_network">%2$s</xliff:g> SIM.\n\nThis means that your location, activity, or identity have been logged. This is common practice but may be an issue for people concerned about privacy.</string>
+    <string name="scIDIssueSummaryWithCellularID">At <xliff:g id="disclosure_time">%1$s</xliff:g>, a nearby network recorded your device\'s unique ID (<xliff:g id="cellular_identifier">%2$s</xliff:g>) while using your <xliff:g id="disclosure_network">%3$s</xliff:g> SIM.\n\nThis means that your location, activity, or identity have been logged. This is common practice but may be an issue for people concerned about privacy.</string>
+    <string name="scIdentifierDisclosureIssueSummary">At <xliff:g id="disclosure_time">%1$s</xliff:g>, a nearby network recorded your device\'s unique ID while using your <xliff:g id="disclosure_network">%3$s</xliff:g> SIM.\n\nThis means that your location, activity, or identity have been logged. This is common practice but may be an issue for people concerned about privacy.</string>
+    <!-- cellular identifier used to display in between summary of identifier disclosure issue. -->
+    <string name="cellular_identifier_imsi" translatable="false">IMSI</string>
+    <string name="cellular_identifier_imei" translatable="false">IMEI</string>
+    <string name="cellular_identifier_suci" translatable="false">SUCI</string>
 
     <!-- Title of the safety center issue and notification when the phone restores an encrypted connection to the network. -->
     <string name="scNullCipherIssueEncryptedTitle">Connected to encrypted network <xliff:g id="network_name">%1$s</xliff:g></string>
