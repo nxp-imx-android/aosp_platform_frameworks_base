@@ -22,10 +22,16 @@
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-ExitDesktopToSplitScreenWithAppHeaderMenuFlickerTest"
     },
     {
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-MaximizeAppFlickerTest"
+    },
+    {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-OpenAppFromAllAppsFlickerTest"
     },
     {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-OpenAppFromTaskbarFlickerTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-OpenAppsInDesktopModeFlickerTest"
     },
     {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-QuickSwitchBetweenDesktopAndFullscreenTest"
@@ -53,6 +59,24 @@
     },
     {
       "name": "WMShellFlickerTestsDesktopMode-resizing-ResizeAppWithEdgeResizeTouchpadFlickerTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-resizing-SnapResizeAppWindowLeftWithButtonFlickerTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-resizing-SnapResizeAppWindowLeftWithDragFlickerTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-resizing-SnapResizeAppWindowLeftWithKeyboardFlickerTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-resizing-SnapResizeAppWindowRightWithButtonFlickerTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-resizing-SnapResizeAppWindowRightWithDragFlickerTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-resizing-SnapResizeAppWindowRightWithKeyboardFlickerTest"
     },
     {
       "name": "WMShellFlickerTestsDesktopMode-tiling-TilingDividerResizingAppsFlickerTest"
