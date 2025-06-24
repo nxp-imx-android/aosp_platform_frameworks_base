@@ -232,8 +232,17 @@ constructor(
     @Deprecated("Use KeyguardTransitionInteractor + KeyguardState")
     val isKeyguardShowing: StateFlow<Boolean> = repository.isKeyguardShowing
 
-    /** Whether the keyguard is dismissible or not. */
+    /**
+     * Whether the keyguard is unlocked or not. This is always true when keyguard has been dismissed
+     * or can be dismissed by a swipe.
+     */
     val isKeyguardDismissible: StateFlow<Boolean> = repository.isKeyguardDismissible
+
+    /**
+     * Whether device entry believes the device is trusted. This can be true or false when keyguard
+     * has been dismissed depending on biometric and trust states.
+     */
+    val hasTrust: StateFlow<Boolean> = repository.hasTrust
 
     /** Whether the keyguard is occluded (covered by an activity). */
     @Deprecated("Use KeyguardTransitionInteractor + KeyguardState.OCCLUDED")

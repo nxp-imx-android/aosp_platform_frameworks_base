@@ -47,11 +47,11 @@ constructor(
      */
     private val canShowPrivateNotificationContent: Flow<Boolean> =
         combine(
-            keyguardInteractor.isKeyguardDismissible,
+            keyguardInteractor.hasTrust,
             sensitiveNotificationProtectionInteractor.isSensitiveStateActive,
             biometricUnlockInteractor.unlockState,
-        ) { isKeyguardDismissible, isSensitive, biometricUnlockState ->
-            isKeyguardDismissible &&
+        ) { hasTrust, isSensitive, biometricUnlockState ->
+            hasTrust &&
                 !isSensitive &&
                 !BiometricUnlockMode.dismissesKeyguard(biometricUnlockState.mode)
         }

@@ -152,7 +152,7 @@ class AODPromotedNotificationsInteractorTest : SysuiTestCase() {
         }
 
     private fun Kosmos.setKeyguardLocked(locked: Boolean) {
-        fakeKeyguardRepository.setKeyguardDismissible(!locked)
+        fakeKeyguardRepository.setHasTrust(!locked)
     }
 
     private fun Kosmos.setScreenSharingProtectionActive(active: Boolean) {
