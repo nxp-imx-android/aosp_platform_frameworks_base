@@ -31,6 +31,9 @@ import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.platform.test.rule.ScreenRecordRule
 import android.platform.uiautomatorhelpers.BetterSwipe
+import android.platform.uiautomatorhelpers.DeviceHelpers
+import android.platform.uiautomatorhelpers.DeviceHelpers.assertInvisible
+import android.platform.uiautomatorhelpers.DeviceHelpers.assertVisible
 import android.platform.uiautomatorhelpers.WaitUtils
 import android.provider.Settings
 import android.tools.NavBar
@@ -50,16 +53,11 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
-import androidx.test.uiautomator.Until
 import com.android.launcher3.tapl.LauncherInstrumentation
 import com.android.launcher3.tapl.TestHelpers
 import com.android.window.flags.Flags
 import com.android.wm.shell.shared.desktopmode.DesktopState
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.toJavaDuration
 import org.junit.After
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assume
 import org.junit.Before
@@ -132,8 +130,7 @@ class ConnectedDisplayCujSmokeTests {
         // Ensure launcher is visible.
         device.pressHome()
         instrumentation.waitForIdleSync()
-        device.wait(Until.hasObject(By.pkg(device.launcherPackageName).depth(0)),
-            TIMEOUT.inWholeMilliseconds)
+        By.pkg(device.launcherPackageName).depth(0).assertVisible()
 
         // Ensure the transient taskbar is disabled.
         tapl.enableTransientTaskbar(false)
@@ -155,26 +152,18 @@ class ConnectedDisplayCujSmokeTests {
         resetTopology(externalDisplayId)
 
         // Navigate to display topology settings in Settings app
-        checkNotNull(
-            device.wait(
-                Until.findObject(By.text(CONNECTED_DEVICES_TEXT)),
-                TIMEOUT.inWholeMilliseconds
-            )
-        ) { "Can't find a connected device on setting" }.click()
-        checkNotNull(
-            device.wait(
-                Until.findObject(By.text(EXTERNAL_DISPLAY_TEXT)),
-                TIMEOUT.inWholeMilliseconds
-            )
-        ) { "Can't find a external display on setting" }.click()
+        DeviceHelpers.waitForObj(By.text(CONNECTED_DEVICES_TEXT)) {
+            "Can't find a connected device on setting"
+        }.click()
+        DeviceHelpers.waitForObj(By.text(EXTERNAL_DISPLAY_TEXT)) {
+            "Can't find a external display on setting"
+        }.click()
 
         // Modify the topology.
-        val paneObject = checkNotNull(
-            device.wait(
-                Until.findObject(By.res(SETTINGS_PACKAGE, DISPLAY_TOPOLOGY_PANE_CONTENT_RES_ID)),
-                TIMEOUT.inWholeMilliseconds
-            )
-        ) { "Can't find a display panel on setting" }
+        val paneObject =
+            DeviceHelpers.waitForObj(
+                By.res(SETTINGS_PACKAGE, DISPLAY_TOPOLOGY_PANE_CONTENT_RES_ID)
+            ) { "Can't find a display panel on setting" }
 
         val defaultDisplayObject = findDefaultDisplayObject(paneObject)
         val originalTopology = displayManager.displayTopology
@@ -188,7 +177,7 @@ class ConnectedDisplayCujSmokeTests {
                 paneObject.visibleBounds.bottom.toFloat() - 1f
             )
         )
-        WaitUtils.ensureThat("Display topology changed", timeout = TIMEOUT.toJavaDuration()) {
+        WaitUtils.ensureThat("Display topology changed") {
             originalTopology != displayManager.displayTopology
         }
 
@@ -528,12 +517,9 @@ class ConnectedDisplayCujSmokeTests {
     fun launchAppFromTaskbar(displayId: Int, appHelper: StandardAppHelper) {
         val selector = By.text(appHelper.appName).hasParent(taskbarSelector(displayId))
         val appName = appHelper.appName
-        checkNotNull(
-            device.wait(
-                Until.findObject(selector),
-                TIMEOUT.inWholeMilliseconds
-            )
-        ) { "Can't find an app icon of $appName on taskbar on display#$displayId" }.click()
+        DeviceHelpers.waitForObj(selector) {
+            "Can't find an app icon of $appName on taskbar on display#$displayId"
+        }.click()
     }
 
     fun openAllApps(displayId: Int) {
@@ -548,12 +534,9 @@ class ConnectedDisplayCujSmokeTests {
             instrumentation.uiAutomation.syncInputTransactions()
         } else {
             val taskbar =
-                checkNotNull(
-                    device.wait(
-                    Until.findObject(taskbarSelector(displayId)),
-                    TIMEOUT.inWholeMilliseconds
-                    )
-                ) { "Can't find a taskbar on display#$displayId" }
+                DeviceHelpers.waitForObj(taskbarSelector(displayId)) {
+                    "Can't find a taskbar on display#$displayId"
+                }
             taskbar.children.first().click()
         }
     }
@@ -565,12 +548,12 @@ class ConnectedDisplayCujSmokeTests {
         openAllApps(displayId)
 
         val appsListSelector = appsListSelector(displayId)
-        val appsList = device.wait(Until.findObject(appsListSelector), TIMEOUT.inWholeMilliseconds)
+        val appsList = DeviceHelpers.waitForObj(appsListSelector)
         val appIconSelector = By.text(appName).hasParent(appsListSelector)
 
         // Scroll down All Apps until the app icon is visible.
         val appIcon = checkNotNull((1..SCROLL_RETRY_MAX).firstNotNullOfOrNull {
-            device.wait(Until.findObject(appIconSelector), TIMEOUT.inWholeMilliseconds) ?: run {
+            DeviceHelpers.waitForNullableObj(appIconSelector) ?: run {
                 BetterSwipe.swipe(
                     start = PointF(
                         appsList.visibleBounds.exactCenterX(),
@@ -590,29 +573,19 @@ class ConnectedDisplayCujSmokeTests {
     }
 
     fun assertTaskbarVisible(displayId: Int) =
-        checkNotNull(
-            device.wait(
-                Until.findObject(taskbarSelector(displayId)),
-                TIMEOUT.inWholeMilliseconds
-            )
-        ) { "Can't find a taskbar on display#$displayId" }
+        taskbarSelector(displayId).assertVisible() { "Can't find a taskbar on display#$displayId" }
 
     fun assertTaskbarInvisible(displayId: Int) =
-        checkNotNull(
-            device.wait(Until.gone(taskbarSelector(displayId)), TIMEOUT.inWholeMilliseconds)
-        ) { "A taskbar is visible unexpectedly on display#$displayId" }
+        taskbarSelector(displayId).assertInvisible() {
+            "A taskbar is visible unexpectedly on display#$displayId"
+        }
 
     fun waitForSysUiObjectForTheApp(
         componentMatcher: IComponentNameMatcher,
         resId: String
     ): UiObject2 {
-        val objects =
-            checkNotNull(
-                device.wait(
-                    Until.findObjects(By.res(SYSTEMUI_PACKAGE, resId)),
-                    TIMEOUT.inWholeMilliseconds
-                )
-            ) { "Unable to find view for $resId" }
+        val objects = DeviceHelpers.waitForPossibleEmpty(By.res(SYSTEMUI_PACKAGE, resId))
+        assertTrue("Unable to find view for $resId", objects.isNotEmpty())
         // TODO(b/416608975) - Check the app window bounds to filter out the uninteresting objects.
         return objects.first()
     }
@@ -622,44 +595,22 @@ class ConnectedDisplayCujSmokeTests {
 
     fun openAppHandleMenuForFullscreenApp(displayId: Int) {
         val selector = By.res(SYSTEMUI_PACKAGE, STATUS_BAR_CONTAINER_RES_ID).displayId(displayId)
-        (checkNotNull(
-            device.wait(
-                Until.findObject(selector),
-                TIMEOUT.inWholeMilliseconds
-            )
-        ) { "Unable to find view for $selector" }).click()
+        DeviceHelpers.waitForObj(selector).click()
     }
 
-    fun assertOverviewDesktopItemVisible(displayId: Int) {
-        assertNotNull(
-            "Unable to find overview desktop item",
-            device.wait(
-                Until.findObjects(
-                    By.res(
-                        TestHelpers.getOverviewPackageName(),
-                        TASK_VIEW_DESKTOP_RES_ID
-                    ).displayId(displayId)
-                ), TIMEOUT.inWholeMilliseconds
-            )
-        )
-    }
+    fun assertOverviewDesktopItemVisible(displayId: Int) =
+        By.res(
+            TestHelpers.getOverviewPackageName(),
+            TASK_VIEW_DESKTOP_RES_ID
+        ).displayId(displayId).assertVisible() { "Unable to find overview desktop item" }
 
-    fun assertOverviewItemVisible(appHelper: StandardAppHelper, displayId: Int) {
-        val objects =
-            checkNotNull(
-                device.wait(
-                    Until.findObjects(
-                        By.res(
-                            TestHelpers.getOverviewPackageName(),
-                            TASK_VIEW_SINGLE_RES_ID
-                        ).displayId(displayId)
-                    ), TIMEOUT.inWholeMilliseconds
-                )
-            ) { "Unable to find overview item" }
-
-        assertNotNull("Can't find overview item for ${appHelper.appName}",
-            objects.find { it.hasObject(By.descEndsWith(appHelper.appName)) })
-    }
+    fun assertOverviewItemVisible(appHelper: StandardAppHelper, displayId: Int) =
+        By.descEndsWith(appHelper.appName).hasAncestor(
+            By.res(
+                TestHelpers.getOverviewPackageName(),
+                TASK_VIEW_SINGLE_RES_ID
+            ).displayId(displayId)
+        ).assertVisible() { "Can't find overview item for ${appHelper.appName}" }
 
     fun verifyActivityState(
         componentMatcher: IComponentNameMatcher,
@@ -704,37 +655,27 @@ class ConnectedDisplayCujSmokeTests {
         val topology = DisplayTopology()
         for (info in displayInfos) {
             topology.addDisplay(
-                    info.displayId, info.logicalWidth, info.logicalHeight, info.logicalDensityDpi)
+                info.displayId, info.logicalWidth, info.logicalHeight, info.logicalDensityDpi
+            )
         }
         displayManager.displayTopology = topology
-        WaitUtils.ensureThat("Display topology updated", timeout = TIMEOUT.toJavaDuration()) {
+        WaitUtils.ensureThat("Display topology updated") {
             topology == displayManager.displayTopology
         }
     }
 
     fun closeAllDesktopApps() {
         val closeButtonSelector = By.res(SYSTEMUI_PACKAGE, CLOSE_BUTTON)
-        device.wait(
-            Until.findObjects(closeButtonSelector),
-            TIMEOUT.inWholeMilliseconds
-        )?.forEach {
+        DeviceHelpers.waitForPossibleEmpty(closeButtonSelector).forEach {
             it.click()
         }
-        device.wait(
-            Until.gone(closeButtonSelector),
-            TIMEOUT.inWholeMilliseconds
-        )
+        closeButtonSelector.assertInvisible()
     }
 
     fun clickRecentsButton(displayId: Int) {
         val selector = By.res(device.launcherPackageName, RECENTS_BUTTON_RES_ID)
             .displayId(displayId)
-        (checkNotNull(
-            device.wait(
-                Until.findObject(selector),
-                TIMEOUT.inWholeMilliseconds
-            )
-        ) { "Unable to find view for $selector" }).click()
+        DeviceHelpers.waitForObj(selector).click()
     }
 
     fun taskbarSelector(displayId: Int): BySelector =
@@ -765,6 +706,5 @@ class ConnectedDisplayCujSmokeTests {
         const val CONNECTED_DEVICES_TEXT = "Connected devices"
         const val SETTINGS_PACKAGE = "com.android.settings"
         const val SCROLL_RETRY_MAX = 5
-        val TIMEOUT: Duration = 10.seconds
     }
 }
