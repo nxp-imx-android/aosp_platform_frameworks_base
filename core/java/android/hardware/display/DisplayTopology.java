@@ -572,9 +572,9 @@ public final class DisplayTopology implements Parcelable {
     }
 
     /**
-     * Assign absolute bounds to each display. The top-left corner of the root is at position
+     * Assign absolute bounds in dp to each display. The top-left corner of the root is at position
      * (0, 0).
-     * @return Map from logical display ID to the display's absolute bounds
+     * @return Map from logical display ID to the display's absolute bounds in dp
      */
     @NonNull
     public SparseArray<RectF> getAbsoluteBounds() {
