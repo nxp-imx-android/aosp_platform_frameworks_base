@@ -2003,6 +2003,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 // to be changed by non-transition logic until the transition is finished.
                 if (wp.isVisibleRequested() && wp.getFixedRotationLeash() != null) {
                     transaction.show(wp.mSurfaceControl);
+                    transaction.setAlpha(wp.mSurfaceControl, 1);
                 }
                 continue;
             }
