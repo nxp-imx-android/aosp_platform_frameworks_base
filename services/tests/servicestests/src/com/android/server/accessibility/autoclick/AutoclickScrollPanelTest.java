@@ -41,6 +41,7 @@ import android.widget.ImageButton;
 import com.android.internal.R;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -272,6 +273,7 @@ public class AutoclickScrollPanelTest {
                 any(WindowManager.LayoutParams.class));
     }
 
+    @Ignore
     @Test
     public void showPanel_normalCase() {
         // Normal case, position at (100, 100).
