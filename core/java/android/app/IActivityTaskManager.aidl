@@ -21,6 +21,7 @@ import android.app.ActivityTaskManager;
 import android.app.ApplicationErrorReport;
 import android.app.ContentProviderHolder;
 import android.app.GrantedUriPermission;
+import android.app.HandoffActivityData;
 import android.app.IApplicationThread;
 import android.app.IActivityClientController;
 import android.app.IActivityController;
@@ -426,4 +427,16 @@ interface IActivityTaskManager {
     * @hide
     */
     void moveRootTaskToDisplayOnTopOrBottom(int taskId, int displayId, boolean onTop);
+
+    /**
+     * Reports HandoffActivityData for a given set of activities back to
+     * ActivityTaskManager.
+     *
+     * @param requestToken A request token used by ActivityTaskManager to
+     * identify the request.
+     * @param data A list of HandoffActivityData objects containing the data for the requested
+     * activities in the same order as the request.
+     * @hide
+     */
+    void reportHandoffActivityData(in IBinder requestToken, in List<HandoffActivityData> data);
 }
