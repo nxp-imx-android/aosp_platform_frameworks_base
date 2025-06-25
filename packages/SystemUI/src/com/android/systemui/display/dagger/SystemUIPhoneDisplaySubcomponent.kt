@@ -22,6 +22,7 @@ import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDispla
 import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import dagger.BindsInstance
 import dagger.Subcomponent
@@ -58,6 +59,8 @@ interface SystemUIPhoneDisplaySubcomponent : SystemUIDisplaySubcomponent {
     @get:DisplayAware val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory
 
     @get:DisplayAware val homeStatusBarViewBinder: HomeStatusBarViewBinder
+
+    @get:DisplayAware val statusBarRootFactory: StatusBarRootFactory
 
     @Subcomponent.Factory
     interface Factory : SystemUIDisplaySubcomponent.Factory {

@@ -73,6 +73,7 @@ constructor(
             statusBarConfigurationController,
             darkIconDispatcher,
             displaySubComponent.statusBarFragmentProvider,
+            displaySubComponent.statusBarRootFactory,
             displaySubComponent.homeStatusBarComponentFactory,
         )
     }

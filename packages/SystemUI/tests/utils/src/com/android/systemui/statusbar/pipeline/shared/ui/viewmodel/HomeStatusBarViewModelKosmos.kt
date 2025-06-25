@@ -54,6 +54,17 @@ var Kosmos.homeStatusBarViewBinder: HomeStatusBarViewBinder by
 
 var Kosmos.homeStatusBarViewModel: HomeStatusBarViewModel by
     Kosmos.Fixture { homeStatusBarViewModelFactory.invoke(testableContext.displayId) }
+
+var Kosmos.defaultDisplayHomeStatusBarViewModelFactory:
+    HomeStatusBarViewModel.HomeStatusBarViewModelFactory by
+    Kosmos.Fixture {
+        object : HomeStatusBarViewModel.HomeStatusBarViewModelFactory {
+            override fun create(): HomeStatusBarViewModel {
+                return homeStatusBarViewModelFactory.invoke(testableContext.displayId)
+            }
+        }
+    }
+
 var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
     Kosmos.Fixture {
         { displayId ->

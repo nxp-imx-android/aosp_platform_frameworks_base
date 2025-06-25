@@ -35,6 +35,8 @@ import com.android.systemui.statusbar.mockCommandQueue
 import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.StatusBarRootFactory
+import com.android.systemui.statusbar.pipeline.shared.ui.composable.statusBarRootFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewBinder
@@ -59,6 +61,7 @@ fun Kosmos.createFakeDisplaySubcomponent(
     homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel =
         this.homeStatusBarViewModelFactory,
     homeStatusBarViewBinder: HomeStatusBarViewBinder = this.homeStatusBarViewBinder,
+    statusBarRootFactory: StatusBarRootFactory = this.statusBarRootFactory,
 ): SystemUIPhoneDisplaySubcomponent {
     return object : SystemUIPhoneDisplaySubcomponent {
         override val displayCoroutineScope: CoroutineScope
@@ -92,6 +95,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val homeStatusBarViewBinder: HomeStatusBarViewBinder
             get() = homeStatusBarViewBinder
+
+        override val statusBarRootFactory: StatusBarRootFactory
+            get() = statusBarRootFactory
     }
 }
 
