@@ -1906,6 +1906,13 @@ flag {
 }
 
 flag {
+    name: "new_screen_record_toolbar"
+    namespace: "systemui"
+    description: "Enables the new screen record flow."
+    bug: "427481098"
+}
+
+flag {
     name: "fix_dialog_launch_animation_jank_logging"
     namespace: "systemui"
     description: "Adjust timing of jank logging for dialog launch animations, and attach it to the dialog window instead of the origin view window."
