@@ -193,6 +193,20 @@ class AppCompatAspectRatioOverrides {
         return baseOverride;
     }
 
+    boolean hasSystemFullscreenOverrideCache() {
+        return mIsSystemFullscreenOverrideEnabled == null
+                && LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY.isTrue();
+    }
+
+    boolean resetSystemFullscreenOverrideCache() {
+        if (mIsSystemFullscreenOverrideEnabled != null) {
+            mIsSystemFullscreenOverrideEnabled = null;
+            return true;
+        }
+        return false;
+    }
+
+
     /**
      * Whether we should enable users to resize the current app.
      */

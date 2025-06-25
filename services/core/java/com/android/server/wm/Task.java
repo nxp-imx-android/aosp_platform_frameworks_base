@@ -1918,6 +1918,18 @@ class Task extends TaskFragment {
                 -1 /* don't check PID */, -1 /* don't check UID */, this);
     }
 
+    /**
+     * Update task's force resize overrides if the system full-screen override cache has
+     * been invalidated due to activity restart.
+     */
+    void updateForceResizeOverridesIfNeeded(@NonNull ActivityRecord r) {
+        final AppCompatAspectRatioOverrides aspectRatioOverrides =
+                r.mAppCompatController.getAspectRatioOverrides();
+        if (aspectRatioOverrides.hasSystemFullscreenOverrideCache()) {
+            updateForceResizeOverrides(r);
+        }
+    }
+
     private void updateForceResizeOverrides(@NonNull ActivityRecord r) {
         final AppCompatResizeOverrides resizeOverrides = r.mAppCompatController
                 .getResizeOverrides();

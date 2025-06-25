@@ -8804,6 +8804,8 @@ final class ActivityRecord extends WindowToken {
         // configuration.
         mAppCompatController.getSizeCompatModePolicy().clearSizeCompatMode();
         mAppCompatController.getDisplayCompatModePolicy().onProcessRestarted();
+        final boolean fullscreenOverrideChanged =
+                mAppCompatController.getAspectRatioOverrides().resetSystemFullscreenOverrideCache();
 
         if (!attachedToProcess()) {
             return;
@@ -8828,6 +8830,10 @@ final class ActivityRecord extends WindowToken {
                 mAtmService.mAmInternal.killProcess(wpc.mName, wpc.mUid, "resetConfig");
             });
             return;
+        }
+
+        if (fullscreenOverrideChanged) {
+            task.updateForceResizeOverridesIfNeeded(this);
         }
 
         // Process restart may require trampoline activity launch, for which app switching needs to
