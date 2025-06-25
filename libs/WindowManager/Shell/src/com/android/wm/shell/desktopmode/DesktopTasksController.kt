@@ -3686,7 +3686,7 @@ class DesktopTasksController(
                     )
                 }
             } else {
-                getInitialBounds(destLayout, taskInfo, destDeskId)
+                calculateMaximizeBounds(destLayout, taskInfo)
             }
         wct.setBounds(taskInfo.token, boundsWithinDisplay)
     }
