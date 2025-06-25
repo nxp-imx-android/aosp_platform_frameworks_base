@@ -29,6 +29,7 @@ import androidx.test.uiautomator.Configurator
 import androidx.test.uiautomator.UiDevice
 import com.android.compatibility.common.util.SettingsStateChangerRule
 import com.android.server.accessibility.Flags
+import org.junit.AfterClass
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -171,5 +172,17 @@ class AutoclickPanelTests {
         // Confirm the panel moved around the screen and finished in the starting location.
         val fifthPosition = getAutoclickPanelPosition()
         assertEquals(startingPosition, fifthPosition)
+    }
+
+    private companion object {
+        @AfterClass
+        @JvmStatic
+        fun teardownAfterClass() {
+            // Wait for the Autoclick panel to be closed.
+            waitAndAssert {
+                UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+                    .findObject(By.res(AUTOCLICK_PANEL_ID)) == null
+            }
+        }
     }
 }
