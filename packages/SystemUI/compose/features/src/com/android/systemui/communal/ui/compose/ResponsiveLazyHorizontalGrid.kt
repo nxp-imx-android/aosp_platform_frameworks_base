@@ -275,6 +275,6 @@ private fun calculateNumCellsWidth(width: Dp) =
 private fun calculateNumCellsHeight(height: Dp) =
     when {
         height >= 1000.dp -> 3
-        height >= COMPACT_HEIGHT -> 2
+        height >= COMPACT_HEIGHT -> 3
         else -> 1
     }
