@@ -22,6 +22,9 @@ import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodRedirect;
+import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.util.Log;
 import android.util.Printer;
 
@@ -66,7 +69,8 @@ import java.lang.reflect.Modifier;
  * your new thread.  The given Runnable or Message will then be scheduled
  * in the Handler's message queue and processed when appropriate.
  */
-@android.ravenwood.annotation.RavenwoodKeepWholeClass
+@RavenwoodKeepWholeClass
+@RavenwoodRedirectionClass("Handler_ravenwood")
 public class Handler {
     /*
      * Set this flag to true to detect anonymous, local or member classes
@@ -789,8 +793,15 @@ public class Handler {
         return sendMessage(msg);
     }
 
+    @RavenwoodRedirect
+    private static void onBeforeEnqueue(@NonNull MessageQueue queue, @NonNull Message msg,
+            long uptimeMillis) {
+        // Ravenwood will check for a pending exception, and throw it if any.
+    }
+
     private boolean enqueueMessage(@NonNull MessageQueue queue, @NonNull Message msg,
             long uptimeMillis) {
+        onBeforeEnqueue(queue, msg, uptimeMillis);
         msg.target = this;
         msg.workSourceUid = ThreadLocalWorkSource.getUid();
 
