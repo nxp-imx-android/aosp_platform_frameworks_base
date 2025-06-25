@@ -22,6 +22,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.hardware.input.KeyGestureEvent
+import android.text.BidiFormatter
 import android.text.TextUtils
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityManager
@@ -87,7 +88,6 @@ constructor(
             return null
         }
 
-        // TODO: b/410892855 - bidi wrap the title.
         val title =
             resources.getString(
                 R.string.accessibility_key_gesture_dialog_title,
@@ -145,13 +145,32 @@ constructor(
                 if (accessibilityServiceInfo == null) {
                     null
                 } else {
-                    Pair(
-                        accessibilityServiceInfo.resolveInfo.loadLabel(packageManager).toString(),
-                        accessibilityServiceInfo.loadIntro(packageManager) ?: "",
-                    )
+                    val featureName =
+                        getFeatureName(
+                            accessibilityServiceInfo.resolveInfo.loadLabel(packageManager)
+                        )
+                    var intro = accessibilityServiceInfo.loadIntro(packageManager) ?: ""
+
+                    // We don't re-use the existing intro from AccessibilityServiceInfo for
+                    // TalkBack.
+                    if (keyGestureType == KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER) {
+                        intro =
+                            resources.getString(
+                                R.string.accessibility_key_gesture_dialog_talkback_intro,
+                                featureName,
+                            )
+                    }
+
+                    Pair(featureName, intro)
                 }
             }
             else -> null
         }
+    }
+
+    // Get the service name and bidi wrap it to protect from bidi side effects.
+    private fun getFeatureName(label: CharSequence): CharSequence {
+        val locale = context.resources.configuration.getLocales().get(0)
+        return BidiFormatter.getInstance(locale).unicodeWrap(label)
     }
 }
