@@ -178,13 +178,9 @@ private fun rememberTooltipPositionProvider(
     windowInsets: WindowInsets,
     spacingBetweenTooltipAndAnchor: Dp = SpacingBetweenTooltipAndAnchor,
 ): PopupPositionProvider {
-    // We grab the top window inset and remove it manually from the position as it is not consumed
-    // in the QS panel (b/424438896)
-    val topInset = windowInsets.getTop(LocalDensity.current)
-
-    val tooltipAnchorSpacing =
-        with(LocalDensity.current) { spacingBetweenTooltipAndAnchor.roundToPx() }
-    return remember(tooltipAnchorSpacing, topInset) {
+    val density = LocalDensity.current
+    val tooltipAnchorSpacing = with(density) { spacingBetweenTooltipAndAnchor.roundToPx() }
+    return remember(tooltipAnchorSpacing, windowInsets, density) {
         object : PopupPositionProvider {
             override fun calculatePosition(
                 anchorBounds: IntRect,
@@ -207,6 +203,11 @@ private fun rememberTooltipPositionProvider(
                     // right side of the screen
                     x = anchorBounds.right - popupContentSize.width
                 }
+
+                // We grab the top window inset and remove it manually from the position as it is
+                // not consumed
+                // in the QS panel (b/424438896)
+                val topInset = windowInsets.getTop(density)
 
                 // Tooltip prefers to be below the anchor,
                 // but if this causes the tooltip to be outside the window
