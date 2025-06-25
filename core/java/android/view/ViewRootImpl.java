@@ -6581,6 +6581,7 @@ public final class ViewRootImpl implements ViewParent,
         mView.assignParent(null);
         mView = null;
         mAttachInfo.mRootView = null;
+        mFallbackEventHandler.setView(null);
 
         destroySurface();
 
