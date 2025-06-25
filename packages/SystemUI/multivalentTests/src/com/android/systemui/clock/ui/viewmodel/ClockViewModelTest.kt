@@ -57,34 +57,36 @@ class ClockViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun is24HourFormatTrue_clockText_equalsCurrentTime() =
+    fun is24HourFormatTrue_clockTextAndDescription_equalsCurrentTime() =
         kosmos.runTest {
             fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
             whenever(dateFormatUtil.is24HourFormat).thenReturn(true)
             underTest.activateIn(testScope)
 
             assertThat(underTest.clockText).isEqualTo("23:12")
+            assertThat(underTest.contentDescriptionText).isEqualTo("23:12")
         }
 
     @Test
-    fun is24HourFormatFalse_clockText_equalsCurrentTime() =
+    fun is24HourFormatFalse_clockTextAndDescription_equalsCurrentTime() =
         kosmos.runTest {
             fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
             whenever(dateFormatUtil.is24HourFormat).thenReturn(false)
             underTest.activateIn(testScope)
 
             assertThat(underTest.clockText).isEqualTo("11:12\u202FPM")
+            assertThat(underTest.contentDescriptionText).isEqualTo("11:12\u202FPM")
         }
 
     @Test
-    fun clockText_updatesWhenTimeTick() =
+    fun clockTextAndDescription_updatesWhenTimeTick() =
         kosmos.runTest {
             fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
             whenever(dateFormatUtil.is24HourFormat).thenReturn(true)
             underTest.activateIn(testScope)
-            val earlierTime = underTest.clockText
 
-            assertThat(earlierTime).isEqualTo("23:12")
+            assertThat(underTest.clockText).isEqualTo("23:12")
+            assertThat(underTest.contentDescriptionText).isEqualTo("23:12")
 
             fakeSystemClock.advanceTime(2.minutes.inWholeMilliseconds)
             broadcastDispatcher.sendIntentToMatchingReceiversOnly(
@@ -94,17 +96,18 @@ class ClockViewModelTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(underTest.clockText).isEqualTo("23:14")
+            assertThat(underTest.contentDescriptionText).isEqualTo("23:14")
         }
 
     @Test
-    fun clockText_updatesWhenTimeChanged() =
+    fun clockTextAndDescription_updatesWhenTimeChanged() =
         kosmos.runTest {
             fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
             whenever(dateFormatUtil.is24HourFormat).thenReturn(true)
             underTest.activateIn(testScope)
-            val earlierTime = underTest.clockText
 
-            assertThat(earlierTime).isEqualTo("23:12")
+            assertThat(underTest.clockText).isEqualTo("23:12")
+            assertThat(underTest.contentDescriptionText).isEqualTo("23:12")
 
             fakeSystemClock.advanceTime(2.minutes.inWholeMilliseconds)
             broadcastDispatcher.sendIntentToMatchingReceiversOnly(
@@ -114,17 +117,18 @@ class ClockViewModelTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(underTest.clockText).isEqualTo("23:14")
+            assertThat(underTest.contentDescriptionText).isEqualTo("23:14")
         }
 
     @Test
-    fun clockText_updatesWhenTimezoneChanged() =
+    fun clockTextAndDescription_updatesWhenTimezoneChanged() =
         kosmos.runTest {
             fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
             whenever(dateFormatUtil.is24HourFormat).thenReturn(true)
             underTest.activateIn(testScope)
-            val earlierTime = underTest.clockText
 
-            assertThat(earlierTime).isEqualTo("23:12")
+            assertThat(underTest.clockText).isEqualTo("23:12")
+            assertThat(underTest.contentDescriptionText).isEqualTo("23:12")
 
             TimeZone.setDefault(TimeZone.getTimeZone(ZoneId.of("Asia/Tokyo")))
             broadcastDispatcher.sendIntentToMatchingReceiversOnly(
@@ -134,16 +138,17 @@ class ClockViewModelTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(underTest.clockText).isEqualTo("08:12")
+            assertThat(underTest.contentDescriptionText).isEqualTo("08:12")
         }
 
     @Test
-    fun clockText_updatesWhenLocaleChanged() =
+    fun clockTextAndDescription_updatesWhenLocaleChanged() =
         kosmos.runTest {
             fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
             underTest.activateIn(testScope)
-            val earlierTime = underTest.clockText
 
-            assertThat(earlierTime).isEqualTo("11:12\u202FPM")
+            assertThat(underTest.clockText).isEqualTo("11:12\u202FPM")
+            assertThat(underTest.contentDescriptionText).isEqualTo("11:12\u202FPM")
 
             Locale.setDefault(Locale.TRADITIONAL_CHINESE)
             broadcastDispatcher.sendIntentToMatchingReceiversOnly(
@@ -153,6 +158,7 @@ class ClockViewModelTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(underTest.clockText).isEqualTo("下午11:12")
+            assertThat(underTest.contentDescriptionText).isEqualTo("下午11:12")
         }
 
     companion object {
