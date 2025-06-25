@@ -22,6 +22,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_NOSENSOR;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_SENSOR;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
+import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER_PORTRAIT;
 import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.DisplayCutout.NO_CUTOUT;
 import static android.view.IWindowManager.FIXED_TO_USER_ROTATION_DEFAULT;
@@ -77,7 +78,6 @@ import android.view.WindowManager;
 import androidx.annotation.Nullable;
 import androidx.test.filters.SmallTest;
 
-import com.android.internal.R;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.server.UiThread;
 import com.android.server.policy.WindowManagerPolicy;
@@ -465,26 +465,53 @@ public class DisplayRotationTests {
     }
 
     @Test
-    public void setRotationAtAngleIfLocked_AutoRotateOff_ShouldSetRotation()
+    public void setRotationAtAngleIfAllowed_AutoRotateOff_RotationLockNotEnforced_ShouldRotate()
             throws Exception {
-        mBuilder.build();
+        setupImmersiveAppCompatPolicyEnforcement(Surface.ROTATION_90);
         freezeRotation(Surface.ROTATION_0);
+        setImmersiveAppCompatRotationLockEnforced(/* isRotationLockEnforced= */ false,
+                Surface.ROTATION_90);
 
-        setRotationAtAngleIfLocked(Surface.ROTATION_90);
+        setRotationAtAngleIfAllowed(Surface.ROTATION_90);
 
         assertEquals(Surface.ROTATION_90, mTarget.getUserRotation());
     }
 
     @Test
-    public void setRotationAtAngleIfLocked_AutoRotateOn_ShouldNotSetRotation()
+    public void setRotationAtAngleIfAllowed_AutoRotateOff_RotationLockEnforced_ShouldRotate()
             throws Exception {
-        mBuilder.build();
+        setupImmersiveAppCompatPolicyEnforcement(Surface.ROTATION_90);
+        freezeRotation(Surface.ROTATION_0);
+
+        setRotationAtAngleIfAllowed(Surface.ROTATION_90);
+
+        assertEquals(Surface.ROTATION_90, mTarget.getUserRotation());
+    }
+
+    @Test
+    public void setRotationAtAngleIfAllowed_AutoRotateOn_RotationLockNotEnforced_ShouldNotRotate()
+            throws Exception {
+        setupImmersiveAppCompatPolicyEnforcement(Surface.ROTATION_90);
+        freezeRotation(Surface.ROTATION_0);
+        thawRotation();
+        setImmersiveAppCompatRotationLockEnforced(/* isRotationLockEnforced= */ false,
+                Surface.ROTATION_90);
+
+        setRotationAtAngleIfAllowed(Surface.ROTATION_90);
+
+        assertEquals(Surface.ROTATION_0, mTarget.getUserRotation());
+    }
+
+    @Test
+    public void setRotationAtAngleIfAllowed_AutoRotateOn_RotationLockEnforced_ShouldRotate()
+            throws Exception {
+        setupImmersiveAppCompatPolicyEnforcement(Surface.ROTATION_90);
         freezeRotation(Surface.ROTATION_0);
         thawRotation();
 
-        setRotationAtAngleIfLocked(Surface.ROTATION_90);
+        setRotationAtAngleIfAllowed(Surface.ROTATION_90);
 
-        assertEquals(Surface.ROTATION_0, mTarget.getUserRotation());
+        assertEquals(Surface.ROTATION_90, mTarget.getUserRotation());
     }
 
     @Test
@@ -1388,6 +1415,27 @@ public class DisplayRotationTests {
                 + " fixed to user rotation if no auto rotation.", mTarget.isFixedToUserRotation());
     }
 
+    private void setImmersiveAppCompatRotationLockEnforced(boolean isRotationLockEnforced,
+            int proposedRotation) {
+        when(mDisplayRotationImmersiveAppCompatPolicyMock.isRotationLockEnforced(
+                proposedRotation)).thenReturn(isRotationLockEnforced);
+    }
+
+    private void setupImmersiveAppCompatPolicyEnforcement(int proposedRotation) throws Exception {
+        mDisplayRotationImmersiveAppCompatPolicyMock = mock(
+                DisplayRotationImmersiveAppCompatPolicy.class);
+        mBuilder.build();
+
+        setImmersiveAppCompatRotationLockEnforced(true, proposedRotation);
+        when(mMockDisplayPolicy.getLidState()).thenReturn(
+                WindowManagerPolicy.WindowManagerFuncs.LID_CLOSED);
+        when(mMockDisplayPolicy.getDockMode()).thenReturn(Intent.EXTRA_DOCK_STATE_UNDOCKED);
+        when(mMockDisplayPolicy.isHdmiPlugged()).thenReturn(false);
+        when(mMockDisplayPolicy.isPersistentVrModeEnabled()).thenReturn(false);
+        mTarget.updateOrientation(SCREEN_ORIENTATION_USER_PORTRAIT, /* forceUpdate= */ true);
+        mTarget.setFixedToUserRotation(FIXED_TO_USER_ROTATION_DISABLED);
+    }
+
     private void moveTimeForward(long timeMillis) {
         sCurrentUptimeMillis += timeMillis;
         sClock.fastForward(timeMillis);
@@ -1437,8 +1485,8 @@ public class DisplayRotationTests {
         });
     }
 
-    private void setRotationAtAngleIfLocked(int rotation) {
-        mTarget.setRotationAtAngleIfLocked(rotation, /* caller= */ "DisplayRotationTests");
+    private void setRotationAtAngleIfAllowed(int rotation) {
+        mTarget.setRotationAtAngleIfAllowed(rotation, /* caller= */ "DisplayRotationTests");
 
         if (mTarget.isDefaultDisplay) {
             mAccelerometerRotationObserver.onChange(false);

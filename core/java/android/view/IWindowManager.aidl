@@ -390,7 +390,7 @@ interface IWindowManager
     /**
     * Sets display rotation to {@link rotation} if auto-rotate is OFF.
     */
-    void setRotationAtAngleIfLocked(int rotation, String caller);
+    void setRotationAtAngleIfAllowed(int rotation, String caller);
 
     /**
      * Lock the display orientation to the specified rotation, or to the current

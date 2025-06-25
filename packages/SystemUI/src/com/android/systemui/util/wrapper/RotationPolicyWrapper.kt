@@ -30,7 +30,7 @@ import javax.inject.Inject
 interface RotationPolicyWrapper {
     fun setRotationLock(enabled: Boolean, caller: String)
     fun setRotationLockAtAngle(enabled: Boolean, rotation: Int, caller: String)
-    fun setRotationAtAngleIfLocked(rotation: Int, caller: String)
+    fun setRotationAtAngleIfAllowed(rotation: Int, caller: String)
     fun getRotationLockOrientation(): Int
     fun isRotationLockToggleVisible(): Boolean
     fun isRotationLocked(): Boolean
@@ -58,9 +58,9 @@ class RotationPolicyWrapperImpl @Inject constructor(
     /**
      * Sets screen rotation to [rotation] if the value of [ACCELEROMETER_ROTATION] is false.
      */
-    override fun setRotationAtAngleIfLocked(rotation: Int, caller: String) {
-        traceSection("RotationPolicyWrapperImpl#setRotationAtAngleIfLocked") {
-            RotationPolicy.setRotationAtAngleIfLocked(rotation, caller)
+    override fun setRotationAtAngleIfAllowed(rotation: Int, caller: String) {
+        traceSection("RotationPolicyWrapperImpl#setRotationAtAngleIfAllowed") {
+            RotationPolicy.setRotationAtAngleIfAllowed(rotation, caller)
         }
     }
 
