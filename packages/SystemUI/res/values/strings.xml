@@ -4456,4 +4456,10 @@
 
     <!-- Content of button shown on the bouncer screen to navigate back to keyguard. [CHAR LIMIT=NONE] -->
     <string name="back_button_on_bouncer">Back</string>
+
+    <!-- Content description for arrow in Pager Dots to navigate to previous page [CHAR LIMIT=NONE] -->
+    <string name="pager_dots_previous_content_description">Previous</string>
+
+    <!-- Content description for arrow in Pager Dots to navigate to next page [CHAR LIMIT=NONE] -->
+    <string name="pager_dots_next_content_description">Next</string>
 </resources>
