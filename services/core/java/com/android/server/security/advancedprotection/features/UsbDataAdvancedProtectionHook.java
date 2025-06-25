@@ -25,6 +25,7 @@ import static android.hardware.usb.UsbPortStatus.DATA_ROLE_NONE;
 import static android.hardware.usb.UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
 import static android.hardware.usb.UsbPortStatus.COMPLIANCE_WARNING_BC_1_2;
 import static android.hardware.usb.UsbPortStatus.COMPLIANCE_WARNING_INPUT_POWER_LIMITED;
+import static android.hardware.usb.InternalUsbDataSignalDisableReason.USB_DISABLE_REASON_APM;
 
 import android.app.KeyguardManager;
 import android.app.Notification;
@@ -94,7 +95,6 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
     private static final String EXTRA_SILENCE_POWER_NOTIFICATION = "silence_power_notification";
 
     private static final int DELAY_DISABLE_MS = 3000;
-    private static final int OS_USB_DISABLE_REASON_LOCKDOWN_MODE = 1;
     private static final int USB_DATA_CHANGE_MAX_RETRY_ATTEMPTS = 3;
 
     private final Context mContext;
@@ -488,7 +488,7 @@ public class UsbDataAdvancedProtectionHook extends AdvancedProtectionHook {
         while (usbChangeStateReattempts < USB_DATA_CHANGE_MAX_RETRY_ATTEMPTS) {
             try {
                 if (mUsbManagerInternal.enableUsbDataSignal(
-                        status, OS_USB_DISABLE_REASON_LOCKDOWN_MODE)) {
+                        status, USB_DISABLE_REASON_APM)) {
                     break;
                 } else {
                     Slog.e(TAG, "USB Data protection toggle attempt failed");
