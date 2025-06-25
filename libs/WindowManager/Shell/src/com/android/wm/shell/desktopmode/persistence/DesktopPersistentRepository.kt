@@ -124,25 +124,38 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                         userId,
                         DesktopRepositoryState.getDefaultInstance(),
                     )
-                val desktop =
-                    getDesktop(currentRepository, desktopId)
+                if (isEmptyDesk(freeformTasksInZOrder)) {
+                    persistentRepositories
                         .toBuilder()
-                        .updateTaskStates(
-                            visibleTasks,
-                            minimizedTasks,
-                            freeformTasksInZOrder,
-                            leftTiledTask,
-                            rightTiledTask,
+                        .putDesktopRepoByUser(
+                            userId,
+                            currentRepository.toBuilder().removeDesktop(desktopId).build(),
                         )
-                        .updateZOrder(freeformTasksInZOrder)
+                        .build()
+                } else {
+                    val desktop =
+                        getDesktop(currentRepository, desktopId)
+                            .toBuilder()
+                            .updateTaskStates(
+                                visibleTasks,
+                                minimizedTasks,
+                                freeformTasksInZOrder,
+                                leftTiledTask,
+                                rightTiledTask,
+                            )
+                            .updateZOrder(freeformTasksInZOrder)
 
-                persistentRepositories
-                    .toBuilder()
-                    .putDesktopRepoByUser(
-                        userId,
-                        currentRepository.toBuilder().putDesktop(desktopId, desktop.build()).build(),
-                    )
-                    .build()
+                    persistentRepositories
+                        .toBuilder()
+                        .putDesktopRepoByUser(
+                            userId,
+                            currentRepository
+                                .toBuilder()
+                                .putDesktop(desktopId, desktop.build())
+                                .build(),
+                        )
+                        .build()
+                }
             }
         } catch (exception: Exception) {
             Log.e(
@@ -191,7 +204,8 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
         } catch (exception: Exception) {
             Log.e(
                 TAG,
-                "Error in removing user related data, data is stored in a file named $DESKTOP_REPOSITORIES_DATASTORE_FILE",
+                "Error in removing user related data, data is " +
+                    "stored in a file named $DESKTOP_REPOSITORIES_DATASTORE_FILE",
                 exception,
             )
         }
@@ -203,6 +217,8 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
             desktopId,
             Desktop.newBuilder().setDesktopId(desktopId).setDisplayId(DEFAULT_DISPLAY).build(),
         )
+
+    private fun isEmptyDesk(freeformTasksInZOrder: ArrayList<Int>) = freeformTasksInZOrder.isEmpty()
 
     companion object {
         private const val TAG = "DesktopPersistenceRepo"
@@ -285,12 +301,12 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
         private fun createDesktopTask(
             taskId: Int,
             state: DesktopTaskState = DesktopTaskState.VISIBLE,
-            tiling_state: DesktopTaskTilingState = DesktopTaskTilingState.NONE,
+            tilingState: DesktopTaskTilingState = DesktopTaskTilingState.NONE,
         ): DesktopTask =
             DesktopTask.newBuilder()
                 .setTaskId(taskId)
                 .setDesktopTaskState(state)
-                .setDesktopTaskTilingState(tiling_state)
+                .setDesktopTaskTilingState(tilingState)
                 .build()
     }
 }
