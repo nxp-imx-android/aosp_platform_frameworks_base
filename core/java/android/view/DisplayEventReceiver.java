@@ -77,6 +77,13 @@ public abstract class DisplayEventReceiver {
      */
     public static final int EVENT_REGISTRATION_FRAME_RATE_OVERRIDE_FLAG = 0x2;
 
+    /**
+     * Specifies to generate mode rejected events from Surface Flinger.
+     * <p>
+     * Keep in sync with frameworks/native/libs/gui/aidl/android/gui/ISurfaceComposer.aidl
+     */
+    public static final int EVENT_REGISTRATION_MODE_REJECTED_FLAG = 0x4;
+
     private static final String TAG = "DisplayEventReceiver";
 
     @UnsupportedAppUsage
