@@ -17,8 +17,8 @@ package com.android.systemui.display.data.repository
 
 import android.view.Display
 import com.android.app.displaylib.DisplayRepository.PendingDisplay
+import com.android.app.displaylib.ExternalDisplayConnectionType
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.util.mockito.mock
 import dagger.Binds
 import dagger.Module
 import javax.inject.Inject
@@ -27,23 +27,24 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.mockito.Mockito.`when` as whenever
+import org.mockito.kotlin.mock
 
 /** Creates a mock display. */
-fun display(type: Int, flags: Int = 0, id: Int = 0, state: Int? = null): Display {
-    return mock {
-        whenever(this.displayId).thenReturn(id)
-        whenever(this.type).thenReturn(type)
-        whenever(this.flags).thenReturn(flags)
-        if (state != null) {
-            whenever(this.state).thenReturn(state)
-        }
+fun display(type: Int, flags: Int = 0, id: Int = 0, state: Int? = null): Display =
+    mock<Display> {
+        on { displayId }.thenReturn(id)
+        on { uniqueId }.thenReturn("uniqueId$id")
+        on { this.type }.thenReturn(type)
+        on { this.flags }.thenReturn(flags)
+        if (state != null) on { this.state }.thenReturn(state)
     }
-}
 
 /** Creates a mock [DisplayRepository.PendingDisplay]. */
 fun createPendingDisplay(id: Int = 0): PendingDisplay =
-    mock<PendingDisplay> { whenever(this.id).thenReturn(id) }
+    mock<PendingDisplay> {
+        on { this.id }.thenReturn(id)
+        on { connectionType }.thenReturn(ExternalDisplayConnectionType.NOT_SPECIFIED)
+    }
 
 @SysUISingleton
 /** Fake [DisplayRepository] implementation for testing. */

@@ -594,6 +594,46 @@ public final class DisplayManager {
     public static final int SWITCHING_TYPE_RENDER_FRAME_RATE_ONLY = 3;
 
     /**
+     * Default value for {@link ExternalDisplayConnection}.
+     * No saved connection preference, so always show a dialog to ask the user when connecting this
+     * external display.
+     * @hide
+     */
+    public static final int EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_ASK = 0;
+
+    /**
+     * Value for {@link ExternalDisplayConnection}.
+     * Automatically enable desktop mode when connecting this external display.
+     * @hide
+     */
+    public static final int EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DESKTOP = 1;
+
+    /**
+     * Value for {@link ExternalDisplayConnection}.
+     * Automatically enable mirroring when connecting this external display.
+     * @hide
+     */
+    public static final int EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_MIRROR = 2;
+
+    /**
+     * Constants representing user options for external display connection. Each display can
+     * have a unique connection preference, so there is no settings key, instead a displays's
+     * unique id is the key, with one of the values below as the value. Default value is
+     * {@link #EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_ASK}, which shows a dialog, allowing users
+     * to then select a preference between desktop, mirroring or continually showing the dialog.
+     *
+     * @hide
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = { "EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_" }, value = {
+            EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_ASK,
+            EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_DESKTOP,
+            EXTERNAL_DISPLAY_CONNECTION_PREFERENCE_MIRROR,
+    })
+    public @interface ExternalDisplayConnection {
+    }
+
+    /**
      * @hide
      */
     @LongDef(flag = true, prefix = {"EVENT_TYPE_"}, value = {
@@ -1647,6 +1687,31 @@ public final class DisplayManager {
     @SystemApi
     public Pair<float[], float[]> getMinimumBrightnessCurve() {
         return mGlobal.getMinimumBrightnessCurve();
+    }
+
+    /**
+     * Sets the persistent connection preference for a given display.
+     *
+     * @param uniqueId The unique ID of the display.
+     * @param connectionPreference The integer preference value to save.
+     *
+     * @hide
+     */
+    @RequiresPermission(MANAGE_DISPLAYS)
+    public void setExternalDisplayConnectionPreference(String uniqueId, int connectionPreference) {
+        mGlobal.setExternalDisplayConnectionPreference(uniqueId, connectionPreference);
+    }
+
+    /**
+     * Gets the persistent connection preference for a given display.
+     *
+     * @param uniqueId The unique ID of the display.
+     * @return The saved integer preference value.
+     *
+     * @hide
+     */
+    public int getExternalDisplayConnectionPreference(String uniqueId) {
+        return mGlobal.getExternalDisplayConnectionPreference(uniqueId);
     }
 
     /**

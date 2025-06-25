@@ -367,6 +367,25 @@ public abstract class DisplayManagerInternal {
     public abstract void ignoreProximitySensorUntilChanged();
 
     /**
+     * Sets the persistent connection preference for a given display. This preference
+     * determines whether to show a dialog, mirror, or use desktop mode automatically.
+     *
+     * @param uniqueId The unique ID of the display.
+     * @param preference The integer constant for the new preference to save.
+     * @hide
+     */
+    public abstract void setConnectionPreference(String uniqueId, int preference);
+
+    /**
+     * Retrieves the saved connection preference for a given display.
+     *
+     * @param uniqueId The unique ID of the display.
+     * @return The integer constant for the saved preference.
+     * @hide
+     */
+    public abstract int getConnectionPreference(String uniqueId);
+
+    /**
      * Returns the refresh rate switching type.
      */
     @DisplayManager.SwitchingType
