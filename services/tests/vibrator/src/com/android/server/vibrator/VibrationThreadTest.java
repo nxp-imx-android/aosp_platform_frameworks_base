@@ -29,6 +29,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -152,6 +153,10 @@ public class VibrationThreadTest {
                 .thenReturn(TEST_DEFAULT_AMPLITUDE);
         when(mVibrationConfigMock.getDefaultVibrationScaleLevelGain())
                 .thenReturn(TEST_DEFAULT_SCALE_LEVEL_GAIN);
+        when(mVibrationConfigMock.getVibrationScaleFactor(anyInt(), anyFloat()))
+                .thenAnswer(invocation -> invocation.getArgument(1));
+        when(mVibrationConfigMock.getExternalVibrationScaleFactor(anyInt(), anyFloat()))
+                .thenAnswer(invocation -> invocation.getArgument(1));
         when(mPackageManagerInternalMock.getSystemUiServiceComponent())
                 .thenReturn(new ComponentName("", ""));
         doAnswer(answer -> {

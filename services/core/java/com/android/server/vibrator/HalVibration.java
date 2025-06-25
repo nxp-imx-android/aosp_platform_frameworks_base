@@ -55,8 +55,11 @@ final class HalVibration extends Vibration {
     @NonNull
     private volatile CombinedVibration mEffectToPlay;
 
-    /** Reported scale values applied to the vibration effects. */
+    // TODO(b/356600863): remove scale level once scale v2 flag is removed
     private int mScaleLevel;
+    /** Reported scale factor applied to the effect (e.g. waveform amplitude, primitive scale). */
+    private float mScaleFactor;
+    /** Reported adaptive scale factor applied on top of the scale factor to the effect. */
     private float mAdaptiveScale;
 
     HalVibration(@NonNull VibrationSession.CallerInfo callerInfo,
@@ -65,6 +68,7 @@ final class HalVibration extends Vibration {
         mOriginalEffect = effect;
         mEffectToPlay = effect;
         mScaleLevel = VibrationScaler.SCALE_NONE;
+        mScaleFactor = VibrationScaler.SCALE_FACTOR_NONE;
         mAdaptiveScale = VibrationScaler.ADAPTIVE_SCALE_NONE;
     }
 
@@ -105,6 +109,7 @@ final class HalVibration extends Vibration {
 
         // Save scale values for debugging purposes.
         mScaleLevel = scaler.getScaleLevel(vibrationUsage);
+        mScaleFactor = scaler.getScaleFactor(vibrationUsage, /* isExternalVibration= */ false);
         mAdaptiveScale = scaler.getAdaptiveHapticsScale(vibrationUsage);
         stats.reportAdaptiveScale(mAdaptiveScale);
 
@@ -152,7 +157,7 @@ final class HalVibration extends Vibration {
                 Objects.equals(mOriginalEffect, mEffectToPlay) ? null : mOriginalEffect;
         return new Vibration.DebugInfoImpl(getStatus(), callerInfo,
                 VibrationStats.StatsInfo.findVibrationType(mEffectToPlay), stats, mEffectToPlay,
-                originalEffect, mScaleLevel, mAdaptiveScale);
+                originalEffect, mScaleLevel, mScaleFactor, mAdaptiveScale);
     }
 
     /** Returns true if this vibration can pipeline with the specified one. */
