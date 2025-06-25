@@ -3955,8 +3955,19 @@
     <!--- Label of the dismiss button of the dialog appearing when an external display is connected [CHAR LIMIT=NONE]-->
     <string name="dismiss_dialog">Dismiss</string>
 
+    <!--- Title of the dialog appearing when an external display is connected, asking whether to start desktop mode or mirroring [CHAR LIMIT=NONE]-->
+    <string name="connected_display_dialog_title">Connect to external display</string>
+    <!--- Label of the "don't ask me again" checkbox of the dialog appearing when an external display is connected [CHAR LIMIT=NONE]-->
+    <string name="remember_choice">Don\'t ask me again</string>
+    <!--- Label of the "enable display for desktop" button of the dialog appearing when an external display is connected [CHAR LIMIT=NONE]-->
+    <string name="start_desktop_mode">Desktop</string>
+    <!--- Label of the "enable display for mirroring" button of the dialog appearing when an external display is connected [CHAR LIMIT=NONE]-->
+    <string name="start_mirroring">Mirror</string>
     <!--- Content description of the connected display status bar icon that appears every time a display is connected [CHAR LIMIT=NONE]-->
     <string name="connected_display_icon_desc">Display connected</string>
+    <!--- Text for toast that appears every time an extended display is connected (skipping connection dialog) [CHAR LIMIT=NONE]-->
+    <string name="connected_display_extended_mode_text">Connected to external display</string>
+
 
     <!-- Title of the privacy dialog, shown for active / recent app usage of some phone sensors [CHAR LIMIT=30] -->
     <string name="privacy_dialog_title">Microphone, Camera &amp; Location</string>
