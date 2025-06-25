@@ -225,7 +225,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
             @NonNull String[] args,
             ShellCallback callback,
             @NonNull ResultReceiver resultReceiver) {
-        new AppFunctionManagerServiceShellCommand(this)
+        new AppFunctionManagerServiceShellCommand(mContext, this)
                 .exec(this, in, out, err, args, callback, resultReceiver);
     }
 

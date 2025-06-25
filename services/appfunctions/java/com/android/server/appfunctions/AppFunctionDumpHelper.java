@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 public final class AppFunctionDumpHelper {
     private static final String TAG = AppFunctionDumpHelper.class.getSimpleName();
@@ -89,20 +90,19 @@ public final class AppFunctionDumpHelper {
         return false;
     }
 
-    private static void dumpAppFunctionsStateForUser(
-            @NonNull Context context, @NonNull IndentingPrintWriter pw, boolean isVerbose) {
+    /** Returns a map where the key is the package name and the value is its appfunction state. */
+    static Map<String, List<SearchResult>> queryAppFunctionsStateForUser(
+            @NonNull Context context, boolean isVerbose)
+            throws ExecutionException, InterruptedException {
         AppSearchManager appSearchManager = context.getSystemService(AppSearchManager.class);
         if (appSearchManager == null) {
-            pw.println("Couldn't retrieve AppSearchManager.");
-            return;
+            throw new IllegalStateException("Couldn't retrieve AppSearchManager.");
         }
 
         Map<String, List<SearchResult>> packageSearchResults = new ArrayMap<>();
 
         try (FutureGlobalSearchSession searchSession =
                 new FutureGlobalSearchSession(appSearchManager, Runnable::run)) {
-            pw.println();
-
             try (FutureSearchResults futureSearchResults =
                     searchSession
                             .search("", buildAppFunctionMetadataSearchSpec(isVerbose))
@@ -122,10 +122,17 @@ public final class AppFunctionDumpHelper {
                                 .add(searchResult);
                     }
                 } while (!searchResultsList.isEmpty());
-
-                dumpSearchResults(pw, packageSearchResults);
             }
+        }
+        return packageSearchResults;
+    }
 
+    private static void dumpAppFunctionsStateForUser(
+            @NonNull Context context, @NonNull IndentingPrintWriter pw, boolean isVerbose) {
+        try {
+            Map<String, List<SearchResult>> packageSearchResults =
+                    queryAppFunctionsStateForUser(context, isVerbose);
+            dumpSearchResults(pw, packageSearchResults);
         } catch (Exception e) {
             pw.println("Failed to dump AppFunction state: " + e);
         }
@@ -134,10 +141,12 @@ public final class AppFunctionDumpHelper {
     private static void dumpSearchResults(
             IndentingPrintWriter pw, Map<String, List<SearchResult>> packageSearchResults) {
         for (Map.Entry<String, List<SearchResult>> entry : packageSearchResults.entrySet()) {
+            pw.println();
             pw.println("AppFunctionDocument(s) for package: " + entry.getKey());
 
             pw.increaseIndent();
             for (SearchResult result : entry.getValue()) {
+                pw.println();
                 if (result.getGenericDocument()
                         .getSchemaType()
                         .startsWith(AppFunctionStaticMetadataHelper.STATIC_SCHEMA_TYPE)) {
