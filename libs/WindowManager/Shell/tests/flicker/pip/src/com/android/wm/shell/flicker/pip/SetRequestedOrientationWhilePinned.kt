@@ -17,7 +17,7 @@
 package com.android.wm.shell.flicker.pip
 
 import android.app.Activity
-import android.platform.test.annotations.FlakyTest
+import androidx.test.filters.FlakyTest
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDevice
