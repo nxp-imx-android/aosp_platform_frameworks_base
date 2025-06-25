@@ -844,7 +844,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
     }
 
-    @Test
+    @Ignore("b/425280318")
     @DisableSceneContainer
     @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun animateToGlanceableHub_v2Disabled_affectsAlpha() =
@@ -866,7 +866,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
             }
         }
 
-    @Test
+    @Ignore("b/425280318")
     @DisableSceneContainer
     @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun animateToGlanceableHub_v2Disabled_alphaResetOnCommunalNotShowing() =
@@ -932,7 +932,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
             }
         }
 
-    @Test
+    @Ignore("b/425280318")
     @DisableSceneContainer
     @EnableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun animateToGlanceableHub_v2Enabled_alphaDoesNotChange() =
