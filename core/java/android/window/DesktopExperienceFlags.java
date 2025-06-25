@@ -205,6 +205,8 @@ public enum DesktopExperienceFlags {
     ENABLE_TASKBAR_RECENT_TASKS_THROTTLE_BUGFIX(Flags::enableTaskbarRecentTasksThrottleBugfix,
             true, Flags.FLAG_ENABLE_TASKBAR_RECENT_TASKS_THROTTLE_BUGFIX),
     ENABLE_TILE_RESIZING(Flags::enableTileResizing, true, Flags.FLAG_ENABLE_TILE_RESIZING),
+    ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG(Flags::enableUpdatedDisplayConnectionDialog, false,
+            Flags.FLAG_ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG),
     ENABLE_WINDOWING_TASK_STACK_ORDER_BUGFIX(
             Flags::enableWindowingTaskStackOrderBugfix, true,
             Flags.FLAG_ENABLE_WINDOWING_TASK_STACK_ORDER_BUGFIX),
