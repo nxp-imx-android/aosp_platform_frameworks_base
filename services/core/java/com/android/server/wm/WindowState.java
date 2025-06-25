@@ -152,6 +152,7 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STARTING_W
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SYNC_ENGINE;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WINDOW_INSETS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_SHOW_TRANSACTIONS;
+import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_LAYOUT;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
 import static com.android.server.policy.WindowManagerPolicy.TRANSIT_ENTER;
 import static com.android.server.policy.WindowManagerPolicy.TRANSIT_EXIT;
@@ -2970,6 +2971,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (doAnimation) {
             mWinAnimator.applyAnimationLocked(TRANSIT_ENTER, true);
         }
+        if (mControllableInsetProvider != null) {
+            mDisplayContent.pendingLayoutChanges |= FINISH_LAYOUT_REDO_LAYOUT;
+        }
         if (requestAnim) {
             mWmService.scheduleAnimationLocked();
         }
@@ -3014,6 +3018,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                         "WindowState.hideLw: setting mFocusMayChange true");
                 mWmService.mFocusMayChange = true;
             }
+        }
+        if (mControllableInsetProvider != null) {
+            mDisplayContent.pendingLayoutChanges |= FINISH_LAYOUT_REDO_LAYOUT;
         }
         if (requestAnim) {
             mWmService.scheduleAnimationLocked();

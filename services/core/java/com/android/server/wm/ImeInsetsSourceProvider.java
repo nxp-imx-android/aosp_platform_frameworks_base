@@ -71,6 +71,12 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     private boolean mServerVisible;
 
     /**
+     * The server visibility of the source provider's window before the latest
+     * {@link #onPreLayout} call.
+     */
+    private boolean mServerVisiblePreLayout;
+
+    /**
      * When the IME is not ready, it has givenInsetsPending. However, this could happen again,
      * after it became serverVisible. This flag indicates is used to determine if it is
      * readyForDispatching
@@ -91,18 +97,31 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
     }
 
     @Override
-    void onPostLayout() {
+    void onPreLayout() {
+        if (!android.view.inputmethod.Flags.setServerVisibilityOnprelayout()) {
+            return;
+        }
+        mServerVisiblePreLayout = mServerVisible;
+        super.onPreLayout();
+
+        mLastDrawn = mWin != null && mWin.isDrawn();
+    }
+
+    @Override
+    boolean onPostLayout() {
         final boolean wasSourceVisible = mSource.isVisible();
-        super.onPostLayout();
-        if (wasSourceVisible != mSource.isVisible()) {
+        final boolean controlDispatched = super.onPostLayout();
+        if (!android.view.inputmethod.Flags.setServerVisibilityOnprelayout()
+                && wasSourceVisible != mSource.isVisible()) {
             // TODO(b/427863960): Remove this and set the server visibility in onPreLayout
             // If the IME visibility has changed, a traversal needs to apply.
             mDisplayContent.setLayoutNeeded();
         }
 
         final boolean givenInsetsPending = mWin != null && mWin.mGivenInsetsPending;
-        mLastDrawn = mWin != null && mWin.isDrawn();
-
+        if (!android.view.inputmethod.Flags.setServerVisibilityOnprelayout()) {
+            mLastDrawn = mWin != null && mWin.isDrawn();
+        }
         // isLeashReadyForDispatching (used to dispatch the leash of the control) is
         // depending on mGivenInsetsReady. Therefore, triggering notifyControlChanged here
         // again, so that the control with leash can be eventually dispatched
@@ -114,10 +133,14 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             mGivenInsetsReady = true;
             ImeTracker.forLogging().onProgress(mStatsToken,
                     ImeTracker.PHASE_WM_POST_LAYOUT_NOTIFY_CONTROLS_CHANGED);
-            mStateController.notifyControlChanged(mControlTarget, this);
+            if (!controlDispatched) {
+                mStateController.notifyControlChanged(mControlTarget, this);
+            }
             setImeShowing(true);
-        } else if (wasSourceVisible && isServerVisible() && mGivenInsetsReady
-                && givenInsetsPending) {
+            return true;
+        } else if (((!android.view.inputmethod.Flags.setServerVisibilityOnprelayout()
+                && wasSourceVisible) || mServerVisiblePreLayout) && isServerVisible()
+                && mGivenInsetsReady && givenInsetsPending) {
             // If the server visibility didn't change (still visible), and mGivenInsetsReady
             // is set, we won't call into notifyControlChanged. Therefore, we can reset the
             // statsToken, if available.
@@ -126,12 +149,22 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
             ImeTracker.forLogging().onCancelled(mStatsToken,
                     ImeTracker.PHASE_WM_POST_LAYOUT_NOTIFY_CONTROLS_CHANGED);
             mStatsToken = null;
-        } else if (isImeShowing() && !isServerVisible()) {
-            ProtoLog.d(WM_DEBUG_IME,
-                    "onPostLayout: setImeShowing(false) was: true, controlTarget=%s",
-                    mControlTarget);
-            setImeShowing(false);
+        } else if (!isServerVisible()) {
+            if (isImeShowing()) {
+                ProtoLog.d(WM_DEBUG_IME,
+                        "onPostLayout: setImeShowing(false) was: true, controlTarget=%s",
+                        mControlTarget);
+                setImeShowing(false);
+            }
+            if (android.view.inputmethod.Flags.setServerVisibilityOnprelayout()
+                    && mControlTarget != null && mServerVisiblePreLayout && !controlDispatched) {
+                // If the server visibility changed (not visible anymore), we need to dispatch
+                // the control.
+                mStateController.notifyControlChanged(mControlTarget, this);
+                return true;
+            }
         }
+        return controlDispatched;
     }
 
     @Nullable

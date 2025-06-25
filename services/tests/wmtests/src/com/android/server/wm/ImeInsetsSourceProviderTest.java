@@ -168,7 +168,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     }
 
     @Test
-    public void testOnPostLayout_resetServerVisibilityWhenImeIsNotDrawn() {
+    public void testOnPreLayout_resetServerVisibilityWhenImeIsNotDrawn() {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         final WindowState inputTarget = newWindowBuilder("app", TYPE_APPLICATION).build();
         makeWindowVisibleAndDrawn(ime);
@@ -179,19 +179,31 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         mImeProvider.updateControlForTarget(inputTarget, true /* force */,
                 ImeTracker.Token.empty());
 
-        // Calling onPostLayout, as the drawn state is initially false.
-        mImeProvider.onPostLayout();
+        // Calling onPreLayout, as the drawn state is initially false.
+        if (android.view.inputmethod.Flags.setServerVisibilityOnprelayout()) {
+            mImeProvider.onPreLayout();
+        } else {
+            mImeProvider.onPostLayout();
+        }
         assertTrue(mImeProvider.isSurfaceVisible());
 
         // Reset window's drawn state
         ime.mWinAnimator.mDrawState = NO_SURFACE;
-        mImeProvider.onPostLayout();
+        if (android.view.inputmethod.Flags.setServerVisibilityOnprelayout()) {
+            mImeProvider.onPreLayout();
+        } else {
+            mImeProvider.onPostLayout();
+        }
         assertFalse(mImeProvider.isServerVisible());
         assertFalse(mImeProvider.isSurfaceVisible());
 
         // Set it back to drawn
         ime.mWinAnimator.mDrawState = HAS_DRAWN;
-        mImeProvider.onPostLayout();
+        if (android.view.inputmethod.Flags.setServerVisibilityOnprelayout()) {
+            mImeProvider.onPreLayout();
+        } else {
+            mImeProvider.onPostLayout();
+        }
         assertTrue(mImeProvider.isServerVisible());
         assertTrue(mImeProvider.isSurfaceVisible());
     }

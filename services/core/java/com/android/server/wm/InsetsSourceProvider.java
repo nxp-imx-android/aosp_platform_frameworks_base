@@ -362,28 +362,53 @@ class InsetsSourceProvider {
     }
 
     /**
-     * Called when a layout pass has occurred.
+     * Called before a layout pass will occur.
      */
-    void onPostLayout() {
+    void onPreLayout() {
+        if (!android.view.inputmethod.Flags.setServerVisibilityOnprelayout()) {
+            return;
+        }
         if (mWin == null) {
             return;
         }
-        final boolean isServerVisible = isSurfaceVisible();
+        setServerVisible(isSurfaceVisible());
+    }
 
-        final boolean serverVisibleChanged = mServerVisible != isServerVisible;
-        setServerVisible(isServerVisible);
+    /**
+     * Called after a layout pass has occurred.
+     *
+     * @return {@code true} if {@link InsetsStateController#notifyControlChanged} was called or
+     * was scheduled to be called within this method, else {@code false}.
+     */
+    boolean onPostLayout() {
+        if (mWin == null) {
+            return false;
+        }
+        final boolean serverVisibleChanged;
+        if (!android.view.inputmethod.Flags.setServerVisibilityOnprelayout()) {
+            final boolean isServerVisible = isSurfaceVisible();
+
+            serverVisibleChanged = mServerVisible != isServerVisible;
+            setServerVisible(isServerVisible);
+        } else {
+            serverVisibleChanged = false;
+        }
         if (mControl != null && mControlTarget != null) {
             final boolean positionChanged = updateInsetsControlPosition(mWin);
-            if (!(positionChanged || mHasPendingPosition)
-                    // The insets hint would be updated while changing the position. Here updates it
-                    // for the possible change of the bounds or the server visibility.
-                    && (updateInsetsHint(mControl) || serverVisibleChanged)) {
+            if (positionChanged || mHasPendingPosition) {
+                return true;
+            }
+            // The insets hint would be updated while changing the position. Here updates it
+            // for the possible change of the bounds.
+            if (updateInsetsHint(mControl) || serverVisibleChanged) {
                 // Only call notifyControlChanged here when the position hasn't been or won't be
                 // changed. Otherwise, it has been called or scheduled to be called during
                 // updateInsetsControlPosition.
                 mStateController.notifyControlChanged(mControlTarget, this);
+                return true;
             }
         }
+        return false;
     }
 
     /**
