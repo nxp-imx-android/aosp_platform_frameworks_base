@@ -5923,6 +5923,13 @@ public final class ActiveServices {
         // Not running -- get it started, and enqueue this service record
         // to be executed when the app comes up.
         if (app == null && !permissionsReviewRequired && !packageFrozen) {
+            // Fixup the seInfo as the service's app info might have been updated during restart.
+            final String seInfo = generateAdditionalSeInfoFromService(
+                    r.intent.getIntent(), r.packageName);
+            if (!TextUtils.isEmpty(seInfo) && (TextUtils.isEmpty(r.appInfo.seInfo)
+                    || r.appInfo.seInfo.indexOf(seInfo) < 0)) {
+                r.appInfo.seInfo += seInfo;
+            }
             // TODO (chriswailes): Change the Zygote policy flags based on if the launch-for-service
             //  was initiated from a notification tap or not.
             if (r.isSdkSandbox) {
