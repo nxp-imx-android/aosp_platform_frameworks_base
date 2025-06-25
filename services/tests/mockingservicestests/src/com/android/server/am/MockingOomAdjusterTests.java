@@ -190,6 +190,7 @@ public class MockingOomAdjusterTests {
 
     private Context mContext;
     private ProcessStateController mProcessStateController;
+    private ProcessStateController.ActivityStateAsyncUpdater mActivityStateAsyncUpdater;
     private ActiveUids mActiveUids;
     private PackageManagerInternal mPackageManagerInternal;
     private ActivityManagerService mService;
@@ -275,8 +276,9 @@ public class MockingOomAdjusterTests {
                 mService.mProcessList, mActiveUids)
                 .setCachedAppOptimizer(mTestCachedAppOptimizer)
                 .setOomAdjusterInjector(mInjector)
-                .setActivityStateLooper(mActivityStateHandlerThread.getLooper())
                 .build();
+        mActivityStateAsyncUpdater = mProcessStateController.createActivityStateAsyncUpdater(
+                mActivityStateHandlerThread.getLooper());
         mService.mProcessStateController = mProcessStateController;
         mService.mOomAdjuster = mService.mProcessStateController.getOomAdjuster();
         mService.mOomAdjuster.mAdjSeq = 10000;
@@ -615,9 +617,8 @@ public class MockingOomAdjusterTests {
         assertEquals("vis-multi-window-activity", app.mState.getAdjType());
         assertCpuTime(app);
 
-        doReturn(ACTIVITY_STATE_FLAG_IS_VISIBLE
-                | WindowProcessController.ACTIVITY_STATE_FLAG_OCCLUDED_FREEFORM)
-                .when(wpc).getActivityStateFlags();
+        setActivityStateFlags(wpc, ACTIVITY_STATE_FLAG_IS_VISIBLE
+                | WindowProcessController.ACTIVITY_STATE_FLAG_OCCLUDED_FREEFORM);
         updateOomAdj(app);
         assertProcStates(app, PROCESS_STATE_TOP, VISIBLE_APP_ADJ, SCHED_GROUP_BACKGROUND);
         assertEquals("occluded-freeform-activity", app.mState.getAdjType());
@@ -658,7 +659,7 @@ public class MockingOomAdjusterTests {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, true);
         WindowProcessController wpc = app.getWindowProcessController();
-        doReturn(true).when(wpc).hasRecentTasks();
+        setHasRecentTasks(wpc, true);
         app.mState.setLastTopTime(SystemClock.uptimeMillis());
         setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
         updateOomAdj(app);
@@ -812,8 +813,8 @@ public class MockingOomAdjusterTests {
         ProcessRecord app = spy(makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
                 MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true));
         WindowProcessController wpc = app.getWindowProcessController();
-        doReturn(true).when(wpc).hasActivities();
-        doReturn(ACTIVITY_STATE_FLAG_IS_VISIBLE).when(wpc).getActivityStateFlags();
+        setHasActivity(wpc, true);
+        setActivityStateFlags(wpc, ACTIVITY_STATE_FLAG_IS_VISIBLE);
 
         final ProcessRecord app2 = spy(makeDefaultProcessRecord(MOCKAPP3_PID, MOCKAPP3_UID,
                 MOCKAPP3_PROCESSNAME, MOCKAPP3_PACKAGENAME, false));
@@ -3916,7 +3917,7 @@ public class MockingOomAdjusterTests {
 
     private void setTopProcessState(int procState) {
         if (Flags.pushActivityStateToOomadjuster()) {
-            mProcessStateController.setTopProcessStateAsync(procState);
+            mActivityStateAsyncUpdater.setTopProcessStateAsync(procState);
             flushActivityStateHandler();
         } else {
             doReturn(procState).when(mService.mAtmInternal).getTopProcessState();
@@ -3924,11 +3925,11 @@ public class MockingOomAdjusterTests {
     }
 
     private void setDeviceUnlocking(boolean unlocking) {
-        mProcessStateController.setDeviceUnlocking(unlocking);
+        mActivityStateAsyncUpdater.setDeviceUnlocking(unlocking);
     }
 
     private void setExpandedNotificationShade(boolean expandedShade) {
-        mProcessStateController.setExpandedNotificationShadeAsync(expandedShade);
+        mActivityStateAsyncUpdater.setExpandedNotificationShadeAsync(expandedShade);
         flushActivityStateHandler();
     }
 
@@ -3936,7 +3937,7 @@ public class MockingOomAdjusterTests {
         if (Flags.pushActivityStateToOomadjuster()) {
             final WindowProcessController wpc =
                     proc == null ? null : proc.getWindowProcessController();
-            mProcessStateController.setTopProcessAsync(wpc, false,
+            mActivityStateAsyncUpdater.setTopProcessAsync(wpc, false,
                     false);
             flushActivityStateHandler();
         } else {
@@ -3947,7 +3948,7 @@ public class MockingOomAdjusterTests {
 
     private void setPreviousProcess(WindowProcessController wpc) {
         if (Flags.pushActivityStateToOomadjuster()) {
-            mProcessStateController.setPreviousProcessAsync(wpc);
+            mActivityStateAsyncUpdater.setPreviousProcessAsync(wpc);
             flushActivityStateHandler();
         } else {
             if (wpc == null) return;
@@ -3957,7 +3958,7 @@ public class MockingOomAdjusterTests {
 
     private void setHomeProcess(WindowProcessController wpc) {
         if (Flags.pushActivityStateToOomadjuster()) {
-            mProcessStateController.setHomeProcessAsync(wpc);
+            mActivityStateAsyncUpdater.setHomeProcessAsync(wpc);
             flushActivityStateHandler();
         } else {
             if (wpc == null) return;
@@ -3967,7 +3968,7 @@ public class MockingOomAdjusterTests {
 
     private void setHeavyWeightProcess(WindowProcessController wpc) {
         if (Flags.pushActivityStateToOomadjuster()) {
-            mProcessStateController.setHeavyWeightProcessAsync(wpc);
+            mActivityStateAsyncUpdater.setHeavyWeightProcessAsync(wpc);
             flushActivityStateHandler();
         } else {
             if (wpc == null) return;
@@ -3976,7 +3977,7 @@ public class MockingOomAdjusterTests {
     }
 
     private void setVisibleDozeUiProcess(WindowProcessController wpc) {
-        mProcessStateController.setVisibleDozeUiProcessAsync(wpc);
+        mActivityStateAsyncUpdater.setVisibleDozeUiProcessAsync(wpc);
         flushActivityStateHandler();
     }
 
@@ -4001,7 +4002,7 @@ public class MockingOomAdjusterTests {
 
     private void setHasActivity(WindowProcessController wpc, boolean hasActivity) {
         if (Flags.pushActivityStateToOomadjuster()) {
-            mProcessStateController.setHasActivityAsync(wpc, hasActivity);
+            mActivityStateAsyncUpdater.setHasActivityAsync(wpc, hasActivity);
             flushActivityStateHandler();
         } else {
             if (wpc == null) return;
@@ -4011,7 +4012,7 @@ public class MockingOomAdjusterTests {
 
     private void setActivityStateFlags(WindowProcessController wpc, int flags) {
         if (Flags.pushActivityStateToOomadjuster()) {
-            mProcessStateController.setActivityStateAsync(wpc, flags, Long.MIN_VALUE);
+            mActivityStateAsyncUpdater.setActivityStateAsync(wpc, flags, Long.MIN_VALUE);
             flushActivityStateHandler();
         } else {
             if (wpc == null) return;
@@ -4022,12 +4023,22 @@ public class MockingOomAdjusterTests {
     private void setActivityState(WindowProcessController wpc, int flags,
             long perceptibleStopTimeMs) {
         if (Flags.pushActivityStateToOomadjuster()) {
-            mProcessStateController.setActivityStateAsync(wpc, flags, perceptibleStopTimeMs);
+            mActivityStateAsyncUpdater.setActivityStateAsync(wpc, flags, perceptibleStopTimeMs);
             flushActivityStateHandler();
         } else {
             if (wpc == null) return;
             doReturn(flags).when(wpc).getActivityStateFlags();
             doReturn(perceptibleStopTimeMs).when(wpc).getPerceptibleTaskStoppedTimeMillis();
+        }
+    }
+
+    private void setHasRecentTasks(WindowProcessController wpc, boolean hasRecentTasks) {
+        if (Flags.pushActivityStateToOomadjuster()) {
+            mActivityStateAsyncUpdater.setHasRecentTasksAsync(wpc, hasRecentTasks);
+            flushActivityStateHandler();
+        } else {
+            if (wpc == null) return;
+            doReturn(hasRecentTasks).when(wpc).hasRecentTasks();
         }
     }
 

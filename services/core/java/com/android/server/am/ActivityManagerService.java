@@ -2489,7 +2489,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         final Looper activityTaskLooper = DisplayThread.get().getLooper();
         mProcessStateController = new ProcessStateController.Builder(this, mProcessList, activeUids)
                 .setLockObject(this)
-                .setActivityStateLooper(activityTaskLooper)
                 .setTopProcessChangeCallback(this::updateTopAppListeners)
                 .build();
         mOomAdjuster = mProcessStateController.getOomAdjuster();

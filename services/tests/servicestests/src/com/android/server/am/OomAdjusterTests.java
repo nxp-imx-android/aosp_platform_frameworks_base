@@ -22,6 +22,7 @@ import static androidx.test.platform.app.InstrumentationRegistry.getInstrumentat
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -74,10 +75,13 @@ public class OomAdjusterTests {
         // We need to run with dexmaker share class loader to make use of
         // ActivityTaskManagerService from wm package.
         runWithDexmakerShareClassLoader(() -> {
+            final ProcessStateController psc = mock(ProcessStateController.class);
+            doReturn(mock(ProcessStateController.ActivityStateAsyncUpdater.class)).when(
+                    psc).createActivityStateAsyncUpdater(any());
+
             sService = mock(ActivityManagerService.class);
             sService.mActivityTaskManager = new ActivityTaskManagerService(sContext);
-            sService.mActivityTaskManager.initialize(null, null, mock(ProcessStateController.class),
-                    sContext.getMainLooper());
+            sService.mActivityTaskManager.initialize(null, null, psc, sContext.getMainLooper());
             sService.mAtmInternal = sService.mActivityTaskManager.getAtmInternal();
 
             setFieldValue(ActivityManagerService.class, sService, "mProcLock",
