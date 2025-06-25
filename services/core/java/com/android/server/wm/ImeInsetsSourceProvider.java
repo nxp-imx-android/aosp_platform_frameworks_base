@@ -92,8 +92,13 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
 
     @Override
     void onPostLayout() {
-        boolean wasServerVisible = mServerVisible;
+        final boolean wasSourceVisible = mSource.isVisible();
         super.onPostLayout();
+        if (wasSourceVisible != mSource.isVisible()) {
+            // TODO(b/427863960): Remove this and set the server visibility in onPreLayout
+            // If the IME visibility has changed, a traversal needs to apply.
+            mDisplayContent.setLayoutNeeded();
+        }
 
         final boolean givenInsetsPending = mWin != null && mWin.mGivenInsetsPending;
         mLastDrawn = mWin != null && mWin.isDrawn();
@@ -111,7 +116,7 @@ final class ImeInsetsSourceProvider extends InsetsSourceProvider {
                     ImeTracker.PHASE_WM_POST_LAYOUT_NOTIFY_CONTROLS_CHANGED);
             mStateController.notifyControlChanged(mControlTarget, this);
             setImeShowing(true);
-        } else if (wasServerVisible && isServerVisible() && mGivenInsetsReady
+        } else if (wasSourceVisible && isServerVisible() && mGivenInsetsReady
                 && givenInsetsPending) {
             // If the server visibility didn't change (still visible), and mGivenInsetsReady
             // is set, we won't call into notifyControlChanged. Therefore, we can reset the
