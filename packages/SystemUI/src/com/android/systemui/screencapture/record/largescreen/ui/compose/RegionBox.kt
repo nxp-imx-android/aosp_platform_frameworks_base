@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.ui.compose
+package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -42,6 +41,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
 
 /**
  * Determines which zone (corner or edge) of a box is being touched based on the press offset.
