@@ -738,7 +738,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         Trace.endSection();
     }
 
-    private void updateBackgroundColorsOfSelf() {
+    public void updateBackgroundColorsOfSelf() {
         super.updateBackgroundColors();
         if (mColorUpdateLogger.isEnabled()) {
             mColorUpdateLogger.logNotificationEvent("ENR.updateBackgroundColorsOfSelf()",
