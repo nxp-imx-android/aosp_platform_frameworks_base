@@ -88,7 +88,7 @@ class LockscreenSmartspaceController
 @Inject
 constructor(
     @ShadeDisplayAware private val context: Context,
-    private val featureFlags: FeatureFlags,
+    featureFlags: FeatureFlags,
     private val activityStarter: ActivityStarter,
     private val falsingManager: FalsingManager,
     private val systemClock: SystemClock,
@@ -101,7 +101,7 @@ constructor(
     private val bypassController: KeyguardBypassController,
     private val keyguardUpdateMonitor: KeyguardUpdateMonitor,
     private val smartspaceViewModelFactory: SmartspaceViewModel.Factory,
-    private val dumpManager: DumpManager,
+    dumpManager: DumpManager,
     private val execution: Execution,
     @Main private val uiExecutor: Executor,
     @Background private val bgExecutor: Executor,
@@ -133,7 +133,6 @@ constructor(
     private var regionSamplers = mutableMapOf<SmartspaceView, RegionSampler>()
 
     private val regionSamplingEnabled = featureFlags.isEnabled(Flags.REGION_SAMPLING)
-    private var isRegionSamplersCreated = false
     private var showNotifications = false
     private var showSensitiveContentForCurrentUser = false
     private var showSensitiveContentForManagedUser = false
@@ -513,11 +512,6 @@ constructor(
 
         updateBypassEnabled()
         reloadSmartspace()
-    }
-
-    fun setSplitShadeEnabled(enabled: Boolean) {
-        mSplitShadeEnabled = enabled
-        smartspaceViews.forEach { it.setSplitShadeEnabled(enabled) }
     }
 
     /** Requests the smartspace session for an update. */
