@@ -204,3 +204,10 @@ flag {
   description: "Disables restoring the IME visibility after activity recreation (e.g. rotation), without an explicit show request."
   bug: "391859600"
 }
+
+flag {
+  name: "optimize_ime_input_target_update"
+  namespace: "input_method"
+  description: "Optimizes the IME Input Target update flow by bypassing the InputMethodService, as there are no checks done there"
+  bug: "427397699"
+}
