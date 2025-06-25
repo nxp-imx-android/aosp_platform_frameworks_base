@@ -155,13 +155,6 @@ public class ViewConfiguration {
     private static final int DOUBLE_TAP_MIN_TIME = 40;
 
     /**
-     * Defines the maximum duration in milliseconds between a touch pad
-     * touch and release for a given touch to be considered a tap (click) as
-     * opposed to a hover movement gesture.
-     */
-    private static final int HOVER_TAP_TIMEOUT = 150;
-
-    /**
      * Defines the maximum distance in pixels that a touch pad touch can move
      * before being released for it to be considered a tap (click) as opposed
      * to a hover movement gesture.
@@ -1613,7 +1606,6 @@ public class ViewConfiguration {
         private int mJumpTapTimeout = -1;
         private int mDoubleTapTimeout = -1;
         private int mDoubleTapMinTime = -1;
-        private int mHoverTapTimeout = -1;
         private int mHoverTapSlop = -1;
         private long mZoomControlsTimeout = -1L;
         private float mScrollFriction = -1f;
