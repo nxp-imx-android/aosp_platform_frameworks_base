@@ -19,7 +19,6 @@ package com.android.server.wm.flicker.launch
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDevice
 import android.tools.Rotation
-import android.tools.flicker.annotation.FlickerServiceCompatible
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
@@ -56,7 +55,6 @@ import org.junit.runners.Parameterized
  *        apps are running before setup
  * ```
  */
-@FlickerServiceCompatible
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)

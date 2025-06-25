@@ -20,7 +20,6 @@ import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresDevice
 import android.tools.NavBar
 import android.tools.Rotation
-import android.tools.flicker.annotation.FlickerServiceCompatible
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.LegacyFlickerTest
 import android.tools.flicker.legacy.LegacyFlickerTestFactory
@@ -60,7 +59,6 @@ import org.junit.runners.Parameterized
  * ```
  */
 @RequiresDevice
-@FlickerServiceCompatible
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
