@@ -67,6 +67,7 @@ import com.android.systemui.plugins.activityStarter
 import com.android.systemui.settings.displayTracker
 import com.android.systemui.settings.userTracker
 import com.android.systemui.statusbar.phone.systemUIDialogFactory
+import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 
 var Kosmos.shortcutHelperAppCategoriesShortcutsSource: KeyboardShortcutGroupsSource by
     Kosmos.Fixture { AppCategoriesShortcutsSource(windowManager, testDispatcher) }
@@ -75,7 +76,7 @@ var Kosmos.shortcutHelperSystemShortcutsSource: KeyboardShortcutGroupsSource by
     Kosmos.Fixture { SystemShortcutsSource(mainResources, fakeInputManager.inputManager) }
 
 var Kosmos.shortcutHelperMultiTaskingShortcutsSource: KeyboardShortcutGroupsSource by
-    Kosmos.Fixture { MultitaskingShortcutsSource(mainResources, applicationContext) }
+    Kosmos.Fixture { MultitaskingShortcutsSource(mainResources, applicationContext, desktopState) }
 
 val Kosmos.shortcutHelperStateRepository by
     Kosmos.Fixture { ShortcutHelperStateRepository(fakeInputManager.inputManager, testDispatcher) }
@@ -273,6 +274,8 @@ val Kosmos.shortcutCustomizationViewModelFactory by
     }
 
 val Kosmos.fakeLauncherApps by Kosmos.Fixture { FakeLauncherApps() }
+
+val Kosmos.desktopState by Kosmos.Fixture { FakeDesktopState() }
 
 val Kosmos.userVisibleAppsRepository by
     Kosmos.Fixture {

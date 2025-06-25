@@ -102,7 +102,8 @@ public abstract class SysuiTestCase {
                     android.service.quickaccesswallet.Flags.class,
                     com.android.internal.telephony.flags.Flags.class,
                     com.android.server.notification.Flags.class,
-                    com.android.systemui.Flags.class);
+                    com.android.systemui.Flags.class,
+                    com.android.window.flags.Flags.class);
 
     // TODO(b/339471826): Fix Robolectric to execute the @ClassRule correctly
     @Rule public final SetFlagsRule mSetFlagsRule =
