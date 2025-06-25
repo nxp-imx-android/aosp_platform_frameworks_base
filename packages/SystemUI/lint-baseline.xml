@@ -24139,6 +24139,149 @@
     </issue>
 
     <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/communal/data/backup/CommunalBackupUtils.kt"
+            line="21"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/communal/CommunalMetricsStartable.kt"
+            line="21"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/keyguard/CustomizationProvider.kt"
+            line="33"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/qs/tiles/FlashlightTileWithLevel.kt"
+            line="27"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/util/kotlin/IpcSerializer.kt"
+            line="19"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/keyguard/ui/preview/KeyguardPreviewRenderer.kt"
+            line="47"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/keyguard/ui/preview/KeyguardRemotePreviewManager.kt"
+            line="29"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/media/controls/domain/pipeline/Media3ActionFactory.kt"
+            line="34"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/qs/tiles/ModesDndTile.kt"
+            line="28"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/qs/tiles/ModesTile.kt"
+            line="30"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/statusbar/notification/logging/NotificationMemoryLogger.kt"
+            line="24"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/inputdevice/tutorial/domain/interactor/TutorialSchedulerInteractor.kt"
+            line="20"
+            column="1"/>
+    </issue>
+
+    <issue
+        id="RunBlockingUsage"
+        message="Importing com.android.app.tracing.coroutines.runBlockingTraced is not allowed."
+        errorLine1="import com.android.app.tracing.coroutines.runBlockingTraced as runBlocking"
+        errorLine2="~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~">
+        <location
+            file="frameworks/base/packages/SystemUI/src/com/android/systemui/user/data/repository/UserRepository.kt"
+            line="34"
+            column="1"/>
+    </issue>
+
+    <issue
         id="SharedFlowCreation"
         message="`MutableSharedFlow()` creates a new shared flow, which has poor performance characteristics"
         errorLine1="        MutableSharedFlow&lt;Int>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)"
