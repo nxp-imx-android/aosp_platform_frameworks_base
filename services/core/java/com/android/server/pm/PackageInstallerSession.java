@@ -3449,7 +3449,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
         private Intent getUserNotificationIntent() {
             return new Intent(
-                    PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE)
+                    PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION)
                     .setPackage(mPm.getPackageInstallerPackageName())
                     .putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId);
         }

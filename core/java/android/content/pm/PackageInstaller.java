@@ -240,8 +240,8 @@ public class PackageInstaller {
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
-    public static final String ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE =
-            "android.content.pm.action.NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE";
+    public static final String ACTION_CONFIRM_DEVELOPER_VERIFICATION =
+            "android.content.pm.action.CONFIRM_DEVELOPER_VERIFICATION";
 
     /**
      * An integer session ID that an operation is working with.
