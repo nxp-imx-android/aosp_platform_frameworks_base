@@ -599,6 +599,11 @@ public class CallLog {
          */
         public static final int FEATURES_VOLTE = 1 << 6;
         /**
+         * Call was HD+
+         */
+        @FlaggedApi(Flags.FLAG_HD_PLUS_CALL)
+        public static final int FEATURES_HD_PLUS_CALL = 1 << 7;
+        /**
          * The phone number as the user entered it.
          * <P>Type: TEXT</P>
          */
