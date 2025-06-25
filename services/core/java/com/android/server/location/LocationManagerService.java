@@ -815,6 +815,9 @@ public class LocationManagerService extends ILocationManager.Stub implements
 
     @Override
     public PackageTagsList getAdasAllowlist() {
+        if (Flags.changeGetAdasAllowlistFromHiddenToSystem()) {
+            LocationPermissions.enforceCallingOrSelfAccessBypassAllowlistPermission(mContext);
+        }
         return mInjector.getSettingsHelper().getAdasAllowlist();
     }
 
