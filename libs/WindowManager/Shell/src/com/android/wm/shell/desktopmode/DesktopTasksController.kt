@@ -752,6 +752,7 @@ class DesktopTasksController(
                             destDisplayLayout?.densityDpi()?.let {
                                 wct.setDensityDpi(task.token, it)
                             }
+                            applyFreeformDisplayChange(wct, task, destinationDisplayId, deskId)
                         }
                         desksTransitionObserver.addPendingTransition(
                             DeskTransition.ChangeDeskDisplay(
