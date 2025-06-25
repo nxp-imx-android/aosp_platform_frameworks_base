@@ -18,6 +18,7 @@ package com.android.systemui.media.remedia.ui.viewmodel
 
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.ImageBitmap
+import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.media.remedia.shared.model.MediaCardActionButtonLayout
 import com.android.systemui.media.remedia.shared.model.MediaColorScheme
@@ -58,7 +59,7 @@ interface MediaCardViewModel {
     /** Simple icon-only version of the output switcher for use in compact UIs. */
     val outputSwitcherChipButton: MediaSecondaryActionViewModel.Action
 
-    val onClick: () -> Unit
+    val onClick: (Expandable) -> Unit
 
     /** Accessibility string for the click action of the card. */
     val onClickLabel: String?

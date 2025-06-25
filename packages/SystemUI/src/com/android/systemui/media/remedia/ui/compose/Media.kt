@@ -96,6 +96,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipRect
@@ -123,6 +124,8 @@ import androidx.compose.ui.util.fastRoundToInt
 import com.android.compose.PlatformButton
 import com.android.compose.PlatformIconButton
 import com.android.compose.PlatformOutlinedButton
+import com.android.compose.animation.Expandable
+import com.android.compose.animation.rememberExpandableController
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.animation.scene.ElementKey
 import com.android.compose.animation.scene.SceneKey
@@ -135,6 +138,7 @@ import com.android.compose.modifiers.thenIf
 import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.mechanics.spec.builder.rememberMotionBuilderContext
+import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.common.ui.compose.PagerDots
@@ -327,17 +331,35 @@ private fun Card(
             CardBackground(image = viewModel.background, modifier = Modifier.matchParentSize())
         }
 
-        key(stlState) {
-            SceneTransitionLayout(state = stlState) {
-                scene(Media.Scenes.Default) {
-                    CardForeground(viewModel = viewModel, threeRows = true, fillHeight = false)
-                }
+        Expandable(
+            controller =
+                rememberExpandableController(color = Color.Transparent, shape = RectangleShape),
+            useModifierBasedImplementation = true,
+        ) {
+            key(stlState) {
+                SceneTransitionLayout(state = stlState) {
+                    scene(Media.Scenes.Default) {
+                        CardForeground(
+                            expandable = it,
+                            viewModel = viewModel,
+                            threeRows = true,
+                            fillHeight = false,
+                        )
+                    }
 
-                scene(Media.Scenes.Compressed) {
-                    CardForeground(viewModel = viewModel, threeRows = false, fillHeight = false)
-                }
+                    scene(Media.Scenes.Compressed) {
+                        CardForeground(
+                            expandable = it,
+                            viewModel = viewModel,
+                            threeRows = false,
+                            fillHeight = false,
+                        )
+                    }
 
-                scene(Media.Scenes.Compact) { CompactCardForeground(viewModel = viewModel) }
+                    scene(Media.Scenes.Compact) {
+                        CompactCardForeground(expandable = it, viewModel = viewModel)
+                    }
+                }
             }
         }
     }
@@ -372,6 +394,7 @@ private fun rememberAnimatedColorScheme(colorScheme: MediaColorScheme?): Animate
  */
 @Composable
 private fun ContentScope.CardForeground(
+    expandable: Expandable,
     viewModel: MediaCardViewModel,
     threeRows: Boolean,
     fillHeight: Boolean,
@@ -391,6 +414,7 @@ private fun ContentScope.CardForeground(
     Layout(
         content = {
             CardForegroundContent(
+                expandable = expandable,
                 viewModel = viewModel,
                 threeRows = threeRows,
                 fillHeight = fillHeight,
@@ -436,16 +460,18 @@ private fun ContentScope.CardForeground(
 
 @Composable
 private fun ContentScope.CardForegroundContent(
+    expandable: Expandable,
     viewModel: MediaCardViewModel,
     threeRows: Boolean,
     fillHeight: Boolean,
     colorScheme: AnimatedColorScheme,
     modifier: Modifier = Modifier,
 ) {
+
     Column(
         modifier =
             modifier.combinedClickable(
-                onClick = viewModel.onClick,
+                onClick = { viewModel.onClick(expandable) },
                 onLongClick = viewModel.onLongClick,
                 onClickLabel = viewModel.onClickLabel,
             )
@@ -468,10 +494,12 @@ private fun ContentScope.CardForegroundContent(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier =
                     Modifier.align(Alignment.TopEnd)
-                        // Output switcher chip must be limited to at most 40% of the maximum width
+                        // Output switcher chip must be limited to at most 40% of the maximum
+                        // width
                         // of the card.
                         //
-                        // This saves the maximum possible width of the card so it can be referred
+                        // This saves the maximum possible width of the card so it can be
+                        // referred
                         // to by child custom layout code below.
                         //
                         // The assumption is that the row can be as wide as the entire card.
@@ -646,6 +674,7 @@ private fun ContentScope.CardForegroundContent(
  */
 @Composable
 private fun ContentScope.CompactCardForeground(
+    expandable: Expandable,
     viewModel: MediaCardViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -654,7 +683,10 @@ private fun ContentScope.CompactCardForeground(
         verticalAlignment = Alignment.CenterVertically,
         modifier =
             modifier
-                .clickable(onClick = viewModel.onClick, onClickLabel = viewModel.onClickLabel)
+                .clickable(
+                    onClick = { viewModel.onClick(expandable) },
+                    onClickLabel = viewModel.onClickLabel,
+                )
                 .background(MaterialTheme.colorScheme.surfaceContainer)
                 .padding(16.dp),
     ) {
