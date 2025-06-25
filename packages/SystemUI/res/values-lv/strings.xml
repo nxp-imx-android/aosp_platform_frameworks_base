@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Pašlaik ierakstāt visu ekrānu"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Pašlaik ierakstāt lietotni <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Apturēt ierakstīšanu"</string>
+    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
+    <skip />
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Uzņemt"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Ierakstīt"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Notiek ekrāna kopīgošana"</string>
@@ -664,8 +666,7 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Izslēgt"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Atbloķējiet vecāku paziņojumu skatīšanai"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Šo ierīci pārvalda viens no jūsu vecākiem."</string>
-    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
-    <skip />
+    <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Noteikti ierīces iestatījumi ir aizsargāti ar PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Šī ierīce pieder jūsu organizācijai, un jūsu organizācija var uzraudzīt tīkla datplūsmu."</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"Šī ierīce pieder organizācijai<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g>, un šī organizācija var uzraudzīt tīkla datplūsmu."</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"Šo ierīci nodrošina <xliff:g id="ORGANIZATION_NAME">%s</xliff:g>"</string>
@@ -706,8 +707,7 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Atvērt VPN iestatījumus"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Šo ierīci pārvalda viens no jūsu vecākiem. Vecāki var skatīt un pārvaldīt tādu informāciju kā jūsu izmantotās lietotnes, atrašanās vieta un izmantošanas ilgums."</string>
-    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
-    <skip />
+    <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Noteiktus ierīces kontroles iestatījumus, piemēram, dienas ierobežojumus un dīkstāves laiku, var mainīt tikai ar PIN."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Bloķēšanu liedzis TrustAgent"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Ierīce tika bloķēta; pārāk daudz autentifikācijas mēģinājumu."</string>
@@ -752,8 +752,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"Divtoņu daudzfrekvenču signalizācija"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"Pieejamība"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"Asistents"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"Zvanīt"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Vibrēt"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Izslēgt skaņu"</string>
@@ -813,8 +812,7 @@
     <string name="status_bar_work" msgid="5238641949837091056">"Darba profils"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"Lidojuma režīms"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"Vecāku kontrole"</string>
-    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
-    <skip />
+    <string name="status_bar_pin_supervision" msgid="4376576498566645782">"PIN aizsardzība noteiktām ierīces vadīklām"</string>
     <string name="zen_alarm_warning" msgid="7844303238486849503">"Nākamais signāls (<xliff:g id="WHEN">%1$s</xliff:g>) netiks atskaņots."</string>
     <string name="alarm_template" msgid="2234991538018805736">"plkst. <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"<xliff:g id="WHEN">%1$s</xliff:g>"</string>
@@ -855,6 +853,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Ieslēgt"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Tagad garākas sarunas var tikt apkopotas, lai sniegtu jums īsus kopsavilkumus"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Paziņojumu kārtotājs grupē zemākas prioritātes paziņojumus un izslēdz tiem skaņu"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Gatavs"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Lietot"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Izslēgt"</string>
@@ -1580,10 +1580,8 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Pievienot saīsni"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Dzēst saīsni"</string>
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
-    <skip />
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
-    <skip />
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"Ir sasniegts 10 lietotņu pielāgoto saīšņu ierobežojums"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"Dzēsiet kādu saīsni, lai varētu pievienot jaunu saīsni"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Pārvietošanās, izmantojot tastatūru"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Uzziniet par īsinājumtaustiņiem."</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Pārvietošanās, izmantojot skārienpaliktni"</string>
@@ -1658,13 +1656,19 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Nezināma"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Vai atiestatīt visus elementus?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Visiem ātro iestatījumu elementiem tiks atiestatīti sākotnējie iestatījumi"</string>
+    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
+    <skip />
+    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
+    <skip />
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> vairs nerādīs reāllaika jaunumus. Iestatījumos varat jebkurā laikā to mainīt."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Aizvērt"</string>
-    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
-    <skip />
+    <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"Gaidstāves ieteikumu ikona"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Velciet no augšējā kreisā stūra, lai atvērtu paziņojumu paneli."</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Velciet no augšējā labā stūra, lai atvērtu ātro iestatījumu izvēlni."</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"Atpakaļ"</string>
 </resources>

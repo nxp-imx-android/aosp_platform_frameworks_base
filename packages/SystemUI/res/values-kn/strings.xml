@@ -138,6 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"ನೀವು ಪ್ರಸ್ತುತ ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಸ್ಕ್ರೀನ್ ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡುತ್ತಿದ್ದೀರಿ"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"ನೀವು ಪ್ರಸ್ತುತ <xliff:g id="APP_NAME">%1$s</xliff:g> ಅನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡುತ್ತಿದ್ದೀರಿ"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ"</string>
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"ಆಯ್ದ ಪ್ರದೇಶವನ್ನು ಕ್ಯಾಪ್ಚರ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"ಕ್ಯಾಪ್ಚರ್ ಮಾಡಿ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ರೆಕಾರ್ಡ್ ಮಾಡಿ"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"ಪರದೆಯನ್ನು ಹಂಚಿಕೊಳ್ಳಲಾಗುತ್ತಿದೆ"</string>
@@ -750,8 +751,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"ಬ್ಲೂಟೂತ್‌"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"ಡ್ಯುಯಲ್‌ ಬಹು ಟೋನ್ ಆವರ್ತನೆ"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"ಆ್ಯಕ್ಸೆಸಿಬಿಲಿಟಿ"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"Assistant"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"ರಿಂಗ್"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"ವೈಬ್ರೇಟ್‌"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"ಮ್ಯೂಟ್"</string>
@@ -852,6 +852,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ಆನ್ ಮಾಡಿ"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ನಿಮ್ಮ ದೀರ್ಘ ಸಂಭಾಷಣೆಗಳನ್ನು ಈಗ ಸಂಕ್ಷಿಪ್ತಗೊಳಿಸಬಹುದು ಇದರಿಂದ ನಿಮಗೆ ತ್ವರಿತ ರೀಕ್ಯಾಪ್‌ಗಳು ದೊರೆಯುತ್ತವೆ"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Notification Organizer ಕಡಿಮೆ ಆದ್ಯತೆಯ ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ಬಂಡಲ್ ಮಾಡುತ್ತದೆ ಮತ್ತು ನಿಶ್ಯಬ್ದಗೊಳಿಸುತ್ತದೆ"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"ಪೂರ್ಣಗೊಂಡಿದೆ"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ಅನ್ವಯಿಸಿ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ಆಫ್ ಮಾಡಿ"</string>
@@ -1653,12 +1655,15 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"ಅಪರಿಚಿತ"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"ಎಲ್ಲಾ ಟೈಲ್‌ಗಳನ್ನು ರೀಸೆಟ್ ಮಾಡಬೇಕೆ?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"ಎಲ್ಲಾ ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳ ಟೈಲ್‌ಗಳನ್ನು ಸಾಧನದ ಮೂಲ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ರೀಸೆಟ್ ಮಾಡಲಾಗುತ್ತದೆ"</string>
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"ಉಪಯುಕ್ತ ಸಲಹೆಗಳನ್ನು ಪಡೆಯಿರಿ"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"ನೀವು ಸ್ಕ್ರೀನ್ ಮೇಲೆ ಏನು ಮಾಡುತ್ತಿದ್ದೀರಿ ಎಂಬುದಕ್ಕೆ ಸಂಬಂಧಿಸಿದ ಮಾಹಿತಿ ಮತ್ತು ಕ್ರಿಯೆಗಳನ್ನು ಪೂರ್ವಭಾವಿಯಾಗಿ ಸೂಚಿಸಲು ನಾವು AI ಅನ್ನು ಬಳಸುತ್ತೇವೆ"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"ಐಕಾನ್"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"ಸಲಹೆಗಳನ್ನು ಹೇಗೆ ಜನರೇಟ್ ಮಾಡಲಾಗಿದೆ ಎಂಬುದನ್ನು ನೋಡಲು ಸ್ಪರ್ಶಿಸಿ ಮತ್ತು ಹೋಲ್ಡ್‌ ಮಾಡಿ"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ಇನ್ನು ಮುಂದೆ ಲೈವ್ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ತೋರಿಸುವುದಿಲ್ಲ. ನೀವು ಇದನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಬದಲಾಯಿಸಬಹುದು."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"ಮುಚ್ಚಿರಿ"</string>
     <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"ಆ್ಯಂಬಿಯೆಂಟ್ ಸಲಹೆಗಳ ಐಕಾನ್"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"ನೋಟಿಫಿಕೇಶನ್‌ಗಳನ್ನು ತೆರೆಯಲು ಮೇಲಿನ ಎಡದಿಂದ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ತ್ವರಿತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಲು ಮೇಲಿನ ಬಲದಿಂದ ಸ್ವೈಪ್ ಮಾಡಿ"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"ಹಿಂದಕ್ಕೆ"</string>
 </resources>

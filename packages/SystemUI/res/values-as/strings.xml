@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"বৰ্তমান আপুনি আপোনাৰ গোটেই স্ক্ৰীনখন ৰেকৰ্ড কৰি আছে"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"বৰ্তমান আপুনি <xliff:g id="APP_NAME">%1$s</xliff:g> ৰেকৰ্ড কৰি আছে"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ৰেকৰ্ডিং বন্ধ কৰক"</string>
+    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
+    <skip />
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"কেপচাৰ কৰক"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ৰেকৰ্ড কৰক"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"স্ক্ৰীন শ্বেয়াৰ কৰি থকা হৈছে"</string>
@@ -750,8 +752,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"ব্লুটুথ"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"ডুৱেল মাল্টি ট\'ন ফ্ৰিকুৱেন্সী"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"দিব্যাংগসকলৰ বাবে থকা সুবিধাসমূহ"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"Assistant"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"ৰিং"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"কম্পন"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"মিউট"</string>
@@ -852,6 +853,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"অন কৰক"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"এতিয়া আপোনাক ক্ষিপ্ৰ ৰিকেপ দিবলৈ আপোনাৰ দীঘলীয়া বাৰ্তালাপৰ সাৰাংশ প্ৰস্তুত কৰিব পাৰি"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"জাননী সংগঠকে বাণ্ডল কৰে আৰু কম অগ্ৰাধিকাৰ থকা জাননী নীৰৱ কৰে"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"কৰা হ’ল"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"প্ৰয়োগ কৰক"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"অফ কৰক"</string>
@@ -1653,12 +1656,19 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"অজ্ঞাত"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"আটাইবোৰ টাইল ৰিছেট কৰিবনে?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"আটাইবোৰ ক্ষিপ্ৰ ছেটিঙৰ টাইল ডিভাইচৰ মূল ছেটিংছলৈ ৰিছেট হ’ব"</string>
+    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
+    <skip />
+    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
+    <skip />
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g>এ আৰু লাইভ আপডে’ট নেদেখুৱাব। আপুনি যিকোনো সময়তে ছেটিঙত এইটো সলনি কৰিব পাৰে।"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"বন্ধ কৰক"</string>
     <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"এম্বিয়েণ্ট সম্পৰ্কীয় পৰামৰ্শৰ চিহ্ন"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"জাননীসমূহ খুলিবলৈ একেবাৰে ওপৰৰ বাওঁফালৰ পৰা ছোৱাইপ কৰক"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ক্ষিপ্ৰ ছেটিংসমূহ খুলিবলৈ একেবাৰে ওপৰৰ সোঁফালৰ পৰা ছোৱাইপ কৰক"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"উভতি যাওক"</string>
 </resources>

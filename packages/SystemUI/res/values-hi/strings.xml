@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"फ़िलहाल, पूरी स्क्रीन रिकॉर्ड की जा रही है"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"फ़िलहाल, <xliff:g id="APP_NAME">%1$s</xliff:g> की रिकॉर्डिंग की जा रही है"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"रिकॉर्ड करना बंद करें"</string>
+    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
+    <skip />
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"कैप्चर करें"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"रिकॉर्डिंग टाइप चुनें"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"स्क्रीन शेयर की जा रही है"</string>
@@ -397,7 +399,7 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# डिवाइस}one{# डिवाइस}other{# डिवाइस}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"फ़्लैशलाइट"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"कैमरा इस्तेमाल में है"</string>
-    <string name="flashlight_dialog_title" msgid="4232742718579701241">"फ़्लैशलाइट की क्षमता"</string>
+    <string name="flashlight_dialog_title" msgid="4232742718579701241">"फ़्लैशलाइट की रोशनी"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"मोबाइल डेटा"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"डेटा खर्च"</string>
@@ -750,8 +752,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"ब्लूटूथ"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"दोहरी बहु टोन आवृत्ति"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"सुलभता"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"असिस्टेंट"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"आवाज़ चालू है"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"वाइब्रेशन"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"आवाज़ बंद है"</string>
@@ -852,6 +853,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"चालू करें"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"अब आपको अपनी लंबी बातचीत की खास जानकारी, रीकैप के तौर पर तुरंत मिल सकती है"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"सूचनाओं को व्यवस्थित करने की सेटिंग, सूचनाओं को बंडल करती है और उनकी आवाज़ बंद करती है. ये ऐसी सूचनाएं होती हैं जो ज़्यादा अहम नहीं होती हैं"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"हो गया"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू करें"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"बंद करें"</string>
@@ -1577,10 +1580,8 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"शॉर्टकट जोड़ें"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"शॉर्टकट मिटाएं"</string>
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
-    <skip />
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
-    <skip />
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"ऐप्लिकेशन के लिए 10 से ज़्यादा कस्टम शॉर्टकट नहीं बनाए जा सकते"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"नया शॉर्टकट जोड़ने के लिए, कोई शॉर्टकट मिटाएं"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"कीबोर्ड का इस्तेमाल करके नेविगेट करें"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"कीबोर्ड शॉर्टकट के बारे में जानें"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"टचपैड का इस्तेमाल करके नेविगेट करें"</string>
@@ -1655,13 +1656,19 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"कोई जानकारी नहीं है"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"क्या सभी टाइल रीसेट करनी हैं?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"क्विक सेटिंग से जुड़ी सभी टाइल, डिवाइस की ओरिजनल सेटिंग पर रीसेट हो जाएंगी"</string>
+    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
+    <skip />
+    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
+    <skip />
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> अब लाइव अपडेट नहीं दिखाएगा. सेटिंग में जाकर, इस विकल्प को कभी भी बदला जा सकता है."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"बंद करें"</string>
-    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
-    <skip />
+    <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"ऐंबियंट सुझावों का आइकॉन"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"सूचनाएं देखने के लिए, सबसे ऊपर बाईं ओर से नीचे की ओर स्वाइप करें"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"क्विक सेटिंग खोलने के लिए, सबसे ऊपर दाईं ओर से नीचे की ओर स्वाइप करें"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"वापस जाएं"</string>
 </resources>

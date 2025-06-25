@@ -138,6 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"現在、画面全体を録画しています"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"現在、<xliff:g id="APP_NAME">%1$s</xliff:g>を録画しています"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"録画を停止"</string>
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"選択した領域をキャプチャ"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"キャプチャ"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"録画"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"画面を共有しています"</string>
@@ -752,8 +753,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"デュアルトーン マルチ周波数"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"ユーザー補助機能"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"アシスタント"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"着信音"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"バイブレーション"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"ミュート"</string>
@@ -854,6 +854,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ON にする"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"長い会話を要約して、内容をすばやく確認できるようになりました"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"通知オーガナイザーは、優先度の低い通知をまとめてサイレントにします"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"完了"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"適用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"OFF にする"</string>
@@ -1655,12 +1657,15 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"不明"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"すべてのタイルをリセットしますか？"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"すべてのクイック設定タイルがデバイスの元の設定にリセットされます"</string>
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"購入候補の情報を入手する"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"AI を使用して、画面上での操作に関連する情報やアクションを積極的に提案します"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"アイコン"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"長押しすると、候補の生成方法を確認できます"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> のライブ情報は表示されなくなります。これは [設定] でいつでも変更できます。"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>、<xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"閉じる"</string>
     <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"Ambient Suggestions のアイコン"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"左上から下にスワイプして通知を開きます"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"右上から下にスワイプしてクイック設定を開きます"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"戻る"</string>
 </resources>
