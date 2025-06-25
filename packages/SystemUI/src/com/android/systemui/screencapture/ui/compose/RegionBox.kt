@@ -44,32 +44,6 @@ import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.res.R
 
 /**
- * A common interface for all draggable zones of the resizable box. The ResizeZone is one of Corner
- * or Edge.
- */
-sealed interface ResizeZone
-
-/**
- * An enum to identify each of the four corners of the rectangle.
- *
- * @param alignment The alignment of the corner within the box.
- */
-enum class Corner(val alignment: Alignment) : ResizeZone {
-    TopLeft(Alignment.TopStart),
-    TopRight(Alignment.TopEnd),
-    BottomLeft(Alignment.BottomStart),
-    BottomRight(Alignment.BottomEnd),
-}
-
-/** An enum to identify each of the four edges of the rectangle. */
-enum class Edge : ResizeZone {
-    Top,
-    Bottom,
-    Left,
-    Right,
-}
-
-/**
  * Determines which zone (corner or edge) of a box is being touched based on the press offset.
  *
  * @param boxWidth The total width of the box.
@@ -78,35 +52,32 @@ enum class Edge : ResizeZone {
  * @param touchAreaPx The size of the touch area in pixels.
  * @return The ResizeZone that was pressed, or `null` if the press was not on a zone.
  */
-private fun getDragZone(
+private fun getTouchedZone(
     boxWidth: Float,
     boxHeight: Float,
     startOffset: Offset,
     touchAreaPx: Float,
 ): ResizeZone? {
     val isTouchingTop = startOffset.y in -touchAreaPx..touchAreaPx
-    val isTouchingBottom = startOffset.y in (boxHeight - touchAreaPx)..boxHeight
+    val isTouchingBottom = startOffset.y in (boxHeight - touchAreaPx)..(boxHeight + touchAreaPx)
     val isTouchingLeft = startOffset.x in -touchAreaPx..touchAreaPx
-    val isTouchingRight = startOffset.x in (boxWidth - touchAreaPx)..boxWidth
+    val isTouchingRight = startOffset.x in (boxWidth - touchAreaPx)..(boxWidth + touchAreaPx)
 
-    // Corners should be checked first because edges are also touched when the user touches a
-    // corner.
-    when {
-        isTouchingTop && isTouchingLeft -> return Corner.TopLeft
-        isTouchingTop && isTouchingRight -> return Corner.TopRight
-        isTouchingBottom && isTouchingLeft -> return Corner.BottomLeft
-        isTouchingBottom && isTouchingRight -> return Corner.BottomRight
+    return when {
+        // Corners have priority over edges, as they occupy overlapping areas.
+        isTouchingTop && isTouchingLeft -> ResizeZone.Corner.TopLeft
+        isTouchingTop && isTouchingRight -> ResizeZone.Corner.TopRight
+        isTouchingBottom && isTouchingLeft -> ResizeZone.Corner.BottomLeft
+        isTouchingBottom && isTouchingRight -> ResizeZone.Corner.BottomRight
+
+        // If not a corner, check for edges.
+        isTouchingLeft -> ResizeZone.Edge.Left
+        isTouchingTop -> ResizeZone.Edge.Top
+        isTouchingRight -> ResizeZone.Edge.Right
+        isTouchingBottom -> ResizeZone.Edge.Bottom
+
+        else -> null
     }
-
-    // Edges are checked next.
-    when {
-        isTouchingTop -> return Edge.Top
-        isTouchingBottom -> return Edge.Bottom
-        isTouchingLeft -> return Edge.Left
-        isTouchingRight -> return Edge.Right
-    }
-
-    return null
 }
 
 /**
@@ -144,65 +115,6 @@ fun RegionBox(
         )
     }
 
-    val onResizeDrag:
-        (dragAmount: Offset, zone: ResizeZone, maxWidth: Float, maxHeight: Float) -> Unit =
-        { dragAmount, zone, maxWidth, maxHeight ->
-            var newLeft = rect.left
-            var newTop = rect.top
-            var newRight = rect.right
-            var newBottom = rect.bottom
-
-            val (dragX, dragY) = dragAmount
-
-            // Handle horizontal drag for resizing.
-            when (zone) {
-                Corner.TopLeft,
-                Corner.BottomLeft,
-                Edge.Left -> {
-                    val potentialNewLeft = rect.left + dragX
-                    val rightLimitForMinWidth = rect.right - minSizePx
-
-                    newLeft = potentialNewLeft.coerceIn(0f, rightLimitForMinWidth)
-                }
-                Corner.TopRight,
-                Corner.BottomRight,
-                Edge.Right -> {
-                    val potentialNewRight = rect.right + dragX
-                    val leftLimitForMinWidth = rect.left + minSizePx
-
-                    newRight = potentialNewRight.coerceIn(leftLimitForMinWidth, maxWidth)
-                }
-                else -> {
-                    // No horizontal change for Top or Bottom edges.
-                }
-            }
-
-            // Handle vertical drag for resizing.
-            when (zone) {
-                Corner.TopLeft,
-                Corner.TopRight,
-                Edge.Top -> {
-                    val potentialNewTop = rect.top + dragY
-                    val bottomLimitForMinHeight = rect.bottom - minSizePx
-
-                    newTop = potentialNewTop.coerceIn(0f, bottomLimitForMinHeight)
-                }
-                Corner.BottomLeft,
-                Corner.BottomRight,
-                Edge.Bottom -> {
-                    val potentialNewBottom = rect.bottom + dragY
-                    val topLimitForMinHeight = rect.top + minSizePx
-
-                    newBottom = potentialNewBottom.coerceIn(topLimitForMinHeight, maxHeight)
-                }
-                else -> {
-                    // No vertical change for Left or Right edges.
-                }
-            }
-
-            rect = Rect(newLeft, newTop, newRight, newBottom)
-        }
-
     val onBoxDrag: (dragAmount: Offset, maxWidth: Float, maxHeight: Float) -> Unit =
         { dragAmount, maxWidth, maxHeight ->
             val newOffset = rect.topLeft + dragAmount
@@ -220,7 +132,9 @@ fun RegionBox(
 
     ResizableRectangle(
         rect = rect,
-        onResizeDrag = onResizeDrag,
+        onResizeDrag = { dragAmount, zone, maxWidth, maxHeight ->
+            rect = zone.processResizeDrag(rect, dragAmount, minSizePx, maxWidth, maxHeight)
+        },
         onBoxDrag = onBoxDrag,
         onDragEnd = {
             onDragEnd(
@@ -294,7 +208,7 @@ private fun ResizableRectangle(
                         detectDragGestures(
                             onDragStart = { startOffset ->
                                 draggedZone =
-                                    getDragZone(
+                                    getTouchedZone(
                                         boxWidth = size.width.toFloat(),
                                         boxHeight = size.height.toFloat(),
                                         startOffset = startOffset,
