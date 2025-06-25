@@ -188,18 +188,7 @@ class InsetsStateController {
     }
 
     /**
-     * Called before a layout pass will occur.
-     */
-    void onPreLayout() {
-        Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "ISC.onPreLayout");
-        for (int i = mProviders.size() - 1; i >= 0; i--) {
-            mProviders.valueAt(i).onPreLayout();
-        }
-        Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
-    }
-
-    /**
-     * Called after a layout pass has occurred.
+     * Called when a layout pass has occurred.
      */
     void onPostLayout() {
         Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "ISC.onPostLayout");

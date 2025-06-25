@@ -168,7 +168,7 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
     }
 
     @Test
-    public void testOnPreLayout_resetServerVisibilityWhenImeIsNotDrawn() {
+    public void testOnPostLayout_resetServerVisibilityWhenImeIsNotDrawn() {
         final WindowState ime = newWindowBuilder("ime", TYPE_INPUT_METHOD).build();
         final WindowState inputTarget = newWindowBuilder("app", TYPE_APPLICATION).build();
         makeWindowVisibleAndDrawn(ime);
@@ -179,19 +179,19 @@ public class ImeInsetsSourceProviderTest extends WindowTestsBase {
         mImeProvider.updateControlForTarget(inputTarget, true /* force */,
                 ImeTracker.Token.empty());
 
-        // Calling onPreLayout, as the drawn state is initially false.
-        mImeProvider.onPreLayout();
+        // Calling onPostLayout, as the drawn state is initially false.
+        mImeProvider.onPostLayout();
         assertTrue(mImeProvider.isSurfaceVisible());
 
         // Reset window's drawn state
         ime.mWinAnimator.mDrawState = NO_SURFACE;
-        mImeProvider.onPreLayout();
+        mImeProvider.onPostLayout();
         assertFalse(mImeProvider.isServerVisible());
         assertFalse(mImeProvider.isSurfaceVisible());
 
         // Set it back to drawn
         ime.mWinAnimator.mDrawState = HAS_DRAWN;
-        mImeProvider.onPreLayout();
+        mImeProvider.onPostLayout();
         assertTrue(mImeProvider.isServerVisible());
         assertTrue(mImeProvider.isSurfaceVisible());
     }
