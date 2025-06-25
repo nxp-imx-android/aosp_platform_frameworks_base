@@ -1369,6 +1369,16 @@ flag {
 }
 
 flag {
+    name: "limit_system_fullscreen_override_to_default_display"
+    namespace: "lse_desktop_experience"
+    description: "Limit system full-screen override to apps first launched on default display"
+    bug: "423802240"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "nested_tasks_with_independent_bounds_bugfix"
     namespace: "lse_desktop_experience"
     description: "Allows tasks under a root task to be have independent (non-inherited) bounds"
