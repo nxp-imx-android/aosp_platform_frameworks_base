@@ -93,13 +93,6 @@ flag {
 }
 
 flag {
-    name: "touchpad_three_finger_tap_shortcut"
-    namespace: "input"
-    description: "Turns three-finger touchpad taps into a customizable shortcut."
-    bug: "365063048"
-}
-
-flag {
     name: "enable_display_color_inversion_key_gestures"
     namespace: "input"
     description: "Adds key gestures for display color inversion for accessibility needs"
