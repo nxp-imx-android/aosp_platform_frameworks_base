@@ -49,6 +49,7 @@ public class AlwaysOnDisplayPolicy {
 
     static final String KEY_SCREEN_BRIGHTNESS_ARRAY = "screen_brightness_array";
     static final String KEY_DIMMING_SCRIM_ARRAY = "dimming_scrim_array";
+    static final String KEY_WALLPAPER_DIMMING_SCRIM_ARRAY = "wallpaper_dimming_scrim_array";
     static final String KEY_PROX_SCREEN_OFF_DELAY_MS = "prox_screen_off_delay";
     static final String KEY_PROX_COOLDOWN_TRIGGER_MS = "prox_cooldown_trigger";
     static final String KEY_PROX_COOLDOWN_PERIOD_MS = "prox_cooldown_period";
@@ -93,6 +94,14 @@ public class AlwaysOnDisplayPolicy {
      * @see #KEY_DIMMING_SCRIM_ARRAY
      */
     public int[] dimmingScrimArray;
+
+    /**
+     * Integer array to map ambient brightness type to dimming scrim for aod wallpaper.
+     *
+     * @see Settings.Global#ALWAYS_ON_DISPLAY_CONSTANTS
+     * @see #KEY_WALLPAPER_DIMMING_SCRIM_ARRAY
+     */
+    public int[] wallpaperDimmingScrimArray;
 
     /**
      * Delay time(ms) from covering the prox to turning off the screen.
@@ -205,6 +214,9 @@ public class AlwaysOnDisplayPolicy {
                 dimmingScrimArray = mParser.getIntArray(KEY_DIMMING_SCRIM_ARRAY,
                         resources.getIntArray(
                                 R.array.config_doze_brightness_sensor_to_scrim_opacity));
+                wallpaperDimmingScrimArray = mParser.getIntArray(KEY_WALLPAPER_DIMMING_SCRIM_ARRAY,
+                        resources.getIntArray(
+                                R.array.config_doze_brightness_sensor_to_wallpaper_scrim_opacity));
             }
         }
     }
