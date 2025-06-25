@@ -99,6 +99,7 @@ class OccludedToLockscreenTransitionViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    @DisableSceneContainer
     fun statusBarAlphaOnCancel() =
         testScope.runTest {
             val values by collectValues(underTest.statusBarAlpha)

@@ -106,6 +106,12 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     public interface TaskListener extends TaskVanishedListener, TaskAppearedListener,
             TaskInfoChangedListener {
 
+        /**
+         * Invoked when back is pressed on the base activity of the task. If the task is not
+         * organized, there will be no callback.
+         *
+         * @param taskInfo The RunningTaskInfo for the Task which received back event.
+         */
         default void onBackPressedOnTaskRoot(RunningTaskInfo taskInfo) {}
         /** Whether this task listener supports compat UI. */
         default boolean supportCompatUI() {

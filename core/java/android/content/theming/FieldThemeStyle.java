@@ -21,18 +21,11 @@ import android.annotation.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.Objects;
 
 /** @hide */
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
-public class FieldThemeStyle extends ThemeSettingsField<Integer, String> {
-    public FieldThemeStyle(String key, Function<ThemeSettingsUpdater, Integer> updaterGetter,
-            BiConsumer<ThemeSettingsUpdater, Integer> updaterSetter,
-            Function<ThemeSettings, Integer> getter, ThemeSettings defaults) {
-        super(key, updaterGetter, updaterSetter, getter, defaults);
-    }
-
+public final class FieldThemeStyle extends ThemeSettingsField<Integer, String> {
     private static final @ThemeStyle.Type List<Integer> sValidStyles = Arrays.asList(
             ThemeStyle.EXPRESSIVE, ThemeStyle.SPRITZ, ThemeStyle.TONAL_SPOT, ThemeStyle.FRUIT_SALAD,
             ThemeStyle.RAINBOW, ThemeStyle.VIBRANT, ThemeStyle.MONOCHROMATIC);
@@ -44,6 +37,7 @@ public class FieldThemeStyle extends ThemeSettingsField<Integer, String> {
 
     @Override
     public boolean validate(Integer value) {
+        Objects.requireNonNull(value);
         return sValidStyles.contains(value);
     }
 

@@ -36,11 +36,8 @@ import static perfetto.protos.TracePacketOuterClass.TracePacket.SequenceFlags.SE
 
 import android.os.SystemClock;
 import android.platform.test.annotations.Presubmit;
-import android.tools.ScenarioBuilder;
 import android.tools.Tag;
 import android.tools.io.TraceType;
-import android.tools.traces.TraceConfig;
-import android.tools.traces.TraceConfigs;
 import android.tools.traces.io.ResultReader;
 import android.tools.traces.io.ResultWriter;
 import android.tools.traces.monitors.PerfettoTraceMonitor;
@@ -91,13 +88,6 @@ public class ProcessedPerfettoProtoLogImplTest {
     private static final String MOCK_VIEWER_CONFIG_FILE = "my/mock/viewer/config/file.pb";
     private final File mTracingDirectory = InstrumentationRegistry.getInstrumentation()
             .getTargetContext().getFilesDir();
-
-    private final TraceConfigs mTraceConfig = new TraceConfigs(
-            new TraceConfig(false, true, false),
-            new TraceConfig(false, true, false),
-            new TraceConfig(false, true, false),
-            new TraceConfig(false, true, false)
-    );
 
     private static ProtoLogConfigurationService sProtoLogConfigurationService;
     private static ProtoLogDataSource sTestDataSource;
@@ -269,7 +259,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(1);
@@ -303,7 +293,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(4);
@@ -340,7 +330,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(3);
@@ -372,7 +362,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(5);
@@ -474,7 +464,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(1);
@@ -510,7 +500,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(1);
@@ -537,7 +527,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(1);
@@ -577,7 +567,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         assertThrows(java.net.SocketException.class, reader::readProtoLogTrace);
     }
 
@@ -596,7 +586,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).isEmpty();
@@ -624,7 +614,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(1);
@@ -791,7 +781,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(1);
@@ -815,7 +805,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(1);
@@ -846,10 +836,10 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor2.stop(writer2);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protologFromMonitor1 = reader.readProtoLogTrace();
 
-        final ResultReader reader2 = new ResultReader(writer2.write(), mTraceConfig);
+        final ResultReader reader2 = new ResultReader(writer2.write());
         final ProtoLogTrace protologFromMonitor2 = reader2.readProtoLogTrace();
 
         Truth.assertThat(protologFromMonitor1.messages).hasSize(1);
@@ -880,7 +870,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(2);
@@ -913,7 +903,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(1);
@@ -944,7 +934,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(1);
@@ -1014,7 +1004,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(1);
@@ -1081,22 +1071,22 @@ public class ProcessedPerfettoProtoLogImplTest {
         releaseExecutorLatch.countDown();
 
         var writer0 = new ResultWriter()
-                .forScenario(new ScenarioBuilder().forClass("scenario0").build())
+                .withName("scenario0")
                 .withOutputDir(mTracingDirectory).setRunComplete();
         traceMonitor0.stop(writer0);
 
         var writer1 = new ResultWriter()
-                .forScenario(new ScenarioBuilder().forClass("scenario1").build())
+                .withName("scenario1")
                 .withOutputDir(mTracingDirectory).setRunComplete();
         traceMonitor1.stop(writer1);
         busyWaitTracingSessionDoesntExist("test_session1");
 
-        final ResultReader reader0 = new ResultReader(writer0.write(), mTraceConfig);
+        final ResultReader reader0 = new ResultReader(writer0.write());
         final ProtoLogTrace protolog0 = reader0.readProtoLogTrace();
 
         Truth.assertThat(protolog0.messages).hasSize(numOldMessages + numNewMessages);
 
-        final ResultReader reader1 = new ResultReader(writer1.write(), mTraceConfig);
+        final ResultReader reader1 = new ResultReader(writer1.write());
         final ProtoLogTrace protolog1 = reader1.readProtoLogTrace();
 
         Truth.assertThat(protolog1.messages).hasSize(numNewMessages);
@@ -1186,7 +1176,7 @@ public class ProcessedPerfettoProtoLogImplTest {
         }
 
         // Verify that all messages were written to the trace.
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final ProtoLogTrace protolog = reader.readProtoLogTrace();
 
         Truth.assertThat(protolog.messages).hasSize(numMessages);
@@ -1243,7 +1233,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader resultReader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader resultReader = new ResultReader(writer.write());
         final ProtoLogTrace protologTrace = resultReader.readProtoLogTrace();
 
         Truth.assertThat(protologTrace.messages).hasSize(1);
@@ -1275,7 +1265,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final var traceBytes = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
         final var trace = Trace.parseFrom(traceBytes);
         final var protoLogMessagePackets = trace.getPacketList().stream()
@@ -1308,7 +1298,7 @@ public class ProcessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final var traceBytes = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
         final var trace = Trace.parseFrom(traceBytes);
         final var protoLogMessagePackets = trace.getPacketList().stream()

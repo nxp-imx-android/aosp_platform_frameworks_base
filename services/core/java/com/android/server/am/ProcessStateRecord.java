@@ -164,12 +164,6 @@ final class ProcessStateRecord {
     private boolean mServiceHighRam;
 
     /**
-     * Has this process not been in a cached state since last idle?
-     */
-    @GuardedBy("mProcLock")
-    private boolean mNotCachedSinceIdle;
-
-    /**
      * Are there any started services running in this process?
      */
     @CompositeRWLock({"mService", "mProcLock"})
@@ -691,16 +685,6 @@ final class ProcessStateRecord {
     @GuardedBy(anyOf = {"mService", "mProcLock"})
     boolean isServiceHighRam() {
         return mServiceHighRam;
-    }
-
-    @GuardedBy("mProcLock")
-    void setNotCachedSinceIdle(boolean notCachedSinceIdle) {
-        mNotCachedSinceIdle = notCachedSinceIdle;
-    }
-
-    @GuardedBy("mProcLock")
-    boolean isNotCachedSinceIdle() {
-        return mNotCachedSinceIdle;
     }
 
     @GuardedBy("mProcLock")
@@ -1402,15 +1386,6 @@ final class ProcessStateRecord {
         if (mServiceB) {
             pw.print(prefix); pw.print("serviceb="); pw.print(mServiceB);
             pw.print(" serviceHighRam="); pw.println(mServiceHighRam);
-        }
-        if (mNotCachedSinceIdle) {
-            pw.print(prefix); pw.print("notCachedSinceIdle="); pw.print(mNotCachedSinceIdle);
-            if (mService.mAppProfiler.isProfilingPss()) {
-                pw.print(" initialIdlePss=");
-            } else {
-                pw.print(" initialIdleRss=");
-            }
-            pw.println(mApp.mProfile.getInitialIdlePssOrRss());
         }
         if (hasTopUi() || hasOverlayUi() || mRunningRemoteAnimation) {
             pw.print(prefix); pw.print("hasTopUi="); pw.print(hasTopUi());

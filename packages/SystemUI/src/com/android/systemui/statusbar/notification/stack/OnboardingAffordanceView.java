@@ -127,6 +127,11 @@ public class OnboardingAffordanceView extends StackScrollerDecorView implements 
     }
 
     @Override
+    public boolean isBackgroundOpaque() {
+        return true;
+    }
+
+    @Override
     public void onActivityLaunchAnimationEnd() {
         if (mOnActivityLaunchEndListener != null) {
             mOnActivityLaunchEndListener.run();

@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 
 /** A proxy of holding the list of Output Switcher's output media items. */
 public class OutputMediaItemListProxy {
+    private static final int MAX_SUGGESTED_DEVICE_COUNT = 2;
     private final Context mContext;
     private final List<MediaItem> mOutputMediaItemList;
 
@@ -221,7 +222,8 @@ public class OutputMediaItemListProxy {
                 } else {
                     selectedMediaItems.add(0, mediaItem);
                 }
-            } else if (device.isSuggestedDevice()) {
+            } else if (device.isSuggestedDevice()
+                    && suggestedMediaItems.size() < MAX_SUGGESTED_DEVICE_COUNT) {
                 suggestedMediaItems.add(mediaItem);
             } else {
                 speakersAndDisplaysMediaItems.add(mediaItem);

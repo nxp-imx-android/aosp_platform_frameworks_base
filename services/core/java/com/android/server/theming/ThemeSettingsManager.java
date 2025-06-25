@@ -17,21 +17,12 @@
 package com.android.server.theming;
 
 import android.annotation.FlaggedApi;
-import android.annotation.NonNull;
 import android.annotation.UserIdInt;
 import android.content.ContentResolver;
 import android.content.theming.ThemeSettings;
 import android.content.theming.ThemeSettingsField;
-import android.content.theming.ThemeSettingsUpdater;
 import android.provider.Settings;
 import android.telecom.Log;
-
-import com.android.internal.util.Preconditions;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.Iterator;
 
 /**
  * Manages the loading and saving of theme settings. This class handles the persistence of theme
@@ -43,19 +34,6 @@ import java.util.Iterator;
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
 class ThemeSettingsManager {
     private static final String TAG = ThemeSettingsManager.class.getSimpleName();
-    static final String TIMESTAMP_FIELD = "_applied_timestamp";
-    private final ThemeSettingsField<?, ?>[] mFields;
-    private final ThemeSettings mDefaults;
-
-    /**
-     * Constructs a new {@code ThemeSettingsManager} with the specified default settings.
-     *
-     * @param defaults The default theme settings to use.
-     */
-    ThemeSettingsManager(ThemeSettings defaults) {
-        mDefaults = defaults;
-        mFields = ThemeSettingsField.getFields(defaults);
-    }
 
     /**
      * Loads the theme settings for the specified user.
@@ -64,26 +42,14 @@ class ThemeSettingsManager {
      * @param contentResolver The content resolver to use.
      * @return The loaded {@link ThemeSettings}.
      */
-    @NonNull
-    ThemeSettings loadSettings(@UserIdInt int userId, ContentResolver contentResolver) {
-        String jsonString = Settings.Secure.getStringForUser(contentResolver,
-                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, userId);
-
-        JSONObject userSettings;
-
+    ThemeSettings readSettings(@UserIdInt int userId, ContentResolver contentResolver) {
         try {
-            userSettings = new JSONObject(jsonString == null ? "" : jsonString);
-        } catch (JSONException e) {
-            userSettings = new JSONObject();
+            return ThemeSettings.fromJson(Settings.Secure.getStringForUser(contentResolver,
+                    Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, userId));
+        } catch (Exception e) {
+            Log.w(TAG, "Error loading theme settings: " + e);
+            return null;
         }
-
-        ThemeSettingsUpdater updater = ThemeSettings.updater();
-
-        for (ThemeSettingsField<?, ?> field : mFields) {
-            field.fromJSON(userSettings, updater);
-        }
-
-        return updater.toThemeSettings(mDefaults);
     }
 
     /**
@@ -91,76 +57,20 @@ class ThemeSettingsManager {
      *
      * @param userId          The ID of the user.
      * @param contentResolver The content resolver to use.
-     * @param updater         The {@link ThemeSettingsUpdater} to save.
+     * @param newSettings     The {@link ThemeSettings} to save.
      */
-    void replaceSettings(@UserIdInt int userId, ContentResolver contentResolver,
-            ThemeSettingsUpdater updater) throws RuntimeException {
-        Preconditions.checkArgument(updater != null, "Impossible to write empty settings");
-
-        JSONObject jsonSettings = new JSONObject();
-
-
-        for (ThemeSettingsField<?, ?> field : mFields) {
-            field.toJSON(updater, jsonSettings);
-        }
-
-        // user defined timestamp should be ignored. Storing new timestamp.
+    boolean writeSettings(@UserIdInt int userId, ContentResolver contentResolver,
+            ThemeSettings newSettings) {
         try {
-            jsonSettings.put(TIMESTAMP_FIELD, System.currentTimeMillis());
-        } catch (JSONException e) {
-            Log.w(TAG, "Error saving timestamp: " + e.getMessage());
+            Settings.Secure.putStringForUser(contentResolver,
+                    Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, newSettings.toString(),
+                    userId);
+
+            return true;
+        } catch (Exception e) {
+            Log.w(TAG, "Error writings theme settings:" + e.getMessage());
+
+            return false;
         }
-
-        String jsonString = jsonSettings.toString();
-
-        Settings.Secure.putStringForUser(contentResolver,
-                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, jsonString, userId);
-    }
-
-    /**
-     * Saves the specified theme settings for the given user, while preserving unrelated existing
-     * properties.
-     *
-     * @param userId          The ID of the user.
-     * @param contentResolver The content resolver to use.
-     * @param updater         The {@link ThemeSettingsUpdater} to save.
-     */
-    void updateSettings(@UserIdInt int userId, ContentResolver contentResolver,
-            ThemeSettingsUpdater updater) throws JSONException, RuntimeException {
-        Preconditions.checkArgument(updater != null, "Impossible to write empty settings");
-
-        String existingJsonString = Settings.Secure.getStringForUser(contentResolver,
-                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, userId);
-
-        JSONObject existingJson;
-        try {
-            existingJson = new JSONObject(existingJsonString == null ? "{}" : existingJsonString);
-        } catch (JSONException e) {
-            existingJson = new JSONObject();
-        }
-
-        JSONObject newJson = new JSONObject();
-        for (ThemeSettingsField<?, ?> field : mFields) {
-            field.toJSON(updater, newJson);
-        }
-
-        // user defined timestamp should be ignored. Storing new timestamp.
-        try {
-            newJson.put(TIMESTAMP_FIELD, System.currentTimeMillis());
-        } catch (JSONException e) {
-            Log.w(TAG, "Error saving timestamp: " + e.getMessage());
-        }
-
-        // Merge the new settings with the existing settings
-        Iterator<String> keys = newJson.keys();
-        while (keys.hasNext()) {
-            String key = keys.next();
-            existingJson.put(key, newJson.get(key));
-        }
-
-        String mergedJsonString = existingJson.toString();
-
-        Settings.Secure.putStringForUser(contentResolver,
-                Settings.Secure.THEME_CUSTOMIZATION_OVERLAY_PACKAGES, mergedJsonString, userId);
     }
 }

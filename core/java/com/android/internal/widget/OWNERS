@@ -27,3 +27,6 @@ per-file ViewClippingUtil.java = file:/packages/SystemUI/src/com/android/systemu
 
 # Appwidget related
 per-file *RemoteViews* = file:/services/appwidget/java/com/android/server/appwidget/OWNERS
+
+# Resolver related
+per-file *Resolver* = file:/core/java/com/android/internal/app/chooser/OWNERS

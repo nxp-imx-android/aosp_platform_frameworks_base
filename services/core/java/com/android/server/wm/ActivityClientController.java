@@ -1818,7 +1818,7 @@ class ActivityClientController extends IActivityClientController.Stub {
                 final ActivityRecord root = task.getRootActivity(false /*ignoreRelinquishIdentity*/,
                         true /*setToBottomIfNone*/);
                 if (r == root && mService.mWindowOrganizerController.mTaskOrganizerController
-                        .handleInterceptBackPressedOnTaskRoot(r.getRootTask())) {
+                        .handleInterceptBackPressedOnTaskRoot(r)) {
                     // This task is handled by a task organizer that has requested the back
                     // pressed callback.
                     return;

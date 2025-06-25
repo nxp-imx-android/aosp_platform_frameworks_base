@@ -29,25 +29,13 @@ import androidx.annotation.Nullable;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
+import java.util.Objects;
 
 /** @hide */
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
-public class FieldColorSource extends ThemeSettingsField<String, String> {
+public final class FieldColorSource extends ThemeSettingsField<String, String> {
     public static final String VALUE_PRESET = "preset";
     public static final String VALUE_HOME_WALLPAPER = "home_wallpaper";
-    public static final String VALUE_LOCK_WALLPAPER = "lock_wallpaper";
-
-    public FieldColorSource(
-            String key,
-            Function<ThemeSettingsUpdater, String> updaterGetter,
-            BiConsumer<ThemeSettingsUpdater, String> updaterSetter,
-            Function<ThemeSettings, String> getter,
-            ThemeSettings defaults
-    ) {
-        super(key, updaterGetter, updaterSetter, getter, defaults);
-    }
 
     @Override
     @Nullable
@@ -63,8 +51,9 @@ public class FieldColorSource extends ThemeSettingsField<String, String> {
 
     @Override
     public boolean validate(String value) {
+        Objects.requireNonNull(value);
         return switch (value) {
-            case VALUE_PRESET, VALUE_HOME_WALLPAPER, VALUE_LOCK_WALLPAPER -> true;
+            case VALUE_PRESET, VALUE_HOME_WALLPAPER -> true;
             default -> false;
         };
     }
@@ -80,7 +69,7 @@ public class FieldColorSource extends ThemeSettingsField<String, String> {
     }
 
 
-    @StringDef({VALUE_PRESET, VALUE_HOME_WALLPAPER, VALUE_LOCK_WALLPAPER})
+    @StringDef({VALUE_PRESET, VALUE_HOME_WALLPAPER})
     @Target({PARAMETER, METHOD, LOCAL_VARIABLE, FIELD})
     @Retention(SOURCE)
     @interface Type {

@@ -24,7 +24,6 @@ import static android.service.ondeviceintelligence.OnDeviceSandboxedInferenceSer
 import static android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService.REGISTER_MODEL_UPDATE_CALLBACK_BUNDLE_KEY;
 
 import static com.android.server.ondeviceintelligence.BundleUtil.sanitizeInferenceParams;
-import static com.android.server.ondeviceintelligence.BundleUtil.validatePfdReadOnly;
 import static com.android.server.ondeviceintelligence.BundleUtil.sanitizeStateParams;
 import static com.android.server.ondeviceintelligence.BundleUtil.wrapWithValidation;
 
@@ -62,7 +61,6 @@ import android.os.ICancellationSignal;
 import android.os.IRemoteCallback;
 import android.os.Looper;
 import android.os.Message;
-import android.os.ParcelFileDescriptor;
 import android.os.PersistableBundle;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
@@ -88,11 +86,9 @@ import com.android.internal.infra.AndroidFuture;
 import com.android.internal.os.BackgroundThread;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.SystemService;
-import com.android.server.SystemService.TargetUser;
 import com.android.server.ondeviceintelligence.callbacks.ListenableDownloadCallback;
 
 import java.io.FileDescriptor;
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -623,7 +619,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                                 try {
                                     ensureRemoteIntelligenceServiceInitialized();
                                     service.registerRemoteStorageService(
-                                            getIRemoteStorageService(), new IRemoteCallback.Stub() {
+                                            getRemoteStorageService(), new IRemoteCallback.Stub() {
                                                 @Override
                                                 public void sendResult(Bundle bundle) {
                                                     final int uid = Binder.getCallingUid();
@@ -761,57 +757,12 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
     }
 
     @NonNull
-    private IRemoteStorageService.Stub getIRemoteStorageService() {
-        return new IRemoteStorageService.Stub() {
-            @Override
-            public void getReadOnlyFileDescriptor(
-                    String filePath,
-                    AndroidFuture<ParcelFileDescriptor> future) {
-                ensureRemoteIntelligenceServiceInitialized();
-                AndroidFuture<ParcelFileDescriptor> pfdFuture = new AndroidFuture<>();
-                mRemoteOnDeviceIntelligenceService.run(
-                        service -> service.getReadOnlyFileDescriptor(
-                                filePath, pfdFuture));
-                pfdFuture.whenCompleteAsync((pfd, error) -> {
-                    try {
-                        if (error != null) {
-                            future.completeExceptionally(error);
-                        } else {
-                            validatePfdReadOnly(pfd);
-                            future.complete(pfd);
-                        }
-                    } finally {
-                        tryClosePfd(pfd);
-                    }
-                }, callbackExecutor);
-            }
-
-            @Override
-            public void getReadOnlyFeatureFileDescriptorMap(
-                    Feature feature,
-                    RemoteCallback remoteCallback) {
-                ensureRemoteIntelligenceServiceInitialized();
-                mRemoteOnDeviceIntelligenceService.run(
-                        service -> service.getReadOnlyFeatureFileDescriptorMap(
-                                feature,
-                                new RemoteCallback(result -> callbackExecutor.execute(() -> {
-                                    try {
-                                        if (result == null) {
-                                            remoteCallback.sendResult(null);
-                                        }
-                                        for (String key : result.keySet()) {
-                                            ParcelFileDescriptor pfd = result.getParcelable(key,
-                                                    ParcelFileDescriptor.class);
-                                            validatePfdReadOnly(pfd);
-                                        }
-                                        remoteCallback.sendResult(result);
-                                    } finally {
-                                        resourceClosingExecutor.execute(
-                                                () -> BundleUtil.tryCloseResource(result));
-                                    }
-                                }))));
-            }
-        };
+    private IRemoteStorageService.Stub getRemoteStorageService() {
+        return new RemoteStorageService(
+                this::ensureRemoteIntelligenceServiceInitialized,
+                mRemoteOnDeviceIntelligenceService,
+                callbackExecutor,
+                resourceClosingExecutor);
     }
 
     private void validateServiceElevated(String serviceName, boolean checkIsolated) {
@@ -1039,16 +990,6 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
             }
         });
         return processingSignalFuture;
-    }
-
-    private static void tryClosePfd(ParcelFileDescriptor pfd) {
-        if (pfd != null) {
-            try {
-                pfd.close();
-            } catch (IOException e) {
-                Log.e(TAG, "Failed to close parcel file descriptor ", e);
-            }
-        }
     }
 
     private synchronized Handler getTemporaryHandler() {

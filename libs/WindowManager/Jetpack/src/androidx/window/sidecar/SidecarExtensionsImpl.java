@@ -22,7 +22,9 @@ import android.app.Activity;
 import android.app.ActivityThread;
 import android.hardware.devicestate.DeviceState;
 import android.hardware.devicestate.DeviceStateManager;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.window.extensions.layout.FoldingFeature;
@@ -44,11 +46,13 @@ public class SidecarExtensionsImpl implements SidecarInterface {
     private final DeviceStateManager mDeviceStateManager;
     private final DeviceStateManager.DeviceStateCallback mDeviceStateCallback =
             new DeviceStateCallback();
+    private final Handler mMainThread;
 
     public SidecarExtensionsImpl(WindowLayoutComponent windowLayoutComponent,
             DeviceStateManager deviceStateManager) {
         mWindowLayoutComponent = Objects.requireNonNull(windowLayoutComponent);
         mDeviceStateManager = Objects.requireNonNull(deviceStateManager);
+        mMainThread = new Handler(Looper.getMainLooper());
     }
 
     @Override
@@ -189,7 +193,8 @@ public class SidecarExtensionsImpl implements SidecarInterface {
             }
             final SidecarWindowLayoutInfo sidecarWindowLayoutInfo =
                     SidecarExtensionsImpl.computeSidecarWindowLayoutInfo(windowLayoutInfo);
-            mSidecarCallback.onWindowLayoutChanged(mWindowToken, sidecarWindowLayoutInfo);
+            mMainThread.post(() -> mSidecarCallback
+                    .onWindowLayoutChanged(mWindowToken, sidecarWindowLayoutInfo));
         }
     }
 
@@ -212,7 +217,7 @@ public class SidecarExtensionsImpl implements SidecarInterface {
 
             final SidecarDeviceState deviceState = new SidecarDeviceState();
             deviceState.posture = posture;
-            mSidecarCallback.onDeviceStateChanged(deviceState);
+            mMainThread.post(() -> mSidecarCallback.onDeviceStateChanged(deviceState));
         }
     }
 }

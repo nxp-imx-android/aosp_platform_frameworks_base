@@ -19,6 +19,8 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.MessageQueue;
+import android.util.Log;
 
 import com.android.ravenwood.common.RavenwoodCommonUtils;
 import com.android.ravenwood.common.SneakyThrow;
@@ -35,6 +37,8 @@ import java.util.function.Supplier;
 public class RavenwoodUtils {
     private RavenwoodUtils() {
     }
+
+    private static final int DEFAULT_TIMEOUT_SECONDS = 10;
 
     /**
      * Load a JNI library respecting {@code java.library.path}
@@ -88,7 +92,7 @@ public class RavenwoodUtils {
             latch.countDown();
         });
         try {
-            latch.await(30, TimeUnit.SECONDS);
+            latch.await(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while waiting on the Runnable", e);
         }
@@ -123,8 +127,57 @@ public class RavenwoodUtils {
      * Run a Runnable on main thread and wait for it to complete.
      */
     @Nullable
-    public static void runOnMainThreadSync(@NonNull Runnable r) {
-        runOnHandlerSync(getMainHandler(), r);
+    public static void runOnMainThreadSync(@NonNull ThrowingRunnable r) {
+        runOnHandlerSync(getMainHandler(), () -> {
+            r.run();
+            return null;
+        });
+    }
+
+    /**
+     * Set by {@link RavenwoodDriver} to run code before {@link #waitForLooperDone(Looper)}.
+     */
+    static volatile Runnable sPendingExceptionThrower = () -> {};
+
+    /**
+     * Wait for a looper to be idle.
+     *
+     * When running on Ravenwood, this will also throw the pending exception, if any.
+     */
+    public static void waitForLooperDone(Looper looper) {
+        var idler = new Idler();
+        looper.getQueue().addIdleHandler(idler);
+        idler.waitForIdle();
+
+        sPendingExceptionThrower.run();
+    }
+
+    /**
+     * Wait for a looper to be idle.
+     *
+     * When running on Ravenwood, this will also throw the pending exception, if any.
+     */
+    public static void waitForMainLooperDone() {
+        waitForLooperDone(Looper.getMainLooper());
+    }
+
+    private static class Idler implements MessageQueue.IdleHandler {
+        private final CountDownLatch mLatch = new CountDownLatch(1);
+
+        @Override
+        public boolean queueIdle() {
+            mLatch.countDown();
+            return false; // One-shot idle handler returns true.
+        }
+
+        public boolean waitForIdle() {
+            try {
+                return mLatch.await(DEFAULT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Log.w("Idler", "Interrupted");
+                return false;
+            }
+        }
     }
 
     /**
@@ -158,8 +211,14 @@ public class RavenwoodUtils {
     }
 
     /** Used by {@link #memoize(ThrowingSupplier)}  */
+    public interface ThrowingRunnable {
+        /** run the code. */
+        void run() throws Exception;
+    }
+
+    /** Used by {@link #memoize(ThrowingSupplier)}  */
     public interface ThrowingSupplier<T> {
-        /** */
+        /** run the code. */
         T get() throws Exception;
     }
 }

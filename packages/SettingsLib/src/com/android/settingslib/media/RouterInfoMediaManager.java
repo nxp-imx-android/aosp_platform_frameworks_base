@@ -79,12 +79,12 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
                 public void onSuggestionsUpdated(
                         String suggestingPackageName,
                         List<SuggestedDeviceInfo> suggestedDeviceInfo) {
-                    updateDeviceSuggestion(suggestingPackageName, suggestedDeviceInfo);
+                    notifyDeviceSuggestionUpdated(suggestingPackageName, suggestedDeviceInfo);
                 }
 
                 @Override
                 public void onSuggestionsCleared(String suggestingPackageName) {
-                    updateDeviceSuggestion(suggestingPackageName, null);
+                    notifyDeviceSuggestionUpdated(suggestingPackageName, null);
                 }
 
                 @Override
@@ -165,7 +165,7 @@ public final class RouterInfoMediaManager extends InfoMediaManager {
         if (Flags.enableSuggestedDeviceApi()) {
             for (Map.Entry<String, List<SuggestedDeviceInfo>> entry :
                     mRouter.getDeviceSuggestions().entrySet()) {
-                updateDeviceSuggestion(entry.getKey(), entry.getValue());
+                notifyDeviceSuggestionUpdated(entry.getKey(), entry.getValue());
             }
         }
         mRouter.registerTransferCallback(mExecutor, mTransferCallback);

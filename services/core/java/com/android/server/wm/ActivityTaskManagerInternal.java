@@ -24,6 +24,7 @@ import android.app.AppProtoEnums;
 import android.app.IActivityManager;
 import android.app.IAppTask;
 import android.app.IApplicationThread;
+import android.app.IHandoffTaskDataReceiver;
 import android.app.ITaskStackListener;
 import android.app.ProfilerInfo;
 import android.content.ComponentName;
@@ -815,4 +816,9 @@ public abstract class ActivityTaskManagerInternal {
 
     /** Returns whether assist data is allowed for all activities. */
     public abstract boolean isAssistDataForActivitiesAllowed(List<IBinder> activityTokens);
+
+    /** Requests data to hand off a given task, returned via the given receiver. */
+    public abstract void requestHandoffTaskData(
+        int taskId,
+        @NonNull IHandoffTaskDataReceiver receiver);
 }

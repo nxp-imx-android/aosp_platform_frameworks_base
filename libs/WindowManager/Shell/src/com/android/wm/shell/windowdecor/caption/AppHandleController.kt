@@ -286,6 +286,7 @@ class AppHandleController(
         if (isOpenByDefaultDialogActive) return
         openByDefaultDialog = OpenByDefaultDialog(
             context,
+            userContext,
             taskInfo,
             taskSurface,
             displayController,

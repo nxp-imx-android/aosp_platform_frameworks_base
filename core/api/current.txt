@@ -12996,7 +12996,7 @@ package android.content.pm {
     field public int reqTouchScreen;
   }
 
-  public class CrossProfileApps {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class CrossProfileApps {
     method public boolean canInteractAcrossProfiles();
     method public boolean canRequestInteractAcrossProfiles();
     method @NonNull public android.content.Intent createRequestInteractAcrossProfilesIntent();
@@ -14237,7 +14237,7 @@ package android.content.pm {
     method @NonNull public android.content.pm.ShortcutInfo.Builder setStartingTheme(int);
   }
 
-  public class ShortcutManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class ShortcutManager {
     method @WorkerThread public boolean addDynamicShortcuts(@NonNull java.util.List<android.content.pm.ShortcutInfo>);
     method @WorkerThread public android.content.Intent createShortcutResultIntent(@NonNull android.content.pm.ShortcutInfo);
     method public void disableShortcuts(@NonNull java.util.List<java.lang.String>);
@@ -14317,7 +14317,7 @@ package android.content.pm {
 
 package android.content.pm.verify.domain {
 
-  public final class DomainVerificationManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class DomainVerificationManager {
     method @Nullable public android.content.pm.verify.domain.DomainVerificationUserState getDomainVerificationUserState(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
   }
 
@@ -21477,7 +21477,7 @@ package android.hardware.usb {
     field @NonNull public static final android.os.Parcelable.Creator<android.hardware.usb.UsbInterface> CREATOR;
   }
 
-  public class UsbManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class UsbManager {
     method public android.hardware.usb.UsbAccessory[] getAccessoryList();
     method public java.util.HashMap<java.lang.String,android.hardware.usb.UsbDevice> getDeviceList();
     method public boolean hasPermission(android.hardware.usb.UsbDevice);
@@ -30300,7 +30300,7 @@ package android.net {
     method public String sanitize(String);
   }
 
-  public class VpnManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class VpnManager {
     method public void deleteProvisionedVpnProfile();
     method @Nullable public android.net.VpnProfileState getProvisionedVpnProfileState();
     method @Nullable public android.content.Intent provisionVpnProfile(@NonNull android.net.PlatformVpnProfile);
@@ -33821,7 +33821,7 @@ package android.os {
     method public boolean unlinkToDeath(@NonNull android.os.IBinder.DeathRecipient, int);
   }
 
-  public final class BugreportManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class BugreportManager {
     method @WorkerThread public void cancelBugreport();
     method @WorkerThread public void startConnectivityBugreport(@NonNull android.os.ParcelFileDescriptor, @NonNull java.util.concurrent.Executor, @NonNull android.os.BugreportManager.BugreportCallback);
   }
@@ -45455,7 +45455,7 @@ package android.telephony {
     field public static final String KEY_CARRIER_PROVISIONS_WIFI_MERGED_NETWORKS_BOOL = "carrier_provisions_wifi_merged_networks_bool";
     field public static final String KEY_CARRIER_RCS_PROVISIONING_REQUIRED_BOOL = "carrier_rcs_provisioning_required_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_CARRIER_ROAMING_NTN_CONNECT_TYPE_INT = "carrier_roaming_ntn_connect_type_int";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_CARRIER_ROAMING_NTN_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_INT = "carrier_roaming_ntn_emergency_call_to_satellite_handover_type_int";
+    field public static final String KEY_CARRIER_ROAMING_NTN_EMERGENCY_CALL_TO_SATELLITE_HANDOVER_TYPE_INT = "carrier_roaming_ntn_emergency_call_to_satellite_handover_type_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_CARRIER_ROAMING_SATELLITE_DEFAULT_SERVICES_INT_ARRAY = "carrier_roaming_satellite_default_services_int_array";
     field public static final String KEY_CARRIER_SERVICE_NAME_STRING_ARRAY = "carrier_service_name_array";
     field public static final String KEY_CARRIER_SERVICE_NUMBER_STRING_ARRAY = "carrier_service_number_array";
@@ -45650,14 +45650,14 @@ package android.telephony {
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_ENTITLEMENT_APP_NAME_STRING = "satellite_entitlement_app_name_string";
     field public static final String KEY_SATELLITE_ENTITLEMENT_STATUS_REFRESH_DAYS_INT = "satellite_entitlement_status_refresh_days_int";
     field public static final String KEY_SATELLITE_ENTITLEMENT_SUPPORTED_BOOL = "satellite_entitlement_supported_bool";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ESOS_SUPPORTED_BOOL = "satellite_esos_supported_bool";
+    field public static final String KEY_SATELLITE_ESOS_SUPPORTED_BOOL = "satellite_esos_supported_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_25q4_apis") public static final String KEY_SATELLITE_IGNORE_DATA_ROAMING_SETTING_BOOL = "satellite_ignore_data_roaming_setting_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_INFORMATION_REDIRECT_URL_STRING = "satellite_information_redirect_url_string";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_NIDD_APN_NAME_STRING = "satellite_nidd_apn_name_string";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_ESOS_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_esos_inactivity_timeout_sec_int";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_P2P_SMS_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_p2p_sms_inactivity_timeout_sec_int";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_P2P_SMS_SUPPORTED_BOOL = "satellite_roaming_p2p_sms_supported_bool";
-    field @FlaggedApi("com.android.internal.telephony.flags.carrier_roaming_nb_iot_ntn") public static final String KEY_SATELLITE_ROAMING_SCREEN_OFF_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_screen_off_inactivity_timeout_sec_int";
+    field public static final String KEY_SATELLITE_ROAMING_ESOS_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_esos_inactivity_timeout_sec_int";
+    field public static final String KEY_SATELLITE_ROAMING_P2P_SMS_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_p2p_sms_inactivity_timeout_sec_int";
+    field public static final String KEY_SATELLITE_ROAMING_P2P_SMS_SUPPORTED_BOOL = "satellite_roaming_p2p_sms_supported_bool";
+    field public static final String KEY_SATELLITE_ROAMING_SCREEN_OFF_INACTIVITY_TIMEOUT_SEC_INT = "satellite_roaming_screen_off_inactivity_timeout_sec_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_ROAMING_TURN_OFF_SESSION_FOR_EMERGENCY_CALL_BOOL = "satellite_roaming_turn_off_session_for_emergency_call_bool";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_SOS_MAX_DATAGRAM_SIZE_BYTES_INT = "satellite_sos_max_datagram_size_bytes_int";
     field @FlaggedApi("com.android.internal.telephony.flags.satellite_system_apis") public static final String KEY_SATELLITE_SUPPORTED_MSG_APPS_STRING_ARRAY = "satellite_supported_msg_apps_string_array";

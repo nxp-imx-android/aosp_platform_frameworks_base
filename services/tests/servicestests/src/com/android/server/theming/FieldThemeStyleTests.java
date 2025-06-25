@@ -18,10 +18,10 @@ package com.android.server.theming;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.content.theming.FieldColorSource;
+import static org.junit.Assert.assertThrows;
+
+import android.annotation.SuppressLint;
 import android.content.theming.FieldThemeStyle;
-import android.content.theming.ThemeSettings;
-import android.content.theming.ThemeSettingsUpdater;
 import android.content.theming.ThemeStyle;
 
 import org.junit.Before;
@@ -31,22 +31,11 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class FieldThemeStyleTests {
-    public static final ThemeSettings DEFAULTS = new ThemeSettings(
-            /* colorIndex= */ 1,
-            /* systemPalette= */ 0xFF123456,
-            /* accentColor= */ 0xFF654321,
-            /* colorSource= */ FieldColorSource.VALUE_HOME_WALLPAPER,
-            /* themeStyle= */ ThemeStyle.VIBRANT,
-            /* colorBoth= */ true);
-
     private FieldThemeStyle mFieldThemeStyle;
 
     @Before
     public void setup() {
-        mFieldThemeStyle = new FieldThemeStyle("themeStyle",
-                ThemeSettingsUpdater::getThemeStyle,
-                ThemeSettingsUpdater::themeStyle,
-                ThemeSettings::themeStyle, DEFAULTS);
+        mFieldThemeStyle = new FieldThemeStyle();
     }
 
     @Test
@@ -56,8 +45,20 @@ public class FieldThemeStyleTests {
     }
 
     @Test
-    public void parse_invalidThemeStyle_returnsNull() {
+    public void parse_validThemeStyleCaseInsensitive_returnsCorrectStyle() {
+        Integer parsedValue = mFieldThemeStyle.parse("expressive");
+        assertThat(parsedValue).isNull();
+    }
+
+    @Test
+    public void parse_invalidThemeStyleName_returnsNull() {
         Integer parsedValue = mFieldThemeStyle.parse("INVALID");
+        assertThat(parsedValue).isNull();
+    }
+
+    @Test
+    public void parse_nullString_returnsNull() {
+        Integer parsedValue = mFieldThemeStyle.parse(null);
         assertThat(parsedValue).isNull();
     }
 
@@ -68,13 +69,48 @@ public class FieldThemeStyleTests {
     }
 
     @Test
-    public void validate_validThemeStyle_returnsTrue() {
+    public void serialize_nullThemeStyle_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            mFieldThemeStyle.serialize(null);
+        });
+    }
+
+    @SuppressLint("WrongConstant")
+    @Test
+    public void serialize_invalidThemeStyleInteger_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            mFieldThemeStyle.serialize(-1);
+        });
+    }
+
+    @Test
+    public void validate_validThemeStyle_tonalSpot_returnsTrue() {
         assertThat(mFieldThemeStyle.validate(ThemeStyle.TONAL_SPOT)).isTrue();
     }
 
     @Test
-    public void validate_invalidThemeStyle_returnsFalse() {
+    public void validate_validThemeStyle_vibrant_returnsTrue() {
+        assertThat(mFieldThemeStyle.validate(ThemeStyle.VIBRANT)).isTrue();
+    }
+
+    @Test
+    public void validate_invalidThemeStyle_content_returnsFalse() {
+        assertThat(mFieldThemeStyle.validate(ThemeStyle.CONTENT)).isFalse();
+    }
+
+    @Test
+    public void validate_invalidThemeStyle_clock_returnsFalse() {
+        assertThat(mFieldThemeStyle.validate(ThemeStyle.CLOCK)).isFalse();
+    }
+
+    @Test
+    public void validate_invalidThemeStyle_integer_returnsFalse() {
         assertThat(mFieldThemeStyle.validate(-1)).isFalse();
+    }
+
+    @Test
+    public void validate_invalidThemeStyle_largePositiveInteger_returnsFalse() {
+        assertThat(mFieldThemeStyle.validate(100)).isFalse();
     }
 
     @Test
@@ -87,8 +123,4 @@ public class FieldThemeStyleTests {
         assertThat(mFieldThemeStyle.getJsonType()).isEqualTo(String.class);
     }
 
-    @Test
-    public void get_returnsDefaultValue() {
-        assertThat(mFieldThemeStyle.getDefaultValue()).isEqualTo(DEFAULTS.themeStyle());
-    }
 }

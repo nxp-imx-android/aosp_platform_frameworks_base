@@ -1734,7 +1734,13 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     }
 
     public void onUiModeChanged() {
-        mUpdateSelfBackgroundOnUpdate = true;
+        if (isBundle()) {
+            // If this is a bundle, then `onNotificationUpdated` will not be called as there is no
+            // backing notification entry for bundles. So update the background immediately.
+            updateBackgroundColorsOfSelf();
+        } else {
+            mUpdateSelfBackgroundOnUpdate = true;
+        }
         reInflateViews();
         if (mChildrenContainer != null) {
             for (ExpandableNotificationRow child : mChildrenContainer.getAttachedChildren()) {

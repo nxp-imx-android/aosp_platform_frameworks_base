@@ -788,39 +788,6 @@ class MobileIconViewModelKairosTest : SysuiTestCase() {
         assertThat(activityContainerVisible).isFalse()
     }
 
-    @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
-    @Test
-    fun nonTerrestrial_usesSatelliteIcon_flagOff() = runTest {
-        repository.isNonTerrestrial.setValue(true)
-        repository.setAllLevels(0)
-        repository.satelliteLevel.setValue(0)
-
-        val latest by underTest.icon.map { it as SignalIconModel.Satellite }.collectLastValue()
-
-        // Level 0 -> no connection
-        assertThat(latest).isNotNull()
-        assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_0)
-
-        // 1-2 -> 1 bar
-        repository.setAllLevels(1)
-        repository.satelliteLevel.setValue(1)
-        assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_1)
-
-        repository.setAllLevels(2)
-        repository.satelliteLevel.setValue(2)
-        assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_1)
-
-        // 3-4 -> 2 bars
-        repository.setAllLevels(3)
-        repository.satelliteLevel.setValue(3)
-        assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_2)
-
-        repository.setAllLevels(4)
-        repository.satelliteLevel.setValue(4)
-        assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_2)
-    }
-
-    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     fun nonTerrestrial_usesSatelliteIcon_flagOn() = runTest {
         repository.isNonTerrestrial.setValue(true)
@@ -847,42 +814,6 @@ class MobileIconViewModelKairosTest : SysuiTestCase() {
         assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_2)
     }
 
-    @DisableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
-    @Test
-    fun satelliteIcon_ignoresInflateSignalStrength_flagOff() = runTest {
-        // Note that this is the exact same test as above, but with inflateSignalStrength set to
-        // true we note that the level is unaffected by inflation
-        repository.inflateSignalStrength.setValue(true)
-        repository.isNonTerrestrial.setValue(true)
-        repository.setAllLevels(0)
-        repository.satelliteLevel.setValue(0)
-
-        val latest by underTest.icon.map { it as SignalIconModel.Satellite }.collectLastValue()
-
-        // Level 0 -> no connection
-        assertThat(latest).isNotNull()
-        assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_0)
-
-        // 1-2 -> 1 bar
-        repository.setAllLevels(1)
-        repository.satelliteLevel.setValue(1)
-        assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_1)
-
-        repository.setAllLevels(2)
-        repository.satelliteLevel.setValue(2)
-        assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_1)
-
-        // 3-4 -> 2 bars
-        repository.setAllLevels(3)
-        repository.satelliteLevel.setValue(3)
-        assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_2)
-
-        repository.setAllLevels(4)
-        repository.satelliteLevel.setValue(4)
-        assertThat(latest!!.icon.res).isEqualTo(R.drawable.ic_satellite_connected_2)
-    }
-
-    @EnableFlags(com.android.internal.telephony.flags.Flags.FLAG_CARRIER_ROAMING_NB_IOT_NTN)
     @Test
     fun satelliteIcon_ignoresInflateSignalStrength_flagOn() = runTest {
         // Note that this is the exact same test as above, but with inflateSignalStrength set to

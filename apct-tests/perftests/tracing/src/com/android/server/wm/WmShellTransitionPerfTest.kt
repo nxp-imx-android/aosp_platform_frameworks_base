@@ -18,7 +18,6 @@ package com.android.server.wm
 import android.os.IBinder
 import android.perftests.utils.PerfStatusReporter
 import android.platform.test.annotations.Postsubmit
-import android.tools.ScenarioBuilder
 import android.tools.traces.busyWaitTracingSessionDoesntExist
 import android.tools.traces.busyWaitTracingSessionExists
 import android.tools.traces.io.ResultWriter
@@ -90,7 +89,7 @@ class WmShellTransitionPerfTest(private val mTracingState: TracingState?) {
     // Helper to create a dummy ResultWriter
     private fun createDummyWriter(scenarioDir: File): ResultWriter {
         return ResultWriter()
-            .forScenario(ScenarioBuilder().forClass("DataSourcePerfTest").build())
+            .withName("DataSourcePerfTest")
             .withOutputDir(scenarioDir)
             .setRunComplete()
     }

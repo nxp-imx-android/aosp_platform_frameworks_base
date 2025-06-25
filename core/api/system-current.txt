@@ -4195,7 +4195,7 @@ package android.content.pm {
     field public int targetSandboxVersion;
   }
 
-  public class CrossProfileApps {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class CrossProfileApps {
     method @RequiresPermission(anyOf={android.Manifest.permission.INTERACT_ACROSS_PROFILES, android.Manifest.permission.START_CROSS_PROFILE_ACTIVITIES}) public void startActivity(@NonNull android.content.ComponentName, @NonNull android.os.UserHandle, @Nullable android.app.Activity, @Nullable android.os.Bundle);
     method @RequiresPermission(anyOf={android.Manifest.permission.INTERACT_ACROSS_PROFILES, android.Manifest.permission.START_CROSS_PROFILE_ACTIVITIES}) public void startActivity(@NonNull android.content.ComponentName, @NonNull android.os.UserHandle);
   }
@@ -4640,7 +4640,7 @@ package android.content.pm {
     method @Nullable public android.app.Person[] getPersons();
   }
 
-  public class ShortcutManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class ShortcutManager {
     method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_APP_PREDICTIONS) @WorkerThread public java.util.List<android.content.pm.ShortcutManager.ShareShortcutInfo> getShareTargets(@NonNull android.content.IntentFilter);
     method public boolean hasShareTargets(@NonNull String);
   }
@@ -4834,7 +4834,7 @@ package android.content.pm.verify.domain {
     field public static final int STATE_UNMODIFIABLE = 2; // 0x2
   }
 
-  public final class DomainVerificationManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class DomainVerificationManager {
     method @Nullable @RequiresPermission(android.Manifest.permission.DOMAIN_VERIFICATION_AGENT) public android.content.pm.verify.domain.DomainVerificationInfo getDomainVerificationInfo(@NonNull String) throws android.content.pm.PackageManager.NameNotFoundException;
     method @NonNull @RequiresPermission(android.Manifest.permission.UPDATE_DOMAIN_VERIFICATION_USER_SELECTION) public java.util.SortedSet<android.content.pm.verify.domain.DomainOwner> getOwnersForDomain(@NonNull String);
     method @FlaggedApi("android.content.pm.relative_reference_intent_filters") @NonNull public java.util.Map<java.lang.String,java.util.List<android.content.UriRelativeFilterGroup>> getUriRelativeFilterGroups(@NonNull String, @NonNull java.util.List<java.lang.String>);
@@ -5233,12 +5233,22 @@ package android.hardware.camera2.extension {
     method @NonNull public abstract java.util.List<android.hardware.camera2.CaptureRequest.Key> getAvailableCaptureRequestKeys(@NonNull String);
     method @NonNull public abstract java.util.List<android.hardware.camera2.CaptureResult.Key> getAvailableCaptureResultKeys(@NonNull String);
     method @NonNull public abstract java.util.List<android.util.Pair<android.hardware.camera2.CameraCharacteristics.Key,java.lang.Object>> getAvailableCharacteristicsKeyValues();
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") @Nullable public android.util.Range<java.lang.Long> getEstimatedCaptureLatencyRangeMillis(@NonNull android.util.Size, int);
     method public long getMetadataVendorId(@NonNull String);
     method @NonNull public abstract android.hardware.camera2.extension.SessionProcessor getSessionProcessor();
     method @NonNull public abstract java.util.Map<java.lang.Integer,java.util.List<android.util.Size>> getSupportedCaptureOutputResolutions(@NonNull String);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") @NonNull public java.util.Map<java.lang.Integer,java.util.List<android.util.Size>> getSupportedPostviewOutputResolutions(@NonNull android.util.Size);
     method @NonNull public abstract java.util.Map<java.lang.Integer,java.util.List<android.util.Size>> getSupportedPreviewOutputResolutions(@NonNull String);
     method public abstract void initialize(@NonNull String, @NonNull android.hardware.camera2.extension.CharacteristicsMap);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public boolean isCaptureProcessProgressAvailable();
     method public abstract boolean isExtensionAvailable(@NonNull String, @NonNull android.hardware.camera2.extension.CharacteristicsMap);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public boolean isPostviewAvailable();
+  }
+
+  @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public final class CameraConfiguration {
+    method @NonNull public android.hardware.camera2.extension.CameraOutputSurface getPostViewOutputSurface();
+    method @NonNull public android.hardware.camera2.extension.CameraOutputSurface getPreviewOutputSurface();
+    method @NonNull public android.hardware.camera2.extension.CameraOutputSurface getStillCaptureOutputSurface();
   }
 
   public abstract class CameraExtensionService extends android.app.Service {
@@ -5299,11 +5309,14 @@ package android.hardware.camera2.extension {
   public abstract class SessionProcessor {
     ctor public SessionProcessor();
     method public abstract void deInitSession(@NonNull android.os.IBinder);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") @Nullable public android.util.Pair<java.lang.Long,java.lang.Long> getRealtimeStillCaptureLatency();
     method @NonNull public abstract android.hardware.camera2.extension.ExtensionConfiguration initSession(@NonNull android.os.IBinder, @NonNull String, @NonNull android.hardware.camera2.extension.CharacteristicsMap, @NonNull android.hardware.camera2.extension.CameraOutputSurface, @NonNull android.hardware.camera2.extension.CameraOutputSurface);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") @NonNull public android.hardware.camera2.extension.ExtensionConfiguration initSession(@NonNull android.os.IBinder, @NonNull String, @NonNull android.hardware.camera2.extension.CharacteristicsMap, @NonNull android.hardware.camera2.extension.CameraConfiguration);
     method public abstract void onCaptureSessionEnd();
     method public abstract void onCaptureSessionStart(@NonNull android.hardware.camera2.extension.RequestProcessor, @NonNull String);
     method public abstract void setParameters(@NonNull android.hardware.camera2.CaptureRequest);
     method public abstract int startMultiFrameCapture(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.extension.SessionProcessor.CaptureCallback);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public int startMultiFrameCapture(boolean, @NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.extension.SessionProcessor.CaptureCallback);
     method public abstract int startRepeating(@NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.extension.SessionProcessor.CaptureCallback);
     method public abstract int startTrigger(@NonNull android.hardware.camera2.CaptureRequest, @NonNull java.util.concurrent.Executor, @NonNull android.hardware.camera2.extension.SessionProcessor.CaptureCallback);
     method public abstract void stopRepeating();
@@ -5312,6 +5325,7 @@ package android.hardware.camera2.extension {
   public static interface SessionProcessor.CaptureCallback {
     method public void onCaptureCompleted(long, int, @NonNull java.util.Map<android.hardware.camera2.CaptureResult.Key,java.lang.Object>);
     method public void onCaptureFailed(int, int);
+    method @FlaggedApi("com.android.internal.camera.flags.efv_capture_latency") public default void onCaptureProcessProgressUpdated(@IntRange(from=0, to=100) int);
     method public void onCaptureProcessStarted(int);
     method public void onCaptureSequenceAborted(int);
     method public void onCaptureSequenceCompleted(int);
@@ -7420,7 +7434,7 @@ package android.hardware.usb {
     method public boolean resetDevice();
   }
 
-  public class UsbManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class UsbManager {
     method @RequiresPermission(android.Manifest.permission.MANAGE_USB) public long getCurrentFunctions();
     method @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_USB) public java.util.List<android.hardware.usb.UsbPort> getPorts();
     method @FlaggedApi("android.hardware.usb.flags.expose_usb_speed_system_api") @RequiresPermission(android.Manifest.permission.MANAGE_USB) public int getUsbBandwidthMbps();
@@ -10436,7 +10450,9 @@ package android.net {
 
   public abstract class NetworkSpecifier {
     method public boolean canBeSatisfiedBy(@Nullable android.net.NetworkSpecifier);
+    method @FlaggedApi("com.android.net.thread.platform.flags.thread_mobile_enabled") public long getApplicableRedactions();
     method @Nullable public android.net.NetworkSpecifier redact();
+    method @FlaggedApi("com.android.net.thread.platform.flags.thread_mobile_enabled") @Nullable public android.net.NetworkSpecifier redact(long);
   }
 
   public class NetworkStack {
@@ -11355,7 +11371,7 @@ package android.os {
     method @Nullable public Object onTransactStarted(@NonNull android.os.IBinder, int);
   }
 
-  public final class BugreportManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class BugreportManager {
     method @RequiresPermission(android.Manifest.permission.DUMP) @WorkerThread public void preDumpUiData();
     method @RequiresPermission(android.Manifest.permission.DUMP) public void requestBugreport(@NonNull android.os.BugreportParams, @Nullable CharSequence, @Nullable CharSequence);
     method @RequiresPermission(android.Manifest.permission.DUMP) @WorkerThread public void retrieveBugreport(@NonNull String, @NonNull android.os.ParcelFileDescriptor, @NonNull java.util.concurrent.Executor, @NonNull android.os.BugreportManager.BugreportCallback);

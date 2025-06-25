@@ -27,6 +27,7 @@ filegroup {
     // Exactly one MessageQueue.java will be added to srcs by messagequeue-gen
     exclude_srcs: [
         "**/*_ravenwood.java",
+        ":dropboxmanager_aidl_sources",
         ":dynamic_instrumentation_manager_aidl_sources",
         "android/os/*MessageQueue/**/*.java",
         "android/ranging/**/*.java",
@@ -106,11 +107,12 @@ release_package_messagequeue_implementation_srcs {
 
 aidl_interface {
     name: "dropboxmanager_aidl",
-    srcs: ["com/android/internal/os/IDropBoxManagerService.aidl"],
+    srcs: [":dropboxmanager_aidl_sources"],
     unstable: true,
     backend: {
         java: {
-            enabled: false, // TODO(b/424186512) switch frameworks/base to using this as well, it uses core build **/*.aidl glob now
+            additional_libs: ["unsupportedappusage"],
+            enabled: true,
         },
         rust: {
             enabled: true,
@@ -120,6 +122,11 @@ aidl_interface {
             ],
         },
     },
+}
+
+filegroup {
+    name: "dropboxmanager_aidl_sources",
+    srcs: ["com/android/internal/os/IDropBoxManagerService.aidl"],
 }
 
 filegroup {

@@ -45,11 +45,10 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.android.app.displaylib.PerDisplayRepository
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.AlphaOptimizedLinearLayout
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
-import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.lifecycle.WindowLifecycleState
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
@@ -66,7 +65,6 @@ import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.RudimentaryBattery
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.core.StatusBarRootModernization
-import com.android.systemui.statusbar.data.repository.DarkIconDispatcherStore
 import com.android.systemui.statusbar.events.domain.interactor.SystemStatusEventAnimationInteractor
 import com.android.systemui.statusbar.featurepods.popups.StatusBarPopupChips
 import com.android.systemui.statusbar.featurepods.popups.ui.compose.StatusBarPopupChipsContainer
@@ -108,27 +106,23 @@ constructor(
     private val darkIconManagerFactory: DarkIconManager.Factory,
     private val iconController: StatusBarIconController,
     private val ongoingCallController: OngoingCallController,
-    private val darkIconDispatcherStore: DarkIconDispatcherStore,
     private val eventAnimationInteractor: SystemStatusEventAnimationInteractor,
     private val mediaHierarchyManager: MediaHierarchyManager,
     @Named(POPUP) private val mediaHost: MediaHost,
-    private val displaySubcomponentRepository:
-        PerDisplayRepository<SystemUIPhoneDisplaySubcomponent>,
+    @DisplayAware private val darkIconDispatcher: DarkIconDispatcher,
+    @DisplayAware private val homeStatusBarViewBinder: HomeStatusBarViewBinder,
+    @DisplayAware private val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory,
     private val statusBarRegionSamplingViewModelFactory: StatusBarRegionSamplingViewModel.Factory,
 ) {
     fun create(root: ViewGroup, andThen: (ViewGroup) -> Unit): ComposeView {
         val composeView = ComposeView(root.context)
-        val displayId = root.context.displayId
-        val darkIconDispatcher = darkIconDispatcherStore.forDisplay(displayId) ?: return composeView
-        val displaySubcomponent = displaySubcomponentRepository[displayId] ?: return composeView
         composeView.apply {
             setContent {
                 PlatformTheme {
                     StatusBarRoot(
                         parent = root,
-                        statusBarViewModelFactory =
-                            displaySubcomponent.homeStatusBarViewModelFactory,
-                        statusBarViewBinder = displaySubcomponent.homeStatusBarViewBinder,
+                        statusBarViewModelFactory = homeStatusBarViewModelFactory,
+                        statusBarViewBinder = homeStatusBarViewBinder,
                         notificationIconsBinder = notificationIconsBinder,
                         iconViewStoreFactory = iconViewStoreFactory,
                         darkIconManagerFactory = darkIconManagerFactory,

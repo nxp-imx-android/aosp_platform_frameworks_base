@@ -18,6 +18,7 @@ package android.app;
 
 import android.app.ActivityOptions.SceneTransitionInfo;
 import android.app.ContentProviderHolder;
+import android.app.HandoffActivityData;
 import android.app.IInstrumentationWatcher;
 import android.app.IUiAutomationConnection;
 import android.app.ProfilerInfo;
@@ -188,4 +189,5 @@ oneway interface IApplicationThread {
     void schedulePing(in RemoteCallback pong);
     void getExecutableMethodFileOffsets(in MethodDescriptor methodDescriptor,
             in IOffsetCallback resultCallback);
+    void requestHandoffActivityData(in IBinder requestToken, in List<IBinder> activityTokens);
 }

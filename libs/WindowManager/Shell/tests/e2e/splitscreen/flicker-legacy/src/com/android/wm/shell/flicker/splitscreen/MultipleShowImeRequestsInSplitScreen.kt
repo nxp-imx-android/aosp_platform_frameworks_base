@@ -23,7 +23,6 @@ import android.tools.ScenarioBuilder
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
-import android.tools.traces.SERVICE_TRACE_CONFIG
 import android.tools.traces.component.ComponentNameMatcher
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.flicker.splitscreen.benchmark.MultipleShowImeRequestsInSplitScreenBenchmark
@@ -66,9 +65,7 @@ class MultipleShowImeRequestsInSplitScreen(override val flicker: LegacyFlickerTe
             .withStartRotation(Rotation.ROTATION_0)
             .withEndRotation(Rotation.ROTATION_0)
             .withNavBarMode(navBarMode), resultReaderProvider = { scenario ->
-            android.tools.flicker.datastore.CachedResultReader(
-                scenario, SERVICE_TRACE_CONFIG
-            )
+            android.tools.flicker.datastore.CachedResultReader(scenario)
         })
 
         @Parameterized.Parameters(name = "{0}")

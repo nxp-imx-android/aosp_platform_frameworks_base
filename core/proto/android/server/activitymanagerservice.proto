@@ -764,7 +764,7 @@ message ActivityManagerServiceDumpProcessesProto {
     optional int32 last_memory_level = 56;
     optional int32 last_num_processes = 57;
     optional .android.util.Duration last_idle_time = 58;
-    optional int64 low_ram_since_last_idle_ms = 59;
+    optional int64 low_ram_since_last_idle_ms = 59 [deprecated=true];
 }
 
 message ActiveInstrumentationProto {

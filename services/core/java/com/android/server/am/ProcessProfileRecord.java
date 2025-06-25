@@ -74,12 +74,6 @@ final class ProcessProfileRecord {
     private long mNextPssTime;
 
     /**
-     * Initial memory pss of process for idle maintenance.
-     */
-    @GuardedBy("mProfilerLock")
-    private long mInitialIdlePssOrRss;
-
-    /**
      * Last computed memory pss.
      */
     @GuardedBy("mProfilerLock")
@@ -353,16 +347,6 @@ final class ProcessProfileRecord {
     @GuardedBy("mProfilerLock")
     void setNextPssTime(long nextPssTime) {
         mNextPssTime = nextPssTime;
-    }
-
-    @GuardedBy("mProfilerLock")
-    long getInitialIdlePssOrRss() {
-        return mInitialIdlePssOrRss;
-    }
-
-    @GuardedBy("mProfilerLock")
-    void setInitialIdlePssOrRss(long initialIdlePssOrRss) {
-        mInitialIdlePssOrRss = initialIdlePssOrRss;
     }
 
     @GuardedBy("mProfilerLock")

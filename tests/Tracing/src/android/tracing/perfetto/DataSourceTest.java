@@ -20,8 +20,8 @@ import static android.internal.perfetto.protos.TestEventOuterClass.TestEvent.PAY
 import static android.internal.perfetto.protos.TestEventOuterClass.TestEvent.TestPayload.SINGLE_INT;
 import static android.internal.perfetto.protos.TracePacketOuterClass.TracePacket.FOR_TESTING;
 import static android.tools.traces.Utils.busyWaitForDataSourceRegistration;
-import static android.tools.traces.Utils.busyWaitTracingSessionExists;
 import static android.tools.traces.Utils.busyWaitTracingSessionDoesntExist;
+import static android.tools.traces.Utils.busyWaitTracingSessionExists;
 import static android.tracing.perfetto.TestUtils.createTempWriter;
 
 import static java.io.File.createTempFile;
@@ -29,11 +29,8 @@ import static java.nio.file.Files.createTempDirectory;
 
 import android.internal.perfetto.protos.DataSourceConfigOuterClass.DataSourceConfig;
 import android.internal.perfetto.protos.TestConfigOuterClass.TestConfig;
-import android.tools.ScenarioBuilder;
 import android.tools.Tag;
 import android.tools.io.TraceType;
-import android.tools.traces.TraceConfig;
-import android.tools.traces.TraceConfigs;
 import android.tools.traces.io.ResultReader;
 import android.tools.traces.io.ResultWriter;
 import android.tools.traces.monitors.PerfettoTraceMonitor;
@@ -68,13 +65,6 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(AndroidJUnit4.class)
 public class DataSourceTest {
     private final File mTracingDirectory = createTempDirectory("temp").toFile();
-
-    private final TraceConfigs mTraceConfig = new TraceConfigs(
-            new TraceConfig(false, true, false),
-            new TraceConfig(false, true, false),
-            new TraceConfig(false, true, false),
-            new TraceConfig(false, true, false)
-    );
 
     private static TestDataSource sTestDataSource;
 
@@ -130,7 +120,7 @@ public class DataSourceTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final byte[] rawProtoFromFile = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
         assert rawProtoFromFile != null;
         final perfetto.protos.TraceOuterClass.Trace trace = perfetto.protos.TraceOuterClass.Trace
@@ -370,8 +360,7 @@ public class DataSourceTest {
 
         for (int i = 0; i < instanceCount; i++) {
             final ResultWriter writer = new ResultWriter()
-                    .forScenario(new ScenarioBuilder()
-                            .forClass(createTempFile("temp", "").getName()).build())
+                    .withName(createTempFile("temp", "").getName())
                     .withOutputDir(mTracingDirectory)
                     .setRunComplete();
             writers.add(writer);
@@ -422,7 +411,7 @@ public class DataSourceTest {
         for (int i = 0; i < instanceCount; i++) {
             final int expectedTracedValue = i + 1;
             final ResultWriter writer = writers.get(i);
-            final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+            final ResultReader reader = new ResultReader(writer.write());
             final byte[] rawProtoFromFile = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
             assert rawProtoFromFile != null;
             final perfetto.protos.TraceOuterClass.Trace trace =
@@ -640,7 +629,7 @@ public class DataSourceTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final byte[] rawProtoFromFile = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
         assert rawProtoFromFile != null;
         final perfetto.protos.TraceOuterClass.Trace trace = perfetto.protos.TraceOuterClass.Trace
@@ -698,7 +687,7 @@ public class DataSourceTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final byte[] rawProtoFromFile = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
         assert rawProtoFromFile != null;
         final perfetto.protos.TraceOuterClass.Trace trace = perfetto.protos.TraceOuterClass.Trace
@@ -758,7 +747,7 @@ public class DataSourceTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final byte[] rawProtoFromFile = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
         assert rawProtoFromFile != null;
         final perfetto.protos.TraceOuterClass.Trace trace = perfetto.protos.TraceOuterClass.Trace
@@ -803,7 +792,7 @@ public class DataSourceTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final byte[] rawProtoFromFile = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
         assert rawProtoFromFile != null;
         final perfetto.protos.TraceOuterClass.Trace trace = perfetto.protos.TraceOuterClass.Trace

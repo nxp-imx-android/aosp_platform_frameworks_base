@@ -214,7 +214,7 @@ public class DisplayLayout {
         mRotation = info.rotation;
         mCutout = info.displayCutout;
         mDensityDpi = info.logicalDensityDpi;
-        mGlobalBoundsDp = new RectF(0, 0, pxToDp(mWidth), pxToDp(mHeight));
+        mGlobalBoundsDp = new RectF();
         mHasNavigationBar = hasNavigationBar;
         mHasStatusBar = hasStatusBar;
         mAllowSeamlessRotationDespiteNavBarMoving = res.getBoolean(

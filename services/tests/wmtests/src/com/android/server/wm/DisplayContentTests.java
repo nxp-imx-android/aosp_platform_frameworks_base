@@ -106,6 +106,7 @@ import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import android.annotation.NonNull;
@@ -126,6 +127,7 @@ import android.os.UserManager;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.DisplayInfo;
@@ -139,6 +141,7 @@ import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
 import android.view.View;
+import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams.WindowType;
 import android.window.DisplayAreaInfo;
@@ -404,6 +407,34 @@ public class DisplayContentTests extends WindowTestsBase {
         // Compute IME parent returns nothing if current target and window receiving input
         // are different i.e. if current window didn't request IME.
         assertNull("computeImeParent() should be null", mDisplayContent.computeImeParent());
+    }
+
+    @Test
+    @UseTestDisplay(addWindows = W_INPUT_METHOD)
+    @RequiresFlagsEnabled(android.view.inputmethod.Flags.FLAG_REPORT_ANIMATING_INSETS_TYPES)
+    public void testSetImeInputTargetNullResetsRemoteInsetsControlTargetImeVisibility()
+            throws RemoteException {
+        final var displayWindowInsetsController = spy(createDisplayWindowInsetsController());
+        mDisplayContent.setRemoteInsetsController(displayWindowInsetsController);
+
+        final var appWin = newWindowBuilder("appWin", TYPE_APPLICATION)
+                .setWindowingMode(WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW).build();
+        final var remoteControlTarget = mDisplayContent.mRemoteInsetsControlTarget;
+
+        // Set appWin as the IME input target.
+        appWin.setRequestedVisibleTypes(WindowInsets.Type.ime());
+        clearInvocations(displayWindowInsetsController);
+        mDisplayContent.setImeInputTarget(appWin);
+        mDisplayContent.setImeLayeringTarget(appWin);
+        assertEquals("RemoteInsetsControlTarget should be the IME control target",
+                remoteControlTarget, mDisplayContent.getImeControlTarget());
+        assertTrue("appWin should have the IME requested visible",
+                appWin.isRequestedVisible(WindowInsets.Type.ime()));
+
+        // Set null input target
+        mDisplayContent.setImeInputTarget(null /* target */);
+        verify(displayWindowInsetsController).setImeInputTargetRequestedVisibility(
+                eq(false) /* visible */, any());
     }
 
     @Test

@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.pipeline.mobile.domain.interactor
 
 import android.content.Context
-import com.android.internal.telephony.flags.Flags
 import com.android.settingslib.SignalIcon.MobileIconGroup
 import com.android.settingslib.graph.SignalDrawable
 import com.android.settingslib.mobile.MobileIconCarrierIdOverrides
@@ -324,12 +323,7 @@ class MobileIconInteractorKairosImpl(
 
     // Satellite level is unaffected by the inflateSignalStrength property
     // See b/346904529 for details
-    private val satelliteShownLevel: State<Int> =
-        if (Flags.carrierRoamingNbIotNtn()) {
-            connectionRepository.satelliteLevel
-        } else {
-            combine(level, isInService) { level, isInService -> if (isInService) level else 0 }
-        }
+    private val satelliteShownLevel: State<Int> = connectionRepository.satelliteLevel
 
     private val cellularIcon: State<SignalIconModel.Cellular> =
         combine(

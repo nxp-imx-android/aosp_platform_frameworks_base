@@ -400,8 +400,14 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
         List<AppServiceConnection> connections = getSupervisionAppServiceConnections(userId);
         for (AppServiceConnection conn : connections) {
-            String targetPackage = conn.getFinder().getTargetPackage(userId);
-            ISupervisionListener binder = (ISupervisionListener) conn.getServiceBinder();
+            String targetPackage = conn.getPackageName();
+            ISupervisionListener binder = null;
+            try {
+                binder = (ISupervisionListener) conn.getServiceBinder();
+            } catch (Exception e) {
+                Slogf.e(SupervisionLog.TAG, "Error getting binder: " + e.getMessage(), e);
+            }
+
             if (binder == null) {
                 Slogf.d(SupervisionLog.TAG,
                         "Failed to bind to SupervisionAppService for %s now", targetPackage);

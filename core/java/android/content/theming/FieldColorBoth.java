@@ -21,18 +21,10 @@ import android.annotation.FlaggedApi;
 import androidx.annotation.Nullable;
 
 import java.util.Objects;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 /** @hide */
 @FlaggedApi(android.server.Flags.FLAG_ENABLE_THEME_SERVICE)
-public class FieldColorBoth extends ThemeSettingsField<Boolean, String> {
-    public FieldColorBoth(String key, Function<ThemeSettingsUpdater, Boolean> updaterGetter,
-            BiConsumer<ThemeSettingsUpdater, Boolean> updaterSetter,
-            Function<ThemeSettings, Boolean> getter, ThemeSettings defaults) {
-        super(key, updaterGetter, updaterSetter, getter, defaults);
-    }
-
+public final class FieldColorBoth extends ThemeSettingsField<Boolean, String> {
     @Override
     @Nullable
     public Boolean parse(String primitive) {

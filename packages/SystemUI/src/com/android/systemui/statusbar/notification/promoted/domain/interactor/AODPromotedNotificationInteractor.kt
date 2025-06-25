@@ -18,7 +18,9 @@ package com.android.systemui.statusbar.notification.promoted.domain.interactor
 
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dump.DumpManager
+import com.android.systemui.keyguard.domain.interactor.BiometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel
 import com.android.systemui.statusbar.policy.domain.interactor.SensitiveNotificationProtectionInteractor
 import com.android.systemui.util.kotlin.FlowDumperImpl
@@ -36,18 +38,22 @@ constructor(
     keyguardInteractor: KeyguardInteractor,
     sensitiveNotificationProtectionInteractor: SensitiveNotificationProtectionInteractor,
     dumpManager: DumpManager,
+    biometricUnlockInteractor: BiometricUnlockInteractor,
 ) : FlowDumperImpl(dumpManager) {
 
     /**
-     * Whether the system is unlocked and not screensharing such that private notification content
-     * is allowed to show on the aod
+     * Whether the system is unlocked, not screensharing such that private notification content is
+     * allowed to show on the aod, and a biometric is not about to dismiss the keyguard
      */
     private val canShowPrivateNotificationContent: Flow<Boolean> =
         combine(
-            keyguardInteractor.isKeyguardDismissible,
+            keyguardInteractor.hasTrust,
             sensitiveNotificationProtectionInteractor.isSensitiveStateActive,
-        ) { isKeyguardDismissible, isSensitive ->
-            isKeyguardDismissible && !isSensitive
+            biometricUnlockInteractor.unlockState,
+        ) { hasTrust, isSensitive, biometricUnlockState ->
+            hasTrust &&
+                !isSensitive &&
+                !BiometricUnlockMode.dismissesKeyguard(biometricUnlockState.mode)
         }
 
     /** The content to show as the promoted notification on AOD */

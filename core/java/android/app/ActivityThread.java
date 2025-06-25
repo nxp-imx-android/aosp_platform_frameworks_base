@@ -45,6 +45,8 @@ import static com.android.internal.os.SafeZipPathValidatorCallback.VALIDATE_ZIP_
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityOptions.SceneTransitionInfo;
+import android.app.HandoffActivityData;
+import android.app.HandoffActivityDataRequestInfo;
 import android.app.RemoteServiceException.BadForegroundServiceNotificationException;
 import android.app.RemoteServiceException.BadUserInitiatedJobNotificationException;
 import android.app.RemoteServiceException.CannotPostForegroundServiceNotificationException;
@@ -1129,6 +1131,11 @@ public final class ActivityThread extends ClientTransactionHandler
         int flags;
     }
 
+    static final class RequestHandoffActivityData {
+        List<IBinder> activityTokens;
+        IBinder requestToken;
+    }
+
     // A list of receivers and an index into the receiver to be processed next.
     static final class ReceiverList {
         List<ReceiverInfo> receivers;
@@ -2116,6 +2123,21 @@ public final class ActivityThread extends ClientTransactionHandler
             sendMessage(H.REQUEST_ASSIST_CONTEXT_EXTRAS, cmd);
         }
 
+        /**
+         * Requests the data needed to start a handoff activity.
+         *
+         * @param requestToken The token of the request, used by ActivityTaskManager to identify
+         *                     the request.
+         * @param activityTokens The tokens of the activities to hand off.
+         */
+        @Override
+        public void requestHandoffActivityData(IBinder requestToken, List<IBinder> activityTokens) {
+            RequestHandoffActivityData cmd = new RequestHandoffActivityData();
+            cmd.activityTokens = activityTokens;
+            cmd.requestToken = requestToken;
+            sendMessage(H.REQUEST_HANDOFF_ACTIVITY_DATA, cmd);
+        }
+
         @Override
         public void setCoreSettings(Bundle coreSettings) {
             sendMessage(H.SET_CORE_SETTINGS, coreSettings);
@@ -2513,6 +2535,7 @@ public final class ActivityThread extends ClientTransactionHandler
         public static final int FINISH_INSTRUMENTATION_WITHOUT_RESTART = 171;
 
         public static final int TIMEOUT_SERVICE_FOR_TYPE = 172;
+        public static final int REQUEST_HANDOFF_ACTIVITY_DATA = 173;
 
         String codeToString(int code) {
             if (DEBUG_MESSAGES) {
@@ -2568,6 +2591,7 @@ public final class ActivityThread extends ClientTransactionHandler
                     case TIMEOUT_SERVICE: return "TIMEOUT_SERVICE";
                     case PING: return "PING";
                     case TIMEOUT_SERVICE_FOR_TYPE: return "TIMEOUT_SERVICE_FOR_TYPE";
+                    case REQUEST_HANDOFF_ACTIVITY_DATA: return "REQUEST_HANDOFF_ACTIVITY_DATA";
                 }
             }
             return Integer.toString(code);
@@ -2888,6 +2912,12 @@ public final class ActivityThread extends ClientTransactionHandler
                     break;
                 case FINISH_INSTRUMENTATION_WITHOUT_RESTART:
                     handleFinishInstrumentationWithoutRestart();
+                    break;
+                case REQUEST_HANDOFF_ACTIVITY_DATA:
+                    Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
+                            "handleHandoffActivityDataRequest");
+                    handleHandoffActivityDataRequest((RequestHandoffActivityData)msg.obj);
+                    Trace.traceEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER);
                     break;
             }
             long messageElapsedTimeMs = SystemClock.uptimeMillis() - messageStartUptimeMs;
@@ -4604,6 +4634,32 @@ public final class ActivityThread extends ClientTransactionHandler
     public void handleNewIntent(ActivityClientRecord r, List<ReferrerIntent> intents) {
         checkAndBlockForNetworkAccess();
         deliverNewIntents(r, intents);
+    }
+
+    private void handleHandoffActivityDataRequest(RequestHandoffActivityData cmd) {
+        final HandoffActivityDataRequestInfo requestInfo = new HandoffActivityDataRequestInfo(true);
+        final List<HandoffActivityData> handoffActivityData = new ArrayList<>();
+        for (IBinder activityToken : cmd.activityTokens) {
+            final ActivityClientRecord r = mActivities.get(activityToken);
+            if (r != null) {
+                final HandoffActivityData dataForActivity =
+                        r.activity.onHandoffActivityDataRequested(requestInfo);
+                if (dataForActivity == null) {
+                    Log.w(TAG, "HandoffActivityData is null for " + r.activity.getComponentName());
+                }
+                handoffActivityData.add(dataForActivity);
+            } else {
+                Log.w(TAG, "Attempted to fetch HandoffActivityData for non-existent activity.");
+                handoffActivityData.add(null);
+            }
+        }
+
+        IActivityTaskManager mgr = ActivityTaskManager.getService();
+        try {
+            mgr.reportHandoffActivityData(cmd.requestToken, handoffActivityData);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     public void handleRequestAssistContextExtras(RequestAssistContextExtras cmd) {

@@ -22,6 +22,7 @@ flag {
 
 flag {
     name: "thread_mobile_enabled"
+    is_exported: true
     namespace: "thread_network"
     description: "Controls whether Thread support for mobile devices is enabled"
     bug: "363970206"
