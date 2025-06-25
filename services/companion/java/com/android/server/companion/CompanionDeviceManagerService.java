@@ -629,10 +629,10 @@ public class CompanionDeviceManagerService extends SystemService {
 
         @Override
         @EnforcePermission(MANAGE_COMPANION_DEVICES)
-        public void enableSecureTransport(boolean enabled) {
-            enableSecureTransport_enforcePermission();
+        public void overrideTransportType(int typeOverride) {
+            overrideTransportType_enforcePermission();
 
-            mTransportManager.enableSecureTransport(enabled);
+            mTransportManager.overrideTransportType(typeOverride);
         }
 
         @Override

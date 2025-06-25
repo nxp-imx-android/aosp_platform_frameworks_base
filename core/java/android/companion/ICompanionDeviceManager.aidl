@@ -140,7 +140,7 @@ interface ICompanionDeviceManager {
     PermissionSyncRequest getPermissionSyncRequest(int associationId);
 
     @EnforcePermission("MANAGE_COMPANION_DEVICES")
-    void enableSecureTransport(boolean enabled);
+    void overrideTransportType(int typeOverride);
 
     byte[] getBackupPayload(int userId);
 

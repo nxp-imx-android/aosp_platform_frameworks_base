@@ -1862,22 +1862,25 @@ public final class CompanionDeviceManager {
     }
 
     /**
-     * Enables or disables secure transport for testing. Defaults to being enabled.
-     * Should not be used outside of testing.
+     * Overrides the type of transport to be assigned.
+     * Can be used to force a raw transport or a secure transport.
+     * Defaults to letting CDM decide based on device state.
+     * DO NOT USE outside of testing.
      *
-     * @param enabled true to enable. false to disable.
+     * @param override 0 for default, 1 for raw, 2 for secure.
      * @hide
      */
     @TestApi
+    @SuppressLint("UnflaggedApi")
     @RequiresPermission(android.Manifest.permission.MANAGE_COMPANION_DEVICES)
-    public void enableSecureTransport(boolean enabled) {
+    public void overrideTransportType(int typeOverride) {
         if (mService == null) {
             Log.w(TAG, "CompanionDeviceManager service is not available.");
             return;
         }
 
         try {
-            mService.enableSecureTransport(enabled);
+            mService.overrideTransportType(typeOverride);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

@@ -2027,8 +2027,6 @@ UnflaggedApi: android.companion.AssociationInfo.Builder#setTimeApproved(long):
     New API must be flagged with @FlaggedApi: method android.companion.AssociationInfo.Builder.setTimeApproved(long)
 UnflaggedApi: android.companion.CompanionDeviceManager#MESSAGE_REQUEST_PING:
     New API must be flagged with @FlaggedApi: field android.companion.CompanionDeviceManager.MESSAGE_REQUEST_PING
-UnflaggedApi: android.companion.CompanionDeviceManager#enableSecureTransport(boolean):
-    New API must be flagged with @FlaggedApi: method android.companion.CompanionDeviceManager.enableSecureTransport(boolean)
 UnflaggedApi: android.content.AttributionSource#AttributionSource(int, int, String, String, android.os.IBinder, String[], android.content.AttributionSource):
     New API must be flagged with @FlaggedApi: constructor android.content.AttributionSource(int,int,String,String,android.os.IBinder,String[],android.content.AttributionSource)
 UnflaggedApi: android.content.AttributionSource#AttributionSource(int, int, String, String, android.os.IBinder, String[], int, android.content.AttributionSource):
