@@ -48,6 +48,7 @@ import static android.view.WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR;
 import static android.view.WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
 import static android.view.WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
 import static android.view.WindowManager.LayoutParams.FLAG_SECURE;
+import static android.view.WindowManager.LayoutParams.INVALID_WINDOW_TYPE;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
 import static android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
 import static android.view.WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION;
@@ -102,6 +103,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
@@ -2386,6 +2388,98 @@ public class DisplayContentTests extends WindowTestsBase {
         // removeImeScreenshotByTarget.
         appWin.removeImmediately();
         assertNull(mDisplayContent.mImeScreenshot);
+    }
+
+    @SetupWindows(addWindows = W_INPUT_METHOD)
+    @Test
+    public void testDispatchImeOverlayLayeringTargetVisibilityChanged_whenLayeringTargetNull() {
+        final DisplayContent dc = createNewDisplay();
+        final var wmService = dc.mWmService;
+        spyOn(wmService);
+        final WindowState app = newWindowBuilder("app", TYPE_BASE_APPLICATION).setDisplay(dc)
+                .build();
+        app.mAttrs.flags |= FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM;
+        dc.setInputMethodWindowLocked(mImeWindow);
+
+        assertEquals("app became the IME layering target", app,
+                dc.getImeLayeringTarget());
+        assertTrue("app is an IME overlay layering target", app.isImeOverlayLayeringTarget());
+        verify(wmService).dispatchImeOverlayLayeringTargetVisibilityChanged(
+                eq(app.mClient.asBinder()), eq(TYPE_BASE_APPLICATION), eq(true) /* visible */,
+                eq(false) /* removed */, eq(dc.mDisplayId));
+
+        // Removing IME window updates IME layering target to null
+        dc.setInputMethodWindowLocked(null /* win */);
+        assertNotEquals("app is no longer the IME layering target after IME was removed",
+                app, dc.getImeLayeringTarget());
+        assertFalse("app is no longer an IME overlay layering target after IME was removed",
+                app.isImeOverlayLayeringTarget());
+        verify(wmService).dispatchImeOverlayLayeringTargetVisibilityChanged(isNull() /* token */,
+                eq(INVALID_WINDOW_TYPE), eq(false) /* visible */, eq(true) /* removed */,
+                eq(dc.mDisplayId));
+    }
+
+    @SetupWindows(addWindows = W_INPUT_METHOD)
+    @Test
+    public void testDispatchImeOverlayLayeringTargetVisibilityChanged_whenLayeringTargetChanges() {
+        final DisplayContent dc = createNewDisplay();
+        final var wmService = dc.mWmService;
+        spyOn(wmService);
+        final WindowState app1 = newWindowBuilder("app1", TYPE_BASE_APPLICATION)
+                .setDisplay(dc).build();
+        final WindowState app2 = newWindowBuilder("app2", TYPE_APPLICATION)
+                .setDisplay(dc).build();
+        app1.mAttrs.flags |= FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM;
+        app2.mActivityRecord.setVisibleRequested(false);
+        dc.setInputMethodWindowLocked(mImeWindow);
+
+        assertEquals("app1 became the IME layering target", app1,
+                dc.getImeLayeringTarget());
+        assertTrue("app1 is an IME overlay layering target", app1.isImeOverlayLayeringTarget());
+        verify(wmService).dispatchImeOverlayLayeringTargetVisibilityChanged(
+                eq(app1.mClient.asBinder()), eq(TYPE_BASE_APPLICATION), eq(true) /* visible */,
+                eq(false) /* removed */, eq(dc.mDisplayId));
+
+        app2.mActivityRecord.setVisibleRequested(true);
+        dc.computeImeLayeringTarget(true /* update */);
+        assertEquals("app2 became the IME layering target", app2,
+                dc.getImeLayeringTarget());
+        assertFalse("app2 is not an IME overlay layering target",
+                app2.isImeOverlayLayeringTarget());
+        verify(wmService).dispatchImeOverlayLayeringTargetVisibilityChanged(isNull() /* token */,
+                eq(TYPE_APPLICATION), eq(false) /* visible */, eq(true) /* removed */,
+                eq(dc.mDisplayId));
+    }
+
+    @SetupWindows(addWindows = W_INPUT_METHOD)
+    @Test
+    public void testDispatchImeOverlayLayeringTargetVisibilityChanged_whenOverlayTargetAdded() {
+        final DisplayContent dc = createNewDisplay();
+        final var wmService = dc.mWmService;
+        spyOn(wmService);
+        final WindowState app1 = newWindowBuilder("app1", TYPE_BASE_APPLICATION)
+                .setDisplay(dc).build();
+        dc.setInputMethodWindowLocked(mImeWindow);
+
+        assertEquals("app1 became the IME layering target", app1,
+                dc.getImeLayeringTarget());
+        assertFalse("app1 is not an IME overlay layering target",
+                app1.isImeOverlayLayeringTarget());
+        verify(wmService, never()).dispatchImeOverlayLayeringTargetVisibilityChanged(
+                any(Binder.class), anyInt(), anyBoolean(), anyBoolean(), anyInt());
+
+        final WindowState app2 = newWindowBuilder("app2", TYPE_APPLICATION)
+                .setParent(app1)
+                .setDisplay(dc).build();
+        app2.mAttrs.flags |= FLAG_NOT_FOCUSABLE | FLAG_ALT_FOCUSABLE_IM;
+
+        dc.computeImeLayeringTarget(true /* update */);
+        assertEquals("app2 became the IME layering target", app2,
+                dc.getImeLayeringTarget());
+        assertTrue("app2 is an IME overlay layering target", app2.isImeOverlayLayeringTarget());
+        verify(wmService).dispatchImeOverlayLayeringTargetVisibilityChanged(
+                eq(app2.mClient.asBinder()), eq(TYPE_APPLICATION), eq(true) /* visible */,
+                eq(false) /* removed */, eq(dc.mDisplayId));
     }
 
     @Test

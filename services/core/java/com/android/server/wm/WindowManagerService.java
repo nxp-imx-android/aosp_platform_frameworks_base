@@ -2042,11 +2042,6 @@ public class WindowManagerService extends IWindowManager.Stub
 
         if (imMayMove) {
             displayContent.computeImeLayeringTarget(true /* update */);
-            if (win.isImeOverlayLayeringTarget()) {
-                dispatchImeOverlayLayeringTargetVisibilityChanged(client.asBinder(),
-                        win.mAttrs.type, win.isVisibleRequestedOrAdding(), false /* removed */,
-                        displayContent.getDisplayId());
-            }
         }
 
         // Don't do layout here, the window must call
@@ -3666,7 +3661,7 @@ public class WindowManagerService extends IWindowManager.Stub
         });
     }
 
-    void dispatchImeOverlayLayeringTargetVisibilityChanged(@NonNull IBinder token,
+    void dispatchImeOverlayLayeringTargetVisibilityChanged(@Nullable IBinder token,
             @WindowManager.LayoutParams.WindowType int windowType, boolean visible,
             boolean removed, int displayId) {
         if (DEBUG_INPUT_METHOD) {
