@@ -24,7 +24,9 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.keyguard.data.repository.fakeKeyguardRepository
+import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
+import com.android.systemui.keyguard.shared.model.BiometricUnlockMode
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.collectLastValue
@@ -59,6 +61,7 @@ class AODPromotedNotificationsInteractorTest : SysuiTestCase() {
             keyguardInteractor = keyguardInteractor,
             sensitiveNotificationProtectionInteractor = sensitiveNotificationProtectionInteractor,
             dumpManager = dumpManager,
+            biometricUnlockInteractor = biometricUnlockInteractor,
         )
     }
 
@@ -123,6 +126,26 @@ class AODPromotedNotificationsInteractorTest : SysuiTestCase() {
             renderNotificationListInteractor.setRenderedList(listOf(ronEntry))
 
             // THEN aod content is redacted
+            val content by collectLastValue(underTest.content)
+            assertThat(content).isNotNull()
+            assertThat(content!!.title).isEqualTo("REDACTED")
+        }
+
+    @Test
+    fun content_sensitive_unlocked_biometricUnlockDismissesKeyguard() =
+        kosmos.runTest {
+            // GIVEN a promoted entry
+            val ronEntry = buildPublicPrivatePromotedOngoing()
+
+            setKeyguardLocked(true)
+            setScreenSharingProtectionActive(false)
+            kosmos.fakeKeyguardRepository.setBiometricUnlockState(
+                BiometricUnlockMode.UNLOCK_COLLAPSING
+            )
+
+            renderNotificationListInteractor.setRenderedList(listOf(ronEntry))
+
+            // THEN aod content remains redacted
             val content by collectLastValue(underTest.content)
             assertThat(content).isNotNull()
             assertThat(content!!.title).isEqualTo("REDACTED")
