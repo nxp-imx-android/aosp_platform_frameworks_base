@@ -843,9 +843,8 @@ public class SettingsHelperTest {
     }
 
     @Test
-    @EnableFlags(com.android.server.backup.Flags.FLAG_ENABLE_METRICS_SETTINGS_BACKUP_AGENTS)
     public void
-    restoreValue_metricsFlagIsEnabled_restoresSetting_secureUri_logsSuccessWithSecureDatatype()
+    restoreValue_restoresSetting_secureUri_logsSuccessWithSecureDatatype()
     {
         mSettingsHelper.restoreValue(
                 mContext,
@@ -863,9 +862,8 @@ public class SettingsHelperTest {
     }
 
     @Test
-    @EnableFlags(com.android.server.backup.Flags.FLAG_ENABLE_METRICS_SETTINGS_BACKUP_AGENTS)
     public void
-    restoreValue_metricsFlagIsEnabled_restoresSetting_systemUri_logsSuccessWithSystemDatatype()
+    restoreValue_restoresSetting_systemUri_logsSuccessWithSystemDatatype()
     {
         mSettingsHelper.restoreValue(
                 mContext,
@@ -883,9 +881,8 @@ public class SettingsHelperTest {
     }
 
     @Test
-    @EnableFlags(com.android.server.backup.Flags.FLAG_ENABLE_METRICS_SETTINGS_BACKUP_AGENTS)
     public void
-    restoreValue_metricsFlagIsEnabled_restoresSetting_globalUri_logsSuccessWithGlobalDatatype()
+    restoreValue_restoresSetting_globalUri_logsSuccessWithGlobalDatatype()
     {
         mSettingsHelper.restoreValue(
                 mContext,
@@ -903,8 +900,7 @@ public class SettingsHelperTest {
     }
 
     @Test
-    @EnableFlags(com.android.server.backup.Flags.FLAG_ENABLE_METRICS_SETTINGS_BACKUP_AGENTS)
-    public void restoreValue_metricsFlagIsEnabled_doesNotRestoreSetting_logsFailure() {
+    public void restoreValue_doesNotRestoreSetting_logsFailure() {
         mSettingsHelper.restoreValue(
                 mContext,
                 mContentResolver,
@@ -918,21 +914,6 @@ public class SettingsHelperTest {
             getLoggingResultForDatatype(SettingsBackupRestoreKeys.KEY_UNKNOWN);
         assertThat(loggingResult).isNotNull();
         assertThat(loggingResult.getFailCount()).isEqualTo(1);
-    }
-
-    @Test
-    @DisableFlags(com.android.server.backup.Flags.FLAG_ENABLE_METRICS_SETTINGS_BACKUP_AGENTS)
-    public void restoreValue_metricsFlagIsDisabled_doesNotLogMetrics() {
-        mSettingsHelper.restoreValue(
-                mContext,
-                mContentResolver,
-                new ContentValues(),
-                Uri.EMPTY,
-                SETTING_KEY,
-                SETTING_VALUE,
-                /* restoredFromSdkInt */ 0);
-
-        assertThat(getLoggingResultForDatatype(SettingsBackupRestoreKeys.KEY_UNKNOWN)).isNull();
     }
 
     private int getAutoRotationSettingValue() {
