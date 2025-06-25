@@ -14,7 +14,6 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.ambient.statusbar.shared.flag.OngoingActivityChipsOnDream
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.flags.FeatureFlagsClassic
 import com.android.systemui.plugins.statusbar.StatusBarStateController
 import com.android.systemui.settings.UserTracker
 import com.android.systemui.statusbar.NotificationLockscreenUserManager
@@ -23,6 +22,7 @@ import com.android.systemui.statusbar.SysuiStatusBarStateController
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.provider.HighPriorityProvider
+import com.android.systemui.statusbar.notification.shared.NotificationBundleUi
 import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.util.ListenerSet
 import com.android.systemui.util.asIndenting
@@ -84,7 +84,6 @@ constructor(
     private val userTracker: UserTracker,
     private val secureSettings: SecureSettings,
     private val globalSettings: GlobalSettings,
-    private val featureFlags: FeatureFlagsClassic,
 ) : CoreStartable, KeyguardNotificationVisibilityProvider {
     private val showSilentNotifsUri =
         secureSettings.getUriFor(Settings.Secure.LOCK_SCREEN_SHOW_SILENT_NOTIFICATIONS)
@@ -102,6 +101,25 @@ constructor(
             }
         }
 
+    // KeyguardUpdateMonitor stores callbacks as WeakRefs, so we need to keep a strong reference to
+    // the callback in order to prevent it from being garbage collected.
+    private val keyguardUpdateMonitorCallback =
+        object : KeyguardUpdateMonitorCallback() {
+            override fun onStrongAuthStateChanged(userId: Int) {
+                notifyStateChanged("onStrongAuthStateChanged")
+            }
+
+            override fun onDreamingStateChanged(dreaming: Boolean) {
+                if (OngoingActivityChipsOnDream.isEnabled && NotificationBundleUi.isEnabled) {
+                    // Only notify if we're no longer dreaming, otherwise this will cause a
+                    // flicker as the device transitions to dreaming
+                    if (!dreaming) {
+                        notifyStateChanged("onDreamingStateChanged(dreaming=false)")
+                    }
+                }
+            }
+        }
+
     override fun start() {
         readShowSilentNotificationSetting()
         keyguardStateController.addCallback(
@@ -115,13 +133,8 @@ constructor(
                 }
             }
         )
-        keyguardUpdateMonitor.registerCallback(
-            object : KeyguardUpdateMonitorCallback() {
-                override fun onStrongAuthStateChanged(userId: Int) {
-                    notifyStateChanged("onStrongAuthStateChanged")
-                }
-            }
-        )
+
+        keyguardUpdateMonitor.registerCallback(keyguardUpdateMonitorCallback)
 
         // register lockscreen settings changed callbacks:
         val settingsObserver: ContentObserver =
@@ -184,55 +197,56 @@ constructor(
         onStateChangedListeners.forEach { it.accept(reason) }
     }
 
-    override fun shouldHideNotification(entry: NotificationEntry): Boolean =
+    override fun shouldHideNotification(entry: NotificationEntry): VisState =
         when {
             // Don't hide notifications if we're in a dream. The dream status bar needs
             // notifications to render ongoing call chip.
-            OngoingActivityChipsOnDream.isEnabled && keyguardUpdateMonitor.isDreaming -> false
+            OngoingActivityChipsOnDream.isEnabled && keyguardUpdateMonitor.isDreaming -> SHOW
             // Keyguard state doesn't matter if the keyguard is not showing.
-            !isLockedOrLocking -> false
+            !isLockedOrLocking -> SHOW
             // Notifications not allowed on the lockscreen, always hide.
-            !lockscreenUserManager.shouldShowLockscreenNotifications() -> true
+            !lockscreenUserManager.shouldShowLockscreenNotifications() -> HIDE
             // User settings do not allow this notification on the lockscreen, so hide it.
-            userSettingsDisallowNotification(entry) -> true
+            userSettingsDisallowNotification(entry) -> HIDE
             // Entry is explicitly marked SECRET, so hide it.
-            entry.sbn.notification.visibility == VISIBILITY_SECRET -> true
+            entry.sbn.notification.visibility == VISIBILITY_SECRET -> HIDE
             // if entry is silent, apply custom logic to see if should hide
-            shouldHideIfEntrySilent(entry) -> true
-            else -> false
+            shouldHideIfEntrySilent(entry) -> HIDE
+            else -> SHOW
         }
 
-    private fun shouldHideIfEntrySilent(entry: PipelineEntry): Boolean =
+    private fun shouldHideIfEntrySilent(entry: PipelineEntry): VisState =
         when {
             // Show if explicitly high priority (not hidden)
-            highPriorityProvider.isExplicitlyHighPriority(entry) -> false
+            highPriorityProvider.isExplicitlyHighPriority(entry) -> SHOW
             // Ambient notifications are hidden always from lock screen
-            entry.asListEntry()?.representativeEntry?.isAmbient == true -> true
+            entry.asListEntry()?.representativeEntry?.isAmbient == true -> HIDE
             // [Now notification is silent]
             // Always hide if user wants silent notifs hidden
-            hideSilentNotificationsOnLockscreen -> true
+            hideSilentNotificationsOnLockscreen -> HIDE
             // Show when silent notifications are allowed on lockscreen
-            else -> false
+            else -> SHOW
         }
 
-    private fun userSettingsDisallowNotification(entry: NotificationEntry): Boolean {
-        fun disallowForUser(user: Int) =
+    private fun userSettingsDisallowNotification(entry: NotificationEntry): VisState {
+        fun disallowForUser(user: Int): VisState =
             when {
                 // user is in lockdown, always disallow
-                keyguardUpdateMonitor.isUserInLockdown(user) -> true
+                keyguardUpdateMonitor.isUserInLockdown(user) -> HIDE
                 // device isn't public, no need to check public-related settings, so allow
-                !lockscreenUserManager.isLockscreenPublicMode(user) -> false
+                !lockscreenUserManager.isLockscreenPublicMode(user) -> SHOW
                 // entry is meant to be secret on the lockscreen, disallow
-                isRankingVisibilitySecret(entry) -> true
+                isRankingVisibilitySecret(entry) -> HIDE
                 // disallow if user disallows notifications in public
-                else -> !lockscreenUserManager.userAllowsNotificationsInPublic(user)
+                lockscreenUserManager.userAllowsNotificationsInPublic(user) -> SHOW
+                else -> HIDE
             }
         val currentUser = lockscreenUserManager.currentUserId
         val notifUser = entry.sbn.user.identifier
         return when {
-            disallowForUser(currentUser) -> true
-            notifUser == UserHandle.USER_ALL -> false
-            notifUser == currentUser -> false
+            disallowForUser(currentUser) == HIDE -> HIDE
+            notifUser == UserHandle.USER_ALL -> SHOW
+            notifUser == currentUser -> SHOW
             else -> disallowForUser(notifUser)
         }
     }
@@ -272,3 +286,8 @@ constructor(
         hideSilentNotificationsOnLockscreen = !showSilentNotifs
     }
 }
+
+private typealias VisState = Boolean
+
+private const val SHOW: VisState = false
+private const val HIDE: VisState = true
