@@ -54,7 +54,9 @@ public class ProcessStateController {
     private final OomAdjuster mOomAdjuster;
     private final BiConsumer<ConnectionRecord, Boolean> mServiceBinderCallUpdater;
 
+    // TODO(b/425766486): Investigate if we could use java.util.concurrent.locks.ReadWriteLock.
     private final Object mLock;
+    private final Object mProcLock;
 
     private final Handler mActivityStateHandler;
 
@@ -64,12 +66,14 @@ public class ProcessStateController {
 
     private ProcessStateController(ActivityManagerService ams, ProcessList processList,
             ActiveUids activeUids, ServiceThread handlerThread,
-            CachedAppOptimizer cachedAppOptimizer, Object lock, Looper activityStateLooper,
-            Consumer<ProcessRecord> topChangeCallback, OomAdjuster.Injector oomAdjInjector) {
+            CachedAppOptimizer cachedAppOptimizer, Object lock, Object procLock,
+            Looper activityStateLooper, Consumer<ProcessRecord> topChangeCallback,
+            OomAdjuster.Injector oomAdjInjector) {
         mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
                 mGlobalState, cachedAppOptimizer, oomAdjInjector);
 
         mLock = lock;
+        mProcLock = procLock;
         mActivityStateHandler = new Handler(activityStateLooper);
         mTopChangeCallback = topChangeCallback;
         final Handler serviceHandler = new Handler(handlerThread.getLooper());
@@ -464,6 +468,19 @@ public class ProcessStateController {
     public void setActiveInstrumentation(@NonNull ProcessRecord proc,
             ActiveInstrumentation activeInstrumentation) {
         proc.setActiveInstrumentation(activeInstrumentation);
+    }
+
+    @GuardedBy("mLock")
+    void forceProcessStateUpTo(@NonNull ProcessRecord proc, int newState) {
+        final int prevProcState = proc.mState.getReportedProcState();
+        if (prevProcState > newState) {
+            synchronized (mProcLock) {
+                proc.mState.setReportedProcState(newState);
+                proc.mState.setCurProcState(newState);
+                proc.mState.setCurRawProcState(newState);
+                mOomAdjuster.onProcessStateChanged(proc, prevProcState);
+            }
+        }
     }
 
     /********************* Process Visibility State Events *********************/
@@ -955,8 +972,8 @@ public class ProcessStateController {
                 mOomAdjInjector = new OomAdjuster.Injector();
             }
             return new ProcessStateController(mAms, mProcessList, mActiveUids, mHandlerThread,
-                    mCachedAppOptimizer, mLock, mActivityStateLooper, mTopChangeCallback,
-                    mOomAdjInjector);
+                    mCachedAppOptimizer, mLock, mAms.mProcLock, mActivityStateLooper,
+                    mTopChangeCallback, mOomAdjInjector);
         }
 
         /**

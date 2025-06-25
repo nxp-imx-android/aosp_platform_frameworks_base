@@ -2101,7 +2101,8 @@ class BroadcastQueueImpl extends BroadcastQueue {
             mService.mProcessStateController.noteBroadcastDeliveryStarted(queue.app,
                     queue.getPreferredSchedulingGroupLocked());
             if (queue.runningOomAdjusted) {
-                queue.app.mState.forceProcessStateUpTo(ActivityManager.PROCESS_STATE_RECEIVER);
+                mService.mProcessStateController.forceProcessStateUpTo(queue.app,
+                        ActivityManager.PROCESS_STATE_RECEIVER);
                 mService.enqueueOomAdjTargetLocked(queue.app);
             }
         }

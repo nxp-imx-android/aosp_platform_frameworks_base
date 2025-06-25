@@ -1630,7 +1630,7 @@ class ProcessRecord implements WindowProcessListener {
     public void setPendingUiCleanAndForceProcessStateUpTo(int newState) {
         synchronized (mService) {
             setPendingUiClean(true);
-            mState.forceProcessStateUpTo(newState);
+            mService.mProcessStateController.forceProcessStateUpTo(this, newState);
         }
     }
 
@@ -1686,7 +1686,7 @@ class ProcessRecord implements WindowProcessListener {
                     true /* activityChange */, true /* updateOomAdj */);
             setPendingUiClean(true);
             mService.mProcessStateController.setHasShownUi(this, true);
-            mState.forceProcessStateUpTo(topProcessState);
+            mService.mProcessStateController.forceProcessStateUpTo(this, topProcessState);
         }
     }
 

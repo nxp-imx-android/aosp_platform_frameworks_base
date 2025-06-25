@@ -620,19 +620,6 @@ final class ProcessStateRecord {
         return mRepProcState;
     }
 
-    @GuardedBy("mService")
-    void forceProcessStateUpTo(int newState) {
-        if (mRepProcState > newState) {
-            synchronized (mProcLock) {
-                final int prevProcState = mRepProcState;
-                setReportedProcState(newState);
-                setCurProcState(newState);
-                setCurRawProcState(newState);
-                mService.mOomAdjuster.onProcessStateChanged(mApp, prevProcState);
-            }
-        }
-    }
-
     @GuardedBy({"mService", "mProcLock"})
     void setSetProcState(int setProcState) {
         if (ActivityManager.isProcStateCached(mSetProcState)
