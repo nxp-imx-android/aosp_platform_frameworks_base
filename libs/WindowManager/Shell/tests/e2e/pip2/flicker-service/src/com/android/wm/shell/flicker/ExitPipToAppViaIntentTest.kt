@@ -17,7 +17,7 @@
 package com.android.wm.shell.flicker
 
 import android.app.Instrumentation
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.flicker.FlickerConfig
