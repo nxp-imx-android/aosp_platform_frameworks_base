@@ -59,6 +59,9 @@ class FakeKeyguardRepository @Inject constructor() : KeyguardRepository {
     private val _isKeyguardUnlocked = MutableStateFlow(false)
     override val isKeyguardDismissible: StateFlow<Boolean> = _isKeyguardUnlocked.asStateFlow()
 
+    private val _hasTrust = MutableStateFlow(false)
+    override val hasTrust: StateFlow<Boolean> = _hasTrust.asStateFlow()
+
     private val _isKeyguardOccluded = MutableStateFlow(false)
     override val isKeyguardOccluded: StateFlow<Boolean> = _isKeyguardOccluded
 
@@ -165,6 +168,10 @@ class FakeKeyguardRepository @Inject constructor() : KeyguardRepository {
 
     fun setKeyguardDismissible(isUnlocked: Boolean) {
         _isKeyguardUnlocked.value = isUnlocked
+    }
+
+    fun setHasTrust(hasTrust: Boolean) {
+        _hasTrust.value = hasTrust
     }
 
     override fun setIsDozing(isDozing: Boolean) {
