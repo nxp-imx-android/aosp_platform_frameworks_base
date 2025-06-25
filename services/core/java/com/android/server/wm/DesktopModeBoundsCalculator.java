@@ -71,12 +71,13 @@ public final class DesktopModeBoundsCalculator {
      */
     static void updateInitialBounds(@NonNull Task task, @Nullable WindowLayout layout,
             @Nullable ActivityRecord activity, @Nullable ActivityOptions options,
+            @NonNull DisplayContent displayContent,
             @NonNull LaunchParamsController.LaunchParams outParams,
             @NonNull Consumer<String> logger) {
         // Use stable frame instead of raw frame to avoid launching freeform windows on top of
         // stable insets, which usually are system widgets such as sysbar & navbar.
         final Rect stableBounds = new Rect();
-        task.getDisplayArea().getStableRect(stableBounds);
+        displayContent.getStableRect(stableBounds);
 
         final boolean hasFullscreenOverride = activity != null
                 && activity.mAppCompatController.getAspectRatioOverrides().hasFullscreenOverride();
@@ -89,7 +90,7 @@ public final class DesktopModeBoundsCalculator {
         final boolean shouldRespectOptionPosition =
                 updateOptionBoundsSize && DesktopModeFlags.ENABLE_CASCADING_WINDOWS.isTrue();
         // Calculate caption height for target display if needed.
-        final Display targetDisplay = task.getDisplayArea().mDisplayContent.getDisplay();
+        final Display targetDisplay = displayContent.getDisplay();
         final Context displayContext = task.mWmService.mContext.createDisplayContext(targetDisplay);
         final int captionHeight = activity != null && shouldExcludeCaptionFromAppBounds(
                 activity.info, task.isResizeable(), activity.mOptOutEdgeToEdge)
@@ -110,7 +111,7 @@ public final class DesktopModeBoundsCalculator {
                 logger.accept("layout specifies sizes, inheriting size and applying gravity");
             } else if (verticalGravity > 0 || horizontalGravity > 0) {
                 outParams.mBounds.set(calculateInitialBounds(task, activity, stableBounds, options,
-                        shouldRespectOptionPosition, captionHeight));
+                        displayContent, shouldRespectOptionPosition, captionHeight));
                 applyLayoutGravity(verticalGravity, horizontalGravity, outParams.mBounds,
                         stableBounds);
                 logger.accept("layout specifies gravity, applying desired bounds and gravity");
@@ -119,7 +120,7 @@ public final class DesktopModeBoundsCalculator {
             }
         } else {
             outParams.mBounds.set(calculateInitialBounds(task, activity, stableBounds, options,
-                    shouldRespectOptionPosition, captionHeight));
+                    displayContent, shouldRespectOptionPosition, captionHeight));
             logger.accept("layout not specified, applying desired bounds");
             logger.accept("respecting option bounds cascaded position="
                     + shouldRespectOptionPosition);
@@ -141,12 +142,11 @@ public final class DesktopModeBoundsCalculator {
     @NonNull
     private static Rect calculateInitialBounds(@NonNull Task task,
             @NonNull ActivityRecord activity, @NonNull Rect stableBounds,
-            @Nullable ActivityOptions options, boolean shouldRespectOptionPosition,
-            int captionHeight
+            @Nullable ActivityOptions options, @NonNull DisplayContent displayContent,
+            boolean shouldRespectOptionPosition, int captionHeight
     ) {
         // Display bounds not taking into account insets.
-        final TaskDisplayArea displayArea = task.getDisplayArea();
-        final Rect screenBounds = displayArea.getBounds();
+        final Rect screenBounds = displayContent.getBounds();
         final Size idealSize = calculateIdealSize(screenBounds, DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
         if (!DesktopModeFlags.ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS.isTrue()) {
             return centerInScreen(idealSize, screenBounds);
