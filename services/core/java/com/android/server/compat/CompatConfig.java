@@ -179,7 +179,7 @@ final class CompatConfig {
         for (CompatChange c : mChanges.values()) {
             long changeId = c.getId();
             boolean isLatestSdk = isChangeTargetingLatestSdk(c, app.targetSdkVersion);
-            if (c.isEnabled(app, mAndroidBuildClassifier) && isLatestSdk) {
+            if (c.isEnabled(app, mAndroidBuildClassifier) && isLatestSdk && !c.getNoLogging()) {
                 loggable.add(changeId);
             }
         }

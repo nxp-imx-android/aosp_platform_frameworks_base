@@ -136,18 +136,18 @@ public class PlatformCompatTest {
         mPlatformCompat =
                 new PlatformCompat(mContext, mCompatConfig, mBuildClassifier, mChangeReporter);
         assertThat(mPlatformCompat.listAllChanges()).asList().containsExactly(
-                new CompatibilityChangeInfo(1L, "", -1, -1, false, false, "", false),
-                new CompatibilityChangeInfo(2L, "change2", -1, -1, true, false, "", false),
+                new CompatibilityChangeInfo(1L, "", -1, -1, false, false, false, "", false),
+                new CompatibilityChangeInfo(2L, "change2", -1, -1, true, false, false, "", false),
                 new CompatibilityChangeInfo(3L, "", Build.VERSION_CODES.O, -1, false, false,
-                        "desc", false),
+                        false, "desc", false),
                 new CompatibilityChangeInfo(
-                        4L, "", Build.VERSION_CODES.P, -1, false, false, "", false),
+                        4L, "", Build.VERSION_CODES.P, -1, false, false, false, "", false),
                 new CompatibilityChangeInfo(
-                        5L, "", Build.VERSION_CODES.Q, -1, false, false, "", false),
+                        5L, "", Build.VERSION_CODES.Q, -1, false, false, false, "", false),
                 new CompatibilityChangeInfo(
-                        6L, "", Build.VERSION_CODES.R, -1, false, false, "", false),
-                new CompatibilityChangeInfo(7L, "", -1, -1, false, true, "", false),
-                new CompatibilityChangeInfo(8L, "", -1, -1, true, false, "", true));
+                        6L, "", Build.VERSION_CODES.R, -1, false, false, false, "", false),
+                new CompatibilityChangeInfo(7L, "", -1, -1, false, true, false, "", false),
+                new CompatibilityChangeInfo(8L, "", -1, -1, true, false, false, "", true));
     }
 
     @Test
@@ -165,12 +165,12 @@ public class PlatformCompatTest {
         mPlatformCompat =
                 new PlatformCompat(mContext, mCompatConfig, mBuildClassifier, mChangeReporter);
         assertThat(mPlatformCompat.listUIChanges()).asList().containsExactly(
-                new CompatibilityChangeInfo(1L, "", -1, -1, false, false, "", false),
-                new CompatibilityChangeInfo(2L, "change2", -1, -1, true, false, "", false),
+                new CompatibilityChangeInfo(1L, "", -1, -1, false, false, false, "", false),
+                new CompatibilityChangeInfo(2L, "change2", -1, -1, true, false, false, "", false),
                 new CompatibilityChangeInfo(
-                        5L, "", Build.VERSION_CODES.P, -1, false, false, "", false),
+                        5L, "", Build.VERSION_CODES.P, -1, false, false, false, "", false),
                 new CompatibilityChangeInfo(
-                        6L, "", Build.VERSION_CODES.Q, -1, false, false, "", false));
+                        6L, "", Build.VERSION_CODES.Q, -1, false, false, false, "", false));
     }
 
     @Test
@@ -421,16 +421,16 @@ public class PlatformCompatTest {
         ApplicationInfo appInfo = ApplicationInfoBuilder.create().withUid(123).build();
         mPlatformCompat.reportChange(1L, appInfo);
         verify(mChangeReporter)
-                .reportChange(123, 1L, ChangeReporter.STATE_ENABLED, false, true, true);
+                .reportChange(123, 1L, ChangeReporter.STATE_ENABLED, false, true);
         mPlatformCompat.reportChange(2L, appInfo);
         verify(mChangeReporter)
-                .reportChange(123, 2L, ChangeReporter.STATE_DISABLED, false, true, true);
+                .reportChange(123, 2L, ChangeReporter.STATE_DISABLED, false, true);
 
         ApplicationInfo systemAppInfo =
                 ApplicationInfoBuilder.create().withUid(123).systemApp().build();
         mPlatformCompat.reportChange(3L, systemAppInfo);
         verify(mChangeReporter)
-                .reportChange(123, 3L, ChangeReporter.STATE_ENABLED, true, true, true);
+                .reportChange(123, 3L, ChangeReporter.STATE_ENABLED, true, true);
     }
 
     @Test
@@ -454,11 +454,11 @@ public class PlatformCompatTest {
 
         mPlatformCompat.reportChangeByPackageName(1L, PACKAGE_NAME, 123);
         verify(mChangeReporter)
-                .reportChange(123, 1L, ChangeReporter.STATE_ENABLED, false, true, true);
+                .reportChange(123, 1L, ChangeReporter.STATE_ENABLED, false, true);
 
         mPlatformCompat.reportChangeByPackageName(2L, PACKAGE_NAME, 123);
         verify(mChangeReporter)
-                .reportChange(123, 2L, ChangeReporter.STATE_DISABLED, false, true, true);
+                .reportChange(123, 2L, ChangeReporter.STATE_DISABLED, false, true);
 
         String SYSTEM_PACKAGE_NAME = "my.system.package";
 
@@ -473,11 +473,11 @@ public class PlatformCompatTest {
 
         mPlatformCompat.reportChangeByPackageName(1L, SYSTEM_PACKAGE_NAME, 123);
         verify(mChangeReporter)
-                .reportChange(123, 1L, ChangeReporter.STATE_ENABLED, true, true, true);
+                .reportChange(123, 1L, ChangeReporter.STATE_ENABLED, true, true);
 
         mPlatformCompat.reportChangeByPackageName(2L, SYSTEM_PACKAGE_NAME, 123);
         verify(mChangeReporter)
-                .reportChange(123, 2L, ChangeReporter.STATE_DISABLED, false, true, true);
+                .reportChange(123, 2L, ChangeReporter.STATE_DISABLED, false, true);
     }
 
     @Test
@@ -495,16 +495,16 @@ public class PlatformCompatTest {
         ApplicationInfo appInfo = ApplicationInfoBuilder.create().withUid(123).build();
         assertThat(mPlatformCompat.isChangeEnabled(1L, appInfo)).isTrue();
         verify(mChangeReporter)
-                .reportChange(123, 1L, ChangeReporter.STATE_ENABLED, false, false, false);
+                .reportChange(123, 1L, ChangeReporter.STATE_ENABLED, false, false);
         assertThat(mPlatformCompat.isChangeEnabled(2L, appInfo)).isFalse();
         verify(mChangeReporter)
-                .reportChange(123, 2L, ChangeReporter.STATE_DISABLED, false, false, false);
+                .reportChange(123, 2L, ChangeReporter.STATE_DISABLED, false, false);
 
         ApplicationInfo systemAppInfo =
                 ApplicationInfoBuilder.create().withUid(123).systemApp().build();
         assertThat(mPlatformCompat.isChangeEnabled(3L, systemAppInfo)).isTrue();
         verify(mChangeReporter)
-                .reportChange(123, 3L, ChangeReporter.STATE_ENABLED, true, false, false);
+                .reportChange(123, 3L, ChangeReporter.STATE_ENABLED, true, false);
     }
 
     @DisableFlags(Flags.FLAG_SYSTEM_UID_TARGET_SYSTEM_SDK)
