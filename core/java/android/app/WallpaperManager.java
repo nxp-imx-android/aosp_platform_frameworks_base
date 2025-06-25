@@ -909,7 +909,7 @@ public class WallpaperManager {
                             cmProxy.doColorManagement(decoder, info);
                         }
                     }));
-                } catch (OutOfMemoryError | IOException e) {
+                } catch (OutOfMemoryError | IOException | ArrayIndexOutOfBoundsException e) {
                     Log.w(TAG, "Can't decode file", e);
                 }
             } catch (RemoteException e) {
