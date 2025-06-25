@@ -245,6 +245,9 @@ public enum DesktopExperienceFlags {
     HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS(
             Flags::handleIncompatibleTasksInDesktopLaunchParams, false,
             Flags.FLAG_HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS),
+    LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY(
+            Flags::limitSystemFullscreenOverrideToDefaultDisplay, false,
+            Flags.FLAG_LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY),
     PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH(
             Flags::preserveRecentsTaskConfigurationOnRelaunch, true,
             Flags.FLAG_PRESERVE_RECENTS_TASK_CONFIGURATION_ON_RELAUNCH),
