@@ -375,6 +375,7 @@ class AppHeaderController(
         if (isOpenByDefaultDialogActive) return
         openByDefaultDialog = OpenByDefaultDialog(
             context,
+            userContext,
             taskInfo,
             taskSurface,
             displayController,
