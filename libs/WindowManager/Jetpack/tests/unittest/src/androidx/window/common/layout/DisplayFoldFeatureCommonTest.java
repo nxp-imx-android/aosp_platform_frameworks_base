@@ -29,7 +29,6 @@ import android.graphics.Rect;
 import android.platform.test.annotations.Presubmit;
 import android.util.ArraySet;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Set;
@@ -43,7 +42,8 @@ import java.util.Set;
 @Presubmit
 public class DisplayFoldFeatureCommonTest {
 
-    @Ignore("b/421016779")
+    private final Rect mBounds = new Rect(0, 100, 300, 100);
+
     @Test
     public void test_different_type_not_equals() {
         final Set<Integer> properties = new ArraySet<>();
@@ -52,7 +52,7 @@ public class DisplayFoldFeatureCommonTest {
         final DisplayFoldFeatureCommon second =
                 new DisplayFoldFeatureCommon(DISPLAY_FOLD_FEATURE_TYPE_SCREEN_FOLD_IN, properties);
 
-        assertThat(first).isEqualTo(second);
+        assertThat(first).isNotEqualTo(second);
     }
 
     @Test
@@ -111,11 +111,10 @@ public class DisplayFoldFeatureCommonTest {
         assertThat(foldFeatureCommon.getType()).isEqualTo(DISPLAY_FOLD_FEATURE_TYPE_HINGE);
     }
 
-    @Ignore("b/421016779")
     @Test
     public void test_create_half_opened_feature() {
         final CommonFoldingFeature foldingFeature =
-                new CommonFoldingFeature(COMMON_TYPE_HINGE, COMMON_STATE_UNKNOWN, new Rect());
+                new CommonFoldingFeature(COMMON_TYPE_HINGE, COMMON_STATE_UNKNOWN, mBounds);
         final DisplayFoldFeatureCommon foldFeatureCommon = DisplayFoldFeatureCommon.create(
                 foldingFeature, true);
 
@@ -125,11 +124,10 @@ public class DisplayFoldFeatureCommonTest {
                 .isTrue();
     }
 
-    @Ignore("b/421016779")
     @Test
     public void test_create_fold_feature_no_half_opened() {
         final CommonFoldingFeature foldingFeature =
-                new CommonFoldingFeature(COMMON_TYPE_FOLD, COMMON_STATE_UNKNOWN, new Rect());
+                new CommonFoldingFeature(COMMON_TYPE_FOLD, COMMON_STATE_UNKNOWN, mBounds);
         final DisplayFoldFeatureCommon foldFeatureCommon = DisplayFoldFeatureCommon.create(
                 foldingFeature, true);
 
