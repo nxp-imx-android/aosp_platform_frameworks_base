@@ -25,12 +25,12 @@ import static org.junit.Assert.assertThrows;
 
 import android.content.Context;
 import android.content.res.XmlResourceParser;
+import android.platform.test.ravenwood.RavenwoodRule;
 import android.util.Log;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import com.android.ravenwood.common.RavenwoodCommonUtils;
 import com.android.ravenwood.restest_apk.R;
 
 import org.junit.Test;
@@ -71,7 +71,7 @@ public class RavenwoodResApkTest {
         var file = "ravenwood-data/framework-res.apk";
 
         assertTrue(new File(
-                RavenwoodCommonUtils.getRavenwoodRuntimePath() + "/" + file).exists());
+                RavenwoodRule.getRavenwoodRuntimePath() + "/" + file).exists());
     }
 
     @Test

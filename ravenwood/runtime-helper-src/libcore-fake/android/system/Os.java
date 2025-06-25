@@ -15,9 +15,9 @@
  */
 package android.system;
 
+import com.android.ravenwood.OpenJdkWorkaround;
 import com.android.ravenwood.RavenwoodRuntimeNative;
 import com.android.ravenwood.RavenwoodRuntimeState;
-import com.android.ravenwood.common.JvmWorkaround;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -69,7 +69,7 @@ public final class Os {
     /** Ravenwood version of the OS API. */
     public static void close(FileDescriptor fd) throws ErrnoException {
         try {
-            JvmWorkaround.getInstance().closeFd(fd);
+            OpenJdkWorkaround.closeFd(fd);
         } catch (IOException e) {
             // The only valid error on Linux that can happen is EIO
             throw new ErrnoException("close", OsConstants.EIO);

@@ -15,12 +15,13 @@
  */
 package android.platform.test.ravenwood;
 
-import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_VERBOSE_LOGGING;
-import static com.android.ravenwood.common.RavenwoodCommonUtils.getRavenwoodRuntimePath;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_VERBOSE_LOGGING;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.getRavenwoodRuntimePath;
 
 import android.util.Log;
 
 import com.android.ravenwood.RavenwoodRuntimeNative;
+import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,7 +36,7 @@ import java.util.Set;
  * A class to manage the core default system properties of the Ravenwood environment.
  */
 public class RavenwoodSystemProperties {
-    private static final String TAG = com.android.ravenwood.common.RavenwoodCommonUtils.TAG;
+    private static final String TAG = RavenwoodInternalUtils.TAG;
 
     /** We pull in properties from this file. */
     private static final String RAVENWOOD_BUILD_PROP = "ravenwood-data/ravenwood-build.prop";

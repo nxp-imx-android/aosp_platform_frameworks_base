@@ -18,8 +18,6 @@ package com.android.ravenwood;
 import android.system.ErrnoException;
 import android.system.StructStat;
 
-import com.android.ravenwood.common.JvmWorkaround;
-
 import java.io.FileDescriptor;
 
 /**
@@ -69,7 +67,7 @@ public class RavenwoodRuntimeNative {
     public static native String getIcuDataName();
 
     public static long lseek(FileDescriptor fd, long offset, int whence) throws ErrnoException {
-        return nLseek(JvmWorkaround.getInstance().getFdInt(fd), offset, whence);
+        return nLseek(OpenJdkWorkaround.getFdInt(fd), offset, whence);
     }
 
     public static FileDescriptor[] pipe2(int flags) throws ErrnoException {
@@ -78,28 +76,28 @@ public class RavenwoodRuntimeNative {
                 new FileDescriptor(),
                 new FileDescriptor(),
         };
-        JvmWorkaround.getInstance().setFdInt(ret[0], fds[0]);
-        JvmWorkaround.getInstance().setFdInt(ret[1], fds[1]);
+        OpenJdkWorkaround.setFdInt(ret[0], fds[0]);
+        OpenJdkWorkaround.setFdInt(ret[1], fds[1]);
 
         return ret;
     }
 
     public static FileDescriptor dup(FileDescriptor fd) throws ErrnoException {
-        var fdInt = nDup(JvmWorkaround.getInstance().getFdInt(fd));
+        var fdInt = nDup(OpenJdkWorkaround.getFdInt(fd));
 
         var retFd = new FileDescriptor();
-        JvmWorkaround.getInstance().setFdInt(retFd, fdInt);
+        OpenJdkWorkaround.setFdInt(retFd, fdInt);
         return retFd;
     }
 
     public static int fcntlInt(FileDescriptor fd, int cmd, int arg) throws ErrnoException {
-        var fdInt = JvmWorkaround.getInstance().getFdInt(fd);
+        var fdInt = OpenJdkWorkaround.getFdInt(fd);
 
         return nFcntlInt(fdInt, cmd, arg);
     }
 
     public static StructStat fstat(FileDescriptor fd) throws ErrnoException {
-        var fdInt = JvmWorkaround.getInstance().getFdInt(fd);
+        var fdInt = OpenJdkWorkaround.getFdInt(fd);
 
         return nFstat(fdInt);
     }
@@ -108,7 +106,7 @@ public class RavenwoodRuntimeNative {
         int fd = nOpen(path, flags, mode);
         if (fd < 0) return null;
         var retFd = new FileDescriptor();
-        JvmWorkaround.getInstance().setFdInt(retFd, fd);
+        OpenJdkWorkaround.setFdInt(retFd, fd);
         return retFd;
     }
 }

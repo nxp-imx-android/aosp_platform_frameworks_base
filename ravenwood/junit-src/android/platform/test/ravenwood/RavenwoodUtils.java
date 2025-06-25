@@ -22,14 +22,12 @@ import android.os.Looper;
 import android.os.MessageQueue;
 import android.util.Log;
 
-import com.android.ravenwood.common.RavenwoodCommonUtils;
 import com.android.ravenwood.common.SneakyThrow;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 
 /**
  * Utilities for writing (bivalent) ravenwood tests.
@@ -39,30 +37,6 @@ public class RavenwoodUtils {
     }
 
     private static final int DEFAULT_TIMEOUT_SECONDS = 10;
-
-    /**
-     * Load a JNI library respecting {@code java.library.path}
-     * (which reflects {@code LD_LIBRARY_PATH}).
-     *
-     * <p>{@code libname} must be the library filename without:
-     * - directory
-     * - "lib" prefix
-     * - and the ".so" extension
-     *
-     * <p>For example, in order to load "libmyjni.so", then pass "myjni".
-     *
-     * <p>This is basically the same thing as Java's {@link System#loadLibrary(String)},
-     * but this API works slightly different on ART and on the desktop Java, namely
-     * the desktop Java version uses a different entry point method name
-     * {@code JNI_OnLoad_libname()} (note the included "libname")
-     * while ART always seems to use {@code JNI_OnLoad()}.
-     *
-     * <p>This method provides the same behavior on both the device side and on Ravenwood --
-     * it uses {@code JNI_OnLoad()} as the entry point name on both.
-     */
-    public static void loadJniLibrary(String libname) {
-        RavenwoodCommonUtils.loadJniLibrary(libname);
-    }
 
     private class MainHandlerHolder {
         static Handler sMainHandler = new Handler(Looper.getMainLooper());
@@ -107,7 +81,6 @@ public class RavenwoodUtils {
     /**
      * Run a Runnable on Handler and wait for it to complete.
      */
-    @Nullable
     public static void runOnHandlerSync(@NonNull Handler h, @NonNull Runnable r) {
         runOnHandlerSync(h, () -> {
             r.run();
@@ -126,7 +99,6 @@ public class RavenwoodUtils {
     /**
      * Run a Runnable on main thread and wait for it to complete.
      */
-    @Nullable
     public static void runOnMainThreadSync(@NonNull ThrowingRunnable r) {
         runOnHandlerSync(getMainHandler(), () -> {
             r.run();
@@ -180,45 +152,9 @@ public class RavenwoodUtils {
         }
     }
 
-    /**
-     * Wrap the given {@link Supplier} to become memoized.
-     *
-     * The underlying {@link Supplier} will only be invoked once, and that result will be cached
-     * and returned for any future requests.
-     */
-    static <T> Supplier<T> memoize(ThrowingSupplier<T> supplier) {
-        return new Supplier<>() {
-            private T mInstance;
-
-            @Override
-            public T get() {
-                synchronized (this) {
-                    if (mInstance == null) {
-                        mInstance = create();
-                    }
-                    return mInstance;
-                }
-            }
-
-            private T create() {
-                try {
-                    return supplier.get();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        };
-    }
-
-    /** Used by {@link #memoize(ThrowingSupplier)}  */
+    /** Used by {@link #runOnMainThreadSync(ThrowingRunnable)}}  */
     public interface ThrowingRunnable {
         /** run the code. */
         void run() throws Exception;
-    }
-
-    /** Used by {@link #memoize(ThrowingSupplier)}  */
-    public interface ThrowingSupplier<T> {
-        /** run the code. */
-        T get() throws Exception;
     }
 }
