@@ -72,6 +72,7 @@ import com.android.systemui.statusbar.pipeline.shared.data.repository.Connectivi
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.RealWifiRepository
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.WifiRepository
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.WifiRepositorySwitcher
+import com.android.systemui.statusbar.pipeline.wifi.data.repository.demo.DemoModeWifiDataSourceKairos
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.prod.DisabledWifiRepository
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.prod.WifiRepositoryImpl
 import com.android.systemui.statusbar.pipeline.wifi.domain.interactor.WifiInteractor
@@ -94,6 +95,7 @@ import kotlinx.coroutines.flow.Flow
         [
             AirplaneModeDataLayerModule::class,
             DemoModeMobileConnectionDataSourceKairosImpl.Module::class,
+            DemoModeWifiDataSourceKairos.Module::class,
             MobileRepositorySwitcherKairos.Module::class,
             MobileConnectionsRepositoryKairosImpl.Module::class,
             MobileIconsInteractorKairosImpl.Module::class,
