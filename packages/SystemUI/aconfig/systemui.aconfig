@@ -1769,6 +1769,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_call_chip_use_is_hidden"
+    namespace: "systemui"
+    description: "Enables isHidden field for all call chips"
+    bug: "427747840"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "media_projection_grey_error_text"
     namespace: "systemui"
     description: "Set the error text color to grey when app sharing is hidden by the requesting app"

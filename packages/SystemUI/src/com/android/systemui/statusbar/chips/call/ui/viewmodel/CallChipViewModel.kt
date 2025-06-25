@@ -162,17 +162,21 @@ constructor(
                 ) { callState, headsUpState ->
                     when (callState) {
                         is OngoingCallModel.NoCall -> OngoingActivityChipModel.Inactive()
-                        is OngoingCallModel.InCall ->
-                            if (callState.isAppVisible) {
+                        is OngoingCallModel.InCall -> {
+                            val useLegacyInactiveBehavior =
+                                callState.isAppVisible && !StatusBarCallChipUseIsHidden.isEnabled
+
+                            if (useLegacyInactiveBehavior) {
                                 OngoingActivityChipModel.Inactive()
                             } else {
                                 prepareChip(
                                     state = callState,
                                     headsUpState = headsUpState,
                                     systemClock = systemClock,
-                                    isHidden = false,
+                                    isHidden = callState.isAppVisible,
                                 )
                             }
+                        }
                     }
                 }
                 .stateIn(
