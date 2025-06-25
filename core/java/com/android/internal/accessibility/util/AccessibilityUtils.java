@@ -30,6 +30,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.pm.ServiceInfo;
+import android.media.AudioAttributes;
+import android.media.Ringtone;
 import android.os.Build;
 import android.os.UserHandle;
 import android.provider.Settings;
@@ -383,5 +385,24 @@ public final class AccessibilityUtils {
     public static int getMagnificationMagnifyKeyboardDefaultValue(Context context) {
         return context.getResources().getBoolean(
                 R.bool.config_magnification_magnify_keyboard_default) ? State.ON : State.OFF;
+    }
+
+    /** Play a notification sound if tone isn't null. */
+    public static void playNotificationTone(Context context, Ringtone tone) {
+        // Use USAGE_ASSISTANCE_ACCESSIBILITY for TVs to ensure that TVs play the ringtone as they
+        // have less ways of providing feedback like vibration.
+        final boolean hasFeatureLeanback =
+                context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_LEANBACK);
+        final int audioAttributesUsage =
+                hasFeatureLeanback
+                        ? AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY
+                        : AudioAttributes.USAGE_NOTIFICATION_EVENT;
+
+        // Play a notification tone
+        if (tone != null) {
+            tone.setAudioAttributes(
+                    new AudioAttributes.Builder().setUsage(audioAttributesUsage).build());
+            tone.play();
+        }
     }
 }
