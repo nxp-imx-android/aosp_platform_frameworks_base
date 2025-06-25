@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-import com.android.build.gradle.BaseExtension
-import com.android.build.gradle.api.AndroidBasePlugin
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.LibraryExtension
+import com.android.build.gradle.AppPlugin
+import com.android.build.gradle.BasePlugin
+import com.android.build.gradle.LibraryPlugin
 
 plugins {
     alias(libs.plugins.android.application) apply false
@@ -31,22 +35,25 @@ allprojects {
     extra["jetpackComposeVersion"] = "1.9.0-alpha04"
 }
 
+allprojects {
+    val projectBuildPath = path.replace(':', File.separatorChar)
+    layout.buildDirectory = file("$androidTop/out/gradle-spa/$projectBuildPath/build")
+}
+
 subprojects {
-    layout.buildDirectory.set(file("$androidTop/out/gradle-spa/$name"))
-
-    plugins.withType<AndroidBasePlugin> {
-        configure<BaseExtension> {
-            compileSdkVersion(36)
-
-            defaultConfig {
-                targetSdk = 36
-            }
-        }
+    plugins.withType<BasePlugin> {
+        the(CommonExtension::class).apply { compileSdk = 36 }
 
         configure<JavaPluginExtension> {
-            toolchain {
-                languageVersion.set(JavaLanguageVersion.of(libs.versions.jvm.get()))
-            }
+            toolchain { languageVersion.set(JavaLanguageVersion.of(libs.versions.jvm.get())) }
         }
+    }
+
+    plugins.withType<AppPlugin> {
+        configure<ApplicationExtension> { defaultConfig { targetSdk = 36 } }
+    }
+
+    plugins.withType<LibraryPlugin> {
+        configure<LibraryExtension> { testOptions { targetSdk = 36 } }
     }
 }
