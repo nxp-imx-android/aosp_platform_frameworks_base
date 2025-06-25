@@ -1199,6 +1199,16 @@ flag {
 }
 
 flag {
+    name: "enable_updated_display_connection_dialog"
+    namespace: "lse_desktop_experience"
+    description: "Enables new display connection dialog that allows selecting between desktop and mirroring. Requires ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT flag to work properly."
+    bug: "413620089"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_visual_indicator_in_transition_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables bugfix to move visual drop-zone indicator to transition root, so it can't be shown after the transition."
