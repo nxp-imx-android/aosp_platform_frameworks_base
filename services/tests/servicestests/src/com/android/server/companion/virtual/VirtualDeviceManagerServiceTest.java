@@ -18,6 +18,7 @@ package com.android.server.companion.virtual;
 
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_DEFAULT;
+import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_INVALID;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_RECENTS;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_SENSORS;
 import static android.content.Context.DEVICE_ID_DEFAULT;
@@ -448,11 +449,21 @@ public class VirtualDeviceManagerServiceTest {
     }
 
     @Test
+    @DisableFlags(Flags.FLAG_HANDLE_INVALID_DEVICE_ID)
     public void getDevicePolicy_nonExistentDeviceId_returnsDefault() {
         assertThat(mVdm.getDevicePolicy(mDeviceImpl.getDeviceId() + 1, POLICY_TYPE_SENSORS))
                 .isEqualTo(DEVICE_POLICY_DEFAULT);
         assertThat(mVdmNative.getDevicePolicy(mDeviceImpl.getDeviceId() + 1, POLICY_TYPE_SENSORS))
                 .isEqualTo(DEVICE_POLICY_DEFAULT);
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_HANDLE_INVALID_DEVICE_ID)
+    public void getDevicePolicy_nonExistentDeviceId_returnsInvalid() {
+        assertThat(mVdm.getDevicePolicy(mDeviceImpl.getDeviceId() + 1, POLICY_TYPE_SENSORS))
+                .isEqualTo(DEVICE_POLICY_INVALID);
+        assertThat(mVdmNative.getDevicePolicy(mDeviceImpl.getDeviceId() + 1, POLICY_TYPE_SENSORS))
+                .isEqualTo(DEVICE_POLICY_INVALID);
     }
 
     @Test
