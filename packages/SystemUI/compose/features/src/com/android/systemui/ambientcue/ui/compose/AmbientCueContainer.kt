@@ -33,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -123,6 +124,7 @@ private fun TaskBarAnd3ButtonAmbientCue(
     val density = LocalDensity.current
     val portrait = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
     var pillCenter by remember { mutableStateOf(Offset.Zero) }
+    var pillSize by remember { mutableStateOf(Size(0)) }
     val screenWidthPx = with(density) { configuration.screenWidthDp.dp.toPx() }
     var touchableRegion by remember { mutableStateOf<Rect?>(null) }
     LaunchedEffect(expanded, touchableRegion) {
@@ -137,15 +139,25 @@ private fun TaskBarAnd3ButtonAmbientCue(
         showEducation = viewModel.showLongPressEducation,
         modifier =
             modifier.graphicsLayer {
-                translationX = screenWidthPx - size.width
-                translationY = pillCenter.y - size.height
+                if (portrait) {
+                    translationX = screenWidthPx - size.width
+                    translationY = pillCenter.y - size.height
+                } else {
+                    translationX = screenWidthPx - pillSize.height - size.width
+                    translationY = pillCenter.y - pillSize.width
+                }
             },
         padding =
-            PaddingValues(
-                start = ACTIONS_HORIZONTAL_PADDING.dp,
-                end = ACTIONS_HORIZONTAL_PADDING.dp,
-                bottom = SHORT_PILL_ACTIONS_VERTICAL_PADDING.dp,
-            ),
+            if (portrait) {
+                PaddingValues(
+                    start = ACTIONS_HORIZONTAL_PADDING.dp,
+                    end = ACTIONS_HORIZONTAL_PADDING.dp,
+                    top = ACTIONS_TOP_PADDING.dp,
+                    bottom = SHORT_PILL_ACTIONS_VERTICAL_PADDING.dp,
+                )
+            } else {
+                PaddingValues()
+            },
     )
     ShortPill(
         actions = actions,
@@ -161,6 +173,7 @@ private fun TaskBarAnd3ButtonAmbientCue(
                 Modifier.graphicsLayer {
                         translationX = pillCenter.x - size.width / 2
                         translationY = pillCenter.y - size.height / 2
+                        pillSize = size
                     }
                     .onGloballyPositioned { layoutCoordinates ->
                         layoutCoordinates.parentCoordinates?.let { parentCoordinates ->
@@ -211,6 +224,7 @@ private fun NavBarAmbientCue(
         modifier = modifier,
         padding =
             PaddingValues(
+                top = ACTIONS_TOP_PADDING.dp,
                 bottom = NAV_BAR_ACTIONS_PADDING.dp,
                 start = ACTIONS_HORIZONTAL_PADDING.dp,
                 end = ACTIONS_HORIZONTAL_PADDING.dp,
@@ -246,5 +260,6 @@ private const val NAV_BAR_HEIGHT_DP = 24 // R.dimen.taskbar_stashed_size from La
 private const val SHORT_PILL_ACTIONS_VERTICAL_PADDING = 38
 private const val NAV_BAR_ACTIONS_PADDING = NAV_BAR_HEIGHT_DP + 16
 private const val ACTIONS_HORIZONTAL_PADDING = 32
+private const val ACTIONS_TOP_PADDING = 32
 
 private const val ONE_TAP_DELAY_MS = 500L
