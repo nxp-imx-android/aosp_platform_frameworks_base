@@ -114,6 +114,8 @@ public class AppCompatTaskInfo implements Parcelable {
     public static final int FLAG_OPT_OUT_EDGE_TO_EDGE = FLAG_BASE << 11;
     /** Top activity flag for whether activity is letterboxed for a safe region. */
     public static final int FLAG_SAFE_REGION_LETTERBOXED = FLAG_BASE << 12;
+    /** The related task is a leaf task. */
+    public static final int FLAG_IS_LEAF_TASK = FLAG_BASE << 13;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(flag = true, value = {
@@ -130,7 +132,8 @@ public class AppCompatTaskInfo implements Parcelable {
             FLAG_HAS_MIN_ASPECT_RATIO_OVERRIDE,
             FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE,
             FLAG_OPT_OUT_EDGE_TO_EDGE,
-            FLAG_SAFE_REGION_LETTERBOXED
+            FLAG_SAFE_REGION_LETTERBOXED,
+            FLAG_IS_LEAF_TASK
     })
     public @interface TopActivityFlag {}
 
@@ -145,7 +148,8 @@ public class AppCompatTaskInfo implements Parcelable {
     private static final int FLAGS_ORGANIZER_INTERESTED = FLAG_IS_FROM_LETTERBOX_DOUBLE_TAP
             | FLAG_ELIGIBLE_FOR_USER_ASPECT_RATIO_BUTTON | FLAG_FULLSCREEN_OVERRIDE_SYSTEM
             | FLAG_FULLSCREEN_OVERRIDE_USER | FLAG_HAS_MIN_ASPECT_RATIO_OVERRIDE
-            | FLAG_OPT_OUT_EDGE_TO_EDGE | FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE;
+            | FLAG_OPT_OUT_EDGE_TO_EDGE | FLAG_ENABLE_RESTART_MENU_FOR_DISPLAY_MOVE
+            | FLAG_IS_LEAF_TASK;
 
     @TopActivityFlag
     private static final int FLAGS_COMPAT_UI_INTERESTED = FLAGS_ORGANIZER_INTERESTED
@@ -219,6 +223,20 @@ public class AppCompatTaskInfo implements Parcelable {
      */
     public boolean eligibleForLetterboxEducation() {
         return isTopActivityFlagEnabled(FLAG_ELIGIBLE_FOR_LETTERBOX_EDU);
+    }
+
+    /**
+     * Set if the current Task is a leaf task.
+     */
+    public void setIsLeafTask(boolean isLeafTask) {
+        setTopActivityFlag(FLAG_IS_LEAF_TASK, isLeafTask);
+    }
+
+    /**
+     * @return {@code true} if the task is a leaf task.
+     */
+    public boolean isLeafTask() {
+        return isTopActivityFlagEnabled(FLAG_IS_LEAF_TASK);
     }
 
     /**
@@ -467,6 +485,7 @@ public class AppCompatTaskInfo implements Parcelable {
     @Override
     public String toString() {
         return "AppCompatTaskInfo { topActivityInSizeCompat=" + isTopActivityInSizeCompat()
+                + " isLeafTask= " + isLeafTask()
                 + " eligibleForLetterboxEducation= " + eligibleForLetterboxEducation()
                 + " isLetterboxEducationEnabled= " + isLetterboxEducationEnabled()
                 + " isLetterboxDoubleTapEnabled= " + isLetterboxDoubleTapEnabled()

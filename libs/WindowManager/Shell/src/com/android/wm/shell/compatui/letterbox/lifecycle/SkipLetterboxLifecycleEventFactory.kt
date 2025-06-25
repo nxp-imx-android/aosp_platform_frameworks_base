@@ -16,9 +16,8 @@
 
 package com.android.wm.shell.compatui.letterbox.lifecycle
 
-import android.window.TransitionInfo
+import android.window.TransitionInfo.Change
 import com.android.wm.shell.dagger.WMSingleton
-import com.android.wm.shell.shared.TransitionUtil.isClosingType
 import javax.inject.Inject
 
 /**
@@ -28,11 +27,11 @@ import javax.inject.Inject
 @WMSingleton
 class SkipLetterboxLifecycleEventFactory @Inject constructor() : LetterboxLifecycleEventFactory {
 
-    // We also ignore closing Changes.
-    override fun canHandle(change: TransitionInfo.Change): Boolean = isClosingType(change.mode)
+    // We also ignore closing Changes or changes related to Tasks without any activity.
+    override fun canHandle(change: Change): Boolean = change.shouldSkipForLetterbox()
 
     // Although this LetterboxLifecycleEventFactory is able to handle the specific Change
     // it returns an empty LetterboxLifecycleEvent to basically ignore the Change.
-    override fun createLifecycleEvent(change: TransitionInfo.Change): LetterboxLifecycleEvent? =
+    override fun createLifecycleEvent(change: Change): LetterboxLifecycleEvent? =
         null
 }
