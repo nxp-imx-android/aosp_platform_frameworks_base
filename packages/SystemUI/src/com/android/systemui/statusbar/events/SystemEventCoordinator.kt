@@ -20,12 +20,17 @@ import android.annotation.IntRange
 import android.content.Context
 import android.provider.DeviceConfig
 import android.provider.DeviceConfig.NAMESPACE_PRIVACY
+import com.android.internal.annotations.VisibleForTesting
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.display.domain.interactor.ConnectedDisplayInteractor
+import com.android.systemui.log.LogBuffer
+import com.android.systemui.log.core.LogLevel
 import com.android.systemui.privacy.PrivacyChipBuilder
 import com.android.systemui.privacy.PrivacyItem
 import com.android.systemui.privacy.PrivacyItemController
+import com.android.systemui.privacy.PrivacyType
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.featurepods.av.domain.interactor.AvControlsChipInteractor
 import com.android.systemui.statusbar.policy.BatteryController
@@ -51,8 +56,11 @@ constructor(
     private val context: Context,
     @Application private val appScope: CoroutineScope,
     connectedDisplayInteractor: ConnectedDisplayInteractor,
+    @SystemEventCoordinatorLog private val logBuffer: LogBuffer,
 ) {
     private val onDisplayConnectedFlow = connectedDisplayInteractor.connectedDisplayAddition
+    private val defaultCameraPackageName =
+        context.resources.getString(R.string.config_cameraGesturePackage)
 
     private var connectedDisplayCollectionJob: Job? = null
     private lateinit var scheduler: SystemStatusAnimationScheduler
@@ -154,7 +162,7 @@ constructor(
                 } else {
                     val showAnimation =
                         isChipAnimationEnabled() &&
-                            !containsOnlyLocation(currentPrivacyItems) &&
+                            !isExemptFromChipAnimation(currentPrivacyItems) &&
                             (!uniqueItemsMatch(currentPrivacyItems, previousPrivacyItems) ||
                                 systemClock.elapsedRealtime() - timeLastEmpty >= DEBOUNCE_TIME)
                     notifyPrivacyItemsChanged(showAnimation)
@@ -167,6 +175,40 @@ constructor(
                     two.map { it.application.uid to it.privacyType.permGroupName }.toSet()
             }
 
+            // Returns true if the privacy items are exempt from the chip animation.
+            private fun isExemptFromChipAnimation(items: List<PrivacyItem>): Boolean {
+                if (!Flags.statusBarPrivacyChipAnimationExemption()) {
+                    return containsOnlyLocation(items)
+                }
+
+                // Camera and microphone requests by the default camera app are exempt from the
+                // chip animation. Filter those out.
+                val nonExemptItems =
+                    items.filterNot {
+                        val shouldFilter = isCameraOrMicrophoneRequest(it) &&
+                            it.application.packageName == defaultCameraPackageName
+                        if (shouldFilter) {
+                            logBuffer.log(
+                                TAG,
+                                LogLevel.DEBUG,
+                                {
+                                    str1 = it.application.packageName
+                                    str2 = it.privacyType.permGroupName
+                                },
+                                {
+                                    "Privacy item from default camera ($str1) is exempt from " +
+                                    "chip animation. Permission group=$str2"
+                                },
+                            )
+                        }
+
+                        shouldFilter
+                    }
+
+                // If the remaining items are only location, the chip animation is also exempt
+                return containsOnlyLocation(nonExemptItems)
+            }
+
             // Return true if the only privacy item is location
             private fun containsOnlyLocation(items: List<PrivacyItem>): Boolean {
                 return items
@@ -174,6 +216,12 @@ constructor(
                         it.privacyType.permGroupName == android.Manifest.permission_group.LOCATION
                     }
                     .isEmpty()
+            }
+
+            private fun isCameraOrMicrophoneRequest(item: PrivacyItem): Boolean {
+                return item.privacyType.let {
+                    it == PrivacyType.TYPE_CAMERA || it == PrivacyType.TYPE_MICROPHONE
+                 }
             }
 
             private fun isChipAnimationEnabled(): Boolean {
@@ -186,6 +234,9 @@ constructor(
                 )
             }
         }
+
+        @VisibleForTesting
+        fun getPrivacyStateListener() = privacyStateListener
 }
 
 private const val DEBOUNCE_TIME = 3000L
