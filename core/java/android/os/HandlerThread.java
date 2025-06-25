@@ -23,24 +23,63 @@ import java.util.concurrent.Executor;
 
 /**
  * A {@link Thread} that has a {@link Looper}. The {@link Looper} can then be used to create {@link
- * Handler}s.
+ * Handler}s. Just like with a regular {@link Thread}, {@link #start()} must still be called.
  *
- * <p>Note that just like with a regular {@link Thread}, {@link #start()} must still be called.
+ * <p><em>Use this class only if you must work with the {@link Handler} API and need a {@link
+ * Thread} to do the handling on that is not an existing {@link Looper} thread, such as {@link
+ * Looper#getMainLooper()}.</em> Otherwise, prefer {@link java.util.concurrent.Executor} or {@link
+ * java.util.concurrent.ExecutorService}, or Kotlin <a
+ * href="https://developer.android.com/topic/libraries/architecture/coroutines">coroutines</a>.
  *
- * <p>Use this class if you must work with the {@link Handler} API and need a {@link Thread} to do
- * the handling on. Otherwise, consider using a {@link java.util.concurrent.Executor} or {@link
- * java.util.concurrent.ExecutorService} instead. <br>
- * Executors offer more flexibility with regards to threading. Work submitted to an Executor can be
- * set to run on another thread, on one of several threads from a static or dynamic pool, or on the
- * caller's thread, depending on your needs. <br>
- * {link @link java.util.concurrent.Executor} offers a simpler API that is easier to use.
- * {link @link java.util.concurrent.ExecutorService} offers the richer {@link
+ * <p>Note that many APIs that required a {@link Handler} in older SDK versions offer a newer
+ * alternative that accepts an {@link java.util.concurrent.Executor} instead. Always prefer to use
+ * the newer API if available.
+ *
+ * <h2>Alternatives to {@code HandlerThread}</h2>
+ *
+ * <p>{@link java.util.concurrent.Executor}s offer more flexibility with regards to threading. Work
+ * submitted to an {@link java.util.concurrent.Executor} can be set to run on another thread, on one
+ * of several threads from a static or dynamic pool, or on the caller's thread, depending on your
+ * needs.
+ *
+ * <p>{link @link java.util.concurrent.Executor} offers a simpler API that is easier to use compared
+ * to {@link Handler}. {link @link java.util.concurrent.ExecutorService} offers the richer {@link
  * java.util.concurrent.Future} API, which you can use to monitor task status, cancel tasks,
- * propagate exceptions, and chain multiple pending tasks. <br>
- * {link @link java.util.concurrent.Executors} is a convenient factory class that makes it easy to
- * create {@link java.util.concurrent.Executor}s to meet different needs. It creates {@link
- * java.util.concurrent.Executor}s with concurrent work queues that ensure that multiple threads may
- * enqueue and perform work at the same time without encountering lock contention.
+ * propagate exceptions, and chain multiple pending tasks.
+ *
+ * <p>{link @link java.util.concurrent.Executors} is a factory for various {@link
+ * java.util.concurrent.Executor}s that meet common concurrency needs. These {@link
+ * java.util.concurrent.Executor}s use work queues that offer better concurrency and reduced
+ * contention than {@code HandlerThread}.
+ *
+ * <p>On Kotlin, <a
+ * href="https://developer.android.com/topic/libraries/architecture/coroutines">coroutines</a> may
+ * be used to handle concurrency.
+ *
+ * <h2>Common {@code HandlerThread} performance issues</h2>
+ *
+ * <p>Apps that use {@code HandlerThread} may encounter the following performance issues:
+ *
+ * <ul>
+ *   <li><b>Excessive thread creation</b>: A {@code HandlerThread} is a {@link java.lang.Thread}.
+ *       Every system thread costs some resident memory, whether it is working or if it's idle. If
+ *       your app has a large number of {@code HandlerThread}s each dedicated to a single type of
+ *       task, rather than for instance a {@link java.util.concurrent.ThreadPoolExecutor} that can
+ *       grow and shrink in size according to demand, then the additional idle {@code
+ *       HandlerThread}s will be wasting memory.
+ *   <li><b>Lock contention</b>: {@code HandlerThread} uses a {@link Looper} which in turn uses a
+ *       {@link MessageQueue}. {@link MessageQueue} uses a single lock to synchronize access to its
+ *       underlying queue. Any threads attempting to enqueue messages at the same time, and the
+ *       {@code HandlerThread} itself when attempting to dequeue the next message to handle, will
+ *       block each other.
+ *   <li><b>Priority inversion</b>: A high-priority {@code HandlerThread} can become blocked by a
+ *       lower-priority thread, for instance if the former is trying to enqueue a message while the
+ *       latter is trying to dequeue the next message to handle, or vice versa.
+ * </ul>
+ *
+ * The best way to avoid these issues is to use {@link java.util.concurrent.Executor}s or <a
+ * href="https://developer.android.com/topic/libraries/architecture/coroutines">Kotlin
+ * coroutines</a> instead of {@code HandlerThread}.
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class HandlerThread extends Thread {
