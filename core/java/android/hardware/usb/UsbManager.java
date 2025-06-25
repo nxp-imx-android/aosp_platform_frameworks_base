@@ -17,6 +17,7 @@
 
 package android.hardware.usb;
 
+import static android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME;
 import static android.hardware.usb.UsbPortStatus.DATA_STATUS_DISABLED_FORCE;
 
 import android.Manifest;
@@ -28,6 +29,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresFeature;
 import android.annotation.RequiresPermission;
+import android.annotation.RestrictedForEnvironment;
 import android.annotation.SdkConstant;
 import android.annotation.SdkConstant.SdkConstantType;
 import android.annotation.SuppressLint;
@@ -83,6 +85,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <a href="{@docRoot}guide/topics/connectivity/usb/index.html">USB developer guide</a>.</p>
  * </div>
  */
+@RestrictedForEnvironment(
+        environments = ENVIRONMENT_SDK_RUNTIME, from = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @SystemService(Context.USB_SERVICE)
 public class UsbManager {
     private static final String TAG = "UsbManager";
