@@ -2175,6 +2175,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                 rootTask = new Task.Builder(mService)
                         .setActivityType(r.getActivityType())
                         .setOnTop(true)
+                        .setTaskId(taskDisplayArea.getNextRootTaskId())
                         .setActivityInfo(r.info)
                         .setIntent(r.intent)
                         .setDeferTaskAppear(true)
