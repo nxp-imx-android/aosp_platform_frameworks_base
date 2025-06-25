@@ -50,6 +50,10 @@ final class ProcessStateRecord {
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
 
+    private final String mProcessName;
+    private final int mUid;
+    private String mTrackName;
+
     private final ProcessRecord mApp;
     private final ActivityManagerService mService;
     private final ActivityManagerGlobalLock mProcLock;
@@ -438,7 +442,9 @@ final class ProcessStateRecord {
     @GuardedBy("mService")
     private long mFollowupUpdateUptimeMs = Long.MAX_VALUE;
 
-    ProcessStateRecord(ProcessRecord app) {
+    ProcessStateRecord(String processName, int uid, ProcessRecord app) {
+        mProcessName = processName;
+        mUid = uid;
         mApp = app;
         mService = app.mService;
         mProcLock = mService.mProcLock;
@@ -882,10 +888,9 @@ final class ProcessStateRecord {
     @GuardedBy("mService")
     void setAdjType(String adjType) {
         if (TRACE_OOM_ADJ) {
-            Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER,
-                    "oom:" + mApp.processName + "/u" + mApp.uid, 0);
-            Trace.asyncTraceForTrackBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER,
-                    "oom:" + mApp.processName + "/u" + mApp.uid, adjType, 0);
+            Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER, getTrackName(), 0);
+            Trace.asyncTraceForTrackBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, getTrackName(),
+                    adjType, 0);
         }
         mAdjType = adjType;
     }
@@ -1221,8 +1226,7 @@ final class ProcessStateRecord {
     @GuardedBy({"mService", "mProcLock"})
     void onCleanupApplicationRecordLSP() {
         if (TRACE_OOM_ADJ) {
-            Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER,
-                    "oom:" + mApp.processName + "/u" + mApp.uid, 0);
+            Trace.asyncTraceForTrackEnd(Trace.TRACE_TAG_ACTIVITY_MANAGER, getTrackName(), 0);
         }
         setHasForegroundActivities(false);
         mHasShownUi = false;
@@ -1319,6 +1323,16 @@ final class ProcessStateRecord {
     @GuardedBy("mService")
     public long getCacheOomRankerRssTimeMs() {
         return mCacheOomRankerRssTimeMs;
+    }
+
+    /**
+     * Lazily initiate and return the track name.
+     */
+    private String getTrackName() {
+        if (mTrackName == null) {
+            mTrackName = "oom:" + mProcessName + "/u" + mUid;
+        }
+        return mTrackName;
     }
 
     @GuardedBy({"mService", "mProcLock"})

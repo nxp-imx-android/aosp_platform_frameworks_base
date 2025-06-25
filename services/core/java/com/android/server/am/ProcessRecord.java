@@ -627,7 +627,7 @@ class ProcessRecord implements WindowProcessListener {
         mProviders = new ProcessProviderRecord(this);
         mReceivers = new ProcessReceiverRecord(this);
         mErrorState = new ProcessErrorStateRecord(this);
-        mState = new ProcessStateRecord(this);
+        mState = new ProcessStateRecord(processName, uid, this);
         mOptRecord = new ProcessCachedOptimizerRecord(this);
         final long now = SystemClock.uptimeMillis();
         mProfile.init(now);
