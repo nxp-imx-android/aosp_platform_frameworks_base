@@ -16,8 +16,10 @@
 
 package com.android.server.security.authenticationpolicy;
 
-import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED;
-import static android.hardware.biometrics.BiometricManager.BIOMETRIC_SUCCESS;
+import static android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG;
+import static android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_WEAK;
+import static android.hardware.biometrics.SensorProperties.STRENGTH_STRONG;
+import static android.hardware.biometrics.SensorProperties.STRENGTH_WEAK;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
 import static android.security.Flags.FLAG_SECURE_LOCK_DEVICE;
@@ -41,8 +43,11 @@ import static org.mockito.Mockito.when;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
+import android.content.Context;
+import android.hardware.biometrics.BiometricEnrollmentStatus;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricStateListener;
+import android.hardware.biometrics.SensorProperties;
 import android.hardware.face.FaceManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.IBinder;
@@ -58,7 +63,9 @@ import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
 import android.testing.TestableContext;
+import android.util.ArrayMap;
 
+import androidx.annotation.NonNull;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
@@ -77,6 +84,10 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * atest FrameworksServicesTests:SecureLockDeviceServiceTest
  */
@@ -87,10 +98,12 @@ import org.mockito.junit.MockitoRule;
 public class SecureLockDeviceServiceTest {
     private static final int TEST_USER_ID = 0;
     private static final int OTHER_USER_ID = 1;
+    private final UserHandle mUser = new UserHandle(TEST_USER_ID);
+    private final UserHandle mOtherUser = new UserHandle(OTHER_USER_ID);
 
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
-    @Rule public final TestableContext mContext = new TestableContext(
-            InstrumentationRegistry.getInstrumentation().getTargetContext(), null);
+    @Rule public final SecureLockDeviceContext mTestContext = new SecureLockDeviceContext(
+            InstrumentationRegistry.getInstrumentation().getTargetContext(), mUser, mOtherUser);
     @Rule public LocalServiceKeeperRule mLocalServiceKeeperRule = new LocalServiceKeeperRule();
     @Rule public MockitoRule mockito = MockitoJUnit.rule();
 
@@ -101,6 +114,8 @@ public class SecureLockDeviceServiceTest {
     @Mock private ActivityManager mActivityManager;
     @Mock private AuthenticationPolicyService mAuthenticationPolicyService;
     @Mock private BiometricManager mBiometricManager;
+    @Mock private BiometricManager mUserBiometricManager;
+    @Mock private BiometricManager mOtherUserBiometricManager;
     @Mock private DevicePolicyManager mDevicePolicyManager;
     @Mock private FaceManager mFaceManager;
     @Mock private FingerprintManager mFingerprintManager;
@@ -118,23 +133,24 @@ public class SecureLockDeviceServiceTest {
             new EnableSecureLockDeviceParams("test");
     private final DisableSecureLockDeviceParams mDisableParams =
             new DisableSecureLockDeviceParams("test");
-    private final UserHandle mUser = UserHandle.of(TEST_USER_ID);
-    private final UserHandle mOtherUser = UserHandle.of(OTHER_USER_ID);
-
     private SecureLockDeviceService mSecureLockDeviceService;
     private SecureLockDeviceService.SecureLockDeviceStore mSecureLockDeviceStore;
 
     @SuppressLint("VisibleForTests")
     @Before
     public void setUp() throws Exception {
-        // Unable to mock PowerManager directly because final class
-        mContext.addMockSystemService(ActivityManager.class, mActivityManager);
-        mContext.addMockSystemService(PowerManager.class,
-                new PowerManager(mContext, mIPowerManager, mThermalService, null));
-        mContext.addMockSystemService(BiometricManager.class, mBiometricManager);
-        mContext.addMockSystemService(DevicePolicyManager.class, mDevicePolicyManager);
-        mContext.addMockSystemService((FaceManager.class), mFaceManager);
-        mContext.addMockSystemService((FingerprintManager.class), mFingerprintManager);
+        // Mock user-aware BiometricManager retrieval
+        mTestContext.mockBiometricManagerForUser(mUser, mUserBiometricManager);
+        mTestContext.mockBiometricManagerForUser(mOtherUser, mOtherUserBiometricManager);
+
+        // Mock system services
+        mTestContext.addMockSystemService(ActivityManager.class, mActivityManager);
+        mTestContext.addMockSystemService(PowerManager.class,
+                new PowerManager(mTestContext, mIPowerManager, mThermalService, null));
+        mTestContext.addMockSystemService(BiometricManager.class, mBiometricManager);
+        mTestContext.addMockSystemService(DevicePolicyManager.class, mDevicePolicyManager);
+        mTestContext.addMockSystemService((FaceManager.class), mFaceManager);
+        mTestContext.addMockSystemService((FingerprintManager.class), mFingerprintManager);
 
         when(mActivityManager.isProfileForeground(eq(mUser))).thenReturn(true);
         when(mSecureLockDeviceStatusListener.asBinder())
@@ -149,7 +165,7 @@ public class SecureLockDeviceServiceTest {
         mLocalServiceKeeperRule.overrideLocalService(WindowManagerInternal.class,
                 mWindowManagerInternal);
 
-        mSecureLockDeviceService = new SecureLockDeviceService(mContext);
+        mSecureLockDeviceService = new SecureLockDeviceService(mTestContext);
         mSecureLockDeviceStore = mSecureLockDeviceService.getStore();
         mSecureLockDeviceService.onLockSettingsReady();
         mSecureLockDeviceService.onBootCompleted();
@@ -164,8 +180,11 @@ public class SecureLockDeviceServiceTest {
 
     @Test
     public void enableSecureLockDevice_goesToSleep_locksDevice() throws RemoteException {
-        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
-                true /* isStrongBiometric */);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
 
         enableSecureLockDevice(mUser);
 
@@ -175,8 +194,11 @@ public class SecureLockDeviceServiceTest {
 
     @Test
     public void disableSecureLockDevice_asUnauthorizedUser_returnsNotAuthorized() {
-        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
-                true /* isStrongBiometric */);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
         assertThat(enableSecureLockDevice(mUser)).isEqualTo(SUCCESS);
 
         assertThat(mSecureLockDeviceService.isSecureLockDeviceEnabled()).isTrue();
@@ -191,8 +213,11 @@ public class SecureLockDeviceServiceTest {
 
     @Test
     public void disableSecureLockDevice_asAuthorizedUser_returnsSuccess() {
-        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
-                true /* isStrongBiometric */);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
         assertThat(enableSecureLockDevice(mUser)).isEqualTo(SUCCESS);
 
         assertThat(mSecureLockDeviceService.isSecureLockDeviceEnabled()).isTrue();
@@ -211,8 +236,11 @@ public class SecureLockDeviceServiceTest {
 
     @Test
     public void enableSecureLockDeviceReturnsError_whenAlreadyEnabled() {
-        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
-                true /* isStrongBiometric */);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
         enableSecureLockDevice(mUser);
 
         boolean isSecureLockDeviceEnabled = mSecureLockDeviceService.isSecureLockDeviceEnabled();
@@ -224,7 +252,11 @@ public class SecureLockDeviceServiceTest {
 
     @Test
     public void enableSecureLockDevice_userSwitchFails_returnsErrorUnknown() {
-        setupBiometrics(TEST_USER_ID, true, true);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
         when(mActivityManager.isProfileForeground(eq(mUser))).thenReturn(false);
         when(mActivityManager.switchUser(eq(TEST_USER_ID))).thenReturn(false);
 
@@ -233,7 +265,11 @@ public class SecureLockDeviceServiceTest {
 
     @Test
     public void enableSecureLockDevice_switchesCallingUserToForeground_restrictsUserSwitching() {
-        setupBiometrics(OTHER_USER_ID, true, true);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                false, /* primaryUserHasStrongBiometricEnrollment */
+                true /* otherUserHasStrongBiometricEnrollment */
+        );
 
         // Mock mUser as current user, successful switch to mOtherUser
         when(mActivityManager.isProfileForeground(eq(mOtherUser))).thenReturn(false)
@@ -252,13 +288,13 @@ public class SecureLockDeviceServiceTest {
 
     @Test
     public void secureLockDevice_checksBiometricEnrollmentsOfCallingUser() {
-        // Calling user TEST_USER_ID has no biometrics enrolled
-        setupBiometrics(TEST_USER_ID, false /* hasBiometricEnrolled */,
-                false /* isStrongBiometric */);
-
-        // Some other user on the device has strong biometrics enrolled
-        setupBiometrics(OTHER_USER_ID, true /* hasBiometricEnrolled */,
-                true /* isStrongBiometric */);
+        // Calling user TEST_USER_ID has no biometrics enrolled, but some other user on the
+        // device has strong biometrics enrolled
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                false, /* primaryUserHasStrongBiometricEnrollment */
+                true /* otherUserHasStrongBiometricEnrollment */
+        );
 
         int secureLockDeviceAvailability =
                 mSecureLockDeviceService.getSecureLockDeviceAvailability(mUser);
@@ -269,9 +305,12 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void secureLockDeviceUnavailable_whenMissingStrongBiometricEnrollment() {
-        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
-                false /* isStrongBiometric */);
+    public void secureLockDeviceUnavailable_whenNoStrongBiometricSensors() {
+        setupBiometricState(
+                false, /* deviceHasStrongBiometricSensor */
+                false, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
 
         int secureLockDeviceAvailability =
                 mSecureLockDeviceService.getSecureLockDeviceAvailability(mUser);
@@ -282,10 +321,12 @@ public class SecureLockDeviceServiceTest {
     }
 
     @Test
-    public void getSecureLockDeviceAvailability_noBiometricsEnrolled() {
-        setupBiometrics(TEST_USER_ID, false /* hasBiometricEnrolled */,
-                false /* isStrongBiometric */);
-
+    public void getSecureLockDeviceAvailability_whenMissingStrongBiometricEnrollments() {
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                false, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
         int secureLockDeviceAvailability =
                 mSecureLockDeviceService.getSecureLockDeviceAvailability(mUser);
         int enableSecureLockDeviceRequestStatus = enableSecureLockDevice(mUser);
@@ -296,8 +337,11 @@ public class SecureLockDeviceServiceTest {
 
     @Test
     public void getSecureLockDeviceAvailability_success() {
-        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
-                true /* isStrongBiometric */);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
 
         int secureLockDeviceAvailability =
                 mSecureLockDeviceService.getSecureLockDeviceAvailability(mUser);
@@ -309,8 +353,11 @@ public class SecureLockDeviceServiceTest {
 
     @Test
     public void isSecureLockDeviceEnabled_updatesState() {
-        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
-                true /* isStrongBiometric */);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
 
         boolean isSecureLockDeviceEnabled = mSecureLockDeviceService.isSecureLockDeviceEnabled();
         assertThat(isSecureLockDeviceEnabled).isFalse();
@@ -328,8 +375,11 @@ public class SecureLockDeviceServiceTest {
 
     @Test
     public void testAllListenersNotified_onEnableSecureLockDevice() throws RemoteException {
-        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
-                true /* isStrongBiometric */);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
         mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
                 mUser, mSecureLockDeviceStatusListener);
         mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
@@ -363,8 +413,11 @@ public class SecureLockDeviceServiceTest {
 
     @Test
     public void testAllListenersNotified_onDisableSecureLockDevice() throws RemoteException {
-        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
-                true /* isStrongBiometric */);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
         mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
                 mUser, mSecureLockDeviceStatusListener);
         mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
@@ -398,8 +451,11 @@ public class SecureLockDeviceServiceTest {
 
     @Test
     public void testRelevantListenerNotified_onBiometricEnrollmentAdded() throws RemoteException {
-        setupBiometrics(TEST_USER_ID, false /* hasBiometricEnrolled */,
-                false /* isStrongBiometric */);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                false, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
         mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
                 mUser, mSecureLockDeviceStatusListener);
         mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
@@ -407,11 +463,14 @@ public class SecureLockDeviceServiceTest {
         verify(mFingerprintManager).registerBiometricStateListener(
                 mBiometricStateListenerCaptor.capture());
         BiometricStateListener biometricStateListener = mBiometricStateListenerCaptor.getValue();
-        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
-                true /* isStrongBiometric */);
         clearInvocations(mSecureLockDeviceStatusListener);
         clearInvocations(mSecureLockDeviceStatusOtherListener);
 
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
         biometricStateListener.onEnrollmentsChanged(
                 TEST_USER_ID,
                 1 /* sensorId */,
@@ -432,8 +491,11 @@ public class SecureLockDeviceServiceTest {
     @Test
     public void testRelevantListenerNotified_onBiometricEnrollmentRemoved() throws RemoteException {
         // Add enrollments
-        setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
-                true /* isStrongBiometric */);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                true, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
         mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
                 mUser, mSecureLockDeviceStatusListener);
         mSecureLockDeviceService.registerSecureLockDeviceStatusListener(
@@ -443,11 +505,19 @@ public class SecureLockDeviceServiceTest {
         BiometricStateListener biometricStateListener = mBiometricStateListenerCaptor.getValue();
 
         // Remove enrollments
-        setupBiometrics(TEST_USER_ID, false /* hasBiometricEnrolled */,
-                false /* isStrongBiometric */);
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                false, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
         clearInvocations(mSecureLockDeviceStatusListener);
         clearInvocations(mSecureLockDeviceStatusOtherListener);
 
+        setupBiometricState(
+                true, /* deviceHasStrongBiometricSensor */
+                false, /* primaryUserHasStrongBiometricEnrollment */
+                false /* otherUserHasStrongBiometricEnrollment */
+        );
         biometricStateListener.onEnrollmentsChanged(
                 TEST_USER_ID,
                 1 /* sensorId */,
@@ -465,14 +535,49 @@ public class SecureLockDeviceServiceTest {
                 .onSecureLockDeviceAvailableStatusChanged(anyInt());
     }
 
-    private void setupBiometrics(int userId, boolean hasBiometricEnrolled,
-            boolean isStrongBiometric) {
-        when(mBiometricManager.hasEnrolledBiometrics(eq(userId))).thenReturn(
-                hasBiometricEnrolled);
-        when(mBiometricManager.canAuthenticate(eq(userId),
-                eq(BiometricManager.Authenticators.BIOMETRIC_STRONG)
-        )).thenReturn(hasBiometricEnrolled && isStrongBiometric
-                ? BIOMETRIC_SUCCESS : BIOMETRIC_ERROR_NONE_ENROLLED);
+    private void setupBiometricState(
+            boolean deviceHasStrongBiometricSensor,
+            boolean primaryUserHasStrongBiometricEnrollment,
+            boolean otherUserHasStrongBiometricEnrollment
+    ) {
+        if (deviceHasStrongBiometricSensor) {
+            when(mBiometricManager.getSensorProperties()).thenReturn(
+                    getSensorPropertiesList(STRENGTH_STRONG));
+        } else {
+            when(mBiometricManager.getSensorProperties()).thenReturn(
+                    getSensorPropertiesList(STRENGTH_WEAK));
+        }
+
+        if (primaryUserHasStrongBiometricEnrollment) {
+            when(mUserBiometricManager.getEnrollmentStatus()).thenReturn(
+                    getEnrollmentStatusMap(BIOMETRIC_STRONG));
+        } else {
+            when(mUserBiometricManager.getEnrollmentStatus()).thenReturn(
+                    getEnrollmentStatusMap(BIOMETRIC_WEAK));
+        }
+
+        if (otherUserHasStrongBiometricEnrollment) {
+            when(mOtherUserBiometricManager.getEnrollmentStatus()).thenReturn(
+                    getEnrollmentStatusMap(BIOMETRIC_STRONG));
+        } else {
+            when(mOtherUserBiometricManager.getEnrollmentStatus()).thenReturn(
+                    getEnrollmentStatusMap(BIOMETRIC_WEAK));
+        }
+    }
+
+    private List<SensorProperties> getSensorPropertiesList(
+            @SensorProperties.Strength int strength
+    ) {
+        return List.of(new SensorProperties(0, strength, List.of()));
+    }
+
+    private Map<Integer, BiometricEnrollmentStatus> getEnrollmentStatusMap(int sensorStrength) {
+        Map<Integer, BiometricEnrollmentStatus> enrollmentStatusMap = new HashMap<>();
+        enrollmentStatusMap.put(BiometricManager.TYPE_FINGERPRINT, new BiometricEnrollmentStatus(
+                sensorStrength, 1
+        ));
+
+        return enrollmentStatusMap;
     }
 
     private int enableSecureLockDevice(UserHandle user) {
@@ -481,5 +586,32 @@ public class SecureLockDeviceServiceTest {
 
     private int disableSecureLockDevice(UserHandle user) {
         return mSecureLockDeviceService.disableSecureLockDevice(user, mDisableParams);
+    }
+
+    private class SecureLockDeviceContext extends TestableContext {
+        @Rule public final TestableContext mUserContext = new TestableContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext(), null);
+        @Rule public final TestableContext mOtherUserContext = new TestableContext(
+                InstrumentationRegistry.getInstrumentation().getTargetContext(), null);
+        private final ArrayMap<UserHandle, TestableContext> mMockUserContexts = new ArrayMap<>();
+
+        SecureLockDeviceContext(Context baseContext, UserHandle primaryUser,
+                UserHandle otherUser) {
+            super(baseContext);
+            mMockUserContexts.put(primaryUser, mUserContext);
+            mMockUserContexts.put(otherUser, mOtherUserContext);
+        }
+
+        @NonNull
+        @Override
+        public Context createContextAsUser(UserHandle user, int flags) {
+            return mMockUserContexts.get(user);
+        }
+
+        public void mockBiometricManagerForUser(UserHandle user,
+                BiometricManager biometricManager) {
+            mMockUserContexts.get(user).addMockSystemService(BiometricManager.class,
+                    biometricManager);
+        }
     }
 }

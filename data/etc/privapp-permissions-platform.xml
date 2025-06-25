@@ -238,6 +238,14 @@ applications that come with the platform
         <permission name="android.permission.READ_COMPAT_CHANGE_CONFIG" />
     </privapp-permissions>
 
+    <privapp-permissions package="com.android.server.security.authenticationpolicy">
+        <permission name="android.permission.INTERACT_ACROSS_USERS"/>
+        <permission name="android.permission.MANAGE_SECURE_LOCK_DEVICE"/>
+        <permission name="android.permission.SET_BIOMETRIC_DIALOG_ADVANCED"/>
+        <permission name="android.permission.USE_BIOMETRIC"/>
+        <permission name="android.permission.USE_BIOMETRIC_INTERNAL"/>
+    </privapp-permissions>
+
     <privapp-permissions package="com.android.server.telecom">
         <permission name="android.permission.BIND_CONNECTION_SERVICE"/>
         <permission name="android.permission.BIND_INCALL_SERVICE"/>

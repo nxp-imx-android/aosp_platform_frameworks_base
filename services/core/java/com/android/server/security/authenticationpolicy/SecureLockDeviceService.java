@@ -16,7 +16,7 @@
 
 package com.android.server.security.authenticationpolicy;
 
-import static android.hardware.biometrics.BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED;
+import static android.hardware.biometrics.BiometricManager.Authenticators.BIOMETRIC_STRONG;
 import static android.os.UserManager.DISALLOW_USER_SWITCH;
 import static android.security.Flags.secureLockDevice;
 import static android.security.Flags.secureLockdown;
@@ -32,8 +32,10 @@ import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
 import android.content.Context;
+import android.hardware.biometrics.BiometricEnrollmentStatus;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricStateListener;
+import android.hardware.biometrics.SensorProperties;
 import android.hardware.face.FaceManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
@@ -74,6 +76,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 /**
  * System service for remotely calling secure lock on the device.
@@ -284,26 +287,53 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
             return ERROR_UNSUPPORTED;
         }
 
-        int userId = user.getIdentifier();
         if (mBiometricManager == null) {
             Slog.w(TAG, "BiometricManager not available: secure lock device is unsupported.");
             return ERROR_UNSUPPORTED;
-        } else if (!mBiometricManager.hasEnrolledBiometrics(userId)) {
+        } else if (!hasStrongBiometricSensor()) {
             if (DEBUG) {
-                Slog.d(TAG, "Secure lock device unavailable: no biometrics are enrolled.");
-            }
-            return ERROR_NO_BIOMETRICS_ENROLLED;
-            // TODO: update to getEnrollmentStatus API once biometric strength check is supported
-        } else if (mBiometricManager.canAuthenticate(userId,
-                BiometricManager.Authenticators.BIOMETRIC_STRONG) == BIOMETRIC_ERROR_NONE_ENROLLED
-        ) {
-            if (DEBUG) {
-                Slog.d(TAG, "Secure lock device unavailable: no strong biometric enrollments.");
+                Slog.d(TAG, "Secure lock device unavailable: device does not have biometric"
+                        + "sensors of sufficient strength.");
             }
             return ERROR_INSUFFICIENT_BIOMETRICS;
+        } else if (!hasStrongBiometricsEnrolled(user)) {
+            if (DEBUG) {
+                Slog.d(TAG, "Secure lock device unavailable: device is missing enrollments "
+                        + "for strong biometric sensor.");
+            }
+            return ERROR_NO_BIOMETRICS_ENROLLED;
         } else {
             return SUCCESS;
         }
+    }
+
+    private boolean hasStrongBiometricSensor() {
+        for (SensorProperties sensorProps : mBiometricManager.getSensorProperties()) {
+            if (sensorProps.getSensorStrength() == SensorProperties.STRENGTH_STRONG) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean hasStrongBiometricsEnrolled(UserHandle user) {
+        Context userContext = mContext.createContextAsUser(user, 0);
+        BiometricManager biometricManager = userContext.getSystemService(BiometricManager.class);
+
+        if (biometricManager == null) {
+            Slog.w(TAG, "BiometricManager not available, strong biometric enrollment cannot be "
+                    + "checked.");
+            return false;
+        }
+        Map<Integer, BiometricEnrollmentStatus> enrollmentStatusMap =
+                biometricManager.getEnrollmentStatus();
+
+        for (BiometricEnrollmentStatus status : enrollmentStatusMap.values()) {
+            if (status.getStrength() == BIOMETRIC_STRONG && status.getEnrollmentCount() > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
