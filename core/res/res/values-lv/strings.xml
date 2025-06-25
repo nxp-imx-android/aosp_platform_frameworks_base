@@ -165,8 +165,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Mobilā tīkla drošība"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Šifrēšana un paziņojumi par nešifrētiem tīkliem"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Piekļūts ierīces ID"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"Pulksten <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> tuvējā tīklā tika reģistrēts jūsu ierīces unikālais ID (IMSI vai IMEI), kamēr izmantojāt savu <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM karti."</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"Pulksten <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> tuvējā tīklā tika reģistrēts jūsu ierīces unikālais ID (IMSI vai IMEI), kamēr izmantojāt savu <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM karti.\n\nTas nozīmē, ka tika reģistrēta jūsu atrašanās vieta, darbības vai identitāte. Šāda prakse ir ierasta, tomēr var radīt problēmas personām, kurām ir bažas par konfidencialitāti."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Izveidots savienojums ar šifrēto tīklu <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"Tagad <xliff:g id="NETWORK_NAME">%1$s</xliff:g> SIM savienojums ir drošāks."</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Izveidots savienojums ar nešifrētu tīklu"</string>
@@ -359,16 +365,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"piekļūt sensoru datiem par jūsu veselības rādījumiem"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Paziņojumi"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"rādīt paziņojumus"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"PR sensitīvi acu izsekošanas dati"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"piekļūt sensitīviem acu kustību izsekošanas datiem"</string>
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"PR izsekošanas dati"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"piekļūt PR datiem par jums un vidi ap jums"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"Sensitīvi PR izsekošanas dati"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"piekļūt sensitīviem izsekošanas datiem par jums un vidi ap jums"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Izgūt loga saturu."</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Skatīt tā loga saturu, ar kuru mijiedarbojaties."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Aktivizēt funkciju “Pārlūkot pieskaroties”."</string>
@@ -2582,6 +2584,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB datu signāls ir atspējots."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Vai radušās problēmas saistībā ar autorizāciju ar pirksta nospiedumu?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Pieskarieties, lai skatītu padomus par to, kā uzlabot atbloķēšanas pieredzi."</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Atspējot mirgošanu"</string>
 </resources>

@@ -166,8 +166,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Безопасность мобильной сети"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Шифрование, уведомления о незашифрованных сетях"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Получен доступ к идентификатору устройства"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"В <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, когда вы использовали SIM-карту \"<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>\", сетью поблизости от вас был записан уникальный идентификатор вашего устройства (IMSI или IMEI)."</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"В <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, когда вы использовали SIM-карту \"<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>\", сетью поблизости от вас был записан уникальный идентификатор вашего устройства (IMSI или IMEI).\n\nЭто значит, что было зарегистрировано ваше местоположение, действия или личность. Это распространенная практика, однако она может вызывать беспокойство у тех, кто заботится о своей конфиденциальности."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Подключено к зашифрованной сети <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"Теперь подключение SIM-карты (<xliff:g id="NETWORK_NAME">%1$s</xliff:g>) лучше защищено."</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Подключено к незашифрованной сети"</string>

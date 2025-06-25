@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"ಮೊಬೈಲ್‌ ನೆಟ್‌ವರ್ಕ್‌ ಸೆಕ್ಯೂರಿಟಿ"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"ಎನ್‌ಕ್ರಿಪ್ಶನ್, ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡದ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗೆ ನೋಟಿಫಿಕೇಶನ್‌ಗಳು"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"ಸಾಧನದ ID ಅನ್ನು ಆ್ಯಕ್ಸೆಸ್ ಮಾಡಲಾಗಿದೆ"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>ಕ್ಕೆ, <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM ಬಳಸುವಾಗ ಸಾಧನದ ಅನನ್ಯ ID (IMSI ಅಥವಾ IMEI)ಯನ್ನು ಹತ್ತಿರದ ನೆಟ್‌ವರ್ಕ್‌ ರೆಕಾರ್ಡ್ ಮಾಡಿದೆ"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> ಸಮಯದಲ್ಲಿ, ನಿಮ್ಮ ಸಾಧನದ ಅನನ್ಯ ID (IMSI ಅಥವಾ IMEI) ಅನ್ನು ನಿಮ್ಮ <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM ಕಾರ್ಡ್ ಬಳಸುವಾಗ ಹತ್ತಿರದ ನೆಟ್‌ವರ್ಕ್‌ನಿಂದ ರೆಕಾರ್ಡ್ ಮಾಡಲಾಗಿದೆ.\n\nಇದರರ್ಥ ನಿಮ್ಮ ಸ್ಥಳ, ಚಟುವಟಿಕೆ ಅಥವಾ ಗುರುತನ್ನು ಲಾಗ್ ಮಾಡಲಾಗಿದೆ. ಇದು ಸಾಮಾನ್ಯ ವಿಧಾನವಾಗಿದೆ ಆದರೆ ಗೌಪ್ಯತೆಯ ಕುರಿತು ಕಾಳಜಿವಹಿಸುವವರಿಗೆ ಸಮಸ್ಯೆಯಾಗಬಹುದು."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಿದ <xliff:g id="NETWORK_NAME">%1$s</xliff:g> ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಕನೆಕ್ಟ್ ಮಾಡಲಾಗಿದೆ"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> SIM ಕನೆಕ್ಷನ್ ಈಗ ಹೆಚ್ಚು ಸುರಕ್ಷಿತವಾಗಿದೆ"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡದ ನೆಟ್‌ವರ್ಕ್‌ಗೆ ಕನೆಕ್ಟ್ ಮಾಡಲಾಗಿದೆ"</string>

@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"行動網路安全性"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"加密 (網路未加密通知)"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"已存取裝置 ID"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"在 <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>，鄰近網路使用你的「<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>」SIM 卡時，記錄了你的裝置專屬 ID (IMSI 或 IMEI)"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"在 <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>，鄰近網路使用你的「<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>」SIM 卡時，記錄了你的裝置專屬 ID (IMSI 或 IMEI)。\n\n這代表鄰近網路記錄了你的位置、活動或身分資訊。儘管這種情況很常見，但注重隱私的人可能會認為這是個問題。"</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"已連上加密網路「<xliff:g id="NETWORK_NAME">%1$s</xliff:g>」"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"現在連上「<xliff:g id="NETWORK_NAME">%1$s</xliff:g>」SIM 卡更加安全"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"連接上未加密網路"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB 資料信號已停用。"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"使用指紋解鎖時發生問題嗎？"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"輕觸即可查看提示，瞭解如何提升解鎖體驗"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"不閃爍"</string>
 </resources>

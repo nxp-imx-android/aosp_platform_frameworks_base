@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Sicherheit des Mobilfunknetzes"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Verschlüsselung, Benachrichtigungen für unverschlüsselte Netzwerke"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Auf Geräte-ID zugegriffen"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"Um <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> hat ein Netzwerk in der Nähe die eindeutige ID (IMSI oder IMEI) deines Geräts aufgezeichnet, während du <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>-SIM verwendet hast."</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"Um <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> hat ein Netzwerk in der Nähe die eindeutige ID (IMSI oder IMEI) deines Geräts aufgezeichnet, während du <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>-SIM verwendet hast.\n\nDaher wurden dein Standort, deine Aktivitäten oder deine Identität protokolliert. Das ist zwar üblich, kann jedoch ein Problem für Personen sein, denen ihre Privatsphäre wichtig ist."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Mit verschlüsseltem Netzwerk „<xliff:g id="NETWORK_NAME">%1$s</xliff:g>“ verbunden"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"Verbindung der <xliff:g id="NETWORK_NAME">%1$s</xliff:g>-SIM ist jetzt sicherer"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Mit unverschlüsseltem Netzwerk verbunden"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-Datensignal wurde deaktiviert."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Probleme mit der Entsperrung per Fingerabdruck?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Tippe, um Tipps zur optimalen Nutzung der Entsperrung zu erhalten"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Nicht blinken"</string>
 </resources>

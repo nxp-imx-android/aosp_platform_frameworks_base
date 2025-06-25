@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"मोबाइल नेटवर्क की सुरक्षा"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"एन्क्रिप्शन, असुरक्षित नेटवर्क के लिए सूचनाएं"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"डिवाइस आईडी को ऐक्सेस किया गया"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"आपके <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> सिम के ज़रिए, आस-पास के नेटवर्क ने <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> पर आपके डिवाइस का यूनीक आईडी (IMSI या IMEI) रिकॉर्ड किया"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"आपके <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> सिम के ज़रिए, आस-पास के नेटवर्क ने <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> पर आपके डिवाइस का यूनीक आईडी (IMSI या IMEI) रिकॉर्ड किया.\n\nइसका मतलब है कि आपकी जगह की जानकारी, गतिविधि या निजी जानकारी को लॉग किया गया है. यह आम बात है. हालांकि, यह उन लोगों के लिए समस्या की वजह हो सकता है जिन्हें अपनी निजी जानकारी को लेकर चिंता रहती है."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"एन्क्रिप्ट यानी सुरक्षित नेटवर्क <xliff:g id="NETWORK_NAME">%1$s</xliff:g> से कनेक्ट किया गया"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"अब <xliff:g id="NETWORK_NAME">%1$s</xliff:g> सिम का कनेक्शन ज़्यादा सुरक्षित हो गया है"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"ऐसे नेटवर्क से कनेक्ट किया गया जो सुरक्षित नहीं है"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"यूएसबी से डेटा सिग्नल भेजने की प्रोसेस बंद कर दी गई है."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"क्या आपको फ़िंगरप्रिंट अनलॉक की सुविधा का इस्तेमाल करने में समस्या आ रही है?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"डिवाइस को अनलॉक करने का अनुभव बेहतर बनाने की सलाह देखने के लिए टैप करें"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"कर्सर ब्लिंक करने की सेटिंग बंद करें"</string>
 </resources>

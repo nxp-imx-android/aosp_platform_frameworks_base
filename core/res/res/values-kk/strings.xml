@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Мобильдік желінің қауіпсіздігі"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Шифрлау, шифрланбаған желілер туралы хабарландырулар"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Құрылғы идентификаторы алынды"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM картасын қолдану кезінде маңайдағы желіде сағат <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> шамасында құрылғыңыздың бірегей идентификаторы (IMSI не IMEI) жазып алынды."</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM картасын қолдану кезінде маңайдағы желіде сағат <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> шамасында құрылғыңыздың бірегей идентификаторы (IMSI не IMEI) жазып алынды.\n\nОрналасқан жеріңіз, әрекеттеріңіз не жеке басыңыз туралы ақпарат тіркелді. Мұндай жағдай жиі болып тұратынына қарамастан, ол өз құпиялығына үлкен мән беретін адамдарға қиындық келтіруі мүмкін."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Шифрланған желіге (<xliff:g id="NETWORK_NAME">%1$s</xliff:g>) қосылды"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"Енді <xliff:g id="NETWORK_NAME">%1$s</xliff:g> SIM картасымен қосылу қорғалған."</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Шифрланбаған желіге қосылды"</string>

@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"የተንቀሳቃሽ ስልክ አውታረ መረብ ደኅንነት"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"ምስጠራ፣ ያልተመሰጠሩ የአውታረ መረቦች ማሳወቂያዎች"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"የመሣሪያ መታወቂያ ተደርሶበታል"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> ላይ በአቅራቢያዎ ያለ አውታረ መረብ የ<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> ሲምዎን በመጠቀም ላይ ሳለ የመሣሪያዎን ልዩ መታወቂያ (IMSI ወይም IMEI) መዝግቧል"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> ላይ በአቅራቢያዎ ያለ አውታረ መረብ የ<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> ሲምዎን በመጠቀም ላይ ሳለ የመሣሪያዎን ልዩ መታወቂያ (IMSI ወይም IMEI) መዝግቧል።\n\nይህ ማለት የእርስዎ አካባቢ፣ እንቅስቃሴ ወይም ማንነት ተመዝግቧል ማለት ነው። ይህ የተለመደ ተግባር ነው፣ ነገር ግን ስለግላዊነት ለሚጨነቁ ሰዎች ችግር ሊሆን ይችላል።"</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"ከተመሠጠረ አውታረ መረብ <xliff:g id="NETWORK_NAME">%1$s</xliff:g> ጋር ተገናኝቷል።"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"የ<xliff:g id="NETWORK_NAME">%1$s</xliff:g> ሲም ግንኙነት አሁን ደኅንነቱ ይበልጥ የተጠበቀ ነው።"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"ካልተመሠጠረ አውታረ መረብ ጋር ተገናኝቷል"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"የUSB የውሂብ ምልክት ተሰናክሏል።"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"በጣት አሻራ መክፈቻ ችግር እያጋጠመዎት ነው?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"የመክፈት ተሞክሮዎን ለማሻሻል ጠቃሚ ምክሮችን ለመገምገም መታ ያድርጉ"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ብልጭ ድርግም አያድርጉ"</string>
 </resources>

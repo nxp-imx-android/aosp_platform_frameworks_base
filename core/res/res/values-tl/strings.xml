@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Seguridad ng mobile network"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Pag-encrypt, mga notification para sa mga hindi naka-encrypt na network"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Na-access ang Device ID"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"Nang <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, na-record ng isang kalapit na network ang natatanging ID ng iyong device (IMSI o IMEI) habang ginagamit ang iyong <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"Nang <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, na-record ng isang kalapit na network ang natatanging ID ng iyong device (IMSI o IMEI) habang ginagamit ang iyong <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM.\n\nIbig sabihin, na-log ang iyong lokasyon, aktibidad, o pagkakakilanlan. Isa itong karaniwang kagawian pero posibleng isang isyu para sa mga taong nag-aalala tungkol sa privacy."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Nakakonekta sa naka-encrypt na network na <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"Mas secure na ang koneksyon ng <xliff:g id="NETWORK_NAME">%1$s</xliff:g> SIM"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Nakakonekta sa hindi naka-encrypt na network"</string>

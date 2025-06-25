@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Sare mugikorraren segurtasuna"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Enkriptatzea, enkriptatu gabeko sareen jakinarazpenak"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Gailu-identifikatzailea atzitu da"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> aldera, inguruko sare batek zure gailuaren identifikatzaile esklusiboa (IMSI edo IMEI) erregistratu du, <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> operadorearen SIMa erabiltzen ari zinenean"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> aldera, inguruko sare batek zure gailuaren identifikatzaile esklusiboa (IMSI edo IMEI) erregistratu du, <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> operadorearen SIMa erabiltzen ari zinenean.\n\nHorrek esan nahi du zure kokapena, jarduerak edo identitatea erregistratuta geratu direla. Ohikoa da hori, baina baliteke arazo bat izatea pribatutasunari garrantzia ematen dioten pertsonentzat."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> sare enkriptatura konektatuta"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> operadorearen SIMaren konexioa seguruagoa da orain"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Enkriptatu gabeko sare batera konektatuta"</string>
@@ -2082,7 +2088,7 @@
     <string name="app_streaming_blocked_title_for_camera_dialog" msgid="3935701653713853065">"Kamera ez dago erabilgarri"</string>
     <string name="app_streaming_blocked_title_for_fingerprint_dialog" msgid="3516853717714141951">"Jarraitu telefonoan"</string>
     <string name="app_streaming_blocked_title_for_microphone_dialog" msgid="544822455127171206">"Mikrofonoa ez dago erabilgarri"</string>
-    <string name="app_streaming_blocked_title_for_playstore_dialog" msgid="8149823099822897538">"Play Store ez dago erabilgarri"</string>
+    <string name="app_streaming_blocked_title_for_playstore_dialog" msgid="8149823099822897538">"Google Play Store ez dago erabilgarri"</string>
     <string name="app_streaming_blocked_title_for_settings_dialog" product="tv" msgid="196994247017450357">"Android TV-ren ezarpenak ez daude erabilgarri"</string>
     <string name="app_streaming_blocked_title_for_settings_dialog" product="tablet" msgid="8222710146267948647">"Tabletaren ezarpenak ez daude erabilgarri"</string>
     <string name="app_streaming_blocked_title_for_settings_dialog" product="default" msgid="6895719984375299791">"Telefonoaren ezarpenak ez daude erabilgarri"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB bidezko datu-seinalea desgaitu da."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Arazoak dituzu hatz-marka bidez desblokeatzeko eginbidearekin?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Sakatu hau desblokeatzeko aukera hobetzeko aholkuak berrikusteko"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Ez egin keinurik"</string>
 </resources>

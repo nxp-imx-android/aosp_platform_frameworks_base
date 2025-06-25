@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Keselamatan rangkaian mudah alih"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Penyulitan, pemberitahuan untuk rangkaian yang tidak disulitkan"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"ID peranti diakses"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"Pada <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, rangkaian berdekatan merekodkan ID unik peranti anda (IMSI atau IMEI) semasa menggunakan SIM <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> anda"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"Pada <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, rangkaian berdekatan merekodkan ID unik peranti anda (IMSI atau IMEI) semasa menggunakan SIM <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> anda.\n\nHal ini bermaksud bahawa lokasi, aktiviti atau identiti anda telah dilog. Amalan ini biasa dilakukan tetapi mungkin menjadi hal kepada pengguna yang bimbang tentang privasi."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Disambungkan kepada rangkaian <xliff:g id="NETWORK_NAME">%1$s</xliff:g> yang disulitkan"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"Sambungan SIM <xliff:g id="NETWORK_NAME">%1$s</xliff:g> kini lebih selamat"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Disambungkan kepada rangkaian yang tidak disulitkan"</string>

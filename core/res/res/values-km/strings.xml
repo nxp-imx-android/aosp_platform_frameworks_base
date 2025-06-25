@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"សុវត្ថិភាពបណ្ដាញទូរសព្ទចល័ត"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"ការ​អ៊ីនគ្រីប ការ​ជូនដំណឹងសម្រាប់បណ្ដាញដែលមិនបានអ៊ីនគ្រីប"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"បានចូលប្រើប្រាស់លេខសម្គាល់​ឧបករណ៍"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"នៅម៉ោង <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> បណ្ដាញនៅជិតបានកត់ត្រាលេខកូដសម្គាល់ខុសពីគេ (IMSI ឬ IMEI) របស់ឧបករណ៍អ្នក ពេលកំពុងប្រើស៊ីម <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> របស់អ្នក"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"នៅម៉ោង <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> បណ្ដាញនៅជិតបានកត់ត្រាលេខកូដសម្គាល់ខុសពីគេ (IMSI ឬ IMEI) របស់ឧបករណ៍អ្នក ពេលកំពុងប្រើស៊ីម <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> របស់អ្នក។\n\nនេះមានន័យថា ទីតាំង សកម្មភាព ឬអត្តសញ្ញាណរបស់អ្នកត្រូវបានកត់ត្រាទុក។ នេះគឺជាការអនុវត្តទូទៅ ប៉ុន្តែអាចនឹងមានបញ្ហាសម្រាប់អ្នកដែលមានកង្វល់ពាក់ព័ន្ធនឹងឯកជនភាព។"</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"បានភ្ជាប់ទៅបណ្ដាញដែលបានអ៊ីនគ្រីប <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"ការតភ្ជាប់ស៊ីម <xliff:g id="NETWORK_NAME">%1$s</xliff:g> កាន់តែមានសុវត្ថិភាពឥឡូវនេះ"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"បានភ្ជាប់ទៅបណ្ដាញដែលមិនបានអ៊ីនគ្រីប"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"សញ្ញាទិន្នន័យ USB ត្រូវបានបិទ។"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"មានបញ្ហាពាក់ព័ន្ធនឹងការដោះសោ​ដោយស្កេន​ស្នាមម្រាមដៃឬ?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ចុច ដើម្បីពិនិត្យមើលគន្លឹះសម្រាប់កែលម្អបទពិសោធដោះសោរបស់អ្នក"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"កុំលោតភ្លឹបភ្លែត"</string>
 </resources>

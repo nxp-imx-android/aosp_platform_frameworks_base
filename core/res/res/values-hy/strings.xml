@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Բջջային ցանցի անվտանգություն"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Գաղտնագրում, ծանուցումներ չգաղտնագրված ցանցերի համար"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Սարքի նույնացուցիչը հասանելի է դարձել"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"Ժամը <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>-ին մոտակա ցանցը գրանցել է ձեր սարքի եզակի նույնացուցիչը (IMSI-ը կամ IMEI-ը) <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>-ի ձեր SIM քարտի օգտագործման ժամանակ"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"Ժամը <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>-ին մոտակա ցանցը գրանցել է ձեր սարքի եզակի նույնացուցիչը (IMSI-ը կամ IMEI-ը) <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>-ի ձեր SIM քարտի օգտագործման ժամանակ։\n\nԴա նշանակում է, որ ձեր տեղադրությունը, գործողությունները կամ անձը նույնականացնող տվյալները գրանցվել են։ Սա սովորական գործելակերպ է, սակայն կարող է խնդիր լինել այն մարդկանց համար, որոնք մտահոգված են իրենց գաղտնիությամբ։"</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Հեռախոսը միացավ <xliff:g id="NETWORK_NAME">%1$s</xliff:g> գաղտնագրված ցանցին"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g>-ի SIM քարտի միացումն այժմ ավելի անվտանգ է"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Միացած է չգաղտնագրված ցանցի"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB-ով տվյալների փոխանցումն անջատված է։"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Մատնահետքով ապակողպման խնդիր ունե՞ք"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Էկրանն ապակողպելն ավելի հեշտ է դարձել։ Հպեք՝ հուշումները տեսնելու համար։"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Չթարթել"</string>
 </resources>

@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"మొబైల్ నెట్‌వర్క్ సెక్యూరిటీ"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"ఎన్‌క్రిప్షన్, ఎన్‌క్రిప్ట్ చేయని నెట్‌వర్క్‌లకు సంబంధించిన నోటిఫికేషన్‌లు"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"పరికర IDని యాక్సెస్ చేశారు"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"మీ <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIMను వాడేటప్పుడు, <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>కి దగ్గర్లోని ఒక నెట్‌వర్క్, మీ పరికర యూనిక్ IDని (IMSI లేదా IMEI) రికార్డ్ చేసింది"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"మీ <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIMను ఉపయోగిస్తున్నప్పుడు, సమీపంలోని నెట్‌వర్క్ <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> సమయానికి మీ పరికర యూనిక్ ID (IMSI లేదా IMEI)ని రికార్డ్ చేసింది.\n\nమీ లొకేషన్, యాక్టివిటీ, లేదా గుర్తింపు లాగ్ అయ్యాయని దీని అర్థం. దీనిని తరచుగా అమలు చేస్తుంటారు, కానీ గోప్యత గురించి ఆందోళనపడే వ్యక్తులకు ఇది సమస్య కావచ్చు,"</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"ఎన్‌క్రిప్ట్ చేసిన నెట్‌వర్క్ <xliff:g id="NETWORK_NAME">%1$s</xliff:g>‌కు కనెక్ట్ అయింది"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> SIM కనెక్షన్ ఇప్పుడు మరింత సురక్షితంగా ఉంది"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"ఎన్‌క్రిప్ట్ చేయని నెట్‌వర్క్‌కు కనెక్ట్ అయింది"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB డేటా సిగ్నల్ డిజేబుల్ అయింది."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"వేలిముద్ర అన్‌లాక్‌తో సమస్య ఉందా?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"మీ అన్‌లాకింగ్ ఎక్స్‌పీరియన్స్‌ను మెరుగుపరిచేందుకు చిట్కాలను రివ్యూ చేయడానికి ట్యాప్ చేయండి"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"బ్లింక్ అవ్వకూడదు"</string>
 </resources>

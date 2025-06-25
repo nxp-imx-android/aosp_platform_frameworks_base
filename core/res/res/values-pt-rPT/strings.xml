@@ -165,8 +165,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Segurança de redes móveis"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Encriptação e notificações para redes não encriptadas"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"ID do dispositivo acedido"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"À(s) <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, uma rede próxima registou o ID exclusivo do seu dispositivo (IMSI ou IMEI) enquanto usava o seu SIM <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"À(s) <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, uma rede próxima registou o ID exclusivo do seu dispositivo (IMSI ou IMEI) enquanto usava o seu SIM <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>.\n\nIsto significa que a sua localização, atividade ou identidade foram registadas. Esta é uma prática comum, mas pode ser um problema para pessoas preocupadas com a privacidade."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Ligação estabelecida à rede <xliff:g id="NETWORK_NAME">%1$s</xliff:g> encriptada"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"Agora, a ligação ao SIM <xliff:g id="NETWORK_NAME">%1$s</xliff:g> é mais segura"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Ligação estabelecida a uma rede não encriptada"</string>

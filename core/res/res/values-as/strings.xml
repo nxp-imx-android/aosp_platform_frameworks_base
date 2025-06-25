@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"ম’বাইল নেটৱৰ্কৰ সুৰক্ষা"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"এনক্ৰিপশ্বন, এনক্ৰিপ্ট নকৰা নেটৱৰ্কৰ বাবে জাননী"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"ডিভাইচৰ আইডি এক্সেছ কৰা হৈছে"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>ত, এটা নিকটৱৰ্তী নেটৱৰ্কে আপোনাৰ <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> ছিম ব্যৱহাৰ কৰাৰ সময়ত আপোনাৰ ডিভাইচৰ অদ্বিতীয় আইডি (IMSI বা IMEI) ৰেকৰ্ড কৰিছে"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>ত, এটা নিকটৱৰ্তী নেটৱৰ্কে আপোনাৰ <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> ছিম ব্যৱহাৰ কৰাৰ সময়ত আপোনাৰ ডিভাইচৰ অদ্বিতীয় আইডি (IMSI বা IMEI) ৰেকৰ্ড কৰিছে।\n\n ইয়াৰ অৰ্থ হৈছে যে আপোনাৰ অৱস্থান, কাৰ্যকলাপ বা পৰিচয়ৰ লগ তৈয়াৰ কৰা হৈছে। এইটো সাধাৰণভাৱে কৰা অনুশীলন যদিও গোপনীয়তাক সম্পৰ্কে চিন্তিত লোকসকলৰ বাবে ই এটা সমস্যা হ’ব পাৰে।"</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"এনক্ৰিপ্ট কৰা নেটৱৰ্ক <xliff:g id="NETWORK_NAME">%1$s</xliff:g>ৰ সৈতে সংযুক্ত কৰা আছে"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> ছিমৰ সংযোগ এতিয়া অধিক সুৰক্ষিত"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"এনক্ৰিপ্ট নকৰা নেটৱৰ্কৰ সৈতে সংযুক্ত কৰা আছে"</string>
