@@ -23,8 +23,6 @@ import static perfetto.protos.TracePacketOuterClass.TracePacket.SequenceFlags.SE
 
 import android.tools.Tag;
 import android.tools.io.TraceType;
-import android.tools.traces.TraceConfig;
-import android.tools.traces.TraceConfigs;
 import android.tools.traces.io.ResultReader;
 import android.tools.traces.monitors.PerfettoTraceMonitor;
 import android.tracing.perfetto.DataSourceParams;
@@ -53,13 +51,6 @@ public class UnprocessedPerfettoProtoLogImplTest {
 
     private final File mTracingDirectory = InstrumentationRegistry.getInstrumentation()
             .getTargetContext().getFilesDir();
-
-    private final TraceConfigs mTraceConfig = new TraceConfigs(
-            new TraceConfig(false, true, false),
-            new TraceConfig(false, true, false),
-            new TraceConfig(false, true, false),
-            new TraceConfig(false, true, false)
-    );
 
     private static ProtoLogDataSource sTestDataSource;
     private static UnprocessedPerfettoProtoLogImpl sProtoLog;
@@ -112,7 +103,7 @@ public class UnprocessedPerfettoProtoLogImplTest {
             traceMonitor.stop(writer);
         }
 
-        final ResultReader reader = new ResultReader(writer.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(writer.write());
         final var traceBytes = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
         final var trace = Trace.parseFrom(traceBytes);
 

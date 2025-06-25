@@ -30,8 +30,6 @@ import android.os.RemoteException;
 import android.platform.test.annotations.Presubmit;
 import android.tools.Tag;
 import android.tools.io.TraceType;
-import android.tools.traces.TraceConfig;
-import android.tools.traces.TraceConfigs;
 import android.tools.traces.io.ResultReader;
 import android.tools.traces.io.ResultWriter;
 import android.tools.traces.monitors.PerfettoTraceMonitor;
@@ -113,13 +111,6 @@ public class ProtoLogConfigurationServiceTest {
             .withOutputDir(mTracingDirectory)
             .setRunComplete();
 
-    private final TraceConfigs mTraceConfig = new TraceConfigs(
-            new TraceConfig(false, true, false),
-            new TraceConfig(false, true, false),
-            new TraceConfig(false, true, false),
-            new TraceConfig(false, true, false)
-    );
-
     @Captor
     ArgumentCaptor<IBinder.DeathRecipient> mDeathRecipientArgumentCaptor;
 
@@ -179,7 +170,7 @@ public class ProtoLogConfigurationServiceTest {
 
         traceMonitor.start();
         traceMonitor.stop(mWriter);
-        final ResultReader reader = new ResultReader(mWriter.write(), mTraceConfig);
+        final ResultReader reader = new ResultReader(mWriter.write());
         final byte[] traceData = reader.readBytes(TraceType.PERFETTO, Tag.ALL);
 
         final Trace trace = Trace.parseFrom(traceData);
