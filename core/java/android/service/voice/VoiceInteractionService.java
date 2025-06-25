@@ -1153,7 +1153,9 @@ public class VoiceInteractionService extends Service {
      * <p><b>System Conditions:</b>
      * SystemUI will honor the state set by this method for the invocation effect, provided other
      * system-level conditions are met, such as the correct hardware gesture for invocation
-     * (e.g., power button long-press) being detected.
+     * (e.g., power button long-press) being detected. Note that the actual visualization of this
+     * effect is contingent on the specific SystemUI implementation; some variants, such as those on
+     * automotive or television platforms, may not have a visual representation for this effect.
      *
      * @param enabled {@code true} to enable the invocation effect for the current user and
      *                            assistant,
