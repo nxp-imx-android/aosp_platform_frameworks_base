@@ -354,6 +354,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         if (existingTaskActivity == null || launchingActivity == null) return false;
         return (Objects.equals(existingTaskActivity.packageName, launchingActivity.packageName))
                 && (existingTaskActivity.mUserId == launchingTask.mUserId)
+                && existingTaskActivity.getTask().mTaskId != launchingTask.mTaskId
                 && isLaunchingNewSingleTask(launchingActivity.launchMode)
                 && isClosingExitingInstance(launchingTask.getBaseIntent().getFlags());
     }
