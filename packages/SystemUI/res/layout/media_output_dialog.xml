@@ -91,13 +91,6 @@
             android:layout_marginBottom="8dp"/>
     </LinearLayout>
 
-    <ViewStub
-        android:id="@+id/broadcast_qrcode"
-        android:layout="@layout/media_output_broadcast_area"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-    </ViewStub>
-
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/device_list"
         android:layout_width="match_parent"
