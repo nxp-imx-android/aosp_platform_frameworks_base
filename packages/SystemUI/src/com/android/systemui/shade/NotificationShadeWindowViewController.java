@@ -467,7 +467,7 @@ public class NotificationShadeWindowViewController implements Dumpable {
                         return logDownOrFalseResultDispatch(ev, "disallowed new pointer", false);
                     }
                 }
-                if (isDown) {
+                if (!SceneContainerFlag.isEnabled() && isDown) {
                     mNotificationStackScrollLayoutController.closeControlsIfOutsideTouch(ev);
                 }
 
