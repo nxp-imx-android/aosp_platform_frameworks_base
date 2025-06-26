@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.qs.panels.ui.compose.icons
+package com.android.systemui.common.ui.icons
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathFillType
@@ -25,7 +25,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-public val Edit: ImageVector
+val Edit: ImageVector
     get() {
         if (_Edit != null) {
             return _Edit!!

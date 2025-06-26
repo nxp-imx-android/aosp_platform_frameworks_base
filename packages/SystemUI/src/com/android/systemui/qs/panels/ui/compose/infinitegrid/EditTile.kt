@@ -154,6 +154,7 @@ import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.common.ui.compose.load
+import com.android.systemui.common.ui.icons.Undo
 import com.android.systemui.qs.flags.QsEditModeTabs
 import com.android.systemui.qs.panels.shared.model.SizedTileImpl
 import com.android.systemui.qs.panels.ui.compose.DragAndDropState
@@ -305,7 +306,7 @@ fun DefaultEditTileGrid(
                             ),
                     ) {
                         Icon(
-                            Icons.AutoMirrored.Default.Undo,
+                            Undo,
                             contentDescription =
                                 stringResource(id = com.android.internal.R.string.undo),
                         )
@@ -349,6 +350,7 @@ fun DefaultEditTileGrid(
                         listState = listState,
                         selectionState = selectionState,
                         onEditAction = onEditAction,
+                        canLayoutTile = editModeTabViewModel.selectedTab.isTilesLayoutAllowed,
                         showAvailableTiles = editModeTabViewModel.selectedTab.isTilesEditingAllowed,
                     )
                 }
@@ -381,6 +383,7 @@ fun DefaultEditTileGrid(
                         listState = listState,
                         selectionState = selectionState,
                         onEditAction = onEditAction,
+                        canLayoutTile = true,
                         showAvailableTiles =
                             !(listState.dragInProgress || selectionState.placementEnabled) ||
                                 listState.dragType == DragType.Move,
@@ -477,7 +480,10 @@ private fun EditModeScrollableColumnWithTabs(
             content()
         }
 
-        EditModeTabs(editModeTabViewModel) { selectionState.unSelect() }
+        // Disable tab selection while a drag is in progress
+        EditModeTabs(editModeTabViewModel, enabled = !listState.dragInProgress) {
+            selectionState.unSelect()
+        }
 
         Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.systemBars))
     }
@@ -694,6 +700,7 @@ private fun AnimatedAvailableTilesGrid(
     listState: EditTileListState,
     selectionState: MutableSelectionState,
     showAvailableTiles: Boolean,
+    canLayoutTile: Boolean,
     onEditAction: (EditAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -720,6 +727,7 @@ private fun AnimatedAvailableTilesGrid(
                     allTiles,
                     selectionState,
                     listState.columns,
+                    canLayoutTile = canLayoutTile,
                     { onEditAction(EditAction.AddTile(it)) }, // Add to the end
                     listState,
                 )
@@ -751,6 +759,7 @@ private fun AvailableTileGrid(
     tiles: List<EditTileViewModel>,
     selectionState: MutableSelectionState,
     columns: Int,
+    canLayoutTile: Boolean,
     onAddTile: (TileSpec) -> Unit,
     dragAndDropState: DragAndDropState,
 ) {
@@ -811,6 +820,7 @@ private fun AvailableTileGrid(
                                         cell = viewModel,
                                         dragAndDropState = dragAndDropState,
                                         selectionState = selectionState,
+                                        canLayoutTile = canLayoutTile,
                                         onAddTile = onAddTile,
                                         modifier = Modifier.weight(1f).fillMaxHeight(),
                                     )
@@ -1118,6 +1128,7 @@ private fun AvailableTileGridCell(
     cell: EditTileViewModel,
     dragAndDropState: DragAndDropState,
     selectionState: MutableSelectionState,
+    canLayoutTile: Boolean,
     onAddTile: (TileSpec) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -1129,7 +1140,9 @@ private fun AvailableTileGridCell(
     val colors = EditModeTileDefaults.editTileColors()
     val onClick: () -> Unit = {
         onAddTile(cell.tileSpec)
-        selectionState.select(cell.tileSpec)
+        if (canLayoutTile) {
+            selectionState.select(cell.tileSpec)
+        }
     }
     val clickLabel =
         stringResource(id = R.string.accessibility_qs_edit_named_tile_add_action, cell.label.text)
@@ -1157,7 +1170,7 @@ private fun AvailableTileGridCell(
     ) {
         Box(Modifier.fillMaxWidth().height(TileHeight)) {
             val draggableModifier =
-                if (cell.isCurrent) {
+                if (cell.isCurrent || !canLayoutTile) {
                     Modifier
                 } else {
                     Modifier.dragAndDropTileSource(
