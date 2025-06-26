@@ -6717,6 +6717,13 @@ final class Session
         synchronized (mLock) {
             final RemoteAugmentedAutofillService remoteService =
                     mService.getRemoteAugmentedAutofillServiceLocked();
+            if (Flags.addNullCheckForAugmentedInlineRequest() && remoteService == null) {
+                Slog.i(
+                        TAG,
+                        "onAugmentedAutofillInlineSuggestionAccept(): no service for user, skipping"
+                                + " processing inline suggestion request");
+                return;
+            }
             logAugmentedAutofillRequestLocked(
                     mode,
                     remoteService.getComponentName(),
