@@ -135,6 +135,9 @@ public interface TextClassifier {
     /** Onetime password. */
     @FlaggedApi(Flags.FLAG_TEXT_CLASSIFIER_CHOICE_API_ENABLED)
     String TYPE_OTP = "otp";
+    /** SMS retriever OTP.  */
+    @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_REDACT_OTP_SMS_API)
+    String TYPE_SMS_RETRIEVER_OTP = "sms_retriever_otp";
     /**
      * Word that users may be interested to look up for meaning.
      * @hide
@@ -154,7 +157,8 @@ public interface TextClassifier {
             TYPE_DATE_TIME,
             TYPE_FLIGHT_NUMBER,
             TYPE_DICTIONARY,
-            TYPE_OTP
+            TYPE_OTP,
+            TYPE_SMS_RETRIEVER_OTP
     })
     @interface EntityType {}
 
