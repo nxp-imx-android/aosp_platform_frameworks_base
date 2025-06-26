@@ -782,6 +782,12 @@
     <!-- The accessibility autoclick scroll panel button width and height -->
     <dimen name="accessibility_autoclick_scroll_panel_button_size">36dp</dimen>
 
+    <!-- The elevation for autoclick type panel when it is resting. -->
+    <dimen name="accessibility_autoclick_panel_resting_elevation">6dp</dimen>
+
+    <!-- The elevation for autoclick type panel when it is hovered. -->
+    <dimen name="accessibility_autoclick_panel_hover_elevation">8dp</dimen>
+
     <!-- Margin around the various security views -->
     <dimen name="keyguard_muliuser_selector_margin">8dp</dimen>
 

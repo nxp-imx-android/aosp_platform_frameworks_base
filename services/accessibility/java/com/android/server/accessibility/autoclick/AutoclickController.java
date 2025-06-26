@@ -1173,7 +1173,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
                 clearLongPressState();
             }
 
-            if (mAutoclickTypePanel.isHoveringDraggableArea()
+            if (mAutoclickTypePanel.isHoveringDraggableArea(mLastMotionEvent)
                     && !mAutoclickTypePanel.getIsDragging()) {
                 mAutoclickTypePanel.onDragStart(mLastMotionEvent);
                 return;

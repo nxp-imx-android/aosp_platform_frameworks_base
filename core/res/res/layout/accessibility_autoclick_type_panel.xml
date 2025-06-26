@@ -17,12 +17,13 @@
 */
 -->
 
-<com.android.server.accessibility.autoclick.AutoclickLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.android.server.accessibility.autoclick.AutoclickTypeLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/accessibility_autoclick_type_panel"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_gravity="center_horizontal"
     android:background="@drawable/accessibility_autoclick_type_panel_rounded_background"
+    android:elevation="@dimen/accessibility_autoclick_panel_resting_elevation"
     android:orientation="vertical"
     android:paddingVertical="8dp"
     android:paddingHorizontal="16dp">
@@ -158,4 +159,4 @@
 
     </LinearLayout>
 
-</com.android.server.accessibility.autoclick.AutoclickLinearLayout>
+</com.android.server.accessibility.autoclick.AutoclickTypeLinearLayout>
