@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"การรักษาความปลอดภัยของเครือข่ายมือถือ"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"การเข้ารหัส การแจ้งเตือนสำหรับเครือข่ายที่ไม่ได้เข้ารหัส"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"เข้าถึงรหัสอุปกรณ์แล้ว"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"เมื่อเวลา <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> เครือข่ายใกล้เคียงได้บันทึกรหัสที่ไม่ซ้ำกัน (IMSI หรือ IMEI) ของอุปกรณ์ของคุณในขณะที่ใช้ซิม <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"เมื่อเวลา <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> เครือข่ายใกล้เคียงได้บันทึกรหัสที่ไม่ซ้ำกัน (IMSI หรือ IMEI) ของอุปกรณ์ของคุณในขณะที่ใช้ซิม <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>\n\nนั่นหมายความว่ามีการบันทึกตำแหน่ง กิจกรรม หรือข้อมูลประจำตัวของคุณ การดำเนินการนี้เป็นแนวทางปฏิบัติทั่วไปแต่อาจเป็นปัญหาสำหรับผู้ที่มีความกังวลในเรื่องความเป็นส่วนตัว"</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"เชื่อมต่อกับเครือข่าย <xliff:g id="NETWORK_NAME">%1$s</xliff:g> ที่เข้ารหัสแล้ว"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"การเชื่อมต่อซิม <xliff:g id="NETWORK_NAME">%1$s</xliff:g> มีความปลอดภัยมากขึ้นแล้ว"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"เชื่อมต่อกับเครือข่ายที่ไม่ได้เข้ารหัสแล้ว"</string>

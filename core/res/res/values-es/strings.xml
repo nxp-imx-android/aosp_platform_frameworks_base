@@ -165,8 +165,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Seguridad de redes móviles"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Cifrado, notificaciones sobre redes no cifradas"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Se ha accedido al ID del dispositivo"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"A las <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, una red cercana registró el ID único de tu dispositivo (IMSI o IMEI) mientras usabas la SIM de <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"A las <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, una red cercana registró el ID único de tu dispositivo (IMSI o IMEI) mientras usabas la SIM de <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>.\n\nEsto significa que se ha registrado tu ubicación, actividad o identidad. Se trata de una práctica habitual, pero puede ser un problema para quienes les preocupa su privacidad."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Conexión a la red cifrada <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"Ahora, la conexión con la SIM de <xliff:g id="NETWORK_NAME">%1$s</xliff:g> es más segura"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Conectado a una red no cifrada"</string>
@@ -1807,7 +1813,7 @@
     <string name="one_handed_mode_feature_name" msgid="2334330034828094891">"Modo Una mano"</string>
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Atenuación extra"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Audífonos"</string>
-    <string name="autoclick_feature_name" msgid="4056260617171267864">"Clic automático (tiempo permanencia)"</string>
+    <string name="autoclick_feature_name" msgid="4056260617171267864">"Autoclic (tiempo detenido)"</string>
     <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Teclas de ratón"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Desconectado"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Conectado"</string>
@@ -2578,6 +2584,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"La señal de datos USB se ha inhabilitado."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"¿Tienes problemas con Desbloqueo con huella digital?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Toca para ver consejos para mejorar la experiencia de desbloqueo"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Sin parpadeo"</string>
 </resources>

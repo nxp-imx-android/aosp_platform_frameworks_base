@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"மொபைல் நெட்வொர்க் பாதுகாப்பு"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"என்க்ரிப்ஷன், என்க்ரிப்ஷன் செய்யப்படாத நெட்வொர்க்குகளுக்கான அறிவிப்புகள்"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"சாதன ஐடி அணுகப்பட்டது"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>க்கு, உங்கள் <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> சிம்மைப் பயன்படுத்தும்போது அருகிலுள்ள நெட்வொர்க் உங்கள் சாதனத்தின் தனிப்பட்ட ஐடியை (IMSI அல்லது IMEI) ரெக்கார்டு செய்துள்ளது"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>க்கு, உங்கள் <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> சிம்மைப் பயன்படுத்தும்போது அருகிலுள்ள நெட்வொர்க் உங்கள் சாதனத்தின் தனிப்பட்ட ஐடியை (IMSI அல்லது IMEI) ரெக்கார்டு செய்துள்ளது.\n\nஅதாவது உங்கள் இருப்பிடம், செயல்பாடு அல்லது அடையாளம் பதிவுசெய்யப்பட்டுள்ளது. இது பொதுவான நடைமுறையாகும். ஆனால் தனியுரிமை பற்றிய அக்கறை கொண்டவர்களுக்கு இது ஒரு பிரச்சனையாக இருக்கலாம்."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"என்க்ரிப்ஷன் செய்யப்பட்ட நெட்வொர்க் <xliff:g id="NETWORK_NAME">%1$s</xliff:g> உடன் இணைக்கப்பட்டுள்ளது"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> சிம் இணைப்பு இப்போது மிகவும் பாதுகாப்பானது"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"என்க்ரிப்ஷன் செய்யப்படாத நெட்வொர்க்குடன் இணைக்கப்பட்டுள்ளது"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB தரவு சிக்னல் முடக்கப்பட்டுள்ளது."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"கைரேகை அன்லாக் அம்சத்தில் ஏதேனும் சிக்கலை எதிர்கொள்கிறீர்களா?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"அன்லாக் செய்யும் அனுபவத்தை மேம்படுத்தும் உதவிக்குறிப்புகளைப் பார்க்க தட்டவும்"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"பிளிங் ஆகாது"</string>
 </resources>

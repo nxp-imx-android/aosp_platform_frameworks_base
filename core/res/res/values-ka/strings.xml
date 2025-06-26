@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"მობილური ქსელის უსაფრთხოება"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"დაშიფვრა, შეტყობინებები დაუშიფრავი ქსელებისთვის"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"მოწყობილობის ID გაზიარებულია"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> საათზე ახლომდებარე ქსელმა ჩაიწერა თქვენი მოწყობილობის უნიკალური ID (IMSI ან IMEI) თქვენი <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM-ბარათით სარგებლობისას."</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> საათზე ახლომდებარე ქსელმა ჩაიწერა თქვენი მოწყობილობის უნიკალური ID (IMSI ან IMEI), თქვენი <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM-ბარათით სარგებლობისას.\n\nეს ნიშნავს, რომ თქვენი მდებარეობა, აქტივობა ან ვინაობა დამახსოვრებულია ჟურნალში. ეს გავრცელებული პრაქტიკაა, თუმცა შესაძლოა კონფიდენციალურობის მსურველი პირებისთვის პრობლემა იყოს."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"დაკავშირებულია დაშიფრულ ქსელთან <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> SIM-ბარათის კავშირი ახლა ბევრად უსაფრთხო გახდა"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"დაკავშირებულია დაუშიფრავ ქსელთან"</string>

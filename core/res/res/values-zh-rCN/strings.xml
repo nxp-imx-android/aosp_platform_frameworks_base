@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"移动网络安全"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"加密、通知（连接到未加密网络时）"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"有网络获取了设备 ID"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>，当您使用<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM 卡时，一个附近的网络记录了您设备的唯一 ID（IMSI 或 IMEI）"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>，当您使用<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM 卡时，一个附近的网络记录了您设备的唯一 ID（IMSI 或 IMEI）。\n\n这意味着您的位置信息、活动或身份信息都被记录了。这是常见做法，但对注重隐私的人来说可能是一个问题。"</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"连接到了名为“<xliff:g id="NETWORK_NAME">%1$s</xliff:g>”的加密网络"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> SIM 卡的连接现在更安全了"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"连接到了一个未加密的网络"</string>
@@ -670,7 +676,7 @@
     <string name="permlab_hand_tracking" msgid="6478233866595566940">"跟踪您的手部动作"</string>
     <string name="permdesc_hand_tracking" msgid="8639715900104966456">"允许应用访问手部跟踪数据。"</string>
     <string name="permlab_head_tracking" msgid="1309731456372087270">"跟踪您的头部动作"</string>
-    <string name="permdesc_head_tracking" msgid="231597390513699188">"允许应用访问头部追踪数据。"</string>
+    <string name="permdesc_head_tracking" msgid="231597390513699188">"允许应用访问头部跟踪数据。"</string>
     <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"了解您周围的环境"</string>
     <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"允许应用访问关于您周围环境的跟踪数据。"</string>
     <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"详细了解您周围的环境"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB 数据信号已停用。"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"使用指纹解锁时遇到问题了吗？"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"点按即可查看提升解锁体验的小贴士"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"不闪烁"</string>
 </resources>

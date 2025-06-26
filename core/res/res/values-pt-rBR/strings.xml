@@ -165,8 +165,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Segurança de rede móvel"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Criptografia, notificações para redes não criptografadas"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"ID do dispositivo acessado"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"Às <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, uma rede próxima registrou o ID exclusivo do seu dispositivo (IMSI ou IMEI) enquanto usava seu chip da <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"Às <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, uma rede próxima registrou o ID exclusivo do seu dispositivo (IMSI ou IMEI) usando seu chip da <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>.\n\nIsso significa que sua localização, atividade ou identidade foram registradas. Essa é uma prática comum, mas pode ser um problema para pessoas preocupadas com a privacidade."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Conectado à rede criptografada <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"A conexão do chip da <xliff:g id="NETWORK_NAME">%1$s</xliff:g> está mais segura agora"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Conectado à rede não criptografada"</string>
@@ -2578,6 +2584,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"O indicador de dados USB foi desativado."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Está tendo problemas com o desbloqueio por impressão digital?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Toque para ver dicas sobre como melhorar a experiência de desbloqueio"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Não piscar"</string>
 </resources>

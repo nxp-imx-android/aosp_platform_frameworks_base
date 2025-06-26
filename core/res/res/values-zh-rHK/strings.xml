@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"流動網絡安全"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"加密 (網絡未加密通知)"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"已存取裝置 ID"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"在 <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>，附近網絡使用你的 「<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>」SIM 卡時，記錄了你裝置的獨特 ID (IMSI 或 IMEI)。"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"在 <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>，附近網絡使用你的 「<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>」SIM 卡時，記錄了你裝置的獨特 ID (IMSI 或 IMEI)。\n\n這代表附近網絡記錄了你的位置、活動或身分資料。雖然這種情況很常見，但對注重私隱的人可能構成問題。"</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"已連線至已加密的網絡 <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"現在連線「<xliff:g id="NETWORK_NAME">%1$s</xliff:g>」SIM 卡更加安全"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"已連線至未加密的網絡"</string>
@@ -1594,7 +1600,7 @@
     <string name="car_mode_disable_notification_title" msgid="8450693275833142896">"駕駛應用程式執行中"</string>
     <string name="car_mode_disable_notification_message" msgid="8954550232288567515">"輕按即可退出駕駛應用程式。"</string>
     <string name="back_button_label" msgid="4078224038025043387">"返回"</string>
-    <string name="next_button_label" msgid="6040209156399907780">"繼續"</string>
+    <string name="next_button_label" msgid="6040209156399907780">"下一步"</string>
     <string name="skip_button_label" msgid="3566599811326688389">"略過"</string>
     <string name="no_matches" msgid="6472699895759164599">"沒有相符的結果"</string>
     <string name="find_on_page" msgid="5400537367077438198">"在頁面中尋找"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB 資料訊號已停用。"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"使用「指紋解鎖」時遇到問題嗎？"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"輕按即可查看關於改善解鎖體驗的貼士"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"不要閃動"</string>
 </resources>

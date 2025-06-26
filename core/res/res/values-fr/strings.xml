@@ -165,8 +165,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Sécurité du réseau mobile"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Chiffrement, notifications pour les réseaux non chiffrés"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"ID de l\'appareil accessible"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"À <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, un réseau à proximité a enregistré l\'identifiant unique de votre appareil (IMSI ou code IMEI) lors de l\'utilisation de votre carte SIM <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"À <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, un réseau à proximité a enregistré l\'identifiant unique de votre appareil (IMSI ou code IMEI) lors de l\'utilisation de votre carte SIM <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>.\n\nCela signifie que votre localisation, votre activité ou votre identité ont été enregistrées. Il s\'agit d\'une pratique courante, mais qui peut poser problème aux personnes soucieuses du respect de leur confidentialité."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Connecté au réseau chiffré <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"La connexion à la carte SIM <xliff:g id="NETWORK_NAME">%1$s</xliff:g> est désormais plus sécurisée"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Connecté à un réseau non chiffré"</string>

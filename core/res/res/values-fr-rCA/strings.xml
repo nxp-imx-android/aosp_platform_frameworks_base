@@ -165,8 +165,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Sécurité des réseaux mobiles"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Chiffrement, notifications pour les réseaux non chiffrés"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Identifiant d\'appareil consulté"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"À <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, un réseau à proximité a enregistré l\'identifiant unique de votre appareil (IMSI ou IIEM) alors que vous utilisiez votre carte SIM <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"À <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, un réseau à proximité a enregistré l\'identifiant unique de votre appareil (IMSI ou IIEM) alors que vous utilisiez votre carte SIM <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>.\n\nCela signifie que votre position, votre activité ou votre identité ont été journalisées. Il s\'agit d\'une pratique courante, mais qui peut poser problème aux personnes soucieuses de leur confidentialité."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Connecté à un réseau chiffré <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"La connexion à la carte SIM <xliff:g id="NETWORK_NAME">%1$s</xliff:g> est maintenant plus sûre"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Connecté à un réseau non chiffré"</string>
@@ -2578,6 +2584,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Le signal de données USB a été désactivé."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Vous rencontrez des problèmes avec le Déverrouillage par empreinte digitale?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Touchez l\'écran pour consulter des conseils afin d\'améliorer votre expérience de déverrouillage"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Ne pas faire clignoter"</string>
 </resources>

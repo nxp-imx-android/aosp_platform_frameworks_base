@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Bảo mật mạng di động"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Mã hoá, thông báo cho mạng chưa được mã hoá"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Mã thiết bị đã bị truy cập"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"Vào <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, một mạng lân cận đã ghi nhận mã nhận dạng duy nhất của thiết bị của bạn (IMSI hoặc IMEI) trong lúc sử dụng SIM <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> của bạn"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"Vào <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, một mạng lân cận đã ghi lại mã nhận dạng duy nhất của thiết bị của bạn (IMSI hoặc IMEI) trong lúc sử dụng SIM <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> của bạn.\n\nTức là vị trí, hoạt động hoặc danh tính của bạn đã được ghi lại. Đây là một phương thức thông dụng nhưng có thể trở thành vấn đề đối với những ai lo ngại về quyền riêng tư."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Đã kết nối với mạng <xliff:g id="NETWORK_NAME">%1$s</xliff:g> đã mã hoá"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"Kết nối SIM <xliff:g id="NETWORK_NAME">%1$s</xliff:g> nay an toàn hơn"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Đã kết nối với mạng chưa được mã hoá"</string>
@@ -358,16 +364,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"truy cập dữ liệu cảm biến về dấu hiệu sinh tồn của bạn"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Thông báo"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"hiển thị thông báo"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (2099659100156643683) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (1414121516133760271) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"Dữ liệu theo dõi ánh mắt nhạy cảm qua XR"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"truy cập vào dữ liệu theo dõi ánh mắt nhạy cảm"</string>
     <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"dữ liệu theo dõi XR"</string>
     <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"truy cập vào dữ liệu XR về bạn và môi trường xung quanh bạn"</string>
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (2993940754322250652) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (8498501397939308918) -->
-    <skip />
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"Dữ liệu theo dõi nhạy cảm qua XR"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"truy cập vào dữ liệu theo dõi nhạy cảm về bạn và môi trường xung quanh bạn"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Truy xuất nội dung cửa sổ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Kiểm tra nội dung của cửa sổ bạn đang tương tác."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Bật tính năng Khám phá bằng cách chạm"</string>
@@ -2581,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"Tín hiệu dữ liệu qua USB đã bị tắt."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Bạn gặp sự cố khi sử dụng tính năng Mở khoá bằng vân tay?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Nhấn để xem các mẹo giúp cải thiện trải nghiệm mở khoá"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Không nhấp nháy"</string>
 </resources>

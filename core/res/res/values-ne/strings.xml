@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"मोबाइल नेटवर्कको सुरक्षा"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"इन्क्रिप्सन, इन्क्रिप्ट नगरिएका नेटवर्कसम्बन्धी सूचना"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"डिभाइसको ID एक्सेस गरियो"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"तपाईंले आफ्नो <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM प्रयोग गर्दै गर्दा तपाईंको डिभाइसको नजिकै रहेको एउटा नेटवर्कले <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> मा तपाईंको डिभाइसको अद्वितीय ID रेकर्ड गरेको छ"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"तपाईंले आफ्नो <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> SIM प्रयोग गर्दै गर्दा तपाईंको डिभाइसको नजिकै रहेको एउटा नेटवर्कले <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> मा तपाईंको डिभाइसको अद्वितीय ID रेकर्ड गरेको छ।\n\nयसको अर्थ तपाईंको लोकेसन, गतिविधि वा पहिचान लग गरिएको छ। यसो गर्नु सामान्य हो तर आफ्नो गोपनीयताका बारेमा चिन्ता लिने मान्छेहरूका लागि यो समस्याको विषय हुन सक्छ।"</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"इन्क्रिप्ट गरिएको नेटवर्क <xliff:g id="NETWORK_NAME">%1$s</xliff:g> मा कनेक्ट गरियो"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> SIM को कनेक्सन अब सुरक्षित छ"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"इन्क्रिप्ट नगरिएको नेटवर्कमा कनेक्ट गरियो"</string>
