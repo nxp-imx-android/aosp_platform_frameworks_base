@@ -358,6 +358,7 @@ import com.android.server.FgThread;
 import com.android.server.LocalServices;
 import com.android.server.UiThread;
 import com.android.server.Watchdog;
+import com.android.server.am.UserState;
 import com.android.server.input.InputManagerService;
 import com.android.server.inputmethod.InputMethodManagerInternal;
 import com.android.server.pm.UserManagerInternal;
@@ -3903,7 +3904,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 confirm);
     }
 
-    public void setCurrentUser(@UserIdInt int newUserId) {
+    /** Update the current user. */
+    public void setCurrentUser(@UserIdInt int newUserId, UserState uss) {
         synchronized (mGlobalLock) {
             final TransitionController controller = mAtmService.getTransitionController();
             final Transition transition = new Transition(TRANSIT_OPEN, 0 /* flags */, controller,
@@ -3923,6 +3925,10 @@ public class WindowManagerService extends IWindowManager.Stub
 
                 // Hide windows that should not be seen by the new user.
                 mRoot.switchUser(newUserId);
+                if (DesktopExperienceFlags.ENABLE_APPLY_DESK_ACTIVATION_ON_USER_SWITCH.isTrue()) {
+                    // Restore the new user's previous windows or home.
+                    mRoot.switchUser(newUserId, uss);
+                }
                 mWindowPlacerLocked.performSurfacePlacement();
 
                 // Notify whether the root docked task exists for the current user
