@@ -198,6 +198,7 @@ class DesktopRepository(
 
     /** Stores the last state of the given display, along with the bounds of the tasks on it. */
     fun preserveDisplay(displayId: Int, uniqueId: String) {
+        logD("preserveDisplay for displayId=%d, uniqueId=%s", displayId, uniqueId)
         val orderedDesks = desktopData.getOrderedDesks(displayId)
         // Do not preserve the display if there are no active tasks on it.
         if (!orderedDesks.any { it.activeTasks.isNotEmpty() }) return
