@@ -78,9 +78,11 @@ import android.os.UserHandle;
 import android.permission.flags.Flags;
 import android.provider.DeviceConfig;
 import android.text.TextUtils;
+import android.util.ArraySet;
 import android.util.Slog;
 import android.util.SparseArray;
 
+import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.PackageMonitor;
@@ -110,6 +112,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private static final String ALLOWLISTED_APP_FUNCTIONS_AGENTS =
             "allowlisted_app_functions_agents";
     private static final String NAMESPACE_MACHINE_LEARNING = "machine_learning";
+    private static final String ANDROID_PACKAGE_NAME = "android";
 
     private final RemoteServiceCaller<IAppFunctionService> mRemoteServiceCaller;
     private final CallerValidator mCallerValidator;
@@ -130,6 +133,12 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     private final IBinder mPermissionOwner;
 
+    private final Object mDeviceSettingPackagesLock = new Object();
+
+    @Nullable
+    @GuardedBy("mDeviceSettingPackagesLock")
+    private Set<String> mDeviceSettingPackages;
+
     private final Object mAgentAllowlistLock = new Object();
 
     // The main agent allowlist, set by the updatable DeviceConfig System
@@ -137,7 +146,8 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     private List<SignedPackage> mUpdatableAgentAllowlist = new ArrayList<>();
 
     public AppFunctionManagerServiceImpl(
-            @NonNull Context context, @NonNull PackageManagerInternal packageManagerInternal,
+            @NonNull Context context,
+            @NonNull PackageManagerInternal packageManagerInternal,
             @NonNull AppFunctionAccessServiceInterface appFunctionAccessServiceInterface,
             @NonNull IUriGrantsManager uriGrantsManager,
             @NonNull UriGrantsManagerInternal uriGrantsManagerInternal) {
@@ -528,24 +538,37 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     @Override
-    public int getAccessFlags(String agentPackageName, int agentUserId,
-            String targetPackageName, int targetUserId) throws RemoteException {
+    public int getAccessFlags(
+            String agentPackageName, int agentUserId, String targetPackageName, int targetUserId)
+            throws RemoteException {
         if (!accessCheckFlagsEnabled()) {
             return 0;
         }
-        return mAppFunctionAccessService.getAccessFlags(agentPackageName, agentUserId,
-                targetPackageName, targetUserId);
+        final String targetPermissionOwner = getPermissionOwnerPackage(targetPackageName);
+        return mAppFunctionAccessService.getAccessFlags(
+                agentPackageName, agentUserId, targetPermissionOwner, targetUserId);
     }
 
     @Override
-    public boolean updateAccessFlags(String agentPackageName, int agentUserId,
-            String targetPackageName, int targetUserId, int flagMask, int flags)
+    public boolean updateAccessFlags(
+            String agentPackageName,
+            int agentUserId,
+            String targetPackageName,
+            int targetUserId,
+            int flagMask,
+            int flags)
             throws RemoteException {
         if (!accessCheckFlagsEnabled()) {
             return false;
         }
-        return mAppFunctionAccessService.updateAccessFlags(agentPackageName, agentUserId,
-                targetPackageName, targetUserId, flagMask, flags);
+        final String targetPermissionOwner = getPermissionOwnerPackage(targetPackageName);
+        return mAppFunctionAccessService.updateAccessFlags(
+                agentPackageName,
+                agentUserId,
+                targetPermissionOwner,
+                targetUserId,
+                flagMask,
+                flags);
     }
 
     @Override
@@ -553,18 +576,20 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return;
         }
-        mAppFunctionAccessService.revokeSelfAccess(targetPackageName);
+        final String targetPermissionOwner = getPermissionOwnerPackage(targetPackageName);
+        mAppFunctionAccessService.revokeSelfAccess(targetPermissionOwner);
     }
 
     @Override
-    public int getAccessRequestState(String agentPackageName, int agentUserId,
-            String targetPackageName, int targetUserId) throws RemoteException {
+    public int getAccessRequestState(
+            String agentPackageName, int agentUserId, String targetPackageName, int targetUserId)
+            throws RemoteException {
         if (!accessCheckFlagsEnabled()) {
             return ACCESS_REQUEST_STATE_UNREQUESTABLE;
         }
-
-        return mAppFunctionAccessService.getAccessRequestState(agentPackageName,
-                agentUserId, targetPackageName, targetUserId);
+        final String targetPermissionOwner = getPermissionOwnerPackage(targetPackageName);
+        return mAppFunctionAccessService.getAccessRequestState(
+                agentPackageName, agentUserId, targetPermissionOwner, targetUserId);
     }
 
     @Override
@@ -580,7 +605,46 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
         if (!accessCheckFlagsEnabled()) {
             return List.of();
         }
-        return mAppFunctionAccessService.getValidTargets(userId);
+        final List<String> validTargets = mAppFunctionAccessService.getValidTargets(userId);
+        final ArraySet<String> validPermissionOwnerTargets = new ArraySet<>();
+
+        final int validTargetSize = validTargets.size();
+        for (int i = 0; i < validTargetSize; i++) {
+            final String target = validTargets.get(i);
+            final String permissionOwner = getPermissionOwnerPackage(target);
+            validPermissionOwnerTargets.add(permissionOwner);
+        }
+
+        return List.copyOf(validPermissionOwnerTargets);
+    }
+
+    /**
+     * Returns the permission owner's package name.
+     *
+     * <p>For apps that is set as part of config_appFunctionsDeviceSettingsPackages, the access
+     * permission is controlled as "android".
+     */
+    @NonNull
+    private String getPermissionOwnerPackage(@NonNull String packageName) {
+        final Set<String> deviceSettingPackages = getDeviceSettingPackages();
+        if (deviceSettingPackages.contains(packageName)) {
+            return ANDROID_PACKAGE_NAME;
+        }
+        return packageName;
+    }
+
+    @NonNull
+    private Set<String> getDeviceSettingPackages() {
+        synchronized (mDeviceSettingPackagesLock) {
+            if (mDeviceSettingPackages != null) {
+                return mDeviceSettingPackages;
+            }
+            final String[] deviceSettingPackages =
+                    mContext.getResources()
+                            .getStringArray(R.array.config_appFunctionDeviceSettingsPackages);
+            mDeviceSettingPackages = new ArraySet<>(deviceSettingPackages);
+            return mDeviceSettingPackages;
+        }
     }
 
     private boolean accessCheckFlagsEnabled() {
@@ -589,11 +653,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
     }
 
     /**
-     * Grants temporary uri permission on behalf of the app that returns the response to the
-     * caller that sends the request.
+     * Grants temporary uri permission on behalf of the app that returns the response to the caller
+     * that sends the request.
      *
-     * <p>All {@link AppFunctionUriGrant} in {@link ExecuteAppFunctionResponse} would be granted
-     * to the receiver until the system service is finished. That is usually until device reboots.
+     * <p>All {@link AppFunctionUriGrant} in {@link ExecuteAppFunctionResponse} would be granted to
+     * the receiver until the system service is finished. That is usually until device reboots.
      */
     private void grantTemporaryUriPermissions(
             @NonNull ExecuteAppFunctionAidlRequest requestInternal,
@@ -603,15 +667,11 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
         final int uriReceiverUserId = UserHandle.getUserId(callingUid);
         final int targetUserId = requestInternal.getUserHandle().getIdentifier();
-        final String uriOwnerPackageName = requestInternal
-                .getClientRequest()
-                .getTargetPackageName();
+        final String uriOwnerPackageName =
+                requestInternal.getClientRequest().getTargetPackageName();
         final int uriOwnerUid =
                 mPackageManagerInternal.getPackageUid(
-                        uriOwnerPackageName,
-                        /* flags= */ 0,
-                        /* userId= */ targetUserId
-                );
+                        uriOwnerPackageName, /* flags= */ 0, /* userId= */ targetUserId);
 
         final long ident = Binder.clearCallingIdentity();
         try {
@@ -620,10 +680,10 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 final AppFunctionUriGrant uriGrant = response.getUriGrants().get(i);
                 if (!ContentResolver.SCHEME_CONTENT.equals(uriGrant.getUri().getScheme())) continue;
 
-                final  String uriReceiverPackageName = requestInternal.getCallingPackage();
-                final int uriOwnerUserid = ContentProvider.getUserIdFromUri(
-                        uriGrant.getUri(),
-                        UserHandle.getUserId(uriOwnerUid));
+                final String uriReceiverPackageName = requestInternal.getCallingPackage();
+                final int uriOwnerUserid =
+                        ContentProvider.getUserIdFromUri(
+                                uriGrant.getUri(), UserHandle.getUserId(uriOwnerUid));
                 mUriGrantsManager.grantUriPermissionFromOwner(
                         mPermissionOwner,
                         uriOwnerUid,
@@ -631,8 +691,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                         ContentProvider.getUriWithoutUserId(uriGrant.getUri()),
                         uriGrant.getModeFlags(),
                         uriOwnerUserid,
-                        uriReceiverUserId
-                );
+                        uriReceiverUserId);
             }
         } catch (RemoteException e) {
             Slog.e(TAG, "Granting URI permissions failed", e);
@@ -903,9 +962,9 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
 
     /**
      * Returns a new {@link SafeOneTimeExecuteAppFunctionCallback} initialized with a {@link
-     * SafeOneTimeExecuteAppFunctionCallback.CompletionCallback} that logs the results and a
-     * {@link SafeOneTimeExecuteAppFunctionCallback.BeforeCompletionCallback} that grants the
-     * temporary uri permission to caller.
+     * SafeOneTimeExecuteAppFunctionCallback.CompletionCallback} that logs the results and a {@link
+     * SafeOneTimeExecuteAppFunctionCallback.BeforeCompletionCallback} that grants the temporary uri
+     * permission to caller.
      */
     @VisibleForTesting
     SafeOneTimeExecuteAppFunctionCallback initializeSafeExecuteAppFunctionCallback(
