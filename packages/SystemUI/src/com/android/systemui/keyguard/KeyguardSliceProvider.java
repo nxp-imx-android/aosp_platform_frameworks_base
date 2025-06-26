@@ -51,7 +51,6 @@ import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.keyguard.KeyguardUpdateMonitorCallback;
 import com.android.systemui.application.ContentProviderContextAvailableCallback;
 import com.android.systemui.application.ContentProviderContextInitializer;
-import com.android.systemui.SystemUIAppComponentFactoryBase;
 import com.android.systemui.dagger.qualifiers.Background;
 import com.android.systemui.media.NotificationMediaManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
@@ -76,7 +75,7 @@ import javax.inject.Inject;
 /**
  * Simple Slice provider that shows the current date.
  *
- * Injection is handled by {@link SystemUIAppComponentFactoryBase} +
+ * Injection is handled by {@link com.android.systemui.SystemUIAppComponentFactoryBase} +
  * {@link com.android.systemui.dagger.GlobalRootComponent#inject(KeyguardSliceProvider)}.
  */
 public class KeyguardSliceProvider extends SliceProvider implements
