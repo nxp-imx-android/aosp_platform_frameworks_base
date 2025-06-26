@@ -32,9 +32,11 @@ import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction
+import com.android.systemui.plugins.activityStarter
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInputTestKtx
 import com.android.systemui.res.R
+import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordFeaturesInteractor
 import com.android.systemui.screenrecord.ScreenRecordUxController
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepositoryImpl
@@ -70,7 +72,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
             screenRecordUxController = screenRecordUxController,
         )
 
-    private val underTest =
+    private val underTest by lazy {
         ScreenRecordTileUserActionInteractor(
             context,
             testScope.testScheduler,
@@ -78,11 +80,14 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
             screenRecordRepository,
             screenRecordUxController,
             keyguardInteractor,
+            kosmos.activityStarter,
             keyguardDismissUtil,
             dialogTransitionAnimator,
             panelInteractor,
+            kosmos.screenCaptureRecordFeaturesInteractor,
             mock<MediaProjectionMetricsLogger>(),
         )
+    }
 
     @Test
     fun handleClick_whenStarting_cancelCountdown() = runTest {
@@ -95,7 +100,7 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
 
     // Test that clicking the tile is NOP if opened from desktop.
     @Test
-    @EnableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE)
+    @EnableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
     fun handleClick_fromDesktop_flagEnabled_isNOP() = runTest {
         val recordingModel = ScreenRecordModel.DoingNothing
 
@@ -108,46 +113,23 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
             .createScreenRecordDialog(onStartRecordingClickedCaptor.capture())
     }
 
-    // Test that clicking the tile in desktop opens the recording dialog if flag is disabled.
-    @Test
-    @DisableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE)
-    fun handleClick_fromDesktop_flagDisabled_opensRecordingDialog() = runTest {
-        val recordingModel = ScreenRecordModel.DoingNothing
-
-        // Override the resource to enable desktop features.
-        underTest.apply { overrideResource(R.bool.config_enableDesktopScreenCapture, true) }
-
-        underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
-        val onStartRecordingClickedCaptor = argumentCaptor<Runnable>()
-        verify(screenRecordUxController)
-            .createScreenRecordDialog(onStartRecordingClickedCaptor.capture())
-    }
-
-    // Test that clicking the tile not in desktop opens the recording dialog even if flag is
-    // enabled.
-    @Test
-    @EnableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE)
-    fun handleClick_notFromDesktop_flagEnabled_opensRecordingDialog() = runTest {
-        val recordingModel = ScreenRecordModel.DoingNothing
-
-        // Override the resource to disable desktop features.
-        underTest.apply { overrideResource(R.bool.config_enableDesktopScreenCapture, false) }
-
-        underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
-        val onStartRecordingClickedCaptor = argumentCaptor<Runnable>()
-        verify(screenRecordUxController)
-            .createScreenRecordDialog(onStartRecordingClickedCaptor.capture())
-    }
-
     // Test that clicking the tile not in desktop opens the recording dialog when the flag is
     // disabled.
     @Test
     @DisableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE)
-    fun handleClick_notFromDesktop_flagDisabled_opensRecordingDialog() = runTest {
+    fun handleClick_desktopFlagDisabled_opensRecordingDialog() = runTest {
         val recordingModel = ScreenRecordModel.DoingNothing
 
-        // Override the resource to disable desktop features.
-        underTest.apply { overrideResource(R.bool.config_enableDesktopScreenCapture, false) }
+        underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
+        val onStartRecordingClickedCaptor = argumentCaptor<Runnable>()
+        verify(screenRecordUxController)
+            .createScreenRecordDialog(onStartRecordingClickedCaptor.capture())
+    }
+
+    @Test
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    fun handleClick_newToolbarFlagDisabled_opensRecordingDialog() = runTest {
+        val recordingModel = ScreenRecordModel.DoingNothing
 
         underTest.handleInput(QSTileInputTestKtx.click(recordingModel))
         val onStartRecordingClickedCaptor = argumentCaptor<Runnable>()

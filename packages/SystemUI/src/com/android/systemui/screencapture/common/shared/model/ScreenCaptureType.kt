@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.common.data
+package com.android.systemui.screencapture.common.shared.model
 
 /** The main Screen Capture use cases. */
 enum class ScreenCaptureType {

@@ -17,9 +17,9 @@
 package com.android.systemui.screencapture.record.domain.interactor
 
 import android.content.res.Resources
+import com.android.dream.lowlight.dagger.qualifiers.Application
 import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.policy.ConfigurationController
@@ -37,16 +37,19 @@ class ScreenCaptureRecordFeaturesInteractor
 @Inject
 constructor(
     @Main private val resources: Resources,
-    @Background private val scope: CoroutineScope,
+    @Application private val scope: CoroutineScope,
     configurationController: ConfigurationController,
 ) {
+
+    val isNewScreenRecordToolbarEnabled: Boolean = Flags.newScreenRecordToolbar()
+
+    val isDesktopToolbarEnabled: Boolean = Flags.desktopScreenCapture()
+
+    val shouldShowNewToolbar: Boolean = isNewScreenRecordToolbarEnabled && isDesktopToolbarEnabled
 
     val isLargeScreen: Flow<Boolean?> =
         configurationController.onConfigChanged
             .onStart { emit(resources.configuration) }
-            .map {
-                Flags.desktopScreenCapture() &&
-                    resources.getBoolean(R.bool.config_enableDesktopScreenCapture)
-            }
+            .map { resources.getBoolean(R.bool.config_enableDesktopScreenCapture) }
             .stateIn(scope, SharingStarted.WhileSubscribed(), null)
 }

@@ -17,7 +17,9 @@
 package com.android.systemui.qs.tiles.impl.screenrecord.domain.interactor
 
 import android.content.Context
+import android.content.Intent
 import android.media.projection.StopReason
+import android.os.UserHandle
 import android.util.Log
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.animation.DialogCuj
@@ -33,11 +35,14 @@ import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileUserActionInteractor
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInput
 import com.android.systemui.qs.tiles.base.shared.model.QSTileUserAction
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureActivityIntentParameters
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractor
+import com.android.systemui.screencapture.ui.ScreenCaptureActivity
 import com.android.systemui.screenrecord.ScreenRecordUxController
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil
-import com.android.systemui.util.Utils
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.withContext
@@ -52,17 +57,33 @@ constructor(
     private val screenRecordRepository: ScreenRecordRepository,
     private val screenRecordUxController: ScreenRecordUxController,
     private val keyguardInteractor: KeyguardInteractor,
+    private val activityStarter: ActivityStarter,
     private val keyguardDismissUtil: KeyguardDismissUtil,
     private val dialogTransitionAnimator: DialogTransitionAnimator,
     private val panelInteractor: PanelInteractor,
+    private val screenCaptureRecordFeaturesInteractor: ScreenCaptureRecordFeaturesInteractor,
     private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
 ) : QSTileUserActionInteractor<ScreenRecordModel> {
     override suspend fun handleInput(input: QSTileInput<ScreenRecordModel>): Unit =
         with(input) {
             when (action) {
                 is QSTileUserAction.Click -> {
-                    if (Utils.isDesktopScreenCaptureEnabled(context)) {
-                        // TODO(b/412723197): open screen capture toolbar when it becomes available.
+                    if (screenCaptureRecordFeaturesInteractor.shouldShowNewToolbar) {
+                        val intent = Intent(context, ScreenCaptureActivity::class.java)
+
+                        // TODO(b/412723197): pass actual params here.
+                        ScreenCaptureActivityIntentParameters(
+                                ScreenCaptureType.RECORD,
+                                isUserConsentRequired = false,
+                                resultReceiver = null,
+                                mediaProjection = null,
+                                hostAppUserHandle = UserHandle.CURRENT,
+                                hostAppUid = 0,
+                            )
+                            .fillIntent(intent)
+                        activityStarter.postQSRunnableDismissingKeyguard {
+                            activityStarter.startActivity(intent, true)
+                        }
                     } else {
                         when (data) {
                             is ScreenRecordModel.Starting -> {
@@ -133,7 +154,7 @@ constructor(
 
         keyguardDismissUtil.executeWhenUnlocked(
             dismissAction,
-            false /* requiresShadeOpen */,
+            false, /* requiresShadeOpen */
             true, /* afterKeyguardDone */
         )
     }

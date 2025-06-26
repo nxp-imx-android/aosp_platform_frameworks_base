@@ -16,7 +16,7 @@
 
 package com.android.systemui.screencapture.common
 
-import com.android.systemui.screencapture.common.data.ScreenCaptureType
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureType
 import dagger.MapKey
 
 /** Used for multibindings by [ScreenCaptureType]. */

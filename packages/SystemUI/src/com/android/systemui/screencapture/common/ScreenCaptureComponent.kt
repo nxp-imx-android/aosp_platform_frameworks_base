@@ -16,6 +16,7 @@
 
 package com.android.systemui.screencapture.common
 
+import com.android.systemui.screencapture.common.shared.model.ScreenCaptureActivityIntentParameters
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
 import dagger.BindsInstance
 import dagger.Subcomponent
@@ -42,6 +43,11 @@ interface ScreenCaptureComponent {
 
         /** The [CoroutineScope] to use coroutines limited to Screen Capture sessions. */
         @BindsInstance @ScreenCapture fun setScope(scope: CoroutineScope): Builder
+
+        /** [ScreenCaptureActivityIntentParameters] that has been used to start capture flow. */
+        @BindsInstance
+        @ScreenCapture
+        fun setParameters(parameters: ScreenCaptureActivityIntentParameters): Builder
 
         /**
          * Builds this [ScreenCaptureComponent]. Actual Subcomponent Builders should override this

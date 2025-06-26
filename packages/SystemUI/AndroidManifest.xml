@@ -17,11 +17,11 @@
  */
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
-        package="com.android.systemui"
-        android:sharedUserId="android.uid.systemui"
-        xmlns:tools="http://schemas.android.com/tools"
-        coreApp="true">
+    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
+    package="com.android.systemui"
+    android:sharedUserId="android.uid.systemui"
+    xmlns:tools="http://schemas.android.com/tools"
+    coreApp="true">
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
@@ -533,6 +533,13 @@
             android:exported="true"
             android:singleUser="true"
             android:permission="android.permission.LAUNCH_CAPTURE_CONTENT_ACTIVITY_FOR_NOTE" />
+
+        <activity android:name=".screencapture.ui.ScreenCaptureActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:finishOnCloseSystemDialogs="true"
+            android:launchMode="singleInstance"
+            android:theme="@style/ScreenCapture" />
 
         <service android:name=".screenrecord.service.ScreenRecordingService" />
 
