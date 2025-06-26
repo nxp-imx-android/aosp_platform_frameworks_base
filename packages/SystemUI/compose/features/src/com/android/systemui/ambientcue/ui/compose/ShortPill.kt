@@ -142,11 +142,17 @@ fun ShortPill(
     var pillContentSize by remember { mutableStateOf(IntSize.Zero) }
     var pillContentPosition by remember { mutableStateOf(Offset.Zero) }
 
+    val density = LocalDensity.current
     val config = LocalConfiguration.current
     val isBoldTextEnabled by remember { derivedStateOf { config.fontWeightAdjustment > 0 } }
+    val fontScale = config.fontScale
     val actionTextStyle =
         MaterialTheme.typography.labelMedium.copy(
-            fontWeight = if (isBoldTextEnabled) FontWeight.Bold else FontWeight.Medium
+            fontWeight = if (isBoldTextEnabled) FontWeight.Bold else FontWeight.Medium,
+            fontSize =
+                with(density) {
+                    (MaterialTheme.typography.labelMedium.fontSize.value * fontScale).dp.toSp()
+                },
         )
 
     Box(
@@ -260,7 +266,7 @@ fun ShortPill(
 
         // The layout for the expanded state (a single, centered button)
         if (expansionAlpha < 1f && pillContentSize != IntSize.Zero) {
-            with(LocalDensity.current) {
+            with(density) {
                 val offsetX =
                     pillContentPosition.x.toDp() + (pillContentSize.width.toDp() / 2) -
                         (closeButtonSize / 2)
