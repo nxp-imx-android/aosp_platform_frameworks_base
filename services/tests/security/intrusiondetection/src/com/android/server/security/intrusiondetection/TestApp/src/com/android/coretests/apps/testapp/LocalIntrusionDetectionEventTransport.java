@@ -83,6 +83,9 @@ public class LocalIntrusionDetectionEventTransport extends IntrusionDetectionEve
         for (IntrusionDetectionEvent event : events) {
             if (event.getType() == IntrusionDetectionEvent.SECURITY_EVENT) {
                 SecurityEvent securityEvent = event.getSecurityEvent();
+                if (securityEvent.getData() == null) {
+                    continue;
+                }
                 Object[] eventData = (Object[]) securityEvent.getData();
                 if (securityEvent.getTag() == SecurityLog.TAG_KEY_GENERATED
                         && eventData[1].equals(TEST_SECURITY_EVENT_TAG)) {
