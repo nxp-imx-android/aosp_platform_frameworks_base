@@ -16,7 +16,6 @@
 
 package com.android.packageinstaller.v2.ui.fragments;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
@@ -37,7 +36,7 @@ public class InstallStagingFragment extends DialogFragment {
 
     private static final String LOG_TAG = InstallStagingFragment.class.getSimpleName();
     private ProgressBar mProgressBar;
-    private AlertDialog mDialog;
+    private Dialog mDialog;
     @NonNull
     private InstallActionListener mInstallActionListener;
 
@@ -54,27 +53,21 @@ public class InstallStagingFragment extends DialogFragment {
 
         View dialogView = getLayoutInflater().inflate(
                 UiUtil.getInstallationLayoutResId(requireContext()), null);
-        dialogView.requireViewById(R.id.progress_bar).setVisibility(View.VISIBLE);
-
-        mDialog = new AlertDialog.Builder(requireContext())
-            .setTitle(R.string.title_install_staging)
-            .setView(dialogView)
-            .setNegativeButton(R.string.button_cancel, (dialog, which) ->
-                mInstallActionListener.onNegativeResponse(InstallStage.STAGE_STAGING))
-            .setCancelable(false)
-            .create();
-
-        mDialog.setCanceledOnTouchOutside(false);
-        return mDialog;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        mProgressBar = mDialog.requireViewById(R.id.progress_bar);
+        mProgressBar = dialogView.requireViewById(R.id.progress_bar);
+        mProgressBar.setVisibility(View.VISIBLE);
         mProgressBar.setProgress(0);
         mProgressBar.setMax(100);
         mProgressBar.setIndeterminate(false);
+
+        mDialog = UiUtil.getAlertDialog(requireContext(), getString(R.string.title_install_staging),
+                dialogView, /* positiveBtnText= */ null, getString(R.string.button_cancel),
+                /* positiveBtnListener= */ null,
+                (dialog, which) ->
+                        mInstallActionListener.onNegativeResponse(InstallStage.STAGE_STAGING));
+
+        mDialog.setCanceledOnTouchOutside(false);
+        this.setCancelable(false);
+        return mDialog;
     }
 
     public void setProgress(int progress) {
