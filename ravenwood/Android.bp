@@ -81,12 +81,10 @@ filegroup {
 
 // Common code that is shared across host and device.
 java_library {
-    name: "ravenwood-runtime-common",
+    name: "ravenwood-common-utils",
     host_supported: true,
     sdk_version: "core_current",
-    srcs: [
-        "runtime-common-src/**/*.java",
-    ],
+    srcs: ["common-src/**/*.java"],
     static_libs: [
         "framework-annotations-lib", // should it be "libs" instead?
         "modules-utils-ravenwood",
@@ -103,7 +101,7 @@ java_library_host {
     ],
     libs: [
         "app-compat-annotations",
-        "ravenwood-runtime-common",
+        "ravenwood-common-utils",
     ],
     visibility: ["//visibility:private"],
 }
@@ -129,7 +127,7 @@ java_library {
         "framework-configinfrastructure.ravenwood",
         "framework-minus-apex.ravenwood",
         "ravenwood-helper-libcore-runtime",
-        "ravenwood-runtime-common",
+        "ravenwood-common-utils",
     ],
     sdk_version: "core_current",
     visibility: ["//visibility:private"],
@@ -156,7 +154,7 @@ java_library {
     ],
     static_libs: [
         "androidx.test.monitor",
-        "ravenwood-runtime-common",
+        "ravenwood-common-utils",
     ],
     libs: [
         "android.test.mock.impl",
@@ -195,7 +193,7 @@ java_library {
     ],
     sdk_version: "module_current",
     static_libs: [
-        "ravenwood-runtime-common",
+        "ravenwood-common-utils",
     ],
     libs: [
         "flag-junit",

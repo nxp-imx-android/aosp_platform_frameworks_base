@@ -15,8 +15,6 @@
  */
 package com.android.ravenwood;
 
-import com.android.ravenwood.common.JvmWorkaround;
-
 import java.io.FileDescriptor;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,14 +28,14 @@ public class RavenwoodJdkPatch {
      * Implements FileDescriptor.getInt$()
      */
     public static int getInt$(FileDescriptor fd) {
-        return JvmWorkaround.getInstance().getFdInt(fd);
+        return OpenJdkWorkaround.getFdInt(fd);
     }
 
     /**
      * Implements FileDescriptor.setInt$(int)
      */
     public static void setInt$(FileDescriptor fd, int rawFd) {
-        JvmWorkaround.getInstance().setFdInt(fd, rawFd);
+        OpenJdkWorkaround.setFdInt(fd, rawFd);
     }
 
     /**

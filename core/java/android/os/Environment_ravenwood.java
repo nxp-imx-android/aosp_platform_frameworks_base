@@ -17,7 +17,7 @@ package android.os;
 
 import android.util.Log;
 
-import com.android.ravenwood.common.RavenwoodCommonUtils;
+import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import java.io.File;
 import java.util.Objects;
@@ -28,7 +28,7 @@ import java.util.Objects;
 public class Environment_ravenwood {
     private static final String TAG = "Environment_ravenwood";
 
-    private static final boolean VERBOSE = RavenwoodCommonUtils.RAVENWOOD_VERBOSE_LOGGING;
+    private static final boolean VERBOSE = RavenwoodInternalUtils.RAVENWOOD_VERBOSE_LOGGING;
 
     private Environment_ravenwood() {
     }

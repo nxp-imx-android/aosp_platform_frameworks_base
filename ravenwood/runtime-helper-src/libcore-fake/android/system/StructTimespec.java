@@ -16,7 +16,7 @@
 
 package android.system;
 
-import libcore.util.Objects;;
+import libcore.util.Objects;
 
 /**
  * Corresponds to C's {@code struct timespec} from {@code <time.h>}.

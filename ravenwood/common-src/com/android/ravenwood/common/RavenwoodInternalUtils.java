@@ -26,18 +26,16 @@ import java.io.FileInputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.function.Supplier;
 
-public class RavenwoodCommonUtils {
+public class RavenwoodInternalUtils {
     public static final String TAG = "Ravenwood";
 
-    private RavenwoodCommonUtils() {
+    private RavenwoodInternalUtils() {
     }
 
     /**
@@ -48,18 +46,8 @@ public class RavenwoodCommonUtils {
     public static final boolean RAVENWOOD_VERBOSE_LOGGING = "1".equals(System.getenv(
             "RAVENWOOD_VERBOSE"));
 
-    /**
-     * Env var name for the runtime dir. When running a test locally, it'll contain
-     * `/...(path).../out/host/linux-x86/testcases/ravenwood-runtime`.
-     */
-    private static final String RAVENWOOD_RUNTIME_DIR_ENV = "RAVENWOOD_RUNTIME_DIR";
-
     private static boolean sEnableExtraRuntimeCheck =
             "1".equals(System.getenv("RAVENWOOD_ENABLE_EXTRA_RUNTIME_CHECK"));
-
-    private static final boolean IS_ON_RAVENWOOD = RavenwoodHelper.isRunningOnRavenwood();
-
-    private static final String RAVENWOOD_RUNTIME_PATH = getRavenwoodRuntimePathInternal();
 
     public static final String RAVENWOOD_SYSPROP = "ro.is_on_ravenwood";
 
@@ -68,22 +56,13 @@ public class RavenwoodCommonUtils {
             "ravenwood-res-apks/ravenwood-inst-res.apk";
 
     public static final String RAVENWOOD_EMPTY_RESOURCES_APK =
-            RAVENWOOD_RUNTIME_PATH + "ravenwood-data/ravenwood-empty-res.apk";
+            "ravenwood-data/ravenwood-empty-res.apk";
 
     /**
      * @return if we're running on Ravenwood.
      */
     public static boolean isOnRavenwood() {
-        return IS_ON_RAVENWOOD;
-    }
-
-    /**
-     * Throws if the runtime is not Ravenwood.
-     */
-    public static void ensureOnRavenwood() {
-        if (!isOnRavenwood()) {
-            throw new RavenwoodRuntimeException("This is only supposed to be used on Ravenwood");
-        }
+        return RavenwoodHelper.isRunningOnRavenwood();
     }
 
     /**
@@ -107,10 +86,10 @@ public class RavenwoodCommonUtils {
 
     /**
      * Internal implementation of
-     * {@link android.platform.test.ravenwood.RavenwoodUtils#loadJniLibrary(String)}
+     * {@link android.platform.test.ravenwood.RavenwoodRule#loadJniLibrary(String)}
      */
     public static void loadJniLibrary(String libname) {
-        if (RavenwoodCommonUtils.isOnRavenwood()) {
+        if (isOnRavenwood()) {
             System.load(getJniLibraryPath(libname));
         } else {
             System.loadLibrary(libname);
@@ -199,23 +178,7 @@ public class RavenwoodCommonUtils {
      * This method throws if called on the device side.
      */
     public static String getRavenwoodRuntimePath() {
-        ensureOnRavenwood();
-        return RAVENWOOD_RUNTIME_PATH;
-    }
-
-    private static String getRavenwoodRuntimePathInternal() {
-        if (!isOnRavenwood()) {
-            return null;
-        }
-        var dir = System.getenv(RAVENWOOD_RUNTIME_DIR_ENV);
-        if (dir == null || dir.isEmpty()) {
-            throw new IllegalStateException("$" + RAVENWOOD_RUNTIME_DIR_ENV + " not set");
-        }
-        if (!(new File(dir).isDirectory())) {
-            throw new IllegalStateException("$" + RAVENWOOD_RUNTIME_DIR_ENV + " contains "
-                    + dir + ", but it's not a directory");
-        }
-        return dir;
+        return RavenwoodHelper.getRavenwoodRuntimePath();
     }
 
     /** Close an {@link AutoCloseable}. */
@@ -232,7 +195,7 @@ public class RavenwoodCommonUtils {
     /** Close a {@link FileDescriptor}. */
     public static void closeQuietly(FileDescriptor fd) {
         var is = new FileInputStream(fd);
-        RavenwoodCommonUtils.closeQuietly(is);
+        closeQuietly(is);
     }
 
     public static void ensureIsPublicVoidMethod(Method method, boolean isStatic) {
@@ -310,71 +273,5 @@ public class RavenwoodCommonUtils {
     @Nullable
     public static <T> T withDefault(@Nullable T value, @Nullable T def) {
         return value != null ? value : def;
-    }
-
-    /**
-     * Utility for calling a method with reflections. Used to call a method by name.
-     * Note, this intentionally does _not_ support non-public methods, as we generally
-     * shouldn't violate java visibility in ravenwood.
-     *
-     * @param <TTHIS> class owning the method.
-     */
-    public static class ReflectedMethod<TTHIS> {
-        private final Class<TTHIS> mThisClass;
-        private final Method mMethod;
-
-        private ReflectedMethod(Class<TTHIS> thisClass, Method method) {
-            mThisClass = thisClass;
-            mMethod = method;
-        }
-
-        /** Factory method. */
-        @SuppressWarnings("unchecked")
-        public static <TTHIS> ReflectedMethod<TTHIS> reflectMethod(
-                @NonNull Class<TTHIS> clazz, @NonNull String methodName,
-                @NonNull Class<?>... argTypes) {
-            try {
-                return new ReflectedMethod(clazz, clazz.getMethod(methodName, argTypes));
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        /** Factory method. */
-        @SuppressWarnings("unchecked")
-        public static <TTHIS> ReflectedMethod<TTHIS> reflectMethod(
-                @NonNull String className, @NonNull String methodName,
-                @NonNull Class<?>... argTypes) {
-            try {
-                return reflectMethod((Class<TTHIS>) Class.forName(className), methodName, argTypes);
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        /** Call the instance method */
-        @SuppressWarnings("unchecked")
-        public <RET> RET call(@NonNull TTHIS thisObject, @NonNull Object... args) {
-            try {
-                return (RET) mMethod.invoke(Objects.requireNonNull(thisObject), args);
-            } catch (InvocationTargetException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        /** Call the static method */
-        @SuppressWarnings("unchecked")
-        public <RET> RET callStatic(@NonNull Object... args) {
-            try {
-                return (RET) mMethod.invoke(null, args);
-            } catch (InvocationTargetException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    /** Handy method to create an array */
-    public static <T> T[] arr(@NonNull T... objects) {
-        return objects;
     }
 }

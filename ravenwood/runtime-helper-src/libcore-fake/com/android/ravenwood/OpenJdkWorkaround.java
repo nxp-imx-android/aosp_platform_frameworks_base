@@ -13,7 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.ravenwood.common;
+package com.android.ravenwood;
+
+import com.android.ravenwood.common.SneakyThrow;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -21,15 +23,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-class OpenJdkWorkaround extends JvmWorkaround {
+public class OpenJdkWorkaround {
 
     // @GuardedBy("sAddressMap")
     private static final Map<Object, Long> sAddressMap = new WeakHashMap<>();
     // @GuardedBy("sAddressMap")
     private static long sCurrentAddress = 1;
 
-    @Override
-    public void setFdInt(FileDescriptor fd, int fdInt) {
+    public static void setFdInt(FileDescriptor fd, int fdInt) {
         try {
             final Object obj = Class.forName("jdk.internal.access.SharedSecrets").getMethod(
                     "getJavaIOFileDescriptorAccess").invoke(null);
@@ -41,8 +42,7 @@ class OpenJdkWorkaround extends JvmWorkaround {
         }
     }
 
-    @Override
-    public int getFdInt(FileDescriptor fd) {
+    public static int getFdInt(FileDescriptor fd) {
         try {
             final Object obj = Class.forName("jdk.internal.access.SharedSecrets").getMethod(
                     "getJavaIOFileDescriptorAccess").invoke(null);
@@ -54,8 +54,7 @@ class OpenJdkWorkaround extends JvmWorkaround {
         }
     }
 
-    @Override
-    public void closeFd(FileDescriptor fd) throws IOException {
+    public static void closeFd(FileDescriptor fd) throws IOException {
         try {
             final Object obj = Class.forName("jdk.internal.access.SharedSecrets").getMethod(
                     "getJavaIOFileDescriptorAccess").invoke(null);
@@ -69,8 +68,7 @@ class OpenJdkWorkaround extends JvmWorkaround {
         }
     }
 
-    @Override
-    public long addressOf(Object o) {
+    public static long addressOf(Object o) {
         synchronized (sAddressMap) {
             Long address = sAddressMap.get(o);
             if (address == null) {
@@ -81,8 +79,7 @@ class OpenJdkWorkaround extends JvmWorkaround {
         }
     }
 
-    @Override
-    public <T> T fromAddress(long address) {
+    public static <T> T fromAddress(long address) {
         synchronized (sAddressMap) {
             for (var e : sAddressMap.entrySet()) {
                 if (e.getValue() == address) {

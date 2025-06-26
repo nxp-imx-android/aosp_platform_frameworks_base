@@ -19,7 +19,7 @@ package libcore.io;
 import android.system.ErrnoException;
 import android.system.Os;
 
-import com.android.ravenwood.common.JvmWorkaround;
+import com.android.ravenwood.OpenJdkWorkaround;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -82,6 +82,6 @@ public final class IoUtils {
      * FD owners currently unsupported under Ravenwood; return FD directly
      */
     public static int acquireRawFd(FileDescriptor fd) {
-        return JvmWorkaround.getInstance().getFdInt(fd);
+        return OpenJdkWorkaround.getFdInt(fd);
     }
 }

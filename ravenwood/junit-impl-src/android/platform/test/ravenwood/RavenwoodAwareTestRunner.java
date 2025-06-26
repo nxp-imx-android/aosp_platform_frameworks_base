@@ -15,8 +15,8 @@
  */
 package android.platform.test.ravenwood;
 
-import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_VERBOSE_LOGGING;
-import static com.android.ravenwood.common.RavenwoodCommonUtils.ensureIsPublicVoidMethod;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_VERBOSE_LOGGING;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.ensureIsPublicVoidMethod;
 
 import static org.junit.Assume.assumeTrue;
 
@@ -26,7 +26,7 @@ import android.platform.test.annotations.RavenwoodTestRunnerInitializing;
 import android.platform.test.annotations.internal.InnerRunner;
 import android.util.Log;
 
-import com.android.ravenwood.common.RavenwoodCommonUtils;
+import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -228,7 +228,8 @@ public final class RavenwoodAwareTestRunner extends RavenwoodAwareTestRunnerBase
             s.evaluate();
             onAfter(description, scope, order, null);
         } catch (Throwable t) {
-            RavenwoodCommonUtils.runIgnoringException(() -> onAfter(description, scope, order, t));
+            RavenwoodInternalUtils
+                    .runIgnoringException(() -> onAfter(description, scope, order, t));
             throw t;
         }
     }
