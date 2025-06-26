@@ -13,6 +13,7 @@ import com.android.systemui.scene.ui.composable.Scene
 import com.android.systemui.scene.ui.viewmodel.SceneContainerViewModel
 import com.android.systemui.shade.TouchLogger
 import com.android.systemui.statusbar.notification.stack.ui.view.SharedNotificationContainer
+import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import javax.inject.Provider
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -34,6 +35,7 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
         qsSceneAdapter: Provider<QSSceneAdapter>,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
         windowRootViewKeyEventHandler: WindowRootViewKeyEventHandler,
+        tintedIconManagerFactory: TintedIconManager.Factory,
     ) {
         setLayoutInsetsController(layoutInsetController)
         SceneWindowRootViewBinder.bind(
@@ -53,6 +55,7 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
             dataSourceDelegator = sceneDataSourceDelegator,
             qsSceneAdapter = qsSceneAdapter,
             sceneJankMonitorFactory = sceneJankMonitorFactory,
+            tintedIconManagerFactory = tintedIconManagerFactory,
         )
         setWindowRootViewKeyEventHandler(windowRootViewKeyEventHandler)
     }

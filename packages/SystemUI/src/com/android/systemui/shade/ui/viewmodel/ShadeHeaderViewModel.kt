@@ -52,7 +52,6 @@ import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
 import com.android.systemui.statusbar.phone.domain.interactor.ShadeDarkIconInteractor
 import com.android.systemui.statusbar.phone.ui.StatusBarIconController
-import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import com.android.systemui.statusbar.pipeline.battery.ui.viewmodel.BatteryViewModel
 import com.android.systemui.statusbar.pipeline.mobile.domain.interactor.MobileIconsInteractor
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsViewModel
@@ -83,7 +82,6 @@ constructor(
     val mobileIconsViewModel: MobileIconsViewModel,
     private val privacyChipInteractor: PrivacyChipInteractor,
     private val clockInteractor: ClockInteractor,
-    private val tintedIconManagerFactory: TintedIconManager.Factory,
     private val batteryMeterViewControllerFactory: BatteryMeterViewController.Factory,
     val statusBarIconController: StatusBarIconController,
     val batteryViewModelFactory: BatteryViewModel.AlwaysShowPercent.Factory,
@@ -100,9 +98,6 @@ constructor(
             initialValue = IsAreaDark { true },
             source = shadeDarkIconInteractor.isShadeAreaDark,
         )
-
-    val createTintedIconManager: (ViewGroup, StatusBarLocation) -> TintedIconManager =
-        tintedIconManagerFactory::create
 
     val createBatteryMeterViewController:
         (ViewGroup, StatusBarLocation) -> BatteryMeterViewController =
