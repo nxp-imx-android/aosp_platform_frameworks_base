@@ -59041,6 +59041,7 @@ package android.view.textclassifier {
     field public static final String TYPE_OTHER = "other";
     field @FlaggedApi("android.permission.flags.text_classifier_choice_api_enabled") public static final String TYPE_OTP = "otp";
     field public static final String TYPE_PHONE = "phone";
+    field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final String TYPE_SMS_RETRIEVER_OTP = "sms_retriever_otp";
     field public static final String TYPE_UNKNOWN = "";
     field public static final String TYPE_URL = "url";
     field public static final String WIDGET_TYPE_CLIPBOARD = "clipboard";
