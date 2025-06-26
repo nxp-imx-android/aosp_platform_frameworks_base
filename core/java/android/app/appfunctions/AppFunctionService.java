@@ -106,36 +106,40 @@ public abstract class AppFunctionService extends Service {
                 }
                 SafeOneTimeExecuteAppFunctionCallback safeCallback =
                         new SafeOneTimeExecuteAppFunctionCallback(callback);
-                context.getMainExecutor().execute(
-                        () -> {
-                            try {
-                                onExecuteFunction.perform(
-                                        request,
-                                        callingPackage,
-                                        callingPackageSigningInfo,
-                                        buildCancellationSignal(cancellationCallback),
-                                        new OutcomeReceiver<
-                                                ExecuteAppFunctionResponse,
-                                                AppFunctionException>() {
-                                            @Override
-                                            public void onResult(
-                                                    ExecuteAppFunctionResponse result) {
-                                                safeCallback.onResult(result);
-                                            }
+                context.getMainExecutor()
+                        .execute(
+                                () -> {
+                                    try {
+                                        onExecuteFunction.perform(
+                                                request,
+                                                callingPackage,
+                                                callingPackageSigningInfo,
+                                                buildCancellationSignal(cancellationCallback),
+                                                new OutcomeReceiver<
+                                                        ExecuteAppFunctionResponse,
+                                                        AppFunctionException>() {
+                                                    @Override
+                                                    public void onResult(
+                                                            ExecuteAppFunctionResponse result) {
+                                                        safeCallback.onResult(result);
+                                                    }
 
-                                            @Override
-                                            public void onError(AppFunctionException exception) {
-                                                safeCallback.onError(exception);
-                                            }
-                                        });
-                            } catch (Exception ex) {
-                                // Apps should handle exceptions. But if they don't, report the
-                                // error on behalf of them.
-                                Log.w(TAG, "Uncaught exception in AppFunctionService", ex);
-                                safeCallback.onError(
-                                        new AppFunctionException(toErrorCode(ex), ex.getMessage()));
-                            }
-                        });
+                                                    @Override
+                                                    public void onError(
+                                                            AppFunctionException exception) {
+                                                        safeCallback.onError(exception);
+                                                    }
+                                                });
+                                    } catch (Exception ex) {
+                                        // Apps should handle exceptions. But if they don't, report
+                                        // the
+                                        // error on behalf of them.
+                                        Log.w(TAG, "Uncaught exception in AppFunctionService", ex);
+                                        safeCallback.onError(
+                                                new AppFunctionException(
+                                                        toErrorCode(ex), ex.getMessage()));
+                                    }
+                                });
             }
         };
     }
@@ -187,9 +191,14 @@ public abstract class AppFunctionService extends Service {
      * the execution of function if requested by the system.
      *
      * @param request The function execution request.
-     * @param callingPackage The package name of the app that is requesting the execution.
+     * @param callingPackage The package name of the app that is requesting the execution. It is
+     *     strongly recommended that you do not alter your function’s behavior based on this value.
+     *     Your function should behave consistently for all callers to ensure a predictable
+     *     experience.
      * @param callingPackageSigningInfo The signing information of the app that is requesting the
-     *     execution.
+     *     execution. It is strongly recommended that you do not alter your function’s behavior
+     *     based on this value. Your function should behave consistently for all callers to ensure a
+     *     predictable experience.
      * @param cancellationSignal A signal to cancel the execution.
      * @param callback A callback to report back the result or error.
      */
