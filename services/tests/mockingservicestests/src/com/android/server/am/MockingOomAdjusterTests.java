@@ -72,6 +72,7 @@ import static com.android.server.am.ProcessList.SCHED_GROUP_TOP_APP;
 import static com.android.server.am.ProcessList.SCHED_GROUP_TOP_APP_BOUND;
 import static com.android.server.am.ProcessList.SERVICE_ADJ;
 import static com.android.server.am.ProcessList.SERVICE_B_ADJ;
+import static com.android.server.am.ProcessList.SYSTEM_ADJ;
 import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 import static com.android.server.am.ProcessList.VISIBLE_APP_ADJ;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED;
@@ -115,6 +116,7 @@ import android.os.PowerManagerInternal;
 import android.os.Process;
 import android.os.SystemClock;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -3758,6 +3760,90 @@ public class MockingOomAdjusterTests {
 
         assertProcStates(app, PROCESS_STATE_BOUND_FOREGROUND_SERVICE, PERSISTENT_PROC_ADJ,
                 SCHED_GROUP_RESTRICTED);
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    public void testUpdateOomAdj_bindScheduleLikeTopApp_systemClient_hostGetsTopSchedGroup() {
+        // When system client binds a service with BIND_SCHEDULE_LIKE_TOP_APP, the service should
+        // will be prioritized as top app.
+        ProcessRecord host = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, true);
+        host.mState.setCurrentSchedulingGroup(SCHED_GROUP_DEFAULT);
+        ProcessRecord client = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
+                MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, false);
+        mProcessStateController.setMaxAdj(client, SYSTEM_ADJ);
+
+        bindService(host, client, null, null, Context.BIND_SCHEDULE_LIKE_TOP_APP,
+                mock(IBinder.class));
+        updateOomAdj(client);
+
+        assertTrue(host.mState.shouldScheduleLikeTopApp());
+        assertEquals(SCHED_GROUP_TOP_APP, host.mState.getCurrentSchedulingGroup());
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    public void testUpdateOomAdj_bindScheduleLikeTopApp_nonSystemClient_hostNotGetTopSchedGroup() {
+        ProcessRecord host = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, true);
+        ProcessRecord client = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
+                MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, false);
+        mProcessStateController.setMaxAdj(client, PERCEPTIBLE_RECENT_FOREGROUND_APP_ADJ);
+
+        bindService(host, client, null, null, Context.BIND_SCHEDULE_LIKE_TOP_APP,
+                mock(IBinder.class));
+        updateOomAdj(client);
+
+        assertFalse(host.mState.shouldScheduleLikeTopApp());
+        assertNotEquals(SCHED_GROUP_TOP_APP, host.mState.getCurrentSchedulingGroup());
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @DisableFlags(Flags.FLAG_NOT_SKIP_CONNECTION_RECOMPUTE_FOR_BIND_SCHEDULE_LIKE_TOP_APP)
+    public void testUpdateOomAdj_bindScheduleLikeTopApp_systemClient_hostPrivileged_skipConnectionCompute_hostNotGetTopSchedGroup() {
+        // Similar to testUpdateOomAdj_bindScheduleLikeTopApp_systemClient_hostGetsTopSchedGroup,
+        // but now the host process is already marked as privileged(see
+        // OomAdjusterImpl#isHighPriorityProcess for detail). In this case, connection evaluation
+        // will be skipped, as a result, the scheduling group stays default.
+        ProcessRecord host = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, true);
+        mProcessStateController.setMaxAdj(host, PERSISTENT_SERVICE_ADJ);
+        ProcessRecord client = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
+                MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, false);
+        mProcessStateController.setMaxAdj(client, SYSTEM_ADJ);
+
+        bindService(host, client, null, null, Context.BIND_SCHEDULE_LIKE_TOP_APP,
+                mock(IBinder.class));
+        updateOomAdj(client);
+
+        // The update for host by its client connection evaluation is skipped.
+        assertFalse(host.mState.shouldScheduleLikeTopApp());
+        assertNotEquals(SCHED_GROUP_TOP_APP, host.mState.getSetSchedGroup());
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags(Flags.FLAG_NOT_SKIP_CONNECTION_RECOMPUTE_FOR_BIND_SCHEDULE_LIKE_TOP_APP)
+    public void testUpdateOomAdj_bindScheduleLikeTopApp_systemClient_hostPrivileged_notSkipConnectionCompute_hostGetsTopSchedGroup() {
+        // Similar to its counter-part "withoutFlag" but when the feature flag
+        // "not_skip_connection_recompute_for_bind_schedule_like_top_app" is enabled, the evaluation
+        // of connection with BIND_SCHEDULE_LIKE_TOP_APP will not be skipped if the corresponding
+        // flag has not yet been set.
+        ProcessRecord host = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
+                MOCKAPP_PACKAGENAME, true);
+        mProcessStateController.setMaxAdj(host, PERSISTENT_SERVICE_ADJ);
+        ProcessRecord client = makeDefaultProcessRecord(MOCKAPP2_PID, MOCKAPP2_UID,
+                MOCKAPP2_PROCESSNAME, MOCKAPP2_PACKAGENAME, false);
+        mProcessStateController.setMaxAdj(client, SYSTEM_ADJ);
+
+        bindService(host, client, null, null, Context.BIND_SCHEDULE_LIKE_TOP_APP,
+                mock(IBinder.class));
+        updateOomAdj(client);
+
+        assertTrue(host.mState.shouldScheduleLikeTopApp());
+        assertEquals(SCHED_GROUP_TOP_APP, host.mState.getCurrentSchedulingGroup());
     }
 
     private ProcessRecord makeDefaultProcessRecord(int pid, int uid, String processName,
