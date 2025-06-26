@@ -686,9 +686,14 @@ static jobject android_media_VideoCapabilities_getAchievableFrameRatesFor(JNIEnv
         return NULL;
     }
 
+    if (!videoCaps->supports(width, height, std::nullopt)) {
+        jniThrowException(env, "java/lang/IllegalArgumentException", "unsupported size");
+        return NULL;
+    }
+
     std::optional<Range<double>> frameRates = videoCaps->getAchievableFrameRatesFor(width, height);
     if (!frameRates) {
-        jniThrowException(env, "java/lang/IllegalArgumentException", "unsupported size");
+        // Return NULL if the device doesn't publish data for that resolution
         return NULL;
     }
     jobject jFrameRates = convertToJavaDoubleRange(env, frameRates.value());
