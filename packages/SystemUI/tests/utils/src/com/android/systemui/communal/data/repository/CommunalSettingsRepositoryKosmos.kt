@@ -45,7 +45,7 @@ val Kosmos.communalSettingsRepository: CommunalSettingsRepository by
                 bgDispatcher = testDispatcher,
                 resources = mainResources,
                 featureFlagsClassic = featureFlagsClassic,
-                userAwareSecureSettingsRepository = userAwareSecureSettingsRepository,
+                secureSettingsRepository = userAwareSecureSettingsRepository,
                 broadcastDispatcher = broadcastDispatcher,
                 devicePolicyManager = devicePolicyManager,
                 defaultBackgroundType = communalDefaultBackground,

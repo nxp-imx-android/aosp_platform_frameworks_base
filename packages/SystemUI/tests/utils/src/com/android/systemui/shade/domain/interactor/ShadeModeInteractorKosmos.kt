@@ -29,6 +29,7 @@ import com.android.systemui.res.R
 import com.android.systemui.shade.data.repository.fakeShadeRepository
 import com.android.systemui.shade.data.repository.shadeRepository
 import com.android.systemui.shared.settings.data.repository.fakeSecureSettingsRepository
+import kotlinx.coroutines.runBlocking
 
 val Kosmos.shadeModeInteractor by Fixture {
     ShadeModeInteractorImpl(
@@ -51,7 +52,7 @@ val Kosmos.shadeMode by Fixture { shadeModeInteractor.shadeMode }
  * width. In a narrow layout, they each take up the entire screen width.
  */
 fun Kosmos.enableDualShade(wideLayout: Boolean? = null) {
-    fakeSecureSettingsRepository.setBool(Settings.Secure.DUAL_SHADE, true)
+    runBlocking { fakeSecureSettingsRepository.setBoolean(Settings.Secure.DUAL_SHADE, true) }
 
     if (wideLayout != null) {
         overrideLargeScreenResources(isLargeScreen = wideLayout)
@@ -62,7 +63,7 @@ fun Kosmos.enableDualShade(wideLayout: Boolean? = null) {
 
 // TODO(b/391578667): Make this user-aware once supported by FakeSecureSettingsRepository.
 fun Kosmos.disableDualShade() {
-    fakeSecureSettingsRepository.setBool(Settings.Secure.DUAL_SHADE, false)
+    runBlocking { fakeSecureSettingsRepository.setBoolean(Settings.Secure.DUAL_SHADE, false) }
 }
 
 fun Kosmos.enableSingleShade() {
