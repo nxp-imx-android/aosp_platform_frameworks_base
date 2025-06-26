@@ -131,7 +131,7 @@ class ZenModeIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun icon_updatesWhenActivationChanges() =
+    fun icon_activationChanges_updates() =
         kosmos.runTest {
             fakeZenModeRepository.clearModes()
             val modeId = "update_test"
@@ -160,7 +160,7 @@ class ZenModeIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun icon_multipleActiveModes_updatesToNextPriorityWhenHigherDeactivated_customIcon() =
+    fun icon_multipleActiveModes_updatesToNextPriorityOnDeactivation_customIcon() =
         kosmos.runTest {
             val highPriModeId = "high_pri_res"
             val highPriModeName = "High Priority Resource"
@@ -210,6 +210,23 @@ class ZenModeIconViewModelTest : SysuiTestCase() {
             // Resource ID should be null, but the drawable should be present.
             assertThat(loadedIcon.res).isNull()
             assertThat(loadedIcon.drawable).isEqualTo(CUSTOM_DRAWABLE)
+        }
+
+    @Test
+    fun visible_activationChanges_flips() =
+        kosmos.runTest {
+            kosmos.fakeZenModeRepository.clearModes()
+            val modeId = "visibility_test_mode"
+            val mode = TestModeBuilder().setId(modeId).build()
+            kosmos.fakeZenModeRepository.addMode(mode)
+
+            assertThat(underTest.visible).isFalse()
+
+            kosmos.fakeZenModeRepository.activateMode(modeId)
+            assertThat(underTest.visible).isTrue()
+
+            kosmos.fakeZenModeRepository.deactivateMode(modeId)
+            assertThat(underTest.visible).isFalse()
         }
 
     private companion object {

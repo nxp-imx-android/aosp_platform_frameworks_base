@@ -21,8 +21,6 @@ import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.common.shared.model.ContentDescription.Companion.loadContentDescription
-import com.android.systemui.common.shared.model.Icon as CommonIcon
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
@@ -56,81 +54,38 @@ class WifiIconViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun icon_wifiDisabled_IsNull() =
+    fun visible_isFalse_byDefault() = kosmos.runTest { assertThat(underTest.visible).isFalse() }
+
+    @Test
+    fun visible_wifiIsEnabledAndNotHidden_isTrue() =
+        kosmos.runTest {
+            fakeWifiRepository.setIsWifiEnabled(true)
+            connectivityRepository.fake.setForceHiddenIcons(setOf())
+
+            assertThat(underTest.visible).isTrue()
+        }
+
+    @Test
+    fun visible_wifiIsDisabled_isFalse() =
         kosmos.runTest {
             fakeWifiRepository.setIsWifiEnabled(false)
 
-            assertThat(underTest.icon).isNull()
+            assertThat(underTest.visible).isFalse()
         }
 
     @Test
-    fun icon_wifiEnabled_isDefault_isShown() =
+    fun visible_forceHidden_isFalse() =
         kosmos.runTest {
             fakeWifiRepository.setIsWifiEnabled(true)
-            val testNetwork =
-                WifiNetworkModel.Active.of(isValidated = true, level = 4, ssid = "TestWifi")
-            fakeWifiRepository.setWifiNetwork(testNetwork)
-            connectivityRepository.fake.setWifiConnected()
-
-            val icon = underTest.icon
-            assertThat(icon).isNotNull()
-            assertThat(icon).isInstanceOf(CommonIcon.Resource::class.java)
-            val resourceIcon = icon as CommonIcon.Resource
-
-            val expectedPipelineIcon =
-                PipelineWifiIcon.fromModel(testNetwork, context, showHotspotInfo = false)
-                    as PipelineWifiIcon.Visible
-            assertThat(resourceIcon.res).isEqualTo(expectedPipelineIcon.icon.res)
-            assertThat(resourceIcon.contentDescription?.loadContentDescription(context))
-                .isEqualTo(
-                    expectedPipelineIcon.icon.contentDescription?.loadContentDescription(context)
-                )
-        }
-
-    @Test
-    fun icon_wifiEnabled_inactiveNetwork_isShownAsNoNetwork() =
-        kosmos.runTest {
-            fakeWifiRepository.setIsWifiEnabled(true)
-            fakeWifiRepository.setWifiNetwork(WifiNetworkModel.Inactive()) // Main condition
-            connectivityRepository.fake.setWifiConnected() // Sets isWifiDefault to true
-
-            val icon = underTest.icon
-            assertThat(icon).isNotNull()
-            assertThat(icon).isInstanceOf(CommonIcon.Resource::class.java)
-            val resourceIcon = icon as CommonIcon.Resource
-
-            val expectedPipelineIcon =
-                PipelineWifiIcon.fromModel(
-                    WifiNetworkModel.Inactive(),
-                    context,
-                    showHotspotInfo = false,
-                ) as PipelineWifiIcon.Visible
-            assertThat(resourceIcon.res).isEqualTo(expectedPipelineIcon.icon.res)
-            assertThat(resourceIcon.contentDescription?.loadContentDescription(context))
-                .isEqualTo(
-                    expectedPipelineIcon.icon.contentDescription?.loadContentDescription(context)
-                )
-        }
-
-    @Test
-    fun icon_isForceHidden_isNull() =
-        kosmos.runTest {
-            fakeWifiRepository.setIsWifiEnabled(true)
-            fakeWifiRepository.setWifiNetwork(
-                WifiNetworkModel.Active.of(isValidated = true, level = 4, ssid = "TestWifi")
-            )
-            connectivityRepository.fake.setWifiConnected()
             connectivityRepository.fake.setForceHiddenIcons(setOf(ConnectivitySlot.WIFI))
 
-            assertThat(underTest.icon).isNull()
+            assertThat(underTest.visible).isFalse()
         }
 
     @Test
-    fun icon_wifiNetworkIsCarrierMerged_isNull() =
+    fun visible_networkIsCarrierMerged_isFalse() =
         kosmos.runTest {
             fakeWifiRepository.setIsWifiEnabled(true)
-            connectivityRepository.fake.setWifiConnected()
-
             fakeWifiRepository.setWifiNetwork(
                 WifiNetworkModel.CarrierMerged.of(
                     subscriptionId = 1212,
@@ -139,6 +94,71 @@ class WifiIconViewModelTest : SysuiTestCase() {
                 )
             )
 
-            assertThat(underTest.icon).isNull()
+            assertThat(underTest.visible).isFalse()
+        }
+
+    @Test
+    fun visible_wifiStateChanges_flips() =
+        kosmos.runTest {
+            fakeWifiRepository.setIsWifiEnabled(false)
+            assertThat(underTest.visible).isFalse()
+
+            fakeWifiRepository.setIsWifiEnabled(true)
+
+            assertThat(underTest.visible).isTrue()
+
+            fakeWifiRepository.setIsWifiEnabled(false)
+
+            assertThat(underTest.visible).isFalse()
+        }
+
+    @Test
+    fun visible_forceHiddenChanges_flips() =
+        kosmos.runTest {
+            fakeWifiRepository.setIsWifiEnabled(true)
+
+            connectivityRepository.fake.setForceHiddenIcons(setOf())
+            assertThat(underTest.visible).isTrue()
+
+            connectivityRepository.fake.setForceHiddenIcons(setOf(ConnectivitySlot.WIFI))
+
+            assertThat(underTest.visible).isFalse()
+
+            connectivityRepository.fake.setForceHiddenIcons(setOf())
+
+            assertThat(underTest.visible).isTrue()
+        }
+
+    @Test
+    fun icon_visible_isCorrect() =
+        kosmos.runTest {
+            fakeWifiRepository.setIsWifiEnabled(true)
+            val testNetwork =
+                WifiNetworkModel.Active.of(isValidated = true, level = 4, ssid = "TestWifi")
+            fakeWifiRepository.setWifiNetwork(testNetwork)
+            connectivityRepository.fake.setWifiConnected()
+
+            val expectedPipelineIcon =
+                PipelineWifiIcon.fromModel(testNetwork, context, showHotspotInfo = false)
+                    as PipelineWifiIcon.Visible
+            assertThat(underTest.icon).isEqualTo(expectedPipelineIcon.icon)
+        }
+
+    @Test fun icon_notVisible_isNull() = kosmos.runTest { assertThat(underTest.icon).isNull() }
+
+    @Test
+    fun icon_inactiveNetwork_isShownAsNoNetwork() =
+        kosmos.runTest {
+            fakeWifiRepository.setIsWifiEnabled(true)
+            fakeWifiRepository.setWifiNetwork(WifiNetworkModel.Inactive())
+            connectivityRepository.fake.setWifiConnected()
+
+            val expectedPipelineIcon =
+                PipelineWifiIcon.fromModel(
+                    WifiNetworkModel.Inactive(),
+                    context,
+                    showHotspotInfo = false,
+                ) as PipelineWifiIcon.Visible
+            assertThat(underTest.icon).isEqualTo(expectedPipelineIcon.icon)
         }
 }

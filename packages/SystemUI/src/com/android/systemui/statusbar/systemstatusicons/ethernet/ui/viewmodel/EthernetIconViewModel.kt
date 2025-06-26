@@ -35,7 +35,7 @@ import dagger.assisted.AssistedInject
 class EthernetIconViewModel
 @AssistedInject
 constructor(@Assisted context: Context, interactor: EthernetInteractor) :
-    SystemStatusIconViewModel, ExclusiveActivatable() {
+    SystemStatusIconViewModel.Default, ExclusiveActivatable() {
 
     init {
         /* check if */ SystemStatusIconsInCompose.isUnexpectedlyInLegacyMode()
@@ -47,6 +47,9 @@ constructor(@Assisted context: Context, interactor: EthernetInteractor) :
 
     override val icon: Icon? by
         hydrator.hydratedStateOf(traceName = null, initialValue = null, source = interactor.icon)
+
+    override val visible: Boolean
+        get() = icon != null
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()

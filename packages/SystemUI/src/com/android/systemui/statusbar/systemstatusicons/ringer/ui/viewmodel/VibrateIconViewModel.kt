@@ -20,7 +20,6 @@ import android.content.Context
 import android.media.AudioManager
 import androidx.compose.runtime.getValue
 import com.android.settingslib.volume.domain.interactor.AudioVolumeInteractor
-import com.android.settingslib.volume.shared.model.RingerMode
 import com.android.systemui.common.shared.model.ContentDescription
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -40,7 +39,7 @@ import kotlinx.coroutines.flow.map
 class VibrateIconViewModel
 @AssistedInject
 constructor(@Assisted context: Context, interactor: AudioVolumeInteractor) :
-    SystemStatusIconViewModel, ExclusiveActivatable() {
+    SystemStatusIconViewModel.Default, ExclusiveActivatable() {
 
     init {
         SystemStatusIconsInCompose.expectInNewMode()
@@ -50,19 +49,22 @@ constructor(@Assisted context: Context, interactor: AudioVolumeInteractor) :
 
     override val slotName = context.getString(com.android.internal.R.string.status_bar_volume)
 
-    override val icon: Icon? by
+    override val visible: Boolean by
         hydrator.hydratedStateOf(
-            traceName = "SystemStatus.vibrateIcon",
-            initialValue = null,
-            source = interactor.ringerMode.map { it.toUiState() },
+            traceName = "SystemStatus.vibrateVisible",
+            initialValue = false,
+            source = interactor.ringerMode.map { it.value == AudioManager.RINGER_MODE_VIBRATE },
         )
+
+    override val icon: Icon?
+        get() = visible.toUiState()
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()
     }
 
-    fun RingerMode.toUiState(): Icon? =
-        if (this.value == AudioManager.RINGER_MODE_VIBRATE) {
+    private fun Boolean.toUiState(): Icon? =
+        if (this) {
             Icon.Resource(
                 res = R.drawable.ic_volume_ringer_vibrate,
                 contentDescription =

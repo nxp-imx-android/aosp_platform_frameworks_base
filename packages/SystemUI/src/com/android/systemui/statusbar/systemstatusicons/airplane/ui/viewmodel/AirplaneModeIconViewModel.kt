@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.combine
 class AirplaneModeIconViewModel
 @AssistedInject
 constructor(@Assisted context: Context, interactor: AirplaneModeInteractor) :
-    SystemStatusIconViewModel, ExclusiveActivatable() {
+    SystemStatusIconViewModel.Default, ExclusiveActivatable() {
     init {
         /* check if */ SystemStatusIconsInCompose.isUnexpectedlyInLegacyMode()
     }
@@ -47,29 +47,35 @@ constructor(@Assisted context: Context, interactor: AirplaneModeInteractor) :
 
     override val slotName = context.getString(com.android.internal.R.string.status_bar_airplane)
 
-    override val icon: Icon? by
+    override val visible: Boolean by
         hydrator.hydratedStateOf(
             traceName = null,
-            initialValue = null,
+            initialValue = false,
             source =
                 combine(interactor.isAirplaneMode, interactor.isForceHidden) {
                     isAirplaneMode,
                     isForceHidden ->
-                    if (isAirplaneMode && !isForceHidden) {
-                        Icon.Resource(
-                            res = com.android.internal.R.drawable.ic_qs_airplane,
-                            contentDescription =
-                                ContentDescription.Resource(R.string.accessibility_airplane_mode),
-                        )
-                    } else {
-                        null
-                    }
+                    isAirplaneMode && !isForceHidden
                 },
         )
+
+    override val icon: Icon?
+        get() = visible.toUiState()
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()
     }
+
+    private fun Boolean.toUiState(): Icon? =
+        if (this) {
+            Icon.Resource(
+                res = com.android.internal.R.drawable.ic_qs_airplane,
+                contentDescription =
+                    ContentDescription.Resource(R.string.accessibility_airplane_mode),
+            )
+        } else {
+            null
+        }
 
     @AssistedFactory
     interface Factory {

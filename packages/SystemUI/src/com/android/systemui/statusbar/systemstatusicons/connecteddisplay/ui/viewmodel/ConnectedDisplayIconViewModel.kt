@@ -38,7 +38,7 @@ import kotlinx.coroutines.flow.map
 class ConnectedDisplayIconViewModel
 @AssistedInject
 constructor(@Assisted private val context: Context, interactor: ConnectedDisplayInteractor) :
-    SystemStatusIconViewModel, ExclusiveActivatable() {
+    SystemStatusIconViewModel.Default, ExclusiveActivatable() {
     init {
         SystemStatusIconsInCompose.expectInNewMode()
     }
@@ -48,25 +48,34 @@ constructor(@Assisted private val context: Context, interactor: ConnectedDisplay
     override val slotName =
         context.getString(com.android.internal.R.string.status_bar_connected_display)
 
-    override val icon: Icon? by
+    override val visible: Boolean by
         hydrator.hydratedStateOf(
             traceName = null,
-            initialValue = null,
-            source = interactor.connectedDisplayState.map { it.toUiState() },
+            initialValue = false,
+            source = interactor.connectedDisplayState.map { it.isVisible() },
         )
+
+    override val icon: Icon?
+        get() = visible.toUiState()
 
     override suspend fun onActivated(): Nothing = hydrator.activate()
 
-    private fun ConnectedDisplayInteractor.State.toUiState(): Icon? =
+    private fun Boolean.toUiState(): Icon? =
+        if (this) {
+            Icon.Resource(
+                res = R.drawable.stat_sys_connected_display,
+                contentDescription =
+                    ContentDescription.Resource(R.string.connected_display_icon_desc),
+            )
+        } else {
+            null
+        }
+
+    private fun ConnectedDisplayInteractor.State.isVisible(): Boolean =
         when (this) {
             ConnectedDisplayInteractor.State.CONNECTED,
-            ConnectedDisplayInteractor.State.CONNECTED_SECURE ->
-                Icon.Resource(
-                    res = R.drawable.stat_sys_connected_display,
-                    contentDescription =
-                        ContentDescription.Resource(R.string.connected_display_icon_desc),
-                )
-            ConnectedDisplayInteractor.State.DISCONNECTED -> null
+            ConnectedDisplayInteractor.State.CONNECTED_SECURE -> true
+            ConnectedDisplayInteractor.State.DISCONNECTED -> false
         }
 
     @AssistedFactory
