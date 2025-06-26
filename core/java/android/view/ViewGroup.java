@@ -6848,6 +6848,12 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
         return new LayoutParams(getContext(), attrs);
     }
 
+    /** @hide */
+    public LayoutParams generateLayoutParams(Context inflationContext, AttributeSet attrs) {
+        // Call the previous method for backwards compatibility
+        return generateLayoutParams(attrs);
+    }
+
     /**
      * Returns a safe set of layout parameters based on the supplied layout params.
      * When a ViewGroup is passed a View whose layout params do not pass the test of
