@@ -506,6 +506,12 @@ public abstract class MediaDevice implements Comparable<MediaDevice> {
             return 1;
         }
 
+        if (isSuggestedDevice()) {
+            return -1;
+        } else if (another.isSuggestedDevice()) {
+            return 1;
+        }
+
         if (mType == another.mType) {
             // Check device is muting expected device
             if (isMutingExpectedDevice()) {

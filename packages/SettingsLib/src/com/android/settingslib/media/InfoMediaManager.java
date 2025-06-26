@@ -1086,26 +1086,6 @@ public abstract class InfoMediaManager {
     @RequiresApi(34)
     static class Api34Impl {
         @DoNotInline
-        static List<RouteListingPreference.Item> composePreferenceRouteListing(
-                RouteListingPreference routeListingPreference) {
-            boolean preferRouteListingOrdering =
-                    com.android.media.flags.Flags.enableOutputSwitcherDeviceGrouping()
-                    && preferRouteListingOrdering(routeListingPreference);
-            List<RouteListingPreference.Item> finalizedItemList = new ArrayList<>();
-            List<RouteListingPreference.Item> itemList = routeListingPreference.getItems();
-            for (RouteListingPreference.Item item : itemList) {
-                // Put suggested devices on the top first before further organization
-                if (!preferRouteListingOrdering
-                        && (item.getFlags() & RouteListingPreference.Item.FLAG_SUGGESTED) != 0) {
-                    finalizedItemList.add(0, item);
-                } else {
-                    finalizedItemList.add(item);
-                }
-            }
-            return finalizedItemList;
-        }
-
-        @DoNotInline
         static synchronized List<MediaRoute2Info> filterDuplicatedIds(List<MediaRoute2Info> infos) {
             List<MediaRoute2Info> filteredInfos = new ArrayList<>();
             Set<String> foundDeduplicationIds = new HashSet<>();
@@ -1153,7 +1133,7 @@ public abstract class InfoMediaManager {
                 List<MediaRoute2Info> availableRoutes,
                 RouteListingPreference routeListingPreference) {
             final List<RouteListingPreference.Item> routeListingPreferenceItems =
-                    Api34Impl.composePreferenceRouteListing(routeListingPreference);
+                    routeListingPreference.getItems();
 
             Set<String> sortedRouteIds = new LinkedHashSet<>();
 
