@@ -188,6 +188,7 @@ android_app {
         "appsearch_aconfig_flags",
         "aconfig_trade_in_mode_flags",
         "com.android.media.flags.projection-aconfig",
+        "surfaceflinger_flags",
     ],
 }
 

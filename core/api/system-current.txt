@@ -327,6 +327,7 @@ package android {
     field public static final String READ_CONTENT_RATING_SYSTEMS = "android.permission.READ_CONTENT_RATING_SYSTEMS";
     field public static final String READ_DEVICE_CONFIG = "android.permission.READ_DEVICE_CONFIG";
     field public static final String READ_DREAM_STATE = "android.permission.READ_DREAM_STATE";
+    field @FlaggedApi("com.android.graphics.surfaceflinger.flags.readback_screenshot") public static final String READ_FRAME_BUFFER = "android.permission.READ_FRAME_BUFFER";
     field public static final String READ_GLOBAL_APP_SEARCH_DATA = "android.permission.READ_GLOBAL_APP_SEARCH_DATA";
     field @FlaggedApi("android.content.pm.get_resolved_apk_path") public static final String READ_INSTALLED_SESSION_PATHS = "android.permission.READ_INSTALLED_SESSION_PATHS";
     field public static final String READ_INSTALL_SESSIONS = "android.permission.READ_INSTALL_SESSIONS";
