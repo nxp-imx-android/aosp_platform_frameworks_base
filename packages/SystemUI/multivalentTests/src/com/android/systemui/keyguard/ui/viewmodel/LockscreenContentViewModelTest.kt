@@ -250,7 +250,6 @@ class LockscreenContentViewModelTest(flags: FlagsParameterization) : SysuiTestCa
             ShadeMode.Single -> enableSingleShade()
             ShadeMode.Split -> enableSplitShade()
         }
-        fakeKeyguardClockRepository.setShouldForceSmallClock(clockSize == ClockSize.SMALL)
         fakeKeyguardClockRepository.setClockSize(clockSize)
         kosmos.activeNotificationListRepository.activeNotifications.value =
             ActiveNotificationsStore.Builder()
