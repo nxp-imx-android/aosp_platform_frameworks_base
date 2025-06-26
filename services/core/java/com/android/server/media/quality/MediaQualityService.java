@@ -2183,10 +2183,25 @@ public class MediaQualityService extends SystemService {
                             PersistableBundle currentSdrParameter = currentSdr.getParameters();
                             currentSdrParameter.putString(
                                     STREAM_STATUS_NOT_CREATED, newStatus);
+                            currentSdrParameter.putString(STREAM_STATUS, PictureProfile.STATUS_SDR);
+                            // Add previous stream status information so that application can use
+                            // this flag to indicate that there is a onStreamStatusChange.
+                            currentSdrParameter.putString(PREVIOUS_STREAM_STATUS, profileStatus);
+                            currentSdr.addStringParameter(STREAM_STATUS, PictureProfile.STATUS_SDR);
+                            // PREVIOUS_STREAM_STATUS is used for one time, so copy the current
+                            // profile
+                            PictureProfile currentCopy = PictureProfile.copyFrom(currentSdr);
+                            currentCopy.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);
                             mHandleToPictureProfile.put(profileHandle, currentSdr);
                             mCurrentPictureHandleToOriginal.removeValue(profileHandle);
                             mCurrentPictureHandleToOriginal.put(
                                     currentSdr.getHandle().getId(), profileHandle);
+                            mMqManagerNotifier.notifyOnPictureProfileUpdated(
+                                    currentCopy.getProfileId(), currentCopy, Process.INVALID_UID,
+                                    Process.INVALID_PID);
+
+                            mPictureProfileForHal.add(profileHandle);
+                            mPictureProfileForHal.add(currentSdr.getHandle().getId());
                             mHalNotifier.notifyHalOnPictureProfileChange(profileHandle,
                                     currentSdrParameter);
 
@@ -2199,12 +2214,17 @@ public class MediaQualityService extends SystemService {
                         // Add previous stream status information so that application can use this
                         // flag to indicate that there is a onStreamStatusChange.
                         currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
+                        current.addStringParameter(STREAM_STATUS, newStatus);
+                        // PREVIOUS_STREAM_STATUS is used for one time, so copy the current profile
+                        PictureProfile currentCopy = PictureProfile.copyFrom(current);
+                        currentCopy.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);
                         mHandleToPictureProfile.put(profileHandle, current);
                         mCurrentPictureHandleToOriginal.removeValue(profileHandle);
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
+                        // TODO: use package name to notify
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
-                                current.getProfileId(), current, Process.INVALID_UID,
+                                currentCopy.getProfileId(), currentCopy, Process.INVALID_UID,
                                 Process.INVALID_PID);
 
                         mPictureProfileForHal.add(profileHandle);
@@ -2230,12 +2250,17 @@ public class MediaQualityService extends SystemService {
                         // Add previous stream status information so that application can use this
                         // flag to indicate that there is a onStreamStatusChange.
                         currentProfileParameters.putString(PREVIOUS_STREAM_STATUS, profileStatus);
+                        current.addStringParameter(STREAM_STATUS, PictureProfile.STATUS_SDR);
+                        // PREVIOUS_STREAM_STATUS is used for one time, so copy the current profile
+                        PictureProfile currentCopy = PictureProfile.copyFrom(current);
+                        currentCopy.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);
                         mHandleToPictureProfile.put(profileHandle, current);
                         mCurrentPictureHandleToOriginal.removeValue(profileHandle);
                         mCurrentPictureHandleToOriginal.put(
                                 current.getHandle().getId(), profileHandle);
+                        // TODO: use package name to notify
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
-                                current.getProfileId(), current, Process.INVALID_UID,
+                                currentCopy.getProfileId(), currentCopy, Process.INVALID_UID,
                                 Process.INVALID_PID);
 
                         mPictureProfileForHal.add(current.getHandle().getId());
