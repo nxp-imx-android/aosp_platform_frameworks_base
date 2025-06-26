@@ -78,11 +78,9 @@ import com.android.server.FgThread;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -1556,7 +1554,14 @@ public class AdbDebuggingManager {
             mAdbKeyUser = new AdbdKeyStoreStorage(mUserKeyFile);
             initKeyFile();
             readTempKeysFile();
-            mSystemKeys = getSystemKeysFromFile(SYSTEM_KEY_FILE);
+
+            // The system keystore handles keys pre-loaded into the read-only system partition at
+            // /adb_keys. Unlike the user keystore (/data/misc/adb/adb_keys), these
+            // system keys are considered permanently trusted, are not subject to expiration, and
+            // cannot be modified by the user.
+            AdbdKeyStoreStorage systemKeyStore = new AdbdKeyStoreStorage(
+                    new File(SYSTEM_KEY_FILE));
+            mSystemKeys = systemKeyStore.loadKeys();
             addExistingUserKeysToKeyStore();
         }
 
@@ -1612,26 +1617,9 @@ public class AdbDebuggingManager {
             }
         }
 
-        private Set<String> getSystemKeysFromFile(String fileName) {
-            Set<String> systemKeys = new HashSet<>();
-            File systemKeyFile = new File(fileName);
-            if (systemKeyFile.exists()) {
-                try (BufferedReader in = new BufferedReader(new FileReader(systemKeyFile))) {
-                    String key;
-                    while ((key = in.readLine()) != null) {
-                        key = key.trim();
-                        if (key.length() > 0) {
-                            systemKeys.add(key);
-                        }
-                    }
-                } catch (IOException e) {
-                    Slog.e(TAG, "Caught an exception reading " + fileName + ": " + e);
-                }
-            }
-            return systemKeys;
-        }
-
-        /** Returns whether there are any 'always allowed' keys in the keystore. */
+        /**
+         * Returns whether there are any 'always allowed' keys in the keystore.
+         */
         public boolean isEmpty() {
             return mKeyMap.isEmpty();
         }
