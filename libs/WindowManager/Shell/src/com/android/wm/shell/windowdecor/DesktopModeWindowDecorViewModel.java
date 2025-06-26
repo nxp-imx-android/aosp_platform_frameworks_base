@@ -51,6 +51,7 @@ import android.app.IActivityManager;
 import android.app.IActivityTaskManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -878,7 +879,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (decoration == null) {
             return;
         }
-        mDesktopTasksController.requestSplit(decoration.mTaskInfo, false /* leftOrTop */);
+
+        final int orientation = mContext.getResources().getConfiguration().orientation;
+        // Set leftOrTop as True to split to the top in portrait mode.
+        // Set leftOrTop as False to split to the right in landscape mode.
+        boolean leftOrTop = orientation == Configuration.ORIENTATION_PORTRAIT;
+
+        mDesktopTasksController.requestSplit(decoration.mTaskInfo, leftOrTop);
         mDesktopModeUiEventLogger.log(decoration.mTaskInfo,
                 DesktopUiEventEnum.DESKTOP_WINDOW_APP_HANDLE_MENU_TAP_TO_SPLIT_SCREEN);
     }
