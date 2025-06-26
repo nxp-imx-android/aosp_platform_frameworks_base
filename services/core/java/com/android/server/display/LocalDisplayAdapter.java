@@ -87,6 +87,7 @@ final class LocalDisplayAdapter extends DisplayAdapter {
     private static final double DEFAULT_DISPLAY_SIZE = 24.0;
     // Touch target size 10.4mm in inches (divided by mm per inch 25.4)
     private static final double EXTERNAL_DISPLAY_BASE_TOUCH_TARGET_SIZE_IN_INCHES = 10.4 / 25.4;
+    private static final int EXTERNAL_DISPLAY_MIN_DENSITY_DPI = 100;
 
     private static final double BASE_TOUCH_TARGET_SIZE_DP = 48.0;
 
@@ -552,7 +553,11 @@ final class LocalDisplayAdapter extends DisplayAdapter {
                     double pixels = ppi * EXTERNAL_DISPLAY_BASE_TOUCH_TARGET_SIZE_IN_INCHES;
                     double dpi =
                             pixels * DisplayMetrics.DENSITY_DEFAULT / BASE_TOUCH_TARGET_SIZE_DP;
-                    return (int) (dpi + 0.5);
+                    if (dpi < EXTERNAL_DISPLAY_MIN_DENSITY_DPI) {
+                        return EXTERNAL_DISPLAY_MIN_DENSITY_DPI;
+                    } else {
+                        return (int) (dpi + 0.5);
+                    }
                 }
                 return (int) (mStaticDisplayInfo.density * 160 + 0.5);
             }
