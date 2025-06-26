@@ -31,6 +31,16 @@ flag {
 }
 
 flag {
+    name: "empty_roots_never_top"
+    namespace: "lse_desktop_experience"
+    description: "Prevents empty roots from becoming top/focused"
+    bug: "420858253"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_accessible_custom_headers"
     namespace: "lse_desktop_experience"
     description: "Enables a11y-friendly custom header input handling"
