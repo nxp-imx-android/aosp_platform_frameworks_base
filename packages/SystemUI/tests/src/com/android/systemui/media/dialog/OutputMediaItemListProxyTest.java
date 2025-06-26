@@ -20,14 +20,11 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.Mockito.when;
 
-import android.platform.test.annotations.DisableFlags;
-import android.platform.test.annotations.EnableFlags;
-import android.platform.test.flag.junit.FlagsParameterization;
 import android.testing.TestableLooper;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-import com.android.media.flags.Flags;
 import com.android.settingslib.media.MediaDevice;
 import com.android.systemui.SysuiTestCase;
 
@@ -37,14 +34,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import platform.test.runner.parameterized.ParameterizedAndroidJunit4;
-import platform.test.runner.parameterized.Parameters;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
 @SmallTest
-@RunWith(ParameterizedAndroidJunit4.class)
+@RunWith(AndroidJUnit4.class)
 @TestableLooper.RunWithLooper
 public class OutputMediaItemListProxyTest extends SysuiTestCase {
     private static final String DEVICE_ID_1 = "device_id_1";
@@ -60,19 +54,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
     @Mock private MediaDevice mMediaDevice5;
     @Mock private MediaDevice mMediaDevice6;
 
-    private MediaItem mMediaItem1;
-    private MediaItem mMediaItem2;
     private OutputMediaItemListProxy mOutputMediaItemListProxy;
-
-    @Parameters(name = "{0}")
-    public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(
-                Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING);
-    }
-
-    public OutputMediaItemListProxyTest(FlagsParameterization flags) {
-        mSetFlagsRule.setFlagsParameterization(flags);
-    }
 
     @Before
     public void setUp() {
@@ -86,28 +68,12 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
         when(mMediaDevice5.getId()).thenReturn(DEVICE_ID_5);
         when(mMediaDevice5.isSuggestedDevice()).thenReturn(true);
         when(mMediaDevice6.getId()).thenReturn(DEVICE_ID_6);
-        mMediaItem1 = MediaItem.createDeviceMediaItem(mMediaDevice1);
-        mMediaItem2 = MediaItem.createDeviceMediaItem(mMediaDevice2);
 
         mOutputMediaItemListProxy = new OutputMediaItemListProxy(mContext);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
-    public void updateMediaDevices_flagOn_shouldUpdateMediaItemList() {
-        verifyUpdateMediaDevicesShouldUpdateMediaItemList(
-                /* enableOutputSwitcherDeviceGrouping= */ true);
-    }
-
-    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
-    @Test
-    public void updateMediaDevices_flagOff_shouldUpdateMediaItemList() {
-        verifyUpdateMediaDevicesShouldUpdateMediaItemList(
-                /* enableOutputSwitcherDeviceGrouping= */ false);
-    }
-
-    private void verifyUpdateMediaDevicesShouldUpdateMediaItemList(
-            boolean enableOutputSwitcherDeviceGrouping) {
+    public void updateMediaDevices_shouldUpdateMediaItemList() {
         assertThat(mOutputMediaItemListProxy.isEmpty()).isTrue();
 
         // Create the initial output media item list with mMediaDevice2 and mMediaDevice3.
@@ -124,7 +90,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
         assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
                 .containsExactly(mMediaDevice3, null, mMediaDevice2);
         assertThat(mOutputMediaItemListProxy.getOutputMediaItemList().get(0).isFirstDeviceInGroup())
-                .isEqualTo(enableOutputSwitcherDeviceGrouping);
+                .isTrue();
 
         // Update the output media item list with more media devices.
         mOutputMediaItemListProxy.updateMediaDevices(
@@ -144,7 +110,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 .containsExactly(
                         mMediaDevice3, null, mMediaDevice2, null, mMediaDevice4, mMediaDevice1);
         assertThat(mOutputMediaItemListProxy.getOutputMediaItemList().get(0).isFirstDeviceInGroup())
-                .isEqualTo(enableOutputSwitcherDeviceGrouping);
+                .isTrue();
 
         // Update the output media item list where mMediaDevice4 is offline and new selected device.
         mOutputMediaItemListProxy.updateMediaDevices(
@@ -162,13 +128,11 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
         assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
                 .containsExactly(mMediaDevice3, null, mMediaDevice2, null, mMediaDevice1);
         assertThat(mOutputMediaItemListProxy.getOutputMediaItemList().get(0).isFirstDeviceInGroup())
-                .isEqualTo(enableOutputSwitcherDeviceGrouping);
+                .isTrue();
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
-    public void
-            updateMediaDevices_flagOn_multipleSelectedDevices_shouldHaveCorrectDeviceOrdering() {
+    public void updateMediaDevices_multipleSelectedDevices_shouldHaveCorrectDeviceOrdering() {
         assertThat(mOutputMediaItemListProxy.isEmpty()).isTrue();
 
         // Create the initial output media item list with mMediaDevice2 and mMediaDevice3.
@@ -178,7 +142,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 /* connectedMediaDevice= */ null,
                 /* needToHandleMutingExpectedDevice= */ false);
 
-        // When the device grouping is enabled, the order of selected devices are preserved:
+        // The order of selected devices is preserved:
         //     * a media item with the selected mMediaDevice2
         //     * a media item with the selected mMediaDevice3
         //     * a media item with the selected mMediaDevice1
@@ -196,7 +160,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 /* connectedMediaDevice= */ null,
                 /* needToHandleMutingExpectedDevice= */ false);
 
-        // When the device grouping is enabled, the order of selected devices are preserved:
+        // The order of selected devices is preserved:
         //     * a media item with the selected mMediaDevice2
         //     * a media item with the selected mMediaDevice3
         //     * a media item with the selected mMediaDevice1
@@ -214,7 +178,7 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 /* connectedMediaDevice= */ null,
                 /* needToHandleMutingExpectedDevice= */ false);
 
-        // When the device grouping is enabled, the order of selected devices are preserved:
+        // The order of selected devices is preserved:
         //     * a media item with the selected mMediaDevice3
         //     * a media item with the selected mMediaDevice1
         //     * a group divider for speakers and displays
@@ -223,60 +187,6 @@ public class OutputMediaItemListProxyTest extends SysuiTestCase {
                 .containsExactly(mMediaDevice3, mMediaDevice1, null, mMediaDevice4);
         assertThat(mOutputMediaItemListProxy.getOutputMediaItemList().get(0).isFirstDeviceInGroup())
                 .isTrue();
-    }
-
-    @DisableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
-    @Test
-    public void
-            updateMediaDevices_flagOff_multipleSelectedDevices_shouldHaveCorrectDeviceOrdering() {
-        assertThat(mOutputMediaItemListProxy.isEmpty()).isTrue();
-
-        // Create the initial output media item list with mMediaDevice2 and mMediaDevice3.
-        mOutputMediaItemListProxy.updateMediaDevices(
-                /* devices= */ List.of(mMediaDevice2, mMediaDevice4, mMediaDevice3, mMediaDevice1),
-                /* selectedDevices */ List.of(mMediaDevice1, mMediaDevice2, mMediaDevice3),
-                /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false);
-
-        // When the device grouping is disabled, the order of selected devices are reverted:
-        //     * a media item with the selected mMediaDevice1
-        //     * a media item with the selected mMediaDevice3
-        //     * a media item with the selected mMediaDevice2
-        //     * a group divider for speakers and displays
-        //     * a media item with the mMediaDevice4
-        assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
-                .containsExactly(mMediaDevice1, mMediaDevice3, mMediaDevice2, null, mMediaDevice4);
-
-        // Update the output media item list with a selected device being deselected.
-        mOutputMediaItemListProxy.updateMediaDevices(
-                /* devices= */ List.of(mMediaDevice4, mMediaDevice1, mMediaDevice3, mMediaDevice2),
-                /* selectedDevices */ List.of(mMediaDevice2, mMediaDevice3),
-                /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false);
-
-        // When the device grouping is disabled, the order of selected devices are reverted:
-        //     * a media item with the selected mMediaDevice1
-        //     * a media item with the selected mMediaDevice3
-        //     * a media item with the selected mMediaDevice2
-        //     * a group divider for speakers and displays
-        //     * a media item with the mMediaDevice4
-        assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
-                .containsExactly(mMediaDevice1, mMediaDevice3, mMediaDevice2, null, mMediaDevice4);
-
-        // Update the output media item list with a selected device is missing.
-        mOutputMediaItemListProxy.updateMediaDevices(
-                /* devices= */ List.of(mMediaDevice1, mMediaDevice3, mMediaDevice4),
-                /* selectedDevices */ List.of(mMediaDevice3),
-                /* connectedMediaDevice= */ null,
-                /* needToHandleMutingExpectedDevice= */ false);
-
-        // When the device grouping is disabled, the order of selected devices are reverted:
-        //     * a media item with the selected mMediaDevice1
-        //     * a media item with the selected mMediaDevice3
-        //     * a group divider for speakers and displays
-        //     * a media item with the mMediaDevice4
-        assertThat(getMediaDevices(mOutputMediaItemListProxy.getOutputMediaItemList()))
-                .containsExactly(mMediaDevice1, mMediaDevice3, null, mMediaDevice4);
     }
 
     @Test

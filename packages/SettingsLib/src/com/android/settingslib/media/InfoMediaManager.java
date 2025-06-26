@@ -1104,15 +1104,7 @@ public abstract class InfoMediaManager {
          * Returns an ordered list of available devices based on the provided {@code
          * routeListingPreferenceItems}.
          *
-         * <p>The resulting order if enableOutputSwitcherDeviceGrouping is disabled is:
-         *
-         * <ol>
-         *   <li>Selected routes.
-         *   <li>Not-selected system routes.
-         *   <li>Not-selected, non-system, available routes sorted by route listing preference.
-         * </ol>
-         *
-         * <p>The resulting order if enableOutputSwitcherDeviceGrouping is enabled is:
+         * <p>The resulting order is:
          *
          * <ol>
          *   <li>Selected routes sorted by route listing preference.
@@ -1120,7 +1112,6 @@ public abstract class InfoMediaManager {
          *   <li>Not-selected system routes.
          *   <li>Not-selected, non-system, available routes sorted by route listing preference.
          * </ol>
-         *
          *
          * @param selectedRoutes List of currently selected routes.
          * @param availableRoutes List of available routes that match the app's requested route
@@ -1136,13 +1127,9 @@ public abstract class InfoMediaManager {
                     routeListingPreference.getItems();
 
             Set<String> sortedRouteIds = new LinkedHashSet<>();
-
-            boolean addSelectedRlpItemsFirst =
-                    com.android.media.flags.Flags.enableOutputSwitcherDeviceGrouping()
-                    && preferRouteListingOrdering(routeListingPreference);
             Set<String> selectedRouteIds = new HashSet<>();
 
-            if (addSelectedRlpItemsFirst) {
+            if (preferRouteListingOrdering(routeListingPreference)) {
                 // Add selected RLP items first
                 for (MediaRoute2Info selectedRoute : selectedRoutes) {
                     selectedRouteIds.add(selectedRoute.getId());
