@@ -468,7 +468,7 @@ public class UserInfo implements Parcelable {
             // Don't support switching to pre-created users until they become "real" users.
             return false;
         }
-        return isFull() || canSwitchToHeadlessSystemUser();
+        return isFull() || isSwitchableHeadlessSystemUser();
     }
 
     /**
@@ -476,7 +476,7 @@ public class UserInfo implements Parcelable {
      * {@link com.android.internal.R.bool#config_canSwitchToHeadlessSystemUser} is true.
      */
     @android.ravenwood.annotation.RavenwoodThrow
-    private boolean canSwitchToHeadlessSystemUser() {
+    private boolean isSwitchableHeadlessSystemUser() {
         return UserManager.USER_TYPE_SYSTEM_HEADLESS.equals(userType) && Resources.getSystem()
                 .getBoolean(com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser);
     }

@@ -1134,10 +1134,7 @@ class UserController implements Handler.Callback {
         // system user (not the previous foreground user). Thus we cannot support HSUM devices
         // without interactive headless system user. To solve it for the long term, a refactor might
         // be needed, see more details in the bug.
-        // TODO(b/411696141): Use the more proper API to check if headless system user is
-        // interactive, once it's ready.
-        if (mInjector.isHeadlessSystemUserMode()
-                && !mInjector.getUserManager().canSwitchToHeadlessSystemUser()) {
+        if (!mInjector.doesUserSupportSwitchTo(getUserInfo(UserHandle.USER_SYSTEM))) {
             throw new UnsupportedOperationException("device does not support logoutUser");
         }
         boolean shouldSwitchUser = false;
@@ -2508,7 +2505,7 @@ class UserController implements Handler.Callback {
                 Slogf.w(TAG, "No user info for user #" + targetUserId);
                 return false;
             }
-            if (!targetUserInfo.supportsSwitchTo()) {
+            if (!mInjector.doesUserSupportSwitchTo(targetUserInfo)) {
                 Slogf.w(TAG, "Cannot switch to User #" + targetUserId + ": not supported");
                 return false;
             }
@@ -4491,6 +4488,10 @@ class UserController implements Handler.Callback {
 
         boolean isHeadlessSystemUserMode() {
             return UserManager.isHeadlessSystemUserMode();
+        }
+
+        boolean doesUserSupportSwitchTo(UserInfo user) {
+            return user.supportsSwitchTo();
         }
 
         boolean isUsersOnSecondaryDisplaysEnabled() {
