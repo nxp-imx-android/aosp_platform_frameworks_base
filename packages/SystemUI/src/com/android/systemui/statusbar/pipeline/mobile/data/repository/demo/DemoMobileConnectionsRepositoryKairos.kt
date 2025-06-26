@@ -55,7 +55,7 @@ import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.model
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.model.FakeNetworkEventModel.Mobile
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.demo.model.FakeNetworkEventModel.MobileDisabled
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.prod.FullMobileConnectionRepository.Factory.Companion.MOBILE_CONNECTION_BUFFER_SIZE
-import com.android.systemui.statusbar.pipeline.wifi.data.repository.demo.DemoModeWifiDataSource
+import com.android.systemui.statusbar.pipeline.wifi.data.repository.demo.DemoModeWifiDataSourceKairos
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.demo.model.FakeWifiEventModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -66,7 +66,7 @@ class DemoMobileConnectionsRepositoryKairos
 @AssistedInject
 constructor(
     mobileDataSource: DemoModeMobileConnectionDataSourceKairos,
-    private val wifiDataSource: DemoModeWifiDataSource,
+    private val wifiDataSource: DemoModeWifiDataSourceKairos,
     context: Context,
     private val logFactory: TableLogBufferFactory,
 ) : MobileConnectionsRepositoryKairos, KairosBuilder by kairosBuilder() {
@@ -76,11 +76,8 @@ constructor(
         fun create(): DemoMobileConnectionsRepositoryKairos
     }
 
-    private val wifiEvents: Events<FakeWifiEventModel?> = buildEvents {
-        wifiDataSource.wifiEvents.toEvents(
-            nameTag("DemoMobileConnectionsRepositoryKairos.wifiEvents")
-        )
-    }
+    private val wifiEvents: Events<FakeWifiEventModel?>
+        get() = wifiDataSource.wifiEvents
 
     private val mobileEventsWithSubId: Events<Pair<Int, FakeNetworkEventModel>> =
         mobileDataSource.mobileEvents.mapNotNull { event ->
