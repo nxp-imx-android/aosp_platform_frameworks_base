@@ -18,6 +18,7 @@ package com.android.server.am;
 
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_EMPTY;
+import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_STARTED_SERVICE;
 
 import android.app.IApplicationThread;
 import android.app.ProcessMemoryState.HostingComponentType;
@@ -44,7 +45,7 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * TODO(b/297542292): Update PSS names with RSS once AppProfiler's PSS profiling has been replaced.
  */
-final class ProcessProfileRecord {
+final class ProcessProfileRecord implements ProcessStateRecord.StartedServiceObserver {
     final ProcessRecord mApp;
 
     private final ActivityManagerService mService;
@@ -730,5 +731,14 @@ final class ProcessProfileRecord {
             TimeUtils.formatDuration(mCurCpuTime.get() - lastCpuTime, pw);
         }
         pw.println();
+    }
+
+    @Override
+    public void onHasStartedServicesChanged(boolean hasStartedServices) {
+        if (hasStartedServices) {
+            addHostingComponentType(HOSTING_COMPONENT_TYPE_STARTED_SERVICE);
+        } else {
+            clearHostingComponentType(HOSTING_COMPONENT_TYPE_STARTED_SERVICE);
+        }
     }
 }

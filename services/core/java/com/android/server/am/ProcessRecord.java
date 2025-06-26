@@ -627,14 +627,14 @@ class ProcessRecord implements WindowProcessListener {
         mProviders = new ProcessProviderRecord(this);
         mReceivers = new ProcessReceiverRecord(this);
         mErrorState = new ProcessErrorStateRecord(this);
-        mState = new ProcessStateRecord(processName, uid, this);
+        mWindowProcessController = new WindowProcessController(
+                mService.mActivityTaskManager, info, processName, uid, userId, this, this);
+        mState = new ProcessStateRecord(processName, uid, mWindowProcessController, mProfile, this);
         mOptRecord = new ProcessCachedOptimizerRecord(this);
         final long now = SystemClock.uptimeMillis();
         mProfile.init(now);
         mOptRecord.init(now);
         mState.init(now);
-        mWindowProcessController = new WindowProcessController(
-                mService.mActivityTaskManager, info, processName, uid, userId, this, this);
         mPkgList.put(_info.packageName, new ProcessStats.ProcessStateHolder(_info.longVersionCode));
         updateProcessRecordNodes(this);
     }
