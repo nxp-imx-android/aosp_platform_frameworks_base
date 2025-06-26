@@ -21,13 +21,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import com.android.systemui.clock.ui.viewmodel.AmPmStyle
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 
 /** Composable for the clock UI that is shown on the top left of the status bar and the shade. */
 @Composable
-fun Clock(viewModelFactory: ClockViewModel.Factory, modifier: Modifier = Modifier) {
-    val clockViewModel = rememberViewModel("Clock-viewModel") { viewModelFactory.create() }
+fun Clock(
+    viewModelFactory: ClockViewModel.Factory,
+    modifier: Modifier = Modifier,
+    amPmStyle: AmPmStyle = AmPmStyle.Gone,
+) {
+    val clockViewModel = rememberViewModel("Clock-viewModel") { viewModelFactory.create(amPmStyle) }
     Text(
         text = clockViewModel.clockText,
         modifier = modifier.semantics { contentDescription = clockViewModel.contentDescriptionText },

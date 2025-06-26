@@ -21,6 +21,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.clock.domain.interactor.clockInteractor
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
@@ -137,12 +138,12 @@ class ClockViewModelTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertThat(underTest.clockText).isEqualTo("08:12")
+            assertThat(underTest.clockText).isEqualTo("8:12")
             assertThat(underTest.contentDescriptionText).isEqualTo("08:12")
         }
 
     @Test
-    fun clockTextAndDescription_updatesWhenLocaleChanged() =
+    fun clockTextAndDescription_updatesWhenLocaleChanged_traditionalChinese() =
         kosmos.runTest {
             fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
             underTest.activateIn(testScope)
@@ -157,8 +158,62 @@ class ClockViewModelTest : SysuiTestCase() {
             )
             runCurrent()
 
-            assertThat(underTest.clockText).isEqualTo("下午11:12")
+            assertThat(underTest.clockText).isEqualTo("11:12\u202F下午")
             assertThat(underTest.contentDescriptionText).isEqualTo("下午11:12")
+        }
+
+    @Test
+    fun clockTextAndDescription_updatesWhenLocaleChanged_burmese() =
+        kosmos.runTest {
+            fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
+            underTest.activateIn(testScope)
+
+            assertThat(underTest.clockText).isEqualTo("11:12\u202FPM")
+            assertThat(underTest.contentDescriptionText).isEqualTo("11:12\u202FPM")
+
+            Locale.setDefault(Locale.Builder().setLanguage("my").build())
+            broadcastDispatcher.sendIntentToMatchingReceiversOnly(
+                context,
+                Intent(Intent.ACTION_LOCALE_CHANGED),
+            )
+            runCurrent()
+
+            assertThat(underTest.clockText).isEqualTo("၁၁:၁၂\u202Fညနေ")
+            assertThat(underTest.contentDescriptionText).isEqualTo("ညနေ ၁၁:၁၂")
+        }
+
+    @Test
+    fun clockTextAndDescription_amPmStyleGone() =
+        kosmos.runTest {
+            fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
+            whenever(dateFormatUtil.is24HourFormat).thenReturn(false)
+            val viewModel =
+                ClockViewModel(
+                    clockInteractor = clockInteractor,
+                    dateFormatUtil = dateFormatUtil,
+                    amPmStyle = AmPmStyle.Gone,
+                )
+            viewModel.activateIn(testScope)
+
+            assertThat(viewModel.clockText).isEqualTo("11:12")
+            assertThat(viewModel.contentDescriptionText).isEqualTo("11:12\u202FPM")
+        }
+
+    @Test
+    fun clockTextAndDescription_amPmStyleShown() =
+        kosmos.runTest {
+            fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
+            whenever(dateFormatUtil.is24HourFormat).thenReturn(false)
+            val viewModel =
+                ClockViewModel(
+                    clockInteractor = clockInteractor,
+                    dateFormatUtil = dateFormatUtil,
+                    amPmStyle = AmPmStyle.Shown,
+                )
+            viewModel.activateIn(testScope)
+
+            assertThat(viewModel.clockText).isEqualTo("11:12\u202FPM")
+            assertThat(viewModel.contentDescriptionText).isEqualTo("11:12\u202FPM")
         }
 
     companion object {
