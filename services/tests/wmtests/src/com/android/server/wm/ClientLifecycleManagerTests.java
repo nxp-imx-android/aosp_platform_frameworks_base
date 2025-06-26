@@ -172,10 +172,7 @@ public class ClientLifecycleManagerTests extends SystemServiceTestsBase {
 
     @Test
     public void testLayoutDeferred() throws RemoteException {
-        spyOn(mWms.mWindowPlacerLocked);
-        doReturn(false).when(mWms.mWindowPlacerLocked).isInLayout();
-        doReturn(false).when(mWms.mWindowPlacerLocked).isTraversalScheduled();
-        doReturn(true).when(mWms.mWindowPlacerLocked).isLayoutDeferred();
+        deferLayout();
 
         // Queue transactions during layout deferred.
         mLifecycleManager.scheduleTransactionItem(mClient, mLifecycleItem);
@@ -188,9 +185,7 @@ public class ClientLifecycleManagerTests extends SystemServiceTestsBase {
         verify(mLifecycleManager, never()).scheduleTransaction(any());
 
         // Immediately dispatch when layout continue without ongoing/scheduled layout.
-        doReturn(false).when(mWms.mWindowPlacerLocked).isLayoutDeferred();
-
-        mLifecycleManager.onLayoutContinued();
+        continueLayout();
 
         verify(mLifecycleManager).scheduleTransaction(any());
     }
@@ -215,18 +210,30 @@ public class ClientLifecycleManagerTests extends SystemServiceTestsBase {
 
     @Test
     public void testOnRemoteException_returnTrueForQueueing() throws RemoteException {
-        spyOn(mWms.mWindowPlacerLocked);
-        doReturn(true).when(mWms.mWindowPlacerLocked).isLayoutDeferred();
+        deferLayout();
         final DeadObjectException e = new DeadObjectException();
         doThrow(e).when(mClient).scheduleTransaction(any());
 
         final boolean res = mLifecycleManager.scheduleTransactionItem(mClient, mTransactionItem);
 
         assertTrue(res);
+        verify(mLifecycleManager, never()).scheduleTransaction(any());
 
+        continueLayout();
+
+        // Exception should be caught and logged after queue.
+        verify(mLifecycleManager).scheduleTransaction(any());
+    }
+
+    private void deferLayout() {
+        spyOn(mWms.mWindowPlacerLocked);
+        doReturn(false).when(mWms.mWindowPlacerLocked).isInLayout();
+        doReturn(false).when(mWms.mWindowPlacerLocked).isTraversalScheduled();
+        doReturn(true).when(mWms.mWindowPlacerLocked).isLayoutDeferred();
+    }
+
+    private void continueLayout() {
         doReturn(false).when(mWms.mWindowPlacerLocked).isLayoutDeferred();
         mLifecycleManager.onLayoutContinued();
-
-        verify(mLifecycleManager).scheduleTransaction(any());
     }
 }
