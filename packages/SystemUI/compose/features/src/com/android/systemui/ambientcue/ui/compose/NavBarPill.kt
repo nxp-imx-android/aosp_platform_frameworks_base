@@ -40,10 +40,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -66,6 +71,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -339,25 +345,30 @@ fun NavBarPill(
                 )
             }
 
-            // Close button
-            PlatformIconButton(
-                modifier =
-                    Modifier.size(closeButtonSize)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.surfaceContainer)
-                        .padding(6.dp),
-                iconResource = R.drawable.ic_close_white_rounded,
-                colors =
-                    IconButtonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
-                        disabledContainerColor = Color.Transparent,
-                        disabledContentColor = MaterialTheme.colorScheme.onSurface,
-                    ),
-                contentDescription =
-                    stringResource(id = R.string.underlay_close_button_content_description),
-                onClick = onCloseClick,
-            )
+            // Remove default padding and size.
+            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+                // Close button
+                FilledIconButton(
+                    onClick = onCloseClick,
+                    modifier =
+                        Modifier.size(closeButtonSize)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceContainer),
+                    colors =
+                        IconButtonDefaults.filledIconButtonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                        ),
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_close_white_rounded),
+                        contentDescription =
+                            stringResource(id = R.string.underlay_close_button_content_description),
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(6.dp),
+                    )
+                }
+            }
         }
     }
 }
