@@ -30,7 +30,7 @@ class LetterboxDependenciesHelperTestContext(
 
     fun validateIsDesktopWindowingAction(verifier: (Boolean) -> Unit) {
         // We execute the test subject using the input
-        verifier(testSubjectFactory().isDesktopWindowingAction(inputObject))
+        verifier(testSubjectFactory().shouldDestroyLetterboxSurfaces(inputObject))
     }
 }
 
