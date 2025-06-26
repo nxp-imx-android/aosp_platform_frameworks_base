@@ -5212,7 +5212,7 @@ public class UserManager {
      * including profiles.
      *
      * <p>Returns {@code null} if there is no previous user, for example if there
-     * is only one full user (i.e. only one user which is not a profile) on the device.
+     * is only one user capable of being in the foreground on the device.
      *
      * <p>This method may be used for example to find the user to switch back to if the
      * current user is removed, or if creating a new user is aborted.

@@ -444,7 +444,12 @@ public class UserManagerService extends IUserManager.Stub {
         /** Elapsed realtime since boot when the user was unlocked. */
         long unlockRealtime;
 
-        /** Wall clock time in millis when the user last entered the foreground. */
+        /**
+         * Wall clock time in millis when the user last entered the foreground.
+         *
+         * Applicable for any user that can be switched-to;
+         * will be 0 otherwise (i.e. for profiles and a non-interactive headless system user).
+         */
         long mLastEnteredForegroundTimeMillis;
 
         private long mLastRequestQuietModeEnabledMillis;
@@ -1493,19 +1498,22 @@ public class UserManagerService extends IUserManager.Stub {
         }
     }
 
+    /**
+     * Returns the previous foreground user, or if there isn't one, the first switchable user.
+     * The user need not be a full user; the HSU counts if it is switchable.
+     */
     private @UserIdInt int getPreviousOrFirstSwitchableUser()
             throws UserManager.CheckedUserOperationException {
         // Return the previous foreground user, if there is one.
         final int previousUser = getPreviousUserToEnterForeground();
         if (previousUser != UserHandle.USER_NULL) {
-            Slogf.i(LOG_TAG, "Boot user is previous user %d", previousUser);
+            Slogf.i(LOG_TAG, "Previous foreground user was %d", previousUser);
             return previousUser;
         }
         // No previous user. Return the first switchable user if there is one.
         final int firstSwitchableUser = getFirstSwitchableUser(false);
         if (firstSwitchableUser != UserHandle.USER_NULL) {
-            Slogf.i(LOG_TAG,
-                    "Boot user is first switchable user %d", firstSwitchableUser);
+            Slogf.i(LOG_TAG, "No previous user. First switchable user is %d", firstSwitchableUser);
             return firstSwitchableUser;
         }
         // No switchable users found. Uh oh!
@@ -1527,6 +1535,12 @@ public class UserManagerService extends IUserManager.Stub {
        return UserHandle.USER_NULL;
    }
 
+    /**
+     * Returns the previous foreground user,
+     * i.e. the user that was in the foreground (possibly even prior to a reboot) before the current
+     * foreground user. The user need not be a full user; the HSU counts if it is switchable.
+     * @see UserManager#getPreviousForegroundUser()
+     */
     @Override
     public @CanBeNULL @UserIdInt int getPreviousUserToEnterForeground() {
         checkQueryOrCreateUsersPermission("get previous user");
