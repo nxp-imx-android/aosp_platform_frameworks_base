@@ -16,11 +16,12 @@
 
 package com.android.systemui.media.remedia.ui.viewmodel
 
+import com.android.systemui.animation.Expandable
 import com.android.systemui.common.shared.model.Icon
 
 data class MediaDeviceChipViewModel(
     val icon: Icon,
     val text: String? = null,
     val isConnecting: Boolean = false,
-    val onClick: () -> Unit,
+    val onClick: (Expandable) -> Unit,
 )
