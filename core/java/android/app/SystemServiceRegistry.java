@@ -283,6 +283,7 @@ import android.view.translation.UiTranslationManager;
 import android.webkit.WebViewBootstrapFrameworkInitializer;
 
 import com.android.internal.R;
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.IAppOpsService;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.app.ISoundTriggerService;
@@ -1857,8 +1858,15 @@ public final class SystemServiceRegistry {
                 });
 
         if (interactiveChooser()) {
-            registerService(Context.CHOOSER_SERVICE, ChooserManager.class,
+            registerService(
+                    Context.CHOOSER_SERVICE,
+                    ChooserManager.class,
                     new StaticServiceFetcher<>() {
+                        @Override
+                        public boolean isServiceEnabled(ContextImpl ctx) {
+                            return isChooserManagerSupported(ctx);
+                        }
+
                         @Override
                         public ChooserManager createService() {
                             return new ChooserManager();
@@ -2008,10 +2016,27 @@ public final class SystemServiceRegistry {
                     }
                     break;
             }
+            // TODO (b/404593897): make it a case of the switch statement above when the flag is
+            //  removed.
+            if (interactiveChooser()) {
+                if (Context.CHOOSER_SERVICE.equals(name) && !isChooserManagerSupported(ctx)) {
+                    return null;
+                }
+            }
             Slog.wtf(TAG, "Manager wrapper not available: " + name);
             return null;
         }
         return ret;
+    }
+
+    private static boolean isChooserManagerSupported(ContextImpl ctx) {
+        PackageManager pm = ctx.getPackageManager();
+        if (pm == null) {
+            return true;
+        }
+        return !pm.hasSystemFeature(PackageManager.FEATURE_WATCH)
+                && !pm.hasSystemFeature(PackageManager.FEATURE_LEANBACK)
+                && !pm.hasSystemFeature(PackageManager.FEATURE_AUTOMOTIVE);
     }
 
     /**
@@ -2452,20 +2477,46 @@ public final class SystemServiceRegistry {
      * and should be cached and retained process-wide.
      */
     static abstract class StaticServiceFetcher<T> implements ServiceFetcher<T> {
+        /**
+         * Indicates whether a service reference has been cached.
+         * The cached reference can be {@code null} if the service is not available i.e.
+         * {@link #isServiceEnabled(ContextImpl)} returns {@code false}.
+         */
+        @GuardedBy("StaticServiceFetcher.this")
+        private boolean mIsCached = false;
+        @GuardedBy("StaticServiceFetcher.this")
         private T mCachedInstance;
 
         @Override
         public final T getService(ContextImpl ctx) {
             synchronized (StaticServiceFetcher.this) {
-                if (mCachedInstance == null) {
+                if (mIsCached) {
+                    return mCachedInstance;
+                }
+            }
+            // In case isServiceEnabled would require an IPC, run it outside a synchronized block.
+            boolean isEnabled = isServiceEnabled(ctx);
+            synchronized (StaticServiceFetcher.this) {
+                if (!mIsCached) {
                     try {
-                        mCachedInstance = createService();
+                        if (isEnabled) {
+                            mCachedInstance = createService();
+                            // for a bug-to-bug compatibility, do not cache null-references
+                            mIsCached = mCachedInstance != null;
+                        } else {
+                            mCachedInstance = null;
+                            mIsCached = true;
+                        }
                     } catch (ServiceNotFoundException e) {
                         onServiceNotFound(e);
                     }
                 }
                 return mCachedInstance;
             }
+        }
+
+        protected boolean isServiceEnabled(ContextImpl ctx) {
+            return true;
         }
 
         public abstract T createService() throws ServiceNotFoundException;

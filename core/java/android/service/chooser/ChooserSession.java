@@ -96,7 +96,7 @@ public final class ChooserSession {
          * Gets invoked when the Chooser bounds are changed. The rect parameter represents Chooser
          * window bounds in pixels.
          */
-        void onBoundsChanged(@NonNull Rect size);
+        void onBoundsChanged(@NonNull Rect bounds);
     }
 
     private final ChooserSessionImpl mChooserSession = new ChooserSessionImpl();
@@ -177,25 +177,26 @@ public final class ChooserSession {
     }
 
     /**
-     * Sets whether the targets in the chooser UI are enabled.
+     * Sets whether the targets in the chooser UI are enabled. By default targets are enabled.
      * <p>
      * This method is primarily intended to allow for managing a transient state,
      * particularly useful during long-running operations. By disabling targets,
      * launching application can prevent unintended interactions.
      * <p>A no-op when the session is not in the {@link #STATE_STARTED}.</p>
-     *
-     * @hide
      */
     public void setTargetsEnabled(boolean isEnabled) {
         mChooserSession.setTargetsEnabled(isEnabled);
     }
 
     /**
-     * Get last reported Chooser size or null.
+     * Gets the last bounds reported by the Chooser.
+     *
+     * @return the most recently reported Chooser bounds, or {@code null} if bounds have not yet
+     * been received via {@link ChooserSession.StateListener#onBoundsChanged(Rect)}.
      */
     @Nullable
-    public Rect getSize() {
-        return mChooserSession.mSize.get();
+    public Rect getBounds() {
+        return mChooserSession.mBounds.get();
     }
 
     /**
@@ -237,7 +238,7 @@ public final class ChooserSession {
         @ChooserSession.State
         private int mState = STATE_INITIALIZED;
 
-        private final AtomicReference<Rect> mSize = new AtomicReference<>();
+        private final AtomicReference<Rect> mBounds = new AtomicReference<>();
 
         @Override
         public void registerChooserController(
@@ -282,11 +283,11 @@ public final class ChooserSession {
         }
 
         @Override
-        public void onBoundsChanged(Rect size) {
-            mSize.set(size);
+        public void onBoundsChanged(@NonNull Rect bounds) {
+            mBounds.set(bounds);
             notifyListeners((listener) -> {
                 if (isActive()) {
-                    listener.onBoundsChanged(size);
+                    listener.onBoundsChanged(bounds);
                 }
             });
         }
