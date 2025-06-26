@@ -20,6 +20,7 @@ import static android.app.ActivityManager.INTENT_SENDER_ACTIVITY;
 import static android.app.ActivityManager.INTENT_SENDER_BROADCAST;
 import static android.app.ActivityManager.INTENT_SENDER_FOREGROUND_SERVICE;
 import static android.app.ActivityManager.INTENT_SENDER_SERVICE;
+import static android.app.ActivityManager.START_ABORTED;
 
 import android.Manifest.permission;
 import android.annotation.IntDef;
@@ -1116,12 +1117,16 @@ public final class PendingIntent implements Parcelable {
 
             final IApplicationThread app = ActivityThread.currentActivityThread()
                     .getApplicationThread();
-            return ActivityManager.getService().sendIntentSender(app,
+            int result = ActivityManager.getService().sendIntentSender(app,
                     mTarget, mWhitelistToken, code, intent, resolvedType,
                     onFinished != null
                             ? new FinishedDispatcher(this, onFinished, handler)
                             : null,
                     requiredPermission, options);
+            if (result == START_ABORTED && Build.isDebuggable()) {
+                Log.w(TAG, new StackTrace("Activity start aborted"));
+            }
+            return result;
         } catch (RemoteException e) {
             throw new CanceledException(e);
         }

@@ -2418,6 +2418,9 @@ public class Instrumentation {
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public static void checkStartActivityResult(int res, Object intent) {
         if (!ActivityManager.isStartResultFatalError(res)) {
+            if (res == ActivityManager.START_ABORTED && Build.isDebuggable()) {
+                Log.w(TAG, new StackTrace("Activity start aborted"));
+            }
             return;
         }
 

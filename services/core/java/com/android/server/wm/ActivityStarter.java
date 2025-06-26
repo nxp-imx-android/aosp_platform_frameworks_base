@@ -91,6 +91,7 @@ import static com.android.server.wm.TaskFragment.EMBEDDING_DISALLOWED_UNTRUSTED_
 import static com.android.server.wm.WindowContainer.POSITION_TOP;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WM;
 import static com.android.window.flags.Flags.balDontBringExistingBackgroundTaskStackToFg;
+import static com.android.window.flags.Flags.balReportAbortedActivityStarts;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -1560,6 +1561,9 @@ class ActivityStarter {
     }
 
     static int getExternalResult(int result) {
+        if (balReportAbortedActivityStarts()) {
+            return result;
+        }
         // Aborted results are treated as successes externally, but we must track them internally.
         return result != START_ABORTED ? result : START_SUCCESS;
     }

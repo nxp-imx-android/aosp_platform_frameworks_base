@@ -28,10 +28,12 @@ import android.app.ActivityManager.PendingIntentInfo;
 import android.app.ActivityOptions;
 import android.app.ActivityThread;
 import android.app.IApplicationThread;
+import android.app.StackTrace;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -40,6 +42,7 @@ import android.os.Parcelable;
 import android.os.RemoteException;
 import android.os.UserHandle;
 import android.util.AndroidException;
+import android.util.Log;
 
 import com.android.window.flags.Flags;
 
@@ -73,6 +76,7 @@ import java.util.concurrent.Executor;
  * {@link android.app.PendingIntent#getIntentSender() PendingIntent.getIntentSender()}.
  */
 public class IntentSender implements Parcelable {
+    private static final String TAG = "IntentSender";
     /** If enabled consider the deprecated @hide method as removed. */
     @ChangeId
     @EnabledAfter(targetSdkVersion = VANILLA_ICE_CREAM)
@@ -321,6 +325,9 @@ public class IntentSender implements Parcelable {
                             ? new FinishedDispatcher(this, onFinished, executor)
                             : null,
                     requiredPermission, options);
+            if (res == ActivityManager.START_ABORTED && Build.isDebuggable()) {
+                Log.w(TAG, new StackTrace("Activity start aborted"));
+            }
             if (res < 0) {
                 throw new SendIntentException();
             }
