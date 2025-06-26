@@ -33,11 +33,11 @@ import android.ravenwood.annotation.RavenwoodReplace;
  * is mostly redundant. Clean it up.
  */
 @RavenwoodKeepWholeClass
-@RavenwoodRedirectionClass("RavenwoodEnvironment_ravenwood")
-public final class RavenwoodEnvironment {
-    public static final String TAG = "RavenwoodEnvironment";
+@RavenwoodRedirectionClass("RavenwoodHelperBridge_ravenwood")
+public final class RavenwoodHelperBridge {
+    public static final String TAG = "RavenwoodHelperBridge";
 
-    private static RavenwoodEnvironment sInstance = new RavenwoodEnvironment();
+    private static RavenwoodHelperBridge sInstance = new RavenwoodHelperBridge();
 
     private static RuntimeException notSupportedOnDevice() {
         return new UnsupportedOperationException("This method can only be used on Ravenwood");
@@ -46,7 +46,7 @@ public final class RavenwoodEnvironment {
     /**
      * @return the singleton instance.
      */
-    public static RavenwoodEnvironment getInstance() {
+    public static RavenwoodHelperBridge getInstance() {
         return sInstance;
     }
 
@@ -61,8 +61,12 @@ public final class RavenwoodEnvironment {
      *
      * <p>If someone needs it without having access to the SDK, the following hack would work too.
      * <code>System.getProperty("android.ravenwood.version") != null</code>
+     *
+     * @deprecated Use {@link
+     * com.android.modules.utils.ravenwood.RavenwoodHelper#isRunningOnRavenwood} instead.
      */
     @RavenwoodReplace
+    @Deprecated
     public boolean isRunningOnRavenwood() {
         return false;
     }
@@ -82,8 +86,12 @@ public final class RavenwoodEnvironment {
 
     /**
      * @return the "ravenwood-runtime" directory.
+     *
+     * @deprecated Use {@link
+     * com.android.modules.utils.ravenwood.RavenwoodHelper#getRavenwoodRuntimePath()} instead.
      */
     @RavenwoodRedirect
+    @Deprecated
     public String getRavenwoodRuntimePath() {
         throw notSupportedOnDevice();
     }

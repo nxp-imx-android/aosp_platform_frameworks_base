@@ -33,7 +33,7 @@ import android.util.SparseIntArray;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
-import com.android.internal.ravenwood.RavenwoodEnvironment;
+import com.android.internal.ravenwood.RavenwoodHelperBridge;
 
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -80,7 +80,7 @@ public final class SystemFonts {
     }
 
     private static String getFontsXmlDir$ravenwood() {
-        return RavenwoodEnvironment.getInstance().getRavenwoodRuntimePath() + "fonts/";
+        return RavenwoodHelperBridge.getInstance().getRavenwoodRuntimePath() + "fonts/";
     }
 
     @RavenwoodReplace
@@ -89,7 +89,7 @@ public final class SystemFonts {
     }
 
     private static String getSystemFontDir$ravenwood() {
-        return RavenwoodEnvironment.getInstance().getRavenwoodRuntimePath() + "fonts/";
+        return RavenwoodHelperBridge.getInstance().getRavenwoodRuntimePath() + "fonts/";
     }
 
     /**
