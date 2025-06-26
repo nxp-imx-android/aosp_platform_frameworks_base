@@ -388,15 +388,6 @@ public final class PictureProfile implements Parcelable {
     }
 
     /**
-     * Add a string parameter
-     * Used by system only.
-     * @hide
-     */
-    public void addStringParameter(String key, String value) {
-        mParams.putString(key, value);
-    }
-
-    /**
      * Gets profile handle
      * @hide
      */
