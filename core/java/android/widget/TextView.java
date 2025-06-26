@@ -60,7 +60,6 @@ import android.app.assist.AssistStructure;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
-import android.compat.annotation.NoLogging;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.ClipData;
 import android.content.ClipDescription;
@@ -538,7 +537,6 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
      * @hide
      */
     @ChangeId
-    @NoLogging
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.TIRAMISU)
     public static final long BORINGLAYOUT_FALLBACK_LINESPACING = 210923482L; // buganizer id
 
@@ -547,7 +545,6 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
      * @hide
      */
     @ChangeId
-    @NoLogging
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.P)
     public static final long STATICLAYOUT_FALLBACK_LINESPACING = 37756858; // buganizer id
 
@@ -557,7 +554,6 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
      * @hide
      */
     @ChangeId
-    @NoLogging
     @EnabledSince(targetSdkVersion = VERSION_CODES.VANILLA_ICE_CREAM)
     public static final long USE_BOUNDS_FOR_WIDTH = 63938206;  // buganizer id
 
