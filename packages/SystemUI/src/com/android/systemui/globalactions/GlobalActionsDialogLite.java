@@ -1014,9 +1014,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     }
 
     protected int getEmergencyTextColor(Context context) {
-        return context.getResources().getColor(
-                QsInCompose.isEnabled() ? R.color.materialColorOnSurface
-                        : com.android.systemui.res.R.color.global_actions_lite_text);
+        return context.getResources().getColor(R.color.materialColorOnSurface);
     }
 
     protected int getEmergencyIconColor(Context context) {
