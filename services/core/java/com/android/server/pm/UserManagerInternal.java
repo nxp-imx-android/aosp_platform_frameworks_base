@@ -35,6 +35,7 @@ import com.android.internal.annotations.Keep;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @hide Only for use within the system server.
@@ -605,6 +606,14 @@ public abstract class UserManagerInternal {
      * if there is no such user.
      */
     public abstract @CanBeNULL @UserIdInt int getCommunalProfileId();
+
+    /**
+     * Returns list of bundles keyed by package name for all apps with restrictions in the given
+     * user.
+     * This method reads deprecated app restrictions and MUST NOT be used except for migration
+     * purposes during upgrade.
+     */
+    public abstract Map<String, Bundle> getApplicationRestrictionsForUser(@UserIdInt int userId);
 
     /**
      * Returns the user id of the supervising profile, or {@link android.os.UserHandle#USER_NULL} if
