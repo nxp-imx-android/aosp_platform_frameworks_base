@@ -20,13 +20,11 @@ import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.ActivityThread;
 import android.app.Application;
-import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.os.Bundle;
 import android.os.Process;
 import android.os.Trace;
 import android.tracing.perfetto.InitArguments;
@@ -42,6 +40,8 @@ import androidx.annotation.VisibleForTesting;
 import com.airbnb.lottie.Lottie;
 import com.airbnb.lottie.LottieConfig;
 import com.android.internal.protolog.ProtoLog;
+import com.android.systemui.application.ApplicationContextAvailableCallback;
+import com.android.systemui.application.ApplicationContextInitializer;
 import com.android.systemui.dagger.GlobalRootComponent;
 import com.android.systemui.dagger.SysUIComponent;
 import com.android.systemui.dump.DumpManager;
@@ -67,7 +67,7 @@ import javax.inject.Provider;
  * Application class for SystemUI.
  */
 public class SystemUIApplication extends Application implements
-        SystemUIAppComponentFactoryBase.ContextInitializer, HasWMComponent {
+        ApplicationContextInitializer, HasWMComponent {
 
     public static final String TAG = "SystemUIService";
     private static final boolean DEBUG = false;
@@ -79,7 +79,7 @@ public class SystemUIApplication extends Application implements
      */
     private CoreStartable[] mServices;
     private boolean mServicesStarted;
-    private SystemUIAppComponentFactoryBase.ContextAvailableCallback mContextAvailableCallback;
+    private ApplicationContextAvailableCallback mContextAvailableCallback;
     private SysUIComponent mSysUIComponent;
     private SystemUIInitializer mInitializer;
     private ProcessWrapper mProcessWrapper;
@@ -492,20 +492,8 @@ public class SystemUIApplication extends Application implements
 
     @Override
     public void setContextAvailableCallback(
-            @NonNull SystemUIAppComponentFactoryBase.ContextAvailableCallback callback) {
+            @NonNull ApplicationContextAvailableCallback callback) {
         mContextAvailableCallback = callback;
-    }
-
-    /** Update a notifications application name. */
-    public static void overrideNotificationAppName(Context context, Notification.Builder n,
-            boolean system) {
-        final Bundle extras = new Bundle();
-        String appName = system
-                ? context.getString(com.android.internal.R.string.notification_app_name_system)
-                : context.getString(com.android.internal.R.string.notification_app_name_settings);
-        extras.putString(Notification.EXTRA_SUBSTITUTE_APP_NAME, appName);
-
-        n.addExtras(extras);
     }
 
     @NonNull

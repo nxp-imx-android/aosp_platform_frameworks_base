@@ -21,6 +21,7 @@ import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.application.ApplicationContextAvailableCallback
 import com.android.systemui.dagger.GlobalRootComponent
 import com.android.systemui.dagger.SysUIComponent
 import com.android.systemui.dump.dumpManager
@@ -42,8 +43,7 @@ import org.mockito.MockitoAnnotations
 class SystemUIApplicationTest : SysuiTestCase() {
 
     private val app: SystemUIApplication = SystemUIApplication()
-    private lateinit var contextAvailableCallback:
-        SystemUIAppComponentFactoryBase.ContextAvailableCallback
+    private lateinit var contextAvailableCallback: ApplicationContextAvailableCallback
 
     @get:Rule val setFlagsRule = SetFlagsRule(SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT)
 
@@ -81,8 +81,7 @@ class SystemUIApplicationTest : SysuiTestCase() {
     fun setUp() {
         MockitoAnnotations.initMocks(this)
         app.attachBaseContext(context)
-        contextAvailableCallback =
-            SystemUIAppComponentFactoryBase.ContextAvailableCallback { initializer }
+        contextAvailableCallback = ApplicationContextAvailableCallback { initializer }
         whenever(initializer.rootComponent).thenReturn(rootComponent)
         whenever(initializer.sysUIComponent).thenReturn(sysuiComponent)
         whenever(rootComponent.mainLooper).thenReturn(Looper.myLooper())
