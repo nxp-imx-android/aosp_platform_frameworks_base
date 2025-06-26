@@ -96,6 +96,8 @@ interface IActivityManager {
 
     // Since these transactions are also called from native code, these must be kept in sync with
     // the ones in frameworks/native/libs/binder/include_activitymanager/binder/ActivityManager.h
+    // TODO(b/419409018): Remove this warning message after migrating all native API users to the
+    // activity_structured service.
     // =============== Beginning of transactions used on native side as well ======================
     ParcelFileDescriptor openContentUri(in String uriString);
     void registerUidObserver(in IUidObserver observer, int which, int cutpoint,
