@@ -14,19 +14,25 @@
  * limitations under the License.
  */
 
-package com.android.systemui
+package com.android.systemui.application.impl
 
 import android.os.Looper
 import android.platform.test.flag.junit.SetFlagsRule
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.BootCompleteCacheImpl
+import com.android.systemui.CoreStartable
+import com.android.systemui.InitController
+import com.android.systemui.SystemUIInitializer
+import com.android.systemui.SysuiTestCase
 import com.android.systemui.application.ApplicationContextAvailableCallback
 import com.android.systemui.dagger.GlobalRootComponent
 import com.android.systemui.dagger.SysUIComponent
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.flags.systemPropertiesHelper
 import com.android.systemui.process.processWrapper
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.whenever
 import com.google.common.truth.Truth.assertThat
 import javax.inject.Provider
@@ -40,9 +46,9 @@ import org.mockito.MockitoAnnotations
 @RunWith(AndroidJUnit4::class)
 @SmallTest
 @RunWithLooper
-class SystemUIApplicationTest : SysuiTestCase() {
+class SystemUIApplicationImplTest : SysuiTestCase() {
 
-    private val app: SystemUIApplication = SystemUIApplication()
+    private val app: SystemUIApplicationImpl = SystemUIApplicationImpl()
     private lateinit var contextAvailableCallback: ApplicationContextAvailableCallback
 
     @get:Rule val setFlagsRule = SetFlagsRule(SetFlagsRule.DefaultInitValueType.DEVICE_DEFAULT)

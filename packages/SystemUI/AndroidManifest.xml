@@ -406,7 +406,7 @@
     <protected-broadcast android:name="com.android.systemui.STARTED" />
 
     <application
-        android:name=".SystemUIApplication"
+        android:name=".application.impl.SystemUIApplicationImpl"
         android:persistent="true"
         android:allowClearUserData="false"
         android:backupAgent=".backup.BackupHelper"

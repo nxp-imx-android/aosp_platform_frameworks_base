@@ -11,15 +11,14 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License
+ * limitations under the License.
  */
 
-package com.android.systemui;
+package com.android.systemui.application.impl;
 
 import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.ActivityThread;
-import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -40,8 +39,13 @@ import androidx.annotation.VisibleForTesting;
 import com.airbnb.lottie.Lottie;
 import com.airbnb.lottie.LottieConfig;
 import com.android.internal.protolog.ProtoLog;
+import com.android.systemui.BootCompleteCacheImpl;
+import com.android.systemui.CoreStartable;
+import com.android.systemui.Flags;
+import com.android.systemui.SystemUIInitializer;
 import com.android.systemui.application.ApplicationContextAvailableCallback;
 import com.android.systemui.application.ApplicationContextInitializer;
+import com.android.systemui.application.SystemUIApplication;
 import com.android.systemui.dagger.GlobalRootComponent;
 import com.android.systemui.dagger.SysUIComponent;
 import com.android.systemui.dump.DumpManager;
@@ -63,13 +67,10 @@ import java.util.TreeMap;
 
 import javax.inject.Provider;
 
-/**
- * Application class for SystemUI.
- */
-public class SystemUIApplication extends Application implements
+public class SystemUIApplicationImpl extends SystemUIApplication implements
         ApplicationContextInitializer, HasWMComponent {
 
-    public static final String TAG = "SystemUIService";
+    private static final String TAG = "SystemUIService";
     private static final boolean DEBUG = false;
 
     private BootCompleteCacheImpl mBootCompleteCache;
@@ -84,7 +85,7 @@ public class SystemUIApplication extends Application implements
     private SystemUIInitializer mInitializer;
     private ProcessWrapper mProcessWrapper;
 
-    public SystemUIApplication() {
+    public SystemUIApplicationImpl() {
         super();
         if (!isSubprocess()) {
             if (android.tracing.Flags.sysuiLargePerfettoShmemBuffer()) {
@@ -221,13 +222,7 @@ public class SystemUIApplication extends Application implements
         return processName != null && processName.contains(":");
     }
 
-    /**
-     * Makes sure that all the CoreStartables are running. If they are already running, this is a
-     * no-op. This is needed to conditionally start all the services, as we only need to have it in
-     * the main process.
-     * <p>This method must only be called from the main thread.</p>
-     */
-
+    @Override
     public void startSystemUserServicesIfNeeded() {
         if (!shouldStartSystemUserServices()) {
             Log.wtf(TAG, "Tried starting SystemUser services on non-SystemUser");
@@ -245,13 +240,8 @@ public class SystemUIApplication extends Application implements
                 sortedStartables, "StartServices", vendorComponent);
     }
 
-    /**
-     * Ensures that all the Secondary user SystemUI services are running. If they are already
-     * running, this is a no-op. This is needed to conditionally start all the services, as we only
-     * need to have it in the main process.
-     * <p>This method must only be called from the main thread.</p>
-     */
-    void startSecondaryUserServicesIfNeeded() {
+    @Override
+    public void startSecondaryUserServicesIfNeeded() {
         if (!shouldStartSecondaryUserServices()) {
             return;  // Per-user startables are handled in #startSystemUserServicesIfNeeded.
         }
