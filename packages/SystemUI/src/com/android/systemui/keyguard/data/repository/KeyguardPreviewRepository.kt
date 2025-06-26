@@ -26,15 +26,25 @@ import android.view.Display
 import android.view.Display.DEFAULT_DISPLAY
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
+import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockController
+import com.android.systemui.plugins.clocks.ClockSettings
 import com.android.systemui.shared.clocks.ClockRegistry
+import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_CLOCK_ID
+import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_CLOCK_STYLE
+import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_COLORS
+import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_DISPLAY_ID
 import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_HIDE_CLOCK
 import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_HIGHLIGHT_QUICK_AFFORDANCES
+import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_HOST_TOKEN
+import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_VIEW_HEIGHT
+import com.android.systemui.shared.quickaffordance.shared.model.KeyguardPreviewConstants.KEY_VIEW_WIDTH
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 
 @AssistedFactory
@@ -69,18 +79,29 @@ constructor(
 
     val requestedClockSize: MutableStateFlow<ClockSizeSetting?> = MutableStateFlow(null)
 
-    val previewClock: Flow<ClockController> =
-        clockRepository.currentClockId.map {
-            // We should create a new instance for each collect call cause in preview, the same
-            // clock will be attached to a different parent view at the same time.
-            clockRegistry.createCurrentClock(previewContext)
-        }
+    val overrideClockSettings: ClockSettings? = run {
+        val clockId = request.getString(KEY_CLOCK_ID)
+        if (clockId == null) return@run null
 
-    companion object {
-        private const val KEY_HOST_TOKEN = "host_token"
-        private const val KEY_VIEW_WIDTH = "width"
-        private const val KEY_VIEW_HEIGHT = "height"
-        private const val KEY_DISPLAY_ID = "display_id"
-        private const val KEY_COLORS = "wallpaper_colors"
+        // clock seed color handled by KeyguardPreviewRenderer.updateClockAppearance
+        return@run ClockSettings(
+            clockId = clockId,
+            axes =
+                ClockAxisStyle {
+                    request.getBundle(KEY_CLOCK_STYLE)?.let { bundle ->
+                        bundle.keySet().forEach { key -> put(key, bundle.getFloat(key)) }
+                    }
+                },
+        )
     }
+
+    val previewClock: Flow<ClockController> =
+        overrideClockSettings?.let { settings ->
+            flow { emit(clockRegistry.createPreviewClockAsync(previewContext, settings).await()) }
+        }
+            ?: clockRepository.currentClockId.map {
+                // We should create a new instance for each collect call cause in preview, the same
+                // clock will be attached to a different parent view at the same time.
+                clockRegistry.createCurrentClock(previewContext)
+            }
 }
