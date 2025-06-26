@@ -81,7 +81,6 @@ import com.android.systemui.SysuiTestCase;
 import com.android.systemui.SysuiTestCaseExtKt;
 import com.android.systemui.animation.ActivityTransitionAnimator;
 import com.android.systemui.animation.DialogTransitionAnimator;
-import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.kosmos.Kosmos;
 import com.android.systemui.media.nearby.NearbyMediaDevicesManager;
 import com.android.systemui.plugins.ActivityStarter;
@@ -185,7 +184,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
     private final Kosmos mKosmos = SysuiTestCaseExtKt.testKosmos(this);
 
-    private FeatureFlags mFlags = mock(FeatureFlags.class);
     private final FakeSystemClock mClock = new FakeSystemClock();
 
     private View mDialogLaunchView = mock(View.class);
@@ -243,7 +241,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mAudioManager,
                         mPowerExemptionManager,
                         mKeyguardManager,
-                        mFlags,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
@@ -346,7 +343,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mAudioManager,
                         mPowerExemptionManager,
                         mKeyguardManager,
-                        mFlags,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
@@ -390,7 +386,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mAudioManager,
                         mPowerExemptionManager,
                         mKeyguardManager,
-                        mFlags,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
@@ -857,7 +852,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mAudioManager,
                         mPowerExemptionManager,
                         mKeyguardManager,
-                        mFlags,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
@@ -886,7 +880,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mAudioManager,
                         mPowerExemptionManager,
                         mKeyguardManager,
-                        mFlags,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
@@ -935,7 +928,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mAudioManager,
                         mPowerExemptionManager,
                         mKeyguardManager,
-                        mFlags,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
@@ -964,7 +956,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mAudioManager,
                         mPowerExemptionManager,
                         mKeyguardManager,
-                        mFlags,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
@@ -1182,7 +1173,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mAudioManager,
                         mPowerExemptionManager,
                         mKeyguardManager,
-                        mFlags,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
@@ -1355,7 +1345,6 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mAudioManager,
                         mPowerExemptionManager,
                         mKeyguardManager,
-                        mFlags,
                         mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
