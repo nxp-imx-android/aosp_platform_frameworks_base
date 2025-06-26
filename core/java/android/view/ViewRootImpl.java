@@ -1382,17 +1382,6 @@ public final class ViewRootImpl implements ViewParent,
         }
     }
 
-    // FIXME for perf testing only
-    private boolean mProfile = false;
-
-    /**
-     * Call this to profile the next traversal call.
-     * FIXME for perf testing only. Remove eventually
-     */
-    public void profile() {
-        mProfile = true;
-    }
-
     private boolean isInTouchMode() {
         if (mAttachInfo == null) {
             return mContext.getResources().getBoolean(R.bool.config_defaultInTouchMode);
@@ -3047,17 +3036,7 @@ public final class ViewRootImpl implements ViewParent,
         if (mTraversalScheduled) {
             mTraversalScheduled = false;
             mHandler.getLooper().getQueue().removeSyncBarrier(mTraversalBarrier);
-
-            if (mProfile) {
-                Debug.startMethodTracing("ViewAncestor");
-            }
-
             performTraversals();
-
-            if (mProfile) {
-                Debug.stopMethodTracing();
-                mProfile = false;
-            }
         }
     }
 
