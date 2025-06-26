@@ -240,7 +240,7 @@ private fun NavBarAmbientCue(
         onClick = {
             if (actions.size == 1 && actions[0].oneTapEnabled) {
                 scope.launch {
-                    delay(ONE_TAP_DELAY_MS)
+                    delay(actions[0].oneTapDelayMs)
                     actions[0].onClick()
                 }
             } else {
@@ -261,5 +261,3 @@ private const val SHORT_PILL_ACTIONS_VERTICAL_PADDING = 38
 private const val NAV_BAR_ACTIONS_PADDING = NAV_BAR_HEIGHT_DP + 16
 private const val ACTIONS_HORIZONTAL_PADDING = 32
 private const val ACTIONS_TOP_PADDING = 32
-
-private const val ONE_TAP_DELAY_MS = 500L

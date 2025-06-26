@@ -214,6 +214,7 @@ constructor(
                                     else -> ActionType.Unknown
                                 },
                             oneTapEnabled = action.oneTapEnabled,
+                            oneTapDelayMs = action.oneTapDelayMs,
                         )
                     }
                 },
