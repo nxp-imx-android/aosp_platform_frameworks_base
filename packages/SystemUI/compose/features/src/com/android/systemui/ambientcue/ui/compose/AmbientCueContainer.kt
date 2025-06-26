@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +45,8 @@ import com.android.systemui.ambientcue.ui.viewmodel.ActionViewModel
 import com.android.systemui.ambientcue.ui.viewmodel.AmbientCueViewModel
 import com.android.systemui.ambientcue.ui.viewmodel.PillStyleViewModel
 import com.android.systemui.lifecycle.rememberViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun AmbientCueContainer(
@@ -196,6 +199,8 @@ private fun NavBarAmbientCue(
         if (windowWidthSizeClass == WindowWidthSizeClass.Compact) NAV_BAR_PILL_WIDTH_DP.dp
         else NAV_BAR_PILL_LARGE_WIDTH_DP.dp
 
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(expanded) { onShouldInterceptTouches(expanded, null) }
     ActionList(
         actions = actions,
@@ -218,7 +223,16 @@ private fun NavBarAmbientCue(
         expanded = expanded,
         showEducation = viewModel.showFirstTimeEducation,
         modifier = modifier,
-        onClick = { viewModel.expand() },
+        onClick = {
+            if (actions.size == 1 && actions[0].oneTapEnabled) {
+                scope.launch {
+                    delay(ONE_TAP_DELAY_MS)
+                    actions[0].onClick()
+                }
+            } else {
+                viewModel.expand()
+            }
+        },
         onCloseClick = { viewModel.hide() },
     )
 }
@@ -232,3 +246,5 @@ private const val NAV_BAR_HEIGHT_DP = 24 // R.dimen.taskbar_stashed_size from La
 private const val SHORT_PILL_ACTIONS_VERTICAL_PADDING = 38
 private const val NAV_BAR_ACTIONS_PADDING = NAV_BAR_HEIGHT_DP + 16
 private const val ACTIONS_HORIZONTAL_PADDING = 32
+
+private const val ONE_TAP_DELAY_MS = 500L

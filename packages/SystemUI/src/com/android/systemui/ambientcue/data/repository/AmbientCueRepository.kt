@@ -164,6 +164,7 @@ constructor(
                                 val activityId =
                                     chip.extras?.getParcelable<ActivityId>(EXTRA_ACTIVITY_ID)
                                 val actionType = chip.extras?.getString(EXTRA_ACTION_TYPE)
+                                val oneTapEnabled = chip.extras?.getBoolean(EXTRA_ONE_TAP_ENABLED)
                                 ActionModel(
                                     icon =
                                         IconModel(
@@ -228,6 +229,7 @@ constructor(
                                     },
                                     taskId = activityId?.taskId ?: INVALID_TASK_ID,
                                     actionType = actionType,
+                                    oneTapEnabled = oneTapEnabled == true,
                                 )
                             }
                     if (DEBUG) {
@@ -403,6 +405,7 @@ constructor(
         @VisibleForTesting
         const val EXTRA_ATTRIBUTION_DIALOG_PENDING_INTENT = "attributionDialogPendingIntent"
         @VisibleForTesting const val EXTRA_ACTION_TYPE = "actionType"
+        private const val EXTRA_ONE_TAP_ENABLED = "oneTapEnabled"
 
         // Timeout to hide cuebar if it wasn't interacted with
         private const val TAG = "AmbientCueRepository"

@@ -213,6 +213,7 @@ constructor(
                                     "mr" -> ActionType.MR
                                     else -> ActionType.Unknown
                                 },
+                            oneTapEnabled = action.oneTapEnabled,
                         )
                     }
                 },
