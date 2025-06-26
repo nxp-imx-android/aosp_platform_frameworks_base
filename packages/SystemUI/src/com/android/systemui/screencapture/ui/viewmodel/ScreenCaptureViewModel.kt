@@ -21,6 +21,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.domain.interactor.ScreenshotInteractor
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenCaptureRecordLargeScreenFeaturesInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.coroutineScope
@@ -39,13 +40,14 @@ enum class ScreenCaptureRegion {
     APP_WINDOW,
 }
 
-/** Models state for the Screen Capture UI */
+/** Models UI for the Screen Capture UI for large screen devices. */
 class ScreenCaptureViewModel
 @AssistedInject
 constructor(
     @Application private val applicationContext: Context,
     private val iconProvider: ScreenCaptureIconProvider,
     private val screenshotInteractor: ScreenshotInteractor,
+    private val featuresInteractor: ScreenCaptureRecordLargeScreenFeaturesInteractor,
 ) : HydratedActivatable() {
     private val captureTypeSource = MutableStateFlow(ScreenCaptureType.SCREENSHOT)
     private val captureRegionSource = MutableStateFlow(ScreenCaptureRegion.FULLSCREEN)
@@ -121,23 +123,33 @@ constructor(
         selectedRegion: ScreenCaptureRegion,
         icons: ScreenCaptureIcons?,
     ): List<RadioButtonGroupItemViewModel> {
-        return listOf(
-            RadioButtonGroupItemViewModel(
-                icon = icons?.appWindow,
-                isSelected = (selectedRegion == ScreenCaptureRegion.APP_WINDOW),
-                onClick = { updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW) },
-            ),
-            RadioButtonGroupItemViewModel(
-                icon = icons?.region,
-                isSelected = (selectedRegion == ScreenCaptureRegion.PARTIAL),
-                onClick = { updateCaptureRegion(ScreenCaptureRegion.PARTIAL) },
-            ),
-            RadioButtonGroupItemViewModel(
-                icon = icons?.fullscreen,
-                isSelected = (selectedRegion == ScreenCaptureRegion.FULLSCREEN),
-                onClick = { updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN) },
-            ),
-        )
+        return buildList {
+            if (featuresInteractor.appWindowRegionSupported) {
+                add(
+                    RadioButtonGroupItemViewModel(
+                        icon = icons?.appWindow,
+                        isSelected = (selectedRegion == ScreenCaptureRegion.APP_WINDOW),
+                        onClick = { updateCaptureRegion(ScreenCaptureRegion.APP_WINDOW) },
+                    )
+                )
+            }
+
+            add(
+                RadioButtonGroupItemViewModel(
+                    icon = icons?.region,
+                    isSelected = (selectedRegion == ScreenCaptureRegion.PARTIAL),
+                    onClick = { updateCaptureRegion(ScreenCaptureRegion.PARTIAL) },
+                )
+            )
+
+            add(
+                RadioButtonGroupItemViewModel(
+                    icon = icons?.fullscreen,
+                    isSelected = (selectedRegion == ScreenCaptureRegion.FULLSCREEN),
+                    onClick = { updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN) },
+                )
+            )
+        }
     }
 
     @AssistedFactory
