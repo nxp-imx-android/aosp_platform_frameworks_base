@@ -64,23 +64,6 @@ class CollapseBubbleViaBackTest :
     BubbleStackAlwaysVisibleTestCases,
     BubbleAppBecomesNotExpandedTestCases
 {
-
-    /**
-     * Verifies bubble app window becomes invisible at the end of the transition.
-     */
-    @Test
-    fun appWindowIsInvisibleAtEnd() {
-        wmStateSubjectAtEnd.isAppWindowInvisible(testApp)
-    }
-
-    /**
-     * Verifies bubble app layer becomes invisible at the end of the transition.
-     */
-    @Test
-    fun appLayerIsInvisibleAtEnd() {
-        layerTraceEntrySubjectAtEnd.isInvisible(testApp, mustExist = true)
-    }
-
     companion object : FlickerPropertyInitializer() {
 
         @ClassRule
@@ -97,4 +80,12 @@ class CollapseBubbleViaBackTest :
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
+
+    /**
+     * Verifies bubble app window is invisible at the end of the transition.
+     */
+    @Test
+    override fun appWindowIsInvisibleAtEnd() {
+        wmStateSubjectAtEnd.isAppWindowInvisible(testApp, mustExist = true)
+    }
 }

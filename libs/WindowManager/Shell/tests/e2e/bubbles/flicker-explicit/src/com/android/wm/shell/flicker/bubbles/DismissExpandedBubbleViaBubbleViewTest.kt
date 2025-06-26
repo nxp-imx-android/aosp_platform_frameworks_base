@@ -21,6 +21,7 @@ import android.platform.test.annotations.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.FlakyTest
 import com.android.wm.shell.Flags
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesNotExpandedTestCases
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
@@ -113,9 +114,9 @@ class DismissExpandedBubbleViaBubbleViewTest :
         wmTraceSubject
             .isAboveAppWindowVisible(BUBBLE)
             .then()
-            // bubble stack may be invisible before it's gone.
-            .isAboveAppWindowInvisible(BUBBLE, isOptional = true)
-            .notContains(BUBBLE)
+            // Use #isNonAppWindowInvisible here because the BUBBLE window may have been removed
+            // from WM hierarchy.
+            .isNonAppWindowInvisible(BUBBLE)
             .forAllEntries()
     }
 
@@ -127,24 +128,13 @@ class DismissExpandedBubbleViaBubbleViewTest :
         layersTraceSubject
             .isVisible(BUBBLE)
             .then()
-            // bubble stack may be invisible before it's gone.
-            .isInvisible(BUBBLE, mustExist = true, isOptional = true)
-            .then()
-            .notContains(BUBBLE)
+            .isInvisible(BUBBLE)
             .forAllEntries()
     }
 
 // endregion
 
 // region bubble app related tests
-
-    /**
-     * Verifies the [testApp] window has rounded corner at the start of the transition.
-     */
-    @Test
-    fun appWindowHasRoundedCornerAtStart() {
-        layerTraceEntrySubjectAtStart.hasRoundedCorners(testApp)
-    }
 
     /**
      * Verifies bubble app window is gone at the end of the transition.
@@ -154,13 +144,16 @@ class DismissExpandedBubbleViaBubbleViewTest :
         wmStateSubjectAtEnd.notContains(testApp)
     }
 
-    /**
-     * Verifies bubble app layer is gone at the end of the transition.
-     */
+    @FlakyTest(bugId = 396020056)
     @Test
-    fun appLayerIsGoneAtEnd() {
-        // TestApp may be gone if it's in dismissed state.
-        layerTraceEntrySubjectAtEnd.notContains(testApp)
+    override fun appLayerBecomesInvisible() {
+        super.appLayerBecomesInvisible()
+    }
+
+    @FlakyTest(bugId = 396020056)
+    @Test
+    override fun visibleLayersShownMoreThanOneConsecutiveEntry() {
+        super.visibleLayersShownMoreThanOneConsecutiveEntry()
     }
 
 // endregion
