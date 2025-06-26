@@ -357,6 +357,12 @@ public final class ProcessStateRecord {
     private int mCompletedAdjSeq;
 
     /**
+     * Sequence id for identifying LRU update cycles.
+     */
+    @GuardedBy("mService")
+    private int mLruSeq;
+
+    /**
      * When (uptime) the process last became unimportant.
      */
     @CompositeRWLock({"mService", "mProcLock"})
@@ -928,6 +934,16 @@ public final class ProcessStateRecord {
         return mCompletedAdjSeq;
     }
 
+    @GuardedBy("mService")
+    int getLruSeq() {
+        return mLruSeq;
+    }
+
+    @GuardedBy("mService")
+    void setLruSeq(int lruSeq) {
+        mLruSeq = lruSeq;
+    }
+
     @GuardedBy({"mService", "mProcLock"})
     void setWhenUnimportant(long whenUnimportant) {
         mWhenUnimportant = whenUnimportant;
@@ -1440,7 +1456,7 @@ public final class ProcessStateRecord {
             pw.println();
         }
         pw.print(prefix); pw.print("adjSeq="); pw.print(mAdjSeq);
-        pw.print(" lruSeq="); pw.println(mApp.getLruSeq());
+        pw.print(" lruSeq="); pw.println(mLruSeq);
         pw.print(prefix); pw.print("oom adj: max="); pw.print(mMaxAdj);
         pw.print(" curRaw="); pw.print(mCurRawAdj);
         pw.print(" setRaw="); pw.print(mSetRawAdj);
@@ -1467,9 +1483,8 @@ public final class ProcessStateRecord {
             pw.print(mSetBoundByNonBgRestrictedApp);
         }
         pw.println();
-        if (mHasShownUi || mApp.mProfile.hasPendingUiClean()) {
-            pw.print(prefix); pw.print("hasShownUi="); pw.print(mHasShownUi);
-            pw.print(" pendingUiClean="); pw.println(mApp.mProfile.hasPendingUiClean());
+        if (mHasShownUi) {
+            pw.print(prefix); pw.print("hasShownUi="); pw.println(mHasShownUi);
         }
         pw.print(prefix); pw.print("cached="); pw.print(isCached());
         pw.print(" empty="); pw.println(isEmpty());
