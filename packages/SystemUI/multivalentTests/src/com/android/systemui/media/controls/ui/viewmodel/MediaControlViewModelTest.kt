@@ -285,7 +285,7 @@ class MediaControlViewModelTest : SysuiTestCase() {
         title: String,
         suggestionData: SuggestionData? = null,
     ): MediaData {
-        val device = MediaDeviceData(true, null, DEVICE_NAME, null, showBroadcastButton = true)
+        val device = MediaDeviceData(true, null, DEVICE_NAME, null)
 
         // Create media session
         val metadataBuilder =

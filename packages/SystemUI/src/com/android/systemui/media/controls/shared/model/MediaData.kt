@@ -185,9 +185,6 @@ constructor(
 
     /** Unique id for this device */
     val id: String? = null,
-
-    /** Whether or not to show the broadcast button */
-    val showBroadcastButton: Boolean,
 ) {
     /**
      * Check whether [MediaDeviceData] objects are equal in all fields except the icon. The icon is
@@ -202,8 +199,7 @@ constructor(
         return enabled == other.enabled &&
             name == other.name &&
             intent == other.intent &&
-            id == other.id &&
-            showBroadcastButton == other.showBroadcastButton
+            id == other.id
     }
 }
 

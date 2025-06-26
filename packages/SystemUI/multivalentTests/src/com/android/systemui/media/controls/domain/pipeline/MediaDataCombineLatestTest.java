@@ -107,7 +107,7 @@ public class MediaDataCombineLatestTest extends SysuiTestCase {
                         -1,
                         false,
                         null);
-        mDeviceData = new MediaDeviceData(true, null, DEVICE_NAME, null, false);
+        mDeviceData = new MediaDeviceData(true, null, DEVICE_NAME, null);
     }
 
     @Test
