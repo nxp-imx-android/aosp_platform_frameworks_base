@@ -825,7 +825,9 @@ public class InputMethodService extends AbstractInputMethodService {
         @Override
         public final void dispatchStartInput(@Nullable InputConnection inputConnection,
                 @NonNull IInputMethod.StartInputParams params) {
-            mPrivOps.reportStartInputAsync(params.startInputToken);
+            if (!Flags.optimizeImeInputTargetUpdate()) {
+                mPrivOps.reportStartInputAsync(params.startInputToken);
+            }
             onNavButtonFlagsChanged(params.navigationBarFlags);
             if (params.restarting) {
                 restartInput(inputConnection, params.editorInfo);

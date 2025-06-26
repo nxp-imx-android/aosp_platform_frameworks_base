@@ -28,16 +28,13 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Main
-import com.android.systemui.statusbar.NotificationShadeWindowController
 import com.android.systemui.topui.TopUiController
-import com.android.systemui.topui.TopUiControllerRefactor
 import com.android.systemui.topwindoweffects.domain.interactor.PowerButtonSemantics
 import com.android.systemui.topwindoweffects.domain.interactor.SqueezeEffectInteractor
 import com.android.systemui.topwindoweffects.ui.viewmodel.SqueezeEffectHapticPlayer
 import com.android.wm.shell.appzoomout.AppZoomOut
 import java.io.PrintWriter
 import java.util.Optional
-import java.util.concurrent.Executor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
@@ -54,10 +51,6 @@ constructor(
     private val appZoomOutOptional: Optional<AppZoomOut>,
     squeezeEffectHapticPlayerFactory: SqueezeEffectHapticPlayer.Factory,
     private val topUiController: TopUiController,
-    // TODO(b/411061512): Remove notificationShadeWindowController and mainExecutor once
-    // TopUiControllerRefactor made it to nextfood
-    private val notificationShadeWindowController: NotificationShadeWindowController,
-    @Main private val mainExecutor: Executor,
     @Main private val mainHandler: Handler,
 ) : CoreStartable {
 
@@ -175,13 +168,7 @@ constructor(
     }
 
     private fun setRequestTopUi(requestTopUi: Boolean) {
-        if (TopUiControllerRefactor.isEnabled) {
-            topUiController.setRequestTopUi(requestTopUi, TAG)
-        } else {
-            mainExecutor.execute {
-                notificationShadeWindowController.setRequestTopUi(requestTopUi, TAG)
-            }
-        }
+        topUiController.setRequestTopUi(requestTopUi, TAG)
     }
 
     private fun playDefaultAssistantHaptic() = hapticPlayer?.playDefaultAssistantEffect()

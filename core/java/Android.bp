@@ -465,6 +465,13 @@ filegroup {
 }
 
 filegroup {
+    name: "activity_manager_iuidobserver_aidl",
+    srcs: [
+        "android/app/IUidObserver.aidl",
+    ],
+}
+
+filegroup {
     name: "activity_manager_runningappprocessinfo_aidl",
     srcs: [
         "android/app/RunningAppProcessInfo.aidl",
@@ -764,4 +771,24 @@ java_system_features_srcs {
     name: "systemfeatures-gen-srcs",
     full_class_name: "com.android.internal.pm.RoSystemFeatures",
     visibility: ["//visibility:private"],
+}
+
+aidl_interface {
+    name: "activitymanager_structured_aidl",
+    unstable: true,
+    srcs: [
+        "android/app/IActivityManagerStructured.aidl",
+        ":activity_manager_iprocessobserver_aidl",
+        ":activity_manager_iuidobserver_aidl",
+        ":activity_manager_runningappprocessinfo_aidl",
+    ],
+    backend: {
+        java: {
+            // java code is generated through framework-core-sources.
+            enabled: false,
+        },
+        rust: {
+            enabled: true,
+        },
+    },
 }

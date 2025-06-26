@@ -4137,25 +4137,7 @@ public class ActivityManager {
 
         public void writeToParcel(Parcel dest, int flags) {
             final android.app.RunningAppProcessInfo info = new android.app.RunningAppProcessInfo();
-            info.processName = TextUtils.emptyIfNull(processName);
-            info.pid = pid;
-            info.uid = uid;
-            info.pkgList = pkgList;
-            info.pkgDeps = pkgDeps;
-            info.flags = this.flags;
-            info.lastTrimLevel = lastTrimLevel;
-            info.importance = importance;
-            info.lru = lru;
-            info.importanceReasonCode = importanceReasonCode;
-            info.importanceReasonPid = importanceReasonPid;
-            info.importanceReasonComponent = importanceReasonComponent != null
-                    ? importanceReasonComponent.flattenToString()
-                    : null;
-            info.importanceReasonImportance = importanceReasonImportance;
-            info.processState = processState;
-            info.isFocused = isFocused;
-            info.lastActivityTime = lastActivityTime;
-
+            copyTo(info);
             info.writeToParcel(dest, flags);
         }
 
@@ -4197,6 +4179,28 @@ public class ActivityManager {
             other.processState = processState;
             other.isFocused = isFocused;
             other.lastActivityTime = lastActivityTime;
+        }
+
+        /** @hide */
+        public void copyTo(android.app.RunningAppProcessInfo info) {
+            info.processName = TextUtils.emptyIfNull(processName);
+            info.pid = pid;
+            info.uid = uid;
+            info.pkgList = pkgList;
+            info.pkgDeps = pkgDeps;
+            info.flags = this.flags;
+            info.lastTrimLevel = lastTrimLevel;
+            info.importance = importance;
+            info.lru = lru;
+            info.importanceReasonCode = importanceReasonCode;
+            info.importanceReasonPid = importanceReasonPid;
+            info.importanceReasonComponent = importanceReasonComponent != null
+                    ? importanceReasonComponent.flattenToString()
+                    : null;
+            info.importanceReasonImportance = importanceReasonImportance;
+            info.processState = processState;
+            info.isFocused = isFocused;
+            info.lastActivityTime = lastActivityTime;
         }
 
         public static final @android.annotation.NonNull Creator<RunningAppProcessInfo> CREATOR =

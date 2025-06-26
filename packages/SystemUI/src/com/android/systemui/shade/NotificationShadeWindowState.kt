@@ -51,7 +51,6 @@ class NotificationShadeWindowState(
     @JvmField var forceHideAfterActivityLaunch: Boolean = false,
     @JvmField var mediaBackdropShowing: Boolean = false,
     @JvmField var windowNotTouchable: Boolean = false,
-    @JvmField var componentsForcingTopUi: MutableSet<String> = mutableSetOf(),
     @JvmField var forceOpenTokens: MutableSet<Any> = mutableSetOf(),
     /** one of [StatusBarState] */
     @JvmField var statusBarState: Int = 0,
@@ -97,7 +96,6 @@ class NotificationShadeWindowState(
             launchingActivityFromNotification.toString(),
             mediaBackdropShowing.toString(),
             windowNotTouchable.toString(),
-            componentsForcingTopUi.toString(),
             forceOpenTokens.toString(),
             StatusBarState.toString(statusBarState),
             remoteInputActive.toString(),
@@ -141,7 +139,6 @@ class NotificationShadeWindowState(
             launchingActivity: Boolean,
             backdropShowing: Boolean,
             notTouchable: Boolean,
-            componentsForcingTopUi: MutableSet<String>,
             forceOpenTokens: MutableSet<Any>,
             statusBarState: Int,
             remoteInputActive: Boolean,
@@ -174,8 +171,6 @@ class NotificationShadeWindowState(
                 this.launchingActivityFromNotification = launchingActivity
                 this.mediaBackdropShowing = backdropShowing
                 this.windowNotTouchable = notTouchable
-                this.componentsForcingTopUi.clear()
-                this.componentsForcingTopUi.addAll(componentsForcingTopUi)
                 this.forceOpenTokens.clear()
                 this.forceOpenTokens.addAll(forceOpenTokens)
                 this.statusBarState = statusBarState
@@ -225,7 +220,6 @@ class NotificationShadeWindowState(
                 "launchingActivity",
                 "backdropShowing",
                 "notTouchable",
-                "componentsForcingTopUi",
                 "forceOpenTokens",
                 "statusBarState",
                 "remoteInputActive",

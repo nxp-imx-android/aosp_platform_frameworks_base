@@ -1803,6 +1803,28 @@ package android.hardware.display {
     field public static final int VIRTUAL_DISPLAY_FLAG_SUPPORTS_TOUCH = 64; // 0x40
   }
 
+  @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") public final class DisplayTopology implements android.os.Parcelable {
+    method @NonNull public android.hardware.display.DisplayTopologyGraph getGraph();
+    field public static final int POSITION_BOTTOM = 3; // 0x3
+    field public static final int POSITION_LEFT = 0; // 0x0
+    field public static final int POSITION_RIGHT = 2; // 0x2
+    field public static final int POSITION_TOP = 1; // 0x1
+  }
+
+  @FlaggedApi("com.android.server.display.feature.flags.display_topology_api") public class DisplayTopologyGraph {
+    method @NonNull public android.util.SparseArray<android.hardware.display.DisplayTopologyGraph.DisplayNode> getDisplayNodes();
+  }
+
+  public static final class DisplayTopologyGraph.AdjacentEdge {
+    method @NonNull public android.hardware.display.DisplayTopologyGraph.DisplayNode getDisplayNode();
+    method public int getPosition();
+  }
+
+  public static class DisplayTopologyGraph.DisplayNode {
+    method @NonNull public java.util.List<android.hardware.display.DisplayTopologyGraph.AdjacentEdge> getAdjacentEdges();
+    method public int getDisplayId();
+  }
+
 }
 
 package android.hardware.fingerprint {

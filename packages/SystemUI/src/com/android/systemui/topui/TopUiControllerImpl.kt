@@ -62,7 +62,6 @@ constructor(
 
     @Synchronized
     override fun setRequestTopUi(requestTopUi: Boolean, componentTag: String) {
-        TopUiControllerRefactor.expectInNewMode()
         val changed: Boolean =
             if (requestTopUi) {
                 componentsRequestingTopUi.add(componentTag)

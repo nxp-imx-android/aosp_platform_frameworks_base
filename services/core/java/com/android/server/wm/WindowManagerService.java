@@ -4745,21 +4745,21 @@ public class WindowManagerService extends IWindowManager.Stub
     }
 
     @Override
-    public void setRotationAtAngleIfLocked(int rotation, String caller) {
+    public void setRotationAtAngleIfAllowed(int rotation, String caller) {
         if (!checkCallingPermission(android.Manifest.permission.SET_ORIENTATION,
-                "setRotationAtAngleIfLocked()")) {
+                "setRotationAtAngleIfAllowed()")) {
             throw new SecurityException("Requires SET_ORIENTATION permission");
         }
         if (!enableDeviceStateAutoRotateSettingRefactor()) {
             throw new UnsupportedOperationException(
-                    "API setRotationAtAngleIfLocked should not be used when "
+                    "API setRotationAtAngleIfAllowed should not be used when "
                             + "enableDeviceStateAutoRotateSettingRefactor is disabled");
         }
         final long origId = Binder.clearCallingIdentity();
         try {
             synchronized (mGlobalLock) {
                 final DisplayContent display = mRoot.getDefaultDisplay();
-                display.getDisplayRotation().setRotationAtAngleIfLocked(rotation, caller);
+                display.getDisplayRotation().setRotationAtAngleIfAllowed(rotation, caller);
             }
         } finally {
             Binder.restoreCallingIdentity(origId);

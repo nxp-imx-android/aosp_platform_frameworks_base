@@ -23,7 +23,6 @@ import androidx.core.animation.AnimatorTestRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.concurrency.fakeExecutor
 import com.android.systemui.haptics.fakeVibratorHelper
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.advanceTimeBy
@@ -33,7 +32,6 @@ import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.statusbar.notificationShadeWindowController
 import com.android.systemui.testKosmos
-import com.android.systemui.topui.TopUiControllerRefactor
 import com.android.systemui.topui.mockTopUiController
 import com.android.systemui.topwindoweffects.data.repository.InvocationEffectPreferencesImpl.Companion.DEFAULT_OUTWARD_EFFECT_DURATION_MS
 import com.android.systemui.topwindoweffects.data.repository.SqueezeEffectRepositoryImpl.Companion.DEFAULT_INITIAL_DELAY_MILLIS
@@ -95,9 +93,7 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
                     SqueezeEffectInteractor(squeezeEffectRepository = fakeSqueezeEffectRepository),
                 appZoomOutOptional = appZoomOutOptional,
                 squeezeEffectHapticPlayerFactory = squeezeEffectHapticPlayerFactory,
-                notificationShadeWindowController = notificationShadeWindowController,
                 topUiController = mockTopUiController,
-                mainExecutor = fakeExecutor,
                 mainHandler = kosmos.fakeHandler,
             )
         }
@@ -499,14 +495,8 @@ class TopLevelWindowEffectsTest : SysuiTestCase() {
         }
 
     private fun verifySetRequestTopUi(isRequested: Boolean) {
-        if (TopUiControllerRefactor.isEnabled) {
-            verify(kosmos.mockTopUiController, times(1))
-                .setRequestTopUi(isRequested, TopLevelWindowEffects.TAG)
-        } else {
-            kosmos.fakeExecutor.runAllReady()
-            verify(kosmos.notificationShadeWindowController, times(1))
-                .setRequestTopUi(isRequested, TopLevelWindowEffects.TAG)
-        }
+        verify(kosmos.mockTopUiController, times(1))
+            .setRequestTopUi(isRequested, TopLevelWindowEffects.TAG)
     }
 
     private fun Kosmos.setInvocationEffectEnabled(enabled: Boolean) {

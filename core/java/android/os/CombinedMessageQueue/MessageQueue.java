@@ -1273,16 +1273,12 @@ public final class MessageQueue {
         boolean removed;
         final MatchBarrierToken matchBarrierToken = new MatchBarrierToken(token);
 
-        // Retain the first element to see if we are currently stuck on a barrier.
-        final Message m = first(mPriorityQueue);
-
         removed = findOrRemoveMessages(null, 0, null, null, 0, matchBarrierToken, true);
-        if (removed && m != null) {
-            if (m.target == null && m.arg1 == token) {
-                /* Wake up next() in case it was sleeping on this barrier. */
-                concurrentWake();
-            }
-        } else if (!removed) {
+        if (removed) {
+            // Wake up next() in case it was sleeping on this barrier.
+            // TODO(b/427541521): optimize wakeup logic to only wake up if we are blocked.
+            concurrentWake();
+        } else {
             throw new IllegalStateException("The specified message queue synchronization "
                     + " barrier token has not been posted or has already been removed.");
         }

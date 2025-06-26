@@ -28,6 +28,7 @@ import static android.internal.perfetto.protos.Insetsstate.InsetsStateProto.SOUR
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
 import static android.view.WindowInsets.Type.SIZE;
 import static android.view.WindowInsets.Type.captionBar;
+import static android.view.WindowInsets.Type.defaultCompatible;
 import static android.view.WindowInsets.Type.displayCutout;
 import static android.view.WindowInsets.Type.ime;
 import static android.view.WindowInsets.Type.indexOf;
@@ -193,7 +194,7 @@ public class InsetsState implements Parcelable {
         final int softInputAdjustMode = legacySoftInputMode & SOFT_INPUT_MASK_ADJUST;
 
         @InsetsType
-        int compatInsetsTypes = systemBars() | displayCutout();
+        int compatInsetsTypes = defaultCompatible();
         if (softInputAdjustMode == SOFT_INPUT_ADJUST_RESIZE) {
             compatInsetsTypes |= ime();
         }

@@ -17,10 +17,8 @@
 package com.android.systemui.topui
 
 import android.app.activityManagerInterface
-import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
-import com.android.systemui.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.runTest
@@ -57,7 +55,6 @@ class TopUiControllerImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_TOP_UI_CONTROLLER)
     fun firstRequest_setsHasTopUiTrue() =
         kosmos.runTest {
             underTest.setRequestTopUi(true, "tag1")
@@ -68,7 +65,6 @@ class TopUiControllerImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_TOP_UI_CONTROLLER)
     fun duplicateRequest_noExtraCall() =
         kosmos.runTest {
             // Initial request
@@ -83,7 +79,6 @@ class TopUiControllerImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_TOP_UI_CONTROLLER)
     fun secondRequest_differentTag_noExtraCall() =
         kosmos.runTest {
             // Initial request
@@ -98,7 +93,6 @@ class TopUiControllerImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_TOP_UI_CONTROLLER)
     fun releaseOneOfTwo_noCall() =
         kosmos.runTest {
             // Setup with two requesters
@@ -115,7 +109,6 @@ class TopUiControllerImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_TOP_UI_CONTROLLER)
     fun releaseLast_setsHasTopUiFalse() =
         kosmos.runTest {
             // Setup with two requesters
@@ -137,7 +130,6 @@ class TopUiControllerImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_TOP_UI_CONTROLLER)
     fun duplicateRelease_noExtraCall() =
         kosmos.runTest {
             // Setup and release all
@@ -154,7 +146,6 @@ class TopUiControllerImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_TOP_UI_CONTROLLER)
     fun releaseNonExistent_noCall() =
         kosmos.runTest {
             // Setup with one requester
@@ -174,7 +165,6 @@ class TopUiControllerImplTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(Flags.FLAG_ENABLE_TOP_UI_CONTROLLER)
     fun requestReleaseRequest_correctCalls() =
         kosmos.runTest {
             // Request

@@ -144,13 +144,13 @@ public final class RotationPolicy {
      * Sets screen rotation to {@link rotation} if the value of {@link ACCELEROMETER_ROTATION} is
      * false.
      */
-    public static void setRotationAtAngleIfLocked(final int rotation, String caller) {
+    public static void setRotationAtAngleIfAllowed(final int rotation, String caller) {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
                 try {
                     IWindowManager wm = WindowManagerGlobal.getWindowManagerService();
-                    wm.setRotationAtAngleIfLocked(rotation, caller);
+                    wm.setRotationAtAngleIfAllowed(rotation, caller);
                 } catch (RemoteException exc) {
                     Log.w(TAG, "Unable to set rotation to:" + rotation);
                 }

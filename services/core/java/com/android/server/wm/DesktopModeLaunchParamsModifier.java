@@ -264,7 +264,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             }
         }
 
-        DesktopModeBoundsCalculator.updateInitialBounds(task, layout, activity, options,
+        DesktopModeBoundsCalculator.updateInitialBounds(task, layout, activity, options, display,
                 outParams, this::appendLog);
         appendLog("final desktop mode task bounds set to %s", outParams.mBounds);
         if (options != null && options.getFlexibleLaunchSize()) {

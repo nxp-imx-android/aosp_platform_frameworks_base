@@ -1512,13 +1512,9 @@ public class WindowOrganizerTests extends WindowTestsBase {
         final Task task = createTask(rootTask);
         task.setTaskOrganizer(organizer);
         final ActivityRecord activity = createActivityRecord(rootTask.mDisplayContent, task);
-        final Task rootTask2 = createRootTask();
-        final Task task2 = createTask(rootTask2);
-        task2.setTaskOrganizer(organizer);
-        final ActivityRecord activity2 = createActivityRecord(rootTask.mDisplayContent, task2);
 
         assertTrue(rootTask.isOrganized());
-        assertTrue(rootTask2.isOrganized());
+        assertTrue(task.isOrganized());
 
         // Verify a back pressed does not call the organizer
         mWm.mAtmService.mActivityClientController.onBackPressed(activity.token,
@@ -1548,6 +1544,36 @@ public class WindowOrganizerTests extends WindowTestsBase {
         // Ensure events dispatch to organizer.
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
         verify(organizer, times(1)).onBackPressedOnTaskRoot(any());
+    }
+
+    @Test
+    public void testInterceptBackPressedOnTaskRootForUnOrganizedTask() throws RemoteException {
+        final ITaskOrganizer organizer = registerMockOrganizer();
+        final Task rootTask = createRootTask();
+        final Task unorganizedTask = createTask(rootTask);
+        final ActivityRecord activity = createActivityRecord(rootTask.mDisplayContent,
+                unorganizedTask);
+
+        assertTrue(rootTask.isOrganized());
+        assertFalse(unorganizedTask.isOrganized());
+
+        // Verify a back pressed does not call the organizer
+        mWm.mAtmService.mActivityClientController.onBackPressed(activity.token,
+                new IRequestFinishCallback.Default());
+        // Ensure events dispatch to organizer.
+        mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
+        verify(organizer, never()).onBackPressedOnTaskRoot(any());
+
+        // Enable intercepting back
+        mWm.mAtmService.mTaskOrganizerController.setInterceptBackPressedOnTaskRoot(
+                rootTask.mTaskId, true);
+
+        // Verify again that the back press does not call the organizer as task is not organized
+        mWm.mAtmService.mActivityClientController.onBackPressed(activity.token,
+                new IRequestFinishCallback.Default());
+        // Ensure events dispatch to organizer.
+        mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
+        verify(organizer, never()).onBackPressedOnTaskRoot(any());
     }
 
     @Test

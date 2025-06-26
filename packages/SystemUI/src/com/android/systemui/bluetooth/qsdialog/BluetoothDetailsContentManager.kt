@@ -253,11 +253,16 @@ constructor(
                     }
                 }
         }
-        scrollViewContent.apply {
-            minimumHeight =
-                resources.getDimensionPixelSize(initialUiProperties.scrollViewMinHeightResId)
-            layoutParams.height = maxOf(cachedContentHeight, minimumHeight)
+        // If it's in the Compose-based detailed view, min and max height are set in the
+        // `TileDetails`.
+        if (isInDialog) {
+            scrollViewContent.apply {
+                minimumHeight =
+                    resources.getDimensionPixelSize(initialUiProperties.scrollViewMinHeightResId)
+                layoutParams.height = maxOf(cachedContentHeight, minimumHeight)
+            }
         }
+
         updateDetailsUI(dialog, detailsUIState)
     }
 

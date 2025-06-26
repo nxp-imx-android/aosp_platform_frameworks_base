@@ -18,15 +18,16 @@ package android.hardware.display
 
 import android.graphics.PointF
 import android.graphics.RectF
-import android.hardware.display.DisplayTopology.TreeNode.POSITION_BOTTOM
-import android.hardware.display.DisplayTopology.TreeNode.POSITION_LEFT
-import android.hardware.display.DisplayTopology.TreeNode.POSITION_TOP
-import android.hardware.display.DisplayTopology.TreeNode.POSITION_RIGHT
+import android.hardware.display.DisplayTopology.POSITION_BOTTOM
+import android.hardware.display.DisplayTopology.POSITION_LEFT
+import android.hardware.display.DisplayTopology.POSITION_TOP
+import android.hardware.display.DisplayTopology.POSITION_RIGHT
 import android.util.SparseArray
 import android.util.SparseIntArray
 import android.view.Display
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import androidx.core.util.size
 
 class DisplayTopologyTest {
     private var topology = DisplayTopology()
@@ -1024,39 +1025,54 @@ class DisplayTopologyTest {
         val nodes = graph.displayNodes
 
         assertThat(graph.primaryDisplayId).isEqualTo(primaryDisplayId)
-        assertThat(nodes.map {it.displayId}).containsExactly(1, 2, 3, 4, 5)
-        for (node in nodes) {
+        assertThat((0 until nodes.size).map { i -> nodes.keyAt(i) }).containsExactly(1, 2, 3, 4, 5)
+        for (i in 0 until nodes.size) {
+            val node = nodes.valueAt(i)
             assertThat(node.density).isEqualTo(densityPerDisplay.get(node.displayId))
             when (node.displayId) {
-                1 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 2, POSITION_RIGHT,
-                        /* offsetDp= */ 0f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 3, POSITION_RIGHT,
-                        /* offsetDp= */ 400f))
-                2 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 1, POSITION_LEFT,
-                        /* offsetDp= */ 0f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 4, POSITION_RIGHT,
-                        /* offsetDp= */ 0f))
-                3 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 1, POSITION_LEFT,
-                        /* offsetDp= */ -400f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 4, POSITION_RIGHT,
-                        /* offsetDp= */ -400f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 5, POSITION_BOTTOM,
-                        /* offsetDp= */ 500f))
-                4 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 2, POSITION_LEFT,
-                        /* offsetDp= */ 0f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 3, POSITION_LEFT,
-                        /* offsetDp= */ 400f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 5, POSITION_BOTTOM,
-                        /* offsetDp= */ -100f))
-                5 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 3, POSITION_TOP,
-                        /* offsetDp= */ -500f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 4, POSITION_TOP,
-                        /* offsetDp= */ 100f))
+                1 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(2), POSITION_RIGHT, /* offsetDp= */ 0f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(3), POSITION_RIGHT, /* offsetDp= */ 400f
+                    )
+                )
+
+                2 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(1), POSITION_LEFT, /* offsetDp= */ 0f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(4), POSITION_RIGHT, /* offsetDp= */ 0f
+                    )
+                )
+
+                3 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(1), POSITION_LEFT, /* offsetDp= */ -400f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(4), POSITION_RIGHT, /* offsetDp= */ -400f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(5), POSITION_BOTTOM, /* offsetDp= */ 500f
+                    )
+                )
+
+                4 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(2), POSITION_LEFT, /* offsetDp= */ 0f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(3), POSITION_LEFT, /* offsetDp= */ 400f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(5), POSITION_BOTTOM, /* offsetDp= */ -100f
+                    )
+                )
+
+                5 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(3), POSITION_TOP, /* offsetDp= */ -500f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(4), POSITION_TOP, /* offsetDp= */ 100f
+                    )
+                )
             }
         }
     }
@@ -1106,51 +1122,66 @@ class DisplayTopologyTest {
         val nodes = graph.displayNodes
 
         assertThat(graph.primaryDisplayId).isEqualTo(primaryDisplayId)
-        assertThat(nodes.map {it.displayId}).containsExactly(1, 2, 3, 4, 5)
-        for (node in nodes) {
+        assertThat((0 until nodes.size).map { i -> nodes.keyAt(i) }).containsExactly(1, 2, 3, 4, 5)
+        for (i in 0 until nodes.size) {
+            val node = nodes.valueAt(i)
             assertThat(node.density).isEqualTo(densityPerDisplay.get(node.displayId))
             when (node.displayId) {
-                1 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 2, POSITION_RIGHT,
-                        /* offsetDp= */ 0f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 3, POSITION_RIGHT,
-                        /* offsetDp= */ 300f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 3, POSITION_BOTTOM,
-                        /* offsetDp= */ 200f))
-                2 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 1, POSITION_LEFT,
-                        /* offsetDp= */ 0f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 3, POSITION_BOTTOM,
-                        /* offsetDp= */ 0f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 4, POSITION_RIGHT,
-                        /* offsetDp= */ 0f))
-                3 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 1, POSITION_LEFT,
-                        /* offsetDp= */ -300f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 1, POSITION_TOP,
-                        /* offsetDp= */ -200f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 2, POSITION_TOP,
-                        /* offsetDp= */ 0f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 4, POSITION_RIGHT,
-                        /* offsetDp= */ -300f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 4, POSITION_TOP,
-                        /* offsetDp= */ 300f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 5, POSITION_LEFT,
-                        /* offsetDp= */ 100f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 5, POSITION_BOTTOM,
-                        /* offsetDp= */ -200f))
-                4 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 2, POSITION_LEFT,
-                        /* offsetDp= */ 0f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 3, POSITION_LEFT,
-                        /* offsetDp= */ 300f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 3, POSITION_BOTTOM,
-                        /* offsetDp= */ -300f))
-                5 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 3, POSITION_TOP,
-                        /* offsetDp= */ 200f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 3, POSITION_RIGHT,
-                        /* offsetDp= */ -100f))
+                1 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(2), POSITION_RIGHT, /* offsetDp= */ 0f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(3), POSITION_RIGHT, /* offsetDp= */ 300f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(3), POSITION_BOTTOM, /* offsetDp= */ 200f
+                    )
+                )
+
+                2 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(1), POSITION_LEFT, /* offsetDp= */ 0f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(3), POSITION_BOTTOM, /* offsetDp= */ 0f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(4), POSITION_RIGHT, /* offsetDp= */ 0f
+                    )
+                )
+
+                3 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(1), POSITION_LEFT, /* offsetDp= */ -300f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(1), POSITION_TOP, /* offsetDp= */ -200f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(2), POSITION_TOP, /* offsetDp= */ 0f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(4), POSITION_RIGHT, /* offsetDp= */ -300f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(4), POSITION_TOP, /* offsetDp= */ 300f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(5), POSITION_LEFT, /* offsetDp= */ 100f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(5), POSITION_BOTTOM, /* offsetDp= */ -200f
+                    )
+                )
+
+                4 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(2), POSITION_LEFT, /* offsetDp= */ 0f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(3), POSITION_LEFT, /* offsetDp= */ 300f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(3), POSITION_BOTTOM, /* offsetDp= */ -300f
+                    )
+                )
+
+                5 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(3), POSITION_TOP, /* offsetDp= */ 200f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(3), POSITION_RIGHT, /* offsetDp= */ -100f
+                    )
+                )
             }
         }
     }
@@ -1189,25 +1220,34 @@ class DisplayTopologyTest {
         val nodes = graph.displayNodes
 
         assertThat(graph.primaryDisplayId).isEqualTo(primaryDisplayId)
-        assertThat(nodes.map {it.displayId}).containsExactly(1, 2, 3)
-        for (node in nodes) {
+        assertThat((0 until nodes.size).map { i -> nodes.keyAt(i) }).containsExactly(1, 2, 3)
+        for (i in 0 until nodes.size) {
+            val node = nodes.valueAt(i)
             assertThat(node.density).isEqualTo(densityPerDisplay.get(node.displayId))
             when (node.displayId) {
-                1 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 2, POSITION_RIGHT,
-                        /* offsetDp= */ -1f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 3, POSITION_RIGHT,
-                        /* offsetDp= */ 201f))
-                2 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 1, POSITION_LEFT,
-                        /* offsetDp= */ 1f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 3, POSITION_BOTTOM,
-                        /* offsetDp= */ 0f))
-                3 -> assertThat(node.adjacentDisplays.toSet()).containsExactly(
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 1, POSITION_LEFT,
-                        /* offsetDp= */ -201f),
-                    DisplayTopologyGraph.AdjacentDisplay(/* displayId= */ 2, POSITION_TOP,
-                        /* offsetDp= */ 0f))
+                1 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(2), POSITION_RIGHT, /* offsetDp= */ -1f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(3), POSITION_RIGHT, /* offsetDp= */ 201f
+                    )
+                )
+
+                2 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(1), POSITION_LEFT, /* offsetDp= */ 1f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(3), POSITION_BOTTOM, /* offsetDp= */ 0f
+                    )
+                )
+
+                3 -> assertThat(node.adjacentEdges.toSet()).containsExactly(
+                    DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(1), POSITION_LEFT, /* offsetDp= */ -201f
+                    ), DisplayTopologyGraph.AdjacentEdge(
+                        nodes.get(2), POSITION_TOP, /* offsetDp= */ 0f
+                    )
+                )
             }
         }
     }
@@ -1251,7 +1291,7 @@ class DisplayTopologyTest {
 
     private fun verifyDisplay(display: DisplayTopology.TreeNode, id: Int, width: Int,
                               height: Int, density: Int,
-                              @DisplayTopology.TreeNode.Position position: Int = 0,
+                              @DisplayTopology.Position position: Int = 0,
                               offset: Float = 0f, noOfChildren: Int) {
         assertThat(display.displayId).isEqualTo(id)
         assertThat(display.logicalWidth).isEqualTo(width)

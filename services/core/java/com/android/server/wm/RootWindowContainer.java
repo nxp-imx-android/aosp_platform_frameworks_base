@@ -2893,7 +2893,15 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                         () -> {
                             clearDisplayInfoCaches(displayId);
                             if (ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()) {
-                                displayContent.onDisplayInfoChangeApplied();
+                                if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+                                    Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER,
+                                            "onDisplayInfoChangeApplied, displayId=" + displayId);
+                                }
+                                try {
+                                    displayContent.onDisplayInfoChangeApplied();
+                                } finally {
+                                    Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
+                                }
                             }
                         });
             } else {

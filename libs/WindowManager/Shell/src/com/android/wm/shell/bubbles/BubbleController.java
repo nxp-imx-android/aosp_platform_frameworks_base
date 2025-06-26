@@ -2667,7 +2667,7 @@ public class BubbleController implements ConfigurationChangeListener,
 
             if (collapseStack) {
                 mBubbleViewCallback.expansionChanged(/* expanded= */ false);
-                mSysuiProxy.requestNotificationShadeTopUi(false, TAG);
+                mSysuiProxy.requestTopUi(false, TAG);
             }
 
             if (update.selectionChanged) {
@@ -2677,7 +2677,7 @@ public class BubbleController implements ConfigurationChangeListener,
             // Expanding? Apply this last.
             if (update.expandedChanged && update.expanded) {
                 mBubbleViewCallback.expansionChanged(/* expanded= */ true);
-                mSysuiProxy.requestNotificationShadeTopUi(true, TAG);
+                mSysuiProxy.requestTopUi(true, TAG);
             }
 
             if (!update.removedBubbles.isEmpty() && !mBubbleData.hasBubbles()) {

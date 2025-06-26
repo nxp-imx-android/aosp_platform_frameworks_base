@@ -16,14 +16,10 @@
 
 package android.hardware.display;
 
-import static android.hardware.display.DisplayTopology.TreeNode.POSITION_BOTTOM;
-import static android.hardware.display.DisplayTopology.TreeNode.POSITION_LEFT;
-import static android.hardware.display.DisplayTopology.TreeNode.POSITION_RIGHT;
-import static android.hardware.display.DisplayTopology.TreeNode.POSITION_TOP;
-
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.Nullable;
+import android.annotation.TestApi;
 import android.graphics.PointF;
 import android.graphics.RectF;
 import android.os.Parcel;
@@ -62,6 +58,27 @@ public final class DisplayTopology implements Parcelable {
     private static final String TAG = "DisplayTopology";
     private static final float EPSILON = 0.0001f;
     private static final float MAX_GAP = 5;
+
+    // Constants denoting position of a display relative to another display.
+    /** @hide */
+    @TestApi
+    public static final int POSITION_LEFT = 0;
+    /** @hide */
+    @TestApi
+    public static final int POSITION_TOP = 1;
+    /** @hide */
+    @TestApi
+    public static final int POSITION_RIGHT = 2;
+    /** @hide */
+    @TestApi
+    public static final int POSITION_BOTTOM = 3;
+
+    /** @hide */
+    @IntDef(prefix = { "POSITION_" }, value = {
+            POSITION_LEFT, POSITION_TOP, POSITION_RIGHT, POSITION_BOTTOM
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface Position{}
 
     @android.annotation.NonNull
     public static final Creator<DisplayTopology> CREATOR =
@@ -748,11 +765,10 @@ public final class DisplayTopology implements Parcelable {
     }
 
     /**
-     * @return The graph representation of the topology. If there is a corner adjacency, the same
-     * display will appear twice in the list of adjacent displays with both possible placements.
      * @hide
      */
-    public DisplayTopologyGraph getGraph() {
+    @TestApi
+    public @NonNull DisplayTopologyGraph getGraph() {
         // Sort the displays by position
         List<NodeDerivedInfo> infoList = getInfo();
         Comparator<NodeDerivedInfo> byPosition = (display1, display2) -> {
@@ -764,32 +780,37 @@ public final class DisplayTopology implements Parcelable {
         };
         infoList.sort(byPosition);
 
-        List<DisplayTopologyGraph.AdjacentDisplay>[] adjacentDisplays = new List[infoList.size()];
-
+        // DisplayNode objects are not final yet, adjacentEdges will be populated at a later stage
+        DisplayTopologyGraph.DisplayNode[] nodes =
+                new DisplayTopologyGraph.DisplayNode[infoList.size()];
         for (int i = 0; i < infoList.size(); i++) {
-            adjacentDisplays[i] = new ArrayList<>(Math.min(10, infoList.size()));
+            NodeDerivedInfo info = infoList.get(i);
+            nodes[i] = new DisplayTopologyGraph.DisplayNode(info.node.mDisplayId,
+                    info.node.mLogicalDensity, info.absoluteBounds());
+        }
+
+        List<DisplayTopologyGraph.AdjacentEdge>[] adjacentEdges = new List[infoList.size()];
+        for (int i = 0; i < infoList.size(); i++) {
+            adjacentEdges[i] = new ArrayList<>(Math.min(10, infoList.size()));
         }
 
         // Find touching displays
         for (int i = 0; i < infoList.size(); i++) {
-            int displayId1 = infoList.get(i).node.mDisplayId;
+            DisplayTopologyGraph.DisplayNode node1 = nodes[i];
             RectF bounds1 = infoList.get(i).absoluteBounds();
-            List<DisplayTopologyGraph.AdjacentDisplay> adjacentDisplays1 = adjacentDisplays[i];
-
+            List<DisplayTopologyGraph.AdjacentEdge> adjacentEdges1 = adjacentEdges[i];
             for (int j = i + 1; j < infoList.size(); j++) {
-                int displayId2 = infoList.get(j).node.mDisplayId;
+                DisplayTopologyGraph.DisplayNode node2 = nodes[j];
                 RectF bounds2 = infoList.get(j).absoluteBounds();
-                List<DisplayTopologyGraph.AdjacentDisplay> adjacentDisplays2 = adjacentDisplays[j];
+                List<DisplayTopologyGraph.AdjacentEdge> adjacentEdges2 = adjacentEdges[j];
 
-                List<Pair<Integer, Float>> placements1 = findDisplayPlacements(bounds1, bounds2);
-                List<Pair<Integer, Float>> placements2 = findDisplayPlacements(bounds2, bounds1);
-                for (Pair<Integer, Float> placement : placements1) {
-                    adjacentDisplays1.add(new DisplayTopologyGraph.AdjacentDisplay(displayId2,
-                            /* position= */ placement.first, /* offsetDp= */ placement.second));
+                for (Pair<Integer, Float> placement : findDisplayPlacements(bounds1, bounds2)) {
+                    adjacentEdges1.add(new DisplayTopologyGraph.AdjacentEdge(node2, /* position= */
+                            placement.first, /* offsetDp= */ placement.second));
                 }
-                for (Pair<Integer, Float> placement : placements2) {
-                    adjacentDisplays2.add(new DisplayTopologyGraph.AdjacentDisplay(displayId1,
-                            /* position= */ placement.first, /* offsetDp= */ placement.second));
+                for (Pair<Integer, Float> placement : findDisplayPlacements(bounds2, bounds1)) {
+                    adjacentEdges2.add(new DisplayTopologyGraph.AdjacentEdge(node1, /* position= */
+                            placement.first, /* offsetDp= */ placement.second));
                 }
                 if (bounds2.left >= bounds1.right + EPSILON) {
                     // This and the subsequent displays are already too far away
@@ -798,14 +819,9 @@ public final class DisplayTopology implements Parcelable {
             }
         }
 
-        DisplayTopologyGraph.DisplayNode[] nodes =
-                new DisplayTopologyGraph.DisplayNode[infoList.size()];
         for (int i = 0; i < nodes.length; i++) {
-            final NodeDerivedInfo nodeDerivedInfo = infoList.get(i);
-            nodes[i] = new DisplayTopologyGraph.DisplayNode(
-                    nodeDerivedInfo.node.mDisplayId, nodeDerivedInfo.node.mLogicalDensity,
-                    nodeDerivedInfo.absoluteBounds(),
-                    adjacentDisplays[i].toArray(new DisplayTopologyGraph.AdjacentDisplay[0]));
+            nodes[i].setAdjacentEdges(
+                    adjacentEdges[i].toArray(new DisplayTopologyGraph.AdjacentEdge[0]));
         }
         return new DisplayTopologyGraph(mPrimaryDisplayId, nodes);
     }
@@ -869,16 +885,6 @@ public final class DisplayTopology implements Parcelable {
      * @hide
      */
     public static final class TreeNode implements Parcelable {
-        public static final int POSITION_LEFT = 0;
-        public static final int POSITION_TOP = 1;
-        public static final int POSITION_RIGHT = 2;
-        public static final int POSITION_BOTTOM = 3;
-
-        @IntDef(prefix = { "POSITION_" }, value = {
-                POSITION_LEFT, POSITION_TOP, POSITION_RIGHT, POSITION_BOTTOM
-        })
-        @Retention(RetentionPolicy.SOURCE)
-        public @interface Position{}
 
         @android.annotation.NonNull
         public static final Creator<TreeNode> CREATOR =

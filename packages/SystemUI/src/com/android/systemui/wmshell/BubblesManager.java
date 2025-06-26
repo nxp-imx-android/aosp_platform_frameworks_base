@@ -79,7 +79,6 @@ import com.android.systemui.statusbar.phone.StatusBarWindowCallback;
 import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.statusbar.policy.SensitiveNotificationProtectionController;
 import com.android.systemui.statusbar.policy.ZenModeController;
-import com.android.systemui.topui.TopUiControllerRefactor;
 import com.android.wm.shell.bubbles.Bubble;
 import com.android.wm.shell.bubbles.BubbleEntry;
 import com.android.wm.shell.bubbles.Bubbles;
@@ -350,15 +349,9 @@ public class BubblesManager {
             }
 
             @Override
-            public void requestNotificationShadeTopUi(boolean requestTopUi, String componentTag) {
-                sysuiMainExecutor.execute(() -> {
-                    if (TopUiControllerRefactor.isEnabled()) {
-                        mTopUiController.setRequestTopUi(requestTopUi, componentTag);
-                    } else {
-                        mNotificationShadeWindowController.setRequestTopUi(requestTopUi,
-                                componentTag);
-                    }
-                });
+            public void requestTopUi(boolean requestTopUi, String componentTag) {
+                sysuiMainExecutor.execute(
+                        () -> mTopUiController.setRequestTopUi(requestTopUi, componentTag));
             }
 
             @Override

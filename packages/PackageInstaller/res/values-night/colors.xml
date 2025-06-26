@@ -15,5 +15,9 @@
   ~ limitations under the License.
   -->
 <resources>
-    <color name="colorButtonOutline">@android:color/system_outline_variant_dark</color>
+    <color name="onPrimaryColor">@android:color/system_on_primary_dark</color>
+    <color name="onSurfaceColor">@android:color/system_on_surface_dark</color>
+    <color name="onSurfaceVariantColor">@android:color/system_on_surface_variant_dark</color>
+    <color name="outlineVariantColor">@android:color/system_outline_variant_dark</color>
+    <color name="primaryColor">@android:color/system_primary_dark</color>
 </resources>
