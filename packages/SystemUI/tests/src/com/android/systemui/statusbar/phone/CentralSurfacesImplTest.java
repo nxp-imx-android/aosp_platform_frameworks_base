@@ -224,7 +224,6 @@ import dagger.Lazy;
 import kotlinx.coroutines.test.TestScope;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -702,7 +701,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @Ignore("b/427066068")
     public void lockscreenStateMetrics_notShowing_secure() {
         // uninteresting state, except that fingerprint must be non-zero
         when(mKeyguardStateController.isOccluded()).thenReturn(false);
@@ -985,7 +983,8 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @Ignore("b/427066068")
+    // When the scene container is enabled, StatusBarStateController.setState() is no longer needed.
+    @DisableSceneContainer
     public void testShowKeyguardImplementation_setsState() {
         when(mLockscreenUserManager.getCurrentProfiles()).thenReturn(new SparseArray<>());
 
@@ -1249,7 +1248,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
 
     @Test
     @DisableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    @Ignore("b/427066068")
     public void dismissKeyboardShortcuts_largeScreen_newFlagsDisabled_dismissesTabletVersion() {
         switchToLargeScreen();
         mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
@@ -1300,7 +1298,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
 
     @Test
     @DisableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    @Ignore("b/427066068")
     public void dismissKeyboardShortcuts_smallScreen_bothFlagsDisabled_dismissesPhoneVersion() {
         switchToSmallScreen();
         mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, false);
@@ -1314,7 +1311,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    @Ignore("b/427066068")
     public void toggleKeyboardShortcuts_largeScreen_bothFlagsEnabled_doesNotTogglesAny() {
         switchToLargeScreen();
         mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
