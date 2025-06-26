@@ -117,7 +117,6 @@ java_host_for_device {
 java_library {
     name: "ravenwood-helper-framework-runtime",
     srcs: [
-        ":framework-ravenwood-sources",
         "runtime-helper-src/framework/**/*.java",
     ],
     static_libs: [
@@ -151,6 +150,7 @@ java_library {
     srcs: [
         "junit-impl-src/**/*.java",
         "junit-src/**/*.java",
+        ":framework-ravenwood-sources",
     ],
     static_libs: [
         "androidx.test.monitor",
