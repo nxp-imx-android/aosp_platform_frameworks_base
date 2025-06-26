@@ -6891,4 +6891,7 @@ ul.</string>
 
     <!-- Label describing no blinking for Settings.Secure.ACCESSIBILITY_TEXT_CURSOR_BLINK_INTERVAL_MS. -->
     <string name="no_blink_accessibility_text_cursor_blink_label">Don\'t blink</string>
+
+    <!-- Toast message that is shown when dream is triggered by short press power button. [CHAR LIMIT=TOAST] -->
+    <string name="long_press_power_to_turn_off_tv_toast">Long press Power button to turn off TV</string>
 </resources>
