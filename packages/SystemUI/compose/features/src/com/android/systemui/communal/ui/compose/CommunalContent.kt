@@ -71,7 +71,7 @@ constructor(
 
     @Composable
     fun ContentScope.Content(modifier: Modifier = Modifier) {
-        val showLockIcon = !communalSettingsInteractor.isV2FlagEnabled()
+        val showLockIconAndChargingStatus = !communalSettingsInteractor.isV2FlagEnabled()
 
         CommunalTouchableSurface(viewModel = viewModel, modifier = modifier) {
             val orientation = LocalConfiguration.current.orientation
@@ -100,29 +100,33 @@ constructor(
                         )
                         with(hubOnboardingSection) { BottomSheet() }
                     }
-                    if (showLockIcon) {
+                    if (showLockIconAndChargingStatus) {
                         with(lockElement) {
                             LockIcon(
                                 overrideColor = MaterialTheme.colorScheme.onPrimaryContainer,
                                 modifier = Modifier.element(Communal.Elements.LockIcon),
                             )
                         }
-                    }
-                    with(indicationAreaElement) {
-                        IndicationArea(
-                            Modifier.element(Communal.Elements.IndicationArea)
-                                .fillMaxWidth()
-                                .padding(
-                                    bottom =
-                                        dimensionResource(R.dimen.keyguard_indication_margin_bottom)
-                                )
-                        )
+
+                        with(indicationAreaElement) {
+                            IndicationArea(
+                                Modifier.element(Communal.Elements.IndicationArea)
+                                    .fillMaxWidth()
+                                    .padding(
+                                        bottom =
+                                            dimensionResource(
+                                                R.dimen.keyguard_indication_margin_bottom
+                                            )
+                                    )
+                            )
+                        }
                     }
                 },
             ) { measurables, constraints ->
                 val communalGridMeasurable = measurables[0]
-                val lockIconMeasurable = if (showLockIcon) measurables[1] else null
-                val bottomAreaMeasurable = measurables[if (showLockIcon) 2 else 1]
+                val lockIconMeasurable = if (showLockIconAndChargingStatus) measurables[1] else null
+                val bottomAreaMeasurable =
+                    if (showLockIconAndChargingStatus) measurables[2] else null
 
                 val noMinConstraints = constraints.copy(minWidth = 0, minHeight = 0)
 
@@ -139,7 +143,7 @@ constructor(
                         )
                     }
 
-                val bottomAreaPlaceable = bottomAreaMeasurable.measure(noMinConstraints)
+                val bottomAreaPlaceable = bottomAreaMeasurable?.measure(noMinConstraints)
 
                 val communalGridMaxHeight: Int
                 val communalGridPositionY: Int
@@ -173,8 +177,10 @@ constructor(
                         lockIconPlaceable!!.place(x = lockIconBounds.left, y = lockIconBounds.top)
                     }
 
-                    val bottomAreaTop = constraints.maxHeight - bottomAreaPlaceable.height
-                    bottomAreaPlaceable.place(x = 0, y = bottomAreaTop)
+                    if (bottomAreaPlaceable != null) {
+                        val bottomAreaTop = constraints.maxHeight - bottomAreaPlaceable.height
+                        bottomAreaPlaceable.place(x = 0, y = bottomAreaTop)
+                    }
                 }
             }
         }
