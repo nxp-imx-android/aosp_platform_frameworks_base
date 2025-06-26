@@ -193,6 +193,8 @@ public class PlatformCompat extends IPlatformCompat.Stub {
                     changeId,
                     state,
                     appInfo.isSystemApp(),
+                    isTargetingLatestSdk
+                            || isReportRequested, // always log if reporting explicitly requested
                     isReportRequested);
         }
         return enabled;

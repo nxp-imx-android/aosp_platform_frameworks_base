@@ -21,5 +21,4 @@ android_test {
         "flag-junit",
     ],
     platform_apis: true,
-    test_suites: ["general-tests"],
 }
