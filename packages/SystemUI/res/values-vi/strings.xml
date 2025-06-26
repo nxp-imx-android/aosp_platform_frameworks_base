@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Bạn đang ghi lại toàn bộ nội dung trên màn hình"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Bạn đang ghi lại nội dung của <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Dừng ghi"</string>
+    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
+    <skip />
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Chụp"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Ghi âm"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Đang chia sẻ màn hình"</string>
@@ -664,8 +666,7 @@
     <string name="go_to_adaptive_notification_settings" msgid="2423690125178298479">"Tắt"</string>
     <string name="unlock_to_see_notif_text" msgid="7439033907167561227">"Mở khoá để xem thông báo cũ"</string>
     <string name="quick_settings_disclosure_parental_controls" msgid="2114102871438223600">"Thiết bị này do cha mẹ của bạn quản lý"</string>
-    <!-- no translation found for quick_settings_disclosure_pin_protection (9219481515114868267) -->
-    <skip />
+    <string name="quick_settings_disclosure_pin_protection" msgid="9219481515114868267">"Một số chế độ cài đặt thiết bị được bảo vệ bằng mã PIN."</string>
     <string name="quick_settings_disclosure_management_monitoring" msgid="8231336875820702180">"Tổ chức của bạn sở hữu thiết bị này và có thể giám sát lưu lượng truy cập mạng"</string>
     <string name="quick_settings_disclosure_named_management_monitoring" msgid="2831423806103479812">"<xliff:g id="ORGANIZATION_NAME">%1$s</xliff:g> sở hữu thiết bị này và có thể giám sát lưu lượng truy cập mạng"</string>
     <string name="quick_settings_financed_disclosure_named_management" msgid="2307703784594859524">"Thiết bị này do <xliff:g id="ORGANIZATION_NAME">%s</xliff:g> cung cấp"</string>
@@ -706,8 +707,7 @@
     <string name="monitoring_description_vpn_settings_separator" msgid="8292589617720435430">" "</string>
     <string name="monitoring_description_vpn_settings" msgid="5264167033247632071">"Mở phần cài đặt VPN"</string>
     <string name="monitoring_description_parental_controls" msgid="8184693528917051626">"Thiết bị này do cha mẹ bạn quản lý. Cha mẹ có thể có thể xem và quản lý những thông tin như ứng dụng bạn dùng, vị trí của bạn và thời gian bạn sử dụng thiết bị."</string>
-    <!-- no translation found for monitoring_description_pin_protection (1983580207046670355) -->
-    <skip />
+    <string name="monitoring_description_pin_protection" msgid="1983580207046670355">"Bạn chỉ có thể thay đổi một số chế độ kiểm soát trên thiết bị bằng mã PIN, chẳng hạn như giới hạn hằng ngày và thời gian ngừng hoạt động."</string>
     <string name="legacy_vpn_name" msgid="4174223520162559145">"VPN"</string>
     <string name="keyguard_indication_trust_unlocked" msgid="7395154975733744547">"Luôn được TrustAgent mở khóa"</string>
     <string name="kg_prompt_after_adaptive_auth_lock" msgid="2587481497846342760">"Thiết bị đã bị khoá do quá nhiều lần thử xác thực"</string>
@@ -752,8 +752,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"Tần số đa chuông kép"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"Hỗ trợ tiếp cận"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"Trợ lý"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"Đổ chuông"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Rung"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Tắt tiếng"</string>
@@ -813,8 +812,7 @@
     <string name="status_bar_work" msgid="5238641949837091056">"Hồ sơ công việc"</string>
     <string name="status_bar_airplane" msgid="4848702508684541009">"Chế độ trên máy bay"</string>
     <string name="status_bar_supervision" msgid="6735015942701134125">"Chế độ kiểm soát của cha mẹ"</string>
-    <!-- no translation found for status_bar_pin_supervision (4376576498566645782) -->
-    <skip />
+    <string name="status_bar_pin_supervision" msgid="4376576498566645782">"Bảo vệ bằng mã PIN đối với một số chế độ điều khiển thiết bị"</string>
     <string name="zen_alarm_warning" msgid="7844303238486849503">"Bạn sẽ không nghe thấy chuông báo tiếp theo lúc <xliff:g id="WHEN">%1$s</xliff:g> của mình"</string>
     <string name="alarm_template" msgid="2234991538018805736">"lúc <xliff:g id="WHEN">%1$s</xliff:g>"</string>
     <string name="alarm_template_far" msgid="3561752195856839456">"vào <xliff:g id="WHEN">%1$s</xliff:g>"</string>
@@ -855,6 +853,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Bật"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Giờ đây, các cuộc trò chuyện dài của bạn có thể được tóm tắt để cung cấp cho bạn bản tóm tắt nhanh"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Trình sắp xếp thông báo sẽ nhóm và tắt tiếng các thông báo có mức độ ưu tiên thấp"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Xong"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Áp dụng"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Tắt"</string>
@@ -1580,10 +1580,8 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Thêm phím tắt"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Xoá phím tắt"</string>
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
-    <skip />
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
-    <skip />
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"Đã dùng hết hạn mức 10 phím tắt tuỳ chỉnh cho ứng dụng"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"Xoá một phím tắt để thêm được phím tắt mới"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Di chuyển bằng bàn phím"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Tìm hiểu về phím tắt"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Di chuyển bằng bàn di chuột"</string>
@@ -1658,13 +1656,19 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Không xác định"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Đặt lại mọi ô?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Mọi ô Cài đặt nhanh sẽ được đặt lại về chế độ cài đặt ban đầu của thiết bị"</string>
+    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
+    <skip />
+    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
+    <skip />
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> sẽ không còn hiển thị Thông tin cập nhật trực tiếp. Bạn có thể thay đổi lựa chọn này bất cứ lúc nào trong phần Cài đặt."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Đóng"</string>
-    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
-    <skip />
+    <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"Biểu tượng đề xuất môi trường xung quanh"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Vuốt từ trên cùng bên trái để mở thông báo"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Vuốt từ trên cùng bên phải để mở trình đơn Cài đặt nhanh"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"Quay lại"</string>
 </resources>

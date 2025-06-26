@@ -138,6 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"तुम्ही सध्या तुमची संपूर्ण स्क्रीन रेकॉर्ड करत आहात"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"तुम्ही सध्या <xliff:g id="APP_NAME">%1$s</xliff:g> रेकॉर्ड करत आहात"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"रेकॉर्ड करणे थांबवा"</string>
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"निवडलेला भाग कॅप्चर करा"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"कॅप्चर करा"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"रेकॉर्ड करा"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"स्क्रीन शेअर करत आहे"</string>
@@ -750,8 +751,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"ब्लूटूथ"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"दुहेरी एकाधिक टोन वारंंवारता"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"अ‍ॅक्सेसिबिलिटी"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"Assistant"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"रिंग करा"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"व्हायब्रेट"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"म्यूट करा"</string>
@@ -852,6 +852,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"सुरू करा"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"तुमच्या दीर्घ संभाषणांचा आता सारांश दिला जाऊ शकतो, जेणेकरून तुम्हाला जलद रीकॅप मिळतील."</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"नोटिफिकेशन आयोजक कमी प्राधान्य असलेल्या नोटिफिकेशन बंडल करतो आणि सायलंट करतो"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"पूर्ण झाले"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू करा"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"बंद करा"</string>
@@ -1577,10 +1579,8 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"शॉर्टकट जोडा"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"शॉर्टकट हटवा"</string>
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
-    <skip />
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
-    <skip />
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"१० ॲपसाठी कस्टम शॉर्टकटची मर्यादा वापरण्यात आली आहे"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"नवीन शॉर्टकट जोडता यावा यासाठी एखादा शॉर्टकट हटवा"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"तुमचा कीबोर्ड वापरून नेव्हिगेट करा"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"कीबोर्ड शॉर्टकट जाणून घ्या"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"तुमचा टचपॅड वापरून नेव्हिगेट करा"</string>
@@ -1655,13 +1655,15 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"अज्ञात"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"सर्व टाइल रीसेट करायच्या?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"सर्व क्विक सेटिंग्ज टाइल डिव्हाइसच्या मूळ सेटिंग्जवर रीसेट केल्या जातील"</string>
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"उपयुक्त सूचना मिळवा"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"तुम्ही स्क्रीनवर करत असलेल्या गोष्टींशी संबंधित माहिती आणि कृती प्रोॲक्टिव्हपणे सुचववण्यासाठी आम्ही AI वापरतो"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"आयकन"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"सूचना कशा जनरेट केल्या जातात हे पाहण्यासाठी स्पर्श करून धरून ठेवा"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> आता लाइव्ह अपडेट दाखवणार नाही. तुम्ही सेटिंग्ज मध्ये हे कधीही बदलू शकता."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"बंद करा"</string>
-    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
-    <skip />
+    <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"अँबियंट सूचना आयकन"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"नोटिफिकेशन उघडण्यासाठी सर्वात वरती डावीकडून स्‍वाइप करा"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"क्विक सेटिंग्ज उघडण्यासाठी सर्वात वरती डावीकडून स्‍वाइप करा"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"मागे जा"</string>
 </resources>

@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"បច្ចុប្បន្ន អ្នកកំពុងថតអេក្រង់ទាំងមូលរបស់អ្នក"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"បច្ចុប្បន្ន អ្នកកំពុងថត <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ឈប់ថត"</string>
+    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
+    <skip />
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"ថត"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ថត"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"កំពុងបង្ហាញអេក្រង់"</string>
@@ -750,8 +752,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"ប៊្លូធូស"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"ហ្វ្រេកង់ពហុសំឡេងទ្វេ"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"ភាព​ងាយស្រួល"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"Google Assistant"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"រោទ៍"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"ញ័រ"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"បិទសំឡេង"</string>
@@ -852,6 +853,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"បើក"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ឥឡូវនេះ ការសន្ទនាវែងៗរបស់អ្នកអាចត្រូវបានសង្ខេប ដើម្បីផ្ដល់ការសង្ខេបខ្លីៗឱ្យអ្នក"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"សំឡេងស្ងាត់ និងកញ្ចប់កម្មវិធីរៀបចំការជូនដំណឹងបន្ថយការជូនដំណឹងអាទិភាព"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"រួចរាល់"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"ប្រើ"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"បិទ"</string>
@@ -1577,10 +1580,8 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"បញ្ចូល​ផ្លូវកាត់"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"លុបផ្លូវកាត់"</string>
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
-    <skip />
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
-    <skip />
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"ដែនកំណត់ផ្លូវកាត់ផ្ទាល់ខ្លួនរបស់កម្មវិធី 10 ត្រូវបានប្រើអស់ហើយ"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"លុបផ្លូវកាត់ណាមួយ ដើម្បីអាចបញ្ចូលផ្លូវកាត់ថ្មី"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"រុករកដោយប្រើក្ដារចុចរបស់អ្នក"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"ស្វែងយល់អំពីផ្លូវកាត់​ក្ដារ​ចុច"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"រុករកដោយប្រើផ្ទាំងប៉ះរបស់អ្នក"</string>
@@ -1655,13 +1656,19 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"មិនស្គាល់"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"កំណត់ប្រអប់ទាំងអស់​ឡើងវិញឬ?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"ប្រអប់​ការកំណត់រហ័សទាំងអស់នឹងកំណត់ឡើងវិញទៅការ​កំណត់ដើមរបស់ឧបករណ៍"</string>
+    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
+    <skip />
+    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
+    <skip />
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> នឹងលែងបង្ហាញព័ត៌មាន​បន្តផ្ទាល់ទៀតហើយ។ អ្នកអាច​ប្ដូរលក្ខណៈ​នេះ​បានគ្រប់ពេល​នៅក្នុង​ការកំណត់។"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"បិទ"</string>
-    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
-    <skip />
+    <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"រូបតំណាងការណែនាំសម្ងំ"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"អូសពីខាងឆ្វេងផ្នែកខាងលើដើម្បីបើកការជូនដំណឹង"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"អូសពីខាងស្ដាំផ្នែកខាងលើដើម្បីបើកការកំណត់រហ័ស"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"ថយក្រោយ"</string>
 </resources>

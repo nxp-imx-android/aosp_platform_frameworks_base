@@ -138,6 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"আপনি বর্তমানে সম্পূর্ণ স্ক্রিন রেকর্ড করছেন"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"আপনি বর্তমানে <xliff:g id="APP_NAME">%1$s</xliff:g> রেকর্ড করছেন"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"রেকর্ড করা বন্ধ করুন"</string>
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"বেছে নেওয়া অংশ ক্যাপচার করুন"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"ক্যাপচার করুন"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"রেকর্ড করুন"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"স্ক্রিন শেয়ার করা হচ্ছে"</string>
@@ -750,8 +751,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"ব্লুটুথ"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"ডুয়েল মাল্টি টোন ফ্রিকোয়েন্সি"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"অ্যাক্সেসযোগ্যতা"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"Assistant"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"রিং"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"ভাইব্রেট"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"মিউট"</string>
@@ -852,6 +852,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"চালু করুন"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"আপনাকে দ্রুত রিক্যাপ দিতে অপেক্ষাকৃত দীর্ঘ মেসেজের এখন সারসংক্ষেপ করা যাবে"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"বিজ্ঞপ্তি অর্গানাইজার কম অগ্রাধিকারযুক্ত বিজ্ঞপ্তি বান্ডেল এবং সাইলেন্ট করে"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"হয়ে গেছে"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"প্রয়োগ করুন"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"বন্ধ করুন"</string>
@@ -1577,10 +1579,8 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"শর্টকাট যোগ করুন"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"শর্টকাট মুছুন"</string>
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
-    <skip />
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
-    <skip />
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"১০টি অ্যাপ কাস্টম শর্টকাটের সীমায় পৌঁছে গেছেন"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"একটি শর্টকাট মুছে ফেলুন যাতে নতুন একটি যোগ করা যায়"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"আপনার কীবোর্ড ব্যবহার করে নেভিগেট করুন"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"কীবোর্ড শর্টকাট সম্পর্কে জানুন"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"আপনার টাচপ্যাড ব্যবহার করে নেভিগেট করুন"</string>
@@ -1655,13 +1655,15 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"অজানা"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"সব টাইল রিসেট করবেন?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"সব কুইক সেটিংস টাইল, ডিভাইসের আসল সেটিংসে রিসেট হয়ে যাবে"</string>
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"সহায়ক সাজেশন পান"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"আপনি স্ক্রিনে যা করছেন তার সাথে প্রাসঙ্গিক তথ্য ও অ্যাকশন সক্রিয়ভাবে সাজেস্ট করতে আমরা AI ব্যবহার করি"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"আইকন"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"কীভাবে সাজেশন জেনারেট করা হয় তা দেখতে টাচ করে &amp; ধরে রাখুন"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> আর লাইভ আপডেট দেখাবে না। যেকোনও সময় \'সেটিংস\' থেকে এটি পরিবর্তন করা যাবে।"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"বন্ধ করুন"</string>
-    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
-    <skip />
+    <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"অ্যাম্বিয়েন্ট সাজেশনের আইকন"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"বিজ্ঞপ্তি খুলতে উপরের বাঁদিক থেকে সোয়াইপ করুন"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"দ্রুত সেটিংস খুলতে উপরের ডানদিক থেকে সোয়াইপ করুন"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"ফিরে যান"</string>
 </resources>

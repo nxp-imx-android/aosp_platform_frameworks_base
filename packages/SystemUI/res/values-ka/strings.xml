@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"თქვენ ამჟამად იწერთ თქვენს მთლიან ეკრანს"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"თქვენ ამჟამად იწერთ <xliff:g id="APP_NAME">%1$s</xliff:g>-ს"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ჩაწერის შეწყვეტა"</string>
+    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
+    <skip />
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"აღბეჭდვა"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ჩაწერა"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"მიმდინარეობს ეკრანის გაზიარება"</string>
@@ -750,8 +752,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"ტონალური აკრეფა"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"მარტივი წვდომა"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"ასისტენტი"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"დარეკვა"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"ვიბრაცია"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"დადუმება"</string>
@@ -852,6 +853,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ჩართვა"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ახლა უკვე შესაძლებელია თქვენი უფრო გრძელი საუბრების შეჯამება სწრაფი მიმოხილვების მისაღებად"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"შეტყობინებების ორგანიზატორის ნაკრებები და დადუმება ამცირებს პრიორიტეტულ შეტყობინებებს"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"მზადაა"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"მისადაგება"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"გამორთვა"</string>
@@ -1653,12 +1656,19 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"უცნობი"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"გსურთ ყველა ფილის გადაყენება?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"სწრაფი პარამეტრების ყველა ფილა გადაყენდება მოწყობილობის ორიგინალ პარამეტრებზე"</string>
+    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
+    <skip />
+    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
+    <skip />
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> აღარ აჩვენებს განახლებებს რეალურ დროში. ამის შეცვლა პარამეტრებიდან ნებისმიერ დროს შეგიძლიათ."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"დახურვა"</string>
     <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"ემბიენტური შემოთავაზებების ხატულა"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"შეტყობინებების გასახსნელად ჩამოფურცლეთ ზედა მარცხენა მხარედან"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"სწრაფი პარამეტრების გასახსნელად ჩამოფურცლეთ ზედა მარჯვენა მხარედან"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"უკან"</string>
 </resources>

@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Momentálně nahráváte celou obrazovku"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Momentálně nahráváte aplikaci <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Ukončit nahrávání"</string>
+    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
+    <skip />
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Pořídit"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Nahrát"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Sdílení obrazovky"</string>
@@ -824,8 +826,7 @@
     <string name="accessibility_status_bar_satellite_available" msgid="6514855015496916829">"Satelit, připojení je k dispozici"</string>
     <string name="satellite_connected_carrier_text" msgid="118524195198532589">"SOS přes satelit"</string>
     <string name="satellite_emergency_only_carrier_text" msgid="9103913890116841786">"Pouze tísňové hovory nebo SOS"</string>
-    <!-- no translation found for satellite_network_title_text (1483004114819442028) -->
-    <skip />
+    <string name="satellite_network_title_text" msgid="1483004114819442028">"Satelitní sítě"</string>
     <string name="accessibility_phone_string_format" msgid="7798841417881811812">"<xliff:g id="CARRIER_NAME">%1$s</xliff:g>, <xliff:g id="SIGNAL_STRENGTH_DESCRIPTION">%2$s</xliff:g>."</string>
     <string name="accessibility_no_signal" msgid="7052827511409250167">"není signál"</string>
     <string name="accessibility_one_bar" msgid="5342012847647834506">"jedna čárka"</string>
@@ -855,6 +856,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Zapnout"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Delší konverzace si teď můžete nechat shrnout do stručné rekapitulace"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Organizátor oznámení seskupí a ztlumí oznámení s nižší prioritou"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Hotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Použít"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Vypnout"</string>
@@ -954,8 +957,7 @@
     <string name="keyboard_shortcut_a11y_filter_open_apps" msgid="6175417687221004059">"Zobrazují se zkratky, které otevírají aplikace"</string>
     <string name="keyboard_shortcut_a11y_filter_current_app" msgid="7944592357493737911">"Zobrazují se zkratky pro aktuální aplikaci"</string>
     <string name="group_system_access_notification_shade" msgid="1619028907006553677">"Zobrazit oznámení"</string>
-    <!-- no translation found for group_system_access_quick_settings_panel (1844771096582064926) -->
-    <skip />
+    <string name="group_system_access_quick_settings_panel" msgid="1844771096582064926">"Zobrazit rychlé nastavení"</string>
     <string name="group_system_full_screenshot" msgid="5742204844232667785">"Pořídit snímek obrazovky"</string>
     <string name="group_system_access_system_app_shortcuts" msgid="8562482996626694026">"Zobrazit zkratky"</string>
     <string name="group_system_go_back" msgid="2730322046244918816">"Zpět"</string>
@@ -981,8 +983,7 @@
     <string name="system_desktop_mode_snap_right_window" msgid="2162560187639411929">"Přesunout okno doprava"</string>
     <string name="system_desktop_mode_toggle_maximize_window" msgid="4084100093691768239">"Maximalizovat okno"</string>
     <string name="system_desktop_mode_minimize_window" msgid="1248714536732927092">"Minimalizovat okno"</string>
-    <!-- no translation found for system_multiple_desktop_mode_switch_between_desks (6093884593003003708) -->
-    <skip />
+    <string name="system_multiple_desktop_mode_switch_between_desks" msgid="6093884593003003708">"Přecházet mezi plochami"</string>
     <string name="keyboard_shortcut_group_input" msgid="6888282716546625610">"Vstup"</string>
     <string name="input_switch_input_language_next" msgid="3782155659868227855">"Přepnout na další jazyk"</string>
     <string name="input_switch_input_language_previous" msgid="6043341362202336623">"Přepnout na předchozí jazyk"</string>
@@ -1047,14 +1048,10 @@
     <string name="drag_to_add_tiles" msgid="8933270127508303672">"Dlaždice přidáte podržením a přetažením"</string>
     <string name="drag_to_rearrange_tiles" msgid="2143204300089638620">"Dlaždice můžete uspořádat podržením a přetažením"</string>
     <string name="select_to_rearrange_tiles" msgid="6166153534235179148">"Vyberte dlaždice, jejichž pozici a velikost chcete změnit"</string>
-    <!-- no translation found for tap_to_remove_tiles (76564688376603718) -->
-    <skip />
-    <!-- no translation found for resize_and_reorder_tiles (5530933353774871231) -->
-    <skip />
-    <!-- no translation found for qs_edit_edit_tab (467315123555871860) -->
-    <skip />
-    <!-- no translation found for qs_edit_layout_tab (1935366846617681520) -->
-    <skip />
+    <string name="tap_to_remove_tiles" msgid="76564688376603718">"Klepnutím odstraníte dlaždice"</string>
+    <string name="resize_and_reorder_tiles" msgid="5530933353774871231">"Změna velikosti a uspořádání rozvržení"</string>
+    <string name="qs_edit_edit_tab" msgid="467315123555871860">"Upravit"</string>
+    <string name="qs_edit_layout_tab" msgid="1935366846617681520">"Rozvržení"</string>
     <string name="tap_to_position_tile" msgid="6282815817773342757">"Klepnutím umístěte dlaždici"</string>
     <string name="drag_to_remove_tiles" msgid="4682194717573850385">"Přetažením sem dlaždice odstraníte"</string>
     <string name="drag_to_remove_disabled" msgid="933046987838658850">"Potřebujete alespoň tento počet dlaždic: <xliff:g id="MIN_NUM_TILES">%1$d</xliff:g>"</string>
@@ -1586,10 +1583,8 @@
     <string name="shortcut_helper_plus_symbol" msgid="4534843157353732011">"+"</string>
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"Přidat zkratku"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"Smazat zkratku"</string>
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded (7766416877791564255) -->
-    <skip />
-    <!-- no translation found for shortcut_helper_app_custom_shortcut_limit_exceeded_instruction (6146855266321804624) -->
-    <skip />
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"Limit 10 vlastních zkratek aplikací byl vyčerpán"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"Pokud chcete přidat novou zkratku, některou smažte"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"Navigujte pomocí klávesnice"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"Naučte se klávesové zkratky"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"Navigujte pomocí touchpadu"</string>
@@ -1664,11 +1659,18 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Neznámé"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Resetovat všechny dlaždice?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Všechny dlaždice Rychlého nastavení se resetují do původní konfigurace zařízení"</string>
+    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
+    <skip />
+    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
+    <skip />
     <string name="demote_explain_text" msgid="3942301497888762295">"Aplikace <xliff:g id="APPLICATION">%1$s</xliff:g> už nebude zobrazovat aktuality živě. Tuto volbu můžete v nastavení kdykoli změnit."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Zavřít"</string>
-    <!-- no translation found for ambient_cue_icon_content_description (1403264595520777373) -->
-    <skip />
+    <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"Ikona návrhů pro ambientní prostředí"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Přejetím z levého horního rohu otevřete oznámení"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Přejetím z pravého horního rohu otevřete panel Rychlé nastavení"</string>
     <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
