@@ -18,6 +18,10 @@ package android.view;
 
 import static android.view.WindowInsets.Type.SIZE;
 import static android.view.WindowInsets.Type.captionBar;
+import static android.view.WindowInsets.Type.displayCutout;
+import static android.view.WindowInsets.Type.ime;
+import static android.view.WindowInsets.Type.navigationBars;
+import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowInsets.Type.systemBars;
 
 import static org.junit.Assert.assertEquals;
@@ -69,6 +73,49 @@ public class WindowInsetsTest {
         WindowInsets windowInsets = new WindowInsets(insets, maxInsets, visible, false, 0,
                 false, 0, null, null, null, DisplayShape.NONE, systemBars(),
                 true /* compatIgnoreVisibility */, null, null, 0, 0);
+        assertEquals(Insets.of(0, 10, 0, 0), windowInsets.getSystemWindowInsets());
+    }
+
+    @Test
+    public void builder_copy_compatInsetTypes() {
+        final Insets[] insets = new Insets[SIZE];
+        final Insets[] maxInsets = new Insets[SIZE];
+        final boolean[] visible = new boolean[SIZE];
+        final int compatInsetTypes = systemBars() | displayCutout() | ime();
+        final WindowInsets windowInsets = new WindowInsets(insets, maxInsets, visible, false, 0,
+                false, 0, null, null, null, DisplayShape.NONE, compatInsetTypes,
+                false /* compatIgnoreVisibility */, null, null, 0, 0);
+        final WindowInsets modified = new WindowInsets.Builder(windowInsets)
+                .setInsets(statusBars(), Insets.of(0, 10, 0, 0))
+                .setInsets(navigationBars(), Insets.of(0, 0, 20, 0))
+                .setInsets(displayCutout(), Insets.of(30, 0, 0, 0))
+                .setInsets(ime(), Insets.of(0, 0, 0, 40))
+                .build();
+        assertEquals(Insets.of(30, 10, 20, 40), modified.getSystemWindowInsets());
+    }
+
+    @Test
+    public void builder_copy_compatIgnoreVisibility() {
+        final Insets[] insets = new Insets[SIZE];
+        final Insets[] maxInsets = new Insets[SIZE];
+        final boolean[] visible = new boolean[SIZE];
+        final int compatInsetTypes = systemBars() | displayCutout();
+        final WindowInsets windowInsets = new WindowInsets(insets, maxInsets, visible, false, 0,
+                false, 0, null, null, null, DisplayShape.NONE, compatInsetTypes,
+                true /* compatIgnoreVisibility */, null, null, 0, 0);
+        final WindowInsets modified = new WindowInsets.Builder(windowInsets)
+                .setInsetsIgnoringVisibility(statusBars(), Insets.of(0, 10, 0, 0))
+                .setInsetsIgnoringVisibility(navigationBars(), Insets.of(0, 0, 20, 0))
+                .setInsetsIgnoringVisibility(displayCutout(), Insets.of(30, 0, 0, 0))
+                .build();
+        assertEquals(Insets.of(30, 10, 20, 0), modified.getSystemWindowInsets());
+    }
+
+    @Test
+    public void builder_displayCutout_getSystemWindowInsets() {
+        final WindowInsets windowInsets = new WindowInsets.Builder()
+                .setInsets(displayCutout(), Insets.of(0, 10, 0, 0))
+                .build();
         assertEquals(Insets.of(0, 10, 0, 0), windowInsets.getSystemWindowInsets());
     }
 
