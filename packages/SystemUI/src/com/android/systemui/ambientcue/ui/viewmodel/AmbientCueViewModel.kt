@@ -113,7 +113,9 @@ constructor(
     private val firstTimeEducationShownAt: Flow<Long?> =
         sharedPreferences
             .flatMapLatestConflated { prefs ->
-                prefs?.observeLong(KEY_FIRST_TIME_ONBOARDING_SHOWN_AT, -1L) ?: flowOf(null)
+                // If the shared preference is not initialized, set the default value to 0L to avoid
+                // showing the first time education.
+                prefs?.observeLong(KEY_FIRST_TIME_ONBOARDING_SHOWN_AT, -1L) ?: flowOf(0L)
             }
             .map { if (it == -1L) null else it }
             .distinctUntilChanged()
