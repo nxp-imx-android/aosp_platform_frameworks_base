@@ -343,6 +343,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_privacy_chip_animation_exemption"
+    namespace: "systemui"
+    description: "Exempt the default camera app from the privacy chip animation."
+    bug: "422243884"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "notification_shade_ui_thread"
     namespace: "systemui"
     description: "Move the NotificationShade window to a new UI thread, which is separate from "
