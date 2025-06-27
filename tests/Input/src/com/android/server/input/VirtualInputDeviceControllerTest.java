@@ -59,8 +59,10 @@ import org.mockito.invocation.InvocationOnMock;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 @Presubmit
@@ -87,6 +89,7 @@ public class VirtualInputDeviceControllerTest {
     private final Map<String, Integer> mDisplayIdMapping = new HashMap<>();
     // phys -> uniqueId
     private final Map<String, String> mUniqueIdAssociationByPort = new HashMap<>();
+    private final Set<String> mVirtualDevices = new HashSet<>();
 
     @Mock
     private DisplayManagerInternal mDisplayManagerInternalMock;
@@ -122,6 +125,11 @@ public class VirtualInputDeviceControllerTest {
                 .when(mInputManagerService).addUniqueIdAssociationByPort(anyString(), anyString());
         doAnswer(inv -> mUniqueIdAssociationByPort.remove(inv.getArgument(0)))
                 .when(mInputManagerService).removeUniqueIdAssociationByPort(anyString());
+        doAnswer(inv -> mVirtualDevices.add(inv.getArgument(0)))
+                .when(mInputManagerService).addVirtualDevice(anyString());
+        doAnswer(inv -> mVirtualDevices.remove(inv.getArgument(0)))
+                .when(mInputManagerService).removeVirtualDevice(anyString());
+
 
         // Set a new instance of InputManager for testing that uses the IInputManager mock as the
         // interface to the server.
@@ -163,6 +171,7 @@ public class VirtualInputDeviceControllerTest {
                 .setProductId(inv.getArgument(2))
                 .setDescriptor(phys)
                 .setExternal(true)
+                .setIsVirtualDevice(mVirtualDevices.contains(phys))
                 .setAssociatedDisplayId(mDisplayIdMapping.get(mUniqueIdAssociationByPort.get(phys)))
                 .build();
         mDevices.add(device);

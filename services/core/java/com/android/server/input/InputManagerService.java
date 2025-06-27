@@ -173,6 +173,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalInt;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /** The system implementation of {@link IInputManager} that manages input devices. */
@@ -313,6 +314,12 @@ public class InputManagerService extends IInputManager.Stub
     // Currently only accessed by InputReader.
     @GuardedBy("mAssociationsLock")
     private final Map<String, String> mKeyboardLayoutAssociations = new ArrayMap<>();
+
+    // The set of input ports (String) for all the devices that are marked as "virtual devices".
+    // Typically all devices created from VDM or any other Uinput device created by system server
+    // should be marked as virtual.
+    @GuardedBy("mAssociationsLock")
+    private final Set<String> mVirtualDevicePorts = new ArraySet<>();
 
     // Stores input ports associated with device types. For example, adding an association
     // {"123", "touchNavigation"} here would mean that a touch device appearing at port "123" would
@@ -1905,6 +1912,24 @@ public class InputManagerService extends IInputManager.Stub
         mNative.changeKeyboardLayoutAssociation();
     }
 
+    void addVirtualDevice(@NonNull String inputPort) {
+        Objects.requireNonNull(inputPort);
+
+        synchronized (mAssociationsLock) {
+            mVirtualDevicePorts.add(inputPort);
+        }
+        mNative.changeVirtualDevices();
+    }
+
+    void removeVirtualDevice(@NonNull String inputPort) {
+        Objects.requireNonNull(inputPort);
+
+        synchronized (mAssociationsLock) {
+            mVirtualDevicePorts.remove(inputPort);
+        }
+        mNative.changeVirtualDevices();
+    }
+
     @Override // Binder call
     public InputSensorInfo[] getSensorList(int deviceId) {
         return mNative.getSensorList(deviceId);
@@ -2982,6 +3007,14 @@ public class InputManagerService extends IInputManager.Stub
             configs.putAll(mKeyboardLayoutAssociations);
         }
         return flatten(configs);
+    }
+
+    // Native callback.
+    @SuppressWarnings("unused")
+    private String[] getVirtualDevicePorts() {
+        synchronized (mAssociationsLock) {
+            return mVirtualDevicePorts.toArray(new String[0]);
+        }
     }
 
     /**

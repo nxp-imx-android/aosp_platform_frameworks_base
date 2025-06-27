@@ -138,6 +138,7 @@ static struct {
     jmethodID getInputUniqueIdAssociationsByDescriptor;
     jmethodID getDeviceTypeAssociations;
     jmethodID getKeyboardLayoutAssociations;
+    jmethodID getVirtualDevicePorts;
     jmethodID getPointerLayer;
     jmethodID getLoadedPointerIcon;
     jmethodID getKeyboardLayoutOverlay;
@@ -715,9 +716,10 @@ void NativeInputManager::getReaderConfiguration(InputReaderConfiguration* outCon
     }
 
     outConfig->excludedDeviceNames.clear();
-    jobjectArray excludedDeviceNames = jobjectArray(env->CallStaticObjectMethod(
-            gServiceClassInfo.clazz, gServiceClassInfo.getExcludedDeviceNames));
-    if (!checkAndClearExceptionFromCallback(env, "getExcludedDeviceNames") && excludedDeviceNames) {
+    if (jobjectArray excludedDeviceNames =
+                jobjectArray(env->CallStaticObjectMethod(gServiceClassInfo.clazz,
+                                                         gServiceClassInfo.getExcludedDeviceNames));
+        !checkAndClearExceptionFromCallback(env, "getExcludedDeviceNames") && excludedDeviceNames) {
         jsize length = env->GetArrayLength(excludedDeviceNames);
         for (jsize i = 0; i < length; i++) {
             std::string deviceName = getStringElementFromJavaArray(env, excludedDeviceNames, i);
@@ -732,9 +734,9 @@ void NativeInputManager::getReaderConfiguration(InputReaderConfiguration* outCon
     // Received data: ['inputPort1', '1', 'inputPort2', '2']
     // So we unpack accordingly here.
     outConfig->inputPortToDisplayPortAssociations.clear();
-    jobjectArray portAssociations = jobjectArray(env->CallObjectMethod(mServiceObj,
-            gServiceClassInfo.getInputPortAssociations));
-    if (!checkAndClearExceptionFromCallback(env, "getInputPortAssociations") && portAssociations) {
+    if (jobjectArray portAssociations = jobjectArray(
+                env->CallObjectMethod(mServiceObj, gServiceClassInfo.getInputPortAssociations));
+        !checkAndClearExceptionFromCallback(env, "getInputPortAssociations") && portAssociations) {
         jsize length = env->GetArrayLength(portAssociations);
         for (jsize i = 0; i < length / 2; i++) {
             std::string inputPort = getStringElementFromJavaArray(env, portAssociations, 2 * i);
@@ -774,6 +776,18 @@ void NativeInputManager::getReaderConfiguration(InputReaderConfiguration* outCon
                                     return KeyboardLayoutInfo(std::move(languageTag),
                                                               std::move(layoutType));
                                 });
+
+    outConfig->virtualDevicePorts.clear();
+    if (jobjectArray virtualDevicePorts = jobjectArray(
+                env->CallObjectMethod(mServiceObj, gServiceClassInfo.getVirtualDevicePorts));
+        !checkAndClearExceptionFromCallback(env, "getVirtualDevicePorts") && virtualDevicePorts) {
+        jsize length = env->GetArrayLength(virtualDevicePorts);
+        for (jsize i = 0; i < length; i++) {
+            std::string devicePort = getStringElementFromJavaArray(env, virtualDevicePorts, i);
+            outConfig->virtualDevicePorts.insert(devicePort);
+        }
+        env->DeleteLocalRef(virtualDevicePorts);
+    }
 
     { // acquire lock
         std::scoped_lock _l(mLock);
@@ -3039,6 +3053,12 @@ static void changeKeyboardLayoutAssociation(JNIEnv* env, jobject nativeImplObj) 
             InputReaderConfiguration::Change::KEYBOARD_LAYOUT_ASSOCIATION);
 }
 
+static void changeVirtualDevices(JNIEnv* env, jobject nativeImplObj) {
+    NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
+    im->getInputManager()->getReader().requestRefreshConfiguration(
+            InputReaderConfiguration::Change::VIRTUAL_DEVICES);
+}
+
 static void nativeSetMotionClassifierEnabled(JNIEnv* env, jobject nativeImplObj, jboolean enabled) {
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
 
@@ -3400,6 +3420,7 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"changeUniqueIdAssociation", "()V", (void*)nativeChangeUniqueIdAssociation},
         {"changeTypeAssociation", "()V", (void*)nativeChangeTypeAssociation},
         {"changeKeyboardLayoutAssociation", "()V", (void*)changeKeyboardLayoutAssociation},
+        {"changeVirtualDevices", "()V", (void*)changeVirtualDevices},
         {"setDisplayEligibilityForPointerCapture", "(IZ)V",
          (void*)nativeSetDisplayEligibilityForPointerCapture},
         {"setMotionClassifierEnabled", "(Z)V", (void*)nativeSetMotionClassifierEnabled},
@@ -3556,6 +3577,9 @@ int register_android_server_InputManager(JNIEnv* env) {
 
     GET_METHOD_ID(gServiceClassInfo.getKeyboardLayoutAssociations, clazz,
                   "getKeyboardLayoutAssociations", "()[Ljava/lang/String;");
+
+    GET_METHOD_ID(gServiceClassInfo.getVirtualDevicePorts, clazz, "getVirtualDevicePorts",
+                  "()[Ljava/lang/String;");
 
     GET_METHOD_ID(gServiceClassInfo.getPointerLayer, clazz,
             "getPointerLayer", "()I");

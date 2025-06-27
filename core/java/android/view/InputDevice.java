@@ -78,6 +78,7 @@ public final class InputDevice implements Parcelable {
     private final InputDeviceIdentifier mIdentifier;
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     private final boolean mIsExternal;
+    private final boolean mIsVirtualDevice;
     @Source
     private final int mSources;
     private final int mKeyboardType;
@@ -498,11 +499,11 @@ public final class InputDevice implements Parcelable {
      * Called by native code
      */
     private InputDevice(int id, int generation, int controllerNumber, String name, int vendorId,
-            int productId, int deviceBus, String descriptor, boolean isExternal, int sources,
-            int keyboardType, KeyCharacterMap keyCharacterMap, @Nullable String keyboardLanguageTag,
-            @Nullable String keyboardLayoutType, boolean hasVibrator, boolean hasMicrophone,
-            boolean hasSensor, boolean hasBattery, int usiVersionMajor, int usiVersionMinor,
-            int associatedDisplayId, boolean enabled) {
+            int productId, int deviceBus, String descriptor, boolean isExternal,
+            boolean isVirtualDevice, int sources, int keyboardType, KeyCharacterMap keyCharacterMap,
+            @Nullable String keyboardLanguageTag, @Nullable String keyboardLayoutType,
+            boolean hasVibrator, boolean hasMicrophone, boolean hasSensor, boolean hasBattery,
+            int usiVersionMajor, int usiVersionMinor, int associatedDisplayId, boolean enabled) {
         mId = id;
         mGeneration = generation;
         mControllerNumber = controllerNumber;
@@ -512,6 +513,7 @@ public final class InputDevice implements Parcelable {
         mDeviceBus = deviceBus;
         mDescriptor = descriptor;
         mIsExternal = isExternal;
+        mIsVirtualDevice = isVirtualDevice;
         mSources = sources;
         mKeyboardType = keyboardType;
         mKeyCharacterMap = keyCharacterMap;
@@ -546,6 +548,7 @@ public final class InputDevice implements Parcelable {
         mDeviceBus = in.readInt();
         mDescriptor = in.readString();
         mIsExternal = in.readInt() != 0;
+        mIsVirtualDevice = in.readInt() != 0;
         mSources = in.readInt();
         mKeyboardType = in.readInt();
         mKeyboardLanguageTag = in.readString8();
@@ -588,6 +591,7 @@ public final class InputDevice implements Parcelable {
         private int mDeviceBus = 0;
         private String mDescriptor = "";
         private boolean mIsExternal = false;
+        private boolean mIsVirtualDevice = false;
         private int mSources = 0;
         private int mKeyboardType = 0;
         private KeyCharacterMap mKeyCharacterMap = null;
@@ -656,6 +660,12 @@ public final class InputDevice implements Parcelable {
         /** @see InputDevice#isExternal() */
         public Builder setExternal(boolean external) {
             mIsExternal = external;
+            return this;
+        }
+
+        /** @see InputDevice#isPhysicalDevice() */
+        public Builder setIsVirtualDevice(boolean isVirtualDevice) {
+            mIsVirtualDevice = isVirtualDevice;
             return this;
         }
 
@@ -761,6 +771,7 @@ public final class InputDevice implements Parcelable {
                     mDeviceBus,
                     mDescriptor,
                     mIsExternal,
+                    mIsVirtualDevice,
                     mSources,
                     mKeyboardType,
                     mKeyCharacterMap,
@@ -967,6 +978,23 @@ public final class InputDevice implements Parcelable {
      */
     public boolean isExternal() {
         return mIsExternal;
+    }
+
+    /**
+     * Returns {@code true} if it represents a real physical hardware that is connected to the
+     * android device, returns {@code false} if it represents a virtual device that is created from
+     * userspace like devices created using {@link android.companion.virtual.VirtualDeviceManager}
+     * or {@link KeyCharacterMap#VIRTUAL_KEYBOARD}
+     *
+     * <p>
+     * Use this method to identify if an InputDevice should be treated as a physically connected
+     * peripheral for aspects like Settings, etc.
+     * </p>
+     *
+     * @hide
+     */
+    public boolean isPhysicalDevice() {
+        return !mIsVirtualDevice && !isVirtual();
     }
 
     /**
@@ -1592,6 +1620,7 @@ public final class InputDevice implements Parcelable {
         out.writeInt(mDeviceBus);
         out.writeString(mDescriptor);
         out.writeInt(mIsExternal ? 1 : 0);
+        out.writeInt(mIsVirtualDevice ? 1 : 0);
         out.writeInt(mSources);
         out.writeInt(mKeyboardType);
         out.writeString8(mKeyboardLanguageTag);
@@ -1634,6 +1663,7 @@ public final class InputDevice implements Parcelable {
         description.append("  Generation: ").append(mGeneration).append("\n");
         description.append("  Location: ").append(mIsExternal ? "external" : "built-in").append(
                 "\n");
+        description.append("  Virtual: ").append(mIsVirtualDevice).append("\n");
         description.append("  Enabled: ").append(isEnabled()).append("\n");
 
         description.append("  Keyboard Type: ");

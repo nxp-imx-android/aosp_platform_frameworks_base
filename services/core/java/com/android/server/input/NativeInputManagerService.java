@@ -231,6 +231,8 @@ interface NativeInputManagerService {
 
     void changeKeyboardLayoutAssociation();
 
+    void changeVirtualDevices();
+
     void setDisplayEligibilityForPointerCapture(int displayId, boolean enabled);
 
     void setMotionClassifierEnabled(boolean enabled);
@@ -581,6 +583,9 @@ interface NativeInputManagerService {
 
         @Override
         public native void changeKeyboardLayoutAssociation();
+
+        @Override
+        public native void changeVirtualDevices();
 
         @Override
         public native void setDisplayEligibilityForPointerCapture(int displayId, boolean enabled);
