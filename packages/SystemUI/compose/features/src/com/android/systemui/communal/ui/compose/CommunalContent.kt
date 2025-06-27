@@ -17,6 +17,11 @@
 package com.android.systemui.communal.ui.compose
 
 import android.content.res.Configuration
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,6 +42,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.Flags
@@ -76,6 +82,21 @@ constructor(
         CommunalTouchableSurface(viewModel = viewModel, modifier = modifier) {
             val orientation = LocalConfiguration.current.orientation
             var gridRegion by remember { mutableStateOf<Rect?>(null) }
+            val showBackgroundForEditModeTransition by
+                viewModel.showBackgroundForEditModeTransition.collectAsStateWithLifecycle(
+                    initialValue = false
+                )
+
+            // The animated background here matches the color scheme of the edit mode activity and
+            // facilitates the transition to and from edit mode.
+            AnimatedVisibility(
+                visible = showBackgroundForEditModeTransition,
+                enter = fadeIn(tween(TransitionDuration.EDIT_MODE_BACKGROUND_ANIM_DURATION_MS)),
+                exit = fadeOut(tween(TransitionDuration.EDIT_MODE_BACKGROUND_ANIM_DURATION_MS)),
+            ) {
+                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceDim))
+            }
+
             Layout(
                 modifier =
                     Modifier.fillMaxSize().thenIf(communalSettingsInteractor.isV2FlagEnabled()) {

@@ -24,7 +24,6 @@ import com.android.systemui.communal.domain.interactor.CommunalSceneInteractor
 import com.android.systemui.communal.domain.interactor.CommunalSettingsInteractor
 import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.CommunalTransitionKeys
-import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
@@ -94,7 +93,6 @@ constructor(
                     KeyguardState.OCCLUDED -> TO_OCCLUDED_DURATION
                     KeyguardState.ALTERNATE_BOUNCER -> TO_BOUNCER_DURATION
                     KeyguardState.PRIMARY_BOUNCER -> TO_BOUNCER_DURATION
-                    KeyguardState.GONE -> TO_GONE_DURATION
                     else -> DEFAULT_DURATION
                 }.inWholeMilliseconds
         }
@@ -224,10 +222,7 @@ constructor(
                 .filterRelevantKeyguardStateAnd { isKeyguardGoingAway -> isKeyguardGoingAway }
                 .collect {
                     val editModeState = communalSceneInteractor.editModeState.value
-                    if (
-                        editModeState == EditModeState.STARTING ||
-                            editModeState == EditModeState.SHOWING
-                    ) {
+                    if (editModeState != null) {
                         if (Flags.hubEditModeTransition()) {
                             // If transitioning to edit mode, do nothing here. Scene change is
                             // handled by the edit mode activity.
@@ -264,6 +259,5 @@ constructor(
         val TO_BOUNCER_DURATION = 400.milliseconds
         val TO_OCCLUDED_DURATION = 450.milliseconds
         val TO_AOD_DURATION = 500.milliseconds
-        val TO_GONE_DURATION = 100.milliseconds
     }
 }
