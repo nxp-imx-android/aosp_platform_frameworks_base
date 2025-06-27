@@ -26,7 +26,7 @@ filegroup {
     ],
     // Exactly one MessageQueue.java will be added to srcs by messagequeue-gen
     exclude_srcs: [
-        "**/*_ravenwood.java",
+        ":framework-ravenwood-sources",
         ":dropboxmanager_aidl_sources",
         ":dynamic_instrumentation_manager_aidl_sources",
         "android/os/*MessageQueue/**/*.java",

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.provider;
+package android.platform.test.ravenwood;
 
-public class DeviceConfig_ravenwood {
-
-    /**
-     * Called by Ravenwood runtime to reset all local changes.
-     */
-    public static void reset() {
-        RavenwoodConfigDataStore.getInstance().clearAll();
+/**
+ * Standard class loader hook.
+ */
+public class RavenwoodClassLoadHooks {
+    private RavenwoodClassLoadHooks() {
     }
 
     /**
-     * Called by {@link DeviceConfig#newDataStore()}
+     * Calls global initialization.
      */
-    public static DeviceConfigDataStore newDataStore() {
-        return RavenwoodConfigDataStore.getInstance();
+    public static void globalInitOnce(Class<?> clazz) {
+        System.out.println("Framework class loaded: " + clazz.getCanonicalName());
+        // Always try to initialize the environment in case classes are loaded before
+        // RavenwoodAwareTestRunner is initialized
+        RavenwoodDriver.globalInitOnce();
     }
 }
