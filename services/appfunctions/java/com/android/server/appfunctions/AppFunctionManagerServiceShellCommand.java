@@ -108,37 +108,40 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         + ". Defaults to the current user.");
 
         pw.println();
-        pw.println(
-                "  grant-app-function-access --agent-package <AGENT_PACKAGE_NAME> "
-                        + "--target-package <TARGET_PACKAGE_NAME> [--agent-user <USER_ID>] "
-                        + "[--target-user <USER_ID>]");
-        pw.println("    Grants an agent package access to an app's functions.");
-        pw.println("    --agent-package <AGENT_PACKAGE_NAME>: The agent package to grant access.");
-        pw.println("    --target-package <TARGET_PACKAGE_NAME>: The target package.");
-        pw.println(
-                "    --agent-user <USER_ID> (optional): The user ID for the agent package. "
-                        + "Defaults to the current user.");
-        pw.println(
-                "    --target-user <USER_ID> (optional): The user ID for the target package. "
-                        + "Defaults to the current user.");
-        pw.println();
-        pw.println(
-                "  revoke-app-function-access --agent-package <AGENT_PACKAGE_NAME> "
-                        + "--target-package <TARGET_PACKAGE_NAME> [--agent-user <USER_ID>] "
-                        + "[--target-user <USER_ID>]");
-        pw.println("    Revokes an agent package's access to an app's functions.");
-        pw.println(
-                "    --agent-package <AGENT_PACKAGE_NAME>: The agent package to revoke access "
-                        + "from.");
-        pw.println("    --target-package <TARGET_PACKAGE_NAME>: The target package.");
-        pw.println(
-                "    --agent-user <USER_ID> (optional): The user ID for the agent package. "
-                        + "Defaults to the current user.");
-        pw.println(
-                "    --target-user <USER_ID> (optional): The user ID for the target package. "
-                        + "Defaults to the current user.");
 
-        pw.println();
+        if (accessCheckFlagsEnabled()) {
+            pw.println(
+                    "  grant-app-function-access --agent-package <AGENT_PACKAGE_NAME> "
+                            + "--target-package <TARGET_PACKAGE_NAME> [--agent-user <USER_ID>] "
+                            + "[--target-user <USER_ID>]");
+            pw.println("    Grants an agent package access to an app's functions.");
+            pw.println(
+                    "    --agent-package <AGENT_PACKAGE_NAME>: The agent package to grant access.");
+            pw.println("    --target-package <TARGET_PACKAGE_NAME>: The target package.");
+            pw.println(
+                    "    --agent-user <USER_ID> (optional): The user ID for the agent package. "
+                            + "Defaults to the current user.");
+            pw.println(
+                    "    --target-user <USER_ID> (optional): The user ID for the target package. "
+                            + "Defaults to the current user.");
+            pw.println();
+            pw.println(
+                    "  revoke-app-function-access --agent-package <AGENT_PACKAGE_NAME> "
+                            + "--target-package <TARGET_PACKAGE_NAME> [--agent-user <USER_ID>] "
+                            + "[--target-user <USER_ID>]");
+            pw.println("    Revokes an agent package's access to an app's functions.");
+            pw.println(
+                    "    --agent-package <AGENT_PACKAGE_NAME>: The agent package to revoke access "
+                            + "from.");
+            pw.println("    --target-package <TARGET_PACKAGE_NAME>: The target package.");
+            pw.println(
+                    "    --agent-user <USER_ID> (optional): The user ID for the agent package. "
+                            + "Defaults to the current user.");
+            pw.println(
+                    "    --target-user <USER_ID> (optional): The user ID for the target package. "
+                            + "Defaults to the current user.");
+            pw.println();
+        }
     }
 
     @Override
@@ -156,8 +159,14 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                 case "set-enabled":
                     return runSetAppFunctionEnabled();
                 case "grant-app-function-access":
+                    if (!accessCheckFlagsEnabled()) {
+                        return -1;
+                    }
                     return runGrantAppFunctionAccess();
                 case "revoke-app-function-access":
+                    if (!accessCheckFlagsEnabled()) {
+                        return -1;
+                    }
                     return runRevokeAppFunctionAccess();
                 default:
                     return handleDefaultCommands(cmd);
@@ -388,7 +397,9 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                     @Override
                     public void onError(AppFunctionException e) {
                         Log.d(TAG, "onError: ", e);
-                        pw.println("Error executing app function: " + e.getErrorCode() + " - " + e);
+                        pw.printf(
+                                "Error executing app function: %s. See logcat for more details. %n",
+                                e);
                         resultCode.set(-1);
                         countDownLatch.countDown();
                     }
@@ -506,5 +517,10 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             case Process.SHELL_UID -> "com.android.shell";
             default -> throw new IllegalAccessError("Only allow shell or root");
         };
+    }
+
+    private boolean accessCheckFlagsEnabled() {
+        return android.permission.flags.Flags.appFunctionAccessApiEnabled()
+                && android.permission.flags.Flags.appFunctionAccessServiceEnabled();
     }
 }
