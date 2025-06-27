@@ -21,6 +21,7 @@ import android.hardware.biometrics.BiometricFaceConstants
 import android.hardware.biometrics.BiometricSourceType
 import android.os.PowerManager
 import android.platform.test.annotations.EnableFlags
+import android.security.Flags.FLAG_SECURE_LOCK_DEVICE
 import android.service.dreams.Flags.FLAG_DREAMS_V2
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -850,6 +851,21 @@ class DeviceEntryFaceAuthInteractorTest : SysuiTestCase() {
 
             facePropertyRepository.setCameraIno(null)
 
+            runCurrent()
+            assertThat(faceAuthRepository.runningAuthRequest.value).isNull()
+        }
+
+    @EnableFlags(FLAG_SECURE_LOCK_DEVICE)
+    @Test
+    fun faceAuthIsRequestedForSecureLockDeviceBiometricAuth_cancelledWhenHidden() =
+        kosmos.runTest {
+            underTest.onSecureLockDeviceBiometricAuthRequested()
+            underTest.start()
+
+            runCurrent()
+            assertThat(faceAuthRepository.runningAuthRequest.value).isNotNull()
+
+            underTest.onSecureLockDeviceBiometricAuthHidden()
             runCurrent()
             assertThat(faceAuthRepository.runningAuthRequest.value).isNull()
         }

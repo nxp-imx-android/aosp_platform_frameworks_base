@@ -66,6 +66,7 @@ import com.android.systemui.user.data.model.SelectionStatus
 import com.android.systemui.user.data.repository.UserRepository
 import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import com.google.errorprone.annotations.CompileTimeConstant
+import dagger.Lazy
 import java.io.PrintWriter
 import java.util.concurrent.Executor
 import javax.inject.Inject
@@ -351,6 +352,7 @@ constructor(
                 userRepository.selectedUser.map {
                     it.selectionStatus == SelectionStatus.SELECTION_IN_PROGRESS
                 },
+                biometricSettingsRepository.requiresStrongBiometricAuthForSecureLockDevice,
             )
             .flowOn(mainDispatcher) // should revoke auth ASAP in the main thread
             .onEach { anyOfThemIsTrue ->
@@ -455,6 +457,10 @@ constructor(
             Pair(
                 biometricSettingsRepository.isCurrentUserInLockdown.isFalse(),
                 "userHasNotLockedDownDevice",
+            ),
+            Pair(
+                biometricSettingsRepository.requiresPrimaryAuthForSecureLockDevice.isFalse(),
+                "doesNotRequirePrimaryAuthOnBouncerForSecureLockDevice",
             ),
             Pair(keyguardRepository.isKeyguardShowing, "isKeyguardShowing"),
             Pair(
