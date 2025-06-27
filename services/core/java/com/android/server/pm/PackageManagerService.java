@@ -998,6 +998,7 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
     final boolean mShouldStopSystemPackagesByDefault;
     private final @NonNull String mRequiredSdkSandboxPackage;
     private final @Nullable ComponentName mDeveloperVerificationServiceProvider;
+    private final @Nullable String mDeveloperVerificationPolicyDelegatePackage;
     @GuardedBy("mLock")
     private final PackageUsage mPackageUsage = new PackageUsage();
     final CompilerStats mCompilerStats = new CompilerStats();
@@ -1953,6 +1954,8 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
         mShouldStopSystemPackagesByDefault = testParams.shouldStopSystemPackagesByDefault;
         mDeveloperVerificationServiceProvider =
                 testParams.developerVerificationServiceProvider;
+        mDeveloperVerificationPolicyDelegatePackage =
+                testParams.developerVerificationPolicyDelegatePackage;
 
         mLiveComputer = createLiveComputer();
         mSnapshotStatistics = null;
@@ -2498,6 +2501,12 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
                             R.string.config_developerVerificationServiceProviderPackageName));
             mProtectedPackages.setDeveloperVerificationServiceProviderPackage(
                     mDeveloperVerificationServiceProvider);
+            // Remember the developer verification policy delegate which is allowed to change the
+            // developer verification policy on behalf of the developer verification service
+            // provider defined above.
+            mDeveloperVerificationPolicyDelegatePackage =
+                    getVerificationPolicyDelegate(computer, mContext.getString(
+                            R.string.config_developerVerificationPolicyDelegatePackageName));
 
             // Initialize InstantAppRegistry's Instant App list for all users.
             forEachPackageState(computer, packageState -> {
@@ -3787,6 +3796,21 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             return null;
         }
         return ri.getComponentInfo().getComponentName();
+    }
+
+    @Nullable
+    private String getVerificationPolicyDelegate(@NonNull Computer computer,
+            @Nullable String packageName) {
+        if (TextUtils.isEmpty(packageName)) {
+            return null;
+        }
+        // It should be a system and privileged app installed on the device
+        final PackageStateInternal psi = computer.getPackageStateInternal(
+                packageName, Process.SYSTEM_UID);
+        if (psi != null && psi.isSystem() && psi.isPrivileged()) {
+            return packageName;
+        }
+        return null;
     }
 
     @Nullable
@@ -8402,5 +8426,10 @@ public class PackageManagerService implements PackageSender, TestUtilityService 
             }
         }
         return sRestrictedPermissions;
+    }
+
+    @Nullable
+    String getDeveloperVerificationPolicyDelegatePackageName() {
+        return mDeveloperVerificationPolicyDelegatePackage;
     }
 }
