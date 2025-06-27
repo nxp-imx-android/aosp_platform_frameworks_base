@@ -113,6 +113,16 @@ flag {
 }
 
 flag {
+  name: "app_restrictions_coexistence"
+  namespace: "supervision"
+  description: "Enables coexistence support for setApplicationRestrictions."
+  bug: "359188153"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
+
+flag {
  name: "set_auto_time_enabled_coexistence"
  is_exported: true
  namespace: "enterprise"
