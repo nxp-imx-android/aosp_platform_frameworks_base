@@ -111,6 +111,7 @@ import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.ArrayUtils;
 import com.android.server.IntentResolver;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.LocalServices;
@@ -207,8 +208,7 @@ class BroadcastController {
      * Resolver for broadcast intents to registered receivers.
      * Holds BroadcastFilter (subclass of IntentFilter).
      */
-    final IntentResolver<BroadcastFilter, BroadcastFilter> mReceiverResolver =
-            new IntentResolver<>() {
+    final class BroadcastIntentResolver extends IntentResolver<BroadcastFilter, BroadcastFilter> {
         @Override
         protected boolean allowFilterResult(
                 BroadcastFilter filter, List<BroadcastFilter> dest) {
@@ -245,7 +245,21 @@ class BroadcastController {
         protected boolean isPackageForFilter(String packageName, BroadcastFilter filter) {
             return packageName.equals(filter.packageName);
         }
+
+        public List<BroadcastFilter> queryIntent(@NonNull PackageDataSnapshot snapshot,
+                Intent intent, String resolvedType, boolean defaultOnly, @UserIdInt int userId,
+                @Nullable String[] includedPackages) {
+            final List<BroadcastFilter> infos = super.queryIntent(snapshot, intent,
+                    resolvedType, defaultOnly, userId);
+            // TODO: b/428262517 - filter out packages that are not in includedPackages close to
+            // intent resolution.
+            if (includedPackages != null) {
+                infos.removeIf(info -> !ArrayUtils.contains(includedPackages, info.packageName));
+            }
+            return infos;
+        }
     };
+    private final BroadcastIntentResolver mReceiverResolver = new BroadcastIntentResolver();
 
     BroadcastController(Context context, ActivityManagerService service, BroadcastQueue queue) {
         mContext = context;
@@ -1509,10 +1523,13 @@ class BroadcastController {
         // Need to resolve the intent to interested receivers...
         if ((intent.getFlags() & Intent.FLAG_RECEIVER_REGISTERED_ONLY) == 0) {
             receivers = collectReceiverComponents(
-                    intent, resolvedType, callingUid, callingPid, users, broadcastAllowList);
+                    intent, resolvedType, callingUid, callingPid, users, broadcastAllowList,
+                    brOptions == null ? null : brOptions.getIncludedPackages());
         }
         if (intent.getComponent() == null) {
             final PackageDataSnapshot snapshot = mService.getPackageManagerInternal().snapshot();
+            final String[] includedPackages = brOptions != null
+                    ? brOptions.getIncludedPackages() : null;
             if (userId == UserHandle.USER_ALL && callingUid == SHELL_UID) {
                 // Query one target user at a time, excluding shell-restricted users
                 for (int i = 0; i < users.length; i++) {
@@ -1521,8 +1538,8 @@ class BroadcastController {
                         continue;
                     }
                     List<BroadcastFilter> registeredReceiversForUser =
-                            mReceiverResolver.queryIntent(snapshot, intent,
-                                    resolvedType, false /*defaultOnly*/, users[i]);
+                            mReceiverResolver.queryIntent(snapshot, intent, resolvedType,
+                                    false /*defaultOnly*/, users[i], includedPackages);
                     if (registeredReceivers == null) {
                         registeredReceivers = registeredReceiversForUser;
                     } else if (registeredReceiversForUser != null) {
@@ -1531,7 +1548,7 @@ class BroadcastController {
                 }
             } else {
                 registeredReceivers = mReceiverResolver.queryIntent(snapshot, intent,
-                        resolvedType, false /*defaultOnly*/, userId);
+                        resolvedType, false /*defaultOnly*/, userId, includedPackages);
             }
             if (registeredReceivers != null) {
                 SaferIntentUtils.blockNullAction(args, registeredReceivers);
@@ -1959,7 +1976,7 @@ class BroadcastController {
 
     private List<ResolveInfo> collectReceiverComponents(
             Intent intent, String resolvedType, int callingUid, int callingPid,
-            int[] users, int[] broadcastAllowList) {
+            int[] users, int[] broadcastAllowList, String[] includedPackages) {
         // TODO: come back and remove this assumption to triage all broadcasts
         long pmFlags = STOCK_PM_FLAGS | MATCH_DEBUG_TRIAGED_MISSING;
 
@@ -1974,7 +1991,8 @@ class BroadcastController {
                 continue;
             }
             List<ResolveInfo> newReceivers = mService.mPackageManagerInt.queryIntentReceivers(
-                    intent, resolvedType, pmFlags, callingUid, callingPid, user, /* forSend */true);
+                    intent, resolvedType, pmFlags, callingUid, callingPid, user,
+                    /* forSend */ true, includedPackages);
             if (user != UserHandle.USER_SYSTEM && newReceivers != null) {
                 // If this is not the system user, we need to check for
                 // any receivers that should be filtered out.

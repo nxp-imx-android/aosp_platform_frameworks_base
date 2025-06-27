@@ -481,7 +481,8 @@ public class ComponentAliasResolver {
         i.setComponent(resolution.getTarget());
 
         List<ResolveInfo> resolved = pmi.queryIntentReceivers(
-                i, resolvedType, packageFlags, callingUid, callingPid, userId, /*forSend*/ true);
+                i, resolvedType, packageFlags, callingUid, callingPid, userId, /* forSend */ true,
+                /* includedPackages */ null);
         if (resolved == null || resolved.size() == 0) {
             // Target component not found.
             Slog.w(TAG, "Alias target " + target.flattenToShortString() + " not found");
