@@ -56,6 +56,7 @@ import org.junit.runners.MethodSorters
  * - [BubbleAppBecomesNotExpandedTestCases]
  * - [BUBBLE] is visible and then disappear
  */
+@FlakyTest(bugId = 427850786)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RunWith(AndroidJUnit4::class)
 @RequiresDevice
