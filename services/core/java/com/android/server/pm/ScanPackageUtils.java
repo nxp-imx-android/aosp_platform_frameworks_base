@@ -78,6 +78,7 @@ import android.util.apk.ApkSignatureVerifier;
 import android.util.jar.StrictJarFile;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.content.NativeLibraryHelper;
 import com.android.internal.pm.parsing.pkg.ParsedPackage;
 import com.android.internal.pm.pkg.component.ComponentMutateUtils;
 import com.android.internal.pm.pkg.component.ParsedActivity;
@@ -452,14 +453,16 @@ final class ScanPackageUtils {
                         && !isSystemApp
                         && !isApex
                         && !isPlatformPackage) {
-                    int mode =
+                    NativeLibraryHelper.AlignmentResult res =
                             packageAbiHelper.checkPackageAlignment(
                                     parsedPackage,
                                     pkgSetting.getLegacyNativeLibraryPath(),
                                     parsedPackage.isNativeLibraryRootRequiresIsa(),
                                     pkgSetting.getCpuAbiOverride());
-                    if (mode >= ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED) {
-                        pkgSetting.setPageSizeAppCompatFlags(mode);
+                    if (res != null && res.unalignedLibraries != null
+                            && res.flags >= ApplicationInfo.PAGE_SIZE_APP_COMPAT_FLAG_UNDEFINED) {
+                        pkgSetting.setPageSizeAppCompatFlags(res.flags);
+                        pkgSetting.setLibraryAlignmentInfo(res.unalignedLibraries);
                     } else {
                         Slog.e(TAG, "Error occurred while checking alignment of package : "
                                 + parsedPackage.getPackageName());

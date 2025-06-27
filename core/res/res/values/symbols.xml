@@ -3408,6 +3408,10 @@
   <java-symbol type="string" name="page_size_compat_elf_warning_4kb" />
   <java-symbol type="string" name="page_size_compat_apk_and_elf_warning_4kb" />
   <java-symbol type="string" name="page_size_compat_never_show" />
+  <java-symbol type="string" name="page_size_compat_elf_not_aligned" />
+  <java-symbol type="string" name="page_size_compat_apk_not_aligned" />
+  <java-symbol type="string" name="page_size_compat_apk_and_elf_not_aligned" />
+  <java-symbol type="string" name="page_size_compat_unknown" />
 
   <!--  Work profile unlaunchable app alert dialog-->
   <java-symbol type="style" name="AlertDialogWithEmergencyButton"/>
