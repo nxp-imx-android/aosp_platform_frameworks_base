@@ -8115,8 +8115,7 @@
         android:label="@string/permlab_foregroundServiceFileManagement"
         android:protectionLevel="normal|instant" />
 
-    <!-- @FlaggedApi("android.content.pm.introduce_media_processing_type")
-         Allows a regular application to use {@link android.app.Service#startForeground
+    <!-- Allows a regular application to use {@link android.app.Service#startForeground
          Service.startForeground} with the type "mediaProcessing".
          <p>Protection level: normal|instant
     -->
