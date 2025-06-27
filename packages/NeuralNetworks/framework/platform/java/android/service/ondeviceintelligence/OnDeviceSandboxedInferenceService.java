@@ -32,6 +32,7 @@ import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.app.Service;
 import android.app.ondeviceintelligence.Feature;
+import android.app.ondeviceintelligence.InferenceInfo;
 import android.app.ondeviceintelligence.IProcessingSignal;
 import android.app.ondeviceintelligence.IResponseCallback;
 import android.app.ondeviceintelligence.IStreamingResponseCallback;
@@ -532,6 +533,15 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
                     Slog.e(TAG, "Error sending augment request: " + e);
                 }
             }
+
+            @Override
+            public void onInferenceInfo(@NonNull InferenceInfo info) {
+                try {
+                    callback.onInferenceInfo(info);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Error sending inference info: " + e);
+                }
+            }
         };
     }
 
@@ -575,6 +585,15 @@ public abstract class OnDeviceSandboxedInferenceService extends Service {
 
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Error sending augment request: " + e);
+                }
+            }
+
+            @Override
+            public void onInferenceInfo(@NonNull InferenceInfo info) {
+                try {
+                    callback.onInferenceInfo(info);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "Error sending inference info: " + e);
                 }
             }
         };

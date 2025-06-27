@@ -79,6 +79,16 @@ public final class OnDeviceIntelligenceManager {
     public static final String AUGMENT_REQUEST_CONTENT_BUNDLE_KEY =
             "AugmentRequestContentBundleKey";
 
+    /**
+     * The key for a boolean extra in the request {@link Bundle} to indicate if the caller wants to
+     * receive {@link InferenceInfo} in the {@link ProcessingCallback#onInferenceInfo} callback.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_25Q4)
+    public static final String KEY_REQUEST_INFERENCE_INFO = "request_inference_info";
+
     private static final String TAG = "OnDeviceIntelligence";
     private final Context mContext;
     private final IOnDeviceIntelligenceManager mService;
@@ -440,6 +450,13 @@ public final class OnDeviceIntelligenceManager {
                                 callbackExecutor.execute(() -> contentCallback.sendResult(bundle));
                             })));
                 }
+
+                @Override
+                public void onInferenceInfo(InferenceInfo info) {
+                    Binder.withCleanCallingIdentity(
+                            () -> callbackExecutor.execute(
+                                    () -> processingCallback.onInferenceInfo(info)));
+                }
             };
 
 
@@ -524,6 +541,14 @@ public final class OnDeviceIntelligenceManager {
                                         callbackExecutor.execute(
                                                 () -> contentCallback.sendResult(bundle));
                                     })));
+                }
+
+                @Override
+                public void onInferenceInfo(InferenceInfo info) {
+                    Binder.withCleanCallingIdentity(() -> {
+                        callbackExecutor.execute(
+                                () -> streamingProcessingCallback.onInferenceInfo(info));
+                    });
                 }
             };
 
