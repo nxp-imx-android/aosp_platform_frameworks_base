@@ -63,13 +63,14 @@ public class VibrationConfig {
      */
     private static final int DEFAULT_AMPLITUDE = 255;
 
-    // TODO(b/191150049): move these to vibrator static config file
     private final float mHapticChannelMaxVibrationAmplitude;
     private final int mDefaultVibrationAmplitude;
     private final int mRampStepDurationMs;
     private final int mRampDownDurationMs;
     private final int mRequestVibrationParamsTimeoutMs;
     private final int[] mRequestVibrationParamsForUsages;
+    private final float[] mVibrationScaleFactors;
+    private final float[] mExternalVibrationScaleFactors;
 
     private final boolean mIgnoreVibrationsOnWirelessCharger;
 
@@ -123,6 +124,11 @@ public class VibrationConfig {
                 com.android.internal.R.integer.config_defaultRingVibrationIntensity);
         mDefaultKeyboardVibrationIntensity = loadDefaultIntensity(resources,
                 com.android.internal.R.integer.config_defaultKeyboardVibrationIntensity);
+
+        mVibrationScaleFactors = loadIntensityScaleFactors(resources,
+                com.android.internal.R.array.config_vibrationIntensityScaleFactors);
+        mExternalVibrationScaleFactors = loadIntensityScaleFactors(resources,
+                com.android.internal.R.array.config_externalVibrationIntensityScaleFactors);
     }
 
     @VibrationIntensity
@@ -133,6 +139,22 @@ public class VibrationConfig {
             return defaultIntensity;
         }
         return value;
+    }
+
+    @Nullable
+    private static float[] loadIntensityScaleFactors(@Nullable Resources res, int resId) {
+        float[] scales = loadFloatArray(res, resId);
+        if (scales == null || scales.length != Vibrator.VIBRATION_INTENSITY_HIGH) {
+            // Missing or bad config, ignore it.
+            return null;
+        }
+        for (float scale : scales) {
+            if (scale <= 0) {
+                // Bad scale value, ignore config.
+                return null;
+            }
+        }
+        return scales;
     }
 
     private static float loadFloat(@Nullable Resources res, int resId) {
@@ -149,6 +171,22 @@ public class VibrationConfig {
 
     private static int[] loadIntArray(@Nullable Resources res, int resId) {
         return res != null ? res.getIntArray(resId) : new int[0];
+    }
+
+    private static float[] loadFloatArray(@Nullable Resources res, int resId) {
+        String[] values = res != null ? res.getStringArray(resId) : null;
+        if (values == null) {
+            return null;
+        }
+        float[] parsedValues = new float[values.length];
+        for (int i = 0; i < values.length; i++) {
+            try {
+                parsedValues[i] = Float.parseFloat(values[i]);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return parsedValues;
     }
 
     /**
@@ -180,8 +218,43 @@ public class VibrationConfig {
      * for each level.
      */
     public float getDefaultVibrationScaleLevelGain() {
-        // TODO(b/356407380): add device config for this
         return DEFAULT_SCALE_LEVEL_GAIN;
+    }
+
+    /** Return true if device has vibration scale factors config. */
+    public boolean hasVibrationScaleFactors() {
+        return mVibrationScaleFactors != null;
+    }
+
+    /**
+     * Return the scale factor configured for given intensity, or the default value if no
+     * configuration is in place.
+     */
+    public float getVibrationScaleFactor(@VibrationIntensity int intensity, float defaultValue) {
+        if (mVibrationScaleFactors == null || mVibrationScaleFactors.length < intensity) {
+            return defaultValue;
+        }
+        return mVibrationScaleFactors[intensity - 1];
+    }
+
+    /** Return true if device has vibration scale factors config. */
+    public boolean hasExternalVibrationScaleFactors() {
+        return mExternalVibrationScaleFactors != null;
+    }
+
+    /**
+     * Return the scale factor configured for given intensity for external vibrations.
+     *
+     * <p>This will return {@link #getVibrationScaleFactor} if no configuration is in place
+     * specifically for external vibrations.
+     */
+    public float getExternalVibrationScaleFactor(@VibrationIntensity int intensity,
+            float defaultValue) {
+        if (mExternalVibrationScaleFactors == null
+                || mExternalVibrationScaleFactors.length < intensity) {
+            return getVibrationScaleFactor(intensity, defaultValue);
+        }
+        return mExternalVibrationScaleFactors[intensity - 1];
     }
 
     /**
@@ -305,6 +378,9 @@ public class VibrationConfig {
                 + ", mDefaultRingIntensity=" + mDefaultRingVibrationIntensity
                 + ", mDefaultKeyboardIntensity=" + mDefaultKeyboardVibrationIntensity
                 + ", mKeyboardVibrationSettingsSupported=" + mKeyboardVibrationSettingsSupported
+                + ", mVibrationScaleFactors=" + Arrays.toString(mVibrationScaleFactors)
+                + ", mExternalVibrationScaleFactors="
+                + Arrays.toString(mExternalVibrationScaleFactors)
                 + "}";
     }
 
@@ -319,6 +395,9 @@ public class VibrationConfig {
         pw.println("ignoreVibrationsOnWirelessCharger = " + mIgnoreVibrationsOnWirelessCharger);
         pw.println("defaultVibrationAmplitude = " + mDefaultVibrationAmplitude);
         pw.println("hapticChannelMaxAmplitude = " + mHapticChannelMaxVibrationAmplitude);
+        pw.println("vibrationScaleFactors = " + Arrays.toString(mVibrationScaleFactors));
+        pw.println("externalVibrationScaleFactors = "
+                + Arrays.toString(mExternalVibrationScaleFactors));
         pw.println("rampStepDurationMs = " + mRampStepDurationMs);
         pw.println("rampDownDurationMs = " + mRampDownDurationMs);
         pw.println("requestVibrationParamsForUsages = "

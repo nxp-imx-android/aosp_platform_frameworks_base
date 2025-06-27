@@ -1215,7 +1215,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         return new Vibration.DebugInfoImpl(status, callerInfo,
                 VibrationStats.StatsInfo.findVibrationType(effect), new VibrationStats(),
                 effect, /* originalEffect= */ null, VibrationScaler.SCALE_NONE,
-                VibrationScaler.ADAPTIVE_SCALE_NONE);
+                VibrationScaler.SCALE_FACTOR_NONE, VibrationScaler.ADAPTIVE_SCALE_NONE);
     }
 
     private void logVibrationStatus(int uid, VibrationAttributes attrs, Status status) {
