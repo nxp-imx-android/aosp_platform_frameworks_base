@@ -100,6 +100,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -144,6 +145,10 @@ public class RavenwoodDriver {
 
     static final int DEFAULT_TIMEOUT_SECONDS = 10;
     private static final int TIMEOUT_MILLIS = getTimeoutSeconds() * 1000;
+
+    /** Do not dump environments matching this pattern. */
+    private static final Pattern sSecretEnvPattern = Pattern.compile(
+            "(KEY|AUTH|API)", Pattern.CASE_INSENSITIVE);
 
     static int getTimeoutSeconds() {
         var e = System.getenv("RAVENWOOD_TIMEOUT_SECONDS");
@@ -843,7 +848,19 @@ public class RavenwoodDriver {
 
     private static void dumpEnvironment() {
         Log.i(TAG, "Environment:");
-        dumpMap(System.getenv());
+
+        // Dump the environments, but don't print the values for "secret" ones.
+        dumpMap(System.getenv().entrySet().stream()
+                .collect(Collectors.toMap(
+                        // The key remains the same
+                        Map.Entry::getKey,
+
+                        // Hide the values as needed.
+                        entry -> sSecretEnvPattern.matcher(entry.getKey()).find()
+                                ? "[redacted]" : entry.getValue(),
+                        (oldValue, newValue) -> newValue,
+                        HashMap::new
+                )));
     }
 
     private static void dumpMap(Map<?, ?> map) {
