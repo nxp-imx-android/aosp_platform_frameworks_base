@@ -418,7 +418,7 @@ public class DividerSnapAlgorithm {
         int pinnedTaskbarShiftEnd = mIsLeftRightSplit
                 ? mPinnedTaskbarInsets.right : mPinnedTaskbarInsets.bottom;
 
-        // If offscreen apps are supported, we are looking to add 3-5 targets.
+        // If offscreen apps are supported, we are looking to add 5 targets.
         if (areOffscreenRatiosSupported()) {
             // Find the desired sizes for a 10% app and a 33% app.
             float ratio10 = SplitSpec.OFFSCREEN_ASYMMETRIC_RATIO;
@@ -434,6 +434,8 @@ public class DividerSnapAlgorithm {
             int size10 = (int) (ratio10 * dividerMax) + extraSpaceFor10 - mDividerSize / 2;
             // For the 33% target, we bake the insets into the position calculation below.
             int size33 = (int) (ratio33 * (end - start)) - mDividerSize / 2;
+            // If the resulting size is too small, bump it up to the minimum required size.
+            size33 = Math.max(size33, mMinimalSizeResizableTask);
 
             int leftTop10Position = size10;
             int rightBottom10Position = dividerMax - size10 - mDividerSize;
@@ -441,44 +443,32 @@ public class DividerSnapAlgorithm {
             int rightBottom33Position = end - size33 - mDividerSize;
 
             // Get the desired layout for our current device/display/rotation.
-            boolean bigEnoughFor33 = size33 >= mMinimalSizeResizableTask;
             List<Integer> targetSpec = SplitSpec.getSnapTargetLayout(SNAP_FLEXIBLE_HYBRID,
-                    areOffscreenRatiosSupported(), bigEnoughFor33);
+                    areOffscreenRatiosSupported(), true /* bigEnoughFor33 */);
 
-            if (bigEnoughFor33) {
-                // Add 5 targets
-                addNonDismissingTargets(List.of(leftTop10Position, leftTop33Position,
-                                getMiddleTargetPos(), rightBottom33Position, rightBottom10Position),
-                        targetSpec);
-            } else {
-                // Add 3 targets
-                addNonDismissingTargets(List.of(leftTop10Position, getMiddleTargetPos(),
-                                rightBottom10Position),
-                        targetSpec);
-            }
+            // Add 5 targets
+            addNonDismissingTargets(List.of(leftTop10Position, leftTop33Position,
+                            getMiddleTargetPos(), rightBottom33Position, rightBottom10Position),
+                    targetSpec);
         } else {
             // If offscreen apps are not supported, just add the regular 1-3 targets.
             float ratio = SplitSpec.ONSCREEN_ONLY_ASYMMETRIC_RATIO;
 
             // The intended size of the smaller app, in pixels
             int size = (int) (ratio * (end - start)) - mDividerSize / 2;
+            // If the resulting size is too small, bump it up to the minimum required size.
+            size = Math.max(size, mMinimalSizeResizableTask);
 
             int leftTopPosition = start + size;
             int rightBottomPosition = end - size - mDividerSize;
 
             // Get the desired layout for our current device/display/rotation.
-            boolean bigEnoughFor33 = size >= mMinimalSizeResizableTask;
             List<Integer> targetSpec = SplitSpec.getSnapTargetLayout(SNAP_FLEXIBLE_HYBRID,
-                    areOffscreenRatiosSupported(), bigEnoughFor33);
+                    areOffscreenRatiosSupported(), true /* bigEnoughFor33 */);
 
-            if (bigEnoughFor33) {
-                // Add 3 targets
-                addNonDismissingTargets(List.of(leftTopPosition, getMiddleTargetPos(),
-                        rightBottomPosition), targetSpec);
-            } else {
-                // Add 1 target
-                addNonDismissingTargets(List.of(getMiddleTargetPos()), targetSpec);
-            }
+            // Add 3 targets
+            addNonDismissingTargets(List.of(leftTopPosition, getMiddleTargetPos(),
+                    rightBottomPosition), targetSpec);
         }
     }
 
@@ -564,6 +554,19 @@ public class DividerSnapAlgorithm {
      */
     public int calculateNearestSnapPosition(int currentPosition) {
         return snap(currentPosition, /* hardDismiss */ true).snapPosition;
+    }
+
+    /**
+     * Gets the on-screen position of a SnapTarget matching the provided @SnapPosition, if one
+     * exists. If not, return null.
+     */
+    public Integer getPositionBySnapPosition(@SnapPosition int snapPosition) {
+        for (SnapTarget t : mTargets) {
+            if (t.snapPosition == snapPosition) {
+                return t.getPosition();
+            }
+        }
+        return null;
     }
 
     @Nullable
