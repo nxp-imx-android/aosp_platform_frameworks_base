@@ -172,7 +172,8 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
                 mKosmos.getCommunalSceneInteractor(),
                 mAmbientStatusBarViewModelFactory,
                 mIconViewStoreFactory,
-                mLogBuffer);
+                mLogBuffer,
+                mKosmos.getSystemUiDisplaySubcomponentRepository());
         mController.onInit();
     }
 
@@ -352,7 +353,8 @@ public class AmbientStatusBarViewControllerTest extends SysuiTestCase {
                 mKosmos.getCommunalSceneInteractor(),
                 mAmbientStatusBarViewModelFactory,
                 mIconViewStoreFactory,
-                mLogBuffer);
+                mLogBuffer,
+                mKosmos.getSystemUiDisplaySubcomponentRepository());
         controller.onViewAttached();
         verify(mView, never()).showIcon(
                 eq(AmbientStatusBarView.STATUS_ICON_NOTIFICATIONS), eq(true), any());

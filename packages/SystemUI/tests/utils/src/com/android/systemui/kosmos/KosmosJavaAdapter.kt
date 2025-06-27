@@ -40,6 +40,7 @@ import com.android.systemui.deviceentry.domain.interactor.deviceEntryFingerprint
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceEntryUdfpsInteractor
 import com.android.systemui.deviceentry.domain.interactor.deviceUnlockedInteractor
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.globalactions.domain.interactor.globalActionsInteractor
 import com.android.systemui.haptics.msdl.bouncerHapticPlayer
 import com.android.systemui.haptics.msdl.fakeMSDLPlayer
@@ -170,6 +171,9 @@ class KosmosJavaAdapter() {
     val simBouncerInteractor by lazy { kosmos.simBouncerInteractor }
     val statusBarStateController by lazy { kosmos.statusBarStateController }
     val statusBarModePerDisplayRepository by lazy { kosmos.fakeStatusBarModePerDisplayRepository }
+    val systemUiDisplaySubcomponentRepository by lazy {
+        kosmos.displaySubcomponentPerDisplayRepository
+    }
     val shadeLayoutParams by lazy { kosmos.shadeLayoutParams }
     val autoHideControllerStore by lazy { kosmos.fakeAutoHideControllerStore }
     val interactionJankMonitor by lazy { kosmos.interactionJankMonitor }

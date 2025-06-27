@@ -19,6 +19,7 @@ package com.android.systemui.statusbar.dagger
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationController
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
@@ -46,6 +47,13 @@ interface StatusBarPerDisplayModule {
     fun statusBarWindowStateController(
         controller: StatusBarWindowStateController
     ): StatusBarWindowStateController
+
+    @Binds
+    @PerDisplaySingleton
+    @DisplayAware
+    fun ongoingActivityChipsViewModel(
+        impl: OngoingActivityChipsViewModel
+    ): OngoingActivityChipsViewModel
 
     companion object {
         /**

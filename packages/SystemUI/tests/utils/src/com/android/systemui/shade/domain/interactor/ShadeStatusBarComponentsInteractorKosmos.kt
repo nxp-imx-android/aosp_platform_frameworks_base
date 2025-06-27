@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.domain.interactor
 
+import com.android.systemui.display.data.repository.displaySubcomponentPerDisplayRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
 import com.android.systemui.statusbar.data.repository.homeStatusBarComponentsRepository
@@ -26,5 +27,6 @@ val Kosmos.shadeStatusBarComponentsInteractor by
             applicationCoroutineScope,
             { shadeDisplaysInteractor },
             homeStatusBarComponentsRepository,
+            displaySubcomponentPerDisplayRepository,
         )
     }

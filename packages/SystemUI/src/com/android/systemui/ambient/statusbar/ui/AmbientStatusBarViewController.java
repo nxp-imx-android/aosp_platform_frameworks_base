@@ -102,6 +102,8 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
     private final AmbientStatusBarViewModel.Factory mAmbientStatusBarViewModelFactory;
     private final ConnectedDisplaysStatusBarNotificationIconViewStore.Factory mIconViewStoreFactory;
     private final DreamLogger mLogger;
+    private final PerDisplayRepository<SystemUIDisplaySubcomponent>
+            mPerDisplayDisplaySubcomponentRepo;
 
     private boolean mIsAttached;
     private boolean mCommunalVisible;
@@ -172,7 +174,8 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
             CommunalSceneInteractor communalSceneInteractor,
             AmbientStatusBarViewModel.Factory ambientStatusBarViewModelFactory,
             ConnectedDisplaysStatusBarNotificationIconViewStore.Factory iconViewStoreFactory,
-            @DreamLog LogBuffer logBuffer) {
+            @DreamLog LogBuffer logBuffer,
+            PerDisplayRepository<SystemUIDisplaySubcomponent> perDisplayDisplaySubcomponentRepo) {
         super(view);
         mResources = resources;
         mMainExecutor = mainExecutor;
@@ -195,6 +198,7 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
         mAmbientStatusBarViewModelFactory = ambientStatusBarViewModelFactory;
         mIconViewStoreFactory = iconViewStoreFactory;
         mLogger = new DreamLogger(logBuffer, TAG);
+        mPerDisplayDisplaySubcomponentRepo = perDisplayDisplaySubcomponentRepo;
     }
 
     @Override
@@ -226,7 +230,8 @@ public class AmbientStatusBarViewController extends ViewController<AmbientStatus
                     getContext(),
                     ongoingActivityChipsView,
                     mAmbientStatusBarViewModelFactory,
-                    mIconViewStoreFactory);
+                    mIconViewStoreFactory,
+                    mPerDisplayDisplaySubcomponentRepo);
         }
 
         mFlows.add(collectFlow(
