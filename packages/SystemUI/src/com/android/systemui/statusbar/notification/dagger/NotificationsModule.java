@@ -81,6 +81,8 @@ import com.android.systemui.statusbar.notification.logging.NotificationPanelLogg
 import com.android.systemui.statusbar.notification.logging.dagger.NotificationsLogModule;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractor;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationContentExtractorImpl;
+import com.android.systemui.statusbar.notification.promoted.ShowPromotedNotificationsOnAOD;
+import com.android.systemui.statusbar.notification.promoted.ShowPromotedNotificationsOnAODImpl;
 import com.android.systemui.statusbar.notification.promoted.shared.model.PromotedNotificationContentModel;
 import com.android.systemui.statusbar.notification.row.NotificationEntryProcessorFactory;
 import com.android.systemui.statusbar.notification.row.NotificationEntryProcessorFactoryLooperImpl;
@@ -331,6 +333,13 @@ public interface NotificationsModule {
         }
     }
 
+    /**
+     *  Provides the default implementation of {@link ShowPromotedNotificationsOnAOD}
+     */
+    @Binds
+    @SysUISingleton
+    ShowPromotedNotificationsOnAOD provideShowPromotedNotificationsOnAOD(
+            ShowPromotedNotificationsOnAODImpl impl);
     /**
      * Provide an implementation of {@link MagneticNotificationRowManager} based on its flag.
      */

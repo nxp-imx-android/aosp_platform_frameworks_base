@@ -1129,6 +1129,9 @@
     <!-- Whether or not to show the UMO on the glanceable hub when media is playing. -->
     <bool name="config_showUmoOnHub">false</bool>
 
+    <!-- Whether or not to show the promoted notifications on AOD. -->
+    <bool name="config_showPromotedNotificationsOnAOD">true</bool>
+
     <!-- Whether to enable the desktop specific audio tile details view. -->
     <bool name="config_enableDesktopAudioTileDetailsView">false</bool>
 
