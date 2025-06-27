@@ -1419,6 +1419,16 @@ flag {
 }
 
 flag {
+    name: "move_to_next_display_shortcut_with_projected_mode"
+    namespace: "lse_desktop_experience"
+    description: "Enable the 'move to next display' shortcut to work with the projected mode"
+    bug: "424748132"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "nested_tasks_with_independent_bounds_bugfix"
     namespace: "lse_desktop_experience"
     description: "Allows tasks under a root task to be have independent (non-inherited) bounds"
