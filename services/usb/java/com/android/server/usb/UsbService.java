@@ -26,6 +26,9 @@ import static android.hardware.usb.UsbPortStatus.MODE_DUAL;
 import static android.hardware.usb.UsbPortStatus.MODE_UFP;
 import static android.hardware.usb.UsbPortStatus.POWER_ROLE_SINK;
 import static android.hardware.usb.UsbPortStatus.POWER_ROLE_SOURCE;
+import static android.hardware.usb.InternalUsbDataSignalDisableReason.USB_DISABLE_REASON_LOCKDOWN_MODE;
+import static android.hardware.usb.InternalUsbDataSignalDisableReason.USB_DISABLE_REASON_APM;
+import static android.hardware.usb.InternalUsbDataSignalDisableReason.USB_DISABLE_REASON_ENTERPRISE;
 
 import android.hardware.usb.IUsbManagerInternal;
 
@@ -89,6 +92,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -99,15 +103,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * support is delegated to UsbDeviceManager.
  */
 public class UsbService extends IUsbManager.Stub {
-
-    public static final int OS_USB_DISABLE_REASON_AAPM = 0;
-    public static final int OS_USB_DISABLE_REASON_LOCKDOWN_MODE = 1;
-
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef(value = {OS_USB_DISABLE_REASON_AAPM,
-        OS_USB_DISABLE_REASON_LOCKDOWN_MODE})
-    public @interface OsUsbDisableReason {
-    }
 
     public static class Lifecycle extends SystemService {
         private UsbService mUsbService;
@@ -1532,6 +1527,8 @@ public class UsbService extends IUsbManager.Stub {
      * that controls USB data behavior.
      */
     private class StrongAuthTracker extends LockPatternUtils.StrongAuthTracker {
+        private static final IUsbOperationInternal sDefaultOperation =
+                new IUsbOperationInternal.Default();
         private boolean mLockdownModeStatus;
 
         StrongAuthTracker(Context context, Looper looper) {
@@ -1551,8 +1548,8 @@ public class UsbService extends IUsbManager.Stub {
             for (UsbPort port: mPortManager.getPorts()) {
                 enableUsbDataInternal(port.getId(), !lockDownTriggeredByUser,
                     STRONG_AUTH_OPERATION_ID,
-                    new IUsbOperationInternal.Default(),
-                    OS_USB_DISABLE_REASON_LOCKDOWN_MODE,
+                    sDefaultOperation,
+                    USB_DISABLE_REASON_LOCKDOWN_MODE,
                     true);
             }
         }
@@ -1560,10 +1557,13 @@ public class UsbService extends IUsbManager.Stub {
 
     private class UsbManagerInternalImpl extends IUsbManagerInternal.Stub {
         private static final AtomicInteger sUsbOperationCount = new AtomicInteger();
-
+        private static final Set<Integer> sValidDisableReasons = Set.of(USB_DISABLE_REASON_APM,
+            USB_DISABLE_REASON_LOCKDOWN_MODE, USB_DISABLE_REASON_ENTERPRISE);
         @Override
-        public boolean enableUsbDataSignal(boolean enable,
-                @OsUsbDisableReason int disableReason) {
+        public boolean enableUsbDataSignal(boolean enable, int disableReason) {
+                if(!sValidDisableReasons.contains(disableReason)) {
+                    throw new IllegalArgumentException("Invalid disable reason: " + disableReason);
+                }
                 boolean result = true;
                 int operationId = sUsbOperationCount.incrementAndGet() + disableReason;
                 for (UsbPort port : mPortManager.getPorts()) {

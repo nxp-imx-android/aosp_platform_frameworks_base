@@ -85,9 +85,11 @@ public class UsbServiceTest {
 
     private static final int TEST_SECOND_CALLER_ID = 2000;
 
-    private static final int TEST_INTERNAL_REQUESTER_REASON_1 = 100;
+    private static final int TEST_INTERNAL_REQUESTER_REASON_1 = 0;
 
-    private static final int TEST_INTERNAL_REQUESTER_REASON_2 = 200;
+    private static final int TEST_INTERNAL_REQUESTER_REASON_2 = 1;
+
+    private static final int TEST_INTERNAL_REQUESTER_INVALID_REASON = 999;
 
     private UsbService mUsbService;
 
@@ -299,5 +301,11 @@ public class UsbServiceTest {
             fail("RemoteException thrown when calling enableUsbDataSignal");
             return false;
         }
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void usbManagerInternal_enableUsbDataSignal_throwsExceptionIfInvalidDisableReason()
+        throws IllegalArgumentException, RemoteException {
+        mIUsbManagerInternal.enableUsbDataSignal(true, TEST_INTERNAL_REQUESTER_INVALID_REASON);
     }
 }
