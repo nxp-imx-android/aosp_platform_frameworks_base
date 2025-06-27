@@ -313,7 +313,7 @@ package android.location {
     method @FloatRange(from=-3600.0F, to=3600.0f) public double getDeltaT();
     method @FloatRange(from=-0.004F, to=0.004f) public double getDeltaTDot();
     method @FloatRange(from=0.0f, to=0.03f) public double getEccentricity();
-    method @IntRange(from=0, to=31) public int getFrequencyChannelNumber();
+    method @IntRange(from=0xfffffff9, to=6) public int getFrequencyChannelNumber();
     method public int getHealthState();
     method @FloatRange(from=-1.0F, to=1.0f) public double getLambda();
     method @FloatRange(from=-1.0F, to=1.0f) public double getOmega();
@@ -333,7 +333,7 @@ package android.location {
     method @NonNull public android.location.GlonassAlmanac.GlonassSatelliteAlmanac.Builder setDeltaT(@FloatRange(from=-3600.0F, to=3600.0f) double);
     method @NonNull public android.location.GlonassAlmanac.GlonassSatelliteAlmanac.Builder setDeltaTDot(@FloatRange(from=-0.004F, to=0.004f) double);
     method @NonNull public android.location.GlonassAlmanac.GlonassSatelliteAlmanac.Builder setEccentricity(@FloatRange(from=0.0f, to=0.03f) double);
-    method @NonNull public android.location.GlonassAlmanac.GlonassSatelliteAlmanac.Builder setFrequencyChannelNumber(@IntRange(from=0, to=31) int);
+    method @NonNull public android.location.GlonassAlmanac.GlonassSatelliteAlmanac.Builder setFrequencyChannelNumber(@IntRange(from=0xfffffff9, to=6) int);
     method @NonNull public android.location.GlonassAlmanac.GlonassSatelliteAlmanac.Builder setGlonassM(boolean);
     method @NonNull public android.location.GlonassAlmanac.GlonassSatelliteAlmanac.Builder setHealthState(int);
     method @NonNull public android.location.GlonassAlmanac.GlonassSatelliteAlmanac.Builder setLambda(@FloatRange(from=-1.0F, to=1.0f) double);

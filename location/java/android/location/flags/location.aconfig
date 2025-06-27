@@ -212,3 +212,13 @@ flag {
     bug: "362287534"
     is_exported: true
 }
+
+flag {
+    name: "fix_glonass_almanac_frequency_channel_range"
+    namespace: "location"
+    description: "Fix GLONASS almanac frequency channel range"
+    bug: "428050932"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
