@@ -34,6 +34,12 @@ import kotlinx.coroutines.flow.flowOf
 interface SecureLockDeviceRepository {
     /** @see AuthenticationPolicyManager.isSecureLockDeviceEnabled */
     val isSecureLockDeviceEnabled: Flow<Boolean>
+
+    /** @see BiometricSettingsRepository.requiresPrimaryAuthForSecureLockDevice */
+    val requiresPrimaryAuthForSecureLockDevice: Flow<Boolean>
+
+    /** @see BiometricSettingsRepository.requiresStrongBiometricAuthForSecureLockDevice */
+    val requiresStrongBiometricAuthForSecureLockDevice: Flow<Boolean>
 }
 
 @SysUISingleton
@@ -42,6 +48,7 @@ class SecureLockDeviceRepositoryImpl
 constructor(
     @Background backgroundExecutor: Executor,
     authenticationPolicyManager: AuthenticationPolicyManager?,
+    biometricSettingsRepository: BiometricSettingsRepository,
 ) : SecureLockDeviceRepository {
     override val isSecureLockDeviceEnabled: Flow<Boolean> =
         if (secureLockDevice()) {
@@ -79,6 +86,12 @@ constructor(
         } else {
             flowOf(false)
         }
+
+    override val requiresPrimaryAuthForSecureLockDevice: Flow<Boolean> =
+        biometricSettingsRepository.requiresPrimaryAuthForSecureLockDevice
+
+    override val requiresStrongBiometricAuthForSecureLockDevice: Flow<Boolean> =
+        biometricSettingsRepository.requiresStrongBiometricAuthForSecureLockDevice
 
     companion object {
         private const val TAG = "SecureLockDeviceRepositoryImpl"
