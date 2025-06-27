@@ -1695,6 +1695,7 @@ public final class StreamConfigurationMap {
             case HAL_PIXEL_FORMAT_RGB_565:
             case HAL_PIXEL_FORMAT_YCBCR_422_SP:
             case HAL_PIXEL_FORMAT_YCRCB_420_SP:
+            case HAL_PIXEL_FORMAT_YCBCR_422_I:
             case HAL_PIXEL_FORMAT_RAW16:
             case HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED:
             case HAL_PIXEL_FORMAT_YCBCR_420_888:
