@@ -16,14 +16,10 @@
 
 package com.android.internal.widget.floatingtoolbar;
 
-import static android.view.selectiontoolbar.ISelectionToolbarCallback.ERROR_DO_NOT_ALLOW_MULTIPLE_TOOL_BAR;
-import static android.view.selectiontoolbar.ISelectionToolbarCallback.ERROR_UNKNOWN_WIDGET_TOKEN;
-import static android.view.selectiontoolbar.SelectionToolbarManager.NO_TOOLBAR_ID;
 import static android.view.selectiontoolbar.ToolbarMenuItem.PRIORITY_OVERFLOW;
 import static android.view.selectiontoolbar.ToolbarMenuItem.PRIORITY_PRIMARY;
 import static android.view.selectiontoolbar.ToolbarMenuItem.PRIORITY_UNKNOWN;
 
-import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.UiThread;
@@ -59,8 +55,6 @@ import android.widget.PopupWindow;
 
 import com.android.internal.R;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,19 +73,6 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     private static final boolean DEBUG =
             Log.isLoggable(FloatingToolbar.FLOATING_TOOLBAR_TAG, Log.VERBOSE);
 
-    private static final int TOOLBAR_STATE_SHOWN = 1;
-    private static final int TOOLBAR_STATE_HIDDEN = 2;
-    private static final int TOOLBAR_STATE_DISMISSED = 3;
-
-    @IntDef(prefix = {"TOOLBAR_STATE_"}, value = {
-            TOOLBAR_STATE_SHOWN,
-            TOOLBAR_STATE_HIDDEN,
-            TOOLBAR_STATE_DISMISSED
-    })
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ToolbarState {
-    }
-
     @NonNull
     private final Context mContext;
 
@@ -107,9 +88,8 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     @NonNull
     private final SelectionToolbarCallbackImpl mSelectionToolbarCallback;
 
-    // tracks this popup state.
-    private @ToolbarState int mState;
-
+    // Tracks this toolbar popup state.
+    private @ToolbarState int mState = TOOLBAR_STATE_DISMISSED;
     private int mNextSequenceNumber;
     private final SparseArray<MenuItem.OnMenuItemClickListener> mPendingMenuItemClickListeners =
             new SparseArray<>();
@@ -120,8 +100,6 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     private final Rect mContentRect = new Rect();
     private List<MenuItem> mMenuItems;
     private MenuItem.OnMenuItemClickListener mMenuItemClickListener;
-    // The widget token of the current showing floating toolbar provided by the render service.
-    private long mFloatingToolbarToken;
 
     private int mSuggestedWidth;
     private final Rect mScreenViewPort = new Rect();
@@ -138,7 +116,6 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         mSelectionToolbarManager = context.getSystemService(SelectionToolbarManager.class);
         mSelectionToolbarCallback = new SelectionToolbarCallbackImpl(this);
         mIsLightTheme = isLightTheme(context);
-        mFloatingToolbarToken = NO_TOOLBAR_ID;
     }
 
     private boolean isLightTheme(Context context) {
@@ -157,30 +134,34 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
 
         ViewRootImpl viewRootImpl = mParent.getViewRootImpl();
         if (viewRootImpl == null) {
-            Log.w(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+            Log.e(FloatingToolbar.FLOATING_TOOLBAR_TAG,
                     "RemoteFloatingToolbarPopup.show(): viewRootImpl is null.");
             return;
         }
 
-        if (isShowing() && Objects.equals(menuItems, mMenuItems)
-                && Objects.equals(contentRect, mContentRect)) {
+        boolean isDuplicateRequest = isLatestPendingOrCurrent(menuItems, contentRect);
+
+        if (isShowing() && isDuplicateRequest) {
             if (DEBUG) {
                 Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
-                        "Ignore duplicate show() for the same content.");
+                        "RemoteFloatingToolbarPopup.show(): Ignore duplicate request.");
+            }
+            if (mPendingMenuItemClickListeners.size() > 0) {
+                mPendingMenuItemClickListeners.put(mNextSequenceNumber, menuItemClickListener);
+            } else {
+                mMenuItemClickListener = menuItemClickListener;
             }
             return;
         }
-
-        if (isLatestPendingOrCurrent(menuItems, menuItemClickListener, contentRect)) {
-            return;
+        boolean isLayoutRequired = !isDuplicateRequest || mWidthChanged;
+        if (DEBUG) {
+            Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG, "RemoteFloatingToolbarPopup.show():"
+                    + " isDuplicateRequest " + isDuplicateRequest  + ", mWidthChanged "
+                    + mWidthChanged);
         }
-
-        boolean isLayoutRequired = mMenuItems == null
-                || !MenuItemRepr.reprEquals(menuItems, mMenuItems)
-                || mWidthChanged;
-        if (isLayoutRequired) {
-            mSelectionToolbarManager.dismissToolbar(mFloatingToolbarToken);
-            doDismissPopupWindow();
+        if (isLayoutRequired && mState != TOOLBAR_STATE_DISMISSED) {
+            mSelectionToolbarManager.dismissToolbar();
+            resetStateAndDismissPopupWindow();
         }
 
         mParent.getWindowVisibleDisplayFrame(mScreenViewPort);
@@ -191,7 +172,6 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         int sequenceNumber = mNextSequenceNumber++;
         final ShowInfo showInfo = new ShowInfo();
         showInfo.sequenceNumber = sequenceNumber;
-        showInfo.widgetToken = mFloatingToolbarToken;
         showInfo.layoutRequired = isLayoutRequired;
         showInfo.menuItems = getToolbarMenuItems(menuItems);
         showInfo.contentRect = contentRect;
@@ -200,27 +180,24 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         showInfo.hostInputToken = viewRootImpl.getInputToken();
         showInfo.isLightTheme = mIsLightTheme;
         showInfo.configuration = mContext.getResources().getConfiguration();
-        if (DEBUG) {
-            Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
-                    "RemoteFloatingToolbarPopup.show() for " + showInfo);
-        }
         mPendingMenuItemClickListeners.put(sequenceNumber, menuItemClickListener);
         mPendingMenuItems.put(sequenceNumber, menuItems);
         mPendingShowInfos.put(sequenceNumber, showInfo);
         mSelectionToolbarManager.showToolbar(showInfo, mSelectionToolbarCallback);
+        mState = TOOLBAR_STATE_SHOWN;
+        if (DEBUG) {
+            Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+                    "RemoteFloatingToolbarPopup.show() completed, and the state is SHOWN.");
+        }
     }
 
-    private boolean isLatestPendingOrCurrent(List<MenuItem> menuItems,
-            MenuItem.OnMenuItemClickListener menuItemClickListener, Rect contentRect) {
+    private boolean isLatestPendingOrCurrent(List<MenuItem> menuItems, Rect contentRect) {
         if (mPendingMenuItems.size() == 0) {
             return Objects.equals(menuItems, mMenuItems)
-                    && menuItemClickListener == mMenuItemClickListener
                     && Objects.equals(contentRect, mContentRect);
         }
-
         int lastPendingIndex = mPendingMenuItems.size() - 1;
-        return menuItemClickListener == mPendingMenuItemClickListeners.valueAt(lastPendingIndex)
-                && Objects.equals(menuItems, mPendingMenuItems.valueAt(lastPendingIndex))
+        return Objects.equals(menuItems, mPendingMenuItems.valueAt(lastPendingIndex))
                 && Objects.equals(
                         contentRect, mPendingShowInfos.valueAt(lastPendingIndex).contentRect);
     }
@@ -237,17 +214,18 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
                     "RemoteFloatingToolbarPopup.dismiss().");
         }
-        mSelectionToolbarManager.dismissToolbar(mFloatingToolbarToken);
-        doDismissPopupWindow();
+        mSelectionToolbarManager.dismissToolbar();
+        resetStateAndDismissPopupWindow();
+        mState = TOOLBAR_STATE_DISMISSED;
     }
 
     @UiThread
     @Override
     public void hide() {
-        if (mState == TOOLBAR_STATE_DISMISSED || mState == TOOLBAR_STATE_HIDDEN) {
+        if (mState == TOOLBAR_STATE_HIDDEN || mState == TOOLBAR_STATE_DISMISSED) {
             if (DEBUG) {
                 Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
-                        "The floating toolbar already dismissed or hidden.");
+                        "The floating toolbar already dismissed/hidden.");
             }
             return;
         }
@@ -255,9 +233,9 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
                     "RemoteFloatingToolbarPopup.hide().");
         }
-        mSelectionToolbarManager.hideToolbar(mFloatingToolbarToken);
-        mState = TOOLBAR_STATE_HIDDEN;
+        mSelectionToolbarManager.hideToolbar();
         mPopupWindow.dismiss();
+        mState = TOOLBAR_STATE_HIDDEN;
     }
 
     @UiThread
@@ -265,6 +243,10 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     public void setSuggestedWidth(int suggestedWidth) {
         int difference = Math.abs(suggestedWidth - mSuggestedWidth);
         mWidthChanged = difference > (mSuggestedWidth * 0.2);
+        if (DEBUG) {
+            Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+                    "setSuggestedWidth: mWidthChanged " + mWidthChanged);
+        }
         mSuggestedWidth = suggestedWidth;
     }
 
@@ -304,9 +286,6 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     }
 
     private void updatePopupWindowContent(WidgetInfo widgetInfo) {
-        if (DEBUG) {
-            Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG, "updatePopupWindowContent.");
-        }
         ViewGroup contentContainer = (ViewGroup) mPopupWindow.getContentView();
         contentContainer.removeAllViews();
         SurfaceView surfaceView = new SurfaceView(mParent.getContext());
@@ -363,7 +342,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         final Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(),
                 drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bitmap);
-        drawable.setBounds(0, 0, canvas.getWidth(),  canvas.getHeight());
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
         drawable.draw(canvas);
         return Icon.createWithBitmap(bitmap);
     }
@@ -391,14 +370,9 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         return popupWindow;
     }
 
-    private void doDismissPopupWindow() {
-        if (DEBUG) {
-            Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG, "RemoteFloatingToolbarPopup.doDismiss().");
-        }
-        mState = TOOLBAR_STATE_DISMISSED;
+    private void resetStateAndDismissPopupWindow() {
         mMenuItems = null;
         mMenuItemClickListener = null;
-        mFloatingToolbarToken = 0;
         mSuggestedWidth = 0;
         mWidthChanged = true;
         resetCoords();
@@ -421,6 +395,18 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
     private void onShow(WidgetInfo info) {
         runOnUiThread(() -> {
             int sequenceNumber = info.sequenceNumber;
+            if (!isShowing()) {
+                Log.w(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+                        "onShow callback: The widget isn't showing.");
+                mPendingMenuItemClickListeners.remove(sequenceNumber);
+                mPendingMenuItems.remove(sequenceNumber);
+                mPendingShowInfos.remove(sequenceNumber);
+                return;
+            }
+            if (DEBUG) {
+                Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+                        "onShow callback: Showing toolbar.");
+            }
             mMenuItemClickListener = Objects.requireNonNull(
                     mPendingMenuItemClickListeners.removeReturnOld(sequenceNumber));
             mMenuItems = Objects.requireNonNull(
@@ -428,9 +414,6 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             ShowInfo showInfo = Objects.requireNonNull(
                     mPendingShowInfos.removeReturnOld(sequenceNumber));
             mContentRect.set(showInfo.contentRect);
-
-            mFloatingToolbarToken = info.widgetToken;
-            mState = TOOLBAR_STATE_SHOWN;
             updatePopupWindowContent(info);
             Rect contentRect = info.contentRect;
             mPopupWindow.setWidth(contentRect.width());
@@ -444,7 +427,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         runOnUiThread(() -> {
             if (!isShowing()) {
                 Log.w(FloatingToolbar.FLOATING_TOOLBAR_TAG,
-                        "onWidgetUpdated(): The widget isn't showing.");
+                        "onWidgetUpdated callback: The widget isn't showing.");
                 return;
             }
             updatePopupWindowContent(info);
@@ -452,19 +435,11 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             Point coords = getCoordinatesInWindow(contentRect.left, contentRect.top);
             if (DEBUG) {
                 Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
-                        "PopupWindow x= " + coords.x + " y= " + coords.y + " w="
-                                + contentRect.width() + " h=" + contentRect.height());
+                        "onWidgetUpdated callback: PopupWindow x= " + coords.x + " y= "
+                                + coords.y + " w=" + contentRect.width() + " h="
+                                + contentRect.height());
             }
             mPopupWindow.update(coords.x, coords.y, contentRect.width(), contentRect.height());
-        });
-    }
-
-    private void onToolbarShowTimeout() {
-        runOnUiThread(() -> {
-            if (mState == TOOLBAR_STATE_DISMISSED) {
-                return;
-            }
-            doDismissPopupWindow();
         });
     }
 
@@ -476,7 +451,7 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
             MenuItem item = mMenuItems.get(itemIndex);
             if (DEBUG) {
                 Log.v(FloatingToolbar.FLOATING_TOOLBAR_TAG,
-                        "SelectionToolbarCallbackImpl onMenuItemClicked. itemIndex="
+                        "onMenuItemClicked callback: itemIndex="
                                 + itemIndex + " item=" + item);
             }
             // TODO: handle the menu item like clipboard
@@ -484,24 +459,15 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
                 mMenuItemClickListener.onMenuItemClick(item);
             } else {
                 Log.e(FloatingToolbar.FLOATING_TOOLBAR_TAG,
-                        "onMenuItemClicked: cannot find menu item.");
+                        "onMenuItemClicked callback: cannot find menu item.");
             }
         });
     }
 
     private void onError(int errorCode, int sequenceNumber) {
         runOnUiThread(() -> {
-            switch (errorCode) {
-                case ERROR_DO_NOT_ALLOW_MULTIPLE_TOOL_BAR:
-                    Log.e(FloatingToolbar.FLOATING_TOOLBAR_TAG,
-                            "onError: attempt to show multiple toolbars");
-                    break;
-                case ERROR_UNKNOWN_WIDGET_TOKEN:
-                    Log.e(FloatingToolbar.FLOATING_TOOLBAR_TAG,
-                            "onError: unknown widget token");
-                    break;
-            }
-
+            Log.e(FloatingToolbar.FLOATING_TOOLBAR_TAG,
+                    "Error occurred on show toolbar, code: " + errorCode);
             mPendingMenuItemClickListeners.remove(sequenceNumber);
             mPendingMenuItems.remove(sequenceNumber);
             mPendingShowInfos.remove(sequenceNumber);
@@ -547,17 +513,6 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         }
 
         @Override
-        public void onToolbarShowTimeout() {
-            final RemoteFloatingToolbarPopup remoteFloatingToolbarPopup = mRemotePopup.get();
-            if (remoteFloatingToolbarPopup != null) {
-                remoteFloatingToolbarPopup.onToolbarShowTimeout();
-            } else {
-                Log.w(FloatingToolbar.FLOATING_TOOLBAR_TAG,
-                        "Lost remoteFloatingToolbarPopup reference for onToolbarShowTimeout.");
-            }
-        }
-
-        @Override
         public void onMenuItemClicked(int itemIndex) {
             final RemoteFloatingToolbarPopup remoteFloatingToolbarPopup = mRemotePopup.get();
             if (remoteFloatingToolbarPopup != null) {
@@ -589,7 +544,8 @@ public final class RemoteFloatingToolbarPopup implements FloatingToolbarPopup {
         public final int mGroupId;
         @Nullable
         public final String mTitle;
-        @Nullable private final Drawable mIcon;
+        @Nullable
+        private final Drawable mIcon;
 
         private MenuItemRepr(
                 int itemId, int groupId, @Nullable CharSequence title,
