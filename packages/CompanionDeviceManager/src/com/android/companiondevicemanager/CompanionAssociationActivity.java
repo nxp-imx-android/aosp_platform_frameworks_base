@@ -59,7 +59,6 @@ import android.companion.AssociationInfo;
 import android.companion.AssociationRequest;
 import android.companion.CompanionDeviceManager;
 import android.companion.DeviceFilter;
-import android.companion.Flags;
 import android.companion.IAssociationRequestCallback;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -237,13 +236,8 @@ public class CompanionAssociationActivity extends FragmentActivity implements
         }
 
         try {
-            if (Flags.associationFailureCode()) {
-                appCallback.onFailure(
-                        RESULT_SECURITY_ERROR, "More than one AssociationRequests are processing.");
-            } else {
-                appCallback.onFailure(
-                        RESULT_INTERNAL_ERROR, "More than one AssociationRequests are processing.");
-            }
+            appCallback.onFailure(
+                    RESULT_SECURITY_ERROR, "More than one AssociationRequests are processing.");
         } catch (RemoteException ignore) {
         }
     }

@@ -3444,7 +3444,7 @@ package android.companion {
     method public void onAssociationsChanged(@NonNull java.util.List<android.companion.AssociationInfo>);
   }
 
-  @FlaggedApi("android.companion.device_presence") public final class ObservingDevicePresenceRequest implements android.os.Parcelable {
+  public final class ObservingDevicePresenceRequest implements android.os.Parcelable {
     method @FlaggedApi("android.companion.association_verification") @Nullable public android.companion.DeviceId getDeviceId();
   }
 
