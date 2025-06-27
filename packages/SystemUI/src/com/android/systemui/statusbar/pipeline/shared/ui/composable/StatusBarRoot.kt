@@ -60,7 +60,7 @@ import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.dagger.MediaModule.POPUP
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
-import com.android.systemui.statusbar.StatusBarRegionSampling
+import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.core.RudimentaryBattery
@@ -314,7 +314,7 @@ fun StatusBarRoot(
                         context.displayId,
                     )
 
-                    if (StatusBarRegionSampling.isEnabled) {
+                    if (StatusBarAlwaysUseRegionSampling.isAnyRegionSamplingEnabled) {
                         bindRegionSamplingViewModel(
                             context.displayId,
                             phoneStatusBarView,

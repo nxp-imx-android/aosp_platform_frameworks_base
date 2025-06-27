@@ -476,6 +476,13 @@ flag {
 }
 
 flag {
+    name: "status_bar_always_use_region_sampling"
+    namespace: "systemui"
+    description: "Have the status bar *always* use region sampling to calculate icon contrast"
+    bug: "365120736"
+}
+
+flag {
     name: "icon_refresh_2025"
     namespace: "systemui"
     description: "Build time flag for 2025 icon refresh"

@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.domain.interactor
 
 import com.android.internal.view.AppearanceRegion
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.StatusBarRegionSampling
 import com.android.systemui.statusbar.data.repository.StatusBarModeRepositoryStore
 import com.android.systemui.uimode.data.repository.ForceInvertRepository
@@ -51,20 +52,19 @@ constructor(
 ) : StatusBarRegionSamplingInteractor {
 
     override val isRegionSamplingEnabled =
-        if (!StatusBarRegionSampling.isEnabled) {
-            flowOf(false)
-        } else {
-            // TODO: b/365120736 - Use a region sampled status bar in more scenarios.
-            //   Region sampling is currently only used for the expanded dark theme
-            //   accessibility feature.
+        if (StatusBarAlwaysUseRegionSampling.isEnabled) {
+            flowOf(true)
+        } else if (StatusBarRegionSampling.isEnabled) {
             forceInvertRepository.isForceInvertDark
+        } else {
+            flowOf(false)
         }
 
     override fun setSampledAppearanceRegions(
         displayId: Int,
         appearanceRegions: List<AppearanceRegion?>,
     ) {
-        if (!StatusBarRegionSampling.isEnabled) {
+        if (!StatusBarAlwaysUseRegionSampling.isAnyRegionSamplingEnabled) {
             return
         }
         val statusBarModePerDisplayRepository = statusBarModeRepositoryStore.forDisplay(displayId)

@@ -28,6 +28,7 @@ import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
+import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.StatusBarRegionSampling
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModeRepository
 import com.android.systemui.testKosmos
@@ -44,7 +45,8 @@ class StatusBarRegionSamplingInteractorTest : SysuiTestCase() {
     private val Kosmos.underTest by Kosmos.Fixture { kosmos.statusBarRegionSamplingInteractor }
 
     @Test
-    fun isRegionSamplingEnabled_forceInvertOff_returnsFalse() =
+    @DisableFlags(StatusBarAlwaysUseRegionSampling.FLAG_NAME)
+    fun isRegionSamplingEnabled_alwaysUseFlagOff_forceInvertOff_returnsFalse() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isRegionSamplingEnabled)
 
@@ -55,7 +57,8 @@ class StatusBarRegionSamplingInteractorTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarRegionSampling.FLAG_NAME)
-    fun isRegionSamplingEnabled_forceInvertDark_flagEnabled_returnsTrue() =
+    @DisableFlags(StatusBarAlwaysUseRegionSampling.FLAG_NAME)
+    fun isRegionSamplingEnabled_forceInvertDark_onlyA11yFlagEnabled_returnsTrue() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isRegionSamplingEnabled)
 
@@ -65,8 +68,8 @@ class StatusBarRegionSamplingInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @DisableFlags(StatusBarRegionSampling.FLAG_NAME)
-    fun isRegionSamplingEnabled_forceInvertDark_flagDisabled_returnsFalse() =
+    @DisableFlags(StatusBarRegionSampling.FLAG_NAME, StatusBarAlwaysUseRegionSampling.FLAG_NAME)
+    fun isRegionSamplingEnabled_forceInvertDark_bothFlagsDisabled_returnsFalse() =
         kosmos.runTest {
             val latest by collectLastValue(underTest.isRegionSamplingEnabled)
 
@@ -76,7 +79,29 @@ class StatusBarRegionSamplingInteractorTest : SysuiTestCase() {
         }
 
     @Test
-    @EnableFlags(StatusBarRegionSampling.FLAG_NAME)
+    @EnableFlags(StatusBarAlwaysUseRegionSampling.FLAG_NAME)
+    fun isRegionSamplingEnabled_alwaysUseFlagEnabled_forceInvertDark_returnsTrue() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isRegionSamplingEnabled)
+
+            fakeForceInvertRepository.setForceInvertDark(true)
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    @EnableFlags(StatusBarAlwaysUseRegionSampling.FLAG_NAME)
+    fun isRegionSamplingEnabled_alwaysUseFlagEnabled_forceInvertOff_returnsTrue() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isRegionSamplingEnabled)
+
+            fakeForceInvertRepository.setForceInvertDark(false)
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    @EnableFlags(StatusBarRegionSampling.FLAG_NAME, StatusBarAlwaysUseRegionSampling.FLAG_NAME)
     fun setSampledAppearanceRegions_propagatesNonNullToStatusBarModeRepository() =
         kosmos.runTest {
             val firstRegion = AppearanceRegion(0, Rect())
@@ -91,8 +116,40 @@ class StatusBarRegionSamplingInteractorTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(StatusBarRegionSampling.FLAG_NAME)
+    @DisableFlags(StatusBarAlwaysUseRegionSampling.FLAG_NAME)
+    fun setSampledAppearanceRegions_onlyA11yFlagEnabled_propagates() =
+        kosmos.runTest {
+            val firstRegion = AppearanceRegion(0, Rect())
+            val secondRegion = null
+            val thirdRegion = AppearanceRegion(APPEARANCE_LIGHT_STATUS_BARS, Rect())
+            val appearanceRegions = listOf(firstRegion, secondRegion, thirdRegion)
+
+            underTest.setSampledAppearanceRegions(Display.DEFAULT_DISPLAY, appearanceRegions)
+
+            assertThat(fakeStatusBarModeRepository.defaultDisplay.fakeSampledAppearanceRegions)
+                .containsExactly(firstRegion, thirdRegion)
+        }
+
+    @Test
+    @EnableFlags(StatusBarAlwaysUseRegionSampling.FLAG_NAME)
     @DisableFlags(StatusBarRegionSampling.FLAG_NAME)
-    fun setSampledAppearanceRegions_flagDisabled_doesNothing() =
+    fun setSampledAppearanceRegions_onlyAlwaysFlagEnabled_propagates() =
+        kosmos.runTest {
+            val firstRegion = AppearanceRegion(0, Rect())
+            val secondRegion = null
+            val thirdRegion = AppearanceRegion(APPEARANCE_LIGHT_STATUS_BARS, Rect())
+            val appearanceRegions = listOf(firstRegion, secondRegion, thirdRegion)
+
+            underTest.setSampledAppearanceRegions(Display.DEFAULT_DISPLAY, appearanceRegions)
+
+            assertThat(fakeStatusBarModeRepository.defaultDisplay.fakeSampledAppearanceRegions)
+                .containsExactly(firstRegion, thirdRegion)
+        }
+
+    @Test
+    @DisableFlags(StatusBarRegionSampling.FLAG_NAME, StatusBarAlwaysUseRegionSampling.FLAG_NAME)
+    fun setSampledAppearanceRegions_bothFlagsDisabled_doesNothing() =
         kosmos.runTest {
             val region = AppearanceRegion(0, Rect())
 
