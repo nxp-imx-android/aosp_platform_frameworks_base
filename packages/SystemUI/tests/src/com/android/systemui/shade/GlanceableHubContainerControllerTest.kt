@@ -39,6 +39,7 @@ import com.android.systemui.ambient.touch.dagger.AmbientTouchComponent
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
 import com.android.systemui.communal.data.repository.fakeCommunalSceneRepository
 import com.android.systemui.communal.domain.interactor.communalInteractor
+import com.android.systemui.communal.domain.interactor.communalSceneInteractor
 import com.android.systemui.communal.domain.interactor.communalSettingsInteractor
 import com.android.systemui.communal.domain.interactor.setCommunalAvailable
 import com.android.systemui.communal.domain.interactor.setCommunalV2ConfigEnabled
@@ -125,6 +126,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
         Kosmos.Fixture {
             GlanceableHubContainerController(
                 communalInteractor,
+                communalSceneInteractor,
                 communalSettingsInteractor,
                 mockCommunalViewModel,
                 keyguardInteractor,
@@ -168,6 +170,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
             val controller =
                 GlanceableHubContainerController(
                     communalInteractor,
+                    communalSceneInteractor,
                     communalSettingsInteractor,
                     mockCommunalViewModel,
                     keyguardInteractor,
@@ -200,6 +203,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
             val controller =
                 GlanceableHubContainerController(
                     communalInteractor,
+                    communalSceneInteractor,
                     communalSettingsInteractor,
                     mockCommunalViewModel,
                     keyguardInteractor,
@@ -228,6 +232,7 @@ class GlanceableHubContainerControllerTest : SysuiTestCase() {
             val controller =
                 GlanceableHubContainerController(
                     communalInteractor,
+                    communalSceneInteractor,
                     communalSettingsInteractor,
                     mockCommunalViewModel,
                     keyguardInteractor,
