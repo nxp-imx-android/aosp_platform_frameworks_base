@@ -2039,3 +2039,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "screen_off_animation_guard_enabled"
+    namespace: "systemui"
+    description: "Reports Log.wtf statements if animations are running while screen is off."
+    bug: "420685896"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
