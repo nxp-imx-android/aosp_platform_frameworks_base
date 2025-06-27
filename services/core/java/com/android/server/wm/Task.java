@@ -1917,10 +1917,11 @@ class Task extends TaskFragment {
     private void updateForceResizeOverrides(@NonNull ActivityRecord r) {
         final AppCompatResizeOverrides resizeOverrides = r.mAppCompatController
                 .getResizeOverrides();
+        // Pass task's displayContent as activity's displayContent is not attached yet.
         mForceResizeOverride = resizeOverrides.shouldOverrideForceResizeApp()
                 || r.isUniversalResizeable()
                 || r.mAppCompatController.getAspectRatioOverrides()
-                    .hasFullscreenOverride();
+                    .hasFullscreenOverride(mDisplayContent);
         mForceNonResizeOverride = resizeOverrides.shouldOverrideForceNonResizeApp();
     }
 

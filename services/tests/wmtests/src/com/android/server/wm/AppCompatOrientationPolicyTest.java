@@ -33,6 +33,7 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_USER;
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_3_2;
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_FULLSCREEN;
+import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_FULLSCREEN_OVERRIDE;
 import static android.view.WindowManager.PROPERTY_COMPAT_IGNORE_REQUESTED_ORIENTATION;
@@ -86,7 +87,12 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
     @EnableCompatChanges({OVERRIDE_ANY_ORIENTATION_TO_USER})
     public void testOverrideOrientationIfNeeded_fullscreenOverrideEnabled_returnsUser() {
         runTestScenarioWithActivity((robot) -> {
-            robot.activity().setIgnoreOrientationRequest(true);
+            robot.applyOnActivity((a) -> {
+                a.setDisplayId(DEFAULT_DISPLAY);
+                a.createActivityWithComponent();
+                a.setIgnoreOrientationRequest(true);
+            });
+
             robot.checkOverrideOrientation(/* candidate */ SCREEN_ORIENTATION_PORTRAIT,
                     /* expected */ SCREEN_ORIENTATION_USER);
         });
@@ -98,6 +104,7 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
         runTestScenario((robot) -> {
             robot.prop().disable(PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE);
             robot.applyOnActivity((a) -> {
+                a.setDisplayId(DEFAULT_DISPLAY);
                 a.createActivityWithComponent();
                 a.setIgnoreOrientationRequest(true);
             });
@@ -114,6 +121,7 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
             robot.prop().disable(PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE);
             robot.conf().enableUserAppAspectRatioFullscreen(true);
             robot.applyOnActivity((a) -> {
+                a.setDisplayId(DEFAULT_DISPLAY);
                 a.createActivityWithComponent();
                 a.setIgnoreOrientationRequest(true);
                 a.setGetUserMinAspectRatioOverrideCode(USER_MIN_ASPECT_RATIO_FULLSCREEN);
@@ -131,6 +139,7 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
             robot.prop().disable(PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_FULLSCREEN_OVERRIDE);
             robot.conf().enableUserAppAspectRatioFullscreen(true);
             robot.applyOnActivity((a) -> {
+                a.setDisplayId(DEFAULT_DISPLAY);
                 a.createActivityWithComponent();
                 a.setIgnoreOrientationRequest(true);
                 a.setGetUserMinAspectRatioOverrideCode(USER_MIN_ASPECT_RATIO_FULLSCREEN);

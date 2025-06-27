@@ -1605,11 +1605,11 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
      * fullscreen. While display rotation is fixed to landscape, the orientation requested by the
      * activity will be still respected by bounds resolution logic. For instance, if an activity
      * requests portrait orientation and this override is set, then activity will appear in the
-     * letterbox mode for fixed orientation with the display rotated to the lanscape natural
+     * letterbox mode for fixed orientation with the display rotated to the landscape natural
      * orientation.
      *
      * <p>This override is applicable only when natural orientation of the device is
-     * landscape and display ignores orientation requestes.
+     * landscape and display ignores orientation requests.
      *
      * <p>Main use case for this override are camera-using activities that are portrait-only and
      * assume alignment with natural device orientation. Such activities can automatically be
@@ -1626,8 +1626,9 @@ public class ActivityInfo extends ComponentInfo implements Parcelable {
 
     /**
      * Enables {@link #SCREEN_ORIENTATION_USER} which overrides any orientation requested
-     * by the activity. Fixed orientation apps can be overridden to fullscreen on large
-     * screen devices with ignoreOrientationRequest enabled with this override.
+     * by the activity. Fixed-orientation and fixed&ndash;aspect ratio apps can be overridden
+     * to full screen on large screen devices when this override is enabled. The override
+     * applies only to default displays that have {@code ignoreOrientationRequest} set to true.
      *
      * @hide
      */

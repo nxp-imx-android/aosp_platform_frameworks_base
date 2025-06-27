@@ -163,6 +163,10 @@ class AppCompatActivityRobot {
         doReturn(enabled).when(mDisplayContent).isDisplayIgnoreActivitySizeRestrictions();
     }
 
+    void setDisplayId(int displayId) {
+        doReturn(displayId).when(mDisplayContent).getDisplayId();
+    }
+
     void configureTaskBounds(@NonNull Rect taskBounds) {
         doReturn(taskBounds).when(mTaskStack.top()).getBounds();
     }
