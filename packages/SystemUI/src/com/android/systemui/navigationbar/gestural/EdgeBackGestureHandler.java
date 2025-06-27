@@ -1242,7 +1242,9 @@ public class EdgeBackGestureHandler {
                     QuickStepContract.isBackGestureDisabled(mSysUiFlags,
                             mIsTrackpadThreeFingerSwipe), mDisabledForQuickstep,
                     mGestureBlockingActivityRunning.get(), mIsInPip, mDisplaySize,
-                    mEdgeWidthLeft, mLeftInset, mEdgeWidthRight, mRightInset, mExcludeRegion));
+                    mEdgeWidthLeft, mLeftInset, mEdgeWidthRight, mRightInset,
+                    DesktopExperienceFlags.ENABLE_MULTIDISPLAY_TRACKPAD_BACK_GESTURE.isTrue()
+                            ? displayBackGestureHandler.getExcludeRegion() : mExcludeRegion));
         } else if (mAllowGesture || mLogGesture) {
             boolean mLastFrameThresholdCrossed = mThresholdCrossed;
             if (!mThresholdCrossed) {
