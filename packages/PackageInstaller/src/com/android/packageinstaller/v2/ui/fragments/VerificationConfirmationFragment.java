@@ -18,13 +18,12 @@ package com.android.packageinstaller.v2.ui.fragments;
 
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN;
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY;
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_OK;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY;
+import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
-import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_UNKNOWN;
 
 import static com.android.packageinstaller.ConfirmDeveloperVerification.FLAG_VERIFICATION_FAILED_MAY_BYPASS;
@@ -96,7 +95,7 @@ public class VerificationConfirmationFragment extends DialogFragment {
                                     DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY))
                     .setNegativeButton(R.string.dont_install,
                             (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
-                                    DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL))
+                                    DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT))
                     .setNeutralButton(R.string.install_anyway,
                             (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
                                     DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY));
@@ -104,7 +103,7 @@ public class VerificationConfirmationFragment extends DialogFragment {
             // only allow retry
             builder.setPositiveButton(R.string.ok,
                             (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
-                                    DEVELOPER_VERIFICATION_USER_RESPONSE_OK))
+                                    DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT))
                     .setNegativeButton(R.string.try_again,
                             (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
                                     DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY));
@@ -112,7 +111,7 @@ public class VerificationConfirmationFragment extends DialogFragment {
             // only allow bypass
             builder.setPositiveButton(R.string.dont_install,
                             (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
-                                    DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL))
+                                    DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT))
                     .setNegativeButton(R.string.install_anyway,
                             (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
                                     DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY));
@@ -123,11 +122,11 @@ public class VerificationConfirmationFragment extends DialogFragment {
                             == DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED)
                             ? R.string.close : R.string.ok,
                     (dialog, which) -> mInstallActionListener.setVerificationUserResponse(
-                            DEVELOPER_VERIFICATION_USER_RESPONSE_OK));
+                            DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT));
         }
         builder.setOnCancelListener(dialog ->
                 mInstallActionListener.setVerificationUserResponse(
-                        DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL));
+                        DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT));
 
         mDialog = builder.create();
         return mDialog;

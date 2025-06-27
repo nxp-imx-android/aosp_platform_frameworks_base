@@ -156,7 +156,7 @@ class InstallRepository(private val context: Context) {
             PackageInstaller.ACTION_CONFIRM_PRE_APPROVAL == intent.action
                 || PackageInstaller.ACTION_CONFIRM_INSTALL == intent.action
                 || (Flags.verificationService()
-                && PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE == intent.action)
+                && PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION == intent.action)
 
         sessionId = if (isSessionInstall)
             intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, SessionInfo.INVALID_ID)
@@ -328,7 +328,7 @@ class InstallRepository(private val context: Context) {
         val uri = intent.data
         val action = intent.action
 
-        if (PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE == action) {
+        if (PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION == action) {
             _stagingResult.value = InstallVerificationConfirmationRequired()
             return
         }
@@ -562,7 +562,7 @@ class InstallRepository(private val context: Context) {
             // mOriginatingURI = null;
             // mReferrerURI = null;
             pendingUserActionReason = info.getPendingUserActionReason()
-        } else if (PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE == intent.action) {
+        } else if (PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION == intent.action) {
             val info = packageInstaller.getSessionInfo(sessionId)
             val resolvedPath = info?.resolvedBaseApkPath
             if (info == null || !info.isSealed || resolvedPath == null) {
@@ -1099,7 +1099,7 @@ class InstallRepository(private val context: Context) {
     }
 
     fun setUserVerificationResponse(responseCode: Int) {
-        if (PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE != intent.action) {
+        if (PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION != intent.action) {
             Log.e(LOG_TAG, "Cannot set verification response for this request: $intent")
             _installResult.value = InstallAborted(ABORT_REASON_INTERNAL_ERROR)
             return
