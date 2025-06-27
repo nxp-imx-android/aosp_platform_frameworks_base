@@ -16,6 +16,7 @@
 
 package com.android.systemui.statusbar.phone
 
+import android.app.ActivityOptions
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Intent
@@ -74,6 +75,7 @@ interface ActivityStarterInternal {
         customMessage: String? = null,
         disallowEnterPictureInPictureWhileLaunching: Boolean = false,
         userHandle: UserHandle? = null,
+        activityOptions: ActivityOptions? = null,
     )
 
     /** Starts an Activity. */

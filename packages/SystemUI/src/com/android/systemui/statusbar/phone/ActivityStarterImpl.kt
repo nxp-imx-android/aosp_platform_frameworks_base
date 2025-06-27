@@ -14,6 +14,7 @@
 
 package com.android.systemui.statusbar.phone
 
+import android.app.ActivityOptions
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Bundle
@@ -383,6 +384,24 @@ constructor(
             dismissShade = dismissShade,
             customMessage = customMessage,
             callback = callback,
+        )
+    }
+
+    override fun startActivityDismissingKeyguard(
+        intent: Intent,
+        onlyProvisioned: Boolean,
+        dismissShade: Boolean,
+        customMessage: String?,
+        activityOptions: ActivityOptions,
+        callback: ActivityStarter.Callback?,
+    ) {
+        activityStarterInternal.startActivityDismissingKeyguard(
+            intent = intent,
+            onlyProvisioned = onlyProvisioned,
+            dismissShade = dismissShade,
+            customMessage = customMessage,
+            callback = callback,
+            activityOptions = activityOptions,
         )
     }
 

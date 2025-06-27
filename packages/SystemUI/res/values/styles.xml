@@ -1162,7 +1162,8 @@
 
     <style name="Theme.EditWidgetsActivity"
         parent="@android:style/Theme.DeviceDefault.NoActionBar.Fullscreen">
-        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
     <style name="TextAppearance.Control">
