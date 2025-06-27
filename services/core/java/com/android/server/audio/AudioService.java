@@ -44,6 +44,7 @@ import static android.media.AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_UNSE
 import static android.media.AudioDeviceVolumeManager.DEVICE_VOLUME_BEHAVIOR_VARIABLE;
 import static android.media.AudioManager.AUDIO_DEVICE_CATEGORY_HEADPHONES;
 import static android.media.AudioManager.FLAG_ABSOLUTE_VOLUME;
+import static android.media.AudioManager.MODE_ASSISTANT_CONVERSATION;
 import static android.media.AudioManager.RINGER_MODE_NORMAL;
 import static android.media.AudioManager.RINGER_MODE_SILENT;
 import static android.media.AudioManager.RINGER_MODE_VIBRATE;
@@ -7032,9 +7033,20 @@ public class AudioService extends IAudioService.Stub
             Log.v(TAG, "setMode(mode=" + mode + ", pid=" + pid
                     + ", uid=" + uid + ", caller=" + callingPackage + ")");
         }
-        if (!checkAudioSettingsPermission("setMode()")) {
-            return;
+
+        if (mContext.checkCallingPermission(
+                MODIFY_AUDIO_SETTINGS_PRIVILEGED) != PackageManager.PERMISSION_GRANTED) {
+            if (mode == MODE_ASSISTANT_CONVERSATION) {
+                Log.w(TAG,
+                        "MODIFY_AUDIO_SETTINGS_PRIVILEGED Permission Denial for "
+                                + "MODE_ASSISTANT_CONVERSATION: setMode() from pid="
+                                + Binder.getCallingPid() + ", uid=" + Binder.getCallingUid());
+                return;
+            } else if (!checkAudioSettingsPermission("setMode()")) {
+                return;
+            }
         }
+
         if (cb == null) {
             Log.e(TAG, "setMode() called with null binder");
             return;

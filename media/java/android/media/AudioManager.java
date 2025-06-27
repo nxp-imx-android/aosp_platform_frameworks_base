@@ -19,6 +19,7 @@ package android.media;
 import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM;
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.content.Context.DEVICE_ID_DEFAULT;
+import static android.media.audio.Flags.FLAG_ASSISTANT_VOLUME_CONTROL;
 import static android.media.audio.Flags.FLAG_DEPRECATE_STREAM_BT_SCO;
 import static android.media.audio.Flags.FLAG_FOCUS_EXCLUSIVE_WITH_RECORDING;
 import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
@@ -3486,14 +3487,16 @@ public class AudioManager {
     /**
      * Sets the audio mode.
      * <p>
-     * The audio mode encompasses audio routing AND the behavior of
+     * The audio mode encompasses audio routing, volume management AND the behavior of
      * the telephony layer. Therefore this method should only be used by applications that
      * replace the platform-wide management of audio settings or the main telephony application.
      * In particular, the {@link #MODE_IN_CALL} mode should only be used by the telephony
      * application when it places a phone call, as it will cause signals from the radio layer
-     * to feed the platform mixer.
+     * to feed the platform mixer. The {@link #MODE_ASSISTANT_CONVERSATION} should only be used
+     * by applications that introduce an interactive assistant communication which would
+     * prioritize the audio management around streams with {@link AudioAttributes#USAGE_ASSISTANT}.
      *
-     * @param mode  the requested audio mode.
+     * @param mode  the requested audio mode. (see {@link AudioManager.AudioMode})
      *              Informs the HAL about the current audio state so that
      *              it can route the audio appropriately.
      */
@@ -3677,6 +3680,12 @@ public class AudioManager {
      */
     public static final int MODE_COMMUNICATION_REDIRECT = AudioSystem.MODE_COMMUNICATION_REDIRECT;
 
+    /**
+     * Use this mode whenever an assistant conversation mode is started.
+     */
+    @FlaggedApi(FLAG_ASSISTANT_VOLUME_CONTROL)
+    public static final int MODE_ASSISTANT_CONVERSATION = AudioSystem.MODE_ASSISTANT_CONVERSATION;
+
     /** @hide */
     @IntDef(flag = false, prefix = "MODE_", value = {
             MODE_NORMAL,
@@ -3685,7 +3694,8 @@ public class AudioManager {
             MODE_IN_COMMUNICATION,
             MODE_CALL_SCREENING,
             MODE_CALL_REDIRECT,
-            MODE_COMMUNICATION_REDIRECT}
+            MODE_COMMUNICATION_REDIRECT,
+            MODE_ASSISTANT_CONVERSATION}
     )
     @Retention(RetentionPolicy.SOURCE)
     public @interface AudioMode {}

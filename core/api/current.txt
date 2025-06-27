@@ -22348,6 +22348,7 @@ package android.media {
     field public static final int GET_DEVICES_ALL = 3; // 0x3
     field public static final int GET_DEVICES_INPUTS = 1; // 0x1
     field public static final int GET_DEVICES_OUTPUTS = 2; // 0x2
+    field @FlaggedApi("android.media.audio.assistant_volume_control") public static final int MODE_ASSISTANT_CONVERSATION = 7; // 0x7
     field public static final int MODE_CALL_REDIRECT = 5; // 0x5
     field public static final int MODE_CALL_SCREENING = 4; // 0x4
     field public static final int MODE_COMMUNICATION_REDIRECT = 6; // 0x6
