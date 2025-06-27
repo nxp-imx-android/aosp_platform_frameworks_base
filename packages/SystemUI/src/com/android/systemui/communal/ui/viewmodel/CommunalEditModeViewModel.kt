@@ -51,6 +51,7 @@ import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.dagger.MediaModule
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import javax.inject.Inject
@@ -73,6 +74,7 @@ constructor(
     private val communalInteractor: CommunalInteractor,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
+    private val keyguardStateController: KeyguardStateController,
     @Named(MediaModule.COMMUNAL_HUB) mediaHost: MediaHost,
     private val uiEventLogger: UiEventLogger,
     @CommunalLog logBuffer: LogBuffer,
@@ -280,6 +282,9 @@ constructor(
         // Set the scroll position of the glanceable hub to match where we are now.
         persistScrollPosition()
     }
+
+    /** Whether screen rotation is allowed. If false, screen orientation should remain portrait. */
+    fun isScreenRotationAllowed(): Boolean = keyguardStateController.isKeyguardScreenRotationAllowed
 
     companion object {
         private const val TAG = "CommunalEditModeViewModel"

@@ -57,6 +57,7 @@ import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.media.controls.ui.controller.mediaCarouselController
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.settings.fakeUserTracker
+import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
@@ -95,6 +96,7 @@ class CommunalEditModeViewModelTest : SysuiTestCase() {
                 communalInteractor,
                 communalSettingsInteractor,
                 keyguardTransitionInteractor,
+                keyguardStateController,
                 mock<MediaHost>(),
                 uiEventLogger,
                 logcatLogBuffer("CommunalEditModeViewModelTest"),

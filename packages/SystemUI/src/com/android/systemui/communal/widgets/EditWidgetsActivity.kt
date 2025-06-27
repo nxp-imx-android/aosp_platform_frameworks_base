@@ -16,10 +16,12 @@
 
 package com.android.systemui.communal.widgets
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
 import android.content.Intent
 import android.content.IntentSender
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.os.RemoteException
 import android.util.Log
@@ -181,8 +183,13 @@ constructor(
     // Completes when the activity UI is rendered and ready for the hub to edit mode transition.
     private val readyDeferred = CompletableDeferred<Unit>()
 
+    @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (!communalViewModel.isScreenRotationAllowed()) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
 
         listenForTransitionAndChangeScene()
 
