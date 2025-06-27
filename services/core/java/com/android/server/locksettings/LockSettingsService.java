@@ -1053,9 +1053,9 @@ public class LockSettingsService extends ILockSettings.Stub {
             if (isCredentialShareableWithParent(user.id)
                     && !getSeparateProfileChallengeEnabledInternal(user.id)) {
                 success &= SyntheticPasswordCrypto.migrateLockSettingsKey(
-                        PROFILE_KEY_NAME_ENCRYPT + user.id);
+                        profilePasswordEncryptAlias(user.id));
                 success &= SyntheticPasswordCrypto.migrateLockSettingsKey(
-                        PROFILE_KEY_NAME_DECRYPT + user.id);
+                        profilePasswordDecryptAlias(user.id));
             }
         }
         return success;
@@ -1552,7 +1552,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                 storedData.length);
         byte[] decryptionResult;
         SecretKey decryptionKey = (SecretKey) mKeyStore.getKey(
-                PROFILE_KEY_NAME_DECRYPT + userId, null);
+                profilePasswordDecryptAlias(userId), null);
 
         Cipher cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
                 + KeyProperties.BLOCK_MODE_GCM + "/" + KeyProperties.ENCRYPTION_PADDING_NONE);
@@ -2179,14 +2179,14 @@ public class LockSettingsService extends ILockSettings.Stub {
             SecretKey secretKey = keyGenerator.generateKey();
             try {
                 mKeyStore.setEntry(
-                        PROFILE_KEY_NAME_ENCRYPT + profileUserId,
+                        profilePasswordEncryptAlias(profileUserId),
                         new KeyStore.SecretKeyEntry(secretKey),
                         new KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT)
                                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                                 .build());
                 mKeyStore.setEntry(
-                        PROFILE_KEY_NAME_DECRYPT + profileUserId,
+                        profilePasswordDecryptAlias(profileUserId),
                         new KeyStore.SecretKeyEntry(secretKey),
                         new KeyProtection.Builder(KeyProperties.PURPOSE_DECRYPT)
                                 .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
@@ -2197,16 +2197,17 @@ public class LockSettingsService extends ILockSettings.Stub {
                                 .build());
                 // Key imported, obtain a reference to it.
                 SecretKey keyStoreEncryptionKey = (SecretKey) mKeyStore.getKey(
-                        PROFILE_KEY_NAME_ENCRYPT + profileUserId, null);
+                        profilePasswordEncryptAlias(profileUserId), null);
                 Cipher cipher = Cipher.getInstance(
-                        KeyProperties.KEY_ALGORITHM_AES + "/" + KeyProperties.BLOCK_MODE_GCM + "/"
+                        KeyProperties.KEY_ALGORITHM_AES + "/"
+                                + KeyProperties.BLOCK_MODE_GCM + "/"
                                 + KeyProperties.ENCRYPTION_PADDING_NONE);
                 cipher.init(Cipher.ENCRYPT_MODE, keyStoreEncryptionKey);
                 ciphertext = cipher.doFinal(password.getCredential());
                 iv = cipher.getIV();
             } finally {
                 // The original key can now be discarded.
-                mKeyStore.deleteEntry(PROFILE_KEY_NAME_ENCRYPT + profileUserId);
+                mKeyStore.deleteEntry(profilePasswordEncryptAlias(profileUserId));
             }
         } catch (UnrecoverableKeyException
                 | BadPaddingException | IllegalBlockSizeException | KeyStoreException
@@ -2709,9 +2710,19 @@ public class LockSettingsService extends ILockSettings.Stub {
         mStorage.removeUser(userId);
     }
 
+    // TODO: b/412331826 Add protectorId param
+    private static String profilePasswordEncryptAlias(int profileUserId) {
+        return PROFILE_KEY_NAME_ENCRYPT + profileUserId;
+    }
+
+    // TODO: b/412331826 Add protectorId param
+    private static String profilePasswordDecryptAlias(int profileUserId) {
+        return PROFILE_KEY_NAME_DECRYPT + profileUserId;
+    }
+
     private void removeKeystoreProfileKey(int targetUserId) {
-        final String encryptAlias = PROFILE_KEY_NAME_ENCRYPT + targetUserId;
-        final String decryptAlias = PROFILE_KEY_NAME_DECRYPT + targetUserId;
+        final String encryptAlias = profilePasswordEncryptAlias(targetUserId);
+        final String decryptAlias = profilePasswordDecryptAlias(targetUserId);
         try {
             if (mKeyStore.containsAlias(encryptAlias) || mKeyStore.containsAlias(decryptAlias)) {
                 Slogf.i(TAG, "Removing keystore profile key for user %d", targetUserId);
