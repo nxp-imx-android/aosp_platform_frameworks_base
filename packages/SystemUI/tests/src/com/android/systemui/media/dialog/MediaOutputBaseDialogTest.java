@@ -64,6 +64,7 @@ import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
+import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractorKosmosKt;
 
@@ -167,6 +168,7 @@ public class MediaOutputBaseDialogTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mFlags,
+                        new FakeSystemClock(),
                         volumePanelGlobalStateInteractor,
                         mUserTracker);
     }
