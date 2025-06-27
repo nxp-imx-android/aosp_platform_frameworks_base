@@ -89,6 +89,7 @@ import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
+import com.android.systemui.util.time.FakeSystemClock;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractorKosmosKt;
 
@@ -185,6 +186,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     private final Kosmos mKosmos = SysuiTestCaseExtKt.testKosmos(this);
 
     private FeatureFlags mFlags = mock(FeatureFlags.class);
+    private final FakeSystemClock mClock = new FakeSystemClock();
+
     private View mDialogLaunchView = mock(View.class);
     private MediaSwitchingController.Callback mCallback =
             mock(MediaSwitchingController.Callback.class);
@@ -241,6 +244,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mFlags,
+                        mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
         mLocalMediaManager = spy(mMediaSwitchingController.mLocalMediaManager);
@@ -343,6 +347,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mFlags,
+                        mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
 
@@ -386,6 +391,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mFlags,
+                        mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
 
@@ -488,6 +494,72 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         verify(mMediaDevice1, never()).setRangeZone(anyInt());
         verify(mMediaDevice2, never()).setRangeZone(anyInt());
+    }
+
+    @Test
+    @EnableFlags({
+            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN,
+            Flags.FLAG_ALLOW_OUTPUT_SWITCHER_LIST_REARRANGEMENT_WITHIN_TIMEOUT
+    })
+    public void onDeviceListUpdate_repeatedWithinThresholdPeriod_rearrangesList() {
+        mMediaSwitchingController.start(mCb);
+        reset(mCb);
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
+        assertThat(items.get(0).getTitle()).isEqualTo(
+                mContext.getString(R.string.media_output_group_title_speakers_and_displays));
+        assertThat(items.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+        assertThat(items.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+
+        mClock.advanceTime(1500); // < 2 seconds.
+
+        // Make the second device suggested
+        when(mMediaDevice2.isSuggestedDevice()).thenReturn(true);
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        // The list is rearranged - The "Suggested" section added and the order got updated.
+        items = mMediaSwitchingController.getMediaItemList();
+        assertThat(items.get(0).getTitle()).isEqualTo(
+                mContext.getString(R.string.media_output_group_title_suggested));
+        assertThat(items.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+        assertThat(items.get(2).getTitle()).isEqualTo(
+                mContext.getString(R.string.media_output_group_title_speakers_and_displays));
+        assertThat(items.get(3).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+    }
+
+    @Test
+    @EnableFlags({
+            Flags.FLAG_ENABLE_OUTPUT_SWITCHER_REDESIGN,
+            Flags.FLAG_ALLOW_OUTPUT_SWITCHER_LIST_REARRANGEMENT_WITHIN_TIMEOUT
+    })
+    public void onDeviceListUpdate_repeatedAfterThresholdPeriod_appendsItemsToTheList() {
+        mMediaSwitchingController.start(mCb);
+        reset(mCb);
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        List<MediaItem> items = mMediaSwitchingController.getMediaItemList();
+        assertThat(items.get(0).getTitle()).isEqualTo(
+                mContext.getString(R.string.media_output_group_title_speakers_and_displays));
+        assertThat(items.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+        assertThat(items.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
+
+        mClock.advanceTime(2100); // > 2 seconds.
+
+        // Make the second device suggested
+        when(mMediaDevice2.isSuggestedDevice()).thenReturn(true);
+
+        mMediaSwitchingController.onDeviceListUpdate(mMediaDevices);
+
+        // The list remains unchanged.
+        items = mMediaSwitchingController.getMediaItemList();
+        assertThat(items.get(0).getTitle()).isEqualTo(
+                mContext.getString(R.string.media_output_group_title_speakers_and_displays));
+        assertThat(items.get(1).getMediaDevice().get()).isEqualTo(mMediaDevice1);
+        assertThat(items.get(2).getMediaDevice().get()).isEqualTo(mMediaDevice2);
     }
 
     @DisableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
@@ -786,6 +858,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mFlags,
+                        mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
         testMediaSwitchingController.start(mCb);
@@ -814,6 +887,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mFlags,
+                        mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
         testMediaSwitchingController.start(mCb);
@@ -862,6 +936,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mFlags,
+                        mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
 
@@ -890,6 +965,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mFlags,
+                        mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
 
@@ -1107,6 +1183,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mFlags,
+                        mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
 
@@ -1279,6 +1356,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         mPowerExemptionManager,
                         mKeyguardManager,
                         mFlags,
+                        mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
 
