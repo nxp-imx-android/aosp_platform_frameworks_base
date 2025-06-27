@@ -16,7 +16,7 @@
 
 @file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
 
-package com.android.systemui.screencapture.ui.compose
+package com.android.systemui.screencapture.common.ui.compose
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.ui.compose
+package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Offset

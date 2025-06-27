@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.ui.compose
+package com.android.systemui.screencapture.common.ui.compose
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size

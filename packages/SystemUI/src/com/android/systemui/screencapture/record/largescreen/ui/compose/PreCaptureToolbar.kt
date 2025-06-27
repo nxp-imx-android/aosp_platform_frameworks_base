@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.ui.compose
+package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -26,6 +26,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.android.systemui.common.ui.compose.Icon
+import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroup
+import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroupItem
+import com.android.systemui.screencapture.common.ui.compose.Toolbar
 import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
