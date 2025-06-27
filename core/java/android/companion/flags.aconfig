@@ -88,3 +88,11 @@ flag {
     description: "Enable association removed event API"
     bug: "398042032"
 }
+
+flag {
+    name: "enable_medical_profile"
+    is_exported: true
+    namespace: "companion"
+    description: "Enable medical profile"
+    bug: "414859687"
+}

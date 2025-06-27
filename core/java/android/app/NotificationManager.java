@@ -17,6 +17,7 @@
 package android.app;
 
 import static android.Manifest.permission.POST_NOTIFICATIONS;
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 import static android.app.NotificationChannel.DEFAULT_CHANNEL_ID;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.service.notification.Flags.notificationClassification;
@@ -463,7 +464,7 @@ public class NotificationManager {
      * @hide
      */
     @SdkConstant(SdkConstant.SdkConstantType.BROADCAST_INTENT_ACTION)
-    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final String ACTION_NOTIFICATION_LISTENER_ENABLED_CHANGED =
             "android.app.action.NOTIFICATION_LISTENER_ENABLED_CHANGED";
 
@@ -2364,7 +2365,10 @@ public class NotificationManager {
     }
 
     /** @hide */
-    public void setNotificationPolicyAccessGranted(String pkg, boolean granted) {
+    @FlaggedApi(android.companion.Flags.FLAG_ENABLE_MEDICAL_PROFILE)
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.MANAGE_NOTIFICATIONS)
+    public void setNotificationPolicyAccessGranted(@NonNull String pkg, boolean granted) {
         INotificationManager service = service();
         try {
             service.setNotificationPolicyAccessGranted(pkg, granted);
