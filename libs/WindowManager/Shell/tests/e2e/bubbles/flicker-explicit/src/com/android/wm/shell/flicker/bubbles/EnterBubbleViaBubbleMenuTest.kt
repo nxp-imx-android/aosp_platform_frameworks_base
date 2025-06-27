@@ -96,8 +96,9 @@ class EnterBubbleViaBubbleMenuTest : BubbleFlickerTestBase(), BubbleAppBecomesEx
     @Test
     fun bubbleWindowBecomesVisible() {
         wmTraceSubject
-            .skipUntilFirstAssertion()
-            .isAboveAppWindowInvisible(ComponentNameMatcher.BUBBLE)
+            // Bubble app window may not have been added to WM hierarchy at the start of the
+            // transition.
+            .isNonAppWindowInvisible(ComponentNameMatcher.BUBBLE)
             .then()
             .isAboveAppWindowVisible(ComponentNameMatcher.BUBBLE)
             .forAllEntries()
@@ -110,7 +111,7 @@ class EnterBubbleViaBubbleMenuTest : BubbleFlickerTestBase(), BubbleAppBecomesEx
     fun bubbleLayerBecomesVisible() {
         layersTraceSubject
             // Bubble may not appear at the start of the transition.
-            .isInvisible(ComponentNameMatcher.BUBBLE, mustExist = false)
+            .isInvisible(ComponentNameMatcher.BUBBLE)
             .then()
             .isVisible(ComponentNameMatcher.BUBBLE)
             .forAllEntries()
