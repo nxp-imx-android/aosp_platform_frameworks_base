@@ -786,7 +786,9 @@ public final class AudioPlaybackConfiguration implements Parcelable {
     private boolean isMuteAffectingActiveState() {
         return (mMutedState & MUTED_BY_CLIENT_VOLUME) != 0
                 || (mMutedState & MUTED_BY_VOLUME_SHAPER) != 0
-                || (mMutedState & MUTED_BY_OP_PLAY_AUDIO) != 0;
+                || (mMutedState & MUTED_BY_OP_PLAY_AUDIO) != 0
+                || (mMutedState & MUTED_BY_STREAM_VOLUME) != 0
+                || (mMutedState & MUTED_BY_PORT_VOLUME) != 0;
     }
 
     /**
