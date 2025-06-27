@@ -155,6 +155,7 @@ import static android.view.WindowManager.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENAB
 import static android.view.WindowManager.PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING_STATE_SHARING;
 import static android.view.WindowManager.TRANSIT_RELAUNCH;
 import static android.view.WindowManager.hasWindowExtensionsEnabled;
+import static android.window.DesktopExperienceFlags.ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 import static android.window.TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION;
 import static android.window.TransitionInfo.FLAG_IS_OCCLUDED;
@@ -9288,7 +9289,11 @@ final class ActivityRecord extends WindowToken {
     void setPictureInPictureParams(PictureInPictureParams p) {
         pictureInPictureArgs.copyOnlySet(p);
         adjustPictureInPictureParamsIfNeeded(getBounds());
-        getTask().getRootTask().onPictureInPictureParamsChanged();
+        if (ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX.isTrue()) {
+            getTask().onPictureInPictureParamsChanged();
+        } else {
+            getTask().getRootTask().onPictureInPictureParamsChanged();
+        }
     }
 
     void setShouldDockBigOverlays(boolean shouldDockBigOverlays) {
