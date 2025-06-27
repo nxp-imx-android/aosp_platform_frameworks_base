@@ -51,4 +51,7 @@ interface IAuthenticationPolicyService {
 
     @EnforcePermission("USE_BIOMETRIC_INTERNAL")
     void cancelWatchRangingForRequestId(in long authenticationRequestId);
+
+    @EnforcePermission("USE_BIOMETRIC_INTERNAL")
+    void isWatchRangingAvailable(in IProximityResultCallback resultCallback);
 }

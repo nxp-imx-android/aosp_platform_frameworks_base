@@ -13741,6 +13741,24 @@ public final class Settings {
          * @hide
          */
         public static final String AAPM_USB_DATA_PROTECTION = "aapm_usb_data_protection";
+
+        /**
+         * Tracks if the user has enabled Identity Check before Android 16 QPR1 build. This value
+         * is used to show promo card only to pre-existing users who have opted-in to the feature.
+         *
+         * @hide
+         */
+        public static final String IDENTITY_CHECK_ENABLED_V1 =
+                "identity_check_enabled_v1";
+
+        /**
+         * Tracks if the user has seen the promo card for Identity Check.
+         * The promo card should only appear once per device via Safety Center.
+         *
+         * @hide
+         */
+        public static final String IDENTITY_CHECK_PROMO_CARD_SHOWN =
+                "identity_check_promo_card_shown";
     }
 
     /**
@@ -20285,14 +20303,12 @@ public final class Settings {
                 "global_actions_timeout_ms";
 
         /**
-         * Tracks if the user has seen the promo card for Identity Check.
-         * The promo card should only appear once per device via Safety Center.
+         * Indicates if the primary device is eligible for watch ranging or not.
          *
          * @hide
          */
-        public static final String IDENTITY_CHECK_PROMO_CARD_SHOWN =
-                "identity_check_promo_card_shown";
-
+        public static final String WATCH_RANGING_SUPPORTED_BY_PRIMARY_DEVICE =
+                "watch_ranging_supported_by_primary_device";
 
         /**
          * Settings migrated from Wear OS settings provider.
