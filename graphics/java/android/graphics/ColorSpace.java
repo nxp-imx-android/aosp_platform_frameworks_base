@@ -142,8 +142,6 @@ import java.util.function.DoubleUnaryOperator;
 @SuppressWarnings("StaticInitializerReferencesSubClass")
 @SuppressAutoDoc
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
-@android.ravenwood.annotation.RavenwoodClassLoadHook(
-        android.ravenwood.annotation.RavenwoodClassLoadHook.LIBANDROID_LOADING_HOOK)
 public abstract class ColorSpace {
     /**
      * Standard CIE 1931 2° illuminant A, encoded in xyY.

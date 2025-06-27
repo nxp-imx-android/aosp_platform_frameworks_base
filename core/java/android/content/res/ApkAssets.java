@@ -22,7 +22,6 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.content.om.OverlayableInfo;
 import android.content.res.loader.AssetsProvider;
 import android.content.res.loader.ResourcesProvider;
-import android.ravenwood.annotation.RavenwoodClassLoadHook;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.text.TextUtils;
 import android.util.Log;
@@ -49,7 +48,6 @@ import java.util.Objects;
  * @hide
  */
 @RavenwoodKeepWholeClass
-@RavenwoodClassLoadHook(RavenwoodClassLoadHook.LIBANDROID_LOADING_HOOK)
 public final class ApkAssets {
     private static final boolean DEBUG = false;
 
