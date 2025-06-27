@@ -142,6 +142,7 @@ public class Watchdog implements Dumpable {
         "media.transcoding", // Media transcoding service
         "com.android.bluetooth",  // Bluetooth service
         "/apex/com.android.art/bin/artd",  // ART daemon
+        "/apex/com.android.compos/bin/composd",  // CompOS daemon (lazy service)
         "/apex/com.android.os.statsd/bin/statsd",  // Stats daemon
     };
 
