@@ -168,4 +168,12 @@
     <style name="ShapeAppearance">
         <item name="cornerSize">@dimen/alert_dialog_radius</item>
     </style>
+
+    <style name="PackageInstaller.ProgressBarStyle.Linear" parent="Widget.Material3.LinearProgressIndicator">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="indicatorColor">@color/primaryColor</item>
+        <item name="trackColor">@color/outlineVariantColor</item>
+        <item name="trackCornerRadius">50%</item>
+    </style>
 </resources>
