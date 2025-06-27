@@ -3,6 +3,16 @@ container: "system"
 
 # go/keep-sorted start block=yes newline_separated=yes
 flag {
+    name: "close_task_keyboard_shortcut"
+    namespace: "lse_desktop_experience"
+    description: "Enable keyboard shortcut to close a task"
+    bug: "416437920"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "default_desk_without_warmup_migration"
     namespace: "lse_desktop_experience"
     description: "Moves desk creation to coroutines to guarantee non-null default desk"
