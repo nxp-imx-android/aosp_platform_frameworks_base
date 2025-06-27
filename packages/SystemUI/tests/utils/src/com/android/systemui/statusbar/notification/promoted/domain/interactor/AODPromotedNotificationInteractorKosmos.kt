@@ -20,6 +20,7 @@ import com.android.systemui.dump.dumpManager
 import com.android.systemui.keyguard.domain.interactor.biometricUnlockInteractor
 import com.android.systemui.keyguard.domain.interactor.keyguardInteractor
 import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.statusbar.notification.promoted.showPromotedNotificationsOnAOD
 import com.android.systemui.statusbar.policy.domain.interactor.sensitiveNotificationProtectionInteractor
 
 val Kosmos.aodPromotedNotificationInteractor by
@@ -30,5 +31,6 @@ val Kosmos.aodPromotedNotificationInteractor by
             sensitiveNotificationProtectionInteractor = sensitiveNotificationProtectionInteractor,
             dumpManager = dumpManager,
             biometricUnlockInteractor = biometricUnlockInteractor,
+            showPromotedNotificationsOnAOD = showPromotedNotificationsOnAOD,
         )
     }
