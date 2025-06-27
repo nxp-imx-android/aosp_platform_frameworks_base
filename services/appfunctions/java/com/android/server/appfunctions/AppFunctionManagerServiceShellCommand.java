@@ -20,6 +20,10 @@ import static android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_MASK_OTHER
 import static android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_OTHER_DENIED;
 import static android.app.appfunctions.AppFunctionManager.ACCESS_FLAG_OTHER_GRANTED;
 
+import static com.android.server.appfunctions.AppSearchDataJsonConverter.convertGenericDocumentsToJsonArray;
+import static com.android.server.appfunctions.AppSearchDataJsonConverter.convertJsonToGenericDocument;
+import static com.android.server.appfunctions.AppSearchDataJsonConverter.searchResultToJsonObject;
+
 import android.annotation.NonNull;
 import android.app.ActivityManager;
 import android.app.appfunctions.AppFunctionException;
@@ -31,6 +35,8 @@ import android.app.appfunctions.IAppFunctionEnabledCallback;
 import android.app.appfunctions.IAppFunctionManager;
 import android.app.appfunctions.IExecuteAppFunctionCallback;
 import android.app.appsearch.GenericDocument;
+import android.app.appsearch.SearchResult;
+import android.content.Context;
 import android.os.Binder;
 import android.os.ICancellationSignal;
 import android.os.Process;
@@ -44,18 +50,21 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.PrintWriter;
-import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /** Shell command implementation for the {@link AppFunctionManagerService}. */
 public class AppFunctionManagerServiceShellCommand extends ShellCommand {
+    @NonNull private final Context mContext;
+    @NonNull private final IAppFunctionManager mService;
 
-    @NonNull
-    private final IAppFunctionManager mService;
-
-    AppFunctionManagerServiceShellCommand(@NonNull IAppFunctionManager service) {
+    AppFunctionManagerServiceShellCommand(
+            @NonNull Context context, @NonNull IAppFunctionManager service) {
+        mContext = Objects.requireNonNull(context);
         mService = Objects.requireNonNull(service);
     }
 
@@ -66,11 +75,18 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         pw.println("  help");
         pw.println("    Prints this help text.");
         pw.println();
+        pw.println("  list-app-functions [--user <USER_ID>]");
+        pw.println("    Lists all app functions for a specified user in JSON.");
+        pw.println(
+                "    --user <USER_ID> (optional): The user ID to list functions for. "
+                        + "Defaults to the current user.");
+        pw.println();
         pw.println(
                 "  execute-app-function --package <PACKAGE_NAME> --function <FUNCTION_ID> "
                         + "--parameters <PARAMETERS_JSON> [--user <USER_ID>]");
         pw.println(
-                "    Executes an app function for the given package with the provided parameters.");
+                "    Executes an app function for the given package with the provided parameters "
+                        + " and returns the result as a JSON string");
         pw.println("    --package <PACKAGE_NAME>: The target package name.");
         pw.println("    --function <FUNCTION_ID>: The ID of the app function to execute.");
         pw.println(
@@ -133,6 +149,8 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
 
         try {
             switch (cmd) {
+                case "list-app-functions":
+                    return runListAppFunctions();
                 case "execute-app-function":
                     return runExecuteAppFunction();
                 case "set-enabled":
@@ -148,6 +166,49 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             getOutPrintWriter().println("Exception: " + e);
         }
         return -1;
+    }
+
+    private int runListAppFunctions() throws Exception {
+        final PrintWriter pw = getOutPrintWriter();
+        int userId = ActivityManager.getCurrentUser();
+        String opt;
+
+        while ((opt = getNextOption()) != null) {
+            switch (opt) {
+                case "--user":
+                    try {
+                        userId = UserHandle.parseUserArg(getNextArgRequired());
+                    } catch (NumberFormatException e) {
+                        pw.println("Invalid user ID: " + getNextArg() + ". Using current user.");
+                    }
+                    break;
+                default:
+                    pw.println("Unknown option: " + opt);
+                    return -1;
+            }
+        }
+
+        Context context = mContext.createContextAsUser(UserHandle.of(userId), /* flags= */ 0);
+        long token = Binder.clearCallingIdentity();
+        try {
+            Map<String, List<SearchResult>> perPackageSearchResult =
+                    AppFunctionDumpHelper.queryAppFunctionsStateForUser(
+                            context, /* isVerbose= */ true);
+            JSONObject jsonObject = new JSONObject();
+            for (Map.Entry<String, List<SearchResult>> entry : perPackageSearchResult.entrySet()) {
+                JSONArray searchResults = new JSONArray();
+                for (SearchResult result : entry.getValue()) {
+                    searchResults.put(searchResultToJsonObject(result));
+                }
+                jsonObject.put(entry.getKey(), searchResults);
+            }
+            pw.println(jsonObject.toString(/* indentSpaces =*/ 2));
+        } finally {
+            Binder.restoreCallingIdentity(token);
+        }
+        pw.flush();
+
+        return 0;
     }
 
     private int runSetAppFunctionEnabled() throws Exception {
@@ -284,7 +345,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             return -1;
         }
 
-        GenericDocument parameters = parseJsonToGenericDocument(parametersJson);
+        GenericDocument parameters = convertJsonToGenericDocument(parametersJson);
 
         ExecuteAppFunctionAidlRequest request =
                 new ExecuteAppFunctionAidlRequest(
@@ -296,15 +357,31 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         SystemClock.elapsedRealtime());
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
-
+        final AtomicInteger resultCode = new AtomicInteger(0);
         IExecuteAppFunctionCallback callback =
                 new IExecuteAppFunctionCallback.Stub() {
 
                     @Override
                     public void onSuccess(ExecuteAppFunctionResponse response) {
-                        pw.println("App function executed successfully.");
-                        pw.println("Function return:");
-                        pw.println(response.getResultDocument().toString());
+                        try {
+                            GenericDocument[] functionReturn =
+                                    response.getResultDocument()
+                                            .getPropertyDocumentArray(
+                                                    ExecuteAppFunctionResponse
+                                                            .PROPERTY_RETURN_VALUE);
+                            if (functionReturn == null || functionReturn.length == 0) {
+                                pw.println(new JSONObject());
+                                return;
+                            }
+                            // HACK: GenericDocument doesn't tell whether a property is singular
+                            // or repeated. We always assume the return is an array here.
+                            JSONArray functionReturnJson =
+                                    convertGenericDocumentsToJsonArray(functionReturn);
+                            pw.println(functionReturnJson.toString(/*indentSpace=*/ 2));
+                        } catch (JSONException e) {
+                            pw.println("Failed to convert the function response to JSON.");
+                            resultCode.set(-1);
+                        }
                         countDownLatch.countDown();
                     }
 
@@ -312,6 +389,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                     public void onError(AppFunctionException e) {
                         Log.d(TAG, "onError: ", e);
                         pw.println("Error executing app function: " + e.getErrorCode() + " - " + e);
+                        resultCode.set(-1);
                         countDownLatch.countDown();
                     }
                 };
@@ -322,94 +400,11 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         if (!returned) {
             pw.println("Timed out");
             cancellationSignal.cancel();
+            resultCode.set(-1);
         }
         pw.flush();
 
-        return 0;
-    }
-
-    /**
-     * Converts a JSON string to a {@link GenericDocument}.
-     *
-     * <p>This method parses the provided JSON string and creates a {@link GenericDocument}
-     * representation. It extracts the 'id', 'namespace', and 'schemaType' fields from the top-level
-     * JSON object to initialize the {@code GenericDocument}. It then iterates through the remaining
-     * keys in the JSON object and adds them as properties to the {@code GenericDocument}.
-     *
-     * <p>Example Input:
-     *
-     * <pre>{@code
-     * {"createNoteParams":{"title":"My title"}}
-     * }</pre>
-     */
-    private static GenericDocument parseJsonToGenericDocument(String jsonString)
-            throws JSONException {
-        JSONObject json = new JSONObject(jsonString);
-
-        String id = json.optString("id", "");
-        String namespace = json.optString("namespace", "");
-        String schemaType = json.optString("schemaType", "");
-
-        GenericDocument.Builder builder = new GenericDocument.Builder(id, namespace, schemaType);
-
-        Iterator<String> keys = json.keys();
-        while (keys.hasNext()) {
-            String key = keys.next();
-            Object value = json.get(key);
-
-            if (value instanceof String) {
-                builder.setPropertyString(key, (String) value);
-            } else if (value instanceof Integer || value instanceof Long) {
-                builder.setPropertyLong(key, ((Number) value).longValue());
-            } else if (value instanceof Double || value instanceof Float) {
-                builder.setPropertyDouble(key, ((Number) value).doubleValue());
-            } else if (value instanceof Boolean) {
-                builder.setPropertyBoolean(key, (Boolean) value);
-            } else if (value instanceof JSONObject) {
-                GenericDocument nestedDocument = parseJsonToGenericDocument(value.toString());
-                builder.setPropertyDocument(key, nestedDocument);
-            } else if (value instanceof JSONArray) {
-                JSONArray array = (JSONArray) value;
-                if (array.length() == 0) {
-                    continue;
-                }
-
-                Object first = array.get(0);
-                if (first instanceof String) {
-                    String[] arr = new String[array.length()];
-                    for (int i = 0; i < array.length(); i++) {
-                        arr[i] = array.optString(i, null);
-                    }
-                    builder.setPropertyString(key, arr);
-                } else if (first instanceof Integer || first instanceof Long) {
-                    long[] arr = new long[array.length()];
-                    for (int i = 0; i < array.length(); i++) {
-                        arr[i] = array.getLong(i);
-                    }
-                    builder.setPropertyLong(key, arr);
-                } else if (first instanceof Double || first instanceof Float) {
-                    double[] arr = new double[array.length()];
-                    for (int i = 0; i < array.length(); i++) {
-                        arr[i] = array.getDouble(i);
-                    }
-                    builder.setPropertyDouble(key, arr);
-                } else if (first instanceof Boolean) {
-                    boolean[] arr = new boolean[array.length()];
-                    for (int i = 0; i < array.length(); i++) {
-                        arr[i] = array.getBoolean(i);
-                    }
-                    builder.setPropertyBoolean(key, arr);
-                } else if (first instanceof JSONObject) {
-                    GenericDocument[] documentArray = new GenericDocument[array.length()];
-                    for (int i = 0; i < array.length(); i++) {
-                        documentArray[i] =
-                                parseJsonToGenericDocument(array.getJSONObject(i).toString());
-                    }
-                    builder.setPropertyDocument(key, documentArray);
-                }
-            }
-        }
-        return builder.build();
+        return resultCode.get();
     }
 
     private int runGrantAppFunctionAccess() throws Exception {
