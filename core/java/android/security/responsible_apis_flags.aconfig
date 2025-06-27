@@ -167,6 +167,13 @@ flag {
 }
 
 flag {
+    name: "enable_intent_firewall_extra_key_value_filter"
+    namespace: "responsible_apis"
+    description: "Flag for enable ExtraKeyValueFilter in IntentFirewall"
+    bug: "428733109"
+}
+
+flag {
     name: "fail_on_parcel_size_mismatch"
     namespace: "responsible_apis"
     description: "Flag for failing instead of logging in case of parcel size mismatches"
