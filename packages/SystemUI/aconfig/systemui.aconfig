@@ -2041,6 +2041,16 @@ flag {
 }
 
 flag {
+   name: "clear_shortcut_icon_tint"
+   namespace: "systemui"
+   description: "Clear any tint present on incoming lockscreen shortcuts icons"
+   bug: "394282762"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "screen_off_animation_guard_enabled"
     namespace: "systemui"
     description: "Reports Log.wtf statements if animations are running while screen is off."
