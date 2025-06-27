@@ -204,6 +204,46 @@ public final class OnDeviceIntelligenceManager {
     }
 
     /**
+     * Asynchronously get a list of features that are supported for the caller, with an option to
+     * filter the features based on the provided params.
+     *
+     * @param featureParamsFilter params to be used for filtering the features.
+     * @param callbackExecutor    executor to run the callback on.
+     * @param featureListReceiver callback to populate the list of features.
+     */
+    @RequiresPermission(Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_25Q4)
+    public void listFeatures(
+            @NonNull PersistableBundle featureParamsFilter,
+            @NonNull @CallbackExecutor Executor callbackExecutor,
+            @NonNull OutcomeReceiver<List<Feature>,
+                    OnDeviceIntelligenceException> featureListReceiver) {
+        try {
+            IListFeaturesCallback callback =
+                    new IListFeaturesCallback.Stub() {
+                        @Override
+                        public void onSuccess(List<Feature> result) {
+                            Binder.withCleanCallingIdentity(() -> callbackExecutor.execute(
+                                    () -> featureListReceiver.onResult(result)));
+                        }
+
+                        @Override
+                        public void onFailure(int errorCode, String errorMessage,
+                                PersistableBundle errorParams) {
+                            Binder.withCleanCallingIdentity(() -> callbackExecutor.execute(
+                                    () -> featureListReceiver.onError(
+                                            new OnDeviceIntelligenceException(
+                                                    errorCode, errorMessage, errorParams))));
+                        }
+                    };
+            mService.listFeaturesWithFilter(featureParamsFilter, callback);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+
+    /**
      * This method should be used to fetch details about a feature which need some additional
      * computation, that can be inefficient to return in all calls to {@link #getFeature}. Callers
      * and implementation can utilize the {@link Feature#getFeatureParams()} to pass hint on what
