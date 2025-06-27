@@ -26,6 +26,7 @@ import androidx.annotation.VisibleForTesting
 import com.android.systemui.Gefingerpoken
 import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.dagger.qualifiers.DisplaySpecific
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware
 import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
@@ -372,7 +373,7 @@ private constructor(
         private val progressProvider: Optional<ScopedUnfoldTransitionProgressProvider>,
         private val userChipViewModel: StatusBarUserChipViewModel,
         private val centralSurfaces: CentralSurfaces,
-        private val statusBarWindowStateController: StatusBarWindowStateController,
+        @DisplayAware private val statusBarWindowStateController: StatusBarWindowStateController,
         private val shadeController: ShadeController,
         private val shadeViewController: ShadeViewController,
         private val shadeModeInteractor: ShadeModeInteractor,

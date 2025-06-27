@@ -93,6 +93,7 @@ import android.view.WindowMetrics;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.app.displaylib.PerDisplayRepository;
 import com.android.compose.animation.scene.ObservableTransitionState;
 import com.android.internal.colorextraction.ColorExtractor;
 import com.android.internal.logging.UiEventLogger;
@@ -116,6 +117,7 @@ import com.android.systemui.classifier.FalsingManagerFake;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
 import com.android.systemui.communal.shared.model.CommunalScenes;
 import com.android.systemui.demomode.DemoModeController;
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.emergency.EmergencyGestureModule.EmergencyGestureIntentFactory;
 import com.android.systemui.flags.DisableSceneContainer;
@@ -323,6 +325,9 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     @Mock private StatusBarWindowControllerStore mStatusBarWindowControllerStore;
     @Mock private Provider<CollapsedStatusBarFragment> mCollapsedStatusBarFragmentProvider;
     @Mock private StatusBarWindowStateController mStatusBarWindowStateController;
+    @Mock private SystemUIDisplaySubcomponent mSystemUIDisplaySubcomponent;
+    @Mock
+    private PerDisplayRepository<SystemUIDisplaySubcomponent> mPerDisplaySubcomponentRepository;
     @Mock private Bubbles mBubbles;
     @Mock private NoteTaskController mNoteTaskController;
     @Mock private NotificationShadeWindowController mNotificationShadeWindowController;
@@ -416,6 +421,11 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
 
         when(mStatusBarWindowControllerStore.getDefaultDisplay())
                 .thenReturn(mStatusBarWindowController);
+
+        when(mSystemUIDisplaySubcomponent.getStatusBarWindowStateController())
+                .thenReturn(mStatusBarWindowStateController);
+        when(mPerDisplaySubcomponentRepository.get(anyInt()))
+                .thenReturn(mSystemUIDisplaySubcomponent);
 
         mVisualInterruptionDecisionProvider =
                 VisualInterruptionDecisionProviderTestUtil.INSTANCE.createProviderByFlag(
@@ -551,7 +561,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                         mock(HomeStatusBarComponent.Factory.class),
                         emptySet()),
                 mStatusBarWindowControllerStore,
-                mStatusBarWindowStateController,
+                mPerDisplaySubcomponentRepository,
                 new FakeStatusBarModeRepository(),
                 mKeyguardUpdateMonitor,
                 mStatusBarSignalPolicy,
