@@ -4474,6 +4474,7 @@ public abstract class Context {
                 RANGING_SERVICE,
                 MEDIA_QUALITY_SERVICE,
                 ADVANCED_PROTECTION_SERVICE,
+                ANOMALY_DETECTOR_SERVICE,
             })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ServiceName {}
@@ -7024,6 +7025,18 @@ public abstract class Context {
      */
     @FlaggedApi(android.service.chooser.Flags.FLAG_INTERACTIVE_CHOOSER)
     public static final String CHOOSER_SERVICE = "chooser";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve an
+     * {@link android.os.AnomalyDetectorManager}.
+     *
+     * @see #getSystemService(String)
+     *
+     * @hide
+     */
+    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+    @FlaggedApi(android.os.profiling.anomaly.flags.Flags.FLAG_ANOMALY_DETECTOR_CORE)
+    public static final String ANOMALY_DETECTOR_SERVICE = "anomaly_detector";
 
     /**
      * Determine whether the given permission is allowed for a particular

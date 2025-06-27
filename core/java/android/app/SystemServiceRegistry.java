@@ -182,6 +182,7 @@ import android.net.wifi.nl80211.WifiNl80211Manager;
 import android.net.wifi.sharedconnectivity.app.SharedConnectivityManager;
 import android.nfc.NfcFrameworkInitializer;
 import android.ondevicepersonalization.OnDevicePersonalizationFrameworkInitializer;
+import android.os.AnomalyDetectorFrameworkInitializer;
 import android.os.BatteryManager;
 import android.os.BatteryStats;
 import android.os.BatteryStatsManager;
@@ -1975,6 +1976,9 @@ public final class SystemServiceRegistry {
             if (android.server.Flags.telemetryApisService()) {
                 ProfilingFrameworkInitializer.registerServiceWrappers();
             }
+            if (android.os.profiling.anomaly.flags.Flags.anomalyDetectorCore()) {
+                AnomalyDetectorFrameworkInitializer.registerServiceWrappers();
+            }
             if (android.webkit.Flags.updateServiceIpcWrapper()) {
                 WebViewBootstrapFrameworkInitializer.registerServiceWrappers();
             }
@@ -1984,6 +1988,9 @@ public final class SystemServiceRegistry {
             // aconfig lib for ranging module is built only if  RELEASE_RANGING_STACK is enabled,
             // flagcannot be added here.
             RangingFrameworkInitializer.registerServiceWrappers();
+
+            // When RELEASE_ANOMALY_DETECTOR is "false", this call is a no-op.
+            AnomalyDetectorFrameworkInitializer.registerServiceWrappers();
         } finally {
             // If any of the above code throws, we're in a pretty bad shape and the process
             // will likely crash, but we'll reset it just in case there's an exception handler...

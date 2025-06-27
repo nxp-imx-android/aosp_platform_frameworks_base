@@ -22,6 +22,7 @@ filegroup {
         ":framework-nfc-non-updatable-sources",
         ":messagequeue-gen",
         ":ranging_stack_mock_initializer",
+        ":anomaly_detector_mock_initializer",
         ":systemfeatures-gen-srcs",
         ":framework-network-security-config-sources",
     ],
@@ -32,6 +33,7 @@ filegroup {
         ":dynamic_instrumentation_manager_aidl_sources",
         "android/os/*MessageQueue/**/*.java",
         "android/ranging/**/*.java",
+        "android/os/mock/*.java",
     ],
     visibility: ["//frameworks/base"],
 }
@@ -75,6 +77,43 @@ ranging_stack_framework_mock_init {
                 srcs: ["android/ranging/mock/RangingFrameworkInitializer.java"],
                 cmd: "mkdir -p android/ranging/; cp $(in) $(out);",
                 out: ["android/ranging/RangingFrameworkInitializer.java"],
+            },
+        },
+    },
+}
+
+// Mock to allow service registry for anomaly detector.
+// TODO(b/437406213): Remove this after RELEASE_ANOMALY_DETECTOR is ramped up to next.
+soong_config_module_type {
+    name: "anomaly_detector_framework_mock_init",
+    module_type: "genrule",
+    config_namespace: "bootclasspath",
+    bool_variables: [
+        "release_anomaly_detector",
+    ],
+    properties: [
+        "cmd",
+        "out",
+        "srcs",
+    ],
+}
+
+// The actual AnomalyDetectorFrameworkInitializer is present in
+// packages/modules/Profiling/anomaly-detector/framework.
+// Mock AnomalyDetectorFrameworkInitializer does nothing and allows to successfully build
+// SystemServiceRegistry after registering for system service in SystemServiceRegistry both with
+// and without build flag RELEASE_ANOMALY_DETECTOR enabled.
+anomaly_detector_framework_mock_init {
+    name: "anomaly_detector_mock_initializer",
+    soong_config_variables: {
+        release_anomaly_detector: {
+            cmd: "touch $(out)",
+            // Adding an empty file as out is mandatory.
+            out: ["android/os/empty_anomaly_detector.txt"],
+            conditions_default: {
+                srcs: ["android/os/mock/AnomalyDetectorFrameworkInitializer.java"],
+                cmd: "mkdir -p android/os/; cp $(in) $(out);",
+                out: ["android/os/AnomalyDetectorFrameworkInitializer.java"],
             },
         },
     },

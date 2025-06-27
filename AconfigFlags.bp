@@ -24,6 +24,7 @@ aconfig_declarations_group {
         "aconfig_settingslib_flags_java_lib",
         "aconfig_trade_in_mode_flags_java_lib",
         "adpf_flags_java_lib",
+        "anomaly-detector-exported-aconfig-flags-lib",
         "android.app.appfunctions.flags-aconfig-java",
         "android.app.assist.flags-aconfig-java",
         "android.app.contextualsearch.flags-aconfig-java",

@@ -129,6 +129,11 @@ combined_apis {
         default: [
             "framework-platformtelephony",
         ],
+    }) + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
+        true: [
+            "framework-anomaly-detector",
+        ],
+        default: [],
     }),
     system_server_classpath: [
         "service-art",
@@ -146,6 +151,11 @@ combined_apis {
     }) + select(soong_config_variable("ANDROID", "release_crashrecovery_module"), {
         "true": [
             "service-crashrecovery",
+        ],
+        default: [],
+    }) + select(release_flag("RELEASE_ANOMALY_DETECTOR"), {
+        true: [
+            "service-anomaly-detector",
         ],
         default: [],
     }),
