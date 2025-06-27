@@ -45,6 +45,7 @@ import android.app.ondeviceintelligence.IProcessingSignal;
 import android.app.ondeviceintelligence.IResponseCallback;
 import android.app.ondeviceintelligence.IStreamingResponseCallback;
 import android.app.ondeviceintelligence.ITokenInfoCallback;
+import android.app.ondeviceintelligence.ILifecycleListener;
 import android.app.ondeviceintelligence.InferenceInfo;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceManager;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceException;
@@ -62,6 +63,7 @@ import android.os.ICancellationSignal;
 import android.os.IRemoteCallback;
 import android.os.Looper;
 import android.os.Message;
+import android.os.RemoteCallbackList;
 import android.os.PersistableBundle;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
@@ -159,6 +161,26 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
     private final DeviceConfig.OnPropertiesChangedListener mOnPropertiesChangedListener =
             this::sendUpdatedConfig;
 
+    private final RemoteCallbackList<ILifecycleListener> mLifecycleListeners =
+            new RemoteCallbackList.Builder<ILifecycleListener>(
+                    RemoteCallbackList.FROZEN_CALLEE_POLICY_ENQUEUE_ALL)
+                    .setExecutor(callbackExecutor).build();
+    private final ILifecycleListener mSystemLifecycleListener = new ILifecycleListener.Stub() {
+        @Override
+        public void onLifecycleEvent(int event, Feature feature) {
+            // TODO - b/427938935: Verify ordering if multiple broadcasts
+            // are invoked simultaneously.
+            mLifecycleListeners.broadcast(listener -> {
+                try {
+                    Slog.d(TAG, "Invoking onLifecycleEvent from system-server.");
+                    listener.onLifecycleEvent(event, feature);
+                } catch (RemoteException e) {
+                    Slog.d(TAG, "RemoteException when invoking onLifecycleEvent", e);
+                }
+            });
+        }
+    };
+
 
     /**
      * Handler used to reset the temporary service names.
@@ -180,7 +202,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 Context.ON_DEVICE_INTELLIGENCE_SERVICE,
                 getOnDeviceIntelligenceManagerService(), /* allowIsolated = */ true);
         LocalManagerRegistry.addManager(OnDeviceIntelligenceManagerLocal.class,
-                    this::getRemoteInferenceServiceUid);
+                this::getRemoteInferenceServiceUid);
     }
 
     @Override
@@ -607,6 +629,36 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 new OnDeviceIntelligenceShellCommand(OnDeviceIntelligenceManagerService.this).exec(
                         this, in, out, err, args, callback, resultReceiver);
             }
+
+            @Override
+            public void registerInferenceServiceLifecycleListener(ILifecycleListener listener)
+                    throws RemoteException {
+                Slog.d(TAG, "OnDeviceIntelligenceManagerInternal"+
+                                "registerInferenceServiceLifecycleListener");
+                Objects.requireNonNull(listener);
+                mContext.enforceCallingPermission(
+                        Manifest.permission.USE_ON_DEVICE_INTELLIGENCE, TAG);
+                if (!mIsServiceEnabled) {
+                    Slog.w(TAG, "Service not available, not registering lifecycle listener.");
+                    return;
+                }
+                mLifecycleListeners.register(listener);
+            }
+
+            @Override
+            public void unregisterInferenceServiceLifecycleListener(ILifecycleListener listener)
+                    throws RemoteException {
+                Slog.d(TAG, "OnDeviceIntelligenceManagerInternal"
+                            + "unregisterInferenceServiceLifecycleListener");
+                Objects.requireNonNull(listener);
+                mContext.enforceCallingPermission(
+                        Manifest.permission.USE_ON_DEVICE_INTELLIGENCE, TAG);
+                if (!mIsServiceEnabled) {
+                    Slog.w(TAG, "Service not available, not unregistering lifecycle listener.");
+                    return;
+                }
+                mLifecycleListeners.unregister(listener);
+            }
         };
     }
 
@@ -698,6 +750,8 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                                             () -> registerModelLoadingBroadcasts(service));
                                     mConfigExecutor.execute(
                                             () -> registerDeviceConfigChangeListener());
+                                    service.registerInferenceServiceLifecycleListener(
+                                            mSystemLifecycleListener);
                                 } catch (RemoteException ex) {
                                     Slog.w(TAG, "Failed to send connected event", ex);
                                 }
@@ -935,7 +989,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
             }
         }
 
-        return new String[]{ MODEL_LOADED_BROADCAST_INTENT, MODEL_UNLOADED_BROADCAST_INTENT };
+        return new String[]{MODEL_LOADED_BROADCAST_INTENT, MODEL_UNLOADED_BROADCAST_INTENT};
     }
 
     @RequiresPermission(Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)
