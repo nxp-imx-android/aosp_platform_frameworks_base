@@ -194,6 +194,22 @@ public final class DocumentsContract {
     public static final String EXTRA_EXCLUDE_SELF = "android.provider.extra.EXCLUDE_SELF";
 
     /**
+     * Set this in a DocumentsUI intent to add users ids to be excluded from the roots list.
+     *
+     * This will only be supported if there is at least one user to be shown in DocumentsUI picker.
+     *
+     * The caller must also hold either {@link android.Manifest.permission#INTERACT_ACROSS_USERS}
+     * or
+     * {@link android.Manifest.permission#INTERACT_ACROSS_USERS_FULL} for the set user(s) to be
+     * excluded.
+     *
+     * {@hide}
+     */
+    @SystemApi
+    @FlaggedApi(android.multiuser.Flags.FLAG_ENABLE_MOVING_CONTENT_INTO_PRIVATE_SPACE)
+    public static final String EXTRA_EXCLUDED_USERS = "android.provider.extra.EXCLUDED_USERS";
+
+    /**
      * An extra number of degrees that an image should be rotated during the
      * decode process to be presented correctly.
      *

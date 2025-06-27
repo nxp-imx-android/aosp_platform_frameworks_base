@@ -12584,6 +12584,7 @@ package android.provider {
     field public static final String ACTION_MANAGE_DOCUMENT = "android.provider.action.MANAGE_DOCUMENT";
     field public static final String DOWNLOADS_PROVIDER_AUTHORITY = "downloads";
     field public static final String EXTERNAL_STORAGE_PROVIDER_AUTHORITY = "com.android.externalstorage.documents";
+    field @FlaggedApi("android.multiuser.enable_moving_content_into_private_space") public static final String EXTRA_EXCLUDED_USERS = "android.provider.extra.EXCLUDED_USERS";
     field public static final String EXTRA_SHOW_ADVANCED = "android.provider.extra.SHOW_ADVANCED";
   }
 
