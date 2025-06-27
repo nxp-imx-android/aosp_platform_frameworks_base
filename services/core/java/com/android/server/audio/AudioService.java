@@ -8381,17 +8381,26 @@ public class AudioService extends IAudioService.Stub
     }
 
     private boolean callingOrSelfHasAudioSettingsPermission() {
+        // holding MODIFY_AUDIO_SETTINGS_PRIVILEGED grants all permission of MODIFY_AUDIO_SETTINGS
         return mContext.checkCallingOrSelfPermission(MODIFY_AUDIO_SETTINGS)
+                == PackageManager.PERMISSION_GRANTED
+                || mContext.checkCallingOrSelfPermission(MODIFY_AUDIO_SETTINGS_PRIVILEGED)
                 == PackageManager.PERMISSION_GRANTED;
     }
 
     private boolean callingHasAudioSettingsPermission() {
+        // holding MODIFY_AUDIO_SETTINGS_PRIVILEGED grants all permission of MODIFY_AUDIO_SETTINGS
         return mContext.checkCallingPermission(MODIFY_AUDIO_SETTINGS)
+                == PackageManager.PERMISSION_GRANTED
+                || mContext.checkCallingPermission(MODIFY_AUDIO_SETTINGS_PRIVILEGED)
                 == PackageManager.PERMISSION_GRANTED;
     }
 
     private boolean hasAudioSettingsPermission(int uid, int pid) {
+        // holding MODIFY_AUDIO_SETTINGS_PRIVILEGED grants all permission of MODIFY_AUDIO_SETTINGS
         return mContext.checkPermission(MODIFY_AUDIO_SETTINGS, pid, uid)
+                == PackageManager.PERMISSION_GRANTED
+                || mContext.checkPermission(MODIFY_AUDIO_SETTINGS_PRIVILEGED, pid, uid)
                 == PackageManager.PERMISSION_GRANTED;
     }
 
