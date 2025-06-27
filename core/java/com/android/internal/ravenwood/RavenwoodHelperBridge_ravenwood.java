@@ -18,21 +18,21 @@ package com.android.internal.ravenwood;
 import com.android.ravenwood.OpenJdkWorkaround;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 
-public class RavenwoodEnvironment_ravenwood {
-    private RavenwoodEnvironment_ravenwood() {
+public class RavenwoodHelperBridge_ravenwood {
+    private RavenwoodHelperBridge_ravenwood() {
     }
 
     /**
-     * Called from {@link RavenwoodEnvironment#getRavenwoodRuntimePath()}.
+     * Called from {@link RavenwoodHelperBridge#getRavenwoodRuntimePath()}.
      */
-    public static String getRavenwoodRuntimePath(RavenwoodEnvironment env) {
+    public static String getRavenwoodRuntimePath(RavenwoodHelperBridge env) {
         return RavenwoodInternalUtils.getRavenwoodRuntimePath();
     }
 
     /**
-     * Called from {@link RavenwoodEnvironment#fromAddress(long)}.
+     * Called from {@link RavenwoodHelperBridge#fromAddress(long)}.
      */
-    public static <T> T fromAddress(RavenwoodEnvironment env, long address) {
+    public static <T> T fromAddress(RavenwoodHelperBridge env, long address) {
         return OpenJdkWorkaround.fromAddress(address);
     }
 }

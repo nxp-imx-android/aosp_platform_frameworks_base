@@ -16,7 +16,7 @@
 
 package android.os;
 
-import com.android.internal.ravenwood.RavenwoodEnvironment;
+import com.android.internal.ravenwood.RavenwoodHelperBridge;
 
 import dalvik.annotation.optimization.CriticalNative;
 import dalvik.annotation.optimization.FastNative;
@@ -103,7 +103,7 @@ public final class PerfettoTrace {
             mSeverity = severity;
             mPtr = native_init(name, tag, severity);
             mExtraPtr = native_get_extra_ptr(mPtr);
-            if (!RavenwoodEnvironment.getInstance().isRunningOnRavenwood()) {
+            if (!RavenwoodHelperBridge.getInstance().isRunningOnRavenwood()) {
                 sRegistry.registerNativeAllocation(this, mPtr);
             }
         }

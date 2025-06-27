@@ -16,7 +16,7 @@
 
 package android.os;
 
-import com.android.internal.ravenwood.RavenwoodEnvironment;
+import com.android.internal.ravenwood.RavenwoodHelperBridge;
 
 import dalvik.annotation.optimization.CriticalNative;
 import dalvik.annotation.optimization.FastNative;
@@ -654,7 +654,7 @@ public final class PerfettoTrackEventExtra {
 
     private PerfettoTrackEventExtra() {
         mPtr = native_init();
-        if (!RavenwoodEnvironment.getInstance().isRunningOnRavenwood()) {
+        if (!RavenwoodHelperBridge.getInstance().isRunningOnRavenwood()) {
             sRegistry.registerNativeAllocation(this, mPtr);
         }
     }
