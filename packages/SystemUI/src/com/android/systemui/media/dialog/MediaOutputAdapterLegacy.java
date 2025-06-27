@@ -567,7 +567,7 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
             if (ongoingSessionStatus != null && connectionState == ConnectionState.CONNECTED) {
                 showEndArea = true;
                 updateEndAreaForOngoingSession(device, ongoingSessionStatus.host());
-            } else if (groupStatus != null && shouldShowGroupCheckbox(groupStatus)) {
+            } else if (groupStatus != null && isGroupCheckboxEnabled(groupStatus)) {
                 showEndArea = true;
                 isCheckbox = true;
                 updateEndAreaForGroupCheckBox(device, groupStatus);
@@ -629,13 +629,6 @@ public class MediaOutputAdapterLegacy extends MediaOutputAdapterBase {
 
         private void setCheckBoxColor(CheckBox checkBox, int color) {
             checkBox.setForegroundTintList(ColorStateList.valueOf(color));
-        }
-
-        private boolean shouldShowGroupCheckbox(@NonNull GroupStatus groupStatus) {
-            if (Flags.enableOutputSwitcherDeviceGrouping()) {
-                return isGroupCheckboxEnabled(groupStatus);
-            }
-            return true;
         }
 
         private boolean isGroupCheckboxEnabled(@NonNull GroupStatus groupStatus) {

@@ -22,7 +22,6 @@ import android.content.Context;
 
 import androidx.annotation.Nullable;
 
-import com.android.media.flags.Flags;
 import com.android.settingslib.media.MediaDevice;
 import com.android.systemui.res.R;
 
@@ -154,7 +153,7 @@ public class OutputMediaItemListProxy {
             updatedSpeakersAndDisplaysMediaItems.addAll(remainingMediaItems);
         }
 
-        if (Flags.enableOutputSwitcherDeviceGrouping() && !updatedSelectedMediaItems.isEmpty()) {
+        if (!updatedSelectedMediaItems.isEmpty()) {
             MediaItem selectedMediaItem = updatedSelectedMediaItems.get(0);
             Optional<MediaDevice> mediaDeviceOptional = selectedMediaItem.getMediaDevice();
             if (mediaDeviceOptional.isPresent()) {
@@ -217,11 +216,7 @@ public class OutputMediaItemListProxy {
                 selectedMediaItems.add(0, mediaItem);
             } else if (!needToHandleMutingExpectedDevice
                     && selectedOrConnectedMediaDeviceIds.contains(device.getId())) {
-                if (Flags.enableOutputSwitcherDeviceGrouping()) {
-                    selectedMediaItems.add(mediaItem);
-                } else {
-                    selectedMediaItems.add(0, mediaItem);
-                }
+                selectedMediaItems.add(mediaItem);
             } else if (device.isSuggestedDevice()
                     && suggestedMediaItems.size() < MAX_SUGGESTED_DEVICE_COUNT) {
                 suggestedMediaItems.add(mediaItem);

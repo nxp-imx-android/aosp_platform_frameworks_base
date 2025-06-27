@@ -163,16 +163,6 @@ flag {
 }
 
 flag {
-    name: "enable_output_switcher_device_grouping"
-    namespace: "media_better_together"
-    description: "Enables selected items in Output Switcher to be grouped together."
-    bug: "388347018"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "enable_output_switcher_redesign"
   namespace: "media_better_together"
   description: "Enables visual update for the Media Output Switcher"
