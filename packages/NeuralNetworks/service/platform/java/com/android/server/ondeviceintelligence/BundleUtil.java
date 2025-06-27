@@ -24,6 +24,7 @@ import static android.system.OsConstants.PROT_READ;
 import android.app.ondeviceintelligence.IResponseCallback;
 import android.app.ondeviceintelligence.IStreamingResponseCallback;
 import android.app.ondeviceintelligence.ITokenInfoCallback;
+import android.app.ondeviceintelligence.InferenceInfo;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceManager.InferenceParams;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceManager.ResponseParams;
 import android.app.ondeviceintelligence.OnDeviceIntelligenceManager.StateParams;
@@ -189,7 +190,8 @@ public class BundleUtil {
             IStreamingResponseCallback streamingResponseCallback,
             Executor resourceClosingExecutor,
             AndroidFuture future,
-            InferenceInfoStore inferenceInfoStore) {
+            InferenceInfoStore inferenceInfoStore,
+            boolean shouldForwardInferenceInfo) {
         return new IStreamingResponseCallback.Stub() {
             @Override
             public void onNewContent(Bundle processedResult) throws RemoteException {
@@ -243,13 +245,22 @@ public class BundleUtil {
                     resourceClosingExecutor.execute(() -> tryCloseResource(processedContent));
                 }
             }
+
+            @Override
+            public void onInferenceInfo(InferenceInfo info) throws RemoteException {
+                inferenceInfoStore.add(info);
+                if (shouldForwardInferenceInfo) {
+                    streamingResponseCallback.onInferenceInfo(info);
+                }
+            }
         };
     }
 
     public static IResponseCallback wrapWithValidation(IResponseCallback responseCallback,
             Executor resourceClosingExecutor,
             AndroidFuture future,
-            InferenceInfoStore inferenceInfoStore) {
+            InferenceInfoStore inferenceInfoStore,
+            boolean shouldForwardInferenceInfo) {
         return new IResponseCallback.Stub() {
             @Override
             public void onSuccess(Bundle resultBundle)
@@ -290,6 +301,14 @@ public class BundleUtil {
                             }));
                 } finally {
                     resourceClosingExecutor.execute(() -> tryCloseResource(processedContent));
+                }
+            }
+
+            @Override
+            public void onInferenceInfo(InferenceInfo info) throws RemoteException {
+                inferenceInfoStore.add(info);
+                if (shouldForwardInferenceInfo) {
+                    responseCallback.onInferenceInfo(info);
                 }
             }
         };

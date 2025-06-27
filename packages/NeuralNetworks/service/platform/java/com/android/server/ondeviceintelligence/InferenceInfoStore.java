@@ -83,6 +83,15 @@ public class InferenceInfoStore {
         }
     }
 
+    public synchronized void add(InferenceInfo info) {
+        while (!inferenceInfos.isEmpty()
+                && System.currentTimeMillis() - inferenceInfos.first().getStartTimeMillis()
+                > maxAgeMs) {
+            inferenceInfos.pollFirst();
+        }
+        inferenceInfos.add(info);
+    }
+
     private synchronized void add(com.android.server.ondeviceintelligence.nano.InferenceInfo info) {
         while (!inferenceInfos.isEmpty()
                 && System.currentTimeMillis() - inferenceInfos.first().getStartTimeMillis()
