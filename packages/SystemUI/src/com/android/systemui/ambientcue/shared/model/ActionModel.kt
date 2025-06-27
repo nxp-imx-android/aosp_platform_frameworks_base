@@ -29,6 +29,7 @@ data class ActionModel(
     val taskId: Int = INVALID_TASK_ID,
     val actionType: String? = null,
     val oneTapEnabled: Boolean = false,
+    val oneTapDelayMs: Long = 0L,
 )
 
 data class IconModel(val drawable: Drawable, val iconId: String)
