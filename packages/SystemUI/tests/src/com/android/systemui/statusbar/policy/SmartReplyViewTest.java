@@ -15,15 +15,14 @@
 package com.android.systemui.statusbar.policy;
 
 import static android.view.View.MeasureSpec;
+import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Notification;
@@ -45,9 +44,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-
 import androidx.test.filters.SmallTest;
-
 import com.android.internal.logging.nano.MetricsProto.MetricsEvent;
 import com.android.keyguard.KeyguardUpdateMonitor;
 import com.android.systemui.Flags;
@@ -64,17 +61,6 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpManager;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
-
-import kotlin.sequences.Sequence;
-import kotlin.sequences.SequencesKt;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -83,6 +69,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import kotlin.sequences.Sequence;
+import kotlin.sequences.SequencesKt;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 @RunWith(AndroidTestingRunner.class)
 @TestableLooper.RunWithLooper
@@ -130,6 +124,7 @@ public class SmartReplyViewTest extends SysuiTestCase {
     private KeyguardStateController mKeyguardStateController;
     @Mock
     private SysuiStatusBarStateController mStatusBarStateController;
+    @Mock private SmartReplyLogger mSmartReplyLogger;
 
     @Before
     public void setUp() {
@@ -156,6 +151,7 @@ public class SmartReplyViewTest extends SysuiTestCase {
 
         mContainer = new View(mContext, null);
         mView = SmartReplyView.inflate(mContext, mConstants);
+        mView.setSmartReplyLogger(mSmartReplyLogger);
 
         final Resources res = mContext.getResources();
         mSpacing = res.getDimensionPixelSize(R.dimen.smart_reply_button_spacing);
@@ -1403,6 +1399,8 @@ public class SmartReplyViewTest extends SysuiTestCase {
         assertEqualLayouts(expectedView.getChildAt(0), mView.getChildAt(0));
         assertEqualLayouts(expectedView.getChildAt(1), mView.getChildAt(1));
         assertEqualLayouts(expectedView.getChildAt(2), mView.getChildAt(2));
+        verify(mSmartReplyLogger).logAnimatedReplyChipVisibleEvent();
+        verify(mSmartReplyLogger, never()).logAnimatedActionChipVisibleEvent();
     }
 
     @Test
@@ -1443,7 +1441,8 @@ public class SmartReplyViewTest extends SysuiTestCase {
         assertAnimatedActionButtonShownWithEqualMeasures(
                 expectedView.getChildAt(2), mView.getChildAt(2), 2);
         assertEqualLayouts(expectedView.getChildAt(2), mView.getChildAt(2));
-
+        verify(mSmartReplyLogger, never()).logAnimatedReplyChipVisibleEvent();
+        verify(mSmartReplyLogger).logAnimatedActionChipVisibleEvent();
     }
 
     @Test
@@ -1477,6 +1476,8 @@ public class SmartReplyViewTest extends SysuiTestCase {
         assertEqualLayouts(expectedView.getChildAt(0), mView.getChildAt(1));
         assertEqualLayouts(expectedView.getChildAt(1), mView.getChildAt(2));
         assertEqualLayouts(expectedView.getChildAt(2), mView.getChildAt(0));
+        verify(mSmartReplyLogger).logAnimatedReplyChipVisibleEvent();
+        verify(mSmartReplyLogger, never()).logAnimatedActionChipVisibleEvent();
     }
 
     @Test
@@ -1510,6 +1511,8 @@ public class SmartReplyViewTest extends SysuiTestCase {
         assertEqualLayouts(expectedView.getChildAt(0), mView.getChildAt(1));
         assertEqualLayouts(expectedView.getChildAt(1), mView.getChildAt(2));
         assertEqualLayouts(expectedView.getChildAt(2), mView.getChildAt(3));
+        verify(mSmartReplyLogger).logAnimatedReplyChipVisibleEvent();
+        verify(mSmartReplyLogger).logAnimatedActionChipVisibleEvent();
     }
 
     @Test
@@ -1548,6 +1551,8 @@ public class SmartReplyViewTest extends SysuiTestCase {
         assertEqualLayouts(expectedView.getChildAt(0), mView.getChildAt(0));
         assertEqualLayouts(expectedView.getChildAt(1), mView.getChildAt(1));
         assertEqualLayouts(expectedView.getChildAt(2), mView.getChildAt(2));
+        verify(mSmartReplyLogger).logAnimatedReplyChipVisibleEvent();
+        verify(mSmartReplyLogger, never()).logAnimatedActionChipVisibleEvent();
     }
 
     @Test
@@ -1586,5 +1591,7 @@ public class SmartReplyViewTest extends SysuiTestCase {
         assertReplyButtonHidden(mView.getChildAt(0));
         assertReplyButtonHidden(mView.getChildAt(1));
         assertReplyButtonHidden(mView.getChildAt(2));
+        verify(mSmartReplyLogger, never()).logAnimatedReplyChipVisibleEvent();
+        verify(mSmartReplyLogger).logAnimatedActionChipVisibleEvent();
     }
 }
