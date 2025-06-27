@@ -8828,10 +8828,9 @@ final class ActivityRecord extends WindowToken {
                 }
                 final ActionChain chain = mAtmService.mChainTracker.start(
                         "restartProc", transition);
-                // Request invisible so there will be a change after the activity is restarted
-                // to be visible.
-                setVisibleRequested(false);
                 chain.collect(this);
+                // Make sure this will be a change in the transition.
+                transition.setKnownConfigChanges(this, CONFIG_WINDOW_CONFIGURATION);
                 mTransitionController.requestStartTransition(transition, task,
                         null /* remoteTransition */, null /* displayChange */);
                 scheduleStopForRestartProcess();
