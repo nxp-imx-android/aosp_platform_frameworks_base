@@ -71,6 +71,7 @@ import org.mockito.stubbing.Answer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
@@ -211,6 +212,7 @@ public class StagingManagerTest {
         sessions.add(destroyedNonReadySession);
         sessions.add(regularApkSession);
 
+        when(mApexManager.getSessions()).thenReturn(new SparseArray<>(0));
         mStagingManager.restoreSessions(sessions, false);
 
         assertThat(sessions).containsExactly(regularApkSession);
@@ -441,6 +443,8 @@ public class StagingManagerTest {
 
         // Validate checkpoint wasn't aborted.
         verify(mStorageManager, never()).abortChanges(eq("abort-staged-install"), eq(false));
+        // ApexManager should get notified failed sessions.
+        verify(mApexManager, times(1)).abortStagedSession(eq(impossible.sessionId));
 
         assertThat(apexSession.getErrorCode())
                 .isEqualTo(PackageManager.INSTALL_ACTIVATION_FAILED);
@@ -449,6 +453,23 @@ public class StagingManagerTest {
         assertThat(apkSession.getErrorCode())
                 .isEqualTo(PackageManager.INSTALL_ACTIVATION_FAILED);
         assertThat(apkSession.getErrorMessage()).isEqualTo("Another apex session failed");
+    }
+
+    @Test
+    public void restoreSessions_surplusApexSessions_shouldBeAborted() throws Exception {
+        ApexSessionInfo impossible  = new ApexSessionInfo();
+        impossible.sessionId = 1543;
+
+        SparseArray<ApexSessionInfo> apexdSessions = new SparseArray<>();
+        apexdSessions.put(1543, impossible);
+        when(mApexManager.getSessions()).thenReturn(apexdSessions);
+
+        mStagingManager.restoreSessions(Collections.emptyList(), false);
+
+        // Validate checkpoint wasn't aborted.
+        verify(mStorageManager, never()).abortChanges(eq("abort-staged-install"), eq(false));
+        // ApexManager should get notified failed sessions.
+        verify(mApexManager, times(1)).abortStagedSession(eq(impossible.sessionId));
     }
 
     @Test
