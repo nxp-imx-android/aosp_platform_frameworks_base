@@ -951,7 +951,7 @@ package android.companion {
   }
 
   public final class CompanionDeviceManager {
-    method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public void enableSecureTransport(boolean);
+    method @RequiresPermission("android.permission.MANAGE_COMPANION_DEVICES") public void overrideTransportType(int);
   }
 
   public abstract class CompanionDeviceService extends android.app.Service {

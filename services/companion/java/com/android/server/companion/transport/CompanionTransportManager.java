@@ -50,7 +50,7 @@ import java.util.concurrent.Future;
 public class CompanionTransportManager {
     private static final String TAG = "CDM_CompanionTransportManager";
 
-    private boolean mSecureTransportEnabled = true;
+    private int mOverriddenTransportType = 0;
 
     private final Context mContext;
     private final AssociationStore mAssociationStore;
@@ -278,35 +278,49 @@ public class CompanionTransportManager {
                                      ParcelFileDescriptor fd,
                                      byte[] preSharedKey) {
         Slog.i(TAG, "Initializing transport");
-        int associationId = association.getId();
         int flags = association.getTransportFlags();
-        Transport transport;
-        if (!isSecureTransportEnabled()) {
-            // If secure transport is explicitly disabled for testing, use raw transport
-            Slog.i(TAG, "Secure channel is disabled. Creating raw transport");
-            transport = new RawTransport(associationId, fd, mContext);
-        } else if (Build.isDebuggable()) {
-            // If device is debug build, use hardcoded test key for authentication
-            Slog.d(TAG, "Creating an unauthenticated secure channel");
-            final byte[] testKey = "CDM".getBytes(StandardCharsets.UTF_8);
-            transport = new SecureTransport(associationId, fd, mContext, testKey, null, flags);
-        } else if (preSharedKey != null) {
-            // If either device is not Android, then use app-specific pre-shared key
-            Slog.d(TAG, "Creating a PSK-authenticated secure channel");
-            transport = new SecureTransport(associationId, fd, mContext, preSharedKey, null, flags);
-        } else {
-            // If none of the above applies, then use secure channel with attestation verification
-            Slog.d(TAG, "Creating a secure channel");
-            transport = new SecureTransport(associationId, fd, mContext, flags);
-        }
-
+        Transport transport = createTransport(association, fd, preSharedKey, flags);
         addListenersToTransport(transport);
-        transport.setOnTransportClosedListener(this::detachSystemDataTransport);
         transport.start();
         synchronized (mTransports) {
-            mTransports.put(associationId, transport);
+            mTransports.put(association.getId(), transport);
+        }
+    }
+
+    private Transport createTransport(AssociationInfo association,
+            ParcelFileDescriptor fd,
+            byte[] preSharedKey,
+            int flags) {
+        int associationId = association.getId();
+
+        // If transport type is overridden to secure, create a secure transport.
+        if (mOverriddenTransportType == 2) {
+            Slog.i(TAG, "Creating secure transport by override");
+            return new SecureTransport(associationId, fd, mContext, flags);
         }
 
+        // If transport type is overridden to raw, create a raw transport.
+        if (mOverriddenTransportType == 1) {
+            Slog.i(TAG, "Creating raw transport by override");
+            return new RawTransport(associationId, fd, mContext);
+        }
+
+        // If device is debug build, use hardcoded test key for authentication
+        if (Build.isDebuggable()) {
+            Slog.d(TAG, "Creating an unauthenticated secure channel");
+            final byte[] testKey = "CDM".getBytes(StandardCharsets.UTF_8);
+            return new SecureTransport(associationId, fd, mContext, testKey, null, 0);
+        }
+
+        // If either device is not Android, then use app-specific pre-shared key
+        if (preSharedKey != null) {
+            Slog.d(TAG, "Creating a PSK-authenticated secure channel");
+            return new SecureTransport(associationId, fd, mContext, preSharedKey, null, 0);
+        }
+
+        // If none of the above applies, then use secure channel with attestation verification
+        Slog.d(TAG, "Creating a secure channel");
+        return new SecureTransport(associationId, fd, mContext, flags);
     }
 
     public Future<?> requestPermissionRestore(int associationId, byte[] data) {
@@ -341,8 +355,8 @@ public class CompanionTransportManager {
     /**
      * @hide
      */
-    public void enableSecureTransport(boolean enabled) {
-        this.mSecureTransportEnabled = enabled;
+    public void overrideTransportType(int typeOverride) {
+        this.mOverriddenTransportType = typeOverride;
     }
 
     /**
@@ -385,10 +399,6 @@ public class CompanionTransportManager {
                     + " sequence " + sequence + " length " + data.length
                     + " to association " + mAssociationId);
         }
-    }
-
-    private boolean isSecureTransportEnabled() {
-        return mSecureTransportEnabled;
     }
 
     private void addListenersToTransport(Transport transport) {
