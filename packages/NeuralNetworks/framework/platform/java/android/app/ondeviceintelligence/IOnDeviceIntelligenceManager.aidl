@@ -41,6 +41,7 @@
   *
   * @hide
   */
+// Next available field id: 12
 interface IOnDeviceIntelligenceManager {
       @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
       void getVersion(in RemoteCallback remoteCallback) = 1;
@@ -50,6 +51,11 @@ interface IOnDeviceIntelligenceManager {
 
       @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
       void listFeatures(in IListFeaturesCallback listFeaturesCallback) = 3;
+
+      @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
+      @JavaPassthrough(annotation="@android.annotation.FlaggedApi(android.app.ondeviceintelligence.flags.Flags.FLAG_ON_DEVICE_INTELLIGENCE_25Q4)")
+      void listFeaturesWithFilter(in PersistableBundle featureParamsFilter,
+            in IListFeaturesCallback listFeaturesCallback) = 11;
 
       @JavaPassthrough(annotation="@android.annotation.RequiresPermission(android.Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)")
       void getFeatureDetails(in Feature feature, in IFeatureDetailsCallback featureDetailsCallback) = 4;

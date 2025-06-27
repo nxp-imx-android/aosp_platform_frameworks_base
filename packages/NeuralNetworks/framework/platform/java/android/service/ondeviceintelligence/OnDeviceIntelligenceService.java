@@ -159,6 +159,20 @@ public abstract class OnDeviceIntelligenceService extends Service {
                 }
 
                 @Override
+                public void listFeaturesWithFilter(int callerUid,
+                        PersistableBundle featureParamsFilter,
+                        IListFeaturesCallback listFeaturesCallback) {
+                    Objects.requireNonNull(featureParamsFilter);
+                    Objects.requireNonNull(listFeaturesCallback);
+                    mHandler.executeOrSendMessage(
+                            obtainMessage(
+                                    OnDeviceIntelligenceService::onListFeatures,
+                                    OnDeviceIntelligenceService.this, callerUid,
+                                    featureParamsFilter,
+                                    wrapListFeaturesCallback(listFeaturesCallback)));
+                }
+
+                @Override
                 public void getFeature(int callerUid, int id, IFeatureCallback featureCallback) {
                     Objects.requireNonNull(featureCallback);
                     mHandler.executeOrSendMessage(
@@ -566,6 +580,23 @@ public abstract class OnDeviceIntelligenceService extends Service {
      */
     public abstract void onListFeatures(int callerUid, @NonNull OutcomeReceiver<List<Feature>,
             OnDeviceIntelligenceException> listFeaturesCallback);
+
+    /**
+     * List all features which are available in the remote implementation which match the given
+     * filter. The implementation might choose to provide only a certain list of features based on
+     * the caller.
+     *
+     * @param callerUid            UID of the caller that initiated this call chain.
+     * @param featureParamsFilter  params to filter the features.
+     * @param listFeaturesCallback callback to populate the features list.
+     */
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_25Q4)
+    public void onListFeatures(int callerUid,
+            @NonNull PersistableBundle featureParamsFilter,
+            @NonNull OutcomeReceiver<List<Feature>,
+                    OnDeviceIntelligenceException> listFeaturesCallback) {
+    }
+
 
     /**
      * Provides a long value representing the version of the remote implementation processing

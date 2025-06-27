@@ -326,6 +326,50 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
             }
 
             @Override
+            public void listFeaturesWithFilter(PersistableBundle featureParamsFilter,
+                    IListFeaturesCallback listFeaturesCallback)
+                    throws RemoteException {
+                Slog.i(TAG, "OnDeviceIntelligenceManagerInternal listFeaturesWithFilter");
+                Objects.requireNonNull(featureParamsFilter);
+                Objects.requireNonNull(listFeaturesCallback);
+                mContext.enforceCallingPermission(
+                        Manifest.permission.USE_ON_DEVICE_INTELLIGENCE, TAG);
+                if (!mIsServiceEnabled) {
+                    Slog.w(TAG, "Service not available");
+                    listFeaturesCallback.onFailure(
+                        OnDeviceIntelligenceException.ON_DEVICE_INTELLIGENCE_SERVICE_UNAVAILABLE,
+                        "OnDeviceIntelligenceManagerService is unavailable",
+                        PersistableBundle.EMPTY);
+                    return;
+                }
+                ensureRemoteIntelligenceServiceInitialized();
+                int callerUid = Binder.getCallingUid();
+                mRemoteOnDeviceIntelligenceService.postAsync(
+                        service -> {
+                            AndroidFuture future = new AndroidFuture();
+                            service.listFeaturesWithFilter(callerUid, featureParamsFilter,
+                                    new IListFeaturesCallback.Stub() {
+                                        @Override
+                                        public void onSuccess(List<Feature> result)
+                                                throws RemoteException {
+                                            listFeaturesCallback.onSuccess(result);
+                                            future.complete(null);
+                                        }
+
+                                        @Override
+                                        public void onFailure(int errorCode, String errorMessage,
+                                                PersistableBundle errorParams)
+                                                throws RemoteException {
+                                            listFeaturesCallback.onFailure(errorCode, errorMessage,
+                                                    errorParams);
+                                            future.completeExceptionally(new TimeoutException());
+                                        }
+                                    });
+                            return future.orTimeout(getIdleTimeoutMs(), TimeUnit.MILLISECONDS);
+                        });
+            }
+
+            @Override
             public void getFeatureDetails(Feature feature,
                     IFeatureDetailsCallback featureDetailsCallback)
                     throws RemoteException {
