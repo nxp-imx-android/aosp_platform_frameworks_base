@@ -95,10 +95,8 @@ java_library {
 
 // libcore-fake should be explicitly built against the host JDK, so use java_library_host.
 java_library_host {
-    name: "ravenwood-helper-libcore-runtime.host",
-    srcs: [
-        "runtime-helper-src/libcore-fake/**/*.java",
-    ],
+    name: "ravenwood-libcore.host",
+    srcs: ["libcore-fake/**/*.java"],
     libs: [
         "app-compat-annotations",
         "ravenwood-common-utils",
@@ -107,65 +105,44 @@ java_library_host {
 }
 
 java_host_for_device {
-    name: "ravenwood-helper-libcore-runtime",
-    libs: [
-        "ravenwood-helper-libcore-runtime.host",
-    ],
+    name: "ravenwood-libcore",
+    libs: ["ravenwood-libcore.host"],
     visibility: ["//visibility:private"],
 }
 
-java_library {
-    name: "ravenwood-helper-framework-runtime",
-    srcs: [
-        "runtime-helper-src/framework/**/*.java",
+// We use java_import to strip out the sdk_version of AndroidX libraries.
+java_import {
+    name: "ravenwood-androidx",
+    // Put the list of all AndroidX libraries Ravenwood needs here.
+    jars: [
+        ":androidx.test.monitor",
     ],
-    static_libs: [
-        "androidx.annotation_annotation",
-    ],
-    libs: [
-        "framework-configinfrastructure.ravenwood",
-        "framework-minus-apex.ravenwood",
-        "ravenwood-helper-libcore-runtime",
-        "ravenwood-common-utils",
-    ],
-    sdk_version: "core_current",
     visibility: ["//visibility:private"],
-}
-
-// Combine ravenwood-helper-*-runtime and create a single library, which we include
-// in the ravenwood runtime.
-// We do it this way rather than including the individual jars in the runtime, because
-// for some reason we couldn't include a java_host_for_device module in the ravenwood runtime.
-java_library {
-    name: "ravenwood-helper-runtime",
-    defaults: ["ravenwood-internal-only-visibility-java"],
-    static_libs: [
-        "ravenwood-helper-framework-runtime",
-        "ravenwood-helper-libcore-runtime",
-    ],
 }
 
 java_library {
     name: "ravenwood-junit-impl",
     srcs: [
+        ":framework-ravenwood-sources",
         "junit-impl-src/**/*.java",
         "junit-src/**/*.java",
-        ":framework-ravenwood-sources",
+        // TODO: Remove this directory once the sources are moved out
+        "runtime-helper-src/framework/**/*.java",
     ],
     static_libs: [
-        "androidx.test.monitor",
+        "ravenwood-androidx",
         "ravenwood-common-utils",
+        "ravenwood-libcore",
     ],
     libs: [
-        "android.test.mock.impl",
-        "framework-annotations-lib",
+        "framework-configinfrastructure.ravenwood",
         "framework-minus-apex.ravenwood",
-        "hoststubgen-helper-runtime.ravenwood",
+        "hoststubgen-helper-runtime",
         "junit",
         "ravenwood-framework",
-        "ravenwood-helper-runtime",
         "services.core.ravenwood",
     ],
+    sdk_version: "core_current",
     visibility: [":__subpackages__"],
     jarjar_rules: ":ravenwood-services-jarjar-rules",
 }
@@ -178,26 +155,18 @@ java_device_for_host {
     visibility: [":__subpackages__"],
 }
 
-// Carefully compiles against only module_current to support tests that
-// want to verify they're unbundled.  The "impl" library above is what
-// ships inside the Ravenwood environment to actually drive any API
-// access to implementation details.
-// We can't use test_current here because this library needs to be statically
-// linked to mainline tests as well, which can't use test APIs because they
-// need to be able to run on multiple API levels.
+// The "impl" library above is what ships inside the Ravenwood environment to actually drive any
+// API access to implementation details.
 java_library {
     name: "ravenwood-junit",
     srcs: [
         "junit-src/**/*.java",
         "junit-stub-src/**/*.java",
     ],
-    sdk_version: "module_current",
-    static_libs: [
-        "ravenwood-common-utils",
-    ],
+    sdk_version: "core_current",
+    static_libs: ["ravenwood-common-utils"],
     libs: [
-        "flag-junit",
-        "framework-annotations-lib",
+        "framework-minus-apex.ravenwood",
         "junit",
     ],
     visibility: ["//visibility:public"],
@@ -631,11 +600,19 @@ java_defaults {
 java_library {
     name: "ravenwood-empty-framework-minus-apex.ravenwood",
     stem: "framework-minus-apex.ravenwood",
+    defaults: ["ravenwood-empty-jar"],
 }
 
 java_library {
     name: "ravenwood-empty-kxml2-android",
     stem: "kxml2-android",
+    defaults: ["ravenwood-empty-jar"],
+}
+
+java_library {
+    name: "ravenwood-empty-helper-runtime",
+    stem: "ravenwood-helper-runtime",
+    defaults: ["ravenwood-empty-jar"],
 }
 
 android_ravenwood_libgroup {
@@ -648,8 +625,7 @@ android_ravenwood_libgroup {
         "ext-ravenwood",
 
         "android.test.mock.ravenwood",
-        "ravenwood-helper-runtime",
-        "hoststubgen-helper-runtime.ravenwood",
+        "hoststubgen-helper-runtime",
 
         // Note, when we include other services.* jars, we'll need to add
         // platform_compat_config for that module too.
@@ -702,8 +678,10 @@ android_ravenwood_libgroup {
         // doesn't have MODULE_LIBRARIES APIs.)
         "z00-all-updatable-modules-system-stubs",
 
+        // Empty jars to overwrite stale jars in ravenwood-runtime.
         "ravenwood-empty-framework-minus-apex.ravenwood",
         "ravenwood-empty-kxml2-android",
+        "ravenwood-empty-helper-runtime",
     ],
     jni_libs: [
         // Libraries has to be loaded in the following order

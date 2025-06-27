@@ -55,35 +55,15 @@ java_library {
 }
 
 // This library contains helper classes used in the host side test environment at runtime.
-// This library is _not_ specific to Android APIs.
-java_library_host {
+java_library {
     name: "hoststubgen-helper-runtime",
     defaults: ["ravenwood-internal-only-visibility-java"],
-    srcs: [
-        "helper-runtime-src/**/*.java",
-    ],
-    libs: [
-        "junit",
-    ],
-    static_libs: [
-        "guava",
-    ],
+    srcs: ["helper-runtime-src/**/*.java"],
+    libs: ["junit"],
+    static_libs: ["guava"],
+    sdk_version: "core_current",
     jarjar_rules: "jarjar-rules.txt",
-}
-
-java_library {
-    name: "hoststubgen-helper-runtime.ravenwood",
-    defaults: ["ravenwood-internal-only-visibility-java"],
-    srcs: [
-        "helper-runtime-src/**/*.java",
-    ],
-    libs: [
-        "junit",
-    ],
-    static_libs: [
-        "guava",
-    ],
-    jarjar_rules: "jarjar-rules.txt",
+    host_supported: true,
 }
 
 // For sharing the code with other tools
