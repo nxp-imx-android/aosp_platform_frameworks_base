@@ -17,7 +17,7 @@
 package com.android.wm.shell.flicker.bubbles
 
 import android.platform.test.annotations.Presubmit
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import androidx.test.ext.junit.runners.AndroidJUnit4

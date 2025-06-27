@@ -18,7 +18,7 @@ package com.android.server.wm.flicker.quickswitch
 
 import android.graphics.Rect
 import android.platform.test.annotations.Presubmit
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.tools.NavBar
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder

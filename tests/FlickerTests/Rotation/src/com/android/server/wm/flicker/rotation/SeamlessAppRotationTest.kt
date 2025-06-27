@@ -18,7 +18,7 @@ package com.android.server.wm.flicker.rotation
 
 import android.platform.test.annotations.PlatinumTest
 import android.platform.test.annotations.Presubmit
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.tools.ScenarioBuilder
 import android.tools.ScenarioImpl
 import android.tools.flicker.junit.FlickerParametersRunnerFactory

@@ -16,7 +16,7 @@
 
 package com.android.server.wm.flicker.notification
 
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.platform.test.rule.DisableNotificationCooldownSettingRule
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder

@@ -18,7 +18,7 @@ package com.android.wm.shell.flicker.appcompat
 
 import android.graphics.Rect
 import android.platform.test.annotations.Postsubmit
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerTest
 import android.tools.flicker.junit.FlickerParametersRunnerFactory

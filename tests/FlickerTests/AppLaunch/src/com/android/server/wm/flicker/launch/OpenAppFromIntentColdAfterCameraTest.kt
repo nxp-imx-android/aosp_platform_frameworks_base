@@ -16,7 +16,7 @@
 
 package com.android.server.wm.flicker.launch
 
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.tools.device.apphelpers.CameraAppHelper
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
