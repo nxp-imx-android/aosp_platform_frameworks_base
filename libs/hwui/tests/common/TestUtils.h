@@ -101,6 +101,10 @@ private:
     T mOldValue;
 };
 
+enum class SampleImage {
+    RedCarGainmap,
+};
+
 class TestUtils {
 public:
     class SignalingDtor {
@@ -131,6 +135,8 @@ public:
         }
         return true;
     }
+
+    static sk_sp<Bitmap> getSampleImage(SampleImage image);
 
     static sk_sp<Bitmap> createBitmap(int width, int height,
                                       SkColorType colorType = kN32_SkColorType) {

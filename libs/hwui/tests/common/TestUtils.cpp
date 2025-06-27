@@ -16,9 +16,8 @@
 
 #include "TestUtils.h"
 
-#include "DeferredLayerUpdater.h"
-#include "hwui/Paint.h"
-
+#include <hwui/Bitmap.h>
+#include <hwui/ImageDecoder.h>
 #include <hwui/MinikinSkia.h>
 #include <hwui/Typeface.h>
 #include <minikin/Layout.h>
@@ -28,7 +27,9 @@
 #include <renderthread/VulkanManager.h>
 #include <utils/Unicode.h>
 
+#include "DeferredLayerUpdater.h"
 #include "SkCanvas.h"
+#include "SkCodec.h"
 #include "SkColorData.h"
 #include "SkMatrix.h"
 #include "SkPath.h"
@@ -36,6 +37,7 @@
 #include "SkRect.h"
 #include "SkSurface.h"
 #include "SkUnPreMultiply.h"
+#include "hwui/Paint.h"
 
 namespace android {
 namespace uirenderer {
@@ -191,6 +193,48 @@ SkFont TestUtils::defaultFont() {
     SkTypeface* skTypeface = reinterpret_cast<const MinikinFontSkia*>(minikinFont.get())->GetSkTypeface();
     LOG_ALWAYS_FATAL_IF(skTypeface == nullptr);
     return SkFont(sk_ref_sp(skTypeface));
+}
+
+static const uint8_t sRedCarGainmap[]{
+#embed "data/gainmap.jpg"
+};
+
+sk_sp<SkData> dataForImage(SampleImage image) {
+    switch (image) {
+        case SampleImage::RedCarGainmap:
+            return SkData::MakeWithoutCopy(sRedCarGainmap, sizeof(sRedCarGainmap));
+    }
+    return SkData::MakeEmpty();
+}
+
+sk_sp<Bitmap> TestUtils::getSampleImage(SampleImage image) {
+    static std::unordered_map<SampleImage, sk_sp<Bitmap>> sCache;
+
+    auto& entry = sCache[image];
+
+    if (!entry) {
+        auto data = dataForImage(image);
+        auto codec = SkCodec::MakeFromData(data);
+        auto androidCodec = SkAndroidCodec::MakeFromCodec(std::move(codec));
+        ImageDecoder decoder{std::move(androidCodec)};
+        int imageWidth = decoder.width();
+        int imageHeight = decoder.height();
+        decoder.setTargetSize(imageWidth, imageHeight);
+        SkImageInfo bitmapInfo = decoder.getOutputInfo();
+
+        SkBitmap bm;
+        if (!bm.setInfo(bitmapInfo)) {
+            LOG_ALWAYS_FATAL("Failed to setInfo properly");
+        }
+
+        sk_sp<Bitmap> nativeBitmap = Bitmap::allocateHeapBitmap(&bm);
+        SkCodec::Result result = decoder.decode(bm.getPixels(), bm.rowBytes());
+        bm.setImmutable();
+
+        entry = std::move(nativeBitmap);
+    }
+
+    return entry;
 }
 
 } /* namespace uirenderer */
