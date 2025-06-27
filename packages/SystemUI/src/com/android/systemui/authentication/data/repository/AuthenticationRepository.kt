@@ -33,7 +33,6 @@ import com.android.systemui.authentication.shared.model.AuthenticationMethodMode
 import com.android.systemui.authentication.shared.model.AuthenticationResultModel
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionsRepository
@@ -191,7 +190,7 @@ interface AuthenticationRepository {
 class AuthenticationRepositoryImpl
 @Inject
 constructor(
-    @Application private val applicationScope: CoroutineScope,
+    @Background private val applicationScope: CoroutineScope,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val clock: SystemClock,
     private val getSecurityMode: Function<Int, KeyguardSecurityModel.SecurityMode>,
