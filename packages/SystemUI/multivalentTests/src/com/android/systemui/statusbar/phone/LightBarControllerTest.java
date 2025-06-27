@@ -222,6 +222,7 @@ public class LightBarControllerTest extends SysuiTestCase {
                         /* navbarColorManagedByIme= */ false));
         mTestScope.getTestScheduler().advanceUntilIdle();
 
+        verify(mStatusBarIconController).setIconsDarkArea(eq(null));
         verify(mLightBarTransitionsController).setIconsDark(eq(false), anyBoolean());
     }
 

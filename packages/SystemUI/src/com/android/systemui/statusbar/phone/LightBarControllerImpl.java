@@ -403,6 +403,7 @@ public class LightBarControllerImpl implements
 
         if (lightBarBounds.isEmpty()) {
             // If no one is light, all icons become white.
+            mStatusBarIconController.setIconsDarkArea(null);
             mStatusBarIconController
                     .getTransitionsController()
                     .setIconsDark(false, animateChange());
