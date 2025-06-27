@@ -22,6 +22,7 @@ import com.android.systemui.keyguard.data.repository.fakeBiometricSettingsReposi
 import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintAuthRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.securelockdevice.domain.interactor.secureLockDeviceInteractor
 
 val Kosmos.deviceEntryBiometricsAllowedInteractor by
     Kosmos.Fixture {
@@ -31,6 +32,7 @@ val Kosmos.deviceEntryBiometricsAllowedInteractor by
             deviceEntryFaceAuthInteractor = deviceEntryFaceAuthInteractor,
             biometricSettingsInteractor = deviceEntryBiometricSettingsInteractor,
             facePropertyRepository = facePropertyRepository,
+            secureLockDeviceInteractor = { secureLockDeviceInteractor },
         )
     }
 
