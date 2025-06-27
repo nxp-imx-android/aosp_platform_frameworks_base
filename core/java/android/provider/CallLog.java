@@ -419,6 +419,13 @@ public class CallLog {
         public static final Uri CONTENT_FILTER_URI = Uri.parse("content://call_log/calls/filter");
 
         /**
+         * The content:// style URL for VoIP applications to query the data belongs to them
+         */
+        @FlaggedApi(Flags.FLAG_INTEGRATED_CALL_LOGS)
+        @NonNull
+        public static final Uri CONTENT_VOIP_URI = Uri.parse(CONTENT_URI + "/voip");
+
+        /**
          * Query parameter used to limit the number of call logs returned.
          * <p>
          * TYPE: integer

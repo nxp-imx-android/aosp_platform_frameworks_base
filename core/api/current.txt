@@ -37147,6 +37147,7 @@ package android.provider {
     field public static final String CONTENT_TYPE = "vnd.android.cursor.dir/calls";
     field public static final android.net.Uri CONTENT_URI;
     field public static final android.net.Uri CONTENT_URI_WITH_VOICEMAIL;
+    field @FlaggedApi("com.android.server.telecom.flags.integrated_call_logs") @NonNull public static final android.net.Uri CONTENT_VOIP_URI;
     field public static final String COUNTRY_ISO = "countryiso";
     field public static final String DATA_USAGE = "data_usage";
     field public static final String DATE = "date";
