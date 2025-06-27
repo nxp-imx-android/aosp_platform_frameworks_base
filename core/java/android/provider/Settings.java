@@ -2704,6 +2704,30 @@ public final class Settings {
             "android.settings.MANAGE_SUPERVISOR_RESTRICTED_SETTING";
 
     /**
+     * Activity action: Launch UI to bypass the user restrictions set by the SupervisionService
+     * system entity.
+     *
+     * <p>Input: {@link #EXTRA_SUPERVISION_RESTRICTION} specifies the restriction to bypass.
+     *
+     * <p>Output: Nothing.
+     *
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_BYPASS_SUPERVISION_RESTRICTION =
+            "android.settings.BYPASS_SUPERVISION_RESTRICTION";
+
+    /**
+     * Intent extra: supervision restriction that we are trying to pybass.
+     *
+     * <p>This should be used when launching {@link #ACTION_BYPASS_SUPERVISION_RESTRICTION} .
+     *
+     * @hide
+     */
+    public static final String EXTRA_SUPERVISION_RESTRICTION =
+            "android.settings.EXTRA_SUPERVISION_RESTRICTION";
+
+    /**
      * Activity Action: Show a dialog for remote bugreport flow.
      * <p>
      * Input: Nothing.
