@@ -2118,8 +2118,9 @@ public class TransitionTests extends WindowTestsBase {
     }
 
     @Test
-    public void testOverrideAnimationOptionsToInfoIfNecessary_sceneAnimOptions() {
-        ActivityRecord r = initializeOverrideAnimationOptionsTest();
+    public void testOverrideAnimationOptionsToInfoIfNecessary_sceneAnimOptions_fillParentTF() {
+        ActivityRecord r = initializeOverrideAnimationOptionsTest(
+                true /* fillParentTaskFragment */);
         TransitionInfo.AnimationOptions options = TransitionInfo.AnimationOptions
                 .makeSceneTransitionAnimOptions();
         mTransition.setOverrideAnimation(options, r, null /* startCallback */,
@@ -2136,7 +2137,35 @@ public class TransitionTests extends WindowTestsBase {
                 displayChange.getAnimationOptions());
         assertEquals("Task change's AnimationOptions must be overridden.",
                 options, taskChange.getAnimationOptions());
-        assertNull("Embedded TF change's AnimationOptions must not be overridden.",
+        assertEquals(
+                "Fill-parent embedded TF change's AnimationOptions must be overridden.",
+                options, embeddedTfChange.getAnimationOptions());
+        assertEquals("Activity change's AnimationOptions must be overridden.",
+                options, activityChange.getAnimationOptions());
+    }
+
+    @Test
+    public void testOverrideAnimationOptionsToInfoIfNecessary_sceneAnimOptions_nonFillParentTF() {
+        ActivityRecord r = initializeOverrideAnimationOptionsTest(
+                false /* fillParentTaskFragment */);
+        TransitionInfo.AnimationOptions options = TransitionInfo.AnimationOptions
+                .makeSceneTransitionAnimOptions();
+        mTransition.setOverrideAnimation(options, r, null /* startCallback */,
+                null /* finishCallback */);
+
+        mTransition.overrideAnimationOptionsToInfoIfNecessary(mInfo);
+
+        final TransitionInfo.Change displayChange = mInfo.getChanges().get(0);
+        final TransitionInfo.Change taskChange = mInfo.getChanges().get(1);
+        final TransitionInfo.Change embeddedTfChange = mInfo.getChanges().get(2);
+        final TransitionInfo.Change activityChange = mInfo.getChanges().get(3);
+
+        assertNull("Display change's AnimationOptions must not be overridden.",
+                displayChange.getAnimationOptions());
+        assertEquals("Task change's AnimationOptions must be overridden.",
+                options, taskChange.getAnimationOptions());
+        assertNull(
+                "Non-fill-parent embedded TF change's AnimationOptions must not be overridden.",
                 embeddedTfChange.getAnimationOptions());
         assertEquals("Activity change's AnimationOptions must be overridden.",
                 options, activityChange.getAnimationOptions());
@@ -2291,6 +2320,10 @@ public class TransitionTests extends WindowTestsBase {
     }
 
     private ActivityRecord initializeOverrideAnimationOptionsTest() {
+        return initializeOverrideAnimationOptionsTest(true /* fillParentTaskFragment */);
+    }
+
+    private ActivityRecord initializeOverrideAnimationOptionsTest(boolean fillParentTaskFragment) {
         mTransition = createTestTransition(TRANSIT_OPEN);
 
         // Test set AnimationOptions for Activity and Task.
@@ -2314,8 +2347,13 @@ public class TransitionTests extends WindowTestsBase {
                 .toWindowContainerToken(), mDisplayContent.getAnimationLeash()));
         mInfo.addChange(new TransitionInfo.Change(task.mRemoteToken.toWindowContainerToken(),
                 task.getAnimationLeash()));
-        mInfo.addChange(new TransitionInfo.Change(embeddedTf.mRemoteToken.toWindowContainerToken(),
-                embeddedTf.getAnimationLeash()));
+        final TransitionInfo.Change embeddedTfChange =
+                new TransitionInfo.Change(embeddedTf.mRemoteToken.toWindowContainerToken(),
+                        embeddedTf.getAnimationLeash());
+        if (fillParentTaskFragment) {
+            embeddedTfChange.setFlags(FLAG_FILLS_TASK);
+        }
+        mInfo.addChange(embeddedTfChange);
         mInfo.addChange(new TransitionInfo.Change(null /* container */,
                 nonEmbeddedActivity.getAnimationLeash()));
         return nonEmbeddedActivity;

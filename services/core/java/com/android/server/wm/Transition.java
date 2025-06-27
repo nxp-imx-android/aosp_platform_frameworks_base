@@ -2195,14 +2195,16 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         final List<TransitionInfo.Change> changes = info.getChanges();
         for (int i = changes.size() - 1; i >= 0; --i) {
             final WindowContainer<?> container = mTargets.get(i).mContainer;
+            final TransitionInfo.Change change = changes.get(i);
             if (container.asActivityRecord() != null
-                    || shouldApplyAnimOptionsToTask(container.asTask())) {
-                changes.get(i).setAnimationOptions(mOverrideOptions);
-                changes.get(i).setBackgroundColor(mOverrideBackgroundColor);
+                    || shouldApplyAnimOptionsToTask(container.asTask())
+                    || shouldApplyAnimOptionsToFillParentTf(container.asTaskFragment(), change)) {
+                change.setAnimationOptions(mOverrideOptions);
+                change.setBackgroundColor(mOverrideBackgroundColor);
             } else if (shouldApplyAnimOptionsToEmbeddedTf(container.asTaskFragment())) {
                 // We only override AnimationOptions because backgroundColor should be from
                 // TaskFragmentAnimationParams.
-                changes.get(i).setAnimationOptions(mOverrideOptions);
+                change.setAnimationOptions(mOverrideOptions);
             }
         }
         updateActivityTargetForCrossProfileAnimation(info);
@@ -2216,6 +2218,17 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         // Only apply AnimationOptions to Task if it is specified in #getOverrideTaskTransition
         // or it's ANIM_SCENE_TRANSITION.
         return animType == ANIM_SCENE_TRANSITION || mOverrideOptions.getOverrideTaskTransition();
+    }
+
+    private boolean shouldApplyAnimOptionsToFillParentTf(
+            @Nullable TaskFragment taskFragment, @NonNull TransitionInfo.Change change) {
+        if (taskFragment == null || !taskFragment.isEmbedded() || mOverrideOptions == null) {
+            return false;
+        }
+        // Apply AnimationOptions to TaskFragment if it fills parent and the animation is a scene
+        // transition.
+        return change.hasFlags(FLAG_FILLS_TASK)
+                && mOverrideOptions.getType() == ANIM_SCENE_TRANSITION;
     }
 
     private boolean shouldApplyAnimOptionsToEmbeddedTf(@Nullable TaskFragment taskFragment) {
