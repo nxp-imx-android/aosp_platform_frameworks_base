@@ -2443,7 +2443,7 @@ package android.os {
   }
 
   public final class BugreportParams {
-    field public static final int BUGREPORT_MODE_MAX_VALUE = 7; // 0x7
+    field public static final int BUGREPORT_MODE_MAX_VALUE = 8; // 0x8
   }
 
   public class Build {
