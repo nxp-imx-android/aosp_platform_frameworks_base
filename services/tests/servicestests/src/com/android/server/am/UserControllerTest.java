@@ -294,8 +294,6 @@ public class UserControllerTest {
 
     @Test
     public void testStartUser_sendsNoBroadcastsForSystemUserInNonHeadlessMode() {
-        setUpUser(SYSTEM_USER_ID, UserInfo.FLAG_SYSTEM, /* preCreated= */ false,
-                UserManager.USER_TYPE_FULL_SYSTEM);
         mockIsHeadlessSystemUserMode(false);
 
         mUserController.startUser(SYSTEM_USER_ID, USER_START_MODE_FOREGROUND);
@@ -306,8 +304,6 @@ public class UserControllerTest {
 
     @Test
     public void testStartUser_sendsBroadcastsForSystemUserInHeadlessMode() {
-        setUpUser(SYSTEM_USER_ID, UserInfo.FLAG_SYSTEM, /* preCreated= */ false,
-                UserManager.USER_TYPE_SYSTEM_HEADLESS);
         mockIsHeadlessSystemUserMode(true);
 
         mUserController.startUser(SYSTEM_USER_ID, USER_START_MODE_FOREGROUND);
@@ -536,14 +532,11 @@ public class UserControllerTest {
         continueUserSwitchAssertions(oldUserId, TEST_USER_ID, false, false);
     }
 
-    private void mockCanSwitchToHeadlessSystemUser(boolean canSwitch) {
-        doReturn(canSwitch).when(mInjector.mUserManagerMock)
-                .canSwitchToHeadlessSystemUser();
-    }
-
     @Test
     public void testLogoutUserDuringSwitchToSameUser_nonHsum()
             throws InterruptedException {
+        // TODO(b/428046912): This test doesn't actually test anything. The switch isn't sufficient,
+        //  so the list of running users will never contain the test user anyway.
         mockIsHeadlessSystemUserMode(false);
 
         // Start user -- this will update state of mUserController
@@ -562,8 +555,9 @@ public class UserControllerTest {
     @Test
     public void testLogoutUserDuringSwitchToSameUser_hsumAndInteractiveSystemUser()
             throws InterruptedException {
-        mockIsHeadlessSystemUserMode(true);
-        mockCanSwitchToHeadlessSystemUser(true);
+        // TODO(b/428046912): This test doesn't actually test anything. The switch isn't sufficient,
+        //  so the list of running users will never contain the test user anyway.
+        mockIsSwitchableHeadlessSystemUserMode();
 
         // Start user -- this will update state of mUserController
         mUserController.startUser(TEST_USER_ID1, USER_START_MODE_FOREGROUND);
@@ -581,38 +575,47 @@ public class UserControllerTest {
     @Test
     public void testLogoutUser_nonHsum() throws InterruptedException {
         mockIsHeadlessSystemUserMode(false);
+        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
 
-        // Start user -- this will update state of mUserController
-        mUserController.switchUser(UserHandle.USER_SYSTEM);
-        mUserController.switchUser(TEST_USER_ID);
-        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+        // Switch to the test user.
+        addForegroundUserAndContinueUserSwitch(TEST_USER_ID, SYSTEM_USER_ID, 1,
+                /* expectOldUserStopping= */false,
+                /* expectScheduleBackgroundUserStopping= */ false);
+        assertTrue(mUserController.getRunningUsersLU().contains(TEST_USER_ID));
 
-        // Logout user.
+        // Logout the test user.
         mUserController.logoutUser(TEST_USER_ID);
         waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
 
-        // Verify that TEST_USER_ID is not running.
-        List<Integer> runningUserIds = mUserController.getRunningUsersLU();
-        assertFalse(runningUserIds.contains(TEST_USER_ID));
+        // Verify that TEST_USER_ID is no longer running.
+        assertFalse(mUserController.getRunningUsersLU().contains(TEST_USER_ID));
     }
 
     @Test
     public void testLogoutUser_hsumAndInteractiveSystemUser() throws InterruptedException {
-        mockIsHeadlessSystemUserMode(true);
-        mockCanSwitchToHeadlessSystemUser(true);
+        mockIsSwitchableHeadlessSystemUserMode();
+        mUserController.setInitialConfig(/* userSwitchUiEnabled= */ true,
+                /* maxRunningUsers= */ 3, /* delayUserDataLocking= */ false,
+                /* backgroundUserScheduledStopTimeSecs= */ -1);
 
-        // Start user -- this will update state of mUserController
-        mUserController.switchUser(UserHandle.USER_SYSTEM);
-        mUserController.switchUser(TEST_USER_ID);
-        waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
+        // Switch to the test user.
+        addForegroundUserAndContinueUserSwitch(TEST_USER_ID, SYSTEM_USER_ID, 1,
+                /* expectOldUserStopping= */false,
+                /* expectScheduleBackgroundUserStopping= */ false);
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID, TEST_USER_ID);
+        assertEquals("Unexpected current user", TEST_USER_ID, mUserController.getCurrentUserId());
 
-        // Logout user.
+        // Logout the test user.
         mUserController.logoutUser(TEST_USER_ID);
         waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
 
-        // Verify that TEST_USER_ID is not running.
-        List<Integer> runningUserIds = mUserController.getRunningUsersLU();
-        assertFalse(runningUserIds.contains(TEST_USER_ID));
+        // Verify that TEST_USER_ID is no longer running.
+        assertRunningUsersIgnoreOrder(SYSTEM_USER_ID);
+        // Current policy is that interactive HSUM should specifically log out to the system user.
+        assertEquals("Logout should always be to the system user in iHSUM",
+                SYSTEM_USER_ID, mUserController.getCurrentOrTargetUserId());
     }
 
     private void continueUserSwitchAssertions(int expectedOldUserId, int expectedNewUserId,
@@ -677,7 +680,7 @@ public class UserControllerTest {
 
         // Switch to TEST_USER_ID from user 0
         int numberOfUserSwitches = 0;
-        addForegroundUserAndContinueUserSwitch(TEST_USER_ID, UserHandle.USER_SYSTEM,
+        addForegroundUserAndContinueUserSwitch(TEST_USER_ID, SYSTEM_USER_ID,
                 ++numberOfUserSwitches,
                 /* expectOldUserStopping= */false,
                 /* expectScheduleBackgroundUserStopping= */ false);
@@ -922,7 +925,7 @@ public class UserControllerTest {
 
         // Switch to TEST_USER_ID from user 0
         int numberOfUserSwitches = 0;
-        addForegroundUserAndContinueUserSwitch(TEST_USER_ID, UserHandle.USER_SYSTEM,
+        addForegroundUserAndContinueUserSwitch(TEST_USER_ID, SYSTEM_USER_ID,
                 ++numberOfUserSwitches, false,
                 /* expectScheduleBackgroundUserStopping= */ false);
         assertRunningUsersInOrder(SYSTEM_USER_ID, TEST_USER_ID);
@@ -1057,7 +1060,7 @@ public class UserControllerTest {
         setUpUser(TEST_USER_ID1, 0);
         setUpUser(TEST_USER_ID2, 0);
         int numberOfUserSwitches = 1;
-        addForegroundUserAndContinueUserSwitch(TEST_USER_ID, UserHandle.USER_SYSTEM,
+        addForegroundUserAndContinueUserSwitch(TEST_USER_ID, SYSTEM_USER_ID,
                 numberOfUserSwitches, false, false);
         // running: user 0, USER_ID
         assertTrue(mUserController.canStartMoreUsers());
@@ -1099,7 +1102,7 @@ public class UserControllerTest {
         setUpUser(TEST_USER_ID1, 0);
         setUpUser(TEST_USER_ID2, 0);
         int numberOfUserSwitches = 1;
-        addForegroundUserAndContinueUserSwitch(TEST_USER_ID, UserHandle.USER_SYSTEM,
+        addForegroundUserAndContinueUserSwitch(TEST_USER_ID, SYSTEM_USER_ID,
                 numberOfUserSwitches, false, false);
         // running: user 0, USER_ID
         assertTrue(mUserController.canStartMoreUsers());
@@ -1197,7 +1200,7 @@ public class UserControllerTest {
         assertRunningUsersInOrder(TEST_USER_ID1, SYSTEM_USER_ID);
 
         // Start a user in the foreground. This exceeds max. Make sure we cut down to 2 users.
-        addForegroundUserAndContinueUserSwitch(TEST_USER_ID2, UserHandle.USER_SYSTEM,
+        addForegroundUserAndContinueUserSwitch(TEST_USER_ID2, SYSTEM_USER_ID,
                 1, false, false);
         mUserController.finishUserSwitch(mUserStates.get(TEST_USER_ID2));
         waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
@@ -1245,7 +1248,7 @@ public class UserControllerTest {
 
         assertRunningUsersInOrder(SYSTEM_USER_ID);
 
-        addForegroundUserAndContinueUserSwitch(TEST_USER_ID1, UserHandle.USER_SYSTEM,
+        addForegroundUserAndContinueUserSwitch(TEST_USER_ID1, SYSTEM_USER_ID,
                 1, false, false);
         mUserController.finishUserSwitch(mUserStates.get(TEST_USER_ID1));
         waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
@@ -1301,7 +1304,7 @@ public class UserControllerTest {
         assertRunningUsersIgnoreOrder(BG_USER_ID, SYSTEM_USER_ID);
 
         // Start PARENT_ID
-        addForegroundUserAndContinueUserSwitch(PARENT_ID, UserHandle.USER_SYSTEM, 1, false, false);
+        addForegroundUserAndContinueUserSwitch(PARENT_ID, SYSTEM_USER_ID, 1, false, false);
         // We call startProfiles(), but the profiles were configured to not auto-start.
         mUserController.finishUserSwitch(mUserStates.get(PARENT_ID)); // Calls startProfiles()
         waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
@@ -1355,7 +1358,7 @@ public class UserControllerTest {
         assertRunningUsersIgnoreOrder(BG_USER_ID, SYSTEM_USER_ID);
 
         // Start PARENT_ID
-        addForegroundUserAndContinueUserSwitch(PARENT_ID, UserHandle.USER_SYSTEM, 1, false, false);
+        addForegroundUserAndContinueUserSwitch(PARENT_ID, SYSTEM_USER_ID, 1, false, false);
         // We call startProfiles(), which auto-starts the profiles.
         mUserController.finishUserSwitch(mUserStates.get(PARENT_ID)); // Calls startProfiles()
         waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
@@ -1393,7 +1396,7 @@ public class UserControllerTest {
         assertRunningUsersInOrder(SYSTEM_USER_ID);
 
         int numberOfUserSwitches = 1;
-        addForegroundUserAndContinueUserSwitch(PARENT_ID, UserHandle.USER_SYSTEM,
+        addForegroundUserAndContinueUserSwitch(PARENT_ID, SYSTEM_USER_ID,
                 numberOfUserSwitches, false, false);
         mUserController.finishUserSwitch(mUserStates.get(PARENT_ID));
         waitForHandlerToComplete(mInjector.mHandler, HANDLER_WAIT_TIME_MS);
@@ -1515,7 +1518,7 @@ public class UserControllerTest {
         assertRunningUsersInOrder(SYSTEM_USER_ID);
 
         int numberOfUserSwitches = 1;
-        addForegroundUserAndContinueUserSwitch(PARENT_ID, UserHandle.USER_SYSTEM,
+        addForegroundUserAndContinueUserSwitch(PARENT_ID, SYSTEM_USER_ID,
                 numberOfUserSwitches, false, false);
         assertRunningUsersInOrder(SYSTEM_USER_ID, PARENT_ID);
 
@@ -1561,7 +1564,7 @@ public class UserControllerTest {
 
         assertRunningUsersInOrder(SYSTEM_USER_ID);
 
-        addForegroundUserAndContinueUserSwitch(CURRENT_ID, UserHandle.USER_SYSTEM, 1, false, false);
+        addForegroundUserAndContinueUserSwitch(CURRENT_ID, SYSTEM_USER_ID, 1, false, false);
         assertRunningUsersInOrder(SYSTEM_USER_ID, CURRENT_ID);
 
         mUserController.startUser(BG_USER_ID, USER_START_MODE_BACKGROUND);
@@ -2178,8 +2181,24 @@ public class UserControllerTest {
         }
     }
 
-    private void mockIsHeadlessSystemUserMode(boolean value) {
-        when(mInjector.isHeadlessSystemUserMode()).thenReturn(value);
+    /** Specify whether to mock the device as being in regular (non-switchable) HSUM. */
+    private void mockIsHeadlessSystemUserMode(boolean isHsum) {
+        mockIsHeadlessSystemUserMode(isHsum, false);
+    }
+
+    /** Mocks the device as being in interactive (switchable) HSUM. */
+    private void mockIsSwitchableHeadlessSystemUserMode() {
+        mockIsHeadlessSystemUserMode(true, true);
+    }
+
+    private void mockIsHeadlessSystemUserMode(boolean isHsum, boolean canSwitch) {
+        when(mInjector.isHeadlessSystemUserMode()).thenReturn(isHsum);
+        UserInfo sysInfo = setUpUser(SYSTEM_USER_ID, UserInfo.FLAG_SYSTEM, /* preCreated= */ false,
+                isHsum ? UserManager.USER_TYPE_SYSTEM_HEADLESS : UserManager.USER_TYPE_FULL_SYSTEM);
+        if (isHsum) {
+            doReturn(canSwitch).when(mInjector.mUserManagerMock).canSwitchToHeadlessSystemUser();
+            doReturn(canSwitch).when(mInjector).doesUserSupportSwitchTo(eq(sysInfo));
+        }
     }
 
     private void mockIsUsersOnSecondaryDisplaysEnabled(boolean value) {

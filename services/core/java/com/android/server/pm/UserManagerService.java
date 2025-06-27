@@ -9021,7 +9021,6 @@ public class UserManagerService extends IUserManager.Stub {
             writeUserLP(userData);
             return true;
         }
-
     }
 
     /**
