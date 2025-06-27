@@ -1459,18 +1459,18 @@ public class AccountManagerService
                 List<Integer> uids;
                 try {
                     uids = accounts.accountsDb.findAllUidGrants();
+                    for (int uid : uids) {
+                        boolean packageExists = mPackageManager.getPackagesForUid(uid) != null;
+                        if (packageExists) {
+                            continue;
+                        }
+                        Log.d(TAG, "deleting grants for UID " + uid
+                                + " because its package is no longer installed");
+                        accounts.accountsDb.deleteGrantsByUid(uid);
+                    }
                 } catch (SQLiteException e) {
                     Log.w(TAG, "Could not delete grants for user = " + accounts.userId, e);
                     return;
-                }
-                for (int uid : uids) {
-                    final boolean packageExists = mPackageManager.getPackagesForUid(uid) != null;
-                    if (packageExists) {
-                        continue;
-                    }
-                    Log.d(TAG, "deleting grants for UID " + uid
-                            + " because its package is no longer installed");
-                    accounts.accountsDb.deleteGrantsByUid(uid);
                 }
             }
         }
