@@ -21,12 +21,15 @@ import android.annotation.IntDef;
 
 import com.android.internal.camera.flags.Flags;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class ImageFormat {
      /** @hide */
+     @Target(ElementType.TYPE_USE)
      @Retention(RetentionPolicy.SOURCE)
      @IntDef(value = {
              UNKNOWN,

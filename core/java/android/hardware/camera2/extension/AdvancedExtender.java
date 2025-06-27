@@ -293,10 +293,11 @@ public abstract class AdvancedExtender {
      *   resolution exists for the provided capture size then an empty map is returned.
      *   An example of how the map is parsed can be found in {@link #initializeParcelable(Map)}.</p>
      * @param captureSize The still capture resolution
+     * @see ImageFormat
      */
     @FlaggedApi(Flags.FLAG_EFV_CAPTURE_LATENCY)
     @NonNull
-    public Map<Integer, List<Size>> getSupportedPostviewOutputResolutions(
+    public Map<@ImageFormat.Format Integer, List<Size>> getSupportedPostviewOutputResolutions(
             @NonNull Size captureSize) {
         throw new UnsupportedOperationException("Subclasses must override this method");
     }

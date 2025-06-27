@@ -16,6 +16,7 @@
 
 package android.hardware.camera2.extension;
 
+import android.annotation.DurationMillisLong;
 import android.annotation.FlaggedApi;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
@@ -27,12 +28,12 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.impl.CameraExtensionUtils.HandlerExecutor;
 import android.hardware.camera2.impl.CameraMetadataNative;
+import android.hardware.camera2.utils.HashCodeHelpers;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
-import android.util.Pair;
 
 import com.android.internal.camera.flags.Flags;
 
@@ -197,6 +198,62 @@ public abstract class SessionProcessor {
     }
 
     /**
+     * Realtime calculated still capture {@link #startMultiFrameCapture} latency.
+     *
+     * @see #getRealtimeStillCaptureLatency()
+     */
+    @FlaggedApi(Flags.FLAG_EFV_CAPTURE_LATENCY)
+    public final static class CaptureLatencyInfo {
+
+        /**
+         * The estimated still capture latency in milliseconds
+         * from {@link CaptureCallback#onCaptureStarted} until
+         * {@link CaptureCallback#onCaptureProcessStarted}.
+         */
+        @DurationMillisLong
+        public final long captureLatency;
+
+        /**
+         * The estimated post-processing latency in milliseconds from
+         * {@link CaptureCallback#onCaptureProcessStarted} until the processed frame
+         * returns to the client.
+         */
+        @DurationMillisLong
+        public final long processingLatency;
+
+        public CaptureLatencyInfo(@DurationMillisLong long captureLatency,
+                @DurationMillisLong long processingLatency) {
+            this.captureLatency = captureLatency;
+            this.processingLatency = processingLatency;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            CaptureLatencyInfo latency = (CaptureLatencyInfo) o;
+
+            if (captureLatency != latency.captureLatency) return false;
+            if (processingLatency != latency.processingLatency) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return HashCodeHelpers.hashCode((float) captureLatency, (float) processingLatency);
+        }
+
+        @Override
+        public String toString() {
+            return "CaptureLatencyInfo(processingLatency:" + processingLatency +
+                    ", captureLatency: " + captureLatency + ")";
+        }
+    }
+
+
+    /**
      * Initializes the session for the extension. This is where the
      * extension implementations allocate resources for
      * preparing a CameraCaptureSession. After initSession() is called,
@@ -354,6 +411,10 @@ public abstract class SessionProcessor {
      * another capture is running  will cause onCaptureFailed to be called
      * immediately.</p>
      *
+     * <p>This method will not generate postview images and it behaves essentially
+     * the same as calling {@link #startMultiFrameCapture(boolean, Executor, CaptureCallback)}
+     * with the postview argument set to false.</p>
+     *
      * @param executor the executor which will be used for
      *                 invoking the callbacks
      * @param callback a callback to report the status.
@@ -396,18 +457,11 @@ public abstract class SessionProcessor {
      * state and will include the time spent processing the multi-frame capture request along with
      * any additional time for encoding of the processed buffer if necessary.</p>
      *
-     * @return {@code null} if the estimation is not supported or a pair that includes the estimated
-     * input frame/frames camera capture latency as the * first field. This is the time between
-     * {@link CaptureCallback#onCaptureStarted} and
-     * {@link CaptureCallback#onCaptureProcessStarted}. The second field value includes the
-     * estimated post-processing latency. This is the time between
-     * {@link CaptureCallback#onCaptureProcessStarted} until * the processed frame returns back to
-     * the client registered surface. Both first and second values will be in milliseconds. The
-     * total still capture latency will be the sum of both the first and second values of the pair.
+     * @return {@link CaptureLatencyInfo} or {@code null} if the estimation is not supported.
      */
     @FlaggedApi(Flags.FLAG_EFV_CAPTURE_LATENCY)
     @Nullable
-    public Pair<Long, Long> getRealtimeStillCaptureLatency() {
+    public CaptureLatencyInfo getRealtimeStillCaptureLatency() {
         throw new UnsupportedOperationException("Subclasses must override this method");
     }
 
@@ -558,13 +612,13 @@ public abstract class SessionProcessor {
         @Override
         public LatencyPair getRealtimeCaptureLatency() throws RemoteException {
             if (Flags.efvCaptureLatency()) {
-                Pair<Long, Long> pair = SessionProcessor.this.getRealtimeStillCaptureLatency();
-                if (pair == null) {
+                CaptureLatencyInfo info = SessionProcessor.this.getRealtimeStillCaptureLatency();
+                if (info == null) {
                     return null;
                 }
                 LatencyPair ret = new LatencyPair();
-                ret.first = pair.first;
-                ret.second = pair.second;
+                ret.first = info.captureLatency;
+                ret.second = info.processingLatency;
                 return ret;
             }
             return null;
