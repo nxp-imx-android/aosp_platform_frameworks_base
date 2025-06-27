@@ -24,13 +24,10 @@ import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssista
 import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssistant.LocalBluetoothLeBroadcastSourceState.STREAMING;
 import static com.android.settingslib.bluetooth.LocalBluetoothLeBroadcastAssistant.getLocalSourceStateWithSelectedChannel;
 
-import static java.util.stream.Collectors.toList;
-
 import android.annotation.CallbackExecutor;
 import android.annotation.IntDef;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
-import android.bluetooth.BluetoothCsipSetCoordinator;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothLeAudioContentMetadata;
 import android.bluetooth.BluetoothLeBroadcast;
@@ -144,7 +141,6 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
     private final Context mContext;
     private final CachedBluetoothDeviceManager mDeviceManager;
     private final LocalBluetoothProfileManager mProfileManager;
-    private final boolean mHysteresisModeFixAvailable;
     private final boolean mIsWorkProfile;
     private BluetoothLeBroadcast mServiceBroadcast;
     private BluetoothLeBroadcastAssistant mServiceBroadcastAssistant;
@@ -444,7 +440,7 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
                     var sourceState = sourceStateAndSelectedChannel.first;
                     var selectedChannel = sourceStateAndSelectedChannel.second;
                     if (sourceState == STREAMING || sourceState == DECRYPTION_FAILED
-                            || (mHysteresisModeFixAvailable && sourceState == PAUSED)
+                            || sourceState == PAUSED
                             || (Flags.audioStreamPlayPauseByModifySource()
                             && sourceState == PAUSED_BY_RECEIVER)) {
                         List<BluetoothLeAudioContentMetadata> subgroupMetadata =
@@ -492,9 +488,6 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
         BluetoothAdapter.getDefaultAdapter()
                 .getProfileProxy(
                         context, mServiceListener, BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT);
-
-        mHysteresisModeFixAvailable = BluetoothUtils.isAudioSharingHysteresisModeFixAvailable(
-                context);
         mIsWorkProfile = isWorkProfile(mContext);
     }
 
@@ -1198,31 +1191,6 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
                 mServiceBroadcastAssistant.removeSource(device, receiveState.getSourceId());
             }
         }
-    }
-
-    @Nullable
-    private CachedBluetoothDevice getMainDevice(@Nullable List<BluetoothDevice> devices) {
-        if (devices == null || devices.isEmpty()) return null;
-        List<CachedBluetoothDevice> cachedDevices =
-                devices.stream()
-                        .map(device -> mDeviceManager.findDevice(device))
-                        .filter(Objects::nonNull)
-                        .collect(toList());
-        for (CachedBluetoothDevice cachedDevice : cachedDevices) {
-            if (!cachedDevice.getMemberDevice().isEmpty()) {
-                return cachedDevice;
-            }
-        }
-        CachedBluetoothDevice mainDevice = cachedDevices.isEmpty() ? null : cachedDevices.get(0);
-        return mainDevice;
-    }
-
-    private int getUserPreferredPrimaryGroupId() {
-        // TODO: use real key name in SettingsProvider
-        return Settings.Secure.getInt(
-                mContentResolver,
-                BLUETOOTH_LE_BROADCAST_PRIMARY_DEVICE_GROUP_ID,
-                BluetoothCsipSetCoordinator.GROUP_ID_INVALID);
     }
 
     private void notifyBroadcastStateChange(@BroadcastState int state) {
