@@ -1021,6 +1021,11 @@
         <item name="android:thumb">@drawable/settingslib_switch_thumb</item>
     </style>
 
+    <style name="ScreenCapture" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
     <style name="TextAppearance.ScreenRecord" />
 
     <style name="TextAppearance.ScreenRecord.SwitchLabel">

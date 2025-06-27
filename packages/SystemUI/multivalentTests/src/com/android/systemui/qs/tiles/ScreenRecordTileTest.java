@@ -45,9 +45,11 @@ import androidx.test.filters.SmallTest;
 import com.android.internal.logging.MetricsLogger;
 import com.android.systemui.Flags;
 import com.android.systemui.SysuiTestCase;
+import com.android.systemui.SysuiTestCaseExtKt;
 import com.android.systemui.animation.DialogTransitionAnimator;
 import com.android.systemui.classifier.FalsingManagerFake;
 import com.android.systemui.flags.FeatureFlags;
+import com.android.systemui.kosmos.Kosmos;
 import com.android.systemui.mediaprojection.MediaProjectionMetricsLogger;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.qs.QSTile;
@@ -61,6 +63,7 @@ import com.android.systemui.qs.logging.QSLogger;
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor;
 import com.android.systemui.qs.tileimpl.QSTileImpl;
 import com.android.systemui.res.R;
+import com.android.systemui.screencapture.record.domain.interactor.ScreenCaptureRecordFeaturesInteractorKosmosKt;
 import com.android.systemui.screenrecord.ScreenRecordUxController;
 import com.android.systemui.settings.UserContextProvider;
 import com.android.systemui.statusbar.phone.KeyguardDismissUtil;
@@ -88,6 +91,8 @@ public class ScreenRecordTileTest extends SysuiTestCase {
     public static List<FlagsParameterization> getParams() {
         return allCombinationsOf(QSComposeFragment.FLAG_NAME, QsDetailedView.FLAG_NAME);
     }
+
+    private final Kosmos mKosmos = SysuiTestCaseExtKt.testKosmos(this);
 
     @Mock
     private ScreenRecordUxController mController;
@@ -154,6 +159,8 @@ public class ScreenRecordTileTest extends SysuiTestCase {
                 mDialogTransitionAnimator,
                 mPanelInteractor,
                 mMediaProjectionMetricsLogger,
+                ScreenCaptureRecordFeaturesInteractorKosmosKt
+                        .getScreenCaptureRecordFeaturesInteractor(mKosmos),
                 mUserContextProvider
         );
 
@@ -220,16 +227,13 @@ public class ScreenRecordTileTest extends SysuiTestCase {
 
     // Test that clicking the tile is NOP if opened from desktop.
     @Test
-    @EnableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE)
+    @EnableFlags({Flags.FLAG_DESKTOP_SCREEN_CAPTURE, Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR})
     public void testClickFromDesktop() {
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(false);
 
         mTile.refreshState();
         mTestableLooper.processAllMessages();
-
-        // Override the resource to enable desktop features.
-        overrideResource(R.bool.config_enableDesktopScreenCapture, true);
 
         mTile.handleClick(null /* view */);
         mTestableLooper.processAllMessages();
@@ -238,58 +242,13 @@ public class ScreenRecordTileTest extends SysuiTestCase {
 
     // Test that clicking the tile in desktop opens the recording dialog if flag is disabled.
     @Test
-    @DisableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE)
-    public void testClickFromDesktopFlagDisabled() {
+    @DisableFlags(Flags.FLAG_NEW_SCREEN_RECORD_TOOLBAR)
+    public void testClickNewToolbarFlagDisabled() {
         when(mController.isStarting()).thenReturn(false);
         when(mController.isRecording()).thenReturn(false);
 
         mTile.refreshState();
         mTestableLooper.processAllMessages();
-
-        // Override the resource to enable desktop features.
-        overrideResource(R.bool.config_enableDesktopScreenCapture, true);
-
-        mTile.handleClick(null /* view */);
-        mTestableLooper.processAllMessages();
-
-        ArgumentCaptor<Runnable> onStartRecordingClicked = ArgumentCaptor.forClass(Runnable.class);
-        verify(mController).createScreenRecordDialog(onStartRecordingClicked.capture());
-    }
-
-    // Test that clicking the tile not in desktop opens the recording dialog even if flag is
-    // enabled.
-    @Test
-    @EnableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE)
-    public void testClickNotFromDesktopFlagEnabled() {
-        when(mController.isStarting()).thenReturn(false);
-        when(mController.isRecording()).thenReturn(false);
-
-        mTile.refreshState();
-        mTestableLooper.processAllMessages();
-
-        // Override the resource to disable desktop features.
-        overrideResource(R.bool.config_enableDesktopScreenCapture, false);
-
-        mTile.handleClick(null /* view */);
-        mTestableLooper.processAllMessages();
-
-        ArgumentCaptor<Runnable> onStartRecordingClicked = ArgumentCaptor.forClass(Runnable.class);
-        verify(mController).createScreenRecordDialog(onStartRecordingClicked.capture());
-    }
-
-    // Test that clicking the tile not in desktop opens the recording dialog when the flag is
-    // disabled.
-    @Test
-    @DisableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE)
-    public void testClickNotFromDesktopFlagDisabled() {
-        when(mController.isStarting()).thenReturn(false);
-        when(mController.isRecording()).thenReturn(false);
-
-        mTile.refreshState();
-        mTestableLooper.processAllMessages();
-
-        // Override the resource to disable desktop features.
-        overrideResource(R.bool.config_enableDesktopScreenCapture, false);
 
         mTile.handleClick(null /* view */);
         mTestableLooper.processAllMessages();
