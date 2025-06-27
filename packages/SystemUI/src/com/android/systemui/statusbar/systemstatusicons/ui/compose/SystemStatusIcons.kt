@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
+import com.android.systemui.statusbar.pipeline.mobile.ui.compose.MobileIcons
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 
@@ -66,21 +67,27 @@ fun SystemStatusIcons(
                         with(relativeLayoutBounds.boundsInScreen) { Rect(left, top, right, bottom) }
                 },
         ) {
-            viewModel.iconViewModels.forEach { iconViewModel ->
-                // TODO(414653733): Make sure icons are sized uniformly.
-                when (iconViewModel) {
-                    is SystemStatusIconViewModel.Default ->
-                        iconViewModel.icon?.let {
-                            Icon(
-                                icon = it,
-                                modifier = Modifier.size(20.dp).padding(1.dp),
-                                tint = LocalContentColor.current,
+            viewModel.iconViewModels
+                .filter { it.visible }
+                .forEach { iconViewModel ->
+                    // TODO(414653733): Make sure icons are sized uniformly.
+                    when (iconViewModel) {
+                        is SystemStatusIconViewModel.Default ->
+                            iconViewModel.icon?.let {
+                                Icon(
+                                    icon = it,
+                                    modifier = Modifier.size(20.dp).padding(1.dp),
+                                    tint = LocalContentColor.current,
+                                )
+                            }
+                        is SystemStatusIconViewModel.MobileIcons -> {
+                            MobileIcons(
+                                iconViewModel.mobileIconsViewModel,
+                                iconViewModel.stackedMobileIconViewModel,
                             )
                         }
-                    // TODO(427976550): Add a composable for mobile icons.
-                    is SystemStatusIconViewModel.MobileIcons -> {}
+                    }
                 }
-            }
         }
     }
 }
