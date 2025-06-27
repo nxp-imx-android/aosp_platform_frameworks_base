@@ -23,9 +23,6 @@ import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_ACTIVITY;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER;
 
 import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
-import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED;
-import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING;
-import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_VISIBLE;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
 
@@ -1061,8 +1058,18 @@ public final class ProcessStateRecord {
     }
 
     @GuardedBy("mService")
+    int getActivityStateFlags() {
+        return mActivityStateFlags;
+    }
+
+    @GuardedBy("mService")
     void setActivityStateFlags(int flags) {
         mActivityStateFlags = flags;
+    }
+
+    @GuardedBy("mService")
+    long getPerceptibleTaskStoppedTimeMillis() {
+        return mPerceptibleTaskStoppedTimeMillis;
     }
 
     @GuardedBy("mService")
@@ -1126,10 +1133,14 @@ public final class ProcessStateRecord {
     @GuardedBy("mService")
     private boolean getCachedHasVisibleActivities() {
         if (mCachedHasVisibleActivities == VALUE_INVALID) {
-            mCachedHasVisibleActivities = mApp.getWindowProcessController().hasVisibleActivities()
-                    ? VALUE_TRUE : VALUE_FALSE;
+            setCachedHasVisibleActivities(mApp.getWindowProcessController().hasVisibleActivities());
         }
         return mCachedHasVisibleActivities == VALUE_TRUE;
+    }
+
+    @GuardedBy("mService")
+    void setCachedHasVisibleActivities(boolean cachedHasVisibleActivities) {
+        mCachedHasVisibleActivities = cachedHasVisibleActivities ? VALUE_TRUE : VALUE_FALSE;
     }
 
     @GuardedBy("mService")
@@ -1208,57 +1219,14 @@ public final class ProcessStateRecord {
         return mCachedCompatChanges[cachedCompatChangeId] == VALUE_TRUE;
     }
 
-    /** This is only called if the process contains activities and is not the global top. */
-    @GuardedBy("mService")
-    void computeOomAdjFromActivitiesIfNecessary(OomAdjuster.ComputeOomAdjWindowCallback callback,
-            int adj, boolean foregroundActivities, boolean hasVisibleActivities, int procState,
-            int schedGroup, int appUid, int logUid, int processCurTop) {
-        if (mCachedAdj != ProcessList.INVALID_ADJ) {
-            return;
-        }
-        callback.initialize(mApp, adj, foregroundActivities, hasVisibleActivities, procState,
-                schedGroup, appUid, logUid, processCurTop);
-        final int flags;
-        if (Flags.pushActivityStateToOomadjuster()) {
-            flags = mActivityStateFlags;
-        } else {
-            flags = mApp.getWindowProcessController().getActivityStateFlags();
-        }
-
-        if ((flags & ACTIVITY_STATE_FLAG_IS_VISIBLE) != 0) {
-            callback.onVisibleActivity(flags);
-        } else if ((flags & ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED) != 0) {
-            callback.onPausedActivity();
-        } else if ((flags & ACTIVITY_STATE_FLAG_IS_STOPPING) != 0) {
-            callback.onStoppingActivity((flags & ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING) != 0);
-        } else {
-            final long ts;
-            if (Flags.pushActivityStateToOomadjuster()) {
-                ts = mPerceptibleTaskStoppedTimeMillis;
-            } else {
-                ts = mApp.getWindowProcessController().getPerceptibleTaskStoppedTimeMillis();
-            }
-
-            callback.onOtherActivity(ts);
-        }
-
-        mCachedAdj = callback.adj;
-        mCachedForegroundActivities = callback.foregroundActivities;
-        mCachedHasVisibleActivities = callback.mHasVisibleActivities ? VALUE_TRUE : VALUE_FALSE;
-        mCachedProcState = callback.procState;
-        mCachedSchedGroup = callback.schedGroup;
-        mCachedAdjType = callback.mAdjType;
-
-        if (mCachedAdj == ProcessList.VISIBLE_APP_ADJ) {
-            final int taskLayer = flags & ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
-            final int minLayer = Math.min(ProcessList.VISIBLE_APP_LAYER_MAX, taskLayer);
-            mCachedAdj += minLayer;
-        }
-    }
-
     @GuardedBy("mService")
     int getCachedAdj() {
         return mCachedAdj;
+    }
+
+    @GuardedBy("mService")
+    void setCachedAdj(int cachedAdj) {
+        mCachedAdj = cachedAdj;
     }
 
     @GuardedBy("mService")
@@ -1267,8 +1235,18 @@ public final class ProcessStateRecord {
     }
 
     @GuardedBy("mService")
+    void setCachedForegroundActivities(boolean cachedForegroundActivities) {
+        mCachedForegroundActivities = cachedForegroundActivities;
+    }
+
+    @GuardedBy("mService")
     int getCachedProcState() {
         return mCachedProcState;
+    }
+
+    @GuardedBy("mService")
+    void setCachedProcState(int cachedProcState) {
+        mCachedProcState = cachedProcState;
     }
 
     @GuardedBy("mService")
@@ -1277,8 +1255,18 @@ public final class ProcessStateRecord {
     }
 
     @GuardedBy("mService")
+    void setCachedSchedGroup(int cachedSchedGroup) {
+        mCachedSchedGroup = cachedSchedGroup;
+    }
+
+    @GuardedBy("mService")
     String getCachedAdjType() {
         return mCachedAdjType;
+    }
+
+    @GuardedBy("mService")
+    void setCachedAdjType(String cachedAdjType) {
+        mCachedAdjType = cachedAdjType;
     }
 
     @GuardedBy("mService")

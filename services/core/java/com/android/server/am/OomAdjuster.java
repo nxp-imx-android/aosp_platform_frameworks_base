@@ -106,6 +106,11 @@ import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 import static com.android.server.am.ProcessList.VISIBLE_APP_ADJ;
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.DEBUG_SWITCH;
+import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED;
+import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING;
+import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING;
+import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_VISIBLE;
+import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -1503,114 +1508,170 @@ public abstract class OomAdjuster {
         return true;
     }
 
-    protected final ComputeOomAdjWindowCallback mTmpComputeOomAdjWindowCallback =
-            new ComputeOomAdjWindowCallback();
+    protected final OomAdjWindowCalculator mTmpOomAdjWindowCalculator =
+            new OomAdjWindowCalculator();
 
-    /** These methods are called inline during computeOomAdjLSP(), on the same thread */
-    final class ComputeOomAdjWindowCallback {
+    /**
+     * The computeOomAdjFromActivitiesIfNecessary method computes the initial importance of the
+     * process which contains activities and is not the global top. The importance are stored at the
+     * ProcessStateRecord's cached fields.
+     * The method is called during computeOomAdjLSP(), on the same thread.
+     */
+    final class OomAdjWindowCalculator {
+        private ProcessRecord mApp;
+        private int mAdj;
+        private boolean mForegroundActivities;
+        private boolean mHasVisibleActivities;
+        private int mProcState;
+        private int mSchedGroup;
+        private int mAppUid;
+        private int mLogUid;
+        private int mProcessStateCurTop;
+        private String mAdjType;
+        private ProcessStateRecord mState;
 
-        ProcessRecord app;
-        int adj;
-        boolean foregroundActivities;
-        boolean mHasVisibleActivities;
-        int procState;
-        int schedGroup;
-        int appUid;
-        int logUid;
-        int processStateCurTop;
-        String mAdjType;
-        ProcessStateRecord mState;
+        @GuardedBy("this.OomAdjuster.mService")
+        int getAdj() {
+            return mAdj;
+        }
+
+        @GuardedBy("this.OomAdjuster.mService")
+        void computeOomAdjFromActivitiesIfNecessary(ProcessRecord app, int adj,
+                boolean foregroundActivities, boolean hasVisibleActivities, int procState,
+                int schedGroup, int appUid, int logUid, int processCurTop) {
+            if (app.mState.getCachedAdj() != ProcessList.INVALID_ADJ) {
+                return;
+            }
+            initialize(app, adj, foregroundActivities, hasVisibleActivities, procState,
+                    schedGroup, appUid, logUid, processCurTop);
+
+            final int flags;
+            if (Flags.pushActivityStateToOomadjuster()) {
+                flags = mState.getActivityStateFlags();
+            } else {
+                flags = mApp.getWindowProcessController().getActivityStateFlags();
+            }
+
+            if ((flags & ACTIVITY_STATE_FLAG_IS_VISIBLE) != 0) {
+                onVisibleActivity(flags);
+            } else if ((flags & ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED) != 0) {
+                onPausedActivity();
+            } else if ((flags & ACTIVITY_STATE_FLAG_IS_STOPPING) != 0) {
+                onStoppingActivity((flags & ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING) != 0);
+            } else {
+                final long ts;
+                if (Flags.pushActivityStateToOomadjuster()) {
+                    ts = mState.getPerceptibleTaskStoppedTimeMillis();
+                } else {
+                    ts = mApp.getWindowProcessController().getPerceptibleTaskStoppedTimeMillis();
+                }
+                onOtherActivity(ts);
+            }
+
+            if (mAdj == ProcessList.VISIBLE_APP_ADJ) {
+                final int taskLayer = flags & ACTIVITY_STATE_FLAG_MASK_MIN_TASK_LAYER;
+                final int minLayer = Math.min(ProcessList.VISIBLE_APP_LAYER_MAX, taskLayer);
+                mAdj += minLayer;
+            }
+
+            mState.setCachedAdj(mAdj);
+            mState.setCachedForegroundActivities(mForegroundActivities);
+            mState.setCachedHasVisibleActivities(mHasVisibleActivities);
+            mState.setCachedProcState(mProcState);
+            mState.setCachedSchedGroup(mSchedGroup);
+            mState.setCachedAdjType(mAdjType);
+        }
 
         void initialize(ProcessRecord app, int adj, boolean foregroundActivities,
                 boolean hasVisibleActivities, int procState, int schedGroup, int appUid,
                 int logUid, int processStateCurTop) {
-            this.app = app;
-            this.adj = adj;
-            this.foregroundActivities = foregroundActivities;
+            this.mApp = app;
+            this.mAdj = adj;
+            this.mForegroundActivities = foregroundActivities;
             this.mHasVisibleActivities = hasVisibleActivities;
-            this.procState = procState;
-            this.schedGroup = schedGroup;
-            this.appUid = appUid;
-            this.logUid = logUid;
-            this.processStateCurTop = processStateCurTop;
-            mAdjType = app.mState.getAdjType();
+            this.mProcState = procState;
+            this.mSchedGroup = schedGroup;
+            this.mAppUid = appUid;
+            this.mLogUid = logUid;
+            this.mProcessStateCurTop = processStateCurTop;
+            this.mAdjType = app.mState.getAdjType();
             this.mState = app.mState;
         }
 
         void onVisibleActivity(int flags) {
             // App has a visible activity; only upgrade adjustment.
-            if (adj > VISIBLE_APP_ADJ) {
-                adj = VISIBLE_APP_ADJ;
+            if (mAdj > VISIBLE_APP_ADJ) {
+                mAdj = VISIBLE_APP_ADJ;
                 mAdjType = "vis-activity";
-                if (DEBUG_OOM_ADJ_REASON || logUid == appUid) {
-                    reportOomAdjMessageLocked(TAG_OOM_ADJ, "Raise adj to vis-activity: " + app);
+                if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
+                    reportOomAdjMessageLocked(TAG_OOM_ADJ, "Raise adj to vis-activity: " + mApp);
                 }
             }
-            if (procState > processStateCurTop) {
-                procState = processStateCurTop;
+            if (mProcState > mProcessStateCurTop) {
+                mProcState = mProcessStateCurTop;
                 mAdjType = "vis-activity";
-                if (DEBUG_OOM_ADJ_REASON || logUid == appUid) {
+                if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
                     reportOomAdjMessageLocked(TAG_OOM_ADJ,
-                            "Raise procstate to vis-activity (top): " + app);
+                            "Raise procstate to vis-activity (top): " + mApp);
                 }
             }
-            if (schedGroup < SCHED_GROUP_DEFAULT) {
-                schedGroup = SCHED_GROUP_DEFAULT;
+            if (mSchedGroup < SCHED_GROUP_DEFAULT) {
+                mSchedGroup = SCHED_GROUP_DEFAULT;
             }
             if ((flags & WindowProcessController.ACTIVITY_STATE_FLAG_RESUMED_SPLIT_SCREEN) != 0) {
                 // Another side of split should be the current global top. Use the same top
                 // priority for this non-top split.
-                schedGroup = SCHED_GROUP_TOP_APP;
+                mSchedGroup = SCHED_GROUP_TOP_APP;
                 mAdjType = "resumed-split-screen-activity";
             } else if ((flags
                     & WindowProcessController.ACTIVITY_STATE_FLAG_PERCEPTIBLE_FREEFORM) != 0) {
                 // The recently used non-top visible freeform app.
-                schedGroup = SCHED_GROUP_TOP_APP;
+                mSchedGroup = SCHED_GROUP_TOP_APP;
                 mAdjType = "perceptible-freeform-activity";
             } else if ((flags
                     & WindowProcessController.ACTIVITY_STATE_FLAG_VISIBLE_MULTI_WINDOW_MODE) != 0) {
                 // Currently the only case is from freeform apps which are not close to top.
-                schedGroup = SCHED_GROUP_FOREGROUND_WINDOW;
+                mSchedGroup = SCHED_GROUP_FOREGROUND_WINDOW;
                 mAdjType = "vis-multi-window-activity";
             } else if ((flags
                     & WindowProcessController.ACTIVITY_STATE_FLAG_OCCLUDED_FREEFORM) != 0) {
-                schedGroup = SCHED_GROUP_BACKGROUND;
+                mSchedGroup = SCHED_GROUP_BACKGROUND;
                 mAdjType = "occluded-freeform-activity";
             }
-            foregroundActivities = true;
+            mForegroundActivities = true;
             mHasVisibleActivities = true;
         }
 
         void onPausedActivity() {
-            if (adj > PERCEPTIBLE_APP_ADJ) {
-                adj = PERCEPTIBLE_APP_ADJ;
+            if (mAdj > PERCEPTIBLE_APP_ADJ) {
+                mAdj = PERCEPTIBLE_APP_ADJ;
                 mAdjType = "pause-activity";
-                if (DEBUG_OOM_ADJ_REASON || logUid == appUid) {
-                    reportOomAdjMessageLocked(TAG_OOM_ADJ, "Raise adj to pause-activity: "  + app);
+                if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
+                    reportOomAdjMessageLocked(TAG_OOM_ADJ, "Raise adj to pause-activity: "  + mApp);
                 }
             }
-            if (procState > processStateCurTop) {
-                procState = processStateCurTop;
+            if (mProcState > mProcessStateCurTop) {
+                mProcState = mProcessStateCurTop;
                 mAdjType = "pause-activity";
-                if (DEBUG_OOM_ADJ_REASON || logUid == appUid) {
+                if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
                     reportOomAdjMessageLocked(TAG_OOM_ADJ,
-                            "Raise procstate to pause-activity (top): "  + app);
+                            "Raise procstate to pause-activity (top): "  + mApp);
                 }
             }
-            if (schedGroup < SCHED_GROUP_DEFAULT) {
-                schedGroup = SCHED_GROUP_DEFAULT;
+            if (mSchedGroup < SCHED_GROUP_DEFAULT) {
+                mSchedGroup = SCHED_GROUP_DEFAULT;
             }
-            foregroundActivities = true;
+            mForegroundActivities = true;
             mHasVisibleActivities = false;
         }
 
         void onStoppingActivity(boolean finishing) {
-            if (adj > PERCEPTIBLE_APP_ADJ) {
-                adj = PERCEPTIBLE_APP_ADJ;
+            if (mAdj > PERCEPTIBLE_APP_ADJ) {
+                mAdj = PERCEPTIBLE_APP_ADJ;
                 mAdjType = "stop-activity";
-                if (DEBUG_OOM_ADJ_REASON || logUid == appUid) {
+                if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
                     reportOomAdjMessageLocked(TAG_OOM_ADJ,
-                            "Raise adj to stop-activity: "  + app);
+                            "Raise adj to stop-activity: "  + mApp);
                 }
             }
 
@@ -1621,46 +1682,46 @@ public abstract class OomAdjuster {
             // since there can be an arbitrary number of stopping processes and they should soon all
             // go into the cached state.
             if (!finishing) {
-                if (procState > PROCESS_STATE_LAST_ACTIVITY) {
-                    procState = PROCESS_STATE_LAST_ACTIVITY;
+                if (mProcState > PROCESS_STATE_LAST_ACTIVITY) {
+                    mProcState = PROCESS_STATE_LAST_ACTIVITY;
                     mAdjType = "stop-activity";
-                    if (DEBUG_OOM_ADJ_REASON || logUid == appUid) {
+                    if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
                         reportOomAdjMessageLocked(TAG_OOM_ADJ,
-                                "Raise procstate to stop-activity: " + app);
+                                "Raise procstate to stop-activity: " + mApp);
                     }
                 }
             }
-            foregroundActivities = true;
+            mForegroundActivities = true;
             mHasVisibleActivities = false;
         }
 
         void onOtherActivity(long perceptibleTaskStoppedTimeMillis) {
-            if (procState > PROCESS_STATE_CACHED_ACTIVITY) {
-                procState = PROCESS_STATE_CACHED_ACTIVITY;
+            if (mProcState > PROCESS_STATE_CACHED_ACTIVITY) {
+                mProcState = PROCESS_STATE_CACHED_ACTIVITY;
                 mAdjType = "cch-act";
-                if (DEBUG_OOM_ADJ_REASON || logUid == appUid) {
+                if (DEBUG_OOM_ADJ_REASON || mLogUid == mAppUid) {
                     reportOomAdjMessageLocked(TAG_OOM_ADJ,
-                            "Raise procstate to cached activity: " + app);
+                            "Raise procstate to cached activity: " + mApp);
                 }
             }
-            if (Flags.perceptibleTasks() && adj > PERCEPTIBLE_MEDIUM_APP_ADJ) {
+            if (Flags.perceptibleTasks() && mAdj > PERCEPTIBLE_MEDIUM_APP_ADJ) {
                 if (perceptibleTaskStoppedTimeMillis >= 0) {
                     final long now = mInjector.getUptimeMillis();
                     if (now - perceptibleTaskStoppedTimeMillis < PERCEPTIBLE_TASK_TIMEOUT_MILLIS) {
-                        adj = PERCEPTIBLE_MEDIUM_APP_ADJ;
+                        mAdj = PERCEPTIBLE_MEDIUM_APP_ADJ;
                         mAdjType = "perceptible-act";
-                        if (procState > PROCESS_STATE_IMPORTANT_BACKGROUND) {
-                            procState = PROCESS_STATE_IMPORTANT_BACKGROUND;
+                        if (mProcState > PROCESS_STATE_IMPORTANT_BACKGROUND) {
+                            mProcState = PROCESS_STATE_IMPORTANT_BACKGROUND;
                         }
 
-                        maybeSetProcessFollowUpUpdateLocked(app,
+                        maybeSetProcessFollowUpUpdateLocked(mApp,
                                 perceptibleTaskStoppedTimeMillis + PERCEPTIBLE_TASK_TIMEOUT_MILLIS,
                                 now);
-                    } else if (adj > PREVIOUS_APP_ADJ) {
-                        adj = PREVIOUS_APP_ADJ;
+                    } else if (mAdj > PREVIOUS_APP_ADJ) {
+                        mAdj = PREVIOUS_APP_ADJ;
                         mAdjType = "stale-perceptible-act";
-                        if (procState > PROCESS_STATE_LAST_ACTIVITY) {
-                            procState = PROCESS_STATE_LAST_ACTIVITY;
+                        if (mProcState > PROCESS_STATE_LAST_ACTIVITY) {
+                            mProcState = PROCESS_STATE_LAST_ACTIVITY;
                         }
                     }
                 }
