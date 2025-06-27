@@ -152,6 +152,7 @@ applications that come with the platform
         <permission name="android.permission.MANAGE_USERS"/>
         <permission name="android.permission.MANAGE_SUBSCRIPTION_PLANS" />
         <permission name="android.permission.MODIFY_PHONE_STATE"/>
+        <permission name="android.permission.OBSERVE_ROLE_HOLDERS"/>
         <permission name="android.permission.PACKAGE_USAGE_STATS"/>
         <permission name="android.permission.PERFORM_CDMA_PROVISIONING"/>
         <permission name="android.permission.READ_CARRIER_APP_INFO"/>
@@ -639,6 +640,7 @@ applications that come with the platform
         <permission name="android.permission.MANAGE_DEVICE_POLICY_MTE"/>
         <!-- Permission required for integration test - InputTest -->
         <permission name="android.permission.LISTEN_FOR_KEY_ACTIVITY"/>
+        <permission name="android.permission.OBSERVE_ROLE_HOLDERS"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">
