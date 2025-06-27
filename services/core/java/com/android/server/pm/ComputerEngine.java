@@ -153,6 +153,7 @@ import com.android.server.pm.pkg.PackageUserStateInternal;
 import com.android.server.pm.pkg.PackageUserStateUtils;
 import com.android.server.pm.pkg.SharedUserApi;
 import com.android.server.pm.resolution.ComponentResolverApi;
+import com.android.server.pm.verify.developer.DeveloperVerificationStatusInternal;
 import com.android.server.pm.verify.domain.DomainVerificationManagerInternal;
 import com.android.server.uri.UriGrantsManagerInternal;
 import com.android.server.utils.WatchedArrayMap;
@@ -1536,6 +1537,14 @@ public class ComputerEngine implements Computer {
                 if (apexModuleName != null) {
                     packageInfo.setApexPackageName(
                             mApexManager.getActivePackageNameForApexModuleName(apexModuleName));
+                }
+            }
+            if (Flags.verificationService()) {
+                final DeveloperVerificationStatusInternal developerVerificationStatusInternal =
+                        ps.getDeveloperVerificationStatusInternal();
+                if (developerVerificationStatusInternal != null) {
+                    packageInfo.setIsAppMetadataVerified(
+                            developerVerificationStatusInternal.isAppMetadataVerified());
                 }
             }
             return packageInfo;
