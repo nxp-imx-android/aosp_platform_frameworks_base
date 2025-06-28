@@ -170,7 +170,6 @@ public class SliderPreference extends Preference {
             @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setLayoutResource(R.layout.settingslib_expressive_preference_slider);
-        setSelectable(false);
 
         TypedArray a = context.obtainStyledAttributes(
                 attrs, androidx.preference.R.styleable.SeekBarPreference, defStyleAttr,
