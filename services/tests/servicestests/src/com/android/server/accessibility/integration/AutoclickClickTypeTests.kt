@@ -217,6 +217,12 @@ class AutoclickClickTypeTests {
         waitAndAssert {
             testClickButton.text == SCROLL_RIGHT_TEXT
         }
+
+        // Close the scroll panel.
+        moveMouseToScrollButton(SCROLL_EXIT_BUTTON_LAYOUT_ID)
+        waitAndAssert {
+            uiDevice.findObject(By.res(SCROLL_EXIT_BUTTON_LAYOUT_ID)) == null
+        }
     }
 
     // Test activity responsible for receiving clicks and updating its UI depending on the click
@@ -325,6 +331,12 @@ class AutoclickClickTypeTests {
         @AfterClass
         @JvmStatic
         fun teardownAfterClass() {
+            // Wait for the Autoclick panel to be closed.
+            waitAndAssert {
+                UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+                    .findObject(By.res(AUTOCLICK_PANEL_ID)) == null
+            }
+
             // Re-enable SDK version dialog.
             InstrumentationRegistry.getInstrumentation().uiAutomation
                 .executeShellCommand("setprop debug.wm.disable_deprecated_target_sdk_dialog 0")

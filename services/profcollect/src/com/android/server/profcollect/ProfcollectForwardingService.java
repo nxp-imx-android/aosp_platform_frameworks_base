@@ -391,7 +391,7 @@ public final class ProfcollectForwardingService extends SystemService {
     }
 
     private void traceOnDex2oatStart() {
-        if (Utils.withFrequency("dex2oat_trace_freq", 25)) {
+        if (Utils.withFrequency("dex2oat_trace_freq", 75)) {
             // Dex2oat could take a while before it starts. Add a short delay before start tracing.
             Utils.traceSystem(sIProfcollect, "dex2oat", /* delayMs */ 1000);
         }

@@ -4390,6 +4390,31 @@
     <!-- The default vibration strength, must be between 1 and 255 inclusive. -->
     <integer name="config_defaultVibrationAmplitude">255</integer>
 
+    <!-- The scale factor to be applied at each vibration intensity level supported by the device,
+     defined by a positive float value.
+     The default framework scaling will be applied if this is not set, based on the user and the
+     default scales for each usage.
+     The number of entries here must be the device supported scale levels for LOW/MEDIUM/HIGH.
+     Example:
+     <string-array name="config_vibrationIntensityScaleFactors" translatable="false">
+       <item>0.5</item> -> Vibrator.VIBRATION_INTENSITY_LOW
+       <item>0.7</item> -> Vibrator.VIBRATION_INTENSITY_MEDIUM
+       <item>1.0</item> -> Vibrator.VIBRATION_INTENSITY_HIGH
+     </string-array> -->
+    <string-array name="config_vibrationIntensityScaleFactors" translatable="false" />
+
+    <!-- The scale factor to be applied for external vibrations only (i.e. audio-coupled haptics),
+         defined by a positive float value.
+         The values from config_vibrationIntensityScaleFactors will be used if this is not set.
+         The number of entries here must be the device supported scale levels for LOW/MEDIUM/HIGH.
+         Example:
+         <string-array name="config_externalVibrationIntensityScaleFactors" translatable="false">
+           <item>0.3</item> -> Vibrator.VIBRATION_INTENSITY_LOW
+           <item>0.5</item> -> Vibrator.VIBRATION_INTENSITY_MEDIUM
+           <item>1.0</item> -> Vibrator.VIBRATION_INTENSITY_HIGH
+         </string-array> -->
+    <string-array name="config_externalVibrationIntensityScaleFactors" translatable="false" />
+
     <!-- The max vibration strength allowed in audio haptic channels, must be positive or zero if
          limit is unknown. -->
     <item name="config_hapticChannelMaxVibrationAmplitude" format="float" type="dimen">0</item>

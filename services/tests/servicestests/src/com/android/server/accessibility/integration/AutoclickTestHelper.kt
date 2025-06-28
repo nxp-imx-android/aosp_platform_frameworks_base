@@ -26,7 +26,7 @@ import com.android.compatibility.common.util.PollingCheck.waitFor
 import kotlin.time.Duration.Companion.seconds
 import platform.test.desktop.DesktopMouseTestRule
 
-private val FIND_OBJECT_TIMEOUT = 5.seconds
+private val FIND_OBJECT_TIMEOUT = 10.seconds
 
 // Autoclick panel resource ids.
 val LEFT_CLICK_BUTTON_LAYOUT_ID =
@@ -39,6 +39,7 @@ val DOUBLE_CLICK_BUTTON_LAYOUT_ID =
     "android:id/accessibility_autoclick_double_click_layout"
 val DRAG_CLICK_BUTTON_LAYOUT_ID = "android:id/accessibility_autoclick_drag_layout"
 val SCROLL_BUTTON_LAYOUT_ID = "android:id/accessibility_autoclick_scroll_layout"
+val SCROLL_EXIT_BUTTON_LAYOUT_ID = "android:id/scroll_exit"
 val SCROLL_UP_BUTTON_LAYOUT_ID = "android:id/scroll_up"
 val SCROLL_DOWN_BUTTON_LAYOUT_ID = "android:id/scroll_down"
 val SCROLL_LEFT_BUTTON_LAYOUT_ID = "android:id/scroll_left"

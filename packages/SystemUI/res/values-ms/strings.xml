@@ -138,6 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Anda sedang merakam seluruh skrin anda"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Anda sedang merakam <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Hentikan rakaman"</string>
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Tangkap kawasan yang dipilih"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Tangkap"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Rakam"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Berkongsi skrin"</string>
@@ -750,8 +751,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"Multifrekuensi dwinada"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"Kebolehaksesan"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"Assistant"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"Dering"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Getar"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Redam"</string>
@@ -852,6 +852,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Hidupkan"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Kini perbualan anda yang lebih panjang boleh diringkaskan untuk memberi anda ringkasan pantas"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Pengelola pemberitahuan menghimpunkan dan menyenyapkan pemberitahuan keutamaan yang lebih rendah"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Selesai"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Guna"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Matikan"</string>
@@ -1653,12 +1655,15 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Tidak diketahui"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Tetapkan semula semua jubin?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Semua jubin Tetapan Pantas akan ditetapkan semula kepada tetapan asal peranti"</string>
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"Dapatkan cadangan yang berguna"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"Kami menggunakan AI untuk mencadangkan maklumat dan tindakan yang berkaitan dengan perkara yang anda lakukan pada skrin secara proaktif"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"Ikon"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"Sentuh &amp; tahan untuk melihat cara cadangan dijana"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> tidak akan memaparkan Kemaskinian Langsung lagi. Anda boleh menukar tetapan ini pada bila-bila masa dalam Tetapan."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Tutup"</string>
     <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"Ikon Cadangan Ambien"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Leret daripada bahagian atas sebelah kiri untuk membuka pemberitahuan"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Leret daripada bahagian atas sebelah kanan untuk membuka Tetapan Pantas"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"Kembali"</string>
 </resources>

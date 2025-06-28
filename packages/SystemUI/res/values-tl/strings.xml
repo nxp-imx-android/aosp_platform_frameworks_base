@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Kasalukuyan mong nire-record ang iyong buong screen"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Kasalukuyan mong nire-record ang <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Huminto sa pag-record"</string>
+    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
+    <skip />
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"I-capture"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"I-record"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ibinabahagi ang screen"</string>
@@ -750,8 +752,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"Dual multi tone frequency"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"Accessibility"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"Assistant"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"Ipa-ring"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"I-vibrate"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"I-mute"</string>
@@ -852,6 +853,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"I-on"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Puwede na ngayong ibuod ang iyong mas mahahabang pag-uusap para mabigyan ka ng maiikling recap"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Bina-bundle at minu-mute ng organizer ng notification ang mga notification na may mas mababang priyoridad"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Tapos na"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Ilapat"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"I-off"</string>
@@ -1653,12 +1656,19 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Hindi Alam"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"I-reset ang lahat ng tile?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Magre-reset sa mga orihinal na setting ng device ang lahat ng tile ng Mga Mabilisang Setting"</string>
+    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
+    <skip />
+    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
+    <skip />
     <string name="demote_explain_text" msgid="3942301497888762295">"Hindi na magpapakita ang <xliff:g id="APPLICATION">%1$s</xliff:g> ng Mga Live na Update. Puwede mo itong baguhin anumang oras sa Mga Setting."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Isara"</string>
     <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"Icon ng Mga Suhestyon sa Paligid"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Mag-swipe mula sa kaliwang bahagi sa itaas para buksan ang mga notification"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Mag-swipe mula sa kanang bahagi sa itaas para buksan ang Mga Mabilisang Setting"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"Bumalik"</string>
 </resources>

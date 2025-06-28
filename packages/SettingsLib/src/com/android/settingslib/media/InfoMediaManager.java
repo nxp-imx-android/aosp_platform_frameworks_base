@@ -1086,26 +1086,6 @@ public abstract class InfoMediaManager {
     @RequiresApi(34)
     static class Api34Impl {
         @DoNotInline
-        static List<RouteListingPreference.Item> composePreferenceRouteListing(
-                RouteListingPreference routeListingPreference) {
-            boolean preferRouteListingOrdering =
-                    com.android.media.flags.Flags.enableOutputSwitcherDeviceGrouping()
-                    && preferRouteListingOrdering(routeListingPreference);
-            List<RouteListingPreference.Item> finalizedItemList = new ArrayList<>();
-            List<RouteListingPreference.Item> itemList = routeListingPreference.getItems();
-            for (RouteListingPreference.Item item : itemList) {
-                // Put suggested devices on the top first before further organization
-                if (!preferRouteListingOrdering
-                        && (item.getFlags() & RouteListingPreference.Item.FLAG_SUGGESTED) != 0) {
-                    finalizedItemList.add(0, item);
-                } else {
-                    finalizedItemList.add(item);
-                }
-            }
-            return finalizedItemList;
-        }
-
-        @DoNotInline
         static synchronized List<MediaRoute2Info> filterDuplicatedIds(List<MediaRoute2Info> infos) {
             List<MediaRoute2Info> filteredInfos = new ArrayList<>();
             Set<String> foundDeduplicationIds = new HashSet<>();
@@ -1124,15 +1104,7 @@ public abstract class InfoMediaManager {
          * Returns an ordered list of available devices based on the provided {@code
          * routeListingPreferenceItems}.
          *
-         * <p>The resulting order if enableOutputSwitcherDeviceGrouping is disabled is:
-         *
-         * <ol>
-         *   <li>Selected routes.
-         *   <li>Not-selected system routes.
-         *   <li>Not-selected, non-system, available routes sorted by route listing preference.
-         * </ol>
-         *
-         * <p>The resulting order if enableOutputSwitcherDeviceGrouping is enabled is:
+         * <p>The resulting order is:
          *
          * <ol>
          *   <li>Selected routes sorted by route listing preference.
@@ -1140,7 +1112,6 @@ public abstract class InfoMediaManager {
          *   <li>Not-selected system routes.
          *   <li>Not-selected, non-system, available routes sorted by route listing preference.
          * </ol>
-         *
          *
          * @param selectedRoutes List of currently selected routes.
          * @param availableRoutes List of available routes that match the app's requested route
@@ -1153,16 +1124,12 @@ public abstract class InfoMediaManager {
                 List<MediaRoute2Info> availableRoutes,
                 RouteListingPreference routeListingPreference) {
             final List<RouteListingPreference.Item> routeListingPreferenceItems =
-                    Api34Impl.composePreferenceRouteListing(routeListingPreference);
+                    routeListingPreference.getItems();
 
             Set<String> sortedRouteIds = new LinkedHashSet<>();
-
-            boolean addSelectedRlpItemsFirst =
-                    com.android.media.flags.Flags.enableOutputSwitcherDeviceGrouping()
-                    && preferRouteListingOrdering(routeListingPreference);
             Set<String> selectedRouteIds = new HashSet<>();
 
-            if (addSelectedRlpItemsFirst) {
+            if (preferRouteListingOrdering(routeListingPreference)) {
                 // Add selected RLP items first
                 for (MediaRoute2Info selectedRoute : selectedRoutes) {
                     selectedRouteIds.add(selectedRoute.getId());

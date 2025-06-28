@@ -16,7 +16,7 @@
 
 package android.platform.test.ravenwood;
 
-import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_RESOURCE_APK;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_RESOURCE_APK;
 
 import android.app.Application;
 import android.content.ClipboardManager;
@@ -40,6 +40,7 @@ import android.util.ArrayMap;
 import android.util.Singleton;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -51,7 +52,7 @@ import java.util.function.Supplier;
 
 @RavenwoodProvidingImplementation(target = Context.class)
 public class RavenwoodContext extends RavenwoodBaseContext {
-    private static final String TAG = com.android.ravenwood.common.RavenwoodCommonUtils.TAG;
+    private static final String TAG = RavenwoodInternalUtils.TAG;
 
     private final Object mLock = new Object();
     private final String mPackageName;

@@ -95,7 +95,6 @@ fun ActionList(
     val minOverscrollDelta = (-8).dp
     val maxOverscrollDelta = 0.dp
     val columnSpacing = 8.dp
-    val topPadding = 32.dp
     val minGradientHeight = 70.dp
     val edgeAligned = horizontalAlignment == Alignment.Start || horizontalAlignment == Alignment.End
     val smartScrimAlpha by
@@ -283,7 +282,6 @@ fun ActionList(
                         )
                     }
                 }
-                .padding(top = topPadding)
                 .padding(padding),
         verticalArrangement = Arrangement.spacedBy(columnSpacing, Alignment.Bottom),
         horizontalAlignment = horizontalAlignment,

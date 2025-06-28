@@ -19,6 +19,8 @@ package com.android.systemui.clock.ui.composable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import com.android.systemui.clock.ui.viewmodel.ClockViewModel
 import com.android.systemui.lifecycle.rememberViewModel
 
@@ -26,5 +28,8 @@ import com.android.systemui.lifecycle.rememberViewModel
 @Composable
 fun Clock(viewModelFactory: ClockViewModel.Factory, modifier: Modifier = Modifier) {
     val clockViewModel = rememberViewModel("Clock-viewModel") { viewModelFactory.create() }
-    Text(text = clockViewModel.clockText, modifier = modifier)
+    Text(
+        text = clockViewModel.clockText,
+        modifier = modifier.semantics { contentDescription = clockViewModel.contentDescriptionText },
+    )
 }

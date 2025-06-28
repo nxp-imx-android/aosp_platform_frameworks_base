@@ -17,6 +17,11 @@
 package com.android.systemui.communal.ui.compose
 
 import android.content.res.Configuration
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,6 +42,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
 import com.android.compose.modifiers.thenIf
 import com.android.systemui.Flags
@@ -71,11 +77,26 @@ constructor(
 
     @Composable
     fun ContentScope.Content(modifier: Modifier = Modifier) {
-        val showLockIcon = !communalSettingsInteractor.isV2FlagEnabled()
+        val showLockIconAndChargingStatus = !communalSettingsInteractor.isV2FlagEnabled()
 
         CommunalTouchableSurface(viewModel = viewModel, modifier = modifier) {
             val orientation = LocalConfiguration.current.orientation
             var gridRegion by remember { mutableStateOf<Rect?>(null) }
+            val showBackgroundForEditModeTransition by
+                viewModel.showBackgroundForEditModeTransition.collectAsStateWithLifecycle(
+                    initialValue = false
+                )
+
+            // The animated background here matches the color scheme of the edit mode activity and
+            // facilitates the transition to and from edit mode.
+            AnimatedVisibility(
+                visible = showBackgroundForEditModeTransition,
+                enter = fadeIn(tween(TransitionDuration.EDIT_MODE_BACKGROUND_ANIM_DURATION_MS)),
+                exit = fadeOut(tween(TransitionDuration.EDIT_MODE_BACKGROUND_ANIM_DURATION_MS)),
+            ) {
+                Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceDim))
+            }
+
             Layout(
                 modifier =
                     Modifier.fillMaxSize().thenIf(communalSettingsInteractor.isV2FlagEnabled()) {
@@ -100,29 +121,33 @@ constructor(
                         )
                         with(hubOnboardingSection) { BottomSheet() }
                     }
-                    if (showLockIcon) {
+                    if (showLockIconAndChargingStatus) {
                         with(lockElement) {
                             LockIcon(
                                 overrideColor = MaterialTheme.colorScheme.onPrimaryContainer,
                                 modifier = Modifier.element(Communal.Elements.LockIcon),
                             )
                         }
-                    }
-                    with(indicationAreaElement) {
-                        IndicationArea(
-                            Modifier.element(Communal.Elements.IndicationArea)
-                                .fillMaxWidth()
-                                .padding(
-                                    bottom =
-                                        dimensionResource(R.dimen.keyguard_indication_margin_bottom)
-                                )
-                        )
+
+                        with(indicationAreaElement) {
+                            IndicationArea(
+                                Modifier.element(Communal.Elements.IndicationArea)
+                                    .fillMaxWidth()
+                                    .padding(
+                                        bottom =
+                                            dimensionResource(
+                                                R.dimen.keyguard_indication_margin_bottom
+                                            )
+                                    )
+                            )
+                        }
                     }
                 },
             ) { measurables, constraints ->
                 val communalGridMeasurable = measurables[0]
-                val lockIconMeasurable = if (showLockIcon) measurables[1] else null
-                val bottomAreaMeasurable = measurables[if (showLockIcon) 2 else 1]
+                val lockIconMeasurable = if (showLockIconAndChargingStatus) measurables[1] else null
+                val bottomAreaMeasurable =
+                    if (showLockIconAndChargingStatus) measurables[2] else null
 
                 val noMinConstraints = constraints.copy(minWidth = 0, minHeight = 0)
 
@@ -139,7 +164,7 @@ constructor(
                         )
                     }
 
-                val bottomAreaPlaceable = bottomAreaMeasurable.measure(noMinConstraints)
+                val bottomAreaPlaceable = bottomAreaMeasurable?.measure(noMinConstraints)
 
                 val communalGridMaxHeight: Int
                 val communalGridPositionY: Int
@@ -173,8 +198,10 @@ constructor(
                         lockIconPlaceable!!.place(x = lockIconBounds.left, y = lockIconBounds.top)
                     }
 
-                    val bottomAreaTop = constraints.maxHeight - bottomAreaPlaceable.height
-                    bottomAreaPlaceable.place(x = 0, y = bottomAreaTop)
+                    if (bottomAreaPlaceable != null) {
+                        val bottomAreaTop = constraints.maxHeight - bottomAreaPlaceable.height
+                        bottomAreaPlaceable.place(x = 0, y = bottomAreaTop)
+                    }
                 }
             }
         }

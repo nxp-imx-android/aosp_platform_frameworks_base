@@ -17,11 +17,10 @@
 package com.android.systemui.qs.panels.ui.model
 
 import androidx.annotation.StringRes
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.android.systemui.qs.panels.ui.compose.icons.Edit
+import com.android.systemui.common.ui.icons.Edit
+import com.android.systemui.common.ui.icons.TileMedium
 import com.android.systemui.res.R
 
 /** Represents a tab from Quick Settings edit mode. */
@@ -53,7 +52,7 @@ sealed interface EditModeTab {
 
     /** A tab where tiles can be resized/reordered only. */
     data object LayoutTab : EditModeTab {
-        override val titleIcon: ImageVector = Icons.Default.Dashboard
+        override val titleIcon: ImageVector = TileMedium
         override val titleResId: Int = R.string.qs_edit_layout_tab
         override val headerResId: Int = R.string.resize_and_reorder_tiles
         override val isTilesEditingAllowed: Boolean = false

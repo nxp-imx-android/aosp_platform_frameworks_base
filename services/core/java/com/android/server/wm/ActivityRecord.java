@@ -155,6 +155,7 @@ import static android.view.WindowManager.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENAB
 import static android.view.WindowManager.PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING_STATE_SHARING;
 import static android.view.WindowManager.TRANSIT_RELAUNCH;
 import static android.view.WindowManager.hasWindowExtensionsEnabled;
+import static android.window.DesktopExperienceFlags.ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 import static android.window.TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION;
 import static android.window.TransitionInfo.FLAG_IS_OCCLUDED;
@@ -8784,6 +8785,8 @@ final class ActivityRecord extends WindowToken {
         // configuration.
         mAppCompatController.getSizeCompatModePolicy().clearSizeCompatMode();
         mAppCompatController.getDisplayCompatModePolicy().onProcessRestarted();
+        final boolean fullscreenOverrideChanged =
+                mAppCompatController.getAspectRatioOverrides().resetSystemFullscreenOverrideCache();
 
         if (!attachedToProcess()) {
             return;
@@ -8810,6 +8813,10 @@ final class ActivityRecord extends WindowToken {
             return;
         }
 
+        if (fullscreenOverrideChanged) {
+            task.updateForceResizeOverridesIfNeeded(this);
+        }
+
         // Process restart may require trampoline activity launch, for which app switching needs to
         // be enabled. App switching may be allowed only for specific cases while/after Recents is
         // shown. As when a process is restarted, the user should be interacting with the app, so
@@ -8828,10 +8835,9 @@ final class ActivityRecord extends WindowToken {
                 }
                 final ActionChain chain = mAtmService.mChainTracker.start(
                         "restartProc", transition);
-                // Request invisible so there will be a change after the activity is restarted
-                // to be visible.
-                setVisibleRequested(false);
                 chain.collect(this);
+                // Make sure this will be a change in the transition.
+                transition.setKnownConfigChanges(this, CONFIG_WINDOW_CONFIGURATION);
                 mTransitionController.requestStartTransition(transition, task,
                         null /* remoteTransition */, null /* displayChange */);
                 scheduleStopForRestartProcess();
@@ -9288,7 +9294,11 @@ final class ActivityRecord extends WindowToken {
     void setPictureInPictureParams(PictureInPictureParams p) {
         pictureInPictureArgs.copyOnlySet(p);
         adjustPictureInPictureParamsIfNeeded(getBounds());
-        getTask().getRootTask().onPictureInPictureParamsChanged();
+        if (ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX.isTrue()) {
+            getTask().onPictureInPictureParamsChanged();
+        } else {
+            getTask().getRootTask().onPictureInPictureParamsChanged();
+        }
     }
 
     void setShouldDockBigOverlays(boolean shouldDockBigOverlays) {

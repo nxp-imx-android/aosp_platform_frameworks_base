@@ -16,6 +16,7 @@
 
 package com.android.server.companion.datatransfer.continuity.handoff;
 
+import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createAssociationInfo;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createMockContext;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createMockCompanionDeviceManager;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.verifyMessageSent;
@@ -25,9 +26,12 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.ArgumentMatchers.any;
 
+import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
@@ -37,6 +41,7 @@ import android.app.HandoffActivityData;
 import android.content.Context;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
 import android.companion.datatransfer.continuity.IHandoffRequestCallback;
@@ -47,6 +52,8 @@ import android.os.RemoteException;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,14 +63,19 @@ public class OutboundHandoffRequestControllerTest {
     private Context mContext;
     private ICompanionDeviceManager mMockCompanionDeviceManagerService;
 
+    @Mock private ConnectedAssociationStore mMockConnectedAssociationStore;
+
     private OutboundHandoffRequestController mOutboundHandoffRequestController;
 
     @Before
     public void setUp() {
+        MockitoAnnotations.initMocks(this);
         mContext = createMockContext();
         mMockCompanionDeviceManagerService = createMockCompanionDeviceManager(mContext);
 
-        mOutboundHandoffRequestController = new OutboundHandoffRequestController(mContext);
+        mOutboundHandoffRequestController = new OutboundHandoffRequestController(
+            mContext,
+            mMockConnectedAssociationStore);
     }
 
     @Test
@@ -71,6 +83,9 @@ public class OutboundHandoffRequestControllerTest {
         int associationId = 1;
         int taskId = 1;
         HandoffRequestCallbackHolder callbackHolder = new HandoffRequestCallbackHolder();
+        AssociationInfo mockAssociationInfo = createAssociationInfo(associationId, "device");
+        when(mMockConnectedAssociationStore.getConnectedAssociationById(associationId))
+            .thenReturn(mockAssociationInfo);
 
         // Request a handoff to a device.
         mOutboundHandoffRequestController.requestHandoff(
@@ -126,9 +141,31 @@ public class OutboundHandoffRequestControllerTest {
     }
 
     @Test
+    public void testRequestHandoff_associationNotConnected_returnsFailure() {
+        int associationId = 1;
+        int taskId = 1;
+        HandoffRequestCallbackHolder callbackHolder = new HandoffRequestCallbackHolder();
+        when(mMockConnectedAssociationStore.getConnectedAssociationById(associationId))
+            .thenReturn(null);
+        mOutboundHandoffRequestController.requestHandoff(
+            associationId,
+            taskId,
+            callbackHolder.callback);
+
+        // Verify the callback was invoked.
+        callbackHolder.verifyInvoked(
+            associationId,
+            taskId,
+            TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND);
+    }
+
+    @Test
     public void testRequestHandoff_multipleTimes_onlySendsOneMessage() throws Exception {
         int associationId = 1;
         int taskId = 1;
+        AssociationInfo mockAssociationInfo = createAssociationInfo(associationId, "device");
+        when(mMockConnectedAssociationStore.getConnectedAssociationById(associationId))
+            .thenReturn(mockAssociationInfo);
 
         // Request handoff multiple times.
         HandoffRequestCallbackHolder firstCallback = new HandoffRequestCallbackHolder();
@@ -155,6 +192,9 @@ public class OutboundHandoffRequestControllerTest {
         // Request a handoff
         int associationId = 1;
         int taskId = 1;
+        AssociationInfo mockAssociationInfo = createAssociationInfo(associationId, "device");
+        when(mMockConnectedAssociationStore.getConnectedAssociationById(associationId))
+            .thenReturn(mockAssociationInfo);
         HandoffRequestCallbackHolder callback = new HandoffRequestCallbackHolder();
         mOutboundHandoffRequestController.requestHandoff(
             associationId,
@@ -183,6 +223,9 @@ public class OutboundHandoffRequestControllerTest {
         // Request a handoff
         int associationId = 1;
         int taskId = 1;
+        AssociationInfo mockAssociationInfo = createAssociationInfo(associationId, "device");
+        when(mMockConnectedAssociationStore.getConnectedAssociationById(associationId))
+            .thenReturn(mockAssociationInfo);
         HandoffRequestCallbackHolder callback = new HandoffRequestCallbackHolder();
         mOutboundHandoffRequestController.requestHandoff(
             associationId,

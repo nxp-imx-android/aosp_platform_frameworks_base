@@ -21,10 +21,9 @@ import static android.content.pm.PackageInstaller.SessionInfo;
 import static android.content.pm.PackageInstaller.SessionInfo.INVALID_ID;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_OPEN;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_WARN;
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY;
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_OK;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_NETWORK_UNAVAILABLE;
@@ -129,7 +128,7 @@ public class ConfirmDeveloperVerification extends Activity {
                 finish();
             }).setNegativeButton(R.string.dont_install, (dialog, which) -> {
                 mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
-                        DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL);
+                        DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT);
                 finish();
             }).setNeutralButton(R.string.install_anyway, (dialog, which) -> {
                 mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
@@ -140,7 +139,7 @@ public class ConfirmDeveloperVerification extends Activity {
             // only allow retry
             builder.setPositiveButton(R.string.ok, (dialog, which) -> {
                 mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
-                        DEVELOPER_VERIFICATION_USER_RESPONSE_OK);
+                        PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT);
                 finish();
             }).setNegativeButton(R.string.try_again, (dialog, which) -> {
                 mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
@@ -151,7 +150,7 @@ public class ConfirmDeveloperVerification extends Activity {
             // only allow bypass
             builder.setPositiveButton(R.string.dont_install, (dialog, which) -> {
                 mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
-                        DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL);
+                        DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT);
                 finish();
             }).setNegativeButton(R.string.install_anyway, (dialog, which) -> {
                 mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
@@ -167,7 +166,7 @@ public class ConfirmDeveloperVerification extends Activity {
                             : R.string.ok,
                     (dialog, which) -> {
                         mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
-                                DEVELOPER_VERIFICATION_USER_RESPONSE_OK);
+                                PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT);
                         finish();
                     });
         }
@@ -180,7 +179,7 @@ public class ConfirmDeveloperVerification extends Activity {
 
         mDialog.setOnCancelListener(dialog -> {
             mPackageInstaller.setDeveloperVerificationUserResponse(sessionId,
-                    DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL);
+                    DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT);
             finish();
         });
 

@@ -46,8 +46,6 @@ public class SelectionToolbarManagerService extends SystemService {
 
     private static final String LOG_TAG = SelectionToolbarManagerService.class.getSimpleName();
 
-    private final SelectionToolbarRenderServiceRemoteCallback mRemoteServiceCallback =
-            new SelectionToolbarRenderServiceRemoteCallback();
     private final RemoteRenderServiceConnector mRemoteRenderServiceConnector;
 
     private InputManagerInternal mInputManagerInternal;
@@ -67,8 +65,8 @@ public class SelectionToolbarManagerService extends SystemService {
                     .flattenToString();
         }
         final ComponentName serviceComponent = ComponentName.unflattenFromString(serviceName);
-        mRemoteRenderServiceConnector = new RemoteRenderServiceConnector(context,
-                serviceComponent, UserHandle.USER_SYSTEM, mRemoteServiceCallback);
+        mRemoteRenderServiceConnector = new RemoteRenderServiceConnector(context, serviceComponent,
+                UserHandle.USER_SYSTEM, new SelectionToolbarRenderServiceRemoteCallback());
     }
 
     @Override
@@ -98,13 +96,13 @@ public class SelectionToolbarManagerService extends SystemService {
         }
 
         @Override
-        public void hideToolbar(long widgetToken) {
-            mRemoteRenderServiceConnector.hideToolbar(widgetToken);
+        public void hideToolbar() {
+            mRemoteRenderServiceConnector.hideToolbar(Binder.getCallingUid());
         }
 
         @Override
-        public void dismissToolbar(long widgetToken) {
-            mRemoteRenderServiceConnector.dismissToolbar(Binder.getCallingUid(), widgetToken);
+        public void dismissToolbar() {
+            mRemoteRenderServiceConnector.dismissToolbar(Binder.getCallingUid());
         }
 
     }
@@ -152,17 +150,17 @@ public class SelectionToolbarManagerService extends SystemService {
             }
         }
 
-        private void showToolbar(int callingUid, ShowInfo showInfo,
+        private void showToolbar(int uid, ShowInfo showInfo,
                 ISelectionToolbarCallback callback) {
-            run(s -> s.onShow(callingUid, showInfo, callback));
+            run(s -> s.onShow(uid, showInfo, callback));
         }
 
-        private void hideToolbar(long widgetToken) {
-            run(s -> s.onHide(widgetToken));
+        private void hideToolbar(int uid) {
+            run(s -> s.onHide(uid));
         }
 
-        private void dismissToolbar(int callingUid, long widgetToken) {
-            run(s -> s.onDismiss(callingUid, widgetToken));
+        private void dismissToolbar(int uid) {
+            run(s -> s.onDismiss(uid));
         }
     }
 }

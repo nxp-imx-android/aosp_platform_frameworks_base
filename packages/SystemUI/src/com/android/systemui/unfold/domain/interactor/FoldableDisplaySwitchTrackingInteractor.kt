@@ -72,20 +72,24 @@ sealed interface DisplaySwitchState {
 
     /**
      * Displays are in a stable state aka not in the process of switching. If we couldn't track
-     * display switch properly because end event never arrived within [SCREEN_EVENT_TIMEOUT],
-     * [timedOut] is set to true.
+     * display switch properly because end event never arrived within
+     * [FoldableDisplaySwitchTrackingInteractor.SCREEN_EVENT_TIMEOUT], [timedOut] is set to true.
      */
     data class Idle(override val newDeviceState: DeviceState, val timedOut: Boolean = false) :
         DisplaySwitchState
 
-    /** Displays are currently switching. This state can only come directly after [Idle] state. */
+    /**
+     * Displays are currently switching. This state can only come directly after [Idle] state.
+     * Switching might not be visible to the user, that is, folding device with screen off still
+     * emits Switching event as we're swapping default displays.
+     */
     data class Switching(override val newDeviceState: DeviceState) : DisplaySwitchState
 
     /**
      * Switching displays happened multiple times before [Idle] state could settle. This state will
-     * hold until no new display switch related events are sent within [COOL_DOWN_DURATION] window.
-     * This event can only happen directly after [Switching] state and is always directly followed
-     * by [Idle] state.
+     * hold until no new display switch related events are sent within
+     * [FoldableDisplaySwitchTrackingInteractor.COOL_DOWN_DURATION] window. This event can only
+     * happen directly after [Switching] state and is always directly followed by [Idle] state.
      */
     data class Corrupted(override val newDeviceState: DeviceState) : DisplaySwitchState
 

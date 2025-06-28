@@ -35,7 +35,6 @@ import java.util.Objects;
  * @see ObservingDevicePresenceRequest.Builder#setUuid(ParcelUuid)
  * @see ObservingDevicePresenceRequest.Builder#setAssociationId(int)
  */
-@FlaggedApi(Flags.FLAG_DEVICE_PRESENCE)
 public final class DevicePresenceEvent implements Parcelable {
 
     /** @hide */

@@ -575,11 +575,24 @@ public final class SplitLayout implements DisplayInsetsController.OnInsetsChange
         // Estimate position by previous ratio.
         final float length =
                 (float) (mIsLeftRightSplit ? mRootBounds.width() : mRootBounds.height());
-        final int estimatePosition = (int) (length * snapRatio);
+        int estimatedPosition = (int) (length * snapRatio);
+
+        if (Flags.enableFlexibleTwoAppSplit()) {
+            // If we are able to find an exact match for the previous snapPosition (before
+            // rotation), use it. If not, just rely on the position estimate.
+            int previousState = mSplitState.get();
+            Integer exactPosition = mDividerSnapAlgorithm.getPositionBySnapPosition(previousState);
+            if (exactPosition != null) {
+                estimatedPosition = exactPosition;
+            }
+        }
+
         // Init divider position by estimated position using current bounds snap algorithm.
-        mDividerPosition = mDividerSnapAlgorithm.calculateNonDismissingSnapTarget(
-                estimatePosition).position;
+        SnapTarget newSnapTarget = mDividerSnapAlgorithm.calculateNonDismissingSnapTarget(
+                estimatedPosition);
+        mDividerPosition = newSnapTarget.position;
         updateBounds(mDividerPosition);
+        mSplitState.set(newSnapTarget.snapPosition);
     }
 
     private void updateBounds(int position) {

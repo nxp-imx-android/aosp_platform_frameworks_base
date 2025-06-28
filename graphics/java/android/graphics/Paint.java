@@ -34,7 +34,6 @@ import android.annotation.Size;
 import android.app.compat.CompatChanges;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledSince;
-import android.compat.annotation.NoLogging;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.graphics.fonts.FontVariationAxis;
 import android.graphics.text.TextRunShaper;
@@ -1926,7 +1925,6 @@ public class Paint {
      * @hide
      */
     @ChangeId
-    @NoLogging
     @EnabledSince(targetSdkVersion = Build.VERSION_CODES.VANILLA_ICE_CREAM)
     public static final long DEPRECATE_UI_FONT = 279646685L;
 

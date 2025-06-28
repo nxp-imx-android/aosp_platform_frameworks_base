@@ -63,7 +63,7 @@ public abstract class MediaOutputAdapterBase extends RecyclerView.Adapter<Recycl
     private static final String TAG = "MediaOutputAdapterBase";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
     protected final List<MediaItem> mMediaItemList = new CopyOnWriteArrayList<>();
-    private boolean mShouldGroupSelectedMediaItems = Flags.enableOutputSwitcherDeviceGrouping();
+    private boolean mShouldGroupSelectedMediaItems = true;
 
     public MediaOutputAdapterBase(MediaSwitchingController controller) {
         mController = controller;

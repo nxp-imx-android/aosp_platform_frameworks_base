@@ -26,6 +26,7 @@ data class ActionViewModel(
     val onLongClick: () -> Unit,
     val actionType: ActionType,
     val oneTapEnabled: Boolean = false,
+    val oneTapDelayMs: Long = 0L,
 )
 
 enum class ActionType {

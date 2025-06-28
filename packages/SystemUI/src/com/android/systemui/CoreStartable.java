@@ -46,7 +46,7 @@ import java.io.PrintWriter;
  *  </pre>
  *
  *
- * @see SystemUIApplication#startSystemUserServicesIfNeeded()
+ * @see com.android.systemui.application.SystemUIApplication#startSystemUserServicesIfNeeded()
  */
 public interface CoreStartable extends Dumpable {
     String STARTABLE_DEPENDENCIES = "startable_dependencies";

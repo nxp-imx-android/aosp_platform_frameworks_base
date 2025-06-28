@@ -49,7 +49,7 @@ fun FirstTimeEducation(horizontalAlignment: Alignment.Horizontal, modifier: Modi
             Text(
                 text = stringResource(R.string.ambientcue_first_time_edu_title),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 text = stringResource(R.string.ambientcue_first_time_edu_text),

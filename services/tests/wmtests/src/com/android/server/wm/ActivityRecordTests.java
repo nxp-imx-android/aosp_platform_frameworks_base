@@ -2463,6 +2463,22 @@ public class ActivityRecordTests extends WindowTestsBase {
     }
 
     @Test
+    @EnableFlags(Flags.FLAG_ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX)
+    public void testSetPictureInPictureParams() {
+        final ActivityRecord activity = createActivityWith2LevelTask();
+        final Task task = activity.getTask();
+        final Task rootTask = task.getRootTask();
+        final PictureInPictureParams params = new PictureInPictureParams
+                .Builder()
+                .setAutoEnterEnabled(true)
+                .build();
+
+        activity.setPictureInPictureParams(params);
+        verify(rootTask, times(0)).onPictureInPictureParamsChanged();
+        verify(task, times(1)).onPictureInPictureParamsChanged();
+    }
+
+    @Test
     public void testActivityServiceConnectionsHolder() {
         final ActivityRecord activity = new ActivityBuilder(mAtm).setCreateTask(true).build();
         final ActivityServiceConnectionsHolder<Object> holder =

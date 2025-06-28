@@ -372,9 +372,8 @@ public class InfoMediaManagerTest {
         assertThat(mInfoMediaManager.mMediaDevices).hasSize(4);
         assertThat(mInfoMediaManager.mMediaDevices.get(0).getId()).isEqualTo(TEST_ID);
         assertThat(mInfoMediaManager.mMediaDevices.get(1).getId()).isEqualTo(TEST_ID_1);
-        assertThat(mInfoMediaManager.mMediaDevices.get(2).getId()).isEqualTo(TEST_ID_4);
-        assertThat(mInfoMediaManager.mMediaDevices.get(2).isSuggestedDevice()).isTrue();
-        assertThat(mInfoMediaManager.mMediaDevices.get(3).getId()).isEqualTo(TEST_ID_3);
+        assertThat(mInfoMediaManager.mMediaDevices.get(2).getId()).isEqualTo(TEST_ID_3);
+        assertThat(mInfoMediaManager.mMediaDevices.get(3).getId()).isEqualTo(TEST_ID_4);
     }
 
     private RouteListingPreference setUpPreferenceList(boolean useSystemOrdering) {
@@ -383,10 +382,8 @@ public class InfoMediaManagerTest {
         final List<RouteListingPreference.Item> preferenceItemList = new ArrayList<>();
         RouteListingPreference.Item item1 = new RouteListingPreference.Item.Builder(
                 TEST_ID_3).build();
-        RouteListingPreference.Item item2 =
-                new RouteListingPreference.Item.Builder(TEST_ID_4)
-                        .setFlags(RouteListingPreference.Item.FLAG_SUGGESTED)
-                        .build();
+        RouteListingPreference.Item item2 = new RouteListingPreference.Item.Builder(
+                TEST_ID_4).build();
         preferenceItemList.add(item1);
         preferenceItemList.add(item2);
 
@@ -1550,31 +1547,6 @@ public class InfoMediaManagerTest {
                 .isEqualTo(LocalMediaManager.MediaDeviceState.STATE_CONNECTED);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
-    @Test
-    public void composePreferenceRouteListing_useSystemOrderingIsFalse() {
-        RouteListingPreference routeListingPreference = setUpPreferenceList(false);
-
-        List<RouteListingPreference.Item> routeOrder =
-                Api34Impl.composePreferenceRouteListing(routeListingPreference);
-
-        assertThat(routeOrder.get(0).getRouteId()).isEqualTo(TEST_ID_3);
-        assertThat(routeOrder.get(1).getRouteId()).isEqualTo(TEST_ID_4);
-    }
-
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
-    @Test
-    public void composePreferenceRouteListing_useSystemOrderingIsTrue() {
-        RouteListingPreference routeListingPreference = setUpPreferenceList(true);
-
-        List<RouteListingPreference.Item> routeOrder =
-                Api34Impl.composePreferenceRouteListing(routeListingPreference);
-
-        assertThat(routeOrder.get(0).getRouteId()).isEqualTo(TEST_ID_4);
-        assertThat(routeOrder.get(1).getRouteId()).isEqualTo(TEST_ID_3);
-    }
-
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void arrangeRouteListByPreference_useSystemOrderingIsFalse() {
         RouteListingPreference routeListingPreference = setUpPreferenceList(false);
@@ -1591,7 +1563,6 @@ public class InfoMediaManagerTest {
         assertThat(routeOrder.get(3).getId()).isEqualTo(TEST_ID_1);
     }
 
-    @EnableFlags(Flags.FLAG_ENABLE_OUTPUT_SWITCHER_DEVICE_GROUPING)
     @Test
     public void arrangeRouteListByPreference_useSystemOrderingIsTrue() {
         RouteListingPreference routeListingPreference = setUpPreferenceList(true);

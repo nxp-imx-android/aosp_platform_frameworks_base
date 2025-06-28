@@ -17,10 +17,12 @@
 package com.android.server.companion.virtual.camera;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.companion.virtual.camera.IVirtualCameraCallback;
 import android.companion.virtual.camera.VirtualCameraConfig;
 import android.companion.virtual.camera.VirtualCameraStreamConfig;
 import android.companion.virtualcamera.Format;
+import android.companion.virtualcamera.ICaptureResultConsumer;
 import android.companion.virtualcamera.IVirtualCameraService;
 import android.companion.virtualcamera.SupportedStreamConfiguration;
 import android.companion.virtualcamera.VirtualCameraConfiguration;
@@ -28,15 +30,15 @@ import android.companion.virtualcamera.VirtualCameraMetadata;
 import android.companion.virtualdevice.flags.Flags;
 import android.graphics.ImageFormat;
 import android.graphics.PixelFormat;
+import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.impl.CameraMetadataNative;
+import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.util.Slog;
 import android.view.Surface;
-
-import java.util.Collections;
 
 /** Utilities to convert the client side classes to the virtual camera service ones. */
 public final class VirtualCameraConversionUtil {
@@ -84,6 +86,33 @@ public final class VirtualCameraConversionUtil {
             }
 
             @Override
+            public void onConfigureSession(VirtualCameraMetadata sessionParameters,
+                    ICaptureResultConsumer captureResultConsumer) throws RemoteException {
+                if (Flags.virtualCameraMetadata()) {
+                    CaptureRequest captureRequest = null;
+                    if (sessionParameters != null) {
+                        captureRequest = convertToCaptureRequest(sessionParameters);
+                    }
+
+                    android.companion.virtual.camera.ICaptureResultConsumer consumer =
+                            new android.companion.virtual.camera.ICaptureResultConsumer() {
+                                @Override
+                                public void sendCaptureResult(long timestamp,
+                                        CameraMetadataNative captureResult) throws RemoteException {
+                                    captureResultConsumer.sendCaptureResult(timestamp,
+                                            convertToVirtualCameraMetadata(captureResult));
+                                }
+
+                                @Override
+                                public IBinder asBinder() {
+                                    return null;
+                                }
+                            };
+
+                    camera.onConfigureSession(captureRequest, consumer);
+                }
+            }
+            @Override
             public void onStreamConfigured(int streamId, Surface surface, int width, int height,
                     int format) throws RemoteException {
                 camera.onStreamConfigured(streamId, surface, width, height,
@@ -96,15 +125,7 @@ public final class VirtualCameraConversionUtil {
                 CaptureRequest captureRequest = null;
 
                 if (Flags.virtualCameraMetadata() && captureRequestSettings != null) {
-                    CameraMetadataNative metadataNative = convertToCameraMetadataNative(
-                            captureRequestSettings);
-                    if (metadataNative != null) {
-                        // Only the settings of the CaptureRequest are useful to the VD owner app
-                        captureRequest = new CaptureRequest.Builder(metadataNative,
-                                false /* reprocess */,
-                                0 /* reprocessableSessionId */, "" /* logicalCameraId */,
-                                Collections.emptySet() /* physicalCameraIdSet */).build();
-                    }
+                    captureRequest = convertToCaptureRequest(captureRequestSettings);
                 }
 
                 camera.onProcessCaptureRequest(streamId, frameId, captureRequest);
@@ -150,14 +171,23 @@ public final class VirtualCameraConversionUtil {
             return null;
         }
 
+        return convertToVirtualCameraMetadata(cameraCharacteristics.getNativeMetadata());
+    }
+
+    private static VirtualCameraMetadata convertToVirtualCameraMetadata(
+            CameraMetadataNative metadataNative) {
+        if (metadataNative == null) {
+            return null;
+        }
+
         VirtualCameraMetadata virtualCameraMetadata = new VirtualCameraMetadata();
         Parcel parcel = Parcel.obtain();
         try {
-            cameraCharacteristics.getNativeMetadata().writeToParcel(parcel, 0);
+            metadataNative.writeToParcel(parcel, 0);
             parcel.setDataPosition(0);
-            virtualCameraMetadata.metadata = parcel.readBlob();
+            virtualCameraMetadata.metadata = parcel.marshall();
         } catch (Exception e) {
-            Slog.w(TAG, "Failed to convert CameraCharacteristics to VirtualCameraMetadata.");
+            Slog.w(TAG, "Failed to convert CameraMetadataNative to VirtualCameraMetadata.");
             return null;
         } finally {
             parcel.recycle();
@@ -180,5 +210,18 @@ public final class VirtualCameraConversionUtil {
             parcel.recycle();
         }
         return cameraMetadataNative;
+    }
+
+    private static @Nullable CaptureRequest convertToCaptureRequest(
+            @NonNull VirtualCameraMetadata virtualCameraMetadata) {
+        CameraMetadataNative metadataNative = convertToCameraMetadataNative(virtualCameraMetadata);
+        if (metadataNative != null) {
+            // Only the settings of the CaptureRequest are useful to the VD owner app
+            return new CaptureRequest.Builder(metadataNative, false /* reprocess */,
+                    CameraCaptureSession.SESSION_ID_NONE /* reprocessableSessionId */,
+                    "" /* logicalCameraId */, null /* physicalCameraIdSet */).build();
+        }
+
+        return null;
     }
 }

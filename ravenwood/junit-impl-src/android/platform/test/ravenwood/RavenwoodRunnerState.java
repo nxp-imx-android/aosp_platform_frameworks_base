@@ -15,7 +15,7 @@
  */
 package android.platform.test.ravenwood;
 
-import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_VERBOSE_LOGGING;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_VERBOSE_LOGGING;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -25,6 +25,7 @@ import android.util.Log;
 import android.util.Pair;
 
 import com.android.ravenwood.RavenwoodRuntimeNative;
+import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import org.junit.runner.Description;
 
@@ -42,7 +43,7 @@ import java.util.Set;
  * All members must be called from the runner's main thread.
  */
 public final class RavenwoodRunnerState {
-    private static final String TAG = com.android.ravenwood.common.RavenwoodCommonUtils.TAG;
+    private static final String TAG = RavenwoodInternalUtils.TAG;
     private static final String RAVENWOOD_RULE_ERROR =
             "RavenwoodRule(s) are not executed in the correct order";
 

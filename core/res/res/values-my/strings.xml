@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"မိုဘိုင်းကွန်ရက် လုံခြုံရေး"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"အသွင်ဝှက်ခြင်း၊ အသွင်ဝှက်မထားသော ကွန်ရက်များအတွက် အကြောင်းကြားချက်များ"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"စက် ID သုံးထားသည်"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> တွင် သင့် <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> ဆင်းမ်ကတ်ကို သုံးနေစဉ် အနီးရှိ ကွန်ရက်သည် စက်ပစ္စည်း၏ သီးသန့် ID (IMSI (သို့) IMEI) ကို မှတ်တမ်းတင်ထားသည်"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> တွင် သင့် <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> ဆင်းမ်ကတ်ကို သုံးနေစဉ် အနီးရှိ ကွန်ရက်သည် စက်ပစ္စည်း၏ သီးသန့် ID (IMSI (သို့) IMEI) ကို မှတ်တမ်းတင်ထားသည်။\n\nဆိုလိုသည်မှာ သင့်တည်နေရာ၊ လုပ်ဆောင်ချက် (သို့) အထောက်အထားကို မှတ်တမ်းတင်ထားသည်။ ၎င်းသည် သာမန်လုပ်ဆောင်မှုဖြစ်သော်လည်း ကိုယ်ရေးအချက်အလက်လုံခြုံမှုနှင့် ပတ်သက်၍ အချို့သူများအတွက် စိုးရိမ်စရာ ဖြစ်နိုင်သည်။"</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"အသွင်ဝှက်ထားသော ကွန်ရက် <xliff:g id="NETWORK_NAME">%1$s</xliff:g> သို့ ချိတ်ဆက်ထားသည်"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> ဆင်းမ်ကတ် ချိတ်ဆက်မှုသည် ယခု ပိုမိုလုံခြုံပါပြီ"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"အသွင်ဝှက်မထားသော ကွန်ရက်သို့ ချိတ်ဆက်ထားသည်"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ဒေတာအချက်ပြမှုကို ပိတ်လိုက်ပါပြီ။"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"‘လက်ဗွေသုံး လော့ခ်ဖွင့်ခြင်း’ တွင် ပြဿနာရှိနေသလား။"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"လော့ခ်ဖွင့်ရာတွင် ပိုအဆင်ပြေစေရန်အတွက် အကြံပြုချက်များကြည့်ရန် တို့ပါ"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"မှိတ်တုတ်မလင်းပါနှင့်"</string>
 </resources>

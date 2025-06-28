@@ -27,10 +27,12 @@ import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_DISPLAY_SI
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_FULLSCREEN;
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_SPLIT_SCREEN;
 import static android.content.pm.PackageManager.USER_MIN_ASPECT_RATIO_UNSET;
+import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_MIN_ASPECT_RATIO_OVERRIDE;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_ORIENTATION_OVERRIDE;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_FULLSCREEN_OVERRIDE;
 import static android.view.WindowManager.PROPERTY_COMPAT_ALLOW_USER_ASPECT_RATIO_OVERRIDE;
+import static android.window.DesktopExperienceFlags.LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY;
 
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_ATM;
 import static com.android.server.wm.ActivityTaskManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -40,6 +42,7 @@ import static com.android.server.wm.AppCompatUtils.isChangeEnabled;
 import static com.android.server.wm.AppCompatUtils.isDisplayIgnoreActivitySizeRestrictions;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -79,6 +82,8 @@ class AppCompatAspectRatioOverrides {
     private final AppCompatDeviceStateQuery mAppCompatDeviceStateQuery;
     @NonNull
     private final AppCompatReachabilityOverrides mAppCompatReachabilityOverrides;
+    @Nullable
+    private Boolean mIsSystemFullscreenOverrideEnabled;
 
     AppCompatAspectRatioOverrides(@NonNull ActivityRecord activityRecord,
             @NonNull AppCompatConfiguration appCompatConfiguration,
@@ -161,13 +166,46 @@ class AppCompatAspectRatioOverrides {
     }
 
     boolean isSystemOverrideToFullscreenEnabled() {
-        final int aspectRatio = getUserMinAspectRatioOverrideCode();
-
-        return isChangeEnabled(mActivityRecord, OVERRIDE_ANY_ORIENTATION_TO_USER)
-                && !mAllowOrientationOverrideOptProp.isFalse()
-                && (aspectRatio == USER_MIN_ASPECT_RATIO_UNSET
-                    || aspectRatio == USER_MIN_ASPECT_RATIO_FULLSCREEN);
+        return isSystemOverrideToFullscreenEnabled(mActivityRecord.mDisplayContent);
     }
+
+    boolean isSystemOverrideToFullscreenEnabled(@Nullable DisplayContent dc) {
+        if (mIsSystemFullscreenOverrideEnabled != null) {
+            return mIsSystemFullscreenOverrideEnabled;
+        }
+        final int aspectRatio = getUserMinAspectRatioOverrideCode();
+        final boolean baseOverride =
+                isChangeEnabled(mActivityRecord, OVERRIDE_ANY_ORIENTATION_TO_USER)
+                        && !mAllowOrientationOverrideOptProp.isFalse()
+                        && (aspectRatio == USER_MIN_ASPECT_RATIO_UNSET
+                            || aspectRatio == USER_MIN_ASPECT_RATIO_FULLSCREEN);
+
+        if (dc != null
+                && LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY.isTrue()) {
+            // If attached to display, cache full-screen override to maintain consistent
+            // override behaviour when activity is moved between displays.
+            // Only apply full-screen override if activity was started in default display.
+            mIsSystemFullscreenOverrideEnabled = baseOverride
+                    && dc.getDisplayId() == DEFAULT_DISPLAY;
+            return mIsSystemFullscreenOverrideEnabled;
+        }
+
+        return baseOverride;
+    }
+
+    boolean hasSystemFullscreenOverrideCache() {
+        return mIsSystemFullscreenOverrideEnabled == null
+                && LIMIT_SYSTEM_FULLSCREEN_OVERRIDE_TO_DEFAULT_DISPLAY.isTrue();
+    }
+
+    boolean resetSystemFullscreenOverrideCache() {
+        if (mIsSystemFullscreenOverrideEnabled != null) {
+            mIsSystemFullscreenOverrideEnabled = null;
+            return true;
+        }
+        return false;
+    }
+
 
     /**
      * Whether we should enable users to resize the current app.
@@ -183,10 +221,18 @@ class AppCompatAspectRatioOverrides {
     }
 
     /**
-     * Whether to ignore fixed orientation, aspect ratio and resizability of activity.
+     * Whether to ignore fixed orientation, aspect ratio, and resizability of the activity.
      */
     boolean hasFullscreenOverride() {
         return shouldApplyUserFullscreenOverride() || isSystemOverrideToFullscreenEnabled()
+                || shouldIgnoreActivitySizeRestrictionsForDisplay();
+    }
+
+    /**
+     * Whether to ignore fixed orientation, aspect ratio, and resizability of the activity.
+     */
+    boolean hasFullscreenOverride(@NonNull DisplayContent dc) {
+        return shouldApplyUserFullscreenOverride() || isSystemOverrideToFullscreenEnabled(dc)
                 || shouldIgnoreActivitySizeRestrictionsForDisplay();
     }
 

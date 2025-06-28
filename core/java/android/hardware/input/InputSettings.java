@@ -25,7 +25,6 @@ import static com.android.hardware.input.Flags.mouseSwapPrimaryButton;
 import static com.android.hardware.input.Flags.pointerAcceleration;
 import static com.android.hardware.input.Flags.touchpadDisable;
 import static com.android.hardware.input.Flags.touchpadSystemGestureDisable;
-import static com.android.hardware.input.Flags.touchpadThreeFingerTapShortcut;
 import static com.android.hardware.input.Flags.touchpadVisualizer;
 import static com.android.input.flags.Flags.FLAG_KEYBOARD_REPEAT_KEYS;
 import static com.android.input.flags.Flags.keyboardRepeatKeys;
@@ -454,15 +453,6 @@ public class InputSettings {
     }
 
     /**
-     * Returns true if the feature flag for the touchpad three-finger tap shortcut is enabled.
-     *
-     * @hide
-     */
-    public static boolean isTouchpadThreeFingerTapShortcutFeatureFlagEnabled() {
-        return isCustomizableInputGesturesFeatureFlagEnabled() && touchpadThreeFingerTapShortcut();
-    }
-
-    /**
      * Returns true if the feature flag for toggling the mouse scrolling acceleration is enabled.
      *
      * @hide
@@ -608,8 +598,7 @@ public class InputSettings {
         int customizedShortcut = Settings.System.getIntForUser(context.getContentResolver(),
                 Settings.System.TOUCHPAD_THREE_FINGER_TAP_CUSTOMIZATION,
                 KeyGestureEvent.KEY_GESTURE_TYPE_UNSPECIFIED, UserHandle.USER_CURRENT);
-        return customizedShortcut != KeyGestureEvent.KEY_GESTURE_TYPE_UNSPECIFIED
-                && isTouchpadThreeFingerTapShortcutFeatureFlagEnabled();
+        return customizedShortcut != KeyGestureEvent.KEY_GESTURE_TYPE_UNSPECIFIED;
     }
 
     /**
@@ -1271,6 +1260,7 @@ public class InputSettings {
      * @hide
      */
     @FlaggedApi(FLAG_KEYBOARD_A11Y_MOUSE_KEYS)
+    @RequiresPermission(Manifest.permission.WRITE_SETTINGS)
     public static void setPrimaryKeysForMouseKeysEnabled(
             @NonNull Context context, boolean enabled) {
         if (!isAccessibilityMouseKeysFeatureFlagEnabled()) {

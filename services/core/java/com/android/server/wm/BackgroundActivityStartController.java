@@ -48,8 +48,6 @@ import static com.android.window.flags.Flags.balAdditionalLogging;
 import static com.android.window.flags.Flags.balAdditionalStartModes;
 import static com.android.window.flags.Flags.balDontBringExistingBackgroundTaskStackToFg;
 import static com.android.window.flags.Flags.balShowToastsBlocked;
-import static com.android.window.flags.Flags.balStrictModeGracePeriod;
-import static com.android.window.flags.Flags.balStrictModeRo;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static java.util.Objects.requireNonNull;
@@ -899,31 +897,29 @@ public class BackgroundActivityStartController {
             showToast("BAL blocked. goo.gle/android-bal");
         }
         BalVerdict verdict = statsLog(BalVerdict.BLOCK, state);
-        if (balStrictModeRo()) {
-            String abortDebugMessage;
-            if (state.isPendingIntent()) {
-                abortDebugMessage =
-                        "PendingIntent Activity start blocked in " + state.mRealCallingPackage
-                                + ". "
-                                + "PendingIntent was created in " + state.mCallingPackage
-                                + ". "
-                                + (state.mResultForRealCaller.allows()
-                                ? state.mRealCallingPackage
-                                + " could opt in to grant BAL privileges when sending. "
-                                : "")
-                                + (state.mResultForCaller.allows()
-                                ? state.mCallingPackage
-                                + " could opt in to grant BAL privileges when creating."
-                                : "")
-                                + "The intent would have started " + state.mIntent.getComponent();
-            } else {
-                abortDebugMessage = "Activity start blocked. "
-                        + "The intent would have started " + state.mIntent.getComponent();
-            }
-            strictModeLaunchAborted(state.mCallingUid, abortDebugMessage);
-            if (!state.callerIsRealCaller()) {
-                strictModeLaunchAborted(state.mRealCallingUid, abortDebugMessage);
-            }
+        String abortDebugMessage;
+        if (state.isPendingIntent()) {
+            abortDebugMessage =
+                    "PendingIntent Activity start blocked in " + state.mRealCallingPackage
+                            + ". "
+                            + "PendingIntent was created in " + state.mCallingPackage
+                            + ". "
+                            + (state.mResultForRealCaller.allows()
+                            ? state.mRealCallingPackage
+                            + " could opt in to grant BAL privileges when sending. "
+                            : "")
+                            + (state.mResultForCaller.allows()
+                            ? state.mCallingPackage
+                            + " could opt in to grant BAL privileges when creating."
+                            : "")
+                            + "The intent would have started " + state.mIntent.getComponent();
+        } else {
+            abortDebugMessage = "Activity start blocked. "
+                    + "The intent would have started " + state.mIntent.getComponent();
+        }
+        strictModeLaunchAborted(state.mCallingUid, abortDebugMessage);
+        if (!state.callerIsRealCaller()) {
+            strictModeLaunchAborted(state.mRealCallingUid, abortDebugMessage);
         }
         return verdict;
     }
@@ -1970,12 +1966,10 @@ public class BackgroundActivityStartController {
         }
 
         if (logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_GRACE_PERIOD)) {
-            if (balStrictModeRo() && balStrictModeGracePeriod()) {
-                String abortDebugMessage = "Activity start is only allowed by grace period. "
-                        + "This may stop working in the future. "
-                        + "intent: " + state.mIntent;
-                strictModeLaunchAborted(state.mRealCallingUid, abortDebugMessage);
-            }
+            String abortDebugMessage = "Activity start is only allowed by grace period. "
+                    + "This may stop working in the future. "
+                    + "intent: " + state.mIntent;
+            strictModeLaunchAborted(state.mRealCallingUid, abortDebugMessage);
         }
         logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_NON_APP_VISIBLE_WINDOW);
         logIfOnlyAllowedBy(finalVerdict, state, BAL_ALLOW_NOTIFICATION_TOKEN);

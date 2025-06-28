@@ -39,7 +39,7 @@ class RemoteDeviceTaskList {
     private final int mAssociationId;
     private final String mDeviceName;
     private final Consumer<RemoteTask> mOnMostRecentTaskChangedListener;
-    private PriorityQueue<RemoteTaskInfo> mTasks;
+    private final PriorityQueue<RemoteTaskInfo> mTasks;
 
     RemoteDeviceTaskList(
         int associationId,
@@ -120,6 +120,29 @@ class RemoteDeviceTaskList {
             boolean shouldNotifyListeners
                 = (mTasks.peek() != null && mTasks.peek().getId() == taskId);
             mTasks.removeIf(task -> task.getId() == taskId);
+            if (shouldNotifyListeners) {
+                Slog.v(
+                    TAG,
+                    "Notifying most recent task changed for association: " + mAssociationId);
+                mOnMostRecentTaskChangedListener.accept(getMostRecentTask());
+            }
+        }
+    }
+
+    // Replaces tasks with the same ID as provided and notifies listeners.
+    void updateTask(RemoteTaskInfo taskInfo) {
+        synchronized(mTasks) {
+            Slog.v(
+                TAG,
+                "Updating task: " + taskInfo.getId() + " for association: " + mAssociationId);
+            int previousTopTaskId
+                = mTasks.peek() == null ? -1 : mTasks.peek().getId();
+            mTasks.removeIf(task -> task.getId() == taskInfo.getId());
+            mTasks.add(taskInfo);
+            boolean isTopTaskDifferent = previousTopTaskId != mTasks.peek().getId();
+            boolean didTopTaskChange
+                = mTasks.peek() != null && mTasks.peek().getId() == taskInfo.getId();
+            boolean shouldNotifyListeners = isTopTaskDifferent || didTopTaskChange;
             if (shouldNotifyListeners) {
                 Slog.v(
                     TAG,

@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Mobil tarmoq xavfsizligi"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Shifrlash, shifrlanmagan tarmoqlar haqidagi bildirishnomalar"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Qurilma identifikatoriga ruxsat olingan"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> da SIM karta (<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>) ishlatilganda atrofdagi tarmoqda qurilmaning unikal identifikatori (IMSI yoki IMEI) qayd qilingan"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> da SIM karta (<xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g>) ishlatilganda atrofdagi tarmoqda qurilmaning unikal identifikatori (IMSI yoki IMEI) qayd qilingan.\n\nJoylashuvingiz, faolligingiz yoki kimligingiz qayd qilingan. Bu odatiy holat boʻlsa ham, maxfiyligi haqida xavotirlanuvchi odamlar uchun muammo boʻlishi mumkin."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Shifrlangan tarmoqqa (<xliff:g id="NETWORK_NAME">%1$s</xliff:g>) ulandi"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"Endi SIM karta (<xliff:g id="NETWORK_NAME">%1$s</xliff:g>) aloqasi yanada xavfsiz"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Shifrlanmagan tarmoqqa ulandi"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB maʼlumotlar signali faolsizlantirilgan."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"Barmoq izi bilan ochishda muammo bormi?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"Qulfdan chiqarish tajribangizni yaxshilash borasida maslahatlar bilan tanishish uchun bosing"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"Miltillamasin"</string>
 </resources>

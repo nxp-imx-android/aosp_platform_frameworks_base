@@ -5212,7 +5212,7 @@ public class UserManager {
      * including profiles.
      *
      * <p>Returns {@code null} if there is no previous user, for example if there
-     * is only one full user (i.e. only one user which is not a profile) on the device.
+     * is only one user capable of being in the foreground on the device.
      *
      * <p>This method may be used for example to find the user to switch back to if the
      * current user is removed, or if creating a new user is aborted.
@@ -6674,9 +6674,12 @@ public class UserManager {
      *
      * <p>Starting from Android version {@link android.os.Build.VERSION_CODES#UPSIDE_DOWN_CAKE},
      * it is possible for there to be multiple managing apps on the device with the ability to set
-     * restrictions, e.g. an Enterprise Device Policy Controller (DPC) and a Supervision admin.
-     * This API will only to return the restrictions set by the DPCs. To retrieve restrictions
-     * set by all managing apps, use
+     * app restrictions, e.g. an Enterprise Device Policy Controller (DPC) and a Supervision admin.
+     * This method will always return the app restrictions set by the DPC, if the DPC has set one.
+     * Beginning from SDK level 36.1, if the DPC has not set any app restriction while other
+     * managing apps have set some, this method will return app restrictions set by one of those
+     * managing apps. There is no guarantee on which managing apps app restriction will be returned.
+     * To retrieve restrictions set by all managing apps, use
      * {@link android.content.RestrictionsManager#getApplicationRestrictionsPerAdmin} instead.
      *
      * @param packageName the package name of the calling application
@@ -6700,11 +6703,17 @@ public class UserManager {
     /**
      * <p>Starting from Android version {@link android.os.Build.VERSION_CODES#UPSIDE_DOWN_CAKE},
      * it is possible for there to be multiple managing apps on the device with the ability to set
-     * restrictions, e.g. an Enterprise Device Policy Controller (DPC) and a Supervision admin.
-     * This API will only to return the restrictions set by the DPCs. To retrieve restrictions
-     * set by all managing apps, use
+     * app restrictions, e.g. an Enterprise Device Policy Controller (DPC) and a Supervision admin.
+     * This method will always return the app restrictions set by the DPC, if the DPC has set one.
+     * Beginning from SDK level 36.1, if the DPC has not set any app restriction while other
+     * managing apps have set some, this method will return app restrictions set by one of those
+     * managing apps. There is no guarantee on which managing apps app restriction will be returned.
+     * To retrieve restrictions set by all managing apps, use
      * {@link android.content.RestrictionsManager#getApplicationRestrictionsPerAdmin} instead.
      *
+     * @deprecated Retrieve restrictions set by all agents using
+     * {@link android.content.RestrictionsManager#getApplicationRestrictionsPerAdmin} and merge the
+     * result.
      * @hide
      */
     @WorkerThread

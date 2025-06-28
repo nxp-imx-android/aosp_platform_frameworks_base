@@ -10377,11 +10377,11 @@ package android.companion {
     method @FlaggedApi("android.companion.unpair_associated_device") @RequiresPermission(android.Manifest.permission.BLUETOOTH_CONNECT) public boolean removeBond(int);
     method public void requestNotificationAccess(android.content.ComponentName);
     method @Deprecated @FlaggedApi("android.companion.association_verification") public void setDeviceId(int, @Nullable android.companion.DeviceId);
-    method @Deprecated @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
-    method @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
+    method @Deprecated @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
+    method @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void startObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
     method public void startSystemDataTransfer(int, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<java.lang.Void,android.companion.CompanionException>) throws android.companion.DeviceNotAssociatedException;
-    method @Deprecated @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
-    method @FlaggedApi("android.companion.device_presence") @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
+    method @Deprecated @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull String) throws android.companion.DeviceNotAssociatedException;
+    method @RequiresPermission(android.Manifest.permission.REQUEST_OBSERVE_COMPANION_DEVICE_PRESENCE) public void stopObservingDevicePresence(@NonNull android.companion.ObservingDevicePresenceRequest);
     field public static final String EXTRA_ASSOCIATION = "android.companion.extra.ASSOCIATION";
     field @Deprecated public static final String EXTRA_DEVICE = "android.companion.extra.DEVICE";
     field public static final int FLAG_CALL_METADATA = 1; // 0x1
@@ -10389,7 +10389,7 @@ package android.companion {
     field public static final int RESULT_DISCOVERY_TIMEOUT = 2; // 0x2
     field public static final int RESULT_INTERNAL_ERROR = 3; // 0x3
     field public static final int RESULT_OK = -1; // 0xffffffff
-    field @FlaggedApi("android.companion.association_failure_code") public static final int RESULT_SECURITY_ERROR = 4; // 0x4
+    field public static final int RESULT_SECURITY_ERROR = 4; // 0x4
     field public static final int RESULT_USER_REJECTED = 1; // 0x1
   }
 
@@ -10399,7 +10399,7 @@ package android.companion {
     method public void onAssociationPending(@NonNull android.content.IntentSender);
     method @Deprecated public void onDeviceFound(@NonNull android.content.IntentSender);
     method public abstract void onFailure(@Nullable CharSequence);
-    method @FlaggedApi("android.companion.association_failure_code") public void onFailure(int, @Nullable CharSequence);
+    method public void onFailure(int, @Nullable CharSequence);
   }
 
   public abstract class CompanionDeviceService extends android.app.Service {
@@ -10408,10 +10408,10 @@ package android.companion {
     method @RequiresPermission(android.Manifest.permission.DELIVER_COMPANION_MESSAGES) public final void detachSystemDataTransport(int) throws android.companion.DeviceNotAssociatedException;
     method @Nullable public final android.os.IBinder onBind(@NonNull android.content.Intent);
     method @Deprecated @MainThread public void onDeviceAppeared(@NonNull String);
-    method @Deprecated @FlaggedApi("android.companion.device_presence") @MainThread public void onDeviceAppeared(@NonNull android.companion.AssociationInfo);
+    method @Deprecated @MainThread public void onDeviceAppeared(@NonNull android.companion.AssociationInfo);
     method @Deprecated @MainThread public void onDeviceDisappeared(@NonNull String);
-    method @Deprecated @FlaggedApi("android.companion.device_presence") @MainThread public void onDeviceDisappeared(@NonNull android.companion.AssociationInfo);
-    method @FlaggedApi("android.companion.device_presence") @MainThread public void onDevicePresenceEvent(@NonNull android.companion.DevicePresenceEvent);
+    method @Deprecated @MainThread public void onDeviceDisappeared(@NonNull android.companion.AssociationInfo);
+    method @MainThread public void onDevicePresenceEvent(@NonNull android.companion.DevicePresenceEvent);
     field public static final String SERVICE_INTERFACE = "android.companion.CompanionDeviceService";
   }
 
@@ -10439,7 +10439,7 @@ package android.companion {
   public class DeviceNotAssociatedException extends java.lang.RuntimeException {
   }
 
-  @FlaggedApi("android.companion.device_presence") public final class DevicePresenceEvent implements android.os.Parcelable {
+  public final class DevicePresenceEvent implements android.os.Parcelable {
     ctor public DevicePresenceEvent(int, int, @Nullable android.os.ParcelUuid);
     method public int describeContents();
     method public int getAssociationId();
@@ -10457,7 +10457,7 @@ package android.companion {
     field public static final int NO_ASSOCIATION = -1; // 0xffffffff
   }
 
-  @FlaggedApi("android.companion.device_presence") public final class ObservingDevicePresenceRequest implements android.os.Parcelable {
+  public final class ObservingDevicePresenceRequest implements android.os.Parcelable {
     method public int describeContents();
     method public int getAssociationId();
     method @Nullable public android.os.ParcelUuid getUuid();
@@ -13208,6 +13208,7 @@ package android.content.pm {
     method @FlaggedApi("android.content.pm.provide_info_of_apk_in_apex") @Nullable public String getApexPackageName();
     method @FlaggedApi("android.content.pm.archiving") public long getArchiveTimeMillis();
     method public long getLongVersionCode();
+    method @FlaggedApi("android.content.pm.verification_service") public boolean isAppMetadataVerified();
     method public void setLongVersionCode(long);
     method public void writeToParcel(android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.content.pm.PackageInfo> CREATOR;
@@ -37147,6 +37148,7 @@ package android.provider {
     field public static final String CONTENT_TYPE = "vnd.android.cursor.dir/calls";
     field public static final android.net.Uri CONTENT_URI;
     field public static final android.net.Uri CONTENT_URI_WITH_VOICEMAIL;
+    field @FlaggedApi("com.android.server.telecom.flags.integrated_call_logs") @NonNull public static final android.net.Uri CONTENT_VOIP_URI;
     field public static final String COUNTRY_ISO = "countryiso";
     field public static final String DATA_USAGE = "data_usage";
     field public static final String DATE = "date";
@@ -42016,10 +42018,11 @@ package android.service.chooser {
   @FlaggedApi("android.service.chooser.interactive_chooser") public final class ChooserSession {
     method public void addStateListener(@NonNull java.util.concurrent.Executor, @NonNull android.service.chooser.ChooserSession.StateListener);
     method public void close();
-    method @Nullable public android.graphics.Rect getSize();
+    method @Nullable public android.graphics.Rect getBounds();
     method public int getState();
     method @NonNull public android.service.chooser.ChooserSessionToken getToken();
     method public void removeStateListener(@NonNull android.service.chooser.ChooserSession.StateListener);
+    method public void setTargetsEnabled(boolean);
     method public void updateIntent(@NonNull android.content.Intent);
     field public static final int STATE_CLOSED = 2; // 0x2
     field public static final int STATE_INITIALIZED = 0; // 0x0
@@ -45403,6 +45406,7 @@ package android.telephony {
     field public static final String KEY_ALLOW_EMERGENCY_NUMBERS_IN_CALL_LOG_BOOL = "allow_emergency_numbers_in_call_log_bool";
     field public static final String KEY_ALLOW_EMERGENCY_VIDEO_CALLS_BOOL = "allow_emergency_video_calls_bool";
     field public static final String KEY_ALLOW_HOLD_CALL_DURING_EMERGENCY_BOOL = "allow_hold_call_during_emergency_bool";
+    field @FlaggedApi("com.android.internal.telephony.flags.enable_rtt_hold_carrier_config") public static final String KEY_ALLOW_HOLD_IN_RTT_CALL_BOOL = "allow_hold_in_rtt_call_bool";
     field public static final String KEY_ALLOW_HOLD_VIDEO_CALL_BOOL = "allow_hold_video_call_bool";
     field public static final String KEY_ALLOW_LOCAL_DTMF_TONES_BOOL = "allow_local_dtmf_tones_bool";
     field public static final String KEY_ALLOW_MERGE_WIFI_CALLS_WHEN_VOWIFI_OFF_BOOL = "allow_merge_wifi_calls_when_vowifi_off_bool";
@@ -59040,6 +59044,7 @@ package android.view.textclassifier {
     field public static final String TYPE_OTHER = "other";
     field @FlaggedApi("android.permission.flags.text_classifier_choice_api_enabled") public static final String TYPE_OTP = "otp";
     field public static final String TYPE_PHONE = "phone";
+    field @FlaggedApi("com.android.internal.telephony.flags.redact_otp_sms_api") public static final String TYPE_SMS_RETRIEVER_OTP = "sms_retriever_otp";
     field public static final String TYPE_UNKNOWN = "";
     field public static final String TYPE_URL = "url";
     field public static final String WIDGET_TYPE_CLIPBOARD = "clipboard";

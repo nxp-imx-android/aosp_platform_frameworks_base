@@ -22,7 +22,7 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dreams.shared.model.WhenToDream
-import com.android.systemui.util.settings.repository.UserAwareSecureSettingsRepository
+import com.android.systemui.shared.settings.data.repository.SecureSettingsRepository
 import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -48,7 +48,7 @@ class DreamSettingsRepositoryImpl
 constructor(
     @Background private val bgDispatcher: CoroutineDispatcher,
     @Main private val resources: Resources,
-    private val userAwareSecureSettingsRepository: UserAwareSecureSettingsRepository,
+    private val secureSettingsRepository: SecureSettingsRepository,
 ) : DreamSettingsRepository {
     private val dreamsEnabledByDefault by lazy {
         resources.getBoolean(com.android.internal.R.bool.config_dreamsEnabledByDefault)
@@ -67,21 +67,21 @@ constructor(
     }
 
     override fun getDreamsEnabled(): Flow<Boolean> =
-        userAwareSecureSettingsRepository
+        secureSettingsRepository
             .boolSetting(Settings.Secure.SCREENSAVER_ENABLED, dreamsEnabledByDefault)
             .flowOn(bgDispatcher)
 
     private fun getWhenToDreamSetting(): Flow<WhenToDream> =
         combine(
-                userAwareSecureSettingsRepository.boolSetting(
+                secureSettingsRepository.boolSetting(
                     Settings.Secure.SCREENSAVER_ACTIVATE_ON_SLEEP,
                     dreamsActivatedOnSleepByDefault,
                 ),
-                userAwareSecureSettingsRepository.boolSetting(
+                secureSettingsRepository.boolSetting(
                     Settings.Secure.SCREENSAVER_ACTIVATE_ON_DOCK,
                     dreamsActivatedOnDockByDefault,
                 ),
-                userAwareSecureSettingsRepository.boolSetting(
+                secureSettingsRepository.boolSetting(
                     Settings.Secure.SCREENSAVER_ACTIVATE_ON_POSTURED,
                     dreamsActivatedOnPosturedByDefault,
                 ),

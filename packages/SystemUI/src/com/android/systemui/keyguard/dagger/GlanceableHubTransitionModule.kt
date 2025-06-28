@@ -21,10 +21,9 @@ import com.android.systemui.keyguard.ui.viewmodel.DozingToGlanceableHubTransitio
 import com.android.systemui.keyguard.ui.viewmodel.DreamingToGlanceableHubTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToDozingTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToDreamingTransitionViewModel
-import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToGoneTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToEditModeTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToLockscreenTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.GlanceableHubToOccludedTransitionViewModel
-import com.android.systemui.keyguard.ui.viewmodel.GoneToGlanceableHubTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.LockscreenToGlanceableHubTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.OccludedToGlanceableHubTransitionViewModel
 import dagger.Binds
@@ -75,9 +74,5 @@ interface GlanceableHubTransitionImplModule {
 
     @Binds
     @IntoSet
-    fun fromGone(impl: GoneToGlanceableHubTransitionViewModel): GlanceableHubTransition
-
-    @Binds
-    @IntoSet
-    fun toGone(impl: GlanceableHubToGoneTransitionViewModel): GlanceableHubTransition
+    fun toEditMode(impl: GlanceableHubToEditModeTransitionViewModel): GlanceableHubTransition
 }

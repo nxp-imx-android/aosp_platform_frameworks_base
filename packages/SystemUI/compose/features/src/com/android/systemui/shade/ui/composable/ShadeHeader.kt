@@ -100,7 +100,6 @@ import com.android.systemui.shade.ui.composable.ShadeHeader.Values.ClockScale
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.core.NewStatusBarIcons
 import com.android.systemui.statusbar.phone.StatusBarLocation
-import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.pipeline.battery.ui.composable.BatteryWithEstimate
 import com.android.systemui.statusbar.pipeline.mobile.StatusBarMobileIconKairos
 import com.android.systemui.statusbar.pipeline.mobile.ui.view.ModernShadeCarrierGroupMobileView
@@ -724,10 +723,9 @@ private fun ContentScope.StatusIcons(
     val micSlot = stringResource(id = com.android.internal.R.string.status_bar_microphone)
     val locationSlot = stringResource(id = com.android.internal.R.string.status_bar_location)
 
-    val iconContainer = remember { StatusIconContainer(themedContext, null) }
-    val iconManager = remember {
-        viewModel.createTintedIconManager(iconContainer, StatusBarLocation.QS)
-    }
+    val statusIconContext = LocalStatusIconContext.current
+    val iconContainer = statusIconContext.iconContainer(contentKey)
+    val iconManager = statusIconContext.iconManager(contentKey)
 
     // TODO(408001821): Use composable system status icons here instead.
     AndroidView(
@@ -737,6 +735,7 @@ private fun ContentScope.StatusIcons(
 
             iconContainer
         },
+        onRelease = { viewModel.statusBarIconController.removeIconGroup(iconManager) },
         update = { iconContainer ->
             iconContainer.setQsExpansionTransitioning(
                 layoutState.isTransitioningBetween(Scenes.Shade, Scenes.QuickSettings)

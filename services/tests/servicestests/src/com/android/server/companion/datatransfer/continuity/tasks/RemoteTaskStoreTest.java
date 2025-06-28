@@ -203,6 +203,34 @@ public class RemoteTaskStoreTest {
         assertThat(taskStore.getMostRecentTasks()).isEmpty();
     }
 
+    @Test
+    public void updateTask_updatesTaskAndNotifiesListeners() {
+        // Create a fake association info, and have connected association store return it.
+        AssociationInfo associationInfo = createAssociationInfo(1, "name");
+        when(mMockConnectedAssociationStore.getConnectedAssociationById(1))
+            .thenReturn(associationInfo);
+        taskStore.onTransportConnected(associationInfo);
+
+        RemoteTaskInfo initialTaskInfo = createNewRemoteTaskInfo(1, "task1", 100L);
+        RemoteTask initialTask = initialTaskInfo.toRemoteTask(associationInfo.getId(), "name");
+        taskStore.setTasks(1, Collections.singletonList(initialTaskInfo));
+        assertThat(taskStore.getMostRecentTasks()).containsExactly(initialTask);
+        assertThat(remoteTasksReportedToListener).hasSize(1);
+        assertThat(remoteTasksReportedToListener.get(0)).containsExactly(initialTask);
+
+        // Update the task to have a different name.
+        RemoteTaskInfo updatedTaskInfo = createNewRemoteTaskInfo(
+            initialTaskInfo.getId(),
+            "task1",
+            200L);
+        RemoteTask updatedTask = updatedTaskInfo.toRemoteTask(associationInfo.getId(), "name");
+        taskStore.updateTask(1, updatedTaskInfo);
+
+        assertThat(taskStore.getMostRecentTasks()).containsExactly(updatedTask);
+        assertThat(remoteTasksReportedToListener).hasSize(2);
+        assertThat(remoteTasksReportedToListener.get(1)).containsExactly(updatedTask);
+    }
+
     private RemoteTaskInfo createNewRemoteTaskInfo(
         int id,
         String label,

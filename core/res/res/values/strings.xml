@@ -218,23 +218,43 @@
     <!-- Message displayed in dialog when APK is not 16 KB aligned on 4 KB device. [CHAR LIMIT=NONE] -->
     <string name="page_size_compat_apk_warning_4kb">This warning is showing because this is a debuggable app which is currently being tested.
         If you are not the developer, please report this to the developer and ask for a non-debuggable app.
+        &lt;br&gt;&lt;br&gt;
         This app isn\’t 16 KB compatible. APK alignment check failed.
-        Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; </string>
+        Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;
+        &lt;br&gt;&lt;br&gt;
+        Following libraries are not properly aligned:
+        &lt;br&gt;&lt;br&gt;
+    </string>
 
     <!-- Message displayed in dialog when ELF is not 16 KB aligned on 4 KB device. [CHAR LIMIT=NONE] -->
     <string name="page_size_compat_elf_warning_4kb">This warning is showing because this is a debuggable app which is currently being tested.
         If you are not the developer, please report this to the developer and ask for a non-debuggable app.
+        &lt;br&gt;&lt;br&gt;
         This app isn\’t 16 KB compatible. ELF alignment check failed.
-        Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;</string>
+        Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;
+        &lt;br&gt;&lt;br&gt;
+        Following libraries are not properly aligned:
+        &lt;br&gt;&lt;br&gt;
+    </string>
 
     <!-- Message displayed in dialog when APK and ELF are not 16 KB aligned on 4 KB device. [CHAR LIMIT=NONE] -->
     <string name="page_size_compat_apk_and_elf_warning_4kb">This warning is showing because this is a debuggable app which is currently being tested.
         If you are not the developer, please report this to the developer and ask for a non-debuggable app.
+        &lt;br&gt;&lt;br&gt;
         This app isn\’t 16 KB compatible. APK and ELF alignment checks failed.
-        Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;</string>
+        Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;.
+        &lt;br&gt;&lt;br&gt;
+        Following libraries are not properly aligned:
+        &lt;br&gt;&lt;br&gt;
+    </string>
     <!--Confirmation text for page size mismatch dialog to never show-->
     <string name="page_size_compat_never_show"> Don\'t Show Again</string>
+    <string name="page_size_compat_title">Android App Compatibility</string>
 
+    <string name="page_size_compat_elf_not_aligned">&amp;#8226; %1$s : LOAD segment not aligned</string>
+    <string name="page_size_compat_apk_not_aligned">&amp;#8226; %1$s : Uncompressed library not aligned</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned">&amp;#8226; %1$s : LOAD segment and uncompressed library are not aligned</string>
+    <string name="page_size_compat_unknown">&amp;#8226; %1$s : Unknown error</string>
 
     <!-- Displayed to tell the user that caller ID is not provisioned for their SIM. -->
     <string name="serviceNotProvisioned">Service not provisioned.</string>

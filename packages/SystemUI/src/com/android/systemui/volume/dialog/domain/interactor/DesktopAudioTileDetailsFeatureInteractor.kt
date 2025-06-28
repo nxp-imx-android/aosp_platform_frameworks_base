@@ -17,18 +17,21 @@
 package com.android.systemui.volume.dialog.domain.interactor
 
 import android.content.Context
+import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.res.R
-import com.android.systemui.volume.dialog.dagger.scope.VolumeDialogPluginScope
 import javax.inject.Inject
 
-@VolumeDialogPluginScope
+@SysUISingleton
 class DesktopAudioTileDetailsFeatureInteractor
 @Inject
 constructor(@Application private val context: Context) {
-    fun isEnabled(): Boolean {
-        return QsDetailedView.isEnabled &&
+    private val isEnabled =
+        QsDetailedView.isEnabled &&
             context.resources.getBoolean(R.bool.config_enableDesktopAudioTileDetailsView)
+
+    fun isEnabled(): Boolean {
+        return isEnabled
     }
 }

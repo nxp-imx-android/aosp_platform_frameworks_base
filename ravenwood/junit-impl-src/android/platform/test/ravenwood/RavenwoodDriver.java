@@ -21,11 +21,12 @@ import static android.os.UserHandle.SYSTEM;
 import static android.platform.test.ravenwood.RavenwoodSystemServer.ANDROID_PACKAGE_NAME;
 
 import static com.android.modules.utils.ravenwood.RavenwoodHelper.RavenwoodInternal.RAVENWOOD_RUNTIME_PATH_JAVA_SYSPROP;
-import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_EMPTY_RESOURCES_APK;
-import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_INST_RESOURCE_APK;
-import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_RESOURCE_APK;
-import static com.android.ravenwood.common.RavenwoodCommonUtils.parseNullableInt;
-import static com.android.ravenwood.common.RavenwoodCommonUtils.withDefault;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_EMPTY_RESOURCES_APK;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_INST_RESOURCE_APK;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_RESOURCE_APK;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.getRavenwoodRuntimePath;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.parseNullableInt;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.withDefault;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
@@ -74,7 +75,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.os.RuntimeInit;
 import com.android.ravenwood.RavenwoodRuntimeNative;
 import com.android.ravenwood.RavenwoodRuntimeState;
-import com.android.ravenwood.common.RavenwoodCommonUtils;
+import com.android.ravenwood.common.RavenwoodInternalUtils;
 import com.android.ravenwood.common.SneakyThrow;
 import com.android.server.LocalServices;
 import com.android.server.compat.PlatformCompat;
@@ -99,13 +100,14 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
  * Responsible for initializing and the environment.
  */
 public class RavenwoodDriver {
-    private static final String TAG = com.android.ravenwood.common.RavenwoodCommonUtils.TAG;
+    private static final String TAG = RavenwoodInternalUtils.TAG;
 
     private RavenwoodDriver() {
     }
@@ -143,6 +145,10 @@ public class RavenwoodDriver {
 
     static final int DEFAULT_TIMEOUT_SECONDS = 10;
     private static final int TIMEOUT_MILLIS = getTimeoutSeconds() * 1000;
+
+    /** Do not dump environments matching this pattern. */
+    private static final Pattern sSecretEnvPattern = Pattern.compile(
+            "(KEY|AUTH|API)", Pattern.CASE_INSENSITIVE);
 
     static int getTimeoutSeconds() {
         var e = System.getenv("RAVENWOOD_TIMEOUT_SECONDS");
@@ -278,7 +284,7 @@ public class RavenwoodDriver {
 
     private static void globalInitInner() throws IOException {
         // We haven't initialized liblog yet, so directly write to System.out here.
-        RavenwoodCommonUtils.log(TAG, "globalInitInner()");
+        RavenwoodInternalUtils.log(TAG, "globalInitInner()");
 
         if (ENABLE_UNCAUGHT_EXCEPTION_DETECTION) {
             Thread.setDefaultUncaughtExceptionHandler(
@@ -288,7 +294,7 @@ public class RavenwoodDriver {
         // Some process-wide initialization:
         // - maybe redirect stdout/stderr
         // - override native system property functions
-        var lib = RavenwoodCommonUtils.getJniLibraryPath(LIBRAVENWOOD_INITIALIZER_NAME);
+        var lib = RavenwoodInternalUtils.getJniLibraryPath(LIBRAVENWOOD_INITIALIZER_NAME);
         System.load(lib);
         RavenwoodRuntimeNative.reloadNativeLibrary(lib);
 
@@ -304,7 +310,7 @@ public class RavenwoodDriver {
         Log.i(TAG, "RuntimePath=" + System.getProperty(RAVENWOOD_RUNTIME_PATH_JAVA_SYSPROP));
 
         // Make sure libravenwood_runtime is loaded.
-        System.load(RavenwoodCommonUtils.getJniLibraryPath(RAVENWOOD_NATIVE_RUNTIME_NAME));
+        System.load(RavenwoodInternalUtils.getJniLibraryPath(RAVENWOOD_NATIVE_RUNTIME_NAME));
 
         Log_ravenwood.setLogLevels(getLogTags());
         Log_ravenwood.onRavenwoodRuntimeNativeReady();
@@ -313,7 +319,7 @@ public class RavenwoodDriver {
         RavenwoodSystemProperties.initialize();
 
         // Set ICU data file
-        String icuData = RavenwoodCommonUtils.getRavenwoodRuntimePath()
+        String icuData = getRavenwoodRuntimePath()
                 + "ravenwood-data/"
                 + RavenwoodRuntimeNative.getIcuDataName()
                 + ".dat";
@@ -590,7 +596,8 @@ public class RavenwoodDriver {
             return cached;
         }
 
-        var fileToLoad = apkPath != null ? apkPath : new File(RAVENWOOD_EMPTY_RESOURCES_APK);
+        var fileToLoad = apkPath != null ? apkPath :
+                new File(getRavenwoodRuntimePath() + RAVENWOOD_EMPTY_RESOURCES_APK);
 
         assertTrue("File " + fileToLoad + " doesn't exist.", fileToLoad.isFile());
 
@@ -814,7 +821,7 @@ public class RavenwoodDriver {
                 + " %s; Failing all subsequent tests."
                 + " (Run with `RAVENWOOD_TOLERATE_UNHANDLED_EXCEPTIONS=1 atest...` to "
                 + "force run the subsequent tests)",
-                thread, sCurrentDescription, RavenwoodCommonUtils.getStackTraceString(inner));
+                thread, sCurrentDescription, RavenwoodInternalUtils.getStackTraceString(inner));
 
         var outer = new Exception(msg, inner);
         Log.e(TAG, outer.getMessage(), outer);
@@ -841,7 +848,19 @@ public class RavenwoodDriver {
 
     private static void dumpEnvironment() {
         Log.i(TAG, "Environment:");
-        dumpMap(System.getenv());
+
+        // Dump the environments, but don't print the values for "secret" ones.
+        dumpMap(System.getenv().entrySet().stream()
+                .collect(Collectors.toMap(
+                        // The key remains the same
+                        Map.Entry::getKey,
+
+                        // Hide the values as needed.
+                        entry -> sSecretEnvPattern.matcher(entry.getKey()).find()
+                                ? "[redacted]" : entry.getValue(),
+                        (oldValue, newValue) -> newValue,
+                        HashMap::new
+                )));
     }
 
     private static void dumpMap(Map<?, ?> map) {

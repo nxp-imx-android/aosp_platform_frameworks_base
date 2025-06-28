@@ -26,10 +26,9 @@ import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_FAILED_
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_FAILED_REASON_UNKNOWN;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_POLICY_NONE;
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL;
+import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY;
-import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_OK;
 import static android.content.pm.PackageInstaller.DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_DEVELOPER_BLOCKED;
 import static android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo.DEVELOPER_VERIFICATION_USER_ACTION_NEEDED_REASON_LITE_VERIFICATION;
@@ -213,6 +212,7 @@ import com.android.modules.utils.TypedXmlPullParser;
 import com.android.modules.utils.TypedXmlSerializer;
 import com.android.server.IoThread;
 import com.android.server.LocalServices;
+import com.android.server.Watchdog;
 import com.android.server.art.ArtManagedInstallFileHelper;
 import com.android.server.pm.Installer.InstallerException;
 import com.android.server.pm.dex.DexManager;
@@ -220,7 +220,6 @@ import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
 import com.android.server.pm.verify.developer.DeveloperVerificationStatusInternal;
 import com.android.server.pm.verify.developer.DeveloperVerifierController;
-import com.android.server.Watchdog;
 
 import libcore.io.IoUtils;
 import libcore.util.EmptyArray;
@@ -3450,7 +3449,7 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
         private Intent getUserNotificationIntent() {
             return new Intent(
-                    PackageInstaller.ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE)
+                    PackageInstaller.ACTION_CONFIRM_DEVELOPER_VERIFICATION)
                     .setPackage(mPm.getPackageInstallerPackageName())
                     .putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId);
         }
@@ -5082,12 +5081,18 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
                     + "SessionID: " + sessionId);
             return;
         }
-        synchronized (mMetrics) {
-            mMetrics.onDeveloperVerificationUserResponseReceived(userResponse);
+        if (userResponse != DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR) {
+            // Only log user response when the response is not error
+            synchronized (mMetrics) {
+                mMetrics.onDeveloperVerificationUserResponseReceived(userResponse);
+            }
         }
         switch (userResponse) {
-            case DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR -> {
-                String errorMsg = "User could not be notified about the pending verification.";
+            case DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR,
+                 DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT -> {
+                String errorMsg = userResponse == DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR
+                        ? "User could not be notified about the pending verification."
+                        : "User denied proceeding with the pending verification.";
                 Bundle bundle = new Bundle();
                 bundle.putInt(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON,
                         getVerificationFailureReason(mVerificationUserActionNeededReason));
@@ -5096,30 +5101,6 @@ public class PackageInstallerSession extends IPackageInstallerSession.Stub {
 
                 setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg);
                 onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg, bundle);
-            }
-
-            case DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL -> {
-                String errorMsg = "User denied proceeding with the pending verification.";
-                Bundle bundle = new Bundle();
-                bundle.putInt(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON,
-                        getVerificationFailureReason(mVerificationUserActionNeededReason));
-                bundle.putBoolean(EXTRA_DEVELOPER_VERIFICATION_LITE_PERFORMED,
-                        mDeveloperVerificationStatusInternal.isLiteVerification());
-
-                setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg);
-                onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE, errorMsg, bundle);
-            }
-
-            case DEVELOPER_VERIFICATION_USER_RESPONSE_OK -> {
-                Bundle bundle = new Bundle();
-                bundle.putInt(EXTRA_DEVELOPER_VERIFICATION_FAILURE_REASON,
-                        getVerificationFailureReason(mVerificationUserActionNeededReason));
-                bundle.putBoolean(EXTRA_DEVELOPER_VERIFICATION_LITE_PERFORMED,
-                        mDeveloperVerificationStatusInternal.isLiteVerification());
-
-                setSessionFailed(INSTALL_FAILED_VERIFICATION_FAILURE, mVerificationFailedMessage);
-                onSessionVerificationFailure(INSTALL_FAILED_VERIFICATION_FAILURE,
-                        mVerificationFailedMessage, bundle);
             }
 
             case DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY -> {

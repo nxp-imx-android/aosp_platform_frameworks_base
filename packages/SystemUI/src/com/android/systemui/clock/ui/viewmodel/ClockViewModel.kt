@@ -46,12 +46,33 @@ constructor(clockInteractor: ClockInteractor, private val dateFormatUtil: DateFo
     private val formatString: Flow<String> =
         clockInteractor.onTimezoneOrLocaleChanged.mapLatest { getFormatString() }
 
-    private val clockFormat: Flow<SimpleDateFormat> =
-        formatString.mapLatest { format -> SimpleDateFormat(format) }
+    private val contentDescriptionFormat: Flow<SimpleDateFormat> =
+        formatString.mapLatest { format ->
+            // We already provide the locale value in `DateTimePatternGenerator`, so it is okay to
+            // not provide the locale in `SimpleDateFormat` here.
+            @Suppress("SimpleDateFormat") SimpleDateFormat(format)
+        }
+
+    private val _contentDescriptionText: Flow<String> =
+        combine(contentDescriptionFormat, clockInteractor.currentTime) {
+            contentDescriptionFormat,
+            time ->
+            contentDescriptionFormat.format(time)
+        }
+
+    val contentDescriptionText: String by
+        hydrator.hydratedStateOf(
+            traceName = "clockContentDescriptionText",
+            initialValue = clockInteractor.currentTime.value.toString(),
+            source = _contentDescriptionText,
+        )
+
+    private val clockTextFormat: Flow<SimpleDateFormat> =
+        formatString.mapLatest { format -> getClockTextFormat(format) }
 
     private val _clockText: Flow<String> =
-        combine(clockFormat, clockInteractor.currentTime) { clockFormat, time ->
-            clockFormat.format(time)
+        combine(clockTextFormat, clockInteractor.currentTime) { clockTextFormat, time ->
+            clockTextFormat.format(time)
         }
 
     val clockText: String by
@@ -80,7 +101,14 @@ constructor(clockInteractor: ClockInteractor, private val dateFormatUtil: DateFo
         // TODO(b/390204943): use different value depending on if the system want to show seconds.
         val formatSkeleton = if (dateFormatUtil.is24HourFormat) "Hm" else "hm"
 
-        // TODO(b/390204943): handle ContentDescriptionFormat and AM/PM style
         return dateTimePatternGenerator.getBestPattern(formatSkeleton)
+    }
+
+    private fun getClockTextFormat(format: String): SimpleDateFormat {
+        // TODO(b/390204943): handle AM/PM style
+        // We already provide the locale value in `DateTimePatternGenerator` above, so it is okay
+        // to not provide the locale in `SimpleDateFormat` here.
+        @Suppress("SimpleDateFormat")
+        return SimpleDateFormat(format)
     }
 }

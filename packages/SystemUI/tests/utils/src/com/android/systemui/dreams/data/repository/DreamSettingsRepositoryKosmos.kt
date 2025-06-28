@@ -26,6 +26,6 @@ val Kosmos.dreamSettingsRepository: DreamSettingsRepository by
         DreamSettingsRepositoryImpl(
             bgDispatcher = testDispatcher,
             resources = mainResources,
-            userAwareSecureSettingsRepository = userAwareSecureSettingsRepository,
+            secureSettingsRepository = userAwareSecureSettingsRepository,
         )
     }

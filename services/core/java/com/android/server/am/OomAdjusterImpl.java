@@ -991,13 +991,12 @@ public class OomAdjusterImpl extends OomAdjuster {
             ConnectionRecord cr = psr.getConnectionAt(i);
             ProcessRecord service = cr.hasFlag(ServiceInfo.FLAG_ISOLATED_PROCESS)
                     ? cr.binding.service.isolationHostProc : cr.binding.service.app;
-            if (service == null || service == app
-                    || (service.mState.getMaxAdj() >= SYSTEM_ADJ
-                    && service.mState.getMaxAdj() < FOREGROUND_APP_ADJ)
-                    || (service.mState.getCurAdj() <= FOREGROUND_APP_ADJ
-                    && service.mState.getCurrentSchedulingGroup() > SCHED_GROUP_BACKGROUND
-                    && service.mState.getCurProcState() <= PROCESS_STATE_TOP)
-                    || (service.isSdkSandbox && cr.binding.attributedClient != null)) {
+            if (service == null || service == app || isSandboxAttributedConnection(cr, service)) {
+                continue;
+            }
+            // If the host is high priority, skip the connection recompute unless the connection has
+            // flags, which needs extra consideration. e.g. BIND_SCHEDULE_LIKE_TOP_APP
+            if (isHighPriorityProcess(service) && allowSkipForBindScheduleLikeTopApp(cr, service)) {
                 continue;
             }
             connectionConsumer.accept(cr, service);
@@ -1006,12 +1005,10 @@ public class OomAdjusterImpl extends OomAdjuster {
         for (int i = psr.numberOfSdkSandboxConnections() - 1; i >= 0; i--) {
             final ConnectionRecord cr = psr.getSdkSandboxConnectionAt(i);
             final ProcessRecord service = cr.binding.service.app;
-            if (service == null || service == app
-                    || (service.mState.getMaxAdj() >= SYSTEM_ADJ
-                    && service.mState.getMaxAdj() < FOREGROUND_APP_ADJ)
-                    || (service.mState.getCurAdj() <= FOREGROUND_APP_ADJ
-                    && service.mState.getCurrentSchedulingGroup() > SCHED_GROUP_BACKGROUND
-                    && service.mState.getCurProcState() <= PROCESS_STATE_TOP)) {
+            if (service == null || service == app) {
+                continue;
+            }
+            if (isHighPriorityProcess(service) && allowSkipForBindScheduleLikeTopApp(cr, service)) {
                 continue;
             }
             connectionConsumer.accept(cr, service);
@@ -1021,16 +1018,45 @@ public class OomAdjusterImpl extends OomAdjuster {
         for (int i = ppr.numberOfProviderConnections() - 1; i >= 0; i--) {
             ContentProviderConnection cpc = ppr.getProviderConnectionAt(i);
             ProcessRecord provider = cpc.provider.proc;
-            if (provider == null || provider == app
-                    || (provider.mState.getMaxAdj() >= ProcessList.SYSTEM_ADJ
-                    && provider.mState.getMaxAdj() < FOREGROUND_APP_ADJ)
-                    || (provider.mState.getCurAdj() <= FOREGROUND_APP_ADJ
-                    && provider.mState.getCurrentSchedulingGroup() > SCHED_GROUP_BACKGROUND
-                    && provider.mState.getCurProcState() <= PROCESS_STATE_TOP)) {
+            if (provider == null || provider == app || isHighPriorityProcess(provider)) {
                 continue;
             }
             connectionConsumer.accept(cpc, provider);
         }
+    }
+
+    /**
+     * This is one of the condition that blocks the skipping of connection evaluation. This method
+     * returns false when the given connection has flag {@link Context#BIND_SCHEDULE_LIKE_TOP_APP}
+     * but the host process has not set the corresponding flag,
+     * {@link ProcessStateRecord#mScheduleLikeTopApp}.
+     */
+    private static boolean allowSkipForBindScheduleLikeTopApp(ConnectionRecord cr,
+            ProcessRecord host) {
+        // If feature flag for optionally blocking skipping is disabled. Always allow skipping.
+        if (!Flags.notSkipConnectionRecomputeForBindScheduleLikeTopApp()) {
+            return true;
+        }
+
+        // Need to check shouldScheduleLikeTopApp otherwise, there will be too many recompute which
+        // leads to OOM.
+        return !(cr.hasFlag(Context.BIND_SCHEDULE_LIKE_TOP_APP)
+                && !host.mState.shouldScheduleLikeTopApp());
+    }
+
+    private static boolean isSandboxAttributedConnection(ConnectionRecord cr, ProcessRecord host) {
+        return host.isSdkSandbox && cr.binding.attributedClient != null;
+    }
+
+    private static boolean isHighPriorityProcess(ProcessRecord proc) {
+        final boolean isPersistentSystemProcess = proc.mState.getMaxAdj() >= SYSTEM_ADJ
+                && proc.mState.getMaxAdj() < FOREGROUND_APP_ADJ;
+
+        final boolean isEffectivelyForeground = proc.mState.getCurAdj() <= FOREGROUND_APP_ADJ
+                && proc.mState.getCurrentSchedulingGroup() > SCHED_GROUP_BACKGROUND
+                && proc.mState.getCurProcState() <= PROCESS_STATE_TOP;
+
+        return isPersistentSystemProcess || isEffectivelyForeground;
     }
 
     /**

@@ -649,6 +649,52 @@ public class TransitionTests extends WindowTestsBase {
     }
 
     @Test
+    public void testCreateInfo_OnlyWallpapersOnSecondaryDisplay() {
+        DisplayContent otherDisplay = createNewDisplay();
+        final Transition transition = createTestTransition(TRANSIT_CHANGE);
+        ArrayMap<WindowContainer, Transition.ChangeInfo> changes = transition.mChanges;
+        ArraySet<WindowContainer> participants = transition.mParticipants;
+
+        final WallpaperWindowToken wallpaper1 =  new WallpaperWindowToken(mWm,
+                mock(IBinder.class), true, otherDisplay, true /* ownerCanManageAppTokens */);
+        final WindowState wallpaperWindow1 = newWindowBuilder("closing",
+                TYPE_WALLPAPER).setWindowToken(wallpaper1).build();
+
+        final WallpaperWindowToken wallpaper2 =  new WallpaperWindowToken(mWm,
+                mock(IBinder.class), true, otherDisplay, true /* ownerCanManageAppTokens */);
+        final WindowState wallpaperWindow2 = newWindowBuilder("opening",
+                TYPE_WALLPAPER).setWindowToken(wallpaper2).build();
+
+        changes.put(wallpaper1,
+                new Transition.ChangeInfo(wallpaper1, /* vis= */ false, /* exChg= */ true));
+        fillChangeMap(changes, wallpaper1);
+
+        changes.put(wallpaper2,
+                new Transition.ChangeInfo(wallpaper2, /* vis= */ false, /* exChg= */ true));
+        fillChangeMap(changes, wallpaper2);
+
+        // End states.
+        wallpaper1.setVisibleRequested(false);
+        wallpaper2.setVisibleRequested(true);
+        wallpaperWindow1.mHasSurface = true;
+        wallpaperWindow2.mHasSurface = true;
+
+        final int transit = transition.mType;
+        int flags = 0;
+
+        participants.add(wallpaper1);
+        participants.add(wallpaper2);
+        ArrayList<Transition.ChangeInfo> targets =
+                Transition.calculateTargets(participants, changes);
+        TransitionInfo info = Transition.calculateTransitionInfo(transit, flags, targets, mMockT);
+
+        // Check that root can be found by display and has the correct display
+        assertEquals(1, info.getRootCount());
+        assertEquals(otherDisplay.getDisplayId(),
+                info.getRoot(info.findRootIndex(otherDisplay.getDisplayId())).getDisplayId());
+    }
+
+    @Test
     public void testTargets_noIntermediatesToWallpaper() {
         final Transition transition = createTestTransition(TRANSIT_OPEN);
 

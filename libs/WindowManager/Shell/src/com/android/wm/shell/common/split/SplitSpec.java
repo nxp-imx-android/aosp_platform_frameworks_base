@@ -231,11 +231,7 @@ public class SplitSpec {
             case SNAP_FIXED_RATIO:
                 return bigEnoughFor33 ? THREE_TARGETS_ONSCREEN : ONE_TARGET;
             case SNAP_FLEXIBLE_HYBRID:
-                if (areOffscreenRatiosSupported) {
-                    return bigEnoughFor33 ? FIVE_TARGETS : THREE_TARGETS_OFFSCREEN;
-                } else {
-                    return bigEnoughFor33 ? THREE_TARGETS_ONSCREEN : ONE_TARGET;
-                }
+                return areOffscreenRatiosSupported ? FIVE_TARGETS : THREE_TARGETS_ONSCREEN;
             default:
                 throw new IllegalStateException("unrecognized snap mode");
         }

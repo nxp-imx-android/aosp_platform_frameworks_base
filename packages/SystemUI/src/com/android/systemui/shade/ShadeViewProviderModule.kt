@@ -55,6 +55,7 @@ import com.android.systemui.statusbar.notification.stack.ui.view.SharedNotificat
 import com.android.systemui.statusbar.phone.StatusBarLocation
 import com.android.systemui.statusbar.phone.StatusIconContainer
 import com.android.systemui.statusbar.phone.TapAgainView
+import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import com.android.systemui.statusbar.policy.BatteryController
 import com.android.systemui.statusbar.policy.ConfigurationController
 import com.android.systemui.tuner.TunerService
@@ -99,6 +100,7 @@ abstract class ShadeViewProviderModule {
             blurUtils: BlurUtils,
             choreographer: Choreographer?,
             @Main mainDispatcher: CoroutineDispatcher,
+            tintedIconManagerFactory: TintedIconManager.Factory,
         ): WindowRootView {
             return if (SceneContainerFlag.isEnabled) {
                 checkNoSceneDuplicates(scenesProvider.get())
@@ -123,6 +125,7 @@ abstract class ShadeViewProviderModule {
                     qsSceneAdapter = qsSceneAdapter,
                     sceneJankMonitorFactory = sceneJankMonitorFactory,
                     windowRootViewKeyEventHandler = windowRootViewKeyEventHandler,
+                    tintedIconManagerFactory = tintedIconManagerFactory,
                 )
                 sceneWindowRootView
             } else {

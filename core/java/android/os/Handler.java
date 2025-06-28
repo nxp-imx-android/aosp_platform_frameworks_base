@@ -68,6 +68,24 @@ import java.lang.reflect.Modifier;
  * the same <em>post</em> or <em>sendMessage</em> methods as before, but from
  * your new thread.  The given Runnable or Message will then be scheduled
  * in the Handler's message queue and processed when appropriate.
+ *
+ * <h2>Performance considerations when using {@code Handler}</h2>
+ *
+ * <p>Beware that the "has" and "remove" methods of {@code Handler} can be very
+ * slow because these operations scan the entire queue of pending messages.
+ * If the underlying {@link Looper}'s {@link MessageQueue} has many pending
+ * messages, this can be expensive.
+ *
+ * <ul>
+ * <li>Instead of removing a message or a callback to cancel a pending
+ * operation, consider setting a flag to indicate cancellation and having the
+ * operation check the flag before proceeding.
+ * <li>Instead of checking if the queue has a message or a callback to find if
+ * a pending operation has not yet occurred, consider having that operation set
+ * a flag to indicate that it has begun.
+ * </ul>
+ *
+ * See {@code java.util.concurrent} for standard concurrency primitives.
  */
 @RavenwoodKeepWholeClass
 @RavenwoodRedirectionClass("Handler_ravenwood")

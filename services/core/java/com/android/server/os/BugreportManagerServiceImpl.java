@@ -656,7 +656,8 @@ class BugreportManagerServiceImpl extends IDumpstate.Stub {
                 && mode != BugreportParams.BUGREPORT_MODE_WEAR
                 && mode != BugreportParams.BUGREPORT_MODE_TELEPHONY
                 && mode != BugreportParams.BUGREPORT_MODE_WIFI
-                && mode != BugreportParams.BUGREPORT_MODE_ONBOARDING) {
+                && mode != BugreportParams.BUGREPORT_MODE_ONBOARDING
+                && mode != BugreportParams.BUGREPORT_MODE_BLUETOOTH) {
             Slog.w(TAG, "Unknown bugreport mode: " + mode);
             throw new IllegalArgumentException("Unknown bugreport mode: " + mode);
         }

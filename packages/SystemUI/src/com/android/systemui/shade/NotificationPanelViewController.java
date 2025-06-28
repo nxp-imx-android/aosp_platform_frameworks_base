@@ -2303,6 +2303,10 @@ public final class NotificationPanelViewController implements
     @Deprecated
     public void onStatusBarLongPress(MotionEvent event) {
         Log.i(TAG, "Status Bar was long pressed.");
+        if (mTouchDisabled) {
+            mShadeLog.d("Touch disabled. Long press expansion ignored.");
+            return;
+        }
         if (mBarState == KEYGUARD) {
             mShadeLog.d("Lockscreen Status Bar was long pressed. Expansion not supported.");
             return;

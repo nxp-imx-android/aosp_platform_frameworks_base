@@ -644,6 +644,19 @@ public abstract class VibrationEffect implements Parcelable {
      *                    scale down the intensity, values larger than 1 will scale up
      * @return this if there is no scaling to be done, or a copy of this effect with scaled
      *         vibration intensity otherwise
+     *
+     * @hide
+     */
+    @NonNull
+    public abstract VibrationEffect scaleLinearly(float scaleFactor);
+
+    /**
+     * Applies given scale factor as adaptive scale.
+     *
+     * @param scaleFactor scale factor to be applied to the intensity. Values within [0,1) will
+     *                    scale down the intensity, values larger than 1 will scale up
+     * @return this if there is no scaling to be done, or a copy of this effect with scaled
+     *         vibration intensity otherwise
      * @hide
      */
     @NonNull
@@ -1006,6 +1019,13 @@ public abstract class VibrationEffect implements Parcelable {
         /** @hide */
         @NonNull
         @Override
+        public Composed scaleLinearly(float scaleFactor) {
+            return applyToSegments(VibrationEffectSegment::scaleLinearly, scaleFactor);
+        }
+
+        /** @hide */
+        @NonNull
+        @Override
         public Composed applyAdaptiveScale(float scaleFactor) {
             return applyToSegments(VibrationEffectSegment::scaleLinearly, scaleFactor);
         }
@@ -1263,6 +1283,13 @@ public abstract class VibrationEffect implements Parcelable {
                     mAdaptiveScale);
             updated.validate();
             return updated;
+        }
+
+        /** @hide */
+        @NonNull
+        @Override
+        public VibrationEffect scaleLinearly(float scaleFactor) {
+            return scale(scaleFactor);
         }
 
         /** @hide */

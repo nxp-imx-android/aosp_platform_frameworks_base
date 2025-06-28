@@ -31,10 +31,10 @@ import android.view.SurfaceControlViewHost
 import androidx.test.filters.SmallTest
 import com.android.internal.widget.LockPatternUtils
 import com.android.keyguard.logging.KeyguardQuickAffordancesLogger
-import com.android.systemui.SystemUIAppComponentFactoryBase
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.accessibility.domain.interactor.accessibilityInteractor
 import com.android.systemui.animation.DialogTransitionAnimator
+import com.android.systemui.application.ContentProviderContextAvailableCallback
 import com.android.systemui.dock.DockManagerFake
 import com.android.systemui.flags.FakeFeatureFlags
 import com.android.systemui.flags.Flags
@@ -239,7 +239,7 @@ class CustomizationProviderTest : SysuiTestCase() {
 
     @Test
     fun onAttachInfo_reportsContext() {
-        val callback: SystemUIAppComponentFactoryBase.ContextAvailableCallback = mock()
+        val callback: ContentProviderContextAvailableCallback = mock()
         underTest.setContextAvailableCallback(callback)
 
         underTest.attachInfo(context, null)

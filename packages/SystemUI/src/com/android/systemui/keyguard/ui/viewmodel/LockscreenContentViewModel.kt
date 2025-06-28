@@ -16,18 +16,14 @@
 
 package com.android.systemui.keyguard.ui.viewmodel
 
-import android.content.res.Resources
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.biometrics.AuthController
-import com.android.systemui.customization.clocks.R as clocksR
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryBypassInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardBlueprintInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardClockInteractor
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
-import com.android.systemui.keyguard.shared.model.ClockSize
 import com.android.systemui.keyguard.shared.model.ClockSizeSetting
 import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.keyguard.shared.transition.KeyguardTransitionAnimationCallback
@@ -37,7 +33,6 @@ import com.android.systemui.keyguard.ui.composable.layout.UnfoldTranslations
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.plugins.clocks.ClockController
-import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.unfold.domain.interactor.UnfoldTransitionInteractor
@@ -187,24 +182,6 @@ constructor(
                 keyguardTransitionAnimationCallbackDelegator.delegate = null
             }
         }
-    }
-
-    fun getSmartSpacePaddingTop(resources: Resources): Int {
-        return if (clockInteractor.clockSize.value == ClockSize.LARGE) {
-            resources.getDimensionPixelSize(clocksR.dimen.keyguard_smartspace_top_offset) +
-                resources.getDimensionPixelSize(R.dimen.keyguard_clock_top_margin)
-        } else {
-            0
-        }
-    }
-
-    /** Where to place the notifications stack on the lockscreen. */
-    sealed interface NotificationsPlacement {
-        /** Show notifications below the lockscreen clock. */
-        data object BelowClock : NotificationsPlacement
-
-        /** Show notifications side-by-side with the clock. */
-        data class BesideClock(val alignment: Alignment) : NotificationsPlacement
     }
 
     @AssistedFactory

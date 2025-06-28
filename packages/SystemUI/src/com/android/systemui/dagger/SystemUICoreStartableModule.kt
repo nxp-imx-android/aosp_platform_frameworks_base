@@ -27,7 +27,6 @@ import com.android.systemui.bouncer.domain.startable.BouncerStartable
 import com.android.systemui.clipboardoverlay.ClipboardListener
 import com.android.systemui.complication.ComplicationTypesUpdater
 import com.android.systemui.complication.DreamClockTimeComplication
-import com.android.systemui.controls.dagger.StartControlsStartableModule
 import com.android.systemui.dagger.qualifiers.PerUser
 import com.android.systemui.dreams.AssistantAttentionMonitor
 import com.android.systemui.dreams.DreamMonitor
@@ -50,7 +49,6 @@ import com.android.systemui.media.taptotransfer.MediaTttCommandLineHelper
 import com.android.systemui.media.taptotransfer.receiver.MediaTttChipControllerReceiver
 import com.android.systemui.media.taptotransfer.sender.MediaTttSenderCoordinator
 import com.android.systemui.mediaprojection.taskswitcher.MediaProjectionTaskSwitcherCoreStartable
-import com.android.systemui.settings.MultiUserUtilsModule
 import com.android.systemui.shortcut.ShortcutKeyDispatcher
 import com.android.systemui.statusbar.ImmersiveModeConfirmation
 import com.android.systemui.statusbar.gesture.GesturePointerEventListener
@@ -62,8 +60,6 @@ import com.android.systemui.temporarydisplay.chipbar.ChipbarCoordinator
 import com.android.systemui.theme.ThemeOverlayController
 import com.android.systemui.usb.StorageNotification
 import com.android.systemui.util.NotificationChannels
-import com.android.systemui.util.StartBinderLoggerModule
-import com.android.systemui.wallpapers.dagger.WallpaperModule
 import com.android.systemui.wmshell.WMShell
 import dagger.Binds
 import dagger.Module
@@ -71,22 +67,15 @@ import dagger.multibindings.ClassKey
 import dagger.multibindings.IntoMap
 
 /**
- * DEPRECATED: DO NOT ADD THINGS TO THIS FILE.
+ * DEPRECATED: DO NOT ADD THINGS TO THIS FILE. b/427499553
  *
  * Add a feature specific daggger module for what you are working on. Bind your CoreStartable there.
  * Include that module where it is needed.
  *
- * @deprecated
+ * @deprecated b/427499553
  */
-@Module(
-    includes =
-        [
-            MultiUserUtilsModule::class,
-            StartControlsStartableModule::class,
-            StartBinderLoggerModule::class,
-            WallpaperModule::class,
-        ]
-)
+@Deprecated("Do not add things to this file.")
+@Module()
 abstract class SystemUICoreStartableModule {
     /** Inject into BiometricNotificationService */
     @Binds

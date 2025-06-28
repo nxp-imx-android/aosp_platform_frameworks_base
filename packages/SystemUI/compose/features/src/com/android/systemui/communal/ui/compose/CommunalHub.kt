@@ -186,6 +186,7 @@ import com.android.systemui.Flags
 import com.android.systemui.Flags.communalResponsiveGrid
 import com.android.systemui.Flags.communalTimerFlickerFix
 import com.android.systemui.Flags.communalWidgetResizing
+import com.android.systemui.Flags.hubEditModeTransition
 import com.android.systemui.communal.domain.model.CommunalContentModel
 import com.android.systemui.communal.shared.model.CommunalContentSize
 import com.android.systemui.communal.shared.model.CommunalScenes
@@ -252,7 +253,7 @@ fun CommunalHub(
     val isEmptyState by viewModel.isEmptyState.collectAsStateWithLifecycle(initialValue = false)
     val isCommunalContentVisible by
         viewModel.isCommunalContentVisible.collectAsStateWithLifecycle(
-            initialValue = !viewModel.isEditMode
+            initialValue = hubEditModeTransition() || !viewModel.isEditMode
         )
 
     val minContentPadding = gridContentPadding(viewModel.isEditMode, toolbarSize)
@@ -2012,14 +2013,13 @@ private fun toolbarPadding(): PaddingValues {
         )
     }
     val displayCutoutPaddings = WindowInsets.displayCutout.asPaddingValues()
+    // Depending on camera location, there can be no cutout paddings, set a min value
+    val topPadding =
+        displayCutoutPaddings.calculateTopPadding().coerceAtLeast(Dimensions.ToolbarPaddingTop)
     val horizontalPadding = hubDimensions.toolbarHorizontalPadding
     val bottomPadding = hubDimensions.toolbarBottomPadding
 
-    return remember(displayCutoutPaddings, horizontalPadding, bottomPadding) {
-        // Depending on camera location, there can be no cutout paddings, set a min value
-        val topPadding =
-            displayCutoutPaddings.calculateTopPadding().coerceAtLeast(Dimensions.ToolbarPaddingTop)
-
+    return remember(topPadding, horizontalPadding, bottomPadding) {
         PaddingValues(
             start = horizontalPadding,
             top = topPadding,

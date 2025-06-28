@@ -20,7 +20,7 @@ import android.app.Instrumentation
 import android.os.Bundle
 import android.os.Handler
 import android.platform.test.annotations.Presubmit
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.tools.flicker.junit.FlickerBuilderProvider
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder

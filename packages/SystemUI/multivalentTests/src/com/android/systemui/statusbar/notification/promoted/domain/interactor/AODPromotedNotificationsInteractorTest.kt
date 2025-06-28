@@ -37,6 +37,8 @@ import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildPromotedOngoingEntry
 import com.android.systemui.statusbar.notification.domain.interactor.renderNotificationListInteractor
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi
+import com.android.systemui.statusbar.notification.promoted.fake
+import com.android.systemui.statusbar.notification.promoted.showPromotedNotificationsOnAOD
 import com.android.systemui.statusbar.phone.ongoingcall.EnableChipsModernization
 import com.android.systemui.statusbar.policy.domain.interactor.sensitiveNotificationProtectionInteractor
 import com.android.systemui.statusbar.policy.mockSensitiveNotificationProtectionController
@@ -62,11 +64,14 @@ class AODPromotedNotificationsInteractorTest : SysuiTestCase() {
             sensitiveNotificationProtectionInteractor = sensitiveNotificationProtectionInteractor,
             dumpManager = dumpManager,
             biometricUnlockInteractor = biometricUnlockInteractor,
+            showPromotedNotificationsOnAOD = showPromotedNotificationsOnAOD,
         )
     }
 
     @Before
     fun setUp() {
+        // by default, showing RON on AOD is enabled
+        kosmos.showPromotedNotificationsOnAOD.fake.isEnabled = true
         kosmos.statusBarNotificationChipsInteractor.start()
     }
 
@@ -79,6 +84,22 @@ class AODPromotedNotificationsInteractorTest : SysuiTestCase() {
                         .setContentTitle("REDACTED")
                         .build()
                 )
+        }
+
+    @Test
+    fun content_null_when_showing_ron_on_aod_disabled() =
+        kosmos.runTest {
+            // GIVEN a promoted entry
+            val ronEntry = buildPublicPrivatePromotedOngoing()
+
+            setKeyguardLocked(false)
+            setScreenSharingProtectionActive(false)
+            showPromotedNotificationsOnAOD.fake.isEnabled = false
+            renderNotificationListInteractor.setRenderedList(listOf(ronEntry))
+
+            // THEN aod content is null
+            val content by collectLastValue(underTest.content)
+            assertThat(content).isNull()
         }
 
     @Test

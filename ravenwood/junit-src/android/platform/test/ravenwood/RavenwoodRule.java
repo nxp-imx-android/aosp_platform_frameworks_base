@@ -19,7 +19,7 @@ package android.platform.test.ravenwood;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
-import com.android.ravenwood.common.RavenwoodCommonUtils;
+import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -29,8 +29,6 @@ import org.junit.runners.model.Statement;
  * Reach out to g/ravenwood if you need any features in it.
  */
 public final class RavenwoodRule implements TestRule {
-    static final boolean IS_ON_RAVENWOOD = RavenwoodCommonUtils.isOnRavenwood();
-
     final RavenwoodTestProperties mProperties = new RavenwoodTestProperties();
 
     public static class Builder {
@@ -77,22 +75,9 @@ public final class RavenwoodRule implements TestRule {
         }
     }
 
-    /**
-     * Return if the current process is running on a Ravenwood test environment.
-     */
-    public static boolean isOnRavenwood() {
-        return IS_ON_RAVENWOOD;
-    }
-
-    private static void ensureOnRavenwood(String featureName) {
-        if (!IS_ON_RAVENWOOD) {
-            throw new RuntimeException(featureName + " is only supported on Ravenwood.");
-        }
-    }
-
     @Override
     public Statement apply(Statement base, Description description) {
-        if (!IS_ON_RAVENWOOD) {
+        if (!isOnRavenwood()) {
             return base;
         }
         return new Statement() {
@@ -115,8 +100,22 @@ public final class RavenwoodRule implements TestRule {
      * but this one is guaranteeed to return the real value, even when Ravenwood supports
      * injecting a time to{@link System#currentTimeMillis()}.
      */
-    public long realCurrentTimeMillis() {
+    public static long realCurrentTimeMillis() {
         return System.currentTimeMillis();
+    }
+
+    /**
+     * Return if the current process is running on a Ravenwood test environment.
+     */
+    public static boolean isOnRavenwood() {
+        return RavenwoodInternalUtils.isOnRavenwood();
+    }
+
+    private static void ensureOnRavenwood(String featureName) {
+        if (!isOnRavenwood()) {
+            throw new UnsupportedOperationException(
+                    featureName + " is only supported on Ravenwood.");
+        }
     }
 
     /**
@@ -151,5 +150,39 @@ public final class RavenwoodRule implements TestRule {
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * @return the full directory path that contains the "ravenwood-runtime" files.
+     *
+     * This method throws if called on the device side.
+     */
+    public static String getRavenwoodRuntimePath() {
+        ensureOnRavenwood("RavenwoodRule.getRavenwoodRuntimePath()");
+        return RavenwoodInternalUtils.getRavenwoodRuntimePath();
+    }
+
+    /**
+     * Load a JNI library respecting {@code java.library.path}
+     * (which reflects {@code LD_LIBRARY_PATH}).
+     *
+     * <p>{@code libname} must be the library filename without:
+     * - directory
+     * - "lib" prefix
+     * - and the ".so" extension
+     *
+     * <p>For example, in order to load "libmyjni.so", then pass "myjni".
+     *
+     * <p>This is basically the same thing as Java's {@link System#loadLibrary(String)},
+     * but this API works slightly different on ART and on the desktop Java, namely
+     * the desktop Java version uses a different entry point method name
+     * {@code JNI_OnLoad_libname()} (note the included "libname")
+     * while ART always seems to use {@code JNI_OnLoad()}.
+     *
+     * <p>This method provides the same behavior on both the device side and on Ravenwood --
+     * it uses {@code JNI_OnLoad()} as the entry point name on both.
+     */
+    public static void loadJniLibrary(String libname) {
+        RavenwoodInternalUtils.loadJniLibrary(libname);
     }
 }

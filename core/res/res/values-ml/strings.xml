@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"മൊബൈൽ നെറ്റ്‍വർക്ക് സുരക്ഷ"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"എൻക്രിപ്ഷൻ, എൻക്രിപ്റ്റ് ചെയ്യാത്ത നെറ്റ്‍വര്‍ക്കുകൾക്കുള്ള അറിയിപ്പുകൾ"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"ഉപകരണ ഐഡി ആക്സസ് ചെയ്തു"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"നിങ്ങളുടെ <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> സിം ഉപയോഗിക്കുമ്പോൾ സമീപത്തുള്ള ഒരു നെറ്റ്‌വർക്ക് നിങ്ങളുടെ ഉപകരണത്തിൻ്റെ തനത് ഐഡി (IMSI അല്ലെങ്കിൽ IMEI), <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>-ന് റെക്കോർഡ് ചെയ്തു"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"നിങ്ങളുടെ <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> സിം ഉപയോഗിക്കുമ്പോൾ സമീപത്തുള്ള ഒരു നെറ്റ്‌വർക്ക് നിങ്ങളുടെ ഉപകരണത്തിൻ്റെ തനത് ഐഡി (IMSI അല്ലെങ്കിൽ IMEI), <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>-ന് റെക്കോർഡ് ചെയ്തു. \n\nനിങ്ങളുടെ ലൊക്കേഷൻ, ആക്റ്റിവിറ്റി അല്ലെങ്കിൽ ഐഡന്റിറ്റി ലോഗ് ചെയ്തിട്ടുണ്ടെന്നാണ് ഇതിനർത്ഥം. ഇത് പൊതുവായ രീതിയാണ്, എന്നാൽ സ്വകാര്യതയെ കുറിച്ച് ആശങ്കയുള്ളവർക്ക് ഇത് ഒരു പ്രശ്നമായിരിക്കാം."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> എന്ന എന്‍ക്രിപ്റ്റ് ചെയ്ത നെറ്റ്‍വര്‍ക്കിലേക്ക് കണക്റ്റ് ചെയ്തു"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> സിം കണക്ഷന്‍ ഇപ്പോൾ കൂടുതൽ സുരക്ഷിതമാണ്"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"എൻക്രിപ്റ്റ് ചെയ്യാത്ത നെറ്റ്‍വര്‍ക്കിലേക്ക് കണക്റ്റ് ചെയ്തു"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ഡാറ്റാ സിഗ്‌നൽ പ്രവർത്തനരഹിതമാക്കി."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ഫിംഗർപ്രിന്റ് അൺലോക്കുമായി ബന്ധപ്പെട്ട് പ്രശ്നം നേരിടുന്നുണ്ടോ?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"അൺലോക്കിംഗ് അനുഭവം മെച്ചപ്പെടുത്താനുള്ള നുറുങ്ങുകൾ അവലോകനം ചെയ്യാൻ ടാപ്പ് ചെയ്യുക"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ബ്ലിങ്ക് ചെയ്യരുത്"</string>
 </resources>

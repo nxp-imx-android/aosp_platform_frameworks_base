@@ -1,6 +1,5 @@
 package com.android.systemui.communal.ui.compose
 
-import android.content.res.Configuration
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -29,7 +27,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.disabled
@@ -90,6 +87,10 @@ object TransitionDuration {
         EDIT_MODE_TO_HUB_GRID_DELAY_MS + EDIT_MODE_TO_HUB_CONTENT_MS
     const val HUB_TO_EDIT_MODE_CONTENT_MS = 250
     const val TO_GLANCEABLE_HUB_DURATION_MS = 1000
+
+    // The duration in milliseconds to animate in and our of the background for edit mode
+    // transition.
+    const val EDIT_MODE_BACKGROUND_ANIM_DURATION_MS = 300
 }
 
 val sceneTransitionsV2 = transitions {
@@ -143,6 +144,14 @@ val sceneTransitionsV2 = transitions {
             }
         }
         timestampRange(startMillis = 167, endMillis = 334) { fade(Communal.Elements.Scrim) }
+    }
+    to(CommunalScenes.Blank, key = CommunalTransitionKeys.ToEditMode) {
+        spec = tween(durationMillis = TransitionDuration.BETWEEN_HUB_AND_EDIT_MODE_MS)
+        fade(AllElements)
+    }
+    to(CommunalScenes.Communal, key = CommunalTransitionKeys.FromEditMode) {
+        spec = tween(durationMillis = TransitionDuration.BETWEEN_HUB_AND_EDIT_MODE_MS)
+        fade(AllElements)
     }
 }
 
@@ -303,20 +312,6 @@ fun CommunalContainer(
     Box(modifier = Modifier.fillMaxSize().allowGestures(touchesAllowed))
 }
 
-/** Listens to orientation changes on communal scene and reset when scene is disposed. */
-@Composable
-fun ObserveOrientationChange(viewModel: CommunalViewModel) {
-    val configuration = LocalConfiguration.current
-
-    LaunchedEffect(configuration.orientation) {
-        viewModel.onOrientationChange(configuration.orientation)
-    }
-
-    DisposableEffect(Unit) {
-        onDispose { viewModel.onOrientationChange(Configuration.ORIENTATION_UNDEFINED) }
-    }
-}
-
 /** Scene containing the glanceable hub UI. */
 @Composable
 fun ContentScope.CommunalScene(
@@ -329,8 +324,6 @@ fun ContentScope.CommunalScene(
 ) {
     val isFocusable by viewModel.isFocusable.collectAsStateWithLifecycle(initialValue = false)
 
-    // Observe screen rotation while Communal Scene is active.
-    ObserveOrientationChange(viewModel)
     Box(
         modifier =
             Modifier.element(Communal.Elements.Scrim)

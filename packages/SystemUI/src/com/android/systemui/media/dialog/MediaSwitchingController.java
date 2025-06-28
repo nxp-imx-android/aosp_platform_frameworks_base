@@ -20,6 +20,8 @@ import static android.media.RouteListingPreference.ACTION_TRANSFER_MEDIA;
 import static android.media.RouteListingPreference.EXTRA_ROUTE_ID;
 import static android.provider.Settings.ACTION_BLUETOOTH_SETTINGS;
 
+import static com.android.media.flags.Flags.allowOutputSwitcherListRearrangementWithinTimeout;
+
 import android.annotation.CallbackExecutor;
 import android.app.AlertDialog;
 import android.app.KeyguardManager;
@@ -93,6 +95,7 @@ import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.notifcollection.CommonNotifCollection;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
+import com.android.systemui.util.time.SystemClock;
 import com.android.systemui.volume.panel.domain.interactor.VolumePanelGlobalStateInteractor;
 
 import dagger.assisted.Assisted;
@@ -125,6 +128,7 @@ public class MediaSwitchingController
     private static final String PAGE_CONNECTED_DEVICES_KEY =
             "top_level_connected_devices";
     private static final long ALLOWLIST_DURATION_MS = 20000;
+    private static final long LIST_CHANGE_ALLOWED_TIMEOUT_MS = 2000;
     private static final String ALLOWLIST_REASON = "mediaoutput:remote_transfer";
 
     private final String mPackageName;
@@ -164,12 +168,14 @@ public class MediaSwitchingController
     MediaOutputMetricLogger mMetricLogger;
     private int mCurrentState;
     private final FeatureFlags mFeatureFlags;
+    private final SystemClock mClock;
     private final UserTracker mUserTracker;
     private final VolumePanelGlobalStateInteractor mVolumePanelGlobalStateInteractor;
     @NonNull private MediaOutputColorScheme mMediaOutputColorScheme;
     @NonNull private MediaOutputColorSchemeLegacy mMediaOutputColorSchemeLegacy;
     private boolean mIsGroupListCollapsed = true;
     private boolean mHasAdjustVolumeUserRestriction = false;
+    private long mStartTime;
 
     public enum BroadcastNotifyDialog {
         ACTION_FIRST_LAUNCH,
@@ -204,6 +210,7 @@ public class MediaSwitchingController
             PowerExemptionManager powerExemptionManager,
             KeyguardManager keyGuardManager,
             FeatureFlags featureFlags,
+            SystemClock clock,
             VolumePanelGlobalStateInteractor volumePanelGlobalStateInteractor,
             UserTracker userTracker) {
         mContext = context;
@@ -217,6 +224,7 @@ public class MediaSwitchingController
         mPowerExemptionManager = powerExemptionManager;
         mKeyGuardManager = keyGuardManager;
         mFeatureFlags = featureFlags;
+        mClock = clock;
         mUserTracker = userTracker;
         mToken = token;
         mVolumePanelGlobalStateInteractor = volumePanelGlobalStateInteractor;
@@ -243,6 +251,7 @@ public class MediaSwitchingController
     }
 
     protected void start(@NonNull Callback cb) {
+        mStartTime = mClock.elapsedRealtime();
         synchronized (mMediaDevicesLock) {
             mCachedMediaDevices.clear();
             mOutputMediaItemListProxy.clear();
@@ -596,23 +605,19 @@ public class MediaSwitchingController
         synchronized (mMediaDevicesLock) {
             if (!mLocalMediaManager.isPreferenceRouteListingExist()) {
                 attachRangeInfo(devices);
-                if (Flags.enableOutputSwitcherDeviceGrouping()) {
-                    List<MediaDevice> selectedDevices = new ArrayList<>();
-                    Set<String> selectedDeviceIds =
-                            getSelectedMediaDevice().stream()
-                                    .map(MediaDevice::getId)
-                                    .collect(Collectors.toSet());
-                    for (MediaDevice device : devices) {
-                        if (selectedDeviceIds.contains(device.getId())) {
-                            selectedDevices.add(device);
-                        }
+                List<MediaDevice> selectedDevices = new ArrayList<>();
+                Set<String> selectedDeviceIds =
+                        getSelectedMediaDevice().stream()
+                                .map(MediaDevice::getId)
+                                .collect(Collectors.toSet());
+                for (MediaDevice device : devices) {
+                    if (selectedDeviceIds.contains(device.getId())) {
+                        selectedDevices.add(device);
                     }
-                    devices.removeAll(selectedDevices);
-                    Collections.sort(devices, Comparator.naturalOrder());
-                    devices.addAll(0, selectedDevices);
-                } else {
-                    Collections.sort(devices, Comparator.naturalOrder());
                 }
+                devices.removeAll(selectedDevices);
+                Collections.sort(devices, Comparator.naturalOrder());
+                devices.addAll(0, selectedDevices);
             }
 
             // For the first time building list, to make sure the top device is the connected
@@ -621,12 +626,23 @@ public class MediaSwitchingController
                     containsMutingExpectedDevice(devices) && !isCurrentConnectedDeviceRemote();
             final MediaDevice connectedMediaDevice =
                     needToHandleMutingExpectedDevice ? null : getCurrentConnectedMediaDevice();
+            if (isDeviceListRearrangementAllowed()) {
+                // We erase all the items from the previous render so that the sorting and
+                // categorization are run from a clean slate.
+                mOutputMediaItemListProxy.clear();
+            }
             mOutputMediaItemListProxy.updateMediaDevices(
                     devices,
                     getSelectedMediaDevice(),
                     connectedMediaDevice,
                     needToHandleMutingExpectedDevice);
         }
+    }
+
+    /**  Whether it's allowed to change device list order and categories. */
+    private boolean isDeviceListRearrangementAllowed() {
+        return allowOutputSwitcherListRearrangementWithinTimeout()
+                && mClock.elapsedRealtime() - mStartTime <= LIST_CHANGE_ALLOWED_TIMEOUT_MS;
     }
 
     private boolean enableInputRouting() {
@@ -953,6 +969,7 @@ public class MediaSwitchingController
                         mPowerExemptionManager,
                         mKeyGuardManager,
                         mFeatureFlags,
+                        mClock,
                         mVolumePanelGlobalStateInteractor,
                         mUserTracker);
         MediaOutputBroadcastDialog dialog = new MediaOutputBroadcastDialog(mContext, true,

@@ -15,12 +15,14 @@
  */
 package android.platform.test.ravenwood;
 
-import static com.android.ravenwood.common.RavenwoodCommonUtils.log;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.log;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.EnabledOnRavenwood;
+
+import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import org.junit.runner.Description;
 
@@ -31,7 +33,7 @@ import java.util.regex.Pattern;
  * Calculates which tests need to be executed on Ravenwood.
  */
 public class RavenwoodEnablementChecker {
-    private static final String TAG = com.android.ravenwood.common.RavenwoodCommonUtils.TAG;
+    private static final String TAG = RavenwoodInternalUtils.TAG;
 
     /**
      * When this flag is enabled, all disabled tests will run, and all enabled tests will

@@ -79,6 +79,16 @@ public final class OnDeviceIntelligenceManager {
     public static final String AUGMENT_REQUEST_CONTENT_BUNDLE_KEY =
             "AugmentRequestContentBundleKey";
 
+    /**
+     * The key for a boolean extra in the request {@link Bundle} to indicate if the caller wants to
+     * receive {@link InferenceInfo} in the {@link ProcessingCallback#onInferenceInfo} callback.
+     *
+     * @hide
+     */
+    @SystemApi
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_25Q4)
+    public static final String KEY_REQUEST_INFERENCE_INFO = "request_inference_info";
+
     private static final String TAG = "OnDeviceIntelligence";
     private final Context mContext;
     private final IOnDeviceIntelligenceManager mService;
@@ -202,6 +212,46 @@ public final class OnDeviceIntelligenceManager {
             throw e.rethrowFromSystemServer();
         }
     }
+
+    /**
+     * Asynchronously get a list of features that are supported for the caller, with an option to
+     * filter the features based on the provided params.
+     *
+     * @param featureParamsFilter params to be used for filtering the features.
+     * @param callbackExecutor    executor to run the callback on.
+     * @param featureListReceiver callback to populate the list of features.
+     */
+    @RequiresPermission(Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_25Q4)
+    public void listFeatures(
+            @NonNull PersistableBundle featureParamsFilter,
+            @NonNull @CallbackExecutor Executor callbackExecutor,
+            @NonNull OutcomeReceiver<List<Feature>,
+                    OnDeviceIntelligenceException> featureListReceiver) {
+        try {
+            IListFeaturesCallback callback =
+                    new IListFeaturesCallback.Stub() {
+                        @Override
+                        public void onSuccess(List<Feature> result) {
+                            Binder.withCleanCallingIdentity(() -> callbackExecutor.execute(
+                                    () -> featureListReceiver.onResult(result)));
+                        }
+
+                        @Override
+                        public void onFailure(int errorCode, String errorMessage,
+                                PersistableBundle errorParams) {
+                            Binder.withCleanCallingIdentity(() -> callbackExecutor.execute(
+                                    () -> featureListReceiver.onError(
+                                            new OnDeviceIntelligenceException(
+                                                    errorCode, errorMessage, errorParams))));
+                        }
+                    };
+            mService.listFeaturesWithFilter(featureParamsFilter, callback);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
 
     /**
      * This method should be used to fetch details about a feature which need some additional
@@ -400,6 +450,13 @@ public final class OnDeviceIntelligenceManager {
                                 callbackExecutor.execute(() -> contentCallback.sendResult(bundle));
                             })));
                 }
+
+                @Override
+                public void onInferenceInfo(InferenceInfo info) {
+                    Binder.withCleanCallingIdentity(
+                            () -> callbackExecutor.execute(
+                                    () -> processingCallback.onInferenceInfo(info)));
+                }
             };
 
 
@@ -484,6 +541,14 @@ public final class OnDeviceIntelligenceManager {
                                         callbackExecutor.execute(
                                                 () -> contentCallback.sendResult(bundle));
                                     })));
+                }
+
+                @Override
+                public void onInferenceInfo(InferenceInfo info) {
+                    Binder.withCleanCallingIdentity(() -> {
+                        callbackExecutor.execute(
+                                () -> streamingProcessingCallback.onInferenceInfo(info));
+                    });
                 }
             };
 

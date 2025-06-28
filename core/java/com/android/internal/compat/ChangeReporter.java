@@ -94,17 +94,20 @@ public class ChangeReporter {
      * @param state            of the reported change - enabled/disabled/only logged
      * @param isKnownSystemApp do we know that the affected app is a system app? (if true is
      *                         definitely a system app, if false it may or may not be a system app)
+     * @param isLoggableBySdk  whether debug logging is allowed for this change based on target
+     *                         SDK version. This is combined with other logic to determine whether
+     *                         to actually log. If the sdk version does not matter, should be true.
      * @param doStatsLog       whether to log to stats log.
      */
     public void reportChange(int uid, long changeId, int state, boolean isKnownSystemApp,
-            boolean doStatsLog) {
+            boolean isLoggableBySdk, boolean doStatsLog) {
         boolean isAlreadyReported =
                 checkAndSetIsAlreadyReported(uid, new ChangeReport(changeId, state));
         if (doStatsLog && shouldWriteToStatsLog(isKnownSystemApp, isAlreadyReported)) {
             FrameworkStatsLog.write(FrameworkStatsLog.APP_COMPATIBILITY_CHANGE_REPORTED, uid,
                     changeId, state, mSource);
         }
-        if (shouldWriteToDebug(isAlreadyReported, state)) {
+        if (shouldWriteToDebug(isAlreadyReported, state, isLoggableBySdk)) {
             debugLog(uid, changeId, state);
         }
     }
@@ -119,7 +122,7 @@ public class ChangeReporter {
      * @param doStatsLog whether to log to stats log.
      */
     public void reportChange(int uid, long changeId, int state, boolean doStatsLog) {
-        reportChange(uid, changeId, state, false, doStatsLog);
+        reportChange(uid, changeId, state, false, true, doStatsLog);
     }
 
     /**
@@ -145,7 +148,7 @@ public class ChangeReporter {
      * @return true if the report should be logged
      */
     @VisibleForTesting
-    public boolean shouldWriteToStatsLog(boolean isKnownSystemApp, boolean isAlreadyReported) {
+    boolean shouldWriteToStatsLog(boolean isKnownSystemApp, boolean isAlreadyReported) {
         // We don't log where we know the source is a system app or is already reported
         return !isKnownSystemApp && !isAlreadyReported;
     }
@@ -155,9 +158,13 @@ public class ChangeReporter {
      *
      * @param isAlreadyReported is the change already reported
      * @param state             of the reported change - enabled/disabled/only logged
+     * @param isLoggableBySdk   whether debug logging is allowed for this change based on target SDK
+     *                          version. This is combined with other logic to determine whether to
+     *                          actually log. If the sdk version does not matter, should be true.
      * @return true if the report should be logged
      */
-    private boolean shouldWriteToDebug(boolean isAlreadyReported, int state) {
+    private boolean shouldWriteToDebug(
+            boolean isAlreadyReported, int state, boolean isLoggableBySdk) {
         // If log all bit is on, always return true.
         if (mDebugLogAll) return true;
         // If the change has already been reported, do not write.
@@ -169,8 +176,22 @@ public class ChangeReporter {
         boolean skipLoggingFlag = Flags.skipOldAndDisabledCompatLogging();
         if (!skipLoggingFlag || Log.isLoggable(TAG, Log.DEBUG)) return true;
 
-        // Log if the change is enabled
-        return state != STATE_DISABLED;
+        // Log if the change is enabled and targets the latest sdk version.
+        return isLoggableBySdk && state != STATE_DISABLED;
+    }
+
+    /**
+     * Returns whether the next report should be logged to logcat.
+     *
+     * @param uid         affected by the change
+     * @param changeId    the reported change id
+     * @param state       of the reported change - enabled/disabled/only logged
+     *
+     * @return true if the report should be logged
+     */
+    @VisibleForTesting
+    boolean shouldWriteToDebug(int uid, long changeId, int state) {
+        return shouldWriteToDebug(uid, changeId, state, true);
     }
 
     /**
@@ -179,12 +200,15 @@ public class ChangeReporter {
      * @param uid               affected by the change
      * @param changeId          the reported change id
      * @param state             of the reported change - enabled/disabled/only logged
+     * @param isLoggableBySdk   whether debug logging is allowed for this change based on target SDK
+     *                          version. This is combined with other logic to determine whether to
+     *                          actually log. If the sdk version does not matter, should be true.
      * @return true if the report should be logged
      */
     @VisibleForTesting
-    public boolean shouldWriteToDebug(int uid, long changeId, int state) {
+    boolean shouldWriteToDebug(int uid, long changeId, int state, boolean isLoggableBySdk) {
         return shouldWriteToDebug(
-                isAlreadyReported(uid, new ChangeReport(changeId, state)), state);
+                isAlreadyReported(uid, new ChangeReport(changeId, state)), state, isLoggableBySdk);
     }
 
     /**
@@ -216,7 +240,7 @@ public class ChangeReporter {
      * @return true if the report should be logged
      */
     @VisibleForTesting
-    public boolean isAlreadyReported(int uid, long changeId, int state) {
+    boolean isAlreadyReported(int uid, long changeId, int state) {
         return isAlreadyReported(uid, new ChangeReport(changeId, state));
     }
 

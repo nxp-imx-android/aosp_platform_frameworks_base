@@ -7005,6 +7005,10 @@ public abstract class Context {
      * Use with {@link #getSystemService(String)} to retrieve a
      * {@link android.service.chooser.ChooserManager}.
      *
+     * <p class="note"><b>Note:</b> This service is not available on Wear OS, Android TV, or Android
+     * Auto devices. On these form factors, calls to {@code #getSystemService} for this service will
+     * return {@code null}.
+     *
      * @see #getSystemService(String)
      * @see android.service.chooser.ChooserManager
      */

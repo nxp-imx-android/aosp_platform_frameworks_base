@@ -16,7 +16,7 @@
 
 package com.android.server.wm.flicker.service.close.flicker
 
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.flicker.FlickerConfig

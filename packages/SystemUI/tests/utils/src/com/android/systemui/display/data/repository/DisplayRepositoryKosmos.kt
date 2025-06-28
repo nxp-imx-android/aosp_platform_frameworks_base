@@ -41,6 +41,7 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewModelFactory
+import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import com.android.systemui.util.mockito.mock
 import javax.inject.Provider
 import kotlinx.coroutines.CoroutineScope
@@ -84,6 +85,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val statusBarFragmentProvider: Provider<CollapsedStatusBarFragment>
             get() = Provider<CollapsedStatusBarFragment> { mock<CollapsedStatusBarFragment>() }
+
+        override val statusBarWindowStateController: StatusBarWindowStateController
+            get() = mock<StatusBarWindowStateController>()
 
         override val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory
             get() =

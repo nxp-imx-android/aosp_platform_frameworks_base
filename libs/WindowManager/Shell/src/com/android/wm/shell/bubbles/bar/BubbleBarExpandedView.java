@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.bubbles.bar;
 
+import static android.content.pm.ActivityInfo.isFixedOrientationLandscape;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 import static com.android.wm.shell.bubbles.util.BubbleUtils.isValidToBubble;
@@ -414,9 +415,18 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     @Override
     public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
         if (!isValidToBubble(taskInfo)) {
-            // TODO(b/411558731): Besides just showing a warning toast, also force the app to return
-            // to fullscreen, similar to split screen behavior when not supported.
             Toast.makeText(mContext, R.string.bubble_not_supported_text, Toast.LENGTH_SHORT).show();
+        }
+        if (mBubble != null && taskInfo != null && taskInfo.topActivityInfo != null) {
+            // TODO(b/419379112): Whether a Foldable device is large screen or a small screen
+            // (unfolded or folded) is only updated in onTaskInfoChanged AFTER
+            // onFoldStateChanged is called, so the top Activity being fixed orientation
+            // landscape is used as a proxy when unfolded in onFoldStateChanged to decide how
+            // the Bubble should be displayed. It'd be better just have move that logic here and
+            // use isValidToBubble instead.
+            final boolean isLandscape =
+                    isFixedOrientationLandscape(taskInfo.topActivityInfo.screenOrientation);
+            mBubble.setIsTopActivityFixedOrientationLandscape(isLandscape);
         }
     }
 

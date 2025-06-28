@@ -3088,8 +3088,6 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
         // There needs to be a root on each display.
         for (int i = 0; i < sortedTargets.size(); ++i) {
             final WindowContainer<?> wc = sortedTargets.get(i).mContainer;
-            // Don't include wallpapers since they are in a different DA.
-            if (isWallpaper(wc)) continue;
             final DisplayContent dc = wc.getDisplayContent();
             if (dc == null) continue;
             final int endDisplayId = dc.getDisplayId();
@@ -3118,8 +3116,8 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
                 // meant to be always-on-top throughout a transition.
                 leashReference = ancestor.getTopChild();
             }
-            final SurfaceControl rootLeash = leashReference.makeAnimationLeash().setName(
-                    "Transition Root: " + leashReference.getName())
+            final SurfaceControl rootLeash = leashReference.makeAnimationLeash()
+                    .setName("Transition Root: " + leashReference.getName())
                     .setCallsite("Transition.calculateTransitionRoots").build();
             rootLeash.setUnreleasedWarningCallSite("Transition.calculateTransitionRoots");
             // Update layers to start transaction because we prevent assignment during collect, so
@@ -3329,7 +3327,7 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             topApp = sortedTargets.get(i).mContainer;
             break;
         }
-        if (topApp.asActivityRecord() != null) {
+        if (topApp instanceof ActivityRecord) {
             final ActivityRecord topActivity = topApp.asActivityRecord();
             animOptions = addCustomActivityTransition(topActivity, true/* open */,
                     null /* animOptions */);
@@ -3446,16 +3444,20 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     @NonNull
     static WindowContainer<?> findCommonAncestor(
             @NonNull ArrayList<ChangeInfo> targets,
-            @NonNull WindowContainer<?> topApp) {
-        final int displayId = getDisplayId(topApp);
-        WindowContainer<?> ancestor = topApp.getParent();
+            @NonNull WindowContainer<?> topWc) {
+        final int displayId = getDisplayId(topWc);
+        WindowContainer<?> ancestor = topWc.getParent();
         // Go up ancestor parent chain until all targets are descendants. Ancestor should never be
         // null because all targets are attached.
         for (int i = targets.size() - 1; i >= 0; i--) {
             final ChangeInfo change = targets.get(i);
             final WindowContainer wc = change.mContainer;
-            if (isWallpaper(wc) || getDisplayId(wc) != displayId) {
-                // Skip the non-app window or windows on a different display
+            if (getDisplayId(wc) != displayId) {
+                // Skip windows on a different display
+                continue;
+            }
+            if (isWallpaper(wc) != isWallpaper(topWc)) {
+                // Skip windows in a different DisplayArea.
                 continue;
             }
             // Skip order-only display-level changes since the display itself isn't changing.

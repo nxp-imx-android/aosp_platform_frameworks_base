@@ -17,7 +17,7 @@
 package com.android.server.wm.flicker.ime
 
 import android.platform.test.annotations.Presubmit
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.platform.test.rule.UnlockScreenRule
 import android.tools.Rotation
 import android.tools.flicker.junit.FlickerParametersRunnerFactory

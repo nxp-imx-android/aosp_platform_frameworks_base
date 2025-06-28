@@ -17,7 +17,6 @@
 
 package android.companion;
 
-import android.annotation.FlaggedApi;
 import android.annotation.MainThread;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -264,7 +263,6 @@ public abstract class CompanionDeviceService extends Service {
      * @param associationInfo A record for the companion device.
      * @deprecated use {@link #onDevicePresenceEvent(DevicePresenceEvent)}} instead.
      */
-    @FlaggedApi(Flags.FLAG_DEVICE_PRESENCE)
     @Deprecated
     @MainThread
     public void onDeviceAppeared(@NonNull AssociationInfo associationInfo) {
@@ -279,7 +277,6 @@ public abstract class CompanionDeviceService extends Service {
      * @param associationInfo A record for the companion device.
      * @deprecated use {@link #onDevicePresenceEvent(DevicePresenceEvent)}} instead.
      */
-    @FlaggedApi(Flags.FLAG_DEVICE_PRESENCE)
     @Deprecated
     @MainThread
     public void onDeviceDisappeared(@NonNull AssociationInfo associationInfo) {
@@ -293,7 +290,6 @@ public abstract class CompanionDeviceService extends Service {
      *
      * @see CompanionDeviceManager#startObservingDevicePresence(ObservingDevicePresenceRequest)
      */
-    @FlaggedApi(Flags.FLAG_DEVICE_PRESENCE)
     @MainThread
     public void onDevicePresenceEvent(@NonNull DevicePresenceEvent event) {
         // Do nothing. Companion apps can override this function.

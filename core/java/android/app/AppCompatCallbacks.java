@@ -86,29 +86,24 @@ public final class AppCompatCallbacks implements Compatibility.BehaviorChangeDel
     }
 
     public boolean isChangeEnabled(long changeId) {
-        boolean isLoggable = mLogChangeChecksToStatsD ||
-            changeIdInChangeList(mLoggableChanges, changeId);
-        if (!isLoggable) {
-            boolean isEnabled = !changeIdInChangeList(mDisabledChanges, changeId);
-            return isEnabled;
-        }
         return isChangeEnabledAndReport(changeId, mLogChangeChecksToStatsD);
     }
 
     private boolean isChangeEnabledAndReport(long changeId, boolean doStatsLog) {
         boolean isEnabled = !changeIdInChangeList(mDisabledChanges, changeId);
+        boolean isLoggable = changeIdInChangeList(mLoggableChanges, changeId);
         if (isEnabled) {
             // Not present in the disabled changeId array
-            reportChange(changeId, ChangeReporter.STATE_ENABLED, doStatsLog);
+            reportChange(changeId, ChangeReporter.STATE_ENABLED, isLoggable, doStatsLog);
             return true;
         }
-        reportChange(changeId, ChangeReporter.STATE_DISABLED, doStatsLog);
+        reportChange(changeId, ChangeReporter.STATE_DISABLED, isLoggable, doStatsLog);
         return false;
     }
 
-    private void reportChange(long changeId, int state, boolean doStatsLog) {
+    private void reportChange(long changeId, int state, boolean isLoggable, boolean doStatsLog) {
         int uid = Process.myUid();
-        mChangeReporter.reportChange(uid, changeId, state, false, doStatsLog);
+        mChangeReporter.reportChange(uid, changeId, state, false, isLoggable, doStatsLog);
     }
 
 }

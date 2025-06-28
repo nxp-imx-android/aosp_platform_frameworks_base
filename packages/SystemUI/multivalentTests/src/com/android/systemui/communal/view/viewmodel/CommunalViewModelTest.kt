@@ -30,6 +30,7 @@ import com.android.systemui.Flags.FLAG_COMMUNAL_HUB
 import com.android.systemui.Flags.FLAG_COMMUNAL_RESPONSIVE_GRID
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_DIRECT_EDIT_MODE
 import com.android.systemui.Flags.FLAG_GLANCEABLE_HUB_V2
+import com.android.systemui.Flags.FLAG_HUB_EDIT_MODE_TRANSITION
 import com.android.systemui.Flags.FLAG_NOTIFICATION_SHADE_BLUR
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.fakeKeyguardBouncerRepository
@@ -55,6 +56,7 @@ import com.android.systemui.communal.shared.log.CommunalMetricsLogger
 import com.android.systemui.communal.shared.log.communalSceneLogger
 import com.android.systemui.communal.shared.model.CommunalContentSize
 import com.android.systemui.communal.shared.model.CommunalScenes
+import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel
 import com.android.systemui.communal.ui.viewmodel.CommunalViewModel.Companion.POPUP_AUTO_HIDE_TIMEOUT_MS
 import com.android.systemui.communal.ui.viewmodel.PopupType
@@ -1006,6 +1008,52 @@ class CommunalViewModelTest(flags: FlagsParameterization) : SysuiTestCase() {
                 transitionState = TransitionState.STARTED,
             )
             assertThat(swipeToHubEnabled).isFalse()
+        }
+
+    @Test
+    @EnableFlags(FLAG_HUB_EDIT_MODE_TRANSITION)
+    fun showBackgroundForEditModeTransition_flagEnabled() =
+        kosmos.runTest {
+            val showBackground by collectLastValue(underTest.showBackgroundForEditModeTransition)
+
+            // Do not show background when not interacting with edit mode.
+            communalSceneInteractor.setEditModeState(null)
+            assertThat(showBackground).isFalse()
+
+            // Do not show background yet when edit mode is just starting; user may need to
+            // authenticate first.
+            communalSceneInteractor.setEditModeState(EditModeState.STARTING)
+            assertThat(showBackground).isFalse()
+
+            // Show background when edit mode activity has been created to hide the launching
+            // animation below.
+            communalSceneInteractor.setEditModeState(EditModeState.CREATED)
+            assertThat(showBackground).isTrue()
+
+            // Continue to show background when edit mode activity is showing, though the SystemUI
+            // window will be hidden. This ensures that when SystemUI is visible again the
+            // background hides the edit mode activity finish animation below.
+            communalSceneInteractor.setEditModeState(EditModeState.SHOWING)
+            assertThat(showBackground).isTrue()
+        }
+
+    @Test
+    @DisableFlags(FLAG_HUB_EDIT_MODE_TRANSITION)
+    fun showBackgroundForEditModeTransition_flagDisabled_alwaysFalse() =
+        kosmos.runTest {
+            val showBackground by collectLastValue(underTest.showBackgroundForEditModeTransition)
+
+            communalSceneInteractor.setEditModeState(null)
+            assertThat(showBackground).isFalse()
+
+            communalSceneInteractor.setEditModeState(EditModeState.STARTING)
+            assertThat(showBackground).isFalse()
+
+            communalSceneInteractor.setEditModeState(EditModeState.CREATED)
+            assertThat(showBackground).isFalse()
+
+            communalSceneInteractor.setEditModeState(EditModeState.SHOWING)
+            assertThat(showBackground).isFalse()
         }
 
     private suspend fun setIsMainUser(isMainUser: Boolean) {

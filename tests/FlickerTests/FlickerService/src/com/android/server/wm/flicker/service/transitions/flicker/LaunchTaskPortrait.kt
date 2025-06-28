@@ -16,7 +16,7 @@
 
 package com.android.server.wm.flicker.service.transitions.flicker
 
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.tools.Rotation
 import android.tools.flicker.FlickerConfig
 import android.tools.flicker.annotation.ExpectedScenarios

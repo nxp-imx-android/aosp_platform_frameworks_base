@@ -93,6 +93,7 @@ import android.view.WindowMetrics;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.app.displaylib.PerDisplayRepository;
 import com.android.compose.animation.scene.ObservableTransitionState;
 import com.android.internal.colorextraction.ColorExtractor;
 import com.android.internal.logging.UiEventLogger;
@@ -116,6 +117,7 @@ import com.android.systemui.classifier.FalsingManagerFake;
 import com.android.systemui.colorextraction.SysuiColorExtractor;
 import com.android.systemui.communal.shared.model.CommunalScenes;
 import com.android.systemui.demomode.DemoModeController;
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent;
 import com.android.systemui.dump.DumpManager;
 import com.android.systemui.emergency.EmergencyGestureModule.EmergencyGestureIntentFactory;
 import com.android.systemui.flags.DisableSceneContainer;
@@ -224,7 +226,6 @@ import dagger.Lazy;
 import kotlinx.coroutines.test.TestScope;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -323,6 +324,9 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     @Mock private StatusBarWindowControllerStore mStatusBarWindowControllerStore;
     @Mock private Provider<CollapsedStatusBarFragment> mCollapsedStatusBarFragmentProvider;
     @Mock private StatusBarWindowStateController mStatusBarWindowStateController;
+    @Mock private SystemUIDisplaySubcomponent mSystemUIDisplaySubcomponent;
+    @Mock
+    private PerDisplayRepository<SystemUIDisplaySubcomponent> mPerDisplaySubcomponentRepository;
     @Mock private Bubbles mBubbles;
     @Mock private NoteTaskController mNoteTaskController;
     @Mock private NotificationShadeWindowController mNotificationShadeWindowController;
@@ -416,6 +420,11 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
 
         when(mStatusBarWindowControllerStore.getDefaultDisplay())
                 .thenReturn(mStatusBarWindowController);
+
+        when(mSystemUIDisplaySubcomponent.getStatusBarWindowStateController())
+                .thenReturn(mStatusBarWindowStateController);
+        when(mPerDisplaySubcomponentRepository.get(anyInt()))
+                .thenReturn(mSystemUIDisplaySubcomponent);
 
         mVisualInterruptionDecisionProvider =
                 VisualInterruptionDecisionProviderTestUtil.INSTANCE.createProviderByFlag(
@@ -551,7 +560,7 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                         mock(HomeStatusBarComponent.Factory.class),
                         emptySet()),
                 mStatusBarWindowControllerStore,
-                mStatusBarWindowStateController,
+                mPerDisplaySubcomponentRepository,
                 new FakeStatusBarModeRepository(),
                 mKeyguardUpdateMonitor,
                 mStatusBarSignalPolicy,
@@ -702,7 +711,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @Ignore("b/427066068")
     public void lockscreenStateMetrics_notShowing_secure() {
         // uninteresting state, except that fingerprint must be non-zero
         when(mKeyguardStateController.isOccluded()).thenReturn(false);
@@ -985,7 +993,8 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
     }
 
     @Test
-    @Ignore("b/427066068")
+    // When the scene container is enabled, StatusBarStateController.setState() is no longer needed.
+    @DisableSceneContainer
     public void testShowKeyguardImplementation_setsState() {
         when(mLockscreenUserManager.getCurrentProfiles()).thenReturn(new SparseArray<>());
 
@@ -1249,7 +1258,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
 
     @Test
     @DisableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    @Ignore("b/427066068")
     public void dismissKeyboardShortcuts_largeScreen_newFlagsDisabled_dismissesTabletVersion() {
         switchToLargeScreen();
         mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);
@@ -1300,7 +1308,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
 
     @Test
     @DisableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    @Ignore("b/427066068")
     public void dismissKeyboardShortcuts_smallScreen_bothFlagsDisabled_dismissesPhoneVersion() {
         switchToSmallScreen();
         mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, false);
@@ -1314,7 +1321,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
 
     @Test
     @EnableFlags(FLAG_KEYBOARD_SHORTCUT_HELPER_REWRITE)
-    @Ignore("b/427066068")
     public void toggleKeyboardShortcuts_largeScreen_bothFlagsEnabled_doesNotTogglesAny() {
         switchToLargeScreen();
         mFeatureFlags.set(SHORTCUT_LIST_SEARCH_LAYOUT, true);

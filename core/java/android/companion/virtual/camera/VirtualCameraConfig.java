@@ -34,9 +34,9 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.CaptureResult;
 import android.hardware.camera2.impl.CameraMetadataNative;
-import android.hardware.camera2.params.SessionConfiguration;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.RemoteException;
 import android.util.ArraySet;
 import android.view.Surface;
 
@@ -393,13 +393,13 @@ public final class VirtualCameraConfig implements Parcelable {
          * <p>This changes which {@link VirtualCameraCallback} methods are called. When enabled,
          * {@link VirtualCameraCallback#onProcessCaptureRequest(int, long, CaptureRequest)}
          * is called and a {@code Consumer} is received in
-         * {@link VirtualCameraCallback#onSessionConfigured(SessionConfiguration, ObjLongConsumer)}.
-         * The {@code Consumer} takes the {@link CaptureResult} and the timestamp (as {@code long})
-         * for its parameters.
+         * {@link VirtualCameraCallback#onConfigureSession(VirtualCameraSessionConfig,
+         * ObjLongConsumer)}. The {@code Consumer} takes the {@link CaptureResult} and
+         * the timestamp (as {@code long}) for its parameters.
          *
          * @param perFrameCameraMetadataEnabled if set camera metadata is handled for each frame
-         *
-         * @see VirtualCameraCallback#onSessionConfigured
+         * @see VirtualCameraCallback#onConfigureSession(VirtualCameraSessionConfig,
+         * ObjLongConsumer)
          * @see VirtualCameraCallback#onProcessCaptureRequest(int, long)
          * @see VirtualCameraCallback#onProcessCaptureRequest(int, long, CaptureRequest)
          */
@@ -416,11 +416,17 @@ public final class VirtualCameraConfig implements Parcelable {
         /**
          * Sets the {@link CameraCharacteristics} to expose for the configured virtual camera.
          * This field is optional and can be omitted.
-         * When set, this {@link CameraCharacteristics} becomes the source of truth and
-         * {@link #setLensFacing} and {@link #setSensorOrientation} are ignored.
          * <p>
-         * This also means that the corresponding key must be set in the
+         * When set, this {@link CameraCharacteristics} represents the static configuration of
+         * the {@link VirtualCamera}, except for the stream configurations which are still
+         * configured using the {@link #addStreamConfig}.
+         * The and {@link #setLensFacing} and {@link #setSensorOrientation} are ignored, but
+         * that also means that the corresponding key must be set in the
          * {@link CameraCharacteristics}.
+         * <p>
+         * The {@link CameraCharacteristics} needs to contain the set of mandatory
+         * {@link CameraCharacteristics.Key}s required by the
+         * <a href="https://android.googlesource.com/platform/hardware/libhardware/+/refs/heads/main/include_all/hardware/camera3.h">Camera HAL specification</a>
          *
          * @param cameraCharacteristics The instance of the {@link CameraCharacteristics}
          *                              to be associated with the virtual camera.
@@ -488,6 +494,25 @@ public final class VirtualCameraConfig implements Parcelable {
                 mExecutor.execute(mCallback::onOpenCamera);
             }
         }
+
+        @Override
+        public void onConfigureSession(CaptureRequest sessionParameters,
+                ICaptureResultConsumer captureResultConsumer) {
+            if (Flags.virtualCameraMetadata()) {
+                VirtualCameraSessionConfig virtualCameraSessionConfig =
+                        new VirtualCameraSessionConfig(sessionParameters);
+                mExecutor.execute(() -> mCallback.onConfigureSession(virtualCameraSessionConfig,
+                        (captureResult, timestamp) -> {
+                            try {
+                                captureResultConsumer.sendCaptureResult(timestamp,
+                                        captureResult.getNativeMetadata());
+                            } catch (RemoteException e) {
+                                throw e.rethrowFromSystemServer();
+                            }
+                        }));
+            }
+        }
+
 
         @Override
         public void onStreamConfigured(int streamId, Surface surface, int width, int height,

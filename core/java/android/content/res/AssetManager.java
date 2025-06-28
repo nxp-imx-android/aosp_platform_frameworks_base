@@ -48,7 +48,7 @@ import android.util.TypedValue;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.content.om.OverlayConfig;
-import com.android.internal.ravenwood.RavenwoodEnvironment;
+import com.android.internal.ravenwood.RavenwoodHelperBridge;
 
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
@@ -226,7 +226,7 @@ public final class AssetManager implements AutoCloseable {
     }
 
     private static String getFrameworkApkPath$ravenwood() {
-        return RavenwoodEnvironment.getInstance().getRavenwoodRuntimePath()
+        return RavenwoodHelperBridge.getInstance().getRavenwoodRuntimePath()
                 + FRAMEWORK_APK_PATH_RAVENWOOD;
     }
 
@@ -286,7 +286,7 @@ public final class AssetManager implements AutoCloseable {
 
             // TODO(Ravenwood): overlay support?
             final String[] systemIdmapPaths =
-                    RavenwoodEnvironment.getInstance().isRunningOnRavenwood() ? new String[0] :
+                    RavenwoodHelperBridge.getInstance().isRunningOnRavenwood() ? new String[0] :
                     OverlayConfig.getZygoteInstance().createImmutableFrameworkIdmapsInZygote();
             for (String idmapPath : systemIdmapPaths) {
                 apkAssets.add(ApkAssets.loadOverlayFromPath(idmapPath, ApkAssets.PROPERTY_SYSTEM));
@@ -1854,7 +1854,7 @@ public final class AssetManager implements AutoCloseable {
             @Nullable XmlBlock.Parser parser, @NonNull int[] inAttrs, long outValuesAddress,
             long outIndicesAddress) {
         Objects.requireNonNull(inAttrs, "inAttrs");
-        var runtime = RavenwoodEnvironment.getInstance();
+        var runtime = RavenwoodHelperBridge.getInstance();
         final int[] outValues = runtime.fromAddress(outValuesAddress);
         final int[] outIndices = runtime.fromAddress(outIndicesAddress);
         synchronized (this) {

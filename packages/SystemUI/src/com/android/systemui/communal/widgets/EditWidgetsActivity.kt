@@ -16,10 +16,12 @@
 
 package com.android.systemui.communal.widgets
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application.ActivityLifecycleCallbacks
 import android.content.Intent
 import android.content.IntentSender
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.os.RemoteException
 import android.util.Log
@@ -43,6 +45,7 @@ import com.android.systemui.communal.shared.model.CommunalScenes
 import com.android.systemui.communal.shared.model.CommunalTransitionKeys
 import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.communal.ui.compose.CommunalHub
+import com.android.systemui.communal.ui.compose.TransitionDuration
 import com.android.systemui.communal.ui.view.layout.sections.CommunalAppWidgetSection
 import com.android.systemui.communal.ui.viewmodel.CommunalEditModeViewModel
 import com.android.systemui.communal.util.WidgetPickerIntentUtils.getWidgetExtraFromIntent
@@ -54,7 +57,9 @@ import com.android.systemui.log.dagger.CommunalLog
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.settings.UserTracker
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 
 /** An Activity for editing the widgets that appear in hub mode. */
@@ -181,8 +186,25 @@ constructor(
     // Completes when the activity UI is rendered and ready for the hub to edit mode transition.
     private val readyDeferred = CompletableDeferred<Unit>()
 
+    // Completes when the lock screen animation is complete and is ready to a scene change.
+    private val lockscreenReadyDeferred = CompletableDeferred<Unit>()
+
+    @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        if (!communalViewModel.isScreenRotationAllowed()) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
+
+        if (Flags.hubEditModeTransition()) {
+            communalViewModel.setEditModeState(EditModeState.CREATED)
+
+            lifecycleScope.launch {
+                delay(TransitionDuration.EDIT_MODE_BACKGROUND_ANIM_DURATION_MS.milliseconds)
+                lockscreenReadyDeferred.complete(Unit)
+            }
+        }
 
         listenForTransitionAndChangeScene()
 
@@ -221,6 +243,10 @@ constructor(
                 // Wait for the edit mode activity to be ready underneath the hub before starting
                 // the hub to edit mode transition.
                 readyDeferred.await()
+                // Wait for lock screen background animation to finish.
+                lockscreenReadyDeferred.await()
+                // Edit mode activity now ready to show.
+                communalViewModel.setEditModeState(EditModeState.READY_TO_SHOW)
             } else {
                 communalViewModel.canShowEditMode.first { it }
             }
@@ -273,7 +299,9 @@ constructor(
 
     private fun onEditDone() {
         lifecycleScope.launch {
-            communalViewModel.cleanupEditModeState()
+            if (!Flags.hubEditModeTransition()) {
+                communalViewModel.cleanupEditModeState()
+            }
 
             communalViewModel.changeScene(
                 scene = CommunalScenes.Communal,
@@ -364,8 +392,8 @@ constructor(
         uiEventLogger.log(CommunalUiEvent.COMMUNAL_HUB_EDIT_MODE_SHOWN)
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onEnterAnimationComplete() {
+        super.onEnterAnimationComplete()
 
         readyDeferred.complete(Unit)
     }

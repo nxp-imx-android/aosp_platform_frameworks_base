@@ -34,11 +34,6 @@ import java.util.Objects;
 @SystemService(Context.SELECTION_TOOLBAR_SERVICE)
 public final class SelectionToolbarManager {
 
-    /**
-     * Used to mark a toolbar that has no toolbar token id.
-     */
-    public static final long NO_TOOLBAR_ID = 0;
-
     private final ISelectionToolbarManager mService;
 
     public SelectionToolbarManager(@NonNull ISelectionToolbarManager service) {
@@ -60,22 +55,22 @@ public final class SelectionToolbarManager {
     }
 
     /**
-     * Request to hide selection toolbar.
+     * Request to hide selection toolbar for the current UID.
      */
-    public void hideToolbar(long widgetToken) {
+    public void hideToolbar() {
         try {
-            mService.hideToolbar(widgetToken);
+            mService.hideToolbar();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }
     }
 
     /**
-     * Dismiss to dismiss selection toolbar.
+     * Dismiss to dismiss selection toolbar for the current UID.
      */
-    public void dismissToolbar(long widgetToken) {
+    public void dismissToolbar() {
         try {
-            mService.dismissToolbar(widgetToken);
+            mService.dismissToolbar();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

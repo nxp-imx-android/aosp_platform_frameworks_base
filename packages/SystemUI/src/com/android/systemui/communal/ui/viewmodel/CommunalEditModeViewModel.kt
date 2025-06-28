@@ -28,6 +28,7 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityManager
 import com.android.internal.logging.UiEventLogger
+import com.android.systemui.Flags
 import com.android.systemui.communal.dagger.CommunalModule.Companion.LAUNCHER_PACKAGE
 import com.android.systemui.communal.data.model.CommunalWidgetCategories
 import com.android.systemui.communal.domain.interactor.CommunalInteractor
@@ -51,6 +52,7 @@ import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.dagger.MediaModule
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.statusbar.policy.KeyguardStateController
 import com.android.systemui.util.kotlin.BooleanFlowOperators.allOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import javax.inject.Inject
@@ -60,6 +62,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
@@ -73,6 +76,7 @@ constructor(
     private val communalInteractor: CommunalInteractor,
     private val communalSettingsInteractor: CommunalSettingsInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
+    private val keyguardStateController: KeyguardStateController,
     @Named(MediaModule.COMMUNAL_HUB) mediaHost: MediaHost,
     private val uiEventLogger: UiEventLogger,
     @CommunalLog logBuffer: LogBuffer,
@@ -95,11 +99,14 @@ constructor(
 
     override val isEditMode = true
 
-    override val isCommunalContentVisible: Flow<Boolean> =
+    private val editModeShowing =
         communalSceneInteractor.editModeState.map { it == EditModeState.SHOWING }
 
+    override val isCommunalContentVisible: Flow<Boolean> =
+        if (Flags.hubEditModeTransition()) flowOf(true) else editModeShowing
+
     val showDisclaimer: Flow<Boolean> =
-        allOf(isCommunalContentVisible, not(communalInteractor.isDisclaimerDismissed))
+        allOf(editModeShowing, not(communalInteractor.isDisclaimerDismissed))
 
     fun onDisclaimerDismissed() {
         communalInteractor.setDisclaimerDismissed()
@@ -280,6 +287,9 @@ constructor(
         // Set the scroll position of the glanceable hub to match where we are now.
         persistScrollPosition()
     }
+
+    /** Whether screen rotation is allowed. If false, screen orientation should remain portrait. */
+    fun isScreenRotationAllowed(): Boolean = keyguardStateController.isKeyguardScreenRotationAllowed
 
     companion object {
         private const val TAG = "CommunalEditModeViewModel"

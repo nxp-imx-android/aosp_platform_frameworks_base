@@ -203,6 +203,14 @@ flag {
 }
 
 flag {
+    name: "bluetooth_bugreport_mode"
+    is_exported: true
+    namespace: "bluetooth"
+    description: "Add bluetooth bugreport mode containing subset of log sections only related to bluetooth debugging."
+    bug: "410692617"
+}
+
+flag {
     name: "bugreport_multi_display_screenshot_enabled"
     namespace: "crumpet"
     description: "Enable a flag taking screenshots of all displays in bugreport."

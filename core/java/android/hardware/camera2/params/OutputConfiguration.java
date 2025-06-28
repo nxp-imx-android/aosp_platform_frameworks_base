@@ -965,7 +965,7 @@ public final class OutputConfiguration implements Parcelable {
         mConfiguredSize = surfaceSize;
         mConfiguredFormat = StreamConfigurationMap.imageFormatToInternal(format);
         mConfiguredDataspace = StreamConfigurationMap.imageFormatToDataspace(format);
-        mPublicFormat = format;
+        mPublicFormat = SurfaceUtils.getOverrideFormat(format, usage);
         mConfiguredGenerationId = 0;
         mIsDeferredConfig = false;
         mIsShared = false;

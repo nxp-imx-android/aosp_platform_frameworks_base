@@ -16,7 +16,7 @@
 
 package android.platform.test.ravenwood;
 
-import com.android.ravenwood.common.RavenwoodCommonUtils;
+import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -167,6 +167,6 @@ public final class RavenwoodNativeLoader {
         setProperty(GRAPHICS_NATIVE_CLASSES, libhwuiClasses);
         log("Loading " + LIBANDROID_RUNTIME_NAME + " for '" + libandroidClasses + "' and '"
                 + libhwuiClasses + "'");
-        RavenwoodCommonUtils.loadJniLibrary(LIBANDROID_RUNTIME_NAME);
+        RavenwoodInternalUtils.loadJniLibrary(LIBANDROID_RUNTIME_NAME);
     }
 }

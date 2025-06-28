@@ -46,6 +46,7 @@ import com.android.systemui.shade.ui.viewmodel.shadeSceneContentViewModelFactory
 import com.android.systemui.shade.ui.viewmodel.shadeUserAcionsViewModelFactory
 import com.android.systemui.statusbar.notification.stack.ui.view.NotificationScrollView
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.notificationsPlaceholderViewModelFactory
+import com.android.systemui.statusbar.phone.ui.tintedIconManagerFactory
 import com.android.systemui.testKosmos
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancelChildren
@@ -62,8 +63,7 @@ import org.mockito.Mockito.mock
 @TestableLooper.RunWithLooper
 @EnableSceneContainer
 class ShadeSceneTest : SysuiTestCase() {
-    @get:Rule
-    val composeTestRule = createComposeRule()
+    @get:Rule val composeTestRule = createComposeRule()
 
     private val kosmos = testKosmos()
 
@@ -73,40 +73,43 @@ class ShadeSceneTest : SysuiTestCase() {
     fun testSingleShadeHierarchy() =
         with(kosmos) {
             testScope.runTest {
-                val shadeSession = object : SaveableSession, Session by Session(SessionStorage()) {
-                    @Composable
-                    override fun <T : Any> rememberSaveableSession(
-                        vararg inputs: Any?,
-                        saver: Saver<T, out Any>,
-                        key: String?,
-                        init: () -> T
-                    ): T = rememberSession(key, inputs = inputs, init = init)
-                }
+                val shadeSession =
+                    object : SaveableSession, Session by Session(SessionStorage()) {
+                        @Composable
+                        override fun <T : Any> rememberSaveableSession(
+                            vararg inputs: Any?,
+                            saver: Saver<T, out Any>,
+                            key: String?,
+                            init: () -> T,
+                        ): T = rememberSession(key, inputs = inputs, init = init)
+                    }
 
                 usingMediaInComposeFragment = true
 
                 enableSingleShade()
                 runCurrent()
 
-                val scene = ShadeScene(
-                    shadeSession = shadeSession,
-                    notificationStackScrollView = {
-                        mock(NotificationScrollView::class.java)
-                    },
-                    actionsViewModelFactory = shadeUserAcionsViewModelFactory,
-                    contentViewModelFactory = shadeSceneContentViewModelFactory,
-                    notificationsPlaceholderViewModelFactory = notificationsPlaceholderViewModelFactory,
-                    mediaCarouselController = mediaCarouselController,
-                    qqsMediaHost = qqsMediaHost,
-                    qsMediaHost = qsMediaHost,
-                    jankMonitor = interactionJankMonitor,
-                )
+                val scene =
+                    ShadeScene(
+                        shadeSession = shadeSession,
+                        notificationStackScrollView = { mock(NotificationScrollView::class.java) },
+                        actionsViewModelFactory = shadeUserAcionsViewModelFactory,
+                        contentViewModelFactory = shadeSceneContentViewModelFactory,
+                        notificationsPlaceholderViewModelFactory =
+                            notificationsPlaceholderViewModelFactory,
+                        mediaCarouselController = mediaCarouselController,
+                        qqsMediaHost = qqsMediaHost,
+                        qsMediaHost = qsMediaHost,
+                        jankMonitor = interactionJankMonitor,
+                    )
 
                 // Set the single shade content.
                 composeTestRule.setContent {
                     PlatformTheme {
-                        with(scene) {
-                            TestContentScope(currentScene = Scenes.Shade) { Content(Modifier) }
+                        WithStatusIconContext(tintedIconManagerFactory) {
+                            with(scene) {
+                                TestContentScope(currentScene = Scenes.Shade) { Content(Modifier) }
+                            }
                         }
                     }
                 }

@@ -189,6 +189,16 @@ import com.android.server.utils.Slogf;
 import com.android.server.utils.TimingsTraceAndSlog;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import libcore.io.IoUtils;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -445,7 +455,12 @@ public class UserManagerService extends IUserManager.Stub {
         /** Elapsed realtime since boot when the user was unlocked. */
         long unlockRealtime;
 
-        /** Wall clock time in millis when the user last entered the foreground. */
+        /**
+         * Wall clock time in millis when the user last entered the foreground.
+         *
+         * Applicable for any user that can be switched-to;
+         * will be 0 otherwise (i.e. for profiles and a non-interactive headless system user).
+         */
         long mLastEnteredForegroundTimeMillis;
 
         private long mLastRequestQuietModeEnabledMillis;
@@ -1489,19 +1504,22 @@ public class UserManagerService extends IUserManager.Stub {
         }
     }
 
+    /**
+     * Returns the previous foreground user, or if there isn't one, the first switchable user.
+     * The user need not be a full user; the HSU counts if it is switchable.
+     */
     private @UserIdInt int getPreviousOrFirstSwitchableUser()
             throws UserManager.CheckedUserOperationException {
         // Return the previous foreground user, if there is one.
         final int previousUser = getPreviousUserToEnterForeground();
         if (previousUser != UserHandle.USER_NULL) {
-            Slogf.i(LOG_TAG, "Boot user is previous user %d", previousUser);
+            Slogf.i(LOG_TAG, "Previous foreground user was %d", previousUser);
             return previousUser;
         }
         // No previous user. Return the first switchable user if there is one.
         final int firstSwitchableUser = getFirstSwitchableUser(false);
         if (firstSwitchableUser != UserHandle.USER_NULL) {
-            Slogf.i(LOG_TAG,
-                    "Boot user is first switchable user %d", firstSwitchableUser);
+            Slogf.i(LOG_TAG, "No previous user. First switchable user is %d", firstSwitchableUser);
             return firstSwitchableUser;
         }
         // No switchable users found. Uh oh!
@@ -1523,6 +1541,12 @@ public class UserManagerService extends IUserManager.Stub {
        return UserHandle.USER_NULL;
    }
 
+    /**
+     * Returns the previous foreground user,
+     * i.e. the user that was in the foreground (possibly even prior to a reboot) before the current
+     * foreground user. The user need not be a full user; the HSU counts if it is switchable.
+     * @see UserManager#getPreviousForegroundUser()
+     */
     @Override
     public @CanBeNULL @UserIdInt int getPreviousUserToEnterForeground() {
         checkQueryOrCreateUsersPermission("get previous user");
@@ -7218,34 +7242,34 @@ public class UserManagerService extends IUserManager.Stub {
                 /* receiverPermission= */null);
     }
 
-    /**
-     * <p>Starting from Android version {@link android.os.Build.VERSION_CODES#UPSIDE_DOWN_CAKE},
-     * it is possible for there to be multiple managing agents on the device with the ability to set
-     * restrictions, e.g. an Enterprise DPC and a Supervision admin. This API will only to return
-     * the restrictions set by the DPCs. To retrieve restrictions set by all agents, use
-     * {@link android.content.RestrictionsManager#getApplicationRestrictionsPerAdmin} instead.
-     */
     @Override
     public Bundle getApplicationRestrictions(String packageName) {
         return getApplicationRestrictionsForUser(packageName, UserHandle.getCallingUserId());
     }
 
-    /**
-     * <p>Starting from Android version {@link android.os.Build.VERSION_CODES#UPSIDE_DOWN_CAKE},
-     * it is possible for there to be multiple managing agents on the device with the ability to set
-     * restrictions, e.g. an Enterprise DPC and a Supervision admin. This API will only to return
-     * the restrictions set by the DPCs. To retrieve restrictions set by all agents, use
-     * {@link android.content.RestrictionsManager#getApplicationRestrictionsPerAdmin} instead.
-     */
     @Override
     public Bundle getApplicationRestrictionsForUser(String packageName, @UserIdInt int userId) {
         if (UserHandle.getCallingUserId() != userId
                 || !UserHandle.isSameApp(Binder.getCallingUid(), getUidForPackage(packageName))) {
             checkSystemOrRoot("get application restrictions for other user/app " + packageName);
         }
-        synchronized (mAppRestrictionsLock) {
-            // Read the restrictions from XML
-            return readApplicationRestrictionsLAr(packageName, userId);
+        if (android.app.admin.flags.Flags.appRestrictionsCoexistence()) {
+            List<Bundle> restrictions =
+                    getDevicePolicyManagerInternal().getApplicationRestrictionsPerAdminForUser(
+                            packageName, userId);
+            if (restrictions.isEmpty()) {
+                return Bundle.EMPTY;
+            } else {
+                if (restrictions.size() > 1) {
+                    Slog.w(LOG_TAG, "Application restriction list contains more than one element.");
+                }
+                return restrictions.getFirst();
+            }
+        } else {
+            synchronized (mAppRestrictionsLock) {
+                // Read the restrictions from XML
+                return readApplicationRestrictionsLAr(packageName, userId);
+            }
         }
     }
 
@@ -7333,6 +7357,31 @@ public class UserManagerService extends IUserManager.Stub {
             IoUtils.closeQuietly(fis);
         }
         return restrictions;
+    }
+
+    /**
+     * Finds restrictions files in a directory and returns a map of the extracted package name to
+     * the file path.
+     */
+    @GuardedBy("mAppRestrictionsLock")
+    private static Map<String, Path> findRestrictionsFilesLAr(Path directory) throws IOException {
+        String globPattern = "glob:" + RESTRICTIONS_FILE_PREFIX + "*" + XML_SUFFIX;
+        PathMatcher matcher = FileSystems.getDefault().getPathMatcher(globPattern);
+
+        Map<String, Path> matchingFilesMap = new HashMap<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
+            for (Path entry : stream) {
+                if (Files.isRegularFile(entry) && matcher.matches(entry.getFileName())) {
+                    String fileName = entry.getFileName().toString();
+                    int prefixLength = RESTRICTIONS_FILE_PREFIX.length();
+                    int suffixLength = XML_SUFFIX.length();
+                    String packageName =
+                        fileName.substring(prefixLength, fileName.length() - suffixLength);
+                    matchingFilesMap.put(packageName, entry);
+                }
+            }
+        }
+        return matchingFilesMap;
     }
 
     private static void readEntry(Bundle restrictions, ArrayList<String> values,
@@ -8660,6 +8709,26 @@ public class UserManagerService extends IUserManager.Stub {
         public @CanBeNULL @UserIdInt int getSupervisingProfileId() {
             return UserManagerService.this.getSupervisingProfileId();
         }
+
+        @Override
+        public Map<String, Bundle> getApplicationRestrictionsForUser(
+            @UserIdInt int userId) {
+            synchronized (mAppRestrictionsLock) {
+                // Read the restrictions from XML
+                try {
+                    Map<String, Bundle> result = new HashMap<>();
+                    for (Map.Entry<String, Path> entry : findRestrictionsFilesLAr(
+                            Environment.getUserSystemDirectory(userId).toPath()).entrySet()) {
+                        result.put(entry.getKey(), readApplicationRestrictionsLAr(
+                                new AtomicFile(entry.getValue().toFile())));
+                    }
+                    return result;
+                } catch (IOException e) {
+                    Slog.e(LOG_TAG, "Error retrieving bundles ", e);
+                    return Collections.emptyMap();
+                }
+            }
+        }
     } // class LocalService
 
 
@@ -8952,7 +9021,6 @@ public class UserManagerService extends IUserManager.Stub {
             writeUserLP(userData);
             return true;
         }
-
     }
 
     /**

@@ -21,6 +21,8 @@ import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.content.pm.PackageManager
 import android.content.pm.UserInfo
+import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.accessibilityManager
@@ -29,6 +31,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.logging.uiEventLogger
 import com.android.internal.logging.uiEventLoggerFake
+import com.android.systemui.Flags.FLAG_HUB_EDIT_MODE_TRANSITION
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.communal.data.model.CommunalSmartspaceTimer
 import com.android.systemui.communal.data.repository.fakeCommunalMediaRepository
@@ -57,6 +60,7 @@ import com.android.systemui.log.logcatLogBuffer
 import com.android.systemui.media.controls.ui.controller.mediaCarouselController
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.settings.fakeUserTracker
+import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.testKosmos
 import com.android.systemui.user.data.repository.fakeUserRepository
 import com.google.common.truth.Truth.assertThat
@@ -95,6 +99,7 @@ class CommunalEditModeViewModelTest : SysuiTestCase() {
                 communalInteractor,
                 communalSettingsInteractor,
                 keyguardTransitionInteractor,
+                keyguardStateController,
                 mock<MediaHost>(),
                 uiEventLogger,
                 logcatLogBuffer("CommunalEditModeViewModelTest"),
@@ -171,12 +176,32 @@ class CommunalEditModeViewModelTest : SysuiTestCase() {
             assertThat(isCommunalContentVisible).isEqualTo(true)
         }
 
+    @DisableFlags(FLAG_HUB_EDIT_MODE_TRANSITION)
     @Test
     fun isCommunalContentVisible_isFalse_whenEditModeNotShowing() =
         kosmos.runTest {
             val isCommunalContentVisible by collectLastValue(underTest.isCommunalContentVisible)
             communalSceneInteractor.setEditModeState(null)
             assertThat(isCommunalContentVisible).isEqualTo(false)
+        }
+
+    @EnableFlags(FLAG_HUB_EDIT_MODE_TRANSITION)
+    @Test
+    fun isCommunalContentVisible_flagEnabled_alwaysTrue() =
+        kosmos.runTest {
+            val isCommunalContentVisible by collectLastValue(underTest.isCommunalContentVisible)
+
+            communalSceneInteractor.setEditModeState(null)
+            assertThat(isCommunalContentVisible).isTrue()
+
+            communalSceneInteractor.setEditModeState(EditModeState.STARTING)
+            assertThat(isCommunalContentVisible).isTrue()
+
+            communalSceneInteractor.setEditModeState(EditModeState.CREATED)
+            assertThat(isCommunalContentVisible).isTrue()
+
+            communalSceneInteractor.setEditModeState(EditModeState.SHOWING)
+            assertThat(isCommunalContentVisible).isTrue()
         }
 
     @Test

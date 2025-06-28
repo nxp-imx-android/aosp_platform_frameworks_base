@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"મોબાઇલ નેટવર્ક સુરક્ષા"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"એન્ક્રિપ્શન, એન્ક્રિપ્ટ નહીં થયેલા નેટવર્ક માટે નોટિફિકેશન"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"ડિવાઇસ ID ઍક્સેસ કર્યાનો સમય"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> પર, તમારા <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> સિમ કાર્ડનો ઉપયોગ કરતી વખતે નજીકના કોઈ નેટવર્ક દ્વારા તમારા ડિવાઇસનું અજોડ ID (IMSI અથવા IMEI) રેકોર્ડ કરવામાં આવ્યું હતું"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> પર, તમારા <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> સિમ કાર્ડનો ઉપયોગ કરતી વખતે નજીકના કોઈ નેટવર્ક દ્વારા તમારા ડિવાઇસનું અજોડ ID (IMSI અથવા IMEI) રેકોર્ડ કરવામાં આવ્યું હતું.\n\nઆનો અર્થ એ છે કે તમારું લોકેશન, ઍક્ટિવિટી અથવા ઓળખ લૉગ કરવામાં આવી છે. આ સામાન્ય પદ્ધતિ છે પરંતુ પ્રાઇવસી વિશે ચિંતિત લોકો માટે સમસ્યા હોઈ શકે છે."</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"એન્ક્રિપ્ટેડ નેટવર્ક <xliff:g id="NETWORK_NAME">%1$s</xliff:g> સાથે કનેક્ટેડ છે"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> સિમ કાર્ડ કનેક્શન હવે વધુ સુરક્ષિત છે"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"એન્ક્રિપ્ટ નહીં થયેલા નેટવર્ક સાથે કનેકટેડ છે"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ડેટા સિગ્નલ બંધ કરવામાં આવ્યું છે."</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ફિંગરપ્રિન્ટ અનલૉક સુવિધાનો ઉપયોગ કરવામાં સમસ્યા આવી રહી છે?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"તમારા અનલૉકિંગના અનુભવને બહેતર બનાવવા માટેની ટિપનો રિવ્યૂ કરવા માટે ટૅપ કરો"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"બ્લિંક ન કરો"</string>
 </resources>

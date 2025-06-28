@@ -138,6 +138,8 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Neste momento, está a gravar todo o seu ecrã"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Neste momento, está a gravar a app <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Parar gravação"</string>
+    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
+    <skip />
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Capturar"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Gravar"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"A partilhar o ecrã"</string>
@@ -851,6 +853,8 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Ativar"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Agora, é possível resumir as suas conversas mais longas para lhe dar resumos rápidos"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"O organizador de notificações agrupa e silencia as notificações de prioridade mais baixa"</string>
+    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
+    <skip />
     <string name="inline_done_button" msgid="6043094985588909584">"Concluído"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplicar"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desativar"</string>
@@ -1652,6 +1656,14 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Desconhecido"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Repor todos os mosaicos?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Todos os mosaicos de Definições rápidas vão ser repostos para as definições originais do dispositivo"</string>
+    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
+    <skip />
+    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
+    <skip />
+    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
+    <skip />
     <string name="demote_explain_text" msgid="3942301497888762295">"A app <xliff:g id="APPLICATION">%1$s</xliff:g> vai deixar de mostrar atualizações em direto. Pode alterar esta definição em qualquer altura nas Definições."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Fechar"</string>

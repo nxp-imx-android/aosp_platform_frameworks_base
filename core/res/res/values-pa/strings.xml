@@ -164,8 +164,14 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"ਮੋਬਾਈਲ ਨੈੱਟਵਰਕ ਸੁਰੱਖਿਆ"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"ਇਨਕ੍ਰਿਪਸ਼ਨ, ਅਣ-ਇਨਕ੍ਰਿਪਟਡ ਨੈੱਟਵਰਕਾਂ ਲਈ ਸੂਚਨਾਵਾਂ"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"ਡੀਵਾਈਸ ਆਈਡੀ ਤੱਕ ਪਹੁੰਚ ਕੀਤੀ ਗਈ"</string>
-    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="3699930821270580416">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> ਵਜੇ, ਕਿਸੇ ਨਜ਼ਦੀਕੀ ਨੈੱਟਵਰਕ ਵੱਲੋਂ ਤੁਹਾਡੇ <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> ਸਿਮ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਦੀ ਵਿਲੱਖਣ ਆਈਡੀ (IMSI ਜਾਂ IMEI) ਨੂੰ ਰਿਕਾਰਡ ਕੀਤਾ ਗਿਆ"</string>
-    <string name="scIdentifierDisclosureIssueSummary" msgid="7283387338827749276">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> ਵਜੇ, ਕਿਸੇ ਨਜ਼ਦੀਕੀ ਨੈੱਟਵਰਕ ਵੱਲੋਂ ਤੁਹਾਡੇ <xliff:g id="DISCLOSURE_NETWORK">%2$s</xliff:g> ਸਿਮ ਦੀ ਵਰਤੋਂ ਕਰ ਕੇ ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਦੀ ਵਿਲੱਖਣ ਆਈਡੀ (IMSI ਜਾਂ IMEI) ਨੂੰ ਰਿਕਾਰਡ ਕੀਤਾ ਗਿਆ।\n\nਇਸ ਦਾ ਮਤਲਬ ਹੈ ਕਿ ਤੁਹਾਡਾ ਟਿਕਾਣਾ, ਸਰਗਰਮੀ ਜਾਂ ਪਛਾਣ ਨੂੰ ਲੌਗ ਕੀਤਾ ਗਿਆ ਹੈ। ਇਹ ਆਮ ਅਭਿਆਸ ਹੈ, ਪਰ ਪਰਦੇਦਾਰੀ ਬਾਰੇ ਚਿੰਤਤ ਲੋਕਾਂ ਲਈ ਇਹ ਸਮੱਸਿਆ ਹੋ ਸਕਦੀ ਹੈ।"</string>
+    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
+    <skip />
+    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
+    <skip />
+    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
+    <skip />
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"ਇਨਕ੍ਰਿਪਟਡ ਨੈੱਟਵਰਕ <xliff:g id="NETWORK_NAME">%1$s</xliff:g> ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> ਸਿਮ ਕਨੈਕਸ਼ਨ ਹੁਣ ਜ਼ਿਆਦਾ ਸੁਰੱਖਿਅਤ ਹੈ"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"ਇਨਕ੍ਰਿਪਟਡ ਨੈੱਟਵਰਕ ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ"</string>
@@ -2577,6 +2583,5 @@
     <string name="usb_apm_usb_suspicious_activity_notification_text" msgid="6537085605929303187">"USB ਡਾਟਾ ਸਿਗਨਲ ਬੰਦ ਕਰ ਦਿੱਤਾ ਗਿਆ ਹੈ।"</string>
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ਕੀ ਫਿੰਗਰਪ੍ਰਿੰਟ ਅਣਲਾਕ ਸੰਬੰਧੀ ਕੋਈ ਸਮੱਸਿਆ ਆ ਰਹੀ ਹੈ?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"ਆਪਣੇ ਅਣਲਾਕ ਕਰਨ ਸੰਬੰਧੀ ਅਨੁਭਵ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਵਾਸਤੇ ਸੁਝਾਵਾਂ ਦੀ ਸਮੀਖਿਆ ਕਰਨ ਲਈ ਟੈਪ ਕਰੋ"</string>
-    <!-- no translation found for no_blink_accessibility_text_cursor_blink_label (223072797385428874) -->
-    <skip />
+    <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ਪਲਕਾਂ ਨਾ ਝਪਕੋ"</string>
 </resources>

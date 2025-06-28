@@ -28,7 +28,6 @@ import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.display.data.repository.DeviceStateRepository.DeviceState
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
 import com.android.systemui.power.domain.interactor.PowerInteractor
-import com.android.systemui.power.shared.model.WakeSleepReason
 import com.android.systemui.shared.system.SysUiStatsLog
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.DisplaySwitchLatencyEvent
 import com.android.systemui.unfold.DisplaySwitchLatencyTracker.TrackingResult.CORRUPTED
@@ -103,7 +102,7 @@ constructor(
                     } else {
                         latencyTracker.onActionEnd(ACTION_SWITCH_DISPLAY_UNFOLD)
 
-                        if (getCurrentState()
+                        if (getToState()
                             != SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__TO_STATE__SCREEN_OFF
                         ) {
                             latencyTracker.onActionEnd(ACTION_SWITCH_DISPLAY_FOLD)
@@ -150,8 +149,13 @@ constructor(
                 else -> SUCCESS
             }
         val event = switchingUpdate.event ?: return
-        val displaySwitchTimeMs = updatesChain.finalUpdate.elapsedTime - switchingUpdate.elapsedTime
-        val toState = getCurrentState()
+        val toState = getToState()
+        val displaySwitchTimeMs =
+            if (isStateScreenOff()) {
+                LATENCY_UNDEFINED // we don't care about latency in this case
+            } else {
+                updatesChain.finalUpdate.elapsedTime - switchingUpdate.elapsedTime
+            }
         log {
             "trackingResult=$trackingResult, " +
                 "fromFoldableDeviceState=${startingIdleState.switchState.newDeviceState}" +
@@ -232,23 +236,29 @@ constructor(
             TIMED_OUT -> SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__TRACKING_RESULT__TIMED_OUT
         }
 
-    private fun getCurrentState(): Int =
+    private fun getToState(): Int =
+        // not checking asleep/screen off reason means we misrepresent toState for case when user
+        // folds and quickly puts device to sleep with power button. But still it seems better
+        // than not putting SCREEN_OFF as reason when device is just asleep and user folds.
         when {
             isStateAod() -> SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__TO_STATE__AOD
             isStateScreenOff() -> SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__TO_STATE__SCREEN_OFF
             else -> SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__TO_STATE__UNKNOWN
         }
 
-    private fun isStateAod(): Boolean = (isAsleepDueToFold() && isAodEnabled)
+    private fun getFromState(): Int =
+        when {
+            isStateAod() -> SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__FROM_STATE__AOD
+            isStateScreenOff() ->
+                SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__FROM_STATE__SCREEN_OFF
+            else -> SysUiStatsLog.DISPLAY_SWITCH_LATENCY_TRACKED__FROM_STATE__UNKNOWN
+        }
 
-    private fun isStateScreenOff(): Boolean = (isAsleepDueToFold() && !isAodEnabled)
+    private fun isStateAod() = isAsleep() && isAodEnabled
 
-    private fun isAsleepDueToFold(): Boolean {
-        val lastWakefulnessEvent = powerInteractor.detailedWakefulness.value
+    private fun isStateScreenOff() = isAsleep() && !isAodEnabled
 
-        return (lastWakefulnessEvent.isAsleep() &&
-            (lastWakefulnessEvent.lastSleepReason == WakeSleepReason.FOLD))
-    }
+    private fun isAsleep() = powerInteractor.detailedWakefulness.value.isAsleep()
 
     private inline fun log(msg: () -> String) {
         if (DEBUG) Log.d(TAG, msg())
@@ -262,7 +272,7 @@ constructor(
             } else {
                 HAS_SCREEN_WAKELOCKS
             }
-        return copy(screenWakelockStatus = screenWakelockStatus)
+        return copy(screenWakelockStatus = screenWakelockStatus, fromState = getFromState())
     }
 
     /**
@@ -310,6 +320,7 @@ constructor(
 
     companion object {
         private const val VALUE_UNKNOWN = -1
+        private const val LATENCY_UNDEFINED = -1
         private const val TAG = "DisplaySwitchLatency"
         private val DEBUG = Compile.IS_DEBUG && Log.isLoggable(TAG, Log.VERBOSE)
 

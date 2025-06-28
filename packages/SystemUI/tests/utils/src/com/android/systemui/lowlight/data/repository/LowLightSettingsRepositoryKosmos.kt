@@ -25,7 +25,7 @@ import com.android.systemui.util.settings.data.repository.userAwareSecureSetting
 val Kosmos.lowLightSettingsRepository by Fixture {
     LowLightSettingsRepositoryImpl(
         bgDispatcher = testDispatcher,
-        userAwareSecureSettingsRepository = userAwareSecureSettingsRepository,
+        secureSettingsRepository = userAwareSecureSettingsRepository,
         resources = mockResources,
     )
 }

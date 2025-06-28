@@ -240,8 +240,8 @@ public class PackageInstaller {
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
-    public static final String ACTION_NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE =
-            "android.content.pm.action.NOTIFY_DEVELOPER_VERIFICATION_INCOMPLETE";
+    public static final String ACTION_CONFIRM_DEVELOPER_VERIFICATION =
+            "android.content.pm.action.CONFIRM_DEVELOPER_VERIFICATION";
 
     /**
      * An integer session ID that an operation is working with.
@@ -947,22 +947,14 @@ public class PackageInstaller {
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     @SystemApi
-    public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL = 1;
-    /**
-     * This indicates that the user has acknowledged that installation cannot be completed due to
-     * a failed / incomplete developer verification.
-     * @hide
-     */
-    @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
-    @SystemApi
-    public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_OK = 2;
+    public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT = 1;
     /**
      * For an incomplete developer verification, the user has asked to retry the verification.
      * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     @SystemApi
-    public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY = 3;
+    public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY = 2;
     /**
      * For an incomplete developer verification, the user has confirmed proceeding with the
      * installation anyway.
@@ -970,14 +962,13 @@ public class PackageInstaller {
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     @SystemApi
-    public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY = 4;
+    public static final int DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY = 3;
     /**
      * @hide
      */
     @IntDef(value = {
             DEVELOPER_VERIFICATION_USER_RESPONSE_ERROR,
-            DEVELOPER_VERIFICATION_USER_RESPONSE_CANCEL,
-            DEVELOPER_VERIFICATION_USER_RESPONSE_OK,
+            DEVELOPER_VERIFICATION_USER_RESPONSE_ABORT,
             DEVELOPER_VERIFICATION_USER_RESPONSE_RETRY,
             DEVELOPER_VERIFICATION_USER_RESPONSE_INSTALL_ANYWAY,
     })

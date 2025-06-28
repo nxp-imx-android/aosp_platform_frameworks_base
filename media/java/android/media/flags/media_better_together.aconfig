@@ -163,20 +163,20 @@ flag {
 }
 
 flag {
-    name: "enable_output_switcher_device_grouping"
-    namespace: "media_better_together"
-    description: "Enables selected items in Output Switcher to be grouped together."
-    bug: "388347018"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
   name: "enable_output_switcher_redesign"
   namespace: "media_better_together"
   description: "Enables visual update for the Media Output Switcher"
   bug: "388296370"
+}
+
+flag {
+    name: "allow_output_switcher_list_rearrangement_within_timeout"
+    namespace: "media_better_together"
+    description: "Allows Output Switcher device list to rearrange items within a short time after opening."
+    bug: "422074183"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

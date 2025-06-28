@@ -23,7 +23,6 @@ import android.view.selectiontoolbar.ToolbarMenuItem;
 
 import java.util.List;
 
-
 /**
  * @hide
  */
@@ -33,12 +32,6 @@ parcelable ShowInfo {
      * A unique sequence number for the showToolbar request.
      */
     int sequenceNumber;
-
-    /**
-     * The token that is used to identify the selection toolbar. This is initially set to 0
-     * until a selection toolbar has been created for the showToolbar request.
-     */
-    long widgetToken;
 
     /**
      * If the toolbar menu items need to be re-layout.

@@ -197,6 +197,52 @@ public class RemoteDeviceTaskListTest {
         assertThat(mMostRecentTask).isEqualTo(secondExpectedRemoteTask);
     }
 
+    @Test
+    public void updateTask_updatesMostRecentTaskAndNotifiesListeners() {
+        // Set the initial state of the list.
+        RemoteTaskInfo initialTaskInfo = createNewRemoteTaskInfo(1, "task1", 100);
+        RemoteTask initialTask =
+            initialTaskInfo.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
+        taskList.setTasks(Arrays.asList(initialTaskInfo));
+        assertThat(taskList.getMostRecentTask()).isEqualTo(initialTask);
+        assertThat(mObserverCallCount).isEqualTo(1);
+        assertThat(mMostRecentTask).isEqualTo(initialTask);
+
+        RemoteTaskInfo updatedTaskInfo = createNewRemoteTaskInfo(
+            initialTaskInfo.getId(),
+            "task1",
+            200);
+        RemoteTask updatedTask = updatedTaskInfo.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
+        taskList.updateTask(updatedTaskInfo);
+
+        assertThat(taskList.getMostRecentTask()).isEqualTo(updatedTask);
+        assertThat(mObserverCallCount).isEqualTo(2);
+        assertThat(mMostRecentTask).isEqualTo(updatedTask);
+    }
+
+    @Test
+    public void testUpdateTask_doesNotUpdateMostRecentTask_doesNotNotifyListeners() {
+        // Set the initial state of the list.
+        RemoteTaskInfo initialTaskInfo = createNewRemoteTaskInfo(1, "task1", 100);
+        RemoteTask initialTask =
+            initialTaskInfo.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
+        RemoteTaskInfo topTaskInfo = createNewRemoteTaskInfo(2, "task2", 200);
+        RemoteTask topTask = topTaskInfo.toRemoteTask(ASSOCIATION_ID, DEVICE_NAME);
+        taskList.setTasks(Arrays.asList(initialTaskInfo, topTaskInfo));
+        assertThat(taskList.getMostRecentTask()).isEqualTo(topTask);
+        assertThat(mObserverCallCount).isEqualTo(1);
+        assertThat(mMostRecentTask).isEqualTo(topTask);
+
+        RemoteTaskInfo updatedTaskInfo = createNewRemoteTaskInfo(
+            initialTaskInfo.getId(),
+            "task1",
+            150);
+        taskList.updateTask(updatedTaskInfo);
+        assertThat(taskList.getMostRecentTask()).isEqualTo(topTask);
+        assertThat(mObserverCallCount).isEqualTo(1);
+        assertThat(mMostRecentTask).isEqualTo(topTask);
+    }
+
     private RemoteTaskInfo createNewRemoteTaskInfo(
         int id,
         String label,

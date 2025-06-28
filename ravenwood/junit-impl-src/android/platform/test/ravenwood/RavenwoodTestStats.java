@@ -15,9 +15,11 @@
  */
 package android.platform.test.ravenwood;
 
-import static com.android.ravenwood.common.RavenwoodCommonUtils.RAVENWOOD_VERBOSE_LOGGING;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_VERBOSE_LOGGING;
 
 import android.util.Log;
+
+import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import org.junit.runner.Description;
 import org.junit.runner.notification.Failure;
@@ -45,7 +47,7 @@ import java.util.Map;
  * `/tmp/Ravenwood-stats_[TEST-MODULE=NAME]_latest.csv`.
  */
 public class RavenwoodTestStats {
-    private static final String TAG = com.android.ravenwood.common.RavenwoodCommonUtils.TAG;
+    private static final String TAG = RavenwoodInternalUtils.TAG;
     private static final String HEADER =
             "ClassOrMethod,Module,Class,OuterClass,Method,Passed,Failed,Skipped,DurationMillis";
 

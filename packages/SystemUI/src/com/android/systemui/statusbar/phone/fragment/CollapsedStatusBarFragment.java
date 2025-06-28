@@ -274,7 +274,7 @@ public class CollapsedStatusBarFragment extends Fragment implements CommandQueue
             SecureSettings secureSettings,
             @Main Executor mainExecutor,
             DumpManager dumpManager,
-            StatusBarWindowStateController statusBarWindowStateController,
+            @DisplayAware StatusBarWindowStateController statusBarWindowStateController,
             KeyguardUpdateMonitor keyguardUpdateMonitor,
             DemoModeController demoModeController,
             StatusBarWindowControllerStore statusBarWindowControllerStore,

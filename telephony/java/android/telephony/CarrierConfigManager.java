@@ -2446,6 +2446,16 @@ public class CarrierConfigManager {
             "allow_hold_call_during_emergency_bool";
 
     /**
+     * Flag indicating whether RTT (Real-Time Text) calls support the hold/unhold capability. If
+     * false, the hold capability will be disabled for RTT calls. If true, RTT hold capability is
+     * determined by IMS service capabilities.
+     *
+     * The default value is {@code true}.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_RTT_HOLD_CARRIER_CONFIG)
+    public static final String KEY_ALLOW_HOLD_IN_RTT_CALL_BOOL = "allow_hold_in_rtt_call_bool";
+
+    /**
      * Flag indicating whether or not the carrier supports the periodic exchange of phone numbers
      * in the user's address book with the carrier's presence server in order to retrieve the RCS
      * capabilities for each contact used in the RCS User Capability Exchange (UCE) procedure. See
@@ -11157,6 +11167,7 @@ public class CarrierConfigManager {
         sDefaults.putBoolean(KEY_ALLOW_NON_EMERGENCY_CALLS_IN_ECM_BOOL, true);
         sDefaults.putInt(KEY_EMERGENCY_SMS_MODE_TIMER_MS_INT, 0);
         sDefaults.putBoolean(KEY_ALLOW_HOLD_CALL_DURING_EMERGENCY_BOOL, true);
+        sDefaults.putBoolean(KEY_ALLOW_HOLD_IN_RTT_CALL_BOOL, true);
         sDefaults.putBoolean(KEY_USE_RCS_PRESENCE_BOOL, false);
         sDefaults.putBoolean(KEY_USE_RCS_SIP_OPTIONS_BOOL, false);
         sDefaults.putBoolean(KEY_FORCE_IMEI_BOOL, false);

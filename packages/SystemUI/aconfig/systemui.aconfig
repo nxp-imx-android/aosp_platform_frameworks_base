@@ -308,6 +308,16 @@ flag {
 }
 
 flag {
+   name: "global_actions_emphasized_font"
+   namespace: "systemui"
+   description: "Use emphasized font for global actions."
+   bug: "393616338"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
     name: "coroutine_tracing"
     namespace: "systemui"
     description: "Adds thread-local data to System UI's global coroutine scopes to "
@@ -330,6 +340,16 @@ flag {
     description: "Move the StatusBar window to a new UI thread, which is separate from the main "
         "thread."
     bug: "374159193"
+}
+
+flag {
+    name: "status_bar_privacy_chip_animation_exemption"
+    namespace: "systemui"
+    description: "Exempt the default camera app from the privacy chip animation."
+    bug: "422243884"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
@@ -1349,16 +1369,6 @@ flag {
 }
 
 flag {
-  namespace: "systemui"
-  name: "user_aware_settings_repositories"
-  description: "Provide user-aware versions of SecureSettingsRepository and SystemSettingsRepository in SystemUI modules (see doc linked from b/356099784)."
-  bug: "356099784"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
-}
-
-flag {
     name: "notify_password_text_view_user_activity_in_background"
     namespace: "systemui"
     description: "Decide whether to notify the user activity in password text view, to power manager in the background thread."
@@ -1769,6 +1779,16 @@ flag {
 }
 
 flag {
+    name: "status_bar_call_chip_use_is_hidden"
+    namespace: "systemui"
+    description: "Enables isHidden field for all call chips"
+    bug: "427747840"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "media_projection_grey_error_text"
     namespace: "systemui"
     description: "Set the error text color to grey when app sharing is hidden by the requesting app"
@@ -2015,6 +2035,16 @@ flag {
     namespace: "systemui"
     description: "Make sure keyguard and low-light clock show the same charging status."
     bug: "424297980"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "screen_off_animation_guard_enabled"
+    namespace: "systemui"
+    description: "Reports Log.wtf statements if animations are running while screen is off."
+    bug: "420685896"
     metadata {
       purpose: PURPOSE_BUGFIX
     }

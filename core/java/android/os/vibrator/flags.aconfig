@@ -146,3 +146,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    namespace: "haptics"
+    name: "vibration_scale_device_config_enabled"
+    description: "Enables device-configurable vibration scale factors"
+    bug: "427503922"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}

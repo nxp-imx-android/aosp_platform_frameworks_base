@@ -25,20 +25,8 @@ import android.view.selectiontoolbar.WidgetInfo;
  * @hide
  */
 oneway interface ISelectionToolbarCallback {
-
-    /**
-     * The error code that do not allow to create multiple toolbar.
-     */
-    const int ERROR_DO_NOT_ALLOW_MULTIPLE_TOOL_BAR = 1;
-
-    /**
-     * The error code that the widget token is unknown or invalid.
-     */
-    const int ERROR_UNKNOWN_WIDGET_TOKEN = 2;
-
     void onShown(in WidgetInfo info);
     void onWidgetUpdated(in WidgetInfo info);
-    void onToolbarShowTimeout();
     void onMenuItemClicked(int itemIndex);
     void onError(int errorCode, int sequenceNumber);
 }

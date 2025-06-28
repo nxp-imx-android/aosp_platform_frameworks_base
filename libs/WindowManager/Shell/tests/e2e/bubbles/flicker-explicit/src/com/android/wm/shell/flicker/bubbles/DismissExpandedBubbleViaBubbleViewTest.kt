@@ -17,7 +17,7 @@
 package com.android.wm.shell.flicker.bubbles
 
 import android.platform.test.annotations.Presubmit
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -56,6 +56,7 @@ import org.junit.runners.MethodSorters
  * - [BubbleAppBecomesNotExpandedTestCases]
  * - [BUBBLE] is visible and then disappear
  */
+@FlakyTest(bugId = 427850786)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RunWith(AndroidJUnit4::class)
 @RequiresDevice

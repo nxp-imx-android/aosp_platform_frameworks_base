@@ -17,9 +17,11 @@
 package com.android.server.companion.datatransfer.continuity.handoff;
 
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
+import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK;
 import static android.companion.datatransfer.continuity.TaskContinuityManager.HANDOFF_REQUEST_RESULT_SUCCESS;
 
+import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
@@ -51,15 +53,33 @@ public class OutboundHandoffRequestController {
 
     private final Context mContext;
     private final CompanionDeviceManager mCompanionDeviceManager;
+    private final ConnectedAssociationStore mConnectedAssociationStore;
     private final Map<Integer, Map<Integer, List<IHandoffRequestCallback>>> mPendingCallbacks
         = new HashMap<>();
 
-    public OutboundHandoffRequestController(Context context) {
+    public OutboundHandoffRequestController(
+        Context context,
+        ConnectedAssociationStore connectedAssociationStore) {
         mContext = context;
         mCompanionDeviceManager = context.getSystemService(CompanionDeviceManager.class);
+        mConnectedAssociationStore = connectedAssociationStore;
     }
 
     public void requestHandoff(int associationId, int taskId, IHandoffRequestCallback callback) {
+        if (mConnectedAssociationStore.getConnectedAssociationById(associationId) == null) {
+            Slog.w(TAG, "Association " + associationId + " is not connected.");
+            try {
+                callback.onHandoffRequestFinished(
+                    associationId,
+                    taskId,
+                    HANDOFF_REQUEST_RESULT_FAILURE_DEVICE_NOT_FOUND);
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Failed to notify callback of handoff request result", e);
+            }
+
+            return;
+        }
+
         synchronized (mPendingCallbacks) {
             if (!mPendingCallbacks.containsKey(associationId)) {
                 mPendingCallbacks.put(associationId, new HashMap<>());

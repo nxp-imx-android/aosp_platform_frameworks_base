@@ -16,7 +16,7 @@
 
 package com.android.server.wm.flicker.notification
 
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.platform.test.rule.SettingOverrideRule
 import android.provider.Settings
 import android.tools.flicker.junit.FlickerParametersRunnerFactory

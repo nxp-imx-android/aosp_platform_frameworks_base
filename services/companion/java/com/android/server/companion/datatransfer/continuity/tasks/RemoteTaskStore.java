@@ -97,6 +97,16 @@ public class RemoteTaskStore implements ConnectedAssociationStore.Observer {
         }
     }
 
+    public void updateTask(int associationId, RemoteTaskInfo taskInfo) {
+        synchronized (mRemoteDeviceTaskLists) {
+            if (!mRemoteDeviceTaskLists.containsKey(associationId)) {
+                return;
+            }
+
+            mRemoteDeviceTaskLists.get(associationId).updateTask(taskInfo);
+        }
+    }
+
     /**
      * Returns the most recent tasks from all devices in the task store.
      *

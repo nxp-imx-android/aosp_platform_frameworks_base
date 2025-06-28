@@ -163,7 +163,7 @@ public class ProfilerInfo implements Parcelable {
     public static int getFlagsForOutputVersion(int version) {
         // Only two version 1 and version 2 are supported. Just use the default if we see an unknown
         // version.
-        if (version != 1 || version != 2) {
+        if (version != 1 && version != 2) {
             version = OUTPUT_VERSION_DEFAULT;
         }
 
