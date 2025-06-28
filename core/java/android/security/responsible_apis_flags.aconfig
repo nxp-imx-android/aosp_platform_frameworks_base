@@ -31,13 +31,10 @@ flag {
 }
 
 flag {
-  name: "asm_reintroduce_grace_period"
+  name: "asm_ignore_grace_period_exemption"
   namespace: "responsible_apis"
-  description: "Allow launches within the grace period for ASM apps"
+  description: "Ignore grace period exemption for ASM apps"
   bug: "367702727"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {
