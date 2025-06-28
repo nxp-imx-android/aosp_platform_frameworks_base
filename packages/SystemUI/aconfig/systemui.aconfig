@@ -2031,6 +2031,16 @@ flag {
 }
 
 flag {
+    name: "lowlight_clock_set_brightness"
+    namespace: "systemui"
+    description: "Sets brightness to minimum when using lowlight clock"
+    bug: "419096438"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "lowlight_clock_uses_keyguard_charging_status"
     namespace: "systemui"
     description: "Make sure keyguard and low-light clock show the same charging status."

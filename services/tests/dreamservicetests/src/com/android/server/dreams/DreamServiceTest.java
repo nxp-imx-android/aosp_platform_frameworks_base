@@ -44,6 +44,7 @@ import android.service.dreams.Flags;
 import android.service.dreams.IDreamOverlayCallback;
 import android.testing.TestableLooper;
 import android.view.KeyEvent;
+import android.view.WindowManager;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -239,6 +240,27 @@ public class DreamServiceTest {
 
         // Ensure service does not crash from only receiving up event.
         environment.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_SPACE));
+    }
+
+    @Test
+    public void testSetBrightness() throws Exception {
+        final float screenBrightness = .45f;
+        TestDreamEnvironment environment = new TestDreamEnvironment.Builder(mTestableLooper)
+                .build();
+        environment.advance(TestDreamEnvironment.DREAM_STATE_DREAM_ACTIVITY_CREATED);
+        environment.setDreamScreenBrightness(screenBrightness);
+        final WindowManager.LayoutParams params = environment.getLatestLayoutParams();
+        assertThat(params.screenBrightness).isEqualTo(screenBrightness);
+    }
+
+    @Test
+    public void testSetBrightnessNoWindowEarlyExits() throws Exception {
+        final float screenBrightness = .45f;
+        TestDreamEnvironment environment = new TestDreamEnvironment.Builder(mTestableLooper)
+                .build();
+
+        // This call should not crash
+        environment.setDreamScreenBrightness(screenBrightness);
     }
 
     @Test

@@ -1147,6 +1147,27 @@ public class DreamService extends Service implements Window.Callback {
     }
 
     /**
+     * Sets the screen brightness.
+     *
+     * This method sets the underlying {@link LayoutParams#screenBrightness} property. Since this
+     * affects the window, {@link #setScreenBrightness(float)} should not be used for windowless
+     * dreams.
+     *
+     * @hide For use by SystemUI components only.
+     */
+    @UnsupportedAppUsage
+    public void setScreenBrightness(float brightness) {
+        if (mWindow == null) {
+            Slog.e(TAG, "trying to set screen brightness without window");
+            return;
+        }
+
+        WindowManager.LayoutParams lp = mWindow.getAttributes();
+        lp.screenBrightness = brightness;
+        mWindow.setAttributes(lp);
+    }
+
+    /**
      * Sets the screen brightness to use while dozing.
      * <p>
      * The value of this property determines the power state of the primary display

@@ -27,6 +27,7 @@ import android.widget.TextClock;
 import android.widget.TextView;
 
 import com.android.dream.lowlight.LowLightTransitionCoordinator;
+import com.android.systemui.Flags;
 import com.android.systemui.lowlightclock.ChargingStatusProvider;
 import com.android.systemui.lowlightclock.LowLightClockAnimationProvider;
 import com.android.systemui.lowlightclock.LowLightDisplayController;
@@ -102,7 +103,14 @@ public class LowLightClockDreamService extends DreamService implements
                 Log.v(TAG, "setting dim brightness state");
                 mDisplayController.setDisplayBrightnessModeEnabled(true);
             } else {
-                Log.v(TAG, "dim brightness not supported");
+                if (Flags.lowlightClockSetBrightness()) {
+                    Log.v(TAG,
+                            "dim brightness not supported. setting screen brightness to minimum");
+                    setScreenBrightness(0f);
+                } else {
+                    Log.v(TAG, "dim brightness not supported.");
+
+                }
             }
         }
     }
