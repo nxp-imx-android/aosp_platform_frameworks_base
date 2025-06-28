@@ -126,6 +126,23 @@ public abstract class DisplayManagerInternal {
     public abstract ScreenCaptureInternal.ScreenshotHardwareBuffer systemScreenshot(int displayId);
 
     /**
+     * Captures a screenshot of the specified display for internal system use.
+     *
+     * <p>This method allows for more granular control over the screenshot process
+     * compared to {@link #systemScreenshot(int)}.
+     *
+     * @param displayId The display id to take the screenshot of.
+     * @param argsBuilder A {@link ScreenCaptureInternal.DisplayCaptureArgs.Builder}
+     *                    to specify screenshot parameters.
+     * @param callback A {@link ScreenCaptureInternal.ScreenCaptureListener} to receive
+     *                 the screenshot result or an error.
+     */
+    public abstract void systemScreenshot(
+            int displayId,
+            ScreenCaptureInternal.DisplayCaptureArgs.Builder argsBuilder,
+            ScreenCaptureInternal.ScreenCaptureListener callback);
+
+    /**
      * General screenshot functionality that excludes secure layers and applies appropriate rotation
      * that the device is currently in.
      *

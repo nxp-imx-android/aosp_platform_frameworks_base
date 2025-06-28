@@ -116,6 +116,7 @@ import android.view.WindowManager;
 import android.window.ActivityTransitionInfo;
 import android.window.AppCompatTransitionInfo;
 import android.window.DesktopExperienceFlags;
+import android.window.ScreenCapture.ScreenCaptureParams;
 import android.window.ScreenCaptureInternal;
 import android.window.StartingWindowRemovalInfo;
 import android.window.TaskFragmentAnimationParams;
@@ -4424,11 +4425,14 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
             ScreenCaptureInternal.LayerCaptureArgs captureArgs =
                     new ScreenCaptureInternal.LayerCaptureArgs.Builder(wc.getSurfaceControl())
                             .setSourceCrop(cropBounds)
-                            .setCaptureSecureLayers(true)
-                            .setAllowProtected(true)
-                            // We always reroute this screenshot to the display, so this transition
-                            // is ALWAYS seamless
-                            .setHintForSeamlessTransition(true)
+                            .setSecureContentPolicy(
+                                    ScreenCaptureParams.SECURE_CONTENT_POLICY_CAPTURE)
+                            .setProtectedContentPolicy(
+                                    ScreenCaptureParams.PROTECTED_CONTENT_POLICY_CAPTURE)
+                            // Capture layers in the display's native color space. This avoids color
+                            // conversion and helps maintain visual consistency during the
+                            // transition.
+                            .setPreserveDisplayColors(true)
                             .build();
             ScreenCaptureInternal.ScreenshotHardwareBuffer screenshotBuffer =
                     ScreenCaptureInternal.captureLayers(captureArgs);

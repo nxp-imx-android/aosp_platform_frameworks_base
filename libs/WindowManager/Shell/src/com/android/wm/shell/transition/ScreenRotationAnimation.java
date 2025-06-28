@@ -38,6 +38,7 @@ import android.view.SurfaceControl.Transaction;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.window.ScreenCapture.ScreenCaptureParams;
 import android.window.ScreenCaptureInternal;
 import android.window.TransitionInfo;
 
@@ -147,10 +148,12 @@ class ScreenRotationAnimation {
             } else {
                 ScreenCaptureInternal.LayerCaptureArgs args =
                         new ScreenCaptureInternal.LayerCaptureArgs.Builder(mSurfaceControl)
-                                .setCaptureSecureLayers(true)
-                                .setAllowProtected(true)
+                                .setSecureContentPolicy(
+                                        ScreenCaptureParams.SECURE_CONTENT_POLICY_CAPTURE)
+                                .setProtectedContentPolicy(
+                                        ScreenCaptureParams.PROTECTED_CONTENT_POLICY_CAPTURE)
                                 .setSourceCrop(new Rect(0, 0, mStartWidth, mStartHeight))
-                                .setHintForSeamlessTransition(true)
+                                .setPreserveDisplayColors(true)
                                 .build();
                 ScreenCaptureInternal.ScreenshotHardwareBuffer screenshotBuffer =
                         ScreenCaptureInternal.captureLayers(args);

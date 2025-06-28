@@ -169,6 +169,8 @@ import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.RefreshRateRange;
 import android.window.DisplayWindowPolicyController;
+import android.window.ScreenCapture;
+import android.window.ScreenCapture.ScreenCaptureParams;
 import android.window.ScreenCaptureInternal;
 
 import com.android.internal.annotations.GuardedBy;
@@ -3374,11 +3376,30 @@ public final class DisplayManagerService extends SystemService {
             captureArgs =
                     new ScreenCaptureInternal.DisplayCaptureArgs.Builder(token)
                             .setSize(displayInfo.getNaturalWidth(), displayInfo.getNaturalHeight())
-                            .setCaptureSecureLayers(true)
-                            .setAllowProtected(true)
+                            .setSecureContentPolicy(
+                                    ScreenCaptureParams.SECURE_CONTENT_POLICY_CAPTURE)
+                            .setProtectedContentPolicy(
+                                    ScreenCaptureParams.PROTECTED_CONTENT_POLICY_CAPTURE)
                             .build();
         }
         return ScreenCaptureInternal.captureDisplay(captureArgs);
+    }
+
+    private void systemScreenshotInternal(
+            int displayId,
+            ScreenCaptureInternal.DisplayCaptureArgs.Builder argsBuilder,
+            ScreenCaptureInternal.ScreenCaptureListener listener) {
+        final ScreenCaptureInternal.DisplayCaptureArgs captureArgs;
+        final IBinder token;
+        synchronized (mSyncRoot) {
+            token = getDisplayToken(displayId);
+        }
+        if (token == null) {
+            listener.onError(ScreenCapture.SCREEN_CAPTURE_ERROR_CODE_UNKNOWN);
+            return;
+        }
+        captureArgs = argsBuilder.setDisplayToken(token).build();
+        ScreenCaptureInternal.captureDisplay(captureArgs, listener);
     }
 
     private ScreenCaptureInternal.ScreenshotHardwareBuffer userScreenshotInternal(int displayId) {
@@ -5752,6 +5773,14 @@ public final class DisplayManagerService extends SystemService {
         @Override
         public ScreenCaptureInternal.ScreenshotHardwareBuffer systemScreenshot(int displayId) {
             return systemScreenshotInternal(displayId);
+        }
+
+        @Override
+        public void systemScreenshot(
+                int displayId,
+                @NonNull ScreenCaptureInternal.DisplayCaptureArgs.Builder argsBuilder,
+                @NonNull ScreenCaptureInternal.ScreenCaptureListener callback) {
+            systemScreenshotInternal(displayId, argsBuilder, callback);
         }
 
         @Override
