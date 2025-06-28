@@ -1478,6 +1478,16 @@ flag {
 }
 
 flag {
+    name: "scrim_fix"
+    namespace: "systemui"
+    description: "Fix "
+    bug: "414874982"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "bouncer_ui_revamp_2"
     namespace: "systemui"
     description: "Updates to button animations and font changes for bouncer, bouncer_ui_revamp will cover only the blur changes."
@@ -2038,6 +2048,16 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+   name: "clear_shortcut_icon_tint"
+   namespace: "systemui"
+   description: "Clear any tint present on incoming lockscreen shortcuts icons"
+   bug: "394282762"
+   metadata {
+       purpose: PURPOSE_BUGFIX
+   }
 }
 
 flag {

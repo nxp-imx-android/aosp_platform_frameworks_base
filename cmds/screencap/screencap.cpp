@@ -56,7 +56,8 @@ usage: %s [-ahp] [-d display-id] [FILENAME]
    -d: specify the display ID to capture%s
        see "dumpsys SurfaceFlinger --display-id" for valid display IDs.
    -p: outputs in png format.
-   --hint-for-seamless If set will use the hintForSeamless path in SF
+   --preserve-display-colors: Set to true to preserves the native display colorspace. Useful
+       for mixed HDR + SDR content, using identical processing as the display's
 
 If FILENAME ends with .png it will be saved as a png.
 If FILENAME is not given, the results will be printed to stdout.
@@ -77,15 +78,15 @@ If FILENAME is not given, the results will be printed to stdout.
 namespace LongOpts {
 enum {
     Reserved = 255,
-    HintForSeamless,
+    PreservedDisplayColors,
 };
 }
 
 static const struct option LONG_OPTIONS[] = {{"png", no_argument, nullptr, 'p'},
                                              {"jpeg", no_argument, nullptr, 'j'},
                                              {"help", no_argument, nullptr, 'h'},
-                                             {"hint-for-seamless", no_argument, nullptr,
-                                              LongOpts::HintForSeamless},
+                                             {"preserve-display-colors", no_argument, nullptr,
+                                              LongOpts::PreservedDisplayColors},
                                              {0, 0, 0, 0}};
 
 static int32_t flinger2bitmapFormat(aidl::android::hardware::graphics::common::PixelFormat f) {
@@ -330,8 +331,8 @@ int main(int argc, char** argv) {
                 }
                 usage(pname, displayIdOpt);
                 return 1;
-            case LongOpts::HintForSeamless:
-                captureArgs.hintForSeamlessTransition = true;
+            case LongOpts::PreservedDisplayColors:
+                captureArgs.preserveDisplayColors = true;
                 break;
         }
     }

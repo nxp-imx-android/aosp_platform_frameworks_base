@@ -19,7 +19,9 @@ package com.android.systemui.keyguard.ui.viewmodel
 
 import android.app.admin.DevicePolicyManager
 import android.content.Intent
+import android.graphics.drawable.Drawable
 import android.os.UserHandle
+import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -89,6 +91,9 @@ import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.isNull
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.verifyNoInteractions
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -348,6 +353,32 @@ class KeyguardQuickAffordancesCombinedViewModelTest : SysuiTestCase() {
                 testConfig = testConfig,
                 configKey = configKey,
             )
+        }
+
+    @Test
+    @EnableFlags(com.android.systemui.Flags.FLAG_CLEAR_SHORTCUT_ICON_TINT)
+    fun nonTintedIcon_clearsTintFromIcon() =
+        testScope.runTest {
+            val icon: Icon.Loaded = mock()
+            val drawable: Drawable = mock()
+            whenever(icon.drawable).thenReturn(drawable)
+
+            underTest.nonTintedIcon(icon)
+
+            verify(drawable).setTintList(isNull())
+        }
+
+    @Test
+    @DisableFlags(com.android.systemui.Flags.FLAG_CLEAR_SHORTCUT_ICON_TINT)
+    fun nonTintedIcon_noInteractionWithDrawable() =
+        testScope.runTest {
+            val icon: Icon.Loaded = mock()
+            val drawable: Drawable = mock()
+            whenever(icon.drawable).thenReturn(drawable)
+
+            underTest.nonTintedIcon(icon)
+
+            verifyNoInteractions(drawable)
         }
 
     @Test

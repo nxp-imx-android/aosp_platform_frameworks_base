@@ -45,6 +45,8 @@ import static android.view.accessibility.AccessibilityNodeInfo.ACTION_LONG_CLICK
 import static android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 import static android.view.accessibility.AccessibilityNodeInfo.FOCUS_INPUT;
 import static android.view.accessibility.AccessibilityNodeInfo.ROOT_NODE_ID;
+import static android.window.ScreenCapture.ScreenCaptureParams.SECURE_CONTENT_POLICY_CAPTURE;
+import static android.window.ScreenCapture.ScreenCaptureParams.SECURE_CONTENT_POLICY_REDACT;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
@@ -794,7 +796,8 @@ public class AbstractAccessibilityServiceConnectionTest {
                 ArgumentCaptor.forClass(ScreenCaptureInternal.CaptureArgs.class);
         verify(mMockWindowManagerInternal).captureDisplay(
                 eq(Display.DEFAULT_DISPLAY), displayArgsCaptor.capture(), any());
-        assertThat(displayArgsCaptor.getValue().mCaptureSecureLayers).isFalse();
+        assertThat(displayArgsCaptor.getValue().mSecureContentPolicy).isEqualTo(
+                SECURE_CONTENT_POLICY_REDACT);
     }
 
     @Test
@@ -808,7 +811,8 @@ public class AbstractAccessibilityServiceConnectionTest {
                 ArgumentCaptor.forClass(ScreenCaptureInternal.CaptureArgs.class);
         verify(mMockWindowManagerInternal).captureDisplay(
                 anyInt(), displayArgsCaptor.capture(), any());
-        assertThat(displayArgsCaptor.getValue().mCaptureSecureLayers).isTrue();
+        assertThat(displayArgsCaptor.getValue().mSecureContentPolicy).isEqualTo(
+                SECURE_CONTENT_POLICY_CAPTURE);
     }
 
     private void takeScreenshotOfDisplay() {
@@ -835,7 +839,8 @@ public class AbstractAccessibilityServiceConnectionTest {
                 ArgumentCaptor.forClass(ScreenCaptureInternal.LayerCaptureArgs.class);
         verify(mMockSystemSupport).performScreenCapture(layerArgsCaptor.capture(), any());
         // ...without secure layers included
-        assertThat(layerArgsCaptor.getValue().mCaptureSecureLayers).isFalse();
+        assertThat(layerArgsCaptor.getValue().mSecureContentPolicy).isEqualTo(
+                SECURE_CONTENT_POLICY_REDACT);
         // No error sent to callback
         verifyNoMoreInteractions(mMockCallback);
     }
@@ -853,7 +858,8 @@ public class AbstractAccessibilityServiceConnectionTest {
                 ArgumentCaptor.forClass(ScreenCaptureInternal.LayerCaptureArgs.class);
         verify(mMockSystemSupport).performScreenCapture(layerArgsCaptor.capture(), any());
         // ...with secure layers included
-        assertThat(layerArgsCaptor.getValue().mCaptureSecureLayers).isTrue();
+        assertThat(layerArgsCaptor.getValue().mSecureContentPolicy).isEqualTo(
+                SECURE_CONTENT_POLICY_CAPTURE);
         // No error sent to callback
         verifyNoMoreInteractions(mMockCallback);
     }
@@ -886,7 +892,8 @@ public class AbstractAccessibilityServiceConnectionTest {
                 ArgumentCaptor.forClass(ScreenCaptureInternal.LayerCaptureArgs.class);
         verify(mMockSystemSupport).performScreenCapture(layerArgsCaptor.capture(), any());
         // ...with secure layers included
-        assertThat(layerArgsCaptor.getValue().mCaptureSecureLayers).isTrue();
+        assertThat(layerArgsCaptor.getValue().mSecureContentPolicy).isEqualTo(
+                SECURE_CONTENT_POLICY_CAPTURE);
         // No error sent to callback
         verifyNoMoreInteractions(mMockCallback);
     }

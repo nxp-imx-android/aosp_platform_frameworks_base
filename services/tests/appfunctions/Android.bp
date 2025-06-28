@@ -46,6 +46,7 @@ android_test {
         "platform-test-annotations",
         "services.appfunctions",
         "servicestests-core-utils",
+        "testables",
         "truth",
     ],
 

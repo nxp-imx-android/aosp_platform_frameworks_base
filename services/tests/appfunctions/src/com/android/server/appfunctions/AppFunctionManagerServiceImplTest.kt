@@ -19,23 +19,33 @@ package com.android.server.appfunctions
 import android.app.IUriGrantsManager
 import android.app.appfunctions.AppFunctionAccessServiceInterface
 import android.app.appfunctions.flags.Flags
-import android.content.Context
 import android.content.pm.PackageManagerInternal
+import android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_API_ENABLED
+import android.permission.flags.Flags.FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.CheckFlagsRule
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
+import android.testing.TestableContext
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.android.internal.R
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.LocalServices
 import com.android.server.uri.UriGrantsManagerInternal
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
+import org.junit.After
+import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @RunWith(AndroidJUnit4::class)
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER)
@@ -46,16 +56,26 @@ class AppFunctionManagerServiceImplTest {
     val extendedMockitoRule =
         ExtendedMockitoRule.Builder(this).mockStatic(LocalServices::class.java).build()
 
-    private val context: Context
-        get() = ApplicationProvider.getApplicationContext()
+    @get:Rule
+    val context: TestableContext =
+        spy(TestableContext(ApplicationProvider.getApplicationContext(), null))
 
-    private val serviceImpl = AppFunctionManagerServiceImpl(
-        context,
-        mock<PackageManagerInternal>(),
-        mock<AppFunctionAccessServiceInterface>(),
-        mock<IUriGrantsManager>(),
-        mock<UriGrantsManagerInternal>()
-    )
+    private val appFunctionAccessService = mock<AppFunctionAccessServiceInterface>()
+
+    private val serviceImpl =
+        AppFunctionManagerServiceImpl(
+            context,
+            mock<PackageManagerInternal>(),
+            appFunctionAccessService,
+            mock<IUriGrantsManager>(),
+            mock<UriGrantsManagerInternal>(),
+        )
+
+    @Before
+    @After
+    fun clear() {
+        clearDeviceSettingPackages()
+    }
 
     @Test
     fun testGetLockForPackage_samePackage() {
@@ -101,5 +121,167 @@ class AppFunctionManagerServiceImplTest {
         val lock2 = serviceImpl.getLockForPackage("com.example.app")
         // Assert that the lock objects are different
         assertThat(lock1Hash).isNotEqualTo(lock2.hashCode())
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun getAccessFlags_shouldUseOriginalTargetPackage_whenNotDeviceSetting() {
+        val targetPackage = "non.device.setting.package"
+
+        serviceImpl.getAccessFlags("agent.package", 0, targetPackage, 0)
+
+        verify(appFunctionAccessService).getAccessFlags(any(), any(), eq(targetPackage), any())
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun getAccessFlags_shouldUseAndroidTargetPackage_whenIsDeviceSetting() {
+        val targetPackage = "device.setting.package"
+        setDeviceSettingPackages(arrayOf(targetPackage))
+
+        serviceImpl.getAccessFlags("agent.package", 0, targetPackage, 0)
+
+        verify(appFunctionAccessService).getAccessFlags(any(), any(), eq("android"), any())
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun updateAccessFlags_shouldUseOriginalTargetPackage_whenNotDeviceSetting() {
+        val targetPackage = "non.device.setting.package"
+
+        serviceImpl.updateAccessFlags("agent.package", 0, targetPackage, 0, 0, 0)
+
+        verify(appFunctionAccessService)
+            .updateAccessFlags(any(), any(), eq(targetPackage), any(), any(), any())
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun updateAccessFlags_shouldUseAndroidTargetPackage_whenIsDeviceSetting() {
+        val targetPackage = "device.setting.package"
+        setDeviceSettingPackages(arrayOf(targetPackage))
+
+        serviceImpl.updateAccessFlags("agent.package", 0, targetPackage, 0, 0, 0)
+
+        verify(appFunctionAccessService)
+            .updateAccessFlags(any(), any(), eq("android"), any(), any(), any())
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun revokeSelfAccess_shouldUseOriginalTargetPackage_whenNotDeviceSetting() {
+        val targetPackage = "non.device.setting.package"
+
+        serviceImpl.revokeSelfAccess(targetPackage)
+
+        verify(appFunctionAccessService).revokeSelfAccess(eq(targetPackage))
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun revokeSelfAccess_shouldUseAndroidTargetPackage_whenIsDeviceSetting() {
+        val targetPackage = "device.setting.package"
+        setDeviceSettingPackages(arrayOf(targetPackage))
+
+        serviceImpl.revokeSelfAccess(targetPackage)
+
+        verify(appFunctionAccessService).revokeSelfAccess(eq("android"))
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun getAccessRequestState_shouldUseOriginalTargetPackage_whenNotDeviceSetting() {
+        val targetPackage = "non.device.setting.package"
+
+        serviceImpl.getAccessRequestState("agent.package", 0, targetPackage, 0)
+
+        verify(appFunctionAccessService)
+            .getAccessRequestState(any(), any(), eq(targetPackage), any())
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun getAccessRequestState_shouldUseAndroidTargetPackage_whenIsDeviceSetting() {
+        val targetPackage = "device.setting.package"
+        setDeviceSettingPackages(arrayOf(targetPackage))
+
+        serviceImpl.getAccessRequestState("agent.package", 0, targetPackage, 0)
+
+        verify(appFunctionAccessService).getAccessRequestState(any(), any(), eq("android"), any())
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun getValidTargets_shouldNotHaveAndroidPackage_whenNoDeviceSettingPacakge() {
+        val nonDeviceSettingPackage = "non.device.setting.package"
+        val deviceSettingPackage1 = "device.setting.package1"
+        val deviceSettingPackage2 = "device.setting.package2"
+        setDeviceSettingPackages(arrayOf(deviceSettingPackage1, deviceSettingPackage2))
+        whenever(appFunctionAccessService.getValidTargets(any()))
+            .thenReturn(listOf(nonDeviceSettingPackage))
+
+        val validTargets = serviceImpl.getValidTargets(0)
+
+        assertThat(validTargets).containsExactly(nonDeviceSettingPackage)
+    }
+
+    @RequiresFlagsEnabled(
+        FLAG_APP_FUNCTION_ACCESS_SERVICE_ENABLED,
+        FLAG_APP_FUNCTION_ACCESS_API_ENABLED,
+    )
+    @Test
+    fun getValidTargets_shouldReplaceDeviceSettingPackagesToAndroid() {
+        val nonDeviceSettingPackage = "non.device.setting.package"
+        val deviceSettingPackage1 = "device.setting.package1"
+        val deviceSettingPackage2 = "device.setting.package2"
+        setDeviceSettingPackages(arrayOf(deviceSettingPackage1, deviceSettingPackage2))
+        whenever(appFunctionAccessService.getValidTargets(any()))
+            .thenReturn(
+                listOf(nonDeviceSettingPackage, deviceSettingPackage1, deviceSettingPackage2)
+            )
+
+        val validTargets = serviceImpl.getValidTargets(0)
+
+        assertThat(validTargets).containsExactly("android", nonDeviceSettingPackage)
+    }
+
+    private fun setDeviceSettingPackages(deviceSettings: Array<String>) {
+        context.orCreateTestableResources.addOverride(
+            R.array.config_appFunctionDeviceSettingsPackages,
+            deviceSettings,
+        )
+    }
+
+    private fun clearDeviceSettingPackages() {
+        context.orCreateTestableResources.removeOverride(
+            R.array.config_appFunctionDeviceSettingsPackages
+        )
     }
 }

@@ -31,6 +31,7 @@ import android.os.Handler;
 import android.util.ArraySet;
 import android.util.Slog;
 import android.view.Display;
+import android.window.ScreenCapture.ScreenCaptureParams;
 import android.window.ScreenCaptureInternal;
 import android.window.TaskSnapshot;
 import android.window.TaskSnapshotManager;
@@ -285,7 +286,8 @@ class TaskSnapshotController extends AbsAppSnapshotController<Task, TaskSnapshot
                             .setSourceCrop(bounds)
                             .setFrameScale(1.0f)
                             .setPixelFormat(pixelFormat)
-                            .setCaptureSecureLayers(true)
+                            .setSecureContentPolicy(
+                                    ScreenCaptureParams.SECURE_CONTENT_POLICY_CAPTURE)
                             .build();
             return ScreenCaptureInternal.captureLayers(captureArgs);
         }

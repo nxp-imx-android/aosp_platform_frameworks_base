@@ -29,7 +29,11 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
+import android.util.Slog;
 import android.view.SurfaceControl;
+import android.window.ScreenCapture.ScreenCaptureParams.CaptureMode;
+import android.window.ScreenCapture.ScreenCaptureParams.ProtectedContentPolicy;
+import android.window.ScreenCapture.ScreenCaptureParams.SecureContentPolicy;
 
 import com.android.window.flags.Flags;
 
@@ -50,12 +54,17 @@ public class ScreenCaptureInternal {
 
     private static native int nativeCaptureDisplay(DisplayCaptureArgs captureArgs,
             long captureListener);
+
     private static native int nativeCaptureLayers(LayerCaptureArgs captureArgs,
             long captureListener, boolean sync);
+
     private static native long nativeCreateScreenCaptureListener(
             ObjIntConsumer<ScreenshotHardwareBuffer> consumer);
+
     private static native void nativeWriteListenerToParcel(long nativeObject, Parcel out);
+
     private static native long nativeReadListenerFromParcel(Parcel in);
+
     private static native long getNativeListenerFinalizer();
 
     /**
@@ -63,9 +72,20 @@ public class ScreenCaptureInternal {
      * @param captureListener A listener to receive the screenshot callback
      * @hide
      */
-    public static int captureDisplay(@NonNull DisplayCaptureArgs captureArgs,
+    public static void captureDisplay(@NonNull DisplayCaptureArgs captureArgs,
             @NonNull ScreenCaptureListener captureListener) {
-        return nativeCaptureDisplay(captureArgs, captureListener.mNativeObject);
+        int status = captureDisplayInternal(captureArgs, captureListener);
+        if (status != 0) {
+            switch (status) {
+                case -1: //PERMISSION_DENIED
+                    captureListener.onError(ScreenCapture.SCREEN_CAPTURE_ERROR_SENSITIVE_CONTENT);
+                    break;
+                case -38: //INVALID_OPERATION
+                default:
+                    Slog.w(TAG, "captureDisplay failed with unknown status: " + status);
+                    captureListener.onError(ScreenCapture.SCREEN_CAPTURE_ERROR_CODE_UNKNOWN);
+            }
+        }
     }
 
     /**
@@ -77,7 +97,7 @@ public class ScreenCaptureInternal {
     public static ScreenshotHardwareBuffer captureDisplay(
             DisplayCaptureArgs captureArgs) {
         SynchronousScreenCaptureListener syncScreenCapture = createSyncCaptureListener();
-        int status = captureDisplay(captureArgs, syncScreenCapture);
+        int status = captureDisplayInternal(captureArgs, syncScreenCapture);
         if (status != 0) {
             return null;
         }
@@ -176,6 +196,11 @@ public class ScreenCaptureInternal {
     public static int captureLayers(@NonNull LayerCaptureArgs captureArgs,
             @NonNull ScreenCaptureListener captureListener) {
         return nativeCaptureLayers(captureArgs, captureListener.mNativeObject, false /* sync */);
+    }
+
+    private static int captureDisplayInternal(@NonNull DisplayCaptureArgs captureArgs,
+            @NonNull ScreenCaptureListener captureListener) {
+        return nativeCaptureDisplay(captureArgs, captureListener.mNativeObject);
     }
 
     /**
@@ -301,24 +326,30 @@ public class ScreenCaptureInternal {
         public final Rect mSourceCrop = new Rect();
         public final float mFrameScaleX;
         public final float mFrameScaleY;
-        public final boolean mCaptureSecureLayers;
-        public final boolean mAllowProtected;
+        public final @SecureContentPolicy int mSecureContentPolicy;
+        public final @ProtectedContentPolicy int mProtectedContentPolicy;
+        public final @CaptureMode int mCaptureMode;
         public final long mUid;
         public final boolean mGrayscale;
         final SurfaceControl[] mExcludeLayers;
-        public final boolean mHintForSeamlessTransition;
+        public final boolean mPreserveDisplayColors;
+        public final boolean mUseDisplayInstallationOrientation;
+        public final boolean mIncludeSystemOverlays;
 
         private CaptureArgs(CaptureArgs.Builder<? extends CaptureArgs.Builder<?>> builder) {
             mPixelFormat = builder.mPixelFormat;
             mSourceCrop.set(builder.mSourceCrop);
             mFrameScaleX = builder.mFrameScaleX;
             mFrameScaleY = builder.mFrameScaleY;
-            mCaptureSecureLayers = builder.mCaptureSecureLayers;
-            mAllowProtected = builder.mAllowProtected;
+            mSecureContentPolicy = builder.mSecureContentPolicy;
+            mProtectedContentPolicy = builder.mProtectedContentPolicy;
+            mCaptureMode = builder.mCaptureMode;
             mUid = builder.mUid;
             mGrayscale = builder.mGrayscale;
             mExcludeLayers = builder.mExcludeLayers;
-            mHintForSeamlessTransition = builder.mHintForSeamlessTransition;
+            mPreserveDisplayColors = builder.mPreserveDisplayColors;
+            mUseDisplayInstallationOrientation = builder.mUseDisplayInstallationOrientation;
+            mIncludeSystemOverlays = builder.mIncludeSystemOverlays;
         }
 
         private CaptureArgs(Parcel in) {
@@ -326,8 +357,9 @@ public class ScreenCaptureInternal {
             mSourceCrop.readFromParcel(in);
             mFrameScaleX = in.readFloat();
             mFrameScaleY = in.readFloat();
-            mCaptureSecureLayers = in.readBoolean();
-            mAllowProtected = in.readBoolean();
+            mSecureContentPolicy = in.readInt();
+            mProtectedContentPolicy = in.readInt();
+            mCaptureMode = in.readInt();
             mUid = in.readLong();
             mGrayscale = in.readBoolean();
 
@@ -340,7 +372,9 @@ public class ScreenCaptureInternal {
             } else {
                 mExcludeLayers = null;
             }
-            mHintForSeamlessTransition = in.readBoolean();
+            mPreserveDisplayColors = in.readBoolean();
+            mUseDisplayInstallationOrientation = in.readBoolean();
+            mIncludeSystemOverlays = in.readBoolean();
         }
 
         /** Release any layers if set using {@link Builder#setExcludeLayers(SurfaceControl[])}. */
@@ -383,12 +417,15 @@ public class ScreenCaptureInternal {
             private final Rect mSourceCrop = new Rect();
             private float mFrameScaleX = 1;
             private float mFrameScaleY = 1;
-            private boolean mCaptureSecureLayers;
-            private boolean mAllowProtected;
+            private @SecureContentPolicy int mSecureContentPolicy;
+            private @ProtectedContentPolicy int mProtectedContentPolicy;
+            private @CaptureMode int mCaptureMode;
             private long mUid = -1;
             private boolean mGrayscale;
             private SurfaceControl[] mExcludeLayers;
-            private boolean mHintForSeamlessTransition;
+            private boolean mPreserveDisplayColors;
+            private boolean mUseDisplayInstallationOrientation;
+            private boolean mIncludeSystemOverlays;
 
             /**
              * Construct a new {@link CaptureArgs} with the set parameters. The builder remains
@@ -439,24 +476,29 @@ public class ScreenCaptureInternal {
             }
 
             /**
-             * Whether to allow the screenshot of secure layers. Warning: This should only be done
-             * if the content will be placed in a secure SurfaceControl.
-             *
-             * @see ScreenshotHardwareBuffer#containsSecureLayers()
+             * Defines how to handle secure content during screen capture.
              */
-            public T setCaptureSecureLayers(boolean captureSecureLayers) {
-                mCaptureSecureLayers = captureSecureLayers;
+            public T setSecureContentPolicy(@SecureContentPolicy int secureContentPolicy) {
+                mSecureContentPolicy = secureContentPolicy;
                 return getThis();
             }
 
             /**
-             * Whether to allow the screenshot of protected (DRM) content. Warning: The screenshot
-             * cannot be read in unprotected space.
+             * Defines how to handle protected (DRM) content during screen capture.
+             * Similar to secure layer handling, this can affect the composition path.
              *
              * @see HardwareBuffer#USAGE_PROTECTED_CONTENT
              */
-            public T setAllowProtected(boolean allowProtected) {
-                mAllowProtected = allowProtected;
+            public T setProtectedContentPolicy(@ProtectedContentPolicy int protectedContentPolicy) {
+                mProtectedContentPolicy = protectedContentPolicy;
+                return getThis();
+            }
+
+            /**
+             * The desired capture mode.
+             */
+            public T setCaptureMode(@CaptureMode int captureMode) {
+                mCaptureMode = captureMode;
                 return getThis();
             }
 
@@ -486,17 +528,49 @@ public class ScreenCaptureInternal {
             }
 
             /**
-             * Set whether the screenshot will be used in a system animation.
-             * This hint is used for picking the "best" colorspace for the screenshot, in particular
-             * for mixing HDR and SDR content.
-             * E.g., hintForSeamlessTransition is false, then a colorspace suitable for file
-             * encoding, such as BT2100, may be chosen. Otherwise, then the display's color space
-             * would be chosen, with the possibility of having an extended brightness range. This
-             * is important for screenshots that are directly re-routed to a SurfaceControl in
-             * order to preserve accurate colors.
+             * Sets whether the screenshot should attempt to preserve the colors as they are
+             * currently rendered on the display.
+             *
+             * <p>When set to {@code true}, the screen capture will attempt to capture the pixel
+             * data after display-specific color transformations.
+             *
+             * <p>When set to {@code false}, then a colorspace suitable for file encoding, such as
+             * BT2100, may be chosen. Otherwise, then the display's colorspace would be chosen, with
+             * the possibility of having an extended brightness range. This is important for
+             * screenshots that are directly re-routed to a SurfaceControl in order to preserve
+             * accurate colors.
              */
-            public T setHintForSeamlessTransition(boolean hintForSeamlessTransition) {
-                mHintForSeamlessTransition = hintForSeamlessTransition;
+            public T setPreserveDisplayColors(boolean preserveDisplayColors) {
+                mPreserveDisplayColors = preserveDisplayColors;
+                return getThis();
+            }
+
+            /**
+             * Sets whether the screenshot should be captured using the display's
+             * physical installation orientation, rather than its current logical orientation.
+             *
+             * <p>If {@code true}, the screenshot will match the display's native orientation
+             * (e.g., portrait for most phones, landscape for tablets or TVs), ignoring any
+             * rotation applied by software. If {@code false} (default), the screenshot
+             * reflects the display's current logical orientation as seen by the user.
+             */
+            public T setUseDisplayInstallationOrientation(
+                    boolean useDisplayInstallationOrientation) {
+                mUseDisplayInstallationOrientation = useDisplayInstallationOrientation;
+                return getThis();
+            }
+
+            /**
+             * Sets whether the screenshot should attempt to include all layers.
+             *
+             * <p>If {@code true}, the capture includes layers that might normally be excluded, such
+             * as certain system UI elements or overlays.
+             *
+             * <p>If {@code false}, standard layer exclusion rules apply, capturing primarily
+             * user-visible content.
+             */
+            public T setIncludeSystemOverlays(boolean includeSystemOverlays) {
+                mIncludeSystemOverlays = includeSystemOverlays;
                 return getThis();
             }
 
@@ -519,8 +593,9 @@ public class ScreenCaptureInternal {
             mSourceCrop.writeToParcel(dest, flags);
             dest.writeFloat(mFrameScaleX);
             dest.writeFloat(mFrameScaleY);
-            dest.writeBoolean(mCaptureSecureLayers);
-            dest.writeBoolean(mAllowProtected);
+            dest.writeInt(mSecureContentPolicy);
+            dest.writeInt(mProtectedContentPolicy);
+            dest.writeInt(mCaptureMode);
             dest.writeLong(mUid);
             dest.writeBoolean(mGrayscale);
             if (mExcludeLayers != null) {
@@ -531,7 +606,9 @@ public class ScreenCaptureInternal {
             } else {
                 dest.writeInt(0);
             }
-            dest.writeBoolean(mHintForSeamlessTransition);
+            dest.writeBoolean(mPreserveDisplayColors);
+            dest.writeBoolean(mUseDisplayInstallationOrientation);
+            dest.writeBoolean(mIncludeSystemOverlays);
         }
 
         public static final Parcelable.Creator<CaptureArgs> CREATOR =
@@ -584,6 +661,9 @@ public class ScreenCaptureInternal {
                             "Can't take screenshot with null display token");
                 }
                 return new DisplayCaptureArgs(this);
+            }
+
+            public Builder() {
             }
 
             public Builder(IBinder displayToken) {
@@ -660,12 +740,13 @@ public class ScreenCaptureInternal {
                 setPixelFormat(args.mPixelFormat);
                 setSourceCrop(args.mSourceCrop);
                 setFrameScale(args.mFrameScaleX, args.mFrameScaleY);
-                setCaptureSecureLayers(args.mCaptureSecureLayers);
-                setAllowProtected(args.mAllowProtected);
+                setSecureContentPolicy(args.mSecureContentPolicy);
+                setProtectedContentPolicy(args.mProtectedContentPolicy);
+                setCaptureMode(args.mCaptureMode);
                 setUid(args.mUid);
                 setGrayscale(args.mGrayscale);
                 setExcludeLayers(args.mExcludeLayers);
-                setHintForSeamlessTransition(args.mHintForSeamlessTransition);
+                setPreserveDisplayColors(args.mPreserveDisplayColors);
             }
 
             public Builder(SurfaceControl layer) {
@@ -704,6 +785,8 @@ public class ScreenCaptureInternal {
      * This listener can only be used for a single call to capture content call.
      */
     public static class ScreenCaptureListener implements Parcelable {
+        // Transient. Not recoverable from Parcel.
+        private final ObjIntConsumer<ScreenshotHardwareBuffer> mConsumer;
         final long mNativeObject;
         private static final NativeAllocationRegistry sRegistry =
                 NativeAllocationRegistry.createMalloced(
@@ -713,11 +796,13 @@ public class ScreenCaptureInternal {
          * @param consumer The callback invoked when the screen capture is complete.
          */
         public ScreenCaptureListener(ObjIntConsumer<ScreenshotHardwareBuffer> consumer) {
+            this.mConsumer = consumer;
             mNativeObject = nativeCreateScreenCaptureListener(consumer);
             sRegistry.registerNativeAllocation(this, mNativeObject);
         }
 
         private ScreenCaptureListener(Parcel in) {
+            mConsumer = null;
             if (in.readBoolean()) {
                 mNativeObject = nativeReadListenerFromParcel(in);
                 sRegistry.registerNativeAllocation(this, mNativeObject);
@@ -738,6 +823,15 @@ public class ScreenCaptureInternal {
             } else {
                 dest.writeBoolean(true);
                 nativeWriteListenerToParcel(mNativeObject, dest);
+            }
+        }
+
+        /**
+         * Call when the screen capture fails.
+         */
+        public void onError(@ScreenCapture.ScreenCaptureErrorCode int errorCode) {
+            if (mConsumer != null) {
+                mConsumer.accept(null, errorCode);
             }
         }
 
