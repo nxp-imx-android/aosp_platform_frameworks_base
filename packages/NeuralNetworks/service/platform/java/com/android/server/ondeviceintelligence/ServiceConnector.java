@@ -635,6 +635,14 @@ public interface ServiceConnector<I extends IInterface> {
             unbind();
         }
 
+        @Override
+        public void onBindingDied(@NonNull ComponentName name) {
+            if (DEBUG) {
+                logTrace();
+            }
+            unbind();
+        }
+
         protected void dispatchOnBinderDied() {
             ServiceLifecycleCallbacks<I> serviceLifecycleCallbacks = mServiceLifecycleCallbacks;
             if (serviceLifecycleCallbacks != null) {
