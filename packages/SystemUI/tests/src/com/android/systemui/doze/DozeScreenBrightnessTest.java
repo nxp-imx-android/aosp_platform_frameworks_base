@@ -59,6 +59,7 @@ import com.android.internal.display.BrightnessSynchronizer;
 import com.android.server.display.feature.flags.Flags;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
+import com.android.systemui.kosmos.KosmosJavaAdapter;
 import com.android.systemui.statusbar.phone.DozeParameters;
 import com.android.systemui.statusbar.policy.DevicePostureController;
 import com.android.systemui.util.concurrency.FakeExecutor;
@@ -89,7 +90,8 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
     private static final int[] SENSOR_TO_BRIGHTNESS_INT = new int[]{-1, 1, 2, 3, 4};
     private static final float[] SENSOR_TO_BRIGHTNESS_FLOAT =
             new float[]{-1, 0.01f, 0.05f, 0.7f, 0.1f};
-    private static final int[] SENSOR_TO_OPACITY = new int[]{-1, 10, 0, 0, 0};
+    private static final int[] SENSOR_TO_OPACITY = new int[]{-1, 10, 0, 0, 1};
+    private static final int[] SENSOR_TO_WALLPAPER_SCRIM_OPACITY = new int[]{-1, 12, 0, 0, 0};
     private static final float DELTA = BrightnessSynchronizer.EPSILON;
 
     private DozeServiceFake mServiceFake;
@@ -111,6 +113,7 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
     SystemSettings mSystemSettings;
     @Mock
     DisplayManager mDisplayManager;
+    private KosmosJavaAdapter mKosmos;
     private final FakeExecutor mFakeExecutor = new FakeExecutor(new FakeSystemClock());
     private final FakeThreadFactory mFakeThreadFactory = new FakeThreadFactory(mFakeExecutor);
 
@@ -122,6 +125,7 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
+        mKosmos = new KosmosJavaAdapter(this);
         when(mSystemSettings.getIntForUser(eq(Settings.System.SCREEN_BRIGHTNESS), anyInt(),
                 eq(UserHandle.USER_CURRENT))).thenReturn(PowerManager.BRIGHTNESS_ON);
         when(mDisplayManager.getBrightness(Display.DEFAULT_DISPLAY))
@@ -144,6 +148,7 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
         mAlwaysOnDisplayPolicy.dimBrightness = DIM_BRIGHTNESS_INT;
         mAlwaysOnDisplayPolicy.dimBrightnessFloat = DIM_BRIGHTNESS_FLOAT;
         mAlwaysOnDisplayPolicy.dimmingScrimArray = SENSOR_TO_OPACITY;
+        mAlwaysOnDisplayPolicy.wallpaperDimmingScrimArray = SENSOR_TO_WALLPAPER_SCRIM_OPACITY;
         mSensor = fakeSensorManager.getFakeLightSensor();
         mSensorInner = fakeSensorManager.getFakeLightSensor2();
         mScreen = new DozeScreenBrightness(
@@ -159,7 +164,9 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
                 mDevicePostureController,
                 mDozeLog,
                 mSystemSettings,
-                mDisplayManager);
+                mDisplayManager,
+                mKosmos.getWallpaperInteractor(),
+                mKosmos.getTestScope());
     }
 
     @Test
@@ -473,7 +480,10 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
                 mDevicePostureController,
                 mDozeLog,
                 mSystemSettings,
-                mDisplayManager);
+                mDisplayManager,
+                mKosmos.getWallpaperInteractor(),
+                mKosmos.getTestScope()
+        );
         mScreen.transitionTo(UNINITIALIZED, INITIALIZED);
         mScreen.transitionTo(INITIALIZED, DOZE);
         reset(mDozeHost);
@@ -531,7 +541,10 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
                 mDevicePostureController,
                 mDozeLog,
                 mSystemSettings,
-                mDisplayManager);
+                mDisplayManager,
+                mKosmos.getWallpaperInteractor(),
+                mKosmos.getTestScope()
+        );
 
         mScreen.transitionTo(UNINITIALIZED, INITIALIZED);
         mScreen.transitionTo(INITIALIZED, DOZE_AOD);
@@ -565,7 +578,10 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
                 mDevicePostureController,
                 mDozeLog,
                 mSystemSettings,
-                mDisplayManager);
+                mDisplayManager,
+                mKosmos.getWallpaperInteractor(),
+                mKosmos.getTestScope()
+        );
 
         // GIVEN the device is in AOD
         mScreen.transitionTo(UNINITIALIZED, INITIALIZED);
@@ -607,7 +623,10 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
                 mDevicePostureController,
                 mDozeLog,
                 mSystemSettings,
-                mDisplayManager);
+                mDisplayManager,
+                mKosmos.getWallpaperInteractor(),
+                mKosmos.getTestScope()
+        );
 
         // GIVEN the device is in AOD
         mScreen.transitionTo(UNINITIALIZED, INITIALIZED);
@@ -650,7 +669,10 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
                 mDevicePostureController,
                 mDozeLog,
                 mSystemSettings,
-                mDisplayManager);
+                mDisplayManager,
+                mKosmos.getWallpaperInteractor(),
+                mKosmos.getTestScope()
+        );
 
         // GIVEN device is in AOD
         mScreen.transitionTo(UNINITIALIZED, INITIALIZED);
@@ -692,7 +714,10 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
                 mDevicePostureController,
                 mDozeLog,
                 mSystemSettings,
-                mDisplayManager);
+                mDisplayManager,
+                mKosmos.getWallpaperInteractor(),
+                mKosmos.getTestScope()
+        );
 
         // GIVEN device is in AOD
         mScreen.transitionTo(UNINITIALIZED, INITIALIZED);
@@ -738,7 +763,10 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
                 mDevicePostureController,
                 mDozeLog,
                 mSystemSettings,
-                mDisplayManager);
+                mDisplayManager,
+                mKosmos.getWallpaperInteractor(),
+                mKosmos.getTestScope()
+        );
         verify(mDevicePostureController).addCallback(postureCallbackCaptor.capture());
 
         // GIVEN device is in AOD
@@ -790,7 +818,10 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
                 mDevicePostureController,
                 mDozeLog,
                 mSystemSettings,
-                mDisplayManager);
+                mDisplayManager,
+                mKosmos.getWallpaperInteractor(),
+                mKosmos.getTestScope()
+        );
         verify(mDevicePostureController).addCallback(postureCallbackCaptor.capture());
 
         // GIVEN device is in AOD
@@ -868,6 +899,43 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
         assertEquals(SENSOR_TO_BRIGHTNESS_FLOAT[1], mServiceFake.screenBrightnessFloat, DELTA);
         assertEquals(PowerManager.BRIGHTNESS_DEFAULT, mServiceFake.screenBrightnessInt);
         verify(mDozeHost).setAodDimmingScrim(eq(10f / 255f));
+    }
+
+    @Test
+    public void ambientAod_usesWallpaperScrimOpacity() {
+        mScreen.transitionTo(UNINITIALIZED, INITIALIZED);
+        mScreen.transitionTo(INITIALIZED, DOZE_AOD);
+        mKosmos.getWallpaperRepository().setWallpaperSupportsAmbientMode(true);
+        mKosmos.getTestScope().getTestScheduler().runCurrent();
+        waitForSensorManager();
+
+        int sensorValue = 1;
+        mSensor.sendSensorEvent(sensorValue);
+
+        // uses SENSOR_TO_WALLPAPER_SCRIM_OPACITY[sensorValue] bc its greater than
+        // SENSOR_TO_OPACITY[sensorValue]
+        verify(mDozeHost).setAodDimmingScrim(
+                eq(SENSOR_TO_WALLPAPER_SCRIM_OPACITY[sensorValue] / 255f)
+        );
+    }
+
+
+    @Test
+    public void ambientAod_usesRegularScrimOpacity() {
+        mScreen.transitionTo(UNINITIALIZED, INITIALIZED);
+        mScreen.transitionTo(INITIALIZED, DOZE_AOD);
+        mKosmos.getWallpaperRepository().setWallpaperSupportsAmbientMode(true);
+        mKosmos.getTestScope().getTestScheduler().runCurrent();
+        waitForSensorManager();
+
+        int sensorValue = 4;
+        mSensor.sendSensorEvent(sensorValue);
+
+        // uses SENSOR_TO_OPACITY[sensorValue] bc its greater than
+        // SENSOR_TO_WALLPAPER_SCRIM_OPACITY[sensorValue]
+        verify(mDozeHost).setAodDimmingScrim(
+                eq(SENSOR_TO_OPACITY[sensorValue] / 255f)
+        );
     }
 
     @Test
@@ -1152,7 +1220,10 @@ public class DozeScreenBrightnessTest extends SysuiTestCase {
                 mDevicePostureController,
                 mDozeLog,
                 mSystemSettings,
-                mDisplayManager);
+                mDisplayManager,
+                mKosmos.getWallpaperInteractor(),
+                mKosmos.getTestScope()
+            );
         mScreen.transitionTo(UNINITIALIZED, INITIALIZED);
 
         assertEquals(DEFAULT_BRIGHTNESS_INT, mServiceFake.screenBrightnessInt);

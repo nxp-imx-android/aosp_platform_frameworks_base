@@ -43,6 +43,10 @@ class FakeWallpaperRepository : WallpaperRepository {
 
     override fun sendTapCommand(tapPosition: PointF) {}
 
+    fun setWallpaperSupportsAmbientMode(supportsAmbientMode: Boolean) {
+        _wallpaperSupportsAmbientMode.value = supportsAmbientMode
+    }
+
     fun setWallpaperInfo(wallpaperInfo: WallpaperInfo?) {
         _wallpaperInfo.value = wallpaperInfo
     }
