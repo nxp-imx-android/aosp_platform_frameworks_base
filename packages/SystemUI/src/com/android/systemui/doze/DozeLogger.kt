@@ -342,12 +342,12 @@ class DozeLogger @Inject constructor(@DozeLog private val buffer: LogBuffer) {
         )
     }
 
-    fun logSetAodDimmingScrim(scrimOpacity: Long) {
+    fun logSetAodDimmingScrim(scrimOpacity: Float) {
         buffer.log(
             TAG,
             INFO,
-            { long1 = scrimOpacity },
-            { "Doze aod dimming scrim opacity set, opacity=$long1" },
+            { double1 = scrimOpacity.toDouble() },
+            { "Doze aod dimming scrim opacity set, opacity=$double1" },
         )
     }
 

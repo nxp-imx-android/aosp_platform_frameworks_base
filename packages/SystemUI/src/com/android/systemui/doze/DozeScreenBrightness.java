@@ -17,7 +17,10 @@
 package com.android.systemui.doze;
 
 import static android.os.PowerManager.GO_TO_SLEEP_REASON_TIMEOUT;
+
 import static com.android.systemui.keyguard.WakefulnessLifecycle.WAKEFULNESS_GOING_TO_SLEEP;
+
+import static java.lang.Integer.max;
 
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
@@ -39,6 +42,7 @@ import android.view.Display;
 
 import com.android.app.tracing.TraceUtils;
 import com.android.internal.R;
+import com.android.systemui.dagger.qualifiers.Application;
 import com.android.systemui.dagger.qualifiers.Main;
 import com.android.systemui.doze.dagger.BrightnessSensor;
 import com.android.systemui.doze.dagger.DozeScope;
@@ -46,17 +50,23 @@ import com.android.systemui.doze.dagger.WrappedService;
 import com.android.systemui.keyguard.WakefulnessLifecycle;
 import com.android.systemui.statusbar.phone.DozeParameters;
 import com.android.systemui.statusbar.policy.DevicePostureController;
+import com.android.systemui.util.kotlin.JavaAdapterKt;
 import com.android.systemui.util.sensors.AsyncSensorManager;
 import com.android.systemui.util.settings.SystemSettings;
+import com.android.systemui.wallpapers.domain.interactor.WallpaperInteractor;
+
+import kotlin.Unit;
+
+import kotlinx.coroutines.CoroutineScope;
+import kotlinx.coroutines.Job;
 
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CancellationException;
 
 import javax.inject.Inject;
-
-import kotlin.Unit;
 
 /**
  * Controls the screen brightness when dozing.
@@ -88,9 +98,14 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
     private final DevicePostureController mDevicePostureController;
     private final DozeLog mDozeLog;
     private final SystemSettings mSystemSettings;
+    private final WallpaperInteractor mWallpaperInteractor;
+    private final CoroutineScope mScope;
+    private Job mWallpaperSupportsAmbientModeJob = null;
+    private boolean mWallpaperSupportsAmbientMode;
     private final int[] mSensorToBrightness;
     @Nullable
     private final float[] mSensorToBrightnessFloat;
+    private final int[] mSensorToWallpaperScrimOpacity;
     private final int[] mSensorToScrimOpacity;
     private final int mScreenBrightnessDim;
     private final float mScreenBrightnessDimFloat;
@@ -127,7 +142,10 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
             DevicePostureController devicePostureController,
             DozeLog dozeLog,
             SystemSettings systemSettings,
-            DisplayManager displayManager) {
+            DisplayManager displayManager,
+            WallpaperInteractor wallpaperInteractor,
+            @Application CoroutineScope scope
+    ) {
         mContext = context;
         mDozeService = service;
         mSensorManager = sensorManager;
@@ -141,6 +159,8 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
         mHandler = handler;
         mDozeLog = dozeLog;
         mSystemSettings = systemSettings;
+        mWallpaperInteractor = wallpaperInteractor;
+        mScope = scope;
 
         mScreenBrightnessMinimumDimAmountFloat = context.getResources().getFloat(
                 R.dimen.config_screenBrightnessMinimumDimAmountFloat);
@@ -154,6 +174,7 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
         mSensorToBrightnessFloat =
                 mDisplayManager.getDozeBrightnessSensorValueToBrightness(mContext.getDisplayId());
         mSensorToScrimOpacity = alwaysOnDisplayPolicy.dimmingScrimArray;
+        mSensorToWallpaperScrimOpacity = alwaysOnDisplayPolicy.wallpaperDimmingScrimArray;
 
         mDevicePostureController.addCallback(mDevicePostureCallback);
     }
@@ -163,6 +184,7 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
         mState = newState;
         switch (newState) {
             case INITIALIZED:
+                startListeningForWallpaperSupportsAmbientMode();
                 resetBrightnessToDefault();
                 break;
             case DOZE_AOD:
@@ -190,6 +212,7 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
     }
 
     private void onDestroy() {
+        stopListeningForWallpaperSupportsAmbientMode();
         setLightSensorEnabled(false);
         mDevicePostureController.removeCallback(mDevicePostureCallback);
     }
@@ -266,7 +289,11 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
         if (sensorValue < 0 || sensorValue >= mSensorToScrimOpacity.length) {
             return -1;
         }
-        return mSensorToScrimOpacity[sensorValue];
+        int wallpaperScrimOpacity = -1;
+        if (mWallpaperSupportsAmbientMode && sensorValue < mSensorToWallpaperScrimOpacity.length) {
+            wallpaperScrimOpacity = mSensorToWallpaperScrimOpacity[sensorValue];
+        }
+        return max(wallpaperScrimOpacity, mSensorToScrimOpacity[sensorValue]);
     }
 
     private int computeBrightness(int sensorValue) {
@@ -435,6 +462,22 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
         updateBrightnessAndReady(false /* force */);
     }
 
+    private void startListeningForWallpaperSupportsAmbientMode() {
+        if (mWallpaperSupportsAmbientModeJob != null) return;
+        mWallpaperSupportsAmbientModeJob = JavaAdapterKt.collectFlow(
+                mScope,
+                mScope.getCoroutineContext(),
+                mWallpaperInteractor.getWallpaperSupportsAmbientMode(),
+                supportsAmbientMode -> mWallpaperSupportsAmbientMode = supportsAmbientMode
+        );
+    }
+
+    private void stopListeningForWallpaperSupportsAmbientMode() {
+        if (mWallpaperSupportsAmbientModeJob == null) return;
+        mWallpaperSupportsAmbientModeJob.cancel(new CancellationException("Stop monitoring"));
+        mWallpaperSupportsAmbientModeJob = null;
+    }
+
     /** Dump current state */
     public void dump(PrintWriter pw) {
         pw.println("DozeScreenBrightness:");
@@ -445,6 +488,8 @@ public class DozeScreenBrightness extends BroadcastReceiver implements DozeMachi
         idpw.println("sensorToBrightness=" + Arrays.toString(mSensorToBrightness));
         idpw.println("sensorToBrightnessFloat=" + Arrays.toString(mSensorToBrightnessFloat));
         idpw.println("sensorToScrimOpacity=" + Arrays.toString(mSensorToScrimOpacity));
+        idpw.println("sensorToWallpaperScrimOpacity="
+                + Arrays.toString(mSensorToWallpaperScrimOpacity));
         idpw.println("screenBrightnessDim=" + mScreenBrightnessDim);
         idpw.println("screenBrightnessDimFloat=" + mScreenBrightnessDimFloat);
         idpw.println("mDefaultDozeBrightness=" + mDefaultDozeBrightness);

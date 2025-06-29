@@ -467,7 +467,7 @@ public class DozeLog implements Dumpable {
     * @param scrimOpacity
      */
     public void traceSetAodDimmingScrim(float scrimOpacity) {
-        mLogger.logSetAodDimmingScrim((long) scrimOpacity);
+        mLogger.logSetAodDimmingScrim(scrimOpacity);
     }
 
     /**
