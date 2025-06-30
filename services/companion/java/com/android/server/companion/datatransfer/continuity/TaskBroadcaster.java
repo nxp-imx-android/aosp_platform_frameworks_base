@@ -26,6 +26,8 @@ import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.RemoteException;
 import android.util.Slog;
 
@@ -60,6 +62,7 @@ class TaskBroadcaster
     private final ActivityTaskManager mActivityTaskManager;
     private final CompanionDeviceManager mCompanionDeviceManager;
     private final ConnectedAssociationStore mConnectedAssociationStore;
+    private final PackageManager mPackageManager;
 
     private boolean mIsBroadcasting = false;
 
@@ -75,6 +78,8 @@ class TaskBroadcaster
 
         mCompanionDeviceManager
             = context.getSystemService(CompanionDeviceManager.class);
+
+        mPackageManager = context.getPackageManager();
     }
 
     void startBroadcasting(){
@@ -127,7 +132,12 @@ class TaskBroadcaster
         ActivityManager.RunningTaskInfo taskInfo = getRunningTask(taskId);
 
         if (taskInfo != null) {
-            RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(taskInfo);
+            RemoteTaskInfo remoteTaskInfo = createRemoteTaskInfo(taskInfo);
+            if (remoteTaskInfo == null) {
+                Slog.w(TAG, "Could not create RemoteTaskInfo for task: " + taskInfo.taskId);
+                return;
+            }
+
             RemoteTaskAddedMessage taskAddedMessage
                 = new RemoteTaskAddedMessage(remoteTaskInfo);
 
@@ -149,7 +159,12 @@ class TaskBroadcaster
     public void onTaskMovedToFront(RunningTaskInfo taskInfo) throws RemoteException {
         Slog.v(TAG, "onTaskMovedToFront: taskId=" + taskInfo.taskId);
 
-        RemoteTaskInfo remoteTaskInfo = new RemoteTaskInfo(taskInfo);
+        RemoteTaskInfo remoteTaskInfo = createRemoteTaskInfo(taskInfo);
+        if (remoteTaskInfo == null) {
+            Slog.w(TAG, "Could not create RemoteTaskInfo for task: " + taskInfo.taskId);
+            return;
+        }
+
         RemoteTaskUpdatedMessage taskUpdatedMessage = new RemoteTaskUpdatedMessage(remoteTaskInfo);
         sendMessageToAllConnectedAssociations(taskUpdatedMessage);
     }
@@ -169,7 +184,12 @@ class TaskBroadcaster
 
         List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
         for (ActivityManager.RunningTaskInfo taskInfo : runningTasks) {
-            remoteTasks.add(new RemoteTaskInfo(taskInfo));
+            RemoteTaskInfo remoteTaskInfo = createRemoteTaskInfo(taskInfo);
+            if (remoteTaskInfo != null) {
+                remoteTasks.add(remoteTaskInfo);
+            } else {
+                Slog.w(TAG, "Could not create RemoteTaskInfo for task: " + taskInfo.taskId);
+            }
         }
 
         ContinuityDeviceConnected deviceConnectedMessage =
@@ -231,5 +251,26 @@ class TaskBroadcaster
 
     private List<ActivityManager.RunningTaskInfo> getRunningTasks() {
         return mActivityTaskManager.getTasks(Integer.MAX_VALUE, true);
+    }
+
+    private RemoteTaskInfo createRemoteTaskInfo(ActivityManager.RunningTaskInfo taskInfo) {
+        PackageInfo packageInfo;
+        try {
+            packageInfo = mPackageManager.getPackageInfo(
+                taskInfo.baseActivity.getPackageName(),
+                PackageManager.GET_META_DATA);
+        } catch (PackageManager.NameNotFoundException e) {
+            Slog.e(TAG, "Failed to get package info for task: " + taskInfo.taskId, e);
+            return null;
+        }
+
+        String baseApplicationLabel = mPackageManager.getApplicationLabel(
+            packageInfo.applicationInfo).toString();
+
+        return new RemoteTaskInfo(
+            taskInfo.taskId,
+            baseApplicationLabel,
+            taskInfo.lastActiveTime,
+            new byte[0]);
     }
 }

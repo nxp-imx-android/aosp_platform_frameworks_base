@@ -52,8 +52,8 @@ class RemoteDeviceTaskList {
         mTasks = new PriorityQueue<>(new Comparator<RemoteTaskInfo>() {
             @Override
             public int compare(RemoteTaskInfo task1, RemoteTaskInfo task2) {
-                long lastUsedTime1 = task1.getLastUsedTimeMillis();
-                long lastUsedTime2 = task2.getLastUsedTimeMillis();
+                long lastUsedTime1 = task1.lastUsedTimeMillis();
+                long lastUsedTime2 = task2.lastUsedTimeMillis();
                 if (lastUsedTime1 < lastUsedTime2) {
                     return 1;
                 } else if (lastUsedTime1 > lastUsedTime2) {
@@ -85,12 +85,12 @@ class RemoteDeviceTaskList {
      */
     void addTask(RemoteTaskInfo taskInfo) {
         synchronized (mTasks) {
-            Slog.v(TAG, "Adding task: " + taskInfo.getId() + " to association: " + mAssociationId);
+            Slog.v(TAG, "Adding task: " + taskInfo.id() + " to association: " + mAssociationId);
             int previousTopTaskId
-                = mTasks.peek() == null ? -1 : mTasks.peek().getId();
+                = mTasks.peek() == null ? -1 : mTasks.peek().id();
 
             mTasks.add(taskInfo);
-            if (taskInfo.getId() != previousTopTaskId) {
+            if (taskInfo.id() != previousTopTaskId) {
                 Slog.v(
                     TAG,
                     "Notifying most recent task changed for association: " + mAssociationId);
@@ -118,8 +118,8 @@ class RemoteDeviceTaskList {
         synchronized (mTasks) {
             Slog.v(TAG, "Removing task: " + taskId + " for association: " + mAssociationId);
             boolean shouldNotifyListeners
-                = (mTasks.peek() != null && mTasks.peek().getId() == taskId);
-            mTasks.removeIf(task -> task.getId() == taskId);
+                = (mTasks.peek() != null && mTasks.peek().id() == taskId);
+            mTasks.removeIf(task -> task.id() == taskId);
             if (shouldNotifyListeners) {
                 Slog.v(
                     TAG,
@@ -134,14 +134,14 @@ class RemoteDeviceTaskList {
         synchronized(mTasks) {
             Slog.v(
                 TAG,
-                "Updating task: " + taskInfo.getId() + " for association: " + mAssociationId);
+                "Updating task: " + taskInfo.id() + " for association: " + mAssociationId);
             int previousTopTaskId
-                = mTasks.peek() == null ? -1 : mTasks.peek().getId();
-            mTasks.removeIf(task -> task.getId() == taskInfo.getId());
+                = mTasks.peek() == null ? -1 : mTasks.peek().id();
+            mTasks.removeIf(task -> task.id() == taskInfo.id());
             mTasks.add(taskInfo);
-            boolean isTopTaskDifferent = previousTopTaskId != mTasks.peek().getId();
+            boolean isTopTaskDifferent = previousTopTaskId != mTasks.peek().id();
             boolean didTopTaskChange
-                = mTasks.peek() != null && mTasks.peek().getId() == taskInfo.getId();
+                = mTasks.peek() != null && mTasks.peek().id() == taskInfo.id();
             boolean shouldNotifyListeners = isTopTaskDifferent || didTopTaskChange;
             if (shouldNotifyListeners) {
                 Slog.v(

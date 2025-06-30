@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ import static org.testng.Assert.expectThrows;
 
 import android.companion.TaskContinuityMessage;
 
-import android.app.ActivityManager;
-import android.app.TaskInfo;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.util.proto.ProtoOutputStream;
@@ -118,16 +116,14 @@ public class ContinuityDeviceConnectedTest {
         int expectedTaskId = 1;
         String expectedLabel = "test";
         long expectedLastActiveTime = 0;
-
-        TaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
-        taskInfo.taskId = expectedTaskId;
-        taskInfo.taskDescription
-            = new ActivityManager.TaskDescription(expectedLabel);
-        taskInfo.lastActiveTime = expectedLastActiveTime;
+        RemoteTaskInfo expectedTaskInfo = new RemoteTaskInfo(
+            expectedTaskId,
+            expectedLabel,
+            expectedLastActiveTime,
+            new byte[0]);
 
         int currentForegroundTaskId = 1234;
-        List<RemoteTaskInfo> remoteTasks = Arrays.asList(
-            new RemoteTaskInfo(taskInfo));
+        List<RemoteTaskInfo> remoteTasks = Arrays.asList(expectedTaskInfo);
 
         ContinuityDeviceConnected expected
             = new ContinuityDeviceConnected(
@@ -147,12 +143,7 @@ public class ContinuityDeviceConnectedTest {
         assertThat(actual.getRemoteTasks())
             .hasSize(1);
         RemoteTaskInfo actualTaskInfo = actual.getRemoteTasks().get(0);
-        assertThat(actualTaskInfo.getId())
-            .isEqualTo(expectedTaskId);
-        assertThat(actualTaskInfo.getLabel())
-            .isEqualTo(expectedLabel);
-        assertThat(actualTaskInfo.getLastUsedTimeMillis())
-            .isEqualTo(expectedLastActiveTime);
+      assertThat(actualTaskInfo).isEqualTo(expectedTaskInfo);
     }
 
     @Test
