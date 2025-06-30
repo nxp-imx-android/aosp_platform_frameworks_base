@@ -18,12 +18,12 @@ package com.android.systemui.qs.ui.viewmodel
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
-import com.android.systemui.qs.ui.adapter.qsSceneAdapter
+import com.android.systemui.qs.panels.ui.viewmodel.editModeViewModel
 import com.android.systemui.scene.domain.interactor.sceneBackInteractor
 
 val Kosmos.quickSettingsUserActionsViewModel by Fixture {
     QuickSettingsUserActionsViewModel(
-        qsSceneAdapter = qsSceneAdapter,
+        editModeViewModel = editModeViewModel,
         sceneBackInteractor = sceneBackInteractor,
     )
 }

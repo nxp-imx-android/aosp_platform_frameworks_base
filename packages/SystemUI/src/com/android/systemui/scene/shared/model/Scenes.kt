@@ -67,17 +67,6 @@ object Scenes {
      * `NotificationsShade` and `QuickSettingsShade` are used respectively.
      */
     @JvmField val Shade = SceneKey("shade")
-
-    /**
-     * The edit mode scene allows users to customize their quick setting tiles used in the
-     * QuickSettings scene.
-     *
-     * This scene is only used in single/accordion configuration, accessible from [QuickSettings].
-     *
-     * TODO(http://b/425671700): Adding a top-leve scene incurs more maintenance cost. Move this
-     * into an STL internal to the QS scene instead.
-     */
-    @JvmField val QSEditMode = SceneKey("qs_edit_mode")
 }
 
 /**
