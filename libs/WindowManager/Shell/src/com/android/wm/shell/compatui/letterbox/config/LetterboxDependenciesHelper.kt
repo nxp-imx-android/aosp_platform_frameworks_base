@@ -25,7 +25,7 @@ import android.window.TransitionInfo.Change
 interface LetterboxDependenciesHelper {
 
     /**
-     * Tells if the [Change] is related to Desktop Windowing.
+     * Tells if we need to destroy the existing letterbox surfaces for a given [Change].
      */
-    fun isDesktopWindowingAction(change: Change): Boolean
+    fun shouldDestroyLetterboxSurfaces(change: Change): Boolean
 }

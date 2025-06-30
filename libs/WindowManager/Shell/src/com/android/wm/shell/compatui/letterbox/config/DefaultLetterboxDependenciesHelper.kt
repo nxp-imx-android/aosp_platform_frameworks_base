@@ -17,14 +17,14 @@
 package com.android.wm.shell.compatui.letterbox.config
 
 import android.window.TransitionInfo
-import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
+import com.android.wm.shell.desktopmode.DesktopRepository
 
 /**
- * Default [LetterboxDependenciesHelper] implementation using Desktop Windowing dependencies.
+ * Default [LetterboxDependenciesHelper] implementation.
  */
-class DefaultLetterboxDependenciesHelper(val desksOrganizer: DesksOrganizer) :
+class DefaultLetterboxDependenciesHelper(val desktopRepository: DesktopRepository) :
     LetterboxDependenciesHelper {
 
-    override fun isDesktopWindowingAction(change: TransitionInfo.Change): Boolean =
-        desksOrganizer.isDeskChange(change)
+    override fun shouldDestroyLetterboxSurfaces(change: TransitionInfo.Change): Boolean =
+        desktopRepository.isAnyDeskActive(change.endDisplayId)
 }
