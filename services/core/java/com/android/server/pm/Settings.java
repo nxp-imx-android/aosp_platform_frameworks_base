@@ -833,9 +833,9 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         return mSnapshot.snapshot();
     }
 
-    private void invalidatePackageCache() {
+    private void invalidatePackageCache(int invalidationReason) {
         ApplicationPackageManager.invalidateQueryIntentActivitiesCache();
-        PackageManagerService.invalidatePackageInfoCache();
+        PackageManagerService.invalidatePackageInfoCache(invalidationReason);
         ChangeIdStateCache.invalidate();
         onChanged();
     }
@@ -2344,7 +2344,8 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
     }
 
     void writePackageRestrictionsLPr(int userId, boolean sync) {
-        invalidatePackageCache();
+        invalidatePackageCache(
+                PackageMetrics.INVALIDATION_REASON_WRITE_PACKAGE_RESTRICTIONS);
 
         final long startTime = SystemClock.uptimeMillis();
 
@@ -2364,7 +2365,8 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
     }
 
     void writePackageRestrictions(Integer[] userIds) {
-        invalidatePackageCache();
+        invalidatePackageCache(
+                PackageMetrics.INVALIDATION_REASON_WRITE_PACKAGE_RESTRICTIONS);
         final long startTime = SystemClock.uptimeMillis();
         for (int userId : userIds) {
             writePackageRestrictions(userId, startTime, /*sync=*/true);
@@ -2844,7 +2846,8 @@ public final class Settings implements Watchable, Snappable, ResilientAtomicFile
         // changed in the form of a settings object change, and it does so under its internal
         // lock --- so if we invalidate the package cache here, we end up invalidating at the
         // right time.
-        invalidatePackageCache();
+        invalidatePackageCache(
+                PackageMetrics.INVALIDATION_REASON_WRITE_SETTINGS);
 
         ArrayList<Signature> writtenSignatures = new ArrayList<>();
 

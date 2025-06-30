@@ -39,7 +39,6 @@ import android.annotation.Nullable;
 import android.annotation.SpecialUsers.CanBeALL;
 import android.annotation.UserIdInt;
 import android.app.ApplicationExitInfo;
-import android.app.ApplicationPackageManager;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.Flags;
@@ -265,7 +264,8 @@ final class DeletePackageHelper {
                     mPm.updateInstantAppInstallerLocked(packageName);
                 }
             }
-            ApplicationPackageManager.invalidateGetPackagesForUidCache();
+            PackageManagerService.invalidateGetPackagesForUidCache(
+                    PackageMetrics.INVALIDATION_REASON_DELETE_PACKAGE);
         }
 
         if (res) {

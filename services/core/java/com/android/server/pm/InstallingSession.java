@@ -626,7 +626,8 @@ class InstallingSession {
         } catch (PackageManagerException e) {
             request.setError("APEX installation failed", e);
         }
-        PackageManagerService.invalidatePackageInfoCache();
+        PackageManagerService.invalidatePackageInfoCache(
+                PackageMetrics.INVALIDATION_REASON_INSTALL_APEX_PACKAGE);
         ApplicationPackageManager.invalidateQueryIntentActivitiesCache();
         mPm.notifyInstallObserver(request);
     }
