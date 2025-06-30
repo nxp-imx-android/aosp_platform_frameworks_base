@@ -29,6 +29,8 @@ import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarou
 import com.android.systemui.media.controls.ui.controller.MediaCarouselController
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.dagger.MediaModule
+import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
+import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.qs.flags.QsDetailedView
 import com.android.systemui.qs.panels.ui.viewmodel.DetailsViewModel
 import com.android.systemui.qs.panels.ui.viewmodel.EditModeViewModel
@@ -154,14 +156,22 @@ constructor(
         }
     }
 
-    private companion object {
-        fun shouldBrightnessSliderBeVisible(displayId: Int): Boolean {
+    companion object {
+        private fun shouldBrightnessSliderBeVisible(displayId: Int): Boolean {
             return if (ShadeWindowGoesAround.isEnabled) {
                 displayId == Display.DEFAULT_DISPLAY
             } else {
                 true
             }
         }
+
+        /** Behavior of the media carousel in quick settings */
+        val mediaUiBehavior: MediaUiBehavior
+            get() =
+                MediaUiBehavior(
+                    isCarouselDismissible = false,
+                    carouselVisibility = MediaCarouselVisibility.WhenNotEmpty,
+                )
     }
 
     @AssistedFactory

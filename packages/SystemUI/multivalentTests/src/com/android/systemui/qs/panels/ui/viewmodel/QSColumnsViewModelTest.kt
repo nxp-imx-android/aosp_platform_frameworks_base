@@ -38,6 +38,7 @@ import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
 import com.android.systemui.qs.panels.data.repository.QSColumnsRepository
 import com.android.systemui.qs.panels.data.repository.qsColumnsRepository
+import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.res.R
 import com.android.systemui.shade.domain.interactor.disableDualShade
 import com.android.systemui.shade.domain.interactor.enableDualShade
@@ -76,7 +77,7 @@ class QSColumnsViewModelTest : SysuiTestCase() {
     @Test
     fun mediaLocationNull_singleOrSplit_alwaysSingleShadeColumns() =
         kosmos.runTest {
-            val underTest = qsColumnsViewModelFactory.create(null)
+            val underTest = qsColumnsViewModelFactory.create(null, null)
             underTest.activateIn(testScope)
             disableDualShade()
 
@@ -96,7 +97,7 @@ class QSColumnsViewModelTest : SysuiTestCase() {
     @EnableSceneContainer
     fun mediaLocationNull_dualShade_alwaysDualShadeColumns() =
         kosmos.runTest {
-            val underTest = qsColumnsViewModelFactory.create(null)
+            val underTest = qsColumnsViewModelFactory.create(null, null)
             underTest.activateIn(testScope)
             enableDualShade()
 
@@ -116,7 +117,11 @@ class QSColumnsViewModelTest : SysuiTestCase() {
     @EnableSceneContainer
     fun mediaLocationQS_dualShade_alwaysDualShadeColumns() =
         kosmos.runTest {
-            val underTest = qsColumnsViewModelFactory.create(LOCATION_QS)
+            val underTest =
+                qsColumnsViewModelFactory.create(
+                    LOCATION_QS,
+                    QuickSettingsContainerViewModel.mediaUiBehavior,
+                )
             underTest.activateIn(testScope)
             enableDualShade()
 
@@ -135,7 +140,11 @@ class QSColumnsViewModelTest : SysuiTestCase() {
     @EnableSceneContainer
     fun mediaLocationQQS_dualShade_alwaysDualShadeColumns() =
         kosmos.runTest {
-            val underTest = qsColumnsViewModelFactory.create(LOCATION_QQS)
+            val underTest =
+                qsColumnsViewModelFactory.create(
+                    LOCATION_QQS,
+                    QuickQuickSettingsViewModel.mediaUiBehavior,
+                )
             underTest.activateIn(testScope)
             enableDualShade()
 
@@ -153,7 +162,11 @@ class QSColumnsViewModelTest : SysuiTestCase() {
     @Test
     fun mediaLocationQS_singleOrSplit_halfColumnsOnCorrectConfigurationAndVisible() =
         kosmos.runTest {
-            val underTest = qsColumnsViewModelFactory.create(LOCATION_QS)
+            val underTest =
+                qsColumnsViewModelFactory.create(
+                    LOCATION_QS,
+                    QuickSettingsContainerViewModel.mediaUiBehavior,
+                )
             underTest.activateIn(testScope)
             disableDualShade()
 
@@ -173,7 +186,11 @@ class QSColumnsViewModelTest : SysuiTestCase() {
     @Test
     fun mediaLocationQQS_singleOrSplit_halfColumnsOnCorrectConfigurationAndVisible() =
         kosmos.runTest {
-            val underTest = qsColumnsViewModelFactory.create(LOCATION_QQS)
+            val underTest =
+                qsColumnsViewModelFactory.create(
+                    LOCATION_QQS,
+                    QuickQuickSettingsViewModel.mediaUiBehavior,
+                )
             underTest.activateIn(testScope)
             disableDualShade()
 
@@ -193,7 +210,11 @@ class QSColumnsViewModelTest : SysuiTestCase() {
     @Test
     fun largeSpan_normalTiles_ignoreColumns() =
         kosmos.runTest {
-            val underTest = qsColumnsViewModelFactory.create(LOCATION_QQS)
+            val underTest =
+                qsColumnsViewModelFactory.create(
+                    LOCATION_QQS,
+                    QuickQuickSettingsViewModel.mediaUiBehavior,
+                )
             underTest.activateIn(testScope)
 
             // Set extra large tiles to false
@@ -212,7 +233,11 @@ class QSColumnsViewModelTest : SysuiTestCase() {
     @Test
     fun largeSpan_extraLargeTiles_tracksColumns() =
         kosmos.runTest {
-            val underTest = qsColumnsViewModelFactory.create(LOCATION_QQS)
+            val underTest =
+                qsColumnsViewModelFactory.create(
+                    LOCATION_QQS,
+                    QuickQuickSettingsViewModel.mediaUiBehavior,
+                )
             underTest.activateIn(testScope)
 
             // Set extra large tiles to true
@@ -237,7 +262,11 @@ class QSColumnsViewModelTest : SysuiTestCase() {
     @Test
     fun largeSpan_extraLargeTiles_tracksMaxWidth() =
         kosmos.runTest {
-            val underTest = qsColumnsViewModelFactory.create(LOCATION_QQS)
+            val underTest =
+                qsColumnsViewModelFactory.create(
+                    LOCATION_QQS,
+                    QuickQuickSettingsViewModel.mediaUiBehavior,
+                )
             underTest.activateIn(testScope)
 
             // Set extra large tiles to true
@@ -262,7 +291,11 @@ class QSColumnsViewModelTest : SysuiTestCase() {
     @Test
     fun largeSpan_tracksExtraLargeTiles() =
         kosmos.runTest {
-            val underTest = qsColumnsViewModelFactory.create(LOCATION_QQS)
+            val underTest =
+                qsColumnsViewModelFactory.create(
+                    LOCATION_QQS,
+                    QuickQuickSettingsViewModel.mediaUiBehavior,
+                )
             underTest.activateIn(testScope)
 
             // Set extra large tiles to false

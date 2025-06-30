@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.ui.controller.MediaLocation
+import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
 import com.android.systemui.qs.panels.domain.interactor.LargeTileSpanInteractor
 import com.android.systemui.qs.panels.domain.interactor.QSColumnsInteractor
 import dagger.assisted.Assisted
@@ -43,6 +44,7 @@ constructor(
     mediaInRowInLandscapeViewModelFactory: MediaInRowInLandscapeViewModel.Factory,
     private val largeTileSpanInteractor: LargeTileSpanInteractor,
     @Assisted @MediaLocation mediaLocation: Int?,
+    @Assisted mediaUiBehavior: MediaUiBehavior?,
 ) : ExclusiveActivatable() {
 
     private val hydrator = Hydrator("QSColumnsViewModelWithMedia")
@@ -78,7 +80,11 @@ constructor(
             }
 
     private val mediaInRowInLandscapeViewModel =
-        mediaLocation?.let { mediaInRowInLandscapeViewModelFactory.create(it) }
+        if (mediaLocation != null && mediaUiBehavior != null) {
+            mediaInRowInLandscapeViewModelFactory.create(mediaLocation, mediaUiBehavior)
+        } else {
+            null
+        }
 
     private val columnsWithoutMedia by
         hydrator.hydratedStateOf(traceName = "columnsWithoutMedia", source = interactor.columns)
@@ -93,8 +99,8 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(mediaLocation: Int?): QSColumnsViewModel
+        fun create(mediaLocation: Int?, mediaUiBehavior: MediaUiBehavior?): QSColumnsViewModel
 
-        fun createWithoutMediaTracking() = create(null)
+        fun createWithoutMediaTracking() = create(null, null)
     }
 }
