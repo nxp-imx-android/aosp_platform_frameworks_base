@@ -5985,6 +5985,9 @@ public class AccountManagerService
     }
 
     private boolean isSystemUid(int callingUid) {
+        if (Process.isSdkSandboxUid(callingUid)) {
+            return false;
+        }
         String[] packages = null;
         final long ident = Binder.clearCallingIdentity();
         try {
