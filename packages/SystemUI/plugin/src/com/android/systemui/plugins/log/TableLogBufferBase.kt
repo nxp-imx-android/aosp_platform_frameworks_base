@@ -14,6 +14,9 @@
 
 package com.android.systemui.plugins.log
 
+import com.android.systemui.log.table.Diffable
+import com.android.systemui.log.table.TableRowLogger
+
 /**
  * Base interface for a logger that logs changes in table format.
  *
@@ -29,7 +32,11 @@ interface TableLogBufferBase {
         logChange(prefix, columnName, value, isInitial = false)
     }
 
-    /** Logs a String? change. */
+    /**
+     * Logs a String? change.
+     *
+     * @param isInitial see [TableLogBuffer.logChange(String, Boolean, (TableRowLogger) -> Unit].
+     */
     fun logChange(prefix: String = "", columnName: String, value: String?, isInitial: Boolean)
 
     /**
@@ -41,7 +48,11 @@ interface TableLogBufferBase {
         logChange(prefix, columnName, value, isInitial = false)
     }
 
-    /** Logs a Boolean change. */
+    /**
+     * Logs a Boolean change.
+     *
+     * @param isInitial see [TableLogBuffer.logChange(String, Boolean, (TableRowLogger) -> Unit].
+     */
     fun logChange(prefix: String = "", columnName: String, value: Boolean, isInitial: Boolean)
 
     /**
@@ -53,6 +64,40 @@ interface TableLogBufferBase {
         logChange(prefix, columnName, value, isInitial = false)
     }
 
-    /** Logs an Int? change. */
+    /**
+     * Logs an Int? change.
+     *
+     * @param isInitial see [TableLogBuffer.logChange(String, Boolean, (TableRowLogger) -> Unit].
+     */
     fun logChange(prefix: String = "", columnName: String, value: Int?, isInitial: Boolean)
+
+    /**
+     * Log the differences between [prevVal] and [newVal].
+     *
+     * The [newVal] object's method [Diffable.logDiffs] will be used to fetch the diffs.
+     *
+     * @param columnPrefix a prefix that will be applied to every column name that gets logged. This
+     *   ensures that all the columns related to the same state object will be grouped together in
+     *   the table.
+     * @throws IllegalArgumentException if [columnPrefix] or column name contain "|". "|" is used as
+     *   the separator token for parsing, so it can't be present in any part of the column name.
+     */
+    fun <T : Diffable<T>> logDiffs(columnPrefix: String = "", prevVal: T, newVal: T)
+
+    /**
+     * Logs change(s) to the buffer using [rowInitializer].
+     *
+     * @param columnPrefix see [logDiffs].
+     * @param rowInitializer a function that will be called immediately to store relevant data on
+     *   the row.
+     * @param isInitial true if this change represents the starting value for a particular column
+     *   (as opposed to a value that was updated after receiving new information). This is used to
+     *   help us identify which values were just default starting values, and which values were
+     *   derived from updated information. Most callers should use false for this value.
+     */
+    fun logChange(
+        columnPrefix: String = "",
+        isInitial: Boolean = false,
+        rowInitializer: (TableRowLogger) -> Unit,
+    )
 }
