@@ -4016,6 +4016,11 @@ public class DisplayModeDirectorTest {
             return createLastValueAmbientFilter();
         }
 
+        @Override
+        public SystemRequestObserver getSystemRequestObserver(VotesStorage votesStorage) {
+            return mock(SystemRequestObserver.class);
+        }
+
         protected Display createDisplay(int id) {
             return new Display(DisplayManagerGlobal.getInstance(), id, mDisplayInfo,
                     ApplicationProvider.getApplicationContext().getResources());
