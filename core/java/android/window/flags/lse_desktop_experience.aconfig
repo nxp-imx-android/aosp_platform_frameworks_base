@@ -219,6 +219,16 @@ flag {
 }
 
 flag {
+    name: "enable_crash_logging_for_desktop"
+    namespace: "lse_desktop_experience"
+    description: "Enables crash reporting indicating activity was in desktop."
+    bug: "331162483"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_app_handle_animation"
     namespace: "lse_desktop_experience"
     description: "Enables the animation that occurs when the app handle of a task in immersive mode is shown or hidden."
