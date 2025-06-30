@@ -17,10 +17,13 @@
 package com.android.settingslib.media;
 
 import static android.media.MediaRoute2ProviderService.REASON_UNKNOWN_ERROR;
+import static android.media.RoutingChangeInfo.ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED;
+import static android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_MEDIA_CONTROLS;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -38,6 +41,7 @@ import android.media.AudioDeviceAttributes;
 import android.media.AudioManager;
 import android.media.AudioSystem;
 import android.media.MediaRoute2Info;
+import android.media.RoutingChangeInfo;
 import android.media.RoutingSessionInfo;
 import android.media.SuggestedDeviceInfo;
 import android.os.Handler;
@@ -54,13 +58,14 @@ import com.android.settingslib.testutils.shadow.ShadowBluetoothAdapter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowLooper;
 import org.robolectric.shadow.api.Shadow;
+import org.robolectric.shadows.ShadowLooper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -177,7 +182,11 @@ public class LocalMediaManagerTest {
         when(currentDevice.getId()).thenReturn(TEST_CURRENT_DEVICE_ID);
 
         assertThat(mLocalMediaManager.connectDevice(device)).isTrue();
-        verify(mInfoMediaManager).connectToDevice(device);
+        ArgumentCaptor<RoutingChangeInfo> captor = ArgumentCaptor.forClass(RoutingChangeInfo.class);
+        verify(mInfoMediaManager).connectToDevice(eq(device), captor.capture());
+        RoutingChangeInfo capturedInfo = captor.getValue();
+        assertThat(capturedInfo.getEntryPoint()).isEqualTo(ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED);
+        assertThat(capturedInfo.isSuggested()).isEqualTo(false);
     }
 
     @Test
@@ -527,7 +536,11 @@ public class LocalMediaManagerTest {
         devices.add(currentDevice);
         mLocalMediaManager.mMediaDeviceCallback.onDeviceListAdded(devices);
 
-        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1);
+        ArgumentCaptor<RoutingChangeInfo> captor = ArgumentCaptor.forClass(RoutingChangeInfo.class);
+        verify(mInfoMediaManager).connectToDevice(eq(mInfoMediaDevice1), captor.capture());
+        RoutingChangeInfo capturedInfo = captor.getValue();
+        assertThat(capturedInfo.getEntryPoint()).isEqualTo(ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED);
+        assertThat(capturedInfo.isSuggested()).isEqualTo(false);
     }
 
     @Test
@@ -631,9 +644,11 @@ public class LocalMediaManagerTest {
         when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
 
-        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState);
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(ENTRY_POINT_SYSTEM_MEDIA_CONTROLS, /* isSuggested= */ true);
+        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState, routingChangeInfo);
 
-        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1);
+        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1, routingChangeInfo);
         verify(mInfoMediaManager, never()).startScan();
     }
 
@@ -643,10 +658,12 @@ public class LocalMediaManagerTest {
         when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_2);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
 
-        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState);
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(ENTRY_POINT_SYSTEM_MEDIA_CONTROLS, /* isSuggested= */ true);
+        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState, routingChangeInfo);
 
         verify(mInfoMediaManager).startScan();
-        verify(mInfoMediaManager, never()).connectToDevice(mInfoMediaDevice1);
+        verify(mInfoMediaManager, never()).connectToDevice(mInfoMediaDevice1, routingChangeInfo);
     }
 
     @Test
@@ -655,11 +672,13 @@ public class LocalMediaManagerTest {
         when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice2);
 
-        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState);
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(ENTRY_POINT_SYSTEM_MEDIA_CONTROLS, /* isSuggested= */ true);
+        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState, routingChangeInfo);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
         mLocalMediaManager.dispatchDeviceListUpdate();
 
-        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1);
+        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1, routingChangeInfo);
         verify(mInfoMediaManager).startScan();
     }
 
@@ -669,11 +688,13 @@ public class LocalMediaManagerTest {
         when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice2);
 
-        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState);
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(ENTRY_POINT_SYSTEM_MEDIA_CONTROLS, /* isSuggested= */ true);
+        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState, routingChangeInfo);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
         mLocalMediaManager.dispatchDeviceListUpdate();
 
-        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1);
+        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1, routingChangeInfo);
 
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
@@ -687,11 +708,13 @@ public class LocalMediaManagerTest {
         when(mSuggestedDeviceInfo.getRouteId()).thenReturn(TEST_DEVICE_ID_1);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice2);
 
-        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState);
+        RoutingChangeInfo routingChangeInfo =
+                new RoutingChangeInfo(ENTRY_POINT_SYSTEM_MEDIA_CONTROLS, /* isSuggested= */ true);
+        mLocalMediaManager.connectSuggestedDevice(mSuggestedDeviceState, routingChangeInfo);
         mLocalMediaManager.mMediaDevices.add(mInfoMediaDevice1);
         mLocalMediaManager.dispatchDeviceListUpdate();
 
-        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1);
+        verify(mInfoMediaManager).connectToDevice(mInfoMediaDevice1, routingChangeInfo);
 
         mLocalMediaManager.dispatchSelectedDeviceStateChanged(mInfoMediaDevice1,
             LocalMediaManager.MediaDeviceState.STATE_CONNECTED);

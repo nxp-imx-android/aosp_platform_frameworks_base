@@ -16,6 +16,8 @@
 
 package com.android.systemui.media.dialog;
 
+import static android.media.RoutingChangeInfo.ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER;
+
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -23,12 +25,15 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -48,6 +53,7 @@ import android.media.MediaDescription;
 import android.media.MediaMetadata;
 import android.media.MediaRoute2Info;
 import android.media.NearbyDevice;
+import android.media.RoutingChangeInfo;
 import android.media.RoutingSessionInfo;
 import android.media.session.ISessionController;
 import android.media.session.MediaController;
@@ -76,7 +82,6 @@ import com.android.settingslib.media.InputMediaDevice;
 import com.android.settingslib.media.InputRouteManager;
 import com.android.settingslib.media.LocalMediaManager;
 import com.android.settingslib.media.MediaDevice;
-import com.android.settingslib.utils.ThreadUtils;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.SysuiTestCaseExtKt;
 import com.android.systemui.animation.ActivityTransitionAnimator;
@@ -97,15 +102,13 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @SmallTest
@@ -124,8 +127,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
     private static final int MAX_VOLUME = 1;
     private static final int CURRENT_VOLUME = 0;
     private static final boolean VOLUME_FIXED_TRUE = true;
-    private static final int LATCH_COUNT_DOWN_TIME_IN_SECOND = 5;
-    private static final int LATCH_TIME_OUT_TIME_IN_SECOND = 10;
+    private static final int CALLBACK_WAIT_TIME_MS = 10_000;
     private static final String PRODUCT_NAME_BUILTIN_MIC = "Built-in Mic";
     private static final String PRODUCT_NAME_WIRED_HEADSET = "My Wired Headset";
 
@@ -218,9 +220,8 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         when(mSessionMediaController.getPackageName()).thenReturn(mPackageName);
         when(mSessionMediaController.getPlaybackState()).thenReturn(mPlaybackState);
         mMediaControllers.add(mSessionMediaController);
-        when(mMediaSessionManager.getActiveSessionsForUser(any(),
-                Mockito.eq(userHandle))).thenReturn(
-                mMediaControllers);
+        when(mMediaSessionManager.getActiveSessionsForUser(any(), eq(userHandle)))
+                .thenReturn(mMediaControllers);
         doReturn(mMediaSessionManager).when(mSpyContext).getSystemService(
                 MediaSessionManager.class);
         when(mLocalBluetoothManager.getCachedDeviceManager()).thenReturn(
@@ -424,8 +425,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
         mMediaSwitchingController.tryToLaunchMediaApplication(mDialogLaunchView);
 
-        verify(mStarter).startActivity(any(Intent.class), anyBoolean(),
-                Mockito.eq(mController));
+        verify(mStarter).startActivity(any(Intent.class), anyBoolean(), eq(mController));
     }
 
     @Test
@@ -439,8 +439,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
         mMediaSwitchingController.tryToLaunchInAppRoutingIntent(
                 TEST_DEVICE_1_ID, mDialogLaunchView);
 
-        verify(mStarter).startActivity(any(Intent.class), anyBoolean(),
-                Mockito.eq(mController));
+        verify(mStarter).startActivity(any(Intent.class), anyBoolean(), eq(mController));
     }
 
     @Test
@@ -1351,7 +1350,7 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
 
     @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
-    public void selectInputDevice() throws InterruptedException {
+    public void selectInputDevice() {
         final MediaDevice inputMediaDevice =
                 InputMediaDevice.create(
                         mContext,
@@ -1364,26 +1363,41 @@ public class MediaSwitchingControllerTest extends SysuiTestCase {
                         PRODUCT_NAME_BUILTIN_MIC);
         mMediaSwitchingController.connectDevice(inputMediaDevice);
 
-        CountDownLatch latch = new CountDownLatch(LATCH_COUNT_DOWN_TIME_IN_SECOND);
-        var unused = ThreadUtils.postOnBackgroundThread(latch::countDown);
-        latch.await(LATCH_TIME_OUT_TIME_IN_SECOND, TimeUnit.SECONDS);
-
-        verify(mInputRouteManager, atLeastOnce()).selectDevice(inputMediaDevice);
-        verify(mLocalMediaManager, never()).connectDevice(inputMediaDevice);
+        verify(mLocalMediaManager, after(CALLBACK_WAIT_TIME_MS).never())
+                .connectDevice(inputMediaDevice);
+        verify(mInputRouteManager, timeout(CALLBACK_WAIT_TIME_MS)).selectDevice(inputMediaDevice);
     }
 
     @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
     @Test
-    public void selectOutputDevice() throws InterruptedException {
+    public void selectOutputDevice() {
         final MediaDevice outputMediaDevice = mock(MediaDevice.class);
         mMediaSwitchingController.connectDevice(outputMediaDevice);
 
-        CountDownLatch latch = new CountDownLatch(LATCH_COUNT_DOWN_TIME_IN_SECOND);
-        var unused = ThreadUtils.postOnBackgroundThread(latch::countDown);
-        latch.await(LATCH_TIME_OUT_TIME_IN_SECOND, TimeUnit.SECONDS);
+        verify(mInputRouteManager, after(CALLBACK_WAIT_TIME_MS).never())
+                .selectDevice(outputMediaDevice);
+        ArgumentCaptor<RoutingChangeInfo> captor = ArgumentCaptor.forClass(RoutingChangeInfo.class);
+        verify(mLocalMediaManager, timeout(CALLBACK_WAIT_TIME_MS))
+                .connectDevice(eq(outputMediaDevice), captor.capture());
+        RoutingChangeInfo capturedInfo = captor.getValue();
+        assertThat(capturedInfo.getEntryPoint()).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER);
+        assertThat(capturedInfo.isSuggested()).isEqualTo(false);
+    }
 
-        verify(mInputRouteManager, never()).selectDevice(outputMediaDevice);
-        verify(mLocalMediaManager, atLeastOnce()).connectDevice(outputMediaDevice);
+    @EnableFlags(Flags.FLAG_ENABLE_AUDIO_INPUT_DEVICE_ROUTING_AND_VOLUME_CONTROL)
+    @Test
+    public void selectSuggestedOutputDevice() {
+        final MediaDevice outputMediaDevice = mock(MediaDevice.class);
+        when(outputMediaDevice.isSuggestedDevice()).thenReturn(true);
+        mMediaSwitchingController.connectDevice(outputMediaDevice);
+        verify(mInputRouteManager, after(CALLBACK_WAIT_TIME_MS).never())
+                .selectDevice(outputMediaDevice);
+        ArgumentCaptor<RoutingChangeInfo> captor = ArgumentCaptor.forClass(RoutingChangeInfo.class);
+        verify(mLocalMediaManager, timeout(CALLBACK_WAIT_TIME_MS))
+                .connectDevice(eq(outputMediaDevice), captor.capture());
+        RoutingChangeInfo capturedInfo = captor.getValue();
+        assertThat(capturedInfo.getEntryPoint()).isEqualTo(ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER);
+        assertThat(capturedInfo.isSuggested()).isEqualTo(true);
     }
 
     @Test

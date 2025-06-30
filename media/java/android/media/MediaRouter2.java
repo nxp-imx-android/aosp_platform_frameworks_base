@@ -127,65 +127,6 @@ public final class MediaRouter2 {
     @Retention(RetentionPolicy.SOURCE)
     public @interface ScanningState {}
 
-    /**
-     * Indicates that a routing session started as the result of selecting a route from the output
-     * switcher where the route is not amongst the suggested routes.
-     *
-     * @hide
-     */
-    public static final int ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER_NOT_SUGGESTED = 0;
-
-    /**
-     * Indicates that a routing session started as the result of selecting a route from the output
-     * switcher where the route is amongst the suggested routes.
-     *
-     * @hide
-     */
-    public static final int ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER_SUGGESTED_DEVICE = 1;
-
-    /**
-     * Indicates that a routing session started as the result of selecting the device suggestion
-     * pill in the UMO notification.
-     *
-     * @hide
-     */
-    public static final int ENTRY_POINT_SYSTEM_UMO_SUGGESTED_DEVICE = 2;
-
-    /**
-     * Indicates that a routing session was started from a local media router instance where the
-     * entry point was not specified.
-     *
-     * <p>This entry point is marked when {@link MediaRouter2#transferTo(MediaRoute2Info)} is called
-     * on a local media router instance.
-     *
-     * @hide
-     */
-    public static final int ENTRY_POINT_LOCAL_ROUTER_UNSPECIFIED = 3;
-
-    /**
-     * Indicates that a routing session was started from a proxy media router instance where the
-     * entry point was not specified.
-     *
-     * <p>This entry point is marked when {@link MediaRouter2#transferTo(MediaRoute2Info)} is called
-     * on a proxy media router instance.
-     *
-     * @hide
-     */
-    public static final int ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED = 4;
-
-    /** @hide */
-    @IntDef(
-            prefix = "ENTRY_POINT",
-            value = {
-                ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER_NOT_SUGGESTED,
-                ENTRY_POINT_SYSTEM_OUTPUT_SWITCHER_SUGGESTED_DEVICE,
-                ENTRY_POINT_SYSTEM_UMO_SUGGESTED_DEVICE,
-                ENTRY_POINT_LOCAL_ROUTER_UNSPECIFIED,
-                ENTRY_POINT_PROXY_ROUTER_UNSPECIFIED
-            })
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface EntryPoint {}
-
     private static final String TAG = "MR2";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
     private static final Object sSystemRouterLock = new Object();
@@ -1158,6 +1099,24 @@ public final class MediaRouter2 {
      * @see TransferCallback#onTransferFailure
      */
     public void transferTo(@NonNull MediaRoute2Info route) {
+        mImpl.transferTo(route);
+    }
+
+    /**
+     * Transfers the current media to the given route. If it's necessary a new {@link
+     * RoutingController} is created or it is handled within the current routing controller.
+     *
+     * @param route the route you want to transfer the current media to. Pass {@code null} to stop
+     *     routing of the current media.
+     * @param routingChangeInfo information about the start of the media routing session. See {@link
+     *     RoutingChangeInfo}
+     * @see TransferCallback#onTransfer
+     * @see TransferCallback#onTransferFailure
+     * @hide
+     */
+    public void transferTo(
+            @NonNull MediaRoute2Info route, @NonNull RoutingChangeInfo routingChangeInfo) {
+        // TODO: b/427964326 - Pass the entry point of media routing session to MediaRouterService
         mImpl.transferTo(route);
     }
 
