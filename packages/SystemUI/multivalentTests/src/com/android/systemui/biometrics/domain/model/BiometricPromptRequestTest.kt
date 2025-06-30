@@ -1,7 +1,7 @@
 package com.android.systemui.biometrics.domain.model
 
 import android.graphics.Bitmap
-import android.hardware.biometrics.BiometricManager.IconType
+import android.hardware.biometrics.BiometricManager
 import android.hardware.biometrics.FallbackOption
 import android.hardware.biometrics.PromptContentItemBulletedText
 import android.hardware.biometrics.PromptContentViewWithMoreOptionsButton
@@ -36,7 +36,7 @@ class BiometricPromptRequestTest : SysuiTestCase() {
         val title = "what"
         val subtitle = "a"
         val description = "request"
-        val fallbackOptions = listOf(FallbackOption("Account", IconType.ACCOUNT))
+        val fallbackOptions = listOf(FallbackOption("Account", BiometricManager.ICON_TYPE_ACCOUNT))
         val contentView =
             PromptVerticalListContentView.Builder()
                 .setDescription("content description")

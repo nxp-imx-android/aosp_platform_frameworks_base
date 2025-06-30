@@ -178,51 +178,49 @@ public class BiometricManager {
     }
 
     /**
-     * An {@link IntDef} representing the icons for biometric prompt fallbacks
+     * An {@link IntDef} representing the different icon types that can be used in the biometric
+     * prompt fallback options
+     * @hide
+     */
+    @IntDef(prefix = { "ICON_TYPE_" }, value = {
+            ICON_TYPE_PASSWORD,
+            ICON_TYPE_QR_CODE,
+            ICON_TYPE_ACCOUNT,
+            ICON_TYPE_GENERIC,
+            ICON_TYPE_SETTING
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface IconType {}
+
+    /**
+     * An icon representing a password.
      */
     @FlaggedApi(FLAG_ADD_FALLBACK)
-    public interface IconType {
-        /**
-         * @hide
-         */
-        @IntDef({PASSWORD,
-                QR_CODE,
-                ACCOUNT,
-                GENERIC,
-                SETTING})
-        @Retention(RetentionPolicy.SOURCE)
-        @interface Types {}
+    public static final int ICON_TYPE_PASSWORD = 0;
 
-        /**
-         * Password icon
-         */
-        @FlaggedApi(FLAG_ADD_FALLBACK)
-        int PASSWORD = 0;
+    /**
+     * An icon representing a QR code.
+     */
+    @FlaggedApi(FLAG_ADD_FALLBACK)
+    public static final int ICON_TYPE_QR_CODE = 1;
 
-        /**
-         * QR code icon
-         */
-        @FlaggedApi(FLAG_ADD_FALLBACK)
-        int QR_CODE = 1;
+    /**
+     * An icon representing a user account.
+     */
+    @FlaggedApi(FLAG_ADD_FALLBACK)
+    public static final int ICON_TYPE_ACCOUNT = 2;
 
-        /**
-         * Account icon
-         */
-        @FlaggedApi(FLAG_ADD_FALLBACK)
-        int ACCOUNT = 2;
+    /**
+     * A generic icon.
+     */
+    @FlaggedApi(FLAG_ADD_FALLBACK)
+    public static final int ICON_TYPE_GENERIC = 3;
 
-        /**
-         * Generic icon
-         */
-        @FlaggedApi(FLAG_ADD_FALLBACK)
-        int GENERIC = 3;
-
-        /**
-         * Gear icon
-         */
-        @FlaggedApi(FLAG_ADD_FALLBACK)
-        int SETTING = 4;
-    }
+    /**
+     * An icon representing settings (a gear).
+     */
+    @FlaggedApi(FLAG_ADD_FALLBACK)
+    public static final int ICON_TYPE_SETTING = 4;
 
     /**
      * Types of authenticators, defined at a level of granularity supported by
