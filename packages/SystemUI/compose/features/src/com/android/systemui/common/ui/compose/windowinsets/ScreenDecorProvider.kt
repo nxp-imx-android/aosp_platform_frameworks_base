@@ -34,11 +34,13 @@ val LocalScreenCornerRadius = staticCompositionLocalOf { 0.dp }
 @Composable
 fun ScreenDecorProvider(
     displayCutout: StateFlow<DisplayCutout>,
-    screenCornerRadius: Float,
+    screenCornerRadius: StateFlow<Float>,
     content: @Composable () -> Unit,
 ) {
     val cutout by displayCutout.collectAsStateWithLifecycle()
-    val screenCornerRadiusDp = with(LocalDensity.current) { screenCornerRadius.toDp() }
+    val screenCornerRadiusPx by screenCornerRadius.collectAsStateWithLifecycle()
+
+    val screenCornerRadiusDp = with(LocalDensity.current) { screenCornerRadiusPx.toDp() }
 
     CompositionLocalProvider(
         LocalScreenCornerRadius provides screenCornerRadiusDp,
