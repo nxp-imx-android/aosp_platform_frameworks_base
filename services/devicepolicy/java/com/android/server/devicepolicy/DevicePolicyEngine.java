@@ -56,7 +56,6 @@ import android.content.pm.UserInfo;
 import android.content.pm.UserProperties;
 import android.os.Binder;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -2375,6 +2374,44 @@ final class DevicePolicyEngine {
             return mAdminPolicySize.get(admin.getUserId()).get(admin);
         }
         return 0;
+    }
+
+    /*
+     * Returns the admins who has contributed to the resolved policy value for the given policy
+     * definition. Doesn't return the admin if the policy value set by the admin is not included
+     * in the resolved policy.
+     */
+    @NonNull
+    <V> Set<EnforcingAdmin> getEnforcingAdminsForResolvedPolicy(
+            @NonNull PolicyDefinition<V> definition, int userId) {
+        // If the policy is not set, there's no enforcing admin.
+        if (getResolvedPolicyValue(definition, userId) == null) {
+            return Collections.emptySet();
+        }
+        synchronized (mLock) {
+            // Since there's a policy value set in the resolved policy, we know it's either set
+            // locally or globally. Gather all values admins has set.
+            LinkedHashMap<EnforcingAdmin, PolicyValue<V>> policiesSetByAdmins =
+                    new LinkedHashMap<>();
+            // Note that this logic for local and global policy application is duplicated on
+            // DevicePolicyEngine#setGlobalPolicy and DevicePolicyEngine#setLocalPolicy as well
+            // as PolicyState#resolve method. In future, this can be refactored together with the
+            // listed methods.
+            if (hasGlobalPolicyLocked(definition)) {
+                policiesSetByAdmins.putAll(
+                        getGlobalPolicyStateLocked(definition).getPoliciesSetByAdmins());
+            }
+            // Put local policy values later as the local policy set by one admin, overrides the
+            // value for global policy for the same admin. This ordering is important to provide
+            // the correct logic.
+            if (hasLocalPolicyLocked(definition, userId)) {
+                policiesSetByAdmins.putAll(getLocalPolicyStateLocked(definition,
+                        userId).getPoliciesSetByAdmins());
+            }
+            // We know that resolved policy is not null as we have checked for it before.
+            return Objects.requireNonNull(
+                    definition.resolvePolicy(policiesSetByAdmins)).getContributingAdmins();
+        }
     }
 
     public void dump(IndentingPrintWriter pw) {
