@@ -348,18 +348,19 @@ constructor(
     private val isHomeStatusBarAllowedByScene: Flow<Boolean> =
         combine(
                 sceneInteractor.currentScene,
-                isShadeVisibleOnThisDisplay,
+                isShadeVisibleOnAnyDisplay,
                 sceneContainerOcclusionInteractor.invisibleDueToOcclusion,
-            ) { currentScene, isShadeVisible, isOccluded ->
-
-                // All scenes have their own status bars, so we should only show the home status bar
-                // if we're not in a scene. There are two exceptions:
-                // 1) The shade (notifications or quick settings) is shown, because it has its own
-                // status-bar-like header.
-                // 2) If the scene is occluded, then the occluding app needs to show the status bar.
-                // (Fullscreen apps actually won't show the status bar but that's handled with the
-                // rest of our fullscreen app logic, which lives elsewhere.)
-                (currentScene == Scenes.Gone && !isShadeVisible) || isOccluded
+                isShadeWindowOnThisDisplay,
+            ) { currentScene, isShadeVisibleOnAnyDisplay, isOccluded, isShadeWindowOnThisDisplay ->
+                if (isOccluded) {
+                    true
+                } else if (isShadeWindowOnThisDisplay) {
+                    currentScene == Scenes.Gone && !isShadeVisibleOnAnyDisplay
+                } else {
+                    // When the shade is visible on another display,
+                    // allow the home status bar on the current display.
+                    currentScene == Scenes.Gone || isShadeVisibleOnAnyDisplay
+                }
             }
             .distinctUntilChanged()
             .logDiffsForTable(
