@@ -13385,7 +13385,9 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
         int affectedUserId = parent
                 ? getProfileParentId(caller.getUserId()) : caller.getUserId();
 
-        enforcePermission(MANAGE_DEVICE_POLICY_APP_RESTRICTIONS, caller.getPackageName());
+        if (!isCallerDevicePolicyManagementRoleHolder(caller)) {
+            enforcePermission(MANAGE_DEVICE_POLICY_APP_RESTRICTIONS, caller.getPackageName());
+        }
         EnforcingAdmin enforcingAdmin =  getEnforcingAdminForCaller(who, caller.getPackageName());
 
         Bundle bundle = mDevicePolicyEngine.getLocalPolicySetByAdmin(
