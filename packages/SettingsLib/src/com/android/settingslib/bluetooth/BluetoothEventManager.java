@@ -235,18 +235,6 @@ public class BluetoothEventManager {
 
         LocalBluetoothLeBroadcast broadcast = mBtManager == null ? null
                 : mBtManager.getProfileManager().getLeAudioBroadcastProfile();
-        LocalBluetoothLeBroadcastAssistant assistant = mBtManager == null ? null
-                : mBtManager.getProfileManager().getLeAudioBroadcastAssistantProfile();
-        // Trigger updateFallbackActiveDeviceIfNeeded when ASSISTANT profile disconnected when
-        // audio sharing is enabled.
-        if (bluetoothProfile == BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT
-                && state == BluetoothAdapter.STATE_DISCONNECTED
-                && BluetoothUtils.isAudioSharingUIAvailable(mContext)
-                && broadcast != null && assistant != null && broadcast.isProfileReady()
-                && assistant.isProfileReady()) {
-            Log.d(TAG, "updateFallbackActiveDeviceIfNeeded, ASSISTANT profile disconnected");
-            broadcast.updateFallbackActiveDeviceIfNeeded();
-        }
         // Dispatch handleOnProfileStateChanged to local broadcast profile
         if (Flags.promoteAudioSharingForSecondAutoConnectedLeaDevice()
                 && broadcast != null
