@@ -608,10 +608,9 @@ public final class TvInputManagerService extends SystemService {
                 // user already started
                 return;
             }
-            UserInfo userInfo = mUserManager.getUserInfo(userId);
             UserInfo parentInfo = mUserManager.getProfileParent(userId);
             // User is guaranteed to be a profile here as we have checked before calling startUser
-            if (parentInfo != null && parentInfo.id == mCurrentUserId) {
+            if (parentInfo != null) {
                 int prevUserId = mCurrentUserId;
                 mCurrentUserId = userId;
                 // only the children of the current user can be started in background
