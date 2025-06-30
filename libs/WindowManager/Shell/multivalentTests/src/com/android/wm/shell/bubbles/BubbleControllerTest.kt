@@ -377,7 +377,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
 
         bubbleTaskViewController.setTaskViewVisible(taskView, true /* visible */)
 
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             verify(baseTransitions).setTaskViewVisible(
                 taskView,
                 true, /* visible */
@@ -391,7 +391,7 @@ class BubbleControllerTest(flags: FlagsParameterization) {
 
     @Test
     fun setTaskViewVisible_lastBubbleRemoval_skipsTaskViewHiding() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents())
+        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
 
         val baseTransitions = mock<TaskViewTransitions>()
         val taskView = mock<TaskViewTaskController>()

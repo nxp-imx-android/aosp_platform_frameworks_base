@@ -4631,10 +4631,6 @@ class Task extends TaskFragment {
      * @param excluded {@code true} to exclude the task, {@code false} otherwise.
      */
     void setForceExcludedFromRecents(boolean excluded) {
-        if (!Flags.excludeTaskFromRecents()) {
-            Slog.w(TAG, "Flag " + Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS + " is not enabled");
-            return;
-        }
         mForceExcludedFromRecents = excluded;
     }
 

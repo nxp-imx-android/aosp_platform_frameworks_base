@@ -1336,7 +1336,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     fun testOnTaskChanging_collapsedBubbleTask_skipsWindowDecorationCreation() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents())
+        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
 
         val taskInfo = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
         mockBubbleController.stub {
@@ -1355,7 +1355,7 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
 
     @Test
     fun testOnTaskChanging_convertTaskToBubble_destroysWindowDecoration() {
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents())
+        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble())
 
         val taskInfo = createTask(windowingMode = WINDOWING_MODE_MULTI_WINDOW)
         mockBubbleController.stub {

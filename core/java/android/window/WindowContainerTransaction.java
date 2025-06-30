@@ -512,10 +512,6 @@ public final class WindowContainerTransaction implements Parcelable {
     @NonNull
     public WindowContainerTransaction setTaskForceExcludedFromRecents(
             @NonNull WindowContainerToken container, boolean forceExcluded) {
-        if (!Flags.excludeTaskFromRecents()) {
-            throw new IllegalStateException(
-                    "Flag " + Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS + " is not enabled");
-        }
         final Change chg = getOrCreateChange(container.asBinder());
         chg.mChangeMask |= Change.CHANGE_FORCE_EXCLUDED_FROM_RECENTS;
         chg.mForceExcludedFromRecents = forceExcluded;
@@ -1699,10 +1695,6 @@ public final class WindowContainerTransaction implements Parcelable {
 
         /** Gets whether the task is force excluded from recents. */
         public boolean getForceExcludedFromRecents() {
-            if (!Flags.excludeTaskFromRecents()) {
-                throw new IllegalStateException(
-                        "Flag " + Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS + " is not enabled");
-            }
             return mForceExcludedFromRecents;
         }
 
