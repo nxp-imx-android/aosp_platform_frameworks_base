@@ -1787,11 +1787,10 @@ public class FullScreenMagnificationControllerTest {
         mFullScreenMagnificationController.setCenter(TEST_DISPLAY, point.x, point.y, false,
                 SERVICE_ID_1);
 
-        // Note that setCenter doesn't change scale, so it's not necessary to notify the input
-        // manager, but we currently do. The input manager skips redundant computation if the
-        // notified scale is the same as the previous call.
-        verify(mMockInputManager).setAccessibilityPointerIconScaleFactor(TEST_DISPLAY,
-                2.0f);
+        // setCenter doesn't change scale, so it's not necessary to notify
+        // the input manager.
+        verify(mMockInputManager, never()).setAccessibilityPointerIconScaleFactor(anyInt(),
+                anyFloat());
     }
 
     @Test
@@ -1804,11 +1803,27 @@ public class FullScreenMagnificationControllerTest {
         mFullScreenMagnificationController.offsetMagnifiedRegion(TEST_DISPLAY, 100, 50,
                 SERVICE_ID_1);
 
-        // Note that setCenter doesn't change scale, so it's not necessary to notify the input
-        // manager, but we currently do. The input manager skips redundant computation if the
-        // notified scale is the same as the previous call.
-        verify(mMockInputManager).setAccessibilityPointerIconScaleFactor(TEST_DISPLAY,
-                2.0f);
+        // offsetMagnifiedRegion don't change scale, so it's not necessary to notify
+        // the input manager.
+        verify(mMockInputManager, never()).setAccessibilityPointerIconScaleFactor(anyInt(),
+                anyFloat());
+    }
+
+    @Test
+    public void magnificationRegionChanged_notNotifyInput() {
+        register(TEST_DISPLAY);
+        MagnificationCallbacks callbacks = getMagnificationCallbacks(TEST_DISPLAY);
+        callbacks.onMagnificationRegionChanged(OTHER_REGION);
+
+        mMessageCapturingHandler.sendAllMessages();
+
+        verify(mRequestObserver).onFullScreenMagnificationChanged(eq(TEST_DISPLAY),
+                eq(OTHER_REGION), any());
+
+        // onMagnificationRegionChanged don't change scale, so it's not necessary to notify
+        // the input manager.
+        verify(mMockInputManager, never()).setAccessibilityPointerIconScaleFactor(anyInt(),
+                anyFloat());
     }
 
     @Test
