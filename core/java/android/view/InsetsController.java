@@ -22,8 +22,7 @@ import static android.internal.perfetto.protos.Insetscontroller.InsetsController
 import static android.view.InsetsSource.ID_IME;
 import static android.view.InsetsSource.ID_IME_CAPTION_BAR;
 import static android.view.ViewProtoLogGroups.IME_INSETS_CONTROLLER;
-import static android.view.WindowInsets.Type.FIRST;
-import static android.view.WindowInsets.Type.LAST;
+import static android.view.WindowInsets.Type.TYPES;
 import static android.view.WindowInsets.Type.all;
 import static android.view.WindowInsets.Type.captionBar;
 import static android.view.WindowInsets.Type.ime;
@@ -1204,7 +1203,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
         int typesReady = 0;
         final boolean imeVisible = mState.isSourceOrDefaultVisible(
                 mImeSourceConsumer.getId(), ime());
-        for (@InsetsType int type = FIRST; type <= LAST; type = type << 1) {
+        for (@InsetsType int type : TYPES) {
             if ((types & type) == 0) {
                 continue;
             }
@@ -1287,7 +1286,7 @@ public class InsetsController implements WindowInsetsController, InsetsAnimation
 
         @InsetsType
         int typesReady = 0;
-        for (@InsetsType int type = FIRST; type <= LAST; type = type << 1) {
+        for (@InsetsType int type : TYPES) {
             if ((types & type) == 0) {
                 continue;
             }

@@ -19,15 +19,13 @@ package android.view;
 
 import static android.view.Surface.ROTATION_0;
 import static android.view.WindowInsets.Type.DISPLAY_CUTOUT;
-import static android.view.WindowInsets.Type.FIRST;
 import static android.view.WindowInsets.Type.IME;
-import static android.view.WindowInsets.Type.LAST;
 import static android.view.WindowInsets.Type.MANDATORY_SYSTEM_GESTURES;
 import static android.view.WindowInsets.Type.NAVIGATION_BARS;
-import static android.view.WindowInsets.Type.SIZE;
 import static android.view.WindowInsets.Type.STATUS_BARS;
 import static android.view.WindowInsets.Type.SYSTEM_GESTURES;
 import static android.view.WindowInsets.Type.TAPPABLE_ELEMENT;
+import static android.view.WindowInsets.Type.TYPES;
 import static android.view.WindowInsets.Type.all;
 import static android.view.WindowInsets.Type.defaultCompatible;
 import static android.view.WindowInsets.Type.displayCutout;
@@ -173,12 +171,12 @@ public final class WindowInsets {
             int frameWidth, int frameHeight) {
         mSystemWindowInsetsConsumed = typeInsetsMap == null;
         mTypeInsetsMap = mSystemWindowInsetsConsumed
-                ? new Insets[SIZE]
+                ? new Insets[TYPES.length]
                 : typeInsetsMap.clone();
 
         mStableInsetsConsumed = typeMaxInsetsMap == null;
         mTypeMaxInsetsMap = mStableInsetsConsumed
-                ? new Insets[SIZE]
+                ? new Insets[TYPES.length]
                 : typeMaxInsetsMap.clone();
 
         mTypeVisibilityMap = typeVisibilityMap;
@@ -197,10 +195,10 @@ public final class WindowInsets {
         mPrivacyIndicatorBounds = privacyIndicatorBounds;
         mDisplayShape = displayShape;
         mTypeBoundingRectsMap = (mSystemWindowInsetsConsumed || typeBoundingRectsMap == null)
-                ? new Rect[SIZE][]
+                ? new Rect[TYPES.length][]
                 : typeBoundingRectsMap.clone();
         mTypeMaxBoundingRectsMap = (mStableInsetsConsumed || typeMaxBoundingRectsMap == null)
-                ? new Rect[SIZE][]
+                ? new Rect[TYPES.length][]
                 : typeMaxBoundingRectsMap.clone();
         mFrameWidth = frameWidth;
         mFrameHeight = frameHeight;
@@ -248,11 +246,11 @@ public final class WindowInsets {
     @NonNull
     static Insets getInsets(@NonNull Insets[] typeInsetsMap, @InsetsType int typeMask) {
         Insets result = null;
-        for (int i = FIRST; i <= LAST; i = i << 1) {
-            if ((typeMask & i) == 0) {
+        for (@InsetsType int type : TYPES) {
+            if ((typeMask & type) == 0) {
                 continue;
             }
-            Insets insets = typeInsetsMap[indexOf(i)];
+            Insets insets = typeInsetsMap[indexOf(type)];
             if (insets == null) {
                 continue;
             }
@@ -270,20 +268,20 @@ public final class WindowInsets {
      */
     private static void setInsets(@NonNull Insets[] typeInsetsMap, @InsetsType int typeMask,
             @NonNull Insets insets) {
-        for (int i = FIRST; i <= LAST; i = i << 1) {
-            if ((typeMask & i) == 0) {
+        for (@InsetsType int type : TYPES) {
+            if ((typeMask & type) == 0) {
                 continue;
             }
-            typeInsetsMap[indexOf(i)] = insets;
+            typeInsetsMap[indexOf(type)] = insets;
         }
     }
 
     /** @hide */
     @UnsupportedAppUsage
     public WindowInsets(@Nullable Rect systemWindowInsets) {
-        this(createCompatTypeMap(systemWindowInsets), null, new boolean[SIZE], false, 0, false, 0,
-                null, null, null, null, defaultCompatible(), false /* compatIgnoreVisibility */,
-                new Rect[SIZE][], null, 0, 0);
+        this(createCompatTypeMap(systemWindowInsets), null, new boolean[TYPES.length], false, 0,
+                false, 0, null, null, null, null, defaultCompatible(),
+                false /* compatIgnoreVisibility */, new Rect[TYPES.length][], null, 0, 0);
     }
 
     /**
@@ -299,7 +297,7 @@ public final class WindowInsets {
         if (insets == null) {
             return null;
         }
-        Insets[] typeInsetsMap = new Insets[SIZE];
+        Insets[] typeInsetsMap = new Insets[TYPES.length];
         assignCompatInsets(typeInsetsMap, insets);
         return typeInsetsMap;
     }
@@ -320,12 +318,12 @@ public final class WindowInsets {
     @VisibleForTesting
     @NonNull
     private static boolean[] createCompatVisibilityMap(@Nullable Insets[] typeInsetsMap) {
-        boolean[] typeVisibilityMap = new boolean[SIZE];
+        final boolean[] typeVisibilityMap = new boolean[TYPES.length];
         if (typeInsetsMap == null) {
             return typeVisibilityMap;
         }
-        for (int i = FIRST; i <= LAST; i = i << 1) {
-            int index = indexOf(i);
+        for (@InsetsType int type : TYPES) {
+            final int index = indexOf(type);
             if (!Insets.NONE.equals(typeInsetsMap[index])) {
                 typeVisibilityMap[index] = true;
             }
@@ -424,11 +422,11 @@ public final class WindowInsets {
      *         visible on screen.
      */
     public boolean isVisible(@InsetsType int typeMask) {
-        for (int i = FIRST; i <= LAST; i = i << 1) {
-            if ((typeMask & i) == 0) {
+        for (@InsetsType int type : TYPES) {
+            if ((typeMask & type) == 0) {
                 continue;
             }
-            if (!mTypeVisibilityMap[indexOf(i)]) {
+            if (!mTypeVisibilityMap[indexOf(type)]) {
                 return false;
             }
         }
@@ -601,11 +599,11 @@ public final class WindowInsets {
     private List<Rect> getBoundingRects(@NonNull Rect[][] typeBoundingRectsMap,
             @InsetsType int typeMask) {
         Rect[] allRects = null;
-        for (int i = FIRST; i <= LAST; i = i << 1) {
-            if ((typeMask & i) == 0) {
+        for (@InsetsType int type : TYPES) {
+            if ((typeMask & type) == 0) {
                 continue;
             }
-            final Rect[] rects = typeBoundingRectsMap[indexOf(i)];
+            final Rect[] rects = typeBoundingRectsMap[indexOf(type)];
             if (rects == null) {
                 continue;
             }
@@ -1069,19 +1067,20 @@ public final class WindowInsets {
 
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder("WindowInsets{\n    ");
-        for (int i = 0; i < SIZE; i++) {
-            Insets insets = mTypeInsetsMap[i];
-            Insets maxInsets = mTypeMaxInsetsMap[i];
-            boolean visible = mTypeVisibilityMap[i];
+        final var result = new StringBuilder("WindowInsets{\n    ");
+        for (@InsetsType int type : TYPES) {
+            final int index = indexOf(type);
+            final Insets insets = mTypeInsetsMap[index];
+            final Insets maxInsets = mTypeMaxInsetsMap[index];
+            final boolean visible = mTypeVisibilityMap[index];
             if (!Insets.NONE.equals(insets) || !Insets.NONE.equals(maxInsets) || visible) {
-                result.append(Type.toString(1 << i)).append("=").append(insets)
+                result.append(Type.toString(type)).append("=").append(insets)
                         .append(" max=").append(maxInsets)
                         .append(" vis=").append(visible)
                         .append(" boundingRects=")
-                        .append(Arrays.toString(mTypeBoundingRectsMap[i]))
+                        .append(Arrays.toString(mTypeBoundingRectsMap[index]))
                         .append(" maxBoundingRects=")
-                        .append(Arrays.toString(mTypeMaxBoundingRectsMap[i]))
+                        .append(Arrays.toString(mTypeMaxBoundingRectsMap[index]))
                         .append("\n    ");
             }
         }
@@ -1295,8 +1294,9 @@ public final class WindowInsets {
     private static Insets[] insetInsets(
             @NonNull Insets[] typeInsetsMap, int left, int top, int right, int bottom) {
         boolean cloned = false;
-        for (int i = 0; i < SIZE; i++) {
-            Insets insets = typeInsetsMap[i];
+        for (@InsetsType int type : TYPES) {
+            final int index = indexOf(type);
+            final Insets insets = typeInsetsMap[index];
             if (insets == null) {
                 continue;
             }
@@ -1306,7 +1306,7 @@ public final class WindowInsets {
                     typeInsetsMap = typeInsetsMap.clone();
                     cloned = true;
                 }
-                typeInsetsMap[i] = insetInsets;
+                typeInsetsMap[index] = insetInsets;
             }
         }
         return typeInsetsMap;
@@ -1333,8 +1333,9 @@ public final class WindowInsets {
             return typeBoundingRectsMap;
         }
         boolean cloned = false;
-        for (int i = 0; i < SIZE; i++) {
-            final Rect[] boundingRects = typeBoundingRectsMap[i];
+        for (@InsetsType int type : TYPES) {
+            final int index = indexOf(type);
+            final Rect[] boundingRects = typeBoundingRectsMap[index];
             if (boundingRects == null) {
                 continue;
             }
@@ -1345,7 +1346,7 @@ public final class WindowInsets {
                     typeBoundingRectsMap = typeBoundingRectsMap.clone();
                     cloned = true;
                 }
-                typeBoundingRectsMap[i] = insetBoundingRects;
+                typeBoundingRectsMap[index] = insetBoundingRects;
             }
         }
         return typeBoundingRectsMap;
@@ -1440,11 +1441,11 @@ public final class WindowInsets {
          * Creates a builder where all insets are initially consumed.
          */
         public Builder() {
-            mTypeInsetsMap = new Insets[SIZE];
-            mTypeMaxInsetsMap = new Insets[SIZE];
-            mTypeVisibilityMap = new boolean[SIZE];
-            mTypeBoundingRectsMap = new Rect[SIZE][];
-            mTypeMaxBoundingRectsMap = new Rect[SIZE][];
+            mTypeInsetsMap = new Insets[TYPES.length];
+            mTypeMaxInsetsMap = new Insets[TYPES.length];
+            mTypeVisibilityMap = new boolean[TYPES.length];
+            mTypeBoundingRectsMap = new Rect[TYPES.length][];
+            mTypeMaxBoundingRectsMap = new Rect[TYPES.length][];
             mCompatInsetTypes = defaultCompatible();
             mCompatIgnoreVisibility = false;
         }
@@ -1624,11 +1625,11 @@ public final class WindowInsets {
          */
         @NonNull
         public Builder setVisible(@InsetsType int typeMask, boolean visible) {
-            for (int i = FIRST; i <= LAST; i = i << 1) {
-                if ((typeMask & i) == 0) {
+            for (@InsetsType int type : TYPES) {
+                if ((typeMask & type) == 0) {
                     continue;
                 }
-                mTypeVisibilityMap[indexOf(i)] = visible;
+                mTypeVisibilityMap[indexOf(type)] = visible;
             }
             return this;
         }
@@ -1770,11 +1771,11 @@ public final class WindowInsets {
         @FlaggedApi(Flags.FLAG_CUSTOMIZABLE_WINDOW_HEADERS)
         @NonNull
         public Builder setBoundingRects(@InsetsType int typeMask, @NonNull List<Rect> rects) {
-            for (int i = FIRST; i <= LAST; i = i << 1) {
-                if ((typeMask & i) == 0) {
+            for (@InsetsType int type : TYPES) {
+                if ((typeMask & type) == 0) {
                     continue;
                 }
-                mTypeBoundingRectsMap[indexOf(i)] = rects.toArray(new Rect[0]);
+                mTypeBoundingRectsMap[indexOf(type)] = rects.toArray(new Rect[0]);
             }
             mSystemInsetsConsumed = false;
             return this;
@@ -1799,11 +1800,11 @@ public final class WindowInsets {
             if (typeMask == IME) {
                 throw new IllegalArgumentException("Maximum bounding rects not available for IME");
             }
-            for (int i = FIRST; i <= LAST; i = i << 1) {
-                if ((typeMask & i) == 0) {
+            for (@InsetsType int type : TYPES) {
+                if ((typeMask & type) == 0) {
                     continue;
                 }
-                mTypeMaxBoundingRectsMap[indexOf(i)] = rects.toArray(new Rect[0]);
+                mTypeMaxBoundingRectsMap[indexOf(type)] = rects.toArray(new Rect[0]);
             }
             mStableInsetsConsumed = false;
             return this;
@@ -1856,18 +1857,42 @@ public final class WindowInsets {
         static final int TAPPABLE_ELEMENT = 1 << 6;
         static final int DISPLAY_CUTOUT = 1 << 7;
         static final int SYSTEM_OVERLAYS = 1 << 8;
-        @InsetsType
-        static final int FIRST = STATUS_BARS;
-        @InsetsType
-        static final int LAST = SYSTEM_OVERLAYS;
-        static final int SIZE = 9;
 
+        /**
+         * The array of all insets types.
+         *
+         * @hide
+         */
+        @NonNull
+        public static final int[] TYPES = {
+                STATUS_BARS,
+                NAVIGATION_BARS,
+                CAPTION_BAR,
+                IME,
+                SYSTEM_GESTURES,
+                MANDATORY_SYSTEM_GESTURES,
+                TAPPABLE_ELEMENT,
+                DISPLAY_CUTOUT,
+                SYSTEM_OVERLAYS,
+        };
+
+        /** The bitmask of all insets types combined. */
         @InsetsType
-        static final int ALL = ((1 << SIZE) - 1);
+        static final int ALL = STATUS_BARS | NAVIGATION_BARS | CAPTION_BAR | IME | SYSTEM_GESTURES
+                | MANDATORY_SYSTEM_GESTURES | TAPPABLE_ELEMENT | DISPLAY_CUTOUT | SYSTEM_OVERLAYS;
+
+        /** The bitmask of default visible insets types. */
         @InsetsType
         static final int DEFAULT_VISIBLE = ALL & ~IME;
 
-        static int indexOf(@InsetsType int type) {
+        /**
+         * Gets the index of the bit corresponding to the given type.
+         *
+         * @param type the type to get the bit index of.
+         *
+         * @hide
+         */
+        public static int indexOf(@InsetsType int type) {
             switch (type) {
                 case STATUS_BARS:
                     return 0;
@@ -1888,8 +1913,7 @@ public final class WindowInsets {
                 case SYSTEM_OVERLAYS:
                     return 8;
                 default:
-                    throw new IllegalArgumentException("type needs to be >= FIRST and <= LAST,"
-                            + " type=" + type);
+                    throw new IllegalArgumentException("Unknown insets type: " + type);
             }
         }
 
