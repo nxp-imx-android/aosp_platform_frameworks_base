@@ -604,6 +604,47 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX,
+            Flags.FLAG_IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY})
+    public void testRespectOverrideTaskBoundsIfValid() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FREEFORM);
+        final Task task = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setDisplay(display).build();
+        // Override task bounds within display.
+        final Rect displayStableBounds = new Rect();
+        display.getStableRect(displayStableBounds);
+        task.setBounds(displayStableBounds);
+
+        // Task bounds should be respect.
+        new CalculateRequestBuilder().setTask(task).calculate();
+        assertEquals(displayStableBounds, mResult.mBounds);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS,
+            Flags.FLAG_DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX,
+            Flags.FLAG_IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY})
+    public void testDontRespectOverrideTaskBoundsIfNotValid() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final TestDisplayContent display = createNewDisplayContent(WINDOWING_MODE_FREEFORM);
+        final Task task = new TaskBuilder(mSupervisor).setActivityType(
+                ACTIVITY_TYPE_STANDARD).setDisplay(display).build();
+        // Override task bounds with bounds larger than display in at least on dimension.
+        final Rect overrideTaskBounds = new Rect(0, 0, 100, 10000);
+        task.setBounds(overrideTaskBounds);
+
+        // Task bounds should not be respected.
+        new CalculateRequestBuilder().setTask(task).calculate();
+        assertNotEquals(overrideTaskBounds, mResult.mBounds);
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     @DisableFlags(Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS)
     public void testUsesDesiredBoundsIfEmptyLayoutAndActivityOptionsBounds() {
