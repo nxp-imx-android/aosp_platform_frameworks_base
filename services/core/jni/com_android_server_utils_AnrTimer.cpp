@@ -14,21 +14,21 @@
  * limitations under the License.
  */
 
-#include <time.h>
-#include <pthread.h>
-#include <sys/timerfd.h>
 #include <inttypes.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include <pthread.h>
 #include <regex.h>
+#include <sys/stat.h>
+#include <sys/timerfd.h>
+#include <time.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <list>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
-#include <map>
 
 #define LOG_TAG "AnrTimerService"
 #define ATRACE_TAG ATRACE_TAG_ACTIVITY_MANAGER
@@ -95,11 +95,6 @@ const bool DEBUG_TICKER = false;
 // Enable error logging.
 const bool DEBUG_ERROR = true;
 
-// Return the current time in nanoseconds.  This time is relative to system boot.
-nsecs_t now() {
-    return systemTime(SYSTEM_TIME_MONOTONIC);
-}
-
 // The current process.  This is cached here on startup.
 const pid_t sThisProcess = getpid();
 
@@ -130,6 +125,109 @@ std::string getProcessName(pid_t pid) {
         return std::string("notfound");
     }
 }
+
+/**
+ * This is the abstract interface to the system clock and timers that run against the system
+ * clock. There are two variants: the standard Posix timer that runs on Android and a test
+ * variant that gives full control over time advancement to the test code.
+ */
+class Clock {
+public:
+    // Create a clock and all necessary infrastructure.
+    Clock() {}
+
+    virtual ~Clock() = default;
+
+    // Stop the clock and release system resources, as necessary. Threads in waitForTimer() will
+    // be released with the return value of "false".
+    virtual void stop() = 0;
+
+    // Set a timer to expire at the given relative time. The offset is in nanoseconds.  Negative
+    // times are discarded.  This returns 0 on success and -1 on error. waitForTimer() is used
+    // to wait for the timer to expire.
+    virtual int setTimer(nsecs_t) = 0;
+
+    // Turn off the timer and mark it "not expired", if it was expired.  Any thread in
+    // waitForTimer() will continue to wait until setTimer() is called.
+    virtual void clearTimer() = 0;
+
+    // Wait for the timer to expire.  Returns true if the timer expired as expected and false
+    // otherwise.  The function returns true immediately if it is called when the timer is
+    // already expired.  False means the timer was stopped or an OS error occurred.
+    virtual bool waitForTimer() = 0;
+
+    // Get the current time, in nanoseconds, as understood by this instance.
+    virtual nsecs_t getCurrentTime() = 0;
+
+private:
+    Clock(const Clock&) = delete;
+};
+
+/**
+ * This variant is fully functional using posix timers.  It is based on CLOCK_MONOTONIC.
+ */
+class ClockPosix : public Clock {
+public:
+    ClockPosix() {
+        timerFd_ = timer_create();
+    }
+
+    ~ClockPosix() {
+        stop();
+    }
+
+    int setTimer(nsecs_t delay) {
+        if (!running()) return 0;
+
+        if (delay < 0) {
+            errno = EINVAL;
+            return -1;
+        }
+
+        time_t sec = nanoseconds_to_seconds(delay);
+        time_t ns = delay - seconds_to_nanoseconds(sec);
+        struct itimerspec setting = {
+                .it_interval = {0, 0},
+                .it_value = {sec, ns},
+        };
+        return timer_settime(timerFd_, 0, &setting, nullptr);
+    }
+
+    void clearTimer() {
+        if (!running()) return;
+
+        const struct itimerspec setting = {
+                .it_interval = {0, 0},
+                .it_value = {0, 0},
+        };
+        timer_settime(timerFd_, 0, &setting, nullptr);
+    }
+
+    bool waitForTimer() {
+        if (!running()) return false;
+
+        uint64_t token = 0;
+        return read(timerFd_, &token, sizeof(token)) == sizeof(token);
+    }
+
+    void stop() {
+        if (running()) {
+            ::close(timerFd_);
+            timerFd_ = -1;
+        }
+    }
+
+    nsecs_t getCurrentTime() {
+        return systemTime(SYSTEM_TIME_MONOTONIC);
+    }
+
+private:
+    bool running() const {
+        return timerFd_ >= 0;
+    }
+
+    int timerFd_;
+};
 
 /**
  * Actions that can be taken when a timer reaches a split point.
@@ -498,8 +596,8 @@ class AnrTimerService {
      * traditional void* and Java object pointer.  The remaining parameters are
      * configuration options.
      */
-    AnrTimerService(const char* label, notifier_t notifier, void* cookie, jweak jtimer, Ticker*,
-                    bool extend, std::vector<SplitPoint> splits);
+    AnrTimerService(const char* label, notifier_t notifier, void* cookie, jweak jtimer,
+                    std::shared_ptr<Ticker>, bool extend, std::vector<SplitPoint> splits);
 
     // Delete the service and clean up memory.
     ~AnrTimerService();
@@ -555,6 +653,10 @@ class AnrTimerService {
     // Return a string representation of a status value.
     static const char* statusString(Status);
 
+    // Return the current time.  This comes from the Ticker, which may be using a synthetic
+    // clock.
+    nsecs_t now() const;
+
     // The name of this service, for logging.
     const std::string label_;
 
@@ -597,7 +699,7 @@ class AnrTimerService {
     Counters counters_;
 
     // The clock used by this AnrTimerService.
-    Ticker *ticker_;
+    std::shared_ptr<Ticker> ticker_;
 
     // The global tracing specification.
     static AnrTimerTracer tracer_;
@@ -659,6 +761,9 @@ class AnrTimerService::Timer {
     // The creation parameters.  The timeout is the original, relative timeout.
     const int pid;
     const int uid;
+    // The time at which the timer was started.
+    const nsecs_t started;
+    // The relative time from started at which the timer expires.
     const nsecs_t timeout;
     // True if the timer may be extended.
     const bool extend;
@@ -669,9 +774,6 @@ class AnrTimerService::Timer {
 
     // The state of this timer.
     Status status;
-
-    // The time at which the timer was started.
-    nsecs_t started;
 
     // The scheduled timeout.  This is an absolute time.  It may be extended.
     nsecs_t scheduled;
@@ -696,27 +798,27 @@ class AnrTimerService::Timer {
           : id(id),
             pid(0),
             uid(0),
+            started(0),
             timeout(0),
             extend(false),
             nextSplit(0),
             status(Invalid),
-            started(0),
             scheduled(0),
             extended(false),
             traced(false) {}
 
     // Create a new timer.  This starts the timer.
-    Timer(int pid, int uid, nsecs_t timeout, bool extend, AnrTimerTracer::TraceConfig trace,
-          std::vector<SplitPoint> splits)
+    Timer(int pid, int uid, nsecs_t timeout, bool extend, nsecs_t now,
+          AnrTimerTracer::TraceConfig trace, std::vector<SplitPoint> splits)
           : id(nextId()),
             pid(pid),
             uid(uid),
+            started(now),
             timeout(timeout),
             extend(extend),
             splits(buildSplits(std::move(splits), trace)),
             nextSplit(0),
             status(Running),
-            started(now()),
             scheduled(started +
                       (splits.size() > 0 ? (timeout * splits[0].percent) / 100 : timeout)),
             extended(false),
@@ -904,36 +1006,31 @@ class AnrTimerService::Ticker {
 
     // Construct the ticker.  This creates the timerfd file descriptor and starts the monitor
     // thread.  The monitor thread is given a unique name.
-    Ticker() :
-            id_(idGen_.fetch_add(1))
-    {
-        timerFd_ = timer_create();
-        if (timerFd_ < 0) {
-            ALOGE("failed to create timerFd: %s", strerror(errno));
-            return;
-        }
+      Ticker(std::unique_ptr<Clock> clock) : clock_(std::move(clock)), id_(idGen_.fetch_add(1)) {
+          if (pthread_create(&watcher_, 0, run, this) != 0) {
+              ALOGE("failed to start thread: %s", strerror(errno));
+              watcher_ = 0;
+              return;
+          }
 
-        if (pthread_create(&watcher_, 0, run, this) != 0) {
-            ALOGE("failed to start thread: %s", strerror(errno));
-            watcher_ = 0;
-            ::close(timerFd_);
-            return;
-        }
+          // 16 is a magic number from the kernel.  Thread names may not be longer than this many
+          // bytes, including the terminating null.  The snprintf() method will truncate properly.
+          char name[16];
+          snprintf(name, sizeof(name), "AnrTimerService");
+          pthread_setname_np(watcher_, name);
 
-        // 16 is a magic number from the kernel.  Thread names may not be longer than this many
-        // bytes, including the terminating null.  The snprintf() method will truncate properly.
-        char name[16];
-        snprintf(name, sizeof(name), "AnrTimerService");
-        pthread_setname_np(watcher_, name);
-
-        ready_ = true;
-    }
+          ready_ = true;
+      }
 
     ~Ticker() {
-        // Closing the file descriptor will close the monitor process, if any.
-        if (timerFd_ >= 0) ::close(timerFd_);
-        timerFd_ = -1;
+        clock_->stop();
+        pthread_join(watcher_, nullptr);
         watcher_ = 0;
+    }
+
+    // Return the current time, based on this Ticker's clock.
+    nsecs_t now() const {
+        return clock_->getCurrentTime();
     }
 
     // Insert a timer.  Unless canceled, the timer will expire at the scheduled time.  If it
@@ -999,16 +1096,15 @@ class AnrTimerService::Ticker {
     // A simple wrapper that meets the requirements of pthread_create.
     static void* run(void* arg) {
         reinterpret_cast<Ticker*>(arg)->monitor();
-        ALOGI_IF(DEBUG_TICKER, "monitor exited");
         return 0;
     }
 
-    // Loop (almost) forever.  Whenever the timerfd expires, expire as many entries as
-    // possible.  The loop terminates when the read fails; this generally indicates that the
-    // file descriptor has been closed and the thread can exit.
+    // Loop (almost) forever.  Whenever the timer expires, expire as many entries as
+    // possible.  The loop terminates when the read fails; this generally means that the
+    // enclosing Ticker is being deleted and the thread has been canceled.  The thread must
+    // exit.
     void monitor() {
-        uint64_t token = 0;
-        while (read(timerFd_, &token, sizeof(token)) == sizeof(token)) {
+        while (clock_->waitForTimer()) {
             // Move expired timers into the local ready list.  This is done inside
             // the lock.  Then, outside the lock, expire them.
             nsecs_t current = now();
@@ -1026,6 +1122,7 @@ class AnrTimerService::Ticker {
                 }
                 restartLocked();
             }
+
             // Call the notifiers outside the lock.  Calling the notifiers with the lock held
             // can lead to deadlock, if the Java-side handler also takes a lock.  Note that the
             // timerfd is already running.
@@ -1034,6 +1131,8 @@ class AnrTimerService::Ticker {
                 e.service->expire(e.id);
             }
         }
+        // If the read fails, exit immediately without touching any further memory. The Ticker
+        // is being closed.
     }
 
     // Restart the ticker.  The caller must be holding the lock.  This method updates the
@@ -1046,23 +1145,11 @@ class AnrTimerService::Ticker {
             nsecs_t delay = x.scheduled - now();
             // Force a minimum timeout of 10ns.
             if (delay < 10) delay = 10;
-            time_t sec = nanoseconds_to_seconds(delay);
-            time_t ns = delay - seconds_to_nanoseconds(sec);
-            struct itimerspec setting = {
-                .it_interval = { 0, 0 },
-                .it_value = { sec, ns },
-            };
-            timer_settime(timerFd_, 0, &setting, nullptr);
+            clock_->setTimer(delay);
             restarted_++;
-            ALOGI_IF(DEBUG_TICKER, "restarted timerfd for %ld.%09ld", sec, ns);
         } else {
-            const struct itimerspec setting = {
-                .it_interval = { 0, 0 },
-                .it_value = { 0, 0 },
-            };
-            timer_settime(timerFd_, 0, &setting, nullptr);
+            clock_->clearTimer();
             drained_++;
-            ALOGI_IF(DEBUG_TICKER, "drained timer list");
         }
     }
 
@@ -1074,8 +1161,8 @@ class AnrTimerService::Ticker {
     // effectively const after the instance has been created.
     bool ready_ = false;
 
-    // The file descriptor of the timer.
-    int timerFd_ = -1;
+    // The clock that is the basis for this ticker.
+    std::unique_ptr<Clock> clock_;
 
     // The thread that monitors the timer.
     pthread_t watcher_ = 0;
@@ -1103,7 +1190,8 @@ class AnrTimerService::Ticker {
 std::atomic<size_t> AnrTimerService::Ticker::idGen_;
 
 AnrTimerService::AnrTimerService(const char* label, notifier_t notifier, void* cookie, jweak jtimer,
-                                 Ticker* ticker, bool extend, std::vector<SplitPoint> splits)
+                                 std::shared_ptr<Ticker> ticker, bool extend,
+                                 std::vector<SplitPoint> splits)
       : label_(label),
         notifier_(notifier),
         notifierCookie_(cookie),
@@ -1135,7 +1223,7 @@ const char* AnrTimerService::statusString(Status s) {
 
 AnrTimerService::timer_id_t AnrTimerService::start(int pid, int uid, nsecs_t timeout) {
     AutoMutex _l(lock_);
-    Timer t(pid, uid, timeout, extend_, tracer_.getConfig(pid), defaultSplits_);
+    Timer t(pid, uid, timeout, extend_, now(), tracer_.getConfig(pid), defaultSplits_);
     insertLocked(t);
     t.start();
     counters_.started++;
@@ -1254,6 +1342,10 @@ AnrTimerService::Timer AnrTimerService::removeLocked(timer_id_t timerId) {
     return Timer();
 }
 
+nsecs_t AnrTimerService::now() const {
+    return ticker_->now();
+}
+
 std::vector<std::string> AnrTimerService::getDump() const {
     std::vector<std::string> r;
     AutoMutex _l(lock_);
@@ -1294,7 +1386,7 @@ struct AnrArgs {
     jmethodID func = NULL;
     jmethodID funcEarly = NULL;
     JavaVM* vm = NULL;
-    AnrTimerService::Ticker* ticker = nullptr;
+    std::shared_ptr<AnrTimerService::Ticker> ticker = nullptr;
 };
 static AnrArgs gAnrArgs;
 
@@ -1332,9 +1424,12 @@ jlong anrTimerCreate(JNIEnv* env, jobject jtimer, jstring jname, jboolean extend
                      jintArray jtok) {
     if (!nativeSupportEnabled) return 0;
     AutoMutex _l(gAnrLock);
-    if (gAnrArgs.ticker == nullptr) {
-        gAnrArgs.ticker = new AnrTimerService::Ticker();
+    std::shared_ptr<AnrTimerService::Ticker> ticker;
+    if (gAnrArgs.ticker.get() == nullptr) {
+        gAnrArgs.ticker.reset(
+                new AnrTimerService::Ticker(std::unique_ptr<Clock>(new ClockPosix())));
     }
+    ticker = gAnrArgs.ticker;
 
     std::vector<SplitPoint> splits;
     if (jperc && jtok) {
@@ -1356,7 +1451,7 @@ jlong anrTimerCreate(JNIEnv* env, jobject jtimer, jstring jname, jboolean extend
     ScopedUtfChars name(env, jname);
     jobject timer = env->NewWeakGlobalRef(jtimer);
     AnrTimerService* service = new AnrTimerService(name.c_str(), anrNotify, &gAnrArgs, timer,
-                                                   gAnrArgs.ticker, extend, std::move(splits));
+                                                   ticker, extend, std::move(splits));
     return reinterpret_cast<jlong>(service);
 }
 
