@@ -54,6 +54,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+
 import static java.util.Collections.emptySet;
 
 import android.app.ActivityManager;
@@ -134,7 +135,6 @@ import com.android.systemui.navigationbar.NavigationBarController;
 import com.android.systemui.notetask.NoteTaskController;
 import com.android.systemui.plugins.ActivityStarter;
 import com.android.systemui.plugins.ActivityStarter.OnDismissAction;
-import com.android.systemui.plugins.DarkIconDispatcher;
 import com.android.systemui.plugins.PluginDependencyProvider;
 import com.android.systemui.plugins.PluginManager;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
@@ -554,7 +554,6 @@ public class CentralSurfacesImplTest extends SysuiTestCase {
                         mStatusBarWindowController,
                         mStatusBarModePerDisplayRepository,
                         mock(StatusBarConfigurationController.class),
-                        mock(DarkIconDispatcher.class),
                         mCollapsedStatusBarFragmentProvider,
                         mock(StatusBarRootFactory.class),
                         mock(HomeStatusBarComponent.Factory.class),
