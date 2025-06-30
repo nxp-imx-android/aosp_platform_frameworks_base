@@ -1643,6 +1643,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 }
                 mAtmService.mChainTracker.endPartial();
             }
+            if (!mSetIgnoreOrientationRequest
+                    && (changes & ActivityInfo.CONFIG_WINDOW_CONFIGURATION) != 0) {
+                // Update new size for the rotated activities, if any.
+                applyFixedRotationForNonTopVisibleActivityIfNeeded();
+            }
             sendNewConfiguration();
         }
 
@@ -1871,7 +1876,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
         final int displayRotation = getRotation();
         final int rotation = mDisplayRotation.rotationForOrientation(orientation, displayRotation);
-        if (rotation == displayRotation) {
+        final DisplayFrames rotatedFrames = ar.getFixedRotationTransformDisplayFrames();
+        if (rotation == displayRotation && (rotatedFrames == null || (rotatedFrames.mWidth
+                == mDisplayFrames.mWidth && rotatedFrames.mHeight == mDisplayFrames.mHeight))) {
             return;
         }
         startFixedRotationTransform(ar, rotation);

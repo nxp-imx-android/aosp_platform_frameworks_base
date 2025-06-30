@@ -448,6 +448,11 @@ class WindowToken extends WindowContainer<WindowState> {
     void applyFixedRotationTransform(DisplayInfo info, DisplayFrames displayFrames,
             Configuration config) {
         if (mFixedRotationTransformState != null) {
+            if (mFixedRotationTransformState.mDisplayFrames.mRotation == displayFrames.mRotation) {
+                // Invalidate the position, so WindowContainer#updateSurfacePosition can update
+                // the surface position with new size for the same rotation.
+                mLastSurfacePosition.offset(-1, -1);
+            }
             mFixedRotationTransformState.disassociate(this);
         }
         config = new Configuration(config);
@@ -467,6 +472,12 @@ class WindowToken extends WindowContainer<WindowState> {
             return;
         }
         if (mFixedRotationTransformState != null) {
+            if (mFixedRotationTransformState.mDisplayFrames.mRotation
+                    == fixedRotationState.mDisplayFrames.mRotation) {
+                // Invalidate the position, so WindowContainer#updateSurfacePosition can update
+                // the surface position with new size for the same rotation.
+                mLastSurfacePosition.offset(-1, -1);
+            }
             mFixedRotationTransformState.disassociate(this);
         }
         mFixedRotationTransformState = fixedRotationState;
@@ -673,6 +684,22 @@ class WindowToken extends WindowContainer<WindowState> {
             }
         }
         super.updateSurfaceRotation(t, deltaRotation, positionLeash);
+    }
+
+    @Override
+    Rect getParentBoundsForSurfaceRotation(boolean flipped) {
+        if (mFixedRotationTransformState == null) {
+            return super.getParentBoundsForSurfaceRotation(flipped);
+        }
+        // Use the bounds from transform state because it is calculated by the latest display size.
+        // In case the display is resizing that the parent hasn't applied new configuration.
+        if (!flipped) {
+            return mFixedRotationTransformState.mDisplayFrames.mUnrestricted;
+        }
+        final int w = mFixedRotationTransformState.mDisplayFrames.mHeight;
+        final int h = mFixedRotationTransformState.mDisplayFrames.mWidth;
+        mTmpPrevBounds.set(0, 0, w, h);
+        return mTmpPrevBounds;
     }
 
     @Override
