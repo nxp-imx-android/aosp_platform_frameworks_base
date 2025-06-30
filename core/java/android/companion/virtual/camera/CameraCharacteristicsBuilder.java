@@ -109,7 +109,7 @@ public final class CameraCharacteristicsBuilder {
      */
     @SuppressLint("MissingGetterMatchingBuilder") // the getter method is getKeys()
     @NonNull
-    public <T> CameraCharacteristicsBuilder setAvailableCharacteristicsKeys(
+    public CameraCharacteristicsBuilder setAvailableCharacteristicsKeys(
             @Nullable List<CameraCharacteristics.Key<?>> availableCharacteristicsKeys) {
         int[] characteristicsTags = null;
         if (availableCharacteristicsKeys != null) {
@@ -129,7 +129,7 @@ public final class CameraCharacteristicsBuilder {
      * Sets the {@link CaptureRequest.Key}s available for the {@link CaptureRequest}.
      */
     @NonNull
-    public <T> CameraCharacteristicsBuilder setAvailableCaptureRequestKeys(
+    public CameraCharacteristicsBuilder setAvailableCaptureRequestKeys(
             @Nullable List<CaptureRequest.Key<?>> availableCaptureRequestKeys) {
         int[] captureRequestTags = null;
         if (availableCaptureRequestKeys != null) {
@@ -148,7 +148,7 @@ public final class CameraCharacteristicsBuilder {
      * Sets the {@link CaptureResult.Key}s available for the {@link CaptureResult}.
      */
     @NonNull
-    public <T> CameraCharacteristicsBuilder setAvailableCaptureResultKeys(
+    public CameraCharacteristicsBuilder setAvailableCaptureResultKeys(
             @Nullable List<CaptureResult.Key<?>> availableCaptureResultKeys) {
         int[] captureResultTags = null;
         if (availableCaptureResultKeys != null) {
@@ -166,7 +166,7 @@ public final class CameraCharacteristicsBuilder {
      * Sets the {@link CaptureRequest.Key}s available for the {@link SessionConfiguration}.
      */
     @NonNull
-    public <T> CameraCharacteristicsBuilder setAvailableSessionKeys(
+    public CameraCharacteristicsBuilder setAvailableSessionKeys(
             @Nullable List<CaptureRequest.Key<?>> availableSessionKeys) {
         int[] sessionTags = null;
         if (availableSessionKeys != null) {
