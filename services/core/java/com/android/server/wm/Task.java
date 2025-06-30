@@ -2089,7 +2089,10 @@ class Task extends TaskFragment {
         nextPersistTaskBounds &=
                 (getRequestedOverrideConfiguration().windowConfiguration.getBounds() == null
                 || getRequestedOverrideConfiguration().windowConfiguration.getBounds().isEmpty());
-        if (!prevPersistTaskBounds && nextPersistTaskBounds
+
+        final boolean disableRestoreNonFullscreenBounds =
+                Flags.disableRestoreNonFullscreenBoundsOnConfigurationChange();
+        if (!disableRestoreNonFullscreenBounds && !prevPersistTaskBounds && nextPersistTaskBounds
                 && mLastNonFullscreenBounds != null && !mLastNonFullscreenBounds.isEmpty()) {
             // Bypass onRequestedOverrideConfigurationChanged here to avoid infinite loop.
             getRequestedOverrideConfiguration().windowConfiguration
