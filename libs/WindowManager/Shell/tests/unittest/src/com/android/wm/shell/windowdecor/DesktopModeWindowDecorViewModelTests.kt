@@ -29,6 +29,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_MAIN
+import android.content.res.Configuration
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.Region
@@ -773,7 +774,30 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    fun testDecor_onClickToSplitScreen_requestsSplit() {
+    fun testDecor_onClickToSplitScreen_inPortrait_requestsSplitToTop() {
+        // GIVEN the device is in portrait orientation
+        val resources = spyContext.resources
+        val configuration = resources.configuration
+        configuration.orientation = Configuration.ORIENTATION_PORTRAIT
+
+        val windowDecorationActionsCaptor = argumentCaptor<WindowDecorationActions>()
+        val decor = createOpenTaskDecoration(
+            windowingMode = WINDOWING_MODE_MULTI_WINDOW,
+            windowDecorationActions = windowDecorationActionsCaptor
+        )
+
+        windowDecorationActionsCaptor.firstValue.onToSplitScreen(decor.mTaskInfo.taskId)
+
+        verify(mockDesktopTasksController).requestSplit(decor.mTaskInfo, leftOrTop = true)
+    }
+
+    @Test
+    fun testDecor_onClickToSplitScreen_inLandscape_requestsSplitToSide() {
+        // GIVEN the device is in landscape orientation
+        val resources = spyContext.resources
+        val configuration = resources.configuration
+        configuration.orientation = Configuration.ORIENTATION_LANDSCAPE
+
         val windowDecorationActionsCaptor = argumentCaptor<WindowDecorationActions>()
         val decor = createOpenTaskDecoration(
             windowingMode = WINDOWING_MODE_MULTI_WINDOW,
