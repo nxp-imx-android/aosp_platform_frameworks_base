@@ -20,7 +20,12 @@ import com.android.systemui.Flags
 import com.android.systemui.flags.FlagToken
 import com.android.systemui.flags.RefactorFlagUtils
 
-/** Helper for reading or using the status bar region sampling flag state. */
+/**
+ * Helper for reading or using the status bar region sampling flag state.
+ *
+ * This flag enables region sampling if users have the force-dark-theme accessibility setting on.
+ * See also: [StatusBarAlwaysUseRegionSampling].
+ */
 @Suppress("NOTHING_TO_INLINE")
 object StatusBarRegionSampling {
     /** The aconfig flag name */

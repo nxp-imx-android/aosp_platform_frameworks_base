@@ -30,7 +30,7 @@ import com.android.internal.view.AppearanceRegion
 import com.android.systemui.CoreStartable
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.statusbar.CommandQueue
-import com.android.systemui.statusbar.StatusBarRegionSampling
+import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.core.StatusBarInitializer.StatusBarViewLifecycleListener
 import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.data.model.StatusBarAppearance
@@ -253,7 +253,7 @@ constructor(
                 } else {
                     val originalAppearanceRegions =
                         if (
-                            StatusBarRegionSampling.isEnabled &&
+                            StatusBarAlwaysUseRegionSampling.isAnyRegionSamplingEnabled &&
                                 sampledAppearanceRegions.isNotEmpty()
                         ) {
                             sampledAppearanceRegions
