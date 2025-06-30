@@ -18,7 +18,6 @@ package com.android.server.wm;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -70,7 +69,6 @@ public class EmulatorDisplayOverlayTests extends WindowTestsBase {
 
     @Test
     public void testShowEmulatorDisplayOverlay() {
-        doNothing().when(mWm).showEmulatorDisplayOverlay();
         clearInvocations(mWm);
 
         testShowEmulatorDisplayOverlay(
