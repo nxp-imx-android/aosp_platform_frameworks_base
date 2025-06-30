@@ -6931,9 +6931,9 @@ public class Activity extends ContextThemeWrapper
      * on top of the task while activity transitions are being played.
      * For example, if we want to customize the opening transition when launching Activity B which
      * gets started from Activity A, we should call this method inside B's onCreate with
-     * {@code overrideType = OVERRIDE_TRANSITION_OPEN} because the Activity B will on top of the
+     * {@code overrideType = OVERRIDE_TRANSITION_OPEN} because the Activity B will be on top of the
      * task. And if we want to customize the closing transition when finishing Activity B and back
-     * to Activity A, since B is still is above A, we should call this method in Activity B with
+     * to Activity A, since B is still above A, we should call this method in Activity B with
      * {@code overrideType = OVERRIDE_TRANSITION_CLOSE}. </p>
      *
      * <p> If an Activity has called this method, and it also set another activity animation
