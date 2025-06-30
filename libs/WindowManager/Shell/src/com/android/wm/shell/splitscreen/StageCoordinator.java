@@ -4235,6 +4235,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
 
         addDividerBarToTransition(info, false /* show */);
         addAllDimLayersToTransition(info, false /* show */);
+        mSplitLayout.removeTouchZones();
     }
 
     /** Call this when the recents animation canceled during split-screen. */
@@ -4307,6 +4308,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             finishT.reparent(leash,
                     mSplitMultiDisplayHelper.getDisplayRootTaskLeash(DEFAULT_DISPLAY));
             setDividerVisibility(true, finishT);
+            mSplitLayout.populateTouchZones();
             return;
         }
 
