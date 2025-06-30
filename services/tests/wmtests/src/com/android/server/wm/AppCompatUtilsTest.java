@@ -306,7 +306,7 @@ public class AppCompatUtilsTest extends WindowTestsBase {
      * Runs a test scenario providing a Robot.
      */
     void runTestScenario(@NonNull Consumer<AppCompatUtilsRobotTest> consumer) {
-        final AppCompatUtilsRobotTest robot = new AppCompatUtilsRobotTest(mWm, mAtm, mSupervisor);
+        final AppCompatUtilsRobotTest robot = new AppCompatUtilsRobotTest(this);
         consumer.accept(robot);
     }
 
@@ -319,10 +319,8 @@ public class AppCompatUtilsTest extends WindowTestsBase {
         @Nullable
         private AppCompatTransitionInfo mAppCompatTransitionInfo;
 
-        AppCompatUtilsRobotTest(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor) {
-            super(wm, atm, supervisor);
+        AppCompatUtilsRobotTest(@NonNull WindowTestsBase windowTestBase) {
+            super(windowTestBase);
             mTransparentActivityRobot = new AppCompatTransparentActivityRobot(activity());
             mWindowState = Mockito.mock(WindowState.class);
         }

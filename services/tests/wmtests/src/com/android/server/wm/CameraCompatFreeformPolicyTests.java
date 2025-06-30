@@ -613,7 +613,7 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
      */
     void runTestScenario(@NonNull Consumer<CameraCompatFreeformPolicyRobotTests> consumer) {
         final CameraCompatFreeformPolicyRobotTests robot =
-                new CameraCompatFreeformPolicyRobotTests(mWm, mAtm, mSupervisor, this);
+                new CameraCompatFreeformPolicyRobotTests(this);
         consumer.accept(robot);
     }
 
@@ -622,11 +622,8 @@ public class CameraCompatFreeformPolicyTests extends WindowTestsBase {
 
         private CameraManager.AvailabilityCallback mCameraAvailabilityCallback;
 
-        CameraCompatFreeformPolicyRobotTests(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor,
-                @NonNull WindowTestsBase windowTestsBase) {
-            super(wm, atm, supervisor);
+        CameraCompatFreeformPolicyRobotTests(@NonNull WindowTestsBase windowTestsBase) {
+            super(windowTestsBase);
             mWindowTestsBase = windowTestsBase;
             setupCameraManager();
             setupAppCompatConfiguration();

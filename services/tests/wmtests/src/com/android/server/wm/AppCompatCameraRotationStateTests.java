@@ -167,7 +167,7 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
      */
     void runTestScenario(@NonNull Consumer<AppCompatCameraInfoProviderRobotTests> consumer) {
         final AppCompatCameraInfoProviderRobotTests robot =
-                new AppCompatCameraInfoProviderRobotTests(mWm, mAtm, mSupervisor);
+                new AppCompatCameraInfoProviderRobotTests(this);
         consumer.accept(robot);
     }
 
@@ -175,11 +175,9 @@ public class AppCompatCameraRotationStateTests extends WindowTestsBase {
         private AppCompatCameraRotationState mCameraInfoProvider;
         private final WindowManagerService mWm;
 
-        AppCompatCameraInfoProviderRobotTests(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor) {
-            super(wm, atm, supervisor);
-            mWm = wm;
+        AppCompatCameraInfoProviderRobotTests(@NonNull WindowTestsBase windowTestBase) {
+            super(windowTestBase);
+            mWm = windowTestBase.mWm;
             setupAppCompatConfiguration();
         }
 

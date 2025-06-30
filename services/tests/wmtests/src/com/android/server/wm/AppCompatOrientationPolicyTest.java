@@ -540,8 +540,7 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
      */
     void runTestScenario(boolean withActivity,
                          @NonNull Consumer<OrientationPolicyRobotTest> consumer) {
-        final OrientationPolicyRobotTest robot =
-                new OrientationPolicyRobotTest(mWm, mAtm, mSupervisor, withActivity);
+        final OrientationPolicyRobotTest robot = new OrientationPolicyRobotTest(this, withActivity);
         consumer.accept(robot);
     }
 
@@ -549,12 +548,9 @@ public class AppCompatOrientationPolicyTest extends WindowTestsBase {
 
         private final WindowManagerService mWm;
 
-        OrientationPolicyRobotTest(@NonNull WindowManagerService wm,
-                                   @NonNull ActivityTaskManagerService atm,
-                                   @NonNull ActivityTaskSupervisor supervisor,
-                                   boolean withActivity) {
-            super(wm, atm, supervisor);
-            mWm = wm;
+        OrientationPolicyRobotTest(@NonNull WindowTestsBase windowTestBase, boolean withActivity) {
+            super(windowTestBase);
+            mWm = windowTestBase.mWm;
             spyOn(mWm);
             if (withActivity) {
                 activity().createActivityWithComponent();

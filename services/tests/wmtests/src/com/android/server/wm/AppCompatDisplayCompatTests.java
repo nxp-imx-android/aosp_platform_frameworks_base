@@ -118,16 +118,14 @@ public class AppCompatDisplayCompatTests extends WindowTestsBase {
     }
 
     void runTestScenario(@NonNull Consumer<DisplayCompatRobotTest> consumer) {
-        final DisplayCompatRobotTest robot = new DisplayCompatRobotTest(mWm, mAtm, mSupervisor);
+        final DisplayCompatRobotTest robot = new DisplayCompatRobotTest(this);
         consumer.accept(robot);
     }
 
     private static class DisplayCompatRobotTest extends AppCompatRobotBase {
 
-        DisplayCompatRobotTest(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor) {
-            super(wm, atm, supervisor);
+        DisplayCompatRobotTest(@NonNull WindowTestsBase windowTestBase) {
+            super(windowTestBase);
         }
 
         void checkRestartMenuVisibility(boolean enabled) {

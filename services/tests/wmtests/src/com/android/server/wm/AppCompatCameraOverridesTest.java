@@ -444,16 +444,14 @@ public class AppCompatCameraOverridesTest extends WindowTestsBase {
      * Runs a test scenario providing a Robot.
      */
     void runTestScenario(@NonNull Consumer<CameraOverridesRobotTest> consumer) {
-        final CameraOverridesRobotTest robot = new CameraOverridesRobotTest(mWm, mAtm, mSupervisor);
+        final CameraOverridesRobotTest robot = new CameraOverridesRobotTest(this);
         consumer.accept(robot);
     }
 
     private static class CameraOverridesRobotTest extends AppCompatRobotBase {
 
-        CameraOverridesRobotTest(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor) {
-            super(wm, atm, supervisor);
+        CameraOverridesRobotTest(@NonNull WindowTestsBase windowTestBase) {
+            super(windowTestBase);
         }
 
         @Override

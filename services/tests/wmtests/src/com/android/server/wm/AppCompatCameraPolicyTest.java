@@ -282,16 +282,14 @@ public class AppCompatCameraPolicyTest extends WindowTestsBase {
      */
     void runTestScenario(@NonNull Consumer<AppCompatCameraPolicyRobotTest> consumer) {
         final AppCompatCameraPolicyRobotTest robot =
-                new AppCompatCameraPolicyRobotTest(mWm, mAtm, mSupervisor);
+                new AppCompatCameraPolicyRobotTest(this);
         consumer.accept(robot);
     }
 
 
     private static class AppCompatCameraPolicyRobotTest extends AppCompatRobotBase {
-        AppCompatCameraPolicyRobotTest(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor) {
-            super(wm, atm, supervisor);
+        AppCompatCameraPolicyRobotTest(@NonNull WindowTestsBase windowTestBase) {
+            super(windowTestBase);
         }
 
         @Override
