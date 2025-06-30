@@ -2160,7 +2160,7 @@
     <string name="notification_guts_bundle_title">Silence and bundle</string>
 
     <!-- [CHAR LIMIT=100] Notification bundle individual notification inline settings title -->
-    <string name="notification_guts_single_bundle_notif_title">Use Notification Organizer</string>
+    <string name="notification_guts_single_bundle_notif_title">Use notification organizer</string>
 
     <!-- [CHAR LIMIT=100] Notification bundle inline settings summary for an individual notification -->
     <string name="notification_guts_bundle_summary">For <xliff:g id="app_name" example="YouTube">%1$s</xliff:g></string>
