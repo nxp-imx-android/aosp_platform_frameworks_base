@@ -22,5 +22,9 @@ import com.android.systemui.util.time.dateFormatUtil
 
 val Kosmos.clockViewModel: ClockViewModel by
     Kosmos.Fixture {
-        ClockViewModel(clockInteractor = clockInteractor, dateFormatUtil = dateFormatUtil)
+        ClockViewModel(
+            clockInteractor = clockInteractor,
+            dateFormatUtil = dateFormatUtil,
+            amPmStyle = AmPmStyle.Shown,
+        )
     }

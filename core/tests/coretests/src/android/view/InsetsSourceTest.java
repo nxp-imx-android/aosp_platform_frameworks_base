@@ -17,9 +17,7 @@
 package android.view;
 
 import static android.view.InsetsSource.ID_IME_CAPTION_BAR;
-import static android.view.WindowInsets.Type.FIRST;
-import static android.view.WindowInsets.Type.LAST;
-import static android.view.WindowInsets.Type.SIZE;
+import static android.view.WindowInsets.Type.TYPES;
 import static android.view.WindowInsets.Type.captionBar;
 import static android.view.WindowInsets.Type.ime;
 import static android.view.WindowInsets.Type.navigationBars;
@@ -31,6 +29,7 @@ import android.graphics.Insets;
 import android.graphics.Rect;
 import android.platform.test.annotations.Presubmit;
 import android.util.SparseArray;
+import android.view.WindowInsets.Type.InsetsType;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 
@@ -367,11 +366,11 @@ public class InsetsSourceTest {
     @Test
     public void testCreateId() {
         final int numSourcePerType = 2048;
-        final int numTotalSources = SIZE * numSourcePerType;
+        final int numTotalSources = TYPES.length * numSourcePerType;
         final SparseArray<InsetsSource> sources = new SparseArray<>(numTotalSources);
         final Object owner = new Object();
         for (int index = 0; index < numSourcePerType; index++) {
-            for (int type = FIRST; type <= LAST; type = type << 1) {
+            for (@InsetsType int type : TYPES) {
                 final int id = InsetsSource.createId(owner, index, type);
                 assertNull("Must not create the same ID.", sources.get(id));
                 sources.append(id, new InsetsSource(id, type));
@@ -385,7 +384,7 @@ public class InsetsSourceTest {
         // Here doesn't iterate all the owners, or the test cannot be done before timeout.
         for (int owner = 0; owner < 100; owner++) {
             for (int index = 0; index < 2048; index++) {
-                for (int type = FIRST; type <= LAST; type = type << 1) {
+                for (@InsetsType int type : TYPES) {
                     final int id = InsetsSource.createId(owner, index, type);
                     final int indexFromId = InsetsSource.getIndex(id);
                     assertEquals("index and indexFromId must be the same. id=" + id
@@ -403,7 +402,7 @@ public class InsetsSourceTest {
         // Here doesn't iterate all the owners, or the test cannot be done before timeout.
         for (int owner = 0; owner < 100; owner++) {
             for (int index = 0; index < 2048; index++) {
-                for (int type = FIRST; type <= LAST; type = type << 1) {
+                for (@InsetsType int type : TYPES) {
                     final int id = InsetsSource.createId(owner, index, type);
                     final int typeFromId = InsetsSource.getType(id);
                     assertEquals("type and typeFromId must be the same. id=" + id

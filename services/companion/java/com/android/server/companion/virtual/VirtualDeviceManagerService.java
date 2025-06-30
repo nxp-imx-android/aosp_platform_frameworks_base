@@ -531,9 +531,12 @@ public class VirtualDeviceManagerService extends SystemService {
             mVirtualDeviceListeners.unregister(listener);
         }
 
-        @Override // BinderCall
+        @Override // Binder call
         @VirtualDeviceParams.DevicePolicy
         public int getDevicePolicy(int deviceId, @VirtualDeviceParams.PolicyType int policyType) {
+            if (deviceId == Context.DEVICE_ID_DEFAULT) {
+                return DEVICE_POLICY_DEFAULT;
+            }
             VirtualDeviceImpl virtualDevice = getVirtualDeviceForId(deviceId);
             if (virtualDevice == null) {
                 return Flags.handleInvalidDeviceId()

@@ -16,6 +16,8 @@
 
 package com.android.server.display.feature;
 
+import static com.android.window.flags.Flags.FLAG_ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG;
+
 import android.content.Context;
 import android.os.Build;
 import android.os.SystemProperties;
@@ -98,10 +100,6 @@ public class DisplayManagerFlags {
     private final FlagState mBrightnessIntRangeUserPerceptionFlagState = new FlagState(
             Flags.FLAG_BRIGHTNESS_INT_RANGE_USER_PERCEPTION,
             Flags::brightnessIntRangeUserPerception);
-
-    private final FlagState mRestrictDisplayModes = new FlagState(
-            Flags.FLAG_ENABLE_RESTRICT_DISPLAY_MODES,
-            Flags::enableRestrictDisplayModes);
 
     private final FlagState mResolutionBackupRestore = new FlagState(
             Flags.FLAG_RESOLUTION_BACKUP_RESTORE,
@@ -243,6 +241,11 @@ public class DisplayManagerFlags {
     private final FlagState mEnableDisplayContentModeManagementFlagState = new FlagState(
             Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
             DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT::isTrue
+    );
+
+    private final FlagState mEnableUpdatedDisplayConnectionDialogFlagState = new FlagState(
+            FLAG_ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG,
+            DesktopExperienceFlags.ENABLE_UPDATED_DISPLAY_CONNECTION_DIALOG::isTrue
     );
 
     private final FlagState mSubscribeGranularDisplayEvents = new FlagState(
@@ -404,10 +407,6 @@ public class DisplayManagerFlags {
 
     public boolean isBrightnessIntRangeUserPerceptionEnabled() {
         return mBrightnessIntRangeUserPerceptionFlagState.isEnabled();
-    }
-
-    public boolean isRestrictDisplayModesEnabled() {
-        return mRestrictDisplayModes.isEnabled();
     }
 
     public boolean isResolutionBackupRestoreEnabled() {
@@ -582,6 +581,10 @@ public class DisplayManagerFlags {
         return mEnableDisplayContentModeManagementFlagState.isEnabled();
     }
 
+    public boolean isUpdatedDisplayConnectionDialogEnabled() {
+        return mEnableUpdatedDisplayConnectionDialogFlagState.isEnabled();
+    }
+
     /**
      * @return {@code true} if the flag for subscribing to granular display events is enabled
      */
@@ -683,7 +686,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mDisplayConfigErrorHalFlagState);
         pw.println(" " + mSyncedResolutionSwitch);
         pw.println(" " + mBrightnessIntRangeUserPerceptionFlagState);
-        pw.println(" " + mRestrictDisplayModes);
         pw.println(" " + mBrightnessWearBedtimeModeClamperFlagState);
         pw.println(" " + mAutoBrightnessModesFlagState);
         pw.println(" " + mFastHdrTransitions);
@@ -726,6 +728,7 @@ public class DisplayManagerFlags {
         pw.println(" " + mModeSwitchWithoutSaving);
         pw.println(" " + mEnsureColorFadeWhenTurningOn);
         pw.println(" " + mIsOnDisplayAddedInObserverEnabled);
+        pw.println(" " + mEnableUpdatedDisplayConnectionDialogFlagState);
     }
 
     private static class FlagState {

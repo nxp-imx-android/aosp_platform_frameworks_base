@@ -89,6 +89,14 @@ flag {
 }
 
 flag {
+    namespace: "virtual_devices"
+    name: "vdm_mirror_display_permission"
+    description: "Dedicated permission for mirror display creation"
+    bug: "378605160"
+    is_exported: true
+}
+
+flag {
     name: "itemized_vdm_permissions"
     namespace: "virtual_devices"
     description: "Itemized permissions in CDM dialog for VDM roles"

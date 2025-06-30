@@ -16,8 +16,6 @@
 
 package com.android.server.wm;
 
-import static android.view.WindowManager.LayoutParams.TYPE_APPLICATION;
-
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doAnswer;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
@@ -131,7 +129,7 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
      */
     void runTestScenario(@NonNull Consumer<CameraStateMonitorRobotTests> consumer) {
         final CameraStateMonitorRobotTests robot =
-                new CameraStateMonitorRobotTests(mWm, mAtm, mSupervisor, this);
+                new CameraStateMonitorRobotTests(this);
         consumer.accept(robot);
     }
 
@@ -147,11 +145,8 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
 
         private CameraManager.AvailabilityCallback mCameraAvailabilityCallback;
 
-        CameraStateMonitorRobotTests(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor,
-                @NonNull WindowTestsBase windowTestsBase) {
-            super(wm, atm, supervisor);
+        CameraStateMonitorRobotTests(@NonNull WindowTestsBase windowTestsBase) {
+            super(windowTestsBase);
             mWindowTestsBase = windowTestsBase;
             setupCameraManager();
             setupAppCompatConfiguration();
@@ -174,10 +169,6 @@ public final class CameraStateMonitorTests extends WindowTestsBase {
         @Override
         void onPostActivityCreation(@NonNull ActivityRecord activity) {
             super.onPostActivityCreation(activity);
-
-            final WindowState win = mWindowTestsBase.newWindowBuilder("app1",
-                    TYPE_APPLICATION).setWindowToken(activity).build();
-
             setupCameraManager();
             setupHandler();
             setupMockApplicationThread();

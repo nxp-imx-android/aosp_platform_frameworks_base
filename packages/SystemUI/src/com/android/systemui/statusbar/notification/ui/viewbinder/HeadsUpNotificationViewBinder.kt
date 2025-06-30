@@ -18,7 +18,7 @@ package com.android.systemui.statusbar.notification.ui.viewbinder
 
 import android.graphics.RectF
 import com.android.app.tracing.coroutines.launchTraced as launch
-import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
+import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.shared.HeadsUpRowKey
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayout
@@ -30,12 +30,13 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 
 class HeadsUpNotificationViewBinder
 @Inject
 constructor(
     private val viewModel: NotificationListViewModel,
-    private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
+    private val shadeStatusBarComponentsInteractor: ShadeStatusBarComponentsInteractor,
 ) {
     suspend fun bindHeadsUpNotifications(parentView: NotificationStackScrollLayout): Unit =
         coroutineScope {
@@ -44,7 +45,7 @@ constructor(
                 combine(
                         viewModel.pinnedHeadsUpRowKeys,
                         viewModel.activeHeadsUpRowKeys,
-                        ongoingActivityChipsViewModel.visibleChipsWithBounds,
+                        visibleChipsWithBounds(),
                         ::Triple,
                     )
                     .sample(viewModel.headsUpAnimationsEnabled, ::Pair)
@@ -99,6 +100,11 @@ constructor(
     private fun obtainView(key: HeadsUpRowKey): ExpandableNotificationRow {
         return viewModel.elementKeyFor(key) as ExpandableNotificationRow
     }
+
+    private fun visibleChipsWithBounds(): Flow<Map<String, RectF>> =
+        shadeStatusBarComponentsInteractor.ongoingActivityChipsViewModel.flatMapLatest {
+            it.visibleChipsWithBounds
+        }
 }
 
 private val NotificationStackScrollLayout.isHeadsUpAnimatingAway: Flow<Boolean>

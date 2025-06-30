@@ -16,7 +16,8 @@
 
 package android.view;
 
-import static android.view.WindowInsets.Type.SIZE;
+import static android.view.WindowInsets.Type.ALL;
+import static android.view.WindowInsets.Type.TYPES;
 import static android.view.WindowInsets.Type.captionBar;
 import static android.view.WindowInsets.Type.displayCutout;
 import static android.view.WindowInsets.Type.ime;
@@ -25,11 +26,14 @@ import static android.view.WindowInsets.Type.statusBars;
 import static android.view.WindowInsets.Type.systemBars;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import android.graphics.Insets;
 import android.graphics.Rect;
 import android.platform.test.annotations.Presubmit;
+import android.view.WindowInsets.Type.InsetsType;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
@@ -43,6 +47,95 @@ import java.util.List;
 @SmallTest
 @Presubmit
 public class WindowInsetsTest {
+
+    /**
+     * Verifies that all the values in {@link WindowInsets.Type#TYPES} are included in
+     * {@link WindowInsets.Type#ALL}.
+     */
+    @Test
+    public void testTypesInAll() {
+        int combinedTypes = 0;
+        for (@InsetsType int type : TYPES) {
+            assertTrue("type in TYPES should be included in ALL", (type & ALL) != 0);
+            combinedTypes |= type;
+        }
+        assertEquals("ALL should match bitmask of combined types", ALL, combinedTypes);
+    }
+
+    /**
+     * Verifies that all the values in {@link WindowInsets.Type#ALL} are included in
+     * {@link WindowInsets.Type#TYPES}.
+     */
+    @Test
+    public void testAllInTypes() {
+        for (int index = 0; index < Integer.SIZE; index++) {
+            final int type = 1 << index;
+            if ((type & WindowInsets.Type.ALL) != 0) {
+                assertTrue("index of bit in ALL should be less than number of TYPES",
+                        index < TYPES.length);
+                assertEquals("type in ALL should be included in TYPES", type, TYPES[index]);
+            }
+        }
+    }
+
+    /**
+     * Verifies that all the values in {@link WindowInsets.Type#TYPES} are included in
+     * {@link WindowInsets.Type#indexOf}.
+     */
+    @Test
+    public void testTypesInIndexOf() {
+        for (@InsetsType int type : TYPES) {
+            assertEquals("type should match", type, TYPES[WindowInsets.Type.indexOf(type)]);
+        }
+        assertThrows(IllegalArgumentException.class, () -> WindowInsets.Type.indexOf(-1));
+    }
+
+    /**
+     * Verifies that all the values returned by {@link WindowInsets.Type#indexOf} are included in
+     * {@link WindowInsets.Type#TYPES}.
+     */
+    @Test
+    public void testIndexOfInTypes() {
+        for (int i = 0; i < Integer.SIZE; i++) {
+            final int type = 1 << i;
+            try {
+                final int index = WindowInsets.Type.indexOf(type);
+                assertTrue("index should be non-negative", index >= 0);
+                assertTrue("index should be less than number of TYPES", index < TYPES.length);
+                assertEquals(type, TYPES[index]);
+            } catch (IllegalArgumentException e) {
+                // ignore undefined indexOf case, handled through testTypesInIndexOf above.
+            }
+        }
+    }
+
+    /**
+     * Verifies that all the values in {@link WindowInsets.Type#TYPES} are included in
+     * {@link WindowInsets.Type#toString}.
+     */
+    @Test
+    public void testTypesInToString() {
+        for (@InsetsType int type : TYPES) {
+            assertFalse("type toString should not be empty",
+                    WindowInsets.Type.toString(type).isEmpty());
+        }
+        assertTrue("invalid type toString should be empty",
+                WindowInsets.Type.toString(0).isEmpty());
+    }
+
+    /**
+     * Verifies that all the values accepted by {@link WindowInsets.Type#toString} are included in
+     * {@link WindowInsets.Type#TYPES}.
+     */
+    @Test
+    public void testToStringInTypes() {
+        for (int i = 0; i < Integer.SIZE; i++) {
+            final int type = 1 << i;
+            if (!WindowInsets.Type.toString(type).isEmpty()) {
+                assertEquals("type should match", type, TYPES[i]);
+            }
+        }
+    }
 
     @Test
     public void systemWindowInsets_afterConsuming_isConsumed() {
@@ -65,9 +158,9 @@ public class WindowInsetsTest {
 
     @Test
     public void compatInsets_layoutStable() {
-        Insets[] insets = new Insets[SIZE];
-        Insets[] maxInsets = new Insets[SIZE];
-        boolean[] visible = new boolean[SIZE];
+        Insets[] insets = new Insets[TYPES.length];
+        Insets[] maxInsets = new Insets[TYPES.length];
+        boolean[] visible = new boolean[TYPES.length];
         WindowInsets.assignCompatInsets(maxInsets, new Rect(0, 10, 0, 0));
         WindowInsets.assignCompatInsets(insets, new Rect(0, 0, 0, 0));
         WindowInsets windowInsets = new WindowInsets(insets, maxInsets, visible, false, 0,
@@ -78,9 +171,9 @@ public class WindowInsetsTest {
 
     @Test
     public void builder_copy_compatInsetTypes() {
-        final Insets[] insets = new Insets[SIZE];
-        final Insets[] maxInsets = new Insets[SIZE];
-        final boolean[] visible = new boolean[SIZE];
+        final Insets[] insets = new Insets[TYPES.length];
+        final Insets[] maxInsets = new Insets[TYPES.length];
+        final boolean[] visible = new boolean[TYPES.length];
         final int compatInsetTypes = systemBars() | displayCutout() | ime();
         final WindowInsets windowInsets = new WindowInsets(insets, maxInsets, visible, false, 0,
                 false, 0, null, null, null, DisplayShape.NONE, compatInsetTypes,
@@ -96,9 +189,9 @@ public class WindowInsetsTest {
 
     @Test
     public void builder_copy_compatIgnoreVisibility() {
-        final Insets[] insets = new Insets[SIZE];
-        final Insets[] maxInsets = new Insets[SIZE];
-        final boolean[] visible = new boolean[SIZE];
+        final Insets[] insets = new Insets[TYPES.length];
+        final Insets[] maxInsets = new Insets[TYPES.length];
+        final boolean[] visible = new boolean[TYPES.length];
         final int compatInsetTypes = systemBars() | displayCutout();
         final WindowInsets windowInsets = new WindowInsets(insets, maxInsets, visible, false, 0,
                 false, 0, null, null, null, DisplayShape.NONE, compatInsetTypes,

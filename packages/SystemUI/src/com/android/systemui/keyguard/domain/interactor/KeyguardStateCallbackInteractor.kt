@@ -29,7 +29,6 @@ import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.DismissCallbackRegistry
 import com.android.systemui.keyguard.KeyguardWmStateRefactor
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
@@ -64,75 +63,63 @@ constructor(
             return
         }
 
-        if (SceneContainerFlag.isEnabled) {
-            // In flexiglass, only the dismiss callback success is tied to the ATMS lockscreen
-            // visibility. All other state callbacks are triggered via SceneContainerStartable.
-            applicationScope.launch {
-                wmLockscreenVisibilityInteractor.lockscreenVisibility.collect { visible ->
-                    if (!visible) {
-                        dismissCallbackRegistry.notifyDismissSucceeded()
-                    }
-                }
-            }
-        } else {
-            applicationScope.launch {
-                wmLockscreenVisibilityInteractor.lockscreenVisibility.collect { visible ->
-                    val iterator = callbacks.iterator()
-                    withContext(backgroundDispatcher) {
-                        while (iterator.hasNext()) {
-                            val callback = iterator.next()
-                            try {
-                                callback.onShowingStateChanged(
-                                    visible,
-                                    selectedUserInteractor.getSelectedUserId(),
-                                )
-                                callback.onInputRestrictedStateChanged(visible)
+        applicationScope.launch {
+            wmLockscreenVisibilityInteractor.lockscreenVisibility.collect { visible ->
+                val iterator = callbacks.iterator()
+                withContext(backgroundDispatcher) {
+                    while (iterator.hasNext()) {
+                        val callback = iterator.next()
+                        try {
+                            callback.onShowingStateChanged(
+                                visible,
+                                selectedUserInteractor.getSelectedUserId(),
+                            )
+                            callback.onInputRestrictedStateChanged(visible)
 
-                                trustManager.reportKeyguardShowingChanged()
+                            trustManager.reportKeyguardShowingChanged()
 
-                                if (!visible) {
-                                    dismissCallbackRegistry.notifyDismissSucceeded()
-                                }
-                            } catch (e: RemoteException) {
-                                if (e is DeadObjectException) {
-                                    iterator.remove()
-                                }
+                            if (!visible) {
+                                dismissCallbackRegistry.notifyDismissSucceeded()
+                            }
+                        } catch (e: RemoteException) {
+                            if (e is DeadObjectException) {
+                                iterator.remove()
                             }
                         }
                     }
                 }
             }
+        }
 
-            applicationScope.launch {
-                trustInteractor.isTrusted.collect { isTrusted ->
-                    val iterator = callbacks.iterator()
-                    withContext(backgroundDispatcher) {
-                        while (iterator.hasNext()) {
-                            val callback = iterator.next()
-                            try {
-                                callback.onTrustedChanged(isTrusted)
-                            } catch (e: RemoteException) {
-                                if (e is DeadObjectException) {
-                                    iterator.remove()
-                                }
+        applicationScope.launch {
+            trustInteractor.isTrusted.collect { isTrusted ->
+                val iterator = callbacks.iterator()
+                withContext(backgroundDispatcher) {
+                    while (iterator.hasNext()) {
+                        val callback = iterator.next()
+                        try {
+                            callback.onTrustedChanged(isTrusted)
+                        } catch (e: RemoteException) {
+                            if (e is DeadObjectException) {
+                                iterator.remove()
                             }
                         }
                     }
                 }
             }
+        }
 
-            applicationScope.launch {
-                simBouncerInteractor.isAnySimSecure.collect { isSimSecured ->
-                    val iterator = callbacks.iterator()
-                    withContext(backgroundDispatcher) {
-                        while (iterator.hasNext()) {
-                            val callback = iterator.next()
-                            try {
-                                callback.onSimSecureStateChanged(isSimSecured)
-                            } catch (e: RemoteException) {
-                                if (e is DeadObjectException) {
-                                    iterator.remove()
-                                }
+        applicationScope.launch {
+            simBouncerInteractor.isAnySimSecure.collect { isSimSecured ->
+                val iterator = callbacks.iterator()
+                withContext(backgroundDispatcher) {
+                    while (iterator.hasNext()) {
+                        val callback = iterator.next()
+                        try {
+                            callback.onSimSecureStateChanged(isSimSecured)
+                        } catch (e: RemoteException) {
+                            if (e is DeadObjectException) {
+                                iterator.remove()
                             }
                         }
                     }

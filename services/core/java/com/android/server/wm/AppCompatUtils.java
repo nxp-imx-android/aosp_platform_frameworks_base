@@ -139,7 +139,7 @@ final class AppCompatUtils {
             @Nullable ActivityRecord top) {
         final AppCompatTaskInfo appCompatTaskInfo = info.appCompatTaskInfo;
         clearAppCompatTaskInfo(appCompatTaskInfo);
-
+        appCompatTaskInfo.setIsLeafTask(task.isLeafTask());
         if (top == null) {
             return;
         }

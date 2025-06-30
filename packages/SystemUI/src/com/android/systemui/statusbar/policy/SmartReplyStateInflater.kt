@@ -471,7 +471,9 @@ constructor(
                         )
                     } else {
                         context.resources.getDimensionPixelSize(
-                            R.dimen.smart_action_button_icon_size
+                            if (notificationsRedesignTemplates())
+                                R.dimen.notification_2025_smart_action_button_icon_size
+                            else R.dimen.smart_action_button_icon_size
                         )
                     }
                 val iconDrawable =

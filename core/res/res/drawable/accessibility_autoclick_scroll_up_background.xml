@@ -21,7 +21,7 @@
     android:viewportHeight="59"
     android:viewportWidth="67">
     <path
-        android:fillColor="@color/materialColorPrimary"
+        android:fillColor="@color/materialColorSurface"
         android:pathData="M42.078 57.399C39.2379 56.4984 36.2147 56.0091 33.0784 56.0011C29.9421 56.0091
 26.919 56.4984 24.0789 57.399C20.6857 58.475 16.9165 58.3929 13.3327
 57.2631C9.3169 55.9971 6.10867 53.7847 3.79963 50.4923C-0.454337 44.4268

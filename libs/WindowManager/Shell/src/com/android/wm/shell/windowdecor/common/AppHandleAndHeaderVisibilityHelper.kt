@@ -97,7 +97,7 @@ class AppHandleAndHeaderVisibilityHelper (
         // Bubble tasks reset alwaysOnTop when reordering a task to the bottom to hide its task view
         // in TaskViewTransitions#setTaskViewVisible, so we need to explicitly check here.
         fun ActivityManager.RunningTaskInfo.isBubble(): Boolean =
-            if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
+            if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
                 bubbleController.map { it.hasStableBubbleForTask(taskId) }.orElse(false)
             } else {
                 false

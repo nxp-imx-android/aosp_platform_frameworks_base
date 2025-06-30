@@ -157,7 +157,7 @@ public class AppCompatCameraStateSourceTests extends WindowTestsBase {
      */
     void runTestScenario(@NonNull Consumer<AppCompatCameraStateSourceRobotTests> consumer) {
         final AppCompatCameraStateSourceRobotTests robot =
-                new AppCompatCameraStateSourceRobotTests(mWm, mAtm, mSupervisor);
+                new AppCompatCameraStateSourceRobotTests(this);
         consumer.accept(robot);
     }
 
@@ -170,10 +170,8 @@ public class AppCompatCameraStateSourceTests extends WindowTestsBase {
                 mock(AppCompatCameraStatePolicy.class);
 
         private final AppCompatCameraStateSource mSourceUnderTest;
-        AppCompatCameraStateSourceRobotTests(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor) {
-            super(wm, atm, supervisor);
+        AppCompatCameraStateSourceRobotTests(@NonNull WindowTestsBase windowTestBase) {
+            super(windowTestBase);
 
             mSourceUnderTest = new AppCompatCameraStateSource();
 

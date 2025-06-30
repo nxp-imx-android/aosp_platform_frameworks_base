@@ -346,6 +346,19 @@ constructor(
             return false
         }
 
+        // We currently draw both the light reveal scrim, and the AOD UI, in the shade. If it's
+        // already expanded and showing notifications/QS, the animation looks really messy. For now,
+        // disable it if the notification panel is expanded.
+        if (
+            (!this::centralSurfaces.isInitialized ||
+                panelExpansionInteractorLazy.get().isPanelExpanded) &&
+                // Status bar might be expanded because we have started
+                // playing the animation already
+                !isAnimationPlaying()
+        ) {
+            return false
+        }
+
         // We only play the unlocked screen off animation if we are... unlocked.
         if (statusBarStateControllerImpl.state != StatusBarState.SHADE) {
             return false

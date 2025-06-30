@@ -128,7 +128,6 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_KEEP_SCREE
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SCREEN_ON;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SLEEP_TOKEN;
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WALLPAPER;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_SHOW_TRANSACTIONS;
 import static com.android.internal.util.LatencyTracker.ACTION_ROTATE_SCREEN;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_ANIM;
@@ -591,8 +590,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     WallpaperController mWallpaperController;
 
-    boolean mWallpaperMayChange = false;
-
     /**
      * A perf hint session which will boost the refresh rate for the display and change sf duration
      * to handle larger workloads.
@@ -1021,25 +1018,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     mImeLayeringTarget);
 
     private final Consumer<WindowState> mApplySurfaceChangesTransaction = w -> {
-        final WindowSurfacePlacer surfacePlacer = mWmService.mWindowPlacerLocked;
-        final RootWindowContainer root = mWmService.mRoot;
-
         if (w.mHasSurface) {
             // Take care of the window being ready to display.
-            final boolean committed = w.mWinAnimator.commitFinishDrawingLocked();
-            if (isDefaultDisplay && committed) {
-                if (w.hasWallpaper()) {
-                    ProtoLog.v(WM_DEBUG_WALLPAPER,
-                            "First draw done in potential wallpaper target %s", w);
-                    mWallpaperMayChange = true;
-                    pendingLayoutChanges |= FINISH_LAYOUT_REDO_WALLPAPER;
-                    if (DEBUG_LAYOUT_REPEATS) {
-                        surfacePlacer.debugLayoutRepeats(
-                                "wallpaper and commitFinishDrawingLocked true",
-                                pendingLayoutChanges);
-                    }
-                }
-            }
+            w.mWinAnimator.commitFinishDrawingLocked();
         }
 
         // Update effect.
@@ -1055,7 +1036,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mTmpApplySurfaceChangesTransactionState.obscured = true;
             }
 
-            final boolean displayHasContent = root.handleNotObscuredLocked(w,
+            final boolean displayHasContent = mRootWindowContainer.handleNotObscuredLocked(w,
                     mTmpApplySurfaceChangesTransactionState.obscured,
                     mTmpApplySurfaceChangesTransactionState.syswin);
 
@@ -1093,16 +1074,16 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mTmpApplySurfaceChangesTransactionState.disableHdrConversion
                         |= !(w.mAttrs.isHdrConversionEnabled());
 
-                final int preferredModeId = getDisplayPolicy().getRefreshRatePolicy()
-                        .getPreferredModeId(w);
+                final var refreshRatePolicy = getDisplayPolicy().getRefreshRatePolicy();
+                final int preferredModeId = refreshRatePolicy.getPreferredModeId(w);
 
-                if (w.getWindowingMode() != WINDOWING_MODE_PINNED
+                if (preferredModeId != 0
                         && mTmpApplySurfaceChangesTransactionState.preferredModeId == 0
-                        && preferredModeId != 0) {
+                        && !w.inPinnedWindowingMode()) {
                     mTmpApplySurfaceChangesTransactionState.preferredModeId = preferredModeId;
                 }
 
-                final float preferredMinRefreshRate = getDisplayPolicy().getRefreshRatePolicy()
+                final float preferredMinRefreshRate = refreshRatePolicy
                         .getPreferredMinRefreshRate(w);
                 if (mTmpApplySurfaceChangesTransactionState.preferredMinRefreshRate == 0
                         && preferredMinRefreshRate != 0) {
@@ -1110,7 +1091,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                             preferredMinRefreshRate;
                 }
 
-                final float preferredMaxRefreshRate = getDisplayPolicy().getRefreshRatePolicy()
+                final float preferredMaxRefreshRate = refreshRatePolicy
                         .getPreferredMaxRefreshRate(w);
                 if (mTmpApplySurfaceChangesTransactionState.preferredMaxRefreshRate == 0
                         && preferredMaxRefreshRate != 0) {
@@ -1662,6 +1643,11 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 }
                 mAtmService.mChainTracker.endPartial();
             }
+            if (!mSetIgnoreOrientationRequest
+                    && (changes & ActivityInfo.CONFIG_WINDOW_CONFIGURATION) != 0) {
+                // Update new size for the rotated activities, if any.
+                applyFixedRotationForNonTopVisibleActivityIfNeeded();
+            }
             sendNewConfiguration();
         }
 
@@ -1890,7 +1876,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
         }
         final int displayRotation = getRotation();
         final int rotation = mDisplayRotation.rotationForOrientation(orientation, displayRotation);
-        if (rotation == displayRotation) {
+        final DisplayFrames rotatedFrames = ar.getFixedRotationTransformDisplayFrames();
+        if (rotation == displayRotation && (rotatedFrames == null || (rotatedFrames.mWidth
+                == mDisplayFrames.mWidth && rotatedFrames.mHeight == mDisplayFrames.mHeight))) {
             return;
         }
         startFixedRotationTransform(ar, rotation);
@@ -4625,10 +4613,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         /**
          * Attaches the screenshot of IME (a screenshot will be taken if there wasn't one) to the
-         * IME target task and shows it. If the given {@param anyTargetTask} is true, the screenshot
-         * won't be skipped by the activity type of IME target task.
+         * IME target task and shows it. The screenshot will be skipped for activities of type home
+         * or recents.
          */
-        void attachAndShow(@NonNull Transaction t, boolean anyTargetTask) {
+        void attachAndShow(@NonNull Transaction t) {
             final DisplayContent dc = mImeTarget.getDisplayContent();
             // Prepare IME screenshot for the target if it allows to attach into.
             final Task task = mImeTarget.getTask();
@@ -4638,7 +4626,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     || mSurface.getHeight() != dc.mInputMethodWindow.getFrame().height();
             // The exclusion of home/recents is an optimization for regular task switch because
             // home/recents won't appear in recents task.
-            if (task != null && (anyTargetTask || !task.isActivityTypeHomeOrRecents())) {
+            if (task != null && !task.isActivityTypeHomeOrRecents()) {
                 final ScreenCaptureInternal.ScreenshotHardwareBuffer buffer =
                         renewSurface
                                 ? dc.mWmService.mTaskSnapshotController
@@ -4685,27 +4673,18 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         // Prepare IME screenshot for the target if it allows to attach into.
         if (mInputMethodWindow != null && mInputMethodWindow.isVisible()) {
-            attachImeScreenshotOnTarget(mImeLayeringTarget, false /* hideImeWindow */);
+            attachImeScreenshotOnTarget(mImeLayeringTarget);
         }
     }
 
-    private void attachImeScreenshotOnTarget(@NonNull WindowState imeTarget,
-            boolean hideImeWindow) {
+    private void attachImeScreenshotOnTarget(@NonNull WindowState imeTarget) {
         final SurfaceControl.Transaction t = getPendingTransaction();
         // Remove the old IME screenshot first in case the new screenshot happens to
         // override the current one before the transition finish and the surface never be
         // removed on the task.
         removeImeScreenshotImmediately();
         mImeScreenshot = new ImeScreenshot(imeTarget, mWmService.mSurfaceControlFactory.get());
-        // If the caller requests to hide IME, then allow to show IME screenshot for any target
-        // task. So IME won't look like it suddenly disappeared. It usually happens when turning
-        // the screen off.
-        mImeScreenshot.attachAndShow(t, hideImeWindow /* anyTargetTask */);
-        if (mInputMethodWindow != null && hideImeWindow) {
-            // Hide the IME window when deciding to show IME screenshot on demand.
-            // InsetsController will make IME visible again before animating it.
-            mInputMethodWindow.hide(false, false);
-        }
+        mImeScreenshot.attachAndShow(t);
     }
 
     /**
@@ -4723,7 +4702,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     @VisibleForTesting
     void showImeScreenshot(@NonNull WindowState imeTarget) {
-        attachImeScreenshotOnTarget(imeTarget, true /* hideImeWindow */);
+        attachImeScreenshotOnTarget(imeTarget);
     }
 
     /**

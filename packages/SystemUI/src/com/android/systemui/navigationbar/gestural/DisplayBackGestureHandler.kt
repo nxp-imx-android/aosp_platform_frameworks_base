@@ -54,6 +54,8 @@ interface DisplayBackGestureHandler {
 
     fun isValidTrackpadBackGesture(): Boolean
 
+    fun getExcludeRegion(): Region
+
     fun dispose()
 
     fun dump(prefix: String, writer: PrintWriter)
@@ -140,8 +142,10 @@ constructor(
     override fun isValidTrackpadBackGesture(): Boolean {
         // for trackpad gestures, unless the whole screen is excluded region, 3-finger swipe
         // gestures are allowed even if the cursor is in the excluded region.
-        val insets = windowManager.currentWindowMetrics.windowInsets
-            .getInsets(WindowInsets.Type.systemBars())
+        val insets =
+            windowManager.currentWindowMetrics.windowInsets.getInsets(
+                WindowInsets.Type.systemBars()
+            )
         return !excludeRegion.bounds.contains(
             insets.left,
             insets.top,
@@ -149,6 +153,8 @@ constructor(
             displaySize.y - insets.bottom,
         )
     }
+
+    override fun getExcludeRegion() = excludeRegion
 
     override fun dispose() {
         inputEventReceiver.dispose()

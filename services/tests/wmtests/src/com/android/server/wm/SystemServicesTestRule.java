@@ -411,6 +411,9 @@ public class SystemServicesTestRule implements TestRule {
                 mTransaction, new MockSurfaceControlBuilder(), mAppCompat);
 
         spyOn(mWmService);
+        // Do nothing to show EmulatorDisplayOverlay
+        doNothing().when(mWmService).showEmulatorDisplayOverlay();
+
         spyOn(mWmService.mRoot);
         // Invoked during {@link ActivityStack} creation.
         doNothing().when(mWmService.mRoot).updateUIDsPresentOnDisplay();

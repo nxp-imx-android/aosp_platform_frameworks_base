@@ -17,6 +17,8 @@
 package com.android.systemui.ambient.statusbar.ui.binder
 
 import android.content.Context
+import android.util.Log
+import android.view.Display
 import android.widget.LinearLayout
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -24,11 +26,14 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import com.android.app.displaylib.PerDisplayRepository
 import com.android.systemui.ambient.statusbar.ui.AmbientStatusBarViewModel
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
+import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.lifecycle.repeatWhenAttached
 import com.android.systemui.statusbar.chips.ui.compose.OngoingActivityChips
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.core.StatusBarConnectedDisplays
 import com.android.systemui.statusbar.notification.icon.ui.viewbinder.ConnectedDisplaysStatusBarNotificationIconViewStore
 
@@ -44,6 +49,7 @@ object AmbientStatusBarViewBinder {
         ongoingActivityChipsView: ComposeView,
         ambientStatusBarViewModelFactory: AmbientStatusBarViewModel.Factory,
         iconViewStoreFactory: ConnectedDisplaysStatusBarNotificationIconViewStore.Factory,
+        perDisplayDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
     ) {
         ongoingActivityChipsView.repeatWhenAttached {
             repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -57,7 +63,14 @@ object AmbientStatusBarViewBinder {
                     setContent {
                         val viewModel =
                             rememberViewModel("DreamStatusBar.AmbientStatusBarViewModel") {
-                                ambientStatusBarViewModelFactory.create()
+                                val ongoingActivityChipsViewModel =
+                                    getOngoingActivityChipsViewModel(
+                                        perDisplayDisplaySubcomponentRepository,
+                                        context,
+                                    )
+                                ambientStatusBarViewModelFactory.create(
+                                    ongoingActivityChipsViewModel
+                                )
                             }
                         val iconViewStore =
                             if (StatusBarConnectedDisplays.isEnabled) {
@@ -80,4 +93,21 @@ object AmbientStatusBarViewBinder {
             }
         }
     }
+
+    private fun getOngoingActivityChipsViewModel(
+        perDisplayDisplaySubcomponentRepository: PerDisplayRepository<SystemUIDisplaySubcomponent>,
+        context: Context,
+    ): OngoingActivityChipsViewModel {
+        // TODO:b/425316868 - Make AmbientStatusBarComponent a Subcomponent of
+        //  SystemUIDisplaySubcomponent so that we can directly inject display specific dependencies
+        var displaySubcomponent = perDisplayDisplaySubcomponentRepository[context.displayId]
+        if (displaySubcomponent == null) {
+            Log.e(TAG, "No display subcomponent for display ${context.displayId}")
+            displaySubcomponent = perDisplayDisplaySubcomponentRepository[Display.DEFAULT_DISPLAY]!!
+        }
+        val ongoingActivityChipsViewModel = displaySubcomponent.ongoingActivityChipsViewModel
+        return ongoingActivityChipsViewModel
+    }
+
+    private const val TAG = "AmbientStatusBarViewBinder"
 }

@@ -689,7 +689,7 @@ public class ResolverActivity extends Activity implements
         // this happens, we check for it here and set the current profile's tab.
         int selectedProfile = getCurrentProfile();
         UserHandle intentUser = getIntentUser();
-        if (!getTabOwnerUserHandleForLaunch().equals(intentUser)) {
+        if (!Objects.equals(getTabOwnerUserHandleForLaunch(), intentUser)) {
             if (getPersonalProfileUserHandle().equals(intentUser)) {
                 selectedProfile = PROFILE_PERSONAL;
             } else if (getWorkProfileUserHandle().equals(intentUser)) {

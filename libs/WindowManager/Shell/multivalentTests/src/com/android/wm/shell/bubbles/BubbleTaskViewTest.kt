@@ -24,7 +24,6 @@ import android.platform.test.flag.junit.FlagsParameterization
 import android.platform.test.flag.junit.SetFlagsRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
-import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.taskview.TaskView
@@ -117,7 +116,7 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
 
         bubbleTaskView.cleanup()
 
-        if (BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
+        if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             verify(taskView).unregisterTask()
             verify(taskView, never()).removeTask()
         } else {
@@ -131,7 +130,6 @@ class BubbleTaskViewTest(flags: FlagsParameterization) {
         @Parameters(name = "{0}")
         fun getParams() = FlagsParameterization.allCombinationsOf(
             FLAG_ENABLE_CREATE_ANY_BUBBLE,
-            FLAG_EXCLUDE_TASK_FROM_RECENTS,
         )
     }
 }

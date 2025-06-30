@@ -1799,6 +1799,40 @@ public class DisplayContentTests extends WindowTestsBase {
     }
 
     @Test
+    public void testNonTopVisibleFixedOrientationOnDisplayResize() {
+        useFakeSettingsProvider();
+        spyOn(mWm.mAppCompatConfiguration);
+        doReturn(false).when(mWm.mAppCompatConfiguration).isTranslucentLetterboxingEnabled();
+        setReverseDefaultRotation(mDisplayContent, false);
+        makeDisplayPortrait(mDisplayContent);
+        final ActivityRecord nonTopVisible = new ActivityBuilder(mAtm).setCreateTask(true)
+                .setScreenOrientation(SCREEN_ORIENTATION_LANDSCAPE).setVisible(false).build();
+        new ActivityBuilder(mAtm).setCreateTask(true)
+                .setScreenOrientation(SCREEN_ORIENTATION_PORTRAIT)
+                .setActivityTheme(android.R.style.Theme_Translucent).build();
+        nonTopVisible.setVisibleRequested(true);
+        clearInvocations(mTransaction);
+        mDisplayContent.updateOrientation();
+        mDisplayContent.applyFixedRotationForNonTopVisibleActivityIfNeeded();
+
+        assertTrue(nonTopVisible.hasFixedRotationTransform());
+        verify(mTransaction).setPosition(eq(nonTopVisible.mSurfaceControl),
+                eq((float) mDisplayContent.mBaseDisplayWidth), eq(0f));
+
+        clearInvocations(mTransaction);
+        final int newW = mDisplayContent.mBaseDisplayWidth / 2;
+        final int newH = mDisplayContent.mBaseDisplayHeight / 2;
+        mDisplayContent.setForcedSize(newW, newH);
+
+        final DisplayFrames rotatedFrames = nonTopVisible.getFixedRotationTransformDisplayFrames();
+        assertNotNull(rotatedFrames);
+        assertEquals(newH, rotatedFrames.mWidth);
+        assertEquals(newW, rotatedFrames.mHeight);
+        verify(mTransaction).setPosition(eq(nonTopVisible.mSurfaceControl),
+                eq((float) newW), eq(0f));
+    }
+
+    @Test
     public void testSecondaryInternalDisplayRotationFollowsDefaultDisplay() {
         final DisplayRotationCoordinator coordinator =
                 mRootWindowContainer.getDisplayRotationCoordinator();

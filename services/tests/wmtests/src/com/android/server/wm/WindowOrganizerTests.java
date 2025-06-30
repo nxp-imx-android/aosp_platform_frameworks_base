@@ -1685,7 +1685,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS)
     public void testSetTaskForceExcludedFromRecents() {
         final Task rootTask = createRootTask();
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
@@ -1699,7 +1698,6 @@ public class WindowOrganizerTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS)
     public void testSetTaskForceExcludedFromRecents_resetsTaskForceExcludedFromRecents() {
         final Task rootTask = createRootTask();
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);

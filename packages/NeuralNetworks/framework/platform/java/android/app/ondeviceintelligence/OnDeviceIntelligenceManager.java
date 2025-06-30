@@ -40,8 +40,15 @@ import android.os.OutcomeReceiver;
 import android.os.PersistableBundle;
 import android.os.RemoteCallback;
 import android.os.RemoteException;
+import android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService;
 import android.system.OsConstants;
 import android.util.Log;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
 import com.android.internal.infra.AndroidFuture;
 
@@ -92,6 +99,9 @@ public final class OnDeviceIntelligenceManager {
     private static final String TAG = "OnDeviceIntelligence";
     private final Context mContext;
     private final IOnDeviceIntelligenceManager mService;
+
+    private final Map<OnDeviceSandboxedInferenceService.LifecycleListener, ILifecycleListener.Stub>
+            mLifecycleListeners = new ConcurrentHashMap<>();
 
     /**
      * @hide
@@ -579,6 +589,62 @@ public final class OnDeviceIntelligenceManager {
         }
     }
 
+    /**
+     * Registers a listener for inference service lifecycle events of the
+     * configured {@link OnDeviceSandboxedInferenceService}. This method is
+     * thread-safe.
+     *
+     * @param executor The executor to run the listener callbacks on.
+     * @param listener The listener to register.
+     */
+    @RequiresPermission(Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_25Q4)
+    public void registerInferenceServiceLifecycleListener(
+            @NonNull @CallbackExecutor Executor executor,
+            @NonNull OnDeviceSandboxedInferenceService.LifecycleListener listener) {
+        Objects.requireNonNull(executor, "Executor must not be null");
+        Objects.requireNonNull(listener, "Listener must not be null");
+        ILifecycleListener.Stub stub = new ILifecycleListener.Stub() {
+            @Override
+            public void onLifecycleEvent(int event, @NonNull Feature feature) {
+                Binder.withCleanCallingIdentity(
+                        () -> executor.execute(() -> listener.onLifecycleEvent(event, feature)));
+            }
+        };
+
+        mLifecycleListeners.put(listener, stub);
+        try {
+            mService.registerInferenceServiceLifecycleListener(stub);
+        } catch (RemoteException e) {
+            mLifecycleListeners.remove(listener);
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Unregisters a {@link OnDeviceSandboxedInferenceService.LifecycleListener}
+     * if previous registered with
+     * {@link #registerInferenceServiceLifecycleListener}, otherwise no-op.
+     * This method is thread-safe.
+     *
+     * @param listener The listener to unregister.
+     */
+    @RequiresPermission(Manifest.permission.USE_ON_DEVICE_INTELLIGENCE)
+    @FlaggedApi(FLAG_ON_DEVICE_INTELLIGENCE_25Q4)
+    public void unregisterInferenceServiceLifecycleListener(
+            @NonNull OnDeviceSandboxedInferenceService.LifecycleListener listener) {
+        Objects.requireNonNull(listener, "Listener must not be null");
+        ILifecycleListener.Stub stub = mLifecycleListeners.remove(listener);
+        if (stub == null) {
+            // Listener not registered or already unregistered.
+            return;
+        }
+        try {
+            mService.unregisterInferenceServiceLifecycleListener(stub);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
 
     /** Request inference with provided Bundle and Params. */
     public static final int REQUEST_TYPE_INFERENCE = 0;

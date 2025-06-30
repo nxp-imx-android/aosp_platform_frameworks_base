@@ -30,7 +30,7 @@ import com.android.systemui.mediaprojection.permission.SINGLE_APP
 import com.android.systemui.mediaprojection.permission.ScreenShareMode
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
-import com.android.systemui.settings.UserContextProvider
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingStartStopInteractor
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.phone.SystemUIDialog
@@ -45,7 +45,6 @@ class ScreenRecordPermissionDialogDelegate(
     private val hostUid: Int,
     private val controller: ScreenRecordUxController,
     private val activityStarter: ActivityStarter,
-    private val userContextProvider: UserContextProvider,
     private val onStartRecordingClicked: Runnable?,
     private val mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
     private val systemUIDialogFactory: SystemUIDialog.Factory,
@@ -54,6 +53,7 @@ class ScreenRecordPermissionDialogDelegate(
     private val context: Context,
     private val displayManager: DisplayManager,
     private val displayWindowPropertiesRepository: Lazy<DisplayWindowPropertiesRepository>,
+    private val screenRecordingStartStopInteractor: ScreenRecordingStartStopInteractor,
 ) :
     BaseMediaProjectionPermissionDialogDelegate<SystemUIDialog>(
         ScreenRecordPermissionContentManager.createOptionList(displayManager),
@@ -71,19 +71,18 @@ class ScreenRecordPermissionDialogDelegate(
         @Assisted hostUid: Int,
         @Assisted controller: ScreenRecordUxController,
         activityStarter: ActivityStarter,
-        userContextProvider: UserContextProvider,
         @Assisted onStartRecordingClicked: Runnable?,
         mediaProjectionMetricsLogger: MediaProjectionMetricsLogger,
         systemUIDialogFactory: SystemUIDialog.Factory,
         @ShadeDisplayAware context: Context,
         displayManager: DisplayManager,
         displayWindowPropertiesRepository: Lazy<DisplayWindowPropertiesRepository>,
+        screenRecordingStartStopInteractor: ScreenRecordingStartStopInteractor,
     ) : this(
         hostUserHandle,
         hostUid,
         controller,
         activityStarter,
-        userContextProvider,
         onStartRecordingClicked,
         mediaProjectionMetricsLogger,
         systemUIDialogFactory,
@@ -92,6 +91,7 @@ class ScreenRecordPermissionDialogDelegate(
         context,
         displayManager,
         displayWindowPropertiesRepository,
+        screenRecordingStartStopInteractor,
     )
 
     @AssistedFactory
@@ -113,8 +113,8 @@ class ScreenRecordPermissionDialogDelegate(
             displayManager,
             controller,
             activityStarter,
-            userContextProvider,
             onStartRecordingClicked,
+            screenRecordingStartStopInteractor,
         )
     }
 

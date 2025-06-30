@@ -21,7 +21,6 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
-import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
@@ -88,9 +87,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
 
     @Parameters(name = "{0}")
     public static List<FlagsParameterization> getParams() {
-        return FlagsParameterization.allCombinationsOf(
-                FLAG_EXCLUDE_TASK_FROM_RECENTS,
-                FLAG_ENABLE_BUBBLE_ANYTHING);
+        return FlagsParameterization.allCombinationsOf(FLAG_ENABLE_BUBBLE_ANYTHING);
     }
 
     @Mock
@@ -141,7 +138,6 @@ public class TaskViewTransitionsTest extends ShellTestCase {
     @EnableFlags({
             FLAG_ENABLE_CREATE_ANY_BUBBLE,
             FLAG_ENABLE_BUBBLE_ANYTHING,
-            FLAG_EXCLUDE_TASK_FROM_RECENTS,
             FLAG_ENABLE_BUBBLE_APP_COMPAT_FIXES,
     })
     @Test
@@ -261,7 +257,7 @@ public class TaskViewTransitionsTest extends ShellTestCase {
     @Test
     public void testSetTaskVisibility_reorderNoHiddenVisibilitySync_resetsAlwaysOnTopAndReorder() {
         assumeTrue(TaskViewTransitions.useRepo());
-        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents());
+        assumeTrue(BubbleAnythingFlagHelper.enableCreateAnyBubble());
 
         final Rect bounds = new Rect(0, 0, 100, 100);
         mTaskViewRepository.byTaskView(mTaskViewTaskController).mBounds = bounds;

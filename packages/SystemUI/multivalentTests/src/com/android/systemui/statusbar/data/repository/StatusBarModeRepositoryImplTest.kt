@@ -32,6 +32,7 @@ import com.android.internal.view.AppearanceRegion
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.coroutines.collectLastValue
 import com.android.systemui.statusbar.CommandQueue
+import com.android.systemui.statusbar.StatusBarAlwaysUseRegionSampling
 import com.android.systemui.statusbar.StatusBarRegionSampling
 import com.android.systemui.statusbar.core.StatusBarRootModernization
 import com.android.systemui.statusbar.data.model.StatusBarMode
@@ -404,7 +405,8 @@ class StatusBarModeRepositoryImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarRegionSampling.FLAG_NAME)
-    fun statusBarAppearance_sampledAvailable_usesSampledAppearance() =
+    @DisableFlags(StatusBarAlwaysUseRegionSampling.FLAG_NAME)
+    fun statusBarAppearance_a11ySamplingFlagOn_usesSampledAppearance() =
         testScope.runTest {
             val latest by collectLastValue(underTest.statusBarAppearance)
 
@@ -419,8 +421,25 @@ class StatusBarModeRepositoryImplTest : SysuiTestCase() {
         }
 
     @Test
+    @EnableFlags(StatusBarAlwaysUseRegionSampling.FLAG_NAME)
     @DisableFlags(StatusBarRegionSampling.FLAG_NAME)
-    fun statusBarAppearance_sampledAvailable_flagDisabled_usesDisplayPolicyProvidedAppearance() =
+    fun statusBarAppearance_alwaysSamplingFlagOn_usesSampledAppearance() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.statusBarAppearance)
+
+            underTest.setSampledAppearanceRegions(SAMPLED_APPEARANCE_REGIONS)
+            onSystemBarAttributesChanged(
+                appearance = APPEARANCE,
+                appearanceRegions = APPEARANCE_REGIONS.toTypedArray(),
+                letterboxDetails = emptyArray(),
+            )
+
+            assertThat(latest!!.appearanceRegions).isEqualTo(SAMPLED_APPEARANCE_REGIONS)
+        }
+
+    @Test
+    @DisableFlags(StatusBarRegionSampling.FLAG_NAME, StatusBarAlwaysUseRegionSampling.FLAG_NAME)
+    fun statusBarAppearance_bothFlagsDisabled_sampledAvailable_usesDisplayPolicyProvidedAppearance() =
         testScope.runTest {
             val latest by collectLastValue(underTest.statusBarAppearance)
 
@@ -436,7 +455,23 @@ class StatusBarModeRepositoryImplTest : SysuiTestCase() {
 
     @Test
     @EnableFlags(StatusBarRegionSampling.FLAG_NAME)
-    fun statusBarAppearance_sampledUnavailable_usesDisplayPolicyProvidedAppearance() =
+    fun statusBarAppearance_a11yFlagEnabled_sampledUnavailable_usesDisplayPolicyProvidedAppearance() =
+        testScope.runTest {
+            val latest by collectLastValue(underTest.statusBarAppearance)
+
+            underTest.setSampledAppearanceRegions(listOf())
+            onSystemBarAttributesChanged(
+                appearance = APPEARANCE,
+                appearanceRegions = APPEARANCE_REGIONS.toTypedArray(),
+                letterboxDetails = emptyArray(),
+            )
+
+            assertThat(latest!!.appearanceRegions).isEqualTo(APPEARANCE_REGIONS)
+        }
+
+    @Test
+    @EnableFlags(StatusBarAlwaysUseRegionSampling.FLAG_NAME)
+    fun statusBarAppearance_alwaysFlagEnabled_sampledUnavailable_usesDisplayPolicyProvidedAppearance() =
         testScope.runTest {
             val latest by collectLastValue(underTest.statusBarAppearance)
 

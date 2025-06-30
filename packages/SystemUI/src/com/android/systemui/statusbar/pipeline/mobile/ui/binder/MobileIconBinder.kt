@@ -149,15 +149,28 @@ object MobileIconBinder {
                                 Pair(shouldRequestLayout, newIcon)
                             }
                             .collect { (shouldRequestLayout, newIcon) ->
-                                viewModel.verboseLogger?.logBinderReceivedSignalIcon(
-                                    view,
-                                    viewModel.subscriptionId,
-                                    newIcon,
-                                )
                                 if (newIcon is SignalIconModel.Cellular) {
+                                    val packedSignalDrawableState = newIcon.toSignalDrawableState()
+                                    viewModel.verboseLogger?.logBinderReceivedSignalCellularIcon(
+                                        parentView = view,
+                                        subId = viewModel.subscriptionId,
+                                        icon = newIcon,
+                                        packedSignalDrawableState = packedSignalDrawableState,
+                                        shouldRequestLayout = shouldRequestLayout,
+                                    )
                                     iconView.setImageDrawable(mobileDrawable)
-                                    mobileDrawable.level = newIcon.toSignalDrawableState()
+                                    mobileDrawable.level = packedSignalDrawableState
+                                    viewModel.verboseLogger?.logBinderSignalIconResult(
+                                        parentView = view,
+                                        subId = viewModel.subscriptionId,
+                                        unpackedLevel = mobileDrawable.unpackLevel(),
+                                    )
                                 } else if (newIcon is SignalIconModel.Satellite) {
+                                    viewModel.verboseLogger?.logBinderReceivedSignalSatelliteIcon(
+                                        parentView = view,
+                                        subId = viewModel.subscriptionId,
+                                        icon = newIcon,
+                                    )
                                     IconViewBinder.bind(newIcon.icon, iconView)
                                 }
 

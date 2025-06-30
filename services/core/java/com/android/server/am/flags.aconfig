@@ -130,6 +130,14 @@ flag {
 }
 
 flag {
+    name: "remove_lru_spam_prevention"
+    namespace: "backstage_power"
+    is_fixed_read_only: true
+    description: "Remove LRU spam prevention, as it's breaking the LRU"
+    bug: "421872956"
+}
+
+flag {
     name: "cpu_time_capability_based_freeze_policy"
     namespace: "backstage_power"
     description: "Use PROCESS_CAPABILITY_CPU_TIME and PROCESS_CAPABILITY_IMPLICIT_CPU_TIME to control process freeze state."

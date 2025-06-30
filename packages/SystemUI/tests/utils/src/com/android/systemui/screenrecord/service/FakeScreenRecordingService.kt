@@ -18,6 +18,7 @@ package com.android.systemui.screenrecord.service
 
 import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
 import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.domain.interactor.Status
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -53,10 +54,12 @@ class FakeScreenRecordingService : IScreenRecordingService.Stub() {
     ) {
         _status.value =
             Status.Started(
-                captureTarget = captureTarget,
-                audioSource = ScreenRecordingAudioSource.entries[audioSource],
-                displayId = displayId,
-                shouldShowTaps = shouldShowTaps,
+                ScreenRecordingParameters(
+                    captureTarget = captureTarget,
+                    audioSource = ScreenRecordingAudioSource.entries[audioSource],
+                    displayId = displayId,
+                    shouldShowTaps = shouldShowTaps,
+                )
             )
         _callback.value?.onRecordingStarted()
     }

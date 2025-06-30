@@ -112,7 +112,7 @@ public class OutboundHandoffRequestControllerTest {
             = new HandoffActivityData.Builder(expectedComponentName)
                 .setExtras(expectedExtras)
                 .build();
-        doNothing().when(mContext).startActivity(any());
+        doNothing().when(mContext).startActivityAsUser(any(), any(), any());
 
         HandoffRequestResultMessage handoffRequestResultMessage = new HandoffRequestResultMessage(
             taskId,
@@ -124,7 +124,7 @@ public class OutboundHandoffRequestControllerTest {
 
         // Verify the intent was launched.
         ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
-        verify(mContext, times(1)).startActivity(intentCaptor.capture());
+        verify(mContext, times(1)).startActivityAsUser(intentCaptor.capture(), any(), any());
         Intent actualIntent = intentCaptor.getValue();
         assertThat(actualIntent.getComponent()).isEqualTo(expectedComponentName);
         assertThat(actualIntent.getExtras().size()).isEqualTo(1);
@@ -215,7 +215,7 @@ public class OutboundHandoffRequestControllerTest {
             failureStatusCode);
 
         // Verify no intent was launched.
-        verify(mContext, never()).startActivity(any());
+        verify(mContext, never()).startActivityAsUser(any(), any(), any());
     }
 
     @Test
@@ -247,7 +247,7 @@ public class OutboundHandoffRequestControllerTest {
             TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK);
 
         // Verify no intent was launched.
-        verify(mContext, never()).startActivity(any());
+        verify(mContext, never()).startActivityAsUser(any(), any(), any());
     }
 
     private final class HandoffRequestCallbackHolder {

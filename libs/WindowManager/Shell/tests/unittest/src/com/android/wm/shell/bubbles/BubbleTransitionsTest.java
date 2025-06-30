@@ -20,7 +20,6 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
-import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_BAR;
 import static com.android.wm.shell.bubbles.util.BubbleTestUtils.verifyEnterBubbleTransaction;
 import static com.android.wm.shell.transition.Transitions.TRANSIT_BUBBLE_CONVERT_FLOATING_TO_BAR;
@@ -269,7 +268,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_EXCLUDE_TASK_FROM_RECENTS)
     public void testConvertToBubble_excludesTaskFromRecents() {
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
@@ -293,7 +291,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_EXCLUDE_TASK_FROM_RECENTS)
     public void testConvertToBubble_disallowFlagLaunchAdjacent() {
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertToBubble(
@@ -379,7 +376,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_EXCLUDE_TASK_FROM_RECENTS)
     public void testConvertFromBubble_resetsExcludeTaskFromRecents() {
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final BubbleTransitions.BubbleTransition bt = mBubbleTransitions.startConvertFromBubble(
@@ -436,7 +432,6 @@ public class BubbleTransitionsTest extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(FLAG_EXCLUDE_TASK_FROM_RECENTS)
     public void convertDraggedBubbleToFullscreen_resetsExcludeTaskFromRecents() {
         final ActivityManager.RunningTaskInfo taskInfo = setupBubble();
         final SurfaceControl.Transaction animT = mock(SurfaceControl.Transaction.class);

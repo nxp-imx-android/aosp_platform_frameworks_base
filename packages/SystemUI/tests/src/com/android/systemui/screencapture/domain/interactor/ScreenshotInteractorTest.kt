@@ -73,7 +73,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             val capturedRequest = screenshotRequestCaptor.value
             assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_FULLSCREEN)
             assertThat(capturedRequest.source)
-                .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_OTHER)
+                .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
             assertThat(capturedRequest.displayId).isEqualTo(DEFAULT_DISPLAY)
         }
     }
@@ -94,7 +94,7 @@ class ScreenshotInteractorTest : SysuiTestCase() {
             val capturedRequest = screenshotRequestCaptor.value
             assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE)
             assertThat(capturedRequest.source)
-                .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_OTHER)
+                .isEqualTo(WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI)
             assertThat(capturedRequest.bitmap).isEqualTo(mockBitmap)
             assertThat(capturedRequest.boundsInScreen).isEqualTo(bounds)
             assertThat(capturedRequest.displayId).isEqualTo(DEFAULT_DISPLAY)

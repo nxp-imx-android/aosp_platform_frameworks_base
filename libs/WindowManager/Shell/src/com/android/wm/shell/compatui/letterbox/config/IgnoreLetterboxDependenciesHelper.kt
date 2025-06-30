@@ -28,5 +28,5 @@ class IgnoreLetterboxDependenciesHelper : LetterboxDependenciesHelper {
      * We should ignore all the changes related to Desktop Windowing when the feature is not
      * available.
      */
-    override fun isDesktopWindowingAction(change: Change): Boolean = false
+    override fun shouldDestroyLetterboxSurfaces(change: Change): Boolean = false
 }

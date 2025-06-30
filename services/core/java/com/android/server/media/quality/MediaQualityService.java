@@ -706,12 +706,15 @@ public class MediaQualityService extends SystemService {
             String[] columns = {BaseParameters.PARAMETER_ID};
             String selection = BaseParameters.PARAMETER_TYPE + " = ? AND ("
                     + BaseParameters.PARAMETER_NAME + " = ? OR "
-                    + BaseParameters.PARAMETER_NAME + " = ?) AND "
+                    + BaseParameters.PARAMETER_NAME + " = ? OR "
+                    + BaseParameters.PARAMETER_NAME + " LIKE ?) AND "
                     + BaseParameters.PARAMETER_INPUT_ID + " = ?";
             String[] selectionArguments = {
                     Integer.toString(PictureProfile.TYPE_SYSTEM),
                     PictureProfile.NAME_DEFAULT,
                     PictureProfile.NAME_DEFAULT + "/" + PictureProfile.STATUS_SDR,
+                    // b/427656481 Workaround to recognize temp input default.
+                    "%" + PictureProfile.NAME_DEFAULT + "/" + PictureProfile.STATUS_SDR,
                     inputId
             };
             synchronized (mPictureProfileLock) {
@@ -745,7 +748,9 @@ public class MediaQualityService extends SystemService {
             if (profileHandle == -1) {
                 return null;
             }
-            return mMqDatabaseUtils.getPictureProfile(profileHandle, true);
+            synchronized (mPictureProfileLock) {
+                return mMqDatabaseUtils.getPictureProfile(profileHandle, true);
+            }
         }
 
         public List<PictureProfile> getAllPictureProfilesForTvInput(String inputId, int userId) {
@@ -2196,10 +2201,7 @@ public class MediaQualityService extends SystemService {
                             // profile
                             PictureProfile currentCopy = PictureProfile.copyFrom(currentSdr);
                             currentCopy.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);
-                            mOriginalToCurrent.put(profileHandle, currentSdr.getHandle().getId());
-                            mCurrentPictureHandleToOriginal.removeValue(profileHandle);
-                            mCurrentPictureHandleToOriginal.put(
-                                    currentSdr.getHandle().getId(), profileHandle);
+                            putCurrentPictureProfile(profileHandle, currentSdr.getHandle().getId());
                             mMqManagerNotifier.notifyOnPictureProfileUpdated(
                                     currentCopy.getProfileId(), currentCopy, Process.INVALID_UID,
                                     Process.INVALID_PID);
@@ -2222,10 +2224,7 @@ public class MediaQualityService extends SystemService {
                         // PREVIOUS_STREAM_STATUS is used for one time, so copy the current profile
                         PictureProfile currentCopy = PictureProfile.copyFrom(current);
                         currentCopy.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);
-                        mOriginalToCurrent.put(profileHandle, current.getHandle().getId());
-                        mCurrentPictureHandleToOriginal.removeValue(profileHandle);
-                        mCurrentPictureHandleToOriginal.put(
-                                current.getHandle().getId(), profileHandle);
+                        putCurrentPictureProfile(profileHandle, current.getHandle().getId());
                         // TODO: use package name to notify
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
                                 currentCopy.getProfileId(), currentCopy, Process.INVALID_UID,
@@ -2258,10 +2257,7 @@ public class MediaQualityService extends SystemService {
                         // PREVIOUS_STREAM_STATUS is used for one time, so copy the current profile
                         PictureProfile currentCopy = PictureProfile.copyFrom(current);
                         currentCopy.addStringParameter(PREVIOUS_STREAM_STATUS, profileStatus);
-                        mOriginalToCurrent.put(profileHandle, current.getHandle().getId());
-                        mCurrentPictureHandleToOriginal.removeValue(profileHandle);
-                        mCurrentPictureHandleToOriginal.put(
-                                current.getHandle().getId(), profileHandle);
+                        putCurrentPictureProfile(profileHandle, current.getHandle().getId());
                         // TODO: use package name to notify
                         mMqManagerNotifier.notifyOnPictureProfileUpdated(
                                 currentCopy.getProfileId(), currentCopy, Process.INVALID_UID,
@@ -2666,5 +2662,11 @@ public class MediaQualityService extends SystemService {
             return null;
         }
         return mMqDatabaseUtils.getPictureProfile(currentHandle, /* includeParams= */ true);
+    }
+
+    private void putCurrentPictureProfile(Long originalHandle, Long currentHandle) {
+        mOriginalToCurrent.put(originalHandle, currentHandle);
+        mCurrentPictureHandleToOriginal.removeValue(currentHandle);
+        mCurrentPictureHandleToOriginal.put(currentHandle, originalHandle);
     }
 }

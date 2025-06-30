@@ -3763,7 +3763,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
 
     @Test
     @EnableFlags(FLAG_ENABLE_MOVE_TO_NEXT_DISPLAY_SHORTCUT)
-    fun moveToNextDisplay_defaultBoundsWhenDestinationTooSmall() {
+    fun moveToNextDisplay_maximizeWhenDestinationTooSmall() {
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         // Set up two display ids
         whenever(rootTaskDisplayAreaOrganizer.displayIds)
@@ -3777,7 +3777,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(secondaryLayout.densityDpi()).thenReturn(160)
         whenever(secondaryLayout.width()).thenReturn(640)
         whenever(secondaryLayout.height()).thenReturn(480)
-        whenever(secondaryLayout.getStableBoundsForDesktopMode(any())).thenAnswer { i ->
+        whenever(secondaryLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(0, 0, 640, 480)
         }
 
@@ -3795,10 +3795,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 )
                 .changes[task.token.asBinder()]
         assertNotNull(taskChange)
-        assertThat(taskChange.configuration.windowConfiguration.bounds.left).isAtLeast(0)
-        assertThat(taskChange.configuration.windowConfiguration.bounds.top).isAtLeast(0)
-        assertThat(taskChange.configuration.windowConfiguration.bounds.right).isAtMost(640)
-        assertThat(taskChange.configuration.windowConfiguration.bounds.bottom).isAtMost(480)
+        assertThat(taskChange.configuration.windowConfiguration.bounds.left).isEqualTo(0)
+        assertThat(taskChange.configuration.windowConfiguration.bounds.top).isEqualTo(0)
+        assertThat(taskChange.configuration.windowConfiguration.bounds.right).isEqualTo(640)
+        assertThat(taskChange.configuration.windowConfiguration.bounds.bottom).isEqualTo(480)
     }
 
     @Test

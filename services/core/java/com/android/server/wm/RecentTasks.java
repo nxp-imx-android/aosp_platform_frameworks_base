@@ -84,7 +84,6 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.am.ActivityManagerService;
-import com.android.window.flags.Flags;
 
 import com.google.android.collect.Sets;
 
@@ -1468,7 +1467,7 @@ class RecentTasks {
         }
 
         // Ignore the task if it is force excluded from recents.
-        if (Flags.excludeTaskFromRecents() && task.isForceExcludedFromRecents()) {
+        if (task.isForceExcludedFromRecents()) {
             return false;
         }
 

@@ -44,8 +44,7 @@ constructor(
         val request =
             ScreenshotRequest.Builder(
                     WindowManager.TAKE_SCREENSHOT_FULLSCREEN,
-                    // TODO(b/425755530) create and use a new screenshot source for large screen
-                    WindowManager.ScreenshotSource.SCREENSHOT_OTHER,
+                    WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI,
                 )
                 .setDisplayId(displayId)
                 .build()
@@ -61,8 +60,7 @@ constructor(
         val request =
             ScreenshotRequest.Builder(
                     WindowManager.TAKE_SCREENSHOT_PROVIDED_IMAGE,
-                    // TODO(b/425755530) create and use a new screenshot source for large screen
-                    WindowManager.ScreenshotSource.SCREENSHOT_OTHER,
+                    WindowManager.ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI,
                 )
                 .setBitmap(bitmap)
                 .setBoundsOnScreen(regionBounds)

@@ -2836,18 +2836,20 @@
     <!-- accessibility label for button to open power menu [CHAR LIMIT=NONE] -->
     <string name="accessibility_quick_settings_power_menu">Power menu</string>
 
-    <!-- accessibility label for paging indicator in quick settings [CHAR LIMITi=NONE] -->
+    <!-- accessibility label for paging indicator in quick settings [CHAR LIMIT=NONE] -->
     <string name="accessibility_quick_settings_page">Page <xliff:g name="current_page" example="1">%1$d</xliff:g> of <xliff:g name="num_pages" example="2">%2$d</xliff:g></string>
 
     <!-- Strings for the dialog to enable accessibility services in key gestures -->
-    <!-- Text for the dialog title. -->
-    <string name="accessibility_key_gesture_dialog_title" translatable="false">Turn on <xliff:g name="feature_name" example="Magnification">%1$s</xliff:g>?</string>
-    <!-- Text for showing inside the dialog.-->
-    <string name="accessibility_key_gesture_dialog_content" translatable="false">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Magnification">^3</xliff:g>. <xliff:g name="feature_intro" example="Magnification intro">^4</xliff:g></string>
-    <!-- The prefix string for the magnification intro -->
-    <string name="accessibility_key_gesture_dialog_magnifier_intro" translatable="false">This allows you to quickly zoom in on the screen to make content larger.</string>
-    <!-- Positive button text for the dialog -->
-    <string name="accessibility_key_gesture_dialog_positive_button_text" translatable="false">Turn on</string>
+    <!-- Text for the dialog title. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_dialog_title">Turn on <xliff:g name="feature_name" example="Magnification">%1$s</xliff:g>?</string>
+    <!-- Text for showing inside the dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_dialog_content">Action <annotation id="action_key_icon">icon</annotation> + <xliff:g name="secondary_key" example="Alt">^1</xliff:g> + <xliff:g name="key_code" example="M">^2</xliff:g> is the keyboard shortcut to use <xliff:g name="feature_name" example="Magnification">^3</xliff:g>. <xliff:g name="feature_intro" example="Magnification intro">^4</xliff:g></string>
+    <!-- The text for the Magnification introduction. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_dialog_magnifier_intro">This allows you to quickly zoom in on the screen to make content larger.</string>
+    <!-- The text for the TalkBack introduction. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_dialog_talkback_intro"><xliff:g name="feature_name" example="TalkBack">%1$s</xliff:g> is a screen reader that allows you to hear items spoken aloud. It can be helpful for people who have difficulty seeing the screen.</string>
+    <!-- Positive button text for the dialog. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_dialog_positive_button_text">Turn on</string>
 
     <!-- Plugin control section of the tuner. Non-translatable since it should
          not appear on production builds ever. -->

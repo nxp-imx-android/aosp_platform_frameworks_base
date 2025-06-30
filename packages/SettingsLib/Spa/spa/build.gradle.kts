@@ -31,10 +31,6 @@ android {
         minSdk = 23
     }
 
-    testOptions {
-        targetSdk = 36
-    }
-
     sourceSets.getByName("main") {
         kotlin.setSrcDirs(listOf("src"))
         res.setSrcDirs(listOf("res"))

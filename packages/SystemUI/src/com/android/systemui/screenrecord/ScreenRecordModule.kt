@@ -42,6 +42,9 @@ import com.android.systemui.res.R
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepository
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepositoryImpl
+import com.android.systemui.screenrecord.domain.interactor.LegacyScreenRecordingStartStopInteractor
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingServiceInteractor
+import com.android.systemui.screenrecord.domain.interactor.ScreenRecordingStartStopInteractor
 import com.android.systemui.settings.UserTracker
 import dagger.Binds
 import dagger.Lazy
@@ -102,6 +105,21 @@ interface ScreenRecordModule {
                     screenRecordPermissionContentManagerFactory,
                 )
             }
+        }
+
+        @Provides
+        @SysUISingleton
+        fun provideScreenRecordingStartStopInteractor(
+            legacyScreenRecordingStartStopInteractor:
+                Lazy<LegacyScreenRecordingStartStopInteractor>,
+            screenRecordingServiceInteractor: Lazy<ScreenRecordingServiceInteractor>,
+        ): ScreenRecordingStartStopInteractor {
+            return if (Flags.thinScreenRecordingService()) {
+                    screenRecordingServiceInteractor
+                } else {
+                    legacyScreenRecordingStartStopInteractor
+                }
+                .get()
         }
 
         @Provides

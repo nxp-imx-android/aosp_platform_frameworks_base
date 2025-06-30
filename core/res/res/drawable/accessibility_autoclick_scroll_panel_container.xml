@@ -35,7 +35,7 @@
 
     <!-- Main shape -->
     <path
-        android:fillColor="@color/materialColorPrimary"
+        android:fillColor="@color/materialColorSurface"
         android:pathData="M24.5459 126.067C-8.18197 113.159 -8.18195 66.841 24.5459 53.9333L29.957
         51.7992C39.949 47.8584 47.8584 39.949 51.7992 29.957L53.9333 24.5459C66.841
         -8.18197 113.159 -8.18195 126.067 24.5459L128.201 29.957C132.142 39.949 140.051

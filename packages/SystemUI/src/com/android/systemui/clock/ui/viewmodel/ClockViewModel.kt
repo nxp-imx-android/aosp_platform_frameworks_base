@@ -23,8 +23,10 @@ import com.android.systemui.clock.domain.interactor.ClockInteractor
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.util.time.DateFormatUtil
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,23 +36,31 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.mapLatest
 
+/** AM/PM styling for the clock UI */
+enum class AmPmStyle {
+    Shown,
+    Gone,
+}
+
 /** Models UI state for the clock. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ClockViewModel
 @AssistedInject
-constructor(clockInteractor: ClockInteractor, private val dateFormatUtil: DateFormatUtil) :
-    ExclusiveActivatable() {
+constructor(
+    clockInteractor: ClockInteractor,
+    private val dateFormatUtil: DateFormatUtil,
+    @Assisted private val amPmStyle: AmPmStyle,
+) : ExclusiveActivatable() {
     private val hydrator = Hydrator("ClockViewModel.hydrator")
+
+    // For content description, we use `DateTimePatternGenerator` to generate the best time format
+    // for all the locales. For clock time, since we want to utilize removing AM/PM marker for
+    // `AmPmStyle.Gone`, we will just use `SimpleDateFormat` instead.
     private lateinit var dateTimePatternGenerator: DateTimePatternGenerator
 
-    private val formatString: Flow<String> =
-        clockInteractor.onTimezoneOrLocaleChanged.mapLatest { getFormatString() }
-
-    private val contentDescriptionFormat: Flow<SimpleDateFormat> =
-        formatString.mapLatest { format ->
-            // We already provide the locale value in `DateTimePatternGenerator`, so it is okay to
-            // not provide the locale in `SimpleDateFormat` here.
-            @Suppress("SimpleDateFormat") SimpleDateFormat(format)
+    private val contentDescriptionFormat: Flow<DateFormat> =
+        clockInteractor.onTimezoneOrLocaleChanged.mapLatest {
+            getSimpleDateFormat(getContentDescriptionFormatString())
         }
 
     private val _contentDescriptionText: Flow<String> =
@@ -68,7 +78,9 @@ constructor(clockInteractor: ClockInteractor, private val dateFormatUtil: DateFo
         )
 
     private val clockTextFormat: Flow<SimpleDateFormat> =
-        formatString.mapLatest { format -> getClockTextFormat(format) }
+        clockInteractor.onTimezoneOrLocaleChanged.mapLatest {
+            getSimpleDateFormat(getClockTextFormatString())
+        }
 
     private val _clockText: Flow<String> =
         combine(clockTextFormat, clockInteractor.currentTime) { clockTextFormat, time ->
@@ -92,10 +104,10 @@ constructor(clockInteractor: ClockInteractor, private val dateFormatUtil: DateFo
 
     @AssistedFactory
     interface Factory {
-        fun create(): ClockViewModel
+        fun create(amPmStyle: AmPmStyle): ClockViewModel
     }
 
-    private fun getFormatString(): String {
+    private fun getContentDescriptionFormatString(): String {
         dateTimePatternGenerator = DateTimePatternGenerator.getInstance(Locale.getDefault())
 
         // TODO(b/390204943): use different value depending on if the system want to show seconds.
@@ -104,11 +116,20 @@ constructor(clockInteractor: ClockInteractor, private val dateFormatUtil: DateFo
         return dateTimePatternGenerator.getBestPattern(formatSkeleton)
     }
 
-    private fun getClockTextFormat(format: String): SimpleDateFormat {
-        // TODO(b/390204943): handle AM/PM style
-        // We already provide the locale value in `DateTimePatternGenerator` above, so it is okay
-        // to not provide the locale in `SimpleDateFormat` here.
-        @Suppress("SimpleDateFormat")
-        return SimpleDateFormat(format)
+    private fun getClockTextFormatString(): String {
+        // TODO(b/390204943): use different value depending on if the system want to show seconds.
+        return if (dateFormatUtil.is24HourFormat) {
+            "H:mm"
+        } else if (amPmStyle == AmPmStyle.Shown) {
+            // Note that we always put the AM/PM marker at the end of the string, and this could be
+            // wrong for certain languages.
+            "h:mm\u202Fa"
+        } else {
+            "h:mm"
+        }
+    }
+
+    private fun getSimpleDateFormat(formatString: String): SimpleDateFormat {
+        return SimpleDateFormat(formatString, Locale.getDefault())
     }
 }

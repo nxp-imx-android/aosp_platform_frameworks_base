@@ -24,7 +24,6 @@ import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 
-import static com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS;
 import static com.android.window.flags.Flags.enableHandlersDebuggingMode;
 import static com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE;
 import static com.android.wm.shell.bubbles.util.BubbleUtils.getExitBubbleTransaction;
@@ -469,8 +468,8 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
      *                                          the task with the target visibility when
      *                                          reordering. This only takes effect if {@code
      *                                          reorder} is {@code true}.
-     * @throws IllegalStateException If the flag {@link FLAG_ENABLE_CREATE_ANY_BUBBLE} and
-     *                               {@link FLAG_EXCLUDE_TASK_FROM_RECENTS} are not enabled.
+     * @throws IllegalStateException If the flag {@link FLAG_ENABLE_CREATE_ANY_BUBBLE} is not
+     *                               enabled.
      */
     public void setTaskViewVisible(TaskViewTaskController taskView, boolean visible,
             boolean reorder, boolean syncHiddenWithVisibilityOnReorder) {
@@ -488,11 +487,6 @@ public class TaskViewTransitions implements Transitions.TransitionHandler, TaskV
         final WindowContainerTransaction wct = new WindowContainerTransaction();
         wct.setBounds(taskView.getTaskInfo().token, state.mBounds);
         if (reorder && !syncHiddenWithVisibilityOnReorder) {
-            if (!BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()) {
-                throw new IllegalStateException(
-                    "Flag " + FLAG_ENABLE_CREATE_ANY_BUBBLE + " and "
-                        + FLAG_EXCLUDE_TASK_FROM_RECENTS + " are not enabled");
-            }
             // Reset hidden state to fix corner case where surface was destroyed before task
             // appeared in #prepareOpenAnimation.
             wct.setHidden(taskView.getTaskInfo().token, false /* hidden */);

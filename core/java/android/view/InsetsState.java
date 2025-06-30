@@ -26,7 +26,7 @@ import static android.internal.perfetto.protos.Insetsstate.InsetsStateProto.DISP
 import static android.internal.perfetto.protos.Insetsstate.InsetsStateProto.DISPLAY_FRAME;
 import static android.internal.perfetto.protos.Insetsstate.InsetsStateProto.SOURCES;
 import static android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-import static android.view.WindowInsets.Type.SIZE;
+import static android.view.WindowInsets.Type.TYPES;
 import static android.view.WindowInsets.Type.captionBar;
 import static android.view.WindowInsets.Type.defaultCompatible;
 import static android.view.WindowInsets.Type.displayCutout;
@@ -142,9 +142,9 @@ public class InsetsState implements Parcelable {
             int legacySoftInputMode, int legacyWindowFlags, int legacySystemUiFlags,
             @WindowType int windowType, @ActivityType int activityType,
             @Nullable @InternalInsetsSide SparseIntArray idSideMap) {
-        final Insets[] typeInsetsMap = new Insets[SIZE];
-        final Insets[] typeMaxInsetsMap = new Insets[SIZE];
-        final boolean[] typeVisibilityMap = new boolean[SIZE];
+        final Insets[] typeInsetsMap = new Insets[TYPES.length];
+        final Insets[] typeMaxInsetsMap = new Insets[TYPES.length];
+        final boolean[] typeVisibilityMap = new boolean[TYPES.length];
         final Rect relativeFrame = new Rect(frame);
         final Rect relativeFrameMax = new Rect(frame);
         @InsetsType
@@ -152,8 +152,8 @@ public class InsetsState implements Parcelable {
         boolean forceConsumingOpaqueCaptionBar = false;
         @InsetsType
         int suppressScrimTypes = 0;
-        final Rect[][] typeBoundingRectsMap = new Rect[SIZE][];
-        final Rect[][] typeMaxBoundingRectsMap = new Rect[SIZE][];
+        final Rect[][] typeBoundingRectsMap = new Rect[TYPES.length][];
+        final Rect[][] typeMaxBoundingRectsMap = new Rect[TYPES.length][];
         for (int i = mSources.size() - 1; i >= 0; i--) {
             final InsetsSource source = mSources.valueAt(i);
             @InsetsType

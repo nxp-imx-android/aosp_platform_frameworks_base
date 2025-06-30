@@ -363,8 +363,8 @@ public class TransparentPolicyTest extends WindowTestsBase {
 
     private void runTestScenario(Consumer<TransparentPolicyRobotTest> consumer,
                                  boolean policyEnabled, int displayWidth, int displayHeight) {
-        final TransparentPolicyRobotTest robot =
-                new TransparentPolicyRobotTest(mWm, mAtm, mSupervisor, displayWidth, displayHeight);
+        final TransparentPolicyRobotTest robot = new TransparentPolicyRobotTest(this, displayWidth,
+                displayHeight);
         robot.conf().enableTranslucentPolicy(policyEnabled);
         consumer.accept(robot);
     }
@@ -392,11 +392,9 @@ public class TransparentPolicyTest extends WindowTestsBase {
         @NonNull
         private final AppCompatTransparentActivityRobot mTransparentActivityRobot;
 
-        private TransparentPolicyRobotTest(@NonNull WindowManagerService wm,
-                @NonNull ActivityTaskManagerService atm,
-                @NonNull ActivityTaskSupervisor supervisor,
+        private TransparentPolicyRobotTest(@NonNull WindowTestsBase windowTestBase,
                 int displayWidth, int displayHeight) {
-            super(wm, atm, supervisor, displayWidth, displayHeight);
+            super(windowTestBase, displayWidth, displayHeight);
             mTransparentActivityRobot = new AppCompatTransparentActivityRobot(activity());
             // We always create at least an opaque activity in a Task
             activity().createNewTaskWithBaseActivity();

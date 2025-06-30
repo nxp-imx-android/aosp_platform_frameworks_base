@@ -291,7 +291,7 @@ public final class ProfcollectForwardingService extends SystemService {
                             "collection_interval", 600);
                     mScheduledExecutorService.scheduleWithFixedDelay(() -> {
                         if (sIProfcollect != null) {
-                            Utils.traceSystem(sIProfcollect, "periodic");
+                            Utils.traceSystem(sIProfcollect, "periodic", /* durationMs */ 0);
                         }
                     }, 0, interval, TimeUnit.SECONDS);
                     // Background process and upload service.
@@ -373,7 +373,7 @@ public final class ProfcollectForwardingService extends SystemService {
         @Override
         public void onIntentStarted(Intent intent, long timestampNanos) {
             if (Utils.withFrequency("applaunch_trace_freq", 5)) {
-                Utils.traceSystem(sIProfcollect, "applaunch");
+                Utils.traceSystem(sIProfcollect, "applaunch", /* durationMs */ 0);
             }
         }
     }
@@ -393,7 +393,7 @@ public final class ProfcollectForwardingService extends SystemService {
     private void traceOnDex2oatStart() {
         if (Utils.withFrequency("dex2oat_trace_freq", 75)) {
             // Dex2oat could take a while before it starts. Add a short delay before start tracing.
-            Utils.traceSystem(sIProfcollect, "dex2oat", /* delayMs */ 1000);
+            Utils.traceSystem(sIProfcollect, "dex2oat", /* durationMs */ 0, /* delayMs */ 1000);
         }
     }
 
