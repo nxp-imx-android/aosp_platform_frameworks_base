@@ -193,6 +193,9 @@ public class AnrTimer<V> implements AutoCloseable {
                 new TreeSet<>(comparingInt(SplitPoint::percent)
                         .thenComparingInt(SplitPoint::token));
 
+        /** Make this AnrTimer use test-mode clocking.  This is only useful in tests. */
+        private boolean mTestMode = false;
+
         // This is only used for testing, so it is limited to package visibility.
         Args injector(@NonNull Injector injector) {
             mInjector = injector;
@@ -206,6 +209,11 @@ public class AnrTimer<V> implements AutoCloseable {
 
         public Args extend(boolean flag) {
             mExtend = flag;
+            return this;
+        }
+
+        public Args testMode(boolean flag) {
+            mTestMode = flag;
             return this;
         }
 
@@ -427,14 +435,14 @@ public class AnrTimer<V> implements AutoCloseable {
         mWhat = what;
         mLabel = label;
         mArgs = args;
-        boolean enabled = args.mEnable && nativeTimersSupported();
-        mFeature = createFeatureSwitch(enabled);
+        mFeature = createFeatureSwitch();
     }
 
     // Return the correct feature.  FeatureEnabled is returned if and only if the feature is
     // flag-enabled and if the native shadow was successfully created.  Otherwise, FeatureDisabled
     // is returned.
-    private FeatureSwitch createFeatureSwitch(boolean enabled) {
+    private FeatureSwitch createFeatureSwitch() {
+        final boolean enabled = mArgs.mEnable && nativeTimersSupported();
         if (!enabled) {
             return new FeatureDisabled();
         } else {
@@ -505,6 +513,8 @@ public class AnrTimer<V> implements AutoCloseable {
         abstract void dump(IndentingPrintWriter pw, boolean verbose);
 
         abstract void close();
+
+        abstract void setTime(long now);
     }
 
     /**
@@ -560,6 +570,12 @@ public class AnrTimer<V> implements AutoCloseable {
         @Override
         void close() {
         }
+
+        /** The disabled timer does not support this operation. */
+        @Override
+        void setTime(long now) {
+            throw new UnsupportedOperationException("setTime unavailable in disabled mode");
+        }
     }
 
     /**
@@ -589,7 +605,7 @@ public class AnrTimer<V> implements AutoCloseable {
         /** Create the native AnrTimerService that will host all timers from this instance. */
         FeatureEnabled() {
             mNative = nativeAnrTimerCreate(mLabel, mArgs.mExtend, mArgs.getSplitPercentArray(),
-                    mArgs.getSplitTokenArray());
+                    mArgs.getSplitTokenArray(), mArgs.mTestMode);
             if (mNative == 0) throw new IllegalArgumentException("unable to create native timer");
             synchronized (sAnrTimerList) {
                 sAnrTimerList.put(mNative, new WeakReference(AnrTimer.this));
@@ -742,6 +758,16 @@ public class AnrTimer<V> implements AutoCloseable {
             }
             return r;
         }
+
+        /** This is always safe to call; it does nothing if the timer is not in test mode. */
+        @Override
+        void setTime(long now) {
+            if (!mArgs.mTestMode) {
+                throw new UnsupportedOperationException("setTime called outside test mode");
+            } else if (!nativeAnrTimerSetTime(mNative, now)) {
+                throw new RuntimeException("setTime failure");
+            }
+        }
     }
 
     /**
@@ -881,6 +907,15 @@ public class AnrTimer<V> implements AutoCloseable {
      */
     public void close() {
         mFeature.close();
+    }
+
+    /**
+     * Set the current time as seen by this AnrTimer.  This is only effective for native timers
+     * that were created with testMode enabled.
+     */
+    @VisibleForTesting
+    public void setTime(long now) {
+        mFeature.setTime(now);
     }
 
     /**
@@ -1037,9 +1072,12 @@ public class AnrTimer<V> implements AutoCloseable {
      * Create a new native timer with the given name and flags.  The name is only for logging.
      * Unlike the other methods, this is an instance method: the "this" parameter is passed into
      * the native layer.
+     *
+     * When testMode is true, the native timer is disconnected from any real clock.  Use
+     * nativeAnrTimerSetTime() to change the time seen by a testMode timer.
      */
     private native long nativeAnrTimerCreate(String name, boolean extend,
-            int[] splitPercent, int[] splitToken);
+            int[] splitPercent, int[] splitToken, boolean testMode);
 
     /** Release the native resources.  No further operations are premitted. */
     private static native int nativeAnrTimerClose(long service);
@@ -1073,4 +1111,11 @@ public class AnrTimer<V> implements AutoCloseable {
 
     /** Retrieve runtime dump information from the native layer. */
     private static native String[] nativeAnrTimerDump(long service);
+
+    /**
+     * Set the clock for a native time service.  If the time service was created in test mode,
+     * this changes the service's view of "now" and returns true.  Otherwise it has no effect and
+     * returns false.
+     */
+    private static native boolean nativeAnrTimerSetTime(long service, long now);
 }
