@@ -350,6 +350,13 @@ flag {
 }
 
 flag {
+    name: "query_angle_choice_flag"
+    namespace: "gpu"
+    description: "Unconditionally querying ANGLE choice to fix a driver load malfunction"
+    bug: "408439360"
+}
+
+flag {
     name: "remove_app_profiler_pss_collection"
     is_exported: true
     namespace: "backstage_power"
