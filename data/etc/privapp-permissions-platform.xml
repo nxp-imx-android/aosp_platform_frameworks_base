@@ -643,6 +643,8 @@ applications that come with the platform
         <!-- Permission required for integration test - InputTest -->
         <permission name="android.permission.LISTEN_FOR_KEY_ACTIVITY"/>
         <permission name="android.permission.OBSERVE_ROLE_HOLDERS"/>
+        <!-- Permission required for CTS test - CtsRoleTestCases -->
+        <permission name="android.permission.GET_ROLE_HOLDERS"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">
