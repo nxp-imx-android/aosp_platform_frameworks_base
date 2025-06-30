@@ -289,6 +289,7 @@ class MediaRepositoryTest : SysuiTestCase() {
             resumeAction = resumeAction,
             isExplicit = isExplicit,
             suggestionData = mediaModel.suggestionData,
+            token = session.sessionToken,
         )
     }
 

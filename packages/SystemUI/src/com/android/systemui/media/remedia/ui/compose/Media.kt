@@ -1132,53 +1132,62 @@ private fun DeviceChip(
     // The inner composable consumes the user events from the InteractionSource and feeds them into
     // its indication.
     val clickInteractionSource = remember { MutableInteractionSource() }
-    Box(
-        modifier =
-            modifier
-                .heightIn(min = 48.dp)
-                .clickable(interactionSource = clickInteractionSource, indication = null) {
-                    viewModel.onClick()
-                }
-                .padding(top = 16.dp, bottom = 8.dp)
+    Expandable(
+        controller =
+            rememberExpandableController(
+                color = Color.Transparent,
+                shape = RoundedCornerShape(12.dp),
+            ),
+        useModifierBasedImplementation = true,
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        Box(
             modifier =
-                Modifier.clip(RoundedCornerShape(12.dp))
-                    .background(style.fillColor)
-                    .thenIf(style.borderColor != null) {
-                        Modifier.border(
-                            width = 1.dp,
-                            color = style.borderColor!!,
-                            shape = RoundedCornerShape(12.dp),
+                modifier
+                    .heightIn(min = 48.dp)
+                    .clickable(interactionSource = clickInteractionSource, indication = null) {
+                        viewModel.onClick(it)
+                    }
+                    .padding(top = 16.dp, bottom = 8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier =
+                    Modifier.clip(RoundedCornerShape(12.dp))
+                        .background(style.fillColor)
+                        .thenIf(style.borderColor != null) {
+                            Modifier.border(
+                                width = 1.dp,
+                                color = style.borderColor!!,
+                                shape = RoundedCornerShape(12.dp),
+                            )
+                        }
+                        .indication(clickInteractionSource, ripple())
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+            ) {
+                if (viewModel.isConnecting) {
+                    CircularProgressIndicator(
+                        color = style.contentColor,
+                        modifier = Modifier.size(12.dp),
+                        strokeWidth = 1.dp,
+                    )
+                } else {
+                    Icon(
+                        icon = viewModel.icon,
+                        tint = style.contentColor,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+                AnimatedVisibility(visible = viewModel.text != null) {
+                    rememberLastNonNull(viewModel.text)?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = style.contentColor,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(horizontal = 4.dp),
                         )
                     }
-                    .indication(clickInteractionSource, ripple())
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-        ) {
-            if (viewModel.isConnecting) {
-                CircularProgressIndicator(
-                    color = style.contentColor,
-                    modifier = Modifier.size(12.dp),
-                    strokeWidth = 1.dp,
-                )
-            } else {
-                Icon(
-                    icon = viewModel.icon,
-                    tint = style.contentColor,
-                    modifier = Modifier.size(16.dp),
-                )
-            }
-            AnimatedVisibility(visible = viewModel.text != null) {
-                rememberLastNonNull(viewModel.text)?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = style.contentColor,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(horizontal = 4.dp),
-                    )
                 }
             }
         }

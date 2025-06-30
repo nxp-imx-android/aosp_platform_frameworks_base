@@ -147,10 +147,7 @@ constructor(
 
                 applicationScope.launch {
                     val controller =
-                        if (
-                            currentModel != null &&
-                                activeControllers[currentModel.instanceId]?.sessionToken == token
-                        ) {
+                        if (currentModel != null && currentModel.token == token) {
                             activeControllers[currentModel.instanceId]
                         } else {
                             // Clear controller state if changed for the same media session.
@@ -236,6 +233,7 @@ constructor(
                 resumeAction = resumeAction,
                 isExplicit = isExplicit,
                 suggestionData = suggestionData,
+                token = token,
             )
         }
     }

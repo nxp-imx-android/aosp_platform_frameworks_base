@@ -227,12 +227,11 @@ constructor(
                                         it.name,
                                     ),
                                 isConnecting = it.isInProgress,
-                                onClick = {
+                                onClick = { expandable ->
                                     falsingSystem.runIfNotFalseTap(
                                         FalsingManager.MODERATE_PENALTY
                                     ) {
-                                        // TODO(b/397989775): Perform selection of the suggested
-                                        // device
+                                        it.onClick(expandable)
                                     }
                                 },
                             )
@@ -246,10 +245,9 @@ constructor(
                             text =
                                 if (session.suggestedOutputDevice == null) session.outputDevice.name
                                 else null,
-                            onClick = {
+                            onClick = { expandable ->
                                 falsingSystem.runIfNotFalseTap(FalsingManager.MODERATE_PENALTY) {
-                                    // TODO(b/397989775): tell the UI to show the output
-                                    // switcher.
+                                    session.outputDevice.onClick(expandable)
                                 }
                             },
                         )
