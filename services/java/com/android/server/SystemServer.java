@@ -267,6 +267,7 @@ import com.android.server.selinux.SelinuxAuditLogsService;
 import com.android.server.sensorprivacy.SensorPrivacyService;
 import com.android.server.sensors.SensorService;
 import com.android.server.serial.SerialManagerService;
+import com.android.server.signalcollector.SignalCollectorService;
 import com.android.server.signedconfig.SignedConfigService;
 import com.android.server.slice.SliceManagerService;
 import com.android.server.smartspace.SmartspaceManagerService;
@@ -3554,6 +3555,19 @@ public final class SystemServer implements Dumpable {
             reportWtf("starting System UI", e);
         }
         t.traceEnd();
+
+        // TODO(b/421229308): The collector service should only be running if
+        // the anomaly detection service APIs are enabled.
+        // Replace this flag with the exported API flag after it's ready.
+        if (com.android.server.signalcollector.Flags.enableBinderCallSignalCollector()) {
+            t.traceBegin("StartSignalCollectorService");
+            try {
+                mSystemServiceManager.startService(SignalCollectorService.class);
+            } catch (Throwable e) {
+                reportWtf("starting SignalCollectorService", e);
+            }
+            t.traceEnd();
+        }
 
         t.traceEnd(); // startOtherServices
     }
