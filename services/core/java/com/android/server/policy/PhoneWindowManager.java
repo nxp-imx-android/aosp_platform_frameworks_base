@@ -1309,6 +1309,15 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         dreamManagerInternal.requestDream();
+        if (mHasFeatureLeanback
+                && getResolvedLongPressOnPowerBehavior() == LONG_PRESS_POWER_GO_TO_SLEEP) {
+            Toast.makeText(
+                    mContext,
+                    UiThread.get().getLooper(),
+                    mContext.getString(R.string.long_press_power_to_turn_off_tv_toast),
+                    Toast.LENGTH_LONG)
+                    .show();
+        }
     }
 
     /**
