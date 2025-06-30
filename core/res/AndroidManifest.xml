@@ -5296,6 +5296,7 @@
 
          @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
     <permission-group android:name="android.permission-group.XR_TRACKING"
+                      android:icon="@drawable/perm_group_xr_tracking"
                       android:label="@string/permgrouplab_xr_tracking"
                       android:description="@string/permgroupdesc_xr_tracking"
                       android:priority="100"
@@ -5355,6 +5356,7 @@
 
          @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
     <permission-group android:name="android.permission-group.XR_EYE_SENSITIVE"
+                      android:icon="@drawable/perm_group_xr_eye_sensitive"
                       android:label="@string/permgrouplab_xr_eye_sensitive"
                       android:description="@string/permgroupdesc_xr_eye_sensitive"
                       android:priority="100"
@@ -5377,6 +5379,7 @@
 
          @FlaggedApi(android.xr.Flags.FLAG_XR_MANIFEST_ENTRIES) -->
     <permission-group android:name="android.permission-group.XR_TRACKING_SENSITIVE"
+                      android:icon="@drawable/perm_group_xr_tracking_sensitive"
                       android:label="@string/permgrouplab_xr_tracking_sensitive"
                       android:description="@string/permgroupdesc_xr_tracking_sensitive"
                       android:priority="100"
