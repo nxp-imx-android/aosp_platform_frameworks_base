@@ -65,7 +65,7 @@ constructor(
     override suspend fun handleInput(input: QSTileInput<IssueRecordingModel>) {
         if (input.action is QSTileUserAction.Click) {
             if (input.data.isRecording) {
-                stopIssueRecordingService()
+                sendStopIntent()
             } else {
                 withContext(mainCoroutineContext) { showPrompt(input.action.expandable) }
             }
@@ -105,20 +105,26 @@ constructor(
         screenRecordUxController.startCountdown(
             DELAY_MS,
             INTERVAL_MS,
-            pendingServiceIntent(
+            { sendStartIntent() },
+            { sendStopIntent() },
+        )
+
+    private fun sendStopIntent() {
+        pendingServiceIntent(getStopIntent(userContextProvider.userContext))
+            .send(BroadcastOptions.makeBasic().apply { isInteractive = true }.toBundle())
+    }
+
+    private fun sendStartIntent() {
+        pendingServiceIntent(
                 getStartIntent(
                     userContextProvider.userContext,
                     state.traceConfig,
                     state.recordScreen,
                     state.takeBugreport,
                 )
-            ),
-            pendingServiceIntent(getStopIntent(userContextProvider.userContext)),
-        )
-
-    private fun stopIssueRecordingService() =
-        pendingServiceIntent(getStopIntent(userContextProvider.userContext))
+            )
             .send(BroadcastOptions.makeBasic().apply { isInteractive = true }.toBundle())
+    }
 
     private fun pendingServiceIntent(action: Intent) =
         PendingIntent.getService(

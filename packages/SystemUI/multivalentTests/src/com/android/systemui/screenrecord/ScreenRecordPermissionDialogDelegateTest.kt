@@ -42,10 +42,11 @@ import com.android.systemui.mediaprojection.permission.ENTIRE_SCREEN
 import com.android.systemui.mediaprojection.permission.SINGLE_APP
 import com.android.systemui.plugins.ActivityStarter
 import com.android.systemui.res.R
-import com.android.systemui.settings.UserContextProvider
+import com.android.systemui.screenrecord.domain.interactor.screenRecordingStartStopInteractor
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
+import com.android.systemui.testKosmos
 import com.android.systemui.util.mockito.argumentCaptor
 import com.android.systemui.util.mockito.mock
 import com.google.common.truth.Truth.assertThat
@@ -68,11 +69,12 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
 
     @Mock private lateinit var starter: ActivityStarter
     @Mock private lateinit var controller: ScreenRecordUxController
-    @Mock private lateinit var userContextProvider: UserContextProvider
     @Mock private lateinit var onStartRecordingClicked: Runnable
     @Mock private lateinit var mediaProjectionMetricsLogger: MediaProjectionMetricsLogger
     private val fakeDisplayWindowPropertiesRepository =
         FakeDisplayWindowPropertiesRepository(context)
+
+    private val kosmos = testKosmos()
 
     private lateinit var dialog: SystemUIDialog
     private lateinit var underTest: ScreenRecordPermissionDialogDelegate
@@ -96,13 +98,13 @@ class ScreenRecordPermissionDialogDelegateTest : SysuiTestCase() {
                 TEST_HOST_UID,
                 controller,
                 starter,
-                userContextProvider,
                 onStartRecordingClicked,
                 mediaProjectionMetricsLogger,
                 systemUIDialogFactory,
                 context,
                 context.getSystemService(DisplayManager::class.java)!!,
                 { fakeDisplayWindowPropertiesRepository },
+                kosmos.screenRecordingStartStopInteractor,
             )
         dialog = underTest.createDialog()
     }

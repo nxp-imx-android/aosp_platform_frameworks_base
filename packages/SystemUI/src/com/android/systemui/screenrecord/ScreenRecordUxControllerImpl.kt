@@ -17,7 +17,6 @@
 package com.android.systemui.screenrecord
 
 import android.app.Dialog
-import android.app.PendingIntent
 import com.android.systemui.statusbar.policy.CallbackController
 
 /** [ScreenRecordUxController] implementation of the new screen reactions UX. */
@@ -49,12 +48,7 @@ class ScreenRecordUxControllerImpl :
         TODO("Not yet implemented")
     }
 
-    override fun startCountdown(
-        ms: Long,
-        interval: Long,
-        startIntent: PendingIntent,
-        stopIntent: PendingIntent,
-    ) {
+    override fun startCountdown(ms: Long, interval: Long, start: Runnable, stop: Runnable) {
         TODO("Not yet implemented")
     }
 

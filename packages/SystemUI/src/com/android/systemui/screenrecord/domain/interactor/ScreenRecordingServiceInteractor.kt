@@ -30,8 +30,8 @@ import com.android.app.tracing.coroutines.flow.stateInTraced
 import com.android.app.tracing.coroutines.launchInTraced
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
-import com.android.systemui.mediaprojection.MediaProjectionCaptureTarget
-import com.android.systemui.screenrecord.ScreenRecordingAudioSource
+import com.android.systemui.screenrecord.ScreenRecordUxController
+import com.android.systemui.screenrecord.domain.ScreenRecordingParameters
 import com.android.systemui.screenrecord.service.IScreenRecordingService
 import com.android.systemui.screenrecord.service.IScreenRecordingServiceCallback
 import com.android.systemui.screenrecord.service.ScreenRecordingService
@@ -60,7 +60,8 @@ constructor(
     private val context: Context,
     @Background coroutineScope: CoroutineScope,
     private val userRepository: UserRepository,
-) {
+    private val screenRecordUxController: ScreenRecordUxController,
+) : ScreenRecordingStartStopInteractor {
     private val serviceCallback = ServiceCallback()
     private val isServiceBound = MutableStateFlow(false)
     private val service: Flow<IScreenRecordingService?> =
@@ -101,9 +102,11 @@ constructor(
                         when (status) {
                             is Status.Started -> {
                                 service.startRecording(status)
+                                screenRecordUxController.updateState(true)
                             }
                             is Status.Stopped -> {
                                 service.stopRecording(status.reason)
+                                screenRecordUxController.updateState(false)
                             }
                             is Status.Initial -> {
                                 /* do nothing */
@@ -115,27 +118,17 @@ constructor(
             .launchInTraced("ScreenRecordingServiceInteractor#_status", coroutineScope)
     }
 
-    fun startRecording(
-        captureTarget: MediaProjectionCaptureTarget?,
-        audioSource: ScreenRecordingAudioSource,
-        displayId: Int,
-        shouldShowTaps: Boolean,
-    ) {
+    override fun startRecording(parameters: ScreenRecordingParameters) {
         _status.update { currentStatus ->
             if (currentStatus is Status.Started) {
                 currentStatus
             } else {
-                Status.Started(
-                    captureTarget = captureTarget,
-                    audioSource = audioSource,
-                    displayId = displayId,
-                    shouldShowTaps = shouldShowTaps,
-                )
+                Status.Started(parameters)
             }
         }
     }
 
-    fun stopRecording(@StopReason reason: Int) {
+    override fun stopRecording(@StopReason reason: Int) {
         _status.update { currentStatus ->
             if (currentStatus is Status.Stopped) {
                 currentStatus
@@ -192,19 +185,16 @@ constructor(
 }
 
 private fun IScreenRecordingService.startRecording(status: Status.Started) {
-    with(status) { startRecording(captureTarget, audioSource.ordinal, displayId, shouldShowTaps) }
+    with(status.parameters) {
+        startRecording(captureTarget, audioSource.ordinal, displayId, shouldShowTaps)
+    }
 }
 
 sealed interface Status {
 
     data object Initial : Status
 
-    data class Started(
-        val captureTarget: MediaProjectionCaptureTarget?,
-        val audioSource: ScreenRecordingAudioSource,
-        val displayId: Int,
-        val shouldShowTaps: Boolean,
-    ) : Status
+    data class Started(val parameters: ScreenRecordingParameters) : Status
 
     data class Stopped(val reason: Int) : Status
 }

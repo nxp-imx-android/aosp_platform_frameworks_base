@@ -17,7 +17,6 @@
 package com.android.systemui.screenrecord
 
 import android.app.Dialog
-import android.app.PendingIntent
 import android.media.projection.StopReason
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.qualifiers.Main
@@ -100,13 +99,8 @@ class ScreenRecordLegacyUxControllerImpl(
     }
 
     /** @see RecordingController.startCountdown */
-    override fun startCountdown(
-        ms: Long,
-        interval: Long,
-        startIntent: PendingIntent,
-        stopIntent: PendingIntent,
-    ) {
-        recordingController.startCountdown(ms, interval, startIntent, stopIntent)
+    override fun startCountdown(ms: Long, interval: Long, start: Runnable, stop: Runnable) {
+        recordingController.startCountdown(ms, interval, start, stop)
     }
 
     /** @see RecordingController.cancelCountdown */

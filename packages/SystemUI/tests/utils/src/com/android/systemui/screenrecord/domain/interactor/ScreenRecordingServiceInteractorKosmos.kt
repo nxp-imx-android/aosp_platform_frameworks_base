@@ -19,6 +19,7 @@ package com.android.systemui.screenrecord.domain.interactor
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.applicationCoroutineScope
+import com.android.systemui.screenrecord.screenRecordUxController
 import com.android.systemui.user.data.repository.userRepository
 
 val Kosmos.screenRecordingServiceInteractor: ScreenRecordingServiceInteractor by
@@ -27,5 +28,6 @@ val Kosmos.screenRecordingServiceInteractor: ScreenRecordingServiceInteractor by
             applicationContext,
             applicationCoroutineScope,
             userRepository,
+            screenRecordUxController,
         )
     }
