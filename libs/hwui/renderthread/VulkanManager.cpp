@@ -36,7 +36,7 @@
 
 #include "Properties.h"
 #include "RenderThread.h"
-#include "pipeline/skia/ShaderCache.h"
+#include "pipeline/skia/PersistentGraphicsCache.h"
 #include "renderstate/RenderState.h"
 
 namespace android {
@@ -44,7 +44,7 @@ namespace uirenderer {
 namespace renderthread {
 
 // Not all of these are strictly required, but are all enabled if present.
-static std::array<std::string_view, 25> sEnableExtensions{
+static std::array<std::string_view, 26> sEnableExtensions{
         VK_KHR_BIND_MEMORY_2_EXTENSION_NAME,
         VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,
         VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME,
@@ -70,6 +70,7 @@ static std::array<std::string_view, 25> sEnableExtensions{
         VK_EXT_DEVICE_FAULT_EXTENSION_NAME,
         VK_EXT_FRAME_BOUNDARY_EXTENSION_NAME,
         VK_ANDROID_FRAME_BOUNDARY_EXTENSION_NAME,
+        VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME,
 };
 
 static bool shouldEnableExtension(const std::string_view& extension) {
@@ -339,6 +340,16 @@ void VulkanManager::setupDevice(skgpu::VulkanExtensions& grExtensions,
         formatFeatures->pNext = nullptr;
         *tailPNext = formatFeatures;
         tailPNext = &formatFeatures->pNext;
+    }
+
+    if (grExtensions.hasExtension(VK_EXT_PIPELINE_CREATION_CACHE_CONTROL_EXTENSION_NAME, 1)) {
+        VkPhysicalDevicePipelineCreationCacheControlFeatures* cacheControlFeatures =
+                new VkPhysicalDevicePipelineCreationCacheControlFeatures;
+        cacheControlFeatures->sType =
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PIPELINE_CREATION_CACHE_CONTROL_FEATURES;
+        cacheControlFeatures->pNext = nullptr;
+        *tailPNext = cacheControlFeatures;
+        tailPNext = &cacheControlFeatures->pNext;
     }
 
     VkPhysicalDeviceGlobalPriorityQueryFeaturesEXT* globalPriorityQueryFeatures =
@@ -793,7 +804,7 @@ VulkanManager::VkDrawResult VulkanManager::finishFrame(SkSurface* surface) {
         mQueueWaitIdle(mGraphicsQueue);
     }
 
-    skiapipeline::ShaderCache::get().onVkFrameFlushed(context);
+    skiapipeline::PersistentGraphicsCache::get().onVkFrameFlushed(context);
 
     return drawResult;
 }
