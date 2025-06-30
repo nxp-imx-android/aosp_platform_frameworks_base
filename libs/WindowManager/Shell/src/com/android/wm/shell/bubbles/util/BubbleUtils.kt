@@ -24,7 +24,6 @@ import android.os.Binder
 import android.view.WindowInsets
 import android.window.WindowContainerToken
 import android.window.WindowContainerTransaction
-import com.android.window.flags.Flags
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 
 object BubbleUtils {
@@ -63,9 +62,7 @@ object BubbleUtils {
             // Always reset everything when exit bubble.
             wct.setLaunchNextToBubble(token, toBubble /* launchNextToBubble */)
         }
-        if (Flags.excludeTaskFromRecents()) {
-            wct.setTaskForceExcludedFromRecents(token, toBubble /* forceExcluded */)
-        }
+        wct.setTaskForceExcludedFromRecents(token, toBubble /* forceExcluded */)
         wct.setDisablePip(token, toBubble /* disablePip */)
         if (BubbleAnythingFlagHelper.enableCreateAnyBubble()) {
             wct.setDisableLaunchAdjacent(token, toBubble /* disableLaunchAdjacent */)
@@ -135,7 +132,7 @@ object BubbleUtils {
 
     /** Determines if a bubble task is moving to fullscreen based on its windowing mode. */
     fun isBubbleToFullscreen(task: ActivityManager.RunningTaskInfo?): Boolean {
-        return BubbleAnythingFlagHelper.enableCreateAnyBubbleWithForceExcludedFromRecents()
+        return BubbleAnythingFlagHelper.enableCreateAnyBubble()
                 && task?.windowingMode == WINDOWING_MODE_FULLSCREEN
     }
 }

@@ -26,7 +26,6 @@ import android.window.WindowContainerTransaction
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
 import com.android.internal.protolog.ProtoLog
-import com.android.window.flags.Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_ANYTHING
 import com.android.wm.shell.Flags.FLAG_ENABLE_BUBBLE_TASK_VIEW_LISTENER
 import com.android.wm.shell.MockToken
@@ -105,10 +104,7 @@ class BubbleExpandedViewTest(flags: FlagsParameterization) {
     }
 
     @Test
-    @EnableFlags(
-        FLAG_ENABLE_BUBBLE_ANYTHING,
-        FLAG_EXCLUDE_TASK_FROM_RECENTS,
-    )
+    @EnableFlags(FLAG_ENABLE_BUBBLE_ANYTHING)
     fun onTaskCreated_appliesWctToEnterBubble() {
         bubbleTaskView.listener.onTaskCreated(123 /* taskId */, componentName)
 
@@ -127,7 +123,6 @@ class BubbleExpandedViewTest(flags: FlagsParameterization) {
         @Parameters(name = "{0}")
         fun getParams() = FlagsParameterization.allCombinationsOf(
             FLAG_ENABLE_BUBBLE_TASK_VIEW_LISTENER,
-            FLAG_EXCLUDE_TASK_FROM_RECENTS,
         )
     }
 }

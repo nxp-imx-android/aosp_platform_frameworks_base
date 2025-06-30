@@ -2181,20 +2181,15 @@ public class TaskTests extends WindowTestsBase {
     }
 
     @Test
-    public void testSetForceExcludedFromRecents() {
+    public void testSetForceExcludedFromRecents_returnsForceExcludedFromRecents() {
         final Task task = createTask(mDisplayContent);
 
         task.setForceExcludedFromRecents(true);
 
-        if (Flags.excludeTaskFromRecents()) {
-            assertTrue(task.isForceExcludedFromRecents());
-        } else {
-            assertFalse(task.isForceExcludedFromRecents());
-        }
+        assertTrue(task.isForceExcludedFromRecents());
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS)
     public void testSetForceExcludedFromRecents_resetsTaskForceExcludedFromRecents() {
         final Task task = createTask(mDisplayContent);
         task.setForceExcludedFromRecents(true);

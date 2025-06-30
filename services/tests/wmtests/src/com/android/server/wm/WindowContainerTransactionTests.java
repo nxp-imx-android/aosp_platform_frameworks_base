@@ -365,7 +365,6 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS)
     public void testSetTaskForceExcludedFromRecents() {
         final Task rootTask = createTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
@@ -379,7 +378,6 @@ public class WindowContainerTransactionTests extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_EXCLUDE_TASK_FROM_RECENTS)
     public void testSetTaskForceExcludedFromRecents_resetsTaskForceExcludedFromRecents() {
         final Task rootTask = createTask(mDisplayContent);
         final Task task = createTaskInRootTask(rootTask, 0 /* userId */);
