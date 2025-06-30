@@ -6571,7 +6571,14 @@
     <!-- @SystemApi Allows an application to observe role holder changes.
          @hide -->
     <permission android:name="android.permission.OBSERVE_ROLE_HOLDERS"
-                android:protectionLevel="signature|installer|module" />
+                android:protectionLevel="signature|installer|module"
+                android:featureFlag="!android.permission.flags.supervision_role_enabled" />
+
+    <!-- @SystemApi Allows an application to observe role holder changes.
+         @hide -->
+    <permission android:name="android.permission.OBSERVE_ROLE_HOLDERS"
+                android:protectionLevel="signature|privileged|installer|module"
+                android:featureFlag="android.permission.flags.supervision_role_enabled" />
 
     <!-- Allows an application to manage the companion devices.
          @hide -->
