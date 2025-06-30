@@ -261,6 +261,11 @@ private fun Context.asLockIcon(userId: Int): Drawable {
     val id =
         if (Utils.isManagedProfile(this, userId)) {
             R.drawable.auth_dialog_enterprise
+        } else if (
+            android.multiuser.Flags.allowSupervisingProfile() &&
+                Utils.isSupervisingProfile(this, userId)
+        ) {
+            R.drawable.ic_account_child_invert
         } else {
             R.drawable.auth_dialog_lock
         }
