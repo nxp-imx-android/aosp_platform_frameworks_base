@@ -5586,12 +5586,8 @@ final class ActivityRecord extends WindowToken {
 
     /** Updates draw state and shows drawn windows. */
     void commitFinishDrawing(SurfaceControl.Transaction t) {
-        boolean committed = false;
         for (int i = mChildren.size() - 1; i >= 0; i--) {
-            committed |= mChildren.get(i).commitFinishDrawing(t);
-        }
-        if (committed) {
-            requestUpdateWallpaperIfNeeded();
+            mChildren.get(i).commitFinishDrawing(t);
         }
     }
 

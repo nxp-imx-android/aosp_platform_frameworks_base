@@ -128,7 +128,6 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_KEEP_SCREE
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SCREEN_ON;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SLEEP_TOKEN;
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WALLPAPER;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_SHOW_TRANSACTIONS;
 import static com.android.internal.util.LatencyTracker.ACTION_ROTATE_SCREEN;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_ANIM;
@@ -591,8 +590,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
     WallpaperController mWallpaperController;
 
-    boolean mWallpaperMayChange = false;
-
     /**
      * A perf hint session which will boost the refresh rate for the display and change sf duration
      * to handle larger workloads.
@@ -1021,25 +1018,9 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     mImeLayeringTarget);
 
     private final Consumer<WindowState> mApplySurfaceChangesTransaction = w -> {
-        final WindowSurfacePlacer surfacePlacer = mWmService.mWindowPlacerLocked;
-        final RootWindowContainer root = mWmService.mRoot;
-
         if (w.mHasSurface) {
             // Take care of the window being ready to display.
-            final boolean committed = w.mWinAnimator.commitFinishDrawingLocked();
-            if (isDefaultDisplay && committed) {
-                if (w.hasWallpaper()) {
-                    ProtoLog.v(WM_DEBUG_WALLPAPER,
-                            "First draw done in potential wallpaper target %s", w);
-                    mWallpaperMayChange = true;
-                    pendingLayoutChanges |= FINISH_LAYOUT_REDO_WALLPAPER;
-                    if (DEBUG_LAYOUT_REPEATS) {
-                        surfacePlacer.debugLayoutRepeats(
-                                "wallpaper and commitFinishDrawingLocked true",
-                                pendingLayoutChanges);
-                    }
-                }
-            }
+            w.mWinAnimator.commitFinishDrawingLocked();
         }
 
         // Update effect.
@@ -1055,7 +1036,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mTmpApplySurfaceChangesTransactionState.obscured = true;
             }
 
-            final boolean displayHasContent = root.handleNotObscuredLocked(w,
+            final boolean displayHasContent = mRootWindowContainer.handleNotObscuredLocked(w,
                     mTmpApplySurfaceChangesTransactionState.obscured,
                     mTmpApplySurfaceChangesTransactionState.syswin);
 
@@ -1093,16 +1074,16 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                 mTmpApplySurfaceChangesTransactionState.disableHdrConversion
                         |= !(w.mAttrs.isHdrConversionEnabled());
 
-                final int preferredModeId = getDisplayPolicy().getRefreshRatePolicy()
-                        .getPreferredModeId(w);
+                final var refreshRatePolicy = getDisplayPolicy().getRefreshRatePolicy();
+                final int preferredModeId = refreshRatePolicy.getPreferredModeId(w);
 
-                if (w.getWindowingMode() != WINDOWING_MODE_PINNED
+                if (preferredModeId != 0
                         && mTmpApplySurfaceChangesTransactionState.preferredModeId == 0
-                        && preferredModeId != 0) {
+                        && !w.inPinnedWindowingMode()) {
                     mTmpApplySurfaceChangesTransactionState.preferredModeId = preferredModeId;
                 }
 
-                final float preferredMinRefreshRate = getDisplayPolicy().getRefreshRatePolicy()
+                final float preferredMinRefreshRate = refreshRatePolicy
                         .getPreferredMinRefreshRate(w);
                 if (mTmpApplySurfaceChangesTransactionState.preferredMinRefreshRate == 0
                         && preferredMinRefreshRate != 0) {
@@ -1110,7 +1091,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                             preferredMinRefreshRate;
                 }
 
-                final float preferredMaxRefreshRate = getDisplayPolicy().getRefreshRatePolicy()
+                final float preferredMaxRefreshRate = refreshRatePolicy
                         .getPreferredMaxRefreshRate(w);
                 if (mTmpApplySurfaceChangesTransactionState.preferredMaxRefreshRate == 0
                         && preferredMaxRefreshRate != 0) {

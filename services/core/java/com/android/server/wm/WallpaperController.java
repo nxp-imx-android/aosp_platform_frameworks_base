@@ -23,7 +23,6 @@ import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_WALLPAPER;
-import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_SCREENSHOT;
 import static com.android.server.wm.WindowManagerDebugConfig.DEBUG_WALLPAPER;
 import static com.android.server.wm.WindowManagerDebugConfig.TAG_WITH_CLASS_NAME;
@@ -41,7 +40,6 @@ import android.os.Debug;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.os.SystemClock;
-import android.util.ArraySet;
 import android.util.MathUtils;
 import android.util.Slog;
 import android.util.SparseArray;
@@ -820,8 +818,6 @@ class WallpaperController {
     }
 
     void adjustWallpaperWindows() {
-        mDisplayContent.mWallpaperMayChange = false;
-
         // First find top-most window that has asked to be on top of the wallpaper;
         // all wallpapers go behind it.
         findWallpaperTarget();
@@ -922,29 +918,6 @@ class WallpaperController {
         }
 
         return transitionReady;
-    }
-
-    /**
-     * Adjusts the wallpaper windows if the input display has a pending wallpaper layout or one of
-     * the opening apps should be a wallpaper target.
-     */
-    void adjustWallpaperWindowsForAppTransitionIfNeeded(ArraySet<ActivityRecord> openingApps) {
-        boolean adjust = false;
-        if ((mDisplayContent.pendingLayoutChanges & FINISH_LAYOUT_REDO_WALLPAPER) != 0) {
-            adjust = true;
-        } else {
-            for (int i = openingApps.size() - 1; i >= 0; --i) {
-                final ActivityRecord activity = openingApps.valueAt(i);
-                if (activity.windowsCanBeWallpaperTarget()) {
-                    adjust = true;
-                    break;
-                }
-            }
-        }
-
-        if (adjust) {
-            adjustWallpaperWindows();
-        }
     }
 
     void addWallpaperToken(WallpaperWindowToken token) {

@@ -4277,14 +4277,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     }
 
     /** Makes the surface of drawn window (COMMIT_DRAW_PENDING) to be visible. */
-    boolean commitFinishDrawing(SurfaceControl.Transaction t) {
-        boolean committed = mWinAnimator.commitFinishDrawingLocked();
-        if (committed) {
+    void commitFinishDrawing(SurfaceControl.Transaction t) {
+        if (mWinAnimator.commitFinishDrawingLocked()) {
             // Ensure that the visibility of buffer layer is set.
             mWinAnimator.prepareSurfaceLocked(t);
         }
         for (int i = mChildren.size() - 1; i >= 0; i--) {
-            committed |= mChildren.get(i).commitFinishDrawing(t);
+            mChildren.get(i).commitFinishDrawing(t);
         }
 
         // When a new activity is showing, update dim in this transaction
@@ -4302,7 +4301,6 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (getAnimationLeash() != null) {
             t.merge(getSyncTransaction());
         }
-        return committed;
     }
 
     // This must be called while inside a transaction.
