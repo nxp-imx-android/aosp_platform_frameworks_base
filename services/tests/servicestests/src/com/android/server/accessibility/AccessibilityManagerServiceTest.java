@@ -41,7 +41,6 @@ import static com.android.internal.accessibility.common.ShortcutConstants.UserSh
 import static com.android.internal.accessibility.dialog.AccessibilityButtonChooserActivity.EXTRA_TYPE_TO_CHOOSE;
 import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_HEARING_DEVICES_DIALOG;
 import static com.android.server.accessibility.AccessibilityManagerService.ACTION_LAUNCH_KEY_GESTURE_CONFIRM_DIALOG;
-import static com.android.server.accessibility.Flags.FLAG_ENABLE_MAGNIFICATION_KEYBOARD_CONTROL;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -634,7 +633,7 @@ public class AccessibilityManagerServiceTest {
     }
 
     @Test
-    @RequiresFlagsEnabled({FLAG_ENABLE_MAGNIFICATION_KEYBOARD_CONTROL, FLAG_KEYBOARD_REPEAT_KEYS})
+    @RequiresFlagsEnabled({FLAG_KEYBOARD_REPEAT_KEYS})
     public void testRepeatKeysSettingsChanges_propagateToMagnificationController() {
         final AccessibilityUserState userState = mA11yms.mUserStates.get(
                 mA11yms.getCurrentUserIdLocked());
