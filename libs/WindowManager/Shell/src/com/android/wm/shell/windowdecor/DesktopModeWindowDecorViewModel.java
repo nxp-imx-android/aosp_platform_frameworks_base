@@ -1094,6 +1094,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 return;
             }
             final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(mTaskId);
+            if (decoration == null) {
+                return;
+            }
             final int id = v.getId();
             if (id == R.id.close_window) {
                 if (isTaskInSplitScreen(mTaskId)) {
@@ -1255,6 +1258,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             final int id = v.getId();
             if (id == R.id.maximize_window && !mLongClickDisabled) {
                 final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(mTaskId);
+                if (decoration == null) {
+                    return false;
+                }
                 moveTaskToFront(decoration.mTaskInfo);
                 if (!decoration.isMaximizeMenuActive()) {
                     decoration.createMaximizeMenu();
@@ -1272,6 +1278,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         public boolean onGenericMotion(View v, MotionEvent ev) {
             mMotionEvent = ev;
             final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(mTaskId);
+            if (decoration == null) {
+                return false;
+            }
             final int id = v.getId();
             if (ev.getAction() == ACTION_HOVER_ENTER && id == R.id.maximize_window) {
                 decoration.setAppHeaderMaximizeButtonHovered(true);
@@ -1312,6 +1321,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         @Override
         public boolean handleMotionEvent(@Nullable View v, MotionEvent e) {
             final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(mTaskId);
+            if (decoration == null) {
+                return false;
+            }
             final RunningTaskInfo taskInfo = decoration.mTaskInfo;
             if (mShellDesktopState.canEnterDesktopModeOrShowAppHandle()
                     && !taskInfo.isFreeform()) {
