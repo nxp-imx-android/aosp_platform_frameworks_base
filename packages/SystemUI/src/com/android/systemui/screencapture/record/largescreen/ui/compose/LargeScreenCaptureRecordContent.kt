@@ -16,15 +16,21 @@
 
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.screencapture.common.ui.compose.ScreenCaptureContent
+import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
 import javax.inject.Inject
 
-class LargeScreenCaptureRecordContent @Inject constructor() : ScreenCaptureContent {
+class LargeScreenCaptureRecordContent
+@Inject
+constructor(private val viewModelFactory: PreCaptureViewModel.Factory) : ScreenCaptureContent {
 
     @Composable
     override fun Content() {
-        Text("Not yet implemented")
+        val viewModel: PreCaptureViewModel =
+            rememberViewModel("PreCaptureViewModel") { viewModelFactory.create() }
+
+        PreCaptureUI(viewModel = viewModel)
     }
 }

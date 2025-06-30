@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.ui.viewmodel
+package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import android.annotation.DrawableRes
 import android.annotation.SuppressLint

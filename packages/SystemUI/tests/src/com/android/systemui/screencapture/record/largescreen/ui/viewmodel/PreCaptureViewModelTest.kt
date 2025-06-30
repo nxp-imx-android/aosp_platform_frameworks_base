@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.ui.viewmodel
+package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -42,12 +42,12 @@ import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class ScreenCaptureViewModelTest : SysuiTestCase() {
+class PreCaptureViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope
 
     @Captor private lateinit var screenshotRequestCaptor: ArgumentCaptor<ScreenshotRequest>
-    private val viewModel: ScreenCaptureViewModel by lazy { kosmos.screenCaptureViewModel }
+    private val viewModel: PreCaptureViewModel by lazy { kosmos.preCaptureViewModel }
 
     @Before
     fun setUp() {
