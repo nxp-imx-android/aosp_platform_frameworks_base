@@ -841,7 +841,8 @@ public interface WindowManager extends ViewManager {
             ScreenshotSource.SCREENSHOT_OVERVIEW,
             ScreenshotSource.SCREENSHOT_ACCESSIBILITY_ACTIONS,
             ScreenshotSource.SCREENSHOT_OTHER,
-            ScreenshotSource.SCREENSHOT_VENDOR_GESTURE})
+            ScreenshotSource.SCREENSHOT_VENDOR_GESTURE,
+            ScreenshotSource.SCREENSHOT_SCREEN_CAPTURE_UI})
     @interface ScreenshotSource {
         int SCREENSHOT_GLOBAL_ACTIONS = 0;
         int SCREENSHOT_KEY_CHORD = 1;
@@ -850,6 +851,7 @@ public interface WindowManager extends ViewManager {
         int SCREENSHOT_ACCESSIBILITY_ACTIONS = 4;
         int SCREENSHOT_OTHER = 5;
         int SCREENSHOT_VENDOR_GESTURE = 6;
+        int SCREENSHOT_SCREEN_CAPTURE_UI = 7;
     }
 
     /**
