@@ -72,8 +72,6 @@ import java.net.UnknownHostException;
  * a positive value may be considered as a successful invocation.
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
-@android.ravenwood.annotation.RavenwoodClassLoadHook(
-        "com.android.platform.test.ravenwood.runtimehelper.ClassLoadHook.onClassLoaded")
 // Uncomment the following annotation to switch to the Java substitution version.
 @android.ravenwood.annotation.RavenwoodRedirectionClass("Log_ravenwood")
 public final class Log {

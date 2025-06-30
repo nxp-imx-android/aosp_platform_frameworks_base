@@ -24,7 +24,6 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
-import android.ravenwood.annotation.RavenwoodClassLoadHook;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.TypedValue;
 
@@ -44,12 +43,11 @@ import java.io.Reader;
 
 /**
  * Wrapper around a compiled XML file.
- * 
+ *
  * {@hide}
  */
 @VisibleForTesting(visibility = VisibleForTesting.Visibility.PACKAGE)
 @RavenwoodKeepWholeClass
-@RavenwoodClassLoadHook(RavenwoodClassLoadHook.LIBANDROID_LOADING_HOOK)
 public final class XmlBlock implements AutoCloseable {
     private static final boolean DEBUG=false;
     public static final String ANDROID_RESOURCES = "http://schemas.android.com/apk/res/android";
@@ -433,12 +431,12 @@ public final class XmlBlock implements AutoCloseable {
             }
             if (eventType != START_TAG && eventType != END_TAG) {
                throw new XmlPullParserException(
-                   getPositionDescription() 
+                   getPositionDescription()
                    + ": expected start or end tag", this, null);
             }
             return eventType;
         }
-    
+
         public int getAttributeNameResource(int index) {
             final int resourceNameId = nativeGetAttributeResource(mParseState, index);
             if (resourceNameId == ERROR_NULL_DOCUMENT) {
@@ -446,7 +444,7 @@ public final class XmlBlock implements AutoCloseable {
             }
             return resourceNameId;
         }
-    
+
         public int getAttributeListValue(String namespace, String attribute,
                 String[] options, int defaultValue) {
             int idx = nativeGetAttributeIndex(mParseState, namespace, attribute);
