@@ -66,6 +66,7 @@ import com.android.internal.app.procstats.ProcessStats;
 import com.android.internal.os.Zygote;
 import com.android.server.FgThread;
 import com.android.server.am.OomAdjusterImpl.ProcessRecordNode;
+import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 import com.android.server.wm.WindowProcessController;
 import com.android.server.wm.WindowProcessListener;
 
@@ -79,7 +80,7 @@ import java.util.function.Consumer;
  * Full information about a particular process that
  * is currently running.
  */
-class ProcessRecord implements WindowProcessListener {
+class ProcessRecord implements WindowProcessListener, ProcessStateRecord.ProcessRecordReader {
     static final String TAG = TAG_WITH_CLASS_NAME ? "ProcessRecord" : TAG_AM;
 
     final ActivityManagerService mService; // where we came from
@@ -626,7 +627,8 @@ class ProcessRecord implements WindowProcessListener {
         mErrorState = new ProcessErrorStateRecord(this);
         mWindowProcessController = new WindowProcessController(
                 mService.mActivityTaskManager, info, processName, uid, userId, this, this);
-        mState = new ProcessStateRecord(processName, uid, mWindowProcessController, mProfile, this);
+        mState = new ProcessStateRecord(processName, uid, mWindowProcessController, mProfile, this,
+                mService, mService.mProcLock);
         mOptRecord = new ProcessCachedOptimizerRecord(this);
         final long now = SystemClock.uptimeMillis();
         mProfile.init(now);
@@ -1171,16 +1173,49 @@ class ProcessRecord implements WindowProcessListener {
         return mState.isCached();
     }
 
-    boolean hasActivities() {
+    @Override
+    public boolean hasActivities() {
         return mWindowProcessController.hasActivities();
+    }
+
+    @Override
+    public boolean isHeavyWeightProcess() {
+        return mWindowProcessController.isHeavyWeightProcess();
+    }
+
+    @Override
+    public boolean hasVisibleActivities() {
+        return mWindowProcessController.hasVisibleActivities();
+    }
+
+    @Override
+    public boolean isHomeProcess() {
+        return mWindowProcessController.isHomeProcess();
+    }
+
+    @Override
+    public boolean isPreviousProcess() {
+        return mWindowProcessController.isPreviousProcess();
+    }
+
+    @Override
+    public boolean hasRecentTasks() {
+        return mWindowProcessController.hasRecentTasks();
+    }
+
+    @Override
+    public boolean isReceivingBroadcast(int[] outSchedGroup) {
+        return mService.isReceivingBroadcastLocked(this, outSchedGroup);
+    }
+
+    @Override
+    public boolean hasCompatChange(@CachedCompatChangeId int cachedCompatChangeId) {
+        return mService.mOomAdjuster.isChangeEnabled(cachedCompatChangeId, info,
+                false/* default */);
     }
 
     boolean hasActivitiesOrRecentTasks() {
         return mWindowProcessController.hasActivitiesOrRecentTasks();
-    }
-
-    boolean hasRecentTasks() {
-        return mWindowProcessController.hasRecentTasks();
     }
 
     @GuardedBy("mService")
