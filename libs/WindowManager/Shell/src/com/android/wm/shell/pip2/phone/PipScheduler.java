@@ -24,6 +24,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.SystemProperties;
+import android.os.Trace;
 import android.view.SurfaceControl;
 import android.window.DisplayAreaInfo;
 import android.window.WindowContainerToken;
@@ -241,6 +242,8 @@ public class PipScheduler implements PipTransitionState.PipTransitionStateChange
      * @param targetDisplayId the target display ID where the PiP window should be parented to.
      */
     public void scheduleMoveToDisplay(int targetDisplayId, Rect pipBounds) {
+        Trace.instant(Trace.TRACE_TAG_WINDOW_MANAGER,
+                "PipScheduler#scheduleMoveToDisplay: " + targetDisplayId);
         WindowContainerToken pipTaskToken = mPipTransitionState.getPipTaskToken();
         DisplayAreaInfo displayAreaInfo =
                 mPipDesktopState.getRootTaskDisplayAreaOrganizer().getDisplayAreaInfo(
