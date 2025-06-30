@@ -1455,10 +1455,29 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     @Override
     void onDisplayChanged(DisplayContent dc) {
-        if (dc != null && mDisplayContent != null && dc != mDisplayContent
-                && mDisplayContent.getImeInputTarget() == this) {
-            dc.updateImeInputAndControlTarget(getImeInputTarget());
-            mDisplayContent.setImeInputTarget(null /* target */);
+        if (mDisplayContent != null && dc != mDisplayContent) {
+            if (mInsetsSourceProviders != null && mInsetsSourceProviders.size() > 0) {
+                boolean notifyInsetsChange = false;
+                for (int i = mInsetsSourceProviders.size() - 1; i >= 0; i--) {
+                    if (mInsetsSourceProviders.valueAt(i).isServerVisible()) {
+                        notifyInsetsChange = true;
+                        break;
+                    }
+                }
+                mDisplayContent.getInsetsStateController().updateAboveInsetsState(
+                        notifyInsetsChange);
+            }
+            if (dc != null) {
+                dc.getInsetsStateController().updateAboveInsetsState(
+                        // This window doesn't have a frame yet. Don't let this window cause the
+                        // insets change.
+                        false /* notifyInsetsChange */);
+
+                if (mDisplayContent.getImeInputTarget() == this) {
+                    dc.updateImeInputAndControlTarget(getImeInputTarget());
+                    mDisplayContent.setImeInputTarget(null /* target */);
+                }
+            }
         }
         super.onDisplayChanged(dc);
         // Window was not laid out for this display yet, so make sure mLayoutSeq does not match.
