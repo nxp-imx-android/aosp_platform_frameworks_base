@@ -30,6 +30,8 @@ import android.os.SystemClock
 import android.os.UserHandle
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.widget.ImageView.ScaleType.CENTER_INSIDE
+import android.widget.ImageView.ScaleType.FIT_CENTER
 import androidx.test.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -277,6 +279,51 @@ class IconManagerTest : SysuiTestCase() {
         entry?.let { iconManager.updateIcons(it) }
         testScope.runCurrent()
         assertThat(entry?.icons?.shelfIcon?.sourceIcon).isEqualTo(shortcutIc)
+    }
+
+    @Test
+    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
+    fun testCreateIcons_cdFlagEnabled_scaleTypeIsFitCenter() {
+        val entry =
+            notificationEntry(
+                hasShortcut = false,
+                hasMessageSenderIcon = false,
+                hasLargeIcon = false,
+            )
+
+        iconManager.createIcons(entry!!)
+
+        assertThat(entry.icons.statusBarIcon!!.scaleType).isEqualTo(FIT_CENTER)
+    }
+
+    @Test
+    @DisableFlags(StatusBarConnectedDisplays.FLAG_NAME)
+    fun testCreateIcons_cdFlagDisabled_scaleTypeIsCenterInside() {
+        val entry =
+            notificationEntry(
+                hasShortcut = false,
+                hasMessageSenderIcon = false,
+                hasLargeIcon = false,
+            )
+
+        iconManager.createIcons(entry!!)
+
+        assertThat(entry.icons.statusBarIcon!!.scaleType).isEqualTo(CENTER_INSIDE)
+    }
+
+    @Test
+    @EnableFlags(StatusBarConnectedDisplays.FLAG_NAME)
+    fun testCreateSbIconView_cdFlagEnabled_scaleTypeIsFitCenter() {
+        val entry =
+            notificationEntry(
+                hasShortcut = false,
+                hasMessageSenderIcon = false,
+                hasLargeIcon = false,
+            )
+
+        val sbIconView = iconManager.createSbIconView(context, entry!!)
+
+        assertThat(sbIconView.scaleType).isEqualTo(FIT_CENTER)
     }
 
     private fun notificationEntry(
