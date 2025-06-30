@@ -158,6 +158,8 @@ private fun TaskBarAnd3ButtonAmbientCue(
             } else {
                 PaddingValues()
             },
+        portrait = portrait,
+        pillCenter = pillCenter,
     )
     ShortPill(
         actions = actions,
