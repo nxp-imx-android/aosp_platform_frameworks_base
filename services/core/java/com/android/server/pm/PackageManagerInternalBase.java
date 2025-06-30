@@ -24,6 +24,7 @@ import static com.android.server.pm.PackageManagerService.PLATFORM_PACKAGE_NAME;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.SpecialUsers;
 import android.annotation.UserIdInt;
 import android.content.ComponentName;
 import android.content.Context;
@@ -700,6 +701,15 @@ abstract class PackageManagerInternalBase extends PackageManagerInternal {
         return snapshot().isSuspendingAnyPackages(PLATFORM_PACKAGE_NAME, suspendingUserId, userId);
     }
 
+
+    @Override
+    @Deprecated
+    public void unsuspendForSuspendingPackage(String suspendingPackage,
+            @UserIdInt int suspendingUserId, @SpecialUsers.CanBeALL @UserIdInt int affectedUserId) {
+        mService.unsuspendForSuspendingPackage(
+                snapshot(), suspendingPackage, suspendingUserId, affectedUserId);
+    }
+
     @Override
     @Deprecated
     public final void requestChecksums(@NonNull String packageName, boolean includeSplits,
@@ -716,7 +726,8 @@ abstract class PackageManagerInternalBase extends PackageManagerInternal {
     @Deprecated
     public final boolean isPackageFrozen(@NonNull String packageName,
             int callingUid, int userId) {
-        return snapshot().getPackageStartability(mService.getSafeMode(), packageName, callingUid, userId)
+        return snapshot().getPackageStartability(mService.getSafeMode(),
+                packageName, callingUid, userId)
                 == PackageManagerService.PACKAGE_STARTABILITY_FROZEN;
     }
 
