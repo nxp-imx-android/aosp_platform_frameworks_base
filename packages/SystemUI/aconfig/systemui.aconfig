@@ -171,16 +171,6 @@ flag {
 }
 
 flag {
-    name: "notifications_hun_shared_animation_values"
-    namespace: "systemui"
-    description: "Adds a shared class for fetching HUN animation values."
-    bug: "393369891"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "notification_avalanche_throttle_hun"
     namespace: "systemui"
     description: "During notification avalanche, throttle HUNs showing in fast succession."

@@ -39,7 +39,6 @@ import com.android.systemui.shared.clocks.AnimatableClockView;
 import com.android.systemui.statusbar.NotificationShelf;
 import com.android.systemui.statusbar.notification.PhysicsPropertyAnimator;
 import com.android.systemui.statusbar.notification.headsup.HeadsUpAnimator;
-import com.android.systemui.statusbar.notification.headsup.NotificationsHunSharedAnimationValues;
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow;
 import com.android.systemui.statusbar.notification.row.ExpandableView;
 import com.android.systemui.statusbar.notification.row.StackScrollerDecorView;
@@ -101,8 +100,6 @@ public class StackStateAnimator {
 
     private ValueAnimator mTopOverScrollAnimator;
     private ValueAnimator mBottomOverScrollAnimator;
-    private int mHeadsUpAppearHeightBottom;
-    private int mStackTopMargin;
     private boolean mShadeExpanded;
     private ArrayList<ExpandableView> mTransientViewsToRemove = new ArrayList<>();
     private NotificationShelf mShelf;
@@ -756,16 +753,7 @@ public class StackStateAnimator {
     }
 
     private float getHeadsUpYTranslationStart(boolean headsUpFromBottom, boolean hasStatusBarChip) {
-        if (NotificationsHunSharedAnimationValues.isEnabled()) {
-            return mHeadsUpAnimator.getHeadsUpYTranslation(headsUpFromBottom, hasStatusBarChip);
-        }
-
-        if (headsUpFromBottom) {
-            // start from the bottom of the screen
-            return mHeadsUpAppearHeightBottom + mHeadsUpAppearStartAboveScreen;
-        }
-        // start from the top of the screen
-        return -mStackTopMargin - mHeadsUpAppearStartAboveScreen;
+        return mHeadsUpAnimator.getHeadsUpYTranslation(headsUpFromBottom, hasStatusBarChip);
     }
 
     /**
@@ -775,7 +763,7 @@ public class StackStateAnimator {
     private float getHeadsUpCyclingInYTranslationStart(boolean headsUpFromBottom) {
         if (headsUpFromBottom) {
             // start from the bottom of the screen
-            return mHeadsUpAppearHeightBottom + mHeadsUpCyclingPadding;
+            return mHeadsUpCyclingPadding;
         }
         // start from the top of the screen
         return -mHeadsUpCyclingPadding;
@@ -795,7 +783,7 @@ public class StackStateAnimator {
         final float translationDistance = mHeadsUpCyclingPadding + newHunHeight - oldHunHeight;
         if (headsUpFromBottom) {
             // start from the bottom of the screen
-            return mHeadsUpAppearHeightBottom - translationDistance;
+            return -translationDistance;
         }
         return translationDistance;
     }
@@ -843,16 +831,6 @@ public class StackStateAnimator {
         if (currentAnimator != null) {
             currentAnimator.cancel();
         }
-    }
-
-    public void setHeadsUpAppearHeightBottom(int headsUpAppearHeightBottom) {
-        NotificationsHunSharedAnimationValues.assertInLegacyMode();
-        mHeadsUpAppearHeightBottom = headsUpAppearHeightBottom;
-    }
-
-    public void setStackTopMargin(int stackTopMargin) {
-        NotificationsHunSharedAnimationValues.assertInLegacyMode();
-        mStackTopMargin = stackTopMargin;
     }
 
     public void setShadeExpanded(boolean shadeExpanded) {
