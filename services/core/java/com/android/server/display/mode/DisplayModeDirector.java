@@ -138,7 +138,6 @@ public class DisplayModeDirector {
     private final SkinThermalStatusObserver mSkinThermalStatusObserver;
     private final ModeChangeObserver mModeChangeObserver;
 
-    @Nullable
     private final SystemRequestObserver mSystemRequestObserver;
     private final DeviceConfigParameterProvider mConfigParameterProvider;
     private final DeviceConfigDisplaySettings mDeviceConfigDisplaySettings;
@@ -252,11 +251,7 @@ public class DisplayModeDirector {
         mModeChangeObserver = new ModeChangeObserver(mVotesStorage, injector, handler.getLooper());
         mHbmObserver = new HbmObserver(injector, mVotesStorage, BackgroundThread.getHandler(),
                 mDeviceConfigDisplaySettings);
-        if (displayManagerFlags.isRestrictDisplayModesEnabled()) {
-            mSystemRequestObserver = new SystemRequestObserver(mVotesStorage);
-        } else {
-            mSystemRequestObserver = null;
-        }
+        mSystemRequestObserver = mInjector.getSystemRequestObserver(mVotesStorage);
         mAlwaysRespectAppRequest = false;
         mSupportsFrameRateOverride = injector.supportsFrameRateOverride();
     }
@@ -573,14 +568,12 @@ public class DisplayModeDirector {
      * Delegates requestDisplayModes call to SystemRequestObserver
      */
     public void requestDisplayModes(IBinder token, int displayId, int[] modeIds) {
-        if (mSystemRequestObserver != null) {
-            boolean vrrSupported;
-            synchronized (mLock) {
-                vrrSupported = isVrrSupportedLocked(displayId);
-            }
-            if (vrrSupported) {
-                mSystemRequestObserver.requestDisplayModes(token, displayId, modeIds);
-            }
+        boolean vrrSupported;
+        synchronized (mLock) {
+            vrrSupported = isVrrSupportedLocked(displayId);
+        }
+        if (vrrSupported) {
+            mSystemRequestObserver.requestDisplayModes(token, displayId, modeIds);
         }
     }
 
@@ -3180,6 +3173,8 @@ public class DisplayModeDirector {
         VotesStatsReporter getVotesStatsReporter();
 
         AmbientFilter getAmbientFilter(Resources res);
+
+        SystemRequestObserver getSystemRequestObserver(VotesStorage votesStorage);
     }
 
     @VisibleForTesting
@@ -3332,6 +3327,11 @@ public class DisplayModeDirector {
         @Override
         public AmbientFilter getAmbientFilter(Resources res) {
             return AmbientFilterFactory.createBrightnessFilter(TAG, res);
+        }
+
+        @Override
+        public SystemRequestObserver getSystemRequestObserver(VotesStorage votesStorage) {
+            return new SystemRequestObserver(votesStorage);
         }
 
         private DisplayManager getDisplayManager() {

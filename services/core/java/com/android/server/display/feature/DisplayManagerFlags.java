@@ -101,10 +101,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_BRIGHTNESS_INT_RANGE_USER_PERCEPTION,
             Flags::brightnessIntRangeUserPerception);
 
-    private final FlagState mRestrictDisplayModes = new FlagState(
-            Flags.FLAG_ENABLE_RESTRICT_DISPLAY_MODES,
-            Flags::enableRestrictDisplayModes);
-
     private final FlagState mResolutionBackupRestore = new FlagState(
             Flags.FLAG_RESOLUTION_BACKUP_RESTORE,
             Flags::resolutionBackupRestore);
@@ -413,10 +409,6 @@ public class DisplayManagerFlags {
         return mBrightnessIntRangeUserPerceptionFlagState.isEnabled();
     }
 
-    public boolean isRestrictDisplayModesEnabled() {
-        return mRestrictDisplayModes.isEnabled();
-    }
-
     public boolean isResolutionBackupRestoreEnabled() {
         return mResolutionBackupRestore.isEnabled();
     }
@@ -694,7 +686,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mDisplayConfigErrorHalFlagState);
         pw.println(" " + mSyncedResolutionSwitch);
         pw.println(" " + mBrightnessIntRangeUserPerceptionFlagState);
-        pw.println(" " + mRestrictDisplayModes);
         pw.println(" " + mBrightnessWearBedtimeModeClamperFlagState);
         pw.println(" " + mAutoBrightnessModesFlagState);
         pw.println(" " + mFastHdrTransitions);
