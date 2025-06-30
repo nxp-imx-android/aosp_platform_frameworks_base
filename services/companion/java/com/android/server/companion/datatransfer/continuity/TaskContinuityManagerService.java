@@ -23,6 +23,7 @@ import android.companion.datatransfer.continuity.ITaskContinuityManager;
 import android.companion.datatransfer.continuity.IRemoteTaskListener;
 import android.companion.datatransfer.continuity.RemoteTask;
 import android.content.Context;
+import android.os.Binder;
 import android.util.Slog;
 
 import com.android.server.companion.datatransfer.continuity.handoff.InboundHandoffRequestController;
@@ -105,10 +106,15 @@ public final class TaskContinuityManagerService extends SystemService {
             int associationId,
             int remoteTaskId,
             @NonNull IHandoffRequestCallback callback) {
-            mOutboundHandoffRequestController.requestHandoff(
-                associationId,
-                remoteTaskId,
-                callback);
+            final long ident = Binder.clearCallingIdentity();
+            try {
+                mOutboundHandoffRequestController.requestHandoff(
+                    associationId,
+                    remoteTaskId,
+                    callback);
+            } finally {
+                Binder.restoreCallingIdentity(ident);
+            }
         }
     }
 
