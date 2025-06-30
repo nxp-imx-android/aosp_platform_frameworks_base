@@ -15,13 +15,19 @@
  */
 package android.platform.test.ravenwood;
 
+import static org.junit.Assert.assertNotNull;
+
 import android.annotation.NonNull;
+import android.app.ResourcesManager;
+import android.content.res.Resources;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.Log;
+import android.view.DisplayAdjustments;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.ravenwood.RavenwoodVmState;
+import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,10 +41,6 @@ import java.util.concurrent.atomic.AtomicReference;
  * A singleton class that prepares and manages various app/process lifecycle related states.
  *
  * It's also responsible for initializing {@link RavenwoodVmState}.
- *
- * TODO: Move more of app/process lifecycle related initialization to this class. For example,
- * resource loading should probably move here, and have Context use it to get resources, just like
- * how we handle the app data directories.
  */
 public class RavenwoodEnvironment {
     public static final String TAG = "RavenwoodEnvironment";
@@ -51,6 +53,15 @@ public class RavenwoodEnvironment {
     public static RavenwoodEnvironment getInstance() {
         return Objects.requireNonNull(sInstance.get(), "Instance not set!");
     }
+
+    private static final File RAVENWOOD_TARGET_RESOURCE_APK =
+            new File("ravenwood-res-apks/ravenwood-res.apk");
+    private static final File RAVENWOOD_INST_RESOURCE_APK =
+            new File("ravenwood-res-apks/ravenwood-inst-res.apk");
+
+    private static final File RAVENWOOD_EMPTY_RESOURCES_APK =
+            new File(RavenwoodInternalUtils.getRavenwoodRuntimePath(),
+                    "/ravenwood-data/ravenwood-empty-res.apk");
 
     private final Object mLock = new Object();
 
@@ -78,6 +89,9 @@ public class RavenwoodEnvironment {
 
     @GuardedBy("mLock")
     private final Map<String, File> mAppDataDirs = new HashMap<>();
+
+    @GuardedBy("mLock")
+    private final Map<String, Resources> mPackagesToResources = new HashMap<>();
 
     public RavenwoodEnvironment(
             int uid,
@@ -220,5 +234,67 @@ public class RavenwoodEnvironment {
             mAppDataDirs.put(packageName, dir);
             return dir;
         }
+    }
+
+    /**
+     * Get the resources for a given package's resources.
+     *
+     * @param packageName package name, or "android" to load the system resources.
+     */
+    public Resources loadResources(@NonNull String packageName) {
+        synchronized (mLock) {
+            final var cached = mPackagesToResources.get(packageName);
+            if (cached != null) {
+                return cached;
+            }
+            final var loaded = loadResourcesInnerLocked(packageName);
+            mPackagesToResources.put(packageName, loaded);
+            return loaded;
+        }
+    }
+
+    @GuardedBy("mLock")
+    private Resources loadResourcesInnerLocked(@NonNull String packageName) {
+        final var apk = getResourcesApkFile(packageName);
+        final var emptyPaths = new String[0];
+
+        ResourcesManager.getInstance().initializeApplicationPaths(
+                apk.getAbsolutePath(), emptyPaths);
+
+        final var ret = ResourcesManager.getInstance().getResources(null, apk.getAbsolutePath(),
+                emptyPaths, emptyPaths, emptyPaths,
+                emptyPaths, null, null,
+                new DisplayAdjustments().getCompatibilityInfo(),
+                RavenwoodDriver.class.getClassLoader(), null);
+
+        assertNotNull(ret);
+        return ret;
+    }
+
+    /**
+     * Get the resource APK file for a given package's resources.
+     * @param packageName package name, or "android" to load the system resources.
+     */
+    public File getResourcesApkFile(@NonNull String packageName) {
+        if (packageName.equals(getTargetPackageName())) {
+            if (RAVENWOOD_TARGET_RESOURCE_APK.exists()) {
+                return RAVENWOOD_TARGET_RESOURCE_APK;
+            }
+            // fall-through and use the default resources.
+
+        } else if (packageName.equals(getInstPackageName())) {
+            if (RAVENWOOD_INST_RESOURCE_APK.exists()) {
+                return RAVENWOOD_INST_RESOURCE_APK;
+            }
+            // fall-through and use the default resources.
+
+
+        } else if (packageName.equals(RavenwoodInternalUtils.ANDROID_PACKAGE_NAME)) {
+            // fall-through and use the default resources.
+
+        } else {
+            throw new RuntimeException("Unknown package name: " + packageName);
+        }
+        return RAVENWOOD_EMPTY_RESOURCES_APK;
     }
 }

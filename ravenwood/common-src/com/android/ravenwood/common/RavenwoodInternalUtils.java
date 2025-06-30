@@ -53,13 +53,6 @@ public class RavenwoodInternalUtils {
 
     public static final String RAVENWOOD_SYSPROP = "ro.is_on_ravenwood";
 
-    public static final String RAVENWOOD_RESOURCE_APK = "ravenwood-res-apks/ravenwood-res.apk";
-    public static final String RAVENWOOD_INST_RESOURCE_APK =
-            "ravenwood-res-apks/ravenwood-inst-res.apk";
-
-    public static final String RAVENWOOD_EMPTY_RESOURCES_APK =
-            "ravenwood-data/ravenwood-empty-res.apk";
-
     /**
      * @return if we're running on Ravenwood.
      */
