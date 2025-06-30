@@ -155,7 +155,7 @@ public class AppFunctionManagerServiceImpl extends IAppFunctionManager.Stub {
                 context,
                 new RemoteServiceCallerImpl<>(
                         context, IAppFunctionService.Stub::asInterface, THREAD_POOL_EXECUTOR),
-                new CallerValidatorImpl(context),
+                new CallerValidatorImpl(context, appFunctionAccessServiceInterface),
                 new ServiceHelperImpl(context),
                 new ServiceConfigImpl(),
                 new AppFunctionsLoggerWrapper(context),
