@@ -4606,10 +4606,10 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         /**
          * Attaches the screenshot of IME (a screenshot will be taken if there wasn't one) to the
-         * IME target task and shows it. If the given {@param anyTargetTask} is true, the screenshot
-         * won't be skipped by the activity type of IME target task.
+         * IME target task and shows it. The screenshot will be skipped for activities of type home
+         * or recents.
          */
-        void attachAndShow(@NonNull Transaction t, boolean anyTargetTask) {
+        void attachAndShow(@NonNull Transaction t) {
             final DisplayContent dc = mImeTarget.getDisplayContent();
             // Prepare IME screenshot for the target if it allows to attach into.
             final Task task = mImeTarget.getTask();
@@ -4619,7 +4619,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
                     || mSurface.getHeight() != dc.mInputMethodWindow.getFrame().height();
             // The exclusion of home/recents is an optimization for regular task switch because
             // home/recents won't appear in recents task.
-            if (task != null && (anyTargetTask || !task.isActivityTypeHomeOrRecents())) {
+            if (task != null && !task.isActivityTypeHomeOrRecents()) {
                 final ScreenCaptureInternal.ScreenshotHardwareBuffer buffer =
                         renewSurface
                                 ? dc.mWmService.mTaskSnapshotController
@@ -4666,27 +4666,18 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         // Prepare IME screenshot for the target if it allows to attach into.
         if (mInputMethodWindow != null && mInputMethodWindow.isVisible()) {
-            attachImeScreenshotOnTarget(mImeLayeringTarget, false /* hideImeWindow */);
+            attachImeScreenshotOnTarget(mImeLayeringTarget);
         }
     }
 
-    private void attachImeScreenshotOnTarget(@NonNull WindowState imeTarget,
-            boolean hideImeWindow) {
+    private void attachImeScreenshotOnTarget(@NonNull WindowState imeTarget) {
         final SurfaceControl.Transaction t = getPendingTransaction();
         // Remove the old IME screenshot first in case the new screenshot happens to
         // override the current one before the transition finish and the surface never be
         // removed on the task.
         removeImeScreenshotImmediately();
         mImeScreenshot = new ImeScreenshot(imeTarget, mWmService.mSurfaceControlFactory.get());
-        // If the caller requests to hide IME, then allow to show IME screenshot for any target
-        // task. So IME won't look like it suddenly disappeared. It usually happens when turning
-        // the screen off.
-        mImeScreenshot.attachAndShow(t, hideImeWindow /* anyTargetTask */);
-        if (mInputMethodWindow != null && hideImeWindow) {
-            // Hide the IME window when deciding to show IME screenshot on demand.
-            // InsetsController will make IME visible again before animating it.
-            mInputMethodWindow.hide(false, false);
-        }
+        mImeScreenshot.attachAndShow(t);
     }
 
     /**
@@ -4704,7 +4695,7 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
      */
     @VisibleForTesting
     void showImeScreenshot(@NonNull WindowState imeTarget) {
-        attachImeScreenshotOnTarget(imeTarget, true /* hideImeWindow */);
+        attachImeScreenshotOnTarget(imeTarget);
     }
 
     /**
