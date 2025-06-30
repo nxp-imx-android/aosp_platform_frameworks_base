@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Şu anda ekranınızın tamamını kaydediyorsunuz"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Şu anda <xliff:g id="APP_NAME">%1$s</xliff:g> içeriğini kaydediyorsunuz"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Kaydı durdur"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Seçili alanın görüntüsünü al"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Yakala"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Kaydet"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ekran paylaşılıyor"</string>
@@ -1656,14 +1655,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Bilinmiyor"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Tüm ayar kutuları sıfırlansın mı?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Tüm Hızlı Ayar kutuları cihazın özgün ayarlarına sıfırlanır"</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"Faydalı öneriler alma"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"Ekranda yaptıklarınızla ilgili proaktif olarak bilgi ve işlem önermek için yapay zekadan yararlanırız"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"Simge"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"Önerilerin nasıl oluşturulduğunu görmek için dokunup basılı tutun"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> artık canlı güncellemeleri göstermeyecek. İstediğiniz zaman bunu Ayarlar\'dan değiştirebilirsiniz."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Kapat"</string>

@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"మీరు ప్రస్తుతం మీ మొత్తం స్క్రీన్‌ను రికార్డ్ చేస్తున్నారు"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"మీరు ప్రస్తుతం <xliff:g id="APP_NAME">%1$s</xliff:g>‌ను రికార్డ్ చేస్తున్నారు"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"రికార్డింగ్‌ను ఆపివేయండి"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"ఎంచుకున్న ఏరియాను క్యాప్చర్ చేయండి"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"క్యాప్చర్ చేయండి"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"రికార్డ్ చేయండి"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"స్క్రీన్‌ను షేర్ చేస్తోంది"</string>
@@ -1656,14 +1655,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"తెలియదు"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"టైల్స్ అన్ని రీసెట్ చేయాలా?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"క్విక్ సెట్టింగ్‌ల టైల్స్ అన్నీ, డివైజ్ తాలూకు ఒరిజినల్ సెట్టింగ్‌లకు రీసెట్ అవుతాయి"</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"సహాయకరమైన సూచనలను పొందండి"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"మీరు స్క్రీన్‌పై చేస్తున్న యాక్టివిటీకి సంబంధించిన సమాచారాన్ని, చర్యలను ముందుగానే సిఫార్సు చేయడానికి మేము AIని ఉపయోగిస్తాము"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"చిహ్నం"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"సూచనలు ఎలా జెనరేట్ అవుతాయో చూడటానికి తాకి &amp; నొక్కి ఉంచండి"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ఇకపై లైవ్ అప్‌డేట్‌లను చూపించదు. మీరు దీన్ని ఎప్పుడైనా సెట్టింగ్‌లలో మార్చవచ్చు."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"మూసివేయండి"</string>

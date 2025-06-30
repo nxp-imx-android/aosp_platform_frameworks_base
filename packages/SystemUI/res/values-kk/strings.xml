@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Қазір бүкіл экранды жазып жатырсыз."</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Қазір қолданбадағы (<xliff:g id="APP_NAME">%1$s</xliff:g>) контентті жазып жатырсыз."</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Жазуды тоқтату"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Таңдалған аймақты түсіру"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Түсіру"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Жазу"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Экранды бөлісіп жатыр."</string>
@@ -1317,7 +1316,7 @@
     <string name="media_output_dialog_group" msgid="5571251347877452212">"Топ"</string>
     <string name="media_output_dialog_single_device" msgid="3102758980643351058">"1 құрылғы таңдалды."</string>
     <string name="media_output_dialog_multiple_devices" msgid="1093771040315422350">"<xliff:g id="COUNT">%1$d</xliff:g> құрылғы таңдалды."</string>
-    <string name="media_output_item_connected_state" msgid="297439499870755458">"Жалғанды"</string>
+    <string name="media_output_item_connected_state" msgid="297439499870755458">"Қосылды"</string>
     <string name="media_output_dialog_connect_failed" msgid="3080972621975339387">"Ауысу мүмкін емес. Әрекетті қайталау үшін түртіңіз."</string>
     <string name="media_output_dialog_pairing_new" msgid="5098212763195577270">"Құрылғы жалғау"</string>
     <string name="media_output_dialog_button_connect_device" msgid="2819038239946643550">"Құрылғыны жалғау"</string>
@@ -1656,14 +1655,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Белгісіз"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Барлық бөлшекті бастапқы күйге қайтару керек пе?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Барлық \"Жылдам параметрлер\" бөлшегі құрылғының бастапқы параметрлеріне қайтарылады."</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"Пайдалы ұсыныстар алыңыз"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"Экранда орындап жатқан әрекетіңізге сәйкес ақпарат пен әрекеттерді белсене ұсыну үшін жасанды интеллектіні пайдаланамыз"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"Белгіше"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"Ұсыныстар қалай жасалатынын көру үшін басып тұрыңыз"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> бұдан былай нақты уақыттағы жаңартуларды көрсетпейді. Мұны кез келген уақытта \"Параметрлер\" бөлімінен өзгертуге болады."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Жабу"</string>

@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"இப்போது உங்கள் முழுத்திரையையும் ரெக்கார்டு செய்கிறீர்கள்"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"இப்போது நீங்கள் <xliff:g id="APP_NAME">%1$s</xliff:g> ஐ ரெக்கார்டு செய்கிறீர்கள்"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"ரெக்கார்டிங்கை நிறுத்து"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"தேர்ந்தெடுத்த பகுதியைப் படமெடு"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"படமெடு"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"ரெக்கார்டு செய்"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"திரையைப் பகிர்கிறது"</string>
@@ -1656,14 +1655,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"தெரியவில்லை"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"அனைத்துக் கட்டங்களையும் மீட்டமைக்கவா?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"விரைவு அமைப்புகளின் கட்டங்கள் அனைத்தும் சாதனத்தின் அசல் அமைப்புகளுக்கு மீட்டமைக்கப்படும்"</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"உதவிகரமான பரிந்துரைகளைப் பெறுங்கள்"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"திரையில் நீங்கள் செய்பவற்றுக்குப் பொருத்தமான தகவல்களையும் செயல்களையும் முன்கூட்டியே பரிந்துரைக்க AIயைப் பயன்படுத்துகிறோம்"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"ஐகான்"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"பரிந்துரைகள் எப்படி உருவாகின்றன என்பதைப் பார்க்க தொட்டுப் பிடியுங்கள்"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> இனி நேரலை அறிவிப்புகளைக் காட்டாது. இதை எப்போது வேண்டுமானாலும் அமைப்புகளில் மாற்றலாம்."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"மூடும்"</string>

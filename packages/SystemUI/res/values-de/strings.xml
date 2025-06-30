@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Du zeichnest momentan deinen gesamten Bildschirm auf"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Du zeichnest momentan Inhalte der App <xliff:g id="APP_NAME">%1$s</xliff:g> auf"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Aufzeichnung beenden"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Ausgewählten Bereich aufnehmen"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Screenshot"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Bildschirmaufzeichnung"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Bildschirm wird geteilt"</string>
@@ -1598,27 +1597,27 @@
     <string name="touchpad_back_gesture_action_title" msgid="7199067250654332735">"Zurück"</string>
     <string name="touchpad_back_gesture_guidance" msgid="5352221087725906542">"Wische mit drei Fingern auf dem Touchpad nach links oder rechts"</string>
     <string name="touchpad_back_gesture_success_title" msgid="7370719098633023496">"Sehr gut!"</string>
-    <string name="touchpad_back_gesture_success_body" msgid="2324724953720741719">"Du hast das Tutorial für die Touch-Geste „Zurück“ abgeschlossen."</string>
+    <string name="touchpad_back_gesture_success_body" msgid="2324724953720741719">"Du hast das Tutorial für die Touchgeste „Zurück“ abgeschlossen."</string>
     <string name="touchpad_back_gesture_error_body" msgid="7112668207481458792">"Wenn du mit dem Touchpad zurückgehen möchtest, wische mit drei Fingern nach links oder rechts"</string>
     <string name="touchpad_home_gesture_action_title" msgid="8885107349719257882">"Startbildschirm"</string>
     <string name="touchpad_home_gesture_guidance" msgid="4178219118381915899">"Wische an einer beliebigen Stelle auf dem Touchpad mit drei Fingern nach oben"</string>
     <string name="touchpad_home_gesture_success_title" msgid="3648264553645798470">"Gut gemacht!"</string>
-    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Du hast das Tutorial für die Touch-Geste „Zum Startbildschirm“ abgeschlossen"</string>
+    <string name="touchpad_home_gesture_success_body" msgid="2590690589194027059">"Du hast den Schritt für die „Startbildschirm“-Touchgeste abgeschlossen"</string>
     <string name="touchpad_home_gesture_error_body" msgid="3810674109999513073">"Wenn du zum Startbildschirm gelangen möchtest, wische auf dem Touchpad mit drei Fingern nach oben"</string>
     <string name="touchpad_recent_apps_gesture_action_title" msgid="934906836867137906">"Letzte Apps aufrufen"</string>
     <string name="touchpad_recent_apps_gesture_guidance" msgid="6304446013842271822">"Wische mit drei Fingern nach oben und halte das Touchpad gedrückt"</string>
     <string name="touchpad_recent_apps_gesture_success_title" msgid="8481920554139332593">"Gut gemacht!"</string>
-    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Du hast das Tutorial für die Touch-Geste zum Aufrufen der zuletzt verwendeten Apps abgeschlossen."</string>
+    <string name="touchpad_recent_apps_gesture_success_body" msgid="4334263906697493273">"Du hast das Tutorial für die Touchgeste zum Aufrufen der zuletzt verwendeten Apps abgeschlossen."</string>
     <string name="touchpad_recent_gesture_error_body" msgid="8695535720378462022">"Wenn du zuletzt verwendete Apps aufrufen möchtest, wische mit drei Fingern nach oben und halte das Touchpad gedrückt"</string>
     <string name="touchpad_switch_apps_gesture_action_title" msgid="6835222344612924512">"Zwischen Apps wechseln"</string>
     <string name="touchpad_switch_apps_gesture_guidance" msgid="2554844933805502538">"Wische mit vier Fingern auf dem Touchpad nach rechts"</string>
     <string name="touchpad_switch_apps_gesture_success_title" msgid="4894947244328032458">"Gut gemacht!"</string>
-    <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"Du hast das Tutorial für die Touch-Geste „Apps wechseln“ abgeschlossen."</string>
+    <string name="touchpad_switch_apps_gesture_success_body" msgid="8151089866035126312">"Du hast das Tutorial für die Touchgeste „Apps wechseln“ abgeschlossen."</string>
     <string name="touchpad_switch_gesture_error_body" msgid="5895231916964677918">"Wische mit vier Fingern auf dem Touchpad nach rechts, um zwischen Apps zu wechseln"</string>
     <string name="tutorial_action_key_title" msgid="8172535792469008169">"Alle Apps anzeigen"</string>
     <string name="tutorial_action_key_guidance" msgid="5040613427202799294">"Drücke die Aktionstaste auf deiner Tastatur"</string>
     <string name="tutorial_action_key_success_title" msgid="2371827347071979571">"Perfekt!"</string>
-    <string name="tutorial_action_key_success_body" msgid="1688986269491357832">"Du hast das Tutorial für die Touch-Geste zum Aufrufen aller Apps abgeschlossen"</string>
+    <string name="tutorial_action_key_success_body" msgid="1688986269491357832">"Du hast das Tutorial für die Touchgeste zum Aufrufen aller Apps abgeschlossen"</string>
     <string name="touchpad_action_key_error_body" msgid="8685502040091860903">"Drücke die Aktionstaste auf deiner Tastatur, um alle deine Apps aufzurufen"</string>
     <string name="tutorial_animation_content_description" msgid="2698816574982370184">"Animation während des Tutorials, zum Pausieren und Fortsetzen der Wiedergabe klicken."</string>
     <string name="keyboard_backlight_dialog_title" msgid="8273102932345564724">"Tastaturbeleuchtung"</string>
@@ -1656,14 +1655,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Unbekannt"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Alle Kacheln zurücksetzen?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Alle Schnelleinstellungen-Kacheln werden auf die Standardeinstellungen des Geräts zurückgesetzt"</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"Hilfreiche Vorschläge erhalten"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"Wir schlagen dir mithilfe von KI proaktiv Informationen und Aktionen vor, die für das, was du gerade auf dem Display machst, relevant sind"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"Symbol"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"Gedrückt halten, um zu sehen, wie Vorschläge generiert werden"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> zeigt keine Livemeldungen mehr an. Du kannst dies jederzeit in den Einstellungen ändern."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Schließen"</string>

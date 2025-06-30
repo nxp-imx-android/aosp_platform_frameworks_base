@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Nå tar du opptak av hele skjermen"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Du tar nå opp <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Stopp opptaket"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Ta bilde av det valgte området"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Ta bilde"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Ta opp"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Deler skjermen"</string>
@@ -1656,14 +1655,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Ukjent"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Vil du tilbakestille alle brikkene?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Alle brikker for hurtiginnstillinger tilbakestilles til enhetens opprinnelige innstillinger"</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"Få nyttige forslag"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"Vi bruker AI for å gi proaktive forslag til informasjon og handlinger som er relevante for det du gjør på skjermen"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"Ikon"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"Trykk og hold for å se hvordan forslag genereres"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> viser ikke direkteoppdateringer lenger. Du kan endre dette når som helst i innstillingene."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Lukk"</string>

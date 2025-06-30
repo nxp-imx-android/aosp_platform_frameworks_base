@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Hozir butun ekran yozib olinmoqda"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Hozir <xliff:g id="APP_NAME">%1$s</xliff:g> ilovasi yozib olinmoqda"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Yozuvni toʻxtatish"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Tanlangan hududni tasvirga olish"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Tasvirga olish"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Yozib olish"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ekran ulashilmoqda"</string>
@@ -1655,14 +1654,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Noaniq"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Barcha katakchalar asliga qaytarilsinmi?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Barcha Tezkor sozlamalar katakchalari qurilmaning asl sozlamalariga qaytariladi"</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"Foydali tavsiyalar olish"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"Biz AI yordamida ekranda bajarayotgan amallaringizga aloqador maʼlumot va amallarni oldindan tavsiya qilamiz"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"Belgi"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"Takliflar qanday yaratilishini koʻrish uchun bosib turing"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> maʼlumotlari endi real vaqtda yangilanmaydi. Bu parametrni istalgan vaqtda sozlamalardan o‘zgartirish mumkin."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Yopish"</string>
