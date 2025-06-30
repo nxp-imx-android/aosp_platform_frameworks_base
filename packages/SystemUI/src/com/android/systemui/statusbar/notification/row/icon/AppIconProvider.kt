@@ -128,6 +128,7 @@ constructor(
                             intArrayOf(
                                 /* background */ res.getColor(R.color.materialColorPrimary),
                                 /* icon */ res.getColor(R.color.materialColorSurfaceContainerHigh),
+                                /* adaptive background */ res.getColor(R.color.materialColorPrimary)
                             )
                         },
                     )
@@ -145,7 +146,11 @@ constructor(
                 MonoIconThemeController(
                     shouldForceThemeIcon = true,
                     colorProvider = { _ ->
-                        intArrayOf(/* background */ Color.BLACK, /* icon */ Color.WHITE)
+                        intArrayOf(
+                            /* background */ Color.BLACK,
+                            /* icon */ Color.WHITE,
+                            /* adaptive background */ Color.BLACK
+                        )
                     },
                 )
         }
