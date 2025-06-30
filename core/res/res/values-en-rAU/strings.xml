@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"This app isn\'t 16 KB compatible. APK alignment check failed. This app will be run using page size compatible mode. For best compatibility, please recompile the application with 16 KB support. For more information, see &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"This app isn\'t 16 KB compatible. ELF alignment check failed. This app will be run using page size compatible mode. For best compatibility, please recompile the application with 16 KB support. For more information, see &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"This app isn\'t 16 KB compatible. APK and ELF alignment checks failed. This app will be run using page size compatible mode. For best compatibility, please recompile the application with 16 KB support. For more information, see &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"This warning is showing because this is a debuggable app which is currently being tested. If you are not the developer, please report this to the developer and ask for a non-debuggable app. This app isn\'t 16 KB-compatible. APK alignment check failed. Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"This warning is showing because this is a debuggable app which is currently being tested. If you are not the developer, please report this to the developer and ask for a non-debuggable app. This app isn\'t 16 KB-compatible. ELF alignment check failed. Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"This warning is showing because this is a debuggable app which is currently being tested. If you are not the developer, please report this to the developer and ask for a non-debuggable app. This app isn\'t 16 KB-compatible. APK and ELF alignment checks failed. Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Don\'t show again"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Service not provisioned."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"You can\'t change the caller ID setting."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Switched data to <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>

@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"ಈ ಆ್ಯಪ್‌ 16 KB ಗೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಮತ್ತು ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿವೆ ಪುಟದ ಗಾತ್ರಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವ ಮೋಡ್ ಅನ್ನು ಬಳಸಿಕೊಂಡು ಆ್ಯಪ್ ಅನ್ನು ರನ್ ಮಾಡಲಾಗುತ್ತದೆ. ಉತ್ತಮ ಹೊಂದಾಣಿಕೆಗಾಗಿ, 16 KB ಗೆ ಬೆಂಬಲದೊಂದಿಗೆ ಆ್ಯಪ್ ಅನ್ನು ಮರುಕಂಪೈಲ್ ಮಾಡಿ. ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ಅನ್ನು ನೋಡಿ"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"ಈ ಆ್ಯಪ್‌ 16 KB ಗೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ. ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿದೆ. ಪುಟದ ಗಾತ್ರಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವ ಮೋಡ್ ಅನ್ನು ಬಳಸಿಕೊಂಡು ಆ್ಯಪ್ ಅನ್ನು ರನ್ ಮಾಡಲಾಗುತ್ತದೆ. ಉತ್ತಮ ಹೊಂದಾಣಿಕೆಗಾಗಿ, 16 KB ಗೆ ಬೆಂಬಲದೊಂದಿಗೆ ಆ್ಯಪ್ ಅನ್ನು ಮರುಕಂಪೈಲ್ ಮಾಡಿ. ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ಅನ್ನು ನೋಡಿ"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"ಈ ಆ್ಯಪ್‌ 16 KB ಗೆ ಹೊಂದಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಮತ್ತು ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿವೆ ಪುಟದ ಗಾತ್ರಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವ ಮೋಡ್ ಅನ್ನು ಬಳಸಿಕೊಂಡು ಆ್ಯಪ್ ಅನ್ನು ರನ್ ಮಾಡಲಾಗುತ್ತದೆ. ಉತ್ತಮ ಹೊಂದಾಣಿಕೆಗಾಗಿ, 16 KB ಗೆ ಬೆಂಬಲದೊಂದಿಗೆ ಆ್ಯಪ್ ಅನ್ನು ಮರುಕಂಪೈಲ್ ಮಾಡಿ. ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ಅನ್ನು ನೋಡಿ"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"ಇದು ಡೀಬಗ್ ಮಾಡಬಹುದಾದ ಆ್ಯಪ್ ಆಗಿದ್ದು, ಪ್ರಸ್ತುತ ಪರೀಕ್ಷಿಸಲಾಗುತ್ತಿರುವುದರಿಂದ ಈ ಎಚ್ಚರಿಕೆಯನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ. ನೀವು ಡೆವಲಪರ್ ಅಲ್ಲದಿದ್ದರೆ, ಇದನ್ನು ಡೆವಲಪರ್‌ಗೆ ವರದಿ ಮಾಡಿ ಮತ್ತು ಡೀಬಗ್ ಮಾಡಲಾಗದ ಆ್ಯಪ್‌ಗಾಗಿ ಕೇಳಿ. ಈ ಆ್ಯಪ್ 16 KB ಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆ ವಿಫಲವಾಗಿದೆ. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ನಲ್ಲಿ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"ಇದು ಡೀಬಗ್ ಮಾಡಬಹುದಾದ ಆ್ಯಪ್ ಆಗಿದ್ದು, ಪ್ರಸ್ತುತ ಪರೀಕ್ಷಿಸಲಾಗುತ್ತಿರುವುದರಿಂದ ಈ ಎಚ್ಚರಿಕೆಯನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ. ನೀವು ಡೆವಲಪರ್ ಅಲ್ಲದಿದ್ದರೆ, ಇದನ್ನು ಡೆವಲಪರ್‌ಗೆ ವರದಿ ಮಾಡಿ ಮತ್ತು ಡೀಬಗ್ ಮಾಡಲಾಗದ ಆ್ಯಪ್‌ಗಾಗಿ ಕೇಳಿ. ಈ ಆ್ಯಪ್ 16 KB ಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆ ವಿಫಲವಾಗಿದೆ. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ನಲ್ಲಿ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"ಇದು ಡೀಬಗ್ ಮಾಡಬಹುದಾದ ಆ್ಯಪ್ ಆಗಿದ್ದು, ಪ್ರಸ್ತುತ ಪರೀಕ್ಷಿಸಲಾಗುತ್ತಿರುವುದರಿಂದ ಈ ಎಚ್ಚರಿಕೆಯನ್ನು ತೋರಿಸಲಾಗುತ್ತಿದೆ. ನೀವು ಡೆವಲಪರ್ ಅಲ್ಲದಿದ್ದರೆ, ಇದನ್ನು ಡೆವಲಪರ್‌ಗೆ ವರದಿ ಮಾಡಿ ಮತ್ತು ಡೀಬಗ್ ಮಾಡಲಾಗದ ಆ್ಯಪ್‌ಗಾಗಿ ಕೇಳಿ. ಈ ಆ್ಯಪ್ 16 KB ಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ. APK ಮತ್ತು ELF ಅಲೈನ್‌ಮೆಂಟ್ ಪರಿಶೀಲನೆಗಳು ವಿಫಲವಾಗಿವೆ. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ನಲ್ಲಿ ಹಂತಗಳನ್ನು ಅನುಸರಿಸಿ"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ಮತ್ತೊಮ್ಮೆ ತೋರಿಸಬೇಡಿ"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ಸೇವೆಯನ್ನು ಪೂರೈಸಲಾಗಿಲ್ಲ."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"ನೀವು ಕಾಲರ್‌ ID ಸೆಟ್ಟಿಂಗ್‌ ಬದಲಾಯಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g> ಗೆ ಡೇಟಾವನ್ನು ಬದಲಾಯಿಸಲಾಗಿದೆ"</string>

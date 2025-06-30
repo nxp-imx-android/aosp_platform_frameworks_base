@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Denne app er ikke kompatibel med sidestørrelser på 16 kB. Tjek af APK-afstemning mislykkedes. Denne app køres i kompatibilitetstilstand for sidestørrelse. Kompiler appen igen, så den understøtter 16 kB, for at opnå bedst mulig kompatibilitet. Få flere oplysninger på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Denne app er ikke kompatibel med sidestørrelser på 16 kB. Tjek af ELF-afstemning mislykkedes. Denne app køres i kompatibilitetstilstand for sidestørrelse. Kompiler appen igen, så den understøtter 16 kB, for at opnå bedst mulig kompatibilitet. Få flere oplysninger på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Denne app er ikke kompatibel med sidestørrelser på 16 kB. Tjek af APK- og ELF-afstemning mislykkedes. Denne app køres i kompatibilitetstilstand for sidestørrelse. Kompiler appen igen, så den understøtter 16 kB, for at opnå bedst mulig kompatibilitet. Få flere oplysninger på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Denne advarsel vises, fordi dette er en app, der kan fejlrettes, som i øjeblikket testes. Hvis du ikke er udvikleren, skal du rapportere dette til udvikleren og bede om en app, der ikke kan fejlrettes. Denne app er ikke kompatibel med sidestørrelser på 16 kB. Tjek af APK-justering mislykkedes. Følg vejledningen på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Denne advarsel vises, fordi dette er en app, der kan fejlrettes, som i øjeblikket testes. Hvis du ikke er udvikleren, skal du rapportere dette til udvikleren og bede om en app, der ikke kan fejlrettes. Denne app er ikke kompatibel med sidestørrelser på 16 kB. Tjek af ELF-justering mislykkedes. Følg vejledningen på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Denne advarsel vises, fordi dette er en app, der kan fejlrettes, som i øjeblikket testes. Hvis du ikke er udvikleren, skal du rapportere dette til udvikleren og bede om en app, der ikke kan fejlrettes. Denne app er ikke kompatibel med sidestørrelser på 16 kB. Tjek af APK- og ELF-justering mislykkedes. Følg vejledningen på &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Vis ikke dette igen"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Tjenesten provisioneres ikke."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Du kan ikke ændre indstillingen for opkalds-id\'et."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Der blev skiftet til <xliff:g id="CARRIERDISPLAY">%s</xliff:g>-data"</string>

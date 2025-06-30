@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. APK சீரமைவைச் சரிபார்க்க முடியவில்லை. பக்க அளவுடனான இணக்கத்தன்மைப் பயன்முறையைப் பயன்படுத்தி இந்த ஆப்ஸ் இயக்கப்படும். சிறந்த இணக்கத்தன்மைக்கு, ஆப்ஸை 16 KB ஆதரவுடன் ரீ-கம்பைல் செய்யவும். கூடுதல் தகவல்களுக்கு, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; எனும் பக்கத்தைப் பார்க்கவும்."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. ELF சீரமைவைச் சரிபார்க்க முடியவில்லை. பக்க அளவுடனான இணக்கத்தன்மைப் பயன்முறையைப் பயன்படுத்தி இந்த ஆப்ஸ் இயக்கப்படும். சிறந்த இணக்கத்தன்மைக்கு, ஆப்ஸை 16 KB ஆதரவுடன் ரீ-கம்பைல் செய்யவும். கூடுதல் தகவல்களுக்கு, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; எனும் பக்கத்தைப் பார்க்கவும்."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. APK மற்றும் ELF சீரமைவுகளைச் சரிபார்க்க முடியவில்லை. பக்க அளவுடனான இணக்கத்தன்மைப் பயன்முறையைப் பயன்படுத்தி இந்த ஆப்ஸ் இயக்கப்படும். சிறந்த இணக்கத்தன்மைக்கு, ஆப்ஸை 16 KB ஆதரவுடன் ரீ-கம்பைல் செய்யவும். கூடுதல் தகவல்களுக்கு, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; எனும் பக்கத்தைப் பார்க்கவும்."</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"இது ஒரு பிழைதிருத்தி ஆப்ஸ் என்பதால் இந்த எச்சரிக்கை காட்டப்படுகிறது, இது தற்போது பரிசோதனையில் உள்ளது. நீங்கள் டெவெலப்பர் இல்லையென்றால் இதை டெவெலப்பரிடம் புகாரளித்து, பிழைதிருத்தி அல்லாத ஆப்ஸைக் கேளுங்கள். இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. APK சீரமைவைச் சரிபார்க்க முடியவில்லை. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; பக்கத்தில் உள்ள படிகளைப் பின்பற்றவும்."</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"இது ஒரு பிழைதிருத்தி ஆப்ஸ் என்பதால் இந்த எச்சரிக்கை காட்டப்படுகிறது, இது தற்போது பரிசோதனையில் உள்ளது. நீங்கள் டெவெலப்பர் இல்லையென்றால் இதை டெவெலப்பரிடம் புகாரளித்து, பிழைதிருத்தி அல்லாத ஆப்ஸைக் கேளுங்கள். இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. ELF சீரமைவைச் சரிபார்க்க முடியவில்லை. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; பக்கத்தில் உள்ள படிகளைப் பின்பற்றவும்."</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"இது ஒரு பிழைதிருத்தி ஆப்ஸ் என்பதால் இந்த எச்சரிக்கை காட்டப்படுகிறது, இது தற்போது பரிசோதனையில் உள்ளது. நீங்கள் டெவெலப்பர் இல்லையென்றால் இதை டெவெலப்பரிடம் புகாரளித்து, பிழைதிருத்தி அல்லாத ஆப்ஸைக் கேளுங்கள். இந்த ஆப்ஸ் 16 KB இணக்கத்தன்மை வாய்ந்தது அல்ல. APK மற்றும் ELF சீரமைவுகளைச் சரிபார்க்க முடியவில்லை. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; பக்கத்தில் உள்ள படிகளைப் பின்பற்றவும்."</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"மீண்டும் காட்டாதே"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"சேவை ஒதுக்கப்படவில்லை."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"அழைப்பாளர் ஐடி அமைப்பை மாற்ற முடியாது."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"டேட்டா <xliff:g id="CARRIERDISPLAY">%s</xliff:g>க்கு மாற்றப்பட்டது"</string>

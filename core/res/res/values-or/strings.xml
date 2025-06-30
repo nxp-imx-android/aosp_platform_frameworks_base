@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"ଏହି ଆପ 16 KB ପାଇଁ କମ୍ପାଟିବିଲ ନୁହେଁ। APK ଏବଂ ELF ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚଗୁଡ଼ିକ ବିଫଳ ହୋଇଛି। ପୃଷ୍ଠା ସାଇଜ କମ୍ପାଟିବିଲ ମୋଡ ବ୍ୟବହାର କରି ଏହି ଆପକୁ ଚଲାଯିବ। ସର୍ବୋତ୍ତମ କମ୍ପାଟିବିଲିଟୀ ପାଇଁ ଦୟାକରି 16 KB ସପୋର୍ଟ ସହ ଆପ୍ଲିକେସନକୁ ପୁଣି କମ୍ପାଇଲ କରନ୍ତୁ। ଅଧିକ ସୂଚନା ପାଇଁ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;କୁ ଦେଖନ୍ତୁ"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"ଏହି ଆପ 16 KB ପାଇଁ କମ୍ପାଟିବିଲ ନୁହେଁ। APK ଏବଂ ELF ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚଗୁଡ଼ିକ ବିଫଳ ହୋଇଛି। ପୃଷ୍ଠା ସାଇଜ କମ୍ପାଟିବିଲ ମୋଡ ବ୍ୟବହାର କରି ଏହି ଆପକୁ ଚଲାଯିବ। ସର୍ବୋତ୍ତମ କମ୍ପାଟିବିଲିଟୀ ପାଇଁ ଦୟାକରି 16 KB ସପୋର୍ଟ ସହ ଆପ୍ଲିକେସନକୁ ପୁଣି କମ୍ପାଇଲ କରନ୍ତୁ। ଅଧିକ ସୂଚନା ପାଇଁ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;କୁ ଦେଖନ୍ତୁ"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"ଏହି ଆପ 16 KB ପାଇଁ କମ୍ପାଟିବିଲ ନୁହେଁ। APK ଏବଂ ELF ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚଗୁଡ଼ିକ ବିଫଳ ହୋଇଛି। ପୃଷ୍ଠା ସାଇଜ କମ୍ପାଟିବିଲ ମୋଡ ବ୍ୟବହାର କରି ଏହି ଆପକୁ ଚଲାଯିବ। ସର୍ବୋତ୍ତମ କମ୍ପାଟିବିଲିଟୀ ପାଇଁ ଦୟାକରି 16 KB ସପୋର୍ଟ ସହ ଆପ୍ଲିକେସନକୁ ପୁଣି କମ୍ପାଇଲ କରନ୍ତୁ। ଅଧିକ ସୂଚନା ପାଇଁ &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;କୁ ଦେଖନ୍ତୁ"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"ଏହା ବର୍ତ୍ତମାନ ପରୀକ୍ଷା କରାଯାଉଥିବା ଏକ ଡିବଗେବୁଲ ଆପ ହୋଇଥିବା ଯୋଗୁଁ ଏହି ଚେତାବନୀ ଦେଖାଯାଉଛି। ଯଦି ଆପଣ ଡେଭେଲପର ନୁହଁନ୍ତି, ତେବେ ଦୟାକରି ଡେଭେଲପରଙ୍କୁ ଏହାର ରିପୋର୍ଟ କରନ୍ତୁ ଏବଂ ଏକ ଅଣ-ଡିବଗେବୁଲ ଆପ ପାଇଁ ଅନୁରୋଧ କରନ୍ତୁ। ଏହି ଆପ 16 KB କମ୍ପାଟିବଲ ନୁହେଁ। APK ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚ ବିଫଳ ହୋଇଛି। ଦୟାକରି &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ରେ ଥିବା ଷ୍ଟେପଗୁଡ଼ିକୁ ଫଲୋ କରନ୍ତୁ"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"ଏହା ବର୍ତ୍ତମାନ ପରୀକ୍ଷା କରାଯାଉଥିବା ଏକ ଡିବଗେବୁଲ ଆପ ହୋଇଥିବା ଯୋଗୁଁ ଏହି ଚେତାବନୀ ଦେଖାଯାଉଛି। ଯଦି ଆପଣ ଡେଭେଲପର ନୁହଁନ୍ତି, ତେବେ ଦୟାକରି ଡେଭେଲପରଙ୍କୁ ଏହାର ରିପୋର୍ଟ କରନ୍ତୁ ଏବଂ ଏକ ଅଣ-ଡିବଗେବୁଲ ଆପ ପାଇଁ ଅନୁରୋଧ କରନ୍ତୁ। ଏହି ଆପ 16 KB କମ୍ପାଟିବଲ ନୁହେଁ। ELF ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚ ବିଫଳ ହୋଇଛି। ଦୟାକରି &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ରେ ଥିବା ଷ୍ଟେପଗୁଡ଼ିକୁ ଫଲୋ କରନ୍ତୁ"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"ଏହା ବର୍ତ୍ତମାନ ପରୀକ୍ଷା କରାଯାଉଥିବା ଏକ ଡିବଗେବୁଲ ଆପ ହୋଇଥିବା ଯୋଗୁଁ ଏହି ଚେତାବନୀ ଦେଖାଯାଉଛି। ଯଦି ଆପଣ ଡେଭେଲପର ନୁହଁନ୍ତି, ତେବେ ଦୟାକରି ଡେଭେଲପରଙ୍କୁ ଏହାର ରିପୋର୍ଟ କରନ୍ତୁ ଏବଂ ଏକ ଅଣ-ଡିବଗେବୁଲ ଆପ ପାଇଁ ଅନୁରୋଧ କରନ୍ତୁ। ଏହି ଆପ 16 KB କମ୍ପାଟିବଲ ନୁହେଁ। APK ଏବଂ ELF ଆଲାଇନମେଣ୍ଟ ଯାଞ୍ଚଗୁଡ଼ିକ ବିଫଳ ହୋଇଛି। ଦୟାକରି &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ରେ ଥିବା ଷ୍ଟେପଗୁଡ଼ିକୁ ଫଲୋ କରନ୍ତୁ"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"ପୁଣି ଦେଖାନ୍ତୁ ନାହିଁ"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"ସେବାର ସୁବିଧା ନାହିଁ।"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"ଆପଣ କଲର୍‍ ID ସେଟିଙ୍ଗ ବଦଳାଇପାରିବେ ନାହିଁ।"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g>କୁ ଡାଟା ସ୍ୱିଚ କରାଯାଇଛି"</string>

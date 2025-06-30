@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Programu hii haioani na ukubwa wa ukurasa wa KB 16. Imeshindwa kukagua mpangilio wa APK. Programu hii itaendeshwa katika hali inayooana na ukubwa wa ukurasa. Tafadhali rekebisha mipangilio ya programu ijumuishe KB 16 ili ioane vizuri. Tembelea &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; upate maelezo zaidi"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Programu hii haioani na ukubwa wa ukurasa wa KB 16. Imeshindwa kukagua mpangilio wa ELF. Programu hii itaendeshwa katika hali inayooana na ukubwa wa ukurasa. Tafadhali rekebisha mipangilio ya programu ijumuishe KB 16 ili ioane vizuri. Tembelea &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; upate maelezo zaidi"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Programu hii haioani na ukubwa wa ukurasa wa KB 16. Imeshindwa kukagua mpangilio wa APK na ELF. Programu hii itaendeshwa katika hali inayooana na ukubwa wa ukurasa. Tafadhali rekebisha mipangilio ya programu ijumuishe KB 16 ili ioane vizuri. Tembelea &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; upate maelezo zaidi"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Onyo hili linaonyeshwa kwa sababu hii ni programu inayoweza kutatuliwa ambayo inajaribiwa kwa sasa. Tafadhali ripoti hali hii kwa msanidi programu na uombe toleo la programu lisilo la kutatuliwa iwapo wewe si msanidi programu. Programu hii haioani na mfumo wa KB 16. Imeshindwa kukagua mpangilio wa APK. Tafadhali fuata hatua kwenye &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Onyo hili linaonyeshwa kwa sababu hii ni programu inayoweza kutatuliwa ambayo inajaribiwa kwa sasa. Tafadhali ripoti hali hii kwa msanidi programu na uombe toleo la programu lisilo la kutatuliwa iwapo wewe si msanidi programu. Programu hii haioani na mfumo wa KB 16. Imeshindwa kukagua mpangilio wa ELF. Tafadhali fuata hatua kwenye &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Onyo hili linaonyeshwa kwa sababu hii ni programu inayoweza kutatuliwa ambayo inajaribiwa kwa sasa. Tafadhali ripoti hali hii kwa msanidi programu na uombe toleo la programu lisilo la kutatuliwa iwapo wewe si msanidi programu. Programu hii haioani na mfumo wa KB 16. Imeshindwa kukagua mpangilio wa APK na ELF. Tafadhali fuata hatua kwenye &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Usionyeshe Tena"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Huduma haitathminiwi."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Hauwezi kubadilisha mpangilio wa kitambulisho cha anayepiga."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Sasa unatumia data ya mtandao wa <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>

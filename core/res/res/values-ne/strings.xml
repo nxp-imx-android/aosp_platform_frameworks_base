@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"यो एप १६ के.बि. को पेजसँग कम्प्याटिबल छैन। APK को एलाइनमेन्ट जाँच्न सकिएन। यो एप पेजको साइजसँग कम्प्याटिबल मोड प्रयोग गरेर चलाइने छ। उत्कृष्ट कम्प्याटिबिलिटीका लागि कृपया यो एप १६ के.बि. को पेज प्रयोग गर्न मिल्ने गरी रिकम्पलाइल गर्नुहोस्। यस सम्बन्धमा थप जानकारी प्राप्त गर्न &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; हेर्नुहोस्"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"यो एप १६ के.बि. को पेजसँग कम्प्याटिबल छैन। ELF को एलाइनमेन्ट जाँच्न सकिएन। यो एप पेजको साइजसँग कम्प्याटिबल मोड प्रयोग गरेर चलाइने छ। उत्कृष्ट कम्प्याटिबिलिटीका लागि कृपया यो एप १६ के.बि. को पेज प्रयोग गर्न मिल्ने गरी रिकम्पलाइल गर्नुहोस्। यस सम्बन्धमा थप जानकारी प्राप्त गर्न &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; हेर्नुहोस्"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"यो एप १६ के.बि. को पेजसँग कम्प्याटिबल छैन। APK र ELF को एलाइनमेन्ट जाँच्न सकिएन। यो एप पेजको साइजसँग कम्प्याटिबल मोड प्रयोग गरेर चलाइने छ। उत्कृष्ट कम्प्याटिबिलिटीका लागि कृपया यो एप १६ के.बि. को पेज प्रयोग गर्न मिल्ने गरी रिकम्पलाइल गर्नुहोस्। यस सम्बन्धमा थप जानकारी प्राप्त गर्न &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; हेर्नुहोस्"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"यो एप हाल परीक्षणका क्रममा रहेको डिबग गर्न मिल्ने एप भएकाले यो चेतावनी देखाइएको हो। तपाईं विकासकर्ता होइन भने कृपया यसका बारेमा विकासकर्तालाई रिपोर्ट गर्नुहोस् र डिबग गर्न नमिल्ने एप उपलब्ध गराइदिन अनुरोध गर्नुहोस्। यो एप १६ के.बि. पेज साइजसँग कम्प्याटिबल छैन। APK को एलाइनमेन्ट जाँच्न सकिएन। कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; मा दिइएका चरणहरू पूरा गर्नुहोस्"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"यो एप हाल परीक्षणका क्रममा रहेको डिबग गर्न मिल्ने एप भएकाले यो चेतावनी देखाइएको हो। तपाईं विकासकर्ता होइन भने कृपया यसका बारेमा विकासकर्तालाई रिपोर्ट गर्नुहोस् र डिबग गर्न नमिल्ने एप उपलब्ध गराइदिन अनुरोध गर्नुहोस्। यो एप १६ के.बि. पेज साइजसँग कम्प्याटिबल छैन। ELF को एलाइनमेन्ट जाँच्न सकिएन। कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; मा दिइएका चरणहरू पूरा गर्नुहोस्"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"यो एप हाल परीक्षणका क्रममा रहेको डिबग गर्न मिल्ने एप भएकाले यो चेतावनी देखाइएको हो। तपाईं विकासकर्ता होइन भने कृपया यसका बारेमा विकासकर्तालाई रिपोर्ट गर्नुहोस् र डिबग गर्न नमिल्ने एप उपलब्ध गराइदिन अनुरोध गर्नुहोस्। यो एप १६ के.बि. पेज साइजसँग कम्प्याटिबल छैन। APK र ELF को एलाइनमेन्ट जाँच्न सकिएन। कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; मा दिइएका चरणहरू पूरा गर्नुहोस्"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"फेरि नदेखाउनुहोस्"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"सेवाको व्यवस्था छैन।"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"तपाईं कलर ID सेटिङ परिवर्तन गर्न सक्नुहुन्न।"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g> को डेटा प्रयोग गर्न थालिएको छ"</string>

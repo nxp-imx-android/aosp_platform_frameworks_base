@@ -75,10 +75,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"‏האפליקציה הזו לא תואמת לגודל דף של 16KB. בדיקות ההתאמה ל-APK נכשלה. האפליקציה הזו תופעל במצב תואם לגודל הדף. כדי לקבל את התאימות הטובה ביותר, צריך לקמפל את האפליקציה מחדש ולדאוג שהיא תומכת בגודל דף של 16KB. מידע נוסף זמין בכתובת &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"‏האפליקציה הזו לא תואמת לגודל דף של 16KB. בדיקות ההתאמה ל-ELF נכשלה. האפליקציה הזו תופעל במצב תואם לגודל הדף. כדי לקבל את התאימות הטובה ביותר, צריך לקמפל את האפליקציה מחדש ולדאוג שהיא תומכת בגודל דף של 16KB. מידע נוסף זמין בכתובת &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"‏האפליקציה הזו לא תואמת לגודל דף של 16KB. בדיקות ההתאמה ל-APK ול-ELF נכשלו. האפליקציה הזו תופעל במצב תואם לגודל הדף. כדי לקבל את התאימות הטובה ביותר, צריך לקמפל את האפליקציה מחדש ולדאוג שהיא תומכת בגודל דף של 16KB. מידע נוסף זמין בכתובת &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"‏האזהרה הזו מוצגת כי זו אפליקציה שניתן לבצע בה ניפוי באגים, והיא נמצאת בבדיקה. אם אינך בצוות הפיתוח, יש לדווח למפתח/ת ולבקש אפליקציה שלא ניתן לבצע בה ניפוי באגים. האפליקציה הזו לא תואמת לדפים בגודל 16KB. בדיקת ההתאמה ל-APK נכשלה. יש לפעול לפי השלבים המפורטים בכתובת &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"‏האזהרה הזו מוצגת כי זו אפליקציה שניתן לבצע בה ניפוי באגים, והיא נמצאת בבדיקה. אם אינך בצוות הפיתוח, יש לדווח למפתח/ת ולבקש אפליקציה שלא ניתן לבצע בה ניפוי באגים. האפליקציה הזו לא תואמת לדפים בגודל 16KB. בדיקת ההתאמה ל-ELF נכשלה. יש לפעול לפי השלבים המפורטים בכתובת &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"‏האזהרה הזו מוצגת כי זו אפליקציה שניתן לבצע בה ניפוי באגים, והיא נמצאת בבדיקה. אם אינך בצוות הפיתוח, יש לדווח למפתח/ת ולבקש אפליקציה שלא ניתן לבצע בה ניפוי באגים. האפליקציה הזו לא תואמת לדפים בגודל 16KB. בדיקות ההתאמה ל-APK ול-ELF נכשלו. יש לפעול לפי השלבים המפורטים בכתובת &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"אין להציג שוב"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"השירות לא הוקצה."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"אינך יכול לשנות את הגדרת זיהוי המתקשר."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"הנתונים עברו אל <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>

@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"‏این برنامه با صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی تراز APK ناموفق بود. این برنامه بااستفاده از حالت سازگار اندازه صفحه اجرا خواهد شد. برای بهترین سازگاری، لطفاً برنامه را با پشتیبانی از صفحه ۱۶ کیلوبایتی دوباره ترجمه کنید. برای اطلاعات بیشتر، به &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; مراجعه کنید"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"‏این برنامه با صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی تراز ELF ناموفق بود. این برنامه بااستفاده از حالت سازگار اندازه صفحه اجرا خواهد شد. برای بهترین سازگاری، لطفاً برنامه را با پشتیبانی از صفحه ۱۶ کیلوبایتی دوباره ترجمه کنید. برای اطلاعات بیشتر، به &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; مراجعه کنید"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"‏این برنامه با صفحه ۱۶ کیلوبایتی سازگار نیست. بررسی‌های تراز APK و ELF ناموفق بود. این برنامه بااستفاده از حالت سازگار اندازه صفحه اجرا خواهد شد. برای بهترین سازگاری، لطفاً برنامه را با پشتیبانی از صفحه ۱۶ کیلوبایتی دوباره ترجمه کنید. برای اطلاعات بیشتر، به &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; مراجعه کنید"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"‏این هشدار نشان داده شده است زیرا این یک برنامه قابل‌اشکال‌زدایی است که درحال آزمایش شدن است. اگر شما توسعه‌دهنده نیستید، لطفاً این موضوع را به توسعه‌دهنده گزارش کنید و برنامه غیرقابل‌اشکال‌زدایی درخواست کنید. این برنامه با حالت ۱۶ کیلوبایتی سازگار نیست. بررسی تراز APK ناموفق بود. لطفاً مراحل ارائه‌شده در &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; را دنبال کنید"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"‏این هشدار نشان داده شده است زیرا این یک برنامه قابل‌اشکال‌زدایی است که درحال آزمایش شدن است. اگر شما توسعه‌دهنده نیستید، لطفاً این موضوع را به توسعه‌دهنده گزارش کنید و برنامه غیرقابل‌اشکال‌زدایی درخواست کنید. این برنامه با حالت ۱۶ کیلوبایتی سازگار نیست. بررسی تراز ELF ناموفق بود. لطفاً مراحل ارائه‌شده در &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; را دنبال کنید"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"‏این هشدار نشان داده شده است زیرا این یک برنامه قابل‌اشکال‌زدایی است که درحال آزمایش شدن است. اگر شما توسعه‌دهنده نیستید، لطفاً این موضوع را به توسعه‌دهنده گزارش کنید و برنامه غیرقابل‌اشکال‌زدایی درخواست کنید. این برنامه با حالت ۱۶ کیلوبایتی سازگار نیست. بررسی‌های تراز APK و ELF ناموفق بود. لطفاً مراحل ارائه‌شده در &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; را دنبال کنید"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"دوباره نشان داده نشود"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"سرویس دارای مجوز نیست."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"‏شما می‎توانید تنظیم شناسه تماس‌گیرنده را تغییر دهید."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"داده به <xliff:g id="CARRIERDISPLAY">%s</xliff:g> تغییر کرد"</string>
@@ -164,14 +177,10 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"امنیت شبکه تلفن همراه"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"رمزگذاری، اعلان‌های شبکه‌های رمزگذاری‌نشده"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"شناسه دستگاه  مورددسترس قرار گرفت"</string>
-    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
-    <skip />
-    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
-    <skip />
-    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
-    <skip />
-    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
-    <skip />
+    <string name="scIDIssueSummaryNotificationWithCellularID" msgid="8371590113242615316">"ساعت <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>، یکی از شبکه‌های نزدیکتان شناسه یکتای دستگاهتان (<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>) را هنگام استفاده از سیم‌کارت <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> ضبط کرد"</string>
+    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="7106922007150754222">"ساعت <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>، یکی از شبکه‌های نزدیکتان شناسه یکتای دستگاهتان را هنگام استفاده از سیم‌کارت <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> ضبط کرد"</string>
+    <string name="scIDIssueSummaryWithCellularID" msgid="1189965658392583067">"ساعت <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>، یکی از شبکه‌های نزدیکتان شناسه یکتای دستگاهتان (<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>) را هنگام استفاده از سیم‌کارت <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> ضبط کرد.\n\nاین یعنی مکان، فعالیت، یا هویت شما ثبت شده است. این رویکردی عادی است اما ممکن است برای افرادی که نگران حریم خصوصی‌شان هستند مشکل محسوب شود."</string>
+    <string name="scIdentifierDisclosureIssueSummary" msgid="4362014471570210380">"ساعت <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>، یکی از شبکه‌های نزدیکتان شناسه یکتای دستگاهتان را هنگام استفاده از سیم‌کارت <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> ضبط کرد.\n\nاین یعنی مکان، فعالیت، یا هویت شما ثبت شده است. این رویکردی عادی است اما ممکن است برای افرادی که نگران حریم خصوصی‌شان هستند مشکل محسوب شود."</string>
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"به شبکه رمزگذاری‌شده <xliff:g id="NETWORK_NAME">%1$s</xliff:g> متصل‌اید"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"اتصال سیم‌کارت <xliff:g id="NETWORK_NAME">%1$s</xliff:g> اکنون ایمن‌تر است"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"به شبکه رمزگذاری‌نشده متصل‌اید"</string>
@@ -687,7 +696,7 @@
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"به برنامه امکان می‌دهد پیش‌از آنکه سیستم بتواند کنش‌ها و میان‌برهای سیستم را پردازش کند، کلیدها را ضبط کند."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"استفاده از داده‌های زیست‌سنجشی"</string>
     <string name="biometric_or_screen_lock_app_setting_name" msgid="5348462421758257752">"استفاده از داده‌های زیست‌سنجشی یا قفل صفحه"</string>
-    <string name="biometric_dialog_default_title" msgid="55026799173208210">"تأیید کنید این شمایید"</string>
+    <string name="biometric_dialog_default_title" msgid="55026799173208210">"هویتتان را درستی‌سنجی کنید"</string>
     <string name="biometric_dialog_default_subtitle" msgid="8457232339298571992">"برای ادامه، از زیست‌سنجشی استفاده کنید"</string>
     <string name="biometric_or_screen_lock_dialog_default_subtitle" msgid="159539678371552009">"برای ادامه، از زیست‌سنجشی یا قفل صفحه استفاده کنید"</string>
     <string name="biometric_error_hw_unavailable" msgid="2494077380540615216">"سخت‌افزار زیست‌سنجی دردسترس نیست"</string>

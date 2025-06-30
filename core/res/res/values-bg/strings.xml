@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Това приложение не е съвместимо със страници с размер 16 KB. Проверката за съответствие с APK файла не бе успешна. Това приложение ще се изпълнява в режим на съвместимост с размера на страницата. За най-добра съвместимост компилирайте отново приложението така, че да поддържа страници с размер 16 KB. За повече информация вижте &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Това приложение не е съвместимо със страници с размер 16 KB. Проверката за съответствие с ELF файла не бе успешна. Това приложение ще се изпълнява в режим на съвместимост с размера на страницата. За най-добра съвместимост компилирайте отново приложението така, че да поддържа страници с размер 16 KB. За повече информация вижте &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Това приложение не е съвместимо със страници с размер 16 KB. Проверките за съответствие с APK и ELF файловете не бяха успешни. Това приложение ще се изпълнява в режим на съвместимост с размера на страницата. За най-добра съвместимост компилирайте отново приложението така, че да поддържа страници с размер 16 KB. За повече информация вижте &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Настоящото предупреждение се показва, защото това е приложение с възможност за отстраняване на грешки, което понастоящем се тества. Ако не сте програмистът, моля, подайте сигнал до него и поискайте версия без възможност за отстраняване на грешки. Това приложение не е съвместимо със страници с размер 16 KB. Проверката за съответствие с APK файла не бе успешна. Изпълнете стъпките на адрес &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Настоящото предупреждение се показва, защото това е приложение с възможност за отстраняване на грешки, което понастоящем се тества. Ако не сте програмистът, моля, подайте сигнал до него и поискайте версия без възможност за отстраняване на грешки. Това приложение не е съвместимо със страници с размер 16 KB. Проверката за съответствие с ELF файла не бе успешна. Изпълнете стъпките на адрес &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Настоящото предупреждение се показва, защото това е приложение с възможност за отстраняване на грешки, което понастоящем се тества. Ако не сте програмистът, моля, подайте сигнал до него и поискайте версия без възможност за отстраняване на грешки. Това приложение не е съвместимо със страници с размер 16 KB. Проверките за съответствие с APK и ELF файловете не бяха успешни. Изпълнете стъпките на адрес &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Да не се показва отново"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Услугата не е обезпечена."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Не можете да променяте настройката за идентификация на обажданията."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Преминахте към мобилни данни от <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -1813,7 +1826,7 @@
     <string name="reduce_bright_colors_feature_name" msgid="3222994553174604132">"Допълнително затъмняване"</string>
     <string name="hearing_aids_feature_name" msgid="1125892105105852542">"Слухови апарати"</string>
     <string name="autoclick_feature_name" msgid="4056260617171267864">"Автоматично кликване (време на задържане на курсора на мишката)"</string>
-    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Бутони на мишката"</string>
+    <string name="mouse_keys_feature_name" msgid="3362643216513384542">"Клавиши за мишката"</string>
     <string name="hearing_device_status_disconnected" msgid="497547752953543832">"Няма връзка"</string>
     <string name="hearing_device_status_connected" msgid="2149385149669918764">"Свързано"</string>
     <string name="hearing_device_status_active" msgid="4770378695482566032">"Активно"</string>

@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APKৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। এই এপ্‌টো পৃষ্ঠাৰ আকাৰৰ সমিল ম’ড ব্যৱহাৰ কৰি চলোৱা হ’ব। উত্তম সমিলতাৰ বাবে, অনুগ্ৰহ কৰি এপ্লিকেশ্বনটো ১৬ কেবিৰ সমৰ্থনৰ সৈতে পুনৰায় কম্পাইল কৰক। অধিক তথ্যৰ বাবে, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;লৈ যাওক"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। এই এপ্‌টো পৃষ্ঠাৰ আকাৰৰ সমিল ম’ড ব্যৱহাৰ কৰি চলোৱা হ’ব। উত্তম সমিলতাৰ বাবে, অনুগ্ৰহ কৰি এপ্লিকেশ্বনটো ১৬ কেবিৰ সমৰ্থনৰ সৈতে পুনৰায় কম্পাইল কৰক। অধিক তথ্যৰ বাবে, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;লৈ যাওক"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APK আৰু ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। এই এপ্‌টো পৃষ্ঠাৰ আকাৰৰ সমিল ম’ড ব্যৱহাৰ কৰি চলোৱা হ’ব। উত্তম সমিলতাৰ বাবে, অনুগ্ৰহ কৰি এপ্লিকেশ্বনটো ১৬ কেবিৰ সমৰ্থনৰ সৈতে পুনৰায় কম্পাইল কৰক। অধিক তথ্যৰ বাবে, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;লৈ যাওক"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱাৰা এপৰ বাবে অনুৰোধ কৰক। এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APKৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱাৰা এপৰ বাবে অনুৰোধ কৰক। এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"এই সকীয়নি দেখুওৱা হৈছে কাৰণ এইটো এটা ডিবাগ কৰিব পৰা এপ্‌ যিটো বৰ্তমান পৰীক্ষা কৰি থকা হৈছে। যদি আপুনি বিকাশকৰ্তাগৰাকী নহয়, তেন্তে অনুগ্ৰহ কৰি বিকাশকৰ্তাগৰাকীক এইটো ৰিপ’ৰ্ট কৰক আৰু এটা ডিবাগ কৰিব নোৱাৰা এপৰ বাবে অনুৰোধ কৰক। এই এপ্‌টো ১৬ কেবিৰ সমিল নহয়। APK আৰু ELFৰ শাৰীবিন্যাস পৰীক্ষা বিফল হৈছে। অনুগ্ৰহ কৰি &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;ত দিয়া পদক্ষেপসমূহ অনুসৰণ কৰক"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"পুনৰাই নেদেখুৱাব"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"সুবিধা যোগান ধৰা হোৱা নাই।"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"আপুনি কলাৰ আইডি ছেটিং সলনি কৰিব নোৱাৰে।"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"ডেটা <xliff:g id="CARRIERDISPLAY">%s</xliff:g>লৈ সলনি কৰা হৈছে"</string>
