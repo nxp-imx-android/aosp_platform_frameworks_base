@@ -987,7 +987,7 @@
     <uses-permission android:name="android.permission.ADD_TRUSTED_DISPLAY" />
     <uses-permission android:name="android.permission.ADD_ALWAYS_UNLOCKED_DISPLAY" />
     <uses-permission android:name="android.permission.ADD_MIRROR_DISPLAY"
-        android:featureFlag="android.companion.virtualdevice.flags.enable_limited_vdm_role"/>
+        android:featureFlag="android.companion.virtualdevice.flags.vdm_mirror_display_permission"/>
 
     <!-- Permission required for CTS test - CtsAppTestCases -->
     <uses-permission android:name="android.permission.KILL_UID" />
