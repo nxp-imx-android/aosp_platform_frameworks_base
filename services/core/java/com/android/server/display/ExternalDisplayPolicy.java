@@ -215,10 +215,7 @@ class ExternalDisplayPolicy {
 
         mExternalDisplayStatsService.onDisplayConnected(logicalDisplay);
 
-        if (((Build.IS_ENG || Build.IS_USERDEBUG)
-                        && SystemProperties.getBoolean(ENABLE_ON_CONNECT, false))
-                || (mFlags.isDisplayContentModeManagementEnabled()
-                        && logicalDisplay.canHostTasksLocked())) {
+        if (shouldAutoEnable(logicalDisplay)) {
             Slog.w(TAG, "External display is enabled by default, bypassing user consent.");
             mInjector.sendExternalDisplayEventLocked(logicalDisplay, EVENT_DISPLAY_CONNECTED);
             return;
@@ -285,6 +282,18 @@ class ExternalDisplayPolicy {
         } else {
             mExternalDisplayStatsService.onPresentationWindowRemoved(displayId);
         }
+    }
+
+    private boolean shouldAutoEnable(LogicalDisplay logicalDisplay) {
+        if ((Build.IS_ENG || Build.IS_USERDEBUG)
+                && SystemProperties.getBoolean(ENABLE_ON_CONNECT, false)) return true;
+
+        // If using the new connection dialog, then don't auto enable displays so the dialog
+        // has a reason to show
+        if (mFlags.isUpdatedDisplayConnectionDialogEnabled()) return false;
+
+        return mFlags.isDisplayContentModeManagementEnabled()
+                && logicalDisplay.canHostTasksLocked();
     }
 
     @GuardedBy("mSyncRoot")
