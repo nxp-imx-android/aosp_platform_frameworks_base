@@ -98,8 +98,8 @@ public final class AudioAttributes implements Parcelable {
      */
     public final static int CONTENT_TYPE_MUSIC = 2;
     /**
-     * Content type value to use when the content type is a soundtrack, typically accompanying
-     * a movie or TV program.
+     * Content type value to use when the content type is the audio typically accompanying
+     * a movie or TV program, containing a mix of dialogue, music and sound effects.
      */
     public final static int CONTENT_TYPE_MOVIE = 3;
     /**
