@@ -26,6 +26,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <semaphore>
 #include <set>
 #include <string>
 #include <vector>
@@ -159,6 +160,12 @@ public:
     // Get the current time, in nanoseconds, as understood by this instance.
     virtual nsecs_t getCurrentTime() = 0;
 
+    // Set the current time.  Return true if it worked (test mode) and false otherwise.
+    virtual bool setCurrentTime(nsecs_t) = 0;
+
+    // True on debug.  Useful for test development and debugging.
+    virtual bool isDebug() const = 0;
+
 private:
     Clock(const Clock&) = delete;
 };
@@ -221,12 +228,104 @@ public:
         return systemTime(SYSTEM_TIME_MONOTONIC);
     }
 
+    bool setCurrentTime(nsecs_t) {
+        return false;
+    }
+
+    bool isDebug() const {
+        return false;
+    }
+
 private:
     bool running() const {
         return timerFd_ >= 0;
     }
 
     int timerFd_;
+};
+
+/**
+ * A clock whose time is manually advanced.  This is used only for testing.
+ */
+class ClockTest : public Clock {
+public:
+    ClockTest() : now_(0), alarm_(0), lock_(0), running_(true) {}
+
+    virtual ~ClockTest() {
+        stop();
+    }
+
+    // Set a timer to expire at the given relative time.
+    int setTimer(nsecs_t delay) {
+        if (delay <= 0) {
+            errno = EINVAL;
+            return -1;
+        }
+        alarm_ = now_ + delay;
+        maybeRelease();
+        return 0;
+    }
+
+    // Clear the timer.
+    void clearTimer() {
+        alarm_ = 0;
+    }
+
+    // Wait for the timer to fire.  Returns true if the timer is running.
+    bool waitForTimer() {
+        if (running_ && !ready()) {
+            lock_.acquire();
+        }
+        return running_;
+    }
+
+    // Stop the timer and release any waiters.
+    void stop() {
+        running_ = false;
+        lock_.release();
+    }
+
+    // Get the current time.  This uses the same timebase as the timer.
+    nsecs_t getCurrentTime() {
+        return now_;
+    }
+
+    // Set the current time.  This does nothing unless in the test variant.
+    bool setCurrentTime(nsecs_t now) {
+        now_ = now;
+        maybeRelease();
+        return true;
+    }
+
+    bool isDebug() const {
+        return true;
+    }
+
+private:
+    // Return true if there is an expired alarm time.
+    bool ready() const {
+        return (alarm_ > 0 && alarm_ <= now_);
+    }
+
+    // Maybe release any waiters.
+    void maybeRelease() {
+        if (ready()) {
+            lock_.release();
+        }
+    }
+
+    // The current time.
+    nsecs_t now_;
+
+    // The current timeout.
+    nsecs_t alarm_;
+
+    // A semaphore: it is taken inside waitForTimer() and it is released in setCurrentTime()
+    // when the new time is greater than or equal to the alarm.
+    std::binary_semaphore lock_;
+
+    // Set false to indicate that the clock is about to exit.
+    bool running_;
 };
 
 /**
@@ -636,6 +735,10 @@ class AnrTimerService {
     jweak jtimer() const {
         return notifierObject_;
     }
+
+    // Set the time in the current Clock.  This has no effect if the instance is not in test
+    // mode.
+    bool setCurrentTime(nsecs_t);
 
     // Return the per-instance statistics.
     std::vector<std::string> getDump() const;
@@ -1086,6 +1189,12 @@ class AnrTimerService::Ticker {
         return maxRunning_;
     }
 
+    // Set the current time of this ticker's clock.  Returns true on success (this ticker is
+    // using a test clock) and false otherwise.
+    bool setCurrentTime(nsecs_t now) {
+        return clock_->setCurrentTime(now);
+    }
+
   private:
 
     // Return the head of the running list.  The lock must be held by the caller.
@@ -1346,6 +1455,10 @@ nsecs_t AnrTimerService::now() const {
     return ticker_->now();
 }
 
+bool AnrTimerService::setCurrentTime(nsecs_t now) {
+    return ticker_->setCurrentTime(now);
+}
+
 std::vector<std::string> AnrTimerService::getDump() const {
     std::vector<std::string> r;
     AutoMutex _l(lock_);
@@ -1421,15 +1534,21 @@ jboolean anrTimerSupported(JNIEnv* env, jclass) {
 }
 
 jlong anrTimerCreate(JNIEnv* env, jobject jtimer, jstring jname, jboolean extend, jintArray jperc,
-                     jintArray jtok) {
+                     jintArray jtok, jboolean testMode) {
     if (!nativeSupportEnabled) return 0;
     AutoMutex _l(gAnrLock);
+    // Create a Posix ticker lazily.  This is a singleton that is shared by all non-test
+    // timers.  However, every test timer gets its own ticker.
     std::shared_ptr<AnrTimerService::Ticker> ticker;
-    if (gAnrArgs.ticker.get() == nullptr) {
-        gAnrArgs.ticker.reset(
-                new AnrTimerService::Ticker(std::unique_ptr<Clock>(new ClockPosix())));
+    if (testMode) {
+        ticker.reset(new AnrTimerService::Ticker(std::unique_ptr<Clock>(new ClockTest())));
+    } else {
+        if (gAnrArgs.ticker.get() == nullptr) {
+            gAnrArgs.ticker.reset(
+                    new AnrTimerService::Ticker(std::unique_ptr<Clock>(new ClockPosix())));
+        }
+        ticker = gAnrArgs.ticker;
     }
-    ticker = gAnrArgs.ticker;
 
     std::vector<SplitPoint> splits;
     if (jperc && jtok) {
@@ -1515,9 +1634,16 @@ jobjectArray anrTimerDump(JNIEnv *env, jclass, jlong ptr) {
     return r;
 }
 
+jboolean anrTimerSetTime(JNIEnv* env, jclass, jlong ptr, jlong now) {
+    if (!nativeSupportEnabled) return false;
+    // On the Java side, timeouts are expressed in milliseconds and must be converted to
+    // nanoseconds before being passed to the library code.
+    return toService(ptr)->setCurrentTime(milliseconds_to_nanoseconds(now));
+}
+
 static const JNINativeMethod methods[] = {
         {"nativeAnrTimerSupported", "()Z", (void*)anrTimerSupported},
-        {"nativeAnrTimerCreate", "(Ljava/lang/String;Z[I[I)J", (void*)anrTimerCreate},
+        {"nativeAnrTimerCreate", "(Ljava/lang/String;Z[I[IZ)J", (void*)anrTimerCreate},
         {"nativeAnrTimerClose", "(J)I", (void*)anrTimerClose},
         {"nativeAnrTimerStart", "(JIIJ)I", (void*)anrTimerStart},
         {"nativeAnrTimerCancel", "(JI)Z", (void*)anrTimerCancel},
@@ -1525,6 +1651,7 @@ static const JNINativeMethod methods[] = {
         {"nativeAnrTimerDiscard", "(JI)Z", (void*)anrTimerDiscard},
         {"nativeAnrTimerTrace", "([Ljava/lang/String;)Ljava/lang/String;", (void*)anrTimerTrace},
         {"nativeAnrTimerDump", "(J)[Ljava/lang/String;", (void*)anrTimerDump},
+        {"nativeAnrTimerSetTime", "(JJ)Z", (void*)anrTimerSetTime},
 };
 
 } // anonymous namespace
