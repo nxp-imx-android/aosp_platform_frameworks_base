@@ -38,6 +38,8 @@ public class RavenwoodInternalUtils {
     private RavenwoodInternalUtils() {
     }
 
+    public static final String ANDROID_PACKAGE_NAME = "android";
+
     /**
      * If set to "1", we enable the verbose logging.
      *

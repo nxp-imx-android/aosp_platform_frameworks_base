@@ -63,7 +63,6 @@ public class RavenwoodContext extends RavenwoodBaseContext {
     private final ArrayMap<Class<?>, String> mClassToName = new ArrayMap<>();
     private final ArrayMap<String, Supplier<?>> mNameToFactory = new ArrayMap<>();
 
-    private final File mDataDir;
     private final Supplier<Resources> mResourcesSupplier;
 
     private Application mAppContext;
@@ -88,8 +87,6 @@ public class RavenwoodContext extends RavenwoodBaseContext {
         mPackageName = packageName;
         mMainThread = mainThread;
         mResourcesSupplier = resourcesSupplier;
-
-        mDataDir = RavenwoodDriver.sAppDataDir;
 
         // Services provided by a typical shipping device
         registerService(ClipboardManager.class,
@@ -212,7 +209,9 @@ public class RavenwoodContext extends RavenwoodBaseContext {
 
     @Override
     public File getDataDir() {
-        return mDataDir;
+        // Create the dir lazily upon request. Note, "android" package doesn't have a
+        // data dir. This would throw.
+        return RavenwoodEnvironment.getInstance().getAppDataDir(mPackageName);
     }
 
     @Override
