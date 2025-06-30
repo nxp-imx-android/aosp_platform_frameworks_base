@@ -20,7 +20,7 @@ package dalvik.system;
 // $ANDROID_BUILD_TOP/libcore/libart/src/main/java/dalvik/system/VMRuntime.java
 
 import com.android.ravenwood.OpenJdkWorkaround;
-import com.android.ravenwood.RavenwoodRuntimeState;
+import com.android.ravenwood.RavenwoodVmState;
 
 import java.lang.reflect.Array;
 
@@ -55,7 +55,7 @@ public class VMRuntime {
     }
 
     public int getTargetSdkVersion() {
-        return RavenwoodRuntimeState.sTargetSdkLevel;
+        return RavenwoodVmState.getTargetSdkLevel();
     }
 
     /** Ignored on ravenwood. */

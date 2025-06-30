@@ -172,21 +172,17 @@ public class Log_ravenwood {
     }
 
     /**
-     * PID. We need to use a JNI method to get it, but JNI isn't initially ready.
-     * Call {@link #onRavenwoodRuntimeNativeReady} to signal when JNI is ready, at which point
-     * we set this field.
-     * (We don't want to call native methods that may not be fully initialized even with a
-     * try-catch, because partially initialized JNI methods could crash the process.)
+     * PID. Set from RavenwoodDriver
      */
     private static volatile int sPid = 0;
 
     private static ThreadLocal<Integer> sTid = ThreadLocal.withInitial(Process::myTid);
 
     /**
-     * Call it when {@link RavenwoodRuntimeNative} is usable.
+     * Call it when PID is available.
      */
-    public static void onRavenwoodRuntimeNativeReady() {
-        sPid = Process.myPid();
+    public static void setPid(int pid) {
+        sPid = pid;
     }
 
     private static int getPid() {

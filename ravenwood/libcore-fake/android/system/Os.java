@@ -17,7 +17,7 @@ package android.system;
 
 import com.android.ravenwood.OpenJdkWorkaround;
 import com.android.ravenwood.RavenwoodRuntimeNative;
-import com.android.ravenwood.RavenwoodRuntimeState;
+import com.android.ravenwood.RavenwoodVmState;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -100,11 +100,11 @@ public final class Os {
     }
 
     public static int getpid() {
-        return RavenwoodRuntimeState.sPid;
+        return RavenwoodVmState.getPid();
     }
 
     public static int getuid() {
-        return RavenwoodRuntimeState.sUid;
+        return RavenwoodVmState.getUid();
     }
 
     public static int gettid() {

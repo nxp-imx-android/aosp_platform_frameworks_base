@@ -38,8 +38,6 @@ import java.util.Set;
 
 public class RavenwoodSystemServer {
 
-    static final String ANDROID_PACKAGE_NAME = "android";
-
     /**
      * Set of services that we know how to provide under Ravenwood. We keep this set distinct
      * from {@code com.android.server.SystemServer} to give us the ability to choose either

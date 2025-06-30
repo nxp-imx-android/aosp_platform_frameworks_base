@@ -15,12 +15,12 @@
  */
 package android.os;
 
+import android.platform.test.ravenwood.RavenwoodEnvironment;
 import android.util.Log;
 
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 
 import java.io.File;
-import java.util.Objects;
 
 /**
  * Ravenwood redirect target class from {@link Environment}.
@@ -31,13 +31,6 @@ public class Environment_ravenwood {
     private static final boolean VERBOSE = RavenwoodInternalUtils.RAVENWOOD_VERBOSE_LOGGING;
 
     private Environment_ravenwood() {
-    }
-
-    private static volatile File sRootDir;
-
-    /** Called by ravenwood to initialize it. */
-    public static void init(File rootDir) {
-        sRootDir = Objects.requireNonNull(rootDir);
     }
 
     /** Redirected from the corresponding {@link Environment} method. */
@@ -68,7 +61,7 @@ public class Environment_ravenwood {
             throw new RuntimeException(
                     "Path doesn't start with a '/'. Actual=" + path);
         }
-        var root = Objects.requireNonNull(sRootDir);
+        var root = RavenwoodEnvironment.getInstance().getRootDir();
         if (path.startsWith(root.toString())) {
             if (VERBOSE) {
                 Log.v(TAG, "translate: " + path + " is already translated");
