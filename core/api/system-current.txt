@@ -19950,6 +19950,38 @@ package android.webkit {
 
 package android.window {
 
+  @FlaggedApi("com.android.graphics.surfaceflinger.flags.readback_screenshot") public class ScreenCapture {
+    method public static void capture(@NonNull android.window.ScreenCapture.ScreenCaptureParams, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.window.ScreenCapture.ScreenCaptureResult,java.lang.Exception>);
+    method public static boolean isScreenCaptureOptimizationEnabled();
+  }
+
+  @FlaggedApi("com.android.graphics.surfaceflinger.flags.readback_screenshot") public static final class ScreenCapture.ScreenCaptureParams implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getCaptureMode();
+    method public int getDisplayId();
+    method public int getPixelFormat();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field public static final int CAPTURE_MODE_NONE = 0; // 0x0
+    field public static final int CAPTURE_MODE_REQUIRE_OPTIMIZED = 1; // 0x1
+    field @NonNull public static final android.os.Parcelable.Creator<android.window.ScreenCapture.ScreenCaptureParams> CREATOR;
+  }
+
+  @FlaggedApi("com.android.graphics.surfaceflinger.flags.readback_screenshot") public static final class ScreenCapture.ScreenCaptureParams.Builder {
+    ctor public ScreenCapture.ScreenCaptureParams.Builder(@NonNull android.view.Display);
+    method @NonNull public android.window.ScreenCapture.ScreenCaptureParams build();
+    method @NonNull public android.window.ScreenCapture.ScreenCaptureParams.Builder setCaptureMode(int);
+    method @NonNull public android.window.ScreenCapture.ScreenCaptureParams.Builder setPixelFormat(int);
+  }
+
+  @FlaggedApi("com.android.graphics.surfaceflinger.flags.readback_screenshot") public static final class ScreenCapture.ScreenCaptureResult implements android.os.Parcelable {
+    ctor public ScreenCapture.ScreenCaptureResult(@NonNull android.graphics.ColorSpace, @NonNull android.hardware.HardwareBuffer);
+    method public int describeContents();
+    method @NonNull public android.graphics.ColorSpace getColorSpace();
+    method @NonNull public android.hardware.HardwareBuffer getHardwareBuffer();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.window.ScreenCapture.ScreenCaptureResult> CREATOR;
+  }
+
   public abstract class TaskFpsCallback {
     ctor public TaskFpsCallback();
     method public abstract void onFpsReported(float);
