@@ -16,18 +16,29 @@
 
 package com.android.systemui.screencapture.ui.viewmodel
 
+import android.view.WindowManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.internal.util.ScreenshotRequest
+import com.android.internal.util.mockScreenshotHelper
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import kotlin.test.assertFailsWith
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
+import org.mockito.ArgumentMatchers.isNull
+import org.mockito.Captor
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -35,10 +46,12 @@ class ScreenCaptureViewModelTest : SysuiTestCase() {
     private val kosmos = testKosmos().useUnconfinedTestDispatcher()
     private val testScope = kosmos.testScope
 
+    @Captor private lateinit var screenshotRequestCaptor: ArgumentCaptor<ScreenshotRequest>
     private val viewModel: ScreenCaptureViewModel by lazy { kosmos.screenCaptureViewModel }
 
     @Before
     fun setUp() {
+        MockitoAnnotations.openMocks(this)
         viewModel.activateIn(testScope)
     }
 
@@ -104,5 +117,41 @@ class ScreenCaptureViewModelTest : SysuiTestCase() {
             assertThat(appWindowButton3.isSelected).isTrue()
             assertThat(partialButton3.isSelected).isFalse()
             assertThat(fullscreenButton3.isSelected).isFalse()
+        }
+
+    @Test
+    fun takeFullscreenScreenshot_callsScreenshotInteractor() =
+        testScope.runTest {
+            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
+
+            viewModel.takeFullscreenScreenshot()
+
+            verify(kosmos.mockScreenshotHelper, times(1))
+                .takeScreenshot(screenshotRequestCaptor.capture(), any(), isNull())
+            val capturedRequest = screenshotRequestCaptor.value
+            assertThat(capturedRequest.type).isEqualTo(WindowManager.TAKE_SCREENSHOT_FULLSCREEN)
+        }
+
+    @Test
+    fun takeFullscreenScreenshot_validatesCaptureType() =
+        testScope.runTest {
+            viewModel.updateCaptureType(ScreenCaptureType.SCREEN_RECORD)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.FULLSCREEN)
+
+            assertFailsWith(IllegalArgumentException::class) {
+                viewModel.takeFullscreenScreenshot()
+            }
+        }
+
+    @Test
+    fun takeFullscreenScreenshot_validatesCaptureRegion() =
+        testScope.runTest {
+            viewModel.updateCaptureType(ScreenCaptureType.SCREENSHOT)
+            viewModel.updateCaptureRegion(ScreenCaptureRegion.PARTIAL)
+
+            assertFailsWith(IllegalArgumentException::class) {
+                viewModel.takeFullscreenScreenshot()
+            }
         }
 }
