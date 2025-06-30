@@ -19,6 +19,7 @@ package com.android.server.accessibility.magnification;
 import android.view.Display;
 import android.view.KeyEvent;
 
+import com.android.server.accessibility.AccessibilityManagerService;
 import com.android.server.accessibility.BaseEventStreamTransformation;
 
 /*
@@ -85,10 +86,12 @@ public class MagnificationKeyHandler extends BaseEventStreamTransformation {
     }
 
     protected final MagnificationKeyHandler.Callback mCallback;
+    private final AccessibilityManagerService mAms;
     private boolean mIsKeyboardInteracting = false;
 
-    public MagnificationKeyHandler(Callback callback) {
+    public MagnificationKeyHandler(Callback callback, AccessibilityManagerService ams) {
         mCallback = callback;
+        mAms = ams;
     }
 
     @Override
@@ -160,6 +163,10 @@ public class MagnificationKeyHandler extends BaseEventStreamTransformation {
         // In that case, use the default display.
         if (event.getDisplayId() != Display.INVALID_DISPLAY) {
             return event.getDisplayId();
+        }
+        int topFocusedDisplayId = mAms.getTopFocusedDisplayId();
+        if (topFocusedDisplayId != Display.INVALID_DISPLAY) {
+            return topFocusedDisplayId;
         }
         return Display.DEFAULT_DISPLAY;
     }
