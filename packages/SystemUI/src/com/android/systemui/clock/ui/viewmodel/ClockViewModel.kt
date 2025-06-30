@@ -34,7 +34,6 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.mapLatest
 
 /** AM/PM styling for the clock UI */
 enum class AmPmStyle {
@@ -59,8 +58,10 @@ constructor(
     private lateinit var dateTimePatternGenerator: DateTimePatternGenerator
 
     private val contentDescriptionFormat: Flow<DateFormat> =
-        clockInteractor.onTimezoneOrLocaleChanged.mapLatest {
-            getSimpleDateFormat(getContentDescriptionFormatString())
+        combine(clockInteractor.onTimezoneOrLocaleChanged, clockInteractor.showSeconds) {
+            _,
+            showSeconds ->
+            getSimpleDateFormat(getContentDescriptionFormatString(showSeconds))
         }
 
     private val _contentDescriptionText: Flow<String> =
@@ -78,8 +79,10 @@ constructor(
         )
 
     private val clockTextFormat: Flow<SimpleDateFormat> =
-        clockInteractor.onTimezoneOrLocaleChanged.mapLatest {
-            getSimpleDateFormat(getClockTextFormatString())
+        combine(clockInteractor.onTimezoneOrLocaleChanged, clockInteractor.showSeconds) {
+            _,
+            showSeconds ->
+            getSimpleDateFormat(getClockTextFormatString(showSeconds))
         }
 
     private val _clockText: Flow<String> =
@@ -107,26 +110,36 @@ constructor(
         fun create(amPmStyle: AmPmStyle): ClockViewModel
     }
 
-    private fun getContentDescriptionFormatString(): String {
+    private fun getContentDescriptionFormatString(showSeconds: Boolean): String {
         dateTimePatternGenerator = DateTimePatternGenerator.getInstance(Locale.getDefault())
 
-        // TODO(b/390204943): use different value depending on if the system want to show seconds.
-        val formatSkeleton = if (dateFormatUtil.is24HourFormat) "Hm" else "hm"
+        var formatSkeleton = if (dateFormatUtil.is24HourFormat) "Hm" else "hm"
+        if (showSeconds) {
+            formatSkeleton += "s"
+        }
 
         return dateTimePatternGenerator.getBestPattern(formatSkeleton)
     }
 
-    private fun getClockTextFormatString(): String {
-        // TODO(b/390204943): use different value depending on if the system want to show seconds.
-        return if (dateFormatUtil.is24HourFormat) {
-            "H:mm"
-        } else if (amPmStyle == AmPmStyle.Shown) {
+    private fun getClockTextFormatString(showSeconds: Boolean): String {
+        var formatString =
+            if (dateFormatUtil.is24HourFormat) {
+                "H:mm"
+            } else {
+                "h:mm"
+            }
+
+        if (showSeconds) {
+            formatString += ":ss"
+        }
+
+        if (amPmStyle == AmPmStyle.Shown && !dateFormatUtil.is24HourFormat) {
             // Note that we always put the AM/PM marker at the end of the string, and this could be
             // wrong for certain languages.
-            "h:mm\u202Fa"
-        } else {
-            "h:mm"
+            formatString += "\u202Fa"
         }
+
+        return formatString
     }
 
     private fun getSimpleDateFormat(formatString: String): SimpleDateFormat {

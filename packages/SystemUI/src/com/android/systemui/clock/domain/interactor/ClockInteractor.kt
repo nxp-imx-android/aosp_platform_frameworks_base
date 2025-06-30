@@ -20,20 +20,29 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.UserHandle
 import android.provider.AlarmClock
+import androidx.annotation.VisibleForTesting
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.clock.data.repository.ClockRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.plugins.ActivityStarter
+import com.android.systemui.tuner.TunerService
 import com.android.systemui.util.kotlin.emitOnStart
 import com.android.systemui.util.time.SystemClock
+import com.android.systemui.utils.coroutines.flow.conflatedCallbackFlow
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.stateIn
 
 @SysUISingleton
@@ -45,20 +54,66 @@ constructor(
     private val broadcastDispatcher: BroadcastDispatcher,
     private val systemClock: SystemClock,
     @Background private val coroutineScope: CoroutineScope,
+    private val tunerService: TunerService,
 ) {
     /** [Flow] that emits `Unit` whenever the timezone or locale has changed. */
     val onTimezoneOrLocaleChanged: Flow<Unit> =
         broadcastFlowForActions(Intent.ACTION_TIMEZONE_CHANGED, Intent.ACTION_LOCALE_CHANGED)
             .emitOnStart()
 
+    /** [StateFlow] that emits whether the clock should show seconds. */
+    val showSeconds: StateFlow<Boolean> =
+        conflatedCallbackFlow {
+                val tunable =
+                    TunerService.Tunable { key, newValue ->
+                        if (key == CLOCK_SECONDS_TUNER_KEY) {
+                            trySend(TunerService.parseIntegerSwitch(newValue, false))
+                        }
+                    }
+                tunerService.addTunable(tunable, CLOCK_SECONDS_TUNER_KEY)
+                awaitClose { tunerService.removeTunable(tunable) }
+            }
+            .stateIn(
+                scope = coroutineScope,
+                started = SharingStarted.WhileSubscribed(),
+                initialValue = false,
+            )
+
     /**
-     * [StateFlow] that emits the current `Date` every minute, or when the system time has changed.
+     * [StateFlow] that emits the current `Date`.
      *
-     * TODO(b/390204943): Emits every second instead of every minute since the clock can show
-     *   seconds.
+     * This flow is designed to be efficient. It ticks once per second only when seconds are being
+     * displayed, otherwise, it ticks once per minute. It will also emit a new value whenever the
+     * time is changed by the system.
      */
+    @OptIn(ExperimentalCoroutinesApi::class)
     val currentTime: StateFlow<Date> =
-        broadcastFlowForActions(Intent.ACTION_TIME_TICK, Intent.ACTION_TIME_CHANGED)
+        showSeconds
+            .flatMapLatest { show ->
+                val ticker =
+                    if (show) {
+                        // Flow that emits every second. minus a few milliseconds to dispatch the
+                        // delay.
+                        flow {
+                            val startTime = systemClock.currentTimeMillis()
+                            while (true) {
+                                emit(Unit)
+
+                                val delaySkewMillis =
+                                    (systemClock.currentTimeMillis() - startTime) % 1000L
+                                delay(1000L - delaySkewMillis)
+                            }
+                        }
+                    } else {
+                        // Flow that emits every minute.
+                        broadcastFlowForActions(Intent.ACTION_TIME_TICK)
+                    }
+
+                // A separate flow that emits when time is changed manually.
+                val manualOrTimezoneChanges = broadcastFlowForActions(Intent.ACTION_TIME_CHANGED)
+
+                merge(ticker, manualOrTimezoneChanges).emitOnStart()
+            }
             .map { Date(systemClock.currentTimeMillis()) }
             .stateIn(
                 scope = coroutineScope,
@@ -91,5 +146,9 @@ constructor(
             filter = IntentFilter().apply { actionsToFilter.forEach(::addAction) },
             user = user,
         )
+    }
+
+    companion object {
+        @VisibleForTesting const val CLOCK_SECONDS_TUNER_KEY = "clock_seconds"
     }
 }
