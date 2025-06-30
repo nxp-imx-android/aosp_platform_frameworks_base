@@ -1736,7 +1736,6 @@ std::pair<const char*, const char*> build_version_constants[] = {
         std::pair("RELEASE_OR_PREVIEW_DISPLAY", "ro.build.version.release_or_preview_display"),
         std::pair("BASE_OS", "ro.build.version.base_os"),
         std::pair("SECURITY_PATCH", "ro.build.version.security_patch"),
-        std::pair("SDK", "ro.build.version.sdk"),
         std::pair("PREVIEW_SDK_FINGERPRINT", "ro.build.version.preview_sdk_fingerprint"),
         std::pair("CODENAME", "ro.build.version.codename"),
 };
@@ -1805,7 +1804,6 @@ static void ReloadBuildJavaConstants(JNIEnv* env) {
 
   // Reload the public int/long constants
   ReloadBuildJavaConstant(env, build_cls, "TIME", "J", "ro.build.date.utc");
-  ReloadBuildJavaConstant(env, build_version_cls, "SDK_INT", "I", "ro.build.version.sdk");
   ReloadBuildJavaConstant(env, build_version_cls, "PREVIEW_SDK_INT", "I",
                           "ro.build.version.preview_sdk");
 
