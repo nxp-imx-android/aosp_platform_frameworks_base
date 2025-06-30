@@ -39,7 +39,7 @@ import org.junit.Test;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 @SmallTest
@@ -58,17 +58,30 @@ public class AnrTimerTest {
     private static class TestArg {
         final int pid;
         final int uid;
-        int what;
 
         TestArg(int pid, int uid) {
             this.pid = pid;
             this.uid = uid;
-            this.what = 0;
         }
 
         @Override
         public String toString() {
-            return String.format("pid=%d uid=%d what=%d", pid, uid, what);
+            return String.format("pid=%d uid=%d", pid, uid);
+        }
+    }
+
+    // A test result: what was delivered on timer expiration.
+    private record TestResult(int what, TestArg arg, int token) {
+
+        // Convenience constructor, for when we don't care about 'what'.
+        TestResult(TestArg arg, int token) {
+            this(MSG_TIMEOUT, arg, token);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("{pid=%d uid=%d what=%d token=%d}",
+                    arg.pid, arg.uid, what, token);
         }
     }
 
@@ -77,15 +90,24 @@ public class AnrTimerTest {
         final Object mLock = new Object();
 
         final Handler mHandler;
-        final CountDownLatch mLatch;
+        final Semaphore mSem = new Semaphore(0);
+        final int mExpect;
+
+        @GuardedBy("mLock")
+        final ArrayList<TestResult> mResults = new ArrayList<>();
+
         @GuardedBy("mLock")
         final ArrayList<TestArg> mMessages = new ArrayList<>();
         @GuardedBy("mLock")
         final ArrayList<Thread> mThreads = new ArrayList<>();
 
+        Helper() {
+            this(1);
+        }
+
         Helper(int expect) {
             mHandler = new Handler(Looper.getMainLooper(), this::expirationHandler);
-            mLatch = new CountDownLatch(expect);
+            mExpect = expect;
         }
 
         /**
@@ -95,17 +117,30 @@ public class AnrTimerTest {
         private boolean expirationHandler(Message msg) {
             synchronized (mLock) {
                 TestArg arg = (TestArg) msg.obj;
-                arg.what = msg.what;
                 mMessages.add(arg);
                 mThreads.add(Thread.currentThread());
-                mLatch.countDown();
+                mResults.add(new TestResult(msg.what, arg, msg.arg1));
+                mSem.release();
                 return false;
             }
         }
 
         boolean await(long timeout) throws InterruptedException {
-            // No need to synchronize, as the CountDownLatch is already thread-safe.
-            return mLatch.await(timeout, TimeUnit.MILLISECONDS);
+            return await(mExpect, timeout);
+        }
+
+        boolean await(int count, long timeout) throws InterruptedException {
+            if (count <= 0) {
+                throw new IllegalArgumentException("count is non-positive: " + count);
+            }
+            if (timeout <= 0) {
+                throw new IllegalArgumentException("timeout is non-positive: " + count);
+            }
+            return mSem.tryAcquire(count, timeout, TimeUnit.MILLISECONDS);
+        }
+
+        int available() {
+            return mSem.availablePermits();
         }
 
         /**
@@ -113,26 +148,23 @@ public class AnrTimerTest {
          */
         int size() {
             synchronized (mLock) {
-                return mMessages.size();
+                return mResults.size();
             }
         }
 
-        /**
-         * Fetch the received messages.  Fail if the count of received messages is other than the
-         * expected count.
-         */
-        TestArg[] messages(int expected) {
-            synchronized (mLock) {
-                assertThat(mMessages.size()).isEqualTo(expected);
-                return mMessages.toArray(new TestArg[expected]);
-            }
-        }
         /**
          * Fetch the threads that delivered the messages.
          */
         Thread[] threads() {
             synchronized (mLock) {
                 return mThreads.toArray(new Thread[mThreads.size()]);
+            }
+        }
+
+        TestResult[] results(int want) {
+            synchronized (mLock) {
+                assertEquals(want, mResults.size());
+                return mResults.toArray(new TestResult[mResults.size()]);
             }
         }
     }
@@ -151,6 +183,10 @@ public class AnrTimerTest {
 
         TestAnrTimer(Helper helper, boolean enable) {
             this(helper, enable, false);
+        }
+
+        TestAnrTimer(Helper helper, AnrTimer.Args args) {
+            super(helper.mHandler, MSG_TIMEOUT, caller(), args);
         }
 
         @Override
@@ -174,9 +210,35 @@ public class AnrTimerTest {
         }
     }
 
-    void validate(TestArg expected, TestArg actual) {
-        assertThat(actual).isEqualTo(expected);
+    // Compare two test results.
+    void validate(TestResult expected, TestResult actual) {
         assertThat(actual.what).isEqualTo(MSG_TIMEOUT);
+        assertThat(actual.arg).isEqualTo(expected.arg);
+        assertThat(actual.token).isEqualTo(expected.token);
+    }
+
+    // Verify that a test result matches the broken-out fields.  The what field is always the
+    // timeout constant in these tests.
+    void validate(TestArg arg, int token, TestResult actual) {
+        assertThat(actual.what).isEqualTo(MSG_TIMEOUT);
+        assertThat(actual.arg).isEqualTo(arg);
+        assertThat(actual.token).isEqualTo(token);
+    }
+
+    // Compare that a test result contains the specified argument.
+    void validate(TestArg expected, TestResult actual) {
+        assertThat(actual.arg).isEqualTo(expected);
+    }
+
+    // Compare two arrays of TestResults.  The array lengths must be the same.
+    void validate(TestResult[] expected, TestResult[] actual) {
+        assertThat(actual.length).isEqualTo(expected.length);
+        for (int i = 0; i < expected.length; i++) {
+            if (!actual[i].equals(expected[i])) {
+                Log.w(TAG, "mismatch on entry " + i);
+            }
+            validate(expected[i], actual[i]);
+        }
     }
 
     /**
@@ -192,7 +254,7 @@ public class AnrTimerTest {
             TestArg t = new TestArg(1, 1);
             timer.start(t, 10);
             assertThat(helper.await(5000)).isTrue();
-            TestArg[] result = helper.messages(1);
+            TestResult[] result = helper.results(1);
             validate(t, result[0]);
         }
     }
@@ -221,7 +283,7 @@ public class AnrTimerTest {
             timer.start(t, 10);
 
             assertThat(helper.await(5000)).isTrue();
-            TestArg[] result = helper.messages(1);
+            TestResult[] result = helper.results(1);
             validate(t, result[0]);
         }
     }
@@ -284,7 +346,7 @@ public class AnrTimerTest {
             timer.start(t3, 40);
 
             assertThat(helper.await(5000)).isTrue();
-            TestArg[] result = helper.messages(3);
+            TestResult[] result = helper.results(3);
             validate(t3, result[0]);
             validate(t1, result[1]);
             validate(t2, result[2]);
@@ -319,7 +381,7 @@ public class AnrTimerTest {
             timer.cancel(t1);
             // Delivery is immediate but occurs on a different thread.
             assertThat(helper.await(5000)).isTrue();
-            TestArg[] result = helper.messages(2);
+            TestResult[] result = helper.results(2);
             validate(t3, result[0]);
             validate(t2, result[1]);
         }
@@ -361,9 +423,119 @@ public class AnrTimerTest {
             timer.setTime(70);
             assertThat(helper.await(1000)).isTrue();
 
-            TestArg[] result = helper.messages(2);
+            TestResult[] result = helper.results(2);
             validate(t3, result[0]);
             validate(t2, result[1]);
+        }
+    }
+
+    // For convenience, a Timer+Helper record.
+    private record Stepper(TestAnrTimer timer, Helper helper) {
+        private static final long DEFAULT_TIMEOUT_MS = 100;
+
+        /**
+         * A helper function that steps the timer's clock and waits for 'want' responses.  The
+         * function times out after 100ms, but in normal conditions the response will be delivered
+         * much faster.  The function is meant to track the arrival of new responses, so it starts
+         * by verifying that there are no pending responses.
+
+         * If 'exact' is true, the function waits to see if any lingering responses arrive within
+         * the timeout.  If 'exact' is true, then the test will always take at least 100ms to
+         * complete, so it should be used sparingly.
+         */
+        void stepAndWait(int clock, int want) throws Exception {
+            assertThat(helper.available()).isEqualTo(0);
+            timer.setTime(clock);
+            assertThat(helper.await(want, DEFAULT_TIMEOUT_MS)).isTrue();
+            assertThat(helper.await(1, DEFAULT_TIMEOUT_MS)).isFalse();
+        }
+    }
+
+    /**
+     * Test the split-point feature with a single early notification.
+     */
+    @Test
+    public void testSplitPoint() throws Exception {
+        assumeTrue(AnrTimer.nativeTimersSupported());
+        AnrTimer.Args args =
+                new AnrTimer.Args()
+                .enable(true)
+                .testMode(true)
+                .splitPoint(new AnrTimer.Args.SplitPoint(50, 2));
+
+        // Wait for four events on each of two timer instances.
+        Helper helper = new Helper();
+        TestArg t1 = new TestArg(1, 1);
+        TestArg t2 = new TestArg(1, 2);
+        try (TestAnrTimer timer = new TestAnrTimer(helper, args)) {
+            Stepper stepper = new Stepper(timer, helper);
+
+            timer.start(t1, 100);
+            timer.start(t2, 150);
+            assertEquals(0, helper.size());
+
+            timer.setTime(20);
+            assertEquals(0, helper.size());
+
+            stepper.stepAndWait(51, 1);
+            stepper.stepAndWait(76, 1);
+            stepper.stepAndWait(101, 1);
+            stepper.stepAndWait(151, 1);
+
+            assertEquals(4, helper.size());
+
+            TestResult[] results = helper.results(4);
+            validate(t1, 2, results[0]);
+            validate(t2, 2, results[1]);
+            validate(t1, 0, results[2]);
+            validate(t2, 0, results[3]);
+        }
+    }
+
+    /**
+     * Test the split-point feature with multiple early notifications.
+     */
+    @Test
+    public void testSplitPoint2() throws Exception {
+        assumeTrue(AnrTimer.nativeTimersSupported());
+        AnrTimer.Args args =
+                new AnrTimer.Args()
+                .enable(true)
+                .testMode(true)
+                .splitPoint(new AnrTimer.Args.SplitPoint(25, 1))
+                .splitPoint(new AnrTimer.Args.SplitPoint(50, 2))
+                .splitPoint(new AnrTimer.Args.SplitPoint(75, 3));
+
+        Helper helper = new Helper();
+        TestArg t1 = new TestArg(1, 1);
+        TestArg t2 = new TestArg(1, 2);
+        try (TestAnrTimer timer = new TestAnrTimer(helper, args)) {
+            Stepper stepper = new Stepper(timer, helper);
+
+            timer.start(t1, 100);
+            timer.start(t2, 160);
+
+            stepper.stepAndWait(25, 1);
+            stepper.stepAndWait(40, 1);
+            stepper.stepAndWait(50, 1);
+            stepper.stepAndWait(75, 1);
+            stepper.stepAndWait(80, 1);
+            stepper.stepAndWait(100, 1);
+            stepper.stepAndWait(120, 1);
+            stepper.stepAndWait(160, 1);
+
+            TestResult[] actual = helper.results(8);
+            TestResult[] expected = {
+                new TestResult(t1, 1),        // t1,  25ms (25% of 100)
+                new TestResult(t2, 1),        // t2,  40ms (25% of 160)
+                new TestResult(t1, 2),        // t1,  50ms (50% of 100)
+                new TestResult(t1, 3),        // t1,  75ms (75% of 100)
+                new TestResult(t2, 2),        // t2,  80ms (50% of 160)
+                new TestResult(t1, 0),        // t1, 100ms (100% of 100)
+                new TestResult(t2, 3),        // t2, 120ms (75% of 160)
+                new TestResult(t2, 0)         // t2, 160ms (100% of 160)
+            };
+            validate(expected, actual);
         }
     }
 
