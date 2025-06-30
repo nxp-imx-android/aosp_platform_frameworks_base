@@ -27,8 +27,19 @@ import android.content.Intent;
 import android.os.IBinder;
 
 /**
- * Base class for a service that the {@code android.app.role.RoleManager.ROLE_SYSTEM_SUPERVISION}
- * role holder must implement.
+ * Base class for a service that the holders of the
+ * {@link android.app.role.RoleManager#ROLE_SYSTEM_SUPERVISION} or
+ * {@link android.app.role.RoleManager#ROLE_SUPERVISION} roles must extend.
+ *
+ * <p>When supervision is enabled, the system searches for this service from each supervision role
+ * holder using an intent filter for the {@link #ACTION_SUPERVISION_APP_SERVICE} action. The system
+ * attempts to maintain a bound connection to the service, keeping it in the foreground.
+ *
+ * <p>If a supervision role holder's process crashes, the system will restart it and automatically
+ * rebind to the service after a backoff period.
+ *
+ * <p>The service must be protected with the permission
+ * {@link android.Manifest.permission#BIND_SUPERVISION_APP_SERVICE}.
  *
  * @hide
  */
@@ -36,8 +47,7 @@ import android.os.IBinder;
 @FlaggedApi(Flags.FLAG_ENABLE_SUPERVISION_APP_SERVICE)
 public class SupervisionAppService extends Service {
     /**
-     * Service action: Action for a service that the {@code
-     * android.app.role.RoleManager.ROLE_SYSTEM_SUPERVISION} role holder must implement.
+     * Service Action: Action for a service that a supervision role holder must extend.
      *
      * @hide
      */
