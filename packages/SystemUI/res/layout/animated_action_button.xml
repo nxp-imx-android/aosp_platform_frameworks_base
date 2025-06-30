@@ -23,7 +23,7 @@
     android:drawablePadding="@dimen/animated_action_button_drawable_padding"
     android:ellipsize="end"
     android:textAppearance="@style/TextAppearance.NotificationSmartReply"
-    android:gravity="center"
+    android:gravity="left|center_vertical"
     android:minWidth="0dp"
     android:minHeight="@dimen/animated_action_button_touch_target_height"
     android:paddingHorizontal="@dimen/animated_action_button_padding_horizontal"
