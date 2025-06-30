@@ -54,13 +54,54 @@ class SkipLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
-    fun `Factory is skipped when Change is not closing one`() {
+    fun `Factory is active when Change is for a Task which is NOT a leaf`() {
+        runTestScenario { r ->
+            testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
+                inputChange {
+                    mode = TRANSIT_OPEN
+                    runningTaskInfo { ti ->
+                        ti.appCompatTaskInfo.setIsLeafTask(false)
+                    }
+                }
+                validateCanHandle { canHandle ->
+                    assert(canHandle)
+                }
+                validateCreateLifecycleEvent { event ->
+                    assert(event == null)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `Factory is skipped when Change is not closing for a Task which is NOT a leaf`() {
+        runTestScenario { r ->
+            testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
+                inputChange {
+                    mode = TRANSIT_OPEN
+                    runningTaskInfo { ti ->
+                        ti.appCompatTaskInfo.setIsLeafTask(true)
+                    }
+                }
+                validateCanHandle { canHandle ->
+                    assert(!canHandle)
+                }
+                validateCreateLifecycleEvent { event ->
+                    assert(event != null)
+                    assert(event?.type == LetterboxLifecycleEventType.NONE)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `Factory is skipped when Change is not closing for an Activity Transition`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
                 inputChange {
                     mode = TRANSIT_OPEN
                     activityTransitionInfo {
-                        taskId = 10
+                        this.taskId = 10
                     }
                 }
                 validateCanHandle { canHandle ->
