@@ -36,19 +36,8 @@ import java.util.List;
  */
 @SystemApi
 public interface WebViewFactoryProvider {
-    /**
-     * Used as the requirement when Flags.useBEntryPoint() is false.
-     * @hide
-     */
+    /** @hide */
     int MINIMUM_SUPPORTED_TARGET_SDK = Build.VERSION_CODES.TIRAMISU;
-
-    /**
-     * Used as the requirement when Flags.useBEntryPoint() is true.
-     * TODO: set to the actual minimum required version code - this is just the
-     *       version shipped in V.
-     * @hide
-     */
-    long MINIMUM_SUPPORTED_VERSION_CODE = 661308800L;
 
     /**
      * Returns whether the WebView implementation represented by {@code packageInfo}
@@ -56,11 +45,7 @@ public interface WebViewFactoryProvider {
      * @hide
      */
     static boolean isCompatibleImplementationPackage(@NonNull PackageInfo packageInfo) {
-        if (Flags.useBEntryPoint()) {
-            return packageInfo.versionCode >= MINIMUM_SUPPORTED_VERSION_CODE;
-        } else {
-            return packageInfo.applicationInfo.targetSdkVersion >= MINIMUM_SUPPORTED_TARGET_SDK;
-        }
+        return packageInfo.applicationInfo.targetSdkVersion >= MINIMUM_SUPPORTED_TARGET_SDK;
     }
 
     /**
@@ -69,13 +54,7 @@ public interface WebViewFactoryProvider {
      * @hide
      */
     static @NonNull String describeCompatibleImplementationPackage() {
-        if (Flags.useBEntryPoint()) {
-            return TextUtils.formatSimple("Minimum versionCode for OS support: %d",
-                    MINIMUM_SUPPORTED_VERSION_CODE);
-        } else {
-            return TextUtils.formatSimple("Minimum targetSdkVersion: %d",
-                    MINIMUM_SUPPORTED_TARGET_SDK);
-        }
+        return TextUtils.formatSimple("Minimum targetSdkVersion: %d", MINIMUM_SUPPORTED_TARGET_SDK);
     }
 
     /**
@@ -84,11 +63,7 @@ public interface WebViewFactoryProvider {
      * @hide
      */
     static @NonNull String getWebViewFactoryClassName() {
-        if (Flags.useBEntryPoint()) {
-            return "com.android.webview.chromium.WebViewChromiumFactoryProviderForB";
-        } else {
-            return "com.android.webview.chromium.WebViewChromiumFactoryProviderForT";
-        }
+        return "com.android.webview.chromium.WebViewChromiumFactoryProviderForT";
     }
 
     /**
