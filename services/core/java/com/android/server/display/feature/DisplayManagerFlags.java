@@ -183,11 +183,6 @@ public class DisplayManagerFlags {
             Flags::blockAutobrightnessChangesOnStylusUsage
     );
 
-    private final FlagState mEnableApplyDisplayChangedDuringDisplayAdded = new FlagState(
-            Flags.FLAG_ENABLE_APPLY_DISPLAY_CHANGED_DURING_DISPLAY_ADDED,
-            Flags::enableApplyDisplayChangedDuringDisplayAdded
-    );
-
     private final FlagState mEnableBatteryStatsForAllDisplays = new FlagState(
             Flags.FLAG_ENABLE_BATTERY_STATS_FOR_ALL_DISPLAYS,
             Flags::enableBatteryStatsForAllDisplays
@@ -479,13 +474,6 @@ public class DisplayManagerFlags {
     }
 
     /**
-      * @return {@code true} if need to apply display changes during display added event.
-      */
-    public boolean isApplyDisplayChangedDuringDisplayAddedEnabled() {
-        return mEnableApplyDisplayChangedDuringDisplayAdded.isEnabled();
-    }
-
-    /**
      * @return {@code true} if autobrightness is to be blocked when stylus is being used
      */
     public boolean isBlockAutobrightnessChangesOnStylusUsage() {
@@ -651,7 +639,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mVirtualDisplayLimit);
         pw.println(" " + mNormalBrightnessForDozeParameter);
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
-        pw.println(" " + mEnableApplyDisplayChangedDuringDisplayAdded);
         pw.println(" " + mBlockAutobrightnessChangesOnStylusUsage);
         pw.println(" " + mHasArrSupport);
         pw.println(" " + mAutoBrightnessModeBedtimeWearFlagState);
