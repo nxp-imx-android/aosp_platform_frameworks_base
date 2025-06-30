@@ -21,16 +21,11 @@ import static android.os.UserHandle.SYSTEM;
 
 import static com.android.modules.utils.ravenwood.RavenwoodHelper.RavenwoodInternal.RAVENWOOD_RUNTIME_PATH_JAVA_SYSPROP;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.ANDROID_PACKAGE_NAME;
-import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_EMPTY_RESOURCES_APK;
-import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_INST_RESOURCE_APK;
-import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_RESOURCE_APK;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.getRavenwoodRuntimePath;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.parseNullableInt;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.withDefault;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 import android.annotation.Nullable;
 import android.app.ActivityManager;
@@ -40,7 +35,6 @@ import android.app.Application;
 import android.app.Application_ravenwood;
 import android.app.IUiAutomationConnection;
 import android.app.Instrumentation;
-import android.app.ResourcesManager;
 import android.app.UiAutomation;
 import android.app.UiAutomation_ravenwood;
 import android.content.Context;
@@ -65,7 +59,6 @@ import android.system.ErrnoException;
 import android.system.Os;
 import android.util.Log;
 import android.util.Log_ravenwood;
-import android.view.DisplayAdjustments;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
@@ -94,7 +87,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -357,29 +349,10 @@ public class RavenwoodDriver {
 
         final boolean isSelfInstrumenting = env.isSelfInstrumenting();
 
-        // This will load the resources from the apk set to `resource_apk` in the build file.
-        // This is supposed to be the "target app"'s resources.
-        final Supplier<Resources> targetResourcesLoader = () -> {
-            var file = new File(RAVENWOOD_RESOURCE_APK);
-            return loadResources(file.exists() ? file : null);
-        };
-
-        // Set up test context's (== instrumentation context's) resources.
-        // If the target package name == test package name, then we use the main resources.
-        final Supplier<Resources> instResourcesLoader;
-        if (isSelfInstrumenting) {
-            instResourcesLoader = targetResourcesLoader;
-        } else {
-            instResourcesLoader = () -> {
-                var file = new File(RAVENWOOD_INST_RESOURCE_APK);
-                return loadResources(file.exists() ? file : null);
-            };
-        }
-
         sInstContext = new RavenwoodContext(
-                env.getInstPackageName(), env.getMainThread(), instResourcesLoader);
+                env.getInstPackageName(), env.getMainThread());
         sTargetContext = new RavenwoodContext(
-                env.getTargetPackageName(), env.getMainThread(), targetResourcesLoader);
+                env.getTargetPackageName(), env.getMainThread());
 
         // Set up app context. App context is always created for the target app.
         var application = new Application();
@@ -398,10 +371,8 @@ public class RavenwoodDriver {
         // the difference doesn't matter at least for now, so we just use the target context.
         ActivityThread_ravenwood.init(application, sTargetContext);
 
-        final Supplier<Resources> systemResourcesLoader = () -> loadResources(null);
-
         var systemServerContext = new RavenwoodContext(
-                ANDROID_PACKAGE_NAME, env.getMainThread(), systemResourcesLoader);
+                ANDROID_PACKAGE_NAME, env.getMainThread());
 
         var uiAutomation = new UiAutomation(sInstContext, new IUiAutomationConnection.Default());
 
@@ -555,37 +526,6 @@ public class RavenwoodDriver {
         var loggableChanges = platformCompat.getLoggableChanges(appInfo);
 
         AppCompatCallbacks.install(disabledChanges, loggableChanges, false);
-    }
-
-    /**
-     * Load {@link Resources} from an APK, with cache.
-     */
-    private static Resources loadResources(@Nullable File apkPath) {
-        var cached = sCachedResources.get(apkPath);
-        if (cached != null) {
-            return cached;
-        }
-
-        var fileToLoad = apkPath != null ? apkPath :
-                new File(getRavenwoodRuntimePath() + RAVENWOOD_EMPTY_RESOURCES_APK);
-
-        assertTrue("File " + fileToLoad + " doesn't exist.", fileToLoad.isFile());
-
-        final String path = fileToLoad.getAbsolutePath();
-        final var emptyPaths = new String[0];
-
-        ResourcesManager.getInstance().initializeApplicationPaths(path, emptyPaths);
-
-        final var ret = ResourcesManager.getInstance().getResources(null, path,
-                emptyPaths, emptyPaths, emptyPaths,
-                emptyPaths, null, null,
-                new DisplayAdjustments().getCompatibilityInfo(),
-                RavenwoodDriver.class.getClassLoader(), null);
-
-        assertNotNull(ret);
-
-        sCachedResources.put(apkPath, ret);
-        return ret;
     }
 
     /**
