@@ -20,7 +20,6 @@ import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.os.UserHandle.SYSTEM;
 
 import static com.android.modules.utils.ravenwood.RavenwoodHelper.RavenwoodInternal.RAVENWOOD_RUNTIME_PATH_JAVA_SYSPROP;
-import static com.android.ravenwood.common.RavenwoodInternalUtils.ANDROID_PACKAGE_NAME;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.getRavenwoodRuntimePath;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.parseNullableInt;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.withDefault;
@@ -29,13 +28,7 @@ import static org.junit.Assert.assertThrows;
 
 import android.annotation.Nullable;
 import android.app.ActivityManager;
-import android.app.ActivityThread_ravenwood;
 import android.app.AppCompatCallbacks;
-import android.app.Application;
-import android.app.Application_ravenwood;
-import android.app.IUiAutomationConnection;
-import android.app.Instrumentation;
-import android.app.UiAutomation;
 import android.app.UiAutomation_ravenwood;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -45,7 +38,6 @@ import android.icu.util.ULocale;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.os.Bundle;
 import android.os.HandlerThread;
 import android.os.Handler_ravenwood;
 import android.os.Looper_ravenwood;
@@ -59,8 +51,6 @@ import android.system.ErrnoException;
 import android.system.Os;
 import android.util.Log;
 import android.util.Log_ravenwood;
-
-import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.os.RuntimeInit;
@@ -208,11 +198,6 @@ public class RavenwoodDriver {
     private static final String DEFAULT_INSTRUMENTATION_CLASS =
             "androidx.test.runner.AndroidJUnitRunner";
 
-    static volatile RavenwoodContext sInstContext;
-    static volatile RavenwoodContext sTargetContext;
-    static volatile Application sTargetApplication;
-    private static Instrumentation sInstrumentation;
-
     /**
      * Initialize the global environment.
      */
@@ -283,6 +268,8 @@ public class RavenwoodDriver {
         // Make sure libravenwood_runtime is loaded.
         System.load(RavenwoodInternalUtils.getJniLibraryPath(RAVENWOOD_NATIVE_RUNTIME_NAME));
 
+        final int pid = new Random().nextInt(100, 32768);
+        Log_ravenwood.setPid(pid);
         Log_ravenwood.setLogLevels(getLogTags());
 
         // Do the basic set up for the android sysprops.
@@ -330,9 +317,6 @@ public class RavenwoodDriver {
 
         Looper_ravenwood.sDispatcher = RavenwoodDriver::dispatchMessage;
 
-        var env = createEnvironment();
-        Log_ravenwood.setPid(env.getPid());
-
         RavenwoodUtils.sPendingExceptionThrower =
                 RavenwoodDriver::maybeThrowPendingRecoverableUncaughtExceptionNoClear;
         Handler_ravenwood.sPendingExceptionThrower = (a, b, c) -> {
@@ -340,58 +324,18 @@ public class RavenwoodDriver {
             return null;
         };
 
-
-
         ServiceManager.init$ravenwood();
         LocalServices.removeAllServicesForTest();
-
         ActivityManager.init$ravenwood(SYSTEM.getIdentifier());
 
-        final boolean isSelfInstrumenting = env.isSelfInstrumenting();
+        // Initialize the "environment".
+        var env = createEnvironment(pid);
 
-        sInstContext = new RavenwoodContext(
-                env.getInstPackageName(), env.getMainThread());
-        sTargetContext = new RavenwoodContext(
-                env.getTargetPackageName(), env.getMainThread());
+        // Start app lifecycle.
+        RavenwoodAppDriver.init();
 
-        // Set up app context. App context is always created for the target app.
-        var application = new Application();
-        Application_ravenwood.attach(application, sTargetContext);
-        if (isSelfInstrumenting) {
-            sInstContext.attachApplicationContext(application);
-            sTargetContext.attachApplicationContext(application);
-        } else {
-            // When instrumenting into another APK, the test context doesn't have an app context.
-            sTargetContext.attachApplicationContext(application);
-        }
-        sTargetApplication = application;
-
-        // Set up ActivityThread.currentXxx().
-        // "System context" is _not_ the same thing as the target context, but
-        // the difference doesn't matter at least for now, so we just use the target context.
-        ActivityThread_ravenwood.init(application, sTargetContext);
-
-        var systemServerContext = new RavenwoodContext(
-                ANDROID_PACKAGE_NAME, env.getMainThread());
-
-        var uiAutomation = new UiAutomation(sInstContext, new IUiAutomationConnection.Default());
-
-        var instArgs = Bundle.EMPTY;
-        RavenwoodUtils.runOnMainThreadSync(() -> {
-            try {
-                var clazz = Class.forName(env.getInstrumentationClass());
-                sInstrumentation = (Instrumentation) clazz.getConstructor().newInstance();
-            } catch (ReflectiveOperationException e) {
-                SneakyThrow.sneakyThrow(e);
-            }
-
-            sInstrumentation.basicInit(sInstContext, sTargetContext, uiAutomation);
-            sInstrumentation.onCreate(instArgs);
-        });
-        InstrumentationRegistry.registerInstance(sInstrumentation, instArgs);
-
-        RavenwoodSystemServer.init(systemServerContext);
-
+        // TODO(b/428775903) Make sure nothing would try to access compat-IDs before this call.
+        // We may want to do it within initAppDriver().
         initializeCompatIds(env);
     }
 
@@ -407,7 +351,7 @@ public class RavenwoodDriver {
         return logTags;
     }
 
-    private static RavenwoodEnvironment createEnvironment() throws Exception {
+    private static RavenwoodEnvironment createEnvironment(int pid) throws Exception {
         final var props = RavenwoodSystemProperties.readProperties("ravenwood.properties");
 
         // TODO(b/377765941) Read them from the manifest too?
@@ -422,7 +366,7 @@ public class RavenwoodDriver {
 
         return RavenwoodEnvironment.init(
                 FIRST_APPLICATION_UID,
-                new Random().nextInt(100, 32768),
+                pid,
                 targetSdkLevel,
                 targetPackageName,
                 testPackageName,

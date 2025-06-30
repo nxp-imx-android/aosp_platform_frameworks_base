@@ -302,7 +302,9 @@ import java.util.function.Consumer;
  * {@hide}
  */
 @android.ravenwood.annotation.RavenwoodPartiallyAllowlisted
-@android.ravenwood.annotation.RavenwoodKeepPartialClass
+@android.ravenwood.annotation.RavenwoodKeepPartialClass(
+        comment = "We use Objenesis to instantiate it. No member fields are initialized."
+)
 @android.ravenwood.annotation.RavenwoodRedirectionClass("ActivityThread_ravenwood")
 public final class ActivityThread extends ClientTransactionHandler
         implements ActivityThreadInternal {

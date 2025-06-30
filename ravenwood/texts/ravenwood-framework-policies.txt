@@ -11,6 +11,9 @@ rename android/.*/nano/   devicenano/
 # StatsD auto-generated
 class com.android.internal.util.FrameworkStatsLog keepclass  # no-pta
 
+# Auto generated
+class android.content.AttributionSourceState keepclass # no-pta
+
 # Included in module-utils; cannot use annotations
 class com.android.internal.util.FastXmlSerializer keepclass  # no-pta
 
