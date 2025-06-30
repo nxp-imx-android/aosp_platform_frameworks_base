@@ -293,12 +293,12 @@ public class AutoclickScrollPanel {
     private void toggleSelectedButtonStyle(ImageButton button, boolean hovered) {
         if (hovered) {
             int tintColor = mContext.getColor(
-                    com.android.internal.R.color.materialColorOnPrimary);
+                    com.android.internal.R.color.materialColorOnSurface);
 
-            // Apply semi-transparent (22%) tint.
+            // Apply semi-transparent (11%) tint.
             // SRC_ATOP preserves the button's texture and shadows while applying the tint.
             button.getBackground().setColorFilter(new BlendModeColorFilter(
-                    Color.argb(56, Color.red(tintColor), Color.green(tintColor),
+                    Color.argb(28, Color.red(tintColor), Color.green(tintColor),
                             Color.blue(tintColor)),
 
                     BlendMode.SRC_ATOP));
