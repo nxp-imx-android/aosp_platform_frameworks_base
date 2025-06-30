@@ -208,6 +208,8 @@ public class VibrationScalerTest {
     public void testGetScaleFactor_withConfig_returnsConfigForCurrentSetting() {
         // Default scale gain will be ignored.
         when(mConfigMock.getDefaultVibrationScaleLevelGain()).thenReturn(1.4f);
+        when(mConfigMock.hasVibrationScaleFactors()).thenReturn(true);
+        when(mConfigMock.hasExternalVibrationScaleFactors()).thenReturn(true);
         // External vibration config will be ignored.
         setExternalVibrationScaleFactor(VIBRATION_INTENSITY_LOW, 0.4f);
         setExternalVibrationScaleFactor(VIBRATION_INTENSITY_MEDIUM, 0.5f);
@@ -243,6 +245,8 @@ public class VibrationScalerTest {
     public void testGetScaleFactor_withConfigForExternalVibration_returnsConfigForCurrentSetting() {
         // Default scale gain will be ignored.
         when(mConfigMock.getDefaultVibrationScaleLevelGain()).thenReturn(1.4f);
+        when(mConfigMock.hasVibrationScaleFactors()).thenReturn(true);
+        when(mConfigMock.hasExternalVibrationScaleFactors()).thenReturn(true);
         // Vibration config will be ignored.
         setVibrationScaleFactor(VIBRATION_INTENSITY_LOW, 0.1f);
         setVibrationScaleFactor(VIBRATION_INTENSITY_MEDIUM, 0.2f);
@@ -471,6 +475,8 @@ public class VibrationScalerTest {
     public void scale_withDeviceConfig_usesConfigScales() {
         // Default scale gain will be ignored.
         when(mConfigMock.getDefaultVibrationScaleLevelGain()).thenReturn(1.4f);
+        when(mConfigMock.hasVibrationScaleFactors()).thenReturn(true);
+        when(mConfigMock.hasExternalVibrationScaleFactors()).thenReturn(true);
         setVibrationScaleFactor(VIBRATION_INTENSITY_LOW, 0.1f);
         setVibrationScaleFactor(VIBRATION_INTENSITY_MEDIUM, 0.2f);
         setVibrationScaleFactor(VIBRATION_INTENSITY_HIGH, 0.3f);
