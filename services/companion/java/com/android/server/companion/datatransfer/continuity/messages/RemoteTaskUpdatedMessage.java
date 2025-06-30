@@ -40,7 +40,7 @@ public class RemoteTaskUpdatedMessage implements TaskContinuityMessageData {
                 case (int) android.companion.RemoteTaskUpdatedMessage.TASK:
                     final long taskToken = pis.start(
                         android.companion.RemoteTaskUpdatedMessage.TASK);
-                    mTask = new RemoteTaskInfo(pis);
+                    mTask = RemoteTaskInfo.fromProto(pis);
                     pis.end(taskToken);
                     break;
             }
