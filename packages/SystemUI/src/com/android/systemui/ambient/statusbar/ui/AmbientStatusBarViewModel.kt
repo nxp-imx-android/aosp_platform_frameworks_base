@@ -21,6 +21,7 @@ import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.statusbar.chips.ui.model.MultipleOngoingActivityChipsModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
+import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 /** View model for the dream status bar. */
 class AmbientStatusBarViewModel
 @AssistedInject
-constructor(private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel) :
+constructor(@Assisted private val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel) :
     ExclusiveActivatable() {
 
     private val hydrator = Hydrator("AmbientStatusBarViewModel.hydrator")
@@ -48,6 +49,8 @@ constructor(private val ongoingActivityChipsViewModel: OngoingActivityChipsViewM
 
     @AssistedFactory
     interface Factory {
-        fun create(): AmbientStatusBarViewModel
+        fun create(
+            ongoingActivityChipsViewModel: OngoingActivityChipsViewModel
+        ): AmbientStatusBarViewModel
     }
 }

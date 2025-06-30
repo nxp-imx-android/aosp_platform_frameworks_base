@@ -22,8 +22,8 @@ import com.android.systemui.dump.DumpManager
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeStatusBarComponentsInteractor
 import com.android.systemui.shade.shared.model.ShadeMode
-import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.domain.interactor.RemoteInputInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.ActiveNotificationsInteractor
 import com.android.systemui.statusbar.notification.domain.interactor.HeadsUpNotificationInteractor
@@ -44,6 +44,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -58,7 +59,7 @@ class NotificationListViewModel
 constructor(
     val shelf: NotificationShelfViewModel,
     val hideListViewModel: HideListViewModel,
-    val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel,
+    val shadeStatusBarComponentsInteractor: ShadeStatusBarComponentsInteractor,
     val footerViewModelFactory: FooterViewModel.Factory,
     val emptyShadeViewModelFactory: EmptyShadeViewModel.Factory,
     val bundleOnboarding: BundleOnboardingViewModel,
@@ -367,7 +368,9 @@ constructor(
      * chips like screen recording.
      */
     val visibleStatusBarChips: Flow<Map<String, RectF>> =
-        ongoingActivityChipsViewModel.visibleChipsWithBounds
+        shadeStatusBarComponentsInteractor.ongoingActivityChipsViewModel.flatMapLatest {
+            it.visibleChipsWithBounds
+        }
 
     // TODO(b/325936094) use it for the text displayed in the StatusBar
     fun headsUpRow(key: HeadsUpRowKey): HeadsUpRowViewModel =

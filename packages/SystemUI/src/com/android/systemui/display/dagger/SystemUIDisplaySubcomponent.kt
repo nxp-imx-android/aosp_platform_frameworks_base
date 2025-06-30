@@ -19,6 +19,7 @@ package com.android.systemui.display.dagger
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.data.repository.DisplayStateRepository
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import dagger.BindsInstance
@@ -51,6 +52,8 @@ interface SystemUIDisplaySubcomponent {
     @get:DisplayAware val lifecycleListeners: Set<LifecycleListener>
 
     @get:DisplayAware val statusBarWindowStateController: StatusBarWindowStateController
+
+    @get:DisplayAware val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel
 
     @Subcomponent.Factory
     interface Factory {

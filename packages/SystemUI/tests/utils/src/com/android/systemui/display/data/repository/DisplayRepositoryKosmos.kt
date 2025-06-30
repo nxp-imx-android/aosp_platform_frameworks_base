@@ -29,6 +29,8 @@ import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
+import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsViewModel
 import com.android.systemui.statusbar.core.statusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.mockCommandQueue
@@ -63,6 +65,8 @@ fun Kosmos.createFakeDisplaySubcomponent(
         this.homeStatusBarViewModelFactory,
     homeStatusBarViewBinder: HomeStatusBarViewBinder = this.homeStatusBarViewBinder,
     statusBarRootFactory: StatusBarRootFactory = this.statusBarRootFactory,
+    ongoingActivityChipsViewModel: OngoingActivityChipsViewModel =
+        this.ongoingActivityChipsViewModel,
 ): SystemUIPhoneDisplaySubcomponent {
     return object : SystemUIPhoneDisplaySubcomponent {
         override val displayCoroutineScope: CoroutineScope
@@ -79,6 +83,9 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val lifecycleListeners: Set<SystemUIDisplaySubcomponent.LifecycleListener> =
             sysUiDefaultDisplaySubcomponentLifecycleListeners
+
+        override val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel
+            get() = ongoingActivityChipsViewModel
 
         override val homeStatusBarComponentFactory: HomeStatusBarComponent.Factory
             get() = mock<HomeStatusBarComponent.Factory>()
