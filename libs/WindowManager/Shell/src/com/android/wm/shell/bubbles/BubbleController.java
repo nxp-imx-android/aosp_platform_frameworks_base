@@ -710,6 +710,7 @@ public class BubbleController implements ConfigurationChangeListener,
     @VisibleForTesting
     public void setLauncherHasBubbleBar(boolean launcherHasBubbleBar) {
         if (launcherHasBubbleBar == mLauncherHasBubbleBar) return;
+        ProtoLog.d(WM_SHELL_BUBBLES, "setLauncherHasBubbleBar=%b", launcherHasBubbleBar);
         mLauncherHasBubbleBar = launcherHasBubbleBar;
         if (mLauncherHasBubbleBar) {
             setUpBubbleViewsForMode();
@@ -2962,7 +2963,6 @@ public class BubbleController implements ConfigurationChangeListener,
         pw.print(prefix); pw.println("  bubbleStateListenerSet= " + (mBubbleStateListener != null));
         pw.print(prefix); pw.println("  stackViewSet= " + (mStackView != null));
         pw.print(prefix); pw.println("  layerViewSet= " + (mLayerView != null));
-        pw.print(prefix); pw.println("  isImeVisible= " + mBubblePositioner.isImeVisible());
         pw.println();
 
         mBubbleData.dump(pw);
@@ -2974,9 +2974,11 @@ public class BubbleController implements ConfigurationChangeListener,
         pw.println();
 
         mImpl.mCachedState.dump(pw);
-
         pw.println();
+
         mBubbleTransitions.mTaskViewTransitions.dump(pw);
+
+        mBubblePositioner.dump(pw);
     }
 
     /**
