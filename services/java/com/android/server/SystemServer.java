@@ -3014,13 +3014,9 @@ public final class SystemServer implements Dumpable {
                     DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_CREDENTIAL,
                     CredentialManager.DEVICE_CONFIG_ENABLE_CREDENTIAL_MANAGER, true);
             if (credentialManagerEnabled) {
-                if (isWatch && !android.credentials.flags.Flags.wearCredentialManagerEnabled()) {
-                    Slog.d(TAG, "CredentialManager disabled on wear.");
-                } else {
-                    t.traceBegin("StartCredentialManagerService");
-                    mSystemServiceManager.startService(CredentialManagerService.class);
-                    t.traceEnd();
-                }
+                t.traceBegin("StartCredentialManagerService");
+                mSystemServiceManager.startService(CredentialManagerService.class);
+                t.traceEnd();
             } else {
                 Slog.d(TAG, "CredentialManager disabled.");
             }
