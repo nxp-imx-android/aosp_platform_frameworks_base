@@ -173,7 +173,7 @@ flag {
     name: "allow_output_switcher_list_rearrangement_within_timeout"
     namespace: "media_better_together"
     description: "Allows Output Switcher device list to rearrange items within a short time after opening."
-    bug: "422074183"
+    bug: "425986844"
     metadata {
         purpose: PURPOSE_BUGFIX
     }
