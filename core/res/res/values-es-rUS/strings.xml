@@ -75,10 +75,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Esta app no es compatible con 16 KB. No se pudo verificar la alineación del APK. Esta app se ejecutará con el modo de compatibilidad de tamaño de página. Para obtener mejores resultados, vuelve a compilar la aplicación con la compatibilidad de 16 KB. Para obtener más información, consulta el siguiente vínculo: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Esta app no es compatible con 16 KB. No se pudo verificar la alineación de ELF. La app se ejecutará con el modo de compatibilidad de tamaño de página. Para obtener mejores resultados, vuelve a compilar la aplicación con la compatibilidad de 16 KB. Si necesitas más información, consulta el siguiente vínculo: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Esta app no es compatible con 16 KB. No se pudieron verificar las alineaciones de APK y ELF. La app se ejecutará con el modo de compatibilidad de tamaño de página. Para obtener mejores resultados, vuelve a compilar la aplicación con la compatibilidad de 16 KB. Si necesitas más información, consulta el siguiente vínculo: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Se muestra esta advertencia porque esta es una app depurable y que actualmente se está probando. Si no eres el desarrollador, infórmale la situación y pídele una app no depurable. Esta app no es compatible con 16 KB. No se pudo verificar la alineación del APK. Sigue los pasos que se indican en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Se muestra esta advertencia porque esta es una app depurable y que actualmente se está probando. Si no eres el desarrollador, infórmale la situación y pídele una app no depurable. Esta app no es compatible con 16 KB. No se pudo verificar la alineación de ELF. Sigue los pasos que se indican en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Se muestra esta advertencia porque esta es una app depurable y que actualmente se está probando. Si no eres el desarrollador, infórmale la situación y pídele una app no depurable. Esta app no es compatible con 16 KB. No se pudieron verificar las alineaciones de APK y ELF. Sigue los pasos que se indican en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"No volver a mostrar"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Servicio no suministrado."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"No puedes cambiar la configuración del identificador de llamadas."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Se cambiaron los datos a <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>

@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Diese App ist nicht mit 16 KB kompatibel. Die APK-Abgleichsprüfung ist fehlgeschlagen. Diese App wird im mit der Seitengröße kompatiblen Modus ausgeführt. Für eine optimale Kompatibilität rekompiliere die App, sodass sie 16 KB unterstützt. Weitere Informationen findest du unter &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Diese App ist nicht mit 16 KB kompatibel. Die ELF-Abgleichsprüfung ist fehlgeschlagen. Diese App wird im mit der Seitengröße kompatiblen Modus ausgeführt. Für eine optimale Kompatibilität rekompiliere die App, sodass sie 16 KB unterstützt. Weitere Informationen findest du unter &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Diese App ist nicht mit 16 KB kompatibel. APK- und ELF-Abgleichsprüfungen sind fehlgeschlagen. Diese App wird im mit der Seitengröße kompatiblen Modus ausgeführt. Für eine optimale Kompatibilität rekompiliere die App, sodass sie 16 KB unterstützt. Weitere Informationen findest du unter &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Diese Warnung wird angezeigt, weil es sich um eine debugfähige App handelt, die derzeit getestet wird. Wenn du nicht der Entwickler bist, melde dies dem Entwickler und bitte um eine nicht debugfähige App. Diese App ist nicht mit 16 KB kompatibel. Die APK-Abgleichsprüfung ist fehlgeschlagen. Bitte folge den Schritten unter &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Diese Warnung wird angezeigt, weil es sich um eine debugfähige App handelt, die derzeit getestet wird. Wenn du nicht der Entwickler bist, melde dies dem Entwickler und bitte um eine nicht debugfähige App. Diese App ist nicht mit 16 KB kompatibel. Die ELF-Abgleichsprüfung ist fehlgeschlagen. Bitte folge den Schritten unter &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Diese Warnung wird angezeigt, weil es sich um eine debugfähige App handelt, die derzeit getestet wird. Wenn du nicht der Entwickler bist, melde dies dem Entwickler und bitte um eine nicht debugfähige App. Diese App ist nicht mit 16 KB kompatibel. APK- und ELF-Abgleichsprüfungen sind fehlgeschlagen. Bitte folge den Schritten unter &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Nicht mehr anzeigen"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Dienst nicht eingerichtet."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Du kannst die Einstellung für die Anrufer-ID nicht ändern."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Mobile Daten wurden auf <xliff:g id="CARRIERDISPLAY">%s</xliff:g> umgestellt"</string>
@@ -1825,8 +1838,8 @@
     <string name="accessibility_gesture_prompt_text" msgid="6452246951969541792">"Funktion auswählen"</string>
     <string name="accessibility_gesture_3finger_prompt_text" msgid="77745752309056152">"Funktion auswählen"</string>
     <string name="accessibility_button_instructional_text" msgid="6831154884557881996">"Die Funktion wird geöffnet, wenn du das nächste Mal auf die Schaltfläche „Bedienungshilfen“ tippst"</string>
-    <string name="accessibility_gesture_instructional_text" msgid="4133877896011098550">"Die Funktion wird geöffnet, wenn du diese Touch-Geste für Bedienungshilfen das nächste Mal verwendest. Wische mit 2 Fingern vom unteren Displayrand nach oben und lass dann schnell los."</string>
-    <string name="accessibility_gesture_3finger_instructional_text" msgid="1124458279366968154">"Die Funktion wird geöffnet, wenn du diese Touch-Geste für Bedienungshilfen das nächste Mal verwendest. Wische mit 3 Fingern vom unteren Displayrand nach oben und lass dann schnell los."</string>
+    <string name="accessibility_gesture_instructional_text" msgid="4133877896011098550">"Die Funktion wird geöffnet, wenn du diese Touchgeste für Bedienungshilfen das nächste Mal verwendest. Wische mit 2 Fingern vom unteren Displayrand nach oben und lass dann schnell los."</string>
+    <string name="accessibility_gesture_3finger_instructional_text" msgid="1124458279366968154">"Die Funktion wird geöffnet, wenn du diese Touchgeste für Bedienungshilfen das nächste Mal verwendest. Wische mit 3 Fingern vom unteren Displayrand nach oben und lass dann schnell los."</string>
     <string name="accessibility_magnification_chooser_text" msgid="1502075582164931596">"Vergrößerung"</string>
     <string name="hearing_device_switch_phone_mic_notification_title" msgid="6645178038359708836">"Zum Mikrofon des Smartphones wechseln?"</string>
     <string name="hearing_device_switch_hearing_mic_notification_title" msgid="4612074852145289569">"Zum Mikrofon des Hörgeräts wechseln?"</string>

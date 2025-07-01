@@ -75,10 +75,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Questa app non è compatibile con le pagine di 16 kB. Controllo allineamento APK non riuscito. Questa app verrà eseguita utilizzando la modalità compatibile con le dimensioni della pagina. Per la massima compatibilità, ricompila l\'applicazione con il supporto a 16 kB. Per maggiori dettagli, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Questa app non è compatibile con le pagine di 16 kB. Controllo allineamento ELF non riuscito. Questa app verrà eseguita utilizzando la modalità compatibile con le dimensioni della pagina. Per la massima compatibilità, ricompila l\'applicazione con il supporto a 16 kB. Per maggiori dettagli, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Questa app non è compatibile con le pagine di 16 kB. Controlli di allineamento APK ed ELF non riusciti. Questa app verrà eseguita utilizzando la modalità compatibile con le dimensioni della pagina. Per la massima compatibilità, ricompila l\'applicazione con il supporto a 16 kB. Per maggiori dettagli, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Questo avviso viene visualizzato perché si tratta di un\'app di cui è possibile eseguire il debug che è attualmente in fase di test. Se non sei tu, segnalalo allo sviluppatore e chiedi un\'app di cui è possibile eseguire il debug. Questa app non è compatibile con 16 kB. Controllo allineamento APK non riuscito. Segui la procedura su &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Questo avviso viene visualizzato perché si tratta di un\'app di cui è possibile eseguire il debug che è attualmente in fase di test. Se non sei tu, segnalalo allo sviluppatore e chiedi un\'app di cui è possibile eseguire il debug. Questa app non è compatibile con 16 kB. Controllo allineamento ELF non riuscito. Segui la procedura su &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Questo avviso viene visualizzato perché si tratta di un\'app di cui è possibile eseguire il debug che è attualmente in fase di test. Se non sei tu, segnalalo allo sviluppatore e chiedi un\'app di cui è possibile eseguire il debug. Questa app non è compatibile con 16 kB. Controlli di allineamento APK ed ELF non riusciti. Segui la procedura su &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Non mostrare più"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Servizio non fornito."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Non è possibile modificare l\'impostazione ID chiamante."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"I dati sono stati trasferiti a <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>

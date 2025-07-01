@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"‏یہ ایپ ‎16 KB کے موافق نہیں ہے۔ ‫APK الائنمنٹ چیک ناکام ہو گیا۔ یہ ایپ صفحہ کے سائز کے ساتھ موافقت رکھنے والے موڈ کے ساتھ چلائی جائے گی۔ بہترین موافقت کے لیے، براہ کرم ‎16 KB کے سپورٹ کے ساتھ ایپلیکیشن کو دوبارہ کمپائل کریں۔ مزید معلومات کے لیے &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; دیکھیں"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"‏یہ ایپ ‎16 KB کے موافق نہیں ہے۔ ‫ELF الائنمنٹ چیک ناکام ہو گیا۔ یہ ایپ صفحہ کے سائز کے ساتھ موافقت رکھنے والے موڈ کے ساتھ چلائی جائے گی۔ بہترین موافقت کے لیے، براہ کرم ‎16 KB کے سپورٹ کے ساتھ ایپلیکیشن کو دوبارہ کمپائل کریں۔ مزید معلومات کے لیے &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; دیکھیں"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"‏یہ ایپ ‎16 KB کے موافق نہیں ہے۔ ‫APK اور ELF الائنمنٹ چیکس ناکام ہو گئے۔ یہ ایپ صفحہ کے سائز کے ساتھ موافقت رکھنے والے موڈ کے ساتھ چلائی جائے گی۔ بہترین موافقت کے لیے، براہ کرم ‎16 KB کے سپورٹ کے ساتھ ایپلیکیشن کو دوبارہ کمپائل کریں۔ مزید معلومات کے لیے &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; دیکھیں"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"‏یہ وارننگ اس لیے دکھائی دے رہی ہے کیونکہ یہ ایک قابل ڈیبگ ایپ ہے جس کا فی الحال ٹیسٹ کیا جا رہا ہے۔ اگر آپ ڈویلپر نہیں ہیں تو براہ کرم ڈویلپر کو اس کی اطلاع دیں اور ایک ناقابل ڈیبگ ایپ طلب کریں۔ یہ ایپ ‎16 KB کے موافق نہیں ہے۔ ‫APK الائنمنٹ چیک ناکام ہو گیا۔ براہ کرم &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; پر اقدامات کی پیروی کریں"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"‏یہ وارننگ اس لیے دکھائی دے رہی ہے کیونکہ یہ ایک قابل ڈیبگ ایپ ہے جس کا فی الحال ٹیسٹ کیا جا رہا ہے۔ اگر آپ ڈویلپر نہیں ہیں تو براہ کرم ڈویلپر کو اس کی اطلاع دیں اور ایک ناقابل ڈیبگ ایپ طلب کریں۔ یہ ایپ ‎16 KB کے موافق نہیں ہے۔ ‫ELF الائنمنٹ چیک ناکام ہو گیا۔ براہ کرم &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; پر اقدامات کی پیروی کریں"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"‏یہ وارننگ اس لیے دکھائی دے رہی ہے کیونکہ یہ ایک قابل ڈیبگ ایپ ہے جس کا فی الحال ٹیسٹ کیا جا رہا ہے۔ اگر آپ ڈویلپر نہیں ہیں تو براہ کرم ڈویلپر کو اس کی اطلاع دیں اور ایک ناقابل ڈیبگ ایپ طلب کریں۔ یہ ایپ ‎16 KB کے موافق نہیں ہے۔ ‫APK اور ELF الائنمنٹ چیکس ناکام ہو گئے۔ براہ کرم &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; پر اقدامات کی پیروی کریں"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"دوبارہ نہ دکھائیں"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"سروس فراہم نہیں کی گئی۔"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"‏آپ کالر ID کی ترتیبات تبدیل نہیں کر سکتے ہیں۔"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"ڈیٹا <xliff:g id="CARRIERDISPLAY">%s</xliff:g> پر سوئچ کیا گیا"</string>

@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"這個應用程式不支援 16 KB，APK 校驗檢查失敗。這個應用程式將以頁面大小相容性模式執行。為獲得最佳相容性，請重新編譯，讓應用程式支援 16 KB。詳情請參閱 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"這個應用程式不支援 16 KB，ELF 校驗檢查失敗。這個應用程式將以頁面大小相容性模式執行。為獲得最佳相容性，請重新編譯，讓應用程式支援 16 KB。詳情請參閱 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"這個應用程式不支援 16 KB，APK 和 ELF 校驗檢查失敗。這個應用程式將以頁面大小相容性模式執行。為獲得最佳相容性，請重新編譯，讓應用程式支援 16 KB。詳情請參閱 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"這個應用程式處於偵錯狀態，目前正在測試中，因此你會看到這則警告。如果你不是開發人員，請將這個問題回報給開發人員，並要求提供非偵錯狀態的應用程式。這個應用程式不支援 16 KB。APK 校驗檢查失敗。請按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 中的步驟操作"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"這個應用程式處於偵錯狀態，目前正在測試中，因此你會看到這則警告。如果你不是開發人員，請將這個問題回報給開發人員，並要求提供非偵錯狀態的應用程式。這個應用程式不支援 16 KB。ELF 校驗檢查失敗。請按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 中的步驟操作"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"這個應用程式處於偵錯狀態，目前正在測試中，因此你會看到這則警告。如果你不是開發人員，請將這個問題回報給開發人員，並要求提供非偵錯狀態的應用程式。這個應用程式不支援 16 KB。APK 和 ELF 校驗檢查失敗。請按照 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; 中的步驟操作"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"不要再顯示"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"無法提供此服務。"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"你無法變更來電顯示設定。"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"行動數據已切換至「<xliff:g id="CARRIERDISPLAY">%s</xliff:g>」"</string>

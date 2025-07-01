@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Hierdie app is nie versoenbaar met 16 KB nie. APK-belyningkontrole het misluk. Hierdie app sal met bladsygrootteversoenbare modus gebruik word. Stel asseblief weer die app met 16 KB-ondersteuning saam vir beste versoenbaarheid. Sien &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; vir meer inligting"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Hierdie app is nie versoenbaar met 16 KB nie. ELF-belyningkontrole het misluk. Hierdie app sal met bladsygrootteversoenbare modus gebruik word. Stel asseblief weer die app met 16 KB-ondersteuning saam vir beste versoenbaarheid. Sien &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; vir meer inligting"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Hierdie app is nie versoenbaar met 16 KB nie. APK- ELF-belyningkontroles het misluk. Hierdie app sal met bladsygrootteversoenbare modus gebruik word. Stel asseblief weer die app met 16 KB-ondersteuning saam vir beste versoenbaarheid. Sien &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; vir meer inligting"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Hierdie waarskuwing word gewys omdat dit ’n ontfoutbare app is wat tans getoets word. As jy nie die ontwikkelaar is nie, kan jy dit aan die ontwikkelaar rapporteer en vra vir ’n nieontfoutbare app. Hierdie app is nie 16 KB-versoenbaar nie. APK-belyningkontrole het misluk. Volg die stappe op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Hierdie waarskuwing word gewys omdat dit ’n ontfoutbare app is wat tans getoets word. As jy nie die ontwikkelaar is nie, kan jy dit aan die ontwikkelaar rapporteer en vra vir ’n nieontfoutbare app. Hierdie app is nie 16 KB-versoenbaar nie. ELF-belyningkontrole het misluk. Volg die stappe op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Hierdie waarskuwing word gewys omdat dit ’n ontfoutbare app is wat tans getoets word. As jy nie die ontwikkelaar is nie, kan jy dit aan die ontwikkelaar rapporteer en vra vir ’n nieontfoutbare app. Hierdie app is nie 16 KB-versoenbaar nie. APK- en ELF-belyningkontroles het misluk. Volg die stappe op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Moenie weer wys nie"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Diens nie verskaf nie."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Jy kan nie die beller-ID-instelling verander nie."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Het data oorgeskakel na <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
