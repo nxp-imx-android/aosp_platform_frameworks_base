@@ -104,6 +104,7 @@ import android.util.Slog;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
+import com.android.server.am.psc.ProcessStateRecord;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 
 import java.lang.annotation.Retention;

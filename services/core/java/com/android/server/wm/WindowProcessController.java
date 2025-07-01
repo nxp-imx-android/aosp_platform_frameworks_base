@@ -91,7 +91,7 @@ import com.android.internal.util.function.pooled.PooledLambda;
 import com.android.server.Watchdog;
 import com.android.server.am.Flags;
 import com.android.server.am.ProcessStateController;
-import com.android.server.am.ProcessStateRecord;
+import com.android.server.am.psc.ProcessStateRecord;
 import com.android.server.art.ReasonMapping;
 import com.android.server.grammaticalinflection.GrammaticalInflectionManagerInternal;
 import com.android.server.wm.ActivityTaskManagerService.HotPath;

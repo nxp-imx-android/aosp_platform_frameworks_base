@@ -147,6 +147,7 @@ import com.android.server.SystemConfig;
 import com.android.server.Watchdog;
 import com.android.server.am.ActivityManagerService.ProcessChangeItem;
 import com.android.server.am.psc.PlatformCompatCache;
+import com.android.server.am.psc.ProcessStateRecord;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
@@ -301,7 +302,7 @@ public final class ProcessList {
     // Activity manager's version of an undefined schedule group
     static final int SCHED_GROUP_UNDEFINED = Integer.MIN_VALUE;
     // Activity manager's version of Process.THREAD_GROUP_BACKGROUND
-    static final int SCHED_GROUP_BACKGROUND = 0;
+    public static final int SCHED_GROUP_BACKGROUND = 0;
       // Activity manager's version of Process.THREAD_GROUP_RESTRICTED
     static final int SCHED_GROUP_RESTRICTED = 1;
     // Activity manager's version of Process.THREAD_GROUP_DEFAULT

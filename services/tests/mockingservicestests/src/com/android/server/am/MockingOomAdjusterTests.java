@@ -127,6 +127,7 @@ import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
 
 import com.android.server.LocalServices;
+import com.android.server.am.psc.ProcessStateRecord;
 import com.android.server.wm.ActivityServiceConnectionsHolder;
 import com.android.server.wm.ActivityTaskManagerService;
 import com.android.server.wm.WindowProcessController;

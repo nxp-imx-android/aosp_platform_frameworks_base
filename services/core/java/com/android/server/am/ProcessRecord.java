@@ -68,6 +68,7 @@ import com.android.internal.os.Zygote;
 import com.android.server.FgThread;
 import com.android.server.am.OomAdjusterImpl.ProcessRecordNode;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
+import com.android.server.am.psc.ProcessStateRecord;
 import com.android.server.wm.WindowProcessController;
 import com.android.server.wm.WindowProcessListener;
 

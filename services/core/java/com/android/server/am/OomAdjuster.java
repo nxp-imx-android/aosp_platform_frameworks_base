@@ -148,6 +148,7 @@ import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.ServiceThread;
 import com.android.server.am.psc.PlatformCompatCache;
 import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
+import com.android.server.am.psc.ProcessStateRecord;
 import com.android.server.wm.WindowProcessController;
 
 import java.io.PrintWriter;

@@ -36,6 +36,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.app.procstats.ProcessState;
 import com.android.internal.app.procstats.ProcessStats;
 import com.android.server.am.ProcessList.ProcStateMemTracker;
+import com.android.server.am.psc.ProcessStateRecord;
 import com.android.server.power.stats.BatteryStatsImpl;
 
 import java.io.PrintWriter;
