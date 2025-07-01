@@ -35,6 +35,7 @@ import android.app.ApplicationExitInfo.Reason;
 import android.app.ApplicationExitInfo.SubReason;
 import android.app.BackgroundStartPrivileges;
 import android.app.IApplicationThread;
+import android.content.ComponentName;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ProcessInfo;
@@ -1400,6 +1401,36 @@ class ProcessRecord implements WindowProcessListener, ProcessStateRecord.Process
             proto.write(ProcessRecordProto.LRU_INDEX, lruIndex);
         }
         proto.end(token);
+    }
+
+    @GuardedBy(anyOf = {"mService", "mProcLock"})
+    String makeAdjReason() {
+        final Object adjSource = mState.getAdjSource();
+        final Object adjTarget = mState.getAdjTarget();
+        if (adjSource == null && adjTarget == null) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder(128);
+        sb.append(' ');
+        if (adjTarget instanceof ComponentName) {
+            sb.append(((ComponentName) adjTarget).flattenToShortString());
+        } else if (adjTarget != null) {
+            sb.append(adjTarget);
+        } else {
+            sb.append("{null}");
+        }
+        sb.append("<=");
+        if (adjSource instanceof ProcessRecord) {
+            sb.append("Proc{");
+            sb.append(((ProcessRecord) adjSource).toShortString());
+            sb.append("}");
+        } else if (adjSource != null) {
+            sb.append(adjSource);
+        } else {
+            sb.append("{null}");
+        }
+        return sb.toString();
     }
 
     public String toShortString() {

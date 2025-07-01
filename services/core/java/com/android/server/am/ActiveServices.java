@@ -1287,7 +1287,7 @@ public final class ActiveServices {
                 StringBuilder sb = new StringBuilder(128);
                 sb.append("Not potential delay (state=").append(proc.mState.getCurProcState())
                         .append(' ').append(proc.mState.getAdjType());
-                String reason = proc.mState.makeAdjReason();
+                String reason = proc.makeAdjReason();
                 if (reason != null) {
                     sb.append(' ');
                     sb.append(reason);

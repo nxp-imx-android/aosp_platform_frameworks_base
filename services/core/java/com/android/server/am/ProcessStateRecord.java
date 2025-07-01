@@ -26,7 +26,6 @@ import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_
 
 import android.annotation.ElapsedRealtimeLong;
 import android.app.ActivityManager;
-import android.content.ComponentName;
 import android.os.SystemClock;
 import android.os.Trace;
 import android.util.TimeUtils;
@@ -1348,33 +1347,6 @@ public final class ProcessStateRecord {
     @GuardedBy("mServiceLock")
     void setFollowupUpdateUptimeMs(long updateUptimeMs) {
         mFollowupUpdateUptimeMs = updateUptimeMs;
-    }
-
-    @GuardedBy(anyOf = {"mServiceLock", "mProcLock"})
-    public String makeAdjReason() {
-        if (mAdjSource != null || mAdjTarget != null) {
-            StringBuilder sb = new StringBuilder(128);
-            sb.append(' ');
-            if (mAdjTarget instanceof ComponentName) {
-                sb.append(((ComponentName) mAdjTarget).flattenToShortString());
-            } else if (mAdjTarget != null) {
-                sb.append(mAdjTarget.toString());
-            } else {
-                sb.append("{null}");
-            }
-            sb.append("<=");
-            if (mAdjSource instanceof ProcessRecord) {
-                sb.append("Proc{");
-                sb.append(((ProcessRecord) mAdjSource).toShortString());
-                sb.append("}");
-            } else if (mAdjSource != null) {
-                sb.append(mAdjSource.toString());
-            } else {
-                sb.append("{null}");
-            }
-            return sb.toString();
-        }
-        return null;
     }
 
     @GuardedBy({"mServiceLock", "mProcLock"})
