@@ -11719,7 +11719,7 @@ package android.os {
     field @NonNull public static final android.os.Parcelable.Creator<android.os.PackageTagsList> CREATOR;
   }
 
-  public static final class PackageTagsList.Builder {
+  @FlaggedApi("android.location.flags.change_get_adas_allowlist_from_hidden_to_system") public static final class PackageTagsList.Builder {
     ctor public PackageTagsList.Builder();
     ctor public PackageTagsList.Builder(int);
     method @NonNull public android.os.PackageTagsList.Builder add(@NonNull String);
