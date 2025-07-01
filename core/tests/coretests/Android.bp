@@ -157,6 +157,7 @@ android_test {
         ":HelloWorldUsingSdk1And2",
         ":HelloWorldUsingSdk1AndSdk1",
         ":HelloWorldUsingSdkMalformedNegativeVersion",
+        ":NoUpdateAppWidgetTestApp",
         ":com.android.cts.helpers.aosp",
     ],
 }

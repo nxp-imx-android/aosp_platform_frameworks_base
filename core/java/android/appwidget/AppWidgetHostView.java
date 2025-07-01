@@ -16,6 +16,8 @@
 
 package android.appwidget;
 
+import static android.appwidget.AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY;
+import static android.appwidget.AppWidgetProviderInfo.WIDGET_CATEGORY_KEYGUARD;
 import static android.appwidget.flags.Flags.FLAG_ENGAGEMENT_METRICS;
 import static android.appwidget.flags.Flags.engagementMetrics;
 import static android.content.res.Flags.selfTargetingAndroidResourceFrro;
@@ -34,7 +36,6 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.LauncherActivityInfo;
 import android.content.pm.LauncherApps;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -51,7 +52,6 @@ import android.util.SizeF;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewParent;
 import android.view.accessibility.AccessibilityNodeInfo;
@@ -88,18 +88,6 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
     static final int VIEW_MODE_CONTENT = 1;
     static final int VIEW_MODE_ERROR = 2;
     static final int VIEW_MODE_DEFAULT = 3;
-
-    // Set of valid colors resources.
-    private static final int FIRST_RESOURCE_COLOR_ID = android.R.color.system_neutral1_0;
-    private static final int LAST_RESOURCE_COLOR_ID = android.R.color.system_accent3_1000;
-
-    // When we're inflating the initialLayout for a AppWidget, we only allow
-    // views that are allowed in RemoteViews.
-    private static final LayoutInflater.Filter INFLATER_FILTER =
-            (clazz) -> clazz.isAnnotationPresent(RemoteViews.RemoteView.class);
-
-    Context mContext;
-    Context mRemoteContext;
 
     @UnsupportedAppUsage
     int mAppWidgetId;
@@ -148,7 +136,6 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
     @SuppressWarnings({"UnusedDeclaration"})
     public AppWidgetHostView(Context context, int animationIn, int animationOut) {
         super(context);
-        mContext = context;
         // We want to segregate the view ids within AppWidgets to prevent
         // problems when those ids collide with view ids in the AppWidgetHost.
         setIsRootNamespace(true);
@@ -188,12 +175,6 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
 
         public AdapterChildHostView(Context context) {
             super(context);
-        }
-
-        @Override
-        public Context getRemoteContextEnsuringCorrectCachedApkPath() {
-            // To reduce noise in error messages
-            return null;
         }
 
         @Override
@@ -523,14 +504,11 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
         AppWidgetManager.getInstance(mContext).updateAppWidgetOptions(mAppWidgetId, options);
     }
 
-    /** {@inheritDoc} */
+    /** @hide **/
     @Override
-    public LayoutParams generateLayoutParams(AttributeSet attrs) {
-        // We're being asked to inflate parameters, probably by a LayoutInflater
-        // in a remote Context. To help resolve any remote references, we
-        // inflate through our last mRemoteContext when it exists.
-        final Context context = mRemoteContext != null ? mRemoteContext : mContext;
-        return new FrameLayout.LayoutParams(context, attrs);
+    public LayoutParams generateLayoutParams(Context inflationContext, AttributeSet attrs) {
+        // Widget's layout parameter should be inflated in widget's context
+        return new FrameLayout.LayoutParams(inflationContext, attrs);
     }
 
     /**
@@ -626,9 +604,6 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
                 inflateAsync(rvToApply);
                 return;
             }
-            // Prepare a local reference to the remote Context so we're ready to
-            // inflate any requested LayoutParams.
-            mRemoteContext = getRemoteContextEnsuringCorrectCachedApkPath();
 
             if (!mColorMappingChanged && rvToApply.canRecycleView(mView)) {
                 try {
@@ -689,7 +664,6 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
     private void inflateAsync(@NonNull RemoteViews remoteViews) {
         // Prepare a local reference to the remote Context so we're ready to
         // inflate any requested LayoutParams.
-        mRemoteContext = getRemoteContextEnsuringCorrectCachedApkPath();
         int layoutId = remoteViews.getLayoutId();
 
         if (mLastExecutionSignal != null) {
@@ -789,30 +763,6 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
     }
 
     /**
-     * Build a {@link Context} cloned into another package name, usually for the
-     * purposes of reading remote resources.
-     *
-     * @hide
-     */
-    protected Context getRemoteContextEnsuringCorrectCachedApkPath() {
-        try {
-            Context newContext = mContext.createApplicationContext(
-                    mInfo.providerInfo.applicationInfo,
-                    Context.CONTEXT_RESTRICTED);
-            if (mColorResources != null) {
-                mColorResources.apply(newContext);
-            }
-            return newContext;
-        } catch (NameNotFoundException e) {
-            Log.e(TAG, "Package name " + mInfo.providerInfo.packageName + " not found");
-            return mContext;
-        } catch (NullPointerException e) {
-            Log.e(TAG, "Error trying to create the remote context.", e);
-            return mContext;
-        }
-    }
-
-    /**
      * Prepare the given view to be shown. This might include adjusting
      * {@link FrameLayout.LayoutParams} before inserting.
      */
@@ -839,33 +789,28 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
         Exception exception = null;
 
         try {
-            if (mInfo != null) {
-                Context theirContext = getRemoteContextEnsuringCorrectCachedApkPath();
-                mRemoteContext = theirContext;
-                LayoutInflater inflater = (LayoutInflater)
-                        theirContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                inflater = inflater.cloneInContext(theirContext);
-                inflater.setFilter(INFLATER_FILTER);
-                AppWidgetManager manager = AppWidgetManager.getInstance(mContext);
-                Bundle options = manager.getAppWidgetOptions(mAppWidgetId);
-
+            if (mInfo != null && mInfo.initialLayout != 0) {
                 int layoutId = mInfo.initialLayout;
-                if (options.containsKey(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY)) {
-                    int category = options.getInt(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY);
-                    if (category == AppWidgetProviderInfo.WIDGET_CATEGORY_KEYGUARD) {
-                        int kgLayoutId = mInfo.initialKeyguardLayout;
-                        // If a default keyguard layout is not specified, use the standard
-                        // default layout.
-                        layoutId = kgLayoutId == 0 ? layoutId : kgLayoutId;
+                int kgLayoutId = mInfo.initialKeyguardLayout;
+                if (kgLayoutId != 0 && kgLayoutId != layoutId) {
+                    // If this this a keyguard widget, use keyguard layout
+                    Bundle options = AppWidgetManager.getInstance(mContext)
+                            .getAppWidgetOptions(mAppWidgetId);
+                    if (options.containsKey(OPTION_APPWIDGET_HOST_CATEGORY)
+                            && options.getInt(OPTION_APPWIDGET_HOST_CATEGORY)
+                                    == WIDGET_CATEGORY_KEYGUARD) {
+                        layoutId = kgLayoutId;
                     }
                 }
-                defaultView = inflater.inflate(layoutId, this, false);
+
+                defaultView = new RemoteViewsWrapper(mInfo.providerInfo.applicationInfo, layoutId)
+                        .apply(mContext, this, mInteractionLogger, null, mColorResources);
                 if (!(defaultView instanceof AdapterView)) {
                     // AdapterView does not support onClickListener
                     defaultView.setOnClickListener(this::onDefaultViewClicked);
                 }
             } else {
-                Log.w(TAG, "can't inflate defaultView because mInfo is missing");
+                Log.w(TAG, "can't inflate defaultView, missing defaultLayout, mInfo: " + mInfo);
             }
         } catch (RuntimeException e) {
             exception = e;
@@ -1279,5 +1224,13 @@ public class AppWidgetHostView extends FrameLayout implements AppWidgetHost.AppW
                 + ")";
         }
     }
+
+    private static class RemoteViewsWrapper extends RemoteViews {
+
+        RemoteViewsWrapper(ApplicationInfo application, int layoutId) {
+            super(application, layoutId);
+        }
+    }
+
 }
 
