@@ -73,7 +73,8 @@ import java.util.Objects;
  * create a {@link MediaController} to interact with the session.
  * <p>
  * To receive commands, media keys, and other events a {@link Callback} must be
- * set with {@link #setCallback(Callback)} and {@link #setActive(boolean)
+ * set with {@link #setCallback(Callback)}. To make the session discoverable by
+ * other apps, including system apps, {@link #setActive(boolean)
  * setActive(true)} must be called.
  * <p>
  * When an app is finished performing playback it must call {@link #release()}
@@ -399,10 +400,11 @@ public final class MediaSession {
     }
 
     /**
-     * Set if this session is currently active and ready to receive commands. If
-     * set to false your session's controller may not be discoverable. You must
-     * set the session to active before it can start receiving media button
-     * events or transport commands.
+     * Set if this session is currently active.
+     *
+     * <p>If set to false then your session's controller will not be
+     * discoverable via {@link MediaSessionManager#getActiveSessions(int)} by
+     * other apps, including system apps.
      *
      * @param active Whether this session is active or not.
      */
@@ -420,6 +422,10 @@ public final class MediaSession {
 
     /**
      * Get the current active state of this session.
+     *
+     * <p>If false then your session's controller will not be discoverable via
+     * {@link MediaSessionManager#getActiveSessions(int)} by other apps,
+     * including system apps.
      *
      * @return True if the session is active, false otherwise.
      */

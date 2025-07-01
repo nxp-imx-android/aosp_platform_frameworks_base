@@ -372,8 +372,8 @@ public class MediaSessionService extends SystemService implements Monitor {
                     "onSessionActiveStateChanged:"
                             + " record="
                             + record
-                            + " playbackState="
-                            + playbackState);
+                            + " active="
+                            + record.isActive());
             reportMediaInteractionEvent(record, isUserEngaged);
             mHandler.postSessionsChanged(record);
         }
