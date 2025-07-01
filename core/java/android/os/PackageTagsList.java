@@ -240,6 +240,7 @@ public final class PackageTagsList implements Parcelable {
     /**
      * Builder class for {@link PackageTagsList}.
      */
+    @FlaggedApi(Flags.FLAG_CHANGE_GET_ADAS_ALLOWLIST_FROM_HIDDEN_TO_SYSTEM)
     public static final class Builder {
 
         private final ArrayMap<String, ArraySet<String>> mPackageTags;
