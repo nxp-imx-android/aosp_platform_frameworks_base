@@ -74,23 +74,15 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"このアプリは 16 KB アライメントではありません。APK のアライメント チェックが失敗しました。このアプリはページサイズ互換モードを使用して実行されます。最適な互換性を実現するには、16 KB をサポートするようにアプリケーションを再コンパイルしてください。詳しくは、&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; をご覧ください。"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"このアプリは 16 KB アライメントではありません。ELF のアライメント チェックに失敗しました。このアプリはページサイズ互換モードを使用して実行されます。最適な互換性を実現するには、16 KB をサポートするようにアプリケーションを再コンパイルしてください。詳しくは、&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; をご覧ください。"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"このアプリは 16 KB アライメントではありません。APK と ELF のアライメント チェックに失敗しました。このアプリはページサイズ互換モードを使用して実行されます。最適な互換性を実現するには、16 KB をサポートするようにアプリケーションを再コンパイルしてください。詳しくは、&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; をご覧ください。"</string>
-    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
-    <skip />
+    <string name="page_size_compat_apk_warning_4kb" msgid="1284527724160989424">"現在テスト中のデバッグ可能なアプリであるため、この警告が表示されています。デベロッパー以外のユーザーは、デベロッパーに報告して、デバッグできないアプリをリクエストしてください。&lt;br&gt;&lt;br&gt;このアプリは 16 KB アライメントではありません。APK のアライメント チェックが失敗しました。&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; の手順に沿って対応してください。&lt;br&gt;&lt;br&gt;以下のライブラリが正しく配置されていません。&lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5197745436304627728">"現在テスト中のデバッグ可能なアプリであるため、この警告が表示されています。デベロッパー以外のユーザーは、デベロッパーに報告して、デバッグできないアプリをリクエストしてください。&lt;br&gt;&lt;br&gt;このアプリは 16 KB アライメントではありません。ELF のアライメント チェックに失敗しました。&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; の手順に沿って対応してください。&lt;br&gt;&lt;br&gt;以下のライブラリが正しく配置されていません。&lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5626544342073325806">"現在テスト中のデバッグ可能なアプリであるため、この警告が表示されています。デベロッパー以外のユーザーは、デベロッパーに報告して、デバッグできないアプリをリクエストしてください。&lt;br&gt;&lt;br&gt;このアプリは 16 KB アライメントではありません。APK と ELF のアライメント チェックが失敗しました。&lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; の手順に沿って対応してください。&lt;br&gt;&lt;br&gt;以下のライブラリが正しく配置されていません。&lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"次回から表示しない"</string>
-    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
-    <skip />
-    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
-    <skip />
-    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
-    <skip />
-    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
-    <skip />
+    <string name="page_size_compat_title" msgid="6497719153872572204">"Android アプリの互換性"</string>
+    <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s: LOAD セグメントが一致しません"</string>
+    <string name="page_size_compat_apk_not_aligned" msgid="8927901100655245528">"&amp;#8226; %1$s: 非圧縮ライブラリが一致しません"</string>
+    <string name="page_size_compat_apk_and_elf_not_aligned" msgid="1010371834741548905">"&amp;#8226; %1$s: LOAD セグメントと非圧縮ライブラリが一致していません"</string>
+    <string name="page_size_compat_unknown" msgid="3254222165646410528">"&amp;#8226; %1$s: 不明なエラー"</string>
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"提供可能なサービスがありません。"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"発信者番号の設定は変更できません。"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"データが <xliff:g id="CARRIERDISPLAY">%s</xliff:g> に切り替わりました"</string>
@@ -373,12 +365,18 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"バイタルサインに関するセンサーデータへのアクセス"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"通知"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"通知を表示"</string>
-    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"機密性の高い XR アイ トラッキング データ"</string>
-    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"機密性の高い視線データへのアクセス"</string>
-    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR トラッキング データ"</string>
-    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"ユーザーと周囲の環境に関する XR データへのアクセス"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"機密性の高い XR トラッキング データ"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"ユーザーと周囲の環境に関する機密性の高いトラッキング データへのアクセス"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ウィンドウコンテンツの取得"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"ユーザーがアクセスしているウィンドウのコンテンツを検査します。"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"タッチガイドの有効化"</string>
@@ -676,22 +674,38 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"写真コレクションの変更をアプリに許可します。"</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"メディア コレクションの位置情報の読み取り"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"メディア コレクションの位置情報の読み取りをアプリに許可します。"</string>
-    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"おおまかな視線のトラッキング"</string>
-    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"おおまかな視線のトラッキングをアプリに許可します。"</string>
-    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"視線の移動のトラッキング"</string>
-    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"正確な視線データへのアクセスをアプリに許可します。"</string>
-    <string name="permlab_face_tracking" msgid="2272048395128283324">"顔トラッキング"</string>
-    <string name="permdesc_face_tracking" msgid="2622783922311211866">"顔トラッキング データへのアクセスをアプリに許可します。"</string>
-    <string name="permlab_hand_tracking" msgid="6478233866595566940">"ハンド トラッキング"</string>
-    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"ハンド トラッキング データへのアクセスをアプリに許可します。"</string>
-    <string name="permlab_head_tracking" msgid="1309731456372087270">"ヘッド トラッキング"</string>
-    <string name="permdesc_head_tracking" msgid="231597390513699188">"ヘッド トラッキング データへのアクセスをアプリに許可します。"</string>
-    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"周囲の環境を把握"</string>
-    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"周囲の環境に関するトラッキング データへのアクセスをアプリに許可します。"</string>
-    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"周囲の環境を詳細に把握"</string>
-    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"周囲の環境に関する非常に詳細なトラッキング データへのアクセスをアプリに許可します。"</string>
-    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"フォアグラウンドで実行されていないときに XR データにアクセス"</string>
-    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"フォアグラウンドで実行されていないときに XR データへのアクセスをアプリに許可します。"</string>
+    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
+    <skip />
+    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
+    <skip />
+    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
+    <skip />
+    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
+    <skip />
+    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
+    <skip />
+    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
+    <skip />
+    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
+    <skip />
+    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
+    <skip />
+    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
+    <skip />
+    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
+    <skip />
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"キーを取得"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"システムがシステム ショートカットと操作を処理する前に、キーを取得することをアプリに許可します。"</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"生体認証の使用"</string>
@@ -2593,4 +2607,5 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"指紋認証で問題が発生している場合"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"タップして、ロック解除の操作を改善するためのヒントをご確認ください"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"点滅なし"</string>
+    <string name="long_press_power_to_turn_off_tv_toast" msgid="2231397748028498986">"テレビの電源を切るには電源ボタンを長押しします"</string>
 </resources>
