@@ -198,6 +198,7 @@ constructor(
             printSection("SceneContainerFlag") {
                 printSection("Framework availability") {
                     println("isEnabled", SceneContainerFlag.isEnabled)
+                    println("isEnabledOnVariant", SceneContainerFlag.isEnabledOnVariant)
                 }
 
                 if (!SceneContainerFlag.isEnabled) {

@@ -26,10 +26,21 @@ object SceneContainerFlag {
     /** The flag description -- not an aconfig flag name */
     const val DESCRIPTION = "SceneContainerFlag"
 
+    /**
+     * Whether the flag is enabled on the current variant. If this is set to `false`, then it the
+     * value of the actual aconfig flag doesn't matter and [isEnabled] will always return `false`.
+     *
+     * Some variants of System UI, for example Automotive OS, do not support the scene container
+     * framework. In order for that variant to be able to force it off, this property must be set to
+     * `false` as early as possible in the runtime of the app (ideally, in the constructor the
+     * Application class).
+     */
+    @JvmField var isEnabledOnVariant: Boolean = true
+
     @JvmStatic
     inline val isEnabled
         // NOTE: Changes should also be made in @EnableSceneContainer
-        get() = sceneContainer()
+        get() = sceneContainer() && isEnabledOnVariant
 
     /**
      * Called to ensure code is only run when the flag is enabled. This protects users from the
