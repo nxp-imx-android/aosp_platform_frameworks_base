@@ -594,8 +594,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 modeChangeCallback);
 
         mBrightnessRangeController = mInjector.getBrightnessRangeController(hbmController,
-                modeChangeCallback, mDisplayDeviceConfig, mHandler, flags,
-                displayToken, displayDeviceInfo);
+                modeChangeCallback, mDisplayDeviceConfig);
 
         mDisplayBrightnessController =
                 new DisplayBrightnessController(context, mDisplayId,
@@ -1689,8 +1688,6 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                 // SDR brightness immediately when entering dim or low power mode.
                 animateValue = mBrightnessRangeController.getHdrBrightnessValue();
                 hdrBrightness = animateValue;
-                customAnimationRate = Math.max(customAnimationRate,
-                        mBrightnessRangeController.getHdrTransitionRate());
                 mBrightnessReasonTemp.addModifier(BrightnessReason.MODIFIER_HDR);
             }
 
@@ -3369,10 +3366,9 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
         BrightnessRangeController getBrightnessRangeController(
                 HighBrightnessModeController hbmController, Runnable modeChangeCallback,
-                DisplayDeviceConfig displayDeviceConfig, Handler handler,
-                DisplayManagerFlags flags, IBinder displayToken, DisplayDeviceInfo info) {
+                DisplayDeviceConfig displayDeviceConfig) {
             return new BrightnessRangeController(hbmController,
-                    modeChangeCallback, displayDeviceConfig, handler, flags, displayToken, info);
+                    modeChangeCallback, displayDeviceConfig);
         }
 
         BrightnessClamperController getBrightnessClamperController(Handler handler,
