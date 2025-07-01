@@ -5841,7 +5841,8 @@ public class ActivityManagerService extends IActivityManager.Stub
                         intent, matchFlags, uid, userId));
             case ActivityManager.INTENT_SENDER_BROADCAST:
                 return new ParceledListSlice<>(mPackageManagerInt.queryIntentReceivers(
-                        intent, resolvedType, matchFlags, uid, Process.INVALID_PID, userId, false));
+                        intent, resolvedType, matchFlags, uid, Process.INVALID_PID, userId,
+                        false /* forSend */, null /* includedPackages */));
             default: // ActivityManager.INTENT_SENDER_ACTIVITY_RESULT
                 throw new IllegalStateException("Unsupported intent sender type: " + res.key.type);
         }

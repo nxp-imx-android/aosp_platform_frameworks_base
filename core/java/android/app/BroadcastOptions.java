@@ -40,6 +40,8 @@ import android.os.PowerExemptionManager.ReasonCode;
 import android.os.PowerExemptionManager.TempAllowListType;
 import android.os.Process;
 
+import com.android.internal.util.ArrayUtils;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Objects;
@@ -68,6 +70,7 @@ public class BroadcastOptions extends ComponentOptions {
     private @Nullable BundleMerger mDeliveryGroupExtrasMerger;
     private @Nullable IntentFilter mDeliveryGroupMatchingFilter;
     private @DeferralPolicy int mDeferralPolicy;
+    private @Nullable String[] mIncludedPackages;
 
     /** @hide */
     @IntDef(flag = true, prefix = { "FLAG_" }, value = {
@@ -231,6 +234,12 @@ public class BroadcastOptions extends ComponentOptions {
             "android:broadcast.deferralPolicy";
 
     /**
+     * Corresponds to {@link #setIncludedPackages(String[])}
+     */
+    private static final String KEY_INCLUDED_PACKAGES =
+            "android:broadcast.includedPackageNames";
+
+    /**
      * The list of delivery group policies which specify how multiple broadcasts belonging to
      * the same delivery group has to be handled.
      * @hide
@@ -355,6 +364,7 @@ public class BroadcastOptions extends ComponentOptions {
         mDeliveryGroupMatchingFilter = opts.getParcelable(KEY_DELIVERY_GROUP_MATCHING_FILTER,
                 IntentFilter.class);
         mDeferralPolicy = opts.getInt(KEY_DEFERRAL_POLICY, DEFERRAL_POLICY_DEFAULT);
+        mIncludedPackages = opts.getStringArray(KEY_INCLUDED_PACKAGES);
     }
 
     /** @hide */
@@ -1113,6 +1123,27 @@ public class BroadcastOptions extends ComponentOptions {
     }
 
     /**
+     * Set the list of packages to send the broadcast to.
+     *
+     * @hide
+     */
+    public BroadcastOptions setIncludedPackages(@Nullable String[] packageNames) {
+        mIncludedPackages = packageNames;
+        return this;
+    }
+
+    /**
+     * Get the list of packages to send the broadcast to, that was previously set using
+     * {@link #setIncludedPackages(String[])}.
+     *
+     * @hide
+     */
+    @Nullable
+    public String[] getIncludedPackages() {
+        return mIncludedPackages;
+    }
+
+    /**
      * Returns the created options as a Bundle, which can be passed to
      * {@link android.content.Context#sendBroadcast(android.content.Intent)
      * Context.sendBroadcast(Intent)} and related methods.
@@ -1177,6 +1208,9 @@ public class BroadcastOptions extends ComponentOptions {
         }
         if (mDeferralPolicy != DEFERRAL_POLICY_DEFAULT) {
             b.putInt(KEY_DEFERRAL_POLICY, mDeferralPolicy);
+        }
+        if (!ArrayUtils.isEmpty(mIncludedPackages)) {
+            b.putStringArray(KEY_INCLUDED_PACKAGES, mIncludedPackages);
         }
         return b;
     }

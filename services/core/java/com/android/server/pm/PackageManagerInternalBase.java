@@ -54,6 +54,7 @@ import android.util.ArraySet;
 import android.util.SparseArray;
 
 import com.android.internal.pm.pkg.component.ParsedMainComponent;
+import com.android.internal.util.ArrayUtils;
 import com.android.server.pm.dex.DexManager;
 import com.android.server.pm.permission.PermissionManagerServiceInternal;
 import com.android.server.pm.pkg.AndroidPackage;
@@ -330,9 +331,18 @@ abstract class PackageManagerInternalBase extends PackageManagerInternal {
     @Deprecated
     public final List<ResolveInfo> queryIntentReceivers(
             Intent intent, String resolvedType, @PackageManager.ResolveInfoFlagsBits long flags,
-            int filterCallingUid, int callingPid, int userId, boolean forSend) {
-        return getResolveIntentHelper().queryIntentReceiversInternal(snapshot(), intent,
+            int filterCallingUid, int callingPid, int userId, boolean forSend,
+            String[] includedPackages) {
+        final List<ResolveInfo> result = getResolveIntentHelper().queryIntentReceiversInternal(
+                snapshot(), intent,
                 resolvedType, flags, userId, filterCallingUid, callingPid, forSend);
+        // TODO: b/428262517 - filter out packages that are not in includedPackages close to
+        // intent resolution.
+        if (includedPackages != null) {
+            result.removeIf(resolvedInfo -> !ArrayUtils.contains(
+                    includedPackages, resolvedInfo.activityInfo.packageName));
+        }
+        return result;
     }
 
     @Override

@@ -382,10 +382,14 @@ public abstract class PackageManagerInternal {
      *                         of the calling UID.
      * @param forSend          true if the invocation is intended for sending broadcasts. The value
      *                         of this parameter affects how packages are filtered.
+     * @param includedPackages An optional array of package names. If provided, the results
+     *                         will be limited to receivers from these packages only.
+     *                         If {@code null}, receivers from all packages can be included.
      */
     public abstract List<ResolveInfo> queryIntentReceivers(
             Intent intent, String resolvedType, @PackageManager.ResolveInfoFlagsBits long flags,
-            int filterCallingUid, int callingPid, int userId, boolean forSend);
+            int filterCallingUid, int callingPid, int userId, boolean forSend,
+            @Nullable String[] includedPackages);
 
     /**
      * Retrieve all services that can be performed for the given intent.
