@@ -38,21 +38,19 @@ class LetterboxControllerStrategy @Inject constructor(
     private var currentMode: LetterboxMode = SINGLE_SURFACE
 
     fun configureLetterboxMode(event: LetterboxLifecycleEvent) {
-        // TODO(b/377875146): Define criteria for switching between [LetterboxMode]s.
-        // At the moment, we use the presence of rounded corners to understand if to use a single
-        // surface or multiple surfaces for the letterbox areas. This rule will change when
-        // considering transparent activities which won't have rounded corners leading to the
-        // [MULTIPLE_SURFACES] option.
-        // The chosen strategy will depend on performance considerations,
-        // including surface memory usage and the impact of the rounded corners solution.
-        // In case of Bubble we always use a single surface as simple optimisation for no
-        // transparent activities.
-        currentMode =
-            if (event.isBubble || letterboxConfiguration.isLetterboxActivityCornersRounded()) {
-                SINGLE_SURFACE
-            } else {
-                MULTIPLE_SURFACES
-            }
+        // Decides whether to use a single surface or multiple surfaces for the letterbox.
+        // The primary trade-off is memory usage versus rendering performance.
+        //
+        // A single surface is used for letterboxes with rounded corners on opaque activities
+        // and always for Bubble. In all other cases, such as for letterboxes with straight corners
+        // or for those with rounded corners on a translucent activity, we use multiple surfaces to
+        // ensure better performance.
+        currentMode = when {
+            event.isBubble -> SINGLE_SURFACE
+            event.isTranslucent -> MULTIPLE_SURFACES
+            letterboxConfiguration.isLetterboxActivityCornersRounded() -> SINGLE_SURFACE
+            else -> MULTIPLE_SURFACES
+        }
     }
 
     /**

@@ -40,11 +40,28 @@ import org.junit.runner.RunWith
 class LetterboxControllerStrategyTest : ShellTestCase() {
 
     @Test
-    fun `LetterboxMode is SINGLE_SURFACE with rounded corners`() {
+    fun `LetterboxMode is SINGLE_SURFACE with rounded corners and Not Translucent`() {
         runTestScenario { r ->
             r.configureRoundedCornerRadius(true)
-            r.configureLetterboxMode()
+            r.configureLetterboxMode(
+                r.SIMPLE_TEST_EVENT.copy(
+                    isTranslucent = false
+                )
+            )
             r.checkLetterboxModeIsSingle()
+        }
+    }
+
+    @Test
+    fun `LetterboxMode is MULTI_SURFACE with rounded corners but Translucent`() {
+        runTestScenario { r ->
+            r.configureRoundedCornerRadius(true)
+            r.configureLetterboxMode(
+                r.SIMPLE_TEST_EVENT.copy(
+                    isTranslucent = true
+                )
+            )
+            r.checkLetterboxModeIsMultiple()
         }
     }
 
@@ -83,6 +100,7 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
         companion object {
             @JvmStatic
             private val ROUNDED_CORNERS_TRUE = 10
+
             @JvmStatic
             private val ROUNDED_CORNERS_FALSE = 0
         }
