@@ -538,6 +538,8 @@ interface IAudioService {
     @EnforcePermission("MODIFY_AUDIO_ROUTING")
     oneway void setMultiAudioFocusEnabled(in boolean enabled);
 
+    boolean isMultiAudioFocusEnabled();
+
     int setPreferredDevicesForCapturePreset(
             in int capturePreset, in List<AudioDeviceAttributes> devices);
 
