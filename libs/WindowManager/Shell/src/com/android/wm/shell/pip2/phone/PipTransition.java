@@ -309,7 +309,8 @@ public class PipTransition extends PipTransitionController implements
     @Override
     public void onTransitionConsumed(@NonNull IBinder transition, boolean aborted,
             @Nullable SurfaceControl.Transaction finishT) {
-        if ((transition == mBoundsChangeTransition || transition == mEnterTransition) && aborted) {
+        if (aborted && (transition == mBoundsChangeTransition
+                || mPipTransitionState.getState() == PipTransitionState.SCHEDULED_ENTER_PIP)) {
             onTransitionAborted();
         }
     }
@@ -327,7 +328,14 @@ public class PipTransition extends PipTransitionController implements
             TransitionInfo.Change pipChange = getPipChange(info);
 
             // If there is no PiP change, exit this transition handler and potentially try others.
-            if (pipChange == null) return false;
+            if (pipChange == null) {
+                Log.wtf(TAG, String.format("""
+                        PipTransition did not find a PiP change despite waiting for a scheduled
+                        enter PiP transition.
+                        callers=%s""", Debug.getCallers(4)));
+                onTransitionAborted();
+                return false;
+            }
 
             // Other targets might have default transforms applied that are not relevant when
             // playing PiP transitions, so reset those transforms if needed.
@@ -864,6 +872,8 @@ public class PipTransition extends PipTransitionController implements
             @NonNull TransitionRequestInfo.PipChange pipChange) {
         // cache the original task token to check for multi-activity case later
         final ActivityManager.RunningTaskInfo pipTask = pipChange.getTaskInfo();
+        mPipTransitionState.setPipCandidateTaskInfo(pipTask);
+
         PictureInPictureParams pipParams = pipTask.pictureInPictureParams;
         mPipTaskListener.setPictureInPictureParams(pipParams);
         mPipBoundsState.setBoundsStateForEntry(pipTask.topActivity, pipTask.topActivityInfo,
@@ -1120,6 +1130,7 @@ public class PipTransition extends PipTransitionController implements
                 if (mPipTransitionState.getPipTaskToken() != null) {
                     nextState = PipTransitionState.ENTERED_PIP;
                 } else {
+                    removePipCandidateTaskIfNeeded();
                     nextState = PipTransitionState.EXITED_PIP;
                 }
                 break;
@@ -1132,6 +1143,22 @@ public class PipTransition extends PipTransitionController implements
         }
 
         mPipTransitionState.setState(nextState);
+    }
+
+    private void removePipCandidateTaskIfNeeded() {
+        if (mPipTransitionState.getState() != PipTransitionState.SCHEDULED_ENTER_PIP
+                || mPipTransitionState.getPipCandidateTaskInfo() == null
+                || mPipTransitionState.getPipCandidateTaskInfo().getToken() == null) {
+            return;
+        }
+
+        // Enter PiP was scheduled but PiP handler didn't handle it properly.
+        // So try to remove the PiP candidate we had received via transition request,
+        // because Core might have put the activity in PiP and not resolved the task as a target
+        // (this could happen if the display is asleep, which disqualifies PiP task as invisible).
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        wct.removeTask(mPipTransitionState.getPipCandidateTaskInfo().getToken());
+        mTransitions.startTransition(TRANSIT_CLOSE, wct, null);
     }
 
     @Override
@@ -1155,6 +1182,7 @@ public class PipTransition extends PipTransitionController implements
             case PipTransitionState.EXITED_PIP:
                 mPipTransitionState.setPinnedTaskLeash(null);
                 mPipTransitionState.setPipTaskInfo(null);
+                mPipTransitionState.setPipCandidateTaskInfo(null);
                 mPendingRemoveWithFadeout = false;
                 break;
         }

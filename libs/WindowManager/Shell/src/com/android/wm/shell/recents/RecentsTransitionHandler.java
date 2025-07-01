@@ -1670,7 +1670,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                                     requestRes = mTransitions.dispatchRequest(mTransition,
                                             requestInfo, null /* skip */);
                             wct.merge(requestRes.second, true);
-                            mTransitions.startTransition(TRANSIT_PIP, wct, null /* handler */);
+                            mTransitions.startTransition(TRANSIT_PIP, wct, requestRes.first);
                             // We need to clear the WCT to send finishWCT=null for Recents.
                             wct.clear();
 
