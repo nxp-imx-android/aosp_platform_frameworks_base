@@ -4068,6 +4068,15 @@ public class NotificationManagerService extends SystemService {
                     handleSavePolicyFile();
                 }
             }
+        } else if (nmSummarizationUi() && r.getNotification().isStyle(
+                Notification.MessagingStyle.class)) {
+            // If the notification is determined not to be a conversation, but still uses messaging
+            // style, consider it to be an "invalid" message, so that the sending app still gets
+            // identified as one that sends some form of messages.
+            if (mPreferencesHelper.setInvalidMessageSent(
+                    r.getSbn().getPackageName(), r.getUid())) {
+                handleSavePolicyFile();
+            }
         }
     }
 
