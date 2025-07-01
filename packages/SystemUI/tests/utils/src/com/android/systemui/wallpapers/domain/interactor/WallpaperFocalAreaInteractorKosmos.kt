@@ -18,8 +18,11 @@ package com.android.systemui.wallpapers.domain.interactor
 
 import android.content.applicationContext
 import com.android.systemui.keyguard.domain.interactor.keyguardSmartspaceInteractor
+import com.android.systemui.keyguard.domain.interactor.keyguardTransitionInteractor
 import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.shade.data.repository.shadeRepository
+import com.android.systemui.kosmos.backgroundScope
+import com.android.systemui.scene.domain.interactor.sceneInteractor
+import com.android.systemui.shade.domain.interactor.shadeModeInteractor
 import com.android.systemui.wallpapers.data.repository.wallpaperFocalAreaRepository
 
 var Kosmos.wallpaperFocalAreaInteractor by
@@ -27,7 +30,11 @@ var Kosmos.wallpaperFocalAreaInteractor by
         WallpaperFocalAreaInteractor(
             context = applicationContext,
             wallpaperFocalAreaRepository = wallpaperFocalAreaRepository,
-            shadeRepository = shadeRepository,
+            shadeModeInteractor = shadeModeInteractor,
             smartspaceInteractor = keyguardSmartspaceInteractor,
+            keyguardTransitionInteractor = keyguardTransitionInteractor,
+            sceneInteractor = sceneInteractor,
+            backgroundScope = backgroundScope,
+            wallpaperInteractor = wallpaperInteractor,
         )
     }

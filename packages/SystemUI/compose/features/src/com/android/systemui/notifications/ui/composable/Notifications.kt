@@ -266,7 +266,12 @@ fun ContentScope.ConstrainedNotificationStack(
             useStackBounds = { shouldUseLockscreenStackBounds(layoutState.transitionState) },
             modifier =
                 Modifier.fillMaxWidth()
-                    .notificationStackHeight(view = stackScrollView, constrainToMaxHeight = true),
+                    .notificationStackHeight(view = stackScrollView, constrainToMaxHeight = true)
+                    .onGloballyPositioned { coordinates ->
+                        viewModel.onLockScreenStackBottomChanged(
+                            coordinates.boundsInWindow().bottom
+                        )
+                    },
         )
         HeadsUpNotificationSpace(
             stackScrollView = stackScrollView,

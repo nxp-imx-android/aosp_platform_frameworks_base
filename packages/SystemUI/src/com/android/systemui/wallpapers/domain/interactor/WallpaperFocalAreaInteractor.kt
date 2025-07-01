@@ -22,19 +22,40 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.util.Log
 import android.view.View
+import androidx.annotation.VisibleForTesting
 import com.android.app.animation.MathUtils
+import com.android.compose.animation.scene.ObservableTransitionState
+import com.android.systemui.CoreStartable
 import com.android.systemui.customization.clocks.R as customR
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.keyguard.domain.interactor.KeyguardSmartspaceInteractor
+import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
+import com.android.systemui.keyguard.shared.model.Edge
+import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.keyguard.shared.model.TransitionState
+import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.res.R
-import com.android.systemui.shade.data.repository.ShadeRepository
+import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.shared.flag.SceneContainerFlag
+import com.android.systemui.scene.shared.model.Overlays
+import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
 import com.android.systemui.wallpapers.data.repository.WallpaperFocalAreaRepository
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.launch
 
 @SysUISingleton
 class WallpaperFocalAreaInteractor
@@ -42,18 +63,98 @@ class WallpaperFocalAreaInteractor
 constructor(
     var context: Context,
     private val wallpaperFocalAreaRepository: WallpaperFocalAreaRepository,
-    shadeRepository: ShadeRepository,
+    shadeModeInteractor: ShadeModeInteractor,
     smartspaceInteractor: KeyguardSmartspaceInteractor,
-) {
-    val hasFocalArea = wallpaperFocalAreaRepository.hasFocalArea
+    private val keyguardTransitionInteractor: KeyguardTransitionInteractor,
+    private val sceneInteractor: SceneInteractor,
+    @Background private val backgroundScope: CoroutineScope,
+    private val wallpaperInteractor: WallpaperInteractor,
+) : CoreStartable {
+    val hasFocalArea: StateFlow<Boolean> = wallpaperFocalAreaRepository.hasFocalArea
 
-    val smartspaceBottom =
-        combine(
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val shouldCollectFocalArea =
+        hasFocalArea
+            .flatMapLatest { hasFocalArea ->
+                if (!hasFocalArea) {
+                    return@flatMapLatest flowOf(false)
+                }
+
+                if (SceneContainerFlag.isEnabled) {
+                    sceneInteractor.transitionState.map { transitionState ->
+                        transitionState.isLockscreenIdleWithoutShades() ||
+                            transitionState.isTransitioningToLockscreenFromNonShade()
+                    }
+                } else {
+                    combine(
+                            keyguardTransitionInteractor.startedKeyguardTransitionStep,
+                            // Emit bounds when finishing transition to LOCKSCREEN to avoid race
+                            // condition with COMMAND_WAKING_UP
+                            keyguardTransitionInteractor
+                                .transition(
+                                    edge = Edge.create(to = Scenes.Lockscreen),
+                                    edgeWithoutSceneContainer =
+                                        Edge.create(to = KeyguardState.LOCKSCREEN),
+                                )
+                                .filter { it.transitionState == TransitionState.FINISHED },
+                            ::Pair,
+                        )
+                        // Enforce collecting wallpaperFocalAreaBounds after rebooting
+                        .onStart {
+                            emit(
+                                Pair(
+                                    TransitionStep(to = KeyguardState.LOCKSCREEN),
+                                    TransitionStep(),
+                                )
+                            )
+                        }
+                        .map { (transitionStep, _) ->
+                            // Subscribe to bounds within the period of transitioning to the
+                            // lockscreen, prior to any transitions away.
+                            transitionStep.to == KeyguardState.LOCKSCREEN &&
+                                transitionStep.from != KeyguardState.LOCKSCREEN
+                        }
+                }
+            }
+            .distinctUntilChanged()
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val wallpaperFocalAreaBoundsOnLockscreen: Flow<RectF> =
+        shouldCollectFocalArea.flatMapLatest { shouldCollectFocalArea ->
+            if (shouldCollectFocalArea) {
+                wallpaperFocalAreaBounds
+            } else {
+                emptyFlow()
+            }
+        }
+
+    private val topAreaSectionBottom: Flow<Float> =
+        if (SceneContainerFlag.isEnabled) {
+            combine(
+                    wallpaperFocalAreaRepository.smallClockViewBottom,
+                    wallpaperFocalAreaRepository.smartspaceCardBottom,
+                    wallpaperFocalAreaRepository.mediaPlayerBottom,
+                ) { smallClockViewBottom, smartspaceCardBottom, mediaPlayerBottom ->
+                    Log.d(
+                        TAG,
+                        "smallClockViewBottom $smallClockViewBottom smartspaceCardBottom " +
+                            "$smartspaceCardBottom mediaPlayerBottom $mediaPlayerBottom",
+                    )
+                    MathUtils.max(
+                        smallClockViewBottom,
+                        MathUtils.max(smartspaceCardBottom, mediaPlayerBottom),
+                    )
+                }
+                .filter { it != -1f }
+        } else {
+            /**
+             * When there's no notification, we'll use max of small clock bottom and bcsmartspace,
+             * and height of UMO will be calculated in notification stack height
+             */
+            combine(
                 wallpaperFocalAreaRepository.notificationDefaultTop,
                 smartspaceInteractor.bcSmartspaceVisibility,
-                ::Pair,
-            )
-            .map { (notificationDefaultTop, bcSmartspaceVisibility) ->
+            ) { notificationDefaultTop, bcSmartspaceVisibility ->
                 when (bcSmartspaceVisibility) {
                     View.VISIBLE -> {
                         notificationDefaultTop +
@@ -61,23 +162,26 @@ constructor(
                                 .getDimensionPixelSize(customR.dimen.enhanced_smartspace_height)
                                 .toFloat()
                     }
+
                     else -> {
                         notificationDefaultTop
                     }
                 }
             }
+        }
 
+    @VisibleForTesting
     val wallpaperFocalAreaBounds: Flow<RectF> =
         combine(
-                shadeRepository.isShadeLayoutWide,
+                shadeModeInteractor.isShadeLayoutWide,
                 wallpaperFocalAreaRepository.notificationStackAbsoluteBottom,
                 wallpaperFocalAreaRepository.shortcutAbsoluteTop,
-                smartspaceBottom,
+                topAreaSectionBottom,
             ) {
                 isShadeLayoutWide,
                 notificationStackAbsoluteBottom,
                 shortcutAbsoluteTop,
-                smartspaceBottom ->
+                topAreaSectionBottom ->
                 // Wallpaper will be zoomed in with config_wallpaperMaxScale in lockscreen
                 // so we need to give a bounds taking this scale in consideration
                 val wallpaperZoomedInScale = getSystemWallpaperMaximumScale(context)
@@ -106,6 +210,7 @@ constructor(
                 val scaledBottomMargin =
                     (context.resources.displayMetrics.heightPixels - shortcutAbsoluteTop) /
                         wallpaperZoomedInScale
+
                 val top =
                     // tablet landscape
                     if (context.resources.getBoolean(R.bool.center_align_focal_area_shape)) {
@@ -116,11 +221,11 @@ constructor(
                     // unfold foldable landscape
                     else if (isShadeLayoutWide) {
                         // For all landscape, we should use bottom of smartspace to constrain
-                        scaledBounds.top + smartspaceBottom / wallpaperZoomedInScale
+                        scaledBounds.top + topAreaSectionBottom / wallpaperZoomedInScale
                         // handheld / portrait
                     } else {
                         scaledBounds.top +
-                            MathUtils.max(smartspaceBottom, notificationStackAbsoluteBottom) /
+                            MathUtils.max(topAreaSectionBottom, notificationStackAbsoluteBottom) /
                                 wallpaperZoomedInScale
                     }
                 val bottom = scaledBounds.bottom - scaledBottomMargin
@@ -130,15 +235,39 @@ constructor(
             .filter { it.width() >= 0 && it.height() >= 0 }
             .distinctUntilChanged()
 
-    fun setFocalAreaBounds(bounds: RectF) {
-        wallpaperFocalAreaRepository.setWallpaperFocalAreaBounds(bounds)
+    override fun start() {
+        backgroundScope.launch {
+            wallpaperFocalAreaBoundsOnLockscreen.collect { bounds ->
+                sendWallpaperFocalAreaBounds(bounds)
+            }
+        }
     }
 
     fun setNotificationDefaultTop(top: Float) {
-        wallpaperFocalAreaRepository.setNotificationDefaultTop(top)
+        wallpaperFocalAreaRepository.notificationDefaultTop.value = top
     }
 
-    fun setTapPosition(x: Float, y: Float) {
+    fun setShortcutTop(top: Float) {
+        wallpaperFocalAreaRepository.shortcutAbsoluteTop.value = top
+    }
+
+    fun setMediaPlayerBottom(bottom: Float) {
+        wallpaperFocalAreaRepository.mediaPlayerBottom.value = bottom
+    }
+
+    fun setNotificationStackAbsoluteBottom(bottom: Float) {
+        wallpaperFocalAreaRepository.notificationStackAbsoluteBottom.value = bottom
+    }
+
+    fun setSmallClockBottom(bottom: Float) {
+        wallpaperFocalAreaRepository.smallClockViewBottom.value = bottom
+    }
+
+    fun setSmartspaceCardBottom(bottom: Float) {
+        wallpaperFocalAreaRepository.smartspaceCardBottom.value = bottom
+    }
+
+    fun sendTapPosition(x: Float, y: Float) {
         // Focal area should only react to touch event within its bounds
         val wallpaperZoomedInScale = getSystemWallpaperMaximumScale(context)
         // Because there's a scale applied on wallpaper in lockscreen
@@ -147,7 +276,11 @@ constructor(
         val newX = (x - screenCenterX) / wallpaperZoomedInScale + screenCenterX
         val screenCenterY = context.resources.displayMetrics.heightPixels / 2F
         val newY = (y - screenCenterY) / wallpaperZoomedInScale + screenCenterY
-        wallpaperFocalAreaRepository.setTapPosition(PointF(newX, newY))
+        wallpaperInteractor.sendTapPosition(PointF(newX, newY))
+    }
+
+    fun sendWallpaperFocalAreaBounds(bounds: RectF) {
+        wallpaperInteractor.sendWallpaperFocalAreaBounds(bounds)
     }
 
     companion object {
@@ -162,6 +295,30 @@ constructor(
                         )
                 )
             return if (scale == 0f) 1f else scale
+        }
+
+        private fun ObservableTransitionState.isLockscreenIdleWithoutShades(): Boolean {
+            // Checking only isIdle(Scenes.Lockscreen) isn't enough for a "shade-free" idle
+            // lockscreen. In dual shade mode, overlays like notification or quick settings shades
+            // can still be present. The additional !isIdle checks for these overlays are crucial
+            // to confirm their absence.
+            return isIdle(Scenes.Lockscreen) &&
+                !isIdle(Overlays.NotificationsShade) &&
+                !isIdle(Overlays.QuickSettingsShade)
+        }
+
+        private fun ObservableTransitionState.isTransitioningToLockscreenFromNonShade(): Boolean {
+            return isTransitioning(to = Scenes.Lockscreen) &&
+                !isTransitioningSets(
+                    from =
+                        setOf(
+                            Scenes.Shade,
+                            Scenes.QuickSettings,
+                            Scenes.QSEditMode,
+                            Overlays.NotificationsShade,
+                            Overlays.QuickSettingsShade,
+                        )
+                )
         }
 
         private val TAG = WallpaperFocalAreaInteractor::class.simpleName

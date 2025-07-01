@@ -24,6 +24,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.viewinterop.AndroidView
@@ -58,6 +60,7 @@ constructor(
     fun ContentScope.Shortcut(
         isStart: Boolean,
         applyPadding: Boolean,
+        onTopChanged: ((Float) -> Unit)? = null,
         modifier: Modifier = Modifier,
     ) {
         Element(
@@ -71,11 +74,14 @@ constructor(
                 indicationController = indicationController,
                 binder = keyguardQuickAffordanceViewBinder,
                 modifier =
-                    if (applyPadding) {
-                        Modifier.shortcutPadding()
-                    } else {
-                        Modifier
-                    },
+                    (if (applyPadding) {
+                            Modifier.shortcutPadding()
+                        } else {
+                            Modifier
+                        })
+                        .onGloballyPositioned { coordinates ->
+                            onTopChanged?.invoke(coordinates.boundsInWindow().top)
+                        },
             )
         }
     }

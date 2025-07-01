@@ -21,6 +21,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.animation.scene.ContentScope
@@ -44,9 +46,10 @@ constructor(
 
     @Composable
     fun ContentScope.SmallClock(
+        modifier: Modifier = Modifier,
         burnInParams: BurnInParameters,
         onTopChanged: (top: Float?) -> Unit,
-        modifier: Modifier = Modifier,
+        onBottomChanged: ((Float) -> Unit)? = null,
     ) {
         val currentClock by viewModel.currentClock.collectAsStateWithLifecycle()
         val smallTopMargin by
@@ -66,7 +69,10 @@ constructor(
                     .padding(top = { smallTopMargin })
                     .onTopPlacementChanged(onTopChanged)
                     .burnInAware(viewModel = aodBurnInViewModel, params = burnInParams)
-                    .element(smallClockElementKey),
+                    .element(smallClockElementKey)
+                    .onGloballyPositioned { coordinates ->
+                        onBottomChanged?.invoke(coordinates.boundsInWindow().bottom)
+                    },
         )
     }
 }

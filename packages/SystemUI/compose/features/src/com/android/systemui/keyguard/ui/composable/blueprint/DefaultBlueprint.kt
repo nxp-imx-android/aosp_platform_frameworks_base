@@ -93,6 +93,7 @@ constructor(
                         SmallClock(
                             burnInParams = burnIn.parameters,
                             onTopChanged = burnIn.onSmallClockTopChanged,
+                            onBottomChanged = { bottom -> viewModel.setSmallClockBottom(bottom) },
                         )
                     }
                 },
@@ -107,13 +108,21 @@ constructor(
                         SmartSpace(
                             burnInParams = burnIn.parameters,
                             onTopChanged = burnIn.onSmartspaceTopChanged,
+                            onBottomChanged = { bottom ->
+                                viewModel.setSmartspaceCardBottom(bottom)
+                            },
                             smartSpacePaddingTop = { 0 },
                         )
                     }
                 },
                 media = {
                     with(mediaCarouselElement) {
-                        KeyguardMediaCarousel(isShadeLayoutWide = viewModel.isShadeLayoutWide)
+                        KeyguardMediaCarousel(
+                            isShadeLayoutWide = viewModel.isShadeLayoutWide,
+                            onBottomChanged = { bottom ->
+                                viewModel.setMediaPlayerBottom(bottom = bottom)
+                            },
+                        )
                     }
                 },
                 notifications = {
@@ -126,7 +135,13 @@ constructor(
                 },
                 lockIcon = { with(lockElement) { LockIcon() } },
                 startShortcut = {
-                    with(shortcutElement) { Shortcut(isStart = true, applyPadding = false) }
+                    with(shortcutElement) {
+                        Shortcut(
+                            isStart = true,
+                            applyPadding = false,
+                            onTopChanged = { top -> viewModel.setShortcutTop(top) },
+                        )
+                    }
                 },
                 ambientIndication = {
                     if (ambientIndicationElementOptional.isPresent) {
@@ -141,7 +156,13 @@ constructor(
                     }
                 },
                 endShortcut = {
-                    with(shortcutElement) { Shortcut(isStart = false, applyPadding = false) }
+                    with(shortcutElement) {
+                        Shortcut(
+                            isStart = false,
+                            applyPadding = false,
+                            onTopChanged = { top -> viewModel.setShortcutTop(top) },
+                        )
+                    }
                 },
                 settingsMenu = {
                     with(settingsMenuElement) { SettingsMenu(onPlaced = onSettingsMenuPlaced) }
