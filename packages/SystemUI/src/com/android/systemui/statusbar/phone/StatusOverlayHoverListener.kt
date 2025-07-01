@@ -136,7 +136,7 @@ constructor(
         get() = statusBarConfigurationControllerStore.forDisplay(context.displayId)
 
     private val View.darkIconDispatcher: SysuiDarkIconDispatcher?
-        get() = displaySubcomponentRepository[context.displayId]?.sysUiDarkIconDispatcher
+        get() = displaySubcomponentRepository[context.displayId]?.sysuiDarkIconDispatcher
 
     private fun toHoverTheme(view: View, darkChange: DarkChange): HoverTheme {
         val calculatedTint = DarkIconDispatcher.getTint(darkChange.areas, view, darkChange.tint)
