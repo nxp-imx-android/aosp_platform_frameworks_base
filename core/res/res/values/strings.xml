@@ -6876,6 +6876,8 @@ ul.</string>
     <string name="keyboard_shortcut_group_applications_calculator">Calculator</string>
     <!-- User visible title for the keyboard shortcut that takes the user to the maps app. [CHAR LIMIT=70] -->
     <string name="keyboard_shortcut_group_applications_maps">Maps</string>
+    <!-- User visible title for the keyboard shortcut that takes the user to the files app. [CHAR LIMIT=70] -->
+    <string name="keyboard_shortcut_group_applications_files">Files</string>
     <!-- User visible title for the keyboard shortcut group containing system-wide application launch shortcuts. [CHAR-LIMIT=70] -->
     <string name="keyboard_shortcut_group_applications">Applications</string>
 
