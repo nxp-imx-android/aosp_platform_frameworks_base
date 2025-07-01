@@ -31,6 +31,9 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.util.testTaskAppearedListener
 import com.android.wm.shell.util.testTaskVanishedListener
 import java.util.function.Consumer
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -78,8 +81,8 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
                 leash { leashTest }
                 validateOnTaskAppeared {
                     r.validateItem(10) { item ->
-                        assert(item?.containerLeash == leashTest)
-                        assert(item?.containerToken == tokenTest)
+                        assertEquals(leashTest, item?.containerLeash)
+                        assertEquals(tokenTest, item?.containerToken)
                     }
                 }
             }
@@ -99,7 +102,7 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
                 leash { leashTest }
                 validateOnTaskAppeared {
                     r.validateItem(10) { item ->
-                        assert(item != null)
+                        assertNotNull(item)
                     }
                 }
             }
@@ -110,7 +113,7 @@ class LetterboxTaskListenerAdapterTest : ShellTestCase() {
                 }
                 validateOnTaskVanished {
                     r.validateItem(10) { item ->
-                        assert(item == null)
+                        assertNull(item)
                     }
                 }
             }
