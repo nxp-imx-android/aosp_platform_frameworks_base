@@ -569,6 +569,20 @@ abstract class MobileConnectionRepositoryTest : SysuiTestCase() {
         }
 
     @Test
+    fun setDataEnabled_callsTelephonyApi() =
+        testScope.runTest {
+            underTest.setDataEnabled(true)
+
+            verify(telephonyManager)
+                .setDataEnabledForReason(TelephonyManager.DATA_ENABLED_REASON_USER, true)
+
+            underTest.setDataEnabled(false)
+
+            verify(telephonyManager)
+                .setDataEnabledForReason(TelephonyManager.DATA_ENABLED_REASON_USER, false)
+        }
+
+    @Test
     fun numberOfLevels_isDefault() =
         testScope.runTest {
             var latest: Int? = null

@@ -208,6 +208,10 @@ class CarrierMergedConnectionRepository(
 
     override val dataEnabled: StateFlow<Boolean> = wifiRepository.isWifiEnabled
 
+    override fun setDataEnabled(enabled: Boolean) {
+        telephonyManager.setDataEnabledForReason(TelephonyManager.DATA_ENABLED_REASON_USER, enabled)
+    }
+
     override suspend fun isInEcmMode(): Boolean =
         withContext(bgContext) { telephonyManager.emergencyCallbackMode }
 

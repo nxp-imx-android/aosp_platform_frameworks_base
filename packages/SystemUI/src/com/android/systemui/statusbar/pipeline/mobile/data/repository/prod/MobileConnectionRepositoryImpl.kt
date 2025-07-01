@@ -421,6 +421,10 @@ class MobileConnectionRepositoryImpl(
             .stateIn(scope, SharingStarted.WhileSubscribed(), initial)
     }
 
+    override fun setDataEnabled(enabled: Boolean) {
+        telephonyManager.setDataEnabledForReason(TelephonyManager.DATA_ENABLED_REASON_USER, enabled)
+    }
+
     override suspend fun isInEcmMode(): Boolean =
         withContext(bgDispatcher) { telephonyManager.emergencyCallbackMode }
 

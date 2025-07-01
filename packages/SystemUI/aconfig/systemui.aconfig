@@ -2157,6 +2157,7 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
 flag {
     name: "dialog_anim_end_state_update"
     namespace: "systemui"
@@ -2175,4 +2176,13 @@ flag {
     metadata {
       purpose: PURPOSE_BUGFIX
     }
+}
+
+flag {
+
+    name: "qs_split_internet_tile"
+    namespace: "systemui"
+    description: "Splits the Internet tile into Wifi (with internet info) + Mobile Data."
+    bug: "201143076"
+    is_fixed_read_only: true
 }

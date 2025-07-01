@@ -32,6 +32,7 @@ import com.android.systemui.qs.tiles.DataSaverTile
 import com.android.systemui.qs.tiles.HotspotTile
 import com.android.systemui.qs.tiles.InternetTile
 import com.android.systemui.qs.tiles.InternetTileNewImpl
+import com.android.systemui.qs.tiles.MobileDataTile
 import com.android.systemui.qs.tiles.NfcTile
 import com.android.systemui.qs.tiles.base.domain.interactor.QSTileAvailabilityInteractor
 import com.android.systemui.qs.tiles.base.shared.model.QSTileConfig
@@ -44,6 +45,10 @@ import com.android.systemui.qs.tiles.impl.airplane.domain.interactor.AirplaneMod
 import com.android.systemui.qs.tiles.impl.airplane.domain.interactor.AirplaneModeTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.airplane.domain.model.AirplaneModeTileModel
 import com.android.systemui.qs.tiles.impl.airplane.ui.mapper.AirplaneModeTileMapper
+import com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileDataInteractor
+import com.android.systemui.qs.tiles.impl.cell.domain.interactor.MobileDataTileUserActionInteractor
+import com.android.systemui.qs.tiles.impl.cell.domain.model.MobileDataTileModel
+import com.android.systemui.qs.tiles.impl.cell.ui.mapper.MobileDataTileMapper
 import com.android.systemui.qs.tiles.impl.internet.domain.interactor.InternetTileDataInteractor
 import com.android.systemui.qs.tiles.impl.internet.domain.interactor.InternetTileUserActionInteractor
 import com.android.systemui.qs.tiles.impl.internet.domain.model.InternetTileModel
@@ -73,6 +78,12 @@ interface ConnectivityModule {
     @IntoMap
     @StringKey(CastTile.TILE_SPEC)
     fun bindCastTile(castTile: CastTile): QSTileImpl<*>
+
+    /** Inject MobileDataTile into tileMap in QSModule */
+    @Binds
+    @IntoMap
+    @StringKey(MobileDataTile.TILE_SPEC)
+    fun bindMobileDataTile(tile: MobileDataTile): QSTileImpl<*>
 
     /** Inject HotspotTile into tileMap in QSModule */
     @Binds
@@ -116,11 +127,19 @@ interface ConnectivityModule {
         impl: InternetTileDataInteractor
     ): QSTileAvailabilityInteractor
 
+    @Binds
+    @IntoMap
+    @StringKey(MOBILE_DATA_TILE_SPEC)
+    fun provideMobileDataAvailabilityInteractor(
+        impl: MobileDataTileDataInteractor
+    ): QSTileAvailabilityInteractor
+
     companion object {
 
         const val AIRPLANE_MODE_TILE_SPEC = "airplane"
         const val DATA_SAVER_TILE_SPEC = "saver"
         const val INTERNET_TILE_SPEC = "internet"
+        const val MOBILE_DATA_TILE_SPEC = "cell"
         const val HOTSPOT_TILE_SPEC = "hotspot"
         const val CAST_TILE_SPEC = "cast"
         const val BLUETOOTH_TILE_SPEC = "bt"
@@ -242,6 +261,37 @@ interface ConnectivityModule {
                 stateInteractor,
                 mapper,
                 internetDetailsViewModelFactory.create(),
+            )
+
+        @Provides
+        @IntoMap
+        @StringKey(MOBILE_DATA_TILE_SPEC)
+        fun provideMobileDataTileConfig(uiEventLogger: QsEventLogger): QSTileConfig =
+            QSTileConfig(
+                tileSpec = TileSpec.create(MOBILE_DATA_TILE_SPEC),
+                uiConfig =
+                    QSTileUIConfig.Resource(
+                        iconRes = com.android.settingslib.R.drawable.ic_mobile_4_4_bar,
+                        labelRes = R.string.quick_settings_cellular_detail_title,
+                    ),
+                instanceId = uiEventLogger.getNewInstanceId(),
+                category = TileCategory.CONNECTIVITY,
+            )
+
+        @Provides
+        @IntoMap
+        @StringKey(MOBILE_DATA_TILE_SPEC)
+        fun provideMobileDataTileViewModel(
+            factory: QSTileViewModelFactory.Static<MobileDataTileModel>,
+            mapper: MobileDataTileMapper,
+            dataInteractor: MobileDataTileDataInteractor,
+            userActionInteractor: MobileDataTileUserActionInteractor,
+        ): QSTileViewModel =
+            factory.create(
+                TileSpec.create(MOBILE_DATA_TILE_SPEC),
+                userActionInteractor,
+                dataInteractor,
+                mapper,
             )
 
         @Provides
