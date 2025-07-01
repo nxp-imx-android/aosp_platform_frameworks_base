@@ -18,6 +18,7 @@ package android.window;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.RequiresPermission;
 import android.app.ActivityTaskManager;
 import android.os.RemoteException;
 import android.util.Singleton;
@@ -139,6 +140,8 @@ public class TaskSnapshotManager {
 
     private static final Singleton<ITaskSnapshotManager> ISnapshotManagerSingleton =
             new Singleton<ITaskSnapshotManager>() {
+                @RequiresPermission(allOf = {android.Manifest.permission.MANAGE_ACTIVITY_TASKS,
+                        android.Manifest.permission.READ_FRAME_BUFFER})
                 @Override
                 protected ITaskSnapshotManager create() {
                     try {
