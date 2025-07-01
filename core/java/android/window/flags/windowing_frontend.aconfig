@@ -365,17 +365,6 @@ flag {
 }
 
 flag {
-    name: "splash_screen_view_sync_transaction"
-    namespace: "windowing_frontend"
-    description: "Fixes flickering when transfer splash screen view to client."
-    bug: "402644135"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     namespace: "wear_frameworks"
     name: "dispatch_first_keyguard_locked_state"
     description: "Ensures the first keyguard locked state is dispatched to listeners reigstered through KeyguardManager.addKeyguardLockedStateListener"
