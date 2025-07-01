@@ -92,7 +92,7 @@ constructor(
                     val enoughUpdatesToCreateEvent = updates.size > 2
                     lastState is DisplaySwitchState.Idle && enoughUpdatesToCreateEvent
                 }
-                .map(::UpdatesChain)
+                .map(::toUpdatesChain)
                 .collect { updatesChain ->
                     instantForTrack(TAG) { "new states: $updatesChain " }
                     log { "new display switch states: $updatesChain " }
@@ -158,7 +158,7 @@ constructor(
             }
         log {
             "trackingResult=$trackingResult, " +
-                "fromFoldableDeviceState=${startingIdleState.switchState.newDeviceState}" +
+                "fromFoldableDeviceState=${startingIdleState.switchState.newDeviceState}, " +
                 "toFoldableDeviceState=${updatesChain.finalUpdate.switchState.newDeviceState}, " +
                 "toState=${toState}, " +
                 "latencyMs=${displaySwitchTimeMs}"
@@ -178,26 +178,31 @@ constructor(
         )
     }
 
-    /** Created only with more than two events and Idle as last event */
-    private class UpdatesChain(updates: List<DisplaySwitchUpdate>) {
-        init {
-            require(updates.size > 2) { "Expected more than two updates" }
-            require(updates.last().switchState is DisplaySwitchState.Idle) {
-                "Expected last update to be Idle"
-            }
+    private data class UpdatesChain(
+        val startIdleState: DisplaySwitchUpdate?,
+        val lastSwitchingUpdate: DisplaySwitchUpdate?,
+        val wasCorrupted: Boolean,
+        val finalUpdate: DisplaySwitchUpdate,
+        val timedOut: Boolean,
+    )
+
+    private fun toUpdatesChain(updates: List<DisplaySwitchUpdate>): UpdatesChain {
+        require(updates.size > 2) { "Expected more than two updates" }
+        require(updates.last().switchState is DisplaySwitchState.Idle) {
+            "Expected last update to be Idle"
         }
-
-        private val lastSwitchingStateIndex =
+        val lastSwitchingStateIndex =
             updates.indexOfLast { it.switchState is DisplaySwitchState.Switching }
-
-        // last idle state before switching state
-        val startIdleState = updates.getOrNull(lastSwitchingStateIndex - 1)
-        val lastSwitchingUpdate = updates.getOrNull(lastSwitchingStateIndex)
-
-        // let's check if the state before final state is corrupted
+        // check if the state before final state is corrupted
         val wasCorrupted = updates[updates.size - 2].switchState is DisplaySwitchState.Corrupted
         val finalUpdate = updates.last()
-        val timedOut = (finalUpdate.switchState as? DisplaySwitchState.Idle)?.timedOut ?: false
+        return UpdatesChain(
+            startIdleState = updates.getOrNull(lastSwitchingStateIndex - 1),
+            lastSwitchingUpdate = updates.getOrNull(lastSwitchingStateIndex),
+            wasCorrupted = wasCorrupted,
+            finalUpdate = finalUpdate,
+            timedOut = (finalUpdate.switchState as? DisplaySwitchState.Idle)?.timedOut ?: false,
+        )
     }
 
     private data class DisplaySwitchUpdate(
