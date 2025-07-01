@@ -436,16 +436,18 @@ public class BluetoothEventManagerTest {
     }
 
     @Test
-    public void dispatchAclConnectionStateChanged_findDeviceReturnNull_shouldNotDispatchCallback() {
+    public void dispatchAclConnectionStateChanged_aclBeforeDeviceCreation_shouldDispatchCallback() {
         when(mCachedDeviceManager.findDevice(mBluetoothDevice)).thenReturn(null);
+        when(mCachedDeviceManager.addDevice(mBluetoothDevice)).thenReturn(mCachedBluetoothDevice);
         mBluetoothEventManager.registerCallback(mBluetoothCallback);
         mIntent = new Intent(BluetoothDevice.ACTION_ACL_CONNECTED);
         mIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, mBluetoothDevice);
 
         mContext.sendBroadcast(mIntent);
 
-        verify(mBluetoothCallback, never()).onAclConnectionStateChanged(mCachedBluetoothDevice,
-                BluetoothAdapter.STATE_CONNECTED);
+        verify(mBluetoothCallback)
+                .onAclConnectionStateChanged(
+                        mCachedBluetoothDevice, BluetoothAdapter.STATE_CONNECTED);
     }
 
     /**
