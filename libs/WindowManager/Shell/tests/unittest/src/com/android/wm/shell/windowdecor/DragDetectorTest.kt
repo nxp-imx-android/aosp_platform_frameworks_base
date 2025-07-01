@@ -18,8 +18,8 @@ package com.android.wm.shell.windowdecor
 
 import android.os.SystemClock
 import android.testing.AndroidTestingRunner
-import android.view.MotionEvent
 import android.view.InputDevice
+import android.view.MotionEvent
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
 import org.junit.After
@@ -29,12 +29,12 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.MockitoAnnotations
-import org.mockito.Mockito.`when`
 import org.mockito.Mockito.any
 import org.mockito.Mockito.argThat
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.times
 
 /**
@@ -467,16 +467,67 @@ class DragDetectorTest : ShellTestCase() {
             .handleMotionEvent(any(), argThat { ev -> ev.action == MotionEvent.ACTION_MOVE })
     }
 
+    @Test
+    fun testEventWithMotionClassification_doesNothing() {
+        val dragDetector = createDragDetector()
+        assertFalse(
+            dragDetector.onMotionEvent(
+                createMotionEvent(
+                    MotionEvent.ACTION_DOWN,
+                    isTouch = false,
+                    classification = MotionEvent.CLASSIFICATION_TWO_FINGER_SWIPE
+                )
+            )
+        )
+        verify(eventHandler, never()).handleMotionEvent(any(), any())
+
+        assertFalse(
+            dragDetector.onMotionEvent(
+                createMotionEvent(
+                    MotionEvent.ACTION_UP,
+                    isTouch = false,
+                    classification = MotionEvent.CLASSIFICATION_TWO_FINGER_SWIPE
+                )
+            )
+        )
+        verify(eventHandler, never()).handleMotionEvent(any(), any())
+    }
+
     private fun createMotionEvent(
         action: Int,
         x: Float = X,
         y: Float = Y,
         isTouch: Boolean = true,
         downTime: Long = SystemClock.uptimeMillis(),
-        eventTime: Long = SystemClock.uptimeMillis()
+        eventTime: Long = SystemClock.uptimeMillis(),
+        classification: Int = MotionEvent.CLASSIFICATION_NONE,
     ): MotionEvent {
-        val ev = MotionEvent.obtain(downTime, eventTime, action, x, y, 0)
-        ev.source = if (isTouch) InputDevice.SOURCE_TOUCHSCREEN else InputDevice.SOURCE_MOUSE
+        val pointerProperties = arrayOf(MotionEvent.PointerProperties().apply {
+            this.id = 0
+            this.toolType = MotionEvent.TOOL_TYPE_FINGER
+        })
+        val pointerCoords = arrayOf(MotionEvent.PointerCoords().apply {
+            this.x = x
+            this.y = y
+        })
+        val ev = MotionEvent.obtain(
+            downTime,
+            eventTime,
+            action,
+            /* pointerCount= */ 1,
+            pointerProperties,
+            pointerCoords,
+            /* metaState= */ 0,
+            /* buttonState= */ 0,
+            /* xPrecision= */ 0f,
+            /* yPrecision= */ 0f,
+            /* deviceId= */ 0,
+            /* edgeFlags= */ 0,
+            if (isTouch) InputDevice.SOURCE_TOUCHSCREEN else InputDevice.SOURCE_MOUSE,
+            /* displayId= */ 0,
+            /* flags= */ 0,
+            classification,
+        )!!
         motionEvents.add(ev)
         return ev
     }
