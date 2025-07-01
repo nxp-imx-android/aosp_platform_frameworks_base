@@ -6547,6 +6547,14 @@
     <permission android:name="android.permission.MANAGE_ONE_TIME_PERMISSION_SESSIONS"
                 android:protectionLevel="signature|installer" />
 
+    <!-- @SystemApi Allows an application to get the package names of the
+        holders of a role.
+        @FlaggedApi(android.permission.flags.Flags.FLAG_SUPERVISION_ROLE_ENABLED)
+        @hide -->
+    <permission android:name="android.permission.GET_ROLE_HOLDERS"
+                android:protectionLevel="signature|privileged"
+                android:featureFlag="android.permission.flags.supervision_role_enabled"/>
+
     <!-- @SystemApi Allows an application to manage the holders of a role.
          @hide -->
     <permission android:name="android.permission.MANAGE_ROLE_HOLDERS"
