@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"यह ऐप्लिकेशन 16 केबी वाले पेजों के साथ काम नहीं करता. APK के अलाइनमेंट की जांच नहीं की जा सकी. यह ऐप्लिकेशन, पेज साइज़ के साथ काम करने वाले मोड का इस्तेमाल करके चलेगा. पेज साइज़ के साथ बेहतर तरीके से काम के लिए, कृपया 16 केबी वाले पेजों के साथ ऐप्लिकेशन को फिर से कंपाइल करें. ज़्यादा जानकारी के लिए, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर जाएं"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"यह ऐप्लिकेशन 16 केबी वाले पेज साइज़ के साथ काम नहीं करता. इसके लिए ज़रूरी ईएलएफ़ अलाइनमेंट की जांच भी पूरी नहीं हो सकी. यह ऐप्लिकेशन, इस पेज साइज़ के साथ काम करने वाले मोड का इस्तेमाल करके चलेगा. इस पेज साइज़ के साथ बेहतर तरीके से काम के लिए, कृपया ऐप्लिकेशन को 16 केबी वाले पेज साइज़ के साथ फिर से कंपाइल करें. ज़्यादा जानकारी के लिए, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर जाएं"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"यह ऐप्लिकेशन 16 केबी वाले पेज साइज़ के साथ काम नहीं करता. APK और ईएलएफ़ के अलाइनमेंट से जुड़ी ज़रूरी जांच भी पूरी नहीं हो सकी. यह ऐप्लिकेशन, इस पेज साइज़ के साथ काम करने वाले मोड का इस्तेमाल करके चलेगा. इस पेज साइज़ के साथ बेहतर तरीके से काम के लिए, कृपया ऐप्लिकेशन को 16 केबी वाले पेज साइज़ के साथ फिर से कंपाइल करें. ज़्यादा जानकारी के लिए, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर जाएं"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"यह चेतावनी इसलिए दिख रही है, क्योंकि इस ऐप्लिकेशन को डीबग किया जा सकता है. फ़िलहाल, इसकी जांच की जा रही है. अगर आप डेवलपर नहीं हैं, तो कृपया डेवलपर को इसकी जानकारी दें और ऐसा ऐप्लिकेशन उपलब्ध कराने के लिए कहें जिसे डीबग नहीं किया जा सकता. यह ऐप्लिकेशन, 16 केबी वाले पेज साइज़ के साथ काम नहीं करता है. APK के अलाइनमेंट की जांच नहीं की जा सकी. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर दिए गए निर्देशों का पालन करें"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"यह चेतावनी इसलिए दिख रही है, क्योंकि इस ऐप्लिकेशन को डीबग किया जा सकता है. फ़िलहाल, इसकी जांच की जा रही है. अगर आप डेवलपर नहीं हैं, तो कृपया डेवलपर को इसकी जानकारी दें और ऐसा ऐप्लिकेशन उपलब्ध कराने के लिए कहें जिसे डीबग नहीं किया जा सकता. यह ऐप्लिकेशन, 16 केबी वाले पेज साइज़ के साथ काम नहीं करता है. ईएलएफ़ अलाइनमेंट की जांच नहीं की जा सकी. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर दिए गए निर्देशों का पालन करें"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"यह चेतावनी इसलिए दिख रही है, क्योंकि इस ऐप्लिकेशन को डीबग किया जा सकता है. फ़िलहाल, इसकी जांच की जा रही है. अगर आप डेवलपर नहीं हैं, तो कृपया डेवलपर को इसकी जानकारी दें और ऐसा ऐप्लिकेशन उपलब्ध कराने के लिए कहें जिसे डीबग नहीं किया जा सकता. यह ऐप्लिकेशन, 16 केबी वाले पेज साइज़ के साथ काम नहीं करता है. APK और ईएलएफ़ के अलाइनमेंट की जांच नहीं की जा सकी. कृपया &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; पर दिए गए निर्देशों का पालन करें"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"फिर से न दिखाएं"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"सेवा प्रावधान की हुई नहीं है."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"आप कॉलर आईडी सेटिंग नहीं बदल सकते."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"डेटा को <xliff:g id="CARRIERDISPLAY">%s</xliff:g> पर स्विच किया गया"</string>

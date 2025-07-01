@@ -57,3 +57,10 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+     namespace: "backstage_power"
+     name: "configure_power_stats_log_frequency"
+     description: "Add a configurable value for power stats logging frequency"
+     bug: "166689029"
+}

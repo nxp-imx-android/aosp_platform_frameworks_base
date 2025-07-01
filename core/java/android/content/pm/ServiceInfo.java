@@ -538,7 +538,6 @@ public class ServiceInfo extends ComponentInfo
     @RequiresPermission(
             value = Manifest.permission.FOREGROUND_SERVICE_MEDIA_PROCESSING
     )
-    @FlaggedApi(Flags.FLAG_INTRODUCE_MEDIA_PROCESSING_TYPE)
     public static final int FOREGROUND_SERVICE_TYPE_MEDIA_PROCESSING = 1 << 13;
 
     /**

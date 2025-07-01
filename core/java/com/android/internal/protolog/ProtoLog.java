@@ -224,7 +224,7 @@ public class ProtoLog {
                         new DataSourceParams.Builder()
                                 .setBufferExhaustedPolicy(
                                         DataSourceParams
-                                                .PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_DROP)
+                                                .PERFETTO_DS_BUFFER_EXHAUSTED_POLICY_STALL_AND_DROP)
                                 .build();
                 sDataSource.register(params);
             }

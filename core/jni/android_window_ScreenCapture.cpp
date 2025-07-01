@@ -141,6 +141,15 @@ public:
         return binder::Status::ok();
     }
 
+    void onError(JNIEnv* env, int errorCode) {
+        ScopedLocalRef<jobject> consumer{env, env->NewLocalRef(mConsumerWeak)};
+        if (consumer == nullptr) {
+            ALOGE("ScreenCaptureListenerWrapper::onError - consumer not alive");
+            return;
+        }
+        env->CallVoidMethod(consumer.get(), gConsumerClassInfo.accept, nullptr, errorCode);
+    }
+
 private:
     jweak mConsumerWeak;
     JavaVM* mVm;
@@ -302,6 +311,12 @@ static jlong getNativeListenerFinalizer(JNIEnv* env, jclass clazz) {
     return static_cast<jlong>(reinterpret_cast<uintptr_t>(&destroyNativeListener));
 }
 
+static void nativeListenerOnError(JNIEnv* env, jclass clazz, jlong listenerPtr, jint errorCode) {
+    ScreenCaptureListenerWrapper* listener =
+            reinterpret_cast<ScreenCaptureListenerWrapper*>(listenerPtr);
+    listener->onError(env, errorCode);
+}
+
 // ----------------------------------------------------------------------------
 
 static const JNINativeMethod sScreenCaptureMethods[] = {
@@ -316,6 +331,7 @@ static const JNINativeMethod sScreenCaptureMethods[] = {
     {"nativeReadListenerFromParcel", "(Landroid/os/Parcel;)J",
             (void*)nativeReadListenerFromParcel },
     {"getNativeListenerFinalizer", "()J", (void*)getNativeListenerFinalizer },
+    {"nativeListenerOnError", "(JI)V", (void*)nativeListenerOnError },
         // clang-format on
 };
 

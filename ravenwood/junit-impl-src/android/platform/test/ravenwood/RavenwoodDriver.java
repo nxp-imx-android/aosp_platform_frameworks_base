@@ -18,19 +18,14 @@ package android.platform.test.ravenwood;
 
 import static android.os.Process.FIRST_APPLICATION_UID;
 import static android.os.UserHandle.SYSTEM;
-import static android.platform.test.ravenwood.RavenwoodSystemServer.ANDROID_PACKAGE_NAME;
 
 import static com.android.modules.utils.ravenwood.RavenwoodHelper.RavenwoodInternal.RAVENWOOD_RUNTIME_PATH_JAVA_SYSPROP;
-import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_EMPTY_RESOURCES_APK;
-import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_INST_RESOURCE_APK;
-import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_RESOURCE_APK;
+import static com.android.ravenwood.common.RavenwoodInternalUtils.ANDROID_PACKAGE_NAME;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.getRavenwoodRuntimePath;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.parseNullableInt;
 import static com.android.ravenwood.common.RavenwoodInternalUtils.withDefault;
 
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 import android.annotation.Nullable;
 import android.app.ActivityManager;
@@ -40,7 +35,6 @@ import android.app.Application;
 import android.app.Application_ravenwood;
 import android.app.IUiAutomationConnection;
 import android.app.Instrumentation;
-import android.app.ResourcesManager;
 import android.app.UiAutomation;
 import android.app.UiAutomation_ravenwood;
 import android.content.Context;
@@ -52,10 +46,8 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
-import android.os.Environment_ravenwood;
 import android.os.HandlerThread;
 import android.os.Handler_ravenwood;
-import android.os.Looper;
 import android.os.Looper_ravenwood;
 import android.os.Message;
 import android.os.Process_ravenwood;
@@ -67,14 +59,12 @@ import android.system.ErrnoException;
 import android.system.Os;
 import android.util.Log;
 import android.util.Log_ravenwood;
-import android.view.DisplayAdjustments;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.os.RuntimeInit;
 import com.android.ravenwood.RavenwoodRuntimeNative;
-import com.android.ravenwood.RavenwoodRuntimeState;
 import com.android.ravenwood.common.RavenwoodInternalUtils;
 import com.android.ravenwood.common.SneakyThrow;
 import com.android.server.LocalServices;
@@ -85,9 +75,7 @@ import org.junit.internal.management.ManagementFactory;
 import org.junit.runner.Description;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintStream;
-import java.nio.file.Files;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
@@ -99,7 +87,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -117,7 +104,7 @@ public class RavenwoodDriver {
     private static final PrintStream sStdErr = System.err;
 
     private static final String MAIN_THREAD_NAME = "Ravenwood:Main";
-    private static final String TESTS_THREAD_NAME = "Ravenwood:Test";
+    private static final String TEST_THREAD_NAME = "Ravenwood:Test";
 
     private static final String LIBRAVENWOOD_INITIALIZER_NAME = "ravenwood_initializer";
     private static final String RAVENWOOD_NATIVE_RUNTIME_NAME = "ravenwood_runtime";
@@ -192,7 +179,7 @@ public class RavenwoodDriver {
 
     // TODO: expose packCallingIdentity function in libbinder and use it directly
     // See: packCallingIdentity in frameworks/native/libs/binder/IPCThreadState.cpp
-    private static long packBinderIdentityToken(
+    static long packBinderIdentityToken(
             boolean hasExplicitIdentity, int callingUid, int callingPid) {
         long res = ((long) callingUid << 32) | callingPid;
         if (hasExplicitIdentity) {
@@ -221,32 +208,16 @@ public class RavenwoodDriver {
     private static final String DEFAULT_INSTRUMENTATION_CLASS =
             "androidx.test.runner.AndroidJUnitRunner";
 
-    static volatile Thread sTestThread;
-    static volatile HandlerThread sMainThread;
-
-    private static final int sMyPid = new Random().nextInt(100, 32768);
-    private static int sTargetSdkLevel;
-
-    private static String sTestPackageName;
-    private static String sTargetPackageName;
-    private static String sInstrumentationClass;
-
     static volatile RavenwoodContext sInstContext;
     static volatile RavenwoodContext sTargetContext;
     static volatile Application sTargetApplication;
     private static Instrumentation sInstrumentation;
-    private static final long sCallingIdentity =
-            packBinderIdentityToken(false, FIRST_APPLICATION_UID, sMyPid);
-
-    static volatile File sRootDir;
-    static volatile File sAppDataDir;
 
     /**
      * Initialize the global environment.
      */
     public static void globalInitOnce() {
-        sTestThread = Thread.currentThread();
-        Thread.currentThread().setName(TESTS_THREAD_NAME);
+        Thread.currentThread().setName(TEST_THREAD_NAME);
         synchronized (sInitializationLock) {
             if (!sInitialized) {
                 // globalInitOnce() is called from class initializer, which cause
@@ -282,7 +253,7 @@ public class RavenwoodDriver {
         }
     }
 
-    private static void globalInitInner() throws IOException {
+    private static void globalInitInner() throws Exception {
         // We haven't initialized liblog yet, so directly write to System.out here.
         RavenwoodInternalUtils.log(TAG, "globalInitInner()");
 
@@ -313,7 +284,6 @@ public class RavenwoodDriver {
         System.load(RavenwoodInternalUtils.getJniLibraryPath(RAVENWOOD_NATIVE_RUNTIME_NAME));
 
         Log_ravenwood.setLogLevels(getLogTags());
-        Log_ravenwood.onRavenwoodRuntimeNativeReady();
 
         // Do the basic set up for the android sysprops.
         RavenwoodSystemProperties.initialize();
@@ -356,22 +326,12 @@ public class RavenwoodDriver {
         System.setProperty("android.junit.runner",
                 "androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner");
 
-        loadRavenwoodProperties();
-
         assertMockitoVersion();
 
-        sRootDir = Files.createTempDirectory("ravenwood-root-dir-").toFile();
-        sAppDataDir = new File(sRootDir, "data/app/appdatadir/");
-        sAppDataDir.mkdirs();
-        Environment_ravenwood.init(sRootDir);
+        Looper_ravenwood.sDispatcher = RavenwoodDriver::dispatchMessage;
 
-        Log.i(TAG, "TargetPackageName=" + sTargetPackageName);
-        Log.i(TAG, "TestPackageName=" + sTestPackageName);
-        Log.i(TAG, "TargetSdkLevel=" + sTargetSdkLevel);
-
-        RavenwoodRuntimeState.sUid = FIRST_APPLICATION_UID;
-        RavenwoodRuntimeState.sPid = sMyPid;
-        RavenwoodRuntimeState.sTargetSdkLevel = sTargetSdkLevel;
+        var env = createEnvironment();
+        Log_ravenwood.setPid(env.getPid());
 
         RavenwoodUtils.sPendingExceptionThrower =
                 RavenwoodDriver::maybeThrowPendingRecoverableUncaughtExceptionNoClear;
@@ -380,11 +340,6 @@ public class RavenwoodDriver {
             return null;
         };
 
-        final var main = new HandlerThread(MAIN_THREAD_NAME);
-        sMainThread = main;
-        main.start();
-        Looper_ravenwood.sDispatcher = RavenwoodDriver::dispatchMessage;
-        Looper.setMainLooperForTest(main.getLooper());
 
 
         ServiceManager.init$ravenwood();
@@ -392,32 +347,12 @@ public class RavenwoodDriver {
 
         ActivityManager.init$ravenwood(SYSTEM.getIdentifier());
 
-        final boolean isSelfInstrumenting =
-                Objects.equals(sTestPackageName, sTargetPackageName);
-
-        // This will load the resources from the apk set to `resource_apk` in the build file.
-        // This is supposed to be the "target app"'s resources.
-        final Supplier<Resources> targetResourcesLoader = () -> {
-            var file = new File(RAVENWOOD_RESOURCE_APK);
-            return loadResources(file.exists() ? file : null);
-        };
-
-        // Set up test context's (== instrumentation context's) resources.
-        // If the target package name == test package name, then we use the main resources.
-        final Supplier<Resources> instResourcesLoader;
-        if (isSelfInstrumenting) {
-            instResourcesLoader = targetResourcesLoader;
-        } else {
-            instResourcesLoader = () -> {
-                var file = new File(RAVENWOOD_INST_RESOURCE_APK);
-                return loadResources(file.exists() ? file : null);
-            };
-        }
+        final boolean isSelfInstrumenting = env.isSelfInstrumenting();
 
         sInstContext = new RavenwoodContext(
-                sTestPackageName, main, instResourcesLoader);
+                env.getInstPackageName(), env.getMainThread());
         sTargetContext = new RavenwoodContext(
-                sTargetPackageName, main, targetResourcesLoader);
+                env.getTargetPackageName(), env.getMainThread());
 
         // Set up app context. App context is always created for the target app.
         var application = new Application();
@@ -436,27 +371,18 @@ public class RavenwoodDriver {
         // the difference doesn't matter at least for now, so we just use the target context.
         ActivityThread_ravenwood.init(application, sTargetContext);
 
-        final Supplier<Resources> systemResourcesLoader = () -> loadResources(null);
-
-        var systemServerContext =
-                new RavenwoodContext(ANDROID_PACKAGE_NAME, main, systemResourcesLoader);
+        var systemServerContext = new RavenwoodContext(
+                ANDROID_PACKAGE_NAME, env.getMainThread());
 
         var uiAutomation = new UiAutomation(sInstContext, new IUiAutomationConnection.Default());
 
         var instArgs = Bundle.EMPTY;
         RavenwoodUtils.runOnMainThreadSync(() -> {
-            var instClassName = withDefault(sInstrumentationClass, DEFAULT_INSTRUMENTATION_CLASS);
             try {
-                var clazz = Class.forName(instClassName);
+                var clazz = Class.forName(env.getInstrumentationClass());
                 sInstrumentation = (Instrumentation) clazz.getConstructor().newInstance();
             } catch (ReflectiveOperationException e) {
-                if (sInstrumentationClass != null) {
-                    // If the class is explicitly set, it is an error if the class is not found
-                    SneakyThrow.sneakyThrow(e);
-                } else {
-                    // Fallback to the platform instrumentation
-                    sInstrumentation = new Instrumentation();
-                }
+                SneakyThrow.sneakyThrow(e);
             }
 
             sInstrumentation.basicInit(sInstContext, sTargetContext, uiAutomation);
@@ -466,7 +392,7 @@ public class RavenwoodDriver {
 
         RavenwoodSystemServer.init(systemServerContext);
 
-        initializeCompatIds();
+        initializeCompatIds(env);
     }
 
     /**
@@ -481,16 +407,29 @@ public class RavenwoodDriver {
         return logTags;
     }
 
-    private static void loadRavenwoodProperties() {
-        var props = RavenwoodSystemProperties.readProperties("ravenwood.properties");
-
-        sTargetSdkLevel = withDefault(
-                parseNullableInt(props.get("targetSdkVersionInt")), DEFAULT_TARGET_SDK_LEVEL);
-        sTargetPackageName = withDefault(props.get("packageName"), DEFAULT_PACKAGE_NAME);
-        sTestPackageName = withDefault(props.get("instPackageName"), sTargetPackageName);
-        sInstrumentationClass = props.get("instrumentationClass");
+    private static RavenwoodEnvironment createEnvironment() throws Exception {
+        final var props = RavenwoodSystemProperties.readProperties("ravenwood.properties");
 
         // TODO(b/377765941) Read them from the manifest too?
+        var targetSdkLevel = withDefault(
+                parseNullableInt(props.get("targetSdkVersionInt")), DEFAULT_TARGET_SDK_LEVEL);
+        var targetPackageName = withDefault(props.get("packageName"), DEFAULT_PACKAGE_NAME);
+        var testPackageName = withDefault(props.get("instPackageName"), targetPackageName);
+        var instrumentationClass = withDefault(props.get("instrumentationClass"),
+                DEFAULT_INSTRUMENTATION_CLASS);
+
+        // TODO: Why do we use a random PID? We can get the real PID via JNI. Why not use that?
+
+        return RavenwoodEnvironment.init(
+                FIRST_APPLICATION_UID,
+                new Random().nextInt(100, 32768),
+                targetSdkLevel,
+                targetPackageName,
+                testPackageName,
+                instrumentationClass,
+                Thread.currentThread(), // Test thread
+                new HandlerThread(MAIN_THREAD_NAME)
+        );
     }
 
     private static void maybeThrowUnrecoverableUncaughtExceptionIfDetected() {
@@ -508,7 +447,8 @@ public class RavenwoodDriver {
         UiAutomation_ravenwood.reset();
         Process_ravenwood.reset();
         DeviceConfig_ravenwood.reset();
-        Binder.restoreCallingIdentity(sCallingIdentity);
+        Binder.restoreCallingIdentity(
+                RavenwoodEnvironment.getInstance().getDefaultCallingIdentity());
 
         SystemProperties.clearChangeCallbacksForTest();
 
@@ -527,7 +467,8 @@ public class RavenwoodDriver {
         maybeThrowUnrecoverableUncaughtExceptionIfDetected();
 
         // TODO(b/375272444): this is a hacky workaround to ensure binder identity
-        Binder.restoreCallingIdentity(sCallingIdentity);
+        Binder.restoreCallingIdentity(
+                RavenwoodEnvironment.getInstance().getDefaultCallingIdentity());
 
         scheduleTimeout();
     }
@@ -562,7 +503,7 @@ public class RavenwoodDriver {
         }
     }
 
-    private static void initializeCompatIds() {
+    private static void initializeCompatIds(RavenwoodEnvironment env) {
         // Set up compat-IDs for the app side.
         // TODO: Inside the system server, all the compat-IDs should be enabled,
         // Due to the `AppCompatCallbacks.install(new long[0], new long[0] ...` call in
@@ -570,8 +511,8 @@ public class RavenwoodDriver {
 
         // Compat framework only uses the package name and the target SDK level.
         ApplicationInfo appInfo = new ApplicationInfo();
-        appInfo.packageName = sTargetPackageName;
-        appInfo.targetSdkVersion = sTargetSdkLevel;
+        appInfo.packageName = env.getTargetPackageName();
+        appInfo.targetSdkVersion = env.getTargetSdkLevel();
 
         PlatformCompat platformCompat = null;
         try {
@@ -585,37 +526,6 @@ public class RavenwoodDriver {
         var loggableChanges = platformCompat.getLoggableChanges(appInfo);
 
         AppCompatCallbacks.install(disabledChanges, loggableChanges, false);
-    }
-
-    /**
-     * Load {@link Resources} from an APK, with cache.
-     */
-    private static Resources loadResources(@Nullable File apkPath) {
-        var cached = sCachedResources.get(apkPath);
-        if (cached != null) {
-            return cached;
-        }
-
-        var fileToLoad = apkPath != null ? apkPath :
-                new File(getRavenwoodRuntimePath() + RAVENWOOD_EMPTY_RESOURCES_APK);
-
-        assertTrue("File " + fileToLoad + " doesn't exist.", fileToLoad.isFile());
-
-        final String path = fileToLoad.getAbsolutePath();
-        final var emptyPaths = new String[0];
-
-        ResourcesManager.getInstance().initializeApplicationPaths(path, emptyPaths);
-
-        final var ret = ResourcesManager.getInstance().getResources(null, path,
-                emptyPaths, emptyPaths, emptyPaths,
-                emptyPaths, null, null,
-                new DisplayAdjustments().getCompatibilityInfo(),
-                RavenwoodDriver.class.getClassLoader(), null);
-
-        assertNotNull(ret);
-
-        sCachedResources.put(apkPath, ret);
-        return ret;
     }
 
     /**
@@ -740,8 +650,9 @@ public class RavenwoodDriver {
                     Comparator.comparingLong(Thread::getId)).collect(Collectors.toList());
 
             // Put the test and the main thread at the top.
-            var testThread = sTestThread;
-            var mainThread = sMainThread;
+            var env = RavenwoodEnvironment.getInstance();
+            var testThread = env.getTestThread();
+            var mainThread = env.getMainThread();
             if (mainThread != null) {
                 threads.remove(mainThread);
                 threads.add(0, mainThread);

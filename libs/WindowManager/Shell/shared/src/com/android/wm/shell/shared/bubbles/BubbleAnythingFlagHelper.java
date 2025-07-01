@@ -53,11 +53,6 @@ public class BubbleAnythingFlagHelper {
             return false;
         }
 
-        // This is needed to allow the leaf task can be started in expected bounds.
-        if (!com.android.window.flags.Flags.respectLeafTaskBounds()) {
-            return false;
-        }
-
         return com.android.window.flags.Flags.rootTaskForBubble();
     }
 

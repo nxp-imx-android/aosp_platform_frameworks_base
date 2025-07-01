@@ -391,6 +391,17 @@ java_aconfig_library {
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
+java_aconfig_library {
+    name: "android.location.flags-aconfig-java-export",
+    aconfig_declarations: "android.location.flags-aconfig",
+    mode: "exported",
+    min_sdk_version: "30",
+    apex_available: [
+        "com.android.permission",
+    ],
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
 // NFC
 aconfig_declarations {
     name: "android.nfc.flags-aconfig",

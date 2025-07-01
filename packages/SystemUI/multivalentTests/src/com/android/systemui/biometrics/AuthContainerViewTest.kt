@@ -718,7 +718,11 @@ private fun AuthContainerView.hasBiometricPrompt() =
     (findViewById<ScrollView>(R.id.biometric_scrollview)?.childCount ?: 0) > 0
 
 private fun AuthContainerView.hasCredentialView() =
-    hasCredentialPatternView() || hasCredentialPasswordView()
+    if (Flags.bpFallbackOptions()) {
+        (findViewById<View>(R.id.credential_view)?.visibility ?: View.GONE) == View.VISIBLE
+    } else {
+        hasCredentialPatternView() || hasCredentialPasswordView()
+    }
 
 private fun AuthContainerView.hasCredentialPatternView() =
     findViewById<View>(R.id.lockPattern) != null

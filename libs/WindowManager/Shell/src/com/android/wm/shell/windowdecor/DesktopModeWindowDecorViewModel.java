@@ -51,6 +51,7 @@ import android.app.IActivityManager;
 import android.app.IActivityTaskManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.graphics.Rect;
@@ -155,6 +156,7 @@ import com.android.wm.shell.windowdecor.common.WindowDecorationGestureExclusionT
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.extension.InsetsStateKt;
+import com.android.wm.shell.windowdecor.extension.MotionEventKt;
 import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel;
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler;
@@ -884,7 +886,13 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         if (decoration == null) {
             return;
         }
-        mDesktopTasksController.requestSplit(decoration.mTaskInfo, false /* leftOrTop */);
+
+        final int orientation = mContext.getResources().getConfiguration().orientation;
+        // Set leftOrTop as True to split to the top in portrait mode.
+        // Set leftOrTop as False to split to the right in landscape mode.
+        boolean leftOrTop = orientation == Configuration.ORIENTATION_PORTRAIT;
+
+        mDesktopTasksController.requestSplit(decoration.mTaskInfo, leftOrTop);
         mDesktopModeUiEventLogger.log(decoration.mTaskInfo,
                 DesktopUiEventEnum.DESKTOP_WINDOW_APP_HANDLE_MENU_TAP_TO_SPLIT_SCREEN);
     }
@@ -1094,6 +1102,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                 return;
             }
             final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(mTaskId);
+            if (decoration == null) {
+                return;
+            }
             final int id = v.getId();
             if (id == R.id.close_window) {
                 if (isTaskInSplitScreen(mTaskId)) {
@@ -1187,6 +1198,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     && id != R.id.maximize_window && id != R.id.minimize_window) {
                 return false;
             }
+            if (MotionEventKt.isTouchpadGesture(e)) {
+                // Touchpad finger gestures are ignored.
+                return false;
+            }
+
             final boolean isAppHandle = !taskInfo.isFreeform();
             final int actionMasked = e.getActionMasked();
             final boolean isDown = actionMasked == MotionEvent.ACTION_DOWN;
@@ -1255,6 +1271,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
             final int id = v.getId();
             if (id == R.id.maximize_window && !mLongClickDisabled) {
                 final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(mTaskId);
+                if (decoration == null) {
+                    return false;
+                }
                 moveTaskToFront(decoration.mTaskInfo);
                 if (!decoration.isMaximizeMenuActive()) {
                     decoration.createMaximizeMenu();
@@ -1272,6 +1291,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         public boolean onGenericMotion(View v, MotionEvent ev) {
             mMotionEvent = ev;
             final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(mTaskId);
+            if (decoration == null) {
+                return false;
+            }
             final int id = v.getId();
             if (ev.getAction() == ACTION_HOVER_ENTER && id == R.id.maximize_window) {
                 decoration.setAppHeaderMaximizeButtonHovered(true);
@@ -1312,6 +1334,9 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         @Override
         public boolean handleMotionEvent(@Nullable View v, MotionEvent e) {
             final DesktopModeWindowDecoration decoration = mWindowDecorByTaskId.get(mTaskId);
+            if (decoration == null) {
+                return false;
+            }
             final RunningTaskInfo taskInfo = decoration.mTaskInfo;
             if (mShellDesktopState.canEnterDesktopModeOrShowAppHandle()
                     && !taskInfo.isFreeform()) {

@@ -87,7 +87,7 @@ public class TaskSnapshotPersisterLoaderTest extends TaskSnapshotPersisterTestBa
         assertNotNull(snapshot.getSnapshot());
         assertEquals(Configuration.ORIENTATION_PORTRAIT, snapshot.getOrientation());
 
-        snapshot.getHardwareBuffer().close();
+        snapshot.closeBuffer();
         mPersister.persistSnapshot(1, mTestUserId, snapshot);
         mSnapshotPersistQueue.waitForQueueEmpty();
         assertTrueForFiles(files, file -> !file.exists(),

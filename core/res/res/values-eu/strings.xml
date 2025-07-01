@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Aplikazio hau ez da bateragarria 16 KBko bertsioarekin. Ezin izan da egiaztatu APKren lerrokatzea. Orriaren tamainarekin bateragarria den modua erabilita exekutatuko da aplikazioa. Emaitza onenak lortzeko, konpilatu aplikazioa berriro 16 KBko bertsioarekin bateragarria izan dadin. Informazio gehiago lortzeko, joan hona: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Aplikazio hau ez da bateragarria 16 KBko bertsioarekin. Ezin izan da egiaztatu ELFaren lerrokatzea. Orriaren tamainarekin bateragarria den modua erabilita exekutatuko da aplikazioa. Emaitza onenak lortzeko, konpilatu aplikazioa berriro 16 KBko bertsioarekin bateragarria izan dadin. Informazio gehiago lortzeko, joan hona: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Aplikazio hau ez da bateragarria 16 KB-ko bertsioarekin. Ezin izan da egiaztatu APK eta ELF arteko lerrokatzea. Orriaren tamainarekin bateragarria den modua erabilita exekutatuko da aplikazioa. Emaitza onenak lortzeko, konpilatu aplikazioa berriro 16 KB-ko bertsioarekin bateragarria izan dadin. Informazio gehiago lortzeko, joan hona: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Probatzen ari garen aplikazioa araz daitekeelako agertzen da abisu hau. Garatzailea ez bazara, eman horren berri garatzaileari eta eska iezaiozu araztu ezin den aplikazio bat. Aplikazioak ez du onartzen 16 kB-ko orri-tamaina. Ezin izan da egiaztatu APKren lerrokatzea. Jarraitu honako urrats hauei: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Probatzen ari garen aplikazioa araz daitekeelako agertzen da abisu hau. Garatzailea ez bazara, eman horren berri garatzaileari eta eska iezaiozu araztu ezin den aplikazio bat. Aplikazioak ez du onartzen 16 kB-ko orri-tamaina. Ezin izan da egiaztatu ELFaren lerrokatzea. Jarraitu honako urrats hauei: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Probatzen ari garen aplikazioa araz daitekeelako agertzen da abisu hau. Garatzailea ez bazara, eman horren berri garatzaileari eta eska iezaiozu araztu ezin den aplikazio bat. Aplikazioak ez du onartzen 16 kB-ko orri-tamaina. Ezin izan da egiaztatu APK eta ELF arteko lerrokatzea. Jarraitu honako urrats hauei: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ez erakutsi berriro"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Zerbitzua ez da hornitu."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Ezin duzu aldatu deitzailearen identitatearen ezarpena."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g> operadorearen datu-konexiora aldatu zara"</string>

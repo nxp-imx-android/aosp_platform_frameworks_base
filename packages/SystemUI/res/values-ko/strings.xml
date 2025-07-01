@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"현재 전체 화면을 녹화 중입니다."</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"현재 <xliff:g id="APP_NAME">%1$s</xliff:g>의 콘텐츠를 녹화 중입니다."</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"녹화 중지"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"선택한 영역 캡처"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"캡처"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"녹화"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"화면 공유 중"</string>
@@ -1656,14 +1655,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"알 수 없음"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"모든 타일을 재설정하시겠습니까?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"모든 빠른 설정 타일이 기기의 원래 설정으로 재설정됩니다."</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"유용한 추천 받기"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"Google은 AI를 활용하여 사용자가 화면에서 수행하는 작업과 관련된 정보 및 작업을 사전에 제안합니다."</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"아이콘"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"길게 터치하여 추천이 어떻게 생성되는지 확인하세요."</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g>에서 더 이상 실시간 소식을 표시하지 않습니다. 설정에서 언제든지 변경할 수 있습니다."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"닫기"</string>

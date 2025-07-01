@@ -237,30 +237,19 @@ public final class UiccCardInfo implements Parcelable {
      * @hide
      */
     public UiccCardInfo createSensitiveInfoSanitizedCopy(boolean hasCarrierPrivileges) {
-        if (hasCarrierPrivileges) {
-            List<UiccPortInfo> portInfos = new  ArrayList<>();
-            for (UiccPortInfo portInfo : this.getPorts()) {
-                portInfos.add(portInfo.createSensitiveInfoSanitizedCopy());
-            }
-            return new UiccCardInfo(
-                    this.isEuicc(),
-                    this.getCardId(),
-                    null,
-                    this.getPhysicalSlotIndex(),
-                    this.isRemovable(),
-                    this.isMultipleEnabledProfilesSupported(),
-                    portInfos);
-        } else {
-            // Without carrier privileges, treat it as READ_BASIC_PHONE_STATE, copy minimum info
-            return new UiccCardInfo(
-                    this.isEuicc(),
-                    TelephonyManager.UNINITIALIZED_CARD_ID,
-                    null,
-                    this.getPhysicalSlotIndex(),
-                    this.isRemovable(),
-                    this.isMultipleEnabledProfilesSupported(),
-                    List.of());
+        final List<UiccPortInfo> redactedPortInfos = new  ArrayList<>();
+        for (UiccPortInfo portInfo : mPortList) {
+            redactedPortInfos.add(portInfo.createSensitiveInfoSanitizedCopy());
         }
+
+        return new UiccCardInfo(
+                mIsEuicc,
+                hasCarrierPrivileges ? mCardId : TelephonyManager.UNINITIALIZED_CARD_ID,
+                null,
+                mPhysicalSlotIndex,
+                mIsRemovable,
+                mIsMultipleEnabledProfilesSupported,
+                redactedPortInfos);
     }
 
     @Override

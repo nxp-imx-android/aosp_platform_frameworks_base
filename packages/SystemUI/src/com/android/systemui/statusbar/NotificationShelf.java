@@ -475,6 +475,8 @@ public class NotificationShelf extends ActivatableNotificationView {
         int baseZHeight = mAmbientState.getBaseZHeight();
         int clipTopAmount = 0;
 
+        boolean needsToResetOverrideTint = true;
+
         for (int i = 0; i < getHostLayoutChildCount(); i++) {
             ExpandableView child = getHostLayoutChildAt(i);
             if (!child.needsClippingToShelf() || child.getVisibility() == GONE) {
@@ -507,6 +509,7 @@ public class NotificationShelf extends ActivatableNotificationView {
                     mNotGoneIndex = notGoneIndex;
                     setTintColor(previousColor);
                     setOverrideTintColor(colorTwoBefore, transitionAmount);
+                    needsToResetOverrideTint = false;
 
                 } else if (mNotGoneIndex == -1) {
                     colorTwoBefore = previousColor;
@@ -533,6 +536,11 @@ public class NotificationShelf extends ActivatableNotificationView {
             if (child instanceof ActivatableNotificationView anv) {
                 updateCornerRoundnessOnScroll(anv, viewStart, shelfStart);
             }
+        }
+
+        if (notificationRowTransparency() && needsToResetOverrideTint) {
+            setTintColor(NO_COLOR);
+            setOverrideTintColor(NO_COLOR, 0 /* overrideAmount */);
         }
 
         clipTransientViews();

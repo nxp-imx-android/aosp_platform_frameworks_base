@@ -21,6 +21,7 @@ import static com.android.graphics.surfaceflinger.flags.Flags.FLAG_READBACK_SCRE
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
+import android.annotation.SystemApi;
 import android.graphics.ColorSpace;
 import android.graphics.ParcelableColorSpace;
 import android.hardware.HardwareBuffer;
@@ -28,6 +29,7 @@ import android.os.OutcomeReceiver;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.RemoteException;
+import android.os.SystemProperties;
 import android.view.Display;
 import android.view.IWindowManager;
 import android.view.WindowManagerGlobal;
@@ -36,16 +38,16 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.Executor;
 
-
 /**
  * Provides an API for capturing the contents of a display.
  *
- * <p>This class allows capturing the screen content based on specified parameters and
- * returns the result asynchronously. It defines parameters for the capture via
- * {@link ScreenCaptureParams} and the result via {@link ScreenCaptureResult}.</p>
+ * <p>This class allows capturing the screen content based on specified parameters and returns the
+ * result asynchronously. It defines parameters for the capture via {@link ScreenCaptureParams} and
+ * the result via {@link ScreenCaptureResult}.
  *
  * @hide
  */
+@SystemApi
 @FlaggedApi(FLAG_READBACK_SCREENSHOT)
 public class ScreenCapture {
 
@@ -84,6 +86,7 @@ public class ScreenCapture {
          * @hide
          */
         public static final int SECURE_CONTENT_POLICY_CAPTURE = 1;
+
         /**
          * When a secure window is encountered, throw an exception.
          *
@@ -141,7 +144,7 @@ public class ScreenCapture {
          * Requires the system to use an optimized capture path. This path is designed for minimal
          * performance and power impact, making it suitable for frequent captures.
          *
-         * <p> If the optimized path cannot be utilized due to device limitations, or unsupported
+         * <p>If the optimized path cannot be utilized due to device limitations, or unsupported
          * capture args, the screenshot operation will throw an exception. It will NOT automatically
          * fall back to the 'None' behavior.
          */
@@ -176,6 +179,7 @@ public class ScreenCapture {
          * Returns the policy for handling secure content.
          *
          * @see Builder#setSecureContentPolicy(int)
+         * @hide
          */
         public @SecureContentPolicy int getSecureContentPolicy() {
             return mSecureContentPolicy;
@@ -185,6 +189,7 @@ public class ScreenCapture {
          * Returns the policy for handling protected content.
          *
          * @see Builder#setProtectedContentPolicy(int)
+         * @hide
          */
         public @ProtectedContentPolicy int getProtectedContentPolicy() {
             return mProtectedContentPolicy;
@@ -212,6 +217,7 @@ public class ScreenCapture {
          * Returns whether to use the display's native orientation for the capture.
          *
          * @see Builder#setUseDisplayInstallationOrientation(boolean)
+         * @hide
          */
         public boolean isUseDisplayInstallationOrientation() {
             return mUseDisplayInstallationOrientation;
@@ -221,6 +227,7 @@ public class ScreenCapture {
          * Returns whether to include system overlays in the capture.
          *
          * @see Builder#setIncludeSystemOverlays(boolean)
+         * @hide
          */
         public boolean isIncludeSystemOverlays() {
             return mIncludeSystemOverlays;
@@ -230,6 +237,7 @@ public class ScreenCapture {
          * Returns whether to preserve the display's colors in the capture.
          *
          * @see Builder#setPreserveDisplayColors(boolean)
+         * @hide
          */
         public boolean isPreserveDisplayColors() {
             return mPreserveDisplayColors;
@@ -320,10 +328,11 @@ public class ScreenCapture {
             /**
              * Specifies how to handle secure windows.
              *
-             * <p>A secure window is the window with
-             * {@link android.view.WindowManager.LayoutParams.FLAG_SECURE} set.}
+             * <p>A secure window is a window with {@link
+             * android.view.WindowManager.LayoutParams.FLAG_SECURE} set.
              *
              * <p>Default value is {@link #SECURE_CONTENT_POLICY_REDACT}.
+             *
              * @hide
              */
             public @NonNull Builder setSecureContentPolicy(
@@ -335,9 +344,10 @@ public class ScreenCapture {
             /**
              * Specifies how to handle protected windows.
              *
-             * <p>A protected window is the window that has buffers with protected bit set.
+             * <p>A protected window is a window that has buffers with the protected bit set.
              *
              * <p>Default value is {@link #PROTECTED_CONTENT_POLICY_REDACT}.
+             *
              * @hide
              */
             public @NonNull Builder setProtectedContentPolicy(
@@ -371,10 +381,12 @@ public class ScreenCapture {
              * <p>If {@code true}, the screenshot will be oriented according to the display's
              * physical installation orientation, ignoring any current logical orientation.
              *
-             * <p>If {@code false} (the default), the screenshot will be oriented according
-             * to the current logical orientation of the display, including any software rotation.
+             * <p>If {@code false}, the screenshot will be oriented according to the current logical
+             * orientation of the display, including any software rotation.
              *
              * <p>Default value is {@code false}
+             *
+             * @hide
              */
             public @NonNull Builder setUseDisplayInstallationOrientation(
                     boolean useDisplayInstallationOrientation) {
@@ -392,6 +404,8 @@ public class ScreenCapture {
              * user-visible content.
              *
              * <p>Default value is {@code false}
+             *
+             * @hide
              */
             public @NonNull Builder setIncludeSystemOverlays(boolean includeSystemOverlays) {
                 mIncludeSystemOverlays = includeSystemOverlays;
@@ -399,10 +413,12 @@ public class ScreenCapture {
             }
 
             /**
-             * Sets to true to preserves the native display colorspace. Useful for mixed HDR + SDR
+             * Set to true to preserves the native display colorspace. Useful for mixed HDR + SDR
              * content, using identical processing as the display's.
              *
              * <p>Default value is {@code false}
+             *
+             * @hide
              */
             public @NonNull Builder setPreserveDisplayColors(boolean preserveDisplayColors) {
                 mPreserveDisplayColors = preserveDisplayColors;
@@ -509,6 +525,13 @@ public class ScreenCapture {
      */
     public static final int SCREEN_CAPTURE_ERROR_SENSITIVE_CONTENT = 2;
 
+    /**
+     * Screen capture failed due to missing permissions.
+     *
+     * @hide
+     */
+    public static final int SCREEN_CAPTURE_ERROR_MISSING_PERMISSIONS = 3;
+
     /** Capture a screenshot. */
     public static void capture(
             @NonNull ScreenCaptureParams params,
@@ -521,8 +544,15 @@ public class ScreenCapture {
                     }
 
                     public void onFailure(@ScreenCaptureErrorCode int errorCode) {
-                        executor.execute(() -> receiver.onError(
-                                new IllegalStateException("Failed to capture.")));
+                        Exception e;
+                        if (errorCode == SCREEN_CAPTURE_ERROR_MISSING_PERMISSIONS) {
+                            e =
+                                    new SecurityException(
+                                            "Caller does not have READ_FRAME_BUFFER permission");
+                        } else {
+                            e = new IllegalStateException("Screen capture failed.");
+                        }
+                        executor.execute(() -> receiver.onError(e));
                     }
                 };
         IWindowManager wm = WindowManagerGlobal.getWindowManagerService();
@@ -534,8 +564,12 @@ public class ScreenCapture {
                         new IllegalStateException("Failed to retrieve WindowManagerService."));
             }
         } catch (RemoteException exception) {
-            receiver.onError(exception.rethrowFromSystemServer());
+            receiver.onError(new RuntimeException(exception));
         }
+    }
+
+    public static boolean isScreenCaptureOptimizationEnabled() {
+        return SystemProperties.getBoolean("debug.sf.productionize_readback_screenshot", false);
     }
 
     private ScreenCapture() {

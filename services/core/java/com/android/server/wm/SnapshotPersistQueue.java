@@ -354,12 +354,20 @@ class SnapshotPersistQueue {
     }
 
     static boolean mustPersistByHardwareRender(@NonNull TaskSnapshot snapshot) {
-        final HardwareBuffer hwBuffer = snapshot.getHardwareBuffer();
-        final int pixelFormat = hwBuffer.getFormat();
+        final int pixelFormat;
+        final boolean hasProtectedContent;
+        if (Flags.reduceTaskSnapshotMemoryUsage()) {
+            pixelFormat = snapshot.getHardwareBufferFormat();
+            hasProtectedContent = snapshot.hasProtectedContent();
+        } else {
+            final HardwareBuffer hwBuffer = snapshot.getHardwareBuffer();
+            pixelFormat = hwBuffer.getFormat();
+            hasProtectedContent = TransitionAnimation.hasProtectedContent(hwBuffer);
+        }
         return !Flags.extendingPersistenceSnapshotQueueDepth()
                 || (pixelFormat != PixelFormat.RGB_565 && pixelFormat != PixelFormat.RGBA_8888)
                 || !snapshot.isRealSnapshot()
-                || TransitionAnimation.hasProtectedContent(hwBuffer);
+                || hasProtectedContent;
     }
 
     StoreWriteQueueItem createStoreWriteQueueItem(int id, int userId, TaskSnapshot snapshot,
@@ -461,15 +469,24 @@ class SnapshotPersistQueue {
         }
 
         boolean writeBuffer() {
-            if (AbsAppSnapshotController.isInvalidHardwareBuffer(mSnapshot.getHardwareBuffer())) {
+            if (AbsAppSnapshotController.isInvalidHardwareBuffer(mSnapshot)) {
                 Slog.e(TAG, "Invalid task snapshot hw buffer, taskId=" + mId);
                 return false;
             }
 
-            final HardwareBuffer hwBuffer = mSnapshot.getHardwareBuffer();
-            final int width = hwBuffer.getWidth();
-            final int height = hwBuffer.getHeight();
-            final int pixelFormat = hwBuffer.getFormat();
+            final int width;
+            final int height;
+            final int pixelFormat;
+            if (Flags.reduceTaskSnapshotMemoryUsage()) {
+                width = mSnapshot.getHardwareBufferWidth();
+                height = mSnapshot.getHardwareBufferHeight();
+                pixelFormat = mSnapshot.getHardwareBufferFormat();
+            } else {
+                final HardwareBuffer hwBuffer = mSnapshot.getHardwareBuffer();
+                width = hwBuffer.getWidth();
+                height = hwBuffer.getHeight();
+                pixelFormat = hwBuffer.getFormat();
+            }
             final Bitmap swBitmap = mustPersistByHardwareRender(mSnapshot)
                     ? copyToSwBitmapReadBack()
                     : copyToSwBitmapDirect(width, height, pixelFormat);
@@ -508,8 +525,13 @@ class SnapshotPersistQueue {
         }
 
         private Bitmap copyToSwBitmapReadBack() {
-            final Bitmap bitmap = Bitmap.wrapHardwareBuffer(
-                    mSnapshot.getHardwareBuffer(), mSnapshot.getColorSpace());
+            final Bitmap bitmap;
+            if (Flags.reduceTaskSnapshotMemoryUsage()) {
+                bitmap = mSnapshot.wrapToBitmap();
+            } else {
+                bitmap = Bitmap.wrapHardwareBuffer(
+                        mSnapshot.getHardwareBuffer(), mSnapshot.getColorSpace());
+            }
             if (bitmap == null) {
                 Slog.e(TAG, "Invalid task snapshot hw bitmap");
                 return null;
@@ -532,8 +554,12 @@ class SnapshotPersistQueue {
         private Bitmap copyToSwBitmapDirect(int width, int height, int pixelFormat) {
             try (ImageReader ir = ImageReader.newInstance(width, height,
                     pixelFormat, 1 /* maxImages */)) {
-                ir.getSurface().attachAndQueueBufferWithColorSpace(mSnapshot.getHardwareBuffer(),
-                        mSnapshot.getColorSpace());
+                if (Flags.reduceTaskSnapshotMemoryUsage()) {
+                    mSnapshot.attachAndQueueBufferWithColorSpace(ir.getSurface());
+                } else {
+                    ir.getSurface().attachAndQueueBufferWithColorSpace(
+                            mSnapshot.getHardwareBuffer(), mSnapshot.getColorSpace());
+                }
                 try (Image image = ir.acquireLatestImage()) {
                     if (image == null || image.getPlaneCount() < 1) {
                         Slog.e(TAG, "Image reader cannot acquire image");

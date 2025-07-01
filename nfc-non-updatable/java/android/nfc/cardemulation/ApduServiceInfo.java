@@ -58,6 +58,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.regex.Pattern;
 
 /**
@@ -138,7 +141,7 @@ public final class ApduServiceInfo implements Parcelable {
 
     private final Map<String, Boolean> mAutoTransact;
 
-    private final Map<Pattern, Boolean> mAutoTransactPatterns;
+    private final ConcurrentMap<Pattern, Boolean> mAutoTransactPatterns;
 
     /**
      * Whether this service should only be started when the device is unlocked.
@@ -251,7 +254,7 @@ public final class ApduServiceInfo implements Parcelable {
         this.mStaticAidGroups = new HashMap<String, AidGroup>();
         this.mDynamicAidGroups = new HashMap<String, AidGroup>();
         this.mAutoTransact = autoTransact;
-        this.mAutoTransactPatterns = autoTransactPatterns;
+        this.mAutoTransactPatterns = new ConcurrentHashMap<>(autoTransactPatterns);
         this.mOffHostName = offHost;
         this.mStaticOffHostName = staticOffHost;
         this.mOnHost = onHost;
@@ -383,8 +386,8 @@ public final class ApduServiceInfo implements Parcelable {
             mStaticAidGroups = new HashMap<String, AidGroup>();
             mDynamicAidGroups = new HashMap<String, AidGroup>();
             mAutoTransact = new HashMap<String, Boolean>();
-            mAutoTransactPatterns = new TreeMap<Pattern, Boolean>(
-                    Comparator.comparing(Pattern::toString));
+            mAutoTransactPatterns =
+                     new ConcurrentSkipListMap<>(Comparator.comparing(Pattern::toString));
             mOnHost = onHost;
 
             final int depth = parser.getDepth();
@@ -585,8 +588,15 @@ public final class ApduServiceInfo implements Parcelable {
             return true;
         }
         boolean isPattern = plf.contains("?") || plf.contains("*");
-        List<Pattern> patternMatches = mAutoTransactPatterns.keySet().stream().filter(
-            p -> isPattern ? p.toString().equals(plf) : p.matcher(plf).matches()).toList();
+
+        // Create a copy of the key set to avoid ConcurrentModificationException
+        List<Pattern> patternKeys = new ArrayList<>(mAutoTransactPatterns.keySet());
+
+        List<Pattern> patternMatches =
+                patternKeys.stream()
+                        .filter(p
+                                -> isPattern ? p.toString().equals(plf) : p.matcher(plf).matches())
+                        .toList();
 
         if (patternMatches == null || patternMatches.size() == 0) {
             return false;

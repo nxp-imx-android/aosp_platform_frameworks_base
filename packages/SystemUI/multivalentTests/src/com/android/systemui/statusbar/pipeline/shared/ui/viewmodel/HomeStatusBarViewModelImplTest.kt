@@ -675,6 +675,50 @@ class HomeStatusBarViewModelImplTest(flags: FlagsParameterization) : SysuiTestCa
         }
 
     @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_onExternalDisplay_whenNotificationShadeIsVisibleOnDefaultDisplay_isTrue() =
+        kosmos.runTest {
+            val underTest = homeStatusBarViewModelFactory(EXTERNAL_DISPLAY)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
+            sceneContainerRepository.showOverlay(Overlays.NotificationsShade)
+            fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_onDefaultDisplay_whenShadeIsVisibleOnDefaultDisplay_isFalse() =
+        kosmos.runTest {
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
+            sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
+
+            assertThat(latest).isFalse()
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_SHADE_WINDOW_GOES_AROUND)
+    @EnableSceneContainer
+    fun isHomeStatusBarAllowed_onExternalDisplay_whenShadeIsVisibleOnDefaultDisplay_isTrue() =
+        kosmos.runTest {
+            val underTest = homeStatusBarViewModelFactory(EXTERNAL_DISPLAY)
+            val latest by collectLastValue(underTest.isHomeStatusBarAllowed)
+
+            sceneContainerRepository.instantlyTransitionTo(Scenes.Gone)
+            sceneContainerRepository.showOverlay(Overlays.QuickSettingsShade)
+            fakeShadeDisplaysRepository.setDisplayId(DEFAULT_DISPLAY)
+
+            assertThat(latest).isTrue()
+        }
+
+    @Test
     fun shouldShowOperatorNameView_allowedByInteractor_allowedByDisableFlags_visible() =
         kosmos.runTest {
             kosmos.setHomeStatusBarInteractorShowOperatorName(true)

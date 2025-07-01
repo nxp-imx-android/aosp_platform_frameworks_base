@@ -208,6 +208,16 @@ public class WindowContextTest {
         });
     }
 
+    @EnableFlags(android.view.accessibility.Flags.FLAG_FORCE_INVERT_COLOR)
+    @Test
+    public void testCreateWindowContext_applicationTheme() {
+        final WindowContext windowContext = createWindowContext();
+
+        final int applicationTheme = mInstrumentation.getTargetContext().getApplicationInfo().theme;
+        assertThat(windowContext.getThemeResId()).isEqualTo(applicationTheme);
+    }
+
+
     /**
      * Verifies the behavior when window context attaches an {@link Activity} by override
      * {@link WindowManager.LayoutParams#token}.

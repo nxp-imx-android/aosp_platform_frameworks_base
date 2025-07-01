@@ -641,8 +641,8 @@ public final class WindowContainerTransaction implements Parcelable {
 
     /**
      * Reparent's all children tasks or the top task of {@param currentParent} in the specified
-     * {@param windowingMode} and {@param activityType} to {@param newParent} in their current
-     * z-order.
+     * overridden {@param windowingMode} and {@param activityType} to {@param newParent} in their
+     * current z-order.
      *
      * @param currentParent of the tasks to perform the operation no.
      *                      {@code null} will perform the operation on the display.

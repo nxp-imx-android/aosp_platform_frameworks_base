@@ -20,7 +20,6 @@ package com.android.server.companion.datatransfer.continuity.messages;
 import static com.google.common.truth.Truth.assertThat;
 import static org.testng.Assert.expectThrows;
 
-import android.app.ActivityManager;
 import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.util.proto.ProtoInputStream;
@@ -41,17 +40,17 @@ public class RemoteTaskAddedMessageTest {
 
     @Test
     public void testConstructor_fromObjects() {
-        RemoteTaskInfo expected = createNewRemoteTaskInfo("label", 0);
+        RemoteTaskInfo expected = new RemoteTaskInfo(1, "label", 0, new byte[0]);
 
         RemoteTaskAddedMessage remoteTaskAddedMessage
             = new RemoteTaskAddedMessage(expected);
 
-        assertRemoteTaskInfoEqual(expected, remoteTaskAddedMessage.getTask());
+        assertThat(remoteTaskAddedMessage.getTask()).isEqualTo(expected);
     }
 
     @Test
     public void testConstructor_fromProto_hasTask() throws IOException {
-        final RemoteTaskInfo expected = createNewRemoteTaskInfo("label", 0);
+        final RemoteTaskInfo expected = new RemoteTaskInfo(1, "label", 0, new byte[0]);
         final ProtoOutputStream pos = new ProtoOutputStream();
         final long taskToken = pos.start(android.companion.RemoteTaskAddedMessage.TASK);
         expected.writeToProto(pos);
@@ -62,13 +61,13 @@ public class RemoteTaskAddedMessageTest {
         RemoteTaskAddedMessage remoteTaskAddedMessage
             = RemoteTaskAddedMessage.readFromProto(pis);
 
-        assertRemoteTaskInfoEqual(expected, remoteTaskAddedMessage.getTask());
+        assertThat(remoteTaskAddedMessage.getTask()).isEqualTo(expected);
     }
 
     @Test
     public void testWriteAndRead_roundTrip_works() throws IOException {
         RemoteTaskAddedMessage expected
-            = new RemoteTaskAddedMessage(createNewRemoteTaskInfo("label", 0));
+            = new RemoteTaskAddedMessage(new RemoteTaskInfo(1, "label", 0, new byte[0]));
 
         final ProtoOutputStream pos = new ProtoOutputStream();
         expected.writeToProto(pos);
@@ -77,29 +76,15 @@ public class RemoteTaskAddedMessageTest {
         final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
         final RemoteTaskAddedMessage actual = RemoteTaskAddedMessage.readFromProto(pis);
 
-        assertRemoteTaskInfoEqual(expected.getTask(), actual.getTask());
+        assertThat(actual.getTask()).isEqualTo(expected.getTask());
     }
 
     @Test
     public void testGetFieldNumber_returnsCorrectValue() {
         RemoteTaskAddedMessage remoteTaskAddedMessage
-            = new RemoteTaskAddedMessage(createNewRemoteTaskInfo("label", 0));
+            = new RemoteTaskAddedMessage(new RemoteTaskInfo(1, "label", 0, new byte[0]));
 
         assertThat(remoteTaskAddedMessage.getFieldNumber())
             .isEqualTo(android.companion.TaskContinuityMessage.REMOTE_TASK_ADDED);
-    }
-
-    private RemoteTaskInfo createNewRemoteTaskInfo(String label, long lastUsedTimeMillis) {
-        ActivityManager.RunningTaskInfo runningTaskInfo = new ActivityManager.RunningTaskInfo();
-        runningTaskInfo.taskId = 1;
-        runningTaskInfo.taskDescription = new ActivityManager.TaskDescription(label);
-        runningTaskInfo.lastActiveTime = lastUsedTimeMillis;
-        return new RemoteTaskInfo(runningTaskInfo);
-    }
-
-    private void assertRemoteTaskInfoEqual(RemoteTaskInfo expected, RemoteTaskInfo actual) {
-        assertThat(actual.getId()).isEqualTo(expected.getId());
-        assertThat(actual.getLabel()).isEqualTo(expected.getLabel());
-        assertThat(actual.getLastUsedTimeMillis()).isEqualTo(expected.getLastUsedTimeMillis());
     }
 }

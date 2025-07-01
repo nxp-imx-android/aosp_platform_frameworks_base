@@ -16,8 +16,6 @@
 
 package android.platform.test.ravenwood;
 
-import static com.android.ravenwood.common.RavenwoodInternalUtils.RAVENWOOD_RESOURCE_APK;
-
 import android.app.Application;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -63,9 +61,6 @@ public class RavenwoodContext extends RavenwoodBaseContext {
     private final ArrayMap<Class<?>, String> mClassToName = new ArrayMap<>();
     private final ArrayMap<String, Supplier<?>> mNameToFactory = new ArrayMap<>();
 
-    private final File mDataDir;
-    private final Supplier<Resources> mResourcesSupplier;
-
     private Application mAppContext;
 
     @GuardedBy("mLock")
@@ -83,13 +78,9 @@ public class RavenwoodContext extends RavenwoodBaseContext {
         mNameToFactory.put(serviceName, serviceSupplier);
     }
 
-    public RavenwoodContext(String packageName, HandlerThread mainThread,
-            Supplier<Resources> resourcesSupplier) throws IOException {
+    public RavenwoodContext(String packageName, HandlerThread mainThread) throws IOException {
         mPackageName = packageName;
         mMainThread = mainThread;
-        mResourcesSupplier = resourcesSupplier;
-
-        mDataDir = RavenwoodDriver.sAppDataDir;
 
         // Services provided by a typical shipping device
         registerService(ClipboardManager.class,
@@ -212,7 +203,9 @@ public class RavenwoodContext extends RavenwoodBaseContext {
 
     @Override
     public File getDataDir() {
-        return mDataDir;
+        // Create the dir lazily upon request. Note, "android" package doesn't have a
+        // data dir. This would throw.
+        return RavenwoodEnvironment.getInstance().getAppDataDir(mPackageName);
     }
 
     @Override
@@ -267,12 +260,7 @@ public class RavenwoodContext extends RavenwoodBaseContext {
 
     @Override
     public Resources getResources() {
-        synchronized (mLock) {
-            if (mResources == null) {
-                mResources = mResourcesSupplier.get();
-            }
-            return mResources;
-        }
+        return RavenwoodEnvironment.getInstance().loadResources(getPackageName());
     }
 
     @Override
@@ -299,7 +287,8 @@ public class RavenwoodContext extends RavenwoodBaseContext {
 
     @Override
     public String getPackageResourcePath() {
-        return new File(RAVENWOOD_RESOURCE_APK).getAbsolutePath();
+        return RavenwoodEnvironment.getInstance()
+                .getResourcesApkFile(this.getPackageName()).getAbsolutePath();
     }
 
     final void attachApplicationContext(Application appContext) {

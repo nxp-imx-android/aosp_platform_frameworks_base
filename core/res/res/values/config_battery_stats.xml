@@ -74,5 +74,9 @@
     It only affects the `dumpsys batterystats -\-checkin` command, The real checkin Format -->
     <integer name="config_batteryHistoryDumpRealCheckinWindowSize">86400000</integer>
 
+    <!-- PowerStats log period on low frequency, default value is 1 hour (60 * 60 * 1000) in millis -->
+    <integer name="config_powerStatsLogPeriodLowFrequencyMs">3600000</integer>
 
+    <!-- PowerStats log period on high frequency, default value is 2 minutes (2 * 60 * 1000) in millis -->
+    <integer name="config_powerStatsLogPeriodHighFrequencyMs">120000</integer>
 </resources>

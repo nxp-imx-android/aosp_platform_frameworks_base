@@ -56,73 +56,68 @@ class AirplaneModeIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun icon_notAirplaneMode_outputsNull() =
-        kosmos.runTest {
-            fakeConnectivityRepository.setForceHiddenIcons(setOf())
-            airplaneModeRepository.setIsAirplaneMode(false)
+    fun visible_isFalse_byDefault() = kosmos.runTest { assertThat(underTest.visible).isFalse() }
 
-            assertThat(underTest.icon).isNull()
+    @Test fun icon_notVisible_isNull() = kosmos.runTest { assertThat(underTest.icon).isNull() }
+
+    @Test
+    fun visible_airplaneModeOnAndNotForceHidden_isTrue() =
+        kosmos.runTest {
+            airplaneModeRepository.setIsAirplaneMode(true)
+            fakeConnectivityRepository.setForceHiddenIcons(setOf())
+
+            assertThat(underTest.visible).isTrue()
         }
 
     @Test
-    fun icon_forceHidden_outputsNull() =
+    fun visible_forceHidden_isFalse() =
         kosmos.runTest {
+            airplaneModeRepository.setIsAirplaneMode(true)
             fakeConnectivityRepository.setForceHiddenIcons(setOf(ConnectivitySlot.AIRPLANE))
-            airplaneModeRepository.setIsAirplaneMode(true)
 
-            assertThat(underTest.icon).isNull()
+            assertThat(underTest.visible).isFalse()
         }
 
     @Test
-    fun icon_isAirplaneModeAndNotForceHidden_outputsIcon() =
-        kosmos.runTest {
-            fakeConnectivityRepository.setForceHiddenIcons(setOf())
-            airplaneModeRepository.setIsAirplaneMode(true)
-
-            val expectedIcon =
-                Icon.Resource(
-                    res = com.android.internal.R.drawable.ic_qs_airplane,
-                    contentDescription =
-                        ContentDescription.Resource(R.string.accessibility_airplane_mode),
-                )
-            assertThat(underTest.icon).isEqualTo(expectedIcon)
-        }
-
-    @Test
-    fun icon_updatesWhenAirplaneModeChanges() =
+    fun visible_airplaneModeChanges_flips() =
         kosmos.runTest {
             fakeConnectivityRepository.setForceHiddenIcons(setOf())
 
-            // Start not in airplane mode
             airplaneModeRepository.setIsAirplaneMode(false)
-            assertThat(underTest.icon).isNull()
+            assertThat(underTest.visible).isFalse()
 
-            // Turn on airplane mode
             airplaneModeRepository.setIsAirplaneMode(true)
 
-            assertThat(underTest.icon).isEqualTo(expectedAirplaneIcon)
+            assertThat(underTest.visible).isTrue()
 
-            // Turn off airplane mode
             airplaneModeRepository.setIsAirplaneMode(false)
-            assertThat(underTest.icon).isNull()
+
+            assertThat(underTest.visible).isFalse()
         }
 
     @Test
-    fun icon_updatesWhenForceHiddenChanges() =
+    fun visible_forceHiddenChanges_flips() =
         kosmos.runTest {
             airplaneModeRepository.setIsAirplaneMode(true)
 
-            // Start not hidden
             fakeConnectivityRepository.setForceHiddenIcons(setOf())
+            assertThat(underTest.visible).isTrue()
 
-            assertThat(underTest.icon).isEqualTo(expectedAirplaneIcon)
-
-            // Force hide
             fakeConnectivityRepository.setForceHiddenIcons(setOf(ConnectivitySlot.AIRPLANE))
-            assertThat(underTest.icon).isNull()
 
-            // Un-hide
+            assertThat(underTest.visible).isFalse()
+
             fakeConnectivityRepository.setForceHiddenIcons(setOf())
+
+            assertThat(underTest.visible).isTrue()
+        }
+
+    @Test
+    fun icon_visible_isCorrect() =
+        kosmos.runTest {
+            airplaneModeRepository.setIsAirplaneMode(true)
+            fakeConnectivityRepository.setForceHiddenIcons(setOf())
+
             assertThat(underTest.icon).isEqualTo(expectedAirplaneIcon)
         }
 }

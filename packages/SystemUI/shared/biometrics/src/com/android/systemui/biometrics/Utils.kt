@@ -103,6 +103,11 @@ object Utils {
         context.getSystemService(UserManager::class.java)?.isManagedProfile(userId) ?: false
 
     @JvmStatic
+    fun isSupervisingProfile(context: Context, userId: Int): Boolean =
+        context.getSystemService(UserManager::class.java)?.getUserInfo(userId)?.userType ==
+            UserManager.USER_TYPE_PROFILE_SUPERVISING
+
+    @JvmStatic
     fun <T : SensorPropertiesInternal> findFirstSensorProperties(
         properties: List<T>?,
         sensorIds: IntArray,

@@ -16,6 +16,7 @@
 
 package com.android.server.supervision;
 
+import static android.Manifest.permission.BYPASS_ROLE_QUALIFICATION;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
 import static android.Manifest.permission.MANAGE_ROLE_HOLDERS;
 import static android.Manifest.permission.MANAGE_USERS;
@@ -33,6 +34,7 @@ import android.annotation.UserIdInt;
 import android.app.KeyguardManager;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.DevicePolicyManagerInternal;
+import android.app.role.RoleManager;
 import android.app.supervision.ISupervisionListener;
 import android.app.supervision.ISupervisionManager;
 import android.app.supervision.SupervisionManagerInternal;
@@ -45,12 +47,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerInternal;
 import android.content.pm.UserInfo;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.PersistableBundle;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
@@ -136,7 +140,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     @Override
     public void setSupervisionEnabledForUser(@UserIdInt int userId, boolean enabled) {
-        // TODO(b/395630828): Ensure that this method can only be called by the system.
+        enforceCallerCanSetSupervisionEnabled();
         if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
@@ -165,9 +169,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
     }
 
     /**
-     * Creates an {@link Intent} that can be used with
-     * {@link Context#startActivityForResult(String, Intent, int, Bundle)} to launch the activity to
-     * verify supervision credentials.
+     * Creates an {@link Intent} that can be used with {@link Context#startActivityForResult(String,
+     * Intent, int, Bundle)} to launch the activity to verify supervision credentials.
      *
      * <p>A valid {@link Intent} is always returned if supervision is enabled at the time this
      * method is called, the launched activity still need to perform validity checks as the
@@ -271,8 +274,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
             SupervisionListenerRecord record = mSupervisionListeners.get(listener.asBinder());
             if (record == null) {
                 try {
-                    mSupervisionListeners.put(listener.asBinder(),
-                            new SupervisionListenerRecord(listener, userId));
+                    mSupervisionListeners.put(
+                            listener.asBinder(), new SupervisionListenerRecord(listener, userId));
                 } catch (RemoteException e) {
                     // Binder died, ignore
                 }
@@ -380,18 +383,20 @@ public class SupervisionService extends ISupervisionManager.Stub {
                 mSupervisionSettings.saveUserData();
             }
         }
-        Binder.withCleanCallingIdentity(() -> {
-            updateWebContentFilters(userId, enabled);
-            dispatchSupervisionEvent(userId,
-                    listener -> listener.onSetSupervisionEnabled(userId, enabled));
-            if (!enabled) {
-                clearDevicePolicies(userId, supervisionAppPackage);
-            }
-        });
+        Binder.withCleanCallingIdentity(
+                () -> {
+                    updateWebContentFilters(userId, enabled);
+                    dispatchSupervisionEvent(
+                            userId, listener -> listener.onSetSupervisionEnabled(userId, enabled));
+                    if (!enabled) {
+                        clearAllDevicePoliciesAndSuspendedPackages(userId);
+                    }
+                });
     }
 
     @NonNull
-    private List<ISupervisionListener> getSupervisionAppServiceListeners(@UserIdInt int userId,
+    private List<ISupervisionListener> getSupervisionAppServiceListeners(
+            @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
         ArrayList<ISupervisionListener> listeners = new ArrayList<>();
         if (!Flags.enableSupervisionAppService()) {
@@ -409,8 +414,10 @@ public class SupervisionService extends ISupervisionManager.Stub {
             }
 
             if (binder == null) {
-                Slogf.d(SupervisionLog.TAG,
-                        "Failed to bind to SupervisionAppService for %s now", targetPackage);
+                Slogf.d(
+                        SupervisionLog.TAG,
+                        "Failed to bind to SupervisionAppService for %s now",
+                        targetPackage);
 
                 dispatchSupervisionAppServiceWhenConnected(conn, action);
                 continue;
@@ -422,7 +429,8 @@ public class SupervisionService extends ISupervisionManager.Stub {
         return listeners;
     }
 
-    private void dispatchSupervisionEvent(@UserIdInt int userId,
+    private void dispatchSupervisionEvent(
+            @UserIdInt int userId,
             @NonNull RemoteExceptionIgnoringConsumer<ISupervisionListener> action) {
         ArrayList<ISupervisionListener> listeners = new ArrayList<>();
 
@@ -430,22 +438,48 @@ public class SupervisionService extends ISupervisionManager.Stub {
         listeners.addAll(getSupervisionAppServiceListeners(userId, action));
 
         synchronized (getLockObject()) {
-            mSupervisionListeners.forEach((binder, record) -> {
-                if (record.userId == userId || record.userId == UserHandle.USER_ALL) {
-                    listeners.add(record.listener);
-                }
-            });
+            mSupervisionListeners.forEach(
+                    (binder, record) -> {
+                        if (record.userId == userId || record.userId == UserHandle.USER_ALL) {
+                            listeners.add(record.listener);
+                        }
+                    });
         }
 
         listeners.forEach(listener -> action.accept(listener));
     }
 
-    private void clearDevicePolicies(
-            @UserIdInt int userId, @Nullable String supervisionAppPackage) {
+    private void clearAllDevicePoliciesAndSuspendedPackages(@UserIdInt int userId) {
+        if (!Flags.enableRemovePoliciesOnSupervisionDisable()) {
+            return;
+        }
+
+        enforcePermission(MANAGE_ROLE_HOLDERS);
+        List<String> supervisionPackages = new ArrayList<>();
+        RoleManagerWrapper roleManager = mInjector.getRoleManagerWrapper();
+        if (roleManager != null) {
+            supervisionPackages.addAll(
+                    roleManager.getRoleHoldersAsUser(
+                            RoleManager.ROLE_SUPERVISION, UserHandle.of(userId)));
+            supervisionPackages.addAll(
+                    roleManager.getRoleHoldersAsUser(
+                            RoleManager.ROLE_SYSTEM_SUPERVISION, UserHandle.of(userId)));
+        }
+
+        for (String supervisionPackage : supervisionPackages) {
+            clearDevicePoliciesAndSuspendedPackagesFor(userId, supervisionPackage);
+        }
+    }
+
+    private void clearDevicePoliciesAndSuspendedPackagesFor(int userId, String supervisionPackage) {
         DevicePolicyManagerInternal dpmi = mInjector.getDpmInternal();
-        if (Flags.enableRemovePoliciesOnSupervisionDisable()
-                && dpmi != null && supervisionAppPackage != null) {
-            dpmi.removePoliciesForAdmins(supervisionAppPackage, userId);
+        if (dpmi != null) {
+            dpmi.removePoliciesForAdmins(supervisionPackage, userId);
+        }
+
+        PackageManagerInternal pmi = mInjector.getPackageManagerInternal();
+        if (pmi != null) {
+            pmi.unsuspendForSuspendingPackage(supervisionPackage, userId, userId);
         }
     }
 
@@ -455,27 +489,27 @@ public class SupervisionService extends ISupervisionManager.Stub {
         // This listener will be notified when the connection changes.
         AppServiceConnection.ConnectionStatusListener connectionListener =
                 new AppServiceConnection.ConnectionStatusListener() {
-            @Override
-            public void onConnected(@NonNull AppServiceConnection connection,
-                    @NonNull IInterface service) {
-                try {
-                    ISupervisionListener binder = (ISupervisionListener) service;
-                    Binder.withCleanCallingIdentity(() -> action.accept(binder));
-                } finally {
-                    connection.removeConnectionStatusListener(this);
-                }
-            }
+                    @Override
+                    public void onConnected(
+                            @NonNull AppServiceConnection connection, @NonNull IInterface service) {
+                        try {
+                            ISupervisionListener binder = (ISupervisionListener) service;
+                            Binder.withCleanCallingIdentity(() -> action.accept(binder));
+                        } finally {
+                            connection.removeConnectionStatusListener(this);
+                        }
+                    }
 
-            @Override
-            public void onDisconnected(@NonNull AppServiceConnection connection) {
-                connection.removeConnectionStatusListener(this);
-            }
+                    @Override
+                    public void onDisconnected(@NonNull AppServiceConnection connection) {
+                        connection.removeConnectionStatusListener(this);
+                    }
 
-            @Override
-            public void onBinderDied(@NonNull AppServiceConnection connection) {
-                connection.removeConnectionStatusListener(this);
-            }
-        };
+                    @Override
+                    public void onBinderDied(@NonNull AppServiceConnection connection) {
+                        connection.removeConnectionStatusListener(this);
+                    }
+                };
         conn.addConnectionStatusListener(connectionListener);
     }
 
@@ -496,11 +530,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
             final ContentResolver contentResolver = mInjector.context.getContentResolver();
             final int value = Settings.Secure.getIntForUser(contentResolver, key, userId);
             if (!enabled || value != 1) {
-                Settings.Secure.putIntForUser(
-                        contentResolver,
-                        key,
-                        value * -1,
-                        userId);
+                Settings.Secure.putIntForUser(contentResolver, key, value * -1, userId);
             }
         } catch (Settings.SettingNotFoundException ignored) {
             // Ignore the exception and do not change the value as no value has been set.
@@ -536,7 +566,9 @@ public class SupervisionService extends ISupervisionManager.Stub {
      */
     private ComponentName getSupervisionProfileOwnerComponent() {
         return ComponentName.unflattenFromString(
-                mInjector.context.getResources()
+                mInjector
+                        .context
+                        .getResources()
                         .getString(R.string.config_defaultSupervisionProfileOwnerComponent));
     }
 
@@ -547,19 +579,38 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     /** Enforces that the caller has the given permission. */
     private void enforcePermission(String permission) {
-        checkCallAuthorization(
-                mInjector.context.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED);
+        checkCallAuthorization(hasCallingPermission(permission));
     }
 
     /** Enforces that the caller has at least one of the given permission. */
     private void enforceAnyPermission(String... permissions) {
         boolean authorized = false;
         for (String permission : permissions) {
-            if (mInjector.context.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED) {
+            if (hasCallingPermission(permission)) {
                 authorized = true;
+                break;
             }
         }
         checkCallAuthorization(authorized);
+    }
+
+    /**
+     * Enforces that the caller can set supervision enabled state.
+     *
+     * This is restricted to the callers with the root, shell, or system uid or callers with the
+     * BYPASS_ROLE_QUALIFICATION permission. This permission is only granted to the
+     * SYSTEM_SHELL role holder.
+     */
+    private void enforceCallerCanSetSupervisionEnabled() {
+        checkCallAuthorization(isCallerSystem() || hasCallingPermission(BYPASS_ROLE_QUALIFICATION));
+    }
+
+    private boolean hasCallingPermission(String permission) {
+        return mInjector.context.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED;
+    }
+
+    private boolean isCallerSystem() {
+        return UserHandle.isSameApp(Binder.getCallingUid(), Process.SYSTEM_UID);
     }
 
     /** Provides local services in a lazy manner. */
@@ -570,7 +621,9 @@ public class SupervisionService extends ISupervisionManager.Stub {
         private AppBindingService mAppBindingService;
         private KeyguardManager mKeyguardManager;
         private PackageManager mPackageManager;
+        private PackageManagerInternal mPackageManagerInternal;
         private UserManagerInternal mUserManagerInternal;
+        private RoleManagerWrapper mRoleManagerWrapper;
 
         Injector(Context context) {
             this.context = context;
@@ -612,6 +665,34 @@ public class SupervisionService extends ISupervisionManager.Stub {
             }
             return mUserManagerInternal;
         }
+
+        PackageManagerInternal getPackageManagerInternal() {
+            if (mPackageManagerInternal == null) {
+                mPackageManagerInternal = LocalServices.getService(PackageManagerInternal.class);
+            }
+            return mPackageManagerInternal;
+        }
+
+        RoleManagerWrapper getRoleManagerWrapper() {
+            if (mRoleManagerWrapper == null) {
+                final Object roleManager = context.getSystemService(RoleManager.class);
+                if (roleManager instanceof RoleManager) {
+                    mRoleManagerWrapper = new RoleManagerWrapper() {
+                        @Override
+                        public List<String> getRoleHoldersAsUser(String roleName, UserHandle user) {
+                            return ((RoleManager) roleManager).getRoleHoldersAsUser(roleName, user);
+                        }
+                    };
+                } else {
+                    mRoleManagerWrapper = (RoleManagerWrapper) roleManager;
+                }
+            }
+            return mRoleManagerWrapper;
+        }
+    }
+
+    public interface RoleManagerWrapper {
+        List<String> getRoleHoldersAsUser(String roleName, UserHandle user);
     }
 
     /** Publishes local and binder services and allows the service to act during initialization. */

@@ -89,6 +89,7 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
     private int mUid;
     private ScreenInternalAudioRecorder mAudio;
     private ScreenRecordingAudioSource mAudioSource;
+    private Long mStartTimeMillis = 0L;
     private final MediaProjectionCaptureTarget mCaptureRegion;
     private final Handler mHandler;
     private final int mDisplayId;
@@ -288,6 +289,7 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         Log.d(TAG, "start recording");
         prepare();
         mMediaRecorder.start();
+        mStartTimeMillis = System.currentTimeMillis();
         mListener.onStarted();
         recordInternalAudio();
     }
@@ -348,8 +350,10 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
      * Store recorded video
      */
     public SavedRecording save() throws IOException, IllegalStateException {
-        String fileName = new SimpleDateFormat("'screen-'yyyyMMdd-HHmmss'.mp4'")
-                .format(new Date());
+        String saveDate = new SimpleDateFormat("yyyyMMdd-HHmmss").format(new Date());
+        String fileName = mStartTimeMillis > 0L
+                ? String.format("screen-%s-%d.mp4", saveDate, mStartTimeMillis)
+                : String.format("screen-%s.mp4", saveDate);
 
         ContentValues values = new ContentValues();
         values.put(MediaStore.Video.Media.DISPLAY_NAME, fileName);

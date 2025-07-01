@@ -41,6 +41,16 @@ flag {
 }
 
 flag {
+    name: "disable_restore_non_fullscreen_bounds_on_configuration_change"
+    namespace: "lse_desktop_experience"
+    description: "Disable restoring bounds to mLastNonFullscreenBounds on configuration change."
+    bug: "372315420"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "empty_roots_never_top"
     namespace: "lse_desktop_experience"
     description: "Prevents empty roots from becoming top/focused"
@@ -527,6 +537,16 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Enables enter desktop windowing transition & motion polish changes"
     bug: "369763947"
+}
+
+flag {
+    name: "enable_desktop_windowing_enterprise_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables fixes in desktop windowing related to enterprise"
+    bug: "413607166"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {

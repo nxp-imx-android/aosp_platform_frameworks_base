@@ -30,6 +30,7 @@ import com.android.systemui.media.controls.ui.controller.MediaLocation
 import com.android.systemui.media.controls.ui.controller.mediaHostStatesManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.qs.composefragment.dagger.usingMediaInComposeFragment
+import com.android.systemui.qs.ui.viewmodel.QuickSettingsContainerViewModel
 import com.android.systemui.shade.domain.interactor.enableDualShade
 import com.android.systemui.shade.domain.interactor.enableSingleShade
 import com.android.systemui.shade.domain.interactor.enableSplitShade
@@ -54,7 +55,10 @@ class MediaInRowInLandscapeViewModelTest(private val testData: TestData) : Sysui
     private val kosmos = testKosmos().apply { usingMediaInComposeFragment = testData.usingMedia }
 
     private val underTest by lazy {
-        kosmos.mediaInRowInLandscapeViewModelFactory.create(TESTED_MEDIA_LOCATION)
+        kosmos.mediaInRowInLandscapeViewModelFactory.create(
+            TESTED_MEDIA_LOCATION,
+            TESTED_MEDIA_BEHAVIOR,
+        )
     }
 
     @Before
@@ -110,6 +114,7 @@ class MediaInRowInLandscapeViewModelTest(private val testData: TestData) : Sysui
 
     companion object {
         private const val TESTED_MEDIA_LOCATION = LOCATION_QS
+        private val TESTED_MEDIA_BEHAVIOR = QuickSettingsContainerViewModel.mediaUiBehavior
 
         @JvmStatic
         @Parameters(name = "{0}")

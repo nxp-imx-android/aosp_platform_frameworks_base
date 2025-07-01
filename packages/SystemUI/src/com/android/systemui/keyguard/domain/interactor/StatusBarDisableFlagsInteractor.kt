@@ -32,7 +32,6 @@ import com.android.systemui.CoreStartable
 import com.android.systemui.authentication.domain.interactor.AuthenticationInteractor
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.deviceconfig.domain.interactor.DeviceConfigInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor
@@ -47,13 +46,11 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.shade.ShadeDisplayAware
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import javax.inject.Inject
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 
 private val TAG = StatusBarDisableFlagsInteractor::class.simpleName
 
@@ -67,9 +64,8 @@ private val TAG = StatusBarDisableFlagsInteractor::class.simpleName
 class StatusBarDisableFlagsInteractor
 @Inject
 constructor(
-    @Application private val scope: CoroutineScope,
+    @Background private val scope: CoroutineScope,
     @ShadeDisplayAware private val context: Context,
-    @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val deviceEntryFaceAuthInteractor: DeviceEntryFaceAuthInteractor,
     private val statusBarService: IStatusBarService,
     private val processWrapper: ProcessWrapper,
@@ -179,17 +175,15 @@ constructor(
                     return@collect
                 }
 
-                withContext(backgroundDispatcher) {
-                    try {
-                        statusBarService.disableForUser(
-                            flags,
-                            disableToken,
-                            context.packageName,
-                            selectedUserId,
-                        )
-                    } catch (e: RemoteException) {
-                        e.printStackTrace()
-                    }
+                try {
+                    statusBarService.disableForUser(
+                        flags,
+                        disableToken,
+                        context.packageName,
+                        selectedUserId,
+                    )
+                } catch (e: RemoteException) {
+                    e.printStackTrace()
                 }
             }
         }

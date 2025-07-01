@@ -104,6 +104,10 @@ public class WindowContext extends ContextWrapper implements WindowProvider,
                     Flags.FLAG_REPARENT_TO_DEFAULT_WITH_DISPLAY_REMOVAL + " is not enabled");
         }
         Reference.reachabilityFence(this);
+        if (android.view.accessibility.Flags.forceInvertColor()) {
+            // Use the theme of the application as the default theme for this window context.
+            base.setTheme(getApplicationInfo().theme);
+        }
     }
 
     /**

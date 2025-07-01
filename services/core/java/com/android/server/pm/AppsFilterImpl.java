@@ -176,8 +176,9 @@ public final class AppsFilterImpl extends AppsFilterLocked implements Watchable,
     private void onChanged() {
         // App visibility may have changed, which means that earlier fetches from these caches may
         // be invalid.
-        PackageManager.invalidatePackageInfoCache();
-        ApplicationPackageManager.invalidateGetPackagesForUidCache();
+        final int invalidationReason = PackageMetrics.INVALIDATION_REASON_APP_FILTER_CHANGE;
+        PackageManagerService.invalidatePackageInfoCache(invalidationReason);
+        PackageManagerService.invalidateGetPackagesForUidCache(invalidationReason);
         ApplicationPackageManager.invalidateQueryIntentActivitiesCache();
         dispatchChange(this);
     }

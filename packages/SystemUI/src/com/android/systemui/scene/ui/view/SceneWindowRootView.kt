@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowInsets
+import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter
 import com.android.systemui.scene.shared.model.SceneContainerConfig
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
@@ -31,6 +32,7 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
         scenes: Set<Scene>,
         overlays: Set<Overlay>,
         layoutInsetController: LayoutInsetsController,
+        configurationRepository: ConfigurationRepository,
         sceneDataSourceDelegator: SceneDataSourceDelegator,
         qsSceneAdapter: Provider<QSSceneAdapter>,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
@@ -53,6 +55,7 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
                 super.setVisibility(if (isVisible) View.VISIBLE else View.INVISIBLE)
             },
             dataSourceDelegator = sceneDataSourceDelegator,
+            configurationRepository = configurationRepository,
             qsSceneAdapter = qsSceneAdapter,
             sceneJankMonitorFactory = sceneJankMonitorFactory,
             tintedIconManagerFactory = tintedIconManagerFactory,

@@ -2089,7 +2089,10 @@ class Task extends TaskFragment {
         nextPersistTaskBounds &=
                 (getRequestedOverrideConfiguration().windowConfiguration.getBounds() == null
                 || getRequestedOverrideConfiguration().windowConfiguration.getBounds().isEmpty());
-        if (!prevPersistTaskBounds && nextPersistTaskBounds
+
+        final boolean disableRestoreNonFullscreenBounds =
+                Flags.disableRestoreNonFullscreenBoundsOnConfigurationChange();
+        if (!disableRestoreNonFullscreenBounds && !prevPersistTaskBounds && nextPersistTaskBounds
                 && mLastNonFullscreenBounds != null && !mLastNonFullscreenBounds.isEmpty()) {
             // Bypass onRequestedOverrideConfigurationChanged here to avoid infinite loop.
             getRequestedOverrideConfiguration().windowConfiguration
@@ -2469,10 +2472,7 @@ class Task extends TaskFragment {
      * persist task bounds if needed.
      */
     void setInitialBoundsIfNeeded() {
-        if (!com.android.window.flags.Flags.respectLeafTaskBounds()) {
-            updateOverrideConfigurationFromLaunchBounds();
-        } else if (persistTaskBounds(getWindowConfiguration())
-                && getRequestedOverrideBounds().isEmpty()) {
+        if (persistTaskBounds(getWindowConfiguration()) && getRequestedOverrideBounds().isEmpty()) {
             // Sets the Task bounds to the non-fullscreen bounds persisted last time if the Task
             // has no override bounds set.
             setBounds(mLastNonFullscreenBounds);

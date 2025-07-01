@@ -1746,6 +1746,59 @@ public final class DisplayPowerControllerTest {
 
         verify(mDisplayOffloadSession).blockScreenOn(any(Runnable.class));
         verify(mDisplayOffloadSession, never()).cancelBlockScreenOn();
+
+        // Set brightness
+        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_ON);
+        float brightness = 0.34f;
+        when(mHolder.brightnessSetting.getBrightness()).thenReturn(brightness);
+        ArgumentCaptor<BrightnessSetting.BrightnessSettingListener> listenerCaptor =
+                ArgumentCaptor.forClass(BrightnessSetting.BrightnessSettingListener.class);
+        verify(mHolder.brightnessSetting).registerListener(listenerCaptor.capture());
+        BrightnessSetting.BrightnessSettingListener listener = listenerCaptor.getValue();
+        listener.onBrightnessChanged(brightness);
+        advanceTime(1); // Send messages, run updatePowerState
+
+        // Brightness should not be set if screen on blocked
+        verify(mHolder.animator, never()).animateTo(/* linearFirstTarget= */ anyFloat(),
+                /* linearSecondTarget= */ anyFloat(), /* rate= */ anyFloat(),
+                /* ignoreAnimationLimits= */ anyBoolean());
+    }
+
+    @Test
+    public void testOffloadBlocker_turnON_noOffloadSession_screenOnNotBlocked() {
+        // set up, do not set the offload session
+        int initState = Display.STATE_OFF;
+        mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
+        when(mDisplayOffloadSession.blockScreenOn(any())).thenReturn(true);
+
+        // start with OFF.
+        when(mHolder.displayPowerState.getScreenState()).thenReturn(initState);
+        DisplayPowerRequest dpr = new DisplayPowerRequest();
+        dpr.policy = DisplayPowerRequest.POLICY_OFF;
+        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
+        advanceTime(1); // Run updatePowerState
+
+        // go to ON.
+        dpr.policy = DisplayPowerRequest.POLICY_BRIGHT;
+        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
+        advanceTime(1); // Run updatePowerState
+
+        verify(mDisplayOffloadSession, never()).blockScreenOn(any(Runnable.class));
+        verify(mDisplayOffloadSession, never()).cancelBlockScreenOn();
+
+        // Set brightness
+        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_ON);
+        float brightness = 0.34f;
+        when(mHolder.brightnessSetting.getBrightness()).thenReturn(brightness);
+        ArgumentCaptor<BrightnessSetting.BrightnessSettingListener> listenerCaptor =
+                ArgumentCaptor.forClass(BrightnessSetting.BrightnessSettingListener.class);
+        verify(mHolder.brightnessSetting).registerListener(listenerCaptor.capture());
+        BrightnessSetting.BrightnessSettingListener listener = listenerCaptor.getValue();
+        listener.onBrightnessChanged(brightness);
+        advanceTime(1); // Send messages, run updatePowerState
+
+        verify(mHolder.animator).animateTo(eq(brightness), /* linearSecondTarget= */ anyFloat(),
+                /* rate= */ eq(0f), /* ignoreAnimationLimits= */ eq(false));
     }
 
     @Test
@@ -2224,21 +2277,12 @@ public final class DisplayPowerControllerTest {
         when(mHolder.brightnessSetting.getBrightness()).thenReturn(brightness);
         when(mHolder.hbmController.getCurrentBrightnessMax())
                 .thenReturn(PowerManager.BRIGHTNESS_MAX);
-        when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_ON);
-        // Start with state=DOZE.
         when(mHolder.displayPowerState.getScreenState()).thenReturn(Display.STATE_DOZE);
+
         DisplayPowerRequest dprInit = new DisplayPowerRequest();
-        dprInit.policy = DisplayPowerRequest.POLICY_DOZE;
+        dprInit.policy = DisplayPowerRequest.POLICY_BRIGHT;
         mHolder.dpc.requestPowerState(dprInit, /* waitForNegativeProximity= */ false);
-        advanceTime(1); // Run updatePowerState; initialize to DOZE
-        // Go to state=ON. But state change would be blocked. so, state=DOZE.
-        when(mDisplayOffloadSession.blockScreenOn(any())).thenReturn(true);
-        DisplayPowerRequest dpr = new DisplayPowerRequest();
-        dpr.dozeScreenState = Display.STATE_ON;
-        dpr.policy = DisplayPowerRequest.POLICY_BRIGHT;
-        dpr.useNormalBrightnessForDoze = true;
-        mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);
-        advanceTime(1); // Run updatePowerState; process turning on.
+        advanceTime(1); // Run updatePowerState
 
         ArgumentCaptor<BrightnessSetting.BrightnessSettingListener> listenerCaptor =
                 ArgumentCaptor.forClass(BrightnessSetting.BrightnessSettingListener.class);

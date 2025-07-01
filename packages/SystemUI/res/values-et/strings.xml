@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Salvestate praegu kogu oma ekraanikuva."</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Salvestate praegu rakendust <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Peata salvestamine"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Jäädvusta valitud ala"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Jäädvusta"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Salvestamine"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Ekraani jagamine"</string>
@@ -1656,14 +1655,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Teadmata"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Kas lähtestada kõik paanid?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Kõik kiirseadete paanid lähtestatakse seadme algseadetele."</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"Kasulike soovituste hankimine"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"Kasutame AI-d et ennetavalt soovitada teavet ja toiminguid, mis on seotud sellega, mida ekraanil teete."</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"Ikoon"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"Puudutage pikalt, et näha, kuidas soovitusi genereeritakse"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> ei kuva enam reaalajas teavitusi. Saate seda seadete menüüs igal ajal muuta."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Sule"</string>

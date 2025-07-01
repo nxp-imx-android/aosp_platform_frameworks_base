@@ -17,6 +17,7 @@
 package com.android.systemui.media.remedia.data.model
 
 import android.app.PendingIntent
+import android.media.session.MediaSession
 import com.android.internal.logging.InstanceId
 import com.android.systemui.common.shared.model.Icon
 import com.android.systemui.media.controls.shared.model.MediaButton
@@ -71,4 +72,5 @@ data class MediaDataModel(
     val isExplicit: Boolean,
     /** Device suggestions data */
     val suggestionData: SuggestionData?,
+    val token: MediaSession.Token?,
 )

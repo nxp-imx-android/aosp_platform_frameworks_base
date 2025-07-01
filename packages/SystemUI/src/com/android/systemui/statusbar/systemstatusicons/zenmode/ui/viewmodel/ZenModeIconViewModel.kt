@@ -29,7 +29,6 @@ import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatu
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.map
 
 /**
  * ViewModel for the Zen Mode system status icon. Observes the current Zen mode state and provides
@@ -38,18 +37,24 @@ import kotlinx.coroutines.flow.map
 class ZenModeIconViewModel
 @AssistedInject
 constructor(@Assisted private val context: Context, interactor: ZenModeInteractor) :
-    SystemStatusIconViewModel, ExclusiveActivatable() {
+    SystemStatusIconViewModel.Default, ExclusiveActivatable() {
 
     private val hydrator: Hydrator = Hydrator("ZenModeIconViewModel.hydrator")
 
     override val slotName = context.getString(com.android.internal.R.string.status_bar_zen)
 
-    override val icon: Icon? by
+    private val zenModeState: ZenModeInfo? by
         hydrator.hydratedStateOf(
-            traceName = "SystemStatus.zenModeIcon",
+            traceName = "SystemStatus.zenModeState",
             initialValue = null,
-            source = interactor.mainActiveMode.map { it?.toUiState() },
+            source = interactor.mainActiveMode,
         )
+
+    override val visible: Boolean
+        get() = zenModeState != null
+
+    override val icon: Icon?
+        get() = zenModeState?.toUiState()
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()

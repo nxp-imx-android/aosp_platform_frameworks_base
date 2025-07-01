@@ -221,9 +221,9 @@ public class AuthContainerView extends LinearLayout
         @Override
         public void onUseDeviceCredential() {
             mConfig.mCallback.onDeviceCredentialPressed(getRequestId());
-            addCredentialView(false /* animatePanel */, true /* animateContents */);
 
             if (!Flags.bpFallbackOptions()) {
+                addCredentialView(false /* animatePanel */, true /* animateContents */);
                 // TODO(b/313469218): Remove Config
                 mConfig.mPromptInfo.setAuthenticators(
                         BiometricManager.Authenticators.DEVICE_CREDENTIAL);
@@ -265,7 +265,6 @@ public class AuthContainerView extends LinearLayout
             animateAway(BiometricPrompt.DISMISSED_REASON_CREDENTIAL_CONFIRMED);
         } else if (Flags.bpFallbackOptions()) {
             mPromptSelectorInteractorProvider.get().onSwitchToAuth();
-            removeCredentialView();
             mConfig.mCallback.onResumeAuthentication(getRequestId());
         }
     }
@@ -357,7 +356,7 @@ public class AuthContainerView extends LinearLayout
 
         final LayoutInflater layoutInflater = LayoutInflater.from(mContext);
         final PromptKind kind = mPromptViewModel.getPromptKind().getValue();
-        if (kind.isBiometric()) {
+        if (kind.isBiometric() || Flags.bpFallbackOptions()) {
             if (kind.isTwoPaneLandscapeBiometric()) {
                 mLayout = (ConstraintLayout) layoutInflater.inflate(
                         R.layout.biometric_prompt_two_pane_layout, this, false /* attachToRoot */);
@@ -396,7 +395,10 @@ public class AuthContainerView extends LinearLayout
 
     private void showPrompt(@NonNull PromptViewModel viewModel,
             @NonNull VibratorHelper vibratorHelper) {
-        if (mPromptViewModel.getPromptKind().getValue().isBiometric()) {
+        if (Flags.bpFallbackOptions()) {
+            addBiometricView(viewModel, vibratorHelper);
+            addCredentialView(false, false);
+        } else if (mPromptViewModel.getPromptKind().getValue().isBiometric()) {
             addBiometricView(viewModel, vibratorHelper);
         } else if (mPromptViewModel.getPromptKind().getValue().isCredential()) {
             addCredentialView(true, false);
@@ -452,19 +454,26 @@ public class AuthContainerView extends LinearLayout
         }
         // TODO(b/288175645): Once AuthContainerView is removed, set 0dp in credential view xml
         //  files with the corresponding left/right or top/bottom constraints being set to "parent".
-        mCredentialView = factory.inflate(layoutResourceId, mLayout, false);
-
-        // The background is used for detecting taps / cancelling authentication. Since the
-        // credential view is full-screen and should not be canceled from background taps,
-        // disable it.
-        mBackgroundView.setOnClickListener(null);
-        mBackgroundView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
-        final CredentialViewModel vm = mCredentialViewModelProvider.get();
-        vm.setAnimateContents(animateContents);
-        ((CredentialView) mCredentialView).init(vm, this, mPanelController, animatePanel,
-                mBiometricCallback, mAuthContextPlugins);
-
-        mLayout.addView(mCredentialView);
+        if (Flags.bpFallbackOptions()) {
+            final FrameLayout credentialView = mLayout.findViewById(R.id.credential_view);
+            mCredentialView = factory.inflate(layoutResourceId, credentialView, false);
+            final CredentialViewModel vm = mCredentialViewModelProvider.get();
+            ((CredentialView) mCredentialView).init(vm, this, mPanelController, false,
+                    mBiometricCallback, mAuthContextPlugins);
+            credentialView.addView(mCredentialView);
+        } else {
+            mCredentialView = factory.inflate(layoutResourceId, mLayout, false);
+            // The background is used for detecting taps / cancelling authentication. Since the
+            // credential view is full-screen and should not be canceled from background taps,
+            // disable it.
+            mBackgroundView.setOnClickListener(null);
+            mBackgroundView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+            final CredentialViewModel vm = mCredentialViewModelProvider.get();
+            vm.setAnimateContents(animateContents);
+            ((CredentialView) mCredentialView).init(vm, this, mPanelController, animatePanel,
+                    mBiometricCallback, mAuthContextPlugins);
+            mLayout.addView(mCredentialView);
+        }
     }
 
     /** Removes the credential view from the biometric prompt */

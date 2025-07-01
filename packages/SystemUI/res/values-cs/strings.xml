@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Momentálně nahráváte celou obrazovku"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Momentálně nahráváte aplikaci <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Ukončit nahrávání"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Zachytit vybranou oblast"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Pořídit"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Nahrát"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Sdílení obrazovky"</string>
@@ -754,8 +753,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"Bluetooth"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"Tónová volba"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"Přístupnost"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"Asistent"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"Vyzvánění"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"Vibrace"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"Ztlumení"</string>
@@ -856,8 +854,7 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Zapnout"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Delší konverzace si teď můžete nechat shrnout do stručné rekapitulace"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Organizátor oznámení seskupí a ztlumí oznámení s nižší prioritou"</string>
-    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
-    <skip />
+    <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# oznámení}few{# oznámení}many{# oznámení}other{# oznámení}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Hotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Použít"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Vypnout"</string>
@@ -1659,20 +1656,15 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Neznámé"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Resetovat všechny dlaždice?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Všechny dlaždice Rychlého nastavení se resetují do původní konfigurace zařízení"</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"Získejte užitečné návrhy"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"S využitím AI proaktivně navrhujeme informace a akce relevantní pro to, co děláte na obrazovce"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"Ikona"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"Podržením zobrazíte, jak se návrhy generují"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"Aplikace <xliff:g id="APPLICATION">%1$s</xliff:g> už nebude zobrazovat aktuality živě. Tuto volbu můžete v nastavení kdykoli změnit."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Zavřít"</string>
     <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"Ikona návrhů pro ambientní prostředí"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Přejetím z levého horního rohu otevřete oznámení"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Přejetím z pravého horního rohu otevřete panel Rychlé nastavení"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"Zpět"</string>
 </resources>

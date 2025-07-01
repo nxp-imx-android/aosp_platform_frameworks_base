@@ -35,6 +35,16 @@ flag {
 }
 
 flag {
+    name: "notification_top_line_margin_fix"
+    namespace: "systemui"
+    description: "Fixes a small bug where the timestamp had an unnecessary margin in grouped notifications."
+    bug: "417196998"
+    metadata {
+       purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
   name: "api_metric_style"
   is_exported: true
   namespace: "notifications"

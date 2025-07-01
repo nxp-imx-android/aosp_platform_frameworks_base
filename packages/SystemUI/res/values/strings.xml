@@ -2160,7 +2160,7 @@
     <string name="notification_guts_bundle_title">Silence and bundle</string>
 
     <!-- [CHAR LIMIT=100] Notification bundle individual notification inline settings title -->
-    <string name="notification_guts_single_bundle_notif_title">Use Notification Organizer</string>
+    <string name="notification_guts_single_bundle_notif_title">Use notification organizer</string>
 
     <!-- [CHAR LIMIT=100] Notification bundle inline settings summary for an individual notification -->
     <string name="notification_guts_bundle_summary">For <xliff:g id="app_name" example="YouTube">%1$s</xliff:g></string>
@@ -4458,4 +4458,10 @@
 
     <!-- Content of button shown on the bouncer screen to navigate back to keyguard. [CHAR LIMIT=NONE] -->
     <string name="back_button_on_bouncer">Back</string>
+
+    <!-- Content description for arrow in Pager Dots to navigate to previous page [CHAR LIMIT=NONE] -->
+    <string name="pager_dots_previous_content_description">Previous</string>
+
+    <!-- Content description for arrow in Pager Dots to navigate to next page [CHAR LIMIT=NONE] -->
+    <string name="pager_dots_next_content_description">Next</string>
 </resources>

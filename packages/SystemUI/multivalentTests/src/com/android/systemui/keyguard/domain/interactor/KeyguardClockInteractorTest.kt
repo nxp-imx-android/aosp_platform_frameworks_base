@@ -93,7 +93,7 @@ class KeyguardClockInteractorTest : SysuiTestCase() {
     fun clockSize_forceSmallClock_SMALL() =
         testScope.runTest {
             val value by collectLastValue(underTest.clockSize)
-            kosmos.fakeKeyguardClockRepository.setShouldForceSmallClock(true)
+            kosmos.fakeKeyguardClockRepository.setClockSize(ClockSize.SMALL)
             kosmos.fakeFeatureFlagsClassic.set(Flags.LOCKSCREEN_ENABLE_LANDSCAPE, true)
             kosmos.fakeKeyguardTransitionRepository.transitionTo(
                 KeyguardState.AOD,

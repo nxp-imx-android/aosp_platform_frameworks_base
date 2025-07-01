@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Bu tətbiq 16 KB ilə uyğunlaşmır. APK düzləndirmə yoxlaması alınmadı. Bu tətbiq səhifə ölçüsünə uyğun rejimdən istifadə edilməklə işlədiləcək. Ən yaxşı uyğunluq üçün tətbiqi 16 KB dəstəyi ilə yenidən tərtib edin. Ətraflı məlumat üçün nəzər salın: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Bu tətbiq 16 KB ilə uyğunlaşmır. ELF düzləndirmə yoxlaması alınmadı. Bu tətbiq səhifə ölçüsünə uyğun rejimdən istifadə edilməklə işlədiləcək. Ən yaxşı uyğunluq üçün tətbiqi 16 KB dəstəyi ilə yenidən tərtib edin. Ətraflı məlumat üçün nəzər salın: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Bu tətbiq 16 KB ilə uyğunlaşmır. APK və ELF düzləndirmə yoxlamaları uğursuz oldu. Bu tətbiq səhifə ölçüsünə uyğun rejimdən istifadə edilməklə işlədiləcək. Ən yaxşı uyğunluq üçün tətbiqi 16 KB dəstəyi ilə yenidən tərtib edin. Ətraflı məlumat üçün nəzər salın: &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Bu xəbərdarlıq hazırda sınaqdan keçirilən və sazlana bilən tətbiq olduğu üçün göstərilir. Tərtibatçı deyilsinizsə, bunu tərtibatçıya bildirin və sazlana bilməyən tətbiq istəyin. Bu tətbiq 16 KB ilə uyğun deyil. APK düzləndirmə yoxlaması alınmadı. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ünvanındakı addımlara əməl edin"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Bu xəbərdarlıq hazırda sınaqdan keçirilən və sazlana bilən tətbiq olduğu üçün göstərilir. Tərtibatçı deyilsinizsə, bunu tərtibatçıya bildirin və sazlana bilməyən tətbiq istəyin. Bu tətbiq 16 KB ilə uyğun deyil. ELF düzləndirmə yoxlaması alınmadı. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ünvanındakı addımlara əməl edin"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Bu xəbərdarlıq hazırda sınaqdan keçirilən və sazlana bilən tətbiq olduğu üçün göstərilir. Tərtibatçı deyilsinizsə, bunu tərtibatçıya bildirin və sazlana bilməyən tətbiq istəyin. Bu tətbiq 16 KB ilə uyğun deyil. APK və ELF düzləndirmə yoxlamaları alınmadı. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; ünvanındakı addımlara əməl edin"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Bir daha göstərməyin"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Xidmət təmin edilməyib."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Çağrı kimliyi ayarını dəyişə bilməzsiniz."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Data <xliff:g id="CARRIERDISPLAY">%s</xliff:g> operatoruna keçirilib"</string>

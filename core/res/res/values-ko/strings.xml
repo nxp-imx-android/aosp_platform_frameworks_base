@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"이 앱은 16KB와 호환되지 않습니다. APK 정렬 검사에 실패했습니다. 이 앱은 페이지 크기 호환 모드를 사용하여 실행됩니다. 최상의 호환성을 위해 16KB를 지원하도록 애플리케이션을 다시 컴파일하세요. 자세한 내용은 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;를 참고하세요."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"이 앱은 16KB와 호환되지 않습니다. ELF 정렬 검사에 실패했습니다. 이 앱은 페이지 크기 호환 모드를 사용하여 실행됩니다. 최상의 호환성을 위해 16KB를 지원하도록 애플리케이션을 다시 컴파일하세요. 자세한 내용은 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;를 참고하세요."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"이 앱은 16KB와 호환되지 않습니다. APK 및 ELF 정렬 검사에 실패했습니다. 이 앱은 페이지 크기 호환 모드를 사용하여 실행됩니다. 최상의 호환성을 위해 16KB를 지원하도록 애플리케이션을 다시 컴파일하세요. 자세한 내용은 &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;를 참고하세요."</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"이 앱은 현재 테스트 중인 디버그 가능 앱이므로 이 경고가 표시됩니다. 개발자가 아니라면 개발자에게 이 문제를 보고하고 디버그할 수 없는 앱을 요청하세요. 이 앱은 16KB와 호환되지 않습니다. APK 정렬 검사에 실패했습니다. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;의 단계를 따르세요."</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"이 앱은 현재 테스트 중인 디버그 가능 앱이므로 이 경고가 표시됩니다. 개발자가 아니라면 개발자에게 이 문제를 보고하고 디버그할 수 없는 앱을 요청하세요. 이 앱은 16KB와 호환되지 않습니다. ELF 정렬 검사에 실패했습니다. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;의 단계를 따르세요."</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"이 앱은 현재 테스트 중인 디버그 가능 앱이므로 이 경고가 표시됩니다. 개발자가 아니라면 개발자에게 이 문제를 보고하고 디버그할 수 없는 앱을 요청하세요. 이 앱은 16KB와 호환되지 않습니다. APK 및 ELF 정렬 검사에 실패했습니다. &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;의 단계를 따르세요."</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"다시 표시 안함"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"서비스가 준비되지 않았습니다."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"발신자 번호 설정을 변경할 수 없습니다."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g> 이동통신사로 데이터가 변경됨"</string>

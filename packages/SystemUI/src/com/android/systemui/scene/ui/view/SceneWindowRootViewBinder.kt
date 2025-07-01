@@ -34,6 +34,7 @@ import com.android.internal.policy.ScreenDecorationsUtils
 import com.android.systemui.common.ui.compose.windowinsets.CutoutLocation
 import com.android.systemui.common.ui.compose.windowinsets.DisplayCutout
 import com.android.systemui.common.ui.compose.windowinsets.ScreenDecorProvider
+import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.compose.modifiers.sysUiResTagContainer
 import com.android.systemui.initOnBackPressedDispatcherOwner
 import com.android.systemui.lifecycle.WindowLifecycleState
@@ -76,6 +77,7 @@ object SceneWindowRootViewBinder {
         overlays: Set<Overlay>,
         onVisibilityChangedInternal: (isVisible: Boolean) -> Unit,
         dataSourceDelegator: SceneDataSourceDelegator,
+        configurationRepository: ConfigurationRepository,
         qsSceneAdapter: Provider<QSSceneAdapter>,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
         tintedIconManagerFactory: TintedIconManager.Factory,
@@ -132,6 +134,7 @@ object SceneWindowRootViewBinder {
                                 containerConfig = containerConfig,
                                 sceneJankMonitorFactory = sceneJankMonitorFactory,
                                 tintedIconManagerFactory = tintedIconManagerFactory,
+                                configurationRepository = configurationRepository,
                             )
                             .also { it.id = R.id.scene_container_root_composable }
                     )
@@ -155,6 +158,7 @@ object SceneWindowRootViewBinder {
                             viewModelFactory =
                                 viewModel.dualShadeEducationalTooltipsViewModelFactory,
                             windowInsets = windowInsets,
+                            configurationRepository = configurationRepository,
                         )
                     )
 
@@ -177,16 +181,19 @@ object SceneWindowRootViewBinder {
         overlayByKey: Map<OverlayKey, Overlay>,
         dataSourceDelegator: SceneDataSourceDelegator,
         qsSceneAdapter: Provider<QSSceneAdapter>,
+        configurationRepository: ConfigurationRepository,
         containerConfig: SceneContainerConfig,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
         tintedIconManagerFactory: TintedIconManager.Factory,
     ): View {
+        val displayCutout = displayCutoutFromWindowInsets(scope, context, windowInsets)
+        val cornerRadius = cornerRadius(scope, configurationRepository, context)
         return ComposeView(context).apply {
             setContent {
                 PlatformTheme {
                     ScreenDecorProvider(
-                        displayCutout = displayCutoutFromWindowInsets(scope, context, windowInsets),
-                        screenCornerRadius = ScreenDecorationsUtils.getWindowCornerRadius(context),
+                        displayCutout = displayCutout,
+                        screenCornerRadius = cornerRadius,
                     ) {
                         WithStatusIconContext(tintedIconManagerFactory = tintedIconManagerFactory) {
                             SceneContainer(
@@ -212,7 +219,10 @@ object SceneWindowRootViewBinder {
         context: Context,
         viewModelFactory: DualShadeEducationalTooltipsViewModel.Factory,
         windowInsets: StateFlow<WindowInsets?>,
+        configurationRepository: ConfigurationRepository,
     ): View {
+        val displayCutout = displayCutoutFromWindowInsets(scope, context, windowInsets)
+        val cornerRadius = cornerRadius(scope, configurationRepository, context)
         return ComposeView(context).apply {
             layoutParams =
                 FrameLayout.LayoutParams(
@@ -222,8 +232,8 @@ object SceneWindowRootViewBinder {
             setContent {
                 PlatformTheme {
                     ScreenDecorProvider(
-                        displayCutout = displayCutoutFromWindowInsets(scope, context, windowInsets),
-                        screenCornerRadius = ScreenDecorationsUtils.getWindowCornerRadius(context),
+                        displayCutout = displayCutout,
+                        screenCornerRadius = cornerRadius,
                     ) {
                         DualShadeEducationalTooltips(viewModelFactory = viewModelFactory)
                     }
@@ -232,6 +242,23 @@ object SceneWindowRootViewBinder {
         }
     }
 
+    /**
+     * The corner radius can chang every time the window is moved to another display. This keeps it
+     * up to date.
+     */
+    private fun cornerRadius(
+        scope: CoroutineScope,
+        configurationRepository: ConfigurationRepository,
+        context: Context,
+    ): StateFlow<Float> =
+        configurationRepository.onMovedToDisplay
+            .map { ScreenDecorationsUtils.getWindowCornerRadius(context) }
+            .stateIn(
+                scope,
+                SharingStarted.WhileSubscribed(),
+                ScreenDecorationsUtils.getWindowCornerRadius(context),
+            )
+
     // TODO(b/298525212): remove once Compose exposes window inset bounds.
     private fun displayCutoutFromWindowInsets(
         scope: CoroutineScope,
@@ -239,24 +266,30 @@ object SceneWindowRootViewBinder {
         windowInsets: StateFlow<WindowInsets?>,
     ): StateFlow<DisplayCutout> =
         windowInsets
-            .map {
-                val boundingRect = it?.displayCutout?.boundingRectTop
-                val width = boundingRect?.let { boundingRect.right - boundingRect.left } ?: 0
-                val left = boundingRect?.left?.toDp(context) ?: 0.dp
-                val top = boundingRect?.top?.toDp(context) ?: 0.dp
-                val right = boundingRect?.right?.toDp(context) ?: 0.dp
-                val bottom = boundingRect?.bottom?.toDp(context) ?: 0.dp
-                val location =
-                    when {
-                        width <= 0f -> CutoutLocation.NONE
-                        left <= 0.dp -> CutoutLocation.LEFT
-                        right >= getDisplayWidth(context) -> CutoutLocation.RIGHT
-                        else -> CutoutLocation.CENTER
-                    }
-                val viewDisplayCutout = it?.displayCutout
-                DisplayCutout(left, top, right, bottom, location, viewDisplayCutout)
+            .map { it.toCutout(context) }
+            .stateIn(
+                scope,
+                SharingStarted.WhileSubscribed(),
+                initialValue = windowInsets.value.toCutout(context),
+            )
+
+    private fun WindowInsets?.toCutout(context: Context): DisplayCutout {
+        val boundingRect = this?.displayCutout?.boundingRectTop
+        val width = boundingRect?.let { boundingRect.right - boundingRect.left } ?: 0
+        val left = boundingRect?.left?.toDp(context) ?: 0.dp
+        val top = boundingRect?.top?.toDp(context) ?: 0.dp
+        val right = boundingRect?.right?.toDp(context) ?: 0.dp
+        val bottom = boundingRect?.bottom?.toDp(context) ?: 0.dp
+        val location =
+            when {
+                width <= 0f -> CutoutLocation.NONE
+                left <= 0.dp -> CutoutLocation.LEFT
+                right >= getDisplayWidth(context) -> CutoutLocation.RIGHT
+                else -> CutoutLocation.CENTER
             }
-            .stateIn(scope, SharingStarted.WhileSubscribed(), DisplayCutout())
+        val viewDisplayCutout = this?.displayCutout
+        return DisplayCutout(left, top, right, bottom, location, viewDisplayCutout)
+    }
 
     // TODO(b/298525212): remove once Compose exposes window inset bounds.
     private fun getDisplayWidth(context: Context): Dp {

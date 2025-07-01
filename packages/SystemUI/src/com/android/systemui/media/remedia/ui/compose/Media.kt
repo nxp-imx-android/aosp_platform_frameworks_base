@@ -135,7 +135,6 @@ import com.android.compose.animation.scene.transitions
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.gesture.overscrollToDismiss
 import com.android.compose.modifiers.thenIf
-import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.mechanics.spec.builder.rememberMotionBuilderContext
 import com.android.systemui.animation.Expandable
@@ -236,10 +235,16 @@ private fun CardCarouselContent(
     val isSwipingEnabled = behavior.isCarouselScrollingEnabled && !isFalseTouchDetected
 
     val roundedCornerShape = RoundedCornerShape(32.dp)
+    val padding =
+        if (presentationStyle == MediaPresentationStyle.Large) {
+            0.dp
+        } else {
+            8.dp
+        }
 
     Box(
         modifier =
-            modifier.padding(8.dp).clip(roundedCornerShape).pointerInput(behavior) {
+            modifier.padding(padding).clip(roundedCornerShape).pointerInput(behavior) {
                 if (behavior.isCarouselScrollFalseTouch != null) {
                     awaitEachGesture {
                         awaitFirstDown(false, PointerEventPass.Initial)
@@ -321,6 +326,8 @@ private fun Card(
             transitions = Media.Transitions,
         )
 
+    val colorScheme = rememberAnimatedColorScheme(viewModel.colorScheme)
+
     // Each time the presentation style changes, animate to the corresponding scene.
     LaunchedEffect(presentationStyle) {
         stlState.setTargetScene(targetScene = presentationStyle.toScene(), animationScope = this)
@@ -328,7 +335,11 @@ private fun Card(
 
     Box(modifier) {
         if (stlState.currentScene != Media.Scenes.Compact) {
-            CardBackground(image = viewModel.background, modifier = Modifier.matchParentSize())
+            CardBackground(
+                image = viewModel.background,
+                colorScheme = colorScheme,
+                modifier = Modifier.matchParentSize(),
+            )
         }
 
         Expandable(
@@ -342,8 +353,19 @@ private fun Card(
                         CardForeground(
                             expandable = it,
                             viewModel = viewModel,
+                            colorScheme = colorScheme,
                             threeRows = true,
                             fillHeight = false,
+                        )
+                    }
+
+                    scene(Media.Scenes.Large) {
+                        CardForeground(
+                            expandable = it,
+                            viewModel = viewModel,
+                            colorScheme = colorScheme,
+                            threeRows = true,
+                            fillHeight = true,
                         )
                     }
 
@@ -351,6 +373,7 @@ private fun Card(
                         CardForeground(
                             expandable = it,
                             viewModel = viewModel,
+                            colorScheme = colorScheme,
                             threeRows = false,
                             fillHeight = false,
                         )
@@ -367,10 +390,12 @@ private fun Card(
 
 @Composable
 private fun rememberAnimatedColorScheme(colorScheme: MediaColorScheme?): AnimatedColorScheme {
-    val primaryColor = colorScheme?.primary ?: LocalAndroidColorScheme.current.primaryFixed
-    val onPrimaryColor = colorScheme?.onPrimary ?: LocalAndroidColorScheme.current.onPrimaryFixed
+    val primaryColor = colorScheme?.primary ?: MaterialTheme.colorScheme.primaryFixed
+    val onPrimaryColor = colorScheme?.onPrimary ?: MaterialTheme.colorScheme.onPrimaryFixed
+    val backgroundColor = colorScheme?.background ?: MaterialTheme.colorScheme.onSurface
     val animatedPrimary by animateColorAsState(targetValue = primaryColor)
     val animatedOnPrimary by animateColorAsState(targetValue = onPrimaryColor)
+    val animatedBackground by animateColorAsState(targetValue = backgroundColor)
 
     return remember {
         object : AnimatedColorScheme {
@@ -379,6 +404,9 @@ private fun rememberAnimatedColorScheme(colorScheme: MediaColorScheme?): Animate
 
             override val onPrimary: Color
                 get() = animatedOnPrimary
+
+            override val background: Color
+                get() = animatedBackground
         }
     }
 }
@@ -396,6 +424,7 @@ private fun rememberAnimatedColorScheme(colorScheme: MediaColorScheme?): Animate
 private fun ContentScope.CardForeground(
     expandable: Expandable,
     viewModel: MediaCardViewModel,
+    colorScheme: AnimatedColorScheme,
     threeRows: Boolean,
     fillHeight: Boolean,
     modifier: Modifier = Modifier,
@@ -405,8 +434,6 @@ private fun ContentScope.CardForeground(
     val gutsAlphaAnimatable = remember { Animatable(0f) }
     val isGutsVisible = viewModel.guts.isVisible
     LaunchedEffect(isGutsVisible) { gutsAlphaAnimatable.animateTo(if (isGutsVisible) 1f else 0f) }
-
-    val colorScheme = rememberAnimatedColorScheme(viewModel.colorScheme)
 
     // Use a custom layout to measure the content even if the content is being hidden because the
     // internal guts are showing. This is needed because only the content knows the size the of the
@@ -732,11 +759,15 @@ private fun ContentScope.CompactCardForeground(
 
 /** Renders the background of a card, loading the artwork and showing an overlay on top of it. */
 @Composable
-private fun CardBackground(image: ImageBitmap?, modifier: Modifier = Modifier) {
+private fun CardBackground(
+    image: ImageBitmap?,
+    colorScheme: AnimatedColorScheme,
+    modifier: Modifier = Modifier,
+) {
     Crossfade(targetState = image, modifier = modifier) { imageOrNull ->
         if (imageOrNull != null) {
             // Loaded art.
-            val gradientBaseColor = MaterialTheme.colorScheme.onSurface
+            val gradientBaseColor = colorScheme.background
             Image(
                 bitmap = imageOrNull,
                 contentDescription = null,
@@ -762,7 +793,7 @@ private fun CardBackground(image: ImageBitmap?, modifier: Modifier = Modifier) {
             )
         } else {
             // Placeholder.
-            Box(Modifier.background(MaterialTheme.colorScheme.onSurface).fillMaxSize())
+            Box(Modifier.background(colorScheme.background).fillMaxSize())
         }
     }
 }
@@ -1132,53 +1163,62 @@ private fun DeviceChip(
     // The inner composable consumes the user events from the InteractionSource and feeds them into
     // its indication.
     val clickInteractionSource = remember { MutableInteractionSource() }
-    Box(
-        modifier =
-            modifier
-                .heightIn(min = 48.dp)
-                .clickable(interactionSource = clickInteractionSource, indication = null) {
-                    viewModel.onClick()
-                }
-                .padding(top = 16.dp, bottom = 8.dp)
+    Expandable(
+        controller =
+            rememberExpandableController(
+                color = Color.Transparent,
+                shape = RoundedCornerShape(12.dp),
+            ),
+        useModifierBasedImplementation = true,
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
+        Box(
             modifier =
-                Modifier.clip(RoundedCornerShape(12.dp))
-                    .background(style.fillColor)
-                    .thenIf(style.borderColor != null) {
-                        Modifier.border(
-                            width = 1.dp,
-                            color = style.borderColor!!,
-                            shape = RoundedCornerShape(12.dp),
+                modifier
+                    .heightIn(min = 48.dp)
+                    .clickable(interactionSource = clickInteractionSource, indication = null) {
+                        viewModel.onClick(it)
+                    }
+                    .padding(top = 16.dp, bottom = 8.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier =
+                    Modifier.clip(RoundedCornerShape(12.dp))
+                        .background(style.fillColor)
+                        .thenIf(style.borderColor != null) {
+                            Modifier.border(
+                                width = 1.dp,
+                                color = style.borderColor!!,
+                                shape = RoundedCornerShape(12.dp),
+                            )
+                        }
+                        .indication(clickInteractionSource, ripple())
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
+            ) {
+                if (viewModel.isConnecting) {
+                    CircularProgressIndicator(
+                        color = style.contentColor,
+                        modifier = Modifier.size(12.dp),
+                        strokeWidth = 1.dp,
+                    )
+                } else {
+                    Icon(
+                        icon = viewModel.icon,
+                        tint = style.contentColor,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+                AnimatedVisibility(visible = viewModel.text != null) {
+                    rememberLastNonNull(viewModel.text)?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = style.contentColor,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(horizontal = 4.dp),
                         )
                     }
-                    .indication(clickInteractionSource, ripple())
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-        ) {
-            if (viewModel.isConnecting) {
-                CircularProgressIndicator(
-                    color = style.contentColor,
-                    modifier = Modifier.size(12.dp),
-                    strokeWidth = 1.dp,
-                )
-            } else {
-                Icon(
-                    icon = viewModel.icon,
-                    tint = style.contentColor,
-                    modifier = Modifier.size(16.dp),
-                )
-            }
-            AnimatedVisibility(visible = viewModel.text != null) {
-                rememberLastNonNull(viewModel.text)?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = style.contentColor,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(horizontal = 4.dp),
-                    )
                 }
             }
         }
@@ -1367,6 +1407,8 @@ private fun RevealedContent(
 enum class MediaPresentationStyle {
     /** The "normal" 3-row carousel look. */
     Default,
+    /** Similar to [Default] but with full height. Used in communal hub. */
+    Large,
     /** Similar to [Default] but not as tall (2-row carousel look). */
     Compressed,
     /** A special single-row treatment that fits nicely in quick settings. */
@@ -1389,6 +1431,7 @@ data class MediaUiBehavior(
 private interface AnimatedColorScheme {
     val primary: Color
     val onPrimary: Color
+    val background: Color
 }
 
 private object Media {
@@ -1404,6 +1447,8 @@ private object Media {
     object Scenes {
         /** The "normal" 3-row carousel look. */
         val Default = SceneKey("default")
+        /** Similar to [Default] but with full height. Used in communal hub. */
+        val Large = SceneKey("large")
         /** Similar to [Default] but not as tall (2-row carousel look). */
         val Compressed = SceneKey("compressed")
         /** A special single-row treatment that fits nicely in quick settings. */
@@ -1413,6 +1458,7 @@ private object Media {
     /** Definitions of how scene changes are transition-animated. */
     val Transitions = transitions {
         from(Scenes.Default, to = Scenes.Compact) {}
+        from(Scenes.Default, to = Scenes.Large) {}
         from(Scenes.Default, to = Scenes.Compressed) { fade(Elements.SeekBarSlider) }
         from(Scenes.Compact, to = Scenes.Compressed) { fade(Elements.SeekBarSlider) }
     }
@@ -1444,6 +1490,7 @@ private object Media {
 private fun MediaPresentationStyle.toScene(): SceneKey {
     return when (this) {
         MediaPresentationStyle.Default -> Media.Scenes.Default
+        MediaPresentationStyle.Large -> Media.Scenes.Large
         MediaPresentationStyle.Compressed -> Media.Scenes.Compressed
         MediaPresentationStyle.Compact -> Media.Scenes.Compact
     }

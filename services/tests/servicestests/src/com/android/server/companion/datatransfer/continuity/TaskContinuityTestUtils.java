@@ -27,6 +27,7 @@ import android.app.ActivityManager;
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
 import android.companion.ICompanionDeviceManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 
@@ -81,12 +82,12 @@ public final class TaskContinuityTestUtils {
 
     public static ActivityManager.RunningTaskInfo createRunningTaskInfo(
         int taskId,
-        String label,
+        String packageName,
         long lastActiveTime) {
 
         ActivityManager.RunningTaskInfo taskInfo = new ActivityManager.RunningTaskInfo();
         taskInfo.taskId = taskId;
-        taskInfo.taskDescription = new ActivityManager.TaskDescription(label);
+        taskInfo.baseActivity = new ComponentName(packageName, "className");
         taskInfo.lastActiveTime = lastActiveTime;
         return taskInfo;
     }

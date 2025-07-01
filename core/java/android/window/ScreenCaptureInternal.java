@@ -67,6 +67,8 @@ public class ScreenCaptureInternal {
 
     private static native long getNativeListenerFinalizer();
 
+    private static native void nativeListenerOnError(long nativeObject, int errorCode);
+
     /**
      * @param captureArgs     Arguments about how to take the screenshot
      * @param captureListener A listener to receive the screenshot callback
@@ -785,8 +787,6 @@ public class ScreenCaptureInternal {
      * This listener can only be used for a single call to capture content call.
      */
     public static class ScreenCaptureListener implements Parcelable {
-        // Transient. Not recoverable from Parcel.
-        private final ObjIntConsumer<ScreenshotHardwareBuffer> mConsumer;
         final long mNativeObject;
         private static final NativeAllocationRegistry sRegistry =
                 NativeAllocationRegistry.createMalloced(
@@ -796,13 +796,11 @@ public class ScreenCaptureInternal {
          * @param consumer The callback invoked when the screen capture is complete.
          */
         public ScreenCaptureListener(ObjIntConsumer<ScreenshotHardwareBuffer> consumer) {
-            this.mConsumer = consumer;
             mNativeObject = nativeCreateScreenCaptureListener(consumer);
             sRegistry.registerNativeAllocation(this, mNativeObject);
         }
 
         private ScreenCaptureListener(Parcel in) {
-            mConsumer = null;
             if (in.readBoolean()) {
                 mNativeObject = nativeReadListenerFromParcel(in);
                 sRegistry.registerNativeAllocation(this, mNativeObject);
@@ -830,9 +828,7 @@ public class ScreenCaptureInternal {
          * Call when the screen capture fails.
          */
         public void onError(@ScreenCapture.ScreenCaptureErrorCode int errorCode) {
-            if (mConsumer != null) {
-                mConsumer.accept(null, errorCode);
-            }
+            nativeListenerOnError(mNativeObject, errorCode);
         }
 
         public static final Parcelable.Creator<ScreenCaptureListener> CREATOR =

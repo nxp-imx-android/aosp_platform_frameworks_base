@@ -6627,7 +6627,7 @@ public final class Settings {
 
         /**
          * Setting to set CV preferred intensity
-         * Setting should be integer (0-10)
+         * Setting should be float range (0.0 - 1.0)
          *
          * @hide
          */
@@ -20283,6 +20283,16 @@ public final class Settings {
          */
         public static final String GLOBAL_ACTIONS_TIMEOUT_MILLIS =
                 "global_actions_timeout_ms";
+
+        /**
+         * Tracks if the user has seen the promo card for Identity Check.
+         * The promo card should only appear once per device via Safety Center.
+         *
+         * @hide
+         */
+        public static final String IDENTITY_CHECK_PROMO_CARD_SHOWN =
+                "identity_check_promo_card_shown";
+
 
         /**
          * Settings migrated from Wear OS settings provider.

@@ -29,6 +29,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_MAIN
+import android.content.res.Configuration
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.Region
@@ -44,6 +45,7 @@ import android.testing.AndroidTestingRunner
 import android.testing.TestableLooper.RunWithLooper
 import android.view.Display.DEFAULT_DISPLAY
 import android.view.ISystemGestureExclusionListener
+import android.view.InputDevice
 import android.view.InsetsSource
 import android.view.InsetsState
 import android.view.KeyEvent
@@ -66,6 +68,7 @@ import com.android.wm.shell.desktopmode.DesktopImmersiveController
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.MinimizeReason
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger
+import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.UnminimizeReason
 import com.android.wm.shell.desktopmode.DesktopTasksController
 import com.android.wm.shell.desktopmode.DesktopTasksController.SnapPosition
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
@@ -773,7 +776,30 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
     }
 
     @Test
-    fun testDecor_onClickToSplitScreen_requestsSplit() {
+    fun testDecor_onClickToSplitScreen_inPortrait_requestsSplitToTop() {
+        // GIVEN the device is in portrait orientation
+        val resources = spyContext.resources
+        val configuration = resources.configuration
+        configuration.orientation = Configuration.ORIENTATION_PORTRAIT
+
+        val windowDecorationActionsCaptor = argumentCaptor<WindowDecorationActions>()
+        val decor = createOpenTaskDecoration(
+            windowingMode = WINDOWING_MODE_MULTI_WINDOW,
+            windowDecorationActions = windowDecorationActionsCaptor
+        )
+
+        windowDecorationActionsCaptor.firstValue.onToSplitScreen(decor.mTaskInfo.taskId)
+
+        verify(mockDesktopTasksController).requestSplit(decor.mTaskInfo, leftOrTop = true)
+    }
+
+    @Test
+    fun testDecor_onClickToSplitScreen_inLandscape_requestsSplitToSide() {
+        // GIVEN the device is in landscape orientation
+        val resources = spyContext.resources
+        val configuration = resources.configuration
+        configuration.orientation = Configuration.ORIENTATION_LANDSCAPE
+
         val windowDecorationActionsCaptor = argumentCaptor<WindowDecorationActions>()
         val decor = createOpenTaskDecoration(
             windowingMode = WINDOWING_MODE_MULTI_WINDOW,
@@ -1059,6 +1085,54 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
         val hierarchyOp = wct.hierarchyOps[0]
         assertThat(hierarchyOp.type).isEqualTo(HierarchyOp.HIERARCHY_OP_TYPE_REMOVE_TASK)
         assertThat(hierarchyOp.container).isEqualTo(decor.mTaskInfo.token.asBinder())
+    }
+
+    @Test
+    fun testOnTouchWithClassification_doesNothing() {
+        val onClickListenerCaptor = argumentCaptor<View.OnClickListener>()
+        val onTouchListenerCaptor = argumentCaptor<View.OnTouchListener>()
+        val decor = createOpenTaskDecoration(
+            windowingMode = WINDOWING_MODE_FREEFORM,
+            onCaptionButtonClickListener = onClickListenerCaptor,
+            onCaptionButtonTouchListener = onTouchListenerCaptor,
+        )
+
+        val view = mock<View> {
+            on { id } doReturn R.id.desktop_mode_caption
+        }
+
+        val onTouchListener = onTouchListenerCaptor.firstValue
+        assertFalse(
+            onTouchListener.onTouch(
+                view,
+                createMotionEvent(
+                    MotionEvent.ACTION_DOWN,
+                    x = 0f,
+                    y = 0f,
+                    source = InputDevice.SOURCE_MOUSE,
+                    classification = MotionEvent.CLASSIFICATION_TWO_FINGER_SWIPE
+                )
+            )
+        )
+
+        verify(mockDesktopTasksController, never()).moveTaskToFront(
+            anyOrNull<RunningTaskInfo>(),
+            anyOrNull(),
+            anyOrNull<UnminimizeReason>(),
+        )
+
+        assertFalse(
+            onTouchListener.onTouch(
+                view,
+                createMotionEvent(
+                    MotionEvent.ACTION_UP,
+                    x = 0f,
+                    y = 0f,
+                    source = InputDevice.SOURCE_MOUSE,
+                    classification = MotionEvent.CLASSIFICATION_TWO_FINGER_SWIPE
+                )
+            )
+        )
     }
 
     @Test
@@ -1602,6 +1676,42 @@ class DesktopModeWindowDecorViewModelTests : DesktopModeWindowDecorViewModelTest
             surfaceView.holder.surface,
             DisplayManager.VIRTUAL_DISPLAY_FLAG_OWN_CONTENT_ONLY,
         )
+    }
+
+    private fun createMotionEvent(
+        action: Int,
+        x: Float = 0f,
+        y: Float = 0f,
+        source: Int = InputDevice.SOURCE_TOUCHSCREEN,
+        classification: Int = MotionEvent.CLASSIFICATION_NONE,
+    ): MotionEvent {
+        val pointerProperties = arrayOf(MotionEvent.PointerProperties().apply {
+            this.id = 0
+            this.toolType = MotionEvent.TOOL_TYPE_FINGER
+        })
+        val pointerCoords = arrayOf(MotionEvent.PointerCoords().apply {
+            this.x = x
+            this.y = y
+        })
+        val ev = MotionEvent.obtain(
+            /* downTime= */ SystemClock.uptimeMillis(),
+            /* eventTime= */ SystemClock.uptimeMillis(),
+            action,
+            /* pointerCount= */ 1,
+            pointerProperties,
+            pointerCoords,
+            /* metaState= */ 0,
+            /* buttonState= */ 0,
+            /* xPrecision= */ 0f,
+            /* yPrecision= */ 0f,
+            /* deviceId= */ 0,
+            /* edgeFlags= */ 0,
+            source,
+            /* displayId= */ 0,
+            /* flags= */ 0,
+            classification,
+        )!!
+        return ev
     }
 
     private companion object {

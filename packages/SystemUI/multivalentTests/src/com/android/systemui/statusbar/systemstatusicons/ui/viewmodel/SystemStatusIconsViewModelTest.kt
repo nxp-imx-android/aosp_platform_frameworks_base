@@ -98,7 +98,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
     }
 
     @Test
-    fun iconViewModels_initiallyEmpty_whenNoIconIsActive() =
+    fun iconViewModels_noIconIsActive_initiallyEmpty() =
         kosmos.runTest { assertThat(underTest.activeSlotNames).isEmpty() }
 
     @Test
@@ -141,7 +141,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun iconViewModels_updatesWhenIndividualIconStateChanges_becomesActive() =
+    fun iconViewModels_individualIconStateChanges_becomesActive() =
         kosmos.runTest {
             statusBarConfigIconSlotNames = arrayOf(slotAirplane)
 
@@ -153,7 +153,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun iconViewModels_updatesWhenIndividualIconStateChanges_becomesInactive() =
+    fun iconViewModels_individualIconStateChanges_becomesInactive() =
         kosmos.runTest {
             statusBarConfigIconSlotNames = arrayOf(slotAirplane)
             showAirplaneMode()
@@ -228,7 +228,7 @@ class SystemStatusIconsViewModelTest : SysuiTestCase() {
         }
 
     private val SystemStatusIconsViewModel.activeSlotNames: List<String>
-        get() = this.iconViewModels.filter { it.icon != null }.map { it.slotName }
+        get() = this.iconViewModels.filter { it.visible }.map { it.slotName }
 
     private suspend fun Kosmos.showAirplaneMode() {
         airplaneModeRepository.setIsAirplaneMode(true)

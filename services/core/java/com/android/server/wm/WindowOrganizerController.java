@@ -2289,7 +2289,8 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                 return false;
             }
             if (!ArrayUtils.isEmpty(hop.getWindowingModes())
-                    && !ArrayUtils.contains(hop.getWindowingModes(), task.getWindowingMode())) {
+                    && !ArrayUtils.contains(hop.getWindowingModes(),
+                    task.getRequestedOverrideWindowingMode())) {
                 return false;
             }
             if (isLockTaskModeViolation(finalNewParent, task, isInLockTaskMode)) {

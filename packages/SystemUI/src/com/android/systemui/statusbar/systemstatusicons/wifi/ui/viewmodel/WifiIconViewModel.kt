@@ -28,7 +28,6 @@ import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatu
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.map
 
 /**
  * View model for the wifi system status icon. Emits a wifi icon when wifi is enabled and should be
@@ -38,7 +37,7 @@ import kotlinx.coroutines.flow.map
 class WifiIconViewModel
 @AssistedInject
 constructor(@Assisted private val context: Context, wifiViewModel: WifiViewModel) :
-    SystemStatusIconViewModel, ExclusiveActivatable() {
+    SystemStatusIconViewModel.Default, ExclusiveActivatable() {
 
     init {
         SystemStatusIconsInCompose.expectInNewMode()
@@ -48,19 +47,18 @@ constructor(@Assisted private val context: Context, wifiViewModel: WifiViewModel
 
     override val slotName = context.getString(com.android.internal.R.string.status_bar_wifi)
 
-    override val icon: Icon? by
+    private val wifiIcon: WifiIcon by
         hydrator.hydratedStateOf(
             traceName = "SystemStatus.wifiIcon",
-            initialValue = null,
-            source = wifiViewModel.wifiIcon.map { it.toSystemStatusIcon() },
+            initialValue = WifiIcon.Hidden,
+            source = wifiViewModel.wifiIcon,
         )
 
-    private fun WifiIcon.toSystemStatusIcon(): Icon? {
-        return when (this) {
-            is WifiIcon.Hidden -> null
-            is WifiIcon.Visible -> this.icon
-        }
-    }
+    override val visible: Boolean
+        get() = wifiIcon is WifiIcon.Visible
+
+    override val icon: Icon?
+        get() = (wifiIcon as? WifiIcon.Visible)?.icon
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()

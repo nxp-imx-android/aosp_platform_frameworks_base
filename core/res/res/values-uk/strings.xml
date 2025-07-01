@@ -76,10 +76,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Цей додаток несумісний зі сторінками пам’яті з розміром 16 КБ. Не вдалося виконати перевірку вирівнювання APK. Цей додаток працюватиме в режимі сумісності з розміром сторінки. Для оптимальної сумісності перекомпілюйте додаток так, щоб він підтримував сторінки пам’яті з розміром 16 КБ. Щоб дізнатися більше, перегляньте статтю &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Цей додаток несумісний зі сторінками пам’яті з розміром 16 КБ. Не вдалося виконати перевірку вирівнювання ELF. Цей додаток працюватиме в режимі сумісності з розміром сторінки. Для оптимальної сумісності перекомпілюйте додаток так, щоб він підтримував сторінки пам’яті з розміром 16 КБ. Щоб дізнатися більше, перегляньте статтю &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Цей додаток несумісний зі сторінками пам’яті з розміром 16 КБ. Не вдалося виконати перевірку вирівнювання APK і ELF. Цей додаток працюватиме в режимі сумісності з розміром сторінки. Для оптимальної сумісності перекомпілюйте додаток так, щоб він підтримував сторінки пам’яті з розміром 16 КБ. Щоб дізнатися більше, перегляньте статтю &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Це попередження відображається, оскільки це налагоджуваний додаток, який зараз тестується. Якщо ви не розробник, повідомте про це розробника й попросіть надати додаток, який не можна налагоджувати. Цей додаток не підтримує сторінки пам’яті розміром 16 КБ. Не вдалося виконати перевірку узгодження APK. Виконайте вказівки на сторінці &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Це попередження відображається, оскільки це налагоджуваний додаток, який зараз тестується. Якщо ви не розробник, повідомте про це розробника й попросіть надати додаток, який не можна налагоджувати. Цей додаток не підтримує сторінки пам’яті розміром 16 КБ. Не вдалося виконати перевірку узгодження ELF. Виконайте вказівки на сторінці &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Це попередження відображається, оскільки це налагоджуваний додаток, який зараз тестується. Якщо ви не розробник, повідомте про це розробника й попросіть надати додаток, який не можна налагоджувати. Цей додаток не підтримує сторінки пам’яті розміром 16 КБ. Не вдалося виконати перевірку узгодження APK і ELF. Виконайте вказівки на сторінці &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Більше не показувати"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Службу не ініціалізовано."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Ви не можете змінювати налаштування ідентифікатора абонента."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Мобільний Інтернет переключено на <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>

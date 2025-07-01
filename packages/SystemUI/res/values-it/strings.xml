@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Al momento stai registrando l\'intero schermo"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Al momento stai registrando <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Interrompi registrazione"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Acquisisci area selezionata"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Acquisisci"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Registra"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Condivisione dello schermo in corso"</string>
@@ -901,7 +900,7 @@
     <string name="notification_conversation_unbubble" msgid="6908427185031099868">"Rimuovi bolle"</string>
     <string name="notification_menu_accessibility" msgid="8984166825879886773">"<xliff:g id="APP_NAME">%1$s</xliff:g> <xliff:g id="MENU_DESCRIPTION">%2$s</xliff:g>"</string>
     <string name="notification_menu_gear_description" msgid="6429668976593634862">"gestione delle notifiche"</string>
-    <string name="notification_menu_snooze_description" msgid="4740133348901973244">"opzioni di posticipazione notifiche"</string>
+    <string name="notification_menu_snooze_description" msgid="4740133348901973244">"opzioni di posticipo notifiche"</string>
     <string name="notification_menu_snooze_action" msgid="5415729610393475019">"Ricordamelo"</string>
     <string name="snooze_undo" msgid="2738844148845992103">"Annulla"</string>
     <string name="snooze_undo_content_description" msgid="2711656788917580801">"Annulla ripetizione notifica"</string>
@@ -1656,14 +1655,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Sconosciuti"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Reimpostare tutti i riquadri?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Tutti i riquadri Impostazioni rapide torneranno ai valori originali del dispositivo"</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"Ricevi suggerimenti utili"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"Utilizziamo l\'AI per suggerire proattivamente informazioni e azioni pertinenti a ciò che stai facendo sullo schermo"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"Icona"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"Tocca e tieni premuto per vedere come vengono generati i suggerimenti"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> non mostrerà più gli aggiornamenti in tempo reale. Puoi modificare questa opzione in qualsiasi momento in Impostazioni."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Chiudi"</string>

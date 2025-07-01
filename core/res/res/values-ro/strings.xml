@@ -75,10 +75,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Această aplicație nu este compatibilă cu 16 KB. Verificarea alinierii APK nu a reușit. Aplicația va rula folosind modul compatibil cu dimensiunea paginii. Pentru cea mai bună compatibilitate, recompilează aplicația cu suport pentru 16 KB. Pentru mai multe informații, accesează &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Această aplicație nu este compatibilă cu 16 KB. Verificarea alinierii ELF nu a reușit. Aplicația va rula folosind modul compatibil cu dimensiunea paginii. Pentru cea mai bună compatibilitate, recompilează aplicația cu suport pentru 16 KB. Pentru mai multe informații, accesează &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Această aplicație nu este compatibilă cu 16 KB. Verificările de aliniere APK și ELF nu au reușit. Aplicația va rula folosind modul compatibil cu dimensiunea paginii. Pentru cea mai bună compatibilitate, recompilează aplicația cu suport pentru 16 KB. Pentru mai multe informații, accesează &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Avertismentul se afișează deoarece aceasta este o aplicație care poate fi remediată și care este în curs de testare. Dacă nu ești dezvoltatorul, raportează situația dezvoltatorului și solicită o aplicație care nu poate fi remediată. Această aplicație nu este compatibilă cu 16 KB. Verificarea alinierii APK nu a reușit. Urmează pașii de la href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Avertismentul se afișează deoarece aceasta este o aplicație care poate fi remediată și care este în curs de testare. Dacă nu ești dezvoltatorul, raportează situația dezvoltatorului și solicită o aplicație care nu poate fi remediată. Această aplicație nu este compatibilă cu 16 KB. Verificarea alinierii ELF nu a reușit. Urmează pașii de la href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Avertismentul se afișează deoarece aceasta este o aplicație care poate fi remediată și care este în curs de testare. Dacă nu ești dezvoltatorul, raportează situația dezvoltatorului și solicită o aplicație care nu poate fi remediată. Această aplicație nu este compatibilă cu 16 KB. Verificările alinierii APK și ELF nu au reușit. Urmează pașii de la href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Nu mai afișa"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Nu se asigură accesul la acest serviciu."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Nu poți modifica setarea pentru ID-ul apelantului."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"S-a trecut la datele mobile <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>

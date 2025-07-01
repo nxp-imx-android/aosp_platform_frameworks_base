@@ -190,6 +190,8 @@ class BubbleViewInfoTaskTest {
         bubbleStackView = mock<BubbleStackView>()
         whenever(bubbleStackView.generateLayoutParams(any()))
             .thenReturn(FrameLayout.LayoutParams(1000, 1000))
+        whenever(bubbleStackView.generateLayoutParams(any(), any()))
+            .thenReturn(FrameLayout.LayoutParams(1000, 1000))
         expandedViewManager = BubbleExpandedViewManager.fromBubbleController(bubbleController)
     }
 

@@ -167,6 +167,7 @@ package android {
     field @FlaggedApi("com.android.devicelock.flags.get_enrollment_type") public static final String GET_DEVICE_LOCK_ENROLLMENT_TYPE = "android.permission.GET_DEVICE_LOCK_ENROLLMENT_TYPE";
     field public static final String GET_HISTORICAL_APP_OPS_STATS = "android.permission.GET_HISTORICAL_APP_OPS_STATS";
     field public static final String GET_PROCESS_STATE_AND_OOM_SCORE = "android.permission.GET_PROCESS_STATE_AND_OOM_SCORE";
+    field @FlaggedApi("android.permission.flags.supervision_role_enabled") public static final String GET_ROLE_HOLDERS = "android.permission.GET_ROLE_HOLDERS";
     field public static final String GET_RUNTIME_PERMISSIONS = "android.permission.GET_RUNTIME_PERMISSIONS";
     field public static final String GET_TOP_ACTIVITY_INFO = "android.permission.GET_TOP_ACTIVITY_INFO";
     field @Deprecated public static final String GRANT_PROFILE_OWNER_DEVICE_IDS_ACCESS = "android.permission.GRANT_PROFILE_OWNER_DEVICE_IDS_ACCESS";
@@ -8146,6 +8147,7 @@ package android.media.audiopolicy {
   public class AudioMix implements android.os.Parcelable {
     method public int describeContents();
     method public int getMixState();
+    method @FlaggedApi("android.media.audio.dap_injection_starve_management") public boolean isInjectingSilenceOnStarvation();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.media.audiopolicy.AudioMix> CREATOR;
     field public static final int MIX_STATE_DISABLED = -1; // 0xffffffff
@@ -8158,9 +8160,10 @@ package android.media.audiopolicy {
   public static class AudioMix.Builder {
     ctor public AudioMix.Builder(@NonNull android.media.audiopolicy.AudioMixingRule) throws java.lang.IllegalArgumentException;
     method public android.media.audiopolicy.AudioMix build() throws java.lang.IllegalArgumentException;
-    method public android.media.audiopolicy.AudioMix.Builder setDevice(@NonNull android.media.AudioDeviceInfo) throws java.lang.IllegalArgumentException;
-    method public android.media.audiopolicy.AudioMix.Builder setFormat(@NonNull android.media.AudioFormat) throws java.lang.IllegalArgumentException;
-    method public android.media.audiopolicy.AudioMix.Builder setRouteFlags(int) throws java.lang.IllegalArgumentException;
+    method @NonNull public android.media.audiopolicy.AudioMix.Builder setDevice(@NonNull android.media.AudioDeviceInfo) throws java.lang.IllegalArgumentException;
+    method @NonNull public android.media.audiopolicy.AudioMix.Builder setFormat(@NonNull android.media.AudioFormat) throws java.lang.IllegalArgumentException;
+    method @FlaggedApi("android.media.audio.dap_injection_starve_management") @NonNull public android.media.audiopolicy.AudioMix.Builder setInjectSilenceOnStarvation(boolean);
+    method @NonNull public android.media.audiopolicy.AudioMix.Builder setRouteFlags(int) throws java.lang.IllegalArgumentException;
   }
 
   public class AudioMixingRule implements android.os.Parcelable {
@@ -11705,6 +11708,28 @@ package android.os {
     method public int getOperationResult();
     method @Nullable public android.os.UserHandle getUser();
     method public boolean isSuccessful();
+  }
+
+  @FlaggedApi("android.location.flags.change_get_adas_allowlist_from_hidden_to_system") public final class PackageTagsList implements android.os.Parcelable {
+    method public boolean contains(@NonNull String, @Nullable String);
+    method public boolean containsAll(@NonNull android.os.PackageTagsList);
+    method public boolean containsPackage(@NonNull String);
+    method public boolean containsPackageWithAllTags(@NonNull String);
+    method public int describeContents();
+    method @NonNull public java.util.Set<java.lang.String> getPackages();
+    method public boolean isEmpty();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.os.PackageTagsList> CREATOR;
+  }
+
+  @FlaggedApi("android.location.flags.change_get_adas_allowlist_from_hidden_to_system") public static final class PackageTagsList.Builder {
+    ctor public PackageTagsList.Builder();
+    ctor public PackageTagsList.Builder(int);
+    method @NonNull public android.os.PackageTagsList.Builder add(@NonNull String);
+    method @NonNull public android.os.PackageTagsList.Builder add(@NonNull String, @Nullable String);
+    method @NonNull public android.os.PackageTagsList.Builder addAll(@NonNull android.os.PackageTagsList);
+    method @NonNull public android.os.PackageTagsList.Builder addAll(@NonNull java.util.Map<java.lang.String,? extends java.util.Set<java.lang.String>>);
+    method @NonNull public android.os.PackageTagsList build();
   }
 
   public interface Parcelable {
@@ -19949,6 +19974,38 @@ package android.webkit {
 }
 
 package android.window {
+
+  @FlaggedApi("com.android.graphics.surfaceflinger.flags.readback_screenshot") public class ScreenCapture {
+    method public static void capture(@NonNull android.window.ScreenCapture.ScreenCaptureParams, @NonNull java.util.concurrent.Executor, @NonNull android.os.OutcomeReceiver<android.window.ScreenCapture.ScreenCaptureResult,java.lang.Exception>);
+    method public static boolean isScreenCaptureOptimizationEnabled();
+  }
+
+  @FlaggedApi("com.android.graphics.surfaceflinger.flags.readback_screenshot") public static final class ScreenCapture.ScreenCaptureParams implements android.os.Parcelable {
+    method public int describeContents();
+    method public int getCaptureMode();
+    method public int getDisplayId();
+    method public int getPixelFormat();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field public static final int CAPTURE_MODE_NONE = 0; // 0x0
+    field public static final int CAPTURE_MODE_REQUIRE_OPTIMIZED = 1; // 0x1
+    field @NonNull public static final android.os.Parcelable.Creator<android.window.ScreenCapture.ScreenCaptureParams> CREATOR;
+  }
+
+  @FlaggedApi("com.android.graphics.surfaceflinger.flags.readback_screenshot") public static final class ScreenCapture.ScreenCaptureParams.Builder {
+    ctor public ScreenCapture.ScreenCaptureParams.Builder(@NonNull android.view.Display);
+    method @NonNull public android.window.ScreenCapture.ScreenCaptureParams build();
+    method @NonNull public android.window.ScreenCapture.ScreenCaptureParams.Builder setCaptureMode(int);
+    method @NonNull public android.window.ScreenCapture.ScreenCaptureParams.Builder setPixelFormat(int);
+  }
+
+  @FlaggedApi("com.android.graphics.surfaceflinger.flags.readback_screenshot") public static final class ScreenCapture.ScreenCaptureResult implements android.os.Parcelable {
+    ctor public ScreenCapture.ScreenCaptureResult(@NonNull android.graphics.ColorSpace, @NonNull android.hardware.HardwareBuffer);
+    method public int describeContents();
+    method @NonNull public android.graphics.ColorSpace getColorSpace();
+    method @NonNull public android.hardware.HardwareBuffer getHardwareBuffer();
+    method public void writeToParcel(@NonNull android.os.Parcel, int);
+    field @NonNull public static final android.os.Parcelable.Creator<android.window.ScreenCapture.ScreenCaptureResult> CREATOR;
+  }
 
   public abstract class TaskFpsCallback {
     ctor public TaskFpsCallback();

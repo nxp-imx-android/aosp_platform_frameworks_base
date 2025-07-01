@@ -212,7 +212,7 @@
     <string name="launch_defaults_some" msgid="3631650616557252926">"Je nastaveno několik výchozích hodnot"</string>
     <string name="launch_defaults_none" msgid="8049374306261262709">"Nejsou nastaveny žádné výchozí hodnoty"</string>
     <string name="tts_settings" msgid="8130616705989351312">"Nastavení převodu textu na řeč"</string>
-    <string name="tts_settings_title" msgid="7602210956640483039">"Převod textu na řeč"</string>
+    <string name="tts_settings_title" msgid="7602210956640483039">"Výstup převodu textu na řeč"</string>
     <string name="tts_default_rate_title" msgid="3964187817364304022">"Rychlost řeči"</string>
     <string name="tts_default_rate_summary" msgid="3781937042151716987">"Jak rychle je text předčítán"</string>
     <string name="tts_default_pitch_title" msgid="6988592215554485479">"Výška"</string>

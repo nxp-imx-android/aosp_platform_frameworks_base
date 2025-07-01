@@ -65,6 +65,8 @@ java_defaults {
     kotlin_plugins: ["kotlin-parcelize-compiler-plugin"],
 
     optimize: {
+        optimize: true,
+        shrink: true,
         shrink_resources: true,
     },
 }

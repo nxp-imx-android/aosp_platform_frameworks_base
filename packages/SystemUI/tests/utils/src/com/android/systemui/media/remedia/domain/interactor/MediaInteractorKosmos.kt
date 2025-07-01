@@ -20,6 +20,7 @@ import android.content.applicationContext
 import com.android.systemui.activityIntentHelper
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.media.controls.domain.pipeline.mediaDataProcessor
+import com.android.systemui.media.mediaOutputDialogManager
 import com.android.systemui.media.remedia.data.repository.mediaRepository
 import com.android.systemui.plugins.activityStarter
 import com.android.systemui.statusbar.notificationLockscreenUserManager
@@ -35,5 +36,6 @@ val Kosmos.mediaInteractor by
             activityStarter = activityStarter,
             lockscreenUserManager = notificationLockscreenUserManager,
             activityIntentHelper = activityIntentHelper,
+            mediaOutputDialogManager = mediaOutputDialogManager,
         )
     }

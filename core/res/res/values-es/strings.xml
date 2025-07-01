@@ -75,10 +75,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Esta aplicación no es compatible con el modo de 16 KB. No se ha podido comprobar la alineación del APK. Esta aplicación se ejecutará en el modo compatible con el tamaño de página. Para obtener la mejor compatibilidad, vuelve a compilar la aplicación con compatibilidad de 16 KB. Para obtener más información, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Esta aplicación no es compatible con el modo de 16 KB. No se ha podido comprobar la alineación de ELF. Esta aplicación se ejecutará en el modo compatible con el tamaño de página. Para obtener la mejor compatibilidad, vuelve a compilar la aplicación con compatibilidad de 16 KB. Para obtener más información, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Esta aplicación no es compatible con el modo de 16 KB. No se han podido comprobar las alineaciones de APK y ELF. Esta aplicación se ejecutará en el modo compatible con el tamaño de página. Para obtener la mejor compatibilidad, vuelve a compilar la aplicación con compatibilidad de 16 KB. Para obtener más información, consulta &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Esta advertencia se muestra porque se trata de una aplicación depurable en proceso de pruebas. Si no eres el desarrollador, infórmale de este problema y pídele que cree una aplicación que no se pueda depurar. Esta aplicación no es compatible con 16 kB. No se ha podido comprobar la alineación del APK. Sigue los pasos que se indican en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Esta advertencia se muestra porque se trata de una aplicación depurable en proceso de pruebas. Si no eres el desarrollador, infórmale de este problema y pídele que cree una aplicación que no se pueda depurar. Esta aplicación no es compatible con 16 kB. No se ha podido comprobar la alineación de ELF. Sigue los pasos que se indican en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Esta advertencia se muestra porque se trata de una aplicación depurable en proceso de pruebas. Si no eres el desarrollador, infórmale de este problema y pídele que cree una aplicación que no se pueda depurar. Esta aplicación no es compatible con 16 kB. No se han podido comprobar las alineaciones de APK y ELF. Sigue los pasos que se indican en &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"No volver a mostrar"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"El servicio no se suministra."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"No puedes modificar la identificación de emisor."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Datos cambiados a <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -1456,7 +1469,7 @@
     <string name="usb_unsupported_audio_accessory_title" msgid="2335775548086533065">"Se ha detectado un accesorio de audio analógico"</string>
     <string name="usb_unsupported_audio_accessory_message" msgid="1300168007129796621">"El dispositivo adjunto no es compatible con este teléfono. Toca para obtener más información."</string>
     <string name="adb_active_notification_title" msgid="408390247354560331">"Depuración por USB activa"</string>
-    <string name="adb_active_notification_message" msgid="5617264033476778211">"Toca para desactivar la depuración por USB"</string>
+    <string name="adb_active_notification_message" msgid="5617264033476778211">"Toca para desactivarla"</string>
     <string name="adb_active_notification_message" product="tv" msgid="6624498401272780855">"Seleccionar para inhabilitar la depuración por USB"</string>
     <string name="adbwifi_active_notification_title" msgid="6147343659168302473">"Depuración inalámbrica conectada"</string>
     <string name="adbwifi_active_notification_message" msgid="930987922852867972">"Toca para desactivar la depuración inalámbrica"</string>

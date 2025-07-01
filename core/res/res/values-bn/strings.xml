@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"এই অ্যাপ ১৬ কেবির সাথে মানানসই নয়। APK অ্যালাইনমেন্ট চেক করা যায়নি। এই অ্যাপ পৃষ্ঠার সাইজের সাথে মানানসই মোড ব্যবহার করে চলবে। সবচেয়ে ভালো মানানসই হিসেবে কাজ করার জন্য অ্যাপ্লিকেশনকে ১৬ কেবি সাপোর্টের সাথে আবার কম্পাইল করুন। আরও তথ্যের জন্য, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; দেখুন"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"এই অ্যাপ ১৬ কেবির সাথে মানানসই নয়। ELF অ্যালাইনমেন্ট চেক করা যায়নি। এই অ্যাপ পৃষ্ঠার সাইজের সাথে মানানসই মোড ব্যবহার করে চলবে। সবচেয়ে ভালো মানানসই হিসেবে কাজ করার জন্য অ্যাপ্লিকেশনকে ১৬ কেবি সাপোর্টের সাথে আবার কম্পাইল করুন। আরও তথ্যের জন্য, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; দেখুন"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"এই অ্যাপ ১৬ কেবির সাথে মানানসই নয়। APK ও ELF অ্যালাইনমেন্ট পরীক্ষা করা যায়নি। এই অ্যাপ পৃষ্ঠার সাইজের সাথে মানানসই মোড ব্যবহার করে চলবে। সবচেয়ে ভালো মানানসই হিসেবে কাজ করার জন্য অ্যাপ্লিকেশনকে ১৬ কেবি সাপোর্টের সাথে আবার কম্পাইল করুন। আরও তথ্যের জন্য, &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; দেখুন"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"এই সতর্কতা দেখানো হচ্ছে কারণ এটি এমন একটি অ্যাপ যা ডিবাগ করা যাবে এবং বর্তমানে পরীক্ষা করা হচ্ছে। যদি আপনি ডেভেলপার না হন, তাহলে অনুগ্রহ করে ডেভেলপারকে এটি রিপোর্ট করুন এবং ডিবাগ করা যাবে না এমন একটি অ্যাপের জন্য অনুরোধ করুন। এই অ্যাপটি ১৬ কেবির সাথে মানানসই নয়। APK অ্যালাইনমেন্ট চেক করা যায়নি। &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; থেকে ধাপগুলি ফলো করুন"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"এই সতর্কতা দেখানো হচ্ছে কারণ এটি এমন একটি অ্যাপ যা ডিবাগ করা যাবে এবং বর্তমানে পরীক্ষা করা হচ্ছে। যদি আপনি ডেভেলপার না হন, তাহলে অনুগ্রহ করে ডেভেলপারকে এটি রিপোর্ট করুন এবং ডিবাগ করা যাবে না এমন একটি অ্যাপের জন্য অনুরোধ করুন। এই অ্যাপটি ১৬ কেবির সাথে মানানসই নয়। ELF অ্যালাইনমেন্ট চেক করা যায়নি। &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; থেকে ধাপগুলি ফলো করুন"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"এই সতর্কতা দেখানো হচ্ছে কারণ এটি এমন একটি অ্যাপ যা ডিবাগ করা যাবে এবং বর্তমানে পরীক্ষা করা হচ্ছে। যদি আপনি ডেভেলপার না হন, তাহলে অনুগ্রহ করে ডেভেলপারকে এটি রিপোর্ট করুন এবং ডিবাগ করা যাবে না এমন একটি অ্যাপের জন্য অনুরোধ করুন। এই অ্যাপটি ১৬ কেবির সাথে মানানসই নয়। APK ও ELF অ্যালাইনমেন্ট পরীক্ষা করা যায়নি। &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; থেকে ধাপগুলি ফলো করুন"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"আর দেখতে চাই না"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"পরিষেবা প্রস্তুত নয়৷"</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"আপনি কলার আইডি এর সেটিংস পরিবর্তন করতে পারবেন না৷"</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"<xliff:g id="CARRIERDISPLAY">%s</xliff:g>-এর ডেটা ব্যবহার করা হয়েছে"</string>

@@ -20,7 +20,6 @@ import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Rect;
 import android.os.Binder;
@@ -51,7 +50,6 @@ import java.util.function.Consumer;
  * @see ChooserManager
  */
 @FlaggedApi(Flags.FLAG_INTERACTIVE_CHOOSER)
-@SuppressLint("NotCloseable")
 public final class ChooserSession {
     /**
      * @hide
@@ -133,25 +131,28 @@ public final class ChooserSession {
     /**
      * Terminates the session and closes Chooser.
      */
-    public void close() {
+    public void endSession() {
         mChooserSession.close();
     }
 
     /**
-     * Updates chooser intent in a Chooser session.
-     * <p>Updates to the following extras will be honored:
+     * Updates the chooser intent in an active Chooser session, causing Chooser to refresh its state
+     * and targets.
+     * <p>
+     * Only updates to the following extras in the provided intent are respected:
      * <ul>
-     * <li> {@link Intent#EXTRA_INTENT}
-     * <li> {@link Intent#EXTRA_EXCLUDE_COMPONENTS}
-     * <li> {@link Intent#EXTRA_CHOOSER_TARGETS}
-     * <li> {@link Intent#EXTRA_ALTERNATE_INTENTS}
-     * <li> {@link Intent#EXTRA_REPLACEMENT_EXTRAS}
-     * <li> {@link Intent#EXTRA_INITIAL_INTENTS}
-     * <li> {@link Intent#EXTRA_CHOOSER_RESULT_INTENT_SENDER}
-     * <li> {@link Intent#EXTRA_CHOOSER_REFINEMENT_INTENT_SENDER}
+     * <li>{@link Intent#EXTRA_INTENT}</li>
+     * <li>{@link Intent#EXTRA_EXCLUDE_COMPONENTS}</li>
+     * <li>{@link Intent#EXTRA_CHOOSER_TARGETS}</li>
+     * <li>{@link Intent#EXTRA_ALTERNATE_INTENTS}</li>
+     * <li>{@link Intent#EXTRA_REPLACEMENT_EXTRAS}</li>
+     * <li>{@link Intent#EXTRA_INITIAL_INTENTS}</li>
+     * <li>{@link Intent#EXTRA_CHOOSER_RESULT_INTENT_SENDER}</li>
+     * <li>{@link Intent#EXTRA_CHOOSER_REFINEMENT_INTENT_SENDER}</li>
      * </ul>
-     * </p>
-     * <p>A no-op when the session is not in the {@link #STATE_STARTED}.</p>
+     * This method is a no-op if the session is not in the {@link #STATE_STARTED} state.
+     *
+     * @param intent The new intent to apply to the session.
      */
     public void updateIntent(@NonNull Intent intent) {
         Objects.requireNonNull(intent, "intent should not be null");
@@ -166,14 +167,17 @@ public final class ChooserSession {
     }
 
     /**
-     * Collapses Chooser to temporary yield more screen space for the app.
-     * Chooser will stay collapsed until its first user interaction.
-     * <p>A no-op when the session is not in the {@link #STATE_STARTED}.</p>
+     * Sets the minimized state of the Chooser UI.
+     * <p>
+     * Passing {@code true} requests that the Chooser minimize to its smallest footprint
+     * to yield screen space for the calling application. This state is temporary and can be
+     * overridden by any direct user interaction with the Chooser (e.g., dragging the share sheet).
      *
-     * @hide
+     * @param isMinimized {@code true} to request that the Chooser be minimized;
+     * {@code false} to restore it to its standard layout.
      */
-    public void collapse() {
-        mChooserSession.collapse();
+    public void setMinimized(boolean isMinimized) {
+        mChooserSession.setMinimized(isMinimized);
     }
 
     /**
@@ -301,11 +305,11 @@ public final class ChooserSession {
             doClose(false);
         }
 
-        public void collapse() {
+        public void setMinimized(boolean isMinimized) {
             IChooserController controller = getChooserController();
             if (controller != null) {
                 try {
-                    controller.collapse();
+                    controller.setMinimized(isMinimized);
                 } catch (DeadObjectException e) {
                     doClose(true);
                 } catch (RemoteException e) {

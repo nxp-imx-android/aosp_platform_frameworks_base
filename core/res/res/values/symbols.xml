@@ -4214,6 +4214,8 @@
   <java-symbol type="integer" name="config_storageManagerDaystoRetainDefault" />
   <java-symbol type="string" name="config_headlineFontFamily" />
   <java-symbol type="string" name="config_headlineFontFamilyMedium" />
+  <java-symbol type="string" name="config_bodyFontFamily" />
+
 
   <java-symbol type="integer" name="config_pressedStateDurationMillis" />
   <java-symbol type="integer" name="config_tapTimeoutMillis" />
@@ -5491,6 +5493,8 @@
   <java-symbol type="integer" name="config_batteryHistoryDumpWindowSize" />
   <java-symbol type="integer" name="config_batteryHistoryDumpCheckinWindowSize" />
   <java-symbol type="integer" name="config_batteryHistoryDumpRealCheckinWindowSize" />
+  <java-symbol type="integer" name="config_powerStatsLogPeriodLowFrequencyMs" />
+  <java-symbol type="integer" name="config_powerStatsLogPeriodHighFrequencyMs" />
 
   <!--Dynamic Tokens-->
   <java-symbol name="system_accent1_0_light" type="color"/>

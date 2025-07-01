@@ -21,6 +21,7 @@ import android.app.Notification
 import android.content.Context
 import android.graphics.PorterDuff
 import android.graphics.Rect
+import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.util.Log
 import android.util.Size
@@ -69,6 +70,7 @@ import com.android.internal.widget.ImageFloatingTextView
 import com.android.internal.widget.NotificationExpandButton
 import com.android.internal.widget.NotificationProgressBar
 import com.android.internal.widget.NotificationProgressModel
+import com.android.systemui.FontStyles
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.res.R as systemuiR
 import com.android.systemui.statusbar.notification.promoted.AodPromotedNotificationColor.Background
@@ -320,6 +322,7 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
     private val defaultLargeIconSizePx: Int =
         root.context.resources.getDimensionPixelSize(R.dimen.notification_right_icon_size)
+    private val defaultTypeface: Typeface? = getNotificationTypeFace(root.context)
 
     private val marginPx: Int =
         if (notificationsRedesignTemplates()) {
@@ -356,6 +359,8 @@ private class AODPromotedNotificationViewUpdater(root: View) {
         setTextViewColor(headerTextSecondaryDivider, SecondaryText)
         setTextViewColor(timeDivider, SecondaryText)
         setTextViewColor(verificationDivider, SecondaryText)
+
+        adjustPromotedNotificationTextFonts()
 
         if (notificationsRedesignTemplates()) {
             (mainColumn?.layoutParams as? MarginLayoutParams)?.let { mainColumnMargins ->
@@ -745,6 +750,41 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
     private fun setTextViewColor(view: TextView?, color: AodPromotedNotificationColor) {
         view?.setTextColor(color.colorInt)
+    }
+
+    private fun adjustPromotedNotificationTextFonts() {
+        adjustTextViewFont(appNameDivider)
+        adjustTextViewFont(appNameText)
+        adjustTextViewFont(bigText)
+        adjustTextViewFont(conversationText)
+        adjustTextViewFont(headerText)
+        adjustTextViewFont(headerTextDivider)
+        adjustTextViewFont(headerTextSecondary)
+        adjustTextViewFont(headerTextSecondaryDivider)
+        adjustTextViewFont(text)
+        adjustTextViewFont(title)
+        adjustTextViewFont(verificationDivider)
+        adjustTextViewFont(verificationText)
+        adjustTextViewFont(time)
+        adjustTextViewFont(timeDivider)
+    }
+
+    private fun getNotificationTypeFace(context: Context): Typeface? =
+        try {
+            val defaultFontFamily =
+                if (notificationsRedesignTemplates()) {
+                    FontStyles.GSF_BODY_MEDIUM
+                } else {
+                    context.resources.getString(R.string.config_bodyFontFamily)
+                }
+            Typeface.create(defaultFontFamily, Typeface.NORMAL)
+        } catch (throwable: Throwable) {
+            Log.wtf(TAG, "Font is not found for Promoted Notifications")
+            null
+        }
+
+    private fun adjustTextViewFont(view: TextView?) {
+        view?.setTypeface(defaultTypeface, Typeface.NORMAL)
     }
 
     companion object {

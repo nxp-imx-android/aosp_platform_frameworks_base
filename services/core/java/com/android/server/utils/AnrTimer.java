@@ -150,6 +150,11 @@ public class AnrTimer<V> implements AutoCloseable {
     private static final Injector sDefaultInjector = new Injector();
 
     /**
+     * Token that distinguishes early notifications from timer expirations.
+     */
+    private static final int TOKEN_EXPIRATION = 0;
+
+    /**
      * Token for Long Method Tracing notifications.
      * This token is used in early notifications to trigger long method tracing.
      */
@@ -164,8 +169,20 @@ public class AnrTimer<V> implements AutoCloseable {
      */
     public static class Args {
 
-        /** Represents a point in time (as percent of total) and an associated token. */
-        private record SplitPoint(int percent, int token) {}
+        /**
+         * Represents a point in time (as percent of total) and an associated token. Zero is a
+         * reserved token value.
+         */
+        public record SplitPoint(int percent, int token) {
+            public SplitPoint {
+                if (token == 0) {
+                    throw new IllegalArgumentException("token may not be zero");
+                }
+                if (percent <= 0 || percent > 100) {
+                    throw new IllegalArgumentException("percent must be in (0,100]");
+                }
+            }
+        }
 
         /** Split point for long method tracing, at 50% elapsed time. */
         private static final SplitPoint sLongMethodTracingPoint =
@@ -193,6 +210,9 @@ public class AnrTimer<V> implements AutoCloseable {
                 new TreeSet<>(comparingInt(SplitPoint::percent)
                         .thenComparingInt(SplitPoint::token));
 
+        /** Make this AnrTimer use test-mode clocking.  This is only useful in tests. */
+        private boolean mTestMode = false;
+
         // This is only used for testing, so it is limited to package visibility.
         Args injector(@NonNull Injector injector) {
             mInjector = injector;
@@ -209,6 +229,20 @@ public class AnrTimer<V> implements AutoCloseable {
             return this;
         }
 
+        public Args testMode(boolean flag) {
+            mTestMode = flag;
+            return this;
+        }
+
+        /**
+         * Add a split point.  For the specific purpose of long method tracing, consider using the
+         * {@link #longMethodTracing} method instead.
+         */
+        public Args splitPoint(SplitPoint point) {
+            mSplitPoints.add(point);
+            return this;
+        }
+
         /**
          * Enables or disables long method tracing.
          * When enabled, the timer will trigger long method tracing if it reaches 50%
@@ -218,7 +252,6 @@ public class AnrTimer<V> implements AutoCloseable {
          * @return this {@link Args} instance for chaining.
          */
         public Args longMethodTracing(boolean enabled) {
-            final int percent = 50;
             if (enabled) {
                 mSplitPoints.add(sLongMethodTracingPoint);
             } else {
@@ -263,7 +296,6 @@ public class AnrTimer<V> implements AutoCloseable {
             }
             return tokens;
         }
-
     }
 
     /**
@@ -427,14 +459,14 @@ public class AnrTimer<V> implements AutoCloseable {
         mWhat = what;
         mLabel = label;
         mArgs = args;
-        boolean enabled = args.mEnable && nativeTimersSupported();
-        mFeature = createFeatureSwitch(enabled);
+        mFeature = createFeatureSwitch();
     }
 
     // Return the correct feature.  FeatureEnabled is returned if and only if the feature is
     // flag-enabled and if the native shadow was successfully created.  Otherwise, FeatureDisabled
     // is returned.
-    private FeatureSwitch createFeatureSwitch(boolean enabled) {
+    private FeatureSwitch createFeatureSwitch() {
+        final boolean enabled = mArgs.mEnable && nativeTimersSupported();
         if (!enabled) {
             return new FeatureDisabled();
         } else {
@@ -505,6 +537,8 @@ public class AnrTimer<V> implements AutoCloseable {
         abstract void dump(IndentingPrintWriter pw, boolean verbose);
 
         abstract void close();
+
+        abstract void setTime(long now);
     }
 
     /**
@@ -560,6 +594,12 @@ public class AnrTimer<V> implements AutoCloseable {
         @Override
         void close() {
         }
+
+        /** The disabled timer does not support this operation. */
+        @Override
+        void setTime(long now) {
+            throw new UnsupportedOperationException("setTime unavailable in disabled mode");
+        }
     }
 
     /**
@@ -589,7 +629,7 @@ public class AnrTimer<V> implements AutoCloseable {
         /** Create the native AnrTimerService that will host all timers from this instance. */
         FeatureEnabled() {
             mNative = nativeAnrTimerCreate(mLabel, mArgs.mExtend, mArgs.getSplitPercentArray(),
-                    mArgs.getSplitTokenArray());
+                    mArgs.getSplitTokenArray(), mArgs.mTestMode);
             if (mNative == 0) throw new IllegalArgumentException("unable to create native timer");
             synchronized (sAnrTimerList) {
                 sAnrTimerList.put(mNative, new WeakReference(AnrTimer.this));
@@ -742,6 +782,16 @@ public class AnrTimer<V> implements AutoCloseable {
             }
             return r;
         }
+
+        /** This is always safe to call; it does nothing if the timer is not in test mode. */
+        @Override
+        void setTime(long now) {
+            if (!mArgs.mTestMode) {
+                throw new UnsupportedOperationException("setTime called outside test mode");
+            } else if (!nativeAnrTimerSetTime(mNative, now)) {
+                throw new RuntimeException("setTime failure");
+            }
+        }
     }
 
     /**
@@ -848,7 +898,12 @@ public class AnrTimer<V> implements AutoCloseable {
             }
             mTotalExpired++;
         }
-        mHandler.sendMessage(Message.obtain(mHandler, mWhat, arg));
+        final Message msg = Message.obtain(mHandler, mWhat, arg);
+        // arg1 is zero to signal that this is an expiration callback, and not an early notification
+        // callback.
+        // this an expiration.
+        msg.arg1 = TOKEN_EXPIRATION;
+        mHandler.sendMessage(msg);
         return true;
     }
 
@@ -865,15 +920,33 @@ public class AnrTimer<V> implements AutoCloseable {
     @Keep
     private void notifyEarly(int timerId, int pid, int uid,
                             long elapsedMs, int token) {
-        trace("notifyEarly", timerId, pid, uid, mLabel, elapsedMs, token);
-        switch(token) {
-            case TOKEN_LONG_METHOD_TRACING:
-                LongMethodTracer.trigger(pid,
-                        (int) Math.max(MIN_LMT_DURATION_MS, elapsedMs * 1.5));
-                break;
-            default:
-                Log.w(TAG, "Received a notification with an unknown token: " + token);
+        // Long method tracing is a special case for early notifications.  It is handled directly
+        // in this method.
+        if (token == TOKEN_LONG_METHOD_TRACING) {
+            trace("notifyEarly", timerId, pid, uid, mLabel, elapsedMs, token);
+            LongMethodTracer.trigger(pid,
+                    (int) Math.max(MIN_LMT_DURATION_MS, elapsedMs * 1.5));
+            return;
         }
+
+        // The token is not requesting long method tracing.  The event is forwarded to the message
+        // handler.  This path is used during testing although it is allowed in all cases.
+        V arg = null;
+        synchronized (mLock) {
+            arg = mTimerArgMap.get(timerId);
+            if (arg == null) {
+                Log.e(TAG, formatSimple("failed early notiffor for timer %s:%d : arg not found",
+                                mLabel, timerId));
+                mTotalErrors++;
+                return;
+            }
+        }
+
+        final Message msg = Message.obtain(mHandler, mWhat, arg);
+        // arg1 is used to signal early notifications; a non-zero arg1 means this an early
+        // notification, and arg1 is the token that is passed to the callback.
+        msg.arg1 = token;
+        mHandler.sendMessage(msg);
     }
 
     /**
@@ -881,6 +954,15 @@ public class AnrTimer<V> implements AutoCloseable {
      */
     public void close() {
         mFeature.close();
+    }
+
+    /**
+     * Set the current time as seen by this AnrTimer.  This is only effective for native timers
+     * that were created with testMode enabled.
+     */
+    @VisibleForTesting
+    public void setTime(long now) {
+        mFeature.setTime(now);
     }
 
     /**
@@ -1037,9 +1119,12 @@ public class AnrTimer<V> implements AutoCloseable {
      * Create a new native timer with the given name and flags.  The name is only for logging.
      * Unlike the other methods, this is an instance method: the "this" parameter is passed into
      * the native layer.
+     *
+     * When testMode is true, the native timer is disconnected from any real clock.  Use
+     * nativeAnrTimerSetTime() to change the time seen by a testMode timer.
      */
     private native long nativeAnrTimerCreate(String name, boolean extend,
-            int[] splitPercent, int[] splitToken);
+            int[] splitPercent, int[] splitToken, boolean testMode);
 
     /** Release the native resources.  No further operations are premitted. */
     private static native int nativeAnrTimerClose(long service);
@@ -1073,4 +1158,11 @@ public class AnrTimer<V> implements AutoCloseable {
 
     /** Retrieve runtime dump information from the native layer. */
     private static native String[] nativeAnrTimerDump(long service);
+
+    /**
+     * Set the clock for a native time service.  If the time service was created in test mode,
+     * this changes the service's view of "now" and returns true.  Otherwise it has no effect and
+     * returns false.
+     */
+    private static native boolean nativeAnrTimerSetTime(long service, long now);
 }

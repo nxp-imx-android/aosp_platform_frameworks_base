@@ -21,6 +21,6 @@ import android.content.Intent;
 /** {@hide} */
 interface IChooserController {
     oneway void updateIntent(in Intent intent);
-    oneway void collapse();
+    oneway void setMinimized(in boolean isMinimized);
     oneway void setTargetsEnabled(in boolean isEnabled);
 }

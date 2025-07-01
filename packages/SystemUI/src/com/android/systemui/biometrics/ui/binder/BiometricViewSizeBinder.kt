@@ -39,6 +39,7 @@ import androidx.core.view.doOnLayout
 import androidx.lifecycle.lifecycleScope
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.biometrics.Utils
+import com.android.systemui.biometrics.domain.interactor.BiometricPromptView
 import com.android.systemui.biometrics.ui.viewmodel.PromptPosition
 import com.android.systemui.biometrics.ui.viewmodel.PromptSize
 import com.android.systemui.biometrics.ui.viewmodel.PromptViewModel
@@ -103,7 +104,7 @@ object BiometricViewSizeBinder {
 
         var currentSize: PromptSize? = null
         var currentPosition: PromptPosition = PromptPosition.Bottom
-        var fallbackCurrentlyShowing: Boolean = false
+        var currentView: BiometricPromptView? = null
         panelView.outlineProvider =
             object : ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: Outline) {
@@ -152,6 +153,11 @@ object BiometricViewSizeBinder {
         largeConstraintSet.constrainMaxWidth(R.id.panel, 0)
         largeConstraintSet.setGuidelineBegin(R.id.leftGuideline, 0)
         largeConstraintSet.setGuidelineEnd(R.id.rightGuideline, 0)
+        if (Flags.bpFallbackOptions()) {
+            largeConstraintSet.setVisibility(R.id.auth_screen, View.GONE)
+            largeConstraintSet.setVisibility(R.id.credential_view, View.VISIBLE)
+            largeConstraintSet.setVisibility(R.id.fallback_view, View.GONE)
+        }
 
         // TODO: Investigate better way to handle 180 rotations
         val flipConstraintSet = ConstraintSet()
@@ -350,30 +356,41 @@ object BiometricViewSizeBinder {
                     combine(
                             viewModel.position,
                             viewModel.size,
-                            viewModel.fallbackShowing,
+                            viewModel.currentView,
                             viewModel.hideSensorIcon,
                             ::Quad,
                         )
-                        .collect { (position, size, fallbackShowing, hideSensor) ->
+                        .collect { (position, size, activeView, hideSensor) ->
                             if (Flags.bpFallbackOptions()) {
                                 setVisibilities(hideSensor, size)
-                                if (fallbackShowing) {
-                                    mediumConstraintSet.setVisibility(R.id.auth_screen, View.GONE)
-                                    mediumConstraintSet.setVisibility(iconHolderView.id, View.GONE)
-                                    mediumConstraintSet.setVisibility(
-                                        R.id.fallback_view,
-                                        View.VISIBLE,
-                                    )
-                                } else {
-                                    mediumConstraintSet.setVisibility(
-                                        R.id.auth_screen,
-                                        View.VISIBLE,
-                                    )
-                                    mediumConstraintSet.setVisibility(
-                                        iconHolderView.id,
-                                        if (hideSensor) View.GONE else View.VISIBLE,
-                                    )
-                                    mediumConstraintSet.setVisibility(R.id.fallback_view, View.GONE)
+                                when (activeView) {
+                                    BiometricPromptView.FALLBACK -> {
+                                        mediumConstraintSet.setVisibility(R.id.auth_screen, View.GONE)
+                                        mediumConstraintSet.setVisibility(iconHolderView.id, View.GONE)
+                                        mediumConstraintSet.setVisibility(
+                                            R.id.fallback_view,
+                                            View.VISIBLE,
+                                        )
+                                    }
+                                    BiometricPromptView.BIOMETRIC -> {
+                                        mediumConstraintSet.setVisibility(
+                                            R.id.auth_screen,
+                                            View.VISIBLE,
+                                        )
+                                        mediumConstraintSet.setVisibility(
+                                            iconHolderView.id,
+                                            if (hideSensor) View.GONE else View.VISIBLE,
+                                        )
+                                        mediumConstraintSet.setVisibility(R.id.fallback_view, View.GONE)
+                                    }
+                                    BiometricPromptView.CREDENTIAL -> {
+                                        mediumConstraintSet.setVisibility(R.id.auth_screen, View.GONE)
+                                        mediumConstraintSet.setVisibility(iconHolderView.id, View.GONE)
+                                        mediumConstraintSet.setVisibility(
+                                            R.id.fallback_view,
+                                            View.GONE,
+                                        )
+                                    }
                                 }
                             }
 
@@ -455,7 +472,7 @@ object BiometricViewSizeBinder {
                                     }
 
                                     // Animate between auth and fallback screen if we just changed
-                                    if (fallbackCurrentlyShowing != fallbackShowing) {
+                                    if (currentView != activeView) {
                                         val autoTransition = AutoTransition()
                                         autoTransition.setDuration(
                                             ANIMATE_SMALL_TO_MEDIUM_DURATION_MS.toLong()
@@ -483,7 +500,7 @@ object BiometricViewSizeBinder {
 
                             currentSize = size
                             currentPosition = position
-                            fallbackCurrentlyShowing = fallbackShowing
+                            currentView = activeView
                             notifyAccessibilityChanged()
 
                             panelView.invalidateOutline()

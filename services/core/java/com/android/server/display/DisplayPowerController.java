@@ -1628,7 +1628,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                         || mAutomaticBrightnessStrategy
                         .isTemporaryAutoBrightnessAdjustmentApplied();
         float rampSpeed = 0;
-        if (!mPendingScreenOff) {
+        if (!mPendingScreenOff && mPendingScreenOnUnblockerByDisplayOffload == null) {
             if (mSkipScreenOnBrightnessRamp) {
                 if (state == Display.STATE_ON) {
                     if (mSkipRampState == RAMP_STATE_SKIP_NONE && mDozing) {

@@ -16,10 +16,12 @@
 
 package android.os;
 
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
-import android.annotation.TestApi;
+import android.annotation.SystemApi;
+import android.location.flags.Flags;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 
@@ -40,8 +42,8 @@ import java.util.stream.Collectors;
  *
  * @hide
  */
-@SuppressLint("UnflaggedApi") // TestApi
-@TestApi
+@FlaggedApi(Flags.FLAG_CHANGE_GET_ADAS_ALLOWLIST_FROM_HIDDEN_TO_SYSTEM)
+@SystemApi
 @Immutable
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class PackageTagsList implements Parcelable {
@@ -65,7 +67,6 @@ public final class PackageTagsList implements Parcelable {
      * does not imply anything about whether any given attribution tag under the given package name
      * is present.
      */
-    @SuppressLint("UnflaggedApi") // TestApi
     public boolean containsPackage(@NonNull String packageName) {
         return mPackageTags.containsKey(packageName);
     }
@@ -93,7 +94,6 @@ public final class PackageTagsList implements Parcelable {
      * Returns true if all attribution tags under the given package are contained within this
      * instance.
      */
-    @SuppressLint("UnflaggedApi") // TestApi
     public boolean containsPackageWithAllTags(@NonNull String packageName) {
         Set<String> tags = mPackageTags.get(packageName);
         return tags != null && tags.isEmpty();
@@ -115,7 +115,6 @@ public final class PackageTagsList implements Parcelable {
     }
 
     /** Returns true if the given PackageTagsList is a subset of this instance. */
-    @SuppressLint("UnflaggedApi") // TestApi
     public boolean containsAll(@NonNull PackageTagsList packageTagsList) {
         int otherSize = packageTagsList.mPackageTags.size();
         if (otherSize > mPackageTags.size()) {
@@ -146,7 +145,6 @@ public final class PackageTagsList implements Parcelable {
     }
 
     /** Returns all packages that possess at least one attribution tag. */
-    @SuppressLint("UnflaggedApi") // TestApi
     public @NonNull Set<String> getPackages() {
         return Set.copyOf(mPackageTags.keySet());
     }
@@ -242,6 +240,7 @@ public final class PackageTagsList implements Parcelable {
     /**
      * Builder class for {@link PackageTagsList}.
      */
+    @FlaggedApi(Flags.FLAG_CHANGE_GET_ADAS_ALLOWLIST_FROM_HIDDEN_TO_SYSTEM)
     public static final class Builder {
 
         private final ArrayMap<String, ArraySet<String>> mPackageTags;
@@ -312,7 +311,7 @@ public final class PackageTagsList implements Parcelable {
         }
 
         /** Adds the specified {@link PackageTagsList} to the builder. */
-        @SuppressLint({"MissingGetterMatchingBuilder", "UnflaggedApi"}) // TestApi
+        @SuppressLint("MissingGetterMatchingBuilder")
         public @NonNull Builder addAll(@NonNull PackageTagsList packageTagsList) {
             return addAll(packageTagsList.mPackageTags);
         }
@@ -321,7 +320,7 @@ public final class PackageTagsList implements Parcelable {
          * Adds the given map of package to attribution tags to the builder. An empty set of
          * attribution tags is interpreted to imply all attribution tags under that package.
          */
-        @SuppressLint({"MissingGetterMatchingBuilder", "UnflaggedApi"}) // TestApi
+        @SuppressLint("MissingGetterMatchingBuilder")
         public @NonNull Builder addAll(@NonNull Map<String, ? extends Set<String>> packageTagsMap) {
             mPackageTags.ensureCapacity(packageTagsMap.size());
             for (Map.Entry<String, ? extends Set<String>> entry : packageTagsMap.entrySet()) {

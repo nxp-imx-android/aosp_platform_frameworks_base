@@ -15,7 +15,6 @@
  */
 package com.android.systemui.statusbar.data
 
-import com.android.systemui.statusbar.data.repository.DarkIconDispatcherStoreModule
 import com.android.systemui.statusbar.data.repository.HomeStatusBarComponentsRepositoryModule
 import com.android.systemui.statusbar.data.repository.KeyguardStatusBarRepositoryModule
 import com.android.systemui.statusbar.data.repository.LightBarControllerStoreModule
@@ -31,7 +30,6 @@ import dagger.Module
 @Module(
     includes =
         [
-            DarkIconDispatcherStoreModule::class,
             HomeStatusBarComponentsRepositoryModule::class,
             KeyguardStatusBarRepositoryModule::class,
             LightBarControllerStoreModule::class,

@@ -80,6 +80,7 @@ import com.android.systemui.statusbar.pipeline.shared.domain.interactor.HomeStat
 import com.android.systemui.statusbar.pipeline.shared.ui.model.ChipsVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.SystemInfoCombinedVisibilityModel
 import com.android.systemui.statusbar.pipeline.shared.ui.model.VisibilityModel
+import com.android.systemui.statusbar.policy.domain.interactor.DeviceProvisioningInteractor
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -236,6 +237,7 @@ constructor(
     headsUpNotificationInteractor: HeadsUpNotificationInteractor,
     keyguardTransitionInteractor: KeyguardTransitionInteractor,
     keyguardInteractor: KeyguardInteractor,
+    deviceProvisioningInteractor: DeviceProvisioningInteractor,
     override val operatorNameViewModel: StatusBarOperatorNameViewModel,
     sceneInteractor: SceneInteractor,
     sceneContainerOcclusionInteractor: SceneContainerOcclusionInteractor,
@@ -348,18 +350,19 @@ constructor(
     private val isHomeStatusBarAllowedByScene: Flow<Boolean> =
         combine(
                 sceneInteractor.currentScene,
-                isShadeVisibleOnThisDisplay,
+                isShadeVisibleOnAnyDisplay,
                 sceneContainerOcclusionInteractor.invisibleDueToOcclusion,
-            ) { currentScene, isShadeVisible, isOccluded ->
-
-                // All scenes have their own status bars, so we should only show the home status bar
-                // if we're not in a scene. There are two exceptions:
-                // 1) The shade (notifications or quick settings) is shown, because it has its own
-                // status-bar-like header.
-                // 2) If the scene is occluded, then the occluding app needs to show the status bar.
-                // (Fullscreen apps actually won't show the status bar but that's handled with the
-                // rest of our fullscreen app logic, which lives elsewhere.)
-                (currentScene == Scenes.Gone && !isShadeVisible) || isOccluded
+                isShadeWindowOnThisDisplay,
+            ) { currentScene, isShadeVisibleOnAnyDisplay, isOccluded, isShadeWindowOnThisDisplay ->
+                if (isOccluded) {
+                    true
+                } else if (isShadeWindowOnThisDisplay) {
+                    currentScene == Scenes.Gone && !isShadeVisibleOnAnyDisplay
+                } else {
+                    // When the shade is visible on another display,
+                    // allow the home status bar on the current display.
+                    currentScene == Scenes.Gone || isShadeVisibleOnAnyDisplay
+                }
             }
             .distinctUntilChanged()
             .logDiffsForTable(
@@ -411,11 +414,22 @@ constructor(
      * if we shouldn't be showing any part of the home status bar.
      */
     private val isHomeScreenStatusBarAllowedLegacy: Flow<Boolean> =
-        combine(keyguardTransitionInteractor.currentKeyguardState, isShadeVisibleOnThisDisplay) {
-                currentKeyguardState,
-                isShadeVisibleOnThisDisplay ->
-                (currentKeyguardState == GONE || currentKeyguardState == OCCLUDED) &&
-                    !isShadeVisibleOnThisDisplay
+        combine(
+                keyguardTransitionInteractor.currentKeyguardState,
+                isShadeVisibleOnThisDisplay,
+                deviceProvisioningInteractor.isDeviceProvisioned,
+            ) { currentKeyguardState, isShadeVisibleOnThisDisplay, isDeviceProvisioned ->
+                when {
+                    // Short-term fix for b/418020209.
+                    // `isShadeVisibleOnThisDisplay` is incorrectly reporting that the shade is
+                    // visible during setup wizard, causing the status bar to incorrectly hide.
+                    // Temporarily prevent that while we work out a safe fix inside shade code.
+                    !isDeviceProvisioned -> true
+                    else -> {
+                        (currentKeyguardState == GONE || currentKeyguardState == OCCLUDED) &&
+                            !isShadeVisibleOnThisDisplay
+                    }
+                }
             }
             .distinctUntilChanged()
             .logDiffsForTable(

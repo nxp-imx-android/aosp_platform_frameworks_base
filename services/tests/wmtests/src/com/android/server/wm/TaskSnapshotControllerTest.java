@@ -28,7 +28,6 @@ import static com.android.server.wm.TaskSnapshotController.SNAPSHOT_MODE_REAL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -145,7 +144,7 @@ public class TaskSnapshotControllerTest extends WindowTestsBase {
             assertEquals(contentInsets, snapshot.getContentInsets());
             assertEquals(letterboxInsets, snapshot.getLetterboxInsets());
             assertTrue(snapshot.isTranslucent());
-            assertSame(buffer, snapshot.getHardwareBuffer());
+            assertTrue(snapshot.isSameHardwareBuffer(buffer));
             assertTrue(snapshot.isRealSnapshot());
             assertEquals(taskSize, snapshot.getTaskSize());
             assertEquals(densityDpi, snapshot.getDensityDpi());

@@ -46,23 +46,49 @@ class MuteIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun icon_ringerModeNormal_null() =
+    fun visible_isFalse_byDefault() = kosmos.runTest { assertThat(underTest.visible).isFalse() }
+
+    @Test
+    fun visible_ringerModeIsSilent_isTrue() =
+        kosmos.runTest {
+            fakeAudioRepository.setRingerMode(RingerMode(AudioManager.RINGER_MODE_SILENT))
+
+            assertThat(underTest.visible).isTrue()
+        }
+
+    @Test
+    fun visible_ringerModeIsNormal_isFalse() =
         kosmos.runTest {
             fakeAudioRepository.setRingerMode(RingerMode(AudioManager.RINGER_MODE_NORMAL))
 
-            assertThat(underTest.icon).isNull()
+            assertThat(underTest.visible).isFalse()
         }
 
     @Test
-    fun icon_ringerModeVibrate_null() =
+    fun visible_ringerModeIsVibrate_isFalse() =
         kosmos.runTest {
             fakeAudioRepository.setRingerMode(RingerMode(AudioManager.RINGER_MODE_VIBRATE))
 
-            assertThat(underTest.icon).isNull()
+            assertThat(underTest.visible).isFalse()
         }
 
     @Test
-    fun icon_ringerModeSilent_isShown() =
+    fun visible_ringerModeChanges_flips() =
+        kosmos.runTest {
+            fakeAudioRepository.setRingerMode(RingerMode(AudioManager.RINGER_MODE_NORMAL))
+            assertThat(underTest.visible).isFalse()
+
+            fakeAudioRepository.setRingerMode(RingerMode(AudioManager.RINGER_MODE_SILENT))
+
+            assertThat(underTest.visible).isTrue()
+
+            fakeAudioRepository.setRingerMode(RingerMode(AudioManager.RINGER_MODE_NORMAL))
+
+            assertThat(underTest.visible).isFalse()
+        }
+
+    @Test
+    fun icon_visible_isCorrect() =
         kosmos.runTest {
             fakeAudioRepository.setRingerMode(RingerMode(AudioManager.RINGER_MODE_SILENT))
 
@@ -71,7 +97,8 @@ class MuteIconViewModelTest : SysuiTestCase() {
                     R.drawable.ic_speaker_mute,
                     ContentDescription.Resource(R.string.accessibility_ringer_silent),
                 )
-
             assertThat(underTest.icon).isEqualTo(expected)
         }
+
+    @Test fun icon_notVisible_isNull() = kosmos.runTest { assertThat(underTest.icon).isNull() }
 }

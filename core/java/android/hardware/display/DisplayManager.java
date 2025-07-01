@@ -722,7 +722,7 @@ public final class DisplayManager {
      * maximum respectively.
      */
     @FlaggedApi(Flags.FLAG_SET_BRIGHTNESS_BY_UNIT)
-    public static final int BRIGHTNESS_UNIT_PERCENTAGE = 0;
+    public static final int BRIGHTNESS_UNIT_PERCENTAGE = 1;
 
     /**
      * @hide

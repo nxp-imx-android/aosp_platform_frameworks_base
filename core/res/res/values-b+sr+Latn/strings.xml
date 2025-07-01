@@ -75,10 +75,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Ova aplikacija nije kompatibilna sa veličinom stranice od 16 kB. Provera usklađenosti APK-a nije uspela. Ova aplikacija će raditi pomoću režima kompatibilnog sa veličinom stranice. Da biste obezbedili najbolju kompatibilnost, ponovo kompajlirajte aplikaciju sa podrškom za veličinu stranice od 16 kB. Više informacija potražite na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Ova aplikacija nije kompatibilna sa veličinom stranice od 16 kB. Provera usklađenosti ELF-a nije uspela. Ova aplikacija će raditi pomoću režima kompatibilnog sa veličinom stranice. Da biste obezbedili najbolju kompatibilnost, ponovo kompajlirajte aplikaciju sa podrškom za veličinu stranice od 16 kB. Više informacija potražite na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Ova aplikacija nije kompatibilna sa veličinom stranice od 16 kB. Provere usklađenosti APK-a i ELF-a nisu uspele. Ova aplikacija će raditi pomoću režima kompatibilnog sa veličinom stranice. Da biste obezbedili najbolju kompatibilnost, ponovo kompajlirajte aplikaciju sa podrškom za veličinu stranice od 16 kB. Više informacija potražite na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;."</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Ovo upozorenje se prikazuje jer je ovo aplikacija sa otklonjivim greškama koja se trenutno testira. Prijavite ovo programeru, ako to niste vi, i zatražite aplikaciju bez otklonjivih grešaka. Ova aplikacija nije kompatibilna sa stranicama od 16 kB. Provera usklađenosti APK-a nije uspela. Pratite korake na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Ovo upozorenje se prikazuje jer je ovo aplikacija sa otklonjivim greškama koja se trenutno testira. Prijavite ovo programeru, ako to niste vi, i zatražite aplikaciju bez otklonjivih grešaka. Ova aplikacija nije kompatibilna sa stranicama od 16 kB. Provera usklađenosti ELF-a nije uspela. Pratite korake na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Ovo upozorenje se prikazuje jer je ovo aplikacija sa otklonjivim greškama koja se trenutno testira. Prijavite ovo programeru, ako to niste vi, i zatražite aplikaciju bez otklonjivih grešaka. Ova aplikacija nije kompatibilna sa stranicama od 16 kB. Provere usklađenosti APK-a i ELF-a nisu uspele. Pratite korake na &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Ne prikazuj ponovo"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Usluga nije dobavljena."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Ne možete da promenite podešavanje ID-a korisnika."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Mobilni podaci su prebačeni na operatera <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>
@@ -165,14 +178,10 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"Bezbednost na mobilnoj mreži"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"Šifrovanje, obaveštenja za nešifrovane mreže"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"Pristupljeno je ID-u uređaja"</string>
-    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
-    <skip />
-    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
-    <skip />
-    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
-    <skip />
-    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
-    <skip />
+    <string name="scIDIssueSummaryNotificationWithCellularID" msgid="8371590113242615316">"Mreža u blizini je u <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> evidentirala jedinstveni ID vašeg uređaja (<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>) dok ste koristili <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> SIM"</string>
+    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="7106922007150754222">"Mreža u blizini je u <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> evidentirala jedinstveni ID vašeg uređaja dok ste koristili <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> SIM"</string>
+    <string name="scIDIssueSummaryWithCellularID" msgid="1189965658392583067">"Mreža u blizini je u <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> evidentirala jedinstveni ID vašeg uređaja (<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>) dok ste koristili <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> SIM.\n\nTo znači da je evidentirala vašu lokaciju, aktivnost i identitet. To je uobičajena praksa, ali može da bude problem ljudima koji su zabrinuti za privatnost."</string>
+    <string name="scIdentifierDisclosureIssueSummary" msgid="4362014471570210380">"Mreža u blizini je u <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> evidentirala jedinstveni ID vašeg uređaja dok ste koristili <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> SIM.\n\nTo znači da je evidentirala vašu lokaciju, aktivnost i identitet. To je uobičajena praksa, ali može da bude problem ljudima koji su zabrinuti za privatnost."</string>
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"Povezani ste na šifrovanu mrežu <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"Veza <xliff:g id="NETWORK_NAME">%1$s</xliff:g> SIM-a je sada bezbednija"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"Povezani ste na nešifrovanu mrežu"</string>

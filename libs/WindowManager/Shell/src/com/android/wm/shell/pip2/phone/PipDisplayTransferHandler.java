@@ -24,6 +24,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Bundle;
+import android.os.Trace;
 import android.util.ArrayMap;
 import android.view.SurfaceControl;
 import android.view.SurfaceControl.Transaction;
@@ -152,6 +153,9 @@ public class PipDisplayTransferHandler implements
                         PipTransition.PIP_FINISH_TX, Transaction.class);
                 final Rect pipBounds = extra.getParcelable(
                         PIP_DESTINATION_BOUNDS, Rect.class);
+
+                Trace.instant(Trace.TRACE_TAG_WINDOW_MANAGER,
+                        "PipDisplayTransferHandler#changingPipBounds");
 
                 mPipDisplayLayoutState.setDisplayId(mTargetDisplayId);
                 mPipDisplayLayoutState.setDisplayLayout(

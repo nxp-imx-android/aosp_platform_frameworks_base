@@ -6547,6 +6547,14 @@
     <permission android:name="android.permission.MANAGE_ONE_TIME_PERMISSION_SESSIONS"
                 android:protectionLevel="signature|installer" />
 
+    <!-- @SystemApi Allows an application to get the package names of the
+        holders of a role.
+        @FlaggedApi(android.permission.flags.Flags.FLAG_SUPERVISION_ROLE_ENABLED)
+        @hide -->
+    <permission android:name="android.permission.GET_ROLE_HOLDERS"
+                android:protectionLevel="signature|privileged"
+                android:featureFlag="android.permission.flags.supervision_role_enabled"/>
+
     <!-- @SystemApi Allows an application to manage the holders of a role.
          @hide -->
     <permission android:name="android.permission.MANAGE_ROLE_HOLDERS"
@@ -6571,7 +6579,14 @@
     <!-- @SystemApi Allows an application to observe role holder changes.
          @hide -->
     <permission android:name="android.permission.OBSERVE_ROLE_HOLDERS"
-                android:protectionLevel="signature|installer|module" />
+                android:protectionLevel="signature|installer|module"
+                android:featureFlag="!android.permission.flags.supervision_role_enabled" />
+
+    <!-- @SystemApi Allows an application to observe role holder changes.
+         @hide -->
+    <permission android:name="android.permission.OBSERVE_ROLE_HOLDERS"
+                android:protectionLevel="signature|privileged|installer|module"
+                android:featureFlag="android.permission.flags.supervision_role_enabled" />
 
     <!-- Allows an application to manage the companion devices.
          @hide -->
@@ -8126,8 +8141,7 @@
         android:label="@string/permlab_foregroundServiceFileManagement"
         android:protectionLevel="normal|instant" />
 
-    <!-- @FlaggedApi("android.content.pm.introduce_media_processing_type")
-         Allows a regular application to use {@link android.app.Service#startForeground
+    <!-- Allows a regular application to use {@link android.app.Service#startForeground
          Service.startForeground} with the type "mediaProcessing".
          <p>Protection level: normal|instant
     -->

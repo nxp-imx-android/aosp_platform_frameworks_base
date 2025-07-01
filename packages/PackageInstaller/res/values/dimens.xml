@@ -52,7 +52,7 @@
     <dimen name="button_min_height">40dp</dimen>
     <dimen name="dialog_inter_element_vertical_margin">12dp</dimen>
     <dimen name="alert_dialog_radius">28dp</dimen>
-    <dimen name="alert_dialog_dim_amount">0.68</dimen>
+    <dimen name="alert_dialog_dim_amount">0.6</dimen>
     <!-- 24dp + 364dp + 24dp for the portrait mode -->
     <dimen name="alert_dialog_min_width_minor">412dp</dimen>
     <!-- Override the values for the buttonbar paddings in M3 MaterialAlertDialog -->

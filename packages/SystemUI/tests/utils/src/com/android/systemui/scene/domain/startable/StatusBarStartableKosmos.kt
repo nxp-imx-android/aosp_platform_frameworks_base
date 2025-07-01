@@ -25,7 +25,6 @@ import com.android.systemui.deviceentry.domain.interactor.deviceEntryInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.applicationCoroutineScope
-import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.navigation.domain.interactor.navigationInteractor
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.scene.domain.interactor.sceneContainerOcclusionInteractor
@@ -35,7 +34,6 @@ import com.android.systemui.user.domain.interactor.selectedUserInteractor
 val Kosmos.statusBarStartable by Fixture {
     StatusBarStartable(
         applicationScope = applicationCoroutineScope,
-        backgroundDispatcher = testDispatcher,
         applicationContext = applicationContext,
         selectedUserInteractor = selectedUserInteractor,
         sceneInteractor = sceneInteractor,

@@ -61,7 +61,6 @@ import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -80,6 +79,7 @@ import com.android.compose.animation.scene.animateElementFloatAsState
 import com.android.compose.animation.scene.content.state.TransitionState
 import com.android.compose.modifiers.thenIf
 import com.android.compose.theme.colorAttr
+import com.android.internal.policy.SystemBarUtils
 import com.android.settingslib.Utils
 import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.battery.BatteryMeterViewController
@@ -137,9 +137,12 @@ object ShadeHeader {
         val ChipPaddingVertical = 4.dp
 
         val StatusBarHeight: Dp
-            // TODO(b/414737230): This is a temporary workaround, until we fix the zero padding
-            //  issue given by WindowInsets.statusBars.asPaddingValues().calculateTopPadding().
-            @Composable get() = dimensionResource(R.dimen.status_bar_height)
+            @Composable
+            get() {
+                return with(LocalDensity.current) {
+                    SystemBarUtils.getStatusBarHeight(LocalContext.current).toDp()
+                }
+            }
     }
 
     object TestTags {

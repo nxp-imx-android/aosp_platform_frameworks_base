@@ -53,6 +53,7 @@ import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 import static android.media.audio.Flags.cacheGetStreamMinMaxVolume;
 import static android.media.audio.Flags.cacheGetStreamVolume;
 import static android.media.audio.Flags.concurrentAudioRecordBypassPermission;
+import static android.media.audio.Flags.dapInjectionStarveManagement;
 import static android.media.audio.Flags.deviceVolumeApis;
 import static android.media.audio.Flags.featureSpatialAudioHeadtrackingLowLatency;
 import static android.media.audio.Flags.focusFreezeTestApi;
@@ -5442,6 +5443,8 @@ public class AudioService extends IAudioService.Stub
         pw.println("\tandroid.media.audio.autoPublicVolumeApiHardening:"
                 + autoPublicVolumeApiHardening());
         pw.println("\tandroid.media.audio.automaticBtDeviceType - EOL");
+        pw.println("\tandroid.media.audio.dapInjectionStarveManagement:"
+                + dapInjectionStarveManagement());
         pw.println("\tandroid.media.audio.featureSpatialAudioHeadtrackingLowLatency:"
                 + featureSpatialAudioHeadtrackingLowLatency());
         pw.println("\tandroid.media.audio.focusFreezeTestApi:"
@@ -5681,8 +5684,11 @@ public class AudioService extends IAudioService.Stub
             onSetStreamVolume(streamType, index, flags, deviceType, caller, hasModifyAudioSettings,
                     // ada is non-null when called from setDeviceVolume,
                     // which shouldn't update the mute state
-                    canChangeMuteAndUpdateController /*canChangeMute*/);
+                    // full volume device shouldn't update the mute state
+                    /* canChangeMute= */ canChangeMuteAndUpdateController
+                            && !isFullVolumeDevice(deviceType));
             index = streamState.getIndex(deviceType);
+
         }
 
         handleAbsoluteVolume(streamType, streamTypeAlias, deviceAttr, index, streamState.mIsMuted,

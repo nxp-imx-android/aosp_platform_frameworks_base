@@ -76,10 +76,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Ta aplikacja nie jest zgodna z trybem 16 KB. Sprawdzenie zgodności pliku APK się nie powiodło. Aplikacja będzie działać w trybie zgodnym z rozmiarem strony. Aby zapewnić najlepszą zgodność, dokonaj ponownej kompilacji, żeby aplikacja obsługiwała 16 KB. Więcej informacji znajdziesz na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Ta aplikacja nie jest zgodna z trybem 16 KB. Sprawdzenie zgodności ELF się nie powiodło. Aplikacja będzie działać w trybie zgodnym z rozmiarem strony. Aby zapewnić najlepszą zgodność, dokonaj ponownej kompilacji, żeby aplikacja obsługiwała 16 KB. Więcej informacji znajdziesz na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Ta aplikacja nie jest zgodna z trybem 16 KB. Sprawdzenie zgodności pliku APK i ELF się nie powiodło. Aplikacja będzie działać w trybie zgodnym z rozmiarem strony. Aby zapewnić najlepszą zgodność, dokonaj ponownej kompilacji, żeby aplikacja obsługiwała 16 KB. Więcej informacji znajdziesz na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"To ostrzeżenie wyświetla się, ponieważ jest to aplikacja z możliwością jej debugowania, która przechodzi obecnie testy. Zgłoś to deweloperowi (o ile nim nie jesteś) i poproś o aplikację, której nie można debugować. Ta aplikacja nie jest zgodna z trybem 16 KB. Sprawdzenie zgodności pliku APK się nie powiodło. Wykonaj czynności opisane na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"To ostrzeżenie wyświetla się, ponieważ jest to aplikacja z możliwością jej debugowania, która przechodzi obecnie testy. Zgłoś to deweloperowi (o ile nim nie jesteś) i poproś o aplikację, której nie można debugować. Ta aplikacja nie jest zgodna z trybem 16 KB. Sprawdzenie zgodności pliku ELF się nie powiodło. Wykonaj czynności opisane na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"To ostrzeżenie wyświetla się, ponieważ jest to aplikacja z możliwością jej debugowania, która przechodzi obecnie testy. Zgłoś to deweloperowi (o ile nim nie jesteś) i poproś o aplikację, której nie można debugować. Ta aplikacja nie jest zgodna z trybem 16 KB. Sprawdzenie zgodności plików APK i ELF się nie powiodło. Wykonaj czynności opisane na stronie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Nie pokazuj ponownie"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Usługa nie jest świadczona."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"Nie możesz zmienić ustawienia ID rozmówcy."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Przełączono mobilną transmisję danych na: <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>

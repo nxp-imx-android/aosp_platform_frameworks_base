@@ -131,17 +131,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "respect_leaf_task_bounds"
-    description: "Respect the override bounds of the leaf tasks that are organized by root tasks"
-    bug: "410745462"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "root_task_for_bubble"
     description: "Using a root task to manage Bubble tasks"
     bug: "407669465"

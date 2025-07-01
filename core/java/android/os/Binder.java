@@ -21,7 +21,6 @@ import android.annotation.Nullable;
 import android.annotation.SystemApi;
 import android.app.AppOpsManager;
 import android.compat.annotation.UnsupportedAppUsage;
-import android.ravenwood.annotation.RavenwoodClassLoadHook;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.ExceptionUtils;
 import android.util.Log;
@@ -82,7 +81,6 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  * @see IBinder
  */
 @RavenwoodKeepWholeClass
-@RavenwoodClassLoadHook(RavenwoodClassLoadHook.LIBANDROID_LOADING_HOOK)
 public class Binder implements IBinder {
     /*
      * Set this flag to true to detect anonymous, local or member classes

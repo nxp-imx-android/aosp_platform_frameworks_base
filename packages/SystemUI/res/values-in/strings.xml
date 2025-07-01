@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"Anda sedang merekam seluruh layar"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"Anda sedang merekam <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"Berhenti merekam"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"Ambil gambar area yang dipilih"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"Ambil Foto"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"Rekam"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"Membagikan layar"</string>
@@ -399,7 +398,7 @@
     <string name="quick_settings_hotspot_secondary_label_num_devices" msgid="7536823087501239457">"{count,plural, =1{# perangkat}other{# perangkat}}"</string>
     <string name="quick_settings_flashlight_label" msgid="4904634272006284185">"Lampu Senter"</string>
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"Kamera sedang digunakan"</string>
-    <string name="flashlight_dialog_title" msgid="4232742718579701241">"Kekuatan Senter"</string>
+    <string name="flashlight_dialog_title" msgid="4232742718579701241">"Intensitas Cahaya Senter"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Data seluler"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Penggunaan data"</string>
@@ -1656,14 +1655,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"Tidak diketahui"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"Reset semua kartu?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"Semua kartu Setelan Cepat akan direset ke setelan asli perangkat"</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"Dapatkan saran yang bermanfaat"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"Kami menggunakan AI untuk secara proaktif menyarankan info dan tindakan yang relevan dengan aktivitas Anda di layar"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"Ikon"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"Sentuh lama untuk melihat cara kerja saran"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> tidak akan lagi menampilkan Info Terbaru Langsung. Anda dapat mengubahnya kapan saja di Setelan."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"Tutup"</string>

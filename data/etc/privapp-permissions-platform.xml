@@ -152,6 +152,7 @@ applications that come with the platform
         <permission name="android.permission.MANAGE_USERS"/>
         <permission name="android.permission.MANAGE_SUBSCRIPTION_PLANS" />
         <permission name="android.permission.MODIFY_PHONE_STATE"/>
+        <permission name="android.permission.OBSERVE_ROLE_HOLDERS"/>
         <permission name="android.permission.PACKAGE_USAGE_STATS"/>
         <permission name="android.permission.PERFORM_CDMA_PROVISIONING"/>
         <permission name="android.permission.READ_CARRIER_APP_INFO"/>
@@ -270,6 +271,8 @@ applications that come with the platform
         <permission name="android.permission.GET_DEVICE_LOCK_ENROLLMENT_TYPE"/>
         <!-- Needed for GMSCore Location API test only -->
         <permission name="android.permission.LOCATION_BYPASS"/>
+        <!-- Needed for XTS tests only. -->
+        <permission name="android.permission.ACCESS_LOCATION_BYPASS_ALLOWLIST"/>
         <!-- Needed for test only -->
         <permission name="android.permission.BATTERY_PREDICTION"/>
         <permission name="android.permission.BATTERY_STATS"/>
@@ -639,6 +642,9 @@ applications that come with the platform
         <permission name="android.permission.MANAGE_DEVICE_POLICY_MTE"/>
         <!-- Permission required for integration test - InputTest -->
         <permission name="android.permission.LISTEN_FOR_KEY_ACTIVITY"/>
+        <permission name="android.permission.OBSERVE_ROLE_HOLDERS"/>
+        <!-- Permission required for CTS test - CtsRoleTestCases -->
+        <permission name="android.permission.GET_ROLE_HOLDERS"/>
     </privapp-permissions>
 
     <privapp-permissions package="com.android.soundpicker">

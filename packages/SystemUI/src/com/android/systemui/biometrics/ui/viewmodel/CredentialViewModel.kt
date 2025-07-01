@@ -152,6 +152,9 @@ constructor(
     private val biometricsRequested: Flow<Boolean> =
         promptCredentialInteractor.prompt.map { it?.biometricsRequested == true }
 
+    /** The current [BiometricPromptView] being shown */
+    val currentView = promptSelectorInteractor.currentView
+
     /** List of fallback options set by prompt caller */
     val fallbackOptions: Flow<List<FallbackOptionModel>> =
         promptCredentialInteractor.fallbackOptions
@@ -261,6 +264,11 @@ private fun Context.asLockIcon(userId: Int): Drawable {
     val id =
         if (Utils.isManagedProfile(this, userId)) {
             R.drawable.auth_dialog_enterprise
+        } else if (
+            android.multiuser.Flags.allowSupervisingProfile() &&
+                Utils.isSupervisingProfile(this, userId)
+        ) {
+            R.drawable.ic_account_child_invert
         } else {
             R.drawable.auth_dialog_lock
         }
@@ -273,7 +281,7 @@ private fun Context.asResetTitle(credentialKind: PromptKind): String =
             PromptKind.Pin -> R.string.biometric_dialog_enter_pin
             PromptKind.Pattern -> R.string.biometric_dialog_enter_pattern
             PromptKind.Password -> R.string.biometric_dialog_enter_password
-            else -> 0 // credentialKind should always be a credential
+            else -> R.string.biometric_dialog_enter_password
         }
     )
 
@@ -283,7 +291,7 @@ private fun Context.asResetSubtitle(credentialKind: PromptKind): String =
             PromptKind.Pin -> R.string.biometric_dialog_recovery_pin
             PromptKind.Pattern -> R.string.biometric_dialog_recovery_pattern
             PromptKind.Password -> R.string.biometric_dialog_recovery_password
-            else -> 0 // credentialKind should always be a credential
+            else -> R.string.biometric_dialog_recovery_password
         }
     )
 

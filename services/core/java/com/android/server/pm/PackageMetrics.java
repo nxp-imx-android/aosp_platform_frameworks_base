@@ -63,7 +63,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Metrics class for reporting stats to logging infrastructures like statsd
  */
-final class PackageMetrics {
+public final class PackageMetrics {
     private static final String TAG = "PackageMetrics";
     public static final int STEP_PREPARE = 1;
     public static final int STEP_SCAN = 2;
@@ -87,6 +87,110 @@ final class PackageMetrics {
     @Retention(RetentionPolicy.SOURCE)
     public @interface StepInt {
     }
+
+    // Unspecific what kind of data is stored in the cache.
+    public static final int CACHE_TYPE_UNSPECIFIED =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__CACHE_TYPE__CACHE_TYPE_UNSPECIFIED;
+
+    // The query data of ApplicationInfo and PackageInfo are stored in the cache.
+    public static final int CACHE_TYPE_APPLICATION_AND_PACKAGE_INFO =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__CACHE_TYPE__CACHE_TYPE_APPLICATION_AND_PACKAGE_INFO;
+
+    // The query data of packages for UID are stored in the cache.
+    public static final int CACHE_TYPE_GET_PACKAGES_FOR_UID =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__CACHE_TYPE__CACHE_TYPE_GET_PACKAGES_FOR_UID;
+
+    // Unspecific when to call the invalidation.
+    public static final int INVALIDATION_REASON_UNSPECIFIED =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_UNSPECIFIED;
+
+    // When install the apex package.
+    public static final int INVALIDATION_REASON_INSTALL_APEX_PACKAGE =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_INSTALL_APEX_PACKAGE;
+
+    // When delete the package.
+    public static final int INVALIDATION_REASON_DELETE_PACKAGE =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_DELETE_PACKAGE;
+
+    // When commit the package.
+    public static final int INVALIDATION_REASON_INSTALL_PACKAGE =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_INSTALL_PACKAGE;
+
+    // When the onChanged method is called in AppsFilterImpl.
+    public static final int INVALIDATION_REASON_APP_FILTER_CHANGE =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_APP_FILTER_CHANGE;
+
+    // When write the package restrictions.
+    public static final int INVALIDATION_REASON_WRITE_PACKAGE_RESTRICTIONS =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_WRITE_PACKAGE_RESTRICTIONS;
+
+    // When write the package settings.
+    public static final int INVALIDATION_REASON_WRITE_SETTINGS =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_WRITE_SETTINGS;
+
+    // When grant implicit access.
+    public static final int INVALIDATION_REASON_GRANT_IMPLICIT_ACCESS =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_GRANT_IMPLICIT_ACCESS;
+
+    // When initialize the package manager service.
+    public static final int INVALIDATION_REASON_PACKAGE_MANAGER_SERVICE_INIT =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_PACKAGE_MANAGER_SERVICE_INIT;
+
+    // When package manager service write settings.
+    public static final int INVALIDATION_REASON_SCHEDULE_WRITE_SETTINGS =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_SCHEDULE_WRITE_SETTINGS;
+
+    // When package manager service write package list.
+    public static final int INVALIDATION_REASON_SCHEDULE_WRITE_PACKAGE_LIST =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_SCHEDULE_WRITE_PACKAGE_LIST;
+
+    // When package manager service write package restrictions.
+    public static final int INVALIDATION_REASON_SCHEDULE_WRITE_PACKAGE_RESTRICTIONS =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_SCHEDULE_WRITE_PACKAGE_RESTRICTIONS;
+
+    // When package manager service enable overlay packages.
+    public static final int INVALIDATION_REASON_ENABLE_OVERLAY_PACKAGES =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_ENABLE_OVERLAY_PACKAGES;
+
+    // When package manager service disable package caches.
+    public static final int INVALIDATION_REASON_DISABLE_PACKAGE_CACHES =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_DISABLE_PACKAGE_CACHES;
+
+    // When initialize the permission service.
+    public static final int INVALIDATION_REASON_PERMISSION_SERVICE_INIT =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_PERMISSION_SERVICE_INIT;
+
+    // When initialize the permission manager service.
+    public static final int INVALIDATION_REASON_PERMISSION_MANAGER_SERVICE_INIT =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_PERMISSION_MANAGER_SERVICE_INIT;
+
+    // When the permission flag is changed.
+    public static final int INVALIDATION_REASON_PERMISSION_FLAG_CHANGED =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_PERMISSION_FLAG_CHANGED;
+
+    // When set shell permission.
+    public static final int INVALIDATION_REASON_SET_SHELL_PERMISSION_DELEGATE =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_SET_SHELL_PERMISSION_DELEGATE;
+
+    // When remove shell permission.
+    public static final int INVALIDATION_REASON_REMOVE_SHELL_PERMISSION_DELEGATE =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_REMOVE_SHELL_PERMISSION_DELEGATE;
+
+    // When add override permission state.
+    public static final int INVALIDATION_REASON_ADD_OVERRIDE_PERMISSION_STATE =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_ADD_OVERRIDE_PERMISSION_STATE;
+
+    // When remove override permission state.
+    public static final int INVALIDATION_REASON_REMOVE_OVERRIDE_PERMISSION_STATE =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_REMOVE_OVERRIDE_PERMISSION_STATE;
+
+    // When clear override permission state.
+    public static final int INVALIDATION_REASON_CLEAR_OVERRIDE_PERMISSION_STATE =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_CLEAR_OVERRIDE_PERMISSION_STATE;
+
+    // When clear all override permission state.
+    public static final int INVALIDATION_REASON_CLEAR_ALL_OVERRIDE_PERMISSION_STATE =
+            FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED__INVALIDATION_REASON__INVALIDATION_REASON_CLEAR_ALL_OVERRIDE_PERMISSION_STATE;
 
     public static final String STRING_COMPONENT_STATE_CHANGED = "component_state_changed";
     public static final String STRING_COMPONENT_LABEL_ICON_CHANGED = "component_label_icon_changed";
@@ -508,6 +612,14 @@ final class PackageMetrics {
         FrameworkStatsLog.write(FrameworkStatsLog.PACKAGE_CHANGED_BROADCAST_REPORTED,
                 callingUid, targetUid,
                 convertPackageChangedReasonStringToInteger(reason, isForWholeApp));
+    }
+
+    /**
+     * Metrics for reporting what kind of reason to call the invalidation.
+     */
+    public static void reportCacheInvalidationEvent(int cacheType, int invalidationReason) {
+        FrameworkStatsLog.write(FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED,
+                cacheType, invalidationReason);
     }
 
     private static int convertPackageChangedReasonStringToInteger(String reason,

@@ -10232,11 +10232,18 @@ public class WindowManagerService extends IWindowManager.Stub
             Binder.restoreCallingIdentity(token);
         }
 
-        if (taskSnapshot == null || taskSnapshot.getHardwareBuffer() == null) {
+        if (taskSnapshot == null) {
             return null;
         }
-        return Bitmap.wrapHardwareBuffer(taskSnapshot.getHardwareBuffer(),
-                taskSnapshot.getColorSpace());
+        if (Flags.reduceTaskSnapshotMemoryUsage()) {
+            return taskSnapshot.wrapToBitmap();
+        } else {
+            if (taskSnapshot.getHardwareBuffer() == null) {
+                return null;
+            }
+            return Bitmap.wrapHardwareBuffer(taskSnapshot.getHardwareBuffer(),
+                    taskSnapshot.getColorSpace());
+        }
     }
 
     @Override
@@ -10315,8 +10322,17 @@ public class WindowManagerService extends IWindowManager.Stub
             @NonNull ScreenCapture.ScreenCaptureParams params,
             @NonNull IScreenCaptureCallback callback) {
         if (!checkCallingPermission(READ_FRAME_BUFFER, "screenCapture()")) {
-            throw new SecurityException("Requires READ_FRAME_BUFFER permission");
+            try {
+                callback.onFailure(ScreenCapture.SCREEN_CAPTURE_ERROR_MISSING_PERMISSIONS);
+            } catch (RemoteException remoteException) {
+                Slog.e(
+                        TAG,
+                        "Failed to deliver screenshot permission error to client",
+                        remoteException);
+            }
+            return;
         }
+
         // Translate ScreenCaptureParams to DisplayCaptureArgs.
         ScreenCaptureInternal.DisplayCaptureArgs.Builder argsBuilder =
                 new ScreenCaptureInternal.DisplayCaptureArgs.Builder()

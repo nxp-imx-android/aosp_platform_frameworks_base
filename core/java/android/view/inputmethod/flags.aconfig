@@ -211,3 +211,11 @@ flag {
   description: "Optimizes the IME Input Target update flow by bypassing the InputMethodService, as there are no checks done there"
   bug: "427397699"
 }
+
+flag {
+  name: "enforce_device_policy_ime"
+  namespace: "input_method"
+  description: "Only allow device policy approved IME to unlock work profile."
+  bug: "139872425"
+}
+

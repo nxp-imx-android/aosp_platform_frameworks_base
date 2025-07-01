@@ -55,7 +55,7 @@ public class ContinuityDeviceConnected implements TaskContinuityMessageData {
                 case (int) android.companion.ContinuityDeviceConnected.REMOTE_TASKS:
                     final long remoteTasksToken = pis.start(
                         android.companion.ContinuityDeviceConnected.REMOTE_TASKS);
-                    remoteTasks.add(new RemoteTaskInfo(pis));
+                    remoteTasks.add(RemoteTaskInfo.fromProto(pis));
                     pis.end(remoteTasksToken);
                     break;
             }

@@ -156,6 +156,11 @@ public class PipTransitionState {
     @Nullable
     private TaskInfo mPipTaskInfo;
 
+    // PiP candidate task info sent to Shell during transition request;
+    // this might not be the same as mPipTaskInfo, if in multi-activity case for example.
+    @Nullable
+    private TaskInfo mPipCandidateTaskInfo;
+
     // Overlay leash potentially used during swipe PiP to home transition;
     // if null while mInSwipePipToHomeTransition is true, then srcRectHint was invalid.
     @Nullable
@@ -356,6 +361,14 @@ public class PipTransitionState {
 
     void setPipTaskInfo(@Nullable TaskInfo pipTaskInfo) {
         mPipTaskInfo = pipTaskInfo;
+    }
+
+    @Nullable TaskInfo getPipCandidateTaskInfo() {
+        return mPipCandidateTaskInfo;
+    }
+
+    void setPipCandidateTaskInfo(@Nullable TaskInfo pipCandidateTaskInfo) {
+        mPipCandidateTaskInfo = pipCandidateTaskInfo;
     }
 
     /**

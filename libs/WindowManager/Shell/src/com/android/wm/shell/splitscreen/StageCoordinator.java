@@ -848,12 +848,16 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
      */
     void startIntent(PendingIntent intent, Intent fillInIntent, @SplitPosition int position,
             @Nullable Bundle options, @Nullable WindowContainerToken hideTaskToken,
-            @SplitIndex int index, int displayId) {
+            @Nullable WindowContainerTransaction transaction, @SplitIndex int index,
+            int displayId) {
         ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "startIntent: intent=%s position=%d", intent.getIntent(),
                 position);
         mSplitRequest = new SplitRequest(intent.getIntent(), position);
 
         final WindowContainerTransaction wct = new WindowContainerTransaction();
+        if (transaction != null) {
+            wct.merge(transaction, true);
+        }
         options = enableFlexibleSplit()
                 ? resolveStartStageForIndex(options, null /*wct*/, index)
                 : resolveStartStage(STAGE_TYPE_UNDEFINED, position, options, null /* wct */);
@@ -4231,6 +4235,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
 
         addDividerBarToTransition(info, false /* show */);
         addAllDimLayersToTransition(info, false /* show */);
+        mSplitLayout.removeTouchZones();
     }
 
     /** Call this when the recents animation canceled during split-screen. */
@@ -4303,6 +4308,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             finishT.reparent(leash,
                     mSplitMultiDisplayHelper.getDisplayRootTaskLeash(DEFAULT_DISPLAY));
             setDividerVisibility(true, finishT);
+            mSplitLayout.populateTouchZones();
             return;
         }
 

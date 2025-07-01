@@ -74,10 +74,23 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Deze app is niet compatibel met 16 KB. APK-uitlijningscontrole mislukt. Deze app wordt uitgevoerd in de compatibele modus voor paginagrootte. Voor de beste compatibiliteit moet je de app opnieuw compileren met ondersteuning voor 16 KB. Zie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; voor meer informatie."</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Deze app is niet compatibel met 16 KB. ELF-uitlijningscontrole mislukt. Deze app wordt uitgevoerd in de compatibele modus voor paginagrootte. Voor de beste compatibiliteit moet je de app opnieuw compileren met ondersteuning voor 16 KB. Zie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; voor meer informatie."</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Deze app is niet compatibel met 16 KB. APK- en ELF-uitlijningscontroles mislukt. Deze app wordt uitgevoerd in de compatibele modus voor paginagrootte. Voor de beste compatibiliteit moet je de app opnieuw compileren met ondersteuning voor 16 KB. Zie &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; voor meer informatie."</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="2104642120436642689">"Deze waarschuwing wordt getoond omdat dit een app is waarin fouten kunnen worden opgespoord en die op dit moment wordt getest. Als je niet de ontwikkelaar bent, meld je dit aan de ontwikkelaar en vraag je om een app waarin geen fouten kunnen worden opgespoord. Deze app is niet compatibel met 16 KB. APK-uitlijningscontrole mislukt. Volg de stappen op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="8038334656395476900">"Deze waarschuwing wordt getoond omdat dit een app is waarin fouten kunnen worden opgespoord en die op dit moment wordt getest. Als je niet de ontwikkelaar bent, meld je dit aan de ontwikkelaar en vraag je om een app waarin geen fouten kunnen worden opgespoord. Deze app is niet compatibel met 16 KB. ELF-uitlijningscontrole mislukt. Volg de stappen op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5417036941497610850">"Deze waarschuwing wordt getoond omdat dit een app is waarin fouten kunnen worden opgespoord en die op dit moment wordt getest. Als je niet de ontwikkelaar bent, meld je dit aan de ontwikkelaar en vraag je om een app waarin geen fouten kunnen worden opgespoord. Deze app is niet compatibel met 16 KB. APK- en ELF-uitlijningscontroles mislukt. Volg de stappen op &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
+    <!-- no translation found for page_size_compat_apk_warning_4kb (1284527724160989424) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_warning_4kb (5197745436304627728) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_warning_4kb (5626544342073325806) -->
+    <skip />
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Niet meer tonen"</string>
+    <!-- no translation found for page_size_compat_title (6497719153872572204) -->
+    <skip />
+    <!-- no translation found for page_size_compat_elf_not_aligned (7940806102874132630) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_not_aligned (8927901100655245528) -->
+    <skip />
+    <!-- no translation found for page_size_compat_apk_and_elf_not_aligned (1010371834741548905) -->
+    <skip />
+    <!-- no translation found for page_size_compat_unknown (3254222165646410528) -->
+    <skip />
     <string name="serviceNotProvisioned" msgid="8289333510236766193">"Service niet voorzien."</string>
     <string name="CLIRPermanent" msgid="166443681876381118">"U kunt de instelling voor de beller-ID niet wijzigen."</string>
     <string name="auto_data_switch_title" msgid="3286350716870518297">"Mobiele data overgeschakeld naar <xliff:g id="CARRIERDISPLAY">%s</xliff:g>"</string>

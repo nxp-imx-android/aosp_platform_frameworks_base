@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.statusbar.phone.domain.interactor.IsAreaDark
+import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconViewModel
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatusIconsViewModel
 
 /**
@@ -38,9 +39,16 @@ fun SystemStatusIcons(viewModelFactory: SystemStatusIconsViewModel.Factory, isDa
     val viewModel =
         rememberViewModel(traceName = "SystemStatusIcons") { viewModelFactory.create(context) }
 
-    viewModel.icons.forEach { icon ->
+    viewModel.iconViewModels.forEach { iconViewModel ->
         // TODO(407622922): Use isDark to color the icon.
         // TODO(414653733): Make sure icons are sized uniformly.
-        Icon(icon = icon, modifier = Modifier.size(20.dp).padding(1.dp), tint = Color.Red)
+        when (iconViewModel) {
+            is SystemStatusIconViewModel.Default ->
+                iconViewModel.icon?.let {
+                    Icon(icon = it, modifier = Modifier.size(20.dp).padding(1.dp), tint = Color.Red)
+                }
+            // TODO(427976550): Add a composable for mobile icons.
+            is SystemStatusIconViewModel.MobileIcons -> {}
+        }
     }
 }
