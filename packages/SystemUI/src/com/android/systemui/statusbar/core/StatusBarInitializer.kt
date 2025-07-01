@@ -20,7 +20,6 @@ import android.view.ViewGroup
 import androidx.annotation.VisibleForTesting
 import com.android.systemui.CoreStartable
 import com.android.systemui.fragments.FragmentHostManager
-import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.core.StatusBarInitializer.OnStatusBarViewUpdatedListener
 import com.android.systemui.statusbar.core.StatusBarInitializer.StatusBarViewLifecycleListener
@@ -83,7 +82,6 @@ interface StatusBarInitializer : CoreStartable {
             statusBarWindowController: StatusBarWindowController,
             statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
             statusBarConfigurationController: StatusBarConfigurationController,
-            darkIconDispatcher: DarkIconDispatcher,
             collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
             statusBarRootFactory: StatusBarRootFactory,
             componentFactory: HomeStatusBarComponent.Factory,
@@ -97,7 +95,6 @@ constructor(
     @Assisted private val statusBarWindowController: StatusBarWindowController,
     @Assisted private val statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
     @Assisted private val statusBarConfigurationController: StatusBarConfigurationController,
-    @Assisted private val darkIconDispatcher: DarkIconDispatcher,
     @Assisted private val collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
     @Assisted private val statusBarRootFactory: StatusBarRootFactory,
     @Assisted private val componentFactory: HomeStatusBarComponent.Factory,
@@ -150,7 +147,6 @@ constructor(
                             phoneStatusBarView,
                             statusBarConfigurationController,
                             statusBarWindowController,
-                            darkIconDispatcher,
                         )
                         .also { component ->
                             // CollapsedStatusBarFragment used to be responsible initializing
@@ -226,7 +222,6 @@ constructor(
             statusBarWindowController: StatusBarWindowController,
             statusBarModePerDisplayRepository: StatusBarModePerDisplayRepository,
             statusBarConfigurationController: StatusBarConfigurationController,
-            darkIconDispatcher: DarkIconDispatcher,
             collapsedStatusBarFragmentProvider: Provider<CollapsedStatusBarFragment>,
             statusBarRootFactory: StatusBarRootFactory,
             componentFactory: HomeStatusBarComponent.Factory,

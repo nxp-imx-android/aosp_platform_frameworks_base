@@ -19,8 +19,10 @@ package com.android.systemui.display.dagger
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.PerDisplaySingleton
 import com.android.systemui.display.data.repository.DisplayStateRepository
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
+import com.android.systemui.plugins.DarkIconDispatcher
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
+import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import dagger.BindsInstance
 import dagger.Subcomponent
@@ -54,6 +56,10 @@ interface SystemUIDisplaySubcomponent {
     @get:DisplayAware val statusBarWindowStateController: StatusBarWindowStateController
 
     @get:DisplayAware val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel
+
+    @get:DisplayAware val darkIconDispatcher: DarkIconDispatcher
+
+    @get:DisplayAware val sysUiDarkIconDispatcher: SysuiDarkIconDispatcher
 
     @Subcomponent.Factory
     interface Factory {

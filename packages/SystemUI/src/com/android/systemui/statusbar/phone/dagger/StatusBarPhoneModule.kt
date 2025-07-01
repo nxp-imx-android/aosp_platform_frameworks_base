@@ -34,7 +34,6 @@ import com.android.systemui.statusbar.core.StatusBarInitializer
 import com.android.systemui.statusbar.core.StatusBarInitializerImpl
 import com.android.systemui.statusbar.core.StatusBarInitializerStore
 import com.android.systemui.statusbar.core.StatusBarRootModernization
-import com.android.systemui.statusbar.data.repository.DarkIconDispatcherStore
 import com.android.systemui.statusbar.data.repository.PrivacyDotViewControllerStoreModule
 import com.android.systemui.statusbar.data.repository.PrivacyDotWindowControllerStoreModule
 import com.android.systemui.statusbar.data.repository.StatusBarConfigurationControllerStore
@@ -114,7 +113,6 @@ interface StatusBarPhoneModule {
             statusBarWindowControllerStore: StatusBarWindowControllerStore,
             statusBarModeRepositoryStore: StatusBarModeRepositoryStore,
             statusBarConfigurationControllerStore: StatusBarConfigurationControllerStore,
-            darkIconDispatcherStore: DarkIconDispatcherStore,
             displayComponentRepo: PerDisplayRepository<SystemUIPhoneDisplaySubcomponent>,
         ): StatusBarInitializerImpl {
             val systemUIDisplaySubcomponent = displayComponentRepo[Display.DEFAULT_DISPLAY]!!
@@ -122,7 +120,6 @@ interface StatusBarPhoneModule {
                 statusBarWindowControllerStore.defaultDisplay,
                 statusBarModeRepositoryStore.defaultDisplay,
                 statusBarConfigurationControllerStore.defaultDisplay,
-                darkIconDispatcherStore.defaultDisplay,
                 systemUIDisplaySubcomponent.statusBarFragmentProvider,
                 systemUIDisplaySubcomponent.statusBarRootFactory,
                 systemUIDisplaySubcomponent.homeStatusBarComponentFactory,

@@ -29,11 +29,14 @@ import com.android.systemui.display.domain.interactor.displayStateInteractor
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.plugins.DarkIconDispatcher
+import com.android.systemui.plugins.fakeDarkIconDispatcher
 import com.android.systemui.statusbar.chips.ui.viewmodel.OngoingActivityChipsViewModel
 import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsViewModel
 import com.android.systemui.statusbar.core.statusBarIconRefreshInteractor
 import com.android.systemui.statusbar.domain.interactor.StatusBarIconRefreshInteractor
 import com.android.systemui.statusbar.mockCommandQueue
+import com.android.systemui.statusbar.phone.SysuiDarkIconDispatcher
 import com.android.systemui.statusbar.phone.fragment.CollapsedStatusBarFragment
 import com.android.systemui.statusbar.phone.fragment.dagger.HomeStatusBarComponent
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
@@ -67,6 +70,8 @@ fun Kosmos.createFakeDisplaySubcomponent(
     statusBarRootFactory: StatusBarRootFactory = this.statusBarRootFactory,
     ongoingActivityChipsViewModel: OngoingActivityChipsViewModel =
         this.ongoingActivityChipsViewModel,
+    darkIconDispatcher: DarkIconDispatcher = this.fakeDarkIconDispatcher,
+    sysUiDarkIconDispatcher: SysuiDarkIconDispatcher = this.fakeDarkIconDispatcher,
 ): SystemUIPhoneDisplaySubcomponent {
     return object : SystemUIPhoneDisplaySubcomponent {
         override val displayCoroutineScope: CoroutineScope
@@ -95,6 +100,12 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val statusBarWindowStateController: StatusBarWindowStateController
             get() = mock<StatusBarWindowStateController>()
+
+        override val darkIconDispatcher: DarkIconDispatcher
+            get() = darkIconDispatcher
+
+        override val sysUiDarkIconDispatcher: SysuiDarkIconDispatcher
+            get() = sysUiDarkIconDispatcher
 
         override val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory
             get() =
