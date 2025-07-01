@@ -87,11 +87,13 @@ import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
 import com.android.internal.infra.AndroidFuture;
 import com.android.internal.os.BackgroundThread;
+import com.android.internal.util.DumpUtils;
 import com.android.server.LocalManagerRegistry;
 import com.android.server.SystemService;
 import com.android.server.ondeviceintelligence.callbacks.ListenableDownloadCallback;
 
 import java.io.FileDescriptor;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -628,6 +630,40 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                     String[] args, ShellCallback callback, ResultReceiver resultReceiver) {
                 new OnDeviceIntelligenceShellCommand(OnDeviceIntelligenceManagerService.this).exec(
                         this, in, out, err, args, callback, resultReceiver);
+            }
+
+            @Override
+            public void dump(FileDescriptor fd, PrintWriter writer, String[] args) {
+                if (!DumpUtils.checkDumpPermission(mContext, TAG, writer)) return;
+
+                String prefix = "  ";
+                writer.println("OnDeviceIntelligenceManagerService");
+                writer.println();
+                writer.println(prefix + "Configurations:");
+                final String configPrefix = prefix + "  ";
+                try {
+                    String[] serviceNames = getServiceNames();
+                    writer.println(configPrefix
+                        + "OnDeviceIntelligenceService: " + serviceNames[0]);
+                    writer.println(configPrefix
+                        + "OnDeviceSandboxedInferenceService: " + serviceNames[1]);
+                } catch (Resources.NotFoundException e) {
+                    writer.println(configPrefix + "Could not get service names: " + e);
+                }
+                writer.println();
+                if (mRemoteOnDeviceIntelligenceService != null) {
+                    writer.println("  mRemoteOnDeviceIntelligenceService: "
+                            + mRemoteOnDeviceIntelligenceService);
+                    mRemoteOnDeviceIntelligenceService.dump(prefix, writer);
+                }
+                if (mRemoteInferenceService != null) {
+                    writer.println("  mRemoteInferenceService: " + mRemoteInferenceService);
+                    mRemoteInferenceService.dump(prefix, writer);
+                }
+                mInferenceInfoStore.dump(prefix, writer);
+                writer.println();
+                writer.println(prefix + "Lifecycle Listeners:");
+                mLifecycleListeners.dump(writer, prefix + "  ");
             }
 
             @Override
