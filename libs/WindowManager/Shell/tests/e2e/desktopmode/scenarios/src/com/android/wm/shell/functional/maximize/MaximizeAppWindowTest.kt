@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.functional
+package com.android.wm.shell.functional.maximize
 
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.EnterDesktopWithAppHandleMenu
+import com.android.wm.shell.scenarios.MaximizeAppWindow
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [EnterDesktopWithAppHandleMenu]. */
+/* Functional test for [MaximizeAppWindow]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @Postsubmit
 @ScreenRecordRule.ScreenRecord
-class EnterDesktopWithAppHandleMenuTest : EnterDesktopWithAppHandleMenu()
+class MaximizeAppWindowTest : MaximizeAppWindow()

@@ -100,7 +100,6 @@ test_module_config {
         "com.android.wm.shell.functional.EnterDesktopViaMenuOfLiveOverviewTaskTest",
         "com.android.wm.shell.functional.EnterDesktopViaMenuOfStaticOverviewTaskTest",
         "com.android.wm.shell.functional.EnterDesktopViaStaticDesktopOverviewTaskTest",
-        "com.android.wm.shell.functional.EnterDesktopWithAppHandleMenuTest",
         "com.android.wm.shell.functional.EnterDesktopWithDragExistingWindowsTest",
         "com.android.wm.shell.functional.EnterDesktopWithDragTest",
         "com.android.wm.shell.functional.EnterDesktopWithDragWindowsLimitTest",
@@ -126,16 +125,17 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.CloseAllAppsViaAppHeaderExitTest",
         "com.android.wm.shell.functional.fundamentals.CloseAllAppsWithBackNavigationTest",
         "com.android.wm.shell.functional.fundamentals.EnterDesktopFromSplitScreenWithAppHandleMenuTest",
+        "com.android.wm.shell.functional.fundamentals.EnterDesktopWithAppHandleMenuTest",
         "com.android.wm.shell.functional.fundamentals.EnterSplitScreenWithAppHandleMenuTest",
         "com.android.wm.shell.functional.fundamentals.ExitDesktopToFullScreenWithAppHeaderMenuTest",
         "com.android.wm.shell.functional.fundamentals.ExitDesktopToSplitScreenWithAppHeaderMenuTest",
-        "com.android.wm.shell.functional.fundamentals.MaximizeAppWindowTest",
         "com.android.wm.shell.functional.fundamentals.OpenAppFromAllAppsTest",
         "com.android.wm.shell.functional.fundamentals.OpenAppFromTaskbarTest",
         "com.android.wm.shell.functional.fundamentals.OpenAppsInDesktopModeTest",
         "com.android.wm.shell.functional.fundamentals.QuickSwitchBetweenDesktopAndFullscreenTest",
         "com.android.wm.shell.functional.fundamentals.SwitchFocusBetweenAppsTest",
         "com.android.wm.shell.functional.fundamentals.SwitchToHomeFromDesktopTest",
+        "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowAndPipTest",
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowTest",
         "com.android.wm.shell.functional.resizing.ResizeAppWithCornerResizeTest",
@@ -201,13 +201,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.EnterDesktopViaStaticDesktopOverviewTaskTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-EnterDesktopWithAppHandleMenuTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.EnterDesktopWithAppHandleMenuTest"],
 }
 
 test_module_config {
@@ -386,6 +379,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithAppHandleMenuTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.EnterDesktopWithAppHandleMenuTest"],
+}
+
+test_module_config {
     name: "FunctionalTestsDesktopMode-fundamentals-EnterSplitScreenWithAppHandleMenuTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -404,13 +404,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.fundamentals.ExitDesktopToSplitScreenWithAppHeaderMenuTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-fundamentals-MaximizeAppWindowTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.fundamentals.MaximizeAppWindowTest"],
 }
 
 test_module_config {
@@ -460,6 +453,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowAndPipTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.maximize.MaximizeAppWindowTest"],
 }
 
 test_module_config {

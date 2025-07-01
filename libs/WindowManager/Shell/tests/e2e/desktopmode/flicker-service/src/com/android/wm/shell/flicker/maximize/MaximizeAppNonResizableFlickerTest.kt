@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.flicker.fundamentals
+package com.android.wm.shell.flicker.maximize
 
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerTest
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
