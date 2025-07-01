@@ -21,7 +21,7 @@ import com.android.systemui.authentication.domain.interactor.AuthenticationInter
 import com.android.systemui.authentication.shared.model.AuthenticationMethodModel
 import com.android.systemui.bouncer.domain.interactor.AlternateBouncerInteractor
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Application
+import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.deviceentry.data.repository.DeviceEntryRepository
 import com.android.systemui.keyguard.DismissCallbackRegistry
 import com.android.systemui.log.table.TableLogBuffer
@@ -59,7 +59,7 @@ import kotlinx.coroutines.launch
 class DeviceEntryInteractor
 @Inject
 constructor(
-    @Application private val applicationScope: CoroutineScope,
+    @Background private val applicationScope: CoroutineScope,
     private val repository: Lazy<DeviceEntryRepository>,
     private val authenticationInteractor: Lazy<AuthenticationInteractor>,
     private val sceneInteractor: Lazy<SceneInteractor>,
