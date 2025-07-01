@@ -21,6 +21,7 @@ import com.android.systemui.clock.data.repository.clockRepository
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.plugins.activityStarter
+import com.android.systemui.tuner.tunerService
 import com.android.systemui.util.time.fakeSystemClock
 
 var Kosmos.clockInteractor: ClockInteractor by
@@ -31,5 +32,6 @@ var Kosmos.clockInteractor: ClockInteractor by
             broadcastDispatcher = broadcastDispatcher,
             systemClock = fakeSystemClock,
             coroutineScope = backgroundScope,
+            tunerService = tunerService,
         )
     }
