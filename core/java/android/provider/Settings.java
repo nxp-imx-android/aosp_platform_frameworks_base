@@ -6627,7 +6627,7 @@ public final class Settings {
 
         /**
          * Setting to set CV preferred intensity
-         * Setting should be integer (0-10)
+         * Setting should be float range (0.0 - 1.0)
          *
          * @hide
          */
