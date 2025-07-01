@@ -18,7 +18,6 @@ package android.platform.test.ravenwood;
 
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.hardware.SerialManager;
 import android.os.ServiceManager;
 import android.os.SystemClock;
 import android.ravenwood.example.BlueManager;
@@ -52,8 +51,6 @@ public class RavenwoodSystemServer {
         // Services provided by a typical shipping device
         sKnownServices.put(ClipboardManager.class,
                 "com.android.server.FakeClipboardService$Lifecycle");
-        sKnownServices.put(SerialManager.class,
-                "com.android.server.SerialService$Lifecycle");
 
         // Additional services we provide for testing purposes
         sKnownServices.put(BlueManager.class,

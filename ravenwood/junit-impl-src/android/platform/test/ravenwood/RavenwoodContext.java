@@ -23,13 +23,10 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.content.res.Resources.Theme;
-import android.hardware.ISerialManager;
-import android.hardware.SerialManager;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.PermissionEnforcer;
-import android.os.ServiceManager;
 import android.os.UserHandle;
 import android.ravenwood.annotation.RavenwoodSupported.RavenwoodProvidingImplementation;
 import android.ravenwood.example.BlueManager;
@@ -88,11 +85,6 @@ public class RavenwoodContext extends RavenwoodBaseContext {
                         new ClipboardManager(this, getMainThreadHandler())));
         registerService(PermissionEnforcer.class,
                 Context.PERMISSION_ENFORCER_SERVICE, () -> mEnforcer);
-        registerService(SerialManager.class,
-                Context.SERIAL_SERVICE, memoize(() ->
-                        new SerialManager(this, ISerialManager.Stub.asInterface(
-                                ServiceManager.getService(Context.SERIAL_SERVICE)))
-                ));
 
         // Additional services we provide for testing purposes
         registerService(BlueManager.class,
