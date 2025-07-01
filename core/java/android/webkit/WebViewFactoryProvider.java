@@ -20,11 +20,8 @@ import android.annotation.NonNull;
 import android.annotation.SystemApi;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.net.Network;
 import android.net.Uri;
-import android.os.Build;
-import android.text.TextUtils;
 
 import java.util.List;
 
@@ -36,36 +33,6 @@ import java.util.List;
  */
 @SystemApi
 public interface WebViewFactoryProvider {
-    /** @hide */
-    int MINIMUM_SUPPORTED_TARGET_SDK = Build.VERSION_CODES.TIRAMISU;
-
-    /**
-     * Returns whether the WebView implementation represented by {@code packageInfo}
-     * is compatible with this version of Android.
-     * @hide
-     */
-    static boolean isCompatibleImplementationPackage(@NonNull PackageInfo packageInfo) {
-        return packageInfo.applicationInfo.targetSdkVersion >= MINIMUM_SUPPORTED_TARGET_SDK;
-    }
-
-    /**
-     * Returns a string describing the minimum requirement for a WebView implementation
-     * to be compatible with this version of Android, for debugging purposes.
-     * @hide
-     */
-    static @NonNull String describeCompatibleImplementationPackage() {
-        return TextUtils.formatSimple("Minimum targetSdkVersion: %d", MINIMUM_SUPPORTED_TARGET_SDK);
-    }
-
-    /**
-     * Returns the name of the class that should be used when loading the
-     * WebView implementation on this version of Android.
-     * @hide
-     */
-    static @NonNull String getWebViewFactoryClassName() {
-        return "com.android.webview.chromium.WebViewChromiumFactoryProviderForT";
-    }
-
     /**
      * This Interface provides glue for implementing the backend of WebView static methods which
      * cannot be implemented in-situ in the proxy class.
