@@ -8146,6 +8146,7 @@ package android.media.audiopolicy {
   public class AudioMix implements android.os.Parcelable {
     method public int describeContents();
     method public int getMixState();
+    method @FlaggedApi("android.media.audio.dap_injection_starve_management") public boolean isInjectingSilenceOnStarvation();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.media.audiopolicy.AudioMix> CREATOR;
     field public static final int MIX_STATE_DISABLED = -1; // 0xffffffff
@@ -8158,9 +8159,10 @@ package android.media.audiopolicy {
   public static class AudioMix.Builder {
     ctor public AudioMix.Builder(@NonNull android.media.audiopolicy.AudioMixingRule) throws java.lang.IllegalArgumentException;
     method public android.media.audiopolicy.AudioMix build() throws java.lang.IllegalArgumentException;
-    method public android.media.audiopolicy.AudioMix.Builder setDevice(@NonNull android.media.AudioDeviceInfo) throws java.lang.IllegalArgumentException;
-    method public android.media.audiopolicy.AudioMix.Builder setFormat(@NonNull android.media.AudioFormat) throws java.lang.IllegalArgumentException;
-    method public android.media.audiopolicy.AudioMix.Builder setRouteFlags(int) throws java.lang.IllegalArgumentException;
+    method @NonNull public android.media.audiopolicy.AudioMix.Builder setDevice(@NonNull android.media.AudioDeviceInfo) throws java.lang.IllegalArgumentException;
+    method @NonNull public android.media.audiopolicy.AudioMix.Builder setFormat(@NonNull android.media.AudioFormat) throws java.lang.IllegalArgumentException;
+    method @FlaggedApi("android.media.audio.dap_injection_starve_management") @NonNull public android.media.audiopolicy.AudioMix.Builder setInjectSilenceOnStarvation(boolean);
+    method @NonNull public android.media.audiopolicy.AudioMix.Builder setRouteFlags(int) throws java.lang.IllegalArgumentException;
   }
 
   public class AudioMixingRule implements android.os.Parcelable {
