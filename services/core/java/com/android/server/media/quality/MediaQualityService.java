@@ -222,8 +222,10 @@ public class MediaQualityService extends SystemService {
                                 .getMediaProfileColumns(false), selection, selectionArguments);
                     mPackageDefaultPictureProfileHandleMap.clear();
                     for (PictureProfile profile : packageDefaultPictureProfiles) {
-                        mPackageDefaultPictureProfileHandleMap.put(
-                                profile.getPackageName(), profile.getHandle().getId());
+                        if (isPackageDefaultPictureProfile(profile)) {
+                            mPackageDefaultPictureProfileHandleMap.put(
+                                    profile.getPackageName(), profile.getHandle().getId());
+                        }
                     }
                 }
             } catch (RemoteException e) {
@@ -2605,7 +2607,8 @@ public class MediaQualityService extends SystemService {
     }
 
     private boolean isPackageDefaultPictureProfile(PictureProfile pp) {
-        if (pp == null || pp.getProfileType() != PictureProfile.TYPE_SYSTEM) {
+        if (pp == null || pp.getProfileType() != PictureProfile.TYPE_SYSTEM
+                || pp.getInputId() != null) {
             return false;
         }
         String pictureProfileName = pp.getName();
