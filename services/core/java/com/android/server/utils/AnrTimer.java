@@ -150,6 +150,11 @@ public class AnrTimer<V> implements AutoCloseable {
     private static final Injector sDefaultInjector = new Injector();
 
     /**
+     * Token that distinguishes early notifications from timer expirations.
+     */
+    private static final int TOKEN_EXPIRATION = 0;
+
+    /**
      * Token for Long Method Tracing notifications.
      * This token is used in early notifications to trigger long method tracing.
      */
@@ -164,8 +169,20 @@ public class AnrTimer<V> implements AutoCloseable {
      */
     public static class Args {
 
-        /** Represents a point in time (as percent of total) and an associated token. */
-        private record SplitPoint(int percent, int token) {}
+        /**
+         * Represents a point in time (as percent of total) and an associated token. Zero is a
+         * reserved token value.
+         */
+        public record SplitPoint(int percent, int token) {
+            public SplitPoint {
+                if (token == 0) {
+                    throw new IllegalArgumentException("token may not be zero");
+                }
+                if (percent <= 0 || percent > 100) {
+                    throw new IllegalArgumentException("percent must be in (0,100]");
+                }
+            }
+        }
 
         /** Split point for long method tracing, at 50% elapsed time. */
         private static final SplitPoint sLongMethodTracingPoint =
@@ -218,6 +235,15 @@ public class AnrTimer<V> implements AutoCloseable {
         }
 
         /**
+         * Add a split point.  For the specific purpose of long method tracing, consider using the
+         * {@link #longMethodTracing} method instead.
+         */
+        public Args splitPoint(SplitPoint point) {
+            mSplitPoints.add(point);
+            return this;
+        }
+
+        /**
          * Enables or disables long method tracing.
          * When enabled, the timer will trigger long method tracing if it reaches 50%
          * of its timeout duration.
@@ -226,7 +252,6 @@ public class AnrTimer<V> implements AutoCloseable {
          * @return this {@link Args} instance for chaining.
          */
         public Args longMethodTracing(boolean enabled) {
-            final int percent = 50;
             if (enabled) {
                 mSplitPoints.add(sLongMethodTracingPoint);
             } else {
@@ -271,7 +296,6 @@ public class AnrTimer<V> implements AutoCloseable {
             }
             return tokens;
         }
-
     }
 
     /**
@@ -874,7 +898,12 @@ public class AnrTimer<V> implements AutoCloseable {
             }
             mTotalExpired++;
         }
-        mHandler.sendMessage(Message.obtain(mHandler, mWhat, arg));
+        final Message msg = Message.obtain(mHandler, mWhat, arg);
+        // arg1 is zero to signal that this is an expiration callback, and not an early notification
+        // callback.
+        // this an expiration.
+        msg.arg1 = TOKEN_EXPIRATION;
+        mHandler.sendMessage(msg);
         return true;
     }
 
@@ -891,15 +920,33 @@ public class AnrTimer<V> implements AutoCloseable {
     @Keep
     private void notifyEarly(int timerId, int pid, int uid,
                             long elapsedMs, int token) {
-        trace("notifyEarly", timerId, pid, uid, mLabel, elapsedMs, token);
-        switch(token) {
-            case TOKEN_LONG_METHOD_TRACING:
-                LongMethodTracer.trigger(pid,
-                        (int) Math.max(MIN_LMT_DURATION_MS, elapsedMs * 1.5));
-                break;
-            default:
-                Log.w(TAG, "Received a notification with an unknown token: " + token);
+        // Long method tracing is a special case for early notifications.  It is handled directly
+        // in this method.
+        if (token == TOKEN_LONG_METHOD_TRACING) {
+            trace("notifyEarly", timerId, pid, uid, mLabel, elapsedMs, token);
+            LongMethodTracer.trigger(pid,
+                    (int) Math.max(MIN_LMT_DURATION_MS, elapsedMs * 1.5));
+            return;
         }
+
+        // The token is not requesting long method tracing.  The event is forwarded to the message
+        // handler.  This path is used during testing although it is allowed in all cases.
+        V arg = null;
+        synchronized (mLock) {
+            arg = mTimerArgMap.get(timerId);
+            if (arg == null) {
+                Log.e(TAG, formatSimple("failed early notiffor for timer %s:%d : arg not found",
+                                mLabel, timerId));
+                mTotalErrors++;
+                return;
+            }
+        }
+
+        final Message msg = Message.obtain(mHandler, mWhat, arg);
+        // arg1 is used to signal early notifications; a non-zero arg1 means this an early
+        // notification, and arg1 is the token that is passed to the callback.
+        msg.arg1 = token;
+        mHandler.sendMessage(msg);
     }
 
     /**
