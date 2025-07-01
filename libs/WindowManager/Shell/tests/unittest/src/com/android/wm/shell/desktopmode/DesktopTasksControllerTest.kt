@@ -391,6 +391,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(STABLE_BOUNDS)
         }
+        whenever(displayLayout.width()).thenReturn(STABLE_BOUNDS.width())
+        whenever(displayLayout.height()).thenReturn(STABLE_BOUNDS.height())
         whenever(displayLayout.densityDpi()).thenReturn(160)
         whenever(runBlocking { persistentRepository.readDesktop(any(), any()) })
             .thenReturn(Desktop.getDefaultInstance())
@@ -10396,6 +10398,40 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                         this.deskId == DISCONNECTED_DESK_ID
                 }
             )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun onDisplayDisconnect_desktopModeSupported_taskResizedBasedOnDensity() {
+        val defaultDisplayTask = setUpFreeformTask()
+        val transition = Binder()
+        val secondDisplayLayout = mock(DisplayLayout::class.java)
+        whenever(displayController.getDisplayLayout(SECOND_DISPLAY)).thenReturn(secondDisplayLayout)
+        whenever(secondDisplayLayout.height()).thenReturn(1600)
+        whenever(secondDisplayLayout.width()).thenReturn(2560)
+        whenever(secondDisplayLayout.densityDpi()).thenReturn(240)
+        taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+        val secondDisplayTask =
+            setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = Rect(100, 100, 500, 500),
+                )
+                .apply { isResizeable = true }
+
+        val wct =
+            performDisplayDisconnectTransition(
+                transition = transition,
+                desktopSupportedOnDefaultDisplay = true,
+                taskOnSecondDisplayHasFocus = true,
+                defaultDisplayTask = defaultDisplayTask,
+                secondDisplayTask = secondDisplayTask,
+            )
+        assertThat(findBoundsChange(wct, secondDisplayTask)).isEqualTo(Rect(33, 61, 299, 327))
     }
 
     private fun performDisplayDisconnectTransition(
