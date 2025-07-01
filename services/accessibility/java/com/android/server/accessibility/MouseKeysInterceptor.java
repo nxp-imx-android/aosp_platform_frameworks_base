@@ -28,6 +28,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.database.ContentObserver;
 import android.hardware.input.InputManager;
+import android.hardware.input.InputSettings;
 import android.hardware.input.VirtualMouse;
 import android.hardware.input.VirtualMouseButtonEvent;
 import android.hardware.input.VirtualMouseConfig;
@@ -111,6 +112,14 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     @VisibleForTesting
     public static final float MOUSE_SCROLL_STEP = 0.2f;
 
+    /**
+     * The parameter that converts the mouse keys max speed factor that ranges from 1 - 10
+     * to the actual float mouse pointer movement step. Assigning its value to 0.36f so
+     * the DEFAULT_MOUSE_KEYS_MAX_SPEED matches the constant MOUSE_POINTER_MOVEMENT_STEP
+     * when enableMouseKeyEnhancement flag is off.
+     */
+    private static final float CURSOR_MOVEMENT_PARAMETER = 0.36f;
+
     private final AccessibilityManagerService mAms;
     private final Handler mHandler;
 
@@ -160,10 +169,12 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
     private int mActiveInputDeviceId = 0;
 
     /** The maximum movement step the mouse pointer can reach when accelerating. */
-    private float mMaxMovementStep = 10.0f;
+    @VisibleForTesting
+    float mMaxMovementStep = 10.0f;
 
     /** The acceleration factor applied to the mouse pointer's speed per interval. */
-    private float mAcceleration = 0.1f;
+    @VisibleForTesting
+    float mAcceleration = 0.1f;
 
     /**
      * The keycodes to which the mouse keys functionality will be bound to can be either
@@ -903,6 +914,19 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
         private final Uri mPrimaryKeysSettingUri = Settings.Secure.getUriFor(
                 Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_USE_PRIMARY_KEYS);
 
+        /**
+         * URI used to identify the max speed as a factor of the minimum speed for mouse
+         * keys movement.
+         */
+        private final Uri mMaxSpeedSettingsUri = Settings.Secure.getUriFor(
+                Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_MAX_SPEED);
+
+        /**
+         * URI used to identify the current acceleration value for mouse keys movement.
+         */
+        private final Uri mAccelerationSettingsUri = Settings.Secure.getUriFor(
+                Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ACCELERATION);
+
         private ContentResolver mContentResolver;
         private final int mUserId;
 
@@ -936,6 +960,18 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
             Slog.i(LOG_TAG, "Content resolver registered");
             // Initialize mouse keys bindings
             onChange(/* selfChange= */ true, mPrimaryKeysSettingUri);
+            contentResolver.registerContentObserver(
+                    mMaxSpeedSettingsUri,
+                    /* notifyForDescendants= */ false,
+                    /* observer= */ this,
+                    mUserId);
+            onChange(/* selfChange= */ true, mMaxSpeedSettingsUri);
+            contentResolver.registerContentObserver(
+                    mAccelerationSettingsUri,
+                    /* notifyForDescendants= */ false,
+                    /* observer= */ this,
+                    mUserId);
+            onChange(/* selfChange= */ true, mAccelerationSettingsUri);
         }
 
         /**
@@ -969,6 +1005,26 @@ public class MouseKeysInterceptor extends BaseEventStreamTransformation
                 // The next call to onKeyEventInternal will force re-initialize the keycode map
                 // for the device according to the key binding selected by user.
                 mDeviceKeyCodeMap.clear();
+            }
+
+            if (mMaxSpeedSettingsUri.equals(uri)) {
+                mMaxMovementStep = Settings.Secure.getIntForUser(
+                                mContentResolver,
+                                Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_MAX_SPEED,
+                                InputSettings.DEFAULT_MOUSE_KEYS_MAX_SPEED,
+                                mUserId) * CURSOR_MOVEMENT_PARAMETER;
+                Slog.i(LOG_TAG, "Mouse keys max speed updated. New value for max speed = "
+                        + mMaxMovementStep);
+            }
+
+            if (mAccelerationSettingsUri.equals(uri)) {
+                mAcceleration = Settings.Secure.getFloatForUser(
+                                mContentResolver,
+                                Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ACCELERATION,
+                                InputSettings.DEFAULT_MOUSE_KEYS_ACCELERATION,
+                                mUserId);
+                Slog.i(LOG_TAG, "Mouse keys acceleration updated. New value for acceleration = "
+                        + mAcceleration);
             }
         }
     }
