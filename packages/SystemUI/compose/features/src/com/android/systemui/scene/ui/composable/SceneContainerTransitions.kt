@@ -49,7 +49,13 @@ import com.android.systemui.shade.ui.composable.Shade
  *
  * Please keep the list sorted alphabetically.
  */
-class SceneContainerTransitions : SceneContainerTransitionsBuilder {
+class SceneContainerTransitions(
+    /**
+     * Pass to transitions that animate QS tiles to disable the shared element animation (e.g.
+     * QuickSettings to Shade when QuickSettings is on the second page).
+     */
+    private val animateQsTilesAsShared: () -> Boolean = { true }
+) : SceneContainerTransitionsBuilder {
     override fun build(
         shadeExpansionMotion: VerticalExpandContainerSpec,
         revealHaptics: ContainerRevealHaptics,
@@ -146,7 +152,9 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 to = Scenes.Shade,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE, // NOTYPO
             ) {
-                reversed { shadeToQuickSettingsTransition() }
+                reversed {
+                    shadeToQuickSettingsTransition(animateQsTilesAsShared = animateQsTilesAsShared)
+                }
                 sharedElement(
                     Notifications.Elements.HeadsUpNotificationPlaceholder,
                     enabled = false,
@@ -157,7 +165,7 @@ class SceneContainerTransitions : SceneContainerTransitionsBuilder {
                 to = Scenes.QuickSettings,
                 cuj = Cuj.CUJ_NOTIFICATION_SHADE_QS_EXPAND_COLLAPSE, // NOTYPO
             ) {
-                shadeToQuickSettingsTransition()
+                shadeToQuickSettingsTransition(animateQsTilesAsShared = animateQsTilesAsShared)
             }
             from(
                 Scenes.Shade,

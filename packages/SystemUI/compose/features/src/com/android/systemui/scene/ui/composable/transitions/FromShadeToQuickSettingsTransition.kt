@@ -1,16 +1,23 @@
 package com.android.systemui.scene.ui.composable.transitions
 
 import androidx.compose.animation.core.tween
+import com.android.compose.animation.scene.ContentKey
 import com.android.compose.animation.scene.Edge
+import com.android.compose.animation.scene.ElementKey
+import com.android.compose.animation.scene.ElementMatcher
 import com.android.compose.animation.scene.TransitionBuilder
 import com.android.compose.animation.scene.UserActionDistance
 import com.android.systemui.notifications.ui.composable.Notifications
+import com.android.systemui.qs.shared.ui.ElementKeys
 import com.android.systemui.qs.ui.composable.QuickSettings
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import kotlin.time.Duration.Companion.milliseconds
 
-fun TransitionBuilder.shadeToQuickSettingsTransition(durationScale: Double = 1.0) {
+fun TransitionBuilder.shadeToQuickSettingsTransition(
+    durationScale: Double = 1.0,
+    animateQsTilesAsShared: () -> Boolean = { true },
+) {
     spec = tween(durationMillis = (DefaultDuration * durationScale).inWholeMilliseconds.toInt())
     distance = UserActionDistance { fromContent, _, _ ->
         val distance =
@@ -22,6 +29,19 @@ fun TransitionBuilder.shadeToQuickSettingsTransition(durationScale: Double = 1.0
 
     translate(Notifications.Elements.NotificationScrim, Edge.Bottom)
     timestampRange(endMillis = 83) { fade(QuickSettings.Elements.FooterActions) }
+
+    fractionRange(start = 0.43f) { fade(ElementKeys.QuickSettingsContent) }
+
+    anchoredTranslate(ElementKeys.QuickSettingsContent, ElementKeys.GridAnchor)
+
+    sharedElement(ElementKeys.TileElementMatcher, enabled = animateQsTilesAsShared())
+
+    // This will animate between 0f (QQS) and 0.5, fading in the QQS tiles when coming back
+    // from non first page QS. The QS content ends fading out at 0.43f, so there's a brief
+    // overlap, but because they are really faint, it looks better than complete black without
+    // overlap.
+    fractionRange(end = 0.5f) { fade(QqsTileElementMatcher) }
+    anchoredTranslate(QqsTileElementMatcher, ElementKeys.GridAnchor)
 
     val translationY = ShadeHeader.Dimensions.CollapsedHeightForTransitions
     translate(ShadeHeader.Elements.CollapsedContentStart, y = translationY)
@@ -44,3 +64,10 @@ fun TransitionBuilder.shadeToQuickSettingsTransition(durationScale: Double = 1.0
 }
 
 private val DefaultDuration = 500.milliseconds
+
+private val QqsTileElementMatcher =
+    object : ElementMatcher {
+        override fun matches(key: ElementKey, content: ContentKey): Boolean {
+            return content == Scenes.Shade && ElementKeys.TileElementMatcher.matches(key, content)
+        }
+    }

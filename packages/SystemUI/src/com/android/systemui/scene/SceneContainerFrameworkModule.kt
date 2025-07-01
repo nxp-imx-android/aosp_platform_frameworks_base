@@ -18,6 +18,7 @@ package com.android.systemui.scene
 
 import com.android.systemui.CoreStartable
 import com.android.systemui.notifications.ui.composable.NotificationsShadeSessionModule
+import com.android.systemui.qs.panels.ui.viewmodel.AnimateQsTilesViewModel
 import com.android.systemui.scene.domain.SceneDomainModule
 import com.android.systemui.scene.domain.interactor.DualShadeEducationInteractorModule
 import com.android.systemui.scene.domain.interactor.WindowRootViewVisibilityInteractor
@@ -91,7 +92,10 @@ interface SceneContainerFrameworkModule {
     companion object {
 
         @Provides
-        fun containerConfig(): SceneContainerConfig {
+        fun containerConfig(
+            animateQsTilesViewModelFactory: AnimateQsTilesViewModel.Factory
+        ): SceneContainerConfig {
+            val animateQsTilesViewModel = animateQsTilesViewModelFactory.create()
             return SceneContainerConfig(
                 // Note that this list is in z-order. The first one is the bottom-most and the last
                 // one is top-most.
@@ -122,7 +126,10 @@ interface SceneContainerFrameworkModule {
                         Scenes.QuickSettings to 4,
                         Scenes.QSEditMode to 5,
                     ),
-                transitionsBuilder = SceneContainerTransitions(),
+                transitionsBuilder =
+                    SceneContainerTransitions(
+                        animateQsTilesAsShared = { animateQsTilesViewModel.animateQsTiles }
+                    ),
             )
         }
     }
