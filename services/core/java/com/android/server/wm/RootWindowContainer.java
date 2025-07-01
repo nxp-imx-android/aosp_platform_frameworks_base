@@ -45,7 +45,6 @@ import static android.window.DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_FOCUS_LIGHT;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_KEEP_SCREEN_ON;
-import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_ORIENTATION;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_STATES;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_TASKS;
 import static com.android.internal.protolog.WmProtoLogGroups.WM_SHOW_SURFACE_ALLOC;
@@ -108,7 +107,6 @@ import android.hardware.display.DisplayManagerInternal.DisplayBrightnessOverride
 import android.hardware.power.Mode;
 import android.net.Uri;
 import android.os.Binder;
-import android.os.Debug;
 import android.os.FactoryTest;
 import android.os.Handler;
 import android.os.IBinder;
@@ -189,7 +187,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
     private final SparseArray<DisplayBrightnessOverrideRequest> mDisplayBrightnessOverrides =
             new SparseArray<>();
     private long mUserActivityTimeout = -1;
-    private boolean mUpdateRotation = false;
+
     // Only set while traversing the default display based on its content.
     // Affects the behavior of mirroring on secondary displays.
     private boolean mObscureApplicationContentOnSecondaryDisplays = false;
@@ -737,20 +735,8 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
      * check and {@link WindowSurfacePlacer#isInLayout()} won't take effect.
      */
     void performSurfacePlacement() {
-        Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "performSurfacePlacement");
-        try {
-            performSurfacePlacementNoTrace();
-        } finally {
-            Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
-        }
-    }
-
-    // "Something has changed!  Let's make it correct now."
-    // TODO: Super long method that should be broken down...
-    void performSurfacePlacementNoTrace() {
         if (DEBUG_WINDOW_TRACE) {
-            Slog.v(TAG, "performSurfacePlacementInner: entry. Called by "
-                    + Debug.getCallers(3));
+            Slog.v(TAG, "performSurfacePlacement: entry");
         }
 
         int i;
@@ -849,13 +835,7 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
                     mSustainedPerformanceModeEnabled);
         }
 
-        if (mUpdateRotation) {
-            ProtoLog.d(WM_DEBUG_ORIENTATION, "Performing post-rotate rotation");
-            mUpdateRotation = updateRotationUnchecked();
-        }
-
-        if (!mWmService.mWaitingForDrawnCallbacks.isEmpty()
-                || (!isLayoutNeeded() && !mUpdateRotation)) {
+        if (!mWmService.mWaitingForDrawnCallbacks.isEmpty() || !isLayoutNeeded()) {
             mWmService.checkDrawnWindowsLocked();
         }
 

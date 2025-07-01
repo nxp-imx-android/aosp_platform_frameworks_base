@@ -131,7 +131,6 @@ import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_SLEEP_TOKE
 import static com.android.internal.protolog.WmProtoLogGroups.WM_SHOW_TRANSACTIONS;
 import static com.android.internal.util.LatencyTracker.ACTION_ROTATE_SCREEN;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_ANIM;
-import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_CONFIG;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_LAYOUT;
 import static com.android.server.policy.WindowManagerPolicy.FINISH_LAYOUT_REDO_WALLPAPER;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
@@ -5067,14 +5066,6 @@ class DisplayContent extends RootDisplayArea implements WindowManagerPolicy.Disp
 
         if ((pendingLayoutChanges & FINISH_LAYOUT_REDO_WALLPAPER) != 0) {
             mWallpaperController.adjustWallpaperWindows();
-        }
-
-        if ((pendingLayoutChanges & FINISH_LAYOUT_REDO_CONFIG) != 0) {
-            if (DEBUG_LAYOUT) Slog.v(TAG, "Computing new config from layout");
-            if (updateOrientation()) {
-                setLayoutNeeded();
-                sendNewConfiguration();
-            }
         }
 
         if ((pendingLayoutChanges & FINISH_LAYOUT_REDO_LAYOUT) != 0) {
