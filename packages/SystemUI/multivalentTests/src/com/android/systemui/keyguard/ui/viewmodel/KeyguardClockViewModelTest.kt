@@ -139,7 +139,7 @@ class KeyguardClockViewModelTest(flags: FlagsParameterization) : SysuiTestCase()
                     KeyguardState.AOD,
                     KeyguardState.LOCKSCREEN,
                 )
-                fakeKeyguardClockRepository.setShouldForceSmallClock(true)
+                fakeKeyguardClockRepository.setClockSize(ClockSize.SMALL)
             }
 
             assertThat(currentClockLayout).isEqualTo(ClockLayout.SPLIT_SHADE_SMALL_CLOCK)

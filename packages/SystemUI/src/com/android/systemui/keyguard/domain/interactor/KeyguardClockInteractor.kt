@@ -112,14 +112,14 @@ constructor(
     private val dynamicClockSize: Flow<ClockSize> =
         if (SceneContainerFlag.isEnabled) {
             combine(
+                keyguardClockRepository.forcedClockSize,
                 shadeModeInteractor.isShadeLayoutWide,
                 areAnyNotificationsPresent,
                 mediaCarouselInteractor.hasActiveMedia,
                 keyguardInteractor.isDozing,
-                isOnAod,
-            ) { isShadeLayoutWide, hasNotifs, hasMedia, isDozing, isOnAod ->
+            ) { forcedClockSize, isShadeLayoutWide, hasNotifs, hasMedia, isDozing ->
                 when {
-                    keyguardClockRepository.shouldForceSmallClock && !isOnAod -> ClockSize.SMALL
+                    forcedClockSize != null -> forcedClockSize
                     !isShadeLayoutWide && (hasNotifs || hasMedia) -> ClockSize.SMALL
                     !isShadeLayoutWide -> ClockSize.LARGE
                     hasMedia && !isDozing -> ClockSize.SMALL

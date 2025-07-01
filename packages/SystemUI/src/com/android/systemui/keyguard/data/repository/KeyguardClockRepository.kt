@@ -21,6 +21,7 @@ import android.os.UserHandle
 import android.provider.Settings
 import com.android.keyguard.ClockEventController
 import com.android.systemui.animation.GSFAxes
+import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
@@ -46,6 +47,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onStart
@@ -72,7 +74,7 @@ interface KeyguardClockRepository {
 
     val clockEventController: ClockEventController
 
-    val shouldForceSmallClock: Boolean
+    val forcedClockSize: Flow<ClockSize?>
 
     fun setClockSize(size: ClockSize)
 }
@@ -87,12 +89,24 @@ constructor(
     @Background private val backgroundDispatcher: CoroutineDispatcher,
     @Application private val applicationScope: CoroutineScope,
     @ShadeDisplayAware private val context: Context,
+    @ShadeDisplayAware configurationRepository: ConfigurationRepository,
     private val featureFlags: FeatureFlagsClassic,
 ) : KeyguardClockRepository {
-
     /** Receive SMALL or LARGE clock should be displayed on keyguard. */
     private val _clockSize: MutableStateFlow<ClockSize> = MutableStateFlow(ClockSize.LARGE)
     override val clockSize: StateFlow<ClockSize> = _clockSize.asStateFlow()
+    override val forcedClockSize: Flow<ClockSize?> =
+        if (featureFlags.isEnabled(Flags.LOCKSCREEN_ENABLE_LANDSCAPE)) {
+            configurationRepository.onAnyConfigurationChange.map {
+                if (context.resources.getBoolean(R.bool.force_small_clock_on_lockscreen)) {
+                    ClockSize.SMALL
+                } else {
+                    null
+                }
+            }
+        } else {
+            flowOf<ClockSize?>(null)
+        }
 
     override fun setClockSize(size: ClockSize) {
         SceneContainerFlag.assertInLegacyMode()
@@ -145,12 +159,6 @@ constructor(
                 started = SharingStarted.WhileSubscribed(),
                 initialValue = null,
             )
-
-    override val shouldForceSmallClock: Boolean
-        get() =
-            featureFlags.isEnabled(Flags.LOCKSCREEN_ENABLE_LANDSCAPE) &&
-                // True on small landscape screens
-                context.resources.getBoolean(R.bool.force_small_clock_on_lockscreen)
 
     private fun getClockSize(): ClockSizeSetting {
         return ClockSizeSetting.fromSettingValue(
