@@ -619,9 +619,7 @@ class TaskOrganizerController extends ITaskOrganizerController.Stub {
             return null;
         }
         t.setPosition(leash, window.mSurfacePosition.x, window.mSurfacePosition.y);
-        if (com.android.window.flags.Flags.splashScreenViewSyncTransaction()) {
-            t.apply();
-        }
+        t.apply();
         return leash;
     }
 
