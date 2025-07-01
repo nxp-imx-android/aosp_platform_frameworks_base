@@ -90,6 +90,7 @@ android_test {
         "services.supervision",
         "services.usage",
         "servicestests-utils",
+        "signal_collector_flags_lib",
         "testables",
         // TODO: remove once Android migrates to JUnit 4.12,
         // which provides assertThrows

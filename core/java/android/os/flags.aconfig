@@ -247,13 +247,6 @@ flag {
 }
 
 flag {
-    name: "enable_binder_call_signal_collector"
-    namespace: "backstage_power"
-    description: "Enable binder call signal collector for anomaly detection."
-    bug: "421243909"
-}
-
-flag {
     name: "get_private_space_settings"
     namespace: "profile_experiences"
     description: "Guards a new Private Profile API in LauncherApps"
