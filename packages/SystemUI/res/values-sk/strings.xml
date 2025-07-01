@@ -852,8 +852,7 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Zapnúť"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Dlhšie konverzácie je možné teraz zhrnúť, aby ste mali k dispozícii rýchle súhrny"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Nástroj na usporiadanie upozornení zoskupí upozornenia s nižšou prioritou a vypne ich zvuk"</string>
-    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
-    <skip />
+    <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# upozornenie}few{# upozornenia}many{# notifications}other{# upozornení}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"Hotovo"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Použiť"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Vypnúť"</string>

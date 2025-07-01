@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"ඔබ දැනට ඔබේ සම්පූර්ණ තිරය පටිගත කරමින් සිටී"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"ඔබ දැනට <xliff:g id="APP_NAME">%1$s</xliff:g> පටිගත කරමින් සිටී"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"පටිගත කිරීම නවත්වන්න"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"තෝරාගත් ප්‍රදේශය ග්‍රහණය කරන්න"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"ග්‍රහණය කරන්න"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"පටිගත කරන්න"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"තිරය ​​බෙදා ගැනීම"</string>
@@ -752,8 +751,7 @@
     <string name="stream_bluetooth_sco" msgid="6234562365528664331">"බ්ලූටූත්"</string>
     <string name="stream_dtmf" msgid="7322536356554673067">"ද්විත්ව බහු ස්වර සංඛ්‍යාතය"</string>
     <string name="stream_accessibility" msgid="3873610336741987152">"ප්‍රවේශ්‍යතාව"</string>
-    <!-- no translation found for stream_assistant (2163992770504149386) -->
-    <skip />
+    <string name="stream_assistant" msgid="2163992770504149386">"සහායක"</string>
     <string name="volume_ringer_status_normal" msgid="1339039682222461143">"නාද කරන්න"</string>
     <string name="volume_ringer_status_vibrate" msgid="6970078708957857825">"කම්පනය කරන්න"</string>
     <string name="volume_ringer_status_silent" msgid="3691324657849880883">"නිහඬ කරන්න"</string>
@@ -854,8 +852,7 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ක්‍රියාත්මක කරන්න"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"ඔබේ දීර්ඝ සංවාද දැන් සාරාංශගත කර ඔබට ඉක්මන් සාරාංශ ලබා දිය හැක"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"දැනුම්දීම් සංවිධායක අඩු ප්‍රමුඛතා දැනුම්දීම් පොදි කර නිහඬ කරයි"</string>
-    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
-    <skip />
+    <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# දැනුම්දීමක්}one{දැනුම්දීම් #ක්}other{දැනුම්දීම් #ක්}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"නිමයි"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"යොදන්න"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"ක්‍රියාවිරහිත කරන්න"</string>
@@ -1657,20 +1654,15 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"නොදනී"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"සියලු ටයිල් නැවත සකසන්න ද?"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"සියලු ඉක්මන් සැකසීම් ටයිල් උපාංගයේ මුල් සැකසීම් වෙත නැවත සකසනු ඇත"</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"ප්‍රයෝජනවත් යෝජනා ලබා ගන්න"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"ඔබ තිරය මත කරන දෙයට අදාළ තතු සහ ක්‍රියාමාර්ග කල්තියා යෝජනා කිරීමට අපි AI භාවිතා කරමු"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"නිරූපකය"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"යෝජනා ජනනය වන ආකාරය බැලීමට ස්පර්ශ කර අල්ලා ගන්න"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"<xliff:g id="APPLICATION">%1$s</xliff:g> තවදුරටත් සජීවී යාවත්කාලීන නොපෙන්වයි. ඔබට සැකසීම් තුළ මෙය ඕනෑම වේලාවක වෙනස් කළ හැක."</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>, <xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"වසන්න"</string>
     <string name="ambient_cue_icon_content_description" msgid="1403264595520777373">"ස්ථානික යෝජනා නිරූපකය"</string>
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"දැනුම්දීම් විවෘත කිරීමට ඉහළ වමේ සිට ස්වයිප් කරන්න"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ඉක්මන් සැකසීම් විවෘත කිරීමට ඉහළ දකුණේ සිට ස්වයිප් කරන්න"</string>
-    <!-- no translation found for back_button_on_bouncer (809134628434396761) -->
-    <skip />
+    <string name="back_button_on_bouncer" msgid="809134628434396761">"ආපසු"</string>
 </resources>

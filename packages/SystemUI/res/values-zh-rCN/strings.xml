@@ -138,8 +138,7 @@
     <string name="screenrecord_stop_dialog_message" msgid="6262768207331626817">"您正在录制整个屏幕"</string>
     <string name="screenrecord_stop_dialog_message_specific_app" msgid="5995770227684523244">"您正在录制“<xliff:g id="APP_NAME">%1$s</xliff:g>”"</string>
     <string name="screenrecord_stop_dialog_button" msgid="2883812564938194350">"停止录制"</string>
-    <!-- no translation found for screen_capture_region_selection_button (4437546351856914639) -->
-    <skip />
+    <string name="screen_capture_region_selection_button" msgid="4437546351856914639">"截取所选区域"</string>
     <string name="screen_capture_toolbar_capture_button" msgid="8512731007891496030">"拍摄"</string>
     <string name="screen_capture_toolbar_record_button" msgid="7533814143351870339">"录制"</string>
     <string name="share_to_app_chip_accessibility_label" msgid="4210256229976947065">"正在共享屏幕"</string>
@@ -853,8 +852,7 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"开启"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"现在，系统可以为您总结较长的对话，以便您快速了解重点"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"通知整理工具会将优先级较低的通知归为一组并静音"</string>
-    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
-    <skip />
+    <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# 条通知}other{# 条通知}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"完成"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"应用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"关闭"</string>
@@ -1656,14 +1654,10 @@
     <string name="qs_edit_mode_category_unknown" msgid="509314252124053550">"未知"</string>
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"要重置所有功能块吗？"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"所有“快捷设置”功能块都将重置为设备的原始设置"</string>
-    <!-- no translation found for ambientcue_first_time_edu_title (4786708463521594957) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_text (7541905631076606020) -->
-    <skip />
-    <!-- no translation found for ambientcue_first_time_edu_icon_description (1776865320146246305) -->
-    <skip />
-    <!-- no translation found for ambientcue_long_press_edu_text (8424250358721947938) -->
-    <skip />
+    <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"获取实用建议"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"我们会运用 AI 技术，根据您在屏幕上的操作主动提供相关信息和操作建议"</string>
+    <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"图标"</string>
+    <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"轻触并按住即可查看建议是如何生成的"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"“<xliff:g id="APPLICATION">%1$s</xliff:g>”将不再显示实时动态。您可以随时在“设置”中更改这项设置。"</string>
     <string name="volume_slider_disabled_message_template" msgid="1305088816797803460">"<xliff:g id="STREAM_NAME">%1$s</xliff:g>，<xliff:g id="DISABLED_MESSAGE">%2$s</xliff:g>"</string>
     <string name="underlay_close_button_content_description" msgid="6518481455548869894">"关闭"</string>

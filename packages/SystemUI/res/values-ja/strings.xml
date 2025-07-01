@@ -854,8 +854,7 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ON にする"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"長い会話を要約して、内容をすばやく確認できるようになりました"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"通知オーガナイザーは、優先度の低い通知をまとめてサイレントにします"</string>
-    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
-    <skip />
+    <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# 件の通知}other{# 件の通知}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"完了"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"適用"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"OFF にする"</string>
