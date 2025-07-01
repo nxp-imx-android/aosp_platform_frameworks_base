@@ -17,6 +17,7 @@
 package com.android.server.companion.datatransfer.continuity;
 
 import static android.companion.CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY;
+import static com.android.server.companion.datatransfer.contextsync.BitmapUtils.renderDrawableToByteArray;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
@@ -28,6 +29,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.RemoteException;
 import android.util.Slog;
 
@@ -267,10 +269,13 @@ class TaskBroadcaster
         String baseApplicationLabel = mPackageManager.getApplicationLabel(
             packageInfo.applicationInfo).toString();
 
+        Drawable baseApplicationIcon = mPackageManager.getApplicationIcon(
+            packageInfo.applicationInfo);
+
         return new RemoteTaskInfo(
             taskInfo.taskId,
             baseApplicationLabel,
             taskInfo.lastActiveTime,
-            new byte[0]);
+            renderDrawableToByteArray(baseApplicationIcon));
     }
 }
