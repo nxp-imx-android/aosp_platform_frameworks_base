@@ -16,6 +16,7 @@
 
 package com.android.server.supervision
 
+import android.Manifest.permission.BYPASS_ROLE_QUALIFICATION
 import android.app.Activity
 import android.app.KeyguardManager
 import android.app.admin.DevicePolicyManager
@@ -32,6 +33,8 @@ import android.content.ContextWrapper
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.content.pm.PackageManager.PERMISSION_DENIED
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.content.pm.PackageManagerInternal
 import android.content.pm.UserInfo
 import android.content.pm.UserInfo.FLAG_FOR_TESTING
@@ -61,6 +64,7 @@ import com.android.server.supervision.SupervisionService.ACTION_CONFIRM_SUPERVIS
 import com.android.server.supervision.SupervisionService.RoleManagerWrapper
 import com.google.common.truth.Truth.assertThat
 import java.nio.file.Files
+import kotlin.test.assertFailsWith
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
@@ -95,14 +99,16 @@ class SupervisionServiceTest {
     @Mock private lateinit var mockUserManagerInternal: UserManagerInternal
     @Mock private lateinit var mockRoleManager: SupervisionService.RoleManagerWrapper
 
-    private lateinit var context: Context
+    private lateinit var context: SupervisionContextWrapper
     private lateinit var lifecycle: SupervisionService.Lifecycle
     private lateinit var service: SupervisionService
 
     @Before
     fun setUp() {
-        context = InstrumentationRegistry.getInstrumentation().context
-        context = SupervisionContextWrapper(context, mockKeyguardManager, mockPackageManager,
+        context = SupervisionContextWrapper(
+            InstrumentationRegistry.getInstrumentation().context,
+            mockKeyguardManager,
+            mockPackageManager,
             mockRoleManager)
 
         LocalServices.removeServiceForTest(DevicePolicyManagerInternal::class.java)
@@ -118,11 +124,16 @@ class SupervisionServiceTest {
         SupervisionSettings.getInstance()
             .changeDirForTesting(Files.createTempDirectory("tempSupervisionFolder").toFile())
 
+        // Simulate that this test has the BYPASS_ROLE_QUALIFICATION permission. This is needed to
+        // bypass the system uid check in setSupervisionEnabled. This is the permission the
+        // supervision CTS tests use to enable supervision.
+        context.permissions[BYPASS_ROLE_QUALIFICATION] = PERMISSION_GRANTED
+
         service = SupervisionService(context)
         lifecycle = SupervisionService.Lifecycle(context, service)
         lifecycle.registerProfileOwnerListener()
 
-        //TODO: b/427453821 Remove after converting SupervisionSettings from being a singleton.
+        // TODO: b/427453821 Remove after converting SupervisionSettings from being a singleton.
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
     }
 
@@ -280,11 +291,19 @@ class SupervisionServiceTest {
     }
 
     @Test
+    fun setSupervisionEnabledForUser_noPermission_throwsException() {
+        context.permissions[BYPASS_ROLE_QUALIFICATION] = PERMISSION_DENIED
+        assertFailsWith<SecurityException> {
+            service.setSupervisionEnabledForUser(USER_ID, false)
+        }
+    }
+
+    @Test
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_REMOVE_POLICIES_ON_SUPERVISION_DISABLE)
     fun setSupervisionEnabledForUser_removesPoliciesWhenDisabling() {
         for ((role, packageName) in supervisionRoleHolders) {
             whenever(mockRoleManager.getRoleHoldersAsUser(eq(role), any()))
-                .thenReturn(listOf(packageName));
+                .thenReturn(listOf(packageName))
         }
 
         service.setSupervisionEnabledForUser(USER_ID, false)
@@ -511,7 +530,7 @@ class SupervisionServiceTest {
     private fun setSupervisionEnabledForUser(
         expectedUserId: Int,
         enabled: Boolean,
-        listeners: Map<Int, Pair<ISupervisionListener, IBinder>>,
+        listeners: Map<Int, Pair<ISupervisionListener, IBinder>>
     ) {
         service.setSupervisionEnabledForUser(expectedUserId, enabled)
         listeners.forEach { userId, (listener, binder) ->
@@ -533,7 +552,7 @@ class SupervisionServiceTest {
         assertThat(service.isSupervisionEnabledForUser(USER_ID)).isFalse()
         for ((role, packageName) in supervisionRoleHolders) {
             whenever(mockRoleManager.getRoleHoldersAsUser(eq(role), any()))
-                .thenReturn(listOf(packageName));
+                .thenReturn(listOf(packageName))
         }
 
         service.setSupervisionEnabledForUser(USER_ID, false)
@@ -549,10 +568,15 @@ class SupervisionServiceTest {
     @RequiresFlagsEnabled(Flags.FLAG_ENABLE_REMOVE_POLICIES_ON_SUPERVISION_DISABLE)
     fun clearPackageSuspensions_noSupervisionPackages_doesNothing() {
         whenever(mockRoleManager.getRoleHoldersAsUser(
-            any(), any())).thenReturn(listOf())
+            any(),
+            any()
+        )).thenReturn(listOf())
         service.setSupervisionEnabledForUser(USER_ID, false)
 
-        verify(mockPackageManagerInternal, never()).unsuspendForSuspendingPackage(any(), any(), any())
+        verify(
+            mockPackageManagerInternal,
+            never()
+        ).unsuspendForSuspendingPackage(any(), any(), any())
     }
 
     private val systemSupervisionPackage: String
@@ -566,7 +590,7 @@ class SupervisionServiceTest {
                 .let(ComponentName::unflattenFromString)
 
     private fun simulateUserStarting(userId: Int, preCreated: Boolean = false) {
-        val userInfo = UserInfo(userId, /* name= */ "tempUser", /* flags= */ 0)
+        val userInfo = UserInfo(userId, "tempUser", 0)
         userInfo.preCreated = preCreated
         lifecycle.onUserStarting(TargetUser(userInfo))
     }
@@ -630,14 +654,15 @@ private class SupervisionContextWrapper(
     val roleManagerWrapper: RoleManagerWrapper,
 ) : ContextWrapper(context) {
     val interceptors = mutableListOf<Pair<BroadcastReceiver, IntentFilter>>()
+    val permissions = mutableMapOf<String, Int>()
 
     override fun getSystemService(name: String): Any? {
-        var ret =  when (name) {
+        var ret = when (name) {
             Context.KEYGUARD_SERVICE -> keyguardManager
             Context.ROLE_SERVICE -> roleManagerWrapper
             else -> super.getSystemService(name)
         }
-        return ret;
+        return ret
     }
 
     override fun getPackageManager() = pkgManager
@@ -660,14 +685,21 @@ private class SupervisionContextWrapper(
         val pendingResult =
             BroadcastReceiver.PendingResult(
                 Activity.RESULT_OK,
-                /* resultData= */ "",
-                /* resultExtras= */ null,
-                /* type= */ 0,
-                /* ordered= */ true,
-                /* sticky= */ false,
-                /* token= */ null,
+                /* resultData= */
+                "",
+                /* resultExtras= */
+                null,
+                /* type= */
+                0,
+                /* ordered= */
+                true,
+                /* sticky= */
+                false,
+                /* token= */
+                null,
                 user.identifier,
-                /* flags= */ 0,
+                /* flags= */
+                0,
             )
         for ((receiver, filter) in interceptors) {
             if (filter.match(contentResolver, intent, false, "") > 0) {
@@ -675,5 +707,9 @@ private class SupervisionContextWrapper(
                 receiver.onReceive(context, intent)
             }
         }
+    }
+
+    override fun checkCallingOrSelfPermission(permission: String): Int {
+        return permissions[permission] ?: super.checkCallingOrSelfPermission(permission)
     }
 }

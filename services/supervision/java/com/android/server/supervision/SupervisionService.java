@@ -16,6 +16,7 @@
 
 package com.android.server.supervision;
 
+import static android.Manifest.permission.BYPASS_ROLE_QUALIFICATION;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS;
 import static android.Manifest.permission.MANAGE_ROLE_HOLDERS;
 import static android.Manifest.permission.MANAGE_USERS;
@@ -53,6 +54,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.PersistableBundle;
+import android.os.Process;
 import android.os.RemoteException;
 import android.os.ResultReceiver;
 import android.os.ShellCallback;
@@ -138,7 +140,7 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     @Override
     public void setSupervisionEnabledForUser(@UserIdInt int userId, boolean enabled) {
-        // TODO(b/395630828): Ensure that this method can only be called by the system.
+        enforceCallerCanSetSupervisionEnabled();
         if (UserHandle.getUserId(Binder.getCallingUid()) != userId) {
             enforcePermission(INTERACT_ACROSS_USERS);
         }
@@ -577,19 +579,38 @@ public class SupervisionService extends ISupervisionManager.Stub {
 
     /** Enforces that the caller has the given permission. */
     private void enforcePermission(String permission) {
-        checkCallAuthorization(
-                mInjector.context.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED);
+        checkCallAuthorization(hasCallingPermission(permission));
     }
 
     /** Enforces that the caller has at least one of the given permission. */
     private void enforceAnyPermission(String... permissions) {
         boolean authorized = false;
         for (String permission : permissions) {
-            if (mInjector.context.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED) {
+            if (hasCallingPermission(permission)) {
                 authorized = true;
+                break;
             }
         }
         checkCallAuthorization(authorized);
+    }
+
+    /**
+     * Enforces that the caller can set supervision enabled state.
+     *
+     * This is restricted to the callers with the root, shell, or system uid or callers with the
+     * BYPASS_ROLE_QUALIFICATION permission. This permission is only granted to the
+     * SYSTEM_SHELL role holder.
+     */
+    private void enforceCallerCanSetSupervisionEnabled() {
+        checkCallAuthorization(isCallerSystem() || hasCallingPermission(BYPASS_ROLE_QUALIFICATION));
+    }
+
+    private boolean hasCallingPermission(String permission) {
+        return mInjector.context.checkCallingOrSelfPermission(permission) == PERMISSION_GRANTED;
+    }
+
+    private boolean isCallerSystem() {
+        return UserHandle.isSameApp(Binder.getCallingUid(), Process.SYSTEM_UID);
     }
 
     /** Provides local services in a lazy manner. */
