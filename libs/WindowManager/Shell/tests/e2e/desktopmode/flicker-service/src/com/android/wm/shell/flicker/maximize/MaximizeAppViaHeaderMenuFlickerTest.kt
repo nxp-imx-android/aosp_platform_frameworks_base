@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.flicker.fundamentals
+package com.android.wm.shell.flicker.maximize
 
-import android.platform.test.annotations.RequiresDevice
+import androidx.test.filters.RequiresDevice
 import android.tools.NavBar
 import android.tools.flicker.assertions.FlickerTest
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
 import android.tools.flicker.legacy.LegacyFlickerTestFactory
+import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.wm.shell.flicker.DesktopModeBaseTest
 import com.android.wm.shell.scenarios.MaximizeAppWindow
 import com.android.wm.shell.Utils
-import com.android.wm.shell.flicker.utils.appLayerHasMaxBoundsInOnlyOneDimension
-import com.android.wm.shell.flicker.utils.appLayerMaintainsAspectRatioAlways
+import com.android.wm.shell.flicker.utils.appLayerHasMaxDisplayHeightAtEnd
+import com.android.wm.shell.flicker.utils.appLayerHasMaxDisplayWidthAtEnd
 import com.android.wm.shell.flicker.utils.resizeVeilKeepsIncreasingInSize
 import org.junit.Rule
 import org.junit.Test
@@ -35,25 +36,25 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 /**
- * Maximize non-resizable app window by pressing the maximize button on the app header.
+ * Maximize app window by tapping on the maximize button within the app header maximize menu.
  *
- * Assert that the app window keeps the same increases in size, maintaining its aspect ratio, until
- * filling the vertical or horizontal stable display bounds.
+ * Assert that the app window keeps the same increases in size, filling the vertical and horizontal
+ * stable display bounds.
  */
 
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-class MaximizeAppNonResizableFlickerTest(flicker: LegacyFlickerTest) : DesktopModeBaseTest(flicker) {
-    inner class MaximizeAppNonResizableScenario : MaximizeAppWindow(
+class MaximizeAppViaHeaderMenuFlickerTest(flicker: LegacyFlickerTest) : DesktopModeBaseTest(flicker) {
+    inner class MaximizeAppViaHeaderMenuScenario : MaximizeAppWindow(
         rotation = flicker.scenario.startRotation,
-        isResizable = false
+        trigger = DesktopModeAppHelper.MaximizeDesktopAppTrigger.MAXIMIZE_BUTTON_IN_MENU
     )
 
     @Rule
     @JvmField
     val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
-    val scenario = MaximizeAppNonResizableScenario()
+    val scenario = MaximizeAppViaHeaderMenuScenario()
     private val testApp = scenario.testApp
 
     override val transition: FlickerBuilder.() -> Unit
@@ -70,10 +71,10 @@ class MaximizeAppNonResizableFlickerTest(flicker: LegacyFlickerTest) : DesktopMo
         }
 
     @Test
-    fun appLayerHasMaxBoundsInOnlyOneDimension() = flicker.appLayerHasMaxBoundsInOnlyOneDimension(testApp)
+    fun appLayerHasMaxDisplayHeightAtEnd() = flicker.appLayerHasMaxDisplayHeightAtEnd(testApp)
 
     @Test
-    fun appLayerMaintainsAspectRatioAlways() = flicker.appLayerMaintainsAspectRatioAlways(testApp)
+    fun appLayerHasMaxDisplayWidthAtEnd() = flicker.appLayerHasMaxDisplayWidthAtEnd(testApp)
 
     @Test
     fun resizeVeilKeepsIncreasingInSize() = flicker.resizeVeilKeepsIncreasingInSize(testApp)

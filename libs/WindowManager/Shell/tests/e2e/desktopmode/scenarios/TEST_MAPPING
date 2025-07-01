@@ -43,9 +43,6 @@
       "name": "FunctionalTestsDesktopMode-EnterDesktopViaStaticDesktopOverviewTaskTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-EnterDesktopWithAppHandleMenuTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragExistingWindowsTest"
     },
     {
@@ -121,6 +118,9 @@
       "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopFromSplitScreenWithAppHandleMenuTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithAppHandleMenuTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-fundamentals-EnterSplitScreenWithAppHandleMenuTest"
     },
     {
@@ -128,9 +128,6 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-ExitDesktopToSplitScreenWithAppHeaderMenuTest"
-    },
-    {
-      "name": "FunctionalTestsDesktopMode-fundamentals-MaximizeAppWindowTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-OpenAppFromAllAppsTest"
@@ -149,6 +146,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest"

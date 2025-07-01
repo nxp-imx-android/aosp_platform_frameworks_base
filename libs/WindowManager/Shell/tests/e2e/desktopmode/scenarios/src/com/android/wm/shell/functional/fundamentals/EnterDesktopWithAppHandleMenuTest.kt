@@ -18,12 +18,12 @@ package com.android.wm.shell.functional.fundamentals
 
 import android.platform.test.annotations.Postsubmit
 import android.platform.test.rule.ScreenRecordRule
-import com.android.wm.shell.scenarios.MaximizeAppWindow
+import com.android.wm.shell.scenarios.EnterDesktopWithAppHandleMenu
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
-/* Functional test for [MaximizeAppWindow]. */
+/* Functional test for [EnterDesktopWithAppHandleMenu]. */
 @RunWith(BlockJUnit4ClassRunner::class)
 @Postsubmit
 @ScreenRecordRule.ScreenRecord
-class MaximizeAppWindowTest : MaximizeAppWindow()
+class EnterDesktopWithAppHandleMenuTest : EnterDesktopWithAppHandleMenu()

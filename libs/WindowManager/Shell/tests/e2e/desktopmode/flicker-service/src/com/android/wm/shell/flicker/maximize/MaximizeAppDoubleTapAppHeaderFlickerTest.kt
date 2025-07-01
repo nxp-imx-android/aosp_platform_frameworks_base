@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.flicker.fundamentals
+package com.android.wm.shell.flicker.maximize
 
 import androidx.test.filters.RequiresDevice
 import android.tools.NavBar
@@ -23,35 +23,38 @@ import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
 import android.tools.flicker.legacy.LegacyFlickerTestFactory
+import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
 import com.android.wm.shell.flicker.DesktopModeBaseTest
-import com.android.wm.shell.scenarios.MaximizeAppWindow
 import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.utils.appLayerHasMaxDisplayHeightAtEnd
 import com.android.wm.shell.flicker.utils.appLayerHasMaxDisplayWidthAtEnd
 import com.android.wm.shell.flicker.utils.resizeVeilKeepsIncreasingInSize
+import com.android.wm.shell.scenarios.MaximizeAppWindow
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 /**
- * Maximize app window by pressing the maximize button on the app header.
+ * Maximize app window by double tapping on the app header.
  *
  * Assert that the app window keeps the same increases in size, filling the vertical and horizontal
  * stable display bounds.
  */
-
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-class MaximizeAppFlickerTest(flicker: LegacyFlickerTest) : DesktopModeBaseTest(flicker) {
-
-    inner class MaximizeAppScenario : MaximizeAppWindow(flicker.scenario.startRotation)
+class MaximizeAppDoubleTapAppHeaderFlickerTest(flicker: LegacyFlickerTest) :
+        DesktopModeBaseTest(flicker) {
+    inner class MaximizeAppDoubleTapAppHeaderZoneScenario : MaximizeAppWindow(
+        rotation = flicker.scenario.startRotation,
+        trigger = DesktopModeAppHelper.MaximizeDesktopAppTrigger.DOUBLE_TAP_APP_HEADER
+    )
 
     @Rule
     @JvmField
     val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
-    val scenario = MaximizeAppScenario()
+    val scenario = MaximizeAppDoubleTapAppHeaderZoneScenario()
     private val testApp = scenario.testApp
 
     override val transition: FlickerBuilder.() -> Unit
@@ -81,7 +84,7 @@ class MaximizeAppFlickerTest(flicker: LegacyFlickerTest) : DesktopModeBaseTest(f
         @JvmStatic
         fun getParams(): Collection<FlickerTest> {
             return LegacyFlickerTestFactory.nonRotationTests(
-                    supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
+                supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
             )
         }
     }

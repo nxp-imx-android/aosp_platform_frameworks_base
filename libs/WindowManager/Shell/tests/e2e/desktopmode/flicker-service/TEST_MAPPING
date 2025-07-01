@@ -22,9 +22,6 @@
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-ExitDesktopToSplitScreenWithAppHeaderMenuFlickerTest"
     },
     {
-      "name": "WMShellFlickerTestsDesktopMode-fundamentals-MaximizeAppFlickerTest"
-    },
-    {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-OpenAppFromAllAppsFlickerTest"
     },
     {
@@ -41,6 +38,12 @@
     },
     {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppFlickerTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppNonResizableFlickerTest"
     },
     {
       "name": "WMShellFlickerTestsDesktopMode-resizing-ResizeAppToMaximumWindowSizeFlickerTest"
