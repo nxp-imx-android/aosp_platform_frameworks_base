@@ -167,8 +167,14 @@ public final class SurfaceControl implements Parcelable {
             float l, float t, float r, float b);
     private static native void nativeSetCornerRadius(long transactionObj, long nativeObject,
             float cornerRadius);
+    private static native void nativeSetCornerRadius(
+            long transactionObj, long nativeObject, float topLeft, float topRight,
+                                float bottomLeft, float bottomRight);
     private static native void nativeSetClientDrawnCornerRadius(long transactionObj,
             long nativeObject, float clientDrawnCornerRadius);
+    private static native void nativeSetClientDrawnCornerRadius(
+            long transactionObj, long nativeObject, float topLeft, float topRight,
+                                                float bottomLeft, float bottomRight);
     private static native void nativeSetBackgroundBlurRadius(long transactionObj, long nativeObject,
             int blurRadius);
     private static native void nativeSetBackgroundBlurScale(long transactionObj, long nativeObject,
@@ -3804,6 +3810,43 @@ public final class SurfaceControl implements Parcelable {
             return this;
         }
 
+        /**
+         * Sets the corner radius for each corner of a {@link SurfaceControl}. This is applied to
+         * the SurfaceControl and its children. The API expects a crop to be set on the
+         * SurfaceControl to ensure that the corner radius is applied to the correct region. If the
+         * crop does not intersect with the SurfaceControl's visible content, the corner radius will
+         * not be applied.
+         *
+         * @param sc SurfaceControl
+         * @hide
+         */
+        @NonNull
+        public Transaction setCornerRadius(
+                SurfaceControl sc, float topLeft, float topRight,
+                float bottomLeft, float bottomRight) {
+            checkPreconditions(sc);
+            if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
+                SurfaceControlRegistry.getProcessInstance()
+                        .checkCallStackDebugging(
+                                "setCornerRadius",
+                                this,
+                                sc,
+                                "topLeft=" + topLeft
+                                + " , topRight=" + topRight
+                                + ", bottomLeft=" + bottomLeft
+                                + " , bottomRight=" + bottomRight);
+            }
+
+            if (!com.android.graphics.surfaceflinger.flags.Flags.setDistinctCornerRadii()) {
+                Log.w(TAG, "setCornerRadius was called but"
+                           + "set_distinct_corner_radii flag is disabled");
+                return this;
+            }
+            nativeSetCornerRadius(mNativeObject, sc.mNativeObject,
+                                        topLeft, topRight, bottomLeft, bottomRight);
+
+            return this;
+        }
 
         /**
          * Disables corner radius of a {@link SurfaceControl}. When the radius set by
@@ -3831,6 +3874,41 @@ public final class SurfaceControl implements Parcelable {
                 Log.w(TAG, "setClientDrawnCornerRadius was called but"
                             + "ignore_corner_radius_and_shadows flag is disabled");
             }
+
+            return this;
+        }
+
+        /**
+         * Disables corner radius of a {@link SurfaceControl}. When the radius set by {@link
+         * Transaction#setCornerRadius(SurfaceControl, float)} is equal to clientDrawnCornerRadius
+         * the corner radius drawn by SurfaceFlinger is disabled.
+         *
+         * @hide
+         */
+        @NonNull
+        public Transaction setClientDrawnCornerRadius(
+                @NonNull SurfaceControl sc, float topLeft, float topRight,
+                    float bottomLeft, float bottomRight) {
+            checkPreconditions(sc);
+            if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
+                SurfaceControlRegistry.getProcessInstance()
+                        .checkCallStackDebugging(
+                                "setClientDrawnCornerRadius",
+                                this,
+                                sc,
+                                "topLeft=" + topLeft
+                                + " , topRight=" + topRight
+                                + ", bottomLeft=" + bottomLeft
+                                + " , bottomRight=" + bottomRight);
+            }
+            if (!com.android.graphics.surfaceflinger.flags.Flags.setDistinctCornerRadii()) {
+                Log.w(TAG, "setCornerRadius was called but"
+                           + "set_distinct_corner_radii flag is disabled");
+                return this;
+            }
+
+            nativeSetClientDrawnCornerRadius(mNativeObject, sc.mNativeObject,
+                                            topLeft, topRight, bottomLeft, bottomRight);
 
             return this;
         }
