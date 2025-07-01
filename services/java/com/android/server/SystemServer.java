@@ -2613,8 +2613,7 @@ public final class SystemServer implements Dumpable {
                 reportWtf("starting RuntimeService", e);
             }
             t.traceEnd();
-            if (!disableNetworkTime && (!isWatch || (isWatch
-                    && android.server.Flags.allowNetworkTimeUpdateService()))) {
+            if (!disableNetworkTime) {
                 t.traceBegin("StartNetworkTimeUpdateService");
                 try {
                     networkTimeUpdater = new NetworkTimeUpdateService(context);
