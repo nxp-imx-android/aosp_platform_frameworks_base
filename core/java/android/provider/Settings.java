@@ -20285,6 +20285,16 @@ public final class Settings {
                 "global_actions_timeout_ms";
 
         /**
+         * Tracks if the user has seen the promo card for Identity Check.
+         * The promo card should only appear once per device via Safety Center.
+         *
+         * @hide
+         */
+        public static final String IDENTITY_CHECK_PROMO_CARD_SHOWN =
+                "identity_check_promo_card_shown";
+
+
+        /**
          * Settings migrated from Wear OS settings provider.
          * @hide
          */
