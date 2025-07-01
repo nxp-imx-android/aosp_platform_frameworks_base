@@ -5681,8 +5681,11 @@ public class AudioService extends IAudioService.Stub
             onSetStreamVolume(streamType, index, flags, deviceType, caller, hasModifyAudioSettings,
                     // ada is non-null when called from setDeviceVolume,
                     // which shouldn't update the mute state
-                    canChangeMuteAndUpdateController /*canChangeMute*/);
+                    // full volume device shouldn't update the mute state
+                    /* canChangeMute= */ canChangeMuteAndUpdateController
+                            && !isFullVolumeDevice(deviceType));
             index = streamState.getIndex(deviceType);
+
         }
 
         handleAbsoluteVolume(streamType, streamTypeAlias, deviceAttr, index, streamState.mIsMuted,
