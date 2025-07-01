@@ -20,6 +20,7 @@ import android.app.Notification
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.testCase
+import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildPromotedOngoingEntry
 
@@ -34,6 +35,10 @@ fun Kosmos.createRowWithNotif(notification: Notification): ExpandableNotificatio
 
 fun Kosmos.createRowWithEntry(entry: NotificationEntry): ExpandableNotificationRow {
     return expandableNotificationRowBuilder.createRow(entry)
+}
+
+fun Kosmos.createRowBundle(spec: BundleSpec): ExpandableNotificationRow {
+    return expandableNotificationRowBuilder.createRowBundle(spec)
 }
 
 fun Kosmos.createRow(): ExpandableNotificationRow {

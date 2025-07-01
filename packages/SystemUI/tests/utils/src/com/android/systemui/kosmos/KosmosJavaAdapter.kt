@@ -85,6 +85,7 @@ import com.android.systemui.statusbar.chips.ui.viewmodel.ongoingActivityChipsVie
 import com.android.systemui.statusbar.data.repository.fakeStatusBarModePerDisplayRepository
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
 import com.android.systemui.statusbar.disableflags.domain.interactor.disableFlagsInteractor
+import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
@@ -100,6 +101,7 @@ import com.android.systemui.statusbar.notification.people.PeopleNotificationIden
 import com.android.systemui.statusbar.notification.row.ExpandableNotificationRow
 import com.android.systemui.statusbar.notification.row.createPromotedOngoingRow
 import com.android.systemui.statusbar.notification.row.createRow
+import com.android.systemui.statusbar.notification.row.createRowBundle
 import com.android.systemui.statusbar.notification.row.createRowGroup
 import com.android.systemui.statusbar.notification.row.createRowWithEntry
 import com.android.systemui.statusbar.notification.row.createRowWithNotif
@@ -239,7 +241,7 @@ class KosmosJavaAdapter() {
     val sysUIStateDispatcher by lazy { kosmos.sysUIStateDispatcher }
     val sysUIStateInteractor by lazy { kosmos.sysuiStateInteractor }
     val entryAdapterFactory by lazy { kosmos.entryAdapterFactory }
-    val bundleHeaderViewModel by lazy { kosmos.bundleHeaderViewModelFactory.create()  }
+    val bundleHeaderViewModel by lazy { kosmos.bundleHeaderViewModelFactory.create() }
     val mockNotificationDismissibilityProvider by lazy {
         kosmos.mockNotificationDismissibilityProvider
     }
@@ -267,6 +269,10 @@ class KosmosJavaAdapter() {
     /** Creates an ExpandableNotificationRow with 4 children */
     fun createRowGroup(): ExpandableNotificationRow {
         return kosmos.createRowGroup()
+    }
+
+    fun createRowBundle(spec: BundleSpec): ExpandableNotificationRow {
+        return kosmos.createRowBundle(spec)
     }
 
     fun createPromotedOngoingRow(): ExpandableNotificationRow {
