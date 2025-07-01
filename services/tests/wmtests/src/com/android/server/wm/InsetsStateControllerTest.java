@@ -548,6 +548,54 @@ public class InsetsStateControllerTest extends WindowTestsBase {
         verify(navBar, atLeastOnce()).notifyInsetsChanged();
     }
 
+    /**
+     * Verifies that moving the insets receiving window (app) to another display will stop the
+     * window from receiving insets from the original display.
+     */
+    @UseTestDisplay
+    @Test
+    public void testUpdateAboveInsetsState_onDisplayChanged_app() {
+        final WindowState app = createTestWindow("app");
+        final WindowState statusBar = createTestWindow("statusBar");
+
+        getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
+                .setWindow(statusBar, null, null);
+
+        assertNull(app.mAboveInsetsState.peekSource(ID_STATUS_BAR));
+
+        getController().updateAboveInsetsState(true /* notifyInsetsChange */);
+
+        assertNotNull(app.mAboveInsetsState.peekSource(ID_STATUS_BAR));
+
+        app.getTask().reparent(mDefaultDisplay.getDefaultTaskDisplayArea(), true /* onTop */);
+
+        assertNull(app.mAboveInsetsState.peekSource(ID_STATUS_BAR));
+    }
+
+    /**
+     * Verifies that moving the insets providing window (statusBar) to another display will stop the
+     * window on the original display from receiving the insets.
+     */
+    @UseTestDisplay
+    @Test
+    public void testUpdateAboveInsetsState_onDisplayChanged_statusBar() {
+        final WindowState app = createTestWindow("app");
+        final WindowState statusBar = createTestWindow("statusBar");
+
+        getController().getOrCreateSourceProvider(ID_STATUS_BAR, statusBars())
+                .setWindow(statusBar, null, null);
+
+        assertNull(app.mAboveInsetsState.peekSource(ID_STATUS_BAR));
+
+        getController().updateAboveInsetsState(true /* notifyInsetsChange */);
+
+        assertNotNull(app.mAboveInsetsState.peekSource(ID_STATUS_BAR));
+
+        statusBar.getTask().reparent(mDefaultDisplay.getDefaultTaskDisplayArea(), true /* onTop */);
+
+        assertNull(app.mAboveInsetsState.peekSource(ID_STATUS_BAR));
+    }
+
     @Test
     public void testUpdateAboveInsetsState_imeTargetOnScreenBehavior() {
         final WindowToken imeToken = createTestWindowToken(TYPE_INPUT_METHOD, mDisplayContent);
