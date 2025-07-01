@@ -257,6 +257,7 @@ constructor(
             MediaColorScheme(
                 Color(colorScheme.materialScheme.getPrimaryFixed()),
                 Color(colorScheme.materialScheme.getOnPrimaryFixed()),
+                Color(colorScheme.materialScheme.getOnSurface()),
             )
         }
     }

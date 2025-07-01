@@ -135,7 +135,6 @@ import com.android.compose.animation.scene.transitions
 import com.android.compose.gesture.effect.rememberOffsetOverscrollEffect
 import com.android.compose.gesture.overscrollToDismiss
 import com.android.compose.modifiers.thenIf
-import com.android.compose.theme.LocalAndroidColorScheme
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.mechanics.spec.builder.rememberMotionBuilderContext
 import com.android.systemui.animation.Expandable
@@ -321,6 +320,8 @@ private fun Card(
             transitions = Media.Transitions,
         )
 
+    val colorScheme = rememberAnimatedColorScheme(viewModel.colorScheme)
+
     // Each time the presentation style changes, animate to the corresponding scene.
     LaunchedEffect(presentationStyle) {
         stlState.setTargetScene(targetScene = presentationStyle.toScene(), animationScope = this)
@@ -328,7 +329,11 @@ private fun Card(
 
     Box(modifier) {
         if (stlState.currentScene != Media.Scenes.Compact) {
-            CardBackground(image = viewModel.background, modifier = Modifier.matchParentSize())
+            CardBackground(
+                image = viewModel.background,
+                colorScheme = colorScheme,
+                modifier = Modifier.matchParentSize(),
+            )
         }
 
         Expandable(
@@ -342,6 +347,7 @@ private fun Card(
                         CardForeground(
                             expandable = it,
                             viewModel = viewModel,
+                            colorScheme = colorScheme,
                             threeRows = true,
                             fillHeight = false,
                         )
@@ -351,6 +357,7 @@ private fun Card(
                         CardForeground(
                             expandable = it,
                             viewModel = viewModel,
+                            colorScheme = colorScheme,
                             threeRows = false,
                             fillHeight = false,
                         )
@@ -367,10 +374,12 @@ private fun Card(
 
 @Composable
 private fun rememberAnimatedColorScheme(colorScheme: MediaColorScheme?): AnimatedColorScheme {
-    val primaryColor = colorScheme?.primary ?: LocalAndroidColorScheme.current.primaryFixed
-    val onPrimaryColor = colorScheme?.onPrimary ?: LocalAndroidColorScheme.current.onPrimaryFixed
+    val primaryColor = colorScheme?.primary ?: MaterialTheme.colorScheme.primaryFixed
+    val onPrimaryColor = colorScheme?.onPrimary ?: MaterialTheme.colorScheme.onPrimaryFixed
+    val backgroundColor = colorScheme?.background ?: MaterialTheme.colorScheme.onSurface
     val animatedPrimary by animateColorAsState(targetValue = primaryColor)
     val animatedOnPrimary by animateColorAsState(targetValue = onPrimaryColor)
+    val animatedBackground by animateColorAsState(targetValue = backgroundColor)
 
     return remember {
         object : AnimatedColorScheme {
@@ -379,6 +388,9 @@ private fun rememberAnimatedColorScheme(colorScheme: MediaColorScheme?): Animate
 
             override val onPrimary: Color
                 get() = animatedOnPrimary
+
+            override val background: Color
+                get() = animatedBackground
         }
     }
 }
@@ -396,6 +408,7 @@ private fun rememberAnimatedColorScheme(colorScheme: MediaColorScheme?): Animate
 private fun ContentScope.CardForeground(
     expandable: Expandable,
     viewModel: MediaCardViewModel,
+    colorScheme: AnimatedColorScheme,
     threeRows: Boolean,
     fillHeight: Boolean,
     modifier: Modifier = Modifier,
@@ -405,8 +418,6 @@ private fun ContentScope.CardForeground(
     val gutsAlphaAnimatable = remember { Animatable(0f) }
     val isGutsVisible = viewModel.guts.isVisible
     LaunchedEffect(isGutsVisible) { gutsAlphaAnimatable.animateTo(if (isGutsVisible) 1f else 0f) }
-
-    val colorScheme = rememberAnimatedColorScheme(viewModel.colorScheme)
 
     // Use a custom layout to measure the content even if the content is being hidden because the
     // internal guts are showing. This is needed because only the content knows the size the of the
@@ -732,11 +743,15 @@ private fun ContentScope.CompactCardForeground(
 
 /** Renders the background of a card, loading the artwork and showing an overlay on top of it. */
 @Composable
-private fun CardBackground(image: ImageBitmap?, modifier: Modifier = Modifier) {
+private fun CardBackground(
+    image: ImageBitmap?,
+    colorScheme: AnimatedColorScheme,
+    modifier: Modifier = Modifier,
+) {
     Crossfade(targetState = image, modifier = modifier) { imageOrNull ->
         if (imageOrNull != null) {
             // Loaded art.
-            val gradientBaseColor = MaterialTheme.colorScheme.onSurface
+            val gradientBaseColor = colorScheme.background
             Image(
                 bitmap = imageOrNull,
                 contentDescription = null,
@@ -762,7 +777,7 @@ private fun CardBackground(image: ImageBitmap?, modifier: Modifier = Modifier) {
             )
         } else {
             // Placeholder.
-            Box(Modifier.background(MaterialTheme.colorScheme.onSurface).fillMaxSize())
+            Box(Modifier.background(colorScheme.background).fillMaxSize())
         }
     }
 }
@@ -1398,6 +1413,7 @@ data class MediaUiBehavior(
 private interface AnimatedColorScheme {
     val primary: Color
     val onPrimary: Color
+    val background: Color
 }
 
 private object Media {
