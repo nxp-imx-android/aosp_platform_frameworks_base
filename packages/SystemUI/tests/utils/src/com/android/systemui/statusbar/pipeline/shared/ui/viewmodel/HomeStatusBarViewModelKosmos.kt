@@ -45,6 +45,7 @@ import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStat
 import com.android.systemui.statusbar.pipeline.shared.domain.interactor.homeStatusBarInteractor
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.HomeStatusBarViewBinderImpl
+import com.android.systemui.statusbar.policy.domain.interactor.deviceProvisioningInteractor
 import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.systemStatusIconsViewModelFactory
 
 var Kosmos.homeStatusBarViewBinder: HomeStatusBarViewBinder by
@@ -72,6 +73,7 @@ var Kosmos.homeStatusBarViewModelFactory: (Int) -> HomeStatusBarViewModel by
                 headsUpNotificationInteractor,
                 keyguardTransitionInteractor,
                 keyguardInteractor,
+                deviceProvisioningInteractor,
                 statusBarOperatorNameViewModel,
                 sceneInteractor,
                 sceneContainerOcclusionInteractor,
