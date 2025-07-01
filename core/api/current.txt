@@ -19623,6 +19623,11 @@ package android.hardware.biometrics {
     field public static final int BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED = 15; // 0xf
     field public static final long BIOMETRIC_NO_AUTHENTICATION = -1L; // 0xffffffffffffffffL
     field public static final int BIOMETRIC_SUCCESS = 0; // 0x0
+    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_ACCOUNT = 2; // 0x2
+    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_GENERIC = 3; // 0x3
+    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_PASSWORD = 0; // 0x0
+    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_QR_CODE = 1; // 0x1
+    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ICON_TYPE_SETTING = 4; // 0x4
   }
 
   public static interface BiometricManager.Authenticators {
@@ -19630,14 +19635,6 @@ package android.hardware.biometrics {
     field public static final int BIOMETRIC_WEAK = 255; // 0xff
     field public static final int DEVICE_CREDENTIAL = 32768; // 0x8000
     field @FlaggedApi("android.hardware.biometrics.identity_check_api") public static final int IDENTITY_CHECK = 65536; // 0x10000
-  }
-
-  @FlaggedApi("android.hardware.biometrics.add_fallback") public static interface BiometricManager.IconType {
-    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int ACCOUNT = 2; // 0x2
-    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int GENERIC = 3; // 0x3
-    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int PASSWORD = 0; // 0x0
-    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int QR_CODE = 1; // 0x1
-    field @FlaggedApi("android.hardware.biometrics.add_fallback") public static final int SETTING = 4; // 0x4
   }
 
   public static class BiometricManager.Strings {
