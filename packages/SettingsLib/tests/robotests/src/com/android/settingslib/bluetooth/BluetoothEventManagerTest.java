@@ -37,7 +37,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.telephony.TelephonyManager;
 
@@ -208,7 +207,6 @@ public class BluetoothEventManagerTest {
      * callback.
      */
     @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
     public void dispatchProfileConnectionStateChanged_registerCallback_shouldDispatchCallback() {
         mBluetoothEventManager.registerCallback(mBluetoothCallback);
 
@@ -224,7 +222,6 @@ public class BluetoothEventManagerTest {
      * LocalBluetoothLeBroadcast}#handleProfileConnected when audio sharing flag is off.
      */
     @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
     public void dispatchProfileConnectionStateChanged_flagOff_noCallToBroadcastProfile() {
         setUpAudioSharing(/* enableFlag= */ false, /* enableFeature= */ true, /* enableProfile= */
                 true, /* workProfile= */ false);
@@ -242,7 +239,6 @@ public class BluetoothEventManagerTest {
      * sharing.
      */
     @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
     public void dispatchProfileConnectionStateChanged_notSupport_noCallToBroadcastProfile() {
         setUpAudioSharing(/* enableFlag= */ true, /* enableFeature= */ false, /* enableProfile= */
                 true, /* workProfile= */ false);
@@ -259,7 +255,6 @@ public class BluetoothEventManagerTest {
      * LocalBluetoothLeBroadcast}#handleProfileConnected when triggered for work profile.
      */
     @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
     public void dispatchProfileConnectionStateChanged_workProfile_noCallToBroadcastProfile() {
         setUpAudioSharing(/* enableFlag= */ true, /* enableFeature= */ true, /* enableProfile= */
                 true, /* workProfile= */ true);
@@ -277,7 +272,6 @@ public class BluetoothEventManagerTest {
      * audio sharing is enabled.
      */
     @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
     public void dispatchProfileConnectionStateChanged_assistConnected_handleStateChanged() {
         setUpAudioSharing(/* enableFlag= */ true, /* enableFeature= */ true, /* enableProfile= */
                 true, /* workProfile= */ false);

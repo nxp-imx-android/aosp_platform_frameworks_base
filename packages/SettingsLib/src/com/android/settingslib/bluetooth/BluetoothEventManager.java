@@ -39,7 +39,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.collection.ArraySet;
 
 import com.android.settingslib.R;
-import com.android.settingslib.flags.Flags;
 import com.android.settingslib.utils.ThreadUtils;
 
 import java.util.Collection;
@@ -236,12 +235,13 @@ public class BluetoothEventManager {
         LocalBluetoothLeBroadcast broadcast = mBtManager == null ? null
                 : mBtManager.getProfileManager().getLeAudioBroadcastProfile();
         // Dispatch handleOnProfileStateChanged to local broadcast profile
-        if (Flags.promoteAudioSharingForSecondAutoConnectedLeaDevice()
-                && broadcast != null
-                && state == BluetoothAdapter.STATE_CONNECTED) {
+        if (broadcast != null && state == BluetoothAdapter.STATE_CONNECTED) {
             Log.d(TAG, "dispatchProfileConnectionStateChanged to local broadcast profile");
-            var unused = ThreadUtils.postOnBackgroundThread(
-                    () -> broadcast.handleProfileConnected(device, bluetoothProfile, mBtManager));
+            var unused =
+                    ThreadUtils.postOnBackgroundThread(
+                            () ->
+                                    broadcast.handleProfileConnected(
+                                            device, bluetoothProfile, mBtManager));
         }
     }
 
