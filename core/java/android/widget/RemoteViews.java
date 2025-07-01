@@ -499,6 +499,9 @@ public class RemoteViews implements Parcelable, Filter {
      * The factory callbacks will be called on the background thread so the implementation needs
      * to be thread safe.
      *
+     * Note this only sets the factory to the top-level, use
+     * {@link RemoteViews#visitRemoteViews(Consumer)} if nested RemoteViews also need to be set.
+     *
      * @hide
      */
     public void setLayoutInflaterFactory(@Nullable LayoutInflater.Factory2 factory) {
@@ -734,6 +737,15 @@ public class RemoteViews implements Parcelable, Filter {
             return false;
         }
 
+        /**
+         * See {@link RemoteViews#visitRemoteViews(Consumer)}.
+         */
+        protected void visitRemoteViews(
+                @NonNull Consumer<RemoteViews> visitor
+        ) {
+            // Nothing to visit by default.
+        }
+
         /** See {@link RemoteViews#visitUris(Consumer)}. **/
         public void visitUris(@NonNull Consumer<Uri> visitor) {
             // Nothing to visit by default.
@@ -843,6 +855,31 @@ public class RemoteViews implements Parcelable, Filter {
      */
     public boolean isLegacyListRemoteViews() {
         return mCollectionCache.mIdToUriMapping.size() > 0;
+    }
+
+    /**
+     * A helper function to let the visitor visit this, and the nested RemoteViews recursively.
+     *
+     * @hide
+     */
+    public void visitRemoteViews(@NonNull Consumer<RemoteViews> visitor) {
+        visitor.accept(this);
+        if (mActions != null) {
+            for (int i = 0; i < mActions.size(); i++) {
+                mActions.get(i).visitRemoteViews(visitor);
+            }
+        }
+        if (mSizedRemoteViews != null) {
+            for (int i = 0; i < mSizedRemoteViews.size(); i++) {
+                mSizedRemoteViews.get(i).visitRemoteViews(visitor);
+            }
+        }
+        if (mLandscape != null) {
+            mLandscape.visitRemoteViews(visitor);
+        }
+        if (mPortrait != null) {
+            mPortrait.visitRemoteViews(visitor);
+        }
     }
 
     /**
@@ -4240,6 +4277,13 @@ public class RemoteViews implements Parcelable, Filter {
         @Override
         public int getActionTag() {
             return VIEW_GROUP_ACTION_ADD_TAG;
+        }
+
+        @Override
+        protected void visitRemoteViews(
+                @NonNull Consumer<RemoteViews> visitor
+        ) {
+            mNestedViews.visitRemoteViews(visitor);
         }
 
         @Override
