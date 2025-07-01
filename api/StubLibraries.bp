@@ -1231,6 +1231,10 @@ droidstubs {
 /////////////////////////////////////////////////////////////////////
 // hwbinder.stubs provides APIs required for building HIDL Java
 // libraries.
+//
+// This is a subset of the Android System API that is extracted to provide
+// a build-time only library. It relies on "system-api-stubs-docs-non-updatable"
+// to perform API compatibility checking.
 /////////////////////////////////////////////////////////////////////
 
 droidstubs {
@@ -1245,6 +1249,16 @@ droidstubs {
         "metalava-manual",
     ],
     flags: priv_apps,
+
+    // Use the compatibility check properties to supply the previously released API to which
+    // flagged APIs can be reverted but disable the compatibility check as it is not required.
+    check_api: {
+        last_released: {
+            enabled: false,
+            api_file: ":android-non-updatable.api.combined.system.latest",
+            removed_api_file: ":android-non-updatable-removed.api.combined.system.latest",
+        },
+    },
 }
 
 java_library {
