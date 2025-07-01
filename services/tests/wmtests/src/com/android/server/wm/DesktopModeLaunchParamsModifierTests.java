@@ -1414,6 +1414,26 @@ public class DesktopModeLaunchParamsModifierTests extends
 
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
+    public void testNullActivity_defaultBoundsApplied() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final TestDisplayContent display = createDisplayContent(ORIENTATION_LANDSCAPE,
+                LANDSCAPE_DISPLAY_BOUNDS);
+        final Task task = createTask(display, /* isResizeable */ true);
+
+        final int desiredWidth =
+                (int) (LANDSCAPE_DISPLAY_BOUNDS.width() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+        final int desiredHeight =
+                (int) (LANDSCAPE_DISPLAY_BOUNDS.height() * DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
+
+        assertEquals(RESULT_CONTINUE, new CalculateRequestBuilder().setTask(task)
+                .setActivity(null).calculate());
+        assertEquals(desiredWidth, mResult.mBounds.width());
+        assertEquals(desiredHeight, mResult.mBounds.height());
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     public void testNonEmptyActivityOptionsBounds() {
         setupDesktopModeLaunchParamsModifier();
 
