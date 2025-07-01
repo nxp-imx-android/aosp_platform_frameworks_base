@@ -23,7 +23,6 @@ import android.annotation.RequiresNoPermission;
 import android.annotation.RequiresPermission;
 import android.os.RemoteException;
 
-import com.android.internal.inputmethod.ImeTracing;
 import com.android.internal.view.IInputMethodManager;
 
 import java.util.function.Consumer;
@@ -40,23 +39,6 @@ public class InputMethodManagerGlobal {
     @AnyThread
     public static boolean isImeTraceAvailable() {
         return IInputMethodManagerGlobalInvoker.isAvailable();
-    }
-
-    /**
-     * Invokes {@link IInputMethodManager#startProtoDump(byte[], int, String)}.
-     *
-     * @param protoDump client or service side information to be stored by the server
-     * @param source where the information is coming from, refer to
-     *               {@link ImeTracing#IME_TRACING_FROM_CLIENT} and
-     *               {@link ImeTracing#IME_TRACING_FROM_IMS}
-     * @param where where the information is coming from.
-     * @param exceptionHandler an optional {@link RemoteException} handler.
-     */
-    @AnyThread
-    @RequiresNoPermission
-    public static void startProtoDump(byte[] protoDump, int source, String where,
-            @Nullable Consumer<RemoteException> exceptionHandler) {
-        IInputMethodManagerGlobalInvoker.startProtoDump(protoDump, source, where, exceptionHandler);
     }
 
     /**

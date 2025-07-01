@@ -112,31 +112,6 @@ final class IInputMethodManagerGlobalInvoker {
     }
 
     /**
-     * Invokes {@link IInputMethodManager#startProtoDump(byte[], int, String)}.
-     *
-     * @param protoDump client or service side information to be stored by the server
-     * @param source where the information is coming from, refer to
-     *               {@link com.android.internal.inputmethod.ImeTracing#IME_TRACING_FROM_CLIENT} and
-     *               {@link com.android.internal.inputmethod.ImeTracing#IME_TRACING_FROM_IMS}
-     * @param where where the information is coming from.
-     * @param exceptionHandler an optional {@link RemoteException} handler.
-     */
-    @AnyThread
-    @RequiresNoPermission
-    static void startProtoDump(byte[] protoDump, int source, String where,
-            @Nullable Consumer<RemoteException> exceptionHandler) {
-        final IInputMethodManager service = getService();
-        if (service == null) {
-            return;
-        }
-        try {
-            service.startProtoDump(protoDump, source, where);
-        } catch (RemoteException e) {
-            handleRemoteExceptionOrRethrow(e, exceptionHandler);
-        }
-    }
-
-    /**
      * Invokes {@link IInputMethodManager#startImeTrace()}.
      *
      * @param exceptionHandler an optional {@link RemoteException} handler.

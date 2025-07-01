@@ -171,8 +171,6 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
 
         void removeImeSurfaceFromWindowAsync(IBinder windowToken);
 
-        void startProtoDump(byte[] bytes, int i, String s);
-
         boolean isImeTraceEnabled();
 
         @PermissionVerified(Manifest.permission.CONTROL_UI_TRACING)
@@ -404,11 +402,6 @@ final class IInputMethodManagerImpl extends IInputMethodManager.Stub {
     @Override
     public void removeImeSurfaceFromWindowAsync(IBinder windowToken) {
         mCallback.removeImeSurfaceFromWindowAsync(windowToken);
-    }
-
-    @Override
-    public void startProtoDump(byte[] protoDump, int source, String where) {
-        mCallback.startProtoDump(protoDump, source, where);
     }
 
     @Override
