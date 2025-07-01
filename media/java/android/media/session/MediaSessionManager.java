@@ -170,7 +170,7 @@ public final class MediaSessionManager {
     }
 
     /**
-     * Get a list of controllers for all ongoing sessions. The controllers will
+     * Get a list of controllers for all active sessions. The controllers will
      * be provided in priority order with the most important controller at index
      * 0.
      * <p>
@@ -182,7 +182,7 @@ public final class MediaSessionManager {
      *
      * @param notificationListener The enabled notification listener component.
      *            May be null.
-     * @return A list of controllers for ongoing sessions.
+     * @return A list of controllers for active sessions.
      */
     public @NonNull List<MediaController> getActiveSessions(
             @Nullable ComponentName notificationListener) {
@@ -249,7 +249,7 @@ public final class MediaSessionManager {
      *
      * @param notificationListener The enabled notification listener component. May be null.
      * @param userHandle The user handle to fetch sessions for.
-     * @return A list of controllers for ongoing sessions.
+     * @return A list of controllers for active sessions.
      * @hide
      */
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
