@@ -222,7 +222,7 @@
         This app isn\’t 16 KB compatible. APK alignment check failed.
         Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;
         &lt;br&gt;&lt;br&gt;
-        Following libraries are not properly aligned:
+        Following libraries are not 16 KB aligned:
         &lt;br&gt;&lt;br&gt;
     </string>
 
@@ -233,7 +233,7 @@
         This app isn\’t 16 KB compatible. ELF alignment check failed.
         Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;
         &lt;br&gt;&lt;br&gt;
-        Following libraries are not properly aligned:
+        Following libraries are not 16 KB aligned:
         &lt;br&gt;&lt;br&gt;
     </string>
 
@@ -244,7 +244,7 @@
         This app isn\’t 16 KB compatible. APK and ELF alignment checks failed.
         Please follow the steps on &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;.
         &lt;br&gt;&lt;br&gt;
-        Following libraries are not properly aligned:
+        Following libraries are not 16 KB aligned:
         &lt;br&gt;&lt;br&gt;
     </string>
     <!--Confirmation text for page size mismatch dialog to never show-->
