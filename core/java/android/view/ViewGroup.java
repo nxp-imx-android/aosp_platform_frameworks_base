@@ -22,8 +22,6 @@ import static android.view.flags.Flags.FLAG_TOOLKIT_VIEWGROUP_SET_REQUESTED_FRAM
 import static android.view.flags.Flags.scrollCaptureTargetZOrderFix;
 import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
 
-import static com.android.window.flags.Flags.interceptMotionFromMoveToCancel;
-
 import android.animation.LayoutTransition;
 import android.annotation.CallSuper;
 import android.annotation.FlaggedApi;
@@ -2675,10 +2673,7 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
             ViewRootImpl viewRootImpl = getViewRootImpl();
             if (actionMasked == MotionEvent.ACTION_DOWN || mFirstTouchTarget != null) {
                 final boolean disallowIntercept = (mGroupFlags & FLAG_DISALLOW_INTERCEPT) != 0;
-                final boolean isBackGestureInProgress = !interceptMotionFromMoveToCancel()
-                        && (viewRootImpl != null
-                        && viewRootImpl.getOnBackInvokedDispatcher().isBackGestureInProgress());
-                if (!disallowIntercept || isBackGestureInProgress) {
+                if (!disallowIntercept) {
                     // Allow back to intercept touch
                     intercepted = onInterceptTouchEvent(ev);
                     ev.setAction(action); // restore action in case it was changed
