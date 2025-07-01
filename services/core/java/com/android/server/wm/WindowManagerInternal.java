@@ -297,7 +297,6 @@ public abstract class WindowManagerInternal {
          *        bar caused by this app transition in millis
          *
          * @return Return any bit set of {@link WindowManagerPolicy#FINISH_LAYOUT_REDO_LAYOUT},
-         * {@link WindowManagerPolicy#FINISH_LAYOUT_REDO_CONFIG},
          * {@link WindowManagerPolicy#FINISH_LAYOUT_REDO_WALLPAPER},
          * or {@link WindowManagerPolicy#FINISH_LAYOUT_REDO_ANIM}.
          */
