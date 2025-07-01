@@ -54,6 +54,7 @@ import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.VPoint
 import com.android.systemui.plugins.clocks.VPointF
+import com.android.systemui.plugins.clocks.VPointF.Companion.max
 import com.android.systemui.plugins.clocks.VPointF.Companion.size
 import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.shared.Flags.ambientAod
@@ -107,10 +108,12 @@ abstract class DigitalClockTextView(
     }
 
     var onViewBoundsChanged: ((VRectF) -> Unit)? = null
-    var maxSingleDigitHeight = -1f
-    var maxSingleDigitWidth = -1f
+    var onViewMaxSizeChanged: ((VPointF) -> Unit)? = null
     var digitTranslateAnimator: DigitTranslateAnimator? = null
     var aodFontSizePx = -1f
+
+    var maxSingleDigitSize = VPointF(-1f)
+        private set
 
     // Store the font size when there's no height constraint as a reference when adjusting font size
     private var lastUnconstrainedTextSize = Float.MAX_VALUE
@@ -119,6 +122,10 @@ abstract class DigitalClockTextView(
     @VisibleForTesting var fontSizeAdjustFactor = 1f
 
     private val initThread = Thread.currentThread()
+
+    // Maximum size this view will be at any time, but in its current rendering configuration
+    var maxSize = VPointF(-1f)
+        private set
 
     // textBounds is the size of text in LS, which only measures current text in lockscreen style
     var textBounds = VRectF.ZERO
@@ -212,7 +219,7 @@ abstract class DigitalClockTextView(
         )
 
         measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
-        recomputeMaxSingleDigitSizes()
+        recomputeMaxTextSize()
         requestLayout()
         invalidate()
     }
@@ -552,7 +559,7 @@ abstract class DigitalClockTextView(
         lockScreenPaint.strokeWidth = textBorderWidth
         measure(MeasureSpec.UNSPECIFIED, MeasureSpec.UNSPECIFIED)
         setInterpolatorPaint()
-        recomputeMaxSingleDigitSizes()
+        recomputeMaxTextSize()
         invalidate()
     }
 
@@ -567,30 +574,47 @@ abstract class DigitalClockTextView(
             lockScreenPaint.textSize = textSize
             updateTextBounds()
         }
+
         if (!constrainedByHeight) {
             val lastUnconstrainedHeight = textBounds.height + lockScreenPaint.strokeWidth * 2
             fontSizeAdjustFactor = lastUnconstrainedHeight / lastUnconstrainedTextSize
         }
 
         lockScreenPaint.strokeWidth = textBorderWidth
-        recomputeMaxSingleDigitSizes()
+        recomputeMaxTextSize()
 
         if (this::textAnimator.isInitialized) {
             textAnimator.setTextStyle(TextAnimator.Style(textSize = lockScreenPaint.textSize))
         }
     }
 
-    private fun recomputeMaxSingleDigitSizes() {
-        maxSingleDigitHeight = 0f
-        maxSingleDigitWidth = 0f
+    /** Measures a maximal piece of text so that layout decisions can be consistent. */
+    private fun recomputeMaxTextSize() {
+        maxSingleDigitSize = VPointF(-1)
 
         for (i in 0..9) {
-            val rectForCalculate = lockScreenPaint.getTextBounds("$i")
-            maxSingleDigitHeight = max(maxSingleDigitHeight, rectForCalculate.height)
-            maxSingleDigitWidth = max(maxSingleDigitWidth, rectForCalculate.width)
+            val digitBounds = lockScreenPaint.getTextBounds("$i")
+            maxSingleDigitSize = max(maxSingleDigitSize, digitBounds.size)
         }
-        maxSingleDigitWidth += 2 * lockScreenPaint.strokeWidth
-        maxSingleDigitHeight += 2 * lockScreenPaint.strokeWidth
+        maxSingleDigitSize += 2 * lockScreenPaint.strokeWidth
+
+        maxSize =
+            when (id) {
+                // Single digit values have already been computed
+                ClockViewIds.HOUR_FIRST_DIGIT,
+                ClockViewIds.HOUR_SECOND_DIGIT,
+                ClockViewIds.MINUTE_FIRST_DIGIT,
+                ClockViewIds.MINUTE_SECOND_DIGIT -> maxSingleDigitSize
+                // Digit pairs should measure 00 as 88 is not a valid hour or minute pair
+                ClockViewIds.HOUR_DIGIT_PAIR,
+                ClockViewIds.MINUTE_DIGIT_PAIR -> lockScreenPaint.getTextBounds("00").size
+                // Full format includes the colon. This overmeasures a bit for 12hr configurations.
+                ClockViewIds.TIME_FULL_FORMAT -> lockScreenPaint.getTextBounds("00:00").size
+                // DATE_FORMAT is difficult, and shouldn't be necessary
+                else -> VPointF(-1)
+            }
+
+        onViewMaxSizeChanged?.let { it(maxSize) }
     }
 
     /** Called without animation, can be used to set the initial state of animator */

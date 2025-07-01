@@ -77,7 +77,9 @@ class ClockEventListeners {
 }
 
 interface ClockEventListener {
-    fun onBoundsChanged(bounds: VRectF)
+    fun onBoundsChanged(currentBounds: VRectF)
+
+    fun onMaxSizeChanged(maxSize: VPointF, isLargeClock: Boolean)
 
     fun onChangeComplete()
 }

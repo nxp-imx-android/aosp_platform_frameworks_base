@@ -49,6 +49,7 @@ import com.android.systemui.plugins.clocks.ClockPositionAnimationArgs
 import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.TimeFormatKind
+import com.android.systemui.plugins.clocks.VPointF
 import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
@@ -66,6 +67,7 @@ interface FlexClockViewController {
     val config: ClockFaceConfig
 
     var onViewBoundsChanged: ((VRectF) -> Unit)?
+    var onViewMaxSizeChanged: ((VPointF) -> Unit)?
 }
 
 class FlexClockFaceController(

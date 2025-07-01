@@ -50,6 +50,7 @@ class FlexClockViewGroupController(private val clockCtx: ClockContext) : FlexClo
 
     override val view = FlexClockViewGroup(clockCtx)
     override var onViewBoundsChanged by view::onViewBoundsChanged
+    override var onViewMaxSizeChanged by view::onViewMaxSizeChanged
 
     init {
         fun createController(cfg: LayerConfig) {
