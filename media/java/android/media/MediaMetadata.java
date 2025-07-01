@@ -18,6 +18,7 @@ package android.media;
 import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.Size;
 import android.annotation.StringDef;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.ContentResolver;
@@ -590,30 +591,9 @@ public final class MediaMetadata implements Parcelable {
 
         String mediaId = getString(METADATA_KEY_MEDIA_ID);
 
-        CharSequence[] text = new CharSequence[3];
+        CharSequence[] text = getTitleSubtitleAndDescription();
         Bitmap icon = null;
         Uri iconUri = null;
-
-        // First handle the case where display data is set already
-        CharSequence displayText = getText(METADATA_KEY_DISPLAY_TITLE);
-        if (!TextUtils.isEmpty(displayText)) {
-            // If they have a display title use only display data, otherwise use
-            // our best bets
-            text[0] = displayText;
-            text[1] = getText(METADATA_KEY_DISPLAY_SUBTITLE);
-            text[2] = getText(METADATA_KEY_DISPLAY_DESCRIPTION);
-        } else {
-            // Use whatever fields we can
-            int textIndex = 0;
-            int keyIndex = 0;
-            while (textIndex < text.length && keyIndex < PREFERRED_DESCRIPTION_ORDER.length) {
-                CharSequence next = getText(PREFERRED_DESCRIPTION_ORDER[keyIndex++]);
-                if (!TextUtils.isEmpty(next)) {
-                    // Fill in the next empty bit of text
-                    text[textIndex++] = next;
-                }
-            }
-        }
 
         // Get the best art bitmap we can find
         for (int i = 0; i < PREFERRED_BITMAP_ORDER.length; i++) {
@@ -656,6 +636,19 @@ public final class MediaMetadata implements Parcelable {
         mDescription = bob.build();
 
         return mDescription;
+    }
+
+    /**
+     * Returns a description string of this metadata.
+     *
+     * Note: this is for MediaSession.setMetadata() to get the description of the
+     * metadata, and it matches the previous beahvior as MediaDescription#toString()
+     *
+     * @hide
+     */
+    public String getDescriptionString() {
+        CharSequence[] text = getTitleSubtitleAndDescription();
+        return text[0] + ", " + text[1] + ", " + text[2];
     }
 
     /**
@@ -748,6 +741,35 @@ public final class MediaMetadata implements Parcelable {
         }
 
         return hashCode;
+    }
+
+    /**
+     * Returns title, subtitle, description in this metadata
+     */
+    @NonNull @Size(3)
+    private CharSequence[] getTitleSubtitleAndDescription() {
+        CharSequence[] text = new CharSequence[3];
+        // First handle the case where display data is set already
+        CharSequence displayText = getText(METADATA_KEY_DISPLAY_TITLE);
+        if (!TextUtils.isEmpty(displayText)) {
+            // If they have a display title use only display data, otherwise use
+            // our best bets
+            text[0] = displayText;
+            text[1] = getText(METADATA_KEY_DISPLAY_SUBTITLE);
+            text[2] = getText(METADATA_KEY_DISPLAY_DESCRIPTION);
+        } else {
+            // Use whatever fields we can
+            int textIndex = 0;
+            int keyIndex = 0;
+            while (textIndex < text.length && keyIndex < PREFERRED_DESCRIPTION_ORDER.length) {
+                CharSequence next = getText(PREFERRED_DESCRIPTION_ORDER[keyIndex++]);
+                if (!TextUtils.isEmpty(next)) {
+                    // Fill in the next empty bit of text
+                    text[textIndex++] = next;
+                }
+            }
+        }
+        return text;
     }
 
     /**

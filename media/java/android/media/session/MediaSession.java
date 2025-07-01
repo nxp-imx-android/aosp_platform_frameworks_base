@@ -506,7 +506,7 @@ public final class MediaSession {
     public void setMetadata(@Nullable MediaMetadata metadata) {
         long duration = -1;
         int fields = 0;
-        MediaDescription description = null;
+        String description = null;
         if (metadata != null) {
             metadata = new MediaMetadata.Builder(metadata)
                     .setBitmapDimensionLimit(mMaxBitmapSize)
@@ -515,7 +515,7 @@ public final class MediaSession {
                 duration = metadata.getLong(MediaMetadata.METADATA_KEY_DURATION);
             }
             fields = metadata.size();
-            description = metadata.getDescription();
+            description = metadata.getDescriptionString();
         }
         String metadataDescription = "size=" + fields + ", description=" + description;
 
