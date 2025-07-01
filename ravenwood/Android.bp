@@ -123,11 +123,10 @@ java_import {
 java_library {
     name: "ravenwood-junit-impl",
     srcs: [
+        ":framework-configinfrastructure-ravenwood-sources",
         ":framework-ravenwood-sources",
         "junit-impl-src/**/*.java",
         "junit-src/**/*.java",
-        // TODO: Remove this directory once the sources are moved out
-        "runtime-helper-src/framework/**/*.java",
     ],
     static_libs: [
         "ravenwood-androidx",
