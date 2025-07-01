@@ -21,15 +21,19 @@
 
 namespace aapt {
 
-// Removes any resource that are behind disabled flags.
-class FlagDisabledResourceRemover : public IResourceTableConsumer {
+// The final resource table should only have resource values in the entries section that are either
+// not behind any flags or are behind read only flags that are enabled. This IResourceTableConsumer
+// removes those values in the entry section that are either behind read/write flags or behind
+// read only flags that are disabled. Entries behind read/write flags are in the final table, but in
+// separate chunk devoted to them.
+class FlagNotEnabledResourceRemover : public IResourceTableConsumer {
  public:
-  FlagDisabledResourceRemover() = default;
+  FlagNotEnabledResourceRemover() = default;
 
   bool Consume(IAaptContext* context, ResourceTable* table) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FlagDisabledResourceRemover);
+  DISALLOW_COPY_AND_ASSIGN(FlagNotEnabledResourceRemover);
 };
 
 }  // namespace aapt

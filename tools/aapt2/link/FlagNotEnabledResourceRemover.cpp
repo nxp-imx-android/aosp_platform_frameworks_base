@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "link/FlagDisabledResourceRemover.h"
+#include "link/FlagNotEnabledResourceRemover.h"
 
 #include <algorithm>
 
@@ -32,10 +32,11 @@ static bool KeepResourceEntry(const std::unique_ptr<ResourceEntry>& entry) {
   const auto remove_iter =
       std::stable_partition(entry->values.begin(), end_iter,
                             [](const std::unique_ptr<ResourceConfigValue>& value) -> bool {
-                              return value->value->GetFlagStatus() != FlagStatus::Disabled;
+                              return value->value->GetFlagStatus() == FlagStatus::Enabled ||
+                                     value->value->GetFlagStatus() == FlagStatus::NoFlag;
                             });
 
-  bool keep = remove_iter != entry->values.begin();
+  bool keep = remove_iter != entry->values.begin() || !entry->readwrite_flag_values.empty();
 
   entry->values.erase(remove_iter, end_iter);
 
@@ -46,7 +47,7 @@ static bool KeepResourceEntry(const std::unique_ptr<ResourceEntry>& entry) {
   return keep;
 }
 
-bool FlagDisabledResourceRemover::Consume(IAaptContext* context, ResourceTable* table) {
+bool FlagNotEnabledResourceRemover::Consume(IAaptContext* context, ResourceTable* table) {
   for (auto& pkg : table->packages) {
     for (auto& type : pkg->types) {
       const auto end_iter = type->entries.end();

@@ -262,6 +262,7 @@ enum {
     RES_TABLE_OVERLAYABLE_TYPE        = 0x0204,
     RES_TABLE_OVERLAYABLE_POLICY_TYPE = 0x0205,
     RES_TABLE_STAGED_ALIAS_TYPE       = 0x0206,
+    RES_TABLE_FLAGGED                 = 0x0207,
 };
 
 /**
@@ -1599,6 +1600,26 @@ union ResTable_sparseTypeEntry {
 
 static_assert(sizeof(ResTable_sparseTypeEntry) == sizeof(uint32_t),
         "ResTable_sparseTypeEntry must be 4 bytes in size");
+/**
+ * A container for other chunks all of whose values are behind a given flag.
+ *
+ * The flag_name_index is the index of the flag name in the value string pool.
+ *
+ * When the android runtime encounters this chunk it will check the flag against its current value.
+ * If the flag is enabled and flag_negated is false or it is disabled and flag_negated is true, the
+ * runtime will then process all of the chunks inside of it normally. Otherwise the entire chunk is
+ * skipped.
+ *
+ * Currently this is chunk should be contained in a ResTable_typeSpec and contain any number of
+ * ResTable_type.
+ */
+struct ResTable_flagged {
+  struct ResChunk_header header;
+
+  ResStringPool_ref flag_name_index;
+  bool flag_negated;
+  uint8_t padding[3];
+};
 
 struct ResTable_map_entry;
 
