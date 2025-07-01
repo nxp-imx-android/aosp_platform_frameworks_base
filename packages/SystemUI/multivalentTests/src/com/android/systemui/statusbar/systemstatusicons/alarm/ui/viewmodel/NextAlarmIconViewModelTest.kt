@@ -49,14 +49,7 @@ class NextAlarmIconViewModelTest : SysuiTestCase() {
         kosmos.nextAlarmIconViewModelFactory.create(context).apply { activateIn(testScope) }
 
     @Test
-    fun icon_alarmNotSet_outputsNull() =
-        kosmos.runTest {
-            fakeNextAlarmController.setNextAlarm(null)
-            assertThat(underTest.icon).isNull()
-        }
-
-    @Test
-    fun icon_alarmSet_outputsIcon() =
+    fun icon_visible_isCorrect() =
         kosmos.runTest {
             val alarmClockInfo = AlarmManager.AlarmClockInfo(1L, mock<PendingIntent>())
             fakeNextAlarmController.setNextAlarm(alarmClockInfo)
@@ -65,17 +58,41 @@ class NextAlarmIconViewModelTest : SysuiTestCase() {
         }
 
     @Test
-    fun icon_updatesWhenAlarmChanges() =
+    fun icon_notVisible_isNull() =
         kosmos.runTest {
+            fakeNextAlarmController.setNextAlarm(null)
+
             assertThat(underTest.icon).isNull()
+        }
+
+    @Test
+    fun visible_isFalse_byDefault() =
+        kosmos.runTest {
+            fakeNextAlarmController.setNextAlarm(null)
+
+            assertThat(underTest.visible).isFalse()
+        }
+
+    @Test
+    fun visible_alarmIsSet_isTrue() =
+        kosmos.runTest {
+            val alarmClockInfo = AlarmManager.AlarmClockInfo(1L, mock<PendingIntent>())
+            fakeNextAlarmController.setNextAlarm(alarmClockInfo)
+
+            assertThat(underTest.visible).isTrue()
+        }
+
+    @Test
+    fun visible_alarmChanges_flips() =
+        kosmos.runTest {
+            assertThat(underTest.visible).isFalse()
 
             val alarmInfo = AlarmManager.AlarmClockInfo(1L, mock<PendingIntent>())
             fakeNextAlarmController.setNextAlarm(alarmInfo)
-
-            assertThat(underTest.icon).isEqualTo(EXPECTED_ALARM_ICON)
+            assertThat(underTest.visible).isTrue()
 
             fakeNextAlarmController.setNextAlarm(null)
-            assertThat(underTest.icon).isNull()
+            assertThat(underTest.visible).isFalse()
         }
 
     companion object {

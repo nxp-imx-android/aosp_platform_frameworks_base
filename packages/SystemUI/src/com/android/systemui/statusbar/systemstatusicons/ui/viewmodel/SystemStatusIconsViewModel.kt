@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.systemstatusicons.ui.viewmodel
 
 import android.content.Context
-import androidx.annotation.VisibleForTesting
 import androidx.compose.runtime.getValue
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
@@ -102,7 +101,6 @@ constructor(
         unOrderedIconViewModels.associateBy { it.slotName }
     }
 
-    @VisibleForTesting
     val iconViewModels by
         hydrator.hydratedStateOf(
             traceName = "iconViewModels",
@@ -112,9 +110,6 @@ constructor(
                     sortViewModelsBySlotNames(slotNames.toSet())
                 },
         )
-
-    val icons
-        get() = iconViewModels.mapNotNull { it.icon }
 
     override suspend fun onActivated(): Nothing {
         coroutineScope {

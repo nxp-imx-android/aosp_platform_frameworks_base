@@ -29,7 +29,6 @@ import com.android.systemui.statusbar.systemstatusicons.ui.viewmodel.SystemStatu
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.flow.map
 
 /**
  * View model for the bluetooth connected system status icon. Emits a bluetooth connected icon when
@@ -38,7 +37,7 @@ import kotlinx.coroutines.flow.map
 class BluetoothIconViewModel
 @AssistedInject
 constructor(@Assisted context: Context, interactor: BluetoothConnectionStatusInteractor) :
-    SystemStatusIconViewModel, ExclusiveActivatable() {
+    SystemStatusIconViewModel.Default, ExclusiveActivatable() {
     init {
         SystemStatusIconsInCompose.expectInNewMode()
     }
@@ -47,12 +46,15 @@ constructor(@Assisted context: Context, interactor: BluetoothConnectionStatusInt
 
     override val slotName = context.getString(com.android.internal.R.string.status_bar_bluetooth)
 
-    override val icon: Icon? by
+    override val visible: Boolean by
         hydrator.hydratedStateOf(
             traceName = null,
-            initialValue = null,
-            source = interactor.isBluetoothConnected.map { it.toUiState() },
+            initialValue = false,
+            source = interactor.isBluetoothConnected,
         )
+
+    override val icon: Icon?
+        get() = visible.toUiState()
 
     override suspend fun onActivated(): Nothing {
         hydrator.activate()
