@@ -972,6 +972,9 @@
     <!-- QuickSettings: Flashlight tile level percentage [CHAR LIMIT=NONE] -->
     <string name="quick_settings_flashlight_tile_level_percentage"><xliff:g id="percentage" example="46">%1$d</xliff:g>%%</string>
 
+    <!-- Turn off flashlight and close dialog [CHAR LIMIT=NONE] -->
+    <string name="flashlight_dialog_turn_off">Turn off</string>
+
     <!-- QuickSettings: Cellular detail panel title [CHAR LIMIT=NONE] -->
     <string name="quick_settings_cellular_detail_title">Mobile data</string>
     <!-- QuickSettings: Cellular detail panel, data usage title [CHAR LIMIT=NONE] -->
