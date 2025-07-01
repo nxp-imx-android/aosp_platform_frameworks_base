@@ -20,11 +20,13 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.view.View;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 
 import com.android.packageinstaller.R;
 import com.android.packageinstaller.v2.model.PackageUtil;
@@ -89,7 +91,19 @@ public class UiUtil {
      * system AlertDialog.
      */
     public static Dialog getAlertDialog(@NonNull Context context, @NonNull String title,
-            @NonNull View contentView, int positiveBtnTextResId, int negativeBtnTextResId,
+            @NonNull View contentView) {
+        return getAlertDialog(context, title, contentView, /* positiveBtnText= */ null,
+                /* negativeBtnText= */ null, /* positiveBtnListener= */ null,
+                /* negativeBtnListener= */ null, /* themeResId= */ 0);
+    }
+
+    /**
+     * If material design is enabled, return the MaterialAlertDialog. Otherwise, return the
+     * system AlertDialog.
+     */
+    public static Dialog getAlertDialog(@NonNull Context context, @NonNull String title,
+            @NonNull View contentView, @StringRes int positiveBtnTextResId,
+            @StringRes int negativeBtnTextResId,
             @Nullable DialogInterface.OnClickListener positiveBtnListener,
             @Nullable DialogInterface.OnClickListener negativeBtnListener) {
         return getAlertDialog(context, title, contentView, positiveBtnTextResId,
@@ -116,12 +130,18 @@ public class UiUtil {
      * system AlertDialog.
      */
     public static Dialog getAlertDialog(@NonNull Context context,
-            @NonNull String title, @NonNull View contentView, int positiveBtnTextResId,
-            int negativeBtnTextResId, @Nullable DialogInterface.OnClickListener positiveBtnListener,
+            @NonNull String title, @NonNull View contentView, @StringRes int positiveBtnTextResId,
+            @StringRes int negativeBtnTextResId,
+            @Nullable DialogInterface.OnClickListener positiveBtnListener,
             @Nullable DialogInterface.OnClickListener negativeBtnListener, int themeResId) {
-        return getAlertDialog(context, title, contentView, context.getString(positiveBtnTextResId),
-                context.getString(negativeBtnTextResId), positiveBtnListener, negativeBtnListener,
-                themeResId);
+        final String positiveBtnText =
+                positiveBtnTextResId == Resources.ID_NULL ? null : context.getString(
+                        positiveBtnTextResId);
+        final String negativeBtnText =
+                negativeBtnTextResId == Resources.ID_NULL ? null : context.getString(
+                        negativeBtnTextResId);
+        return getAlertDialog(context, title, contentView, positiveBtnText, negativeBtnText,
+                positiveBtnListener, negativeBtnListener, themeResId);
     }
 
     /**
@@ -129,24 +149,34 @@ public class UiUtil {
      * system AlertDialog.
      */
     public static Dialog getAlertDialog(@NonNull Context context,
-            @NonNull String title, @NonNull View contentView, @NonNull String positiveBtnText,
-            @NonNull String negativeBtnText,
+            @NonNull String title, @NonNull View contentView, @Nullable String positiveBtnText,
+            @Nullable String negativeBtnText,
             @Nullable DialogInterface.OnClickListener positiveBtnListener,
             @Nullable DialogInterface.OnClickListener negativeBtnListener, int themeResId) {
         if (PackageUtil.isMaterialDesignEnabled(context)) {
-            return new MaterialAlertDialogBuilder(context, themeResId)
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context, themeResId)
                     .setTitle(title)
-                    .setView(contentView)
-                    .setPositiveButton(positiveBtnText, positiveBtnListener)
-                    .setNegativeButton(negativeBtnText, negativeBtnListener)
-                    .create();
+                    .setView(contentView);
+            if (positiveBtnText != null) {
+                builder.setPositiveButton(positiveBtnText, positiveBtnListener);
+            }
+
+            if (negativeBtnText != null) {
+                builder.setNegativeButton(negativeBtnText, negativeBtnListener);
+            }
+            return builder.create();
         } else {
-            return new AlertDialog.Builder(context, themeResId)
+            AlertDialog.Builder builder = new AlertDialog.Builder(context, themeResId)
                     .setTitle(title)
-                    .setView(contentView)
-                    .setPositiveButton(positiveBtnText, positiveBtnListener)
-                    .setNegativeButton(negativeBtnText, negativeBtnListener)
-                    .create();
+                    .setView(contentView);
+            if (positiveBtnText != null) {
+                builder.setPositiveButton(positiveBtnText, positiveBtnListener);
+            }
+
+            if (negativeBtnText != null) {
+                builder.setNegativeButton(negativeBtnText, negativeBtnListener);
+            }
+            return builder.create();
         }
     }
 }

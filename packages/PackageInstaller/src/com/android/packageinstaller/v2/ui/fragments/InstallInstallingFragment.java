@@ -19,9 +19,7 @@ package com.android.packageinstaller.v2.ui.fragments;
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_APP_SNIPPET;
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_IS_UPDATING;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -44,7 +42,7 @@ public class InstallInstallingFragment extends DialogFragment {
 
     private static final String LOG_TAG = InstallInstallingFragment.class.getSimpleName();
     private InstallInstalling mDialogData;
-    private AlertDialog mDialog;
+    private Dialog mDialog;
 
     public InstallInstallingFragment() {
         // Required for DialogFragment
@@ -83,21 +81,13 @@ public class InstallInstallingFragment extends DialogFragment {
             .setImageDrawable(mDialogData.getAppIcon());
         ((TextView) dialogView.requireViewById(R.id.app_label)).setText(mDialogData.getAppLabel());
 
-        mDialog = new AlertDialog.Builder(requireContext())
-            .setTitle(
-                mDialogData.isAppUpdating() ? R.string.title_updating : R.string.title_installing)
-            .setView(dialogView)
-            .create();
+        final int titleResId =
+                mDialogData.isAppUpdating() ? R.string.title_updating : R.string.title_installing;
+        mDialog = UiUtil.getAlertDialog(requireContext(), getString(titleResId), dialogView);
 
         this.setCancelable(false);
 
         return mDialog;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        mDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(false);
     }
 
     private void setDialogData(Bundle args) {

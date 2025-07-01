@@ -21,7 +21,6 @@ import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_IS_UPDATING
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_RESULT_INTENT;
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_SHOULD_RETURN_RESULT;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -31,7 +30,6 @@ import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -43,6 +41,7 @@ import com.android.packageinstaller.R;
 import com.android.packageinstaller.v2.model.InstallSuccess;
 import com.android.packageinstaller.v2.model.PackageUtil.AppSnippet;
 import com.android.packageinstaller.v2.ui.InstallActionListener;
+import com.android.packageinstaller.v2.ui.UiUtil;
 
 import java.util.List;
 
@@ -54,7 +53,7 @@ public class InstallSuccessFragment extends DialogFragment {
 
     private static final String LOG_TAG = InstallSuccessFragment.class.getSimpleName();
     private InstallSuccess mDialogData;
-    private AlertDialog mDialog;
+    private Dialog mDialog;
     private InstallActionListener mInstallActionListener;
     private PackageManager mPm;
 
@@ -101,39 +100,28 @@ public class InstallSuccessFragment extends DialogFragment {
             .setImageDrawable(mDialogData.getAppIcon());
         ((TextView) dialogView.requireViewById(R.id.app_label)).setText(mDialogData.getAppLabel());
 
-        mDialog = new AlertDialog.Builder(requireContext())
-            .setTitle(
-                mDialogData.isAppUpdating() ? R.string.title_updated : R.string.title_installed)
-            .setView(dialogView)
-            .setNegativeButton(R.string.button_done,
-                (dialog, which) -> mInstallActionListener.onNegativeResponse(
-                    mDialogData.getStageCode()))
-            .setPositiveButton(R.string.button_open, (dialog, which) -> {})
-            .create();
-
-        return mDialog;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        Button launchButton = mDialog.getButton(DialogInterface.BUTTON_POSITIVE);
-        boolean visible = false;
+        String positiveBtnText = null;
+        DialogInterface.OnClickListener positiveBtnListener = null;
         if (mDialogData.getResultIntent() != null) {
             List<ResolveInfo> list = mPm.queryIntentActivities(mDialogData.getResultIntent(), 0);
             if (list.size() > 0) {
-                visible = true;
+                positiveBtnText = getString(R.string.button_open);
+                positiveBtnListener = (dialog, which) -> {
+                    Log.i(LOG_TAG, "Finished installing and launching "
+                            + mDialogData.getAppLabel());
+                    mInstallActionListener.openInstalledApp(mDialogData.getResultIntent());
+                };
             }
         }
-        if (visible) {
-            launchButton.setOnClickListener(view -> {
-                Log.i(LOG_TAG, "Finished installing and launching " +
-                    mDialogData.getAppLabel());
-                mInstallActionListener.openInstalledApp(mDialogData.getResultIntent());
-            });
-        } else {
-            launchButton.setVisibility(View.GONE);
-        }
+
+        final int titleResId =
+                mDialogData.isAppUpdating() ? R.string.title_updated : R.string.title_installed;
+        mDialog = UiUtil.getAlertDialog(requireContext(), getString(titleResId), dialogView,
+                positiveBtnText, getString(R.string.button_done), positiveBtnListener,
+                (dialog, which) -> mInstallActionListener.onNegativeResponse(
+                        mDialogData.getStageCode()));
+
+        return mDialog;
     }
 
     @Override

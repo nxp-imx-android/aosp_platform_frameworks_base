@@ -31,11 +31,10 @@
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/progress_bar"
             android:indeterminate="true"
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
             android:layout_marginTop="@dimen/dialog_inter_element_margin"
             android:paddingVertical="4dp"
-            android:visibility="gone" />
+            android:visibility="gone"
+            style="@style/PackageInstaller.ProgressBarStyle.Linear"/>
 
         <TextView
             style="?attr/textAppearanceInstallerCustomMessage"
