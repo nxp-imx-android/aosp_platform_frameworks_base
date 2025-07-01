@@ -2912,7 +2912,6 @@ public class CaptureResult extends CameraMetadata<CaptureResult.Key<?>> {
      */
     @PublicKey
     @NonNull
-    @FlaggedApi(Flags.FLAG_CAMERA_AE_MODE_LOW_LIGHT_BOOST)
     public static final Key<Integer> CONTROL_LOW_LIGHT_BOOST_STATE =
             new Key<Integer>("android.control.lowLightBoostState", int.class);
 

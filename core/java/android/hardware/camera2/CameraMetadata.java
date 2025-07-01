@@ -2443,7 +2443,6 @@ public abstract class CameraMetadata<TKey> {
      * @see CameraCharacteristics#SENSOR_INFO_SENSITIVITY_RANGE
      * @see CaptureRequest#CONTROL_AE_MODE
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_AE_MODE_LOW_LIGHT_BOOST)
     public static final int CONTROL_AE_MODE_ON_LOW_LIGHT_BOOST_BRIGHTNESS_PRIORITY = 6;
 
     //
@@ -4262,14 +4261,12 @@ public abstract class CameraMetadata<TKey> {
      * <p>The AE mode 'ON_LOW_LIGHT_BOOST_BRIGHTNESS_PRIORITY' is enabled but not applied.</p>
      * @see CaptureResult#CONTROL_LOW_LIGHT_BOOST_STATE
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_AE_MODE_LOW_LIGHT_BOOST)
     public static final int CONTROL_LOW_LIGHT_BOOST_STATE_INACTIVE = 0;
 
     /**
      * <p>The AE mode 'ON_LOW_LIGHT_BOOST_BRIGHTNESS_PRIORITY' is enabled and applied.</p>
      * @see CaptureResult#CONTROL_LOW_LIGHT_BOOST_STATE
      */
-    @FlaggedApi(Flags.FLAG_CAMERA_AE_MODE_LOW_LIGHT_BOOST)
     public static final int CONTROL_LOW_LIGHT_BOOST_STATE_ACTIVE = 1;
 
     //
