@@ -30,7 +30,7 @@ import android.testing.AndroidTestingRunner
 import android.testing.TestableContext
 import androidx.test.filters.SmallTest
 import com.android.launcher3.icons.BaseIconFactory
-import com.android.launcher3.icons.BaseIconFactory.MODE_DEFAULT
+import com.android.launcher3.icons.BaseIconFactory.Companion.MODE_DEFAULT
 import com.android.launcher3.icons.IconProvider
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.TestRunningTaskInfoBuilder
@@ -41,11 +41,11 @@ import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.sysui.UserChangeListener
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader.AppResources
 import com.google.common.truth.Truth.assertThat
-import java.util.Locale
 import org.junit.Assert.assertThrows
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.ArgumentMatchers.anyFloat
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.kotlin.any
@@ -58,6 +58,7 @@ import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoMoreInteractions
 import org.mockito.kotlin.whenever
+import java.util.Locale
 
 /**
  * Tests for [WindowDecorTaskResourceLoader].
@@ -155,7 +156,7 @@ class WindowDecorTaskResourceLoaderTest : ShellTestCase() {
 
         loader.getHeaderIcon(task)
 
-        verify(mockHeaderIconFactory).createIconBitmap(any(), anyFloat())
+        verify(mockHeaderIconFactory).createIconBitmap(any(), anyFloat(), anyInt(), anyBoolean())
         assertThat(loader.taskToResourceCache[task.taskId]?.appIcon).isNotNull()
     }
 
