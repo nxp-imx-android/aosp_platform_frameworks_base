@@ -368,14 +368,6 @@ class ExternalDisplayPolicy {
     }
 
     boolean isDisplayReadyForMirroring(int displayId) {
-        if (!mFlags.isWaitingConfirmationBeforeMirroringEnabled()) {
-            if (DEBUG) {
-                Slog.d(TAG, "isDisplayReadyForMirroring: mirroring CONFIRMED - "
-                        + " flag 'waiting for confirmation before mirroring' is disabled");
-            }
-            return true;
-        }
-
         synchronized (mSyncRoot) {
             if (!mIsBootCompleted) {
                 if (DEBUG) {
