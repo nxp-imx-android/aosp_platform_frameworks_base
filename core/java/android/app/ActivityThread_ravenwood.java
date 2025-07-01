@@ -16,8 +16,7 @@
 package android.app;
 
 import android.content.Context;
-
-import java.util.Objects;
+import android.platform.test.ravenwood.RavenwoodAppDriver;
 
 /**
  * Inject Ravenwood methods to {@link ActivityThread}.
@@ -26,33 +25,13 @@ public class ActivityThread_ravenwood {
     private ActivityThread_ravenwood() {
     }
 
-    /**
-     * Equivalent to {@link ActivityThread#mInitialApplication}.
-     */
-    private static volatile Application sApplication;
-
-    /**
-     * Equivalent to {@link ActivityThread#getSystemContext}.
-     */
-    private static volatile Context sSystemContext;
-
-    /** Initializer called by Ravenwood. */
-    public static void init(Application application, Context systemContext) {
-        sApplication = Objects.requireNonNull(application);
-        sSystemContext = Objects.requireNonNull(application);
-    }
-
-    private static <T> T ensureInitialized(T object) {
-        return Objects.requireNonNull(object, "ActivityThread_ravenwood not initialized");
-    }
-
     /** Override the corresponding ActivityThread method. */
     public static Context currentSystemContext() {
-        return ensureInitialized(sSystemContext);
+        return RavenwoodAppDriver.getInstance().getAndroidAppBridge().getSystemContext();
     }
 
     /** Override the corresponding ActivityThread method. */
     public static Application currentApplication() {
-        return ensureInitialized(sApplication);
+        return RavenwoodAppDriver.getInstance().getApplication();
     }
 }

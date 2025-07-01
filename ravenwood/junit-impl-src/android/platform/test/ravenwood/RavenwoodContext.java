@@ -44,7 +44,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
@@ -78,7 +77,7 @@ public class RavenwoodContext extends RavenwoodBaseContext {
         mNameToFactory.put(serviceName, serviceSupplier);
     }
 
-    public RavenwoodContext(String packageName, HandlerThread mainThread) throws IOException {
+    public RavenwoodContext(String packageName, HandlerThread mainThread) {
         mPackageName = packageName;
         mMainThread = mainThread;
 

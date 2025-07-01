@@ -26,6 +26,7 @@ import android.annotation.RequiresPermission;
 import android.annotation.SystemApi;
 import android.app.ActivityThread;
 import android.content.pm.PackageManager;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -49,6 +50,7 @@ import java.util.Set;
  * @see Context#createContext(ContextParams)
  * @see AttributionSource
  */
+@RavenwoodKeepWholeClass
 public final class ContextParams {
     private final @Nullable String mAttributionTag;
     private final @Nullable AttributionSource mNext;

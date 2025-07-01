@@ -13,17 +13,21 @@ android.accounts.Account
 android.app.ActivityManager
 android.app.ActivityOptions
 android.app.AppCompatCallbacks
+android.app.AppComponentFactory
 android.app.Application
 android.app.ApplicationPackageManager
 android.app.BroadcastOptions
 android.app.ComponentOptions
+android.app.ContextImpl
 android.app.Instrumentation
+android.app.LoadedApk
 android.app.LocaleConfig
 android.app.PropertyInvalidatedCache
 android.app.ResourcesManager
 android.app.UiAutomation
 android.app.WindowConfiguration
 
+android.content.AttributionSource
 android.content.ClipData
 android.content.ClipDescription
 android.content.ClipboardManager
@@ -33,6 +37,7 @@ android.content.ContentProvider
 android.content.ContentUris
 android.content.ContentValues
 android.content.Context
+android.content.ContextParams
 android.content.ContextWrapper
 android.content.Intent
 android.content.IntentFilter
