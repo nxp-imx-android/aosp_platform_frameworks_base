@@ -155,6 +155,7 @@ import com.android.wm.shell.windowdecor.common.WindowDecorationGestureExclusionT
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSupplier;
 import com.android.wm.shell.windowdecor.extension.InsetsStateKt;
+import com.android.wm.shell.windowdecor.extension.MotionEventKt;
 import com.android.wm.shell.windowdecor.extension.TaskInfoKt;
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel;
 import com.android.wm.shell.windowdecor.tiling.SnapEventHandler;
@@ -1187,6 +1188,11 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     && id != R.id.maximize_window && id != R.id.minimize_window) {
                 return false;
             }
+            if (MotionEventKt.isTouchpadGesture(e)) {
+                // Touchpad finger gestures are ignored.
+                return false;
+            }
+
             final boolean isAppHandle = !taskInfo.isFreeform();
             final int actionMasked = e.getActionMasked();
             final boolean isDown = actionMasked == MotionEvent.ACTION_DOWN;
