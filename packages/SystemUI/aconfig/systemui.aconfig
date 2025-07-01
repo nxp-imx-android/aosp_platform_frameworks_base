@@ -2117,3 +2117,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "expandable_use_modifier_implementation"
+    namespace: "systemui"
+    description: "Default the Compose Expandable to the new modifier implementation."
+    bug: "428899288"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
