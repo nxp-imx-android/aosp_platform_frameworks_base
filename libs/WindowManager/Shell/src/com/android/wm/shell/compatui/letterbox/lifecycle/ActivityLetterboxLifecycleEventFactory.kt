@@ -64,7 +64,8 @@ class ActivityLetterboxLifecycleEventFactory(
                 taskBounds = taskBounds,
                 letterboxBounds = letterboxBounds,
                 taskLeash = taskItem.containerLeash,
-                containerToken = taskItem.containerToken
+                containerToken = taskItem.containerToken,
+                isTranslucent = change.isTranslucent()
             )
         }
         ProtoLog.w(WM_SHELL_APP_COMPAT, "$TAG: Task not found for taskId: $taskId")
