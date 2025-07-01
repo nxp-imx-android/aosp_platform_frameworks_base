@@ -540,6 +540,16 @@ flag {
 }
 
 flag {
+    name: "enable_desktop_windowing_enterprise_bugfix"
+    namespace: "lse_desktop_experience"
+    description: "Enables fixes in desktop windowing related to enterprise"
+    bug: "413607166"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_desktop_windowing_exit_by_minimize_transition_bugfix"
     namespace: "lse_desktop_experience"
     description: "Enables exit desktop windowing by minimize transition & motion polish changes"
