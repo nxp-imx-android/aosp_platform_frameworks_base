@@ -20,8 +20,14 @@ package com.android.wm.shell.flicker.bubbles.utils
 
 import android.app.Instrumentation
 import android.graphics.Point
+import android.platform.systemui_tapl.ui.Bubble
 import android.platform.systemui_tapl.ui.Root
 import android.tools.Rotation
+import android.tools.device.apphelpers.BrowserAppHelper
+import android.tools.device.apphelpers.CalculatorAppHelper
+import android.tools.device.apphelpers.ClockAppHelper
+import android.tools.device.apphelpers.MapsAppHelper
+import android.tools.device.apphelpers.MessagingAppHelper
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import android.tools.flicker.rules.RemoveAllTasksButHomeRule.Companion.removeAllTasksButHome
@@ -40,6 +46,8 @@ import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
 import com.android.launcher3.tapl.LauncherInstrumentation
+import com.android.wm.shell.Flags
+import com.google.common.truth.Truth.assertWithMessage
 
 // TODO(b/396020056): Verify bubble bar on the large screen devices.
 /**
@@ -89,12 +97,9 @@ fun launchBubbleViaBubbleMenu(
     tapl: LauncherInstrumentation,
     wmHelper: WindowManagerStateHelper,
 ) {
-    val allApps = tapl.goHome().switchToAllApps()
-    val simpleAppIcon = allApps.getAppIcon(testApp.appName)
-    // Open the bubble menu and click.
-    simpleAppIcon.openMenu().bubbleMenuItem.click()
-
-    waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
+    // Go to all apps to launch app into a bubble.
+    tapl.goHome().switchToAllApps()
+    launchAndWaitForBubbleAppExpanded(testApp, tapl, wmHelper)
 }
 
 /**
@@ -116,6 +121,9 @@ fun launchBubbleViaDragToBubbleBar(
     taskBarAppIcon.dragToBubbleBarLocation(false /* isBubbleBarLeftDropTarget */)
 
     waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
+    tapl.launchedAppState.assertTaskbarHidden()
+    assertWithMessage("The education must not show for Application bubble")
+        .that(Root.get().bubble.isEducationVisible).isFalse()
 }
 
 /**
@@ -211,6 +219,88 @@ fun dismissBubbleAppViaBubbleView(uiDevice: UiDevice, wmHelper: WindowManagerSta
         .waitForAndVerify()
 }
 
+/**
+ * Launches as many bubble apps as a bubble stack or a bubble bar can contain and collapse.
+ *
+ * @param tapl the [LauncherInstrumentation]
+ * @param wmHelper the [WindowManagerStateHelper]
+ * @return the [Bubble] icon objects of the launched bubble apps
+ */
+fun launchMultipleBubbleAppsViaBubbleMenuAndCollapse(
+    tapl: LauncherInstrumentation,
+    wmHelper: WindowManagerStateHelper,
+): List<Bubble> {
+    // Go to all apps to launch app into a bubble.
+    tapl.goHome().switchToAllApps()
+
+    bubbleApps.forEach { testApp ->
+        launchAndWaitForBubbleAppExpanded(testApp, tapl, wmHelper)
+        if (testApp != bubbleApps.last()) {
+            Root.get().expandedBubbleStack.closeByClickingOutside()
+        }
+    }
+
+    assertBubbleIconsAligned(tapl)
+
+    val expandedBubbleStack = Root.get().expandedBubbleStack
+    val bubbles = expandedBubbleStack.bubbles
+    expandedBubbleStack.closeByClickingOutside()
+
+    return bubbles
+}
+
+/**
+ * Dismisses all bubble apps launched by [launchMultipleBubbleAppsViaBubbleMenuAndCollapse].
+ */
+fun dismissMultipleBubbles() {
+    bubbleApps.forEach { app -> app.exit() }
+}
+
+private fun assertBubbleIconsAligned(tapl: LauncherInstrumentation) {
+    val isBubbleIconsAligned = Root.get().expandedBubbleStack.bubbles.stream()
+        .mapToInt { bubbleIcon: Bubble ->
+            if (tapl.isTablet && !Flags.enableBubbleBar()) {
+                // For large screen devices without bubble bar, the bubble icons are aligned
+                // vertically.
+                bubbleIcon.visibleCenter.x
+            } else {
+                // Otherwise, the bubble icons are aligned horizontally.
+                bubbleIcon.visibleCenter.y
+            }
+        }
+        .distinct()
+        .count() == 1L
+
+
+    val bubblePositions = StringBuilder()
+    if (!isBubbleIconsAligned) {
+        Root.get().expandedBubbleStack.bubbles.forEach { bubble ->
+            bubblePositions.append(
+                "{${bubble.contentDescription()} center: ${bubble.visibleCenter}}, "
+            )
+        }
+    }
+    assertWithMessage("The bubble icons must be aligned, but was $bubblePositions")
+        .that(isBubbleIconsAligned)
+        .isTrue()
+}
+
+private fun launchAndWaitForBubbleAppExpanded(
+    testApp: StandardAppHelper,
+    tapl: LauncherInstrumentation,
+    wmHelper: WindowManagerStateHelper,
+) {
+    val allApps = tapl.allApps
+    val simpleAppIcon = allApps.getAppIcon(testApp.appName)
+    // Open the bubble menu and click.
+    simpleAppIcon.openMenu().bubbleMenuItem.click()
+
+    waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
+
+    assertWithMessage("The education must not show for Application bubble")
+        .that(Root.get().bubble.isEducationVisible).isFalse()
+}
+
 private fun waitAndAssertBubbleAppInExpandedState(
     testApp: StandardAppHelper,
     wmHelper: WindowManagerStateHelper,
@@ -252,3 +342,13 @@ private const val FIND_OBJECT_TIMEOUT = 4000L
 private const val SYSUI_PACKAGE = "com.android.systemui"
 private const val RES_ID_BUBBLE_VIEW = "bubble_view"
 private const val RES_ID_BUBBLE_BAR = "taskbar_bubbles"
+
+// TODO(b/396020056): The max number of bubbles is 5. Make the test more flexible
+//  if the max number could be overridden.
+private val bubbleApps = listOf(
+    CalculatorAppHelper(),
+    BrowserAppHelper(),
+    MapsAppHelper(),
+    MessagingAppHelper(),
+    ClockAppHelper(),
+)

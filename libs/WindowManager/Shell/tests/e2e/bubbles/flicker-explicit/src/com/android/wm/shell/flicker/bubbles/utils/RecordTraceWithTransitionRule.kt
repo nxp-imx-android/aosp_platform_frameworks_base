@@ -16,7 +16,6 @@
 
 package com.android.wm.shell.flicker.bubbles.utils
 
-import android.tools.flicker.rules.RemoveAllTasksButHomeRule.Companion.removeAllTasksButHome
 import android.tools.io.Reader
 import android.util.Log
 import org.junit.AssumptionViolatedException
@@ -56,7 +55,7 @@ class RecordTraceWithTransitionRule(
                     errors.add(e)
                 } finally {
                     // In case the crash during transition and test App is not removed.
-                    removeAllTasksButHome()
+                    tearDownAfterTransition()
                 }
 
                 try {
@@ -82,7 +81,6 @@ class RecordTraceWithTransitionRule(
                 Log.e(TAG, "Transition is aborted due to the exception:\n $e")
             }
         }
-        tearDownAfterTransition()
     }
 
     companion object {
