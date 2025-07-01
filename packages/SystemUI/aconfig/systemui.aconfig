@@ -2096,3 +2096,13 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "blur_settings_toggle"
+    namespace: "systemui"
+    description: "Add a settings toggle to enable/disable blur."
+    bug: "418000779"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
