@@ -19989,7 +19989,7 @@ package android.window {
   }
 
   @FlaggedApi("com.android.graphics.surfaceflinger.flags.readback_screenshot") public static final class ScreenCapture.ScreenCaptureParams.Builder {
-    ctor public ScreenCapture.ScreenCaptureParams.Builder(@NonNull android.view.Display);
+    ctor public ScreenCapture.ScreenCaptureParams.Builder(int);
     method @NonNull public android.window.ScreenCapture.ScreenCaptureParams build();
     method @NonNull public android.window.ScreenCapture.ScreenCaptureParams.Builder setCaptureMode(int);
     method @NonNull public android.window.ScreenCapture.ScreenCaptureParams.Builder setPixelFormat(int);
