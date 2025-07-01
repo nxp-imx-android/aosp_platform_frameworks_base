@@ -87,7 +87,7 @@ class ChooserManagerTest {
 
         assertThat(testSubject.getSession(session.token)).isEqualTo(session)
 
-        session.close()
+        session.endSession()
 
         assertThat(testSubject.getSession(session.token)).isNull()
     }

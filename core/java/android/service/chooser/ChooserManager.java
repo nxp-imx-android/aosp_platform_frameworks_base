@@ -40,6 +40,9 @@ import java.util.Objects;
  * <h3>Usage Example:</h3>
  * <pre>{@code
  * ChooserManager chooserManager = context.getSystemService(ChooserManager.class);
+ * if (chooserManager == null) {
+ *     // handle the case when the interactive chooser session functionality is not supported.
+ * }
  *
  * // Construct the sharing intent
  * Intent targetIntent = new Intent(Intent.ACTION_SEND);

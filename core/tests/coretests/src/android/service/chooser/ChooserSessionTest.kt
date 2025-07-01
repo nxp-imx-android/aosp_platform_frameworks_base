@@ -30,6 +30,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import org.junit.Rule
+import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doReturn
@@ -89,7 +90,7 @@ class ChooserSessionTest {
 
         assertThat(session.state).isEqualTo(ChooserSession.STATE_INITIALIZED)
 
-        session.close()
+        session.endSession()
 
         controllerCallback.registerChooserController(chooserController)
 
@@ -201,11 +202,11 @@ class ChooserSessionTest {
         val updatedIntent = Intent(ACTION_CHOOSER)
 
         session.updateIntent(updatedIntent)
-        session.collapse()
+        session.setMinimized(true)
         session.setTargetsEnabled(false)
 
         verify(chooserController) { 1 * { updateIntent(updatedIntent) } }
-        verify(chooserController) { 1 * { collapse() } }
+        verify(chooserController) { 1 * { setMinimized(true) } }
         verify(chooserController) { 1 * { setTargetsEnabled(false) } }
     }
 
@@ -234,8 +235,8 @@ class ChooserSessionTest {
 
     @EnableFlags(Flags.FLAG_INTERACTIVE_CHOOSER)
     @Test
-    fun test_collapseThrowsDeadObjectException_sessionGetsClosed() {
-        testSessionClosedOnDeadObjectException { collapse() }
+    fun test_setMinimizedThrowsDeadObjectException_sessionGetsClosed() {
+        testSessionClosedOnDeadObjectException { setMinimized(true) }
     }
 
     @EnableFlags(Flags.FLAG_INTERACTIVE_CHOOSER)
@@ -249,7 +250,7 @@ class ChooserSessionTest {
     ) {
         val (session, controllerCallback) = prepareChooserSession()
         chooserController.stub {
-            on { collapse() } doThrow DeadObjectException("collapse")
+            on { setMinimized(anyBoolean()) } doThrow DeadObjectException("setMinimized")
             on { setTargetsEnabled(any()) } doThrow DeadObjectException("setTargetsEnabled")
         }
         controllerCallback.registerChooserController(chooserController)
