@@ -38,7 +38,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.function.Supplier;
 
-@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public class SerialService extends ISerialManager.Stub {
     private static final String TAG = "SerialService";
 

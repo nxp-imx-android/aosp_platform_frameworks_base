@@ -245,9 +245,6 @@ android.graphics.text.MeasuredText
 android.graphics.text.PositionedGlyphs
 android.graphics.text.TextRunShaper
 
-android.hardware.SerialManager
-android.hardware.SerialManagerInternal
-
 android.metrics.LogMaker
 
 android.os.AggregateBatteryConsumer
@@ -674,7 +671,6 @@ com.android.modules.utils.ravenwood.RavenwoodHelper
 
 com.android.server.FgThread
 com.android.server.LocalServices
-com.android.server.SerialService
 com.android.server.ServiceThread
 com.android.server.SystemService
 com.android.server.SystemServiceManager
