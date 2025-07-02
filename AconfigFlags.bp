@@ -30,6 +30,7 @@ aconfig_declarations_group {
         "android.app.flags-aconfig-java",
         "android.app.jank.flags-aconfig-java",
         "android.app.ondeviceintelligence-aconfig-java",
+        "android.app.userrecovery.flags-aconfig-java",
         "android.app.smartspace.flags-aconfig-java",
         "android.app.supervision.flags-aconfig-java",
         "android.app.usage.flags-aconfig-java",
@@ -1295,6 +1296,21 @@ aconfig_declarations {
     container: "system",
     srcs: ["core/java/android/net/flags.aconfig"],
     visibility: [":__subpackages__"],
+}
+
+// User Recovery
+aconfig_declarations {
+    name: "android.app.userrecovery.flags-aconfig",
+    exportable: true,
+    package: "android.app.userrecovery.flags",
+    container: "system",
+    srcs: ["core/java/android/app/userrecovery/flags/flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.app.userrecovery.flags-aconfig-java",
+    aconfig_declarations: "android.app.userrecovery.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
 
 // Thread network

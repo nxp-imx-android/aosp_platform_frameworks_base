@@ -18,6 +18,7 @@ package android.content;
 
 import static android.app.appfunctions.flags.Flags.FLAG_ENABLE_APP_FUNCTION_MANAGER;
 import static android.app.ondeviceintelligence.flags.Flags.FLAG_ENABLE_ON_DEVICE_INTELLIGENCE_MODULE;
+import static android.app.userrecovery.flags.Flags.FLAG_ENABLE_USER_RECOVERY_MANAGER;
 import static android.content.flags.Flags.FLAG_ENABLE_BIND_PACKAGE_ISOLATED_PROCESS;
 import static android.security.Flags.FLAG_SECURE_LOCKDOWN;
 
@@ -6297,6 +6298,17 @@ public abstract class Context {
      * @see #getSystemService(String)
      */
     public static final String PERFORMANCE_HINT_SERVICE = "performance_hint";
+
+    /**
+     * Use with {@link #getSystemService(String)} to retrieve an
+     * {@link RecoveryManager} for executing recovery
+     *
+     * @see #getSystemService(String)
+     * @hide
+     */
+    @FlaggedApi(FLAG_ENABLE_USER_RECOVERY_MANAGER)
+    public static final String USER_RECOVERY_SERVICE = "user_recovery";
+
 
     /**
      * Use with {@link #getSystemService(String)} to retrieve a
