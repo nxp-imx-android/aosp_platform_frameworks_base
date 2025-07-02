@@ -145,7 +145,7 @@ constructor(
             StatusBarConnectedDisplays.unsafeAssertInNewMode()
 
             val sbIcon = iconBuilder.createIconView(entry, context)
-            sbIcon.scaleType = ImageView.ScaleType.FIT_CENTER
+            sbIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
             val (normalIconDescriptor, _) = getIconDescriptors(entry)
             setIcon(entry, normalIconDescriptor, sbIcon)
             return sbIcon
@@ -162,12 +162,7 @@ constructor(
         traceSection("IconManager.createIcons") {
             // Construct the status bar icon view.
             val sbIcon = iconBuilder.createIconView(entry)
-            sbIcon.scaleType =
-                if (StatusBarConnectedDisplays.isEnabled) {
-                    ImageView.ScaleType.FIT_CENTER
-                } else {
-                    ImageView.ScaleType.CENTER_INSIDE
-                }
+            sbIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
             val sbChipIcon: StatusBarIconView?
             if (!StatusBarConnectedDisplays.isEnabled) {
                 sbChipIcon = iconBuilder.createIconView(entry)
@@ -293,12 +288,7 @@ constructor(
         traceSection("IconManager.createIcons") {
             // Construct the status bar icon view.
             val sbIcon = iconBuilder.createIconView(entry)
-            sbIcon.scaleType =
-                if (StatusBarConnectedDisplays.isEnabled) {
-                    ImageView.ScaleType.FIT_CENTER
-                } else {
-                    ImageView.ScaleType.CENTER_INSIDE
-                }
+            sbIcon.scaleType = ImageView.ScaleType.CENTER_INSIDE
             val sbChipIcon: StatusBarIconView?
             if (!StatusBarConnectedDisplays.isEnabled) {
                 sbChipIcon = iconBuilder.createIconView(entry)
