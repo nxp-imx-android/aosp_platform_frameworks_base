@@ -157,18 +157,6 @@ public final class SupervisionRecoveryInfo implements Parcelable {
         parcel.writeInt(mState);
     }
 
-    /**
-     * Reads the SupervisionRecoveryInfo object from the given {@link Parcel}.
-     *
-     * @param parcel The {@link Parcel} to read from.
-     */
-    public void readFromParcel(@NonNull Parcel parcel) {
-        mAccountName = Objects.requireNonNull(parcel.readString());
-        mAccountType = Objects.requireNonNull(parcel.readString());
-        mAccountData = parcel.readPersistableBundle(getClass().getClassLoader());
-        mState = parcel.readInt();
-    }
-
     @Override
     public String toString() {
         java.util.StringJoiner joiner = new java.util.StringJoiner(", ", "{", "}");

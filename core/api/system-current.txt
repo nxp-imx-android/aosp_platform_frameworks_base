@@ -2995,7 +2995,6 @@ package android.app.supervision {
     method @NonNull public String getAccountName();
     method @NonNull public String getAccountType();
     method public int getState();
-    method public void readFromParcel(@NonNull android.os.Parcel);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.supervision.SupervisionRecoveryInfo> CREATOR;
     field public static final String EXTRA_SUPERVISION_RECOVERY_INFO = "android.app.supervision.extra.SUPERVISION_RECOVERY_INFO";
