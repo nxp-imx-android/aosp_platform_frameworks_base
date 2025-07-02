@@ -1121,7 +1121,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         if (app != null && mService.mHomeProcess != app) {
             scheduleStartHome("homeChanged");
             mService.mHomeProcess = app;
-            mService.mProcessStateController.setHomeProcessAsync(app);
+            mService.mActivityStateUpdater.setHomeProcessAsync(app);
         }
     }
 
