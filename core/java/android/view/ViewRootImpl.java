@@ -6426,7 +6426,7 @@ public final class ViewRootImpl implements ViewParent,
         return mPointerCapture;
     }
 
-    void requestPointerCapture(boolean enabled) {
+    void requestPointerCapture(@View.PointerCaptureMode int mode) {
         final IBinder inputToken = getInputToken();
         if (inputToken == null) {
             Log.e(mTag, "No input channel to request Pointer Capture.");
@@ -6437,7 +6437,7 @@ public final class ViewRootImpl implements ViewParent,
             Log.e(mTag, "Missing InputManager; cannot request pointer capture.");
             return;
         }
-        inputManager.requestPointerCapture(inputToken, enabled);
+        inputManager.requestPointerCapture(inputToken, mode);
     }
 
     private void handlePointerCaptureChanged(boolean hasCapture) {

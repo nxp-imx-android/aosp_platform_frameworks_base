@@ -236,3 +236,11 @@ flag {
     description: "Disable settings pages for virtual devices created using VDM or InputManager"
     bug: "402596982"
 }
+
+flag {
+    name: "pointer_capture_modes"
+    namespace: "input"
+    description: "Enable pointer capture modes with different touchpad behaviours, and default to relative events from captured touchpads"
+    is_exported: true
+    bug: "403531245"
+}

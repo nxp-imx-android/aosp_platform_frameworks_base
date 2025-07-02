@@ -59,6 +59,8 @@ import android.view.InputMonitor;
 import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.PointerIcon;
+import android.view.View;
+import android.view.View.PointerCaptureMode;
 import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodSubtype;
 
@@ -1730,9 +1732,17 @@ public final class InputManagerGlobal {
     /**
      * @see android.view.View#requestPointerCapture()
      */
-    public void requestPointerCapture(IBinder windowToken, boolean enable) {
+    public void requestPointerCapture(@NonNull IBinder windowToken, @PointerCaptureMode int mode) {
+        // We need to check the mode is valid here too, since the binder call is oneway, so the
+        // check in InputManagerService#requestPointerCapture would not result in the exception
+        // being propagated to the caller.
+        if (mode != View.POINTER_CAPTURE_MODE_UNCAPTURED
+                && mode != View.POINTER_CAPTURE_MODE_ABSOLUTE) {
+            throw new IllegalArgumentException("Invalid pointer capture mode " + mode);
+        }
+
         try {
-            mIm.requestPointerCapture(windowToken, enable);
+            mIm.requestPointerCapture(windowToken, mode);
         } catch (RemoteException ex) {
             throw ex.rethrowFromSystemServer();
         }

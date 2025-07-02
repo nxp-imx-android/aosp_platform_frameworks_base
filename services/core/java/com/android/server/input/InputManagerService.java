@@ -128,6 +128,7 @@ import android.view.PointerIcon;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.VerifiedInputEvent;
+import android.view.View;
 import android.view.WindowManager;
 import android.view.WindowManagerPolicyConstants;
 import android.view.inputmethod.InputMethodInfo;
@@ -1369,10 +1370,14 @@ public class InputManagerService extends IInputManager.Stub
     }
 
     @Override
-    public void requestPointerCapture(@NonNull IBinder inputChannelToken, boolean enabled) {
+    public void requestPointerCapture(@NonNull IBinder inputChannelToken, int mode) {
         Objects.requireNonNull(inputChannelToken, "inputChannelToken must not be null");
+        if (mode != View.POINTER_CAPTURE_MODE_UNCAPTURED
+                && mode != View.POINTER_CAPTURE_MODE_ABSOLUTE) {
+            throw new IllegalArgumentException("Invalid pointer capture mode " + mode);
+        }
 
-        mNative.requestPointerCapture(inputChannelToken, enabled);
+        mNative.requestPointerCapture(inputChannelToken, mode);
     }
 
     public void setInputDispatchMode(boolean enabled, boolean frozen) {
