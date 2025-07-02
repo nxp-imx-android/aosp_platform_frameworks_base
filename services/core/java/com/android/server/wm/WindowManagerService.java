@@ -3623,16 +3623,10 @@ public class WindowManagerService extends IWindowManager.Stub
     private void dispatchKeyguardLockedState() {
         mH.post(() -> {
             final boolean isKeyguardLocked = mPolicy.isKeyguardShowing();
-            if (mFlags.mDispatchFirstKeyguardLockedState) {
-                // Ensure we don't skip the call for the first dispatch
-                if (mFirstKeyguardLockedStateDispatched
-                        && mDispatchedKeyguardLockedState == isKeyguardLocked) {
-                    return;
-                }
-            } else {
-                if (mDispatchedKeyguardLockedState == isKeyguardLocked) {
-                    return;
-                }
+            // Ensure we don't skip the call for the first dispatch
+            if (mFirstKeyguardLockedStateDispatched
+                    && mDispatchedKeyguardLockedState == isKeyguardLocked) {
+                return;
             }
             final int n = mKeyguardLockedStateListeners.beginBroadcast();
             for (int i = 0; i < n; i++) {
