@@ -264,6 +264,64 @@ public class ProtoLogConfigurationServiceTest {
     }
 
     @Test
+    public void sendEnableLoggingToLogcatToAllClientsWhenNoGroupIsProvided()
+            throws RemoteException {
+        final var service = new ProtoLogConfigurationServiceImpl();
+
+        final RegisterClientArgs args = new RegisterClientArgs();
+        args.groups = new String[] { TEST_GROUP };
+        args.groupsDefaultLogcatStatus = new boolean[] { false };
+        service.registerClient(mMockClient, args);
+
+        final RegisterClientArgs secondClientArgs = new RegisterClientArgs();
+        secondClientArgs.groups = new String[] { OTHER_TEST_GROUP };
+        secondClientArgs.groupsDefaultLogcatStatus = new boolean[] { false };
+        service.registerClient(mSecondMockClient, secondClientArgs);
+
+        Truth.assertThat(service.isLoggingToLogcat(TEST_GROUP)).isFalse();
+        Truth.assertThat(service.isLoggingToLogcat(OTHER_TEST_GROUP)).isFalse();
+
+        service.enableProtoLogToLogcat(Mockito.mock(PrintWriter.class));
+
+        Truth.assertThat(service.isLoggingToLogcat(TEST_GROUP)).isTrue();
+        Truth.assertThat(service.isLoggingToLogcat(OTHER_TEST_GROUP)).isTrue();
+
+        Mockito.verify(mMockClient).toggleLogcat(eq(true),
+                Mockito.argThat(it -> it.length == 1 && it[0].equals(TEST_GROUP)));
+        Mockito.verify(mSecondMockClient).toggleLogcat(eq(true),
+                Mockito.argThat(it -> it.length == 1 && it[0].equals(OTHER_TEST_GROUP)));
+    }
+
+    @Test
+    public void sendDisableLoggingToLogcatToAllClientsWhenNoGroupIsProvided()
+            throws RemoteException {
+        final ProtoLogConfigurationService service = new ProtoLogConfigurationServiceImpl();
+
+        final RegisterClientArgs args = new RegisterClientArgs();
+        args.groups = new String[] { TEST_GROUP };
+        args.groupsDefaultLogcatStatus = new boolean[] { true };
+        service.registerClient(mMockClient, args);
+
+        final RegisterClientArgs secondClientArgs = new RegisterClientArgs();
+        secondClientArgs.groups = new String[] { OTHER_TEST_GROUP };
+        secondClientArgs.groupsDefaultLogcatStatus = new boolean[] { true };
+        service.registerClient(mSecondMockClient, secondClientArgs);
+
+        Truth.assertThat(service.isLoggingToLogcat(TEST_GROUP)).isTrue();
+        Truth.assertThat(service.isLoggingToLogcat(OTHER_TEST_GROUP)).isTrue();
+
+        service.disableProtoLogToLogcat(Mockito.mock(PrintWriter.class));
+
+        Truth.assertThat(service.isLoggingToLogcat(TEST_GROUP)).isFalse();
+        Truth.assertThat(service.isLoggingToLogcat(OTHER_TEST_GROUP)).isFalse();
+
+        Mockito.verify(mMockClient).toggleLogcat(eq(false),
+                Mockito.argThat(it -> it.length == 1 && it[0].equals(TEST_GROUP)));
+        Mockito.verify(mSecondMockClient).toggleLogcat(eq(false),
+                Mockito.argThat(it -> it.length == 1 && it[0].equals(OTHER_TEST_GROUP)));
+    }
+
+    @Test
     public void handlesToggleToLogcatBeforeClientIsRegistered() throws RemoteException {
         final ProtoLogConfigurationService service = new ProtoLogConfigurationServiceImpl();
 
