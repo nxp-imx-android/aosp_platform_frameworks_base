@@ -843,7 +843,8 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Aktivizo"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Aktiv - Në bazë të fytyrës"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Vendos në heshtje dhe grupo"</string>
-    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"Përdor organizuesin e njoftimeve"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Për <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Oferta, veçori të reja etj."</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Historitë kryesore, artikuj editorialë etj."</string>
@@ -852,8 +853,7 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"Aktivizo"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Bisedat e tua më të gjata tani mund të përmblidhen për të të dhënë përmbledhje të shpejta"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"Organizuesi i njoftimeve vendos në paketë dhe në heshtje njoftimet me përparësi më të ulët"</string>
-    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
-    <skip />
+    <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# njoftim}other{# njoftime}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"U krye"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Zbato"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Çaktivizo"</string>
@@ -1095,6 +1095,16 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Modifiko renditjen e \"Cilësimeve të shpejta\"."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menyja e energjisë"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Faqja <xliff:g id="ID_1">%1$d</xliff:g> nga <xliff:g id="ID_2">%2$d</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ekrani i kyçjes"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Po fiket…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Shiko hapat për kujdesin"</string>
@@ -1666,4 +1676,8 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Rrëshqit shpejt nga lart majtas për të hapur njoftimet"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Rrëshqit shpejt nga lart djathtas për të hapur \"Cilësimet e shpejta\""</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Prapa"</string>
+    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <skip />
+    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <skip />
 </resources>
