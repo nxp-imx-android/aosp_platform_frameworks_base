@@ -1046,7 +1046,7 @@ public class OomAdjusterImpl extends OomAdjuster {
         // Need to check shouldScheduleLikeTopApp otherwise, there will be too many recompute which
         // leads to OOM.
         return !(cr.hasFlag(Context.BIND_SCHEDULE_LIKE_TOP_APP)
-                && !host.mState.shouldScheduleLikeTopApp());
+                && !host.mState.getScheduleLikeTopApp());
     }
 
     private static boolean isSandboxAttributedConnection(ConnectionRecord cr, ProcessRecord host) {
@@ -1222,7 +1222,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 state.setSystemNoUi(false);
                 state.setCurrentSchedulingGroup(SCHED_GROUP_TOP_APP);
                 state.setAdjType("pers-top-activity");
-            } else if (state.hasTopUi()) {
+            } else if (state.getHasTopUi()) {
                 // sched group/proc state adjustment is below
                 state.setSystemNoUi(false);
                 state.setAdjType("pers-top-ui");
@@ -1401,7 +1401,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 // short-fgs can't start FGS from the background.
                 newProcState = PROCESS_STATE_FOREGROUND_SERVICE;
 
-            } else if (state.hasOverlayUi()) {
+            } else if (state.getHasOverlayUi()) {
                 adjType = "has-overlay-ui";
                 newAdj = PERCEPTIBLE_APP_ADJ;
                 newProcState = PROCESS_STATE_IMPORTANT_FOREGROUND;
@@ -1610,7 +1610,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                                 "Raise procstate to started service: " + app);
                     }
                 }
-                if (!s.mKeepWarming && state.hasShownUi() && !isHomeProcess(app)) {
+                if (!s.mKeepWarming && state.getHasShownUi() && !isHomeProcess(app)) {
                     // If this process has shown some UI, let it immediately
                     // go to the LRU list because it may be pretty heavy with
                     // UI stuff.  We'll tag it with a label just to help
@@ -1952,7 +1952,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 }
                 // Not doing bind OOM management, so treat
                 // this guy more like a started service.
-                if (state.hasShownUi() && !isHomeProcess(app)) {
+                if (state.getHasShownUi() && !isHomeProcess(app)) {
                     // If this process has shown some UI, let it immediately
                     // go to the LRU list because it may be pretty heavy with
                     // UI stuff.  We'll tag it with a label just to help
@@ -1988,7 +1988,7 @@ public class OomAdjusterImpl extends OomAdjuster {
                 // is less important than a state that can be actively running, then we don't
                 // care about the binding as much as we care about letting this process get into
                 // the LRU list to be killed and restarted if needed for memory.
-                if (state.hasShownUi() && !isHomeProcess(app)
+                if (state.getHasShownUi() && !isHomeProcess(app)
                         && clientAdj > CACHING_UI_SERVICE_CLIENT_ADJ_THRESHOLD) {
                     if (adj >= CACHED_APP_MIN_ADJ) {
                         adjType = "cch-bound-ui-services";
@@ -2352,7 +2352,7 @@ public class OomAdjusterImpl extends OomAdjuster {
 
         String adjType = null;
         if (adj > clientAdj) {
-            if (state.hasShownUi() && !isHomeProcess(app)
+            if (state.getHasShownUi() && !isHomeProcess(app)
                     && clientAdj > PERCEPTIBLE_APP_ADJ) {
                 adjType = "cch-ui-provider";
             } else {

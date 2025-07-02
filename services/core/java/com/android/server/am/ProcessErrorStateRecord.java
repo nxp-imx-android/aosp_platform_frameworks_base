@@ -757,7 +757,7 @@ class ProcessErrorStateRecord {
         // several places in the system server.
         return mApp.isInterestingToUserLocked()
                 || (mApp.info != null && "com.android.systemui".equals(mApp.info.packageName))
-                || (mApp.mState.hasTopUi() || mApp.mState.hasOverlayUi());
+                || (mApp.mState.getHasTopUi() || mApp.mState.getHasOverlayUi());
     }
 
     private boolean getShowBackground() {

@@ -970,14 +970,14 @@ public abstract class OomAdjuster {
                     state.setCurAdj(nextPreviousAppAdj);
                     nextPreviousAppAdj = Math.min(nextPreviousAppAdj + 1, PREVIOUS_APP_MAX_ADJ);
                 } else if (!app.isKilledByAm() && app.getThread() != null && (curAdj >= UNKNOWN_ADJ
-                            || (state.hasShownUi() && curAdj >= CACHED_APP_MIN_ADJ))) {
+                            || (state.getHasShownUi() && curAdj >= CACHED_APP_MIN_ADJ))) {
                     final ProcessServiceRecord psr = app.mServices;
                     int targetAdj = CACHED_APP_MIN_ADJ;
 
                     if (opt != null && opt.isFreezeExempt()) {
                         // BIND_WAIVE_PRIORITY and the like get oom_adj 900
                         targetAdj += 0;
-                    } else if (state.hasShownUi() && uiTargetAdj < uiTierMaxAdj) {
+                    } else if (state.getHasShownUi() && uiTargetAdj < uiTierMaxAdj) {
                         // The most recent UI-showing apps get [910, 910 + ui tier size).
                         targetAdj += uiTargetAdj++;
                     } else if ((state.getSetAdj() >= CACHED_APP_MIN_ADJ)
@@ -1886,7 +1886,7 @@ public abstract class OomAdjuster {
         // restrictions on screen off
         if (state.getCurProcState() >= PROCESS_STATE_BOUND_FOREGROUND_SERVICE
                 && !isDeviceFullyAwake()
-                && !state.shouldScheduleLikeTopApp()) {
+                && !state.getScheduleLikeTopApp()) {
             if (schedGroup > SCHED_GROUP_RESTRICTED) {
                 schedGroup = SCHED_GROUP_RESTRICTED;
             }
@@ -2105,7 +2105,7 @@ public abstract class OomAdjuster {
         final int curSchedGroup = state.getCurrentSchedulingGroup();
         if (app.getWaitingToKill() != null && !app.mReceivers.isReceivingBroadcast()
                 && ActivityManager.isProcStateBackground(state.getCurProcState())
-                && !state.hasStartedServices()) {
+                && !state.getHasStartedServices()) {
             app.killLocked(app.getWaitingToKill(), ApplicationExitInfo.REASON_USER_REQUESTED,
                     ApplicationExitInfo.SUBREASON_REMOVE_TASK, true);
             success = false;
@@ -2183,8 +2183,8 @@ public abstract class OomAdjuster {
                 }
             }
         }
-        if (state.hasRepForegroundActivities() != state.hasForegroundActivities()) {
-            state.setRepForegroundActivities(state.hasForegroundActivities());
+        if (state.getHasRepForegroundActivities() != state.getHasForegroundActivities()) {
+            state.setRepForegroundActivities(state.getHasForegroundActivities());
             changes |= ActivityManagerService.ProcessChangeItem.CHANGE_ACTIVITIES;
         }
 
@@ -2252,9 +2252,9 @@ public abstract class OomAdjuster {
                             mService.mProcessStats.getMemFactorLocked());
                 }
             } else {
-                state.setProcStateChanged(true);
+                state.setHasProcStateChanged(true);
             }
-        } else if (state.hasReportedInteraction()) {
+        } else if (state.getHasReportedInteraction()) {
             final boolean fgsInteractionChangeEnabled = state.getCachedCompatChange(
                     CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME);
             final long interactionThreshold = fgsInteractionChangeEnabled
@@ -2298,11 +2298,11 @@ public abstract class OomAdjuster {
             if (DEBUG_PROCESS_OBSERVERS) Slog.i(TAG_PROCESS_OBSERVERS,
                     "Changes in " + app + ": " + changes);
             mProcessList.enqueueProcessChangeItemLocked(app.getPid(), app.info.uid,
-                    changes, state.hasRepForegroundActivities());
+                    changes, state.getHasRepForegroundActivities());
             if (DEBUG_PROCESS_OBSERVERS) Slog.i(TAG_PROCESS_OBSERVERS,
                     "Enqueued process change item for "
                             + app.toShortString() + ": changes=" + changes
-                            + " foreground=" + state.hasRepForegroundActivities()
+                            + " foreground=" + state.getHasRepForegroundActivities()
                             + " type=" + state.getAdjType() + " source=" + state.getAdjSource()
                             + " target=" + state.getAdjTarget());
         }
@@ -2346,7 +2346,7 @@ public abstract class OomAdjuster {
         final int prevAdj = state.getCurRawAdj();
         // If the process has been marked as foreground, it is starting as the top app (with
         // Zygote#START_AS_TOP_APP_ARG), so boost the thread priority of its default UI thread.
-        if (state.hasForegroundActivities()) {
+        if (state.getHasForegroundActivities()) {
             try {
                 // The priority must be the same as how does {@link #applyOomAdjLSP} set for
                 // {@link SCHED_GROUP_TOP_APP}. We don't check render thread because it
@@ -2430,7 +2430,7 @@ public abstract class OomAdjuster {
                 ? mConstants.USAGE_STATS_INTERACTION_INTERVAL_POST_S
                 : mConstants.USAGE_STATS_INTERACTION_INTERVAL_PRE_S;
         if (isInteraction
-                && (!state.hasReportedInteraction()
+                && (!state.getHasReportedInteraction()
                     || (nowElapsed - state.getInteractionEventTime()) > interactionThreshold)) {
             state.setInteractionEventTime(nowElapsed);
             String[] packages = app.getPackageList();
@@ -2441,7 +2441,7 @@ public abstract class OomAdjuster {
                 }
             }
         }
-        state.setReportedInteraction(isInteraction);
+        state.setHasReportedInteraction(isInteraction);
         if (!isInteraction) {
             state.setInteractionEventTime(0);
         }
