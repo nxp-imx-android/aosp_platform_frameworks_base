@@ -20,9 +20,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.hardware.vibrator.IVibrationSession;
 import android.hardware.vibrator.IVibrator;
-import android.hardware.vibrator.IVibratorCallback;
 import android.hardware.vibrator.IVibratorManager;
-import android.hardware.vibrator.VibrationSessionConfig;
 import android.os.Binder;
 import android.os.DeadObjectException;
 import android.os.IBinder;
@@ -37,7 +35,6 @@ import android.util.SparseArray;
 import com.android.internal.annotations.GuardedBy;
 import com.android.server.vibrator.VintfUtils.VintfSupplier;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,14 +47,14 @@ class VintfHalVibratorManager {
     private static final int DEFAULT_VIBRATOR_ID = 0;
 
     /** Create {@link HalVibratorManager} based on declared services on device. */
-    static HalVibratorManager createHalVibratorManager() {
+    static HalVibratorManager createHalVibratorManager(HalNativeHandler nativeHandler) {
         // TODO(b/422944962): Replace this with Vintf HalVibrator
         IntFunction<HalVibrator> vibratorFactory = VibratorController::new;
 
         if (ServiceManager.isDeclared(IVibratorManager.DESCRIPTOR + "/default")) {
             Slog.v(TAG, "Loading default IVibratorManager service.");
-            return new DefaultHalVibratorManager(
-                    new DefaultVibratorManagerSupplier(), vibratorFactory);
+            return new DefaultHalVibratorManager(new DefaultVibratorManagerSupplier(),
+                    nativeHandler, vibratorFactory);
         }
         if (ServiceManager.isDeclared(IVibrator.DESCRIPTOR + "/default")) {
             Slog.v(TAG, "Loading default IVibrator service.");
@@ -88,10 +85,34 @@ class VintfHalVibratorManager {
     static final class DefaultHalVibratorManager implements HalVibratorManager {
         private static final String TAG = "DefaultHalVibratorManager";
 
+        /** Wrapper for native callbacks to keep track of ongoing vibration sessions. */
+        private final class CallbacksWrapper implements Callbacks {
+            private final Callbacks mDelegate;
+
+            CallbacksWrapper(Callbacks delegate) {
+                mDelegate = delegate;
+            }
+
+            @Override
+            public void onSyncedVibrationComplete(long vibrationId) {
+                mDelegate.onSyncedVibrationComplete(vibrationId);
+            }
+
+            @Override
+            public void onVibrationSessionComplete(long sessionId) {
+                removeSession(sessionId);
+                mDelegate.onVibrationSessionComplete(sessionId);
+            }
+        }
+
         private final Object mLock = new Object();
         @GuardedBy("mLock")
         private final LongSparseArray<IVibrationSession> mOngoingSessions = new LongSparseArray<>();
+        @GuardedBy("mLock")
+        private final LongSparseArray<IBinder.DeathRecipient> mSessionDeathRecipients =
+                new LongSparseArray<>();
         private final VintfSupplier<IVibratorManager> mHalSupplier;
+        private final HalNativeHandler mNativeHandler;
         private final IntFunction<HalVibrator> mVibratorFactory;
         private final SparseArray<HalVibrator> mVibrators = new SparseArray<>();
 
@@ -101,14 +122,16 @@ class VintfHalVibratorManager {
         private volatile int[] mVibratorIds = new int[0];
 
         DefaultHalVibratorManager(VintfSupplier<IVibratorManager> supplier,
-                IntFunction<HalVibrator> vibratorFactory) {
+                HalNativeHandler nativeHandler, IntFunction<HalVibrator> vibratorFactory) {
             mHalSupplier = supplier;
+            mNativeHandler = nativeHandler;
             mVibratorFactory = vibratorFactory;
         }
 
         @Override
         public void init(@NonNull Callbacks cb, @NonNull HalVibrator.Callbacks vibratorCb) {
-            mCallbacks = cb;
+            mCallbacks = new CallbacksWrapper(cb);
+            mNativeHandler.init(mCallbacks, vibratorCb);
 
             // Load vibrator hardware info. The vibrator ids and manager capabilities are loaded
             // once and assumed unchanged for the lifecycle of this service. Each vibrator can still
@@ -177,12 +200,14 @@ class VintfHalVibratorManager {
                 Slog.w(TAG, "No capability to synchronize vibrations, ignoring trigger request.");
                 return false;
             }
-            final IVibratorCallback callback =
-                    hasCapability(IVibratorManager.CAP_TRIGGER_CALLBACK)
-                            ? new SyncedVibrationCallback(this, vibrationId)
-                            : null;
+            if (hasCapability(IVibratorManager.CAP_TRIGGER_CALLBACK)) {
+                // Delegate trigger with callback to native, to avoid creating a new callback
+                // instance for each call, overloading the GC.
+                return mNativeHandler.triggerSyncedWithCallback(vibrationId);
+            }
+            // Trigger callback not supported, avoid unnecessary JNI round trip.
             return VintfUtils.runNoThrow(mHalSupplier,
-                    hal -> hal.triggerSynced(callback),
+                    hal -> hal.triggerSynced(null),
                     e -> Slog.e(TAG, "Error triggering synced vibration " + vibrationId, e));
         }
 
@@ -203,19 +228,33 @@ class VintfHalVibratorManager {
                 Slog.w(TAG, "No capability to start sessions, ignoring start session request.");
                 return false;
             }
-            final IVibratorCallback callback = new SessionCallback(this, sessionId);
-            VibrationSessionConfig config = new VibrationSessionConfig();
-            Optional<IVibrationSession> session = VintfUtils.getNoThrow(mHalSupplier,
-                    hal -> hal.startSession(vibratorIds, config, callback),
-                    e -> Slog.e(TAG, "Error starting vibration session " + sessionId
-                            + " on vibrators " + Arrays.toString(vibratorIds), e));
-            if (session.isPresent()) {
-                synchronized (mLock) {
-                    mOngoingSessions.put(sessionId, session.get());
-                }
-                return true;
+            // Delegate start session with callback to native, to avoid creating a new callback
+            // instance for each call, overloading the GC.
+            IVibrationSession session = mNativeHandler.startSessionWithCallback(
+                    sessionId, vibratorIds);
+            if (session == null) {
+                Slog.e(TAG, "Error starting session " + sessionId
+                        + " for vibrators " + Arrays.toString(vibratorIds));
+                return false;
             }
-            return false;
+            // Use same callback from death recipient to remove session and notify client.
+            IBinder.DeathRecipient deathRecipient =
+                    () -> mCallbacks.onVibrationSessionComplete(sessionId);
+            try {
+                IBinder sessionToken = session.asBinder();
+                Binder.allowBlocking(sessionToken); // Required to trigger close/abort methods.
+                sessionToken.linkToDeath(deathRecipient, 0);
+            } catch (RemoteException e) {
+                Slog.e(TAG, "Unable to register DeathRecipient for session " + sessionId, e);
+                deathRecipient = null;
+            }
+            synchronized (mLock) {
+                mOngoingSessions.put(sessionId, session);
+                if (deathRecipient != null) {
+                    mSessionDeathRecipients.put(sessionId, deathRecipient);
+                }
+            }
+            return true;
         }
 
         @Override
@@ -229,7 +268,8 @@ class VintfHalVibratorManager {
                 session = mOngoingSessions.get(sessionId);
             }
             if (session == null) {
-                Slog.w(TAG, "No session with id " + sessionId + " to end, ignoring request.");
+                Slog.w(TAG, "Error ending session " + sessionId + " with abort=" + shouldAbort
+                        + ", session not found");
                 return false;
             }
             try {
@@ -289,8 +329,20 @@ class VintfHalVibratorManager {
         }
 
         private void removeSession(long sessionId) {
+            IVibrationSession session;
+            IBinder.DeathRecipient deathRecipient;
             synchronized (mLock) {
+                session = mOngoingSessions.get(sessionId);
                 mOngoingSessions.remove(sessionId);
+                deathRecipient = mSessionDeathRecipients.get(sessionId);
+                mSessionDeathRecipients.remove(sessionId);
+            }
+            if (session != null && deathRecipient != null) {
+                try {
+                    session.asBinder().unlinkToDeath(deathRecipient, 0);
+                } catch (Exception e) {
+                    Slog.e(TAG, "Unable to remove DeathRecipient for session " + sessionId, e);
+                }
             }
         }
 
@@ -324,73 +376,6 @@ class VintfHalVibratorManager {
                 names.add("START_SESSIONS");
             }
             return names.toArray(new String[names.size()]);
-        }
-
-        /** Provides {@link IVibratorCallback} without references to local instances. */
-        private static final class SyncedVibrationCallback extends IVibratorCallback.Stub {
-            private final WeakReference<DefaultHalVibratorManager> mManagerRef;
-            private final long mVibrationId;
-
-            SyncedVibrationCallback(DefaultHalVibratorManager manager, long vibrationId) {
-                mManagerRef = new WeakReference<>(manager);
-                mVibrationId = vibrationId;
-            }
-
-            @Override
-            public void onComplete() {
-                DefaultHalVibratorManager manager = mManagerRef.get();
-                if (manager == null) {
-                    return;
-                }
-                Callbacks callbacks = manager.mCallbacks;
-                if (callbacks != null) {
-                    callbacks.onSyncedVibrationComplete(mVibrationId);
-                }
-            }
-
-            @Override
-            public int getInterfaceVersion() {
-                return IVibratorCallback.VERSION;
-            }
-
-            @Override
-            public String getInterfaceHash() {
-                return IVibratorCallback.HASH;
-            }
-        }
-
-        /** Provides {@link IVibratorCallback} without references to local instances. */
-        private static final class SessionCallback extends IVibratorCallback.Stub {
-            private final WeakReference<DefaultHalVibratorManager> mManagerRef;
-            private final long mSessionId;
-
-            SessionCallback(DefaultHalVibratorManager manager, long sessionId) {
-                mManagerRef = new WeakReference<>(manager);
-                mSessionId = sessionId;
-            }
-
-            @Override
-            public void onComplete() {
-                DefaultHalVibratorManager manager = mManagerRef.get();
-                if (manager == null) {
-                    return;
-                }
-                manager.removeSession(mSessionId);
-                Callbacks callbacks = manager.mCallbacks;
-                if (callbacks != null) {
-                    callbacks.onVibrationSessionComplete(mSessionId);
-                }
-            }
-
-            @Override
-            public int getInterfaceVersion() {
-                return IVibratorCallback.VERSION;
-            }
-
-            @Override
-            public String getInterfaceHash() {
-                return IVibratorCallback.HASH;
-            }
         }
     }
 

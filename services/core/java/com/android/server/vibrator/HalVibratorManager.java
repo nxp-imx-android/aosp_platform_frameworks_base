@@ -20,10 +20,16 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.util.IndentingPrintWriter;
 
+import com.android.tools.r8.keepanno.annotations.KeepItemKind;
+import com.android.tools.r8.keepanno.annotations.UsedByNative;
+
 /** Handles interactions with a vibrator manager HAL. */
 interface HalVibratorManager {
 
     /** Callbacks from the vibrator manager HAL. */
+    @UsedByNative(
+            description = "Called from JNI in jni/VibratorManagerService.cpp",
+            kind = KeepItemKind.CLASS_AND_MEMBERS)
     interface Callbacks {
         /** Callback triggered when synced vibration is complete. */
         void onSyncedVibrationComplete(long vibrationId);

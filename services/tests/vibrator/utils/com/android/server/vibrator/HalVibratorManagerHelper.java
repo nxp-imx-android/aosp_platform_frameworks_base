@@ -75,8 +75,9 @@ public class HalVibratorManagerHelper {
 
     /** Create new {@link DefaultHalVibratorManager} for testing. */
     public DefaultHalVibratorManager newDefaultVibratorManager() {
-        FakeVibratorManager fakeManager = new FakeVibratorManager();
-        return new DefaultHalVibratorManager(new FakeVibratorManagerSupplier(fakeManager),
+        return new DefaultHalVibratorManager(
+                new FakeVibratorManagerSupplier(new FakeVibratorManager()),
+                new FakeHalNativeHandler(),
                 id -> mVibratorHelpers.get(id).newVibratorController(id));
     }
 
@@ -250,8 +251,8 @@ public class HalVibratorManagerHelper {
             mStartSessionCount++;
             if (hasCapability(IVibratorManager.CAP_START_SESSIONS)
                     && areVibratorIdsValid(vibratorIds)) {
-                mLastSession = new FakeVibrationSession(new FakeVibratorCallback(
-                        () -> mCallbacks.onVibrationSessionComplete(sessionId)));
+                mLastSession = new FakeVibrationSession(
+                        () -> mCallbacks.onVibrationSessionComplete(sessionId));
                 return true;
             }
             return false;
@@ -279,6 +280,46 @@ public class HalVibratorManagerHelper {
         public void clearSessions() {
             mClearSessionsCount++;
             endLastSessionAbruptly();
+        }
+    }
+
+    /** Provides fake implementation of {@link HalNativeHandler} for testing. */
+    public final class FakeHalNativeHandler implements HalNativeHandler {
+        private HalVibratorManager.Callbacks mManagerCallbacks;
+
+        @Override
+        public void init(@NonNull HalVibratorManager.Callbacks managerCallbacks,
+                @NonNull HalVibrator.Callbacks vibratorCallbacks) {
+            mManagerCallbacks = managerCallbacks;
+        }
+
+        @Override
+        public boolean triggerSyncedWithCallback(long vibrationId) {
+            if (mTriggerSyncedShouldFail) {
+                return false;
+            }
+            mTriggerSyncedCount++;
+            if (hasCapability(IVibratorManager.CAP_SYNC)) {
+                mLastTriggerSyncedCallback = new FakeVibratorCallback(
+                        () -> mManagerCallbacks.onSyncedVibrationComplete(vibrationId));
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public IVibrationSession startSessionWithCallback(long sessionId, int[] vibratorIds) {
+            if (mStartSessionShouldFail) {
+                return null;
+            }
+            mStartSessionCount++;
+            if (hasCapability(IVibratorManager.CAP_START_SESSIONS)
+                    && areVibratorIdsValid(vibratorIds)) {
+                mLastSession = new FakeVibrationSession(
+                        () -> mManagerCallbacks.onVibrationSessionComplete(sessionId));
+                return mLastSession;
+            }
+            return null;
         }
     }
 
@@ -315,14 +356,17 @@ public class HalVibratorManagerHelper {
 
         @Override
         public void triggerSynced(IVibratorCallback callback) throws RemoteException {
+            if (callback != null) {
+                throw new IllegalArgumentException("HAL java client should not receive callbacks");
+            }
             if (mTriggerSyncedShouldFail) {
                 throw new RemoteException();
             }
             mTriggerSyncedCount++;
-            mLastTriggerSyncedCallback = callback;
             if (!hasCapability(IVibratorManager.CAP_SYNC)) {
                 throw new UnsupportedOperationException();
             }
+            mLastTriggerSyncedCallback = callback;
         }
 
         @Override
@@ -336,18 +380,8 @@ public class HalVibratorManagerHelper {
         @Override
         public IVibrationSession startSession(int[] vibratorIds, VibrationSessionConfig config,
                 IVibratorCallback callback) throws RemoteException {
-            if (mStartSessionShouldFail) {
-                throw new RemoteException();
-            }
-            mStartSessionCount++;
-            if (!hasCapability(IVibratorManager.CAP_START_SESSIONS)) {
-                throw new UnsupportedOperationException();
-            }
-            if (!areVibratorIdsValid(vibratorIds)) {
-                throw new IllegalArgumentException();
-            }
-            mLastSession = new FakeVibrationSession(callback);
-            return mLastSession;
+            throw new UnsupportedOperationException(
+                    "HAL java client should not be used to start sessions");
         }
 
         @Override
@@ -372,10 +406,17 @@ public class HalVibratorManagerHelper {
 
     /** Provides fake implementation of {@link IVibrationSession} for testing. */
     public final class FakeVibrationSession extends IVibrationSession.Stub {
+        private final IBinder mToken;
         private final IVibratorCallback mCallback;
 
-        public FakeVibrationSession(IVibratorCallback callback) {
-            mCallback = callback;
+        public FakeVibrationSession(Runnable callback) {
+            mToken = new Binder();
+            mCallback = new FakeVibratorCallback(callback);
+        }
+
+        @Override
+        public IBinder asBinder() {
+            return mToken;
         }
 
         @Override

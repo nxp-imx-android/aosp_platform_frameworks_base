@@ -88,6 +88,8 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.vibrator.VibrationSession.CallerInfo;
 import com.android.server.vibrator.VibrationSession.DebugInfo;
 import com.android.server.vibrator.VibrationSession.Status;
+import com.android.tools.r8.keepanno.annotations.KeepItemKind;
+import com.android.tools.r8.keepanno.annotations.UsedByNative;
 
 import libcore.util.NativeAllocationRegistry;
 
@@ -108,6 +110,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /** System implementation of {@link IVibratorManagerService}. */
+@UsedByNative(
+        description = "Called from JNI in jni/VibratorManagerService.cpp",
+        kind = KeepItemKind.CLASS_AND_MEMBERS)
 public class VibratorManagerService extends IVibratorManagerService.Stub {
     private static final String TAG = "VibratorManagerService";
     private static final String EXTERNAL_VIBRATOR_SERVICE = "external_vibrator_service";
@@ -233,10 +238,22 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 }
             };
 
-    // TODO(b/409002423): remove the native methods once remove_hidl_support flag removed
-    static native long nativeInit(HalVibratorManager.Callbacks callback);
+    /** Create native objects and keep weak references to global callbacks. */
+    private static native long nativeNewInit(HalVibratorManager.Callbacks managerCallbacks,
+            HalVibrator.Callbacks vibratorCallbacks);
 
-    static native long nativeGetFinalizer();
+    /** Return pointer to function to destroy native objects created by {@link #nativeInit}. */
+    private static native long nativeGetFinalizer();
+
+    /** Calls {@link IVibratorManager#triggerSynced} with callback. */
+    private static native boolean nativeTriggerSyncedWithCallback(long nativePtr, long vibrationId);
+
+    /** Calls {@link IVibratorManager#startSession} with callback. */
+    private static native IBinder nativeStartSessionWithCallback(long nativePtr, long sessionId,
+            int[] vibratorIds);
+
+    // TODO(b/409002423): remove native methods below once remove_hidl_support flag removed
+    static native long nativeInit(HalVibratorManager.Callbacks callback);
 
     static native long nativeGetCapabilities(long nativeServicePtr);
 
@@ -1741,7 +1758,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         }
 
         HalVibratorManager createHalVibratorManager() {
-            return VintfHalVibratorManager.createHalVibratorManager();
+            return VintfHalVibratorManager.createHalVibratorManager(new NativeHandler());
         }
 
         HalVibratorManager createNativeHalVibratorManager() {
@@ -2306,6 +2323,53 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         /** Clear vibration sessions. */
         public void clearSessions() {
             nativeClearSessions(mNativeServicePtr);
+        }
+    }
+
+    /** {@link HalNativeHandler} based on {@link VibratorManagerService} native methods. */
+    private static class NativeHandler implements HalNativeHandler {
+
+        @SuppressWarnings("unused") // Used from native as a weak global reference
+        private HalVibratorManager.Callbacks mManagerCallbacks;
+        @SuppressWarnings("unused") // Used from native as a weak global reference
+        private HalVibrator.Callbacks mVibratorCallbacks;
+
+        /**
+         * Keep pointer to native resources allocated by {@link #nativeInit}, to be used on each
+         * native method call and cleared when this instance is garbage collected.
+         */
+        private long mNativePtr;
+
+        @Override
+        public void init(@NonNull HalVibratorManager.Callbacks managerCallback,
+                @NonNull HalVibrator.Callbacks vibratorCallbacks) {
+            mManagerCallbacks = managerCallback; // Used from native as a weak global reference
+            mVibratorCallbacks = vibratorCallbacks; // Used from native as a weak global reference
+            mNativePtr = nativeNewInit(managerCallback, vibratorCallbacks);
+            long finalizerPtr = nativeGetFinalizer();
+
+            if (finalizerPtr != 0) {
+                NativeAllocationRegistry registry =
+                        NativeAllocationRegistry.createMalloced(
+                                VibratorManagerService.class.getClassLoader(), finalizerPtr);
+                registry.registerNativeAllocation(this, mNativePtr);
+            }
+        }
+
+        @Override
+        public boolean triggerSyncedWithCallback(long vibrationId) {
+            return nativeTriggerSyncedWithCallback(mNativePtr, vibrationId);
+        }
+
+        @Nullable
+        @Override
+        public android.hardware.vibrator.IVibrationSession startSessionWithCallback(
+                long sessionId, int[] vibratorIds) {
+            IBinder token = nativeStartSessionWithCallback(mNativePtr, sessionId, vibratorIds);
+            if (token == null) {
+                return null;
+            }
+            return android.hardware.vibrator.IVibrationSession.Stub.asInterface(token);
         }
     }
 

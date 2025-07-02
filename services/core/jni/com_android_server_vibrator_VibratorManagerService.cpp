@@ -18,6 +18,8 @@
 
 #include "com_android_server_vibrator_VibratorManagerService.h"
 
+#include <aidl/android/hardware/vibrator/IVibratorManager.h>
+#include <android/binder_ibinder_jni.h>
 #include <nativehelper/JNIHelp.h>
 #include <utils/Log.h>
 #include <utils/misc.h>
@@ -31,30 +33,61 @@
 
 namespace android {
 
+using IVibratorManager = aidl::android::hardware::vibrator::IVibratorManager;
+using IVibrationSession = aidl::android::hardware::vibrator::IVibrationSession;
+using VibrationSessionConfig = aidl::android::hardware::vibrator::VibrationSessionConfig;
+
+// Used to attach HAL callbacks to JNI environment and send them back to vibrator manager service.
 static JavaVM* sJvm = nullptr;
 static jmethodID sMethodIdOnSyncedVibrationComplete;
 static jmethodID sMethodIdOnVibrationSessionComplete;
+
+// TODO(b/409002423): remove this once remove_hidl_support flag removed
 static std::mutex gManagerMutex;
 static vibrator::ManagerHalController* gManager GUARDED_BY(gManagerMutex) = nullptr;
 
 class NativeVibratorManagerService {
 public:
-    using IVibrationSession = aidl::android::hardware::vibrator::IVibrationSession;
-    using VibrationSessionConfig = aidl::android::hardware::vibrator::VibrationSessionConfig;
-
+    // TODO(b/409002423): remove this once remove_hidl_support flag removed
     NativeVibratorManagerService(JNIEnv* env, jobject callbackListener)
           : mHal(std::make_unique<vibrator::ManagerHalController>()),
-            mCallbackListener(env->NewGlobalRef(callbackListener)) {
+            mCallbackListener(env->NewGlobalRef(callbackListener)),
+            mManagerCallbacks(nullptr),
+            mManagerHalProvider(nullptr) {
         LOG_ALWAYS_FATAL_IF(mHal == nullptr, "Unable to find reference to vibrator manager hal");
         LOG_ALWAYS_FATAL_IF(mCallbackListener == nullptr,
                             "Unable to create global reference to vibration callback handler");
     }
 
-    ~NativeVibratorManagerService() {
-        auto jniEnv = GetOrAttachJNIEnvironment(sJvm);
-        jniEnv->DeleteGlobalRef(mCallbackListener);
+    NativeVibratorManagerService(JNIEnv* env, jobject managerCallbacks,
+                                 jobject /* vibratorCallbacks */)
+          : mHal(nullptr),
+            mCallbackListener(nullptr),
+            mManagerCallbacks(env->NewWeakGlobalRef(managerCallbacks)),
+            mManagerHalProvider(defaultProviderForDeclaredService<IVibratorManager>()) {
+        LOG_ALWAYS_FATAL_IF(mManagerCallbacks == nullptr,
+                            "Unable to create global reference to vibrator manager callbacks");
     }
 
+    ~NativeVibratorManagerService() {
+        auto jniEnv = GetOrAttachJNIEnvironment(sJvm);
+        if (mCallbackListener) {
+            jniEnv->DeleteGlobalRef(mCallbackListener);
+        }
+        if (mManagerCallbacks) {
+            jniEnv->DeleteWeakGlobalRef(mManagerCallbacks);
+        }
+    }
+
+    jweak managerCallbacks() {
+        return mManagerCallbacks;
+    }
+
+    std::shared_ptr<IVibratorManager> managerHal() {
+        return mManagerHalProvider ? mManagerHalProvider->getHal() : nullptr;
+    }
+
+    // TODO(b/409002423): remove functions below once remove_hidl_support flag removed
     vibrator::ManagerHalController* hal() const { return mHal.get(); }
 
     std::function<void()> createSyncedVibrationCallback(jlong vibrationId) {
@@ -116,20 +149,46 @@ public:
     }
 
 private:
+    // TODO(b/409002423): remove this once remove_hidl_support flag removed
     std::mutex mSessionMutex;
     const std::unique_ptr<vibrator::ManagerHalController> mHal;
     std::unordered_map<jlong, std::shared_ptr<IVibrationSession>> mSessions
             GUARDED_BY(mSessionMutex);
     const jobject mCallbackListener;
+
+    const jweak mManagerCallbacks;
+    std::unique_ptr<HalProvider<IVibratorManager>> mManagerHalProvider;
 };
 
+// TODO(b/409002423): remove this once remove_hidl_support flag removed
 vibrator::ManagerHalController* android_server_vibrator_VibratorManagerService_getManager() {
     std::lock_guard<std::mutex> lock(gManagerMutex);
     return gManager;
 }
 
+static NativeVibratorManagerService* toNativeService(jlong ptr, const char* logLabel) {
+    auto service = reinterpret_cast<NativeVibratorManagerService*>(ptr);
+    if (service == nullptr) {
+        ALOGE("%s: native service not initialized", logLabel);
+    }
+    return service;
+}
+
+static std::shared_ptr<IVibratorManager> loadManagerHal(NativeVibratorManagerService* service,
+                                                        const char* logLabel) {
+    if (service == nullptr) {
+        return nullptr;
+    }
+    auto hal = service->managerHal();
+    if (hal == nullptr) {
+        ALOGE("%s: vibrator manager HAL not available", logLabel);
+    }
+    return hal;
+}
+
 static void destroyNativeService(void* ptr) {
-    NativeVibratorManagerService* service = reinterpret_cast<NativeVibratorManagerService*>(ptr);
+    ALOGD("%s", __func__);
+    auto service = reinterpret_cast<NativeVibratorManagerService*>(ptr);
     if (service) {
         std::lock_guard<std::mutex> lock(gManagerMutex);
         gManager = nullptr;
@@ -137,7 +196,9 @@ static void destroyNativeService(void* ptr) {
     }
 }
 
+// TODO(b/409002423): remove this once remove_hidl_support flag removed
 static jlong nativeInit(JNIEnv* env, jclass /* clazz */, jobject callbackListener) {
+    ALOGD("%s", __func__);
     std::unique_ptr<NativeVibratorManagerService> service =
             std::make_unique<NativeVibratorManagerService>(env, callbackListener);
     {
@@ -147,9 +208,63 @@ static jlong nativeInit(JNIEnv* env, jclass /* clazz */, jobject callbackListene
     return reinterpret_cast<jlong>(service.release());
 }
 
+static jlong nativeNewInit(JNIEnv* env, jclass /* clazz */, jobject managerCallbacks,
+                           jobject vibratorCallbacks) {
+    ALOGD("%s", __func__);
+    auto service = std::make_unique<NativeVibratorManagerService>(env, managerCallbacks,
+                                                                  vibratorCallbacks);
+    return reinterpret_cast<jlong>(service.release());
+}
+
 static jlong nativeGetFinalizer(JNIEnv* /* env */, jclass /* clazz */) {
+    ALOGD("%s", __func__);
     return static_cast<jlong>(reinterpret_cast<uintptr_t>(&destroyNativeService));
 }
+
+static jboolean nativeTriggerSyncedWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
+                                                jlong vibrationId) {
+    ALOGD("%s", __func__);
+    auto service = toNativeService(ptr, __func__);
+    auto hal = loadManagerHal(service, __func__);
+    if (hal == nullptr) {
+        return JNI_FALSE;
+    }
+    auto callback = ndk::SharedRefBase::make<VibratorCallback>(sJvm, service->managerCallbacks(),
+                                                               sMethodIdOnSyncedVibrationComplete,
+                                                               vibrationId);
+    auto status = hal->triggerSynced(callback);
+    if (!status.isOk()) {
+        ALOGE("%s: %s", __func__, status.getMessage());
+        return JNI_FALSE;
+    }
+    return JNI_TRUE;
+}
+
+static jobject nativeStartSessionWithCallback(JNIEnv* env, jclass /* clazz */, jlong ptr,
+                                              jlong sessionId, jintArray vibratorIds) {
+    ALOGD("%s", __func__);
+    auto service = toNativeService(ptr, __func__);
+    auto hal = loadManagerHal(service, __func__);
+    if (hal == nullptr) {
+        return nullptr;
+    }
+    std::shared_ptr<IVibrationSession> session;
+    VibrationSessionConfig config;
+    auto callback = ndk::SharedRefBase::make<VibratorCallback>(sJvm, service->managerCallbacks(),
+                                                               sMethodIdOnVibrationSessionComplete,
+                                                               sessionId);
+    jsize size = env->GetArrayLength(vibratorIds);
+    std::vector<int32_t> ids(size);
+    env->GetIntArrayRegion(vibratorIds, 0, size, reinterpret_cast<jint*>(ids.data()));
+    auto status = hal->startSession(ids, config, callback, &session);
+    if (!status.isOk()) {
+        ALOGE("%s: %s", __func__, status.getMessage());
+        return nullptr;
+    }
+    return AIBinder_toJavaBinder(env, session->asBinder().get());
+}
+
+// TODO(b/409002423): remove functions below once remove_hidl_support flag removed
 
 static jlong nativeGetCapabilities(JNIEnv* env, jclass /* clazz */, jlong servicePtr) {
     NativeVibratorManagerService* service =
@@ -257,8 +372,13 @@ static void nativeClearSessions(JNIEnv* env, jclass /* clazz */, jlong servicePt
 inline static constexpr auto sNativeInitMethodSignature =
         "(Lcom/android/server/vibrator/HalVibratorManager$Callbacks;)J";
 
+inline static constexpr auto sNativeNewInitMethodSignature =
+        "(Lcom/android/server/vibrator/HalVibratorManager$Callbacks;"
+        "Lcom/android/server/vibrator/HalVibrator$Callbacks;)J";
+
 static const JNINativeMethod method_table[] = {
         {"nativeInit", sNativeInitMethodSignature, (void*)nativeInit},
+        {"nativeNewInit", sNativeNewInitMethodSignature, (void*)nativeNewInit},
         {"nativeGetFinalizer", "()J", (void*)nativeGetFinalizer},
         {"nativeGetCapabilities", "(J)J", (void*)nativeGetCapabilities},
         {"nativeGetVibratorIds", "(J)[I", (void*)nativeGetVibratorIds},
@@ -268,6 +388,9 @@ static const JNINativeMethod method_table[] = {
         {"nativeStartSession", "(JJ[I)Z", (void*)nativeStartSession},
         {"nativeEndSession", "(JJZ)V", (void*)nativeEndSession},
         {"nativeClearSessions", "(J)V", (void*)nativeClearSessions},
+        {"nativeTriggerSyncedWithCallback", "(JJ)Z", (void*)nativeTriggerSyncedWithCallback},
+        {"nativeStartSessionWithCallback", "(JJ[I)Landroid/os/IBinder;",
+         (void*)nativeStartSessionWithCallback},
 };
 
 int register_android_server_vibrator_VibratorManagerService(JavaVM* jvm, JNIEnv* env) {
