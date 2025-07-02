@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.ambientcue.data.logger
+package com.android.systemui.ambientcue.shared.logger
 
 import com.android.internal.util.FrameworkStatsLog
 import com.android.systemui.util.time.SystemClock
@@ -56,7 +56,7 @@ interface AmbientCueLogger {
      *
      * @param loseFocusMillis The time in milliseconds that the cue bar lost focus.
      */
-    fun setLoseFocusMillis(loseFocusMillis: Long)
+    fun setLoseFocusMillis()
 
     /** Sets fulfilled with ma intent events. */
     fun setFulfilledWithMaStatus()
@@ -91,32 +91,33 @@ class AmbientCueLoggerImpl @Inject constructor(private val systemClock: SystemCl
     }
 
     /** {@see AmbientCueLogger#setLoseFocusMillis} */
-    override fun setLoseFocusMillis(loseFocusMillis: Long) {
-        // TODO(b/425279501): Count loseFocusMillis.
+    override fun setLoseFocusMillis() {
+        report.loseFocusMillis = systemClock.currentTimeMillis()
     }
 
     /** {@see AmbientCueLogger#setFulfilledWithMaStatus} */
     override fun setFulfilledWithMaStatus() {
-        // TODO(b/425279501): Count fulfilledWithMaIntentMillis.
         report.fulfilledWithMaIntent = true
+        report.fulfilledWithMaIntentMillis = systemClock.currentTimeMillis() - displayTimeMillis
     }
 
     /** {@see AmbientCueLogger#setFulfilledWithMrStatus} */
     override fun setFulfilledWithMrStatus() {
-        // TODO(b/425279501): Count fulfilledWithMrIntentMillis.
         report.fulfilledWithMrIntent = true
+        report.fulfilledWithMrIntentMillis = systemClock.currentTimeMillis() - displayTimeMillis
     }
 
     override fun setClickedCloseButtonStatus() {
-        // TODO(b/425279501): Add logic to set clickedCloseButton
+        report.clickedCloseButton = true
     }
 
     override fun setReachedTimeoutStatus() {
-        // TODO(b/425279501): Add logic to set reachedTimeout
+        report.reachedTimeout = true
     }
 
     /** {@see AmbientCueLogger#flushAmbientCueEventReported} */
     override fun flushAmbientCueEventReported() {
+        report.displayDurationMillis = systemClock.currentTimeMillis() - displayTimeMillis
         FrameworkStatsLog.write(
             FrameworkStatsLog.AMBIENT_CUE_EVENT_REPORTED,
             report.displayDurationMillis,

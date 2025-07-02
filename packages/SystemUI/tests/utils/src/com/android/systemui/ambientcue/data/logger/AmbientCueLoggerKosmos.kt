@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.ambientcue.data.logger
+package com.android.systemui.ambientcue.shared.logger
 
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture

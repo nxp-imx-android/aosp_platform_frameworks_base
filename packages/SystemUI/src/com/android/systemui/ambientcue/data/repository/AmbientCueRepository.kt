@@ -36,7 +36,7 @@ import androidx.tracing.trace
 import com.android.systemui.Dumpable
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.LauncherProxyService.LauncherProxyListener
-import com.android.systemui.ambientcue.data.logger.AmbientCueLogger
+import com.android.systemui.ambientcue.shared.logger.AmbientCueLogger
 import com.android.systemui.ambientcue.shared.model.ActionModel
 import com.android.systemui.ambientcue.shared.model.IconModel
 import com.android.systemui.dagger.SysUISingleton
@@ -363,6 +363,9 @@ constructor(
                     ambientCueLogger.setAmbientCueDisplayStatus(maCount, mrCount)
                 }
                 if (!isAttached && isSessionStarted) {
+                    if (globallyFocusedTaskId.value != targetTaskId.value) {
+                        ambientCueLogger.setLoseFocusMillis()
+                    }
                     ambientCueLogger.flushAmbientCueEventReported()
                     ambientCueLogger.clear()
                     isSessionStarted = false
