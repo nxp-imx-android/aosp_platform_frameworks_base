@@ -151,14 +151,12 @@ public abstract sealed class ThemeSettings implements Parcelable permits ThemeSe
         @Override
         public ThemeSettings createFromParcel(Parcel in) {
             // The first string read is the concrete type, used by the sealed class's parceling
-            // to delegate to the correct subclass constructor.
-            // We then read the actual type string that we wrote in the subclass's writeToParcel.
-            in.readString(); // Consume the type written by the sealed class itself for dispatch
-            String type = in.readString(); // This is the type we're interested in
+            // to delegate to the correct subclass constructor..
+            String type = in.readString();
             return switch (type) {
                 case VALUE_HOME_WALLPAPER -> new ThemeSettingsWallpaper(in);
                 case VALUE_PRESET -> new ThemeSettingsPreset(in);
-                default -> throw new IllegalArgumentException(
+                case null, default -> throw new IllegalArgumentException(
                         "Invalid type for ThemeSetting: " + type);
             };
         }
