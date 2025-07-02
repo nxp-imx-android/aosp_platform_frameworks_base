@@ -255,3 +255,13 @@ flag {
         purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "bug_rotation_button_cover_bubble"
+    namespace: "multitasking"
+    description: "Fixes a bug where clicking the rotation button would open the bubble."
+    bug: "424165276"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
