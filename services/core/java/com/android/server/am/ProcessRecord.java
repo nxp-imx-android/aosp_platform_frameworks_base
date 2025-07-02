@@ -340,12 +340,6 @@ class ProcessRecord implements WindowProcessListener {
     private boolean mUsingWrapper;
 
     /**
-     * Sequence id for identifying LRU update cycles.
-     */
-    @GuardedBy("mService")
-    private int mLruSeq;
-
-    /**
      * Class to run on start if this is a special isolated process.
      */
     @GuardedBy("mService")
@@ -562,6 +556,9 @@ class ProcessRecord implements WindowProcessListener {
         if (mState.getSetProcState() > ActivityManager.PROCESS_STATE_SERVICE) {
             mProfile.dumpCputime(pw, prefix);
         }
+        if (mProfile.hasPendingUiClean()) {
+            pw.print(prefix); pw.print("pendingUiClean="); pw.println(mProfile.hasPendingUiClean());
+        }
         mProfile.dumpPss(pw, prefix, nowUptime);
         mState.dump(pw, prefix, nowUptime);
         mErrorState.dump(pw, prefix, nowUptime);
@@ -627,14 +624,14 @@ class ProcessRecord implements WindowProcessListener {
         mProviders = new ProcessProviderRecord(this);
         mReceivers = new ProcessReceiverRecord(this);
         mErrorState = new ProcessErrorStateRecord(this);
-        mState = new ProcessStateRecord(processName, uid, this);
+        mWindowProcessController = new WindowProcessController(
+                mService.mActivityTaskManager, info, processName, uid, userId, this, this);
+        mState = new ProcessStateRecord(processName, uid, mWindowProcessController, mProfile, this);
         mOptRecord = new ProcessCachedOptimizerRecord(this);
         final long now = SystemClock.uptimeMillis();
         mProfile.init(now);
         mOptRecord.init(now);
         mState.init(now);
-        mWindowProcessController = new WindowProcessController(
-                mService.mActivityTaskManager, info, processName, uid, userId, this, this);
         mPkgList.put(_info.packageName, new ProcessStats.ProcessStateHolder(_info.longVersionCode));
         updateProcessRecordNodes(this);
     }
@@ -1136,16 +1133,6 @@ class ProcessRecord implements WindowProcessListener {
     void setUsingWrapper(boolean usingWrapper) {
         mUsingWrapper = usingWrapper;
         mWindowProcessController.setUsingWrapper(usingWrapper);
-    }
-
-    @GuardedBy("mService")
-    int getLruSeq() {
-        return mLruSeq;
-    }
-
-    @GuardedBy("mService")
-    void setLruSeq(int lruSeq) {
-        mLruSeq = lruSeq;
     }
 
     @GuardedBy("mService")

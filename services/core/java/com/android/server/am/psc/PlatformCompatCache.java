@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.server.am;
-
-import static com.android.server.am.ActivityManagerService.TAG;
-import static com.android.server.am.OomAdjuster.CAMERA_MICROPHONE_CAPABILITY_CHANGE_ID;
-import static com.android.server.am.OomAdjuster.PROCESS_CAPABILITY_CHANGE_ID;
-import static com.android.server.am.OomAdjuster.USE_SHORT_FGS_USAGE_INTERACTION_TIME;
+package com.android.server.am.psc;
 
 import android.annotation.IntDef;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.EnabledAfter;
+import android.compat.annotation.EnabledSince;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.IBinder;
@@ -43,12 +41,46 @@ import java.lang.ref.WeakReference;
 
 /**
  * Local platform compat cache.
+ * TODO(b/425766486): Remove the public modifier after moving all the usage into this package.
  */
-final class PlatformCompatCache {
+public final class PlatformCompatCache {
+    private static final String TAG = "PlatformCompatCache";
 
-    static final int CACHED_COMPAT_CHANGE_PROCESS_CAPABILITY = 0;
-    static final int CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY = 1;
-    static final int CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME = 2;
+    public static final int CACHED_COMPAT_CHANGE_PROCESS_CAPABILITY = 0;
+    public static final int CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY = 1;
+    public static final int CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME = 2;
+
+    /**
+     * Flag {@link android.content.Context#BIND_INCLUDE_CAPABILITIES} is used
+     * to pass while-in-use capabilities from client process to bound service. In targetSdkVersion
+     * R and above, if client is a TOP activity, when this flag is present, bound service gets all
+     * while-in-use capabilities; when this flag is not present, bound service gets no while-in-use
+     * capability from client.
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = android.os.Build.VERSION_CODES.Q)
+    static final long PROCESS_CAPABILITY_CHANGE_ID = 136274596L;
+
+    /**
+     * In targetSdkVersion R and above, foreground service has camera and microphone while-in-use
+     * capability only when the {@link android.R.attr#foregroundServiceType} is configured as
+     * {@link android.content.pm.ServiceInfo#FOREGROUND_SERVICE_TYPE_CAMERA} and
+     * {@link android.content.pm.ServiceInfo#FOREGROUND_SERVICE_TYPE_MICROPHONE} respectively in the
+     * manifest file.
+     * In targetSdkVersion below R, foreground service automatically have camera and microphone
+     * capabilities.
+     */
+    @ChangeId
+    @EnabledAfter(targetSdkVersion = android.os.Build.VERSION_CODES.Q)
+    static final long CAMERA_MICROPHONE_CAPABILITY_CHANGE_ID = 136219221L;
+
+    /**
+     * For apps targeting S+, this determines whether to use a shorter timeout before elevating the
+     * standby bucket to ACTIVE when apps start a foreground service.
+     */
+    @ChangeId
+    @EnabledSince(targetSdkVersion = android.os.Build.VERSION_CODES.S)
+    static final long USE_SHORT_FGS_USAGE_INTERACTION_TIME = 183972877L;
 
     @IntDef(prefix = { "CACHED_COMPAT_CHANGE_" }, value = {
         CACHED_COMPAT_CHANGE_PROCESS_CAPABILITY,
@@ -56,7 +88,7 @@ final class PlatformCompatCache {
         CACHED_COMPAT_CHANGE_USE_SHORT_FGS_USAGE_INTERACTION_TIME,
     })
     @Retention(RetentionPolicy.SOURCE)
-    static @interface CachedCompatChangeId{}
+    public @interface CachedCompatChangeId{}
 
     /**
      * Mapping from CACHED_COMPAT_CHANGE_* to the actual compat change id.
@@ -92,7 +124,10 @@ final class PlatformCompatCache {
         }
     }
 
-    static PlatformCompatCache getInstance() {
+    /**
+     * @return the singleton instance of the {@link PlatformCompatCache}.
+     */
+    public static PlatformCompatCache getInstance() {
         if (sPlatformCompatCache == null) {
             sPlatformCompatCache = new PlatformCompatCache(new long[] {
                 PROCESS_CAPABILITY_CHANGE_ID,
@@ -116,7 +151,7 @@ final class PlatformCompatCache {
     /**
      * @return If the given cached compat change id is enabled.
      */
-    static boolean isChangeEnabled(@CachedCompatChangeId int cachedCompatChangeId,
+    public static boolean isChangeEnabled(@CachedCompatChangeId int cachedCompatChangeId,
             ApplicationInfo app, boolean defaultValue) {
         return getInstance().isChangeEnabled(
                 CACHED_COMPAT_CHANGE_IDS_MAPPING[cachedCompatChangeId], app, defaultValue);
@@ -125,7 +160,7 @@ final class PlatformCompatCache {
     /**
      * Invalidate the cache for the given app.
      */
-    void invalidate(ApplicationInfo app) {
+    public void invalidate(ApplicationInfo app) {
         for (int i = mCaches.size() - 1; i >= 0; i--) {
             mCaches.valueAt(i).invalidate(app);
         }
@@ -134,7 +169,7 @@ final class PlatformCompatCache {
     /**
      * Update the cache due to application info changes.
      */
-    void onApplicationInfoChanged(ApplicationInfo app) {
+    public void onApplicationInfoChanged(ApplicationInfo app) {
         for (int i = mCaches.size() - 1; i >= 0; i--) {
             mCaches.valueAt(i).onApplicationInfoChanged(app);
         }

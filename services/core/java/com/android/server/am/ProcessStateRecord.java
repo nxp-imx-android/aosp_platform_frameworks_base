@@ -21,7 +21,6 @@ import static android.app.ActivityManager.PROCESS_STATE_CACHED_EMPTY;
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_ACTIVITY;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER;
-import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_STARTED_SERVICE;
 
 import static com.android.server.am.ProcessList.CACHED_APP_MIN_ADJ;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED;
@@ -39,14 +38,104 @@ import android.util.TimeUtils;
 
 import com.android.internal.annotations.CompositeRWLock;
 import com.android.internal.annotations.GuardedBy;
-import com.android.server.am.PlatformCompatCache.CachedCompatChangeId;
+import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 
 import java.io.PrintWriter;
 
 /**
  * The state info of the process, including proc state, oom adj score, et al.
  */
-final class ProcessStateRecord {
+public final class ProcessStateRecord {
+    /**
+     * An observer interface for {@link ProcessStateRecord} to notify about changes to its internal
+     * state fields.
+     * TODO(b/429069530): Investigate why WindowManager needs to know any of the mCurXXX value.
+     */
+    public interface Observer {
+        /**
+         * Called when mCurRawAdj changes.
+         *
+         * @param curRawAdj The new mCurRawAdj value.
+         */
+        void onCurRawAdjChanged(int curRawAdj);
+
+        /**
+         * Called when mCurAdj changes.
+         *
+         * @param curAdj The new mCurAdj value.
+         */
+        void onCurAdjChanged(int curAdj);
+
+        /**
+         * Called when mCurSchedGroup changes.
+         *
+         * @param curSchedGroup The new mCurSchedGroup value.
+         */
+        void onCurrentSchedulingGroupChanged(int curSchedGroup);
+
+        /**
+         * Called when mCurProcState changes.
+         *
+         * @param curProcState The new mCurProcState value.
+         */
+        void onCurProcStateChanged(int curProcState);
+
+        /**
+         * Called when mRepProcState changes.
+         *
+         * @param repProcState The new mRepProcState value.
+         */
+        void onReportedProcStateChanged(int repProcState);
+
+        /**
+         * Called when mHasTopUi changes.
+         *
+         * @param hasTopUi The new mHasTopUi value.
+         */
+        void onHasTopUiChanged(boolean hasTopUi);
+
+        /**
+         * Called when mHasOverlayUi changes.
+         *
+         * @param hasOverlayUi The new mHasOverlayUi value.
+         */
+        void onHasOverlayUiChanged(boolean hasOverlayUi);
+
+        /**
+         * Called when mInteractionEventTime changes.
+         *
+         * @param interactionEventTime The new mInteractionEventTime value.
+         */
+        void onInteractionEventTimeChanged(long interactionEventTime);
+
+        /**
+         * Called when mFgInteractionTime changes.
+         *
+         * @param fgInteractionTime The new mFgInteractionTime value.
+         */
+        void onFgInteractionTimeChanged(long fgInteractionTime);
+
+        /**
+         * Called when mWhenUnimportant changes.
+         *
+         * @param whenUnimportant The new mWhenUnimportant value.
+         */
+        void onWhenUnimportantChanged(long whenUnimportant);
+    }
+
+    /**
+     * An observer interface for {@link ProcessStateRecord} to notify about changes of
+     * the mHasStartedServices fields.
+     */
+    public interface StartedServiceObserver {
+        /**
+         * Called when mHasStartedServices changes.
+         *
+         * @param hasStartedServices The new mHasStartedServices value.
+         */
+        void onHasStartedServicesChanged(boolean hasStartedServices);
+    }
+
     // Enable this to trace all OomAdjuster state transitions
     private static final boolean TRACE_OOM_ADJ = false;
 
@@ -54,6 +143,8 @@ final class ProcessStateRecord {
     private final int mUid;
     private String mTrackName;
 
+    private final Observer mObserver;
+    private final StartedServiceObserver mStartedServiceObserver;
     private final ProcessRecord mApp;
     private final ActivityManagerService mService;
     private final ActivityManagerGlobalLock mProcLock;
@@ -266,6 +357,12 @@ final class ProcessStateRecord {
     private int mCompletedAdjSeq;
 
     /**
+     * Sequence id for identifying LRU update cycles.
+     */
+    @GuardedBy("mService")
+    private int mLruSeq;
+
+    /**
      * When (uptime) the process last became unimportant.
      */
     @CompositeRWLock({"mService", "mProcLock"})
@@ -442,9 +539,12 @@ final class ProcessStateRecord {
     @GuardedBy("mService")
     private long mFollowupUpdateUptimeMs = Long.MAX_VALUE;
 
-    ProcessStateRecord(String processName, int uid, ProcessRecord app) {
+    ProcessStateRecord(String processName, int uid, Observer observer,
+            StartedServiceObserver startedServiceObserver, ProcessRecord app) {
         mProcessName = processName;
         mUid = uid;
+        mObserver = observer;
+        mStartedServiceObserver = startedServiceObserver;
         mApp = app;
         mService = app.mService;
         mProcLock = mService.mProcLock;
@@ -479,8 +579,7 @@ final class ProcessStateRecord {
             return mCurRawAdj > curRawAdj;
         }
         mCurRawAdj = curRawAdj;
-        mApp.getWindowProcessController().setPerceptible(
-                curRawAdj <= ProcessList.PERCEPTIBLE_APP_ADJ);
+        mObserver.onCurRawAdjChanged(mCurRawAdj);
         return false;
     }
 
@@ -502,7 +601,7 @@ final class ProcessStateRecord {
     @GuardedBy({"mService", "mProcLock"})
     void setCurAdj(int curAdj) {
         mCurAdj = curAdj;
-        mApp.getWindowProcessController().setCurrentAdj(curAdj);
+        mObserver.onCurAdjChanged(mCurAdj);
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
@@ -563,7 +662,7 @@ final class ProcessStateRecord {
     @GuardedBy({"mService", "mProcLock"})
     void setCurrentSchedulingGroup(int curSchedGroup) {
         mCurSchedGroup = curSchedGroup;
-        mApp.getWindowProcessController().setCurrentSchedulingGroup(curSchedGroup);
+        mObserver.onCurrentSchedulingGroupChanged(mCurSchedGroup);
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
@@ -584,7 +683,7 @@ final class ProcessStateRecord {
     @GuardedBy({"mService", "mProcLock"})
     void setCurProcState(int curProcState) {
         mCurProcState = curProcState;
-        mApp.getWindowProcessController().setCurrentProcState(mCurProcState);
+        mObserver.onCurProcStateChanged(mCurProcState);
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
@@ -618,7 +717,7 @@ final class ProcessStateRecord {
     @GuardedBy({"mService", "mProcLock"})
     void setReportedProcState(int repProcState) {
         mRepProcState = repProcState;
-        mApp.getWindowProcessController().setReportedProcState(repProcState);
+        mObserver.onReportedProcStateChanged(mRepProcState);
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
@@ -683,11 +782,7 @@ final class ProcessStateRecord {
     @GuardedBy("mProcLock")
     void setHasStartedServices(boolean hasStartedServices) {
         mHasStartedServices = hasStartedServices;
-        if (hasStartedServices) {
-            mApp.mProfile.addHostingComponentType(HOSTING_COMPONENT_TYPE_STARTED_SERVICE);
-        } else {
-            mApp.mProfile.clearHostingComponentType(HOSTING_COMPONENT_TYPE_STARTED_SERVICE);
-        }
+        mStartedServiceObserver.onHasStartedServicesChanged(mHasStartedServices);
     }
 
     @GuardedBy("mProcLock")
@@ -728,7 +823,7 @@ final class ProcessStateRecord {
     @GuardedBy("mService")
     void setHasTopUi(boolean hasTopUi) {
         mHasTopUi = hasTopUi;
-        mApp.getWindowProcessController().setHasTopUi(hasTopUi);
+        mObserver.onHasTopUiChanged(mHasTopUi);
     }
 
     @GuardedBy("mService")
@@ -739,7 +834,7 @@ final class ProcessStateRecord {
     @GuardedBy("mService")
     void setHasOverlayUi(boolean hasOverlayUi) {
         mHasOverlayUi = hasOverlayUi;
-        mApp.getWindowProcessController().setHasOverlayUi(hasOverlayUi);
+        mObserver.onHasOverlayUiChanged(mHasOverlayUi);
     }
 
     @GuardedBy("mService")
@@ -780,7 +875,7 @@ final class ProcessStateRecord {
     @GuardedBy({"mService", "mProcLock"})
     void setInteractionEventTime(long interactionEventTime) {
         mInteractionEventTime = interactionEventTime;
-        mApp.getWindowProcessController().setInteractionEventTime(interactionEventTime);
+        mObserver.onInteractionEventTimeChanged(mInteractionEventTime);
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
@@ -791,7 +886,7 @@ final class ProcessStateRecord {
     @GuardedBy({"mService", "mProcLock"})
     void setFgInteractionTime(long fgInteractionTime) {
         mFgInteractionTime = fgInteractionTime;
-        mApp.getWindowProcessController().setFgInteractionTime(fgInteractionTime);
+        mObserver.onFgInteractionTimeChanged(mFgInteractionTime);
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
@@ -839,10 +934,20 @@ final class ProcessStateRecord {
         return mCompletedAdjSeq;
     }
 
+    @GuardedBy("mService")
+    int getLruSeq() {
+        return mLruSeq;
+    }
+
+    @GuardedBy("mService")
+    void setLruSeq(int lruSeq) {
+        mLruSeq = lruSeq;
+    }
+
     @GuardedBy({"mService", "mProcLock"})
     void setWhenUnimportant(long whenUnimportant) {
         mWhenUnimportant = whenUnimportant;
-        mApp.getWindowProcessController().setWhenUnimportant(whenUnimportant);
+        mObserver.onWhenUnimportantChanged(mWhenUnimportant);
     }
 
     @GuardedBy(anyOf = {"mService", "mProcLock"})
@@ -1351,7 +1456,7 @@ final class ProcessStateRecord {
             pw.println();
         }
         pw.print(prefix); pw.print("adjSeq="); pw.print(mAdjSeq);
-        pw.print(" lruSeq="); pw.println(mApp.getLruSeq());
+        pw.print(" lruSeq="); pw.println(mLruSeq);
         pw.print(prefix); pw.print("oom adj: max="); pw.print(mMaxAdj);
         pw.print(" curRaw="); pw.print(mCurRawAdj);
         pw.print(" setRaw="); pw.print(mSetRawAdj);
@@ -1378,9 +1483,8 @@ final class ProcessStateRecord {
             pw.print(mSetBoundByNonBgRestrictedApp);
         }
         pw.println();
-        if (mHasShownUi || mApp.mProfile.hasPendingUiClean()) {
-            pw.print(prefix); pw.print("hasShownUi="); pw.print(mHasShownUi);
-            pw.print(" pendingUiClean="); pw.println(mApp.mProfile.hasPendingUiClean());
+        if (mHasShownUi) {
+            pw.print(prefix); pw.print("hasShownUi="); pw.println(mHasShownUi);
         }
         pw.print(prefix); pw.print("cached="); pw.print(isCached());
         pw.print(" empty="); pw.println(isEmpty());
