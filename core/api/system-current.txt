@@ -3465,7 +3465,7 @@ package android.companion.datatransfer.continuity {
     method @Nullable public android.graphics.drawable.Icon getIcon();
     method public int getId();
     method @NonNull public String getLabel();
-    method public int getLastUsedTimestampMillis();
+    method public long getLastUsedTimestampMillis();
     method @NonNull public String getSourceDeviceName();
     method public boolean isHandoffEnabled();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -3479,7 +3479,7 @@ package android.companion.datatransfer.continuity {
     method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setHandoffEnabled(boolean);
     method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setIcon(@Nullable android.graphics.drawable.Icon);
     method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setLabel(@NonNull String);
-    method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setLastUsedTimestampMillis(int);
+    method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setLastUsedTimestampMillis(long);
     method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setSourceDeviceName(@NonNull String);
   }
 
