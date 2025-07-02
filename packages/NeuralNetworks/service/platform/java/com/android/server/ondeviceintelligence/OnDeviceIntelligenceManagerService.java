@@ -16,7 +16,7 @@
 
 package com.android.server.ondeviceintelligence;
 
-import static android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService.UpdateProcessingStateKeys.KEY_DEVICE_CONFIG_UPDATE;
+import static android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService.DEVICE_CONFIG_UPDATE_BUNDLE_KEY;
 import static android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService.MODEL_LOADED_BUNDLE_KEY;
 import static android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService.MODEL_UNLOADED_BUNDLE_KEY;
 import static android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService.MODEL_LOADED_BROADCAST_INTENT;
@@ -735,8 +735,6 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 callbackExecutor.execute(() -> {
                     AndroidFuture<Void> result = null;
                     try {
-                        // Reserved for use by system-server.
-                        processingState.remove(KEY_DEVICE_CONFIG_UPDATE);
                         sanitizeStateParams(processingState);
                         ensureRemoteInferenceServiceInitialized();
                         result = mRemoteInferenceService.post(
@@ -900,7 +898,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
             persistableBundle.putString(key, props.getString(key, ""));
         }
         Bundle bundle = new Bundle();
-        bundle.putParcelable(KEY_DEVICE_CONFIG_UPDATE, persistableBundle);
+        bundle.putParcelable(DEVICE_CONFIG_UPDATE_BUNDLE_KEY, persistableBundle);
         ensureRemoteInferenceServiceInitialized();
         mRemoteInferenceService.run(service -> service.updateProcessingState(
                 bundle,
