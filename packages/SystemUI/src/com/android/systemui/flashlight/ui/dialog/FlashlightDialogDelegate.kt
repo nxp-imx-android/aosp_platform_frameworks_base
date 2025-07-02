@@ -28,6 +28,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.android.compose.PlatformButton
+import com.android.compose.PlatformOutlinedButton
 import com.android.compose.theme.PlatformTheme
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.systemui.animation.DialogCuj
@@ -112,6 +113,8 @@ constructor(
         //  as a workaround, we remember the original theme and keep it on recomposition.
         val isCurrentlyInDarkTheme = isSystemInDarkTheme()
         val cachedDarkTheme = remember { isCurrentlyInDarkTheme }
+        val flashlightSliderViewModel =
+            rememberViewModel("FlashlightSliderViewModel") { viewModelFactory.create() }
         PlatformTheme(isDarkTheme = cachedDarkTheme) {
             AlertDialogContent(
                 modifier = Modifier.semantics { testTagsAsResourceId = true },
@@ -121,20 +124,24 @@ constructor(
                         text = stringResource(R.string.flashlight_dialog_title),
                     )
                 },
-                content = {
-                    FlashlightSliderContainer(
-                        viewModel =
-                            rememberViewModel("FlashlightSliderViewModel") {
-                                viewModelFactory.create()
-                            }
-                    )
-                },
+                content = { FlashlightSliderContainer(viewModel = flashlightSliderViewModel) },
                 positiveButton = {
                     PlatformButton(
                         modifier = Modifier.testTag(FLASHLIGHT_DONE_TAG),
                         onClick = { dialog.dismiss() },
                     ) {
                         Text(stringResource(R.string.quick_settings_done))
+                    }
+                },
+                neutralButton = {
+                    PlatformOutlinedButton(
+                        modifier = Modifier.testTag(FLASHLIGHT_OFF_TAG),
+                        onClick = {
+                            flashlightSliderViewModel.setFlashlightLevel(0)
+                            dialog.dismiss()
+                        },
+                    ) {
+                        Text(stringResource(R.string.flashlight_dialog_turn_off))
                     }
                 },
             )
@@ -170,5 +177,6 @@ constructor(
         private const val INTERACTION_JANK_TAG = "flashlight"
         private const val FLASHLIGHT_TITLE_TAG = "flashlight_title"
         private const val FLASHLIGHT_DONE_TAG = "flashlight_done"
+        private const val FLASHLIGHT_OFF_TAG = "flashlight_off"
     }
 }
