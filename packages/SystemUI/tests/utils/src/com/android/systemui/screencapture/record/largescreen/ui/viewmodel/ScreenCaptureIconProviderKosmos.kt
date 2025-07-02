@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.ui.viewmodel
+package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
-import com.android.systemui.common.shared.model.Icon
+import android.content.applicationContext
+import com.android.systemui.kosmos.Kosmos
+import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.backgroundCoroutineContext
 
-/** Models a single button within the RadioButtonGroup. */
-data class RadioButtonGroupItemViewModel(
-    val label: String? = null,
-    val icon: Icon? = null,
-    val isSelected: Boolean,
-    val onClick: () -> Unit,
-)
+val Kosmos.screenCaptureIconProviderKosmos by Fixture {
+    ScreenCaptureIconProvider(applicationContext, backgroundCoroutineContext)
+}

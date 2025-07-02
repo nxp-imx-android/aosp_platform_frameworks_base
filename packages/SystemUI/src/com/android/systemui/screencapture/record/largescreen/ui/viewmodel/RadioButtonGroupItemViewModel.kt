@@ -14,20 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.domain.interactor
+package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
-import android.os.fakeHandler
-import com.android.internal.util.mockScreenshotHelper
-import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.kosmos.backgroundCoroutineContext
-import com.android.systemui.screenshot.mockImageCapture
+import com.android.systemui.common.shared.model.Icon
 
-val Kosmos.screenshotInteractor by
-    Kosmos.Fixture {
-        ScreenshotInteractor(
-            imageCapture = mockImageCapture,
-            screenshotHelper = mockScreenshotHelper,
-            backgroundContext = backgroundCoroutineContext,
-            backgroundHandler = fakeHandler,
-        )
-    }
+/** Models a single button within the RadioButtonGroup. */
+data class RadioButtonGroupItemViewModel(
+    val label: String? = null,
+    val icon: Icon? = null,
+    val isSelected: Boolean,
+    val onClick: () -> Unit,
+)

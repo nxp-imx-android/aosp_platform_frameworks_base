@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.domain.interactor
+package com.android.systemui.screencapture.record.largescreen.domain.interactor
 
 import android.graphics.Rect
 import android.os.Handler

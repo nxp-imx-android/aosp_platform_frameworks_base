@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.systemui.screencapture.ui.viewmodel
+package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import android.content.Context
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.res.R
-import com.android.systemui.screencapture.domain.interactor.ScreenshotInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenCaptureRecordLargeScreenFeaturesInteractor
+import com.android.systemui.screencapture.record.largescreen.domain.interactor.ScreenshotInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.coroutineScope
@@ -41,7 +41,7 @@ enum class ScreenCaptureRegion {
 }
 
 /** Models UI for the Screen Capture UI for large screen devices. */
-class ScreenCaptureViewModel
+class PreCaptureViewModel
 @AssistedInject
 constructor(
     @Application private val applicationContext: Context,
@@ -154,6 +154,6 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(): ScreenCaptureViewModel
+        fun create(): PreCaptureViewModel
     }
 }
