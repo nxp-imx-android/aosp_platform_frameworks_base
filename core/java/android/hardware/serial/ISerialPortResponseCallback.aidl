@@ -32,8 +32,10 @@ oneway interface ISerialPortResponseCallback {
         ERROR_READING_DRIVERS = 0,
         // Serial port with the given name does not exist.
         ERROR_PORT_NOT_FOUND = 1,
+        // SecurityException due to access denied.
+        ERROR_ACCESS_DENIED = 2,
         // ErrnoException while opening the serial port.
-        ERROR_OPENING_PORT = 2,
+        ERROR_OPENING_PORT = 3,
     }
 
     /**
