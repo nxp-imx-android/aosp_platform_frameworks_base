@@ -642,7 +642,7 @@ class DragResizeInputListener implements AutoCloseable {
                                 "%s: Handling action down, update ctrlType to %d", TAG, ctrlType);
                         mDragStartTaskBounds = mCallback.onDragPositioningStart(ctrlType,
                                 e.getDisplayId(), rawX, rawY);
-                        mLastMotionEventOnDown = e;
+                        mLastMotionEventOnDown = MotionEvent.obtain(e);
                         mResizeTrigger = (ctrlType == CTRL_TYPE_BOTTOM || ctrlType == CTRL_TYPE_TOP
                                 || ctrlType == CTRL_TYPE_RIGHT || ctrlType == CTRL_TYPE_LEFT)
                                 ? ResizeTrigger.EDGE : ResizeTrigger.CORNER;
