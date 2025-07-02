@@ -1032,7 +1032,9 @@ private fun LazyGridItemScope.TileGridCell(
         // usually happens when resizing a tile multiple times. We can fix this by applying the
         // draggable modifier after the first frame
         var isSelectable by remember { mutableStateOf(false) }
-        LaunchedEffect(canLayoutTile) { isSelectable = canLayoutTile }
+        LaunchedEffect(canLayoutTile, dragAndDropState.dragInProgress) {
+            isSelectable = canLayoutTile && !dragAndDropState.dragInProgress
+        }
         val selectableModifier =
             Modifier.selectableTile(cell.tile.tileSpec, selectionState)
                 .dragAndDropTileSource(
