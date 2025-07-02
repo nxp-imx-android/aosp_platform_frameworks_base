@@ -177,10 +177,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_OFFLOAD_SESSION_CANCEL_BLOCK_SCREEN_ON,
             Flags::offloadSessionCancelBlockScreenOn);
 
-    private final FlagState mNewHdrBrightnessModifier = new FlagState(
-            Flags.FLAG_NEW_HDR_BRIGHTNESS_MODIFIER,
-            Flags::newHdrBrightnessModifier);
-
     private final FlagState mVirtualDisplayLimit =
             new FlagState(
                     Flags.FLAG_VIRTUAL_DISPLAY_LIMIT,
@@ -482,13 +478,6 @@ public class DisplayManagerFlags {
         return mSynthetic60hzModes.isEnabled();
     }
 
-    /**
-     * @return Whether to use new HDR brightness modifier or not
-     */
-    public boolean useNewHdrBrightnessModifier() {
-        return mNewHdrBrightnessModifier.isEnabled();
-    }
-
     public boolean isVirtualDisplayLimitEnabled() {
         return mVirtualDisplayLimit.isEnabled();
     }
@@ -688,7 +677,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mIgnoreAppPreferredRefreshRate);
         pw.println(" " + mSynthetic60hzModes);
         pw.println(" " + mOffloadSessionCancelBlockScreenOn);
-        pw.println(" " + mNewHdrBrightnessModifier);
         pw.println(" " + mVirtualDisplayLimit);
         pw.println(" " + mNormalBrightnessForDozeParameter);
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
