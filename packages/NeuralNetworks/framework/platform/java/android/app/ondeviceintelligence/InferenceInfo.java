@@ -141,6 +141,16 @@ public final class InferenceInfo implements Parcelable {
     }
 
     @Override
+    public String toString() {
+        return "InferenceInfo{"
+                + "uid=" + uid
+                + ", startTimeMs=" + startTimeMs
+                + ", endTimeMs=" + endTimeMs
+                + ", suspendedTimeMs=" + suspendedTimeMs
+                + '}';
+    }
+
+    @Override
     public int describeContents() {
         return 0;
     }
