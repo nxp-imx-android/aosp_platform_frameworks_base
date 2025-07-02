@@ -16,6 +16,11 @@
 
 package android.telephony;
 
+import static android.Manifest.permission.MANAGE_COMPANION_DEVICES;
+import static android.Manifest.permission.MANAGE_ROLE_HOLDERS;
+import static android.Manifest.permission.READ_PRIVILEGED_PHONE_STATE;
+import static android.Manifest.permission.RECEIVE_SENSITIVE_NOTIFICATIONS;
+
 import android.Manifest;
 import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
@@ -26,22 +31,30 @@ import android.annotation.Nullable;
 import android.annotation.RequiresFeature;
 import android.annotation.RequiresPermission;
 import android.annotation.SuppressAutoDoc;
+import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.TestApi;
 import android.app.PendingIntent;
+import android.app.role.RoleManager;
+import android.companion.AssociationInfo;
+import android.companion.CompanionDeviceManager;
 import android.compat.Compatibility;
 import android.compat.annotation.ChangeId;
 import android.compat.annotation.EnabledAfter;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.CursorWindow;
 import android.net.Uri;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.os.Trace;
 import android.text.TextUtils;
 import android.util.ArrayMap;
+import android.util.ArraySet;
 import android.util.Log;
 import android.util.Pair;
 
@@ -59,6 +72,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Executor;
 
 /*
@@ -290,6 +305,15 @@ public final class SmsManager {
             CarrierConfigManager.KEY_MMS_CLOSE_CONNECTION_BOOL;
 
     /**
+     * The following roles need access to SMS messages with OTPs:
+     * SMS: To handle basic SMS tasks
+     * ASSISTANT: To perform actions with all SMS messages
+     * DIALER: The Dialer role has SMS permissions, and is considered trusted
+     */
+    private static final List<String> SMS_OTP_READING_ROLES = List.of(RoleManager.ROLE_SMS,
+            RoleManager.ROLE_ASSISTANT, RoleManager.ROLE_DIALER);
+
+    /**
      * 3gpp2 SMS priority is not specified
      * @hide
      */
@@ -435,6 +459,17 @@ public final class SmsManager {
      */
     @SystemApi
     public static final int PREMIUM_SMS_CONSENT_ALWAYS_ALLOW = 3;
+
+    /**
+     * A list of flags that should be used in the package manager to retrieve all system apps, in
+     * any state
+     */
+    private static final int SYSTEM_APP_FLAGS = PackageManager.MATCH_SYSTEM_ONLY
+            | PackageManager.MATCH_DISABLED_COMPONENTS
+            | PackageManager.MATCH_DISABLED_UNTIL_USED_COMPONENTS
+            | PackageManager.MATCH_KNOWN_PACKAGES
+            | PackageManager.MATCH_DIRECT_BOOT_AWARE
+            | PackageManager.MATCH_DIRECT_BOOT_UNAWARE;
 
     // result of asking the user for a subscription to perform an operation.
     private interface SubscriptionResolverResult {
@@ -3691,5 +3726,159 @@ public final class SmsManager {
         } catch (RemoteException ex) {
             throw new RuntimeException(ex);
         }
+    }
+
+    private static Set<String> sSystemPkgs = null;
+
+    /**
+     * Get all app IDs that are allowed to read SMS messages/receive SMS Broadcasts which contain
+     * an otp code, provided said apps also have the READ_SMS/RECEIVE_SMS permissions.
+     * (respectively). This method is static because SmsManager instances can be null, if the
+     * phone process is unavailable.
+     * @hide
+     */
+    @SuppressLint({"UnflaggedApi"})
+    @TestApi
+    @RequiresPermission(allOf = {READ_PRIVILEGED_PHONE_STATE, MANAGE_COMPANION_DEVICES,
+            MANAGE_ROLE_HOLDERS})
+    public static @NonNull Set<String> getSmsOtpTrustedPackages(@NonNull Context context) {
+        PackageManager pm = context.getPackageManager();
+        Set<String> trustedPackages = new ArraySet<>();
+        final long token = Binder.clearCallingIdentity();
+        try {
+            Trace.beginSection("getSmsOtpTrustedPackagess");
+            // All system apps have access to OTPs in SMS messages
+            if (sSystemPkgs == null) {
+                Trace.beginSection("getSmsOtpTrustedPackages_systemApps");
+                sSystemPkgs = new ArraySet<>();
+                List<PackageInfo> systemPkgs = pm.getInstalledPackages(SYSTEM_APP_FLAGS);
+                for (PackageInfo pkg : systemPkgs) {
+                    sSystemPkgs.add(pkg.packageName);
+                }
+                Trace.endSection();
+            }
+            trustedPackages.addAll(sSystemPkgs);
+
+            // Certain role holders have access
+            trustedPackages.addAll(getTrustedOtpSmsRolePackages(context));
+
+            // Holders of the RECEIVE_SENSITIVE_NOTIFICATIONS permission have access
+            List<PackageInfo> permissionHolders = context.getPackageManager()
+                    .getPackagesHoldingPermissions(
+                            new String[] {RECEIVE_SENSITIVE_NOTIFICATIONS}, 0);
+            for (PackageInfo pkg : permissionHolders) {
+                trustedPackages.add(pkg.packageName);
+            }
+
+            // Carrier privileged apps have access
+            trustedPackages.addAll(getPackagesWithCarrierPrivileges(context));
+
+            // Apps with a current companion device association often need to relay all sms
+            // messages to the companion device
+            for (AssociationInfo info : getAllCdmAssociations(context)) {
+                trustedPackages.add(info.getPackageName());
+            }
+        } finally {
+            Binder.restoreCallingIdentity(token);
+            Trace.endSection();
+        }
+        return trustedPackages;
+    }
+
+    /**
+     * Checks if a single app is allowed to to read SMS messages/receive SMS Broadcasts which
+     * contain an otp code, provided said apps also have the READ_SMS/RECEIVE_SMS permissions.
+     * This method is static because SmsManager instances can be null, if the phone process is
+     * unavailable.
+     * @hide
+     */
+    @SuppressLint({"UnflaggedApi"})
+    @TestApi
+    @RequiresPermission(allOf = {READ_PRIVILEGED_PHONE_STATE, MANAGE_COMPANION_DEVICES,
+            MANAGE_ROLE_HOLDERS})
+    public static boolean isAppTrustedForSmsOtp(@NonNull Context context,
+            @NonNull String packageName, int uid) {
+        final long token = Binder.clearCallingIdentity();
+        try {
+            Trace.beginSection("isAppTrustedForSmsOtp");
+            // Holders of the RECEIVE_SENSITIVE_NOTIFICATIONS permission have access
+            if (context.getPackageManager()
+                    .checkPermission(RECEIVE_SENSITIVE_NOTIFICATIONS, packageName)
+                    == PackageManager.PERMISSION_GRANTED) {
+                return true;
+            }
+
+            // All system apps have access to OTPs in SMS messages
+            if (isSystemApp(context, packageName)) {
+                return true;
+            }
+
+            // Certain role holders have access
+            if (isTrustedOtpSmsRoleHolder(context, packageName)) {
+                return true;
+            }
+
+            // Carrier privileged apps have access
+            if (getPackagesWithCarrierPrivileges(context).contains(packageName)) {
+                return true;
+            }
+
+            // Apps with a current companion device association often need to relay all sms
+            // messages to the companion device
+            for (AssociationInfo info : getAllCdmAssociations(context)) {
+                if (Objects.equals(info.getPackageName(), packageName)) {
+                    return true;
+                }
+            }
+
+        } finally {
+            Trace.endSection();
+            Binder.restoreCallingIdentity(token);
+        }
+        return false;
+    }
+
+    @SuppressLint("MissingPermission")
+    private static Set<String> getTrustedOtpSmsRolePackages(Context context) {
+        RoleManager rm = context.getSystemService(RoleManager.class);
+        Set<String> roleHoldingPackages = new ArraySet<>();
+        for (String role: SMS_OTP_READING_ROLES) {
+            roleHoldingPackages.addAll(rm.getRoleHolders(role));
+        }
+        return roleHoldingPackages;
+    }
+
+    private static boolean isTrustedOtpSmsRoleHolder(Context context, String packageName) {
+        return getTrustedOtpSmsRolePackages(context).contains(packageName);
+    }
+
+    private static boolean isSystemApp(Context context, String packageName) {
+        if (sSystemPkgs != null && sSystemPkgs.contains(packageName)) {
+            return true;
+        } else if (sSystemPkgs == null) {
+            try {
+                context.getPackageManager().getPackageUid(packageName, SYSTEM_APP_FLAGS);
+                // If the package isn't a system app, this method will throw an Exception
+                return true;
+            } catch (PackageManager.NameNotFoundException e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    @SuppressLint("MissingPermission")
+    private static Set<String> getPackagesWithCarrierPrivileges(Context context) {
+        TelephonyManager tm = context.getSystemService(TelephonyManager.class);
+        if (tm == null) {
+            return new ArraySet<>();
+        }
+        return tm.getPackagesWithCarrierPrivileges();
+    }
+
+    @SuppressLint("MissingPermission")
+    private static List<AssociationInfo> getAllCdmAssociations(Context context) {
+        CompanionDeviceManager cdm = context.getSystemService(CompanionDeviceManager.class);
+        return cdm.getAllAssociations();
     }
 }
