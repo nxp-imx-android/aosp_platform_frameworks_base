@@ -16,6 +16,12 @@
 
 package com.android.server.serial;
 
+import static android.hardware.serial.SerialPort.OPEN_FLAG_DATA_SYNC;
+import static android.hardware.serial.SerialPort.OPEN_FLAG_NONBLOCK;
+import static android.hardware.serial.SerialPort.OPEN_FLAG_SYNC;
+import static android.hardware.serial.SerialPort.OPEN_FLAG_READ_ONLY;
+import static android.hardware.serial.SerialPort.OPEN_FLAG_WRITE_ONLY;
+import static android.hardware.serial.SerialPort.OPEN_FLAG_READ_WRITE;
 import static android.hardware.serial.flags.Flags.enableSerialApi;
 
 import static com.android.server.serial.SerialConstants.DEV_DIR;
@@ -34,9 +40,11 @@ import android.os.RemoteCallbackList;
 import android.os.RemoteException;
 import android.system.ErrnoException;
 import android.system.Os;
+import android.system.OsConstants;
 import android.util.Slog;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.SystemService;
 
 import java.io.File;
@@ -49,6 +57,12 @@ import java.util.List;
 
 public class SerialManagerService extends ISerialManager.Stub {
     private static final String TAG = "SerialManagerService";
+
+    private static final int OPEN_MODE_BITS =
+            OPEN_FLAG_READ_ONLY | OPEN_FLAG_WRITE_ONLY | OPEN_FLAG_READ_WRITE;
+    private static final int FORBIDDEN_FLAG_BITS =
+            ~(OPEN_FLAG_READ_ONLY | OPEN_FLAG_WRITE_ONLY | OPEN_FLAG_READ_WRITE | OPEN_FLAG_NONBLOCK
+                    | OPEN_FLAG_DATA_SYNC | OPEN_FLAG_SYNC);
 
     // keyed by the serial port name (eg. ttyS0)
     @GuardedBy("mLock")
@@ -65,10 +79,7 @@ public class SerialManagerService extends ISerialManager.Stub {
 
     private final SerialDevicesEnumerator mSerialDevicesEnumerator = new SerialDevicesEnumerator();
 
-    private FileObserver mDevDirObserver;
-
-    private SerialManagerService() {
-    }
+    private SerialManagerService() {}
 
     @Override
     public List<SerialPortInfo> getSerialPorts() throws RemoteException {
@@ -119,7 +130,7 @@ public class SerialManagerService extends ISerialManager.Stub {
             }
             String path = DEV_DIR + "/" + portName;
             try {
-                FileDescriptor fd = Os.open(path, flags, /* mode= */ 0);
+                FileDescriptor fd = Os.open(path, toOsConstants(flags), /* mode= */ 0);
                 try (var pfd = new ParcelFileDescriptor(fd)) {
                     callback.onResult(port, pfd);
                 } catch (RemoteException | RuntimeException e) {
@@ -138,6 +149,34 @@ public class SerialManagerService extends ISerialManager.Stub {
         }
     }
 
+    @VisibleForTesting
+    static int toOsConstants(int flags) {
+        // Always open the device with O_NOCTTY flag, so that it will not become the process's
+        // controlling terminal.
+        int osFlags = OsConstants.O_NOCTTY;
+        switch (flags & OPEN_MODE_BITS) {
+            case OPEN_FLAG_READ_ONLY -> osFlags |= OsConstants.O_RDONLY;
+            case OPEN_FLAG_WRITE_ONLY -> osFlags |= OsConstants.O_WRONLY;
+            case OPEN_FLAG_READ_WRITE -> osFlags |= OsConstants.O_RDWR;
+            default -> throw new IllegalArgumentException(
+                    "Flags value " + flags + " must contain only one open mode flag");
+        }
+        if ((flags & OPEN_FLAG_NONBLOCK) != 0) {
+            osFlags |= OsConstants.O_NONBLOCK;
+        }
+        if ((flags & OPEN_FLAG_DATA_SYNC) != 0) {
+            osFlags |= OsConstants.O_DSYNC;
+        }
+        if ((flags & OPEN_FLAG_SYNC) != 0) {
+            osFlags |= OsConstants.O_SYNC;
+        }
+        if ((flags & FORBIDDEN_FLAG_BITS) != 0) {
+            throw new IllegalArgumentException(
+                    "Flags value " + flags + " is not a combination of FLAG_* constants");
+        }
+        return osFlags;
+    }
+
     private void startIfNeeded() throws IOException {
         if (mIsStarted) {
             return;
@@ -148,7 +187,7 @@ public class SerialManagerService extends ISerialManager.Stub {
     }
 
     private void watchDevicesDir() {
-        mDevDirObserver = new FileObserver(new File(DEV_DIR),
+        FileObserver devDirObserver = new FileObserver(new File(DEV_DIR),
                 FileObserver.CREATE | FileObserver.DELETE) {
             @Override
             public void onEvent(int event, @Nullable String path) {
@@ -166,7 +205,7 @@ public class SerialManagerService extends ISerialManager.Stub {
                 }
             }
         };
-        mDevDirObserver.startWatching();
+        devDirObserver.startWatching();
     }
 
     private void enumerateSerialDevices() throws IOException {
