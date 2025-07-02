@@ -16625,6 +16625,9 @@ package android.telephony {
     field public static final int SIM_ACTIVATION_STATE_UNKNOWN = 0; // 0x0
     field public static final int SIM_STATE_LOADED = 10; // 0xa
     field public static final int SIM_STATE_PRESENT = 11; // 0xb
+    field @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") public static final int SIM_TYPE_EMBEDDED = 2; // 0x2
+    field @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") public static final int SIM_TYPE_PHYSICAL = 1; // 0x1
+    field @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") public static final int SIM_TYPE_UNKNOWN = -1; // 0xffffffff
     field public static final int SRVCC_STATE_HANDOVER_CANCELED = 3; // 0x3
     field public static final int SRVCC_STATE_HANDOVER_COMPLETED = 1; // 0x1
     field public static final int SRVCC_STATE_HANDOVER_FAILED = 2; // 0x2
@@ -16739,6 +16742,8 @@ package android.telephony {
     method public boolean getIsExtendedApduSupported();
     method @Deprecated public int getLogicalSlotIdx();
     method @NonNull public java.util.Collection<android.telephony.UiccPortInfo> getPorts();
+    method @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") public int getSimType();
+    method @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") @NonNull public int[] getSupportedSimTypes();
     method public boolean isRemovable();
     method public void writeToParcel(android.os.Parcel, int);
     field public static final int CARD_STATE_INFO_ABSENT = 1; // 0x1
@@ -16750,10 +16755,12 @@ package android.telephony {
 
   public final class UiccSlotMapping implements android.os.Parcelable {
     ctor public UiccSlotMapping(int, int, int);
+    ctor @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") public UiccSlotMapping(int, int, int, int);
     method public int describeContents();
     method @IntRange(from=0) public int getLogicalSlotIndex();
     method @IntRange(from=0) public int getPhysicalSlotIndex();
     method @IntRange(from=0) public int getPortIndex();
+    method @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") public int getSimType();
     method public void writeToParcel(@Nullable android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.UiccSlotMapping> CREATOR;
   }
