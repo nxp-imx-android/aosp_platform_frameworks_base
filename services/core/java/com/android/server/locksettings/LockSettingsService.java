@@ -47,6 +47,11 @@ import static com.android.internal.widget.LockPatternUtils.pinOrPasswordQualityT
 import static com.android.internal.widget.LockPatternUtils.userOwnsFrpCredential;
 import static com.android.server.locksettings.SyntheticPasswordManager.TOKEN_TYPE_STRONG;
 import static com.android.server.locksettings.SyntheticPasswordManager.TOKEN_TYPE_WEAK;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.decryptProfilePassword;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.encryptProfilePassword;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.profilePasswordDecryptAlias;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.profilePasswordEncryptAlias;
+import static com.android.server.locksettings.UnifiedProfilePasswordCrypto.removeKeystoreProfileKey;
 
 import android.Manifest;
 import android.annotation.NonNull;
@@ -103,7 +108,6 @@ import android.provider.Settings;
 import android.security.AndroidKeyStoreMaintenance;
 import android.security.KeyStoreAuthorization;
 import android.security.keystore.KeyProperties;
-import android.security.keystore.KeyProtection;
 import android.security.keystore.recovery.KeyChainProtectionParams;
 import android.security.keystore.recovery.KeyChainSnapshot;
 import android.security.keystore.recovery.RecoveryCertPath;
@@ -163,13 +167,11 @@ import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
@@ -183,12 +185,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
 
 /**
  * LockSettingsService (LSS) mainly has the following responsibilities:
@@ -231,7 +229,6 @@ import javax.crypto.spec.GCMParameterSpec;
 public class LockSettingsService extends ILockSettings.Stub {
     private static final String TAG = "LockSettingsService";
 
-    private static final int PROFILE_KEY_IV_SIZE = 12;
     private static final String SEPARATE_PROFILE_CHALLENGE_KEY = "lockscreen.profilechallenge";
     private static final String PREV_LSKF_BASED_PROTECTOR_ID_KEY = "prev-sp-handle";
     private static final String LSKF_LAST_CHANGED_TIME_KEY = "sp-handle-ts";
@@ -251,9 +248,6 @@ public class LockSettingsService extends ILockSettings.Stub {
     // sensor's enrollment. If biometric enrollment requests a password handle that has expired, the
     // user's credential must be presented again, e.g. via ConfirmLockPattern/ConfirmLockPassword.
     private static final int GK_PW_HANDLE_STORE_DURATION_MS = 10 * 60 * 1000; // 10 minutes
-
-    private static final String PROFILE_KEY_NAME_ENCRYPT = "profile_key_name_encrypt_";
-    private static final String PROFILE_KEY_NAME_DECRYPT = "profile_key_name_decrypt_";
 
     private static final int HEADLESS_VENDOR_AUTH_SECRET_LENGTH = 32;
 
@@ -1359,7 +1353,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         try {
             if (enabled) {
                 mStorage.removeChildProfileLock(userId);
-                removeKeystoreProfileKey(userId);
+                removeKeystoreProfileKey(mKeyStore, userId);
             } else {
                 synchronized (mSpManager) {
                     tieProfileLockIfNecessary(userId, profileUserPassword);
@@ -1551,21 +1545,7 @@ public class LockSettingsService extends ILockSettings.Stub {
         if (storedData == null) {
             throw new FileNotFoundException("Child profile lock file not found");
         }
-        byte[] iv = Arrays.copyOfRange(storedData, 0, PROFILE_KEY_IV_SIZE);
-        byte[] encryptedPassword = Arrays.copyOfRange(storedData, PROFILE_KEY_IV_SIZE,
-                storedData.length);
-        byte[] decryptionResult;
-        SecretKey decryptionKey = (SecretKey) mKeyStore.getKey(
-                profilePasswordDecryptAlias(userId), null);
-
-        Cipher cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/"
-                + KeyProperties.BLOCK_MODE_GCM + "/" + KeyProperties.ENCRYPTION_PADDING_NONE);
-
-        cipher.init(Cipher.DECRYPT_MODE, decryptionKey, new GCMParameterSpec(128, iv));
-        decryptionResult = cipher.doFinal(encryptedPassword);
-        LockscreenCredential credential = LockscreenCredential.createUnifiedProfilePassword(
-                decryptionResult);
-        ArrayUtils.zeroize(decryptionResult);
+        LockscreenCredential credential = decryptProfilePassword(mKeyStore, userId, storedData);
         try {
             long parentSid = getGateKeeperService().getSecureUserId(
                     mUserManager.getProfileParent(userId).id);
@@ -1749,7 +1729,7 @@ public class LockSettingsService extends ILockSettings.Stub {
                                 profileUserId,
                                 /* isLockTiedToParent= */ true);
                         mStorage.removeChildProfileLock(profileUserId);
-                        removeKeystoreProfileKey(profileUserId);
+                        removeKeystoreProfileKey(mKeyStore, profileUserId);
                     } else {
                         Slog.wtf(TAG, "Attempt to clear tied challenge, but no password supplied.");
                     }
@@ -2168,60 +2148,15 @@ public class LockSettingsService extends ILockSettings.Stub {
             LockscreenCredential password) {
         Slogf.i(TAG, "Tying lock for profile user %d to parent user %d", profileUserId,
                 parentUserId);
-        final byte[] iv;
-        final byte[] ciphertext;
         final long parentSid;
         try {
             parentSid = getGateKeeperService().getSecureUserId(parentUserId);
         } catch (RemoteException e) {
             throw new IllegalStateException("Failed to talk to GateKeeper service", e);
         }
-
-        try {
-            KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES);
-            keyGenerator.init(new SecureRandom());
-            SecretKey secretKey = keyGenerator.generateKey();
-            try {
-                mKeyStore.setEntry(
-                        profilePasswordEncryptAlias(profileUserId),
-                        new KeyStore.SecretKeyEntry(secretKey),
-                        new KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT)
-                                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                                .build());
-                mKeyStore.setEntry(
-                        profilePasswordDecryptAlias(profileUserId),
-                        new KeyStore.SecretKeyEntry(secretKey),
-                        new KeyProtection.Builder(KeyProperties.PURPOSE_DECRYPT)
-                                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                                .setUserAuthenticationRequired(true)
-                                .setBoundToSpecificSecureUserId(parentSid)
-                                .setUserAuthenticationValidityDurationSeconds(30)
-                                .build());
-                // Key imported, obtain a reference to it.
-                SecretKey keyStoreEncryptionKey = (SecretKey) mKeyStore.getKey(
-                        profilePasswordEncryptAlias(profileUserId), null);
-                Cipher cipher = Cipher.getInstance(
-                        KeyProperties.KEY_ALGORITHM_AES + "/"
-                                + KeyProperties.BLOCK_MODE_GCM + "/"
-                                + KeyProperties.ENCRYPTION_PADDING_NONE);
-                cipher.init(Cipher.ENCRYPT_MODE, keyStoreEncryptionKey);
-                ciphertext = cipher.doFinal(password.getCredential());
-                iv = cipher.getIV();
-            } finally {
-                // The original key can now be discarded.
-                mKeyStore.deleteEntry(profilePasswordEncryptAlias(profileUserId));
-            }
-        } catch (UnrecoverableKeyException
-                | BadPaddingException | IllegalBlockSizeException | KeyStoreException
-                | NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new IllegalStateException("Failed to encrypt key", e);
-        }
-        if (iv.length != PROFILE_KEY_IV_SIZE) {
-            throw new IllegalArgumentException("Invalid iv length: " + iv.length);
-        }
-        mStorage.writeChildProfileLock(profileUserId, ArrayUtils.concat(iv, ciphertext));
+        byte[] encryptedPasswordData = encryptProfilePassword(mKeyStore, profileUserId,
+                parentSid, password);
+        mStorage.writeChildProfileLock(profileUserId, encryptedPasswordData);
     }
 
     private void setCeStorageProtection(@UserIdInt int userId, SyntheticPassword sp) {
@@ -2708,35 +2643,10 @@ public class LockSettingsService extends ILockSettings.Stub {
         mUnifiedProfilePasswordCache.removePassword(userId);
 
         gateKeeperClearSecureUserId(userId);
-        removeKeystoreProfileKey(userId);
+        removeKeystoreProfileKey(mKeyStore, userId);
         // Clean up storage last, so that removeStateForReusedUserIdIfNecessary() can assume that no
         // USER_SERIAL_NUMBER_KEY means user is fully removed.
         mStorage.removeUser(userId);
-    }
-
-    // TODO: b/412331826 Add protectorId param
-    private static String profilePasswordEncryptAlias(int profileUserId) {
-        return PROFILE_KEY_NAME_ENCRYPT + profileUserId;
-    }
-
-    // TODO: b/412331826 Add protectorId param
-    private static String profilePasswordDecryptAlias(int profileUserId) {
-        return PROFILE_KEY_NAME_DECRYPT + profileUserId;
-    }
-
-    private void removeKeystoreProfileKey(int targetUserId) {
-        final String encryptAlias = profilePasswordEncryptAlias(targetUserId);
-        final String decryptAlias = profilePasswordDecryptAlias(targetUserId);
-        try {
-            if (mKeyStore.containsAlias(encryptAlias) || mKeyStore.containsAlias(decryptAlias)) {
-                Slogf.i(TAG, "Removing keystore profile key for user %d", targetUserId);
-                mKeyStore.deleteEntry(encryptAlias);
-                mKeyStore.deleteEntry(decryptAlias);
-            }
-        } catch (KeyStoreException e) {
-            // We have tried our best to remove the key.
-            Slogf.e(TAG, e, "Error removing keystore profile key for user %d", targetUserId);
-        }
     }
 
     @Override
