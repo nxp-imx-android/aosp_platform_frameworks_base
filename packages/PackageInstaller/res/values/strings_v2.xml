@@ -135,7 +135,7 @@
     <string name="message_archive_work_profile">This app will be archived from your work profile. Your app data will be saved.</string>
     <string name="message_archive_private_space">This app will be archived from your private space. Your app data will be saved.</string>
 
-    <string name="message_restore">This app download from <xliff:g id="installer_name">%1$s</xliff:g> in the background</string>
+    <string name="message_restore">This app will download from <xliff:g id="installer_name">%1$s</xliff:g> in the background</string>
     <string name="message_restore_error_user_action_needed"><xliff:g id="installer_name">%1$s</xliff:g> needs more information before you can restore this app</string>
     <string name="message_restore_error_less_storage">To restore this app, free up &lt;b><xliff:g id="bytes">%1$s</xliff:g>&lt;/b> and try again </string>
     <string name="message_restore_error_offline">To restore this app, check your internet connection and try again</string>
