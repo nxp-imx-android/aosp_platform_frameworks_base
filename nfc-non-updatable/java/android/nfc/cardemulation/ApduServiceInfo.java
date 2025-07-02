@@ -58,9 +58,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.regex.Pattern;
 
 /**
@@ -141,7 +138,7 @@ public final class ApduServiceInfo implements Parcelable {
 
     private final Map<String, Boolean> mAutoTransact;
 
-    private final ConcurrentMap<Pattern, Boolean> mAutoTransactPatterns;
+    private final Map<Pattern, Boolean> mAutoTransactPatterns;
 
     /**
      * Whether this service should only be started when the device is unlocked.
@@ -254,7 +251,7 @@ public final class ApduServiceInfo implements Parcelable {
         this.mStaticAidGroups = new HashMap<String, AidGroup>();
         this.mDynamicAidGroups = new HashMap<String, AidGroup>();
         this.mAutoTransact = autoTransact;
-        this.mAutoTransactPatterns = new ConcurrentHashMap<>(autoTransactPatterns);
+        this.mAutoTransactPatterns = autoTransactPatterns;
         this.mOffHostName = offHost;
         this.mStaticOffHostName = staticOffHost;
         this.mOnHost = onHost;
@@ -386,8 +383,8 @@ public final class ApduServiceInfo implements Parcelable {
             mStaticAidGroups = new HashMap<String, AidGroup>();
             mDynamicAidGroups = new HashMap<String, AidGroup>();
             mAutoTransact = new HashMap<String, Boolean>();
-            mAutoTransactPatterns =
-                     new ConcurrentSkipListMap<>(Comparator.comparing(Pattern::toString));
+            mAutoTransactPatterns = new TreeMap<Pattern, Boolean>(
+                    Comparator.comparing(Pattern::toString));
             mOnHost = onHost;
 
             final int depth = parser.getDepth();
