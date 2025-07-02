@@ -40,6 +40,8 @@ import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow
 import com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrowButSupported
 import com.android.hoststubgen.hosthelper.HostTestUtils
 import com.android.hoststubgen.log
+import com.android.hoststubgen.utils.ClassDescriptorSet
+import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.MethodVisitor
@@ -49,6 +51,7 @@ import org.objectweb.asm.Opcodes.INVOKESPECIAL
 import org.objectweb.asm.Opcodes.INVOKESTATIC
 import org.objectweb.asm.Opcodes.INVOKEVIRTUAL
 import org.objectweb.asm.Type
+import java.lang.annotation.RetentionPolicy
 
 const val OPCODE_VERSION = Opcodes.ASM9
 
@@ -77,6 +80,9 @@ class ImplGeneratingAdapter(
         // val deleteFieldFinals: Boolean,
 
         val throwExceptionType: String,
+
+        // We make all annotations in this set "runtime-visible".
+        val annotationsToMakeVisible: ClassDescriptorSet,
     )
 
     private lateinit var currentPackageName: String
@@ -151,6 +157,32 @@ class ImplGeneratingAdapter(
         log.unindent()
         log.unindent()
         super.visitEnd()
+    }
+
+    /**
+     * Tweak annotation "visibility" aka "retention policy".
+     */
+    override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor? {
+        // If it's a "known" annotation -- i.e. any Ravenwood annotations -- we do the following:
+        // 1. For the annotation type itself, change the retention policy to "RUNTIME".
+        // 2. Make the annotation "runtime-visible" across the whole jar.
+
+        // For 1.
+        if (options.annotationsToMakeVisible.contains(currentClassName)) {
+            // This current type is a known annotation. We change the retention policy.
+
+            if ("Ljava/lang/annotation/Retention;" == descriptor) {
+                // If it is, we return our custom AnnotationVisitor to modify its value.
+                // We pass the original visitor from the superclass to maintain the chain.
+                return RetentionPolicyAnnotationVisitor(
+                    super.visitAnnotation(descriptor, visible))
+            }
+        }
+
+        // For 2. If the annotation we're processing now is "known" (i.e. RavenwoodKeep, etc),
+        // force it to be "runtime-visible" aka RUNTIME.
+        return super.visitAnnotation(descriptor,
+            visible || options.annotationsToMakeVisible.contains(descriptor))
     }
 
     var skipMemberModificationNestCount = 0
@@ -236,7 +268,7 @@ class ImplGeneratingAdapter(
             UnifiedVisitor.on(ret)
                 .visitAnnotation(HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR, true)
 
-            return ret
+            return ForceFieldAnnotationVisibilityVisitor(ret)
         }
     }
 
@@ -328,7 +360,7 @@ class ImplGeneratingAdapter(
                     .visitAnnotation(HostStubGenProcessedAsKeep.CLASS_DESCRIPTOR, true)
             }
 
-            return ret
+            return ForceMethodAnnotationVisibilityVisitor(ret)
         }
     }
 
@@ -653,6 +685,50 @@ class ImplGeneratingAdapter(
             if (!doReplace(opcode, owner, name, descriptor)) {
                 super.visitMethodInsn(opcode, owner, name, descriptor, isInterface)
             }
+        }
+    }
+
+
+
+    /**
+     * An AnnotationVisitor that specifically targets the `value` of a @Retention
+     * annotation and forces it to be `RUNTIME`.
+     */
+    class RetentionPolicyAnnotationVisitor(
+        next: AnnotationVisitor?,
+    ) : AnnotationVisitor(OPCODE_VERSION, next) {
+        override fun visitEnum(name: String?, descriptor: String?, value: String?) {
+            // We only care about the "value" property of the @Retention annotation.
+            if ("value" == name && "Ljava/lang/annotation/RetentionPolicy;" == descriptor) {
+                super.visitEnum(name, descriptor, RetentionPolicy.RUNTIME.name)
+            } else {
+                // For any other enum property, delegate to the default behavior.
+                super.visitEnum(name, descriptor, value)
+            }
+        }
+    }
+
+    /**
+     * Force a field's annotation to be runtime-visible if it's "known".
+     */
+    inner class ForceFieldAnnotationVisibilityVisitor(
+        next: FieldVisitor?,
+    ) : FieldVisitor(OPCODE_VERSION, next) {
+        override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor? {
+            return super.visitAnnotation(descriptor,
+                visible || options.annotationsToMakeVisible.contains(descriptor))
+        }
+    }
+
+    /**
+     * Force a method's annotation to be runtime-visible if it's "known".
+     */
+    inner class ForceMethodAnnotationVisibilityVisitor(
+        next: MethodVisitor?,
+    ) : MethodVisitor(OPCODE_VERSION, next) {
+        override fun visitAnnotation(descriptor: String?, visible: Boolean): AnnotationVisitor? {
+            return super.visitAnnotation(descriptor,
+                visible || options.annotationsToMakeVisible.contains(descriptor))
         }
     }
 }

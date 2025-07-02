@@ -74,6 +74,7 @@ class HostStubGenClassProcessor(
             deleteClassFinals = options.deleteFinals.get,
             deleteMethodFinals = options.deleteFinals.get,
             throwExceptionType = options.throwExceptionType.get,
+            annotationsToMakeVisible = options.allAnnotationSet
         )
 
         val verbosePrinter = PrintWriter(log.getWriter(LogLevel.Verbose))
