@@ -1739,13 +1739,21 @@ public class PackageInstaller {
     }
 
     /**
-     * Return the current developer verification enforcement policy. This may only be called by the
-     * package currently set by the system as the verifier agent.
+     * Return the current developer verification enforcement policy. This may only be called by:
+     * <ul>
+     *     <li> Packages with {@link android.Manifest.permission#DEVELOPER_VERIFICATION_AGENT}
+     *     permission. </li>
+     *     <li> The package set by the system as the developer verification service provider.</li>
+     *     <li> The package set by the system as the developer verification service policy delegate.
+     *     </li>
+     * </ul>
+     *
      * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     @SystemApi
-    @RequiresPermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT)
+    @RequiresPermission(value = Manifest.permission.DEVELOPER_VERIFICATION_AGENT,
+            conditional = true)
     public final @DeveloperVerificationPolicy int getDeveloperVerificationPolicy() {
         try {
             return mInstaller.getDeveloperVerificationPolicy(mUserId);
@@ -1756,14 +1764,19 @@ public class PackageInstaller {
 
     /**
      * Set the current developer verification enforcement policy which will be applied to all future
-     * installation sessions. This may only be called by the package currently set by the system as
-     * the verifier agent.
-     * @hide
+     * installation sessions. This may only be called by:
+     * <ul>
+     *     <li> The package set by the system as the developer verification service provider.</li>
+     *     <li> The package set by the system as the developer verification service policy delegate.
+     *     </li>
+     * </ul>
      * @return whether the new policy was successfully set.
+     * @hide
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     @SystemApi
-    @RequiresPermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT)
+    @RequiresPermission(value = Manifest.permission.DEVELOPER_VERIFICATION_AGENT,
+            conditional = true)
     public final boolean setDeveloperVerificationPolicy(@DeveloperVerificationPolicy int policy) {
         try {
             return mInstaller.setDeveloperVerificationPolicy(policy, mUserId);
@@ -1783,6 +1796,29 @@ public class PackageInstaller {
     public final @Nullable ComponentName getDeveloperVerificationServiceProvider() {
         try {
             return mInstaller.getDeveloperVerificationServiceProvider();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Returns the package name of the app that is specified by the system as the delegate of
+     * the developer verification service provider (a.k.a. the verifier) and can change the default
+     * developer verification policy on behalf of the verifier. Only the verifier itself can call
+     * this method to query the package name of the delegate app, and it must also have package
+     * visibility to the delegate app to get the result.
+     *
+     * @return the package name of the delegate, or null if the delegate app is not specified by
+     * the system, or is not available to the caller.
+     * @hide
+     */
+    @FlaggedApi(android.content.pm.Flags.FLAG_VERIFICATION_SERVICE)
+    @SystemApi
+    @RequiresPermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT)
+    @Nullable
+    public String getDeveloperVerificationPolicyDelegatePackage() {
+        try {
+            return mInstaller.getDeveloperVerificationPolicyDelegatePackage(mUserId);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

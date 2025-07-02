@@ -6282,6 +6282,8 @@
 
   <!-- Developer verification service provider -->
   <java-symbol type="string" name="config_developerVerificationServiceProviderPackageName" />
+  <!-- Developer verification policy delegate -->
+  <java-symbol type="string" name="config_developerVerificationPolicyDelegatePackageName" />
 
   <!-- Package and class info to bind to ProximityProviderService -->
   <java-symbol type="string" name="proximity_provider_service_package_name" />

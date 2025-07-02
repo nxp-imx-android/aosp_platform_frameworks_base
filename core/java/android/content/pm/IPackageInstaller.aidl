@@ -96,11 +96,13 @@ interface IPackageInstaller {
     @JavaPassthrough(annotation="@android.annotation.RequiresPermission(anyOf={android.Manifest.permission.INSTALL_PACKAGES,android.Manifest.permission.REQUEST_INSTALL_PACKAGES})")
     void reportUnarchivalStatus(int unarchiveId, int status, long requiredStorageBytes, in PendingIntent userActionIntent, in UserHandle userHandle);
 
-    @EnforcePermission("DEVELOPER_VERIFICATION_AGENT")
+    @PermissionManuallyEnforced
     int getDeveloperVerificationPolicy(int userId);
-    @EnforcePermission("DEVELOPER_VERIFICATION_AGENT")
+    @PermissionManuallyEnforced
     boolean setDeveloperVerificationPolicy(int policy, int userId);
     ComponentName getDeveloperVerificationServiceProvider();
+    @EnforcePermission("DEVELOPER_VERIFICATION_AGENT")
+    String getDeveloperVerificationPolicyDelegatePackage(int userId);
 
     @EnforcePermission("SET_DEVELOPER_VERIFICATION_USER_RESPONSE")
     void setDeveloperVerificationUserResponse(int sessionId, int developerVerificationUserResponse);

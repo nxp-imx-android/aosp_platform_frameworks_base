@@ -7638,6 +7638,8 @@
 
     <!-- Package name for developer verification service provider app [DO NOT TRANSLATE] -->
     <string name="config_developerVerificationServiceProviderPackageName" translatable="false"></string>
+    <!-- Package name for developer verification policy delegate app [DO NOT TRANSLATE] -->
+    <string name="config_developerVerificationPolicyDelegatePackageName" translatable="false"></string>
 
     <!-- Whether the system package installer supports the material design. -->
     <bool name="config_enableMaterialDesignInPackageInstaller">true</bool>

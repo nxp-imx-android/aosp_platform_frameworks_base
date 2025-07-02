@@ -16,14 +16,19 @@
 
 package com.android.server.pm;
 
+import static android.os.Process.myUid;
+
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import android.content.ComponentName;
@@ -49,12 +54,12 @@ import org.mockito.MockitoAnnotations;
 @Presubmit
 @RunWith(JUnit4.class)
 public class PackageInstallerServiceTest {
-    private PackageManagerServiceTestParams mTestParams;
     private @Mock PermissionEnforcer mMockPermissionEnforcer;
     private @Mock SystemServiceManager mMockSystemServiceManager;
     private @Mock DeveloperVerifierController mMockDeveloperVerifierController;
     private String mPackageName;
     private PackageManagerService mPms;
+    private @Mock Computer mMockSnapshot;
 
     @Rule
     public final MockSystemRule rule = new MockSystemRule();
@@ -64,8 +69,8 @@ public class PackageInstallerServiceTest {
         MockitoAnnotations.initMocks(this);
         rule.system().stageNominalSystemState();
         mPackageName = this.getClass().getPackageName();
-        mTestParams = new PackageManagerServiceTestParams();
-        mTestParams.packages = new ArrayMap<>();
+        PackageManagerServiceTestParams testParams = new PackageManagerServiceTestParams();
+        testParams.packages = new ArrayMap<>();
         when(rule.mocks().getContext().getSystemService(Context.PERMISSION_ENFORCER_SERVICE))
                 .thenReturn(mMockPermissionEnforcer);
         doReturn(mMockDeveloperVerifierController).when(
@@ -75,8 +80,11 @@ public class PackageInstallerServiceTest {
         );
         doReturn(mMockSystemServiceManager).when(
                 () -> LocalServices.getService(SystemServiceManager.class));
-        when(mMockDeveloperVerifierController.getVerifierPackageName()).thenReturn(mPackageName);
-        mPms = new PackageManagerService(rule.mocks().getInjector(), mTestParams);
+        doReturn(mPackageName).when(mMockDeveloperVerifierController).getVerifierPackageName();
+        mPms = spy(new PackageManagerService(rule.mocks().getInjector(), testParams));
+        doReturn(mMockSnapshot).when(mPms).snapshotComputer();
+        doReturn(myUid()).when(mMockSnapshot).getPackageUidInternal(
+                eq(mPackageName), anyLong(), anyInt(), anyInt());
     }
 
     @Test
@@ -119,15 +127,17 @@ public class PackageInstallerServiceTest {
     }
 
     @Test
-    public void testVerifierIsNull() {
+    public void testVerifierIsNullThrowsException() {
         doReturn(mMockDeveloperVerifierController).when(
                 () -> DeveloperVerifierController.getInstance(any(), any(), eq(null))
         );
         when(mMockDeveloperVerifierController.getVerifierPackageName()).thenReturn(null);
         PackageInstallerService service = new PackageInstallerService(
                 rule.mocks().getContext(), mPms, null, null);
-        assertThat(service.setDeveloperVerificationPolicy(
+        // When there is no verifier specified by the system, no one can change the policy.
+        assertThrows(SecurityException.class,
+                () -> service.setDeveloperVerificationPolicy(
                 /* policy= */ PackageInstaller.DEVELOPER_VERIFICATION_POLICY_BLOCK_FAIL_CLOSED,
-                /* userId= */ UserHandle.USER_SYSTEM)).isFalse();
+                /* userId= */ UserHandle.USER_SYSTEM));
     }
 }

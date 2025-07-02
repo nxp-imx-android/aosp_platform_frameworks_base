@@ -125,4 +125,5 @@ public final class PackageManagerServiceTestParams {
     public FreeStorageHelper freeStorageHelper;
     public PackageMonitorCallbackHelper packageMonitorCallbackHelper;
     public @Nullable ComponentName developerVerificationServiceProvider;
+    public @Nullable String developerVerificationPolicyDelegatePackage;
 }
