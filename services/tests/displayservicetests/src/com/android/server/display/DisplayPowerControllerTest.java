@@ -535,6 +535,7 @@ public final class DisplayPowerControllerTest {
                 .thenReturn(followerBrightness);
 
         mHolder.dpc.addDisplayBrightnessFollower(followerDpc.dpc);
+        advanceTime(1);
 
         DisplayPowerRequest dpr = new DisplayPowerRequest();
         mHolder.dpc.requestPowerState(dpr, /* waitForNegativeProximity= */ false);

@@ -172,6 +172,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     private static final int MSG_SET_STYLUS_BEING_USED = 19;
     private static final int MSG_SET_STYLUS_USE_ENDED = 20;
     private static final int MSG_SET_WINDOW_MANAGER_BRIGHTNESS_OVERRIDE = 21;
+    private static final int MSG_ADD_FOLLOWER = 22;
+    private static final int MSG_REMOVE_FOLLOWER = 23;
 
     private static final int BRIGHTNESS_CHANGE_STATSD_REPORT_INTERVAL_MS = 500;
 
@@ -482,7 +484,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
     // DPCs following the brightness of this DPC. This is used in concurrent displays mode - there
     // is one lead display, the additional displays follow the brightness value of the lead display.
-    @GuardedBy("mLock")
+    // This array should only be read/written from the Handler thread.
     private final SparseArray<DisplayPowerController> mDisplayBrightnessFollowers =
             new SparseArray();
 
@@ -949,8 +951,6 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
      */
     public void stop() {
         synchronized (mLock) {
-            clearDisplayBrightnessFollowersLocked();
-
             mStopped = true;
             Message msg = mHandler.obtainMessage(MSG_STOP);
             mHandler.sendMessageAtTime(msg, mClock.uptimeMillis());
@@ -1282,6 +1282,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
     /** Clean up all resources that are accessed via the {@link #mHandler} thread. */
     private void cleanupHandlerThreadAfterStop() {
+        clearDisplayBrightnessFollowers();
         mDisplayPowerProximityStateController.cleanup();
         mBrightnessRangeController.stop();
         mBrightnessClamperController.stop();
@@ -1325,7 +1326,6 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         boolean mustInitialize = false;
         mBrightnessReasonTemp.set(null);
         mTempBrightnessEvent.reset();
-        SparseArray<DisplayPowerController> displayBrightnessFollowers;
         synchronized (mLock) {
             if (mStopped) {
                 return;
@@ -1354,8 +1354,6 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
             }
 
             mustNotify = !mDisplayReadyLocked;
-
-            displayBrightnessFollowers = mDisplayBrightnessFollowers.clone();
         }
 
         final Pair<Integer, Integer> stateAndReason =
@@ -1570,8 +1568,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
 
         float ambientLux = mAutomaticBrightnessController == null ? 0
                 : mAutomaticBrightnessController.getAmbientLux();
-        for (int i = 0; i < displayBrightnessFollowers.size(); i++) {
-            DisplayPowerController follower = displayBrightnessFollowers.valueAt(i);
+        for (int i = 0; i < mDisplayBrightnessFollowers.size(); i++) {
+            DisplayPowerController follower = mDisplayBrightnessFollowers.valueAt(i);
             follower.setBrightnessToFollow(rawBrightnessState,
                     mDisplayBrightnessController.convertToNits(rawBrightnessState),
                     ambientLux, slowChange);
@@ -2620,28 +2618,23 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
     }
 
     public void addDisplayBrightnessFollower(DisplayPowerController follower) {
-        synchronized (mLock) {
-            mDisplayBrightnessFollowers.append(follower.getDisplayId(), follower);
-            sendUpdatePowerStateLocked();
-        }
+        mHandler.sendMessageAtTime(
+                mHandler.obtainMessage(MSG_ADD_FOLLOWER, 0, 0, follower),
+                mClock.uptimeMillis());
     }
 
     public void removeDisplayBrightnessFollower(DisplayPowerController follower) {
-        synchronized (mLock) {
-            mDisplayBrightnessFollowers.remove(follower.getDisplayId());
-            mHandler.postAtTime(() -> follower.setBrightnessToFollow(
-                    PowerManager.BRIGHTNESS_INVALID_FLOAT, BrightnessMappingStrategy.INVALID_NITS,
-                    /* ambientLux= */ 0, /* slowChange= */ false), mClock.uptimeMillis());
-        }
+        mHandler.sendMessageAtTime(
+                mHandler.obtainMessage(MSG_REMOVE_FOLLOWER, 0, 0, follower),
+                mClock.uptimeMillis());
     }
 
-    @GuardedBy("mLock")
-    private void clearDisplayBrightnessFollowersLocked() {
+    private void clearDisplayBrightnessFollowers() {
         for (int i = 0; i < mDisplayBrightnessFollowers.size(); i++) {
             DisplayPowerController follower = mDisplayBrightnessFollowers.valueAt(i);
-            mHandler.postAtTime(() -> follower.setBrightnessToFollow(
+            follower.setBrightnessToFollow(
                     PowerManager.BRIGHTNESS_INVALID_FLOAT, BrightnessMappingStrategy.INVALID_NITS,
-                    /* ambientLux= */ 0, /* slowChange= */ false), mClock.uptimeMillis());
+                    /* ambientLux= */ 0, /* slowChange= */ false);
         }
         mDisplayBrightnessFollowers.clear();
     }
@@ -3182,6 +3175,22 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                     mDisplayBrightnessController.setStylusBeingUsed(false);
                     updatePowerState();
                     break;
+                case MSG_ADD_FOLLOWER: {
+                    var follower = (DisplayPowerController) msg.obj;
+                    mDisplayBrightnessFollowers.append(follower.getDisplayId(), follower);
+                    updatePowerState();
+                    break;
+                }
+                case MSG_REMOVE_FOLLOWER: {
+                    var follower = (DisplayPowerController) msg.obj;
+                    mDisplayBrightnessFollowers.remove(follower.getDisplayId());
+                    // Reset the follower's brightness override
+                    // so that it returns to its own brightness
+                    follower.setBrightnessToFollow(PowerManager.BRIGHTNESS_INVALID_FLOAT,
+                            BrightnessMappingStrategy.INVALID_NITS, /* ambientLux= */ 0,
+                            /* slowChange= */ false);
+                    break;
+                }
             }
         }
     }
