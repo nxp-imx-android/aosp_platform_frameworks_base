@@ -109,10 +109,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_ENABLE_VSYNC_LOW_POWER_VOTE,
             Flags::enableVsyncLowPowerVote);
 
-    private final FlagState mVsyncLowLightVote = new FlagState(
-            Flags.FLAG_ENABLE_VSYNC_LOW_LIGHT_VOTE,
-            Flags::enableVsyncLowLightVote);
-
     private final FlagState mBrightnessWearBedtimeModeClamperFlagState = new FlagState(
             Flags.FLAG_BRIGHTNESS_WEAR_BEDTIME_MODE_CLAMPER,
             Flags::brightnessWearBedtimeModeClamper);
@@ -406,10 +402,6 @@ public class DisplayManagerFlags {
 
     public boolean isVsyncLowPowerVoteEnabled() {
         return mVsyncLowPowerVote.isEnabled();
-    }
-
-    public boolean isVsyncLowLightVoteEnabled() {
-        return mVsyncLowLightVote.isEnabled();
     }
 
     public boolean isBrightnessWearBedtimeModeClamperEnabled() {

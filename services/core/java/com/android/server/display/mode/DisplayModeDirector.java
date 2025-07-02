@@ -1821,9 +1821,6 @@ public class DisplayModeDirector {
         private final Injector mInjector;
         private final Handler mHandler;
 
-
-        private final boolean mVsyncLowLightBlockingVoteEnabled;
-
         private final IThermalEventListener.Stub mThermalListener =
                 new IThermalEventListener.Stub() {
                     @Override
@@ -1871,7 +1868,6 @@ public class DisplayModeDirector {
                 /* attemptReadFromFeatureParams= */ false);
             mRefreshRateInHighZone = context.getResources().getInteger(
                     R.integer.config_fixedRefreshRateInHighZone);
-            mVsyncLowLightBlockingVoteEnabled = flags.isVsyncLowLightVoteEnabled();
             loadIdleScreenRefreshRateConfigs(/* displayDeviceConfig= */ null);
         }
 
@@ -2313,8 +2309,7 @@ public class DisplayModeDirector {
             synchronized (mLock) {
                 config = mDefaultDisplayDeviceConfig;
             }
-            return mVsyncLowLightBlockingVoteEnabled
-                    && config != null
+            return config != null
                     && config.isVrrSupportEnabled()
                     && !config.getRefreshRateData().lowLightBlockingZoneSupportedModes.isEmpty();
         }
