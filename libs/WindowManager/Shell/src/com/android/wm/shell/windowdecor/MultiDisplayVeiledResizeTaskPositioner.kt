@@ -114,15 +114,6 @@ class MultiDisplayVeiledResizeTaskPositioner(
             interactionJankMonitor.begin(
                 createLongTimeoutJankConfigBuilder(Cuj.CUJ_DESKTOP_MODE_RESIZE_WINDOW)
             )
-            if (!windowDecoration.hasGlobalFocus) {
-                val wct = WindowContainerTransaction()
-                wct.reorder(
-                    windowDecoration.taskInfo.token,
-                    /* onTop= */ true,
-                    /* includingParents= */ true,
-                )
-                taskOrganizer.applyTransaction(wct)
-            }
         }
         repositionTaskBounds.set(taskBoundsAtDragStart)
         val rotation =

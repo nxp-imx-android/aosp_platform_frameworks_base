@@ -97,12 +97,6 @@ class FluidResizeTaskPositioner implements TaskPositioner, Transitions.Transitio
         mTaskBoundsAtDragStart.set(
                 mWindowDecoration.getTaskInfo().configuration.windowConfiguration.getBounds());
         mRepositionStartPoint.set(x, y);
-        if (mCtrlType != CTRL_TYPE_UNDEFINED && !mWindowDecoration.getHasGlobalFocus()) {
-            WindowContainerTransaction wct = new WindowContainerTransaction();
-            wct.reorder(mWindowDecoration.getTaskInfo().token, true /* onTop */,
-                    true /* includingParents */);
-            mTaskOrganizer.applyTransaction(wct);
-        }
         mRepositionTaskBounds.set(mTaskBoundsAtDragStart);
         int rotation = mWindowDecoration
                 .getTaskInfo().configuration.windowConfiguration.getDisplayRotation();
