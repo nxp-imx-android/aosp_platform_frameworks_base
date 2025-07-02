@@ -540,7 +540,7 @@ static void android_os_Process_setCanSelfBackground(JNIEnv* env, jobject clazz, 
 #if GUARD_THREAD_PRIORITY
     ALOGV("Process.setCanSelfBackground(%d) : tid=%d", bgOk, gettid());
     {
-        Mutex::Autolock _l(gKeyCreateMutex);
+        Mutex::Autolock _l(gKeyCreateMutex); // Acquired nowhere else.
         if (gBgKey == -1) {
             pthread_key_create(&gBgKey, NULL);
         }
@@ -549,6 +549,16 @@ static void android_os_Process_setCanSelfBackground(JNIEnv* env, jobject clazz, 
     // inverted:  not-okay, we set a sentinel value
     pthread_setspecific(gBgKey, (void*)(bgOk ? 0 : 0xbaad));
 #endif
+}
+
+static jboolean android_os_Process_getCanSelfBackground(JNIEnv* env, jclass clazz) {
+#if GUARD_THREAD_PRIORITY
+    void* bgOk = pthread_getspecific(gBgKey);
+    if (bgOk == ((void*)0xbaad)) {
+        return false;
+    }
+#endif
+    return true;
 }
 
 jint android_os_Process_getThreadScheduler(JNIEnv* env, jclass clazz,
@@ -584,9 +594,7 @@ void android_os_Process_setThreadScheduler(JNIEnv* env, jclass clazz,
 #endif
 }
 
-void android_os_Process_setThreadPriority(JNIEnv* env, jobject clazz,
-                                              jint pid, jint pri)
-{
+void android_os_Process_setThreadPriorityNative(JNIEnv* env, jobject clazz, jint pid, jint pri) {
 #if GUARD_THREAD_PRIORITY
     // if we're putting the current thread into the background, check the TLS
     // to make sure this thread isn't guarded.  If it is, raise an exception.
@@ -613,12 +621,6 @@ void android_os_Process_setThreadPriority(JNIEnv* env, jobject clazz,
 
     //ALOGI("Setting priority of %" PRId32 ": %" PRId32 ", getpriority returns %d\n",
     //     pid, pri, getpriority(PRIO_PROCESS, pid));
-}
-
-void android_os_Process_setCallingThreadPriority(JNIEnv* env, jobject clazz,
-                                                        jint pri)
-{
-    android_os_Process_setThreadPriority(env, clazz, gettid(), pri);
 }
 
 jint android_os_Process_getThreadPriority(JNIEnv* env, jobject clazz,
@@ -1406,10 +1408,10 @@ void android_os_Process_freezeCgroupUID(JNIEnv* env, jobject clazz, jint uid, jb
 static const JNINativeMethod methods[] = {
         {"getUidForName", "(Ljava/lang/String;)I", (void*)android_os_Process_getUidForName},
         {"getGidForName", "(Ljava/lang/String;)I", (void*)android_os_Process_getGidForName},
-        {"setThreadPriority", "(II)V", (void*)android_os_Process_setThreadPriority},
+        {"setThreadPriorityNative", "(II)V", (void*)android_os_Process_setThreadPriorityNative},
         {"setThreadScheduler", "(III)V", (void*)android_os_Process_setThreadScheduler},
         {"setCanSelfBackground", "(Z)V", (void*)android_os_Process_setCanSelfBackground},
-        {"setThreadPriority", "(I)V", (void*)android_os_Process_setCallingThreadPriority},
+        {"getCanSelfBackground", "()Z", (void*)android_os_Process_getCanSelfBackground},
         {"getThreadPriority", "(I)I", (void*)android_os_Process_getThreadPriority},
         {"getThreadScheduler", "(I)I", (void*)android_os_Process_getThreadScheduler},
         {"setThreadGroup", "(II)V", (void*)android_os_Process_setThreadGroup},
