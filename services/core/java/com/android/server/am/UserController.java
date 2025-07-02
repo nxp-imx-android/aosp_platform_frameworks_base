@@ -150,6 +150,7 @@ import com.android.server.pm.UserManagerInternal.UserStartMode;
 import com.android.server.pm.UserManagerService;
 import com.android.server.utils.Slogf;
 import com.android.server.utils.TimingsTraceAndSlog;
+import com.android.server.wm.ActivityAssistInfo;
 import com.android.server.wm.ActivityTaskManagerInternal;
 import com.android.server.wm.WindowManagerService;
 
@@ -621,11 +622,12 @@ class UserController implements Handler.Callback {
         }
 
         final List<UserInfo> users = mInjector.getUserManager().getUsers(true);
+        final ArraySet<Integer> visibleActivityUsers = mInjector.getVisibleActivityUsers();
         for (int i = 0; i < users.size(); i++) {
             final int userId = users.get(i).id;
             if (isUserVisible(userId)) {
                 exemptedUsers.add(userId);
-            } else if (avoidStoppingUserRightNow(userId)) {
+            } else if (avoidStoppingUserRightNow(userId, visibleActivityUsers)) {
                 avoidUsers.add(userId);
             }
         }
@@ -2846,6 +2848,16 @@ class UserController implements Handler.Callback {
      * Makes requests of other services, so don't call while holding a lock.
      */
     private boolean avoidStoppingUserRightNow(@UserIdInt int userId) {
+        return avoidStoppingUserRightNow(userId, mInjector.getVisibleActivityUsers());
+    }
+
+    /**
+     * Same as {@link #avoidStoppingUserRightNow(int)} but, for efficiency, takes the output of
+     * {@link Injector#getVisibleActivityUsers()} as a parameter.
+     */
+    private boolean avoidStoppingUserRightNow(
+            @UserIdInt int userId, ArraySet<Integer> visibleActivityUsers) {
+
         if (!android.multiuser.Flags.scheduleStopOfBackgroundUser()) {
             return false;
         }
@@ -2863,6 +2875,12 @@ class UserController implements Handler.Callback {
             if (mInjector.getAudioManagerInternal().isUserPlayingAudio(relatedUserId)) {
                 // User is audible (even if invisibly, e.g. via an alarm), so don't stop it.
                 Slogf.d(TAG, "Avoid stopping user %d because user %d is playing audio",
+                        userId, relatedUserId);
+                return true;
+            }
+            if (visibleActivityUsers.contains(userId)) {
+                // User is displaying the top activity from a currently visible root task.
+                Slogf.d(TAG, "Avoid stopping user %d because user %d has a visible activity",
                         userId, relatedUserId);
                 return true;
             }
@@ -3599,6 +3617,9 @@ class UserController implements Handler.Callback {
     /**
      * Returns whether the user is currently visible, including users visible on a background
      * display and always-visible users (e.g. the communal profile).
+     *
+     * <p>Note that this is whether the user itself is considered a visible user, not merely a user
+     * that happens to be displaying a {@link Injector#getVisibleActivityUsers() visible activity}.
      */
     private boolean isUserVisible(@UserIdInt int userId) {
         return mInjector.getUserManagerInternal().isUserVisible(userId);
@@ -4534,6 +4555,28 @@ class UserController implements Handler.Callback {
             } finally {
                 t.traceEnd();
             }
+        }
+
+        /**
+         * Returns the set of users that are currently displaying visible activities.
+         *
+         * <p>Even a non-visible background user could be visibly displaying an activity in special
+         * circumstances, such as if it is running an app with
+         * {@link android.content.pm.ActivityInfo#FLAG_SHOW_FOR_ALL_USERS}.
+         */
+        ArraySet<Integer> getVisibleActivityUsers() {
+            if (!android.multiuser.Flags.rescheduleStopIfVisibleActivities()) {
+                return new ArraySet<>();
+            }
+            ActivityTaskManagerInternal atmi
+                    = LocalServices.getService(ActivityTaskManagerInternal.class);
+            final ArraySet<Integer> visibleActivityUsers = new ArraySet<>();
+            if (atmi != null) {
+                for (ActivityAssistInfo info : atmi.getTopVisibleActivities()) {
+                    visibleActivityUsers.add(info.getUserId());
+                }
+            }
+            return visibleActivityUsers;
         }
     }
 }

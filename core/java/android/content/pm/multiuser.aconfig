@@ -299,6 +299,13 @@ flag {
 }
 
 flag {
+    name: "reschedule_stop_if_visible_activities"
+    namespace: "multiuser"
+    description: "Don't automatically stop a background user that has a top visible activity; instead, reschedule it to stop later"
+    bug: "423731424"
+}
+
+flag {
     name: "stop_previous_user_apps"
     namespace: "multiuser"
     description: "Stop the previous user apps early in a user switch"
