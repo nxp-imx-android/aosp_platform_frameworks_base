@@ -21,6 +21,7 @@ import static android.view.WindowManager.TRANSIT_CHANGE;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_TO_BACK;
 
+import static com.android.wm.shell.splitscreen.SplitScreenController.EXIT_REASON_FULLSCREEN_REQUEST;
 import static com.android.wm.shell.transition.DefaultMixedHandler.subCopy;
 import static com.android.wm.shell.transition.MixedTransitionHelper.animateEnterPipFromSplit;
 import static com.android.wm.shell.transition.MixedTransitionHelper.animateKeyguard;
@@ -113,7 +114,7 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                             mKeyguardHandler, mPipHandler);
             case TYPE_OPTIONS_REMOTE_AND_PIP_OR_DESKTOP_CHANGE ->
                     animateOpenIntentWithRemoteAndPipOrDesktop(transition, info, startTransaction,
-                            finishTransaction, finishCallback);
+                            finishTransaction, finishCallback, mSplitHandler);
             case TYPE_UNFOLD ->
                     animateUnfold(transition, info, startTransaction, finishTransaction,
                             finishCallback);
@@ -197,11 +198,12 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             @NonNull IBinder transition, @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
-            @NonNull Transitions.TransitionFinishCallback finishCallback) {
+            @NonNull Transitions.TransitionFinishCallback finishCallback,
+            @NonNull StageCoordinator splitHandler) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS, "Mixed transition for opening an intent"
                 + " with a remote transition and PIP or Desktop #%d", info.getDebugId());
         boolean handledToPipOrDesktop = tryAnimateOpenIntentWithRemoteAndPipOrDesktop(
-                info, startTransaction, finishTransaction, finishCallback);
+                info, startTransaction, finishTransaction, finishCallback, splitHandler);
         // Consume the transition on remote handler if the leftover handler already handle this
         // transition. And if it cannot, the transition will be handled by remote handler, so don't
         // consume here.
@@ -218,9 +220,20 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
             @NonNull TransitionInfo info,
             @NonNull SurfaceControl.Transaction startTransaction,
             @NonNull SurfaceControl.Transaction finishTransaction,
-            @NonNull Transitions.TransitionFinishCallback finishCallback) {
+            @NonNull Transitions.TransitionFinishCallback finishCallback,
+            @NonNull StageCoordinator splitHandler) {
         ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
                 "tryAnimateOpenIntentWithRemoteAndPipOrDesktop");
+
+        // This is specifically for handling trampolines w/ previously split tasks. In the case that
+        // an activity (which will trampoline into a previously split task) is launched into
+        // fullscreen, the StageCoordinator does not have enough info at transition-request time to
+        // decide whether to handle the transition and never gets a chance to clean up the split
+        // state. So we check here to see if that happened, and clean up if so.
+        if (splitHandler.transitionImpliesSplitToFullscreen(info)) {
+            splitHandler.dismissSplitInBackground(EXIT_REASON_FULLSCREEN_REQUEST);
+        }
+
         TransitionInfo.Change pipChange = null;
         TransitionInfo.Change pipActivityChange = null;
         for (int i = info.getChanges().size() - 1; i >= 0; --i) {
