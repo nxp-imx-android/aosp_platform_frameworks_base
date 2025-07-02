@@ -1268,10 +1268,6 @@ public class LocalBluetoothLeBroadcast implements LocalBluetoothProfile {
     @WorkerThread
     public void handleProfileConnected(@NonNull CachedBluetoothDevice cachedDevice,
             int bluetoothProfile, @Nullable LocalBluetoothManager btManager) {
-        if (!Flags.promoteAudioSharingForSecondAutoConnectedLeaDevice()) {
-            Log.d(TAG, "Skip handleProfileConnected, flag off");
-            return;
-        }
         if (!SYSUI_PKG.equals(mContext.getPackageName())) {
             Log.d(TAG, "Skip handleProfileConnected, not a valid caller");
             return;
