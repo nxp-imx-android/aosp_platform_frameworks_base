@@ -22,7 +22,11 @@ public class LoadedApk_ravenwood {
     private LoadedApk_ravenwood() {
     }
 
-    static Resources getResources(LoadedApk loadedApk) {
+    static ClassLoader getClassLoader(LoadedApk loadedApk) {
+        return LoadedApk_ravenwood.class.getClassLoader();
+    }
+
+    static Resources getResourcesInner(LoadedApk loadedApk) {
         return RavenwoodEnvironment.getInstance().loadResources(loadedApk.getPackageName());
     }
 }

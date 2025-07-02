@@ -75,6 +75,7 @@ import android.os.strictmode.UnsafeIntentLaunchViolation;
 import android.os.strictmode.UntaggedSocketViolation;
 import android.os.strictmode.Violation;
 import android.os.strictmode.WebViewMethodCalledOnWrongThreadViolation;
+import android.ravenwood.annotation.RavenwoodIgnore;
 import android.util.ArrayMap;
 import android.util.Log;
 import android.util.Printer;
@@ -1412,6 +1413,7 @@ public final class StrictMode {
      * @return the old policy, to be passed to {@link #setThreadPolicy} to restore the policy at the
      *     end of a block
      */
+    @RavenwoodIgnore
     public static ThreadPolicy allowThreadDiskWrites() {
         return new ThreadPolicy(
                 allowThreadDiskWritesMask(),
@@ -2387,6 +2389,7 @@ public final class StrictMode {
      * policy which can be changed by other threads.
      * @hide
      */
+    @RavenwoodIgnore
     public static boolean vmIncorrectContextUseEnabled() {
         return (sVmPolicy.mask & DETECT_VM_INCORRECT_CONTEXT_USE) != 0;
     }
@@ -2487,6 +2490,7 @@ public final class StrictMode {
     }
 
     /** @hide */
+    @RavenwoodIgnore
     public static void onIncorrectContextUsed(String message, Throwable originStack) {
         onVmPolicyViolation(new IncorrectContextUseViolation(message, originStack));
     }

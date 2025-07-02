@@ -24,6 +24,7 @@ android.app.LoadedApk
 android.app.LocaleConfig
 android.app.PropertyInvalidatedCache
 android.app.ResourcesManager
+android.app.SystemServiceRegistry
 android.app.UiAutomation
 android.app.WindowConfiguration
 

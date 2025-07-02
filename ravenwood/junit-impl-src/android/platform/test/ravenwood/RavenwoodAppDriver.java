@@ -15,26 +15,30 @@
  */
 package android.platform.test.ravenwood;
 
-import static com.android.ravenwood.common.RavenwoodInternalUtils.ANDROID_PACKAGE_NAME;
-
 import android.annotation.NonNull;
 import android.app.ActivityThread;
+import android.app.ActivityThread_ravenwood;
 import android.app.Application;
-import android.app.Application_ravenwood;
+import android.app.ContextImpl_ravenwood;
+import android.app.ContextImpl_ravenwood.ReallyContextImpl;
 import android.app.IUiAutomationConnection;
 import android.app.Instrumentation;
 import android.app.LoadedApk;
 import android.app.RavenwoodAndroidAppBridge;
 import android.app.UiAutomation;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.ravenwood.common.SneakyThrow;
 
 import org.objenesis.ObjenesisStd;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -57,29 +61,42 @@ public final class RavenwoodAppDriver {
      * Initialize the singleton instance.
      */
     public static void init() {
-        if (!sInstance.compareAndSet(null, new RavenwoodAppDriver())) {
-            throw new RuntimeException("RavenwoodAppDriver already initialized!");
-        }
+        RavenwoodUtils.runOnMainThreadSync(() -> {
+            if (!sInstance.compareAndSet(null, new RavenwoodAppDriver())) {
+                throw new RuntimeException("RavenwoodAppDriver already initialized!");
+            }
+        });
     }
+
+    @GuardedBy("mLoadedApkCache")
+    private final Map<String, LoadedApk> mLoadedApkCache = new HashMap<>();
 
     private final ObjenesisStd mObjenesis;
 
     /** This is an empty instance created by Objenesis. None of its fields are initialized. */
     private final ActivityThread mActivityThread;
 
+    @ReallyContextImpl
+    private final Context mSystemContextImpl;
+
     private final LoadedApk mTargetLoadedApk;
+    private final LoadedApk mInstLoadedApk;
 
-    private final RavenwoodContext mInstContext;
-    private final RavenwoodContext mTargetContext;
-    private final Application mApplication;
+    @ReallyContextImpl
+    private final Context mInstContext;
+    private final Context mTargetContext;
 
-    // It's instantiated on the main thread, so not final.s
-    private volatile Instrumentation mInstrumentation;
+    private final Instrumentation mInstrumentation;
 
     private final RavenwoodAndroidAppBridge mAppBridge;
 
     /**
      * Constructor. It essentially simulates the start of an app lifecycle.
+     *
+     * TODO: This is basically a scale down version of what ActivityThread.bindApplication() and
+     * handleBindApplication() do.
+     * Use more of the real ActivityThread code, and move to ActivityThread when we stop using
+     * Objenesis.
      */
     private RavenwoodAppDriver() {
         var env = RavenwoodEnvironment.getInstance();
@@ -87,52 +104,65 @@ public final class RavenwoodAppDriver {
 
         mActivityThread = mObjenesis.newInstance(ActivityThread.class);
         mTargetLoadedApk = makeLoadedApk(mActivityThread, env.getTargetPackageName());
+        mInstLoadedApk = makeLoadedApk(mActivityThread, env.getInstPackageName());
 
-        mInstContext = new RavenwoodContext(
-                env.getInstPackageName(), env.getMainThread());
-        mTargetContext = new RavenwoodContext(
-                env.getTargetPackageName(), env.getMainThread());
+        // Create the system context.
+        mSystemContextImpl = ContextImpl_ravenwood.createSystemContext(mActivityThread);
 
-        // Set up app context. App context is always created for the target app.
-        var application = new Application();
-        Application_ravenwood.attach(application, mTargetContext);
-        if (env.isSelfInstrumenting()) {
-            mInstContext.attachApplicationContext(application);
-            mTargetContext.attachApplicationContext(application);
-        } else {
-            // When instrumenting into another APK, the test context doesn't have an app context.
-            mTargetContext.attachApplicationContext(application);
-        }
-        mApplication = application;
+        // Create the target's context. Note, it's called "appContext" in handleBindApplication,
+        // but its _not_ an of the Application class. We'll create the app object later,
+        // using makeApplicationInner.
+        var appContext = ContextImpl_ravenwood.createAppContext(
+                mActivityThread, mTargetLoadedApk);
 
-        var systemServerContext = new RavenwoodContext(
-                ANDROID_PACKAGE_NAME, env.getMainThread());
+        // Create the instrumentation context.
+        // (in handleBindApplication too, this happens before creating the target context.)
+        mInstContext = ContextImpl_ravenwood.createAppContext(mActivityThread, mInstLoadedApk);
 
+        // Initialize the instrumentation, using the "inst" context.
+        // See also ActivityThread.initInstrumentation().
         var uiAutomation = new UiAutomation(
                 mInstContext, new IUiAutomationConnection.Default());
 
         var instArgs = Bundle.EMPTY;
-        RavenwoodUtils.runOnMainThreadSync(() -> {
-            try {
-                var clazz = Class.forName(env.getInstrumentationClass());
-                mInstrumentation = (Instrumentation) clazz.getConstructor().newInstance();
-            } catch (ReflectiveOperationException e) {
-                SneakyThrow.sneakyThrow(e);
-            }
+        try {
+            var clazz = Class.forName(env.getInstrumentationClass());
+            mInstrumentation = (Instrumentation) clazz.getConstructor().newInstance();
+        } catch (ReflectiveOperationException e) {
+            SneakyThrow.sneakyThrow(e);
+            throw new RuntimeException(); // Let javac know this branch is unreachable.
+        }
 
-            mInstrumentation.basicInit(mInstContext, mTargetContext, uiAutomation);
-            mInstrumentation.onCreate(instArgs);
-        });
+        mInstrumentation.basicInit(mInstContext, appContext, uiAutomation);
+
+        // Need to set it, as it's used by LoadedApk afer this.
+        ActivityThread_ravenwood.setInstrumentation(mActivityThread, mInstrumentation);
         InstrumentationRegistry.registerInstance(mInstrumentation, instArgs);
 
-        RavenwoodSystemServer.init(systemServerContext);
+        // Create the Application instance, which will be the "target" context.
+        var application = mTargetLoadedApk.makeApplicationInner(
+                // We don't support custom application classes yet, but we'll let the
+                // LoadedApk decide that, so pass false here.
+                /*forceDefaultAppClass=*/ false,
 
-        // This constructor accesses this class's getters, so it must be at the end.
+                // When we make the app's Application object, we pass null.
+                // That's what ActivityThread does in handleBindApplication() too.
+                /*instrumentation=*/ null
+        );
+
+        mTargetContext = appContext;
+
+        mInstrumentation.onCreate(instArgs);
+        mInstrumentation.callApplicationOnCreate(application);
+
+        // Maybe do it first?
+        RavenwoodSystemServer.init(mSystemContextImpl);
+
         mAppBridge = new RavenwoodAndroidAppBridge(this);
     }
 
     /**
-     * Crate an {@link ApplicationInfo} for a package.
+     * Create an {@link ApplicationInfo} for a package.
      *
      * The package must be "known" to Ravenwood; for now, that means it must be an instrumentation
      * or target package name. "android" isn't supported.
@@ -143,33 +173,57 @@ public final class RavenwoodAppDriver {
         var env = RavenwoodEnvironment.getInstance();
         if (!packageName.equals(env.getTargetPackageName())
                 && !packageName.equals(env.getInstPackageName())) {
-            throw env.makeUnknownPackageException(packageName);
+            throw RavenwoodEnvironment.makeUnknownPackageException(packageName);
         }
+
+        // As an example, here's how ApplicationInfo is initialized for the launcher:
+        // http://screen/A8ggwXFuERBBUqt
 
         ApplicationInfo ai = new ApplicationInfo();
         ai.uid = env.getUid();
         ai.targetSdkVersion = env.getTargetSdkLevel();
         ai.packageName = packageName;
 
+        ai.dataDir = env.getAppDataDir(packageName).getAbsolutePath();
+        ai.credentialProtectedDataDir = ai.dataDir;
+        // ai.deviceProtectedDataDir // On device, it's: /data/user_de/0/com.xxx./.
+
+        ai.sourceDir = env.getResourcesApkFile(packageName).getAbsolutePath();
+        ai.publicSourceDir = ai.sourceDir;
+
+        // TODO: Set CE/DE data dirs too.
+
         return ai;
     }
 
-    private static LoadedApk makeLoadedApk(
+    private LoadedApk makeLoadedApk(
             ActivityThread activityThread,
             String packageName
     ) {
-        ApplicationInfo ai = makeApplicationInfo(packageName);
+        // This is a scaled down version of ActivityThread.getPackageInfo()
+        synchronized (mLoadedApkCache) {
+            final var cached = mLoadedApkCache.get(packageName);
+            if (cached != null) {
+                return cached;
+            }
 
-        var loadedApk = new LoadedApk(
-                /* activityThread= */ activityThread,
-                /* aInfo= */ ai,
-                /* compatInfo= */ null,
-                /* baseLoader= */ RavenwoodAppDriver.class.getClassLoader(),
-                /* securityViolation= */ false,
-                /* includeCode= */ true,
-                /* registerPackage= */ false
-        );
-        return loadedApk;
+            ApplicationInfo ai = makeApplicationInfo(packageName);
+
+            // As an example, here's how LoadedApk is initialized for the launcher:
+            // http://screen/6amYMbsRCJ7e5s6
+
+            var loadedApk = new LoadedApk(
+                    /* activityThread= */ activityThread,
+                    /* aInfo= */ ai,
+                    /* compatInfo= */ null,
+                    /* baseLoader= */ RavenwoodAppDriver.class.getClassLoader(),
+                    /* securityViolation= */ false,
+                    /* includeCode= */ true,
+                    /* registerPackage= */ false
+            );
+            mLoadedApkCache.put(packageName, loadedApk);
+            return loadedApk;
+        }
     }
 
     /**
@@ -183,20 +237,25 @@ public final class RavenwoodAppDriver {
         return mActivityThread;
     }
 
+    @ReallyContextImpl
+    public Context getSystemContextImpl() {
+        return mSystemContextImpl;
+    }
+
     public LoadedApk getTargetLoadedApk() {
         return mTargetLoadedApk;
     }
 
-    public RavenwoodContext getInstContext() {
+    public Context getInstContext() {
         return mInstContext;
     }
 
-    public RavenwoodContext getTargetContext() {
+    public Context getTargetContext() {
         return mTargetContext;
     }
 
     public Application getApplication() {
-        return mApplication;
+        return (Application) mTargetContext.getApplicationContext();
     }
 
     public Instrumentation getInstrumentation() {

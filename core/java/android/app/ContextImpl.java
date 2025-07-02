@@ -91,6 +91,7 @@ import android.ravenwood.annotation.RavenwoodKeepPartialClass;
 import android.ravenwood.annotation.RavenwoodRedirect;
 import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.ravenwood.annotation.RavenwoodReplace;
+import android.ravenwood.annotation.RavenwoodSupported.RavenwoodProvidingImplementation;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
@@ -206,6 +207,7 @@ class ReceiverRestrictedContext extends ContextWrapper {
  */
 @RavenwoodKeepPartialClass
 @RavenwoodRedirectionClass("ContextImpl_ravenwood")
+@RavenwoodProvidingImplementation(target = Context.class)
 class ContextImpl extends Context {
     private final static String TAG = "ContextImpl";
     private final static boolean DEBUG = false;
@@ -381,16 +383,7 @@ class ContextImpl extends Context {
 
     // The system service cache for the system services that are cached per-ContextImpl.
     @UnsupportedAppUsage
-    final Object[] mServiceCache = createServiceCache();
-
-    @RavenwoodReplace
-    private static Object[] createServiceCache() {
-        return SystemServiceRegistry.createServiceCache();
-    }
-
-    private static Object[] createServiceCache$ravenwood() {
-        return new Object[0];
-    }
+    final Object[] mServiceCache = SystemServiceRegistry.createServiceCache();
 
     static final int STATE_UNINITIALIZED = 0;
     static final int STATE_INITIALIZING = 1;
@@ -455,17 +448,23 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public PackageManager getPackageManager() {
         if (mPackageManager != null) {
             return mPackageManager;
         }
+        // Doesn't matter if we make more than one instance, so no synchronization
+        // is needed on mPackageManager.
+        mPackageManager = getPackageManagerInner();
+        return mPackageManager;
+    }
 
+    @RavenwoodRedirect
+    private PackageManager getPackageManagerInner() {
         final IPackageManager pm = ActivityThread.getPackageManager();
         if (pm != null) {
-            // Doesn't matter if we make more than one instance.
-            return (mPackageManager = new ApplicationPackageManager(this, pm));
+            return new ApplicationPackageManager(this, pm);
         }
-
         return null;
     }
 
@@ -512,6 +511,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public Resources.Theme getTheme() {
         synchronized (mThemeLock) {
             if (mTheme != null) {
@@ -520,12 +520,13 @@ class ContextImpl extends Context {
 
             mThemeResource = Resources.selectDefaultTheme(mThemeResource,
                     getOuterContext().getApplicationInfo().targetSdkVersion);
-            initializeTheme();
+            initializeTheme(); // XXX TODO: does it work??
 
             return mTheme;
         }
     }
 
+    @RavenwoodKeep
     private void initializeTheme() {
         if (mTheme == null) {
             mTheme = mResources.newTheme();
@@ -584,6 +585,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public ApplicationInfo getApplicationInfo() {
         if (mPackageInfo != null) {
             return mPackageInfo.getApplicationInfo();
@@ -592,6 +594,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public String getPackageResourcePath() {
         if (mPackageInfo != null) {
             return mPackageInfo.getResDir();
@@ -791,6 +794,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public FileInputStream openFileInput(String name)
         throws FileNotFoundException {
         File f = makeFilename(getFilesDir(), name);
@@ -798,6 +802,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public FileOutputStream openFileOutput(String name, int mode) throws FileNotFoundException {
         checkMode(mode);
         final boolean append = (mode&MODE_APPEND) != 0;
@@ -821,6 +826,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public boolean deleteFile(String name) {
         File f = makeFilename(getFilesDir(), name);
         return f.delete();
@@ -829,15 +835,18 @@ class ContextImpl extends Context {
     /**
      * Common-path handling of app data dir creation
      */
+    @RavenwoodKeep
     private static File ensurePrivateDirExists(File file) {
         return ensurePrivateDirExists(file, 0771, -1, null);
     }
 
+    @RavenwoodKeep(comment = "xattr is ignored")
     private static File ensurePrivateCacheDirExists(File file, String xattr) {
         final int gid = UserHandle.getCacheAppGid(Process.myUid());
         return ensurePrivateDirExists(file, 02771, gid, xattr);
     }
 
+    @RavenwoodRedirect(comment = "gid, xattr are ignored")
     private static File ensurePrivateDirExists(File file, int mode, int gid, String xattr) {
         if (!file.exists()) {
             final String path = file.getAbsolutePath();
@@ -870,6 +879,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public File getFilesDir() {
         synchronized (mFilesDirLock) {
             if (mFilesDir == null) {
@@ -898,6 +908,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public File getNoBackupFilesDir() {
         synchronized (mNoBackupFilesDirLock) {
             if (mNoBackupFilesDir == null) {
@@ -941,6 +952,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public File getCacheDir() {
         synchronized (mCacheDirLock) {
             if (mCacheDir == null) {
@@ -951,6 +963,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public File getCodeCacheDir() {
         synchronized (mCodeCacheDirLock) {
             if (mCodeCacheDir == null) {
@@ -1005,11 +1018,13 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public File getFileStreamPath(String name) {
         return makeFilename(getFilesDir(), name);
     }
 
     @Override
+    @RavenwoodKeep
     public File getSharedPreferencesPath(String name) {
         return makeFilename(getPreferencesDir(), name + ".xml");
     }
@@ -2342,6 +2357,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public Object getSystemService(String name) {
         if (vmIncorrectContextUseEnabled()) {
             // Check incorrect Context usage.
@@ -2362,6 +2378,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public String getSystemServiceName(Class<?> serviceClass) {
         return SystemServiceRegistry.getSystemServiceName(serviceClass);
     }
@@ -2394,6 +2411,7 @@ class ContextImpl extends Context {
      * TODO(b/147647877): Fix usages and remove.
      */
     @SuppressWarnings("AndroidFrameworkClientSidePermissionCheck")
+    @RavenwoodIgnore // Always false on Ravenwood.
     private static boolean isSystemOrSystemUI(Context context) {
         return ActivityThread.isSystem() || context.checkPermission(
                 "android.permission.STATUS_BAR_SERVICE",
@@ -3185,16 +3203,19 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public boolean isDeviceProtectedStorage() {
         return (mFlags & Context.CONTEXT_DEVICE_PROTECTED_STORAGE) != 0;
     }
 
     @Override
+    @RavenwoodKeep
     public boolean isCredentialProtectedStorage() {
         return (mFlags & Context.CONTEXT_CREDENTIAL_PROTECTED_STORAGE) != 0;
     }
 
     @Override
+    @RavenwoodKeep
     public boolean canLoadUnsafeResources() {
         if (getPackageName().equals(getOpPackageName())) {
             return true;
@@ -3382,6 +3403,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public File getDataDir() {
         if (mPackageInfo != null) {
             File res = null;
@@ -3410,6 +3432,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public File getDir(String name, int mode) {
         checkMode(mode);
         name = "app_" + name;
@@ -3516,10 +3539,12 @@ class ContextImpl extends Context {
     }
 
     @UnsupportedAppUsage
+    @RavenwoodKeep
     static ContextImpl createAppContext(ActivityThread mainThread, LoadedApk packageInfo) {
         return createAppContext(mainThread, packageInfo, null);
     }
 
+    @RavenwoodKeep
     static ContextImpl createAppContext(ActivityThread mainThread, LoadedApk packageInfo,
             String opPackageName) {
         if (packageInfo == null) throw new IllegalArgumentException("packageInfo");
@@ -3752,11 +3777,13 @@ class ContextImpl extends Context {
     }
 
     @UnsupportedAppUsage
+    @RavenwoodKeep
     final void setOuterContext(@NonNull Context context) {
         mOuterContext = context;
     }
 
     @UnsupportedAppUsage
+    @RavenwoodKeep
     final Context getOuterContext() {
         return mOuterContext;
     }
@@ -3778,6 +3805,7 @@ class ContextImpl extends Context {
         }
     }
 
+    @RavenwoodIgnore(comment = "Not simulating file permissions")
     private void checkMode(int mode) {
         if (getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.N) {
             if ((mode & MODE_WORLD_READABLE) != 0) {
@@ -3790,6 +3818,7 @@ class ContextImpl extends Context {
     }
 
     @SuppressWarnings("deprecation")
+    @RavenwoodIgnore(comment = "Not simulating file permissions")
     static void setFilePermissionsFromMode(String name, int mode,
             int extraPermissions) {
         int perms = FileUtils.S_IRUSR|FileUtils.S_IWUSR
@@ -3808,16 +3837,22 @@ class ContextImpl extends Context {
         FileUtils.setPermissions(name, perms, -1, -1);
     }
 
+    @RavenwoodKeep
     private File makeFilename(File base, String name) {
         if (name.indexOf(File.separatorChar) < 0) {
             final File res = new File(base, name);
             // We report as filesystem access here to give us the best shot at
             // detecting apps that will pass the path down to native code.
-            BlockGuard.getVmPolicy().onPathAccess(res.getPath());
+            onPathAccess(res.getPath());
             return res;
         }
         throw new IllegalArgumentException(
                 "File " + name + " contains a path separator");
+    }
+
+    @RavenwoodIgnore(blockedBy = BlockGuard.class)
+    private static void onPathAccess(@NonNull String path) {
+        BlockGuard.getVmPolicy().onPathAccess(path);
     }
 
     /**
