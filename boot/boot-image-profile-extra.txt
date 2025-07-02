@@ -32,6 +32,48 @@ HSPLjava/util/concurrent/ConcurrentSkipListMap$KeyIterator;->*
 HSPLjava/util/concurrent/ConcurrentSkipListMap$KeySet;->*
 HSPLjava/util/concurrent/ConcurrentSkipListSet;->*
 
+# For now, also compile all method in the 'com.android.internal.dev.perfetto.sdk' Perfetto Trace API.
+# Similar to the existing Trace APIs, these new APIs can impact the performance
+# of many subsystems including MessageQueue. This also keeps benchmark
+# comparisons between both APIs fair.
+# The list is generated from the
+# 'out/soong/.intermediates/external/perfetto/perfetto_trace_lib_framework_java/android_common/jarjar/perfetto_trace_lib_framework_java.jar'
+# jar file, using the following command:
+# ```
+# jar tvf \
+# out/soong/.intermediates/external/perfetto/perfetto_trace_lib_framework_java/android_common/jarjar/perfetto_trace_lib_framework_java.jar \
+# | awk '$8 ~ /\.class$/ {sub(/\.class$/, "", $8); print "HSPL" $8 ";->*"}'
+# ```
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$Proto;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$PerfettoPointer;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$NamedTrack;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$Flow;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$FieldString;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$FieldNested;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$FieldInt64;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$FieldDouble;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$FieldContainer;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$CounterTrack;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$CounterInt64;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$CounterDouble;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$ArgString;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$ArgInt64;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$ArgDouble;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventExtra$ArgBool;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventBuilder;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventBuilder$RingBuffer;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventBuilder$Pool;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventBuilder$ObjectsPool;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventBuilder$ObjectsCache;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrackEventBuilder$LazyInitObjects;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrace;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrace$Session;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoTrace$Category;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoNativeMemoryCleaner;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoNativeMemoryCleaner$FreeNativeMemoryRunnable;->*
+HSPLcom/android/internal/dev/perfetto/sdk/PerfettoNativeMemoryCleaner$AllocationStats;->*
+
 # While the SystemFeaturesMetadata static cache isn't heavyweight, ensure it's
 # pre-initialized in the boot image to avoid redundant per-process overhead.
 # TODO(b/326623529): Consider removing this after the feature has fully ramped
