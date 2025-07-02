@@ -17,7 +17,6 @@
 package com.android.systemui.keyboard.shortcut.data.source
 
 import android.content.res.Resources
-import android.hardware.input.InputSettings
 import android.view.KeyEvent.KEYCODE_3
 import android.view.KeyEvent.KEYCODE_4
 import android.view.KeyEvent.KEYCODE_5
@@ -55,38 +54,28 @@ class AccessibilityShortcutsSource @Inject constructor(@Main private val resourc
             shortcuts.add(
                 // Toggle bounce keys:
                 //  - Meta + Alt + 3
-                shortcutInfo(
-                    resources.getString(R.string.group_accessibility_toggle_bounce_keys)
-                ) {
+                shortcutInfo(resources.getString(R.string.group_accessibility_toggle_bounce_keys)) {
                     command(META_META_ON or META_ALT_ON, KEYCODE_3)
                 }
             )
-            if (InputSettings.isAccessibilityMouseKeysFeatureFlagEnabled()) {
-                shortcuts.add(
-                    // Toggle mouse keys:
-                    //  - Meta + Alt + 4
-                    shortcutInfo(
-                        resources.getString(R.string.group_accessibility_toggle_mouse_keys)
-                    ) {
-                        command(META_META_ON or META_ALT_ON, KEYCODE_4)
-                    }
-                )
-            }
+            shortcuts.add(
+                // Toggle mouse keys:
+                //  - Meta + Alt + 4
+                shortcutInfo(resources.getString(R.string.group_accessibility_toggle_mouse_keys)) {
+                    command(META_META_ON or META_ALT_ON, KEYCODE_4)
+                }
+            )
             shortcuts.add(
                 // Toggle sticky keys:
                 //  - Meta + Alt + 5
-                shortcutInfo(
-                    resources.getString(R.string.group_accessibility_toggle_sticky_keys)
-                ) {
+                shortcutInfo(resources.getString(R.string.group_accessibility_toggle_sticky_keys)) {
                     command(META_META_ON or META_ALT_ON, KEYCODE_5)
                 }
             )
             shortcuts.add(
                 // Toggle slow keys:
                 //  - Meta + Alt + 6
-                shortcutInfo(
-                    resources.getString(R.string.group_accessibility_toggle_slow_keys)
-                ) {
+                shortcutInfo(resources.getString(R.string.group_accessibility_toggle_slow_keys)) {
                     command(META_META_ON or META_ALT_ON, KEYCODE_6)
                 }
             )

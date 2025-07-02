@@ -503,9 +503,6 @@ class InputManagerServiceTests {
 
     @Test
     fun handleKeyGestures_a11yMouseKeysShortcut() {
-        ExtendedMockito.doReturn(true).`when` {
-            InputSettings.isAccessibilityMouseKeysFeatureFlagEnabled()
-        }
         val toggleMouseKeysEvent =
             KeyGestureEvent.Builder()
                 .setKeyGestureType(KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS)
