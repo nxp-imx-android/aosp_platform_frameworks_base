@@ -20,7 +20,6 @@ import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import android.os.Handler;
@@ -80,8 +79,7 @@ public class AnrTimerTest {
 
         @Override
         public String toString() {
-            return String.format("{pid=%d uid=%d what=%d token=%d}",
-                    arg.pid, arg.uid, what, token);
+            return String.format("{{%s} what=%d token=%d}", arg, what, token);
         }
     }
 
@@ -212,9 +210,7 @@ public class AnrTimerTest {
 
     // Compare two test results.
     void validate(TestResult expected, TestResult actual) {
-        assertThat(actual.what).isEqualTo(MSG_TIMEOUT);
-        assertThat(actual.arg).isEqualTo(expected.arg);
-        assertThat(actual.token).isEqualTo(expected.token);
+        assertThat(actual).isEqualTo(expected);
     }
 
     // Verify that a test result matches the broken-out fields.  The what field is always the
@@ -434,19 +430,15 @@ public class AnrTimerTest {
         private static final long DEFAULT_TIMEOUT_MS = 100;
 
         /**
-         * A helper function that steps the timer's clock and waits for 'want' responses.  The
-         * function times out after 100ms, but in normal conditions the response will be delivered
-         * much faster.  The function is meant to track the arrival of new responses, so it starts
-         * by verifying that there are no pending responses.
-
-         * If 'exact' is true, the function waits to see if any lingering responses arrive within
-         * the timeout.  If 'exact' is true, then the test will always take at least 100ms to
-         * complete, so it should be used sparingly.
+         * A helper function that steps the timer's clock and waits for one response.  The
+         * function is meant to track the arrival of new responses, so it starts by verifying that
+         * there are no pending responses.  This means that on a good run, the function always
+         * takes 100ms (the default timeout).
          */
-        void stepAndWait(int clock, int want) throws Exception {
+        void stepAndWait(int clock) throws Exception {
             assertThat(helper.available()).isEqualTo(0);
             timer.setTime(clock);
-            assertThat(helper.await(want, DEFAULT_TIMEOUT_MS)).isTrue();
+            assertThat(helper.await(1, DEFAULT_TIMEOUT_MS)).isTrue();
             assertThat(helper.await(1, DEFAULT_TIMEOUT_MS)).isFalse();
         }
     }
@@ -477,10 +469,10 @@ public class AnrTimerTest {
             timer.setTime(20);
             assertEquals(0, helper.size());
 
-            stepper.stepAndWait(51, 1);
-            stepper.stepAndWait(76, 1);
-            stepper.stepAndWait(101, 1);
-            stepper.stepAndWait(151, 1);
+            stepper.stepAndWait(51);
+            stepper.stepAndWait(76);
+            stepper.stepAndWait(101);
+            stepper.stepAndWait(151);
 
             assertEquals(4, helper.size());
 
@@ -515,14 +507,14 @@ public class AnrTimerTest {
             timer.start(t1, 100);
             timer.start(t2, 160);
 
-            stepper.stepAndWait(25, 1);
-            stepper.stepAndWait(40, 1);
-            stepper.stepAndWait(50, 1);
-            stepper.stepAndWait(75, 1);
-            stepper.stepAndWait(80, 1);
-            stepper.stepAndWait(100, 1);
-            stepper.stepAndWait(120, 1);
-            stepper.stepAndWait(160, 1);
+            stepper.stepAndWait(25);
+            stepper.stepAndWait(40);
+            stepper.stepAndWait(50);
+            stepper.stepAndWait(75);
+            stepper.stepAndWait(80);
+            stepper.stepAndWait(100);
+            stepper.stepAndWait(120);
+            stepper.stepAndWait(160);
 
             TestResult[] actual = helper.results(8);
             TestResult[] expected = {
