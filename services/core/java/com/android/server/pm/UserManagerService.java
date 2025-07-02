@@ -368,6 +368,8 @@ public class UserManagerService extends IUserManager.Stub {
 
     // The boot user strategy for HSUM.
     @VisibleForTesting
+    static final int BOOT_STRATEGY_DO_NOT_OVERRIDE = -1;
+    @VisibleForTesting
     static final int BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER = 0;
     @VisibleForTesting
     static final int BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE = 1;
@@ -378,6 +380,8 @@ public class UserManagerService extends IUserManager.Stub {
             BOOT_STRATEGY_TO_HSU_FOR_PROVISIONED_DEVICE})
     @VisibleForTesting
     @interface BootStrategy {}
+
+    private static final String BOOT_STRATEGY_PROPERTY = "persist.user.hsum_boot_strategy";
 
     private final Context mContext;
     private final PackageManagerService mPm;
@@ -1453,6 +1457,19 @@ public class UserManagerService extends IUserManager.Stub {
         }
     }
 
+    private @BootStrategy int getHsumBootStrategy() {
+        int bootStrategyOverride = SystemProperties.getInt(BOOT_STRATEGY_PROPERTY,
+                BOOT_STRATEGY_DO_NOT_OVERRIDE);
+        int bootStrategy = getContextResources()
+                .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
+        if (bootStrategyOverride != BOOT_STRATEGY_DO_NOT_OVERRIDE) {
+            Slogf.d(LOG_TAG, "%s overriding HSUM boot strategy to %d", BOOT_STRATEGY_PROPERTY,
+                    bootStrategyOverride);
+            bootStrategy = bootStrategyOverride;
+        }
+        return bootStrategy;
+    }
+
     private @UserIdInt int getBootUserUnchecked() throws UserManager.CheckedUserOperationException {
         synchronized (mUsersLock) {
             if (mBootUser != UserHandle.USER_NULL) {
@@ -1468,8 +1485,7 @@ public class UserManagerService extends IUserManager.Stub {
         }
 
         if (isHeadlessSystemUserMode()) {
-            final int bootStrategy = getContextResources()
-                    .getInteger(com.android.internal.R.integer.config_hsumBootStrategy);
+            int bootStrategy = getHsumBootStrategy();
             switch (bootStrategy) {
                 case BOOT_STRATEGY_TO_PREVIOUS_OR_FIRST_SWITCHABLE_USER:
                     return getPreviousOrFirstSwitchableUser();
@@ -8198,6 +8214,7 @@ public class UserManagerService extends IUserManager.Stub {
         if (isHeadlessSystemUserMode) {
             pw.println("  Can switch to headless system user: " + getContextResources()
                     .getBoolean(com.android.internal.R.bool.config_canSwitchToHeadlessSystemUser));
+            pw.println("  HSUM Boot Strategy: " + getHsumBootStrategy());
         }
 
         pw.println("  Is main user permanent admin: " + isMainUserPermanentAdmin());
