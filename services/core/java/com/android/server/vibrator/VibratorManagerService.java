@@ -270,7 +270,9 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         mInputDeviceDelegate = new InputDeviceDelegate(mContext, mHandler);
 
         HalListener halListener = new HalListener(this);
-        mVibratorManager = injector.createHalVibratorManager();
+        mVibratorManager = Flags.removeHidlSupport()
+                ? injector.createHalVibratorManager()
+                : injector.createNativeHalVibratorManager();
         mVibratorManager.init(halListener);
 
         int recentDumpSizeLimit = mContext.getResources().getInteger(
@@ -1741,6 +1743,10 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         }
 
         HalVibratorManager createHalVibratorManager() {
+            return VintfHalVibratorManager.createHalVibratorManager();
+        }
+
+        HalVibratorManager createNativeHalVibratorManager() {
             return new NativeHalVibratorManager(new NativeWrapper());
         }
 
