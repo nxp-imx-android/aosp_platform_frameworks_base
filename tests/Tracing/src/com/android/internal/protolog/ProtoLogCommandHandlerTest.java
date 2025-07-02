@@ -129,14 +129,34 @@ public class ProtoLogCommandHandlerTest {
 
     @Test
     public void handlesGroupStatusCommandWithNoGroups() {
+        Mockito.when(mProtoLogConfigurationService.getGroups())
+                .thenReturn(new String[]{"MY_GROUP", "MY_OTHER_GROUP"});
+        Mockito.when(mProtoLogConfigurationService.isLoggingToLogcat("MY_GROUP")).thenReturn(true);
+        Mockito.when(mProtoLogConfigurationService.isLoggingToLogcat("MY_OTHER_GROUP"))
+                .thenReturn(false);
         final ProtoLogCommandHandler cmdHandler =
                 new ProtoLogCommandHandler(mProtoLogConfigurationService, mPrintWriter);
 
         cmdHandler.exec(mMockBinder, FileDescriptor.in, FileDescriptor.out,
-                FileDescriptor.err, new String[] { "groups", "status" });
+                FileDescriptor.err, new String[]{"groups", "status"});
 
         Mockito.verify(mPrintWriter, times(1))
-                .println(contains("Incomplete command"));
+                .println(contains("MY_GROUP: LOG_TO_LOGCAT = true"));
+        Mockito.verify(mPrintWriter, times(1))
+                .println(contains("MY_OTHER_GROUP: LOG_TO_LOGCAT = false"));
+    }
+
+    @Test
+    public void handlesGroupStatusCommandWithNoGroupArgumentAndNoRegisteredGroups() {
+        Mockito.when(mProtoLogConfigurationService.getGroups()).thenReturn(new String[]{});
+        final ProtoLogCommandHandler cmdHandler =
+                new ProtoLogCommandHandler(mProtoLogConfigurationService, mPrintWriter);
+
+        cmdHandler.exec(mMockBinder, FileDescriptor.in, FileDescriptor.out,
+                FileDescriptor.err, new String[]{"groups", "status"});
+
+        Mockito.verify(mPrintWriter, times(1))
+                .println(contains("No ProtoLog groups registered"));
     }
 
     @Test
