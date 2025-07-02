@@ -65,7 +65,7 @@ public class TestableContext extends ContextWrapper implements TestRule {
 
     private TestableContentResolver mTestableContentResolver;
     private TestableSettingsProvider mSettingsProvider;
-    private RuntimeException mSettingsProviderFailure;
+    private Throwable mSettingsProviderFailure;
 
     private ArrayList<MockServiceResolver> mMockServiceResolvers;
     private ArrayMap<String, Object> mMockSystemServices;
@@ -100,8 +100,7 @@ public class TestableContext extends ContextWrapper implements TestRule {
         } catch (Throwable t) {
             mTestableContentResolver = null;
             mSettingsProvider = null;
-            mSettingsProviderFailure = new RuntimeException(
-                    "Failed to initialize TestableSettingsProvider", t);
+            mSettingsProviderFailure = t;
         }
         mReceiver = check != null ? check.getTracker("receiver") : null;
         mService = check != null ? check.getTracker("service") : null;
@@ -186,7 +185,8 @@ public class TestableContext extends ContextWrapper implements TestRule {
 
     TestableSettingsProvider getSettingsProvider() {
         if (mSettingsProviderFailure != null) {
-            throw mSettingsProviderFailure;
+            throw new RuntimeException(
+                    "Failed to initialize TestableSettingsProvider", mSettingsProviderFailure);
         }
         return mSettingsProvider;
     }
@@ -194,7 +194,8 @@ public class TestableContext extends ContextWrapper implements TestRule {
     @Override
     public TestableContentResolver getContentResolver() {
         if (mSettingsProviderFailure != null) {
-            throw mSettingsProviderFailure;
+            throw new RuntimeException(
+                    "Failed to initialize TestableSettingsProvider", mSettingsProviderFailure);
         }
         return mTestableContentResolver;
     }
