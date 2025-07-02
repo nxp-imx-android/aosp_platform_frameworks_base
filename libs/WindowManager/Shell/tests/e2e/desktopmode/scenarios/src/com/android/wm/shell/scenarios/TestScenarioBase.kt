@@ -16,11 +16,25 @@
 
 package com.android.wm.shell.scenarios
 
+import android.app.Instrumentation
 import android.platform.test.rule.ScreenRecordRule
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
+import org.junit.Before
 import org.junit.Ignore
 import org.junit.Rule
 
 @Ignore("Base Test Class")
 abstract class TestScenarioBase {
+    private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
+    private val device = UiDevice.getInstance(instrumentation)
+
     @get:Rule val screenRecordRule = ScreenRecordRule(/* keepTestLevelRecordingOnSuccess= */ false)
+
+    @Before
+    fun removeAllDesks() {
+        device.executeShellCommand(
+            "dumpsys activity service SystemUIService WMShell desktopmode removeAllDesks"
+        )
+    }
 }
