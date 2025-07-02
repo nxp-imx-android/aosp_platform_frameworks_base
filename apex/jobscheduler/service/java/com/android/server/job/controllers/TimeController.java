@@ -114,8 +114,7 @@ public final class TimeController extends StateController {
             mTrackedJobs.add(job);
 
             job.setTrackingController(JobStatus.TRACKING_TIME);
-            WorkSource ws =
-                    mService.deriveWorkSource(job.getSourceUid(), job.getSourcePackageName());
+            WorkSource ws = mService.deriveWorkSource(job.getSourceUid());
 
             // Only update alarms if the job would be ready with the relevant timing constraint
             // satisfied.
@@ -186,7 +185,7 @@ public final class TimeController extends StateController {
             } else if (wouldBeReadyWithConstraintLocked(job, JobStatus.CONSTRAINT_DEADLINE)) {
                 // This job's deadline is earlier than the current set alarm. Update the alarm.
                 setDeadlineExpiredAlarmLocked(job.getLatestRunTimeElapsed(),
-                        mService.deriveWorkSource(job.getSourceUid(), job.getSourcePackageName()));
+                        mService.deriveWorkSource(job.getSourceUid()));
             }
         }
         if (job.hasTimingDelayConstraint()
@@ -202,7 +201,7 @@ public final class TimeController extends StateController {
             } else if (wouldBeReadyWithConstraintLocked(job, JobStatus.CONSTRAINT_TIMING_DELAY)) {
                 // This job's delay is earlier than the current set alarm. Update the alarm.
                 setDelayExpiredAlarmLocked(job.getEarliestRunTime(),
-                        mService.deriveWorkSource(job.getSourceUid(), job.getSourcePackageName()));
+                        mService.deriveWorkSource(job.getSourceUid()));
             }
         }
     }
@@ -275,7 +274,7 @@ public final class TimeController extends StateController {
                 }
             }
             setDeadlineExpiredAlarmLocked(nextExpiryTime,
-                    mService.deriveWorkSource(nextExpiryUid, nextExpiryPackageName));
+                    mService.deriveWorkSource(nextExpiryUid));
         }
     }
 
@@ -337,7 +336,7 @@ public final class TimeController extends StateController {
                 mStateChangedListener.onControllerStateChanged(changedJobs);
             }
             setDelayExpiredAlarmLocked(nextDelayTime,
-                    mService.deriveWorkSource(nextDelayUid, nextDelayPackageName));
+                    mService.deriveWorkSource(nextDelayUid));
         }
     }
 
