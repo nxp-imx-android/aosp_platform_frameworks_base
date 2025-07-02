@@ -18,6 +18,7 @@ package com.android.hoststubgen
 import com.android.hoststubgen.filters.FilterPolicy
 import com.android.hoststubgen.utils.ArgIterator
 import com.android.hoststubgen.utils.BaseOptions
+import com.android.hoststubgen.utils.ClassDescriptorSet
 import com.android.hoststubgen.utils.FileOrResource
 import com.android.hoststubgen.utils.SetOnce
 
@@ -68,6 +69,8 @@ open class HostStubGenClassProcessorOptions(
     val enableClassChecker: SetOnce<Boolean> = SetOnce(false),
     val enablePreTrace: SetOnce<Boolean> = SetOnce(false),
     val enablePostTrace: SetOnce<Boolean> = SetOnce(false),
+
+    val allAnnotationSet: ClassDescriptorSet = ClassDescriptorSet()
 ) : BaseOptions() {
 
     private val allAnnotations = mutableSetOf<String>()
@@ -83,7 +86,10 @@ open class HostStubGenClassProcessorOptions(
         // Define some shorthands...
         fun nextArg(): String = args.nextArgRequired(option)
         fun MutableSet<String>.addUniqueAnnotationArg(): String =
-            nextArg().also { this += ensureUniqueAnnotation(it) }
+            nextArg().also {
+                this += ensureUniqueAnnotation(it)
+                allAnnotationSet.addType(it)
+            }
 
         when (option) {
             "--policy-override-file" -> policyOverrideFiles.add(FileOrResource(nextArg()))
