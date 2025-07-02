@@ -1,0 +1,4 @@
+-include ../../../proguard_kotlin.flags
+
+-keepattributes Signature
+-keepclassmembers class com.android.systemui.clocks.sample.R$* { public static <fields>; }
