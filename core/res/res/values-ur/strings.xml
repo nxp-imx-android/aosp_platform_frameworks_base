@@ -177,14 +177,10 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"موبائل نیٹ ورک سیکیورٹی"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"غیر مرموز کردہ نیٹ ورکس کے لیے مرموز کاری، اطلاعات"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"‏آلہ ID تک رسائی کی گئی"</string>
-    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
-    <skip />
-    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
-    <skip />
-    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
-    <skip />
-    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
-    <skip />
+    <string name="scIDIssueSummaryNotificationWithCellularID" msgid="8371590113242615316">"‏‫<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> پر، ایک قریبی نیٹ ورک نے آپ کی <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> SIM کا استعمال کرتے ہوئے آپ کے آلے کی منفرد ID (<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>) ریکارڈ کی"</string>
+    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="7106922007150754222">"‏‫<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> پر، ایک قریبی نیٹ ورک نے آپ کی <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> SIM کا استعمال کرتے ہوئے آپ کے آلے کی منفرد ID ریکارڈ کی"</string>
+    <string name="scIDIssueSummaryWithCellularID" msgid="1189965658392583067">"‏‫<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> پر، ایک قریبی نیٹ ورک نے آپ کی <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> SIM کا استعمال کرتے ہوئے آپ کے آلے کی منفرد ID (<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>) ریکارڈ کی۔\n\nاس کا مطلب ہے کہ آپ کے مقام، سرگرمی یا شناخت کو لاگ کیا جا چکا ہے۔ یہ عام بات ہے لیکن رازداری کے بارے میں فکر مند لوگوں کے لیے ایک مسئلہ ہو سکتا ہے۔"</string>
+    <string name="scIdentifierDisclosureIssueSummary" msgid="4362014471570210380">"‏‫<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g> پر، ایک قریبی نیٹ ورک نے آپ کی <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> SIM کا استعمال کرتے ہوئے آپ کے آلے کی منفرد ID ریکارڈ کی۔\n\nاس کا مطلب ہے کہ آپ کے مقام، سرگرمی یا شناخت کو لاگ کیا جا چکا ہے۔ یہ عام بات ہے لیکن رازداری کے بارے میں فکر مند لوگوں کے لیے ایک مسئلہ ہو سکتا ہے۔"</string>
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"مرموز کردہ نیٹ ورک <xliff:g id="NETWORK_NAME">%1$s</xliff:g> سے منسلک ہے"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"‏‫<xliff:g id="NETWORK_NAME">%1$s</xliff:g> SIM کا کنکشن اب بہت محفوظ ہے"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"غیر مرموز کردہ نیٹ ورک سے منسلک ہے"</string>
@@ -377,12 +373,18 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"اپنی علامات حیات کے متعلق سنسر ڈیٹا تک رسائی حاصل کریں"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"اطلاعات"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"اطلاعات دکھائیں"</string>
-    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"‏‫XR حساس آنکھوں کی حرکت کی ٹریکنگ کا ڈیٹا"</string>
-    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"آنکھوں کے حساس ڈیٹا تک رسائی حاصل کریں"</string>
-    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"‏‫XR ٹریکنگ ڈیٹا"</string>
-    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"‏اپنے اور اپنے آس پاس کے ماحول کے بارے میں XR ڈیٹا تک رسائی حاصل کریں"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"‏حساس XR ٹریکنگ ڈیٹا"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"اپنے اور اپنے آس پاس کے ماحول کے بارے میں حساس ٹریکنگ ڈیٹا تک رسائی حاصل کریں"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ونڈو مواد بازیافت کرنے کی"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"کسی ایسی ونڈو کے مواد کا معائنہ کریں جس کے ساتھ آپ تعامل کر رہے ہیں۔"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"ٹچ کے ذریعے دریافت کریں کو آن کرنے کی"</string>
@@ -680,22 +682,38 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"ایپ کو آپ کی تصویر کے مجموعے میں ترمیم کی اجازت دیتا ہے۔"</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"اپنی میڈيا کے مجموعے سے مقامات پڑھیں"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"ایپ کو آپ کی میڈيا کے مجموعے سے مقامات پڑھنے کی اجازت دیتا ہے۔"</string>
-    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"اپنی آنکھوں کی تخمینی نگاہوں کو ٹریک کریں"</string>
-    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"ایپ کو آپ کی تخمینی نگاہوں کو ٹریک کرنے کی اجازت ملتی ہے۔"</string>
-    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"وہ جگہ ٹریک کریں جہاں آپ دیکھ رہے ہیں"</string>
-    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"ایپ کو آنکھوں کے عین مطابق ڈیٹا تک رسائی کی اجازت ملتی ہے۔"</string>
-    <string name="permlab_face_tracking" msgid="2272048395128283324">"اپنے چہرے کو ٹریک کریں"</string>
-    <string name="permdesc_face_tracking" msgid="2622783922311211866">"ایپ کو ایپس کو فیس ٹریکنگ ڈیٹا تک رسائی کی اجازت ملتی ہے۔"</string>
-    <string name="permlab_hand_tracking" msgid="6478233866595566940">"اپنے ہاتھوں کو ٹریک کریں"</string>
-    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"ایپ کو ہینڈ ٹریکنگ ڈیٹا تک رسائی کی اجازت ملتی ہے۔"</string>
-    <string name="permlab_head_tracking" msgid="1309731456372087270">"اپنے سر کو ٹریک کریں"</string>
-    <string name="permdesc_head_tracking" msgid="231597390513699188">"ایپ کو ہیڈ ٹریکنگ ڈیٹا تک رسائی کی اجازت ملتی ہے۔"</string>
-    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"اپنے آس پاس کے ماحول کو سمجھیں"</string>
-    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"ایپ کو براہ راست آپ کے آس پاس کے ماحول کے بارے میں ٹریکنگ ڈیٹا تک رسائی کی اجازت ملتی ہے۔"</string>
-    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"اپنے آس پاس کے ماحول کو اعلیٰ تفصیل سے سمجھیں"</string>
-    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"ایپ کو بہت زیادہ تفصیل کے ساتھ براہ راست آپ کے آس پاس کے ماحول کے بارے میں ٹریکنگ ڈیٹا تک رسائی کی اجازت ملتی ہے۔"</string>
-    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"‏‫XR ڈیٹا تک رسائی حاصل کریں جبکہ پیش منظر میں نہ ہو"</string>
-    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"‏ایپ کو پیش منظر میں نہ ہوتے ہوئے XR ڈیٹا تک رسائی کی اجازت ملتی ہے۔"</string>
+    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
+    <skip />
+    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
+    <skip />
+    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
+    <skip />
+    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
+    <skip />
+    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
+    <skip />
+    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
+    <skip />
+    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
+    <skip />
+    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
+    <skip />
+    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
+    <skip />
+    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
+    <skip />
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"کلیدیں کیپچر کریں"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"اس سے ایپ کو کلیدوں کو کیپچر کرنے کی اجازت ملتی ہے اس سے پہلے کہ سسٹم سسٹم کے شارٹ کٹس اور کارروائیوں پر کارروائی کرے۔"</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"بایو میٹرکس استعمال کریں"</string>
@@ -2597,4 +2615,6 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"فنگر پرنٹ اَن لاک کے ضمن میں دشواری کا سامنا ہے؟"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"اپنے اَن لاک کرنے کے تجربے کو بہتر بنانے کے لیے انگلیوں کے نقشے کا جائزہ لینے کے لیے تھپتھپائیں"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"کرسر بلنک نہیں کرتا ہے"</string>
+    <!-- no translation found for long_press_power_to_turn_off_tv_toast (2231397748028498986) -->
+    <skip />
 </resources>

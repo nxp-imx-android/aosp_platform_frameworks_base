@@ -178,14 +178,10 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"אבטחת הרשת הסלולרית"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"הצפנה, התראות על רשתות לא מוצפנות"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"בוצעה גישה למזהה המכשיר"</string>
-    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
-    <skip />
-    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
-    <skip />
-    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
-    <skip />
-    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
-    <skip />
+    <string name="scIDIssueSummaryNotificationWithCellularID" msgid="8371590113242615316">"‏בשעה <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, בזמן השימוש בכרטיס ה-SIM של <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g>, המזהה הייחודי של המכשיר שלך (<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>) תועד ברשת שהייתה קרובה אליך."</string>
+    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="7106922007150754222">"‏בשעה <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, רשת שהייתה קרובה אליך תיעדה את המזהה הייחודי של המכשיר שלך בזמן השימוש בכרטיס ה-SIM של <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g>"</string>
+    <string name="scIDIssueSummaryWithCellularID" msgid="1189965658392583067">"‏בשעה <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, בזמן השימוש בכרטיס ה-SIM של <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g>, המזהה הייחודי של המכשיר שלך (<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>) תועד ברשת שהייתה קרובה אליך.\n\nזה אומר שהמיקום, הפעילות או הזהות שלך נרשמו. זאת פעולה שגרתית, אבל לאנשים שנושא הפרטיות חשוב להם - היא עלולה להיות בעייתית."</string>
+    <string name="scIdentifierDisclosureIssueSummary" msgid="4362014471570210380">"‏בשעה <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>, רשת שהייתה קרובה אליך תיעדה את המזהה הייחודי של המכשיר שלך בזמן השימוש בכרטיס ה-SIM של <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g>.\n\nזה אומר שהמיקום, הפעילות או הזהות שלך נרשמו. זאת פעולה שגרתית, אבל לאנשים שנושא הפרטיות חשוב להם - היא עלולה להיות בעייתית."</string>
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"יש חיבור לרשת המוצפנת <xliff:g id="NETWORK_NAME">%1$s</xliff:g>"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"‏החיבור של כרטיס ה-SIM של <xliff:g id="NETWORK_NAME">%1$s</xliff:g> מאובטח יותר עכשיו"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"יש חיבור לרשת לא מוצפנת"</string>
@@ -378,12 +374,18 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"גישה אל נתוני חיישנים של הסימנים החיוניים שלך"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"התראות"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"הצגת התראות"</string>
-    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"‏נתונים רגישים של מעקב עיניים של XR"</string>
-    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"גישה לנתונים רגישים של תנועות העיניים"</string>
-    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"‏נתונים של מעקב XR"</string>
-    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"‏גישה לנתוני XR לגביך ולגבי הסביבה הקרובה"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"‏נתונים רגישים של מעקב XR"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"גישה לנתוני מעקב רגישים לגביך ולגבי הסביבה הקרובה"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"אחזור תוכן של חלון"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"בדיקת התוכן של חלון שאיתו מתבצעת אינטראקציה."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"הפעלה של \'גילוי באמצעות מגע\'"</string>
@@ -681,22 +683,38 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"מאפשרת לאפליקציה לשנות את אוסף התמונות שלך."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"לקרוא מיקומים מאוסף המדיה שלך"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"מאפשרת לאפליקציה לקרוא מיקומים מאוסף המדיה שלך."</string>
-    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"מעקב אחרי תנועות העיניים בקירוב"</string>
-    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"ההרשאה מאפשרת לאפליקציה לעקוב אחרי תנועות העיניים בקירוב."</string>
-    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"מעקב אחרי הכיוון של המבט"</string>
-    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"ההרשאה מאפשרת לאפליקציה לגשת לנתונים מדויקים של תנועות עיניים."</string>
-    <string name="permlab_face_tracking" msgid="2272048395128283324">"מעקב אחרי תנועות הפנים"</string>
-    <string name="permdesc_face_tracking" msgid="2622783922311211866">"ההרשאה מאפשרת לאפליקציה לגשת לנתוני מעקב תנועות הפנים."</string>
-    <string name="permlab_hand_tracking" msgid="6478233866595566940">"מעקב אחר תנועות הידיים"</string>
-    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"ההרשאה מאפשרת לאפליקציה לגשת לנתוני מעקב תנועות הידיים."</string>
-    <string name="permlab_head_tracking" msgid="1309731456372087270">"מעקב אחרי תנועות הראש"</string>
-    <string name="permdesc_head_tracking" msgid="231597390513699188">"ההרשאה מאפשרת לאפליקציה לגשת לנתוני מעקב תנועות הראש."</string>
-    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"גישה לנתונים מהסביבה הקרובה"</string>
-    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"ההרשאה מאפשרת לאפליקציה לגשת לנתוני המעקב מהסביבה הקרובה."</string>
-    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"גישה לנתונים מהסביבה הקרובה ברמת פירוט גבוהה"</string>
-    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"ההרשאה מאפשרת לאפליקציה לגשת לנתוני מעקב מהסביבה הקרובה ברמת פירוט גבוהה מאוד."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"‏גישה לנתוני XR כשהאפליקציה לא בחזית"</string>
-    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"‏ההרשאה מאפשרת לאפליקציה לגשת לנתוני XR כשהיא לא בחזית."</string>
+    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
+    <skip />
+    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
+    <skip />
+    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
+    <skip />
+    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
+    <skip />
+    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
+    <skip />
+    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
+    <skip />
+    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
+    <skip />
+    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
+    <skip />
+    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
+    <skip />
+    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
+    <skip />
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"תיעוד השימוש במקשים"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"מתן הרשאה לאפליקציה לתעד את השימוש במקשים לפני שהמערכת מעבדת את מקשי הקיצור והפעולות."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"שימוש במידע ביומטרי"</string>
@@ -2598,4 +2616,6 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"נתקלת בבעיה בפתיחה בטביעת אצבע?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"אפשר ללחוץ כאן כדי לקבל טיפים לפתיחה נוחה יותר של המכשיר"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ללא הבהוב"</string>
+    <!-- no translation found for long_press_power_to_turn_off_tv_toast (2231397748028498986) -->
+    <skip />
 </resources>

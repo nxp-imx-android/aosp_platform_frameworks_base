@@ -177,14 +177,10 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"ম’বাইল নেটৱৰ্কৰ সুৰক্ষা"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"এনক্ৰিপশ্বন, এনক্ৰিপ্ট নকৰা নেটৱৰ্কৰ বাবে জাননী"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"ডিভাইচৰ আইডি এক্সেছ কৰা হৈছে"</string>
-    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
-    <skip />
-    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
-    <skip />
-    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
-    <skip />
-    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
-    <skip />
+    <string name="scIDIssueSummaryNotificationWithCellularID" msgid="8371590113242615316">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>ত, এটা নিকটৱৰ্তী নেটৱৰ্কে আপোনাৰ <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> ছিম ব্যৱহাৰ কৰাৰ সময়ত আপোনাৰ ডিভাইচৰ অদ্বিতীয় আইডি (<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>) ৰেকৰ্ড কৰিছে"</string>
+    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="7106922007150754222">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>ত, এটা নিকটৱৰ্তী নেটৱৰ্কে আপোনাৰ <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> ছিম ব্যৱহাৰ কৰাৰ সময়ত আপোনাৰ ডিভাইচৰ অদ্বিতীয় আইডি ৰেকৰ্ড কৰিছে"</string>
+    <string name="scIDIssueSummaryWithCellularID" msgid="1189965658392583067">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>ত, এটা নিকটৱৰ্তী নেটৱৰ্কে আপোনাৰ <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> ছিম ব্যৱহাৰ কৰাৰ সময়ত আপোনাৰ ডিভাইচৰ অদ্বিতীয় আইডি (<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>) ৰেকৰ্ড কৰিছে।\n\nইয়াৰ অৰ্থ হৈছে যে আপোনাৰ অৱস্থান, কাৰ্যকলাপ বা পৰিচয়ৰ লগ তৈয়াৰ কৰা হৈছে। এইটো সাধাৰণভাৱে কৰা অনুশীলন যদিও গোপনীয়তা সম্পৰ্কে চিন্তিত লোকসকলৰ বাবে ই এটা সমস্যা হ’ব পাৰে।"</string>
+    <string name="scIdentifierDisclosureIssueSummary" msgid="4362014471570210380">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>ত, এটা নিকটৱৰ্তী নেটৱৰ্কে আপোনাৰ <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> ছিম ব্যৱহাৰ কৰাৰ সময়ত আপোনাৰ ডিভাইচৰ অদ্বিতীয় আইডি ৰেকৰ্ড কৰিছে।\n\nইয়াৰ অৰ্থ হৈছে যে আপোনাৰ অৱস্থান, কাৰ্যকলাপ বা পৰিচয়ৰ লগ তৈয়াৰ কৰা হৈছে। এইটো সাধাৰণভাৱে কৰা অনুশীলন যদিও গোপনীয়তা সম্পৰ্কে চিন্তিত লোকসকলৰ বাবে ই এটা সমস্যা হ’ব পাৰে।"</string>
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"এনক্ৰিপ্ট কৰা নেটৱৰ্ক <xliff:g id="NETWORK_NAME">%1$s</xliff:g>ৰ সৈতে সংযুক্ত কৰা আছে"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"<xliff:g id="NETWORK_NAME">%1$s</xliff:g> ছিমৰ সংযোগ এতিয়া অধিক সুৰক্ষিত"</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"এনক্ৰিপ্ট নকৰা নেটৱৰ্কৰ সৈতে সংযুক্ত কৰা আছে"</string>
@@ -377,12 +373,18 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"আপোনাৰ দেহৰ গুৰুত্বপূৰ্ণ অংগসমূহৰ অৱস্থাৰ বিষয়ে ছেন্সৰৰ ডেটা লাভ কৰিব পাৰে"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"জাননী"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"জাননী দেখুৱাওক"</string>
-    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"XR সংবেদনশীল আই ট্ৰেকিং ডেটা"</string>
-    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"চকুৰ দৃষ্টি সম্পৰ্কীয় সংবেদনশীল ডেটা এক্সেছ কৰা"</string>
-    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR ট্ৰেকিং ডেটা"</string>
-    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"আপোনাৰ আৰু আপোনাৰ চৌপাশৰ পৰিৱেশ সম্পৰ্কীয় XR ডেটা এক্সেছ কৰা"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"সংবেদনশীল XR ট্ৰেকিং ডেটা"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"আপোনাৰ আৰু আপোনাৰ চৌপাশৰ পৰিৱেশ সম্পৰ্কীয় সংবেদনশীল ট্ৰেকিং ডেটা এক্সেছ কৰা"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"ৱিণ্ড’ সমল বিচাৰি উলিওৱাৰ"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"আপুনি চাই থকা ৱিণ্ড’খনৰ সমল পৰীক্ষা কৰাৰ।"</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"স্পৰ্শৰ দ্বাৰা অন্বেষণ কৰাৰ সুবিধা অন কৰাৰ"</string>
@@ -680,22 +682,38 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"এপক আপোনাৰ ফট’ সংগ্ৰহ সালসলনি কৰিবলৈ দিয়ে।"</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"আপোনাৰ মিডিয়া সংগ্ৰহৰ অৱস্থান পঢ়িবলৈ"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"এপক আপোনাৰ মিডিয়া সংগ্ৰহৰ অৱস্থান পঢ়িবলৈ দিয়ে।"</string>
-    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"আপোনাৰ আনুমানিক চকুৰ দৃষ্টি ট্ৰেক কৰা"</string>
-    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"এপ্‌টোক আপোনাৰ চকুৰ আনুমানিক দৃষ্টি ট্ৰেক কৰিবলৈ দিয়ে।"</string>
-    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"আপুনি কোনফালে চাই আছে সেয়া ট্ৰেক কৰা"</string>
-    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"এপ্‌টোক আপোনাৰ চকুৰ সঠিক দৃষ্টি সম্পৰ্কীয় ডেটা এক্সেছ কৰিবলৈ দিয়ে।"</string>
-    <string name="permlab_face_tracking" msgid="2272048395128283324">"আপোনাৰ মুখাৱয়ব ট্ৰেক কৰা"</string>
-    <string name="permdesc_face_tracking" msgid="2622783922311211866">"এপ্‌টোক মুখাৱয়ব ট্ৰেক কৰাৰ ডেটা এক্সেছ কৰিবলৈ দিয়ে।"</string>
-    <string name="permlab_hand_tracking" msgid="6478233866595566940">"আপোনাৰ হাত ট্ৰেক কৰা"</string>
-    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"এপ্‌টোক হাতৰ ট্ৰেকিং সম্পৰ্কীয় ডেটা এক্সেছ কৰিবলৈ দিয়ে।"</string>
-    <string name="permlab_head_tracking" msgid="1309731456372087270">"আপোনাৰ মূৰ ট্ৰেক কৰা"</string>
-    <string name="permdesc_head_tracking" msgid="231597390513699188">"এপ্‌টোক হে’ড ট্ৰেকিং সম্পৰ্কীয় ডেটা এক্সেছ কৰিবলৈ দিয়ে।"</string>
-    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"আপোনাৰ একেবাৰেই আশ-পাশৰ পৰিৱেশ বুজা"</string>
-    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"এপ্‌টোক আপোনাৰ একেবাৰেই আশা-পাশৰ পৰিৱেশ সম্পৰ্কীয় ট্ৰেকিং ডেটা এক্সেছ কৰিবলৈ দিয়ে।"</string>
-    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"বিস্তৃত সবিশেষৰ সৈতে আপোনাৰ একেবাৰেই আশ-পাশৰ পৰিৱেশ বুজা"</string>
-    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"এপ্‌টোক বিতং সবিশেষৰ সৈতে আপোনাৰ একেবাৰেই আশা-পাশৰ পৰিৱেশ সম্পৰ্কীয় ট্ৰেকিং ডেটা এক্সেছ কৰিবলৈ দিয়ে।"</string>
-    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"অগ্ৰভূমিত নথকাৰ সময়ত XR ডেটা এক্সেছ কৰা"</string>
-    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"অগ্ৰভূমিত নথকাৰ সময়ত এপ্‌টোক XR ডেটা এক্সেছ কৰিবলৈ দিয়ে।"</string>
+    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
+    <skip />
+    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
+    <skip />
+    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
+    <skip />
+    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
+    <skip />
+    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
+    <skip />
+    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
+    <skip />
+    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
+    <skip />
+    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
+    <skip />
+    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
+    <skip />
+    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
+    <skip />
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"কেপচাৰ কী"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"এপ্‌টোক, ছিষ্টেমে ছিষ্টেমৰ শ্বৰ্টকাট আৰু কাৰ্য প্ৰক্ৰিয়াকৰণ কৰিব পৰাৰ পূৰ্বে কী কেপচাৰ কৰিবলৈ অনুমতি দিয়ে।"</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"বায়\'মেট্ৰিক ব্যৱহাৰ কৰক"</string>
@@ -2597,4 +2615,6 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"ফিংগাৰপ্ৰিন্ট আনলকৰ ক্ষেত্ৰত কিবা অসুবিধা পাইছে নেকি?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"আপুনি আনলক কৰাৰ অভিজ্ঞতা উন্নত কৰাৰ পৰামৰ্শসমূহ পৰ্যালোচনা কৰিবলৈ টিপক"</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"ব্লিংক নকৰিব"</string>
+    <!-- no translation found for long_press_power_to_turn_off_tv_toast (2231397748028498986) -->
+    <skip />
 </resources>
