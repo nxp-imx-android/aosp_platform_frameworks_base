@@ -19,7 +19,6 @@ package android.view;
 import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_CONTINUE_ON_SUBTREE;
 import static android.view.WindowInsetsAnimation.Callback.DISPATCH_MODE_STOP;
 import static android.view.flags.Flags.FLAG_TOOLKIT_VIEWGROUP_SET_REQUESTED_FRAME_RATE_API;
-import static android.view.flags.Flags.scrollCaptureTargetZOrderFix;
 import static android.view.flags.Flags.toolkitViewgroupSetRequestedFrameRateApi;
 
 import android.animation.LayoutTransition;
@@ -7687,22 +7686,13 @@ public abstract class ViewGroup extends View implements ViewParent, ViewManager 
         }
         final Rect tmpRect = getTempRect();
 
-        ArrayList<View> preorderedList = null;
-        boolean customOrder = false;
-        if (scrollCaptureTargetZOrderFix()) {
-            preorderedList = buildOrderedChildList();
-            customOrder = preorderedList == null && isChildrenDrawingOrderEnabled();
-        }
+        ArrayList<View> preorderedList = buildOrderedChildList();
+        boolean customOrder = preorderedList == null && isChildrenDrawingOrderEnabled();
         final View[] children = mChildren;
         for (int i = 0; i < childrenCount; i++) {
-            View child;
-            if (scrollCaptureTargetZOrderFix()) {
-                // Traverse children in the same order they will be drawn (honors Z if set)
-                final int childIndex = getAndVerifyPreorderedIndex(childrenCount, i, customOrder);
-                child = getAndVerifyPreorderedView(preorderedList, children, childIndex);
-            } else {
-                child = children[i];
-            }
+            // Traverse children in the same order they will be drawn (honors Z if set)
+            final int childIndex = getAndVerifyPreorderedIndex(childrenCount, i, customOrder);
+            View child = getAndVerifyPreorderedView(preorderedList, children, childIndex);
 
             // Only visible views can be captured.
             if (child.getVisibility() != View.VISIBLE) {
