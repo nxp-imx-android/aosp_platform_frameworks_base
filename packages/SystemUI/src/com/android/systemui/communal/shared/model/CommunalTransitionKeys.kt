@@ -37,6 +37,8 @@ object CommunalTransitionKeys {
     val FromOccluded = TransitionKey("FromOccluded")
     /** Swipes out of glanceable hub in landscape orientation */
     val SwipeInLandscape = TransitionKey("SwipeInLandscape")
+    /** Swipes up to exit glanceable hub to lockscreen */
+    val SwipeUp = TransitionKey("SwipeUp")
     /** Transition from AOD state to the glanceable hub */
     val FromAod = TransitionKey("FromAod")
 }

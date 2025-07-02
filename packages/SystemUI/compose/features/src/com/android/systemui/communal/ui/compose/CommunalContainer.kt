@@ -121,6 +121,10 @@ val sceneTransitionsV2 = transitions {
         spec = tween(durationMillis = TO_GONE_DURATION.toInt(DurationUnit.MILLISECONDS))
         fade(AllElements)
     }
+    to(CommunalScenes.Blank, key = CommunalTransitionKeys.SwipeUp) {
+        spec = tween(durationMillis = TO_LOCKSCREEN_DURATION.toInt(DurationUnit.MILLISECONDS))
+        fade(AllElements)
+    }
     to(CommunalScenes.Blank, key = CommunalTransitionKeys.SwipeInLandscape) {
         spec = tween(durationMillis = TO_LOCKSCREEN_DURATION.toInt(DurationUnit.MILLISECONDS))
         translate(Communal.Elements.Grid, Edge.End)
@@ -294,7 +298,9 @@ fun CommunalContainer(
                             } else {
                                 CommunalTransitionKeys.Swipe
                             },
-                        )
+                        ),
+                    Swipe.Up to
+                        UserActionResult(CommunalScenes.Blank, CommunalTransitionKeys.SwipeUp),
                 ),
         ) {
             CommunalScene(
