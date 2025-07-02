@@ -1169,16 +1169,17 @@ private fun DeviceChip(
                 color = Color.Transparent,
                 shape = RoundedCornerShape(12.dp),
             ),
+        modifier = modifier.padding(top = 16.dp, bottom = 8.dp),
         useModifierBasedImplementation = true,
     ) {
         Box(
             modifier =
-                modifier
-                    .heightIn(min = 48.dp)
-                    .clickable(interactionSource = clickInteractionSource, indication = null) {
-                        viewModel.onClick(it)
-                    }
-                    .padding(top = 16.dp, bottom = 8.dp)
+                Modifier.heightIn(min = 48.dp).clickable(
+                    interactionSource = clickInteractionSource,
+                    indication = null,
+                ) {
+                    viewModel.onClick(it)
+                }
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
