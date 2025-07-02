@@ -100,6 +100,8 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
     private ActivityRecord mActivity;
     private Task mTask;
 
+    private int mNextPid = 1;
+
     @Before
     public void setUp() throws Exception {
         mAppCompatConfiguration = mDisplayContent.mWmService.mAppCompatConfiguration;
@@ -588,10 +590,15 @@ public final class DisplayRotationCompatPolicyTests extends WindowTestsBase {
                 .setDisplay(mDisplayContent)
                 .build();
 
+        final ComponentName componentName = new ComponentName(TEST_PACKAGE_1, ".TestActivity");
         mActivity = new ActivityBuilder(mAtm)
-                .setComponent(new ComponentName(TEST_PACKAGE_1, ".TestActivity"))
+                .setComponent(componentName)
                 .setScreenOrientation(activityOrientation)
                 .setTask(mTask)
+                .setUseProcess(SystemServicesTestRule.addProcess(mAtm,
+                        componentName.getPackageName(),
+                        componentName.getPackageName() + "Proc",
+                        mNextPid++, /* uid= */ 0))
                 .build();
 
         spyOn(mActivity.info.applicationInfo);
