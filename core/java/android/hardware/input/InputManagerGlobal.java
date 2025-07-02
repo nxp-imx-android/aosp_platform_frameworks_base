@@ -1728,7 +1728,7 @@ public final class InputManagerGlobal {
     }
 
     /**
-     * @see InputManager#requestPointerCapture(IBinder, boolean)
+     * @see android.view.View#requestPointerCapture()
      */
     public void requestPointerCapture(IBinder windowToken, boolean enable) {
         try {
