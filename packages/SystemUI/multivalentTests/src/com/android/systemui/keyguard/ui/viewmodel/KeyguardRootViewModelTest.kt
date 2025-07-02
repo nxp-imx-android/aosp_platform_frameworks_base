@@ -56,6 +56,7 @@ import com.android.systemui.scene.data.repository.setSceneTransition
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.shadeTestUtil
+import com.android.systemui.shared.Flags
 import com.android.systemui.statusbar.notification.data.model.activeNotificationModel
 import com.android.systemui.statusbar.notification.data.repository.ActiveNotificationsStore
 import com.android.systemui.statusbar.notification.data.repository.activeNotificationListRepository
@@ -69,6 +70,7 @@ import com.android.systemui.util.mockito.whenever
 import com.android.systemui.util.ui.isAnimating
 import com.android.systemui.util.ui.stopAnimating
 import com.android.systemui.util.ui.value
+import com.google.common.collect.Range
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
@@ -686,6 +688,131 @@ class KeyguardRootViewModelTest(flags: FlagsParameterization) : SysuiTestCase() 
             transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Blank)
 
             assertThat(scaleToApply).isEqualTo(1f)
+        }
+
+    @Test
+    @DisableSceneContainer
+    @EnableFlags(FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION)
+    fun scaleFromGlanceableHub_reset_whenTransitionedFromHubToAod() =
+        testScope.runTest {
+            val scaleToApply by collectLastValue(underTest.scaleFromZoomOut)
+
+            // Start on communal scene.
+            val transitionState: MutableStateFlow<ObservableTransitionState> =
+                MutableStateFlow(ObservableTransitionState.Idle(CommunalScenes.Communal))
+            communalRepository.setTransitionState(transitionState)
+
+            keyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.LOCKSCREEN,
+                to = KeyguardState.GLANCEABLE_HUB,
+                testScope,
+            )
+
+            assertThat(scaleToApply).isEqualTo(1 - PUSHBACK_SCALE_FOR_LOCKSCREEN)
+
+            // Start transition to AOD
+            transitionState.value =
+                ObservableTransitionState.Transition(
+                    fromScene = CommunalScenes.Communal,
+                    toScene = CommunalScenes.Blank,
+                    currentScene = flowOf(CommunalScenes.Communal),
+                    progress = flowOf(0f),
+                    isInitiatedByUserInput = true,
+                    isUserInputOngoing = flowOf(false),
+                )
+            keyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    TransitionStep(
+                        transitionState = TransitionState.STARTED,
+                        from = KeyguardState.GLANCEABLE_HUB,
+                        to = KeyguardState.AOD,
+                    ),
+                    TransitionStep(
+                        transitionState = TransitionState.RUNNING,
+                        from = KeyguardState.GLANCEABLE_HUB,
+                        to = KeyguardState.AOD,
+                        value = 0.6f,
+                    ),
+                ),
+                testScope,
+            )
+            runCurrent()
+
+            assertThat(scaleToApply).isIn(Range.open(1 - PUSHBACK_SCALE_FOR_LOCKSCREEN, 1f))
+
+            keyguardTransitionRepository.sendTransitionStep(
+                TransitionStep(
+                    transitionState = TransitionState.FINISHED,
+                    from = KeyguardState.GLANCEABLE_HUB,
+                    to = KeyguardState.AOD,
+                )
+            )
+            runCurrent()
+            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Blank)
+
+            assertThat(scaleToApply).isEqualTo(1f)
+        }
+
+    @Test
+    @DisableSceneContainer
+    @EnableFlags(Flags.FLAG_AMBIENT_AOD, FLAG_GESTURE_BETWEEN_HUB_AND_LOCKSCREEN_MOTION)
+    fun scaleFromGlanceableHub_whenTransitionedFromAodToHub() =
+        testScope.runTest {
+            val scaleToApply by collectLastValue(underTest.scaleFromZoomOut)
+
+            // Start on blank scene.
+            val transitionState: MutableStateFlow<ObservableTransitionState> =
+                MutableStateFlow(ObservableTransitionState.Idle(CommunalScenes.Blank))
+            communalRepository.setTransitionState(transitionState)
+
+            keyguardTransitionRepository.sendTransitionSteps(
+                from = KeyguardState.GLANCEABLE_HUB,
+                to = KeyguardState.AOD,
+                testScope,
+            )
+
+            assertThat(scaleToApply).isEqualTo(1f)
+
+            // Start transition to hub.
+            transitionState.value =
+                ObservableTransitionState.Transition(
+                    fromScene = CommunalScenes.Blank,
+                    toScene = CommunalScenes.Communal,
+                    currentScene = flowOf(CommunalScenes.Blank),
+                    progress = flowOf(0f),
+                    isInitiatedByUserInput = true,
+                    isUserInputOngoing = flowOf(false),
+                )
+            keyguardTransitionRepository.sendTransitionSteps(
+                listOf(
+                    TransitionStep(
+                        transitionState = TransitionState.STARTED,
+                        from = KeyguardState.AOD,
+                        to = KeyguardState.GLANCEABLE_HUB,
+                    ),
+                    TransitionStep(
+                        transitionState = TransitionState.RUNNING,
+                        from = KeyguardState.AOD,
+                        to = KeyguardState.GLANCEABLE_HUB,
+                        value = 0.2f,
+                    ),
+                ),
+                testScope,
+            )
+
+            assertThat(scaleToApply).isIn(Range.open(1 - PUSHBACK_SCALE_FOR_LOCKSCREEN, 1f))
+
+            keyguardTransitionRepository.sendTransitionStep(
+                TransitionStep(
+                    transitionState = TransitionState.FINISHED,
+                    from = KeyguardState.AOD,
+                    to = KeyguardState.GLANCEABLE_HUB,
+                )
+            )
+            runCurrent()
+            transitionState.value = ObservableTransitionState.Idle(CommunalScenes.Communal)
+
+            assertThat(scaleToApply).isEqualTo(1f - PUSHBACK_SCALE_FOR_LOCKSCREEN)
         }
 
     @Test

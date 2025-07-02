@@ -240,6 +240,8 @@ constructor(
                     merge(
                         lockscreenToGlanceableHubTransitionViewModel.zoomOut,
                         glanceableHubToLockscreenTransitionViewModel.zoomOut,
+                        aodToGlanceableHubTransitionViewModel.zoomOut,
+                        glanceableHubToAodTransitionViewModel.zoomOut,
                     ),
                 ) { isCommunalVisible, zoomOut ->
                     if (!isCommunalVisible) {
