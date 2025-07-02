@@ -126,7 +126,9 @@ combined_apis {
         true: [
             "framework-telephony",
         ],
-        default: [],
+        default: [
+            "framework-platformtelephony",
+        ],
     }),
     system_server_classpath: [
         "service-art",
@@ -500,6 +502,8 @@ java_defaults {
         "//frameworks/base/nfc",
         "//frameworks/base/packages/CrashRecovery/framework",
         "//packages/modules/NeuralNetworks:__subpackages__",
+        // TODO(b/429127828): Clean this up along with RELEASE_TELEPHONY_MODULE
+        "//packages/modules/Telephony/framework:__subpackages__",
     ],
     plugins: ["error_prone_android_framework"],
     errorprone: {
