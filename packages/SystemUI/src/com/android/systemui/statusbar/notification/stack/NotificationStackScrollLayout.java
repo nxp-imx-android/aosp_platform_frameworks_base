@@ -142,6 +142,8 @@ import com.android.systemui.util.ListenerSet;
 
 import com.google.errorprone.annotations.CompileTimeConstant;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.util.ArrayDeque;
@@ -837,6 +839,8 @@ public class NotificationStackScrollLayout
             drawDebugInfo(canvas, y, Color.BLUE,
                     /* label= */ "getStackTop() + getIntrinsicStackHeight() = " + y);
 
+            drawDebugInfo(canvas, mAmbientState.getDrawBounds(), Color.YELLOW, "drawBounds");
+
             return; // the rest of the fields are not important in Flexiglass
         }
 
@@ -886,6 +890,13 @@ public class NotificationStackScrollLayout
         canvas.drawLine(/* startX= */ 0, /* startY= */ y, /* stopX= */ getWidth(), /* stopY= */ y,
                 mDebugPaint);
         canvas.drawText(label, /* x= */ 0, /* y= */ computeDebugYTextPosition(y), mDebugPaint);
+    }
+
+    private void drawDebugInfo(Canvas canvas, RectF rect, int color, String label) {
+        mDebugPaint.setColor(color);
+        canvas.drawRect(rect, mDebugPaint);
+        canvas.drawText(label, /* x= */ 0, /* y= */ computeDebugYTextPosition((int) rect.top),
+                mDebugPaint);
     }
 
     private int computeDebugYTextPosition(int lineY) {
@@ -1268,10 +1279,10 @@ public class NotificationStackScrollLayout
     }
 
     @Override
-    public void setStackCutoff(float stackCutoff) {
+    public void setDrawBounds(@NotNull RectF drawBounds) {
         if (SceneContainerFlag.isUnexpectedlyInLegacyMode()) return;
-        if (mAmbientState.getStackCutoff() != stackCutoff) {
-            mAmbientState.setStackCutoff(stackCutoff);
+        if (mAmbientState.getDrawBounds() != drawBounds) {
+            mAmbientState.setDrawBounds(drawBounds);
             updateStackEndHeightAndStackHeight(mAmbientState.getExpansionFraction());
             requestChildrenUpdate();
         }
