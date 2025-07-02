@@ -4,6 +4,7 @@ set noparent
 
 caitlinshk@google.com
 evanlaird@google.com
+justinweir@google.com
 pixel@google.com
 
 per-file *Biometric* = set noparent
