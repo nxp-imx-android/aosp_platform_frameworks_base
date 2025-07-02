@@ -22,7 +22,7 @@ fun VariableDayDate(
                 {
                     Text(
                         text = longerDateText,
-                        style = MaterialTheme.typography.labelLargeEmphasized,
+                        style = MaterialTheme.typography.bodyMediumEmphasized,
                         color = textColor,
                         maxLines = 1,
                     )
@@ -30,7 +30,7 @@ fun VariableDayDate(
                 {
                     Text(
                         text = shorterDateText,
-                        style = MaterialTheme.typography.labelLargeEmphasized,
+                        style = MaterialTheme.typography.bodyMediumEmphasized,
                         color = textColor,
                         maxLines = 1,
                     )
