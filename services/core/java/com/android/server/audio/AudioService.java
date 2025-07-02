@@ -465,7 +465,6 @@ public class AudioService extends IAudioService.Stub
     private static final int MSG_NOTIFY_VOL_EVENT = 22;
     private static final int MSG_DISPATCH_AUDIO_SERVER_STATE = 23;
     private static final int MSG_ENABLE_SURROUND_FORMATS = 24;
-    private static final int MSG_UPDATE_RINGER_MODE = 25;
     private static final int MSG_SET_DEVICE_STREAM_VOLUME = 26;
     private static final int MSG_OBSERVE_DEVICES_FOR_ALL_STREAMS = 27;
     private static final int MSG_HDMI_VOLUME_CHECK = 28;
@@ -495,7 +494,6 @@ public class AudioService extends IAudioService.Stub
     private static final int MSG_CONFIGURATION_CHANGED = 54;
     private static final int MSG_BROADCAST_MASTER_MUTE = 55;
     private static final int MSG_UPDATE_CONTEXTUAL_VOLUMES = 56;
-    private static final int MSG_BT_COMM_DEVICE_ACTIVE_UPDATE = 57;
 
     /**
      * Messages handled by the {@link SoundDoseHelper}, do not exceed
@@ -6696,6 +6694,12 @@ public class AudioService extends IAudioService.Stub
         broadcastRingerMode(AudioManager.RINGER_MODE_CHANGED_ACTION, ringerMode);
     }
 
+    /* package */ void updateRingerModeMutedStreams() {
+        synchronized (mSettingsLock) {
+            muteRingerModeStreams();
+        }
+    }
+
     @GuardedBy("mSettingsLock")
     private void muteRingerModeStreams() {
         // Mute stream if not previously muted by ringer mode and (ringer mode
@@ -6717,15 +6721,17 @@ public class AudioService extends IAudioService.Stub
                 && (mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_BLE_HEADSET
                 || mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER);
         // Ask audio policy engine to force use Bluetooth SCO/BLE channel if needed
-        final String eventSource = "muteRingerModeStreams() from u/pid:" + Binder.getCallingUid()
-                + "/" + Binder.getCallingPid();
+        final String eventSource =
+                "muteRingerModeStreams() from u/pid:" + Binder.getCallingUid()
+                        + "/" + Binder.getCallingPid();
         int forceUse = AudioSystem.FORCE_NONE;
         if (shouldRingSco) {
             forceUse = AudioSystem.FORCE_BT_SCO;
         } else if (shouldRingBle) {
             forceUse = AudioSystem.FORCE_BT_BLE;
         }
-        sendMsg(mAudioHandler, MSG_SET_FORCE_USE, SENDMSG_QUEUE, AudioSystem.FOR_VIBRATE_RINGING,
+        sendMsg(mAudioHandler, MSG_SET_FORCE_USE, SENDMSG_QUEUE,
+                AudioSystem.FOR_VIBRATE_RINGING,
                 forceUse, eventSource, 0);
 
         for (int streamType = numStreamTypes - 1; streamType >= 0; streamType--) {
@@ -6735,7 +6741,8 @@ public class AudioService extends IAudioService.Stub
             }
             final boolean isMuted = isStreamMutedByRingerOrZenMode(streamType);
             final boolean muteAllowedBySco =
-                    !((shouldRingSco || shouldRingBle) && streamType == AudioSystem.STREAM_RING);
+                    !((shouldRingSco || shouldRingBle)
+                            && streamType == AudioSystem.STREAM_RING);
             final boolean shouldZenMute = isStreamAffectedByCurrentZen(streamType);
             final boolean shouldMute = shouldZenMute || (ringerModeMute
                     && isStreamAffectedByRingerMode(streamType) && muteAllowedBySco);
@@ -6744,7 +6751,8 @@ public class AudioService extends IAudioService.Stub
                 // unmute
                 // ring and notifications volume should never be 0 when not silenced
                 if (sStreamVolumeAlias.get(streamType) == AudioSystem.STREAM_RING
-                        || sStreamVolumeAlias.get(streamType) == AudioSystem.STREAM_NOTIFICATION) {
+                        || sStreamVolumeAlias.get(streamType)
+                        == AudioSystem.STREAM_NOTIFICATION) {
                     synchronized (mVolumeStateLock) {
                         for (int i = 0; i < vss.mIndexMap.size(); i++) {
                             int device = vss.mIndexMap.keyAt(i);
@@ -6754,14 +6762,14 @@ public class AudioService extends IAudioService.Stub
                             }
                         }
                         // Persist volume for stream ring when it is changed here
-                      final int device = getDeviceForStream(streamType);
-                      sendMsg(mAudioHandler,
-                              MSG_PERSIST_VOLUME,
-                              SENDMSG_QUEUE,
-                              device,
-                              0,
-                              vss,
-                              PERSIST_DELAY);
+                        final int device = getDeviceForStream(streamType);
+                        sendMsg(mAudioHandler,
+                                MSG_PERSIST_VOLUME,
+                                SENDMSG_QUEUE,
+                                device,
+                                0,
+                                vss,
+                                PERSIST_DELAY);
                     }
                 }
                 sRingerAndZenModeMutedStreams &= ~(1 << streamType);
@@ -6811,14 +6819,6 @@ public class AudioService extends IAudioService.Stub
             // Send sticky broadcast
             broadcastRingerMode(AudioManager.INTERNAL_RINGER_MODE_CHANGED_ACTION, ringerMode);
         }
-    }
-
-    /*package*/ void postUpdateRingerModeServiceInt() {
-        sendMsg(mAudioHandler, MSG_UPDATE_RINGER_MODE, SENDMSG_QUEUE, 0, 0, null, 0);
-    }
-
-    private void onUpdateRingerModeServiceInt() {
-        setRingerModeInt(getRingerModeInternal(), false);
     }
 
     /** @see AudioManager#shouldVibrate(int) */
@@ -8683,14 +8683,7 @@ public class AudioService extends IAudioService.Stub
                 0 /*delay*/);
     }
 
-    /*package*/ void postBtCommDeviceActive(@BtCommDeviceActiveType int btCommDeviceActive) {
-        sendMsg(mAudioHandler,
-                MSG_BT_COMM_DEVICE_ACTIVE_UPDATE,
-                SENDMSG_QUEUE, btCommDeviceActive /*arg1*/, 0 /*arg2*/, null /*obj*/,
-                0 /*delay*/);
-    }
-
-    private void onUpdateBtCommDeviceActive(@BtCommDeviceActiveType int btCommDeviceActive) {
+    /* package */ void updateBtCommDeviceActive(@BtCommDeviceActiveType int btCommDeviceActive) {
         if (mBtCommDeviceActive.getAndSet(btCommDeviceActive) != btCommDeviceActive) {
             final VolumeStreamState vss = getVssForStreamOrDefault(AudioSystem.STREAM_VOICE_CALL);
             vss.updateIndexFactors();
@@ -11103,10 +11096,6 @@ public class AudioService extends IAudioService.Stub
                     onEnableSurroundFormats((ArrayList<Integer>) msg.obj);
                     break;
 
-                case MSG_UPDATE_RINGER_MODE:
-                    onUpdateRingerModeServiceInt();
-                    break;
-
                 case MSG_SET_DEVICE_STREAM_VOLUME:
                     onSetVolumeIndexOnDevice((DeviceVolumeUpdate) msg.obj);
                     break;
@@ -11239,10 +11228,6 @@ public class AudioService extends IAudioService.Stub
 
                 case MSG_UPDATE_CONTEXTUAL_VOLUMES:
                     onUpdateContextualVolumes();
-                    break;
-
-                case MSG_BT_COMM_DEVICE_ACTIVE_UPDATE:
-                    onUpdateBtCommDeviceActive(msg.arg1);
                     break;
 
                 case MusicFxHelper.MSG_EFFECT_CLIENT_GONE:
@@ -15681,6 +15666,18 @@ public class AudioService extends IAudioService.Stub
                 }
             }
         }
+    }
+
+    /**
+     * Queries whether multi-audio focus is enabled or not.
+     * @return true if multi-audio focus is enabled, false otherwise
+     * @see AudioManager#isMultiAudioFocusEnabled()
+     */
+    public boolean isMultiAudioFocusEnabled() {
+        if (mMediaFocusControl != null) {
+            return mMediaFocusControl.getMultiAudioFocusEnabled();
+        }
+        return false;
     }
 
     /**

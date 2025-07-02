@@ -139,7 +139,6 @@ import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.ShadeController;
 import com.android.systemui.shade.ShadeDisplayAware;
 import com.android.systemui.shade.shared.flag.ShadeWindowGoesAround;
-import com.android.systemui.statusbar.NotificationShadeWindowController;
 import com.android.systemui.statusbar.VibratorHelper;
 import com.android.systemui.statusbar.phone.LightBarController;
 import com.android.systemui.statusbar.phone.SystemUIDialog;
@@ -936,7 +935,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     @VisibleForTesting
     final class ShutDownAction extends SinglePressAction implements LongPressAction {
         ShutDownAction() {
-            super(R.drawable.ic_lock_power_off,
+            super(com.android.systemui.res.R.drawable.ic_global_actions_power_off,
                     R.string.global_action_power_off);
         }
 
@@ -1049,7 +1048,7 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     @VisibleForTesting
     class EmergencyDialerAction extends EmergencyAction {
         private EmergencyDialerAction() {
-            super(com.android.systemui.res.R.drawable.ic_emergency_star,
+            super(com.android.systemui.res.R.drawable.ic_global_actions_emergency,
                     R.string.global_action_emergency);
         }
 
@@ -1080,7 +1079,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     @VisibleForTesting
     final class RestartAction extends SinglePressAction implements LongPressAction {
         RestartAction() {
-            super(R.drawable.ic_restart, R.string.global_action_restart);
+            super(com.android.systemui.res.R.drawable.ic_global_actions_restart,
+                    R.string.global_action_restart);
         }
 
         @Override
@@ -1123,7 +1123,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     @VisibleForTesting
     class ScreenshotAction extends SinglePressAction {
         ScreenshotAction() {
-            super(R.drawable.ic_screenshot, R.string.global_action_screenshot);
+            super(com.android.systemui.res.R.drawable.ic_global_actions_screenshot,
+                    R.string.global_action_screenshot);
         }
 
         @Override
@@ -1174,7 +1175,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     class BugReportAction extends SinglePressAction implements LongPressAction {
 
         BugReportAction() {
-            super(R.drawable.ic_lock_bugreport, R.string.bugreport_title);
+            super(com.android.systemui.res.R.drawable.ic_global_actions_bugreport,
+                    R.string.bugreport_title);
         }
 
         @Override
@@ -1249,7 +1251,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
 
     private final class LogoutAction extends SinglePressAction {
         private LogoutAction() {
-            super(R.drawable.ic_logout, R.string.global_action_logout);
+            super(com.android.systemui.res.R.drawable.ic_global_actions_logout,
+                    R.string.global_action_logout);
         }
 
         @Override
@@ -1406,7 +1409,8 @@ public class GlobalActionsDialogLite implements DialogInterface.OnDismissListene
     @VisibleForTesting
     class LockDownAction extends SinglePressAction {
         LockDownAction() {
-            super(R.drawable.ic_lock_lockdown, R.string.global_action_lockdown);
+            super(com.android.systemui.res.R.drawable.ic_global_actions_lockdown,
+                    R.string.global_action_lockdown);
         }
 
         @Override

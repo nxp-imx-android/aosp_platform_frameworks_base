@@ -17,16 +17,13 @@
 package com.android.systemui.screencapture.record.largescreen.ui.compose
 
 import androidx.compose.runtime.Composable
-import com.android.systemui.lifecycle.rememberViewModel
-import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureViewModel
+import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
 
 /** Main component for the pre-capture UI. */
 @Composable
-fun PreCaptureUI(viewModelFactory: ScreenCaptureViewModel.Factory) {
-    val viewModel: ScreenCaptureViewModel =
-        rememberViewModel("ScreenCaptureViewModel") { viewModelFactory.create() }
-
+fun PreCaptureUI(viewModel: PreCaptureViewModel) {
     PreCaptureToolbar(viewModel = viewModel, expanded = true, onCloseClick = {})
 
-    // TODO: Add region box here
+    // TODO(b/423967051) If the capture region is FULLSCREEN, show centered capture button.
+    // TODO(b/422834671) If the capture region is PARTIAL, add region box here.
 }

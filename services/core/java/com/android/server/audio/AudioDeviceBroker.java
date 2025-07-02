@@ -1524,9 +1524,9 @@ public class AudioDeviceBroker {
             } else if (equalScoHaVcIndexRange() && isBluetoothHaActive()) {
                 btCommDeviceActiveType = BT_COMM_DEVICE_ACTIVE_HA;
             }
-            mAudioService.postBtCommDeviceActive(btCommDeviceActiveType);
+            mAudioService.updateBtCommDeviceActive(btCommDeviceActiveType);
         } else {
-            mAudioService.postBtCommDeviceActive(
+            mAudioService.updateBtCommDeviceActive(
                     isBluetoothScoActive() ? BT_COMM_DEVICE_ACTIVE_SCO : btCommDeviceActiveType);
         }
 
@@ -2842,7 +2842,7 @@ public class AudioDeviceBroker {
             }
         }
         dispatchCommunicationDevice();
-        mAudioService.postUpdateRingerModeServiceInt();
+        mAudioService.updateRingerModeMutedStreams();
     }
 
     @GuardedBy("mDeviceStateLock")

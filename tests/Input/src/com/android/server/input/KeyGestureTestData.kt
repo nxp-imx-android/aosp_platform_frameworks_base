@@ -511,6 +511,15 @@ object KeyGestureTestData {
                 AppLaunchData.createLaunchDataForCategory(Intent.CATEGORY_APP_CALCULATOR),
             ),
             KeyGestureData(
+                "META + F -> Launch Default Files Browser",
+                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_F),
+                KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION,
+                intArrayOf(KeyEvent.KEYCODE_F),
+                KeyEvent.META_META_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+                AppLaunchData.createLaunchDataForCategory(Intent.CATEGORY_APP_FILES),
+            ),
+            KeyGestureData(
                 "META + CTRL + DEL -> Trigger Bug Report",
                 intArrayOf(
                     KeyEvent.KEYCODE_META_LEFT,
@@ -778,6 +787,15 @@ object KeyGestureTestData {
                 KeyEvent.META_META_ON,
                 intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
                 AppLaunchData.createLaunchDataForCategory(Intent.CATEGORY_APP_CALCULATOR),
+            ),
+            KeyGestureData(
+                "META + F -> Launch Default Files",
+                intArrayOf(KeyEvent.KEYCODE_META_LEFT, KeyEvent.KEYCODE_F),
+                KeyGestureEvent.KEY_GESTURE_TYPE_LAUNCH_APPLICATION,
+                intArrayOf(KeyEvent.KEYCODE_F),
+                KeyEvent.META_META_ON,
+                intArrayOf(KeyGestureEvent.ACTION_GESTURE_COMPLETE),
+                AppLaunchData.createLaunchDataForCategory(Intent.CATEGORY_APP_FILES),
             ),
             KeyGestureData(
                 "META + SHIFT + B -> Launch Default Browser",

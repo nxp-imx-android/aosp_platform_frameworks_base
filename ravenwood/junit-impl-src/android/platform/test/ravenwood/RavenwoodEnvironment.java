@@ -18,6 +18,9 @@ package android.platform.test.ravenwood;
 import static org.junit.Assert.assertNotNull;
 
 import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.app.ActivityThread;
+import android.app.LoadedApk;
 import android.app.ResourcesManager;
 import android.content.res.Resources;
 import android.os.HandlerThread;
@@ -38,11 +41,23 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * A singleton class that prepares and manages various app/process lifecycle related states.
+ * A singleton class that manages various "static" states about the test
+ * (test package name, UID, etc) and things that can be inferred from them.
+ * (e.g. app data directory path, resources, etc)
  *
  * It's also responsible for initializing {@link RavenwoodVmState}.
+ *
+ * This class's constructor has no external dependencies, so we can instantiate this class
+ * at an early stage of initialization. Various other classes such as the {@code *_ravenwood}
+ * classes often get information from this class.
+ *
+ * More dynamic states are managed by {@link RavenwoodAppDriver}, whose constructor has a lot
+ * more complicated initialization logic that involves
+ * {@link ActivityThread}, {@link LoadedApk}, etc, and their {@code *_ravenwood}
+ * counterpart. Such code is allowed to access {@link RavenwoodEnvironment} but not
+ * {@link RavenwoodAppDriver} yet, since it's not initialized yet.
  */
-public class RavenwoodEnvironment {
+public final class RavenwoodEnvironment {
     public static final String TAG = "RavenwoodEnvironment";
 
     private static final AtomicReference<RavenwoodEnvironment> sInstance = new AtomicReference<>();
@@ -51,7 +66,7 @@ public class RavenwoodEnvironment {
      * Returns the singleton instance.
      */
     public static RavenwoodEnvironment getInstance() {
-        return Objects.requireNonNull(sInstance.get(), "Instance not set!");
+        return Objects.requireNonNull(sInstance.get(), "RavenwoodEnvironment not initialized");
     }
 
     private static final File RAVENWOOD_TARGET_RESOURCE_APK =
@@ -93,7 +108,11 @@ public class RavenwoodEnvironment {
     @GuardedBy("mLock")
     private final Map<String, Resources> mPackagesToResources = new HashMap<>();
 
-    public RavenwoodEnvironment(
+    /**
+     * Constructor. There should be only simple initialization here. More complicated
+     * initialization logic should be done its methods, or by RavenwoodAppDriver.
+     */
+    private RavenwoodEnvironment(
             int uid,
             int pid,
             int targetSdkLevel,
@@ -236,6 +255,10 @@ public class RavenwoodEnvironment {
         }
     }
 
+    public static RuntimeException makeUnknownPackageException(@Nullable String packageName) {
+        return new RuntimeException("Unknown package name: " + packageName);
+    }
+
     /**
      * Get the resources for a given package's resources.
      *
@@ -293,7 +316,7 @@ public class RavenwoodEnvironment {
             // fall-through and use the default resources.
 
         } else {
-            throw new RuntimeException("Unknown package name: " + packageName);
+            throw makeUnknownPackageException(packageName);
         }
         return RAVENWOOD_EMPTY_RESOURCES_APK;
     }

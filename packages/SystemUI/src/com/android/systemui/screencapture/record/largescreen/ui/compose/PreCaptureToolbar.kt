@@ -29,12 +29,12 @@ import com.android.systemui.common.ui.compose.Icon
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroup
 import com.android.systemui.screencapture.common.ui.compose.RadioButtonGroupItem
 import com.android.systemui.screencapture.common.ui.compose.Toolbar
-import com.android.systemui.screencapture.ui.viewmodel.ScreenCaptureViewModel
+import com.android.systemui.screencapture.record.largescreen.ui.viewmodel.PreCaptureViewModel
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun PreCaptureToolbar(
-    viewModel: ScreenCaptureViewModel,
+    viewModel: PreCaptureViewModel,
     expanded: Boolean,
     onCloseClick: () -> Unit,
     modifier: Modifier = Modifier,

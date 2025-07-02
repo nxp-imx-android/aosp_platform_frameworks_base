@@ -16,6 +16,7 @@
 
 package android.hardware.serial;
 
+import android.annotation.CallbackExecutor;
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.SystemService;
@@ -77,9 +78,11 @@ public final class SerialManager {
 
     /**
      * Register a listener to monitor serial port connections and disconnections.
+     *
+     * @throws IllegalStateException if this listener has already been registered.
      */
-    public void registerSerialPortListener(@NonNull SerialPortListener listener,
-            @NonNull Executor executor) {
+    public void registerSerialPortListener(@NonNull @CallbackExecutor Executor executor,
+            @NonNull SerialPortListener listener) {
         synchronized (mLock) {
             if (mServiceListener == null) {
                 mServiceListener = new SerialPortServiceListener();

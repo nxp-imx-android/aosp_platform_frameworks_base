@@ -487,7 +487,7 @@ public class BiometricPrompt implements BiometricAuthenticator, BiometricConstan
         @NonNull
         @FlaggedApi(FLAG_ADD_FALLBACK)
         public Builder addFallbackOption(@NonNull CharSequence text,
-                @BiometricManager.IconType.Types int iconType,
+                @BiometricManager.IconType int iconType,
                 @NonNull @CallbackExecutor Executor executor,
                 @NonNull DialogInterface.OnClickListener listener) {
             if (TextUtils.isEmpty(text)) {
@@ -513,12 +513,12 @@ public class BiometricPrompt implements BiometricAuthenticator, BiometricConstan
         }
 
         @FlaggedApi(FLAG_ADD_FALLBACK)
-        private static boolean isValidIconType(@BiometricManager.IconType.Types int iconType) {
-            return iconType == BiometricManager.IconType.PASSWORD
-                    || iconType == BiometricManager.IconType.QR_CODE
-                    || iconType == BiometricManager.IconType.ACCOUNT
-                    || iconType == BiometricManager.IconType.GENERIC
-                    || iconType == BiometricManager.IconType.SETTING;
+        private static boolean isValidIconType(@BiometricManager.IconType int iconType) {
+            return iconType == BiometricManager.ICON_TYPE_PASSWORD
+                    || iconType == BiometricManager.ICON_TYPE_QR_CODE
+                    || iconType == BiometricManager.ICON_TYPE_ACCOUNT
+                    || iconType == BiometricManager.ICON_TYPE_GENERIC
+                    || iconType == BiometricManager.ICON_TYPE_SETTING;
         }
 
         /**

@@ -58,8 +58,6 @@ import static com.android.server.am.ActivityManagerDebugConfig.DEBUG_UID_OBSERVE
 import static com.android.server.am.ActivityManagerService.TAG_BACKUP;
 import static com.android.server.am.ActivityManagerService.TAG_OOM_ADJ;
 import static com.android.server.am.ActivityManagerService.TAG_UID_OBSERVERS;
-import static com.android.server.am.PlatformCompatCache.CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY;
-import static com.android.server.am.PlatformCompatCache.CACHED_COMPAT_CHANGE_PROCESS_CAPABILITY;
 import static com.android.server.am.ProcessCachedOptimizerRecord.SHOULD_NOT_FREEZE_REASON_BINDER_ALLOW_OOM_MANAGEMENT;
 import static com.android.server.am.ProcessList.BACKUP_APP_ADJ;
 import static com.android.server.am.ProcessList.CACHED_APP_MAX_ADJ;
@@ -86,6 +84,8 @@ import static com.android.server.am.ProcessList.SERVICE_B_ADJ;
 import static com.android.server.am.ProcessList.SYSTEM_ADJ;
 import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 import static com.android.server.am.ProcessList.VISIBLE_APP_ADJ;
+import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY;
+import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_PROCESS_CAPABILITY;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;

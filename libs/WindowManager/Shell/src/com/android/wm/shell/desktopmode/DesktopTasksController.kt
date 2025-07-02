@@ -456,15 +456,16 @@ class DesktopTasksController(
     }
 
     /**
-     * Returns all focused tasks in full screen or split screen mode in [displayId] when it is not
-     * the home activity.
+     * Returns all focused tasks in full screen or split screen mode in [displayId] excluding home
+     * activity and desk roots.
      */
     private fun getFocusedNonDesktopTasks(displayId: Int): List<RunningTaskInfo> =
         shellTaskOrganizer.getRunningTasks(displayId).filter { taskInfo ->
             val focused = taskInfo.isFocused
             val isNotDesktop =
                 if (DesktopExperienceFlags.EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS.isTrue) {
-                    !taskRepository.isActiveTask(taskInfo.taskId)
+                    !taskRepository.isActiveTask(taskInfo.taskId) &&
+                        !taskRepository.getAllDeskIds().contains(taskInfo.taskId)
                 } else {
                     taskInfo.windowingMode == WINDOWING_MODE_FULLSCREEN ||
                         taskInfo.windowingMode == WINDOWING_MODE_MULTI_WINDOW
@@ -752,6 +753,7 @@ class DesktopTasksController(
                             destDisplayLayout?.densityDpi()?.let {
                                 wct.setDensityDpi(task.token, it)
                             }
+                            applyFreeformDisplayChange(wct, task, destinationDisplayId, deskId)
                         }
                         desksTransitionObserver.addPendingTransition(
                             DeskTransition.ChangeDeskDisplay(

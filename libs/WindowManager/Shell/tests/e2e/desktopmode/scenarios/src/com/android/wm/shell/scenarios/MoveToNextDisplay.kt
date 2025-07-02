@@ -74,11 +74,6 @@ abstract class MoveToNextDisplay {
 
     @After
     fun teardown() {
-        // TODO(b/405234435): Remove the workaround once b/405229142 is resolved
-        // Ensure that the simulated display being removed does not hold the display focus as a
-        // workaround for b/405229142
-        testApp.exit(wmHelper)
-        testApp.launchViaIntent(wmHelper)
         testApp.exit(wmHelper)
     }
 }

@@ -39,7 +39,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.collection.ArraySet;
 
 import com.android.settingslib.R;
-import com.android.settingslib.flags.Flags;
 import com.android.settingslib.utils.ThreadUtils;
 
 import java.util.Collection;
@@ -235,25 +234,14 @@ public class BluetoothEventManager {
 
         LocalBluetoothLeBroadcast broadcast = mBtManager == null ? null
                 : mBtManager.getProfileManager().getLeAudioBroadcastProfile();
-        LocalBluetoothLeBroadcastAssistant assistant = mBtManager == null ? null
-                : mBtManager.getProfileManager().getLeAudioBroadcastAssistantProfile();
-        // Trigger updateFallbackActiveDeviceIfNeeded when ASSISTANT profile disconnected when
-        // audio sharing is enabled.
-        if (bluetoothProfile == BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT
-                && state == BluetoothAdapter.STATE_DISCONNECTED
-                && BluetoothUtils.isAudioSharingUIAvailable(mContext)
-                && broadcast != null && assistant != null && broadcast.isProfileReady()
-                && assistant.isProfileReady()) {
-            Log.d(TAG, "updateFallbackActiveDeviceIfNeeded, ASSISTANT profile disconnected");
-            broadcast.updateFallbackActiveDeviceIfNeeded();
-        }
         // Dispatch handleOnProfileStateChanged to local broadcast profile
-        if (Flags.promoteAudioSharingForSecondAutoConnectedLeaDevice()
-                && broadcast != null
-                && state == BluetoothAdapter.STATE_CONNECTED) {
+        if (broadcast != null && state == BluetoothAdapter.STATE_CONNECTED) {
             Log.d(TAG, "dispatchProfileConnectionStateChanged to local broadcast profile");
-            var unused = ThreadUtils.postOnBackgroundThread(
-                    () -> broadcast.handleProfileConnected(device, bluetoothProfile, mBtManager));
+            var unused =
+                    ThreadUtils.postOnBackgroundThread(
+                            () ->
+                                    broadcast.handleProfileConnected(
+                                            device, bluetoothProfile, mBtManager));
         }
     }
 

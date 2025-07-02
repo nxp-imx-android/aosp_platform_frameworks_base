@@ -17,12 +17,16 @@
 package com.android.wm.shell.desktopmode
 
 import android.app.TaskInfo
+import android.app.WallpaperColors
+import android.app.WallpaperManager
 import android.content.ComponentName
 import android.os.Bundle
 import android.util.Log
 import android.view.WindowManager
 import android.window.DesktopExperienceFlags
 import androidx.activity.addCallback
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.FragmentActivity
 
 /**
@@ -35,6 +39,13 @@ import androidx.fragment.app.FragmentActivity
  * onto the shell main thread. Activities are always started on the main thread.
  */
 class DesktopWallpaperActivity : FragmentActivity() {
+
+    private var wallpaperManager: WallpaperManager? = null
+
+    private val wallpaperColorsListener =
+        WallpaperManager.OnColorsChangedListener { colors, which ->
+            updateStatusBarIconColors(colors)
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,6 +66,20 @@ class DesktopWallpaperActivity : FragmentActivity() {
         ) {
             onBackPressedDispatcher.addCallback(this) { moveTaskToBack(true) }
         }
+
+        // Handle wallpaper color changes
+        wallpaperManager = getSystemService(WallpaperManager::class.java)
+        wallpaperManager?.addOnColorsChangedListener(wallpaperColorsListener, mainThreadHandler)
+
+        // Set the initial color of status bar icons on activity creation.
+        updateStatusBarIconColors(
+            wallpaperManager?.getWallpaperColors(WallpaperManager.FLAG_SYSTEM)
+        )
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        wallpaperManager?.removeOnColorsChangedListener(wallpaperColorsListener)
     }
 
     override fun onTopResumedActivityChanged(isTopResumedActivity: Boolean) {
@@ -71,6 +96,19 @@ class DesktopWallpaperActivity : FragmentActivity() {
         } else {
             window.addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
         }
+    }
+
+    /** Set the status bar icon colours depending on wallpaper hint. */
+    private fun updateStatusBarIconColors(wallpaperColors: WallpaperColors?) {
+        wallpaperColors?.colorHints?.let {
+            getWindowInsetsController().isAppearanceLightStatusBars =
+                (it and WallpaperColors.HINT_SUPPORTS_DARK_TEXT) != 0
+        }
+    }
+
+    private fun getWindowInsetsController(): WindowInsetsControllerCompat {
+        val window = getWindow()
+        return WindowCompat.getInsetsController(window, window.decorView)
     }
 
     companion object {

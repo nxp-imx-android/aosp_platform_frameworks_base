@@ -51,6 +51,10 @@ import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.ravenwood.annotation.RavenwoodKeep;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodRedirectionClass;
+import android.ravenwood.annotation.RavenwoodReplace;
 import android.security.net.config.NetworkSecurityConfigProvider;
 import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
@@ -108,6 +112,8 @@ final class ServiceConnectionLeaked extends AndroidRuntimeException {
  * Local state maintained about a currently loaded .apk.
  * @hide
  */
+@RavenwoodKeepPartialClass
+@RavenwoodRedirectionClass("LoadedApk_ravenwood")
 public final class LoadedApk {
     static final String TAG = "LoadedApk";
     static final boolean DEBUG = false;
@@ -187,6 +193,7 @@ public final class LoadedApk {
      * NOTE: This constructor is called with ActivityThread's lock held,
      * so MUST NOT call back out to the activity manager.
      */
+    @RavenwoodKeep
     public LoadedApk(ActivityThread activityThread, ApplicationInfo aInfo,
             CompatibilityInfo compatInfo, ClassLoader baseLoader,
             boolean securityViolation, boolean includeCode, boolean registerPackage) {
@@ -202,6 +209,7 @@ public final class LoadedApk {
         mAppComponentFactory = createAppFactory(mApplicationInfo, mBaseClassLoader);
     }
 
+    @RavenwoodReplace(comment = "No need to adjust native lib related stuff")
     private static ApplicationInfo adjustNativeLibraryPaths(ApplicationInfo info) {
         // If we're dealing with a multi-arch application that has both
         // 32 and 64 bit shared libraries, we might need to choose the secondary
@@ -229,10 +237,15 @@ public final class LoadedApk {
         return info;
     }
 
+    private static ApplicationInfo adjustNativeLibraryPaths$ravenwood(ApplicationInfo info) {
+        return info;
+    }
+
     /**
      * Create information about the system package.
      * Must call {@link #installSystemApplicationInfo} later.
      */
+    @RavenwoodKeep
     LoadedApk(ActivityThread activityThread) {
         mActivityThread = activityThread;
         mApplicationInfo = new ApplicationInfo();
@@ -273,6 +286,7 @@ public final class LoadedApk {
                 new ApplicationInfo(mApplicationInfo));
     }
 
+    @RavenwoodReplace(comment = "Custom component factory not supported")
     private AppComponentFactory createAppFactory(ApplicationInfo appInfo, ClassLoader cl) {
         if (mIncludeCode && appInfo.appComponentFactory != null && cl != null) {
             try {
@@ -285,16 +299,23 @@ public final class LoadedApk {
         return AppComponentFactory.DEFAULT;
     }
 
+    private AppComponentFactory createAppFactory$ravenwood(
+            ApplicationInfo appInfo, ClassLoader cl) {
+        return AppComponentFactory.DEFAULT;
+    }
+
     public AppComponentFactory getAppFactory() {
         return mAppComponentFactory;
     }
 
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public String getPackageName() {
         return mPackageName;
     }
 
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public ApplicationInfo getApplicationInfo() {
         return mApplicationInfo;
     }
@@ -397,6 +418,7 @@ public final class LoadedApk {
         mAppComponentFactory = createAppFactory(aInfo, mDefaultClassLoader);
     }
 
+    @RavenwoodKeep
     private boolean setApplicationInfo(ApplicationInfo aInfo) {
         if (mApplicationInfo != null && mApplicationInfo.createTimestamp > aInfo.createTimestamp) {
             Slog.w(TAG, "New application info for package " + aInfo.packageName
@@ -1372,24 +1394,29 @@ public final class LoadedApk {
     }
 
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public File getDataDirFile() {
         return mDataDirFile;
     }
 
+    @RavenwoodKeep
     public File getDeviceProtectedDataDirFile() {
         return mDeviceProtectedDataDirFile;
     }
 
+    @RavenwoodKeep
     public File getCredentialProtectedDataDirFile() {
         return mCredentialProtectedDataDirFile;
     }
 
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public AssetManager getAssets() {
         return getResources().getAssets();
     }
 
     @UnsupportedAppUsage
+    @RavenwoodReplace(comment = "mResources needs to be set explicitly on ravenwood for now")
     public Resources getResources() {
         if (mResources == null) {
             final String[] splitPaths;
@@ -1410,6 +1437,11 @@ public final class LoadedApk {
                     getClassLoader(), null);
         }
         return mResources;
+    }
+
+    private Resources getResources$ravenwood() {
+        return Objects.requireNonNull(mResources,
+                "mResources needs to be set explicitly on ravenwood for now");
     }
 
     /**

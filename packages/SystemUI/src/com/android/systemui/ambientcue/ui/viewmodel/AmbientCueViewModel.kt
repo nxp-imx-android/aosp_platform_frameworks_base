@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.toComposeRect
 import androidx.core.content.edit
 import com.android.app.tracing.coroutines.coroutineScopeTraced
 import com.android.systemui.Dumpable
+import com.android.systemui.ambientcue.shared.logger.AmbientCueLogger
 import com.android.systemui.ambientcue.domain.interactor.AmbientCueInteractor
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.domain.interactor.SharedPreferencesInteractor
@@ -66,6 +67,7 @@ constructor(
     private val systemClock: SystemClock,
     private val dumpManager: DumpManager,
     private val sharedPreferencesInteractor: SharedPreferencesInteractor,
+    private val ambientCueLogger: AmbientCueLogger,
     @Application scope: CoroutineScope,
 ) : ExclusiveActivatable(), Dumpable {
 
@@ -235,10 +237,10 @@ constructor(
     }
 
     fun hide() {
-        // TODO(b/425279501) Log ambient cue close button click status.
         ambientCueInteractor.setDeactivated(true)
         isExpanded = false
         disableFirstTimeHint()
+        ambientCueLogger.setClickedCloseButtonStatus()
     }
 
     private var deactivateCueBarJob: Job? = null
@@ -253,8 +255,8 @@ constructor(
         coroutineScopeTraced("AmbientCueViewModel") {
             deactivateCueBarJob = launch {
                 delay(ambientCueTimeoutMs.milliseconds)
-                // TODO(b/425279501) Log ambient cue timeout status.
                 ambientCueInteractor.setDeactivated(true)
+                ambientCueLogger.setReachedTimeoutStatus()
             }
         }
     }

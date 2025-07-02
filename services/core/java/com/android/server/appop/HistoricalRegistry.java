@@ -59,6 +59,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Process;
 import android.os.RemoteCallback;
+import android.os.Trace;
 import android.provider.DeviceConfig;
 import android.provider.Settings;
 import android.util.ArraySet;
@@ -590,26 +591,31 @@ public class HistoricalRegistry implements HistoricalRegistryInterface {
             @Nullable String attributionTag, @Nullable String[] opNames, int historyFlags,
             int filter, long beginTimeMillis, long endTimeMillis, int flags,
             @Nullable String[] attributionExemptPkgs, @NonNull RemoteCallback callback) {
-        final long currentTimeMillis = System.currentTimeMillis();
-        if (endTimeMillis == Long.MAX_VALUE) {
-            endTimeMillis = currentTimeMillis;
-        }
-        final AppOpsManager.HistoricalOps result =
-                new AppOpsManager.HistoricalOps(beginTimeMillis, endTimeMillis);
+        Trace.traceBegin(Trace.TRACE_TAG_SYSTEM_SERVER, "AppOpHistory#SQLiteGetHistoricalOps");
+        try {
+            final long currentTimeMillis = System.currentTimeMillis();
+            if (endTimeMillis == Long.MAX_VALUE) {
+                endTimeMillis = currentTimeMillis;
+            }
+            final AppOpsManager.HistoricalOps result =
+                    new AppOpsManager.HistoricalOps(beginTimeMillis, endTimeMillis);
 
-        mShortIntervalHistoryHelper.addShortIntervalOpsToHistoricalOpsResult(result,
-                beginTimeMillis, endTimeMillis, filter, uid, packageName, opNames,
-                attributionTag, flags, new ArraySet<>(attributionExemptPkgs), historyFlags);
-        if ((historyFlags & HISTORY_FLAG_AGGREGATE) != 0) {
-            mLongIntervalHistoryHelper.addLongIntervalOpsToHistoricalOpsResult(result,
+            mShortIntervalHistoryHelper.addShortIntervalOpsToHistoricalOpsResult(result,
                     beginTimeMillis, endTimeMillis, filter, uid, packageName, opNames,
-                    attributionTag, flags);
-        }
+                    attributionTag, flags, new ArraySet<>(attributionExemptPkgs), historyFlags);
+            if ((historyFlags & HISTORY_FLAG_AGGREGATE) != 0) {
+                mLongIntervalHistoryHelper.addLongIntervalOpsToHistoricalOpsResult(result,
+                        beginTimeMillis, endTimeMillis, filter, uid, packageName, opNames,
+                        attributionTag, flags);
+            }
 
-        // Send back the result.
-        final Bundle payload = new Bundle();
-        payload.putParcelable(AppOpsManager.KEY_HISTORICAL_OPS, result);
-        callback.sendResult(payload);
+            // Send back the result.
+            final Bundle payload = new Bundle();
+            payload.putParcelable(AppOpsManager.KEY_HISTORICAL_OPS, result);
+            callback.sendResult(payload);
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_SYSTEM_SERVER);
+        }
     }
 
     @Override

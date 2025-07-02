@@ -2084,6 +2084,7 @@ package android.media {
     method @NonNull public android.media.VolumePolicy getVolumePolicy();
     method public boolean hasRegisteredDynamicPolicy();
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public boolean isCsdEnabled();
+    method @FlaggedApi("android.media.audio.audio_focus_desktop") public boolean isMultiAudioFocusEnabled();
     method @RequiresPermission(android.Manifest.permission.CALL_AUDIO_INTERCEPTION) public boolean isPstnCallAudioInterceptable();
     method @RequiresPermission(android.Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED) public boolean isVolumeControlUsingVolumeGroups();
     method public void permissionUpdateBarrier();

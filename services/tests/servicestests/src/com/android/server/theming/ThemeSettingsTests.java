@@ -16,7 +16,6 @@
 
 package com.android.server.theming;
 
-import static android.content.theming.FieldColorSource.VALUE_HOME_WALLPAPER;
 import static android.content.theming.FieldColorSource.VALUE_PRESET;
 import static android.content.theming.ThemeSettings.OVERLAY_CATEGORY_ACCENT_COLOR;
 import static android.content.theming.ThemeSettings.OVERLAY_CATEGORY_SYSTEM_PALETTE;
@@ -105,7 +104,6 @@ public class ThemeSettingsTests {
         ThemeSettings originalSettings = ThemeSettings.fromJson(WALLPAPER_JSON);
 
         Parcel parcel = Parcel.obtain();
-        parcel.writeString(VALUE_HOME_WALLPAPER);
         originalSettings.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
 
@@ -122,7 +120,6 @@ public class ThemeSettingsTests {
         ThemeSettings originalSettings = ThemeSettings.fromJson(PRESET_JSON);
 
         Parcel parcel = Parcel.obtain();
-        parcel.writeString(VALUE_PRESET);
         originalSettings.writeToParcel(parcel, 0);
         parcel.setDataPosition(0);
 

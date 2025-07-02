@@ -21,13 +21,17 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.broadcast.broadcastDispatcher
+import com.android.systemui.clock.domain.interactor.ClockInteractor
 import com.android.systemui.clock.domain.interactor.clockInteractor
+import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.testKosmos
+import com.android.systemui.tuner.TunerService.Tunable
+import com.android.systemui.tuner.tunerService
 import com.android.systemui.util.time.dateFormatUtil
 import com.android.systemui.util.time.fakeSystemClock
 import com.google.common.truth.Truth.assertThat
@@ -39,6 +43,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -215,6 +222,52 @@ class ClockViewModelTest : SysuiTestCase() {
             assertThat(viewModel.clockText).isEqualTo("11:12\u202FPM")
             assertThat(viewModel.contentDescriptionText).isEqualTo("11:12\u202FPM")
         }
+
+    @Test
+    fun showSeconds_is24HourFormatTrue_clockTextUpdates() =
+        kosmos.runTest {
+            fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
+            whenever(dateFormatUtil.is24HourFormat).thenReturn(true)
+            underTest.activateIn(testScope)
+            assertThat(underTest.clockText).isEqualTo("23:12")
+            assertThat(underTest.contentDescriptionText).isEqualTo("23:12")
+
+            getTunable().onTuningChanged(ClockInteractor.CLOCK_SECONDS_TUNER_KEY, "1")
+
+            assertThat(underTest.clockText).isEqualTo("23:12:19")
+            assertThat(underTest.contentDescriptionText).isEqualTo("23:12:19")
+
+            getTunable().onTuningChanged(ClockInteractor.CLOCK_SECONDS_TUNER_KEY, "0")
+
+            assertThat(underTest.clockText).isEqualTo("23:12")
+            assertThat(underTest.contentDescriptionText).isEqualTo("23:12")
+        }
+
+    @Test
+    fun showSeconds_is24HourFormatFalse_clockTextUpdates() =
+        kosmos.runTest {
+            fakeSystemClock.setCurrentTimeMillis(CURRENT_TIME_MILLIS)
+            whenever(dateFormatUtil.is24HourFormat).thenReturn(false)
+            underTest.activateIn(testScope)
+            assertThat(underTest.clockText).isEqualTo("11:12\u202FPM")
+            assertThat(underTest.contentDescriptionText).isEqualTo("11:12\u202FPM")
+
+            getTunable().onTuningChanged(ClockInteractor.CLOCK_SECONDS_TUNER_KEY, "1")
+
+            assertThat(underTest.clockText).isEqualTo("11:12:19\u202FPM")
+            assertThat(underTest.contentDescriptionText).isEqualTo("11:12:19\u202FPM")
+
+            getTunable().onTuningChanged(ClockInteractor.CLOCK_SECONDS_TUNER_KEY, "0")
+
+            assertThat(underTest.clockText).isEqualTo("11:12\u202FPM")
+            assertThat(underTest.contentDescriptionText).isEqualTo("11:12\u202FPM")
+        }
+
+    private fun Kosmos.getTunable(): Tunable {
+        val tunableCaptor = argumentCaptor<Tunable>()
+        verify(tunerService).addTunable(tunableCaptor.capture(), any())
+        return tunableCaptor.firstValue
+    }
 
     companion object {
         private const val CURRENT_TIME_MILLIS = 16641673939408L

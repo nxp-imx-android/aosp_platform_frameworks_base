@@ -37,7 +37,7 @@ import androidx.test.filters.SmallTest
 import com.android.systemui.LauncherProxyService
 import com.android.systemui.LauncherProxyService.LauncherProxyListener
 import com.android.systemui.SysuiTestCase
-import com.android.systemui.ambientcue.data.logger.ambientCueLogger
+import com.android.systemui.ambientcue.shared.logger.ambientCueLogger
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.AMBIENT_CUE_SURFACE
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.DEBOUNCE_DELAY_MS
 import com.android.systemui.ambientcue.data.repository.AmbientCueRepositoryImpl.Companion.EXTRA_ACTION_TYPE
@@ -273,6 +273,44 @@ class AmbientCueRepositoryTest : SysuiTestCase() {
             )
 
             assertThat(isRootViewAttached).isFalse()
+        }
+
+    @Test
+    fun isRootViewAttached_isAttachedAndSessionNotStartedBefore_setsAmbientCueDisplayStatus() =
+        kosmos.runTest {
+            val actions by collectLastValue(underTest.actions)
+            val isRootViewAttached by collectLastValue(underTest.isRootViewAttached)
+            underTest.isDeactivated.update { true }
+            secureSettingsRepository.setInt(
+                AmbientCueRepositoryImpl.AMBIENT_CUE_SETTING,
+                AmbientCueRepositoryImpl.OPTED_IN,
+            )
+            runCurrent()
+            taskStackChangeListeners.listenerImpl.onTaskMovedToFront(
+                RunningTaskInfo().apply { taskId = TASK_ID }
+            )
+            verify(smartSpaceSession)
+                .addOnTargetsAvailableListener(any(), onTargetsAvailableListenerCaptor.capture())
+
+            onTargetsAvailableListenerCaptor.firstValue.onTargetsAvailable(
+                listOf(attributionDialogPendingIntentTarget)
+            )
+            underTest.isDeactivated.update { false }
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+
+            // Verify that the ambient cue displayed status is set.
+            verify(kosmos.ambientCueLogger).setAmbientCueDisplayStatus(any(), any())
+
+            taskStackChangeListeners.listenerImpl.onTaskMovedToFront(
+                RunningTaskInfo().apply { taskId = TASK_ID_2 }
+            )
+            underTest.isDeactivated.update { true }
+            advanceTimeBy(DEBOUNCE_DELAY_MS)
+
+            // Verify that the ambient cue dismissed status is set.
+            verify(kosmos.ambientCueLogger).setLoseFocusMillis()
+            verify(kosmos.ambientCueLogger).flushAmbientCueEventReported()
+            verify(kosmos.ambientCueLogger).clear()
         }
 
     @Test

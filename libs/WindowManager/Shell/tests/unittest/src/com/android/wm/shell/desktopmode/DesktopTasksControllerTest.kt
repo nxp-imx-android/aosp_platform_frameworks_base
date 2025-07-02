@@ -391,6 +391,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(STABLE_BOUNDS)
         }
+        whenever(displayLayout.width()).thenReturn(STABLE_BOUNDS.width())
+        whenever(displayLayout.height()).thenReturn(STABLE_BOUNDS.height())
         whenever(displayLayout.densityDpi()).thenReturn(160)
         whenever(runBlocking { persistentRepository.readDesktop(any(), any()) })
             .thenReturn(Desktop.getDefaultInstance())
@@ -9724,11 +9726,12 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     @EnableFlags(
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
         Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
     )
-    fun onUnhandledDrag_crossDisplayDrag() {
+    fun onUnhandledDrag_crossDisplayDrag_succeedsOnFocusedFreeformTask() {
         taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
         taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
-        setUpFreeformTask(displayId = SECOND_DISPLAY, deskId = 2)
+        setUpFreeformTask(displayId = SECOND_DISPLAY, deskId = 2).apply { isFocused = true }
         testOnUnhandledDrag(
             DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR,
             PointF(1200f, 700f),
@@ -9736,6 +9739,50 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             tabTearingMinimizeAnimationFlagEnabled = true,
             tabTearingLaunchAnimationFlagEnabled = true,
             destinationDisplayId = SECOND_DISPLAY,
+        )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+        Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun onUnhandledDrag_crossDisplayDrag_succeedsOnFocusedDeskRoot() {
+        val task = createFreeformTask(displayId = SECOND_DISPLAY).apply { isFocused = true }
+        runningTasks.add(task)
+        whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(task)
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = task.taskId)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = task.taskId)
+        testOnUnhandledDrag(
+            DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR,
+            PointF(1200f, 700f),
+            Rect(240, 700, 2160, 1900),
+            tabTearingMinimizeAnimationFlagEnabled = true,
+            tabTearingLaunchAnimationFlagEnabled = true,
+            destinationDisplayId = SECOND_DISPLAY,
+        )
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_MINIMIZE_ANIMATION_BUGFIX,
+        Flags.FLAG_ENABLE_DESKTOP_TAB_TEARING_LAUNCH_ANIMATION,
+        Flags.FLAG_EXCLUDE_DESK_ROOTS_FROM_DESKTOP_TASKS,
+    )
+    fun onUnhandledDrag_crossDisplayDrag_noOpOnFocusedNonDesktopTask() {
+        taskRepository.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
+        setUpFullscreenTask(displayId = SECOND_DISPLAY).apply { isFocused = true }
+        testOnUnhandledDrag(
+            DesktopModeVisualIndicator.IndicatorType.NO_INDICATOR,
+            PointF(1200f, 700f),
+            Rect(240, 700, 2160, 1900),
+            tabTearingMinimizeAnimationFlagEnabled = true,
+            tabTearingLaunchAnimationFlagEnabled = true,
+            destinationDisplayId = SECOND_DISPLAY,
+            verifyNoOp = true,
         )
     }
 
@@ -10398,6 +10445,40 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             )
     }
 
+    @Test
+    @EnableFlags(
+        Flags.FLAG_ENABLE_DISPLAY_DISCONNECT_INTERACTION,
+        Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND,
+    )
+    fun onDisplayDisconnect_desktopModeSupported_taskResizedBasedOnDensity() {
+        val defaultDisplayTask = setUpFreeformTask()
+        val transition = Binder()
+        val secondDisplayLayout = mock(DisplayLayout::class.java)
+        whenever(displayController.getDisplayLayout(SECOND_DISPLAY)).thenReturn(secondDisplayLayout)
+        whenever(secondDisplayLayout.height()).thenReturn(1600)
+        whenever(secondDisplayLayout.width()).thenReturn(2560)
+        whenever(secondDisplayLayout.densityDpi()).thenReturn(240)
+        taskRepository.addDesk(SECOND_DISPLAY, DISCONNECTED_DESK_ID)
+        taskRepository.setActiveDesk(displayId = SECOND_DISPLAY, deskId = DISCONNECTED_DESK_ID)
+        val secondDisplayTask =
+            setUpFreeformTask(
+                    displayId = SECOND_DISPLAY,
+                    deskId = DISCONNECTED_DESK_ID,
+                    bounds = Rect(100, 100, 500, 500),
+                )
+                .apply { isResizeable = true }
+
+        val wct =
+            performDisplayDisconnectTransition(
+                transition = transition,
+                desktopSupportedOnDefaultDisplay = true,
+                taskOnSecondDisplayHasFocus = true,
+                defaultDisplayTask = defaultDisplayTask,
+                secondDisplayTask = secondDisplayTask,
+            )
+        assertThat(findBoundsChange(wct, secondDisplayTask)).isEqualTo(Rect(33, 61, 299, 327))
+    }
+
     private fun performDisplayDisconnectTransition(
         transition: IBinder,
         desktopSupportedOnDefaultDisplay: Boolean,
@@ -10771,6 +10852,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         tabTearingMinimizeAnimationFlagEnabled: Boolean,
         tabTearingLaunchAnimationFlagEnabled: Boolean,
         destinationDisplayId: Int = DEFAULT_DISPLAY,
+        verifyNoOp: Boolean = false,
     ) {
         desktopState.overrideDesktopModeSupportPerDisplay[DEFAULT_DISPLAY] = true
         desktopState.overrideDesktopModeSupportPerDisplay[destinationDisplayId] = true
@@ -10824,16 +10906,17 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             mockDragEvent,
             mockCallback as Consumer<Boolean>,
         )
+        val times = if (verifyNoOp) never() else times(1)
         val arg = argumentCaptor<WindowContainerTransaction>()
-        var expectedWindowingMode: Int
+        val expectedWindowingMode: Int
         if (indicatorType == DesktopModeVisualIndicator.IndicatorType.TO_FULLSCREEN_INDICATOR) {
             expectedWindowingMode = WINDOWING_MODE_FULLSCREEN
             // Fullscreen launches currently use default transitions
-            verify(transitions).startTransition(any(), arg.capture(), anyOrNull())
+            verify(transitions, times).startTransition(any(), arg.capture(), anyOrNull())
         } else {
             expectedWindowingMode = WINDOWING_MODE_FREEFORM
             if (tabTearingMinimizeAnimationFlagEnabled || tabTearingLaunchAnimationFlagEnabled) {
-                verify(desktopMixedTransitionHandler)
+                verify(desktopMixedTransitionHandler, times)
                     .startLaunchTransition(
                         eq(TRANSIT_OPEN),
                         arg.capture(),
@@ -10845,10 +10928,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                     )
             } else {
                 // All other launches use a special handler.
-                verify(dragAndDropTransitionHandler)
+                verify(dragAndDropTransitionHandler, times)
                     .handleDropEvent(arg.capture(), eq(mockDragEvent))
             }
         }
+        if (verifyNoOp) return
         assertThat(
                 ActivityOptions.fromBundle(arg.firstValue.hierarchyOps[0].launchOptions)
                     .launchWindowingMode

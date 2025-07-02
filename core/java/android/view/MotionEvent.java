@@ -610,6 +610,8 @@ public final class MotionEvent extends InputEvent implements Parcelable {
             FLAG_IS_GENERATED_GESTURE,
             FLAG_CANCELED,
             FLAG_NO_FOCUS_CHANGE,
+            FLAG_SUPPORTS_ORIENTATION,
+            FLAG_SUPPORTS_DIRECTIONAL_ORIENTATION,
             FLAG_IS_ACCESSIBILITY_EVENT,
             FLAG_TAINTED,
             FLAG_TARGET_ACCESSIBILITY_FOCUS,

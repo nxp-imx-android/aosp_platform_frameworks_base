@@ -3482,11 +3482,20 @@ public final class AlarmManagerServiceTest {
 
     @Test
     public void alarmScheduledAtomPushed() {
-        for (int i = 0; i < 10; i++) {
-            final PendingIntent pi = getNewMockPendingIntent();
-            setTestAlarm(ELAPSED_REALTIME, mNowElapsedTest + i, pi);
+        for (int i = 0; i < 20; i++) {
+            final PendingIntent pi;
+            final IAlarmListener listener;
+            if (i % 2 == 0) {
+                pi = null;
+                listener = getNewListener(() -> {});
+                setTestAlarmWithListener(ELAPSED_REALTIME, mNowElapsedTest + i, listener);
+            } else {
+                pi = getNewMockPendingIntent();
+                listener = null;
+                setTestAlarm(ELAPSED_REALTIME, mNowElapsedTest + i, pi);
+            }
 
-            verify(() -> MetricsHelper.pushAlarmScheduled(argThat(a -> a.matches(pi, null)),
+            verify(() -> MetricsHelper.pushAlarmScheduled(argThat(a -> a.matches(pi, listener)),
                     anyInt()));
         }
     }

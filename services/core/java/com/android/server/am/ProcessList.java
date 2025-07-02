@@ -146,6 +146,7 @@ import com.android.server.ServiceThread;
 import com.android.server.SystemConfig;
 import com.android.server.Watchdog;
 import com.android.server.am.ActivityManagerService.ProcessChangeItem;
+import com.android.server.am.psc.PlatformCompatCache;
 import com.android.server.compat.PlatformCompat;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
@@ -3707,7 +3708,7 @@ public final class ProcessList {
             if (DEBUG_LRU) Slog.d(TAG_LRU, "Moving dep from " + lrui + " to " + index
                     + " in LRU list: " + app);
             mLruProcesses.add(index, app);
-            app.setLruSeq(mLruSeq);
+            app.mState.setLruSeq(mLruSeq);
 
             if (isActivity) {
                 nextActivityIndex = index;
@@ -4113,7 +4114,7 @@ public final class ProcessList {
             }
         }
 
-        app.setLruSeq(mLruSeq);
+        app.mState.setLruSeq(mLruSeq);
 
         // Key of the indices array holds the current index of the process in the LRU list and the
         // value is a boolean indicating whether the process is an activity process or not.
@@ -4130,7 +4131,7 @@ public final class ProcessList {
             ConnectionRecord cr = psr.getConnectionAt(j);
             if (cr.binding != null && !cr.serviceDead && cr.binding.service != null
                     && cr.binding.service.app != null
-                    && cr.binding.service.app.getLruSeq() != mLruSeq
+                    && cr.binding.service.app.mState.getLruSeq() != mLruSeq
                     && cr.notHasFlag(Context.BIND_REDUCTION_FLAGS)
                     && !cr.binding.service.app.isPersistent()) {
                 if (cr.binding.service.app.mServices.hasClientActivities()) {
@@ -4147,7 +4148,8 @@ public final class ProcessList {
         final ProcessProviderRecord ppr = app.mProviders;
         for (int j = ppr.numberOfProviderConnections() - 1; j >= 0; j--) {
             ContentProviderRecord cpr = ppr.getProviderConnectionAt(j).provider;
-            if (cpr.proc != null && cpr.proc.getLruSeq() != mLruSeq && !cpr.proc.isPersistent()) {
+            if (cpr.proc != null && cpr.proc.mState.getLruSeq() != mLruSeq
+                    && !cpr.proc.isPersistent()) {
                 indices.append(offerLruProcessInternalLSP(cpr.proc, now,
                         "provider reference", cpr, app), false);
             }

@@ -1416,6 +1416,18 @@
   <java-symbol type="drawable" name="ic_print_error" />
   <java-symbol type="drawable" name="ic_lock" />
   <java-symbol type="drawable" name="ic_lock_open" />
+  <java-symbol type="drawable" name="ic_lock_bugreport" />
+  <java-symbol type="drawable" name="ic_lock_bugreport_round" />
+  <java-symbol type="drawable" name="ic_lock_lockdown" />
+  <java-symbol type="drawable" name="ic_lock_lockdown_round" />
+  <java-symbol type="drawable" name="ic_lock_power_off" />
+  <java-symbol type="drawable" name="ic_lock_power_off_round" />
+  <java-symbol type="drawable" name="ic_logout" />
+  <java-symbol type="drawable" name="ic_logout_round" />
+  <java-symbol type="drawable" name="ic_restart" />
+  <java-symbol type="drawable" name="ic_restart_round" />
+  <java-symbol type="drawable" name="ic_screenshot" />
+  <java-symbol type="drawable" name="ic_screenshot_round" />
   <java-symbol type="drawable" name="jog_dial_arrow_long_left_green" />
   <java-symbol type="drawable" name="jog_dial_arrow_long_right_red" />
   <java-symbol type="drawable" name="jog_dial_arrow_short_left_and_right" />
@@ -4836,6 +4848,7 @@
   <java-symbol type="dimen" name="resolver_empty_state_container_padding_top" />
   <java-symbol type="dimen" name="resolver_empty_state_container_padding_bottom" />
   <java-symbol type="dimen" name="resolver_profile_tab_margin" />
+  <java-symbol type="bool" name="config_resolverActivityFilterLastUsed" />
 
   <java-symbol type="string" name="config_deviceSpecificDisplayAreaPolicyProvider" />
 
@@ -6120,6 +6133,7 @@
   <java-symbol type="string" name="keyboard_shortcut_group_applications_calendar" />
   <java-symbol type="string" name="keyboard_shortcut_group_applications_contacts" />
   <java-symbol type="string" name="keyboard_shortcut_group_applications_email" />
+  <java-symbol type="string" name="keyboard_shortcut_group_applications_files" />
   <java-symbol type="string" name="keyboard_shortcut_group_applications_maps" />
   <java-symbol type="string" name="keyboard_shortcut_group_applications_music" />
   <java-symbol type="string" name="keyboard_shortcut_group_applications_sms" />

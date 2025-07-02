@@ -288,14 +288,6 @@ flag {
 }
 
 flag {
-    name: "new_hdr_brightness_modifier"
-    namespace: "display_manager"
-    description: "Flag for new HDR brightness clamper."
-    bug: "331275392"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "virtual_display_limit"
     namespace: "display_manager"
     description: "Limit the number of virtual displays that can be created."

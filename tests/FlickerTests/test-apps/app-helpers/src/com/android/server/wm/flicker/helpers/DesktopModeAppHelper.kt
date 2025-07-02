@@ -32,6 +32,7 @@ import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.helpers.SYSTEMUI_PACKAGE
 import android.tools.traces.parsers.WindowManagerStateHelper
 import android.tools.traces.wm.WindowingMode
+import android.view.Display.DEFAULT_DISPLAY
 import android.view.KeyEvent.KEYCODE_D
 import android.view.KeyEvent.KEYCODE_DPAD_DOWN
 import android.view.KeyEvent.KEYCODE_DPAD_UP
@@ -596,7 +597,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
-    fun exitDesktopModeToFullScreenWithAppHeader(wmHelper:WindowManagerStateHelper) {
+    fun exitDesktopModeToFullScreenWithAppHeader(wmHelper: WindowManagerStateHelper) {
         val openMenuButton = getDesktopAppViewByRes(OPEN_MENU_BUTTON)
         openMenuButton?.click()
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
@@ -611,7 +612,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
     }
 
-    fun exitDesktopModeToSplitScreenWithAppHeader(wmHelper:WindowManagerStateHelper) {
+    fun exitDesktopModeToSplitScreenWithAppHeader(wmHelper: WindowManagerStateHelper) {
         val openMenuButton = getDesktopAppViewByRes(OPEN_MENU_BUTTON)
         openMenuButton?.click()
         wmHelper.StateSyncBuilder().withAppTransitionIdle().waitForAndVerify()
@@ -674,6 +675,22 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
                 }
             )
         }
+    }
+
+    fun clickCaption(
+        wmHelper: WindowManagerStateHelper,
+        device: UiDevice,
+        displayId: Int = DEFAULT_DISPLAY
+    ) {
+        val caption = checkNotNull(getCaptionForTheApp(wmHelper, device)) {
+           "Unable to find caption"
+        }
+        caption.click()
+        wmHelper
+            .StateSyncBuilder()
+            .withAppTransitionIdle(displayId)
+            .withTopVisibleApp(innerHelper)
+            .waitForAndVerify()
     }
 
     private fun getDesktopAppViewByRes(viewResId: String): UiObject2 =

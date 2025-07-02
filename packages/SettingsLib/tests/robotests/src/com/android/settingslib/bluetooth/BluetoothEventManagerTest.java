@@ -37,7 +37,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.UserHandle;
 import android.os.UserManager;
-import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.telephony.TelephonyManager;
 
@@ -208,7 +207,6 @@ public class BluetoothEventManagerTest {
      * callback.
      */
     @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
     public void dispatchProfileConnectionStateChanged_registerCallback_shouldDispatchCallback() {
         mBluetoothEventManager.registerCallback(mBluetoothCallback);
 
@@ -221,11 +219,9 @@ public class BluetoothEventManagerTest {
 
     /**
      * dispatchProfileConnectionStateChanged should not call {@link
-     * LocalBluetoothLeBroadcast}#updateFallbackActiveDeviceIfNeeded and
-     * {@link LocalBluetoothLeBroadcast}#handleProfileConnected when audio sharing flag is off.
+     * LocalBluetoothLeBroadcast}#handleProfileConnected when audio sharing flag is off.
      */
     @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
     public void dispatchProfileConnectionStateChanged_flagOff_noCallToBroadcastProfile() {
         setUpAudioSharing(/* enableFlag= */ false, /* enableFeature= */ true, /* enableProfile= */
                 true, /* workProfile= */ false);
@@ -234,18 +230,15 @@ public class BluetoothEventManagerTest {
                 BluetoothProfile.STATE_DISCONNECTED,
                 BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT);
 
-        verify(mBroadcast, never()).updateFallbackActiveDeviceIfNeeded();
         verify(mBroadcast, never()).handleProfileConnected(any(), anyInt(), any());
     }
 
     /**
      * dispatchProfileConnectionStateChanged should not call {@link
-     * LocalBluetoothLeBroadcast}#updateFallbackActiveDeviceIfNeeded and
-     * {@link LocalBluetoothLeBroadcast}#handleProfileConnected when the device does not support
-     * audio sharing.
+     * LocalBluetoothLeBroadcast}#handleProfileConnected when the device does not support audio
+     * sharing.
      */
     @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
     public void dispatchProfileConnectionStateChanged_notSupport_noCallToBroadcastProfile() {
         setUpAudioSharing(/* enableFlag= */ true, /* enableFeature= */ false, /* enableProfile= */
                 true, /* workProfile= */ false);
@@ -254,53 +247,14 @@ public class BluetoothEventManagerTest {
                 BluetoothProfile.STATE_DISCONNECTED,
                 BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT);
 
-        verify(mBroadcast, never()).updateFallbackActiveDeviceIfNeeded();
         verify(mBroadcast, never()).handleProfileConnected(any(), anyInt(), any());
     }
 
     /**
      * dispatchProfileConnectionStateChanged should not call {@link
-     * LocalBluetoothLeBroadcast}#updateFallbackActiveDeviceIfNeeded when audio sharing profile is
-     * not ready.
+     * LocalBluetoothLeBroadcast}#handleProfileConnected when triggered for work profile.
      */
     @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
-    public void dispatchProfileConnectionStateChanged_profileNotReady_noUpdateFallbackDevice() {
-        setUpAudioSharing(/* enableFlag= */ true, /* enableFeature= */ true, /* enableProfile= */
-                false, /* workProfile= */ false);
-        mBluetoothEventManager.dispatchProfileConnectionStateChanged(
-                mCachedBluetoothDevice,
-                BluetoothProfile.STATE_DISCONNECTED,
-                BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT);
-
-        verify(mBroadcast, never()).updateFallbackActiveDeviceIfNeeded();
-    }
-
-    /**
-     * dispatchProfileConnectionStateChanged should not call {@link
-     * LocalBluetoothLeBroadcast}#updateFallbackActiveDeviceIfNeeded when triggered for profile
-     * other than LE_AUDIO_BROADCAST_ASSISTANT or state other than STATE_DISCONNECTED.
-     */
-    @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
-    public void dispatchProfileConnectionStateChanged_notAssistantProfile_noUpdateFallbackDevice() {
-        setUpAudioSharing(/* enableFlag= */ true, /* enableFeature= */ true, /* enableProfile= */
-                true, /* workProfile= */ false);
-        mBluetoothEventManager.dispatchProfileConnectionStateChanged(
-                mCachedBluetoothDevice,
-                BluetoothProfile.STATE_DISCONNECTED,
-                BluetoothProfile.LE_AUDIO);
-
-        verify(mBroadcast, never()).updateFallbackActiveDeviceIfNeeded();
-    }
-
-    /**
-     * dispatchProfileConnectionStateChanged should not call {@link
-     * LocalBluetoothLeBroadcast}#updateFallbackActiveDeviceIfNeeded and
-     * {@link LocalBluetoothLeBroadcast}#handleProfileConnected when triggered for work profile.
-     */
-    @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
     public void dispatchProfileConnectionStateChanged_workProfile_noCallToBroadcastProfile() {
         setUpAudioSharing(/* enableFlag= */ true, /* enableFeature= */ true, /* enableProfile= */
                 true, /* workProfile= */ true);
@@ -309,26 +263,6 @@ public class BluetoothEventManagerTest {
                 BluetoothProfile.STATE_DISCONNECTED,
                 BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT);
 
-        verify(mBroadcast, never()).updateFallbackActiveDeviceIfNeeded();
-        verify(mBroadcast, never()).handleProfileConnected(any(), anyInt(), any());
-    }
-
-    /**
-     * dispatchProfileConnectionStateChanged should call {@link
-     * LocalBluetoothLeBroadcast}#updateFallbackActiveDeviceIfNeeded when assistant profile is
-     * disconnected and audio sharing is enabled.
-     */
-    @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
-    public void dispatchProfileConnectionStateChanged_assistDisconnected_updateFallbackDevice() {
-        setUpAudioSharing(/* enableFlag= */ true, /* enableFeature= */ true, /* enableProfile= */
-                true, /* workProfile= */ false);
-        mBluetoothEventManager.dispatchProfileConnectionStateChanged(
-                mCachedBluetoothDevice,
-                BluetoothProfile.STATE_DISCONNECTED,
-                BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT);
-
-        verify(mBroadcast).updateFallbackActiveDeviceIfNeeded();
         verify(mBroadcast, never()).handleProfileConnected(any(), anyInt(), any());
     }
 
@@ -338,7 +272,6 @@ public class BluetoothEventManagerTest {
      * audio sharing is enabled.
      */
     @Test
-    @EnableFlags(Flags.FLAG_PROMOTE_AUDIO_SHARING_FOR_SECOND_AUTO_CONNECTED_LEA_DEVICE)
     public void dispatchProfileConnectionStateChanged_assistConnected_handleStateChanged() {
         setUpAudioSharing(/* enableFlag= */ true, /* enableFeature= */ true, /* enableProfile= */
                 true, /* workProfile= */ false);
@@ -347,14 +280,12 @@ public class BluetoothEventManagerTest {
                 BluetoothProfile.STATE_CONNECTED,
                 BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT);
 
-        verify(mBroadcast, never()).updateFallbackActiveDeviceIfNeeded();
         verify(mBroadcast).handleProfileConnected(mCachedBluetoothDevice,
                 BluetoothProfile.LE_AUDIO_BROADCAST_ASSISTANT, mBtManager);
     }
 
     private void setUpAudioSharing(boolean enableFlag, boolean enableFeature,
             boolean enableProfile, boolean workProfile) {
-        mSetFlagsRule.disableFlags(Flags.FLAG_DISABLE_AUDIO_SHARING_AUTO_PICK_FALLBACK_IN_UI);
         if (enableFlag) {
             mSetFlagsRule.enableFlags(Flags.FLAG_ENABLE_LE_AUDIO_SHARING);
         } else {

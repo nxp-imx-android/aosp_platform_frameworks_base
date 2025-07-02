@@ -85,6 +85,12 @@ import android.os.UserManager;
 import android.os.storage.StorageManager;
 import android.permission.PermissionControllerManager;
 import android.permission.PermissionManager;
+import android.ravenwood.annotation.RavenwoodIgnore;
+import android.ravenwood.annotation.RavenwoodKeep;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodRedirect;
+import android.ravenwood.annotation.RavenwoodRedirectionClass;
+import android.ravenwood.annotation.RavenwoodReplace;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
@@ -198,6 +204,8 @@ class ReceiverRestrictedContext extends ContextWrapper {
  * Common implementation of Context API, which provides the base
  * context object for Activity and other application components.
  */
+@RavenwoodKeepPartialClass
+@RavenwoodRedirectionClass("ContextImpl_ravenwood")
 class ContextImpl extends Context {
     private final static String TAG = "ContextImpl";
     private final static boolean DEBUG = false;
@@ -244,7 +252,7 @@ class ContextImpl extends Context {
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     private final String mOpPackageName;
     private final @NonNull ContextParams mParams;
-    private @NonNull AttributionSource mAttributionSource;
+    private @NonNull AttributionSource mAttributionSource; // Used by supported API
 
     private final @NonNull ResourcesManager mResourcesManager;
     @UnsupportedAppUsage
@@ -373,7 +381,16 @@ class ContextImpl extends Context {
 
     // The system service cache for the system services that are cached per-ContextImpl.
     @UnsupportedAppUsage
-    final Object[] mServiceCache = SystemServiceRegistry.createServiceCache();
+    final Object[] mServiceCache = createServiceCache();
+
+    @RavenwoodReplace
+    private static Object[] createServiceCache() {
+        return SystemServiceRegistry.createServiceCache();
+    }
+
+    private static Object[] createServiceCache$ravenwood() {
+        return new Object[0];
+    }
 
     static final int STATE_UNINITIALIZED = 0;
     static final int STATE_INITIALIZING = 1;
@@ -426,11 +443,13 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public AssetManager getAssets() {
         return getResources().getAssets();
     }
 
     @Override
+    @RavenwoodKeep
     public Resources getResources() {
         return mResources;
     }
@@ -456,22 +475,26 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public Looper getMainLooper() {
         return mMainThread.getLooper();
     }
 
     @Override
+    @RavenwoodKeep
     public Executor getMainExecutor() {
         return mMainThread.getExecutor();
     }
 
     @Override
+    @RavenwoodKeep
     public Context getApplicationContext() {
         return (mPackageInfo != null) ?
                 mPackageInfo.getApplication() : mMainThread.getApplication();
     }
 
     @Override
+    @RavenwoodKeep
     public void setTheme(int resId) {
         synchronized (mThemeLock) {
             if (mThemeResource != resId) {
@@ -511,11 +534,13 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public ClassLoader getClassLoader() {
         return mClassLoader != null ? mClassLoader : (mPackageInfo != null ? mPackageInfo.getClassLoader() : ClassLoader.getSystemClassLoader());
     }
 
     @Override
+    @RavenwoodKeep
     public String getPackageName() {
         if (mPackageInfo != null) {
             return mPackageInfo.getPackageName();
@@ -527,28 +552,33 @@ class ContextImpl extends Context {
 
     /** @hide */
     @Override
+    @RavenwoodKeep
     public String getBasePackageName() {
         return mBasePackageName != null ? mBasePackageName : getPackageName();
     }
 
     /** @hide */
     @Override
+    @RavenwoodKeep
     public String getOpPackageName() {
         return mAttributionSource.getPackageName();
     }
 
     /** @hide */
     @Override
+    @RavenwoodKeep
     public @Nullable String getAttributionTag() {
         return mAttributionSource.getAttributionTag();
     }
 
     @Override
+    @RavenwoodKeep
     public @Nullable ContextParams getParams() {
         return mParams;
     }
 
     @Override
+    @RavenwoodKeep
     public @NonNull AttributionSource getAttributionSource() {
         return mAttributionSource;
     }
@@ -2209,6 +2239,7 @@ class ContextImpl extends Context {
 
     /** @hide */
     @Override
+    @RavenwoodKeep
     public Handler getMainThreadHandler() {
         return mMainThread.getHandler();
     }
@@ -2956,6 +2987,7 @@ class ContextImpl extends Context {
         updateResourceOverlayConstraints();
     }
 
+    @RavenwoodKeep
     private void updateResourceOverlayConstraints() {
         if (mResources != null) {
             // Avoid calling getDisplay() here, as it makes a binder call into
@@ -3147,6 +3179,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public boolean isRestricted() {
         return (mFlags & Context.CONTEXT_RESTRICTED) != 0;
     }
@@ -3280,6 +3313,7 @@ class ContextImpl extends Context {
     }
 
     @Override
+    @RavenwoodKeep
     public int getDeviceId() {
         return mDeviceId;
     }
@@ -3390,12 +3424,14 @@ class ContextImpl extends Context {
 
     /** {@hide} */
     @Override
+    @RavenwoodKeep
     public UserHandle getUser() {
         return mUser;
     }
 
     /** {@hide} */
     @Override
+    @RavenwoodKeep
     public int getUserId() {
         return mUser.getIdentifier();
     }
@@ -3437,8 +3473,14 @@ class ContextImpl extends Context {
     }
 
     @UnsupportedAppUsage
+    @RavenwoodKeep
     static ContextImpl createSystemContext(ActivityThread mainThread) {
         LoadedApk packageInfo = new LoadedApk(mainThread);
+        return createSystemContextInner(mainThread, packageInfo);
+    }
+
+    @RavenwoodKeep
+    static ContextImpl createSystemContextInner(ActivityThread mainThread, LoadedApk packageInfo) {
         ContextImpl context = new ContextImpl(null, mainThread, packageInfo,
                 ContextParams.EMPTY, null, null, null, null, null, 0, null, null,
                 DEVICE_ID_DEFAULT, false);
@@ -3553,6 +3595,7 @@ class ContextImpl extends Context {
         return context;
     }
 
+    @RavenwoodKeep
     private ContextImpl(@Nullable ContextImpl container, @NonNull ActivityThread mainThread,
             @NonNull LoadedApk packageInfo, @NonNull ContextParams params,
             @Nullable String attributionTag, @Nullable AttributionSource nextAttributionSource,
@@ -3623,9 +3666,10 @@ class ContextImpl extends Context {
         mParams = Objects.requireNonNull(params);
         mAttributionSource = createAttributionSource(attributionTag, nextAttributionSource,
                 params.getRenouncedPermissions(), params.shouldRegisterAttributionSource(), mDeviceId);
-        mContentResolver = new ApplicationContentResolver(this, mainThread);
+        mContentResolver = newApplicationContentResolver(this, mainThread);
     }
 
+    @RavenwoodKeep
     private @NonNull AttributionSource createAttributionSource(@Nullable String attributionTag,
             @Nullable AttributionSource nextAttributionSource,
             @Nullable Set<String> renouncedPermissions, boolean shouldRegister,
@@ -3648,6 +3692,7 @@ class ContextImpl extends Context {
         return registerAttributionSourceIfNeeded(oldSource.withDeviceId(deviceId), shouldRegister);
     }
 
+    @RavenwoodReplace(blockedBy = PermissionManager.class)
     private @NonNull AttributionSource registerAttributionSourceIfNeeded(
             @NonNull AttributionSource attributionSource, boolean shouldRegister) {
         if (shouldRegister || attributionSource.getNext() != null) {
@@ -3657,6 +3702,12 @@ class ContextImpl extends Context {
         return attributionSource;
     }
 
+    private @NonNull AttributionSource registerAttributionSourceIfNeeded$ravenwood(
+            @NonNull AttributionSource attributionSource, boolean shouldRegister) {
+        return attributionSource;
+    }
+
+    @RavenwoodKeep
     void setResources(Resources r) {
         if (r instanceof CompatResources) {
             ((CompatResources) r).setContext(this);
@@ -3827,6 +3878,12 @@ class ContextImpl extends Context {
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
     // ----------------------------------------------------------------------
+
+    @RavenwoodIgnore
+    private static ApplicationContentResolver newApplicationContentResolver(
+            Context context, ActivityThread mainThread) {
+        return new ApplicationContentResolver(context, mainThread);
+    }
 
     private static final class ApplicationContentResolver extends ContentResolver {
         @UnsupportedAppUsage

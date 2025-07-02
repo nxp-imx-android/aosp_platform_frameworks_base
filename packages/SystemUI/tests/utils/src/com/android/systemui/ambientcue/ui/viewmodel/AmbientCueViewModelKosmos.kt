@@ -22,6 +22,7 @@ import com.android.systemui.dump.dumpManager
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.ambientcue.shared.logger.ambientCueLogger
 import com.android.systemui.util.time.fakeSystemClock
 
 private val Kosmos.ambientCueViewModel by Fixture {
@@ -31,6 +32,7 @@ private val Kosmos.ambientCueViewModel by Fixture {
         dumpManager = dumpManager,
         sharedPreferencesInteractor = sharedPreferencesInteractor,
         scope = testScope.backgroundScope,
+        ambientCueLogger = ambientCueLogger,
     )
 }
 

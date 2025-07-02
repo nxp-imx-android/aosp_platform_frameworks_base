@@ -491,6 +491,17 @@ flag {
 }
 
 flag {
+    name: "global_actions_icon_refresh_2025"
+    namespace: "systemui"
+    description: "Build time flag for 2025 power menu icon refresh"
+    bug: "427755140"
+    is_fixed_read_only: true
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "promote_notifications_automatically"
     namespace: "systemui"
     description: "Flag to automatically turn certain notifications into promoted notifications so "
@@ -2092,6 +2103,26 @@ flag {
     namespace: "systemui"
     description: "Show arrows in the pager dots in paginated QS"
     bug: "397156072"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "blur_settings_toggle"
+    namespace: "systemui"
+    description: "Add a settings toggle to enable/disable blur."
+    bug: "418000779"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
+    name: "expandable_use_modifier_implementation"
+    namespace: "systemui"
+    description: "Default the Compose Expandable to the new modifier implementation."
+    bug: "428899288"
     metadata {
       purpose: PURPOSE_BUGFIX
     }

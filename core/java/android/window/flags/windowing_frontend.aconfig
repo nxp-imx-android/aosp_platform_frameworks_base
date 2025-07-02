@@ -276,6 +276,16 @@ flag {
 }
 
 flag {
+    name: "ensure_wallpaper_drawn_on_display_switch"
+    namespace: "windowing_frontend"
+    description: "Ensures that wallpaper is visible and drawn on folding/unfolding"
+    bug: "395612286"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "predictive_back_system_override_callback"
     namespace: "windowing_frontend"
     description: "Provide pre-make predictive back API extension"
@@ -362,17 +372,6 @@ flag {
     namespace: "lse_desktop_experience"
     description: "Adds support for trackpad back gestures on connected displays"
     bug: "382774299"
-}
-
-flag {
-    namespace: "wear_frameworks"
-    name: "dispatch_first_keyguard_locked_state"
-    description: "Ensures the first keyguard locked state is dispatched to listeners reigstered through KeyguardManager.addKeyguardLockedStateListener"
-    bug: "375029840"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

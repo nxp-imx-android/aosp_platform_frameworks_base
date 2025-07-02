@@ -30,18 +30,18 @@ import androidx.annotation.NonNull;
 @FlaggedApi(FLAG_ADD_FALLBACK)
 public final class FallbackOption implements Parcelable {
     @NonNull private final CharSequence mText;
-    @BiometricManager.IconType.Types private final int mIconType;
+    @BiometricManager.IconType private final int mIconType;
 
     public @NonNull CharSequence getText() {
         return mText;
     }
 
-    public @BiometricManager.IconType.Types int getIconType() {
+    public @BiometricManager.IconType int getIconType() {
         return mIconType;
     }
 
     public FallbackOption(@NonNull CharSequence text,
-            @BiometricManager.IconType.Types int iconType) {
+            @BiometricManager.IconType int iconType) {
         this.mText = text;
         this.mIconType = iconType;
     }

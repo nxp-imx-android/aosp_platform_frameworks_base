@@ -140,6 +140,7 @@ java_library {
         "junit",
         "ravenwood-framework",
         "services.core.ravenwood",
+        "objenesis",
     ],
     sdk_version: "core_current",
     visibility: [":__subpackages__"],
