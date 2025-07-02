@@ -28,7 +28,7 @@ import android.util.Slog
 import androidx.tracing.Trace
 import com.android.internal.annotations.VisibleForTesting
 import com.android.launcher3.icons.BaseIconFactory
-import com.android.launcher3.icons.BaseIconFactory.Companion.MODE_DEFAULT
+import com.android.launcher3.icons.BaseIconFactory.MODE_DEFAULT
 import com.android.launcher3.icons.IconProvider
 import com.android.wm.shell.R
 import com.android.wm.shell.common.UserProfileContexts

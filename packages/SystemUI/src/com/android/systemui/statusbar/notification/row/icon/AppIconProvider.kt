@@ -111,52 +111,56 @@ constructor(
     private val densityDpi: Int
         get() = sysuiContext.resources.configuration.densityDpi
 
-    private val standardIconFactory: BaseIconFactory
-        get() =
-            BaseIconFactory(
-                context = sysuiContext,
-                fullResIconDpi = densityDpi,
-                iconBitmapSize = iconSize,
-                // Initialize the controller so that we can support themed icons.
-                themeController =
-                    if (notificationsRedesignThemedAppIcons())
-                        MonoIconThemeController(
-                            shouldForceThemeIcon = true,
-                            colorProvider = { ctx ->
-                                val res = ctx.resources
-                                intArrayOf(
-                                    /* background */ res.getColor(R.color.materialColorPrimary),
-                                    /* icon */ res.getColor(
-                                        R.color.materialColorSurfaceContainerHigh
-                                    ),
-                                    /* adaptive background */ res.getColor(
-                                        R.color.materialColorPrimary
-                                    ),
-                                )
-                            },
-                        )
-                    else null,
-            )
+    private class StandardNotificationIcons(
+        context: Context,
+        fillResIconDpi: Int,
+        iconBitmapSize: Int,
+    ) : BaseIconFactory(context, fillResIconDpi, iconBitmapSize) {
 
-    private val skeletonIconFactory: BaseIconFactory
-        get() =
-            BaseIconFactory(
-                context = sysuiContext,
-                fullResIconDpi = densityDpi,
-                iconBitmapSize = iconSize,
-                themeController =
+        init {
+            if (notificationsRedesignThemedAppIcons()) {
+                // Initialize the controller so that we can support themed icons.
+                mThemeController =
                     MonoIconThemeController(
                         shouldForceThemeIcon = true,
-                        colorProvider = { _ ->
+                        colorProvider = { ctx ->
+                            val res = ctx.resources
                             intArrayOf(
-                                /* background */ Color.BLACK, /* icon */
-                                Color.WHITE,
-
-                                /* adaptive background */ Color.BLACK,
+                                /* background */ res.getColor(R.color.materialColorPrimary),
+                                /* icon */ res.getColor(R.color.materialColorSurfaceContainerHigh),
+                                /* adaptive background */ res.getColor(R.color.materialColorPrimary)
                             )
                         },
-                    ),
-            )
+                    )
+            }
+        }
+    }
+
+    private class SkeletonNotificationIcons(
+        context: Context,
+        fillResIconDpi: Int,
+        iconBitmapSize: Int,
+    ) : BaseIconFactory(context, fillResIconDpi, iconBitmapSize) {
+        init {
+            mThemeController =
+                MonoIconThemeController(
+                    shouldForceThemeIcon = true,
+                    colorProvider = { _ ->
+                        intArrayOf(
+                            /* background */ Color.BLACK,
+                            /* icon */ Color.WHITE,
+                            /* adaptive background */ Color.BLACK
+                        )
+                    },
+                )
+        }
+    }
+
+    private val standardIconFactory: BaseIconFactory
+        get() = StandardNotificationIcons(sysuiContext, densityDpi, iconSize)
+
+    private val skeletonIconFactory: BaseIconFactory
+        get() = SkeletonNotificationIcons(sysuiContext, densityDpi, iconSize)
 
     /** Cache of standard-appearance icons as used in the notification row and guts */
     private val standardCache = AppIconCache(systemClock = systemClock)
