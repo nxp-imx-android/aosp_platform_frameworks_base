@@ -4848,6 +4848,7 @@
   <java-symbol type="dimen" name="resolver_empty_state_container_padding_top" />
   <java-symbol type="dimen" name="resolver_empty_state_container_padding_bottom" />
   <java-symbol type="dimen" name="resolver_profile_tab_margin" />
+  <java-symbol type="bool" name="config_resolverActivityFilterLastUsed" />
 
   <java-symbol type="string" name="config_deviceSpecificDisplayAreaPolicyProvider" />
 

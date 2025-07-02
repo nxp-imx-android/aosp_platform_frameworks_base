@@ -78,6 +78,7 @@ import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Resolver activity instrumentation tests
@@ -227,6 +228,7 @@ public class ResolverActivityTest {
                 Mockito.isA(List.class))).thenReturn(resolvedComponentInfos);
         when(sOverrides.resolverListController.getLastChosen())
                 .thenReturn(resolvedComponentInfos.get(0).getResolveInfoAt(0));
+        sOverrides.filterLastUsedConfig = Optional.of(true);
 
         final ResolverWrapperActivity activity = mActivityRule.launchActivity(sendIntent);
         waitForIdle();
@@ -687,7 +689,7 @@ public class ResolverActivityTest {
         waitForIdle();
         onView(withText(R.string.resolver_work_tab)).perform(click());
         waitForIdle();
-        onView(withId(R.id.contentPanel))
+        onView(withId(R.id.title_container))
                 .perform(swipeUp());
 
         onView(withText(R.string.resolver_cross_profile_blocked))
@@ -713,7 +715,7 @@ public class ResolverActivityTest {
 
         mActivityRule.launchActivity(sendIntent);
         waitForIdle();
-        onView(withId(R.id.contentPanel))
+        onView(withId(R.id.title_container))
                 .perform(swipeUp());
         onView(withText(R.string.resolver_work_tab)).perform(click());
         waitForIdle();
@@ -737,7 +739,7 @@ public class ResolverActivityTest {
 
         mActivityRule.launchActivity(sendIntent);
         waitForIdle();
-        onView(withId(R.id.contentPanel))
+        onView(withId(R.id.title_container))
                 .perform(swipeUp());
         onView(withText(R.string.resolver_work_tab)).perform(click());
         waitForIdle();
@@ -763,7 +765,7 @@ public class ResolverActivityTest {
 
         mActivityRule.launchActivity(sendIntent);
         waitForIdle();
-        onView(withId(R.id.contentPanel))
+        onView(withId(R.id.title_container))
                 .perform(swipeUp());
         onView(withText(R.string.resolver_work_tab)).perform(click());
         waitForIdle();
@@ -835,7 +837,7 @@ public class ResolverActivityTest {
 
         mActivityRule.launchActivity(sendIntent);
         waitForIdle();
-        onView(withId(R.id.contentPanel))
+        onView(withId(R.id.title_container))
                 .perform(swipeUp());
         onView(withText(R.string.resolver_work_tab)).perform(click());
         waitForIdle();
@@ -921,6 +923,30 @@ public class ResolverActivityTest {
         waitForIdle();
 
         assertThat(chosen[0], is(personalResolvedComponentInfos.get(1).getResolveInfoAt(0)));
+    }
+
+    @Test
+    public void testLayoutWithDefault_filterLastUsedDisabled_neverShown() throws RemoteException {
+        Intent sendIntent = createSendImageIntent();
+        List<ResolvedComponentInfo> resolvedComponentInfos = createResolvedComponentsForTest(2,
+                PERSONAL_USER_HANDLE);
+
+        when(sOverrides.resolverListController.getResolversForIntent(Mockito.anyBoolean(),
+                Mockito.anyBoolean(),
+                Mockito.anyBoolean(),
+                Mockito.isA(List.class))).thenReturn(resolvedComponentInfos);
+        when(sOverrides.resolverListController.getLastChosen())
+                .thenReturn(resolvedComponentInfos.get(0).getResolveInfoAt(0));
+        sOverrides.filterLastUsedConfig = Optional.of(false);
+
+        final ResolverWrapperActivity activity = mActivityRule.launchActivity(sendIntent);
+        Espresso.registerIdlingResources(activity.getAdapter().getLabelIdlingResource());
+        waitForIdle();
+
+        // The other entry is filtered to the last used slot
+        assertThat(activity.getAdapter().hasFilteredItem(), is(false));
+        assertThat(activity.getAdapter().getCount(), is(2));
+        assertThat(activity.getAdapter().getPlaceholderCount(), is(2));
     }
 
     @Test
