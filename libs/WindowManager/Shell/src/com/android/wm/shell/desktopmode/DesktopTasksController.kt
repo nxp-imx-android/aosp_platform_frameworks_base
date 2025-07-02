@@ -478,7 +478,7 @@ class DesktopTasksController(
         if (task1.taskId == task2.parentTaskId) task2 else task1
 
     @Deprecated("Use isDisplayDesktopFirst() instead.", ReplaceWith("isDisplayDesktopFirst()"))
-    private fun forceEnterDesktop(displayId: Int): Boolean {
+    private fun isDesktopFirstLegacy(displayId: Int): Boolean {
         if (DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX.isTrue) {
             return rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(displayId)
         }
@@ -497,7 +497,7 @@ class DesktopTasksController(
         // TDA.
         if (tdaInfo == null) {
             logW(
-                "forceEnterDesktop cannot find DisplayAreaInfo for displayId=%d. This could happen" +
+                "isDesktopFirstLegacy cannot find DisplayAreaInfo for displayId=%d. This could happen" +
                     " when the display is a non-trusted virtual display.",
                 displayId,
             )
@@ -1631,7 +1631,7 @@ class DesktopTasksController(
         val deactivationRunnable = addMoveToFullscreenChanges(wct, task, willExitDesktop, displayId)
 
         // We are moving a freeform task to fullscreen, put the home task under the fullscreen task.
-        if (!forceEnterDesktop(displayId)) {
+        if (!isDesktopFirstLegacy(displayId)) {
             moveHomeTaskToTop(displayId, wct)
             wct.reorder(task.token, /* onTop= */ true)
         }
@@ -2899,7 +2899,8 @@ class DesktopTasksController(
                 triggerTask.isFullscreen ->
                     handleFullscreenTaskLaunch(triggerTask, transition, request.type)
                 // Check if freeform task should be updated
-                triggerTask.isFreeform -> handleFreeformTaskLaunch(triggerTask, transition)
+                triggerTask.isFreeform ->
+                    handleFreeformTaskLaunch(triggerTask, transition, request.type)
                 else -> {
                     null
                 }
@@ -3220,9 +3221,10 @@ class DesktopTasksController(
     private fun handleFreeformTaskLaunch(
         task: RunningTaskInfo,
         transition: IBinder,
+        @WindowManager.TransitionType requestType: Int,
     ): WindowContainerTransaction? {
         val anyDeskActive = taskRepository.isAnyDeskActive(task.displayId)
-        val forceEnterDesktop = forceEnterDesktop(task.displayId)
+        val forceEnterDesktop = shouldForceEnterDesktopByDesktopFirstPolicy(task, requestType)
         logV(
             "handleFreeformTaskLaunch taskId=%d displayId=%d anyDeskActive=%b forceEnterDesktop=%b",
             task.taskId,
@@ -3369,7 +3371,7 @@ class DesktopTasksController(
                         // In some launches home task is moved behind new task being launched. Make
                         // sure that's not the case for launches in desktop. Also, if this launch is
                         // the first one to trigger the desktop mode (e.g., when
-                        // [forceEnterDesktop()]), activate the desk here.
+                        // [shouldForceEnterDesktopByDesktopFirstPolicy()]), activate the desk here.
                         val activationRunnable =
                             addDeskActivationChanges(
                                 deskId = deskId,
@@ -3445,27 +3447,50 @@ class DesktopTasksController(
         task: RunningTaskInfo,
         @WindowManager.TransitionType requestType: Int,
     ): Boolean {
-        val isDesktopFirst = rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(task.displayId)
+        if (isDesktopFirstLegacy(task.displayId)) {
+            // We're in desktop-first mode.
+            val forceEnterDesktop = shouldForceEnterDesktopByDesktopFirstPolicy(task, requestType)
+            logV(
+                "shouldFullscreenTaskLaunchSwitchToDesktop, forceEnterDesktop=%s",
+                forceEnterDesktop,
+            )
+            return forceEnterDesktop
+        }
+
+        // We're in touch-first mode.
+        val isAnyDeskActive = isAnyDeskActive(task.displayId)
+        logV("shouldFullscreenTaskLaunchSwitchToDesktop, isAnyDeskActive=%s", isAnyDeskActive)
+        return isAnyDeskActive
+    }
+
+    /**
+     * Returns `true` if `openingTask` should enter desktop mode because of desktop-first policy.
+     * Note that this may return `false` even if the display is in desktop-first mode. To check the
+     * state of the desktop-first mode use `isDisplayDesktopFirst()` instead.
+     */
+    private fun shouldForceEnterDesktopByDesktopFirstPolicy(
+        openingTask: RunningTaskInfo,
+        @WindowManager.TransitionType requestType: Int,
+    ): Boolean {
+        if (!DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_BASED_DEFAULT_TO_DESKTOP_BUGFIX.isTrue) {
+            return isDesktopFirstLegacy(openingTask.displayId)
+        }
+
+        val isDesktopFirst =
+            rootTaskDisplayAreaOrganizer.isDisplayDesktopFirst(openingTask.displayId)
         if (
             DesktopExperienceFlags.ENABLE_DESKTOP_FIRST_FULLSCREEN_REFOCUS_BUGFIX.isTrue &&
                 isDesktopFirst &&
-                isFullscreenRelaunch(task, requestType)
+                isFullscreenRelaunch(openingTask, requestType)
         ) {
             logV(
-                "shouldFullscreenTaskLaunchSwitchToDesktop: no switch as fullscreen relaunch on" +
+                "shouldForceEnterDesktopByDesktopFirstPolicy: no switch as fullscreen relaunch on" +
                     " desktop-first display#%s",
-                task.displayId,
+                openingTask.displayId,
             )
             return false
         }
-
-        val isAnyDeskActive = isAnyDeskActive(task.displayId)
-        logV(
-            "shouldFullscreenTaskLaunchSwitchToDesktop, isAnyDeskActive=%s, isDesktopFirst=%s",
-            isAnyDeskActive,
-            isDesktopFirst,
-        )
-        return isAnyDeskActive || isDesktopFirst
+        return isDesktopFirst
     }
 
     /**
@@ -3491,7 +3516,7 @@ class DesktopTasksController(
             isFreeform,
         )
         if (!DesktopExperienceFlags.ENABLE_MULTIPLE_DESKTOPS_BACKEND.isTrue) {
-            if (!inDesktop && !forceEnterDesktop(displayId)) return null
+            if (!inDesktop && !isDesktopFirstLegacy(displayId)) return null
             if (
                 isTransparentTask &&
                     (DesktopExperienceFlags.FORCE_CLOSE_TOP_TRANSPARENT_FULLSCREEN_TASK.isTrue ||
@@ -4243,13 +4268,13 @@ class DesktopTasksController(
             handler?.setTransition(transition)
             runOnTransitStart?.invoke(transition)
 
-        // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
-        if (!desktopState.enableMultipleDesktops) {
-            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-                toDesktopAnimationDurationMs
-            )
+            // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
+            if (!desktopState.enableMultipleDesktops) {
+                desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                    toDesktopAnimationDurationMs
+                )
+            }
         }
-    }
 
     private fun addDeskRemovalChanges(
         wct: WindowContainerTransaction,
