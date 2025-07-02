@@ -48,15 +48,18 @@ import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.user.domain.interactor.SelectedUserInteractor
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.withContext
 
 @SysUISingleton
 class StatusBarStartable
 @Inject
 constructor(
-    @Background private val applicationScope: CoroutineScope,
+    @Application private val applicationScope: CoroutineScope,
+    @Background private val backgroundDispatcher: CoroutineDispatcher,
     @Application private val applicationContext: Context,
     private val selectedUserInteractor: SelectedUserInteractor,
     private val sceneInteractor: SceneInteractor,
@@ -140,22 +143,24 @@ constructor(
                         return@collect
                     }
 
-                    try {
-                        statusBarService.disableForUser(
-                            flags,
-                            disableToken,
-                            applicationContext.packageName,
-                            selectedUserId,
-                        )
-                    } catch (e: RemoteException) {
-                        Log.d(TAG, "Failed to set disable flags: $flags", e)
+                    withContext(backgroundDispatcher) {
+                        try {
+                            statusBarService.disableForUser(
+                                flags,
+                                disableToken,
+                                applicationContext.packageName,
+                                selectedUserId,
+                            )
+                        } catch (e: RemoteException) {
+                            Log.d(TAG, "Failed to set disable flags: $flags", e)
+                        }
                     }
                 }
         }
     }
 
     override fun onBootCompleted() {
-        applicationScope.launch {
+        applicationScope.launch(context = backgroundDispatcher) {
             try {
                 statusBarService.disableForUser(
                     StatusBarManager.DISABLE_NONE,

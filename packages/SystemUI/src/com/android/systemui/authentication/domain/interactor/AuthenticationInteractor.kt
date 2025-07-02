@@ -30,6 +30,7 @@ import com.android.systemui.authentication.shared.model.AuthenticationPatternCoo
 import com.android.systemui.authentication.shared.model.AuthenticationWipeModel
 import com.android.systemui.authentication.shared.model.AuthenticationWipeModel.WipeTarget
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.logDiffsForTable
@@ -40,6 +41,7 @@ import javax.inject.Inject
 import kotlin.math.max
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -63,7 +65,8 @@ import kotlinx.coroutines.flow.stateIn
 class AuthenticationInteractor
 @Inject
 constructor(
-    @Background private val applicationScope: CoroutineScope,
+    @Application private val applicationScope: CoroutineScope,
+    @Background private val backgroundDispatcher: CoroutineDispatcher,
     private val repository: AuthenticationRepository,
     private val selectedUserInteractor: SelectedUserInteractor,
     @SceneFrameworkTableLog private val tableLogBuffer: TableLogBuffer,
@@ -339,7 +342,7 @@ constructor(
     }
 
     private suspend fun initiateGarbageCollection(delay: Duration) {
-        applicationScope.launch {
+        applicationScope.launch(context = backgroundDispatcher) {
             delay(delay)
             System.gc()
             System.runFinalization()

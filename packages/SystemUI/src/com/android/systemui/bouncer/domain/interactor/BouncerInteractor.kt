@@ -35,7 +35,7 @@ import com.android.systemui.classifier.FalsingClassifier
 import com.android.systemui.classifier.domain.interactor.FalsingInteractor
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
 import com.android.systemui.dagger.SysUISingleton
-import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.deviceentry.domain.interactor.ActiveUnlockInteractor
 import com.android.systemui.deviceentry.domain.interactor.DeviceEntryFaceAuthInteractor
 import com.android.systemui.log.SessionTracker
@@ -65,7 +65,7 @@ import kotlinx.coroutines.flow.map
 class BouncerInteractor
 @Inject
 constructor(
-    @Background private val applicationScope: CoroutineScope,
+    @Application private val applicationScope: CoroutineScope,
     private val repository: BouncerRepository,
     private val authenticationInteractor: AuthenticationInteractor,
     private val deviceEntryFaceAuthInteractor: DeviceEntryFaceAuthInteractor,
