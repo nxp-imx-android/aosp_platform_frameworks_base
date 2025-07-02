@@ -19,6 +19,7 @@ package com.android.internal.pm.pkg.component;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
+import java.util.List;
 import java.util.Set;
 
 /** @hide */
@@ -43,8 +44,10 @@ public interface ParsedPermission extends ParsedComponent {
 
     boolean isPurposeRequired();
 
+    int getRequiresPurposeTargetSdkVersion();
+
     @NonNull
-    Set<String> getValidPurposes();
+    List<ParsedValidPurpose> getValidPurposes();
 
     boolean isTree();
 }

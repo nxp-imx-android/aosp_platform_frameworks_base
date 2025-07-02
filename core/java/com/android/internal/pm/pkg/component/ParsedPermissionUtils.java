@@ -147,6 +147,15 @@ public class ParsedPermissionUtils {
                                 R.styleable.AndroidManifestPermission_requiresPurpose,
                                 /* defValue= */ false);
                 permission.setPurposeRequired(requiresPurpose);
+                if (requiresPurpose) {
+                    final ParseResult<Integer> targetSdkVersionResult =
+                            parseRequiresPurposeTargetSdkVersion(sa, input);
+                    if (targetSdkVersionResult.isError()) {
+                        return input.error(targetSdkVersionResult);
+                    }
+                    permission.setRequiresPurposeTargetSdkVersion(
+                            targetSdkVersionResult.getResult());
+                }
             }
 
             // For now only platform runtime permissions can be restricted
@@ -182,6 +191,23 @@ public class ParsedPermissionUtils {
         }
 
         return input.success(result.getResult());
+    }
+
+    // Version code is only being used to validate attribute value.
+    @SuppressWarnings("AndroidFrameworkCompatChange")
+    private static ParseResult<Integer> parseRequiresPurposeTargetSdkVersion(
+            TypedArray array, ParseInput input) {
+        final int requiresPurposeTargetSdkVersion =
+                array.getInt(
+                        R.styleable.AndroidManifestPermission_requiresPurposeTargetSdkVersion,
+                        /* defValue= */ 0);
+        // Android C is the first platform version that supports purpose enforcement.
+        if (requiresPurposeTargetSdkVersion <= Build.VERSION_CODES.BAKLAVA) {
+            return input.error(
+                    "android:requiresPurposeTargetSdkVersion for <permission> must be defined with"
+                            + " value being at least 37!");
+        }
+        return input.success(requiresPurposeTargetSdkVersion);
     }
 
     @NonNull

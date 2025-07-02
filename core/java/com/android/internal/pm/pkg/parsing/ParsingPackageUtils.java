@@ -298,6 +298,19 @@ public class ParsingPackageUtils {
         return input.success(pkg);
     }
 
+    /** Utility method for parsing min and max SDK version attributes. */
+    public static int parseMinOrMaxSdkVersion(TypedArray sa, int attr, int defaultValue) {
+        int val = defaultValue;
+        TypedValue peekVal = sa.peekValue(attr);
+        if (peekVal != null) {
+            if (peekVal.type >= TypedValue.TYPE_FIRST_INT
+                    && peekVal.type <= TypedValue.TYPE_LAST_INT) {
+                val = peekVal.data;
+            }
+        }
+        return val;
+    }
+
     private final String[] mSeparateProcesses;
     private final DisplayMetrics mDisplayMetrics;
     @NonNull
@@ -1370,18 +1383,6 @@ public class ParsingPackageUtils {
             return input.error(result);
         }
         return input.success(pkg.addPermission(result.getResult()));
-    }
-
-    private int parseMinOrMaxSdkVersion(TypedArray sa, int attr, int defaultValue) {
-        int val = defaultValue;
-        TypedValue peekVal = sa.peekValue(attr);
-        if (peekVal != null) {
-            if (peekVal.type >= TypedValue.TYPE_FIRST_INT
-                    && peekVal.type <= TypedValue.TYPE_LAST_INT) {
-                val = peekVal.data;
-            }
-        }
-        return val;
     }
 
     private ParseResult<ParsingPackage> parseUsesPermission(ParseInput input,
