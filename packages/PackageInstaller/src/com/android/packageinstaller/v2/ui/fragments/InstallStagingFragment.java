@@ -51,6 +51,8 @@ public class InstallStagingFragment extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         Log.i(LOG_TAG, "Creating " + LOG_TAG);
 
+        // There is no root view here. Ok to pass null view root
+        @SuppressWarnings("InflateParams")
         View dialogView = getLayoutInflater().inflate(
                 UiUtil.getInstallationLayoutResId(requireContext()), null);
         mProgressBar = dialogView.requireViewById(R.id.progress_bar);

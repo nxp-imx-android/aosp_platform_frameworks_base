@@ -19,7 +19,6 @@ package com.android.packageinstaller.v2.ui.fragments;
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_APP_SNIPPET;
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_INSTALLER_LABEL;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,6 +35,7 @@ import androidx.fragment.app.DialogFragment;
 import com.android.packageinstaller.R;
 import com.android.packageinstaller.v2.model.PackageUtil;
 import com.android.packageinstaller.v2.model.UnarchiveUserActionRequired;
+import com.android.packageinstaller.v2.ui.UiUtil;
 import com.android.packageinstaller.v2.ui.UnarchiveActionListener;
 
 public class UnarchiveConfirmationFragment extends DialogFragment {
@@ -43,7 +43,6 @@ public class UnarchiveConfirmationFragment extends DialogFragment {
     private static final String LOG_TAG = UnarchiveConfirmationFragment.class.getSimpleName();
 
     private Dialog mDialog;
-    private Button mRestoreButton;
     private UnarchiveUserActionRequired mDialogData;
     private UnarchiveActionListener mUnarchiveActionListener;
 
@@ -82,6 +81,8 @@ public class UnarchiveConfirmationFragment extends DialogFragment {
 
         Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + mDialogData);
 
+        // There is no root view here. Ok to pass null view root
+        @SuppressWarnings("InflateParams")
         View dialogView = getLayoutInflater().inflate(R.layout.uninstall_fragment_layout, null);
         dialogView.requireViewById(R.id.app_snippet).setVisibility(View.VISIBLE);
         ((ImageView) dialogView.requireViewById(R.id.app_icon))
@@ -92,38 +93,28 @@ public class UnarchiveConfirmationFragment extends DialogFragment {
         customMessage.setVisibility(View.VISIBLE);
         customMessage.setText(getString(R.string.message_restore, mDialogData.getInstallerTitle()));
 
-        mDialog = new AlertDialog.Builder(requireActivity())
-                .setTitle(getContext().getString(R.string.title_restore))
-                .setView(dialogView)
-                .setPositiveButton(R.string.button_restore,
-                        (dialog, which) -> mUnarchiveActionListener.beginUnarchive())
-                .setNegativeButton(R.string.button_cancel, (dialog, which) -> {
-                })
-                .create();
+        mDialog = UiUtil.getAlertDialog(requireContext(), getString(R.string.title_restore),
+                dialogView, R.string.button_restore, R.string.button_cancel,
+                (dialog, which) -> mUnarchiveActionListener.beginUnarchive(),
+                (dialog, which) -> {});
         return mDialog;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (mDialog != null) {
-            mRestoreButton = ((AlertDialog) mDialog).getButton(DialogInterface.BUTTON_POSITIVE);
-        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        if (mRestoreButton != null) {
-            mRestoreButton.setEnabled(false);
+        Button button = UiUtil.getAlertDialogPositiveButton(mDialog);
+        if (button != null) {
+            button.setEnabled(false);
         }
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (mRestoreButton != null) {
-            mRestoreButton.setEnabled(true);
+        Button button = UiUtil.getAlertDialogPositiveButton(mDialog);
+        if (button != null) {
+            button.setEnabled(true);
         }
     }
 

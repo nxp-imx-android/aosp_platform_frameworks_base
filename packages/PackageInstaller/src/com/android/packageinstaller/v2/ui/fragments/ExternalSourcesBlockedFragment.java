@@ -88,6 +88,8 @@ public class ExternalSourcesBlockedFragment extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         setDialogData(requireArguments());
 
+        // There is no root view here. Ok to pass null view root
+        @SuppressWarnings("InflateParams")
         View dialogView = getLayoutInflater().inflate(
                 UiUtil.getInstallationLayoutResId(requireContext()), null);
 

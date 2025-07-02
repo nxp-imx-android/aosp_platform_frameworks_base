@@ -331,13 +331,16 @@ class UninstallRepository(private val context: Context) {
                 }
             } else if (isArchive) {
                 dialogTitle = context.getString(R.string.title_archive)
-                positiveButtonText = context.getString(R.string.button_archive)
                 messageString = context.getString(R.string.message_archive)
             }
 
             if (messageString.isNotEmpty()) {
                 messageBuilder.append(messageString)
             }
+        }
+
+        if (isArchive) {
+            positiveButtonText = context.getString(R.string.button_archive)
         }
 
         val message = if (messageBuilder.isNotEmpty()) {

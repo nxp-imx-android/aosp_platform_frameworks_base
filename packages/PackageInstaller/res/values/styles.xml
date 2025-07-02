@@ -46,6 +46,9 @@
         <item name="android:textAppearance">@android:style/TextAppearance.DeviceDefault.Headline</item>
     </style>
 
+    <style name="TextAppearance.PackageInstaller.Title" parent="@android:style/TextAppearance.DeviceDefault.Headline">
+    </style>
+
     <style name="TextAppearance.PackageInstaller.AppLabel" parent="@android:style/TextAppearance.DeviceDefault.SearchResult.Subtitle">
         <item name="android:textColor">?android:attr/textColorPrimary</item>
         <item name="android:textFontWeight">600</item>

@@ -72,6 +72,8 @@ public class InstallInstallingFragment extends DialogFragment {
 
         Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + mDialogData);
 
+        // There is no root view here. Ok to pass null view root
+        @SuppressWarnings("InflateParams")
         View dialogView = getLayoutInflater().inflate(
                 UiUtil.getInstallationLayoutResId(requireContext()), null);
 
