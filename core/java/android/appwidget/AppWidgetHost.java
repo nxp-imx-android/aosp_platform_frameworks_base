@@ -50,6 +50,7 @@ import com.android.internal.appwidget.IAppWidgetService;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -81,7 +82,6 @@ public class AppWidgetHost {
     private final Callbacks mCallbacks;
     private final SparseArray<AppWidgetHostListener> mListeners = new SparseArray<>();
     private InteractionHandler mInteractionHandler;
-    private final Handler mMainHandler;
 
     static class Callbacks extends IAppWidgetHost.Stub {
         private final WeakReference<Handler> mWeakHandler;
@@ -214,7 +214,6 @@ public class AppWidgetHost {
         mHandler = new UpdateHandler(looper);
         mCallbacks = new Callbacks(mHandler);
         mDisplayMetrics = context.getResources().getDisplayMetrics();
-        mMainHandler = new Handler(Looper.getMainLooper());
         bindService(context);
     }
 
@@ -674,29 +673,27 @@ public class AppWidgetHost {
         }
 
         List<AppWidgetEvent> eventList = new ArrayList<>();
-        mMainHandler.post(() -> {
-            synchronized (mListeners) {
-                for (int i = 0; i < mListeners.size(); i++) {
-                    AppWidgetEvent event = mListeners.valueAt(i).collectWidgetEvent();
-                    if (event != null) {
-                        eventList.add(event);
-                    }
+        synchronized (mListeners) {
+            for (int i = 0; i < mListeners.size(); i++) {
+                AppWidgetEvent event = mListeners.valueAt(i).collectWidgetEvent();
+                if (event != null) {
+                    eventList.add(event);
                 }
             }
-            if (eventList.isEmpty()) {
-                return;
-            }
-            AppWidgetEvent[] events = new AppWidgetEvent[eventList.size()];
-            for (int i = 0; i < events.length; i++) {
-                events[i] = eventList.get(i);
-            }
+        }
+        if (eventList.isEmpty()) {
+            return;
+        }
+        AppWidgetEvent[] events = new AppWidgetEvent[eventList.size()];
+        for (int i = 0; i < events.length; i++) {
+            events[i] = eventList.get(i);
+        }
 
-            try {
-                sService.reportWidgetEvents(mContextOpPackageName, events);
-            } catch (RemoteException e) {
-                throw e.rethrowFromSystemServer();
-            }
-        });
+        try {
+            sService.reportWidgetEvents(mContextOpPackageName, events);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 
     /**
@@ -712,19 +709,17 @@ public class AppWidgetHost {
         if (listener == null) {
             return;
         }
-        mMainHandler.post(() -> {
-            AppWidgetEvent event = listener.collectWidgetEvent();
-            if (event == null) {
-                return;
-            }
-            AppWidgetEvent[] events = {event};
+        AppWidgetEvent event = listener.collectWidgetEvent();
+        if (event == null) {
+            return;
+        }
+        AppWidgetEvent[] events = {event};
 
-            try {
-                sService.reportWidgetEvents(mContextOpPackageName, events);
-            } catch (RemoteException e) {
-                throw e.rethrowFromSystemServer();
-            }
-        });
+        try {
+            sService.reportWidgetEvents(mContextOpPackageName, events);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
     }
 }
 

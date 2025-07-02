@@ -16,17 +16,14 @@
 
 package com.android.systemui.communal.widgets
 
-import android.appwidget.AppWidgetEvent
 import android.appwidget.AppWidgetHost.AppWidgetHostListener
 import android.appwidget.AppWidgetProviderInfo
-import android.os.Looper
 import android.widget.RemoteViews
 import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.dagger.qualifiers.Application
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import java.util.concurrent.CompletableFuture
 import kotlinx.coroutines.CoroutineScope
 
 /**
@@ -57,21 +54,5 @@ constructor(
 
     override fun onViewDataChanged(viewId: Int) {
         mainScope.launchTraced("$tag#onViewDataChanged") { listener.onViewDataChanged(viewId) }
-    }
-
-    override fun collectWidgetEvent(): AppWidgetEvent? {
-        if (!android.appwidget.flags.Flags.engagementMetrics()) {
-            return null
-        }
-
-        if (Looper.getMainLooper().isCurrentThread()) {
-            return listener.collectWidgetEvent()
-        }
-
-        val future = CompletableFuture<AppWidgetEvent?>()
-        mainScope.launchTraced("$tag#collectWidgetEvent") {
-            future.complete(listener.collectWidgetEvent())
-        }
-        return future.get()
     }
 }
