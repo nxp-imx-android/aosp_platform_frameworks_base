@@ -20,6 +20,7 @@ import static android.companion.virtual.VirtualDeviceParams.DEVICE_POLICY_CUSTOM
 import static android.companion.virtual.VirtualDeviceParams.POLICY_TYPE_AUDIO;
 import static android.content.Context.DEVICE_ID_DEFAULT;
 import static android.media.audio.Flags.FLAG_ASSISTANT_VOLUME_CONTROL;
+import static android.media.audio.Flags.FLAG_AUDIO_FOCUS_DESKTOP;
 import static android.media.audio.Flags.FLAG_DEPRECATE_STREAM_BT_SCO;
 import static android.media.audio.Flags.FLAG_FOCUS_EXCLUSIVE_WITH_RECORDING;
 import static android.media.audio.Flags.FLAG_FOCUS_FREEZE_TEST_API;
@@ -9102,13 +9103,30 @@ public class AudioManager {
         }
     }
 
-
-    /** @hide
-     * TODO: make this a @SystemApi */
+    /**
+     * @hide
+     * Configures whether multi-audio focus is enabled or not.
+     * @param enabled whether multi-audio focus is enabled or not.
+     */
     @RequiresPermission(Manifest.permission.MODIFY_AUDIO_ROUTING)
     public void setMultiAudioFocusEnabled(boolean enabled) {
         try {
             getService().setMultiAudioFocusEnabled(enabled);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * @hide
+     * Queries whether multi-audio focus is enabled or not.
+     * @return true if multi-audio focus is enabled, false otherwise
+     */
+    @FlaggedApi(FLAG_AUDIO_FOCUS_DESKTOP)
+    @TestApi
+    public boolean isMultiAudioFocusEnabled() {
+        try {
+            return getService().isMultiAudioFocusEnabled();
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

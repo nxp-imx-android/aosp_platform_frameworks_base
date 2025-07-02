@@ -15684,6 +15684,18 @@ public class AudioService extends IAudioService.Stub
     }
 
     /**
+     * Queries whether multi-audio focus is enabled or not.
+     * @return true if multi-audio focus is enabled, false otherwise
+     * @see AudioManager#isMultiAudioFocusEnabled()
+     */
+    public boolean isMultiAudioFocusEnabled() {
+        if (mMediaFocusControl != null) {
+            return mMediaFocusControl.getMultiAudioFocusEnabled();
+        }
+        return false;
+    }
+
+    /**
      * @hide
      * Sets an additional audio output device delay in milliseconds.
      *
