@@ -2289,7 +2289,6 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
      * Verify that we skip broadcasts at enqueue if {@link BroadcastSkipPolicy} decides it
      * should be skipped.
      */
-    @EnableFlags(Flags.FLAG_AVOID_NOTE_OP_AT_ENQUEUE)
     @Test
     public void testSkipPolicy_atEnqueueTime() throws Exception {
         final ProcessRecord callerApp = makeActiveProcessRecord(PACKAGE_RED);
