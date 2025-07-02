@@ -94,6 +94,8 @@ public final class MessageHeap {
         Message tmp = mHeap[x];
         mHeap[x] = mHeap[y];
         mHeap[y] = tmp;
+        mHeap[x].heapIndex = x;
+        mHeap[y].heapIndex = y;
     }
 
     private void siftDown(int i) {
@@ -199,6 +201,7 @@ public final class MessageHeap {
             mNumElements--;
 
             mHeap[0] = mHeap[mNumElements];
+            mHeap[0].heapIndex = 0;
             mHeap[mNumElements] = null;
 
             siftDown(0);
@@ -223,6 +226,7 @@ public final class MessageHeap {
         } else {
             mNumElements--;
             mHeap[i] = mHeap[mNumElements];
+            mHeap[i].heapIndex = i;
             mHeap[mNumElements] = null;
             if (!siftUp(i)) {
                 siftDown(i);
@@ -232,7 +236,10 @@ public final class MessageHeap {
     }
 
     public void removeMessage(@NonNull Message m) throws IllegalArgumentException {
+        // We set this index to be out of range so that we don't attempt to remove this message from
+        // the heap a second time (e.g. when it's processed on the MessageStack freelist).
         remove(m.heapIndex);
+        m.heapIndex = -1;
     }
 
     public void removeAll() {
@@ -288,6 +295,11 @@ public final class MessageHeap {
         int localHeapCount = 0;
         for (int i = 0; i < mHeap.length; i++) {
             if (mHeap[i] != null) {
+                if (mHeap[i].heapIndex != i) {
+                    Log.e(TAG, "Verify failure: message at " + i + " has heapIndex "
+                            + mHeap[i].heapIndex);
+                    return false;
+                }
                 localHeapCount++;
             }
         }

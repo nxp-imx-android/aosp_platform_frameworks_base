@@ -1,0 +1,283 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package android.os;
+
+import android.annotation.Nullable;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
+
+/**
+ * Treiber stack of Message objects, used in NewNewMessageQueue.
+ * @hide
+ */
+public final class MessageStack {
+    private static final String TAG = "MessageStack";
+
+    private static final VarHandle sTop;
+    private volatile Message mTopValue = null;
+
+    private static final VarHandle sFreelistHead;
+    private volatile Message mFreelistHeadValue = null;
+
+    // The underlying min-heaps that are used for ordering Messages.
+    private final MessageHeap mSyncHeap = new MessageHeap();
+    private final MessageHeap mAsyncHeap = new MessageHeap();
+
+    // This points to the most-recently processed message. Comparison with mTopValue will indicate
+    // whether some messages still need to be processed.
+    private Message mLooperProcessed = null;
+
+    static {
+        try {
+            MethodHandles.Lookup l = MethodHandles.lookup();
+            sTop = l.findVarHandle(MessageStack.class, "mTopValue",
+                    Message.class);
+            sFreelistHead = l.findVarHandle(MessageStack.class, "mFreelistHeadValue",
+                    Message.class);
+        } catch (ReflectiveOperationException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
+    /**
+     * Pushes a message onto the top of the stack with a CAS.
+     */
+    public void pushMessage(Message m) {
+        // TODO: This should fail if the current top value is the shutdown sentinel.
+        Message current;
+        do {
+            current = mTopValue;
+            m.next = current;
+        } while (!sTop.weakCompareAndSetRelease(this, current, m));
+
+    }
+
+    /**
+     * Iterates through messages and creates a reverse-ordered chain of messages to remove.
+     */
+    public void updateFreelist(MessageQueue.MessageCompare compare, Handler h, int what,
+            Object object, Runnable r, long when) {
+        Message current = (Message) sTop.getAcquire(this);
+        Message prev = null;
+        Message firstRemoved = null;
+
+        while (current != null) {
+            // Check that the message hasn't already been removed or processed elsewhere.
+            if (!current.isRemoved()
+                    && compare.compareMessage(current, h, what, object, r, when)
+                    && current.markRemoved()) {
+                if (firstRemoved == null) {
+                    firstRemoved = current;
+                }
+                current.clearReferenceFields();
+                // nextFree links each to-be-removed message to the one processed before.
+                current.nextFree = prev;
+                prev = current;
+            }
+            current = current.next;
+        }
+
+        Message freelist;
+        do {
+            freelist = mFreelistHeadValue;
+            firstRemoved.nextFree = freelist;
+        // prev points to the last to-be-removed message that was processed.
+        } while (!sFreelistHead.compareAndSet(this, freelist, prev));
+    }
+
+    /**
+     * Adds not-yet-processed messages into the MessageHeap and creates backlinks.
+     */
+    public void heapSweep() {
+        Message current = (Message) sTop.getAcquire(this);
+        Message prevLooperProcessed = mLooperProcessed;
+        mLooperProcessed = current;
+
+        while (current != null && current != prevLooperProcessed) {
+            if (current.next != null) {
+                current.next.prev = current;
+            }
+            // MessageHeap will maintain its own ordering of Messages, so it doesn't matter that we
+            // insert these Messages in a different order than submitted to the stack.
+            // TODO: Removed messages shouldn't be added to the heap, and possibly not into the
+            // stack either.
+            if (current.isAsynchronous()) {
+                mAsyncHeap.add(current);
+            } else {
+                mSyncHeap.add(current);
+            }
+            current = current.next;
+        }
+
+        // TODO: Investigate inserting in-submitted-order with a second traversal using backlinks.
+    }
+
+    /**
+     * Iterate through the freelist and unlink Messages.
+     */
+    public void drainFreelist() {
+        Message current = (Message) sFreelistHead.getAndSetAcquire(this, null);
+        while (current != null) {
+            Message nextFree = current.nextFree;
+            current.nextFree = null;
+            removeMessage(current, /* removeFromHeap= */ true);
+            current = nextFree;
+        }
+    }
+
+    /**
+     * Get a message from the MessageHeap, remove its links within this stack, then return it.
+     *
+     * This will return null if there are no more items in the heap, or if there was a race and the
+     * polled message was removed.
+     */
+    public Message pop(boolean async) {
+        final Message m = async ? mAsyncHeap.poll() : mSyncHeap.poll();
+        if (m != null) {
+            // We CAS this so that a remover doesn't attempt to add it to the freelist. If this CAS
+            // fails, it has already been removed, and links will be cleared in a drainFreelist()
+            // pass.
+            if (!m.markRemoved()) {
+                return null;
+            }
+            removeMessage(m, /* removeFromHeap= */ false);
+        }
+        return m;
+    }
+
+    /**
+     * Remove a message from the stack.
+     *
+     * removeFromHeap indicates if the message should be removed from the heap (if this message is
+     * being drained from the freelist) or not (if this message was retrieved using
+     * MessageHeap.pop()).
+     */
+    private void removeMessage(Message m, boolean removeFromHeap) {
+        // An out of range heapIndex means that we've already removed this message from the heap
+        // during the MessageHeap.peek() loop in peek().
+        if (removeFromHeap && m.heapIndex >= 0) {
+            if (m.isAsynchronous()) {
+                mAsyncHeap.removeMessage(m);
+            } else {
+                mSyncHeap.removeMessage(m);
+            }
+        }
+
+        // mLooperProcessed must be updated to the next message that hasn't been removed.
+        if (m == mLooperProcessed) {
+            do {
+                mLooperProcessed = mLooperProcessed.next;
+            } while (mLooperProcessed != null && mLooperProcessed.isRemoved());
+        }
+        // If this is the top, attempt to CAS the top to the next item.
+        if (m == mTopValue) {
+            // Since only the looper thread can pop or drain the freelist, if this CAS fails, it
+            // can only be due to a push or quit.
+            if (sTop.compareAndSet(this, m, m.next)) {
+                unlinkFromNext(m);
+                m.prev = null;
+                return;
+            }
+            // If the CAS failed, this is no longer the top, and we must find m's predecessor and
+            // create backlinks before continuing to remove the message the normal way.
+            heapSweep();
+        }
+        unlinkFromNext(m);
+        unlinkFromPrev(m);
+        m.prev = null;
+    }
+
+    private static void unlinkFromNext(Message m) {
+        if (m.next != null) {
+            m.next.prev = m.prev;
+        }
+    }
+
+    private static void unlinkFromPrev(Message m) {
+        if (m.prev != null) {
+            m.prev.next = m.next;
+        }
+    }
+
+    /**
+     * Return the next non-removed Message.
+     *
+     * A null return value indicates that the underlying heap was either empty or only contained
+     * removed messages.
+     */
+    public @Nullable Message peek(boolean async) {
+        while (true) {
+            final Message m = async ? mAsyncHeap.peek() : mSyncHeap.peek();
+            if (m == null) {
+                return null;
+            }
+            if (!m.isRemoved()) {
+                return m;
+            }
+            if (async) {
+                mAsyncHeap.removeMessage(m);
+            } else {
+                mSyncHeap.removeMessage(m);
+            }
+        }
+    }
+
+    /**
+     * Remove the input Message.
+     *
+     * This is suitable to use with the output of peek().
+     */
+    public void remove(Message m) {
+        removeMessage(m, /* removeFromHeap= */ true);
+    }
+
+    /**
+     * Returns the number of non-removed messages in this stack.
+     */
+    public int sizeForTest() {
+        int size = 0;
+        Message current = (Message) sTop.getAcquire(this);
+        while (current != null) {
+            if (!current.isRemoved()) {
+                size++;
+            }
+            current = current.next;
+        }
+        return size;
+    }
+
+    /**
+     * Returns the number of messages in the freelist.
+     */
+    public int freelistSizeForTest() {
+        int size = 0;
+        Message current = (Message) sFreelistHead.getAcquire(this);
+        while (current != null) {
+            size++;
+            current = current.nextFree;
+        }
+        return size;
+    }
+
+    /**
+     * Returns the number of messages in the underlying MessageHeaps.
+     */
+    public int combinedHeapSizesForTest() {
+        return mSyncHeap.size() + mAsyncHeap.size();
+    }
+
+}

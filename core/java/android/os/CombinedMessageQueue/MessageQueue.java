@@ -1543,7 +1543,11 @@ public final class MessageQueue {
         }
     }
 
-    static final class MatchHandlerWhatAndObject extends MessageCompare {
+    /**
+     * Matches handler, what, and object if non-null.
+     * @hide
+     */
+    public static final class MatchHandlerWhatAndObject extends MessageCompare {
         @Override
         public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -2593,7 +2597,7 @@ public final class MessageQueue {
                 MethodHandles.Lookup l = MethodHandles.lookup();
                 sRemovedFromStack = l.findVarHandle(MessageQueue.MessageNode.class,
                         "mRemovedFromStackValue", boolean.class);
-            } catch (Exception e) {
+            } catch (ReflectiveOperationException e) {
                 throw new ExceptionInInitializerError(e);
             }
         }
@@ -2673,7 +2677,7 @@ public final class MessageQueue {
                     long.class);
             sMptrRefCount = l.findVarHandle(MessageQueue.class, "mMptrRefCountValue",
                     long.class);
-        } catch (Exception e) {
+        } catch (ReflectiveOperationException e) {
             throw new ExceptionInInitializerError(e);
         }
     }
@@ -2790,7 +2794,7 @@ public final class MessageQueue {
                 MethodHandles.Lookup l = MethodHandles.lookup();
                 sCounts = l.findVarHandle(MessageQueue.MessageCounts.class, "mCountsValue",
                         long.class);
-            } catch (Exception e) {
+            } catch (ReflectiveOperationException e) {
                 throw new ExceptionInInitializerError(e);
             }
         }
