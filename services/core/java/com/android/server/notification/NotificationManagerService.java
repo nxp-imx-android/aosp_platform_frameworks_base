@@ -3741,9 +3741,9 @@ public class NotificationManagerService extends SystemService {
     }
 
     private void maybeNotifyChannelGroupOwner(String pkg, int uid,
-            NotificationChannelGroup preUpdate, NotificationChannelGroup update) {
+            @Nullable NotificationChannelGroup preUpdate, NotificationChannelGroup update) {
         try {
-            if (preUpdate.isBlocked() != update.isBlocked()) {
+            if (preUpdate != null && preUpdate.isBlocked() != update.isBlocked()) {
                 getContext().sendBroadcastAsUser(
                         new Intent(ACTION_NOTIFICATION_CHANNEL_GROUP_BLOCK_STATE_CHANGED)
                                 .putExtra(NotificationManager.EXTRA_NOTIFICATION_CHANNEL_GROUP_ID,
@@ -7389,8 +7389,16 @@ public class NotificationManagerService extends SystemService {
                 NotificationChannelGroup group) throws RemoteException {
             Objects.requireNonNull(user);
             verifyPrivilegedListener(token, user, false);
-            createNotificationChannelGroup(
-                    pkg, getUidForPackageAndUser(pkg, user), group, false, true);
+            int packageUid = getUidForPackageAndUser(pkg, user);
+            if (packageUid == INVALID_UID) {
+                return;
+            }
+            NotificationChannelGroup previous = mPreferencesHelper.getNotificationChannelGroup(
+                    group.getId(), pkg, packageUid);
+            if (previous == null) {
+                return;
+            }
+            createNotificationChannelGroup(pkg, packageUid, group, false, true);
             handleSavePolicyFile();
         }
 
