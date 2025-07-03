@@ -30,6 +30,7 @@ import static android.media.audio.Flags.FLAG_SCO_MANAGED_BY_AUDIO;
 import static android.media.audio.Flags.FLAG_STREAM_ASSISTANT_PUBLIC;
 import static android.media.audio.Flags.FLAG_SUPPORTED_DEVICE_TYPES_API;
 import static android.media.audio.Flags.FLAG_UNIFY_ABSOLUTE_VOLUME_MANAGEMENT;
+import static android.media.audio.Flags.audioFocusIsolation;
 import static android.media.audio.Flags.autoPublicVolumeApiHardening;
 import static android.media.audio.Flags.streamAssistantPublic;
 import static android.media.audiopolicy.Flags.FLAG_ENABLE_FADE_MANAGER_CONFIGURATION;
@@ -4968,6 +4969,112 @@ public class AudioManager {
             throw e.rethrowFromSystemServer();
         }
     }
+
+    /**
+     * Isolates the given uid's audio focus management.
+     *
+     * <p>When a uid's audio focus management is isolated, its audio focus requests are always
+     * granted, and other applications' requests are not affected by the audio focus state of
+     * isolated uids.
+     *
+     * <p>This is useful, for example, when rerouting an application's audio to another audio
+     * device, with the audio focus requests of that application not affecting the audio focus
+     * requests of the other applications.
+     *
+     * <p>Any existing audio focus requests corresponding {@link #AUDIOFOCUS_GAIN} are preserved and
+     * all other requests receive a {@link #AUDIOFOCUS_LOSS}.
+     *
+     * <p>Isolated uids only permit a single focus entry per uid, so they do not support {@link
+     * #AUDIOFOCUS_GAIN_TRANSIENT} focus requests. Subsequent focus requests within an isolated uid
+     * result in the previous request receiving a {@link #AUDIOFOCUS_LOSS}.
+     *
+     * <p>Only one isolation request may be active for a given uid at a given time.
+     *
+     * <p>Isolated uids are not impacted by external policy based focus requests.
+     *
+     * @param uid The uid of the app's audio focus management to isolate.
+     * @return The isolation token to pass to {@link #exitFocusIsolation} in order to take the uid
+     *     out of isolation, or null if focus isolation failed.
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED)
+    public @Nullable FocusIsolationToken enterFocusIsolation(int uid) {
+        if (!audioFocusIsolation()) {
+            Log.w(TAG, "enterFocusIsolation: Request ignored. Flag is disabled.");
+            return null;
+        }
+        try {
+            var binder = new Binder();
+            if (getService().enterFocusIsolation(uid, binder)) {
+                return new FocusIsolationToken(binder);
+            } else {
+                return null;
+            }
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Removes the given uid from isolation.
+     *
+     * <p>Subsequent focus requests from the uid are treated normally. Any active focus request
+     * under isolation corresponding to an {@link #AUDIOFOCUS_GAIN} either receives an {@link
+     * #AUDIOFOCUS_LOSS}, or acts as if newly requesting audio focus based on the values of the
+     * mode.
+     *
+     * @param token The token obtained from {@link #enterFocusIsolation}, which identifies the uid
+     *     to remove from isolation.
+     * @param mode Describes what to do with any active audio focus requests from the affected uid.
+     * @return Whether the operation was successful.
+     * @see #enterFocusIsolation
+     * @hide
+     */
+    @RequiresPermission(Manifest.permission.MODIFY_AUDIO_SETTINGS_PRIVILEGED)
+    public boolean exitFocusIsolation(
+            @NonNull FocusIsolationToken token, @FocusIsolationExitMode int mode) {
+        if (!audioFocusIsolation()) {
+            Log.w(TAG, "exitFocusIsolation: Request ignored. Flag is disabled.");
+            return false;
+        }
+        Objects.requireNonNull(token);
+        try {
+            return getService().exitFocusIsolation(token.mIBinder, mode);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /** @hide */
+    public static class FocusIsolationToken {
+        private final IBinder mIBinder;
+
+        private FocusIsolationToken(IBinder ibinder) {
+            mIBinder = ibinder;
+        }
+    }
+
+    /**
+     * @hide When exiting focus isolation, if the uid had requested focus, it will retain audio
+     *     focus. Other focus owners will lose focus
+     */
+    public static final int FOCUS_ISOLATION_EXIT_RETAIN_FOCUS = 1;
+
+    /**
+     * @hide When exiting focus isolation, if the uid had requested focus, it will lose audio focus,
+     *     and this will have no impact on other focus owners
+     */
+    public static final int FOCUS_ISOLATION_EXIT_LOSE_FOCUS = 2;
+
+    /** @hide */
+    @IntDef({
+        FOCUS_ISOLATION_EXIT_RETAIN_FOCUS,
+        FOCUS_ISOLATION_EXIT_LOSE_FOCUS,
+    })
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FocusIsolationExitMode {}
+
+    // ===========================================================
 
     /**
      * @hide
