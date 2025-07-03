@@ -3658,6 +3658,7 @@ public class MockingOomAdjusterTests {
 
     @SuppressWarnings("GuardedBy")
     @Test
+    @EnableFlags(Flags.FLAG_CPU_TIME_CAPABILITY_BASED_FREEZE_POLICY)
     public void testUpdateOomAdj_DoAll_BindUiServiceFromClientHome() {
         ProcessRecord app = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID, MOCKAPP_PROCESSNAME,
                 MOCKAPP_PACKAGENAME, true);
@@ -3674,9 +3675,18 @@ public class MockingOomAdjusterTests {
                 ? sFirstUiCachedAdj : sFirstCachedAdj;
         assertProcStates(app, PROCESS_STATE_HOME, expectedAdj, SCHED_GROUP_BACKGROUND,
                 "cch-bound-ui-services");
-        // This UI service oom score was elevated above the freeze cutoff, but the client is not
-        // frozen, so neither should the service.
-        assertImplicitCpuTime(app);
+        // CPU_TIME is not granted to the client and so cannot be propagated to the service.
+        assertNoCpuTime(client);
+        assertNoCpuTime(app);
+        // Granting of IMPLICIT_CPU_TIME will depend on the freezer oomAdj cutoff and will be
+        // propagated to the service from the client when available.
+        if (Flags.prototypeAggressiveFreezing()) {
+            assertNoImplicitCpuTime(client);
+            assertNoImplicitCpuTime(app);
+        } else {
+            assertImplicitCpuTime(client);
+            assertImplicitCpuTime(app);
+        }
     }
 
     @SuppressWarnings("GuardedBy")
