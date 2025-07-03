@@ -144,6 +144,8 @@ object ShadeHeader {
 
     object TestTags {
         const val Root = "shade_header_root"
+        const val BatteryTestTag = "battery_meter_composable_view"
+        const val BatteryTestTagLegacy = "battery_percentage_view"
     }
 
     /** Represents the background highlighting of a header icons chip. */
@@ -193,7 +195,7 @@ fun ContentScope.CollapsedShadeHeader(
 
     // This layout assumes it is globally positioned at (0, 0) and is the same size as the screen.
     CutoutAwareShadeHeader(
-        modifier = modifier,
+        modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root),
         startContent = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -561,13 +563,13 @@ private fun BatteryInfo(
             showIcon = showIcon,
             showEstimate = useExpandedFormat,
             textColor = textColor,
-            modifier = modifier,
+            modifier = modifier.sysuiResTag(ShadeHeader.TestTags.BatteryTestTag),
         )
     } else {
         BatteryIconLegacy(
             createBatteryMeterViewController = viewModel.createBatteryMeterViewController,
             useExpandedFormat = useExpandedFormat,
-            modifier = modifier,
+            modifier = modifier.sysuiResTag(ShadeHeader.TestTags.BatteryTestTagLegacy),
             isHighlighted = isHighlighted,
         )
     }
