@@ -16,6 +16,9 @@
 
 package android.app.admin;
 
+import static android.app.admin.flags.Flags.FLAG_ENFORCING_ADMIN_GET_COMPONENT_NAME_ENABLED;
+
+import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SystemApi;
@@ -38,10 +41,6 @@ public final class EnforcingAdmin implements Parcelable {
     private final String mPackageName;
     private final Authority mAuthority;
     private final UserHandle mUserHandle;
-
-    /**
-     * @hide
-     */
     private final ComponentName mComponentName;
 
     /**
@@ -105,9 +104,8 @@ public final class EnforcingAdmin implements Parcelable {
 
     /**
      * Returns the {@link ComponentName} of the admin if applicable.
-     *
-     * @hide
      */
+    @FlaggedApi(FLAG_ENFORCING_ADMIN_GET_COMPONENT_NAME_ENABLED)
     @Nullable
     public ComponentName getComponentName() {
         return mComponentName;

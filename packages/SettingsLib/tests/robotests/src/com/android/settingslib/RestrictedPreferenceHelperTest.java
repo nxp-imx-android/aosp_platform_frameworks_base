@@ -39,15 +39,20 @@ import android.app.admin.EnforcingAdmin;
 import android.app.admin.RoleAuthority;
 import android.app.admin.SystemAuthority;
 import android.app.admin.UnknownAuthority;
+import android.app.admin.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.RequiresFlagsDisabled;
 import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
+import android.platform.test.flag.junit.FlagsParameterization;
+import android.platform.test.flag.junit.SetFlagsRule;
 import android.view.View;
 import android.widget.TextView;
 
@@ -60,14 +65,24 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.ParameterizedRobolectricTestRunner;
 
 import java.util.Collections;
+import java.util.List;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(ParameterizedRobolectricTestRunner.class)
 public class RestrictedPreferenceHelperTest {
+    @ParameterizedRobolectricTestRunner.Parameters(name = "{0}")
+    public static List<FlagsParameterization> getParams() {
+        return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED);
+    }
+
     @Rule
     public final CheckFlagsRule mCheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule();
+
+    @Rule
+    public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Mock
     private Context mContext;
@@ -87,6 +102,10 @@ public class RestrictedPreferenceHelperTest {
 
     private PreferenceViewHolder mViewHolder;
     private RestrictedPreferenceHelper mHelper;
+
+    public RestrictedPreferenceHelperTest(FlagsParameterization flagsParameterization) {
+        mSetFlagsRule.setFlagsParameterization(flagsParameterization);
+    }
 
     @Before
     public void setUp() {
@@ -219,6 +238,7 @@ public class RestrictedPreferenceHelperTest {
      * {@link RestrictedPreferenceHelper#setDisabledByAdmin(RestrictedLockUtils.EnforcedAdmin)} as a
      * copy or as a reference.
      */
+    @DisableFlags(Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
     @Test
     public void setDisabledByAdmin_disablePreference_receivedEnforcedAdminIsNotAReference() {
         RestrictedLockUtils.EnforcedAdmin enforcedAdmin =
@@ -232,7 +252,6 @@ public class RestrictedPreferenceHelperTest {
         // assignment would be propagated.
         enforcedAdmin.enforcedRestriction = null;
         assertThat(mHelper.mEnforcedAdmin.enforcedRestriction).isEqualTo("some_restriction");
-
         assertThat(mHelper.isDisabledByAdmin()).isTrue();
     }
 
@@ -261,6 +280,17 @@ public class RestrictedPreferenceHelperTest {
         mHelper.setDisabledByAdmin(enforcedAdmin1);
 
         assertThat(mHelper.setDisabledByAdmin(enforcedAdmin2)).isTrue();
+    }
+
+    @EnableFlags(Flags.FLAG_POLICY_TRANSPARENCY_REFACTOR_ENABLED)
+    @Test
+    public void setDisabledByEnforcingAdmin_disablePreference() {
+        EnforcingAdmin enforcingAdmin = new EnforcingAdmin("package.name",
+                DpcAuthority.DPC_AUTHORITY, UserHandle.of(UserHandle.myUserId()), mAdmin);
+
+        mHelper.setDisabledByEnforcingAdmin(enforcingAdmin);
+
+        verify(mPreference).setEnabled(false);
     }
 
     @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
