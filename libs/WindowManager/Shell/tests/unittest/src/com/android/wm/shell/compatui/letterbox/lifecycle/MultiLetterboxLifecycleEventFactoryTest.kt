@@ -22,9 +22,14 @@ import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.compatui.letterbox.lifecycle.FakeLetterboxLifecycleEventFactory.Companion.FAKE_EVENT
 import com.android.wm.shell.util.testLetterboxLifecycleEventFactory
+import java.util.function.Consumer
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.function.Consumer
 
 /**
  * Tests for [MultiLetterboxLifecycleEventFactory].
@@ -47,15 +52,15 @@ class MultiLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                     // No specific Change initialization required.
                 }
                 validateCanHandle { canHandler ->
-                    assert(canHandler == true)
+                    assertTrue(canHandler)
                     r.assertOnCandidate(0) { f ->
-                        assert(f.canHandleInvokeTimes == 1)
+                        assertEquals(1, f.canHandleInvokeTimes)
                     }
                     r.assertOnCandidate(1) { f ->
-                        assert(f.canHandleInvokeTimes == 1)
+                        assertEquals(1, f.canHandleInvokeTimes)
                     }
                     r.assertOnCandidate(2) { f ->
-                        assert(f.canHandleInvokeTimes == 0)
+                        assertEquals(0, f.canHandleInvokeTimes)
                     }
                 }
             }
@@ -73,7 +78,7 @@ class MultiLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                     // No specific Change initialization required.
                 }
                 validateCanHandle { canHandler ->
-                    assert(canHandler == false)
+                    assertFalse(canHandler)
                 }
             }
         }
@@ -90,11 +95,11 @@ class MultiLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                     // No specific Change initialization required.
                 }
                 validateCreateLifecycleEvent { event ->
-                    assert(event == null)
+                    assertNull(event)
                     for (pos in 0..2) {
                         r.assertOnCandidate(pos) { f ->
-                            assert(f.canHandleInvokeTimes == 1)
-                            assert(f.createLifecycleEventInvokeTimes == 0)
+                            assertEquals(1, f.canHandleInvokeTimes)
+                            assertEquals(0, f.createLifecycleEventInvokeTimes)
                         }
                     }
                 }
@@ -119,21 +124,21 @@ class MultiLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                     // No specific Change initialization required.
                 }
                 validateCreateLifecycleEvent { event ->
-                    assert(event != null)
+                    assertNotNull(event)
                     r.assertOnCandidate(0) { f ->
-                        assert(f.canHandleInvokeTimes == 1)
-                        assert(f.createLifecycleEventInvokeTimes == 0)
+                        assertEquals(1, f.canHandleInvokeTimes)
+                        assertEquals(0, f.createLifecycleEventInvokeTimes)
                     }
                     r.assertOnCandidate(1) { f ->
-                        assert(f.canHandleInvokeTimes == 1)
-                        assert(f.createLifecycleEventInvokeTimes == 1)
+                        assertEquals(1, f.canHandleInvokeTimes)
+                        assertEquals(1, f.createLifecycleEventInvokeTimes)
                     }
                     r.assertOnCandidate(2) { f ->
-                        assert(f.canHandleInvokeTimes == 0)
-                        assert(f.createLifecycleEventInvokeTimes == 0)
+                        assertEquals(0, f.canHandleInvokeTimes)
+                        assertEquals(0, f.createLifecycleEventInvokeTimes)
                     }
-                    assert(event?.taskId == 30)
-                    assert(event?.taskBounds == Rect(1, 2, 3, 4))
+                    assertEquals(30, event.taskId)
+                    assertEquals(Rect(1, 2, 3, 4), event.taskBounds)
                 }
             }
         }
@@ -151,7 +156,6 @@ class MultiLetterboxLifecycleEventFactoryTest : ShellTestCase() {
      * Robot contextual to [MultiLetterboxLifecycleEventFactory].
      */
     class LetterboxLifecycleControllerImplRobotTest {
-
 
         private val candidates = mutableListOf<FakeLetterboxLifecycleEventFactory>()
 
