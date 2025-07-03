@@ -234,7 +234,7 @@ class HandleMenuTest : ShellTestCase() {
         assertThat(drawable.bitmap).isEqualTo(mockAppIcon)
     }
 
-    private fun createTaskInfo(windowingMode: Int, splitPosition: Int? = null) {
+    private suspend fun createTaskInfo(windowingMode: Int, splitPosition: Int? = null) {
         val taskDescriptionBuilder = ActivityManager.TaskDescription.Builder()
             .setBackgroundColor(Color.YELLOW)
         val bounds = when (windowingMode) {
@@ -264,10 +264,10 @@ class HandleMenuTest : ShellTestCase() {
                 (it.arguments[1] as Rect).set(SPLIT_RIGHT_BOUNDS)
             }
         }
-        whenever(mockTaskResourceLoader.getName(mockDesktopWindowDecoration.mTaskInfo))
-            .thenReturn(APP_NAME)
-        whenever(mockTaskResourceLoader.getHeaderIcon(mockDesktopWindowDecoration.mTaskInfo))
-            .thenReturn(mockAppIcon)
+        whenever(mockTaskResourceLoader.getNameAndHeaderIcon(mockDesktopWindowDecoration.mTaskInfo))
+            .thenReturn(
+                Pair(APP_NAME, mockAppIcon)
+            )
     }
 
     private fun TestScope.createAndShowHandleMenu(

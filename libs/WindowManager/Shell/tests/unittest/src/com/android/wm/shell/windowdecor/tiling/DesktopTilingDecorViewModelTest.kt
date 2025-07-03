@@ -68,6 +68,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
     private val contextMock: Context = mock()
     private val resourcesMock: Resources = mock()
     private val mainDispatcher: MainCoroutineDispatcher = mock()
+    private val mainScope: CoroutineScope = mock()
     private val bgScope: CoroutineScope = mock()
     private val displayControllerMock: DisplayController = mock()
     private val rootTdaOrganizerMock: RootTaskDisplayAreaOrganizer = mock()
@@ -103,6 +104,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
             DesktopTilingDecorViewModel(
                 contextMock,
                 mainDispatcher,
+                mainScope,
                 bgScope,
                 displayControllerMock,
                 rootTdaOrganizerMock,

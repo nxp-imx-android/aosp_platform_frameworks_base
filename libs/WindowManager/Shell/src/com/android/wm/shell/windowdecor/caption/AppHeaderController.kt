@@ -19,7 +19,6 @@ package com.android.wm.shell.windowdecor.caption
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.Point
 import android.graphics.Rect
 import android.os.Handler
@@ -83,9 +82,9 @@ import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.HeaderData
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainCoroutineDispatcher
 import kotlinx.coroutines.launch
-import java.util.function.BiConsumer
 
 /**
  * Controller for the app header. Creates, updates, and removes the views of the caption
@@ -106,7 +105,6 @@ class AppHeaderController(
     @ShellMainThread private val mainExecutor: ShellExecutor,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
     @ShellMainThread private val mainScope: CoroutineScope,
-    @ShellBackgroundThread private val bgScope: CoroutineScope,
     @ShellBackgroundThread private val bgExecutor: ShellExecutor,
     private val syncQueue: SyncTransactionQueue,
     private val rootTaskDisplayAreaOrganizer: RootTaskDisplayAreaOrganizer,
@@ -166,14 +164,13 @@ class AppHeaderController(
     private val display
         get() = displayController.getDisplay(taskInfo.displayId)
 
-    private var loadAppInfoRunnable: (() -> Unit)? = null
-    private var setAppInfoRunnable: (() -> Unit)? = null
     private val closeMaximizeWindowRunnable = Runnable { closeMaximizeMenu() }
     private val isEducationEnabled = Flags.enableDesktopWindowingAppHandleEducation()
             || Flags.enableDesktopWindowingAppToWebEducationIntegration()
 
     private var isMaximizeMenuHovered = false
     private var isAppHeaderMaximizeButtonHovered = false
+    private var loadAppInfoJob: Job? = null
 
     override fun relayout(
         params: RelayoutParams,
@@ -390,7 +387,7 @@ class AppHeaderController(
             taskResourceLoader,
             surfaceControlTransactionSupplier,
             mainDispatcher,
-            bgScope,
+            mainScope,
             object : DialogLifecycleListener {
                 override fun onDialogDismissed() {
                     openByDefaultDialog = null
@@ -459,7 +456,7 @@ class AppHeaderController(
         viewHolder.onHandleMenuOpened()
         handleMenu = handleMenuFactory.create(
             mainDispatcher = mainDispatcher,
-            bgScope = bgScope,
+            mainScope = mainScope,
             context = decorWindowContext,
             taskInfo = taskInfo,
             parentSurface = decorationSurface,
@@ -584,7 +581,9 @@ class AppHeaderController(
             onMaximizeHoverAnimationFinishedListener = { createMaximizeMenu() },
             desktopModeUiEventLogger = desktopModeUiEventLogger,
         )
-        loadTaskNameAndIconInBackground { name: CharSequence, icon: Bitmap ->
+
+        loadAppInfoJob = mainScope.launch {
+            val (name, icon) = taskResourceLoader.getNameAndHeaderIcon(taskInfo)
             viewHolder.setAppName(name)
             viewHolder.setAppIcon(icon)
             if (desktopState.canEnterDesktopMode && isEducationEnabled) {
@@ -593,26 +592,6 @@ class AppHeaderController(
         }
         viewHolder = appHeaderViewHolder
         return appHeaderViewHolder
-    }
-
-    /**
-     * Loads the task's name and icon in a background thread and posts the results back in the
-     * main thread.
-     */
-    private fun loadTaskNameAndIconInBackground(onResult: BiConsumer<CharSequence, Bitmap>) {
-        loadAppInfoRunnable?.let {
-            bgExecutor.removeCallbacks(it)
-        }
-        setAppInfoRunnable?.let {
-            mainExecutor.removeCallbacks(it)
-        }
-        loadAppInfoRunnable = {
-            val name = taskResourceLoader.getName(taskInfo)
-            val icon = taskResourceLoader.getHeaderIcon(taskInfo)
-            setAppInfoRunnable = { onResult.accept(name, icon) }
-            mainExecutor.execute(setAppInfoRunnable)
-        }
-        bgExecutor.execute(loadAppInfoRunnable)
     }
 
     /** Returns the valid drag area for a task based on elements in the app chip. */
@@ -716,8 +695,7 @@ class AppHeaderController(
     }
 
     override fun close() {
-        loadAppInfoRunnable?.let { bgExecutor.removeCallbacks(it) }
-        setAppInfoRunnable?.let { mainExecutor.removeCallbacks(it) }
+        loadAppInfoJob?.cancel()
         closeHandleMenu()
         closeManageWindowsMenu()
         closeMaximizeMenu()

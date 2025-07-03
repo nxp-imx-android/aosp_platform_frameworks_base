@@ -37,7 +37,6 @@ import android.widget.TextView
 import android.window.TaskConstants
 import com.android.wm.shell.R
 import com.android.wm.shell.common.DisplayController
-import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.windowdecor.additionalviewcontainer.AdditionalViewHostViewContainer
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
@@ -47,7 +46,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainCoroutineDispatcher
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 /**
@@ -62,7 +60,7 @@ internal class OpenByDefaultDialog(
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
     private val surfaceControlTransactionSupplier: Supplier<SurfaceControl.Transaction>,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
-    @ShellBackgroundThread private val bgScope: CoroutineScope,
+    @ShellMainThread private val mainScope: CoroutineScope,
     private val listener: DialogLifecycleListener,
 ) {
     private lateinit var dialog: OpenByDefaultDialogView
@@ -84,14 +82,10 @@ internal class OpenByDefaultDialog(
     init {
         createDialog()
         initializeRadioButtons()
-        loadAppInfoJob = bgScope.launch {
+        loadAppInfoJob = mainScope.launch {
             if (!isActive) return@launch
-            val name = taskResourceLoader.getName(taskInfo)
-            val icon = taskResourceLoader.getHeaderIcon(taskInfo)
-            withContext(mainDispatcher.immediate) {
-                if (!isActive) return@withContext
-                bindAppInfo(icon, name)
-            }
+            val (name, icon) = taskResourceLoader.getNameAndHeaderIcon(taskInfo)
+            bindAppInfo(icon, name)
         }
     }
 

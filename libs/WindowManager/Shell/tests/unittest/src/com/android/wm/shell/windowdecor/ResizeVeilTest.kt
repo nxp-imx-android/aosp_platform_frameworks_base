@@ -241,7 +241,7 @@ class ResizeVeilTest : ShellTestCase() {
         assertThat(veil.iconView.drawable).isNull()
     }
 
-    private fun TestScope.createResizeVeil(
+    private suspend fun TestScope.createResizeVeil(
         withDisplayAvailable: Boolean = true,
         parent: SurfaceControl = mock()
     ): ResizeVeil {

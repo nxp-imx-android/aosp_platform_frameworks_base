@@ -61,7 +61,6 @@ import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_DESKTOP_VIEW
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_FULLSCREEN
 import com.android.wm.shell.desktopmode.DesktopModeUiEventLogger.DesktopUiEventEnum.A11Y_APP_HANDLE_MENU_SPLIT_SCREEN
-import com.android.wm.shell.shared.annotations.ShellBackgroundThread
 import com.android.wm.shell.shared.annotations.ShellMainThread
 import com.android.wm.shell.shared.bubbles.BubbleAnythingFlagHelper
 import com.android.wm.shell.shared.bubbles.ContextUtils.isRtl
@@ -85,7 +84,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 /**
@@ -98,7 +96,7 @@ import kotlinx.coroutines.withContext
  */
 class HandleMenu private constructor(
     @ShellMainThread private val mainDispatcher: CoroutineDispatcher,
-    @ShellBackgroundThread private val bgScope: CoroutineScope,
+    @ShellMainThread private val mainScope: CoroutineScope,
     private val context: Context,
     private val taskInfo: RunningTaskInfo,
     private val parentSurface: SurfaceControl,
@@ -234,15 +232,11 @@ class HandleMenu private constructor(
             this.onOutsideTouchListener = onOutsideTouchListener
             this.onHandleMenuClicked = onHandleMenuClicked
         }
-        loadAppInfoJob = bgScope.launch {
+        loadAppInfoJob = mainScope.launch {
             if (!isActive) return@launch
-            val name = taskResourceLoader.getName(taskInfo)
-            val icon = taskResourceLoader.getHeaderIcon(taskInfo)
-            withContext(mainDispatcher) {
-                if (!isActive) return@withContext
-                handleMenuView.setAppName(name)
-                handleMenuView.setAppIcon(icon)
-            }
+            val (name, icon) = taskResourceLoader.getNameAndHeaderIcon(taskInfo)
+            handleMenuView.setAppName(name)
+            handleMenuView.setAppIcon(icon)
         }
         val x = handleMenuPosition.x.toInt()
         val y = handleMenuPosition.y.toInt()
@@ -1076,7 +1070,7 @@ class HandleMenu private constructor(
         @JvmOverloads
         fun create(
             @ShellMainThread mainDispatcher: CoroutineDispatcher,
-            @ShellBackgroundThread bgScope: CoroutineScope,
+            @ShellMainThread mainScope: CoroutineScope,
             context: Context,
             taskInfo: RunningTaskInfo,
             parentSurface: SurfaceControl,
@@ -1107,7 +1101,7 @@ class HandleMenu private constructor(
                 object : SurfaceControlViewHostFactory {},
         ): HandleMenu = HandleMenu(
             mainDispatcher,
-            bgScope,
+            mainScope,
             context,
             taskInfo,
             parentSurface,
@@ -1140,7 +1134,7 @@ class HandleMenu private constructor(
         @JvmOverloads
         fun create(
             @ShellMainThread mainDispatcher: CoroutineDispatcher,
-            @ShellBackgroundThread bgScope: CoroutineScope,
+            @ShellMainThread mainScope: CoroutineScope,
             parentDecor: DesktopModeWindowDecoration,
             windowManagerWrapper: WindowManagerWrapper,
             windowDecorationActions: WindowDecorationActions,
@@ -1168,7 +1162,7 @@ class HandleMenu private constructor(
                 object : SurfaceControlViewHostFactory {}
         ): HandleMenu = HandleMenu(
             mainDispatcher,
-            bgScope,
+            mainScope,
             parentDecor.mDecorWindowContext,
             parentDecor.mTaskInfo,
             parentDecor.mDecorationContainerSurface,

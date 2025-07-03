@@ -114,6 +114,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     private val motionEvent: MotionEvent = mock()
     private val desktopRepository: DesktopRepository = mock()
     private val mainDispatcher: MainCoroutineDispatcher = mock()
+    private val mainScope: CoroutineScope = mock()
     private val bgScope: CoroutineScope = mock()
     private val taskResourceLoader: WindowDecorTaskResourceLoader = mock()
     private val focusTransitionObserver: FocusTransitionObserver = mock()
@@ -137,6 +138,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
             DesktopTilingWindowDecoration(
                 context,
                 mainDispatcher,
+                mainScope,
                 bgScope,
                 syncQueue,
                 displayController,
