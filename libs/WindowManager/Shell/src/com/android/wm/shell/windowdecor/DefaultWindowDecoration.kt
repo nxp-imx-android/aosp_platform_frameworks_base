@@ -25,6 +25,7 @@ import android.graphics.Rect
 import android.graphics.Region
 import android.os.Handler
 import android.os.Trace
+import android.os.UserHandle
 import android.util.Size
 import android.view.Choreographer
 import android.view.InsetsSource.FLAG_FORCE_CONSUMING
@@ -77,6 +78,7 @@ import com.android.wm.shell.windowdecor.caption.AppHandleController
 import com.android.wm.shell.windowdecor.caption.AppHeaderController
 import com.android.wm.shell.windowdecor.caption.CaptionController
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil
+import com.android.wm.shell.windowdecor.common.ExclusionRegionListener
 import com.android.wm.shell.windowdecor.common.Theme
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost
@@ -87,17 +89,16 @@ import com.android.wm.shell.windowdecor.extension.isTransparentCaptionBarAppeara
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
 
-
 /**
  * Default window decoration implementation that controls both the app handle and the app header
  * captions. This class also adds various decorations to the window including the [ResizeVeil].
  */
-class DefaultWindowDecoration(
+class DefaultWindowDecoration @JvmOverloads constructor(
     taskInfo: RunningTaskInfo,
     taskSurface: SurfaceControl,
     genericLinksParser: AppToWebGenericLinksParser,
     assistContentRequester: AssistContentRequester,
-    private val context: Context,
+    val context: Context,
     private val userContext: Context,
     private val displayController: DisplayController,
     private val taskResourceLoader: WindowDecorTaskResourceLoader,
@@ -107,6 +108,7 @@ class DefaultWindowDecoration(
     @ShellMainThread private val handler: Handler,
     @ShellMainThread private val mainExecutor: ShellExecutor,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
+    @ShellMainThread private val mainScope: CoroutineScope,
     @ShellBackgroundThread private val bgScope: CoroutineScope,
     @ShellBackgroundThread private val bgExecutor: ShellExecutor,
     private val transitions: Transitions,
@@ -169,15 +171,25 @@ class DefaultWindowDecoration(
         get() = taskBounds.width()
     private val taskHeight
         get() = taskBounds.height()
+    /** Returns the current user. */
+    val user: UserHandle
+        get() = userContext.user
     private val captionType
         get() = captionController?.captionType ?: CaptionController.CaptionType.NO_CAPTION
+    val maximizeMenuController: MaximizeMenuController?
+        get() = captionController?.maximizeMenuController
+    val handleMenuController: HandleMenuController?
+        get() = captionController?.handleMenuController
+    val manageWindowsMenuController: ManageWindowsMenuController?
+        get() = captionController?.manageWindowsMenuController
+
 
     init {
         taskResourceLoader.onWindowDecorCreated(taskInfo)
     }
 
     /** Declares whether the window decoration is being dragged. */
-    private var isDragging = false
+    var isDragging = false
 
     /**
      * Declares whether a Recents transition is currently active.
@@ -186,24 +198,24 @@ class DefaultWindowDecoration(
      * corner radius of its task surfaces, so each window decoration should stop updating the corner
      * radius of its task surface during that time.
      */
-    private var isRecentsTransitionRunning = false
+    var isRecentsTransitionRunning = false
         set(running) {
             field = running
             captionController?.isRecentsTransitionRunning = running
         }
 
     /** Adds the [dragResizeListener] which gets notified on the task being drag resized. */
-    private fun addDragResizeListener(dragResizeListener: DragEventListener?) {
+    fun addDragResizeListener(dragResizeListener: DragEventListener?) {
         taskDragResizer?.addDragEventListener(dragResizeListener)
     }
 
     /** Removes the [dragResizeListener] if previously added. */
-    private fun removeDragResizeListener(dragResizeListener: DragEventListener?) {
+    fun removeDragResizeListener(dragResizeListener: DragEventListener?) {
         taskDragResizer?.removeDragEventListener(dragResizeListener)
     }
 
     /** Set the listeners for the decorations. */
-    private fun setListeners(
+    fun setListeners(
         onClickListener: OnClickListener,
         onTouchListener: OnTouchListener,
         onLongClickListener: OnLongClickListener,
@@ -219,12 +231,12 @@ class DefaultWindowDecoration(
      * Sets the [exclusionRegionListener] which is notified when the exclusion region is changed or
      * dismissed.
      */
-    private fun setExclusionRegionListener(exclusionRegionListener: ExclusionRegionListener) {
+    fun setExclusionRegionListener(exclusionRegionListener: ExclusionRegionListener) {
         this.exclusionRegionListener = exclusionRegionListener
     }
 
     /** Sets the [dragPositioningCallback] which is called when a task is repositioned via drag. */
-    private fun setDragPositioningCallback(dragPositioningCallback: DragPositioningCallback) {
+    fun setDragPositioningCallback(dragPositioningCallback: DragPositioningCallback) {
         this.dragPositioningCallback = dragPositioningCallback
     }
 
@@ -245,7 +257,7 @@ class DefaultWindowDecoration(
      * Disables resizing for the [disabledResizingEdge]. Executes immediately or delays if
      * [shouldDelayUpdate].
      */
-    private fun updateDisabledResizingEdge(
+    fun updateDisabledResizingEdge(
         disabledResizingEdge: DisabledEdge,
         shouldDelayUpdate: Boolean
     ) {
@@ -254,7 +266,7 @@ class DefaultWindowDecoration(
         decorationContainerSurface?.let { updateDragResizeListenerIfNeeded(it) }
     }
 
-
+    /** Updates all window decorations, including any existing caption. */
     override fun relayout(
         taskInfo: RunningTaskInfo,
         hasGlobalFocus: Boolean,
@@ -294,7 +306,8 @@ class DefaultWindowDecoration(
         }
     }
 
-    private fun relayout(
+    /** Updates all window decorations, including any existing caption. */
+    fun relayout(
         taskInfo: RunningTaskInfo,
         startT: SurfaceControl.Transaction,
         finishT: SurfaceControl.Transaction,
@@ -446,7 +459,7 @@ class DefaultWindowDecoration(
         // the original reference so that the configuration isn't mutated on config changes and
         // diff checks can be made in WindowDecoration#relayout using the pre/post-relayout
         // configuration. See b/301119301.
-        // TODO(b/301119301): consider moving the config data needed for diffs to relayout params
+        // TODO: b/301119301 - consider moving the config data needed for diffs to relayout params
         // instead of using a whole Configuration as a parameter.
         val windowDecorConfig =
             if (DesktopModeFlags.ENABLE_APP_HEADER_WITH_TASK_DENSITY.isTrue && isAppHeader) {
@@ -609,7 +622,7 @@ class DefaultWindowDecoration(
             // Caption should always be visible in freeform mode. When not in freeform,
             // align with the status bar except when showing over keyguard (where it should not
             // shown).
-            //  TODO(b/356405803): Investigate how it's possible for the status bar visibility to
+            //  TODO: b/356405803 - Investigate how it's possible for the status bar visibility to
             //   be false while a freeform window is open if the status bar is always
             //   forcibly-shown. It may be that the InsetsState (from which |mIsStatusBarVisible|
             //   is set) still contains an invisible insets source in immersive cases even if the
@@ -722,11 +735,13 @@ class DefaultWindowDecoration(
         return exclusionRegion
     }
 
-    private fun shouldResizeListenerHandleEvent(e: MotionEvent, offset: Point): Boolean {
+    /** Returns [true] if [dragResizeListener] should handle the motion event. */
+    fun shouldResizeListenerHandleEvent(e: MotionEvent, offset: Point): Boolean {
         return dragResizeListener?.shouldHandleEvent(e, offset) ?: false
     }
 
-    private fun isHandlingDragResize(): Boolean {
+    /** Returns [true] if [dragResizeListener] is handling the motion event. */
+    fun isHandlingDragResize(): Boolean {
         return dragResizeListener?.isHandlingDragResize ?: false
     }
 
@@ -735,7 +750,8 @@ class DefaultWindowDecoration(
         dragResizeListener = null
     }
 
-    private fun setAnimatingTaskResizeOrReposition(animatingTaskResizeOrReposition: Boolean) {
+    /** Returns true if task resize or reposition is currently being animated. */
+    fun setAnimatingTaskResizeOrReposition(animatingTaskResizeOrReposition: Boolean) {
         captionController?.onAnimatingTaskRepositioningOrResize(animatingTaskResizeOrReposition)
     }
 
@@ -761,14 +777,14 @@ class DefaultWindowDecoration(
     /**
      * Show the resize veil.
      */
-    private fun showResizeVeil(taskBounds: Rect) {
+    fun showResizeVeil(taskBounds: Rect) {
         getOrCreateResizeVeil().showVeil(taskSurface, taskBounds, taskInfo)
     }
 
     /**
      * Show the resize veil.
      */
-    private fun showResizeVeil(tx: SurfaceControl.Transaction, taskBounds: Rect) {
+    fun showResizeVeil(tx: SurfaceControl.Transaction, taskBounds: Rect) {
         getOrCreateResizeVeil().showVeil(
             t = tx,
             parent = taskSurface,
@@ -781,21 +797,21 @@ class DefaultWindowDecoration(
     /**
      * Set new bounds for the resize veil
      */
-    private fun updateResizeVeil(newBounds: Rect) {
+    fun updateResizeVeil(newBounds: Rect) {
         resizeVeil?.updateResizeVeil(newBounds)
     }
 
     /**
      * Set new bounds for the resize veil
      */
-    private fun updateResizeVeil(tx: SurfaceControl.Transaction, newBounds: Rect) {
+    fun updateResizeVeil(tx: SurfaceControl.Transaction, newBounds: Rect) {
         resizeVeil?.updateResizeVeil(tx, newBounds)
     }
 
     /**
      * Fade the resize veil out.
      */
-    private fun hideResizeVeil() {
+    fun hideResizeVeil() {
         resizeVeil?.hideVeil()
     }
 
@@ -804,6 +820,38 @@ class DefaultWindowDecoration(
         resizeVeil = null
     }
 
+    /** Handles a interruption to a drag event. */
+    fun handleDragInterrupted() {
+        (captionController as? AppHandleController)?.handleDragInterrupted()
+    }
+
+    /**
+     * Check if touch event occurred in caption when caption is unable to receive touch events
+     * (i.e. when caption is behind the status bar).
+     */
+    fun checkTouchEventInCaption(e: MotionEvent): Boolean =
+        (captionController as? AppHandleController)?.checkTouchEventInCaption(e) ?: false
+
+
+    /** Checks if touch event occurred in caption's customizable region. */
+    fun checkTouchEventInCustomizableRegion(e: MotionEvent): Boolean =
+        (captionController as? AppHandleController)?.checkTouchEventInCustomizableRegion(e) ?: false
+
+
+    /** Adds inset for caption if one exists. */
+    fun addCaptionInset(wct: WindowContainerTransaction) {
+        captionController?.addCaptionInset(wct)
+    }
+
+    /**
+     * Announces that the app window is now being focused for accessibility. This is used after a
+     * window is minimized/closed, and a new app window gains focus.
+     */
+    fun a11yAnnounceNewFocusedWindow() {
+        (captionController as? AppHeaderController)?.a11yAnnounceFocused()
+    }
+
+    /** Closes the window decoration. */
     override fun close() {
         taskResourceLoader.onWindowDecorClosed(taskInfo)
         closeDragResizeListener()
@@ -832,6 +880,7 @@ class DefaultWindowDecoration(
                 handler,
                 mainExecutor,
                 mainDispatcher,
+                mainScope,
                 bgScope,
                 bgExecutor,
                 syncQueue,
@@ -867,6 +916,7 @@ class DefaultWindowDecoration(
                 { "Expected non-null decoration container surface" },
                 handler,
                 mainDispatcher,
+                mainScope,
                 bgScope,
                 windowManagerWrapper,
                 multiInstanceHelper,
@@ -882,17 +932,5 @@ class DefaultWindowDecoration(
         }
 
         CaptionController.CaptionType.NO_CAPTION -> null
-    }
-
-    /** Listener for changes and dismissal of the exclusion region. */
-    interface ExclusionRegionListener {
-        /** Inform the implementing class of this task's change in region resize handles. */
-        fun onExclusionRegionChanged(taskId: Int, region: Region)
-
-        /**
-         * Inform the implementing class that this task no longer needs an exclusion region,
-         * likely due to it closing.
-         */
-        fun onExclusionRegionDismissed(taskId: Int)
     }
 }

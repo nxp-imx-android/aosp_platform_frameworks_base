@@ -119,6 +119,8 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
     fun testDecor_invokeOpenHandleMenuCallback_openHandleMenu() {
         val task = createTask()
         val decor = setUpMockDecorationForTask(task)
+        val handleMenuController = mock<HandleMenuController>()
+        whenever(decor.handleMenuController).thenReturn(handleMenuController)
         val openHandleMenuCallbackCaptor = argumentCaptor<(Int) -> Unit>()
         // Set task as gmail
         val gmailPackageName = "com.google.android.gm"
@@ -134,7 +136,7 @@ class DesktopModeWindowDecorViewModelAppHandleOnlyTest :
         bgExecutor.flushAll()
         testShellExecutor.flushAll()
 
-        verify(decor, times(1)).createHandleMenu(anyBoolean())
+        verify(handleMenuController, times(1)).createHandleMenu(anyBoolean())
     }
 
     @Test

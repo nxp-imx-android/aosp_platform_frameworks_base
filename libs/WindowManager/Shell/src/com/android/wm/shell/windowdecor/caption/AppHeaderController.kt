@@ -64,7 +64,10 @@ import com.android.wm.shell.windowdecor.HandleMenu
 import com.android.wm.shell.windowdecor.HandleMenu.Companion.shouldShowChangeAspectRatioButton
 import com.android.wm.shell.windowdecor.HandleMenu.Companion.shouldShowRestartButton
 import com.android.wm.shell.windowdecor.HandleMenu.HandleMenuFactory
+import com.android.wm.shell.windowdecor.HandleMenuController
+import com.android.wm.shell.windowdecor.ManageWindowsMenuController
 import com.android.wm.shell.windowdecor.MaximizeMenu
+import com.android.wm.shell.windowdecor.MaximizeMenuController
 import com.android.wm.shell.windowdecor.MaximizeMenuFactory
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
@@ -81,8 +84,8 @@ import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder.HeaderDat
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
+import kotlinx.coroutines.launch
 import java.util.function.BiConsumer
-
 
 /**
  * Controller for the app header. Creates, updates, and removes the views of the caption
@@ -102,6 +105,7 @@ class AppHeaderController(
     @ShellMainThread private val mainHandler: Handler,
     @ShellMainThread private val mainExecutor: ShellExecutor,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
+    @ShellMainThread private val mainScope: CoroutineScope,
     @ShellBackgroundThread private val bgScope: CoroutineScope,
     @ShellBackgroundThread private val bgExecutor: ShellExecutor,
     private val syncQueue: SyncTransactionQueue,
@@ -133,7 +137,7 @@ class AppHeaderController(
     windowDecorViewHostSupplier,
     surfaceControlBuilderSupplier,
     surfaceControlViewHostFactory
-) {
+), MaximizeMenuController, HandleMenuController, ManageWindowsMenuController {
 
     override val captionType = CaptionType.APP_HEADER
 
@@ -144,12 +148,16 @@ class AppHeaderController(
     private var maximizeMenu: MaximizeMenu? = null
     private var manageWindowsMenu: DesktopHeaderManageWindowsMenu? = null
 
-    private val isHandleMenuActive
+    override val maximizeMenuController = this
+    override val handleMenuController = this
+    override val manageWindowsMenuController = this
+
+    override val isMaximizeMenuActive: Boolean
+        get() = maximizeMenu != null
+    override val isHandleMenuActive: Boolean
         get() = handleMenu != null
     private val isOpenByDefaultDialogActive
         get() = openByDefaultDialog != null
-    private val isMaximizeMenuActive
-        get() = maximizeMenu != null
     private val inFullImmersive
         get() = desktopUserRepositories.getProfile(taskInfo.userId)
             .isTaskInFullImmersiveState(taskInfo.taskId)
@@ -304,7 +312,7 @@ class AppHeaderController(
     /**
      * Create and display maximize menu window
      */
-    private fun createMaximizeMenu() {
+    override fun createMaximizeMenu() {
         if (isMaximizeMenuActive) return
         desktopModeUiEventLogger.log(
             taskInfo,
@@ -337,7 +345,7 @@ class AppHeaderController(
     }
 
     /** Set whether the app header's maximize button is hovered.  */
-    private fun setAppHeaderMaximizeButtonHovered(hovered: Boolean) {
+    override fun setAppHeaderMaximizeButtonHovered(hovered: Boolean) {
         isAppHeaderMaximizeButtonHovered = hovered
         onMaximizeHoverStateChanged()
     }
@@ -346,7 +354,7 @@ class AppHeaderController(
      * Called when either one of the maximize button in the app header or the maximize menu has
      * changed its hover state.
      */
-    private fun onMaximizeHoverStateChanged() {
+    override fun onMaximizeHoverStateChanged() {
         if (!isMaximizeMenuHovered && !isAppHeaderMaximizeButtonHovered) {
             // Neither is hovered, close the menu.
             if (isMaximizeMenuActive) {
@@ -404,7 +412,7 @@ class AppHeaderController(
      * Called when there is a [MotionEvent.ACTION_HOVER_EXIT] on the maximize window button.
      * TODO(b/409648813): Move all hover logic to view holder
      */
-    private fun onMaximizeButtonHoverExit() {
+    override fun onMaximizeButtonHoverExit() {
         viewHolder.onMaximizeWindowHoverExit()
     }
 
@@ -412,25 +420,28 @@ class AppHeaderController(
      * Called when there is a [MotionEvent.ACTION_HOVER_ENTER] on the maximize window button.
      * TODO(b/409648813): Move all hover logic to view holder
      */
-    private fun onMaximizeButtonHoverEnter() {
+    override fun onMaximizeButtonHoverEnter() {
         viewHolder.onMaximizeWindowHoverEnter()
     }
 
     /** Updates app info and creates and displays handle menu window. */
-    private suspend fun createHandleMenu(minimumInstancesFound: Boolean) {
+    override fun createHandleMenu(minimumInstancesFound: Boolean) {
         if (isHandleMenuActive) return
-        val isBrowserApp = isBrowserApp()
-        val appToWebIntent = if (canShowAppLinks(display, desktopState)) {
-            appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
-        } else {
-            // Skip request for assist content as it is only used for links, which are not supported
-            null
+        mainScope.launch {
+            val isBrowserApp = isBrowserApp()
+            val appToWebIntent = if (canShowAppLinks(display, desktopState)) {
+                appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
+            } else {
+                // Skip request for assist content as it is only used for links, which are not
+                // supported
+                null
+            }
+            createHandleMenu(
+                openInAppOrBrowserIntent = appToWebIntent,
+                isBrowserApp = isBrowserApp,
+                minimumInstancesFound = minimumInstancesFound
+            )
         }
-        createHandleMenu(
-            openInAppOrBrowserIntent = appToWebIntent,
-            isBrowserApp = isBrowserApp,
-            minimumInstancesFound = minimumInstancesFound
-        )
     }
 
     /** Creates and shows the handle menu. */
@@ -509,7 +520,8 @@ class AppHeaderController(
         isBrowserApp(userContext, it.packageName, userContext.userId)
     } ?: false
 
-    private fun createManageWindowsMenu(snapshotList: List<Pair<Int, TaskSnapshot>>) {
+    /** Creates and shows the manage windows menu. */
+    override fun createManageWindowsMenu(snapshotList: ArrayList<Pair<Int, TaskSnapshot>>) {
         // The menu uses display-wide coordinates for positioning, so make position the sum
         // of task position and caption position.
         val taskBounds = taskInfo.configuration.windowConfiguration.bounds
@@ -684,6 +696,14 @@ class AppHeaderController(
 
     override fun getCaptionWidth(): Int =
         taskInfo.getConfiguration().windowConfiguration.bounds.width()
+
+    /**
+     * Announces that the app window is now being focused for accessibility. This is used after a
+     * window is minimized/closed, and a new app window gains focus.
+     */
+    fun a11yAnnounceFocused() {
+        viewHolder.a11yAnnounceFocused()
+    }
 
     override fun releaseViews(
         wct: WindowContainerTransaction,

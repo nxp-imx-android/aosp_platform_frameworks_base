@@ -66,7 +66,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
     @Mock
     private lateinit var mockTransitions: Transitions
     @Mock
-    private lateinit var mockWindowDecoration: WindowDecoration<*>
+    private lateinit var mockWindowDecoration: WindowDecorationWrapper
     @Mock
     private lateinit var mockDragEventListener: DragPositioningCallbackUtility.DragEventListener
 
@@ -102,9 +102,9 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
         whenever(mockDisplayController.getDisplayLayout(DISPLAY_ID)).thenReturn(mockDisplayLayout)
         whenever(mockDisplayLayout.densityDpi()).thenReturn(DENSITY_DPI)
         whenever(mockDisplayLayout.getStableBounds(any())).thenAnswer { i ->
-            if (mockWindowDecoration.mTaskInfo.configuration.windowConfiguration
+            if (mockWindowDecoration.taskInfo.configuration.windowConfiguration
                     .displayRotation == ROTATION_90 ||
-                mockWindowDecoration.mTaskInfo.configuration.windowConfiguration
+                mockWindowDecoration.taskInfo.configuration.windowConfiguration
                     .displayRotation == ROTATION_270
             ) {
                 (i.arguments.first() as Rect).set(STABLE_BOUNDS_LANDSCAPE)
@@ -115,7 +115,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
         `when`(mockDisplayLayout.stableInsets()).thenReturn(STABLE_INSETS)
         `when`(mockTransactionFactory.get()).thenReturn(mockTransaction)
 
-        mockWindowDecoration.mTaskInfo = ActivityManager.RunningTaskInfo().apply {
+        whenever(mockWindowDecoration.taskInfo).thenReturn(ActivityManager.RunningTaskInfo().apply {
             taskId = TASK_ID
             token = taskToken
             minWidth = MIN_WIDTH
@@ -126,10 +126,11 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
             configuration.windowConfiguration.displayRotation = ROTATION_90
             isResizeable = true
         }
+        )
         `when`(mockWindowDecoration.calculateValidDragArea()).thenReturn(VALID_DRAG_AREA)
-        mockWindowDecoration.mDisplay = mockDisplay
-        mockWindowDecoration.mDecorWindowContext = mockContext
-        whenever(mockWindowDecoration.mDecorWindowContext.resources).thenReturn(mockResources)
+        whenever(mockWindowDecoration.display).thenReturn(mockDisplay)
+        whenever(mockWindowDecoration.decorWindowContext).thenReturn(mockContext)
+        whenever(mockContext.resources).thenReturn(mockResources)
         whenever(mockResources.getDimensionPixelSize(R.dimen.desktop_mode_minimum_window_width))
                 .thenReturn(DESKTOP_MODE_MIN_WIDTH)
         whenever(mockResources.getDimensionPixelSize(R.dimen.desktop_mode_minimum_window_height))
@@ -507,7 +508,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
 
     @Test
     fun testDragResize_resize_useDefaultMinWhenMinWidthInvalid() {
-        mockWindowDecoration.mTaskInfo.minWidth = -1
+        mockWindowDecoration.taskInfo.minWidth = -1
 
         taskPositioner.onDragPositioningStart(
                 CTRL_TYPE_RIGHT or CTRL_TYPE_TOP, // Resize right and top
@@ -661,7 +662,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
 
     @Test
     fun testDragResize_resize_resizingTaskReorderedToTopWhenNotFocused() {
-        mockWindowDecoration.mHasGlobalFocus = false
+        whenever(mockWindowDecoration.hasGlobalFocus).thenReturn(false)
         taskPositioner.onDragPositioningStart(
                 CTRL_TYPE_RIGHT, // Resize right
                 DISPLAY_ID,
@@ -678,7 +679,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
 
     @Test
     fun testDragResize_resize_resizingTaskNotReorderedToTopWhenFocused() {
-        mockWindowDecoration.mHasGlobalFocus = true
+        whenever(mockWindowDecoration.hasGlobalFocus).thenReturn(true)
         taskPositioner.onDragPositioningStart(
                 CTRL_TYPE_RIGHT, // Resize right
                 DISPLAY_ID,
@@ -695,7 +696,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
 
     @Test
     fun testDragResize_drag_draggedTaskNotReorderedToTop() {
-        mockWindowDecoration.mHasGlobalFocus = false
+        whenever(mockWindowDecoration.hasGlobalFocus).thenReturn(false)
         taskPositioner.onDragPositioningStart(
                 CTRL_TYPE_UNDEFINED, // drag
                 DISPLAY_ID,
@@ -739,7 +740,7 @@ class FluidResizeTaskPositionerTest : ShellTestCase() {
         verify(mockDisplayLayout, Mockito.times(1)).getStableBounds(any())
 
         // Rotate the screen to portrait
-        mockWindowDecoration.mTaskInfo.apply {
+        mockWindowDecoration.taskInfo.apply {
             configuration.windowConfiguration.displayRotation = Surface.ROTATION_0
         }
         // Test portrait stable bounds

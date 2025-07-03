@@ -41,7 +41,7 @@ import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
-import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
+import com.android.wm.shell.windowdecor.WindowDecorationWrapper
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.CoroutineScope
@@ -81,7 +81,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
     private val returnToDragStartAnimatorMock: ReturnToDragStartAnimator = mock()
     private val desktopState = FakeDesktopState()
 
-    private val desktopModeWindowDecorationMock: DesktopModeWindowDecoration = mock()
+    private val windowDecorationMock: WindowDecorationWrapper = mock()
     private val desktopTilingDecoration: DesktopTilingWindowDecoration = mock()
     private val taskResourceLoader: WindowDecorTaskResourceLoader = mock()
     private val focusTransitionObserver: FocusTransitionObserver = mock()
@@ -142,14 +142,14 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         desktopTilingDecorViewModel.currentUserId = 1
         desktopTilingDecorViewModel.snapToHalfScreen(
             task1,
-            desktopModeWindowDecorationMock,
+            windowDecorationMock,
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
         assertThat(desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.size()).isEqualTo(1)
         desktopTilingDecorViewModel.snapToHalfScreen(
             task2,
-            desktopModeWindowDecorationMock,
+            windowDecorationMock,
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
@@ -171,7 +171,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         // Snap task 1 on display 1.
         desktopTilingDecorViewModel.snapToHalfScreen(
             task1,
-            desktopModeWindowDecorationMock,
+            windowDecorationMock,
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
@@ -181,7 +181,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         // Snap task 2 on display 2.
         desktopTilingDecorViewModel.snapToHalfScreen(
             task2,
-            desktopModeWindowDecorationMock,
+            windowDecorationMock,
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
@@ -198,7 +198,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         // Snap a new task after user change.
         desktopTilingDecorViewModel.snapToHalfScreen(
             task2,
-            desktopModeWindowDecorationMock,
+            windowDecorationMock,
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
@@ -220,7 +220,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         // Snap task 1 on display 1.
         desktopTilingDecorViewModel.snapToHalfScreen(
             task1,
-            desktopModeWindowDecorationMock,
+            windowDecorationMock,
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
@@ -234,7 +234,7 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         // Snap task 2 on desk2 2.
         desktopTilingDecorViewModel.snapToHalfScreen(
             task2,
-            desktopModeWindowDecorationMock,
+            windowDecorationMock,
             DesktopTasksController.SnapPosition.LEFT,
             BOUNDS,
         )
