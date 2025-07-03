@@ -29,6 +29,7 @@ import static android.view.WindowManager.TRANSIT_FLAG_KEYGUARD_LOCKED;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_PIP;
 import static android.view.WindowManager.TRANSIT_SLEEP;
+import static android.view.WindowManager.TRANSIT_TO_BACK;
 import static android.view.WindowManager.TRANSIT_TO_FRONT;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX;
 import static android.window.TransitionInfo.FLAG_MOVED_TO_TOP;
@@ -427,6 +428,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
         private WindowContainerToken mRecentsTask = null;
         private int mRecentsTaskId = -1;
         private TransitionInfo mInfo = null;
+        private TransitionInfo mMergingInfo;
         private boolean mOpeningSeparateHome = false;
         private boolean mPausingSeparateHome = false;
         private ArrayMap<SurfaceControl, SurfaceControl> mLeashMap = null;
@@ -506,6 +508,25 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                     sendCancelWithSnapshots();
                 } else {
                     sendCancel(null, null);
+                }
+            }
+            if (toHome && mMergingInfo != null && mPausingTasks != null
+                    && mMergingInfo.getType() == TRANSIT_CHANGE
+                    && TransitionUtil.hasDisplayChange(mMergingInfo)) {
+                // Update the mode of pausing tasks from CHANGE to TO_BACK, so the next transition
+                // handler (if any) can animate it correctly.
+                final var changes = mMergingInfo.getChanges();
+                for (int i = changes.size() - 1; i >= 0; --i) {
+                    final TransitionInfo.Change change = changes.get(i);
+                    final ActivityManager.RunningTaskInfo taskInfo = change.getTaskInfo();
+                    if (taskInfo == null || change.getMode() != TRANSIT_CHANGE
+                            || TaskState.indexOf(mPausingTasks, change) < 0) {
+                        continue;
+                    }
+                    change.setMode(TRANSIT_TO_BACK);
+                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
+                            "[%d] RecentsController.cancel: set TO_BACK for taskId=%d",
+                            mInstanceId, taskInfo.taskId);
                 }
             }
             if (mFinishCB != null) {
@@ -597,6 +618,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
             mClosingTasks = null;
             mOpeningTasks = null;
             mInfo = null;
+            mMergingInfo = null;
             mTransition = null;
             mPendingPauseSnapshotsForCancel = null;
             mPipTaskId = -1;
@@ -1042,6 +1064,7 @@ public class RecentsTransitionHandler implements Transitions.TransitionHandler,
                 cancel("keyguard_locked");
                 return;
             }
+            mMergingInfo = info;
             ProtoLog.v(ShellProtoLogGroup.WM_SHELL_RECENTS_TRANSITION,
                     "[%d] RecentsController.merge", mInstanceId);
             // Keep all tasks in one list because order matters.
