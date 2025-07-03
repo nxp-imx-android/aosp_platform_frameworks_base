@@ -258,6 +258,6 @@ private const val NAV_BAR_PILL_LARGE_WIDTH_DP = NAV_BAR_LARGE_WIDTH_DP + 4
 
 private const val NAV_BAR_HEIGHT_DP = 24 // R.dimen.taskbar_stashed_size from Launcher
 private const val SHORT_PILL_ACTIONS_VERTICAL_PADDING = 38
-private const val NAV_BAR_ACTIONS_PADDING = NAV_BAR_HEIGHT_DP + 16
+private const val NAV_BAR_ACTIONS_PADDING = NAV_BAR_HEIGHT_DP + 24
 private const val ACTIONS_HORIZONTAL_PADDING = 32
 private const val ACTIONS_TOP_PADDING = 32
