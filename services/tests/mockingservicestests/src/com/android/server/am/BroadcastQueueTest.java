@@ -930,7 +930,6 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
      * responds with {@link DeadObjectException} even after restarting.
      */
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_AVOID_REPEATED_BCAST_RE_ENQUEUES)
     public void testRepeatedDead_Manifest() throws Exception {
         final ProcessRecord callerApp = makeActiveProcessRecord(PACKAGE_RED);
         mNewProcessBehaviors.put(PACKAGE_GREEN, ProcessBehavior.DEAD);
@@ -1144,7 +1143,6 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
      * it doesn't get stuck.
      */
     @Test
-    @RequiresFlagsEnabled(Flags.FLAG_AVOID_REPEATED_BCAST_RE_ENQUEUES)
     public void testRepeatedKillWithoutNotify() throws Exception {
         final ProcessRecord callerApp = makeActiveProcessRecord(PACKAGE_RED);
         final ProcessRecord receiverBlueApp = makeActiveProcessRecord(PACKAGE_BLUE);
@@ -2289,7 +2287,6 @@ public class BroadcastQueueTest extends BaseBroadcastQueueTest {
      * Verify that we skip broadcasts at enqueue if {@link BroadcastSkipPolicy} decides it
      * should be skipped.
      */
-    @EnableFlags(Flags.FLAG_AVOID_NOTE_OP_AT_ENQUEUE)
     @Test
     public void testSkipPolicy_atEnqueueTime() throws Exception {
         final ProcessRecord callerApp = makeActiveProcessRecord(PACKAGE_RED);
