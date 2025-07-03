@@ -189,16 +189,6 @@ import com.android.server.utils.Slogf;
 import com.android.server.utils.TimingsTraceAndSlog;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import libcore.io.IoUtils;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -215,11 +205,19 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -1034,7 +1032,12 @@ public class UserManagerService extends IUserManager.Stub {
                 if (user != null) {
                     user.startRealtime = SystemClock.elapsedRealtime();
                     if (targetUser.getUserIdentifier() == UserHandle.USER_SYSTEM
-                            && user.info.supportsSwitchTo()) {
+                            && user.info.isFull()) {
+                        // On interactive HSUM devices (where the system user is not a full user but
+                        // can be in foreground), the last entered foreground time for the system
+                        // user will be set later in HsumBootUserInitializer only when it is the
+                        // boot user. This is because we don't know yet if the system user will be
+                        // the boot user (e.g., setBootUser could be called later).
                         mUms.setLastEnteredForegroundTimeToNow(user);
                     }
                 }
@@ -7889,6 +7892,18 @@ public class UserManagerService extends IUserManager.Stub {
         return Binder.withCleanCallingIdentity(() ->
                 AccountManager.get(mContext).someUserHasAccount(account)
                         || someUserHasSeedAccountNoChecks(accountName, accountType));
+    }
+
+    /**
+     * Sets the last entered foreground time to the current time for the given user.
+     */
+    public void setLastEnteredForegroundTimeToNow(@UserIdInt int userId) {
+        UserData userData = getUserDataNoChecks(userId);
+        if (userData == null) {
+            Slog.w(LOG_TAG, "setLastEnteredForegroundTimeToNow: unknown user #" + userId);
+            return;
+        }
+        setLastEnteredForegroundTimeToNow(userData);
     }
 
     private void setLastEnteredForegroundTimeToNow(@NonNull UserData userData) {
