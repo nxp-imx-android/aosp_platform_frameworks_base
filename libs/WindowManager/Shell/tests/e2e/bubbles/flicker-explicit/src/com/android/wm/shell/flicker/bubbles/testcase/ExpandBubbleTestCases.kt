@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.flicker.bubbles
-
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesExpandedTestCases
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
+package com.android.wm.shell.flicker.bubbles.testcase
 
 /**
  * The set to verify bubble expands from collapsed state, which verifies
- * - [BubbleFlickerTestBase]
  * - [BubbleAlwaysVisibleTestCases]
  * - [BubbleAppBecomesExpandedTestCases]
  */
-abstract class ExpandBubbleTestBase : BubbleFlickerTestBase(),
-    BubbleAlwaysVisibleTestCases,
-    BubbleAppBecomesExpandedTestCases
+interface ExpandBubbleTestCases : BubbleAlwaysVisibleTestCases, BubbleAppBecomesExpandedTestCases

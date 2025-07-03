@@ -26,6 +26,7 @@ import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.ImeShownOnAppStartHelper
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
+import com.android.wm.shell.flicker.bubbles.testcase.ExpandBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.ImeBecomesVisibleAndBubbleIsShrunkTestCase
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
@@ -55,7 +56,8 @@ import org.junit.runners.MethodSorters
  *     Expand the [testApp] bubble via tapping on bubble bar and show IME
  * ```
  * Verified tests:
- * - [ExpandBubbleTestBase]
+ * - [BubbleFlickerTestBase]
+ * - [ExpandBubbleTestCases]
  * - [ImeBecomesVisibleAndBubbleIsShrunkTestCase]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE, Flags.FLAG_ENABLE_BUBBLE_BAR)
@@ -63,9 +65,8 @@ import org.junit.runners.MethodSorters
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
 @FlakyTest(bugId = 421000153)
-class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) :
-    ExpandBubbleTestBase(),
-    ImeBecomesVisibleAndBubbleIsShrunkTestCase {
+class ExpandBubbleWithImeViaBubbleBarTest(navBar: NavBar) : BubbleFlickerTestBase(),
+    ExpandBubbleTestCases, ImeBecomesVisibleAndBubbleIsShrunkTestCase {
 
     companion object : FlickerPropertyInitializer() {
         /**

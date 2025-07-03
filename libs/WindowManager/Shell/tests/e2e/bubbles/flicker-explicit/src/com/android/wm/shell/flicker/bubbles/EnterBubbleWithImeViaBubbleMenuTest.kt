@@ -26,6 +26,7 @@ import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.ImeShownOnAppStartHelper
 import com.android.wm.shell.Flags
 import com.android.wm.shell.Utils
+import com.android.wm.shell.flicker.bubbles.testcase.EnterBubbleTestCases
 import com.android.wm.shell.flicker.bubbles.testcase.ImeBecomesVisibleAndBubbleIsShrunkTestCase
 import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
@@ -55,6 +56,7 @@ import org.junit.runners.MethodSorters
  *     IME will show after [ImeActivityAutoFocus] is shown.
  * ```
  * Verified tests:
+ * - [BubbleFlickerTestBase]
  * - [EnterBubbleViaBubbleMenuTest]
  * - [ImeBecomesVisibleAndBubbleIsShrunkTestCase]
  */
@@ -62,8 +64,8 @@ import org.junit.runners.MethodSorters
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class EnterBubbleWithImeViaBubbleMenuTest(navBar: NavBar) :
-    EnterBubbleViaBubbleMenuTest(navBar), ImeBecomesVisibleAndBubbleIsShrunkTestCase {
+class EnterBubbleWithImeViaBubbleMenuTest(navBar: NavBar) : BubbleFlickerTestBase(),
+    EnterBubbleTestCases, ImeBecomesVisibleAndBubbleIsShrunkTestCase {
 
     companion object : FlickerPropertyInitializer() {
         /**
@@ -94,7 +96,7 @@ class EnterBubbleWithImeViaBubbleMenuTest(navBar: NavBar) :
     }
 
     @get:Rule
-    override val setUpRule = ApplyPerParameterRule(
+    val setUpRule = ApplyPerParameterRule(
         Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
         params = arrayOf(navBar)
     )

@@ -85,6 +85,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-EnterBubbleViaDragToBubbleBarTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    include_filters: ["com.android.wm.shell.flicker.bubbles.EnterBubbleViaDragToBubbleBarTest"],
+    test_suites: ["device-tests"],
+}
+
+test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-EnterBubbleWithImeViaBubbleMenuTest",
     base: "WMShellExplicitFlickerTestsBubbles",
     test_suites: ["device-tests"],

@@ -98,6 +98,27 @@ fun launchBubbleViaBubbleMenu(
 }
 
 /**
+ * Launches [testApp] into bubble via dragging the icon from task bar to bubble bar location.
+ *
+ * @param testApp the test app to launch into bubble
+ * @param tapl the [LauncherInstrumentation]
+ * @param wmHelper the [WindowManagerStateHelper]
+ */
+fun launchBubbleViaDragToBubbleBar(
+    testApp: StandardAppHelper,
+    tapl: LauncherInstrumentation,
+    wmHelper: WindowManagerStateHelper,
+) {
+    // Switch to overview to show task bar.
+    val overview = tapl.goHome().switchToOverview()
+    val taskBar = overview.taskbar ?: error("Can't find TaskBar")
+    val taskBarAppIcon = taskBar.getAppIcon(testApp.appName)
+    taskBarAppIcon.dragToBubbleBarLocation(false /* isBubbleBarLeftDropTarget */)
+
+    waitAndAssertBubbleAppInExpandedState(testApp, wmHelper)
+}
+
+/**
  * Collapses the bubble app [testApp] via back key
  *
  * @param testApp the bubble app to collapse
