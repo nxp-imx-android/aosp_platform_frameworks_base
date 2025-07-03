@@ -35,7 +35,7 @@ import android.content.Context;
  */
 @SystemApi(client = MODULE_LIBRARIES)
 @FlaggedApi(FLAG_ENABLE_PHONE_NUMBER_PARSING_API)
-public class TelephonyServiceManager {
+public final class TelephonyServiceManager {
 
     /**
      * @hide

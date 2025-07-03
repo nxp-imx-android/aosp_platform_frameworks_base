@@ -480,7 +480,7 @@ package android.os {
     method @FlaggedApi("android.permission.flags.enhanced_confirmation_mode_apis_enabled") @NonNull @RequiresPermission(android.Manifest.permission.MANAGE_ENHANCED_CONFIRMATION_STATES) public java.util.Set<android.content.pm.SignedPackage> getEnhancedConfirmationTrustedPackages();
   }
 
-  @FlaggedApi("com.android.internal.telephony.flags.enable_phone_number_parsing_api") public class TelephonyServiceManager {
+  @FlaggedApi("com.android.internal.telephony.flags.enable_phone_number_parsing_api") public final class TelephonyServiceManager {
     method @NonNull public android.os.TelephonyServiceManager.ServiceRegisterer getPhoneNumberServiceRegisterer();
   }
 

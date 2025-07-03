@@ -689,6 +689,7 @@
     <style name="Theme.SystemUI.QuickSettings.Header">
         <item name="lightIconTheme">@style/DualToneLightTheme</item>
         <item name="darkIconTheme">@style/QSHeaderDarkTheme</item>
+        <item name="android:fontFamily">variable-body-medium-emphasized</item>
     </style>
 
     <style name="QSIconTheme">

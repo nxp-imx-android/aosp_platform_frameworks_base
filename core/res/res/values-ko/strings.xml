@@ -177,14 +177,10 @@
     <string name="scCellularNetworkSecurityTitle" msgid="7752521808690294384">"모바일 네트워크 보안"</string>
     <string name="scCellularNetworkSecuritySummary" msgid="7042036754550545005">"암호화, 암호화되지 않은 네트워크에 대한 알림"</string>
     <string name="scIdentifierDisclosureIssueTitle" msgid="2898888825129970328">"기기 ID 액세스됨"</string>
-    <!-- no translation found for scIDIssueSummaryNotificationWithCellularID (8371590113242615316) -->
-    <skip />
-    <!-- no translation found for scIdentifierDisclosureIssueSummaryNotification (7106922007150754222) -->
-    <skip />
-    <!-- no translation found for scIDIssueSummaryWithCellularID (1189965658392583067) -->
-    <skip />
-    <!-- no translation found for scIdentifierDisclosureIssueSummary (4362014471570210380) -->
-    <skip />
+    <string name="scIDIssueSummaryNotificationWithCellularID" msgid="8371590113242615316">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>에 <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> SIM을 사용하는 동안 근처 네트워크에서 기기의 고유 ID(<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>)를 기록했습니다."</string>
+    <string name="scIdentifierDisclosureIssueSummaryNotification" msgid="7106922007150754222">"<xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> SIM을 사용하는 동안 <xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>에 근처 네트워크에서 기기의 고유 ID를 기록했습니다."</string>
+    <string name="scIDIssueSummaryWithCellularID" msgid="1189965658392583067">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>에 <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> SIM을 사용하는 동안 근처 네트워크에서 기기의 고유 ID(<xliff:g id="CELLULAR_IDENTIFIER">%2$s</xliff:g>)를 기록했습니다.\n\n즉, 사용자의 위치, 활동 또는 ID가 기록되었습니다. 이는 일반적인 관행이지만 개인 정보 보호에 대해 우려하는 사용자에게는 문제가 될 수도 있습니다."</string>
+    <string name="scIdentifierDisclosureIssueSummary" msgid="4362014471570210380">"<xliff:g id="DISCLOSURE_TIME">%1$s</xliff:g>에 <xliff:g id="DISCLOSURE_NETWORK">%3$s</xliff:g> SIM을 사용하는 동안 근처 네트워크에서 기기의 고유 ID를 기록했습니다.\n\n즉, 사용자의 위치, 활동 또는 ID가 기록되었습니다. 이는 일반적인 관행이지만 개인 정보 보호에 대해 우려하는 사용자에게는 문제가 될 수도 있습니다."</string>
     <string name="scNullCipherIssueEncryptedTitle" msgid="234717016411824969">"암호화된 네트워크 <xliff:g id="NETWORK_NAME">%1$s</xliff:g>에 연결됨"</string>
     <string name="scNullCipherIssueEncryptedSummary" msgid="8577510708842150475">"이제 <xliff:g id="NETWORK_NAME">%1$s</xliff:g> SIM 연결의 보안이 강화되었습니다."</string>
     <string name="scNullCipherIssueNonEncryptedTitle" msgid="3978071464929453915">"암호화되지 않은 네트워크에 연결됨"</string>
@@ -377,12 +373,18 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"생체 신호에 관한 센서 데이터에 액세스"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"알림"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"알림 표시"</string>
-    <string name="permgrouplab_xr_eye_sensitive" msgid="2099659100156643683">"민감한 XR 눈 추적 데이터"</string>
-    <string name="permgroupdesc_xr_eye_sensitive" msgid="1414121516133760271">"민감한 눈 추적 데이터에 액세스"</string>
-    <string name="permgrouplab_xr_tracking" msgid="7418994009794287471">"XR 추적 데이터"</string>
-    <string name="permgroupdesc_xr_tracking" msgid="6777198859446500821">"사용자 및 주변 환경에 대한 XR 데이터에 액세스"</string>
-    <string name="permgrouplab_xr_tracking_sensitive" msgid="2993940754322250652">"민감한 XR 추적 데이터"</string>
-    <string name="permgroupdesc_xr_tracking_sensitive" msgid="8498501397939308918">"사용자 및 주변 환경에 대한 민감한 추적 데이터에 액세스"</string>
+    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
+    <skip />
+    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
+    <skip />
+    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
+    <skip />
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"창 콘텐츠 가져오기"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"상호작용 중인 창의 콘텐츠를 검사합니다."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"터치하여 탐색 사용"</string>
@@ -680,22 +682,38 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"앱에서 사진 컬렉션을 수정하도록 허용합니다."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"미디어 컬렉션에서 위치 읽기"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"앱에서 미디어 컬렉션의 위치를 읽도록 허용합니다."</string>
-    <string name="permlab_eye_tracking_coarse" msgid="7989596289790269059">"대략적인 시선 추적"</string>
-    <string name="permdesc_eye_tracking_coarse" msgid="870510233930553355">"앱이 대략적인 시선을 추적하도록 허용합니다."</string>
-    <string name="permlab_eye_tracking_fine" msgid="6914457357027049512">"시선 추적"</string>
-    <string name="permdesc_eye_tracking_fine" msgid="5788889152304524730">"앱이 정확한 시선 데이터에 액세스하도록 허용합니다."</string>
-    <string name="permlab_face_tracking" msgid="2272048395128283324">"얼굴 추적"</string>
-    <string name="permdesc_face_tracking" msgid="2622783922311211866">"앱이 얼굴 트래킹 데이터에 액세스하도록 허용합니다."</string>
-    <string name="permlab_hand_tracking" msgid="6478233866595566940">"손 추적"</string>
-    <string name="permdesc_hand_tracking" msgid="8639715900104966456">"앱이 핸드 트래킹 데이터에 액세스하도록 허용합니다."</string>
-    <string name="permlab_head_tracking" msgid="1309731456372087270">"머리 추적"</string>
-    <string name="permdesc_head_tracking" msgid="231597390513699188">"앱이 헤드 트래킹 데이터에 액세스하도록 허용합니다."</string>
-    <string name="permlab_scene_understanding_coarse" msgid="6518646430502858641">"주변 환경 파악"</string>
-    <string name="permdesc_scene_understanding_coarse" msgid="4508880777646198656">"앱이 주변 환경에 대한 추적 데이터에 직접 액세스하도록 허용합니다."</string>
-    <string name="permlab_scene_understanding_fine" msgid="409126403264393251">"주변 환경 상세 파악"</string>
-    <string name="permdesc_scene_understanding_fine" msgid="6223368011593524179">"앱이 주변 환경에 대한 매우 상세한 추적 데이터에 액세스하도록 허용합니다."</string>
-    <string name="permlab_xr_tracking_in_background" msgid="7117098718465619023">"포그라운드에 있지 않을 때 XR 데이터에 액세스"</string>
-    <string name="permdesc_xr_tracking_in_background" msgid="939504041387836853">"앱이 포그라운드에 있지 않을 때 XR 데이터에 액세스하도록 허용합니다."</string>
+    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
+    <skip />
+    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
+    <skip />
+    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
+    <skip />
+    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
+    <skip />
+    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
+    <skip />
+    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
+    <skip />
+    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
+    <skip />
+    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
+    <skip />
+    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
+    <skip />
+    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
+    <skip />
+    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
+    <skip />
+    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
+    <skip />
+    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
+    <skip />
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"키 캡처"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"시스템이 시스템 단축키 및 작업을 처리하기 전에 앱이 키를 캡처할 수 있도록 허용합니다."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"생체 인식 사용"</string>
@@ -2597,4 +2615,6 @@
     <string name="fingerprint_frr_notification_title" msgid="3668331918920659093">"지문 잠금 해제에 문제가 있나요?"</string>
     <string name="fingerprint_frr_notification_msg" msgid="2162966846624639252">"잠금 해제 환경을 개선하기 위한 도움말을 검토하려면 탭하세요."</string>
     <string name="no_blink_accessibility_text_cursor_blink_label" msgid="223072797385428874">"깜박이지 않음"</string>
+    <!-- no translation found for long_press_power_to_turn_off_tv_toast (2231397748028498986) -->
+    <skip />
 </resources>

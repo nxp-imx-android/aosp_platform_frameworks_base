@@ -1761,45 +1761,6 @@ public final class BroadcastQueueImplTest extends BaseBroadcastQueueTest {
     }
 
     @SuppressWarnings("GuardedBy")
-    @DisableFlags(Flags.FLAG_AVOID_NOTE_OP_AT_ENQUEUE)
-    @Test
-    public void testSkipPolicy_atEnqueueTime_flagDisabled() throws Exception {
-        final Intent userPresent = new Intent(Intent.ACTION_USER_PRESENT);
-        final Object greenReceiver = makeManifestReceiver(PACKAGE_GREEN, CLASS_GREEN);
-        final Object redReceiver = makeManifestReceiver(PACKAGE_RED, CLASS_RED);
-
-        final BroadcastRecord userPresentRecord = makeBroadcastRecord(userPresent,
-                List.of(greenReceiver, redReceiver));
-
-        final Intent timeTick = new Intent(Intent.ACTION_TIME_TICK);
-        final BroadcastRecord timeTickRecord = makeBroadcastRecord(timeTick,
-                List.of(greenReceiver, redReceiver));
-
-        doAnswer(invocation -> {
-            final BroadcastRecord r = invocation.getArgument(0);
-            final Object o = invocation.getArgument(1);
-            if (userPresent.getAction().equals(r.intent.getAction())
-                    && isReceiverEquals(o, greenReceiver)) {
-                return "receiver skipped by test";
-            }
-            return null;
-        }).when(mSkipPolicy).shouldSkipMessage(any(BroadcastRecord.class), any());
-
-        mImpl.enqueueBroadcastLocked(userPresentRecord);
-        mImpl.enqueueBroadcastLocked(timeTickRecord);
-
-        final BroadcastProcessQueue greenQueue = mImpl.getProcessQueue(PACKAGE_GREEN,
-                getUidForPackage(PACKAGE_GREEN));
-        // There should be only one broadcast for green process as the other would have
-        // been skipped.
-        verifyPendingRecords(greenQueue, List.of(timeTick));
-        final BroadcastProcessQueue redQueue = mImpl.getProcessQueue(PACKAGE_RED,
-                getUidForPackage(PACKAGE_RED));
-        verifyPendingRecords(redQueue, List.of(userPresent, timeTick));
-    }
-
-    @SuppressWarnings("GuardedBy")
-    @EnableFlags(Flags.FLAG_AVOID_NOTE_OP_AT_ENQUEUE)
     @Test
     public void testSkipPolicy_atEnqueueTime() throws Exception {
         final Intent userPresent = new Intent(Intent.ACTION_USER_PRESENT);

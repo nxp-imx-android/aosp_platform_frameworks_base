@@ -26,7 +26,7 @@ RuntimeVisibleAnnotations:
     )
   x: #x(#x=e#x.#x)
     java.lang.annotation.Retention(
-      value=Ljava/lang/annotation/RetentionPolicy;.CLASS
+      value=Ljava/lang/annotation/RetentionPolicy;.RUNTIME
     )
 ## Class: android/hosttest/annotation/HostSideTestKeep.class
   Compiled from "HostSideTestKeep.java"
@@ -50,7 +50,7 @@ RuntimeVisibleAnnotations:
     )
   x: #x(#x=e#x.#x)
     java.lang.annotation.Retention(
-      value=Ljava/lang/annotation/RetentionPolicy;.CLASS
+      value=Ljava/lang/annotation/RetentionPolicy;.RUNTIME
     )
 ## Class: android/hosttest/annotation/HostSideTestPartiallyAllowlisted.class
   Compiled from "HostSideTestPartiallyAllowlisted.java"
@@ -74,7 +74,7 @@ RuntimeVisibleAnnotations:
     )
   x: #x(#x=e#x.#x)
     java.lang.annotation.Retention(
-      value=Ljava/lang/annotation/RetentionPolicy;.CLASS
+      value=Ljava/lang/annotation/RetentionPolicy;.RUNTIME
     )
 ## Class: android/hosttest/annotation/HostSideTestRedirect.class
   Compiled from "HostSideTestRedirect.java"
@@ -98,7 +98,7 @@ RuntimeVisibleAnnotations:
     )
   x: #x(#x=e#x.#x)
     java.lang.annotation.Retention(
-      value=Ljava/lang/annotation/RetentionPolicy;.CLASS
+      value=Ljava/lang/annotation/RetentionPolicy;.RUNTIME
     )
 ## Class: android/hosttest/annotation/HostSideTestRedirectionClass.class
   Compiled from "HostSideTestRedirectionClass.java"
@@ -128,7 +128,7 @@ RuntimeVisibleAnnotations:
     )
   x: #x(#x=e#x.#x)
     java.lang.annotation.Retention(
-      value=Ljava/lang/annotation/RetentionPolicy;.CLASS
+      value=Ljava/lang/annotation/RetentionPolicy;.RUNTIME
     )
 ## Class: android/hosttest/annotation/HostSideTestRemove.class
   Compiled from "HostSideTestRemove.java"
@@ -152,7 +152,7 @@ RuntimeVisibleAnnotations:
     )
   x: #x(#x=e#x.#x)
     java.lang.annotation.Retention(
-      value=Ljava/lang/annotation/RetentionPolicy;.CLASS
+      value=Ljava/lang/annotation/RetentionPolicy;.RUNTIME
     )
 ## Class: android/hosttest/annotation/HostSideTestStaticInitializerKeep.class
   Compiled from "HostSideTestStaticInitializerKeep.java"
@@ -176,7 +176,7 @@ RuntimeVisibleAnnotations:
     )
   x: #x(#x=e#x.#x)
     java.lang.annotation.Retention(
-      value=Ljava/lang/annotation/RetentionPolicy;.CLASS
+      value=Ljava/lang/annotation/RetentionPolicy;.RUNTIME
     )
 ## Class: android/hosttest/annotation/HostSideTestSubstitute.class
   Compiled from "HostSideTestSubstitute.java"
@@ -206,7 +206,7 @@ RuntimeVisibleAnnotations:
     )
   x: #x(#x=e#x.#x)
     java.lang.annotation.Retention(
-      value=Ljava/lang/annotation/RetentionPolicy;.CLASS
+      value=Ljava/lang/annotation/RetentionPolicy;.RUNTIME
     )
 ## Class: android/hosttest/annotation/HostSideTestThrow.class
   Compiled from "HostSideTestThrow.java"
@@ -230,7 +230,7 @@ RuntimeVisibleAnnotations:
     )
   x: #x(#x=e#x.#x)
     java.lang.annotation.Retention(
-      value=Ljava/lang/annotation/RetentionPolicy;.CLASS
+      value=Ljava/lang/annotation/RetentionPolicy;.RUNTIME
     )
 ## Class: android/hosttest/annotation/HostSideTestThrowButSupported.class
   Compiled from "HostSideTestThrowButSupported.java"
@@ -254,7 +254,7 @@ RuntimeVisibleAnnotations:
     )
   x: #x(#x=e#x.#x)
     java.lang.annotation.Retention(
-      value=Ljava/lang/annotation/RetentionPolicy;.CLASS
+      value=Ljava/lang/annotation/RetentionPolicy;.RUNTIME
     )
 ## Class: android/hosttest/annotation/HostSideTestWholeClassKeep.class
   Compiled from "HostSideTestWholeClassKeep.java"
@@ -278,7 +278,7 @@ RuntimeVisibleAnnotations:
     )
   x: #x(#x=e#x.#x)
     java.lang.annotation.Retention(
-      value=Ljava/lang/annotation/RetentionPolicy;.CLASS
+      value=Ljava/lang/annotation/RetentionPolicy;.RUNTIME
     )
 ## Class: com/android/hoststubgen/test/tinyframework/IPretendingAidl$Stub$Proxy.class
   Compiled from "IPretendingAidl.java"
@@ -508,7 +508,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkAnnotations
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkAnnotations
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 1, methods: 8, attributes: 3
+  interfaces: 0, fields: 1, methods: 8, attributes: 2
 Constant pool:
 {
   public int keep;
@@ -517,7 +517,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -549,7 +548,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -570,7 +568,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -627,7 +624,6 @@ Constant pool:
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestThrow
 
@@ -645,7 +641,6 @@ Constant pool:
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrowButSupported
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestThrowButSupported
 
@@ -661,7 +656,6 @@ Constant pool:
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsIgnore
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestIgnore
 }
@@ -669,7 +663,6 @@ SourceFile: "TinyFrameworkAnnotations.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestKeep
   x: #x(#x=s#x)
@@ -684,7 +677,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHo
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkClassLoadHook
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 1, methods: 3, attributes: 3
+  interfaces: 0, fields: 1, methods: 3, attributes: 2
 Constant pool:
 {
   public static final java.util.Set<java.lang.Class<?>> sLoadedClasses;
@@ -752,7 +745,6 @@ SourceFile: "TinyFrameworkClassLoadHook.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations.class
@@ -763,7 +755,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkClassWideAn
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWideAnnotations
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 1, methods: 4, attributes: 3
+  interfaces: 0, fields: 1, methods: 4, attributes: 2
 Constant pool:
 {
   public int keep;
@@ -844,7 +836,6 @@ Constant pool:
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestThrow
 }
@@ -852,7 +843,6 @@ SourceFile: "TinyFrameworkClassWideAnnotations.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWithInitializerDefault.class
@@ -863,7 +853,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkClassWithIn
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWithInitializerDefault
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 2, methods: 0, attributes: 3
+  interfaces: 0, fields: 2, methods: 0, attributes: 2
 Constant pool:
 {
   public static boolean sInitialized;
@@ -872,7 +862,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -882,7 +871,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -891,7 +879,6 @@ SourceFile: "TinyFrameworkClassWithInitializerDefault.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWithInitializerStub.class
@@ -902,7 +889,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkClassWithIn
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkClassWithInitializerStub
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 2, methods: 1, attributes: 3
+  interfaces: 0, fields: 2, methods: 1, attributes: 2
 Constant pool:
 {
   public static boolean sInitialized;
@@ -911,7 +898,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -921,7 +907,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -949,7 +934,6 @@ SourceFile: "TinyFrameworkClassWithInitializerStub.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x(#x=s#x)
     android.hosttest.annotation.HostSideTestClassLoadHook(
       value="com.android.hoststubgen.test.tinyframework.TinyFrameworkClassLoadHook.onClassLoaded"
@@ -966,7 +950,7 @@ public final class com.android.hoststubgen.test.tinyframework.TinyFrameworkEnumC
   flags: (0x4031) ACC_PUBLIC, ACC_FINAL, ACC_SUPER, ACC_ENUM
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkEnumComplex
   super_class: #x                         // java/lang/Enum
-  interfaces: 0, fields: 6, methods: 7, attributes: 4
+  interfaces: 0, fields: 6, methods: 7, attributes: 3
 Constant pool:
 {
   public static final com.android.hoststubgen.test.tinyframework.TinyFrameworkEnumComplex RED;
@@ -975,7 +959,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -985,7 +968,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -995,7 +977,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1005,7 +986,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1015,7 +995,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1087,7 +1066,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
     MethodParameters:
@@ -1112,7 +1090,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1131,7 +1108,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1202,7 +1178,6 @@ SourceFile: "TinyFrameworkEnumComplex.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkEnumSimple.class
@@ -1213,7 +1188,7 @@ public final class com.android.hoststubgen.test.tinyframework.TinyFrameworkEnumS
   flags: (0x4031) ACC_PUBLIC, ACC_FINAL, ACC_SUPER, ACC_ENUM
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkEnumSimple
   super_class: #x                         // java/lang/Enum
-  interfaces: 0, fields: 3, methods: 5, attributes: 4
+  interfaces: 0, fields: 3, methods: 5, attributes: 3
 Constant pool:
 {
   public static final com.android.hoststubgen.test.tinyframework.TinyFrameworkEnumSimple CAT;
@@ -1222,7 +1197,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1232,7 +1206,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1352,7 +1325,6 @@ SourceFile: "TinyFrameworkEnumSimple.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkExceptionTester.class
@@ -1363,7 +1335,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkExceptionTe
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkExceptionTester
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 2, attributes: 3
+  interfaces: 0, fields: 0, methods: 2, attributes: 2
 Constant pool:
 {
   public com.android.hoststubgen.test.tinyframework.TinyFrameworkExceptionTester();
@@ -1417,7 +1389,6 @@ SourceFile: "TinyFrameworkExceptionTester.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkForTextPolicy.class
@@ -1667,7 +1638,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkLambdas$Nes
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas$Nested
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 2, methods: 8, attributes: 6
+  interfaces: 0, fields: 2, methods: 8, attributes: 5
 Constant pool:
 {
   public final java.util.function.Supplier<java.lang.Integer> mSupplier;
@@ -1677,7 +1648,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1688,7 +1658,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1710,7 +1679,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1729,7 +1697,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1745,7 +1712,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1821,7 +1787,6 @@ SourceFile: "TinyFrameworkLambdas.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestKeep
   x: #x()
@@ -1856,7 +1821,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkLambdas
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkLambdas
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 2, methods: 8, attributes: 6
+  interfaces: 0, fields: 2, methods: 8, attributes: 5
 Constant pool:
 {
   public final java.util.function.Supplier<java.lang.Integer> mSupplier;
@@ -1866,7 +1831,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1877,7 +1841,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1899,7 +1862,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1918,7 +1880,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -1934,7 +1895,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 
@@ -2010,7 +1970,6 @@ SourceFile: "TinyFrameworkLambdas.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestKeep
   x: #x()
@@ -2183,7 +2142,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallR
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkMethodCallReplace
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 6, attributes: 6
+  interfaces: 0, fields: 0, methods: 6, attributes: 5
 Constant pool:
 {
   public com.android.hoststubgen.test.tinyframework.TinyFrameworkMethodCallReplace();
@@ -2318,7 +2277,6 @@ SourceFile: "TinyFrameworkMethodCallReplace.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 BootstrapMethods:
@@ -2338,7 +2296,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNative
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkNative
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 1, methods: 14, attributes: 3
+  interfaces: 0, fields: 1, methods: 14, attributes: 2
 Constant pool:
 {
   int value;
@@ -2377,7 +2335,6 @@ Constant pool:
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestRedirect
 
@@ -2411,7 +2368,6 @@ Constant pool:
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestRedirect
 
@@ -2465,7 +2421,6 @@ Constant pool:
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestRedirect
 
@@ -2501,7 +2456,6 @@ Constant pool:
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsThrow
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestThrow
 
@@ -2540,7 +2494,6 @@ Constant pool:
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestRedirect
 
@@ -2557,7 +2510,6 @@ Constant pool:
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestRedirect
 
@@ -2573,7 +2525,6 @@ Constant pool:
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsSubstitute
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestRedirect
 }
@@ -2581,7 +2532,6 @@ SourceFile: "TinyFrameworkNative.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
   x: #x(#x=s#x)
@@ -2596,7 +2546,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNative_host
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkNative_host
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 7, attributes: 3
+  interfaces: 0, fields: 0, methods: 7, attributes: 2
 Constant pool:
 {
   public com.android.hoststubgen.test.tinyframework.TinyFrameworkNative_host();
@@ -2717,7 +2667,6 @@ SourceFile: "TinyFrameworkNative_host.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses$1.class
@@ -3313,7 +3262,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkNestedClass
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkNestedClasses
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 2, methods: 4, attributes: 5
+  interfaces: 0, fields: 2, methods: 4, attributes: 4
 Constant pool:
 {
   public final java.util.function.Supplier<java.lang.Integer> mSupplier;
@@ -3418,7 +3367,6 @@ SourceFile: "TinyFrameworkNestedClasses.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 NestMembers:
@@ -3440,7 +3388,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkPackageRedi
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkPackageRedirect
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 2, attributes: 3
+  interfaces: 0, fields: 0, methods: 2, attributes: 2
 Constant pool:
 {
   public com.android.hoststubgen.test.tinyframework.TinyFrameworkPackageRedirect();
@@ -3482,7 +3430,6 @@ SourceFile: "TinyFrameworkPackageRedirect.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkPartiallyAllowlisted$PartiallyAllowlisted.class
@@ -3493,7 +3440,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkPartiallyAl
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkPartiallyAllowlisted$PartiallyAllowlisted
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 1, attributes: 5
+  interfaces: 0, fields: 0, methods: 1, attributes: 4
 Constant pool:
 {
   public static int foo2(int);
@@ -3512,7 +3459,6 @@ Constant pool:
     RuntimeVisibleAnnotations:
       x: #x()
         com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-    RuntimeInvisibleAnnotations:
       x: #x()
         android.hosttest.annotation.HostSideTestKeep
 }
@@ -3522,7 +3468,6 @@ SourceFile: "TinyFrameworkPartiallyAllowlisted.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestPartiallyAllowlisted
   x: #x()
@@ -3536,7 +3481,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkRenamedClas
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkRenamedClassCaller
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 3, attributes: 3
+  interfaces: 0, fields: 0, methods: 3, attributes: 2
 Constant pool:
 {
   public com.android.hoststubgen.test.tinyframework.TinyFrameworkRenamedClassCaller();
@@ -3597,7 +3542,6 @@ SourceFile: "TinyFrameworkRenamedClassCaller.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException.class
@@ -3608,7 +3552,7 @@ public class com.android.hoststubgen.test.tinyframework.TinyFrameworkUnsupported
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/android/hoststubgen/test/tinyframework/TinyFrameworkUnsupportedApiException
   super_class: #x                         // java/lang/UnsupportedOperationException
-  interfaces: 0, fields: 0, methods: 1, attributes: 3
+  interfaces: 0, fields: 0, methods: 1, attributes: 2
 Constant pool:
 {
   public com.android.hoststubgen.test.tinyframework.TinyFrameworkUnsupportedApiException();
@@ -3632,7 +3576,6 @@ SourceFile: "TinyFrameworkUnsupportedApiException.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/android/hoststubgen/test/tinyframework/packagetest/A.class
@@ -3947,7 +3890,7 @@ public class com.supported.UnsupportedClass
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/supported/UnsupportedClass
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 1, methods: 2, attributes: 3
+  interfaces: 0, fields: 1, methods: 2, attributes: 2
 Constant pool:
 {
   private final int mValue;
@@ -3997,7 +3940,6 @@ SourceFile: "UnsupportedClass.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: com/unsupported/UnsupportedClass.class
@@ -4008,7 +3950,7 @@ public class com.unsupported.UnsupportedClass
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // com/unsupported/UnsupportedClass
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 0, methods: 2, attributes: 3
+  interfaces: 0, fields: 0, methods: 2, attributes: 2
 Constant pool:
 {
   public com.unsupported.UnsupportedClass(int);
@@ -4054,7 +3996,6 @@ SourceFile: "UnsupportedClass.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep
 ## Class: rename_prefix/com/android/hoststubgen/test/tinyframework/TinyFrameworkToBeRenamed.class
@@ -4065,7 +4006,7 @@ public class rename_prefix.com.android.hoststubgen.test.tinyframework.TinyFramew
   flags: (0x0021) ACC_PUBLIC, ACC_SUPER
   this_class: #x                          // rename_prefix/com/android/hoststubgen/test/tinyframework/TinyFrameworkToBeRenamed
   super_class: #x                         // java/lang/Object
-  interfaces: 0, fields: 1, methods: 3, attributes: 3
+  interfaces: 0, fields: 1, methods: 3, attributes: 2
 Constant pool:
 {
   private final int mValue;
@@ -4138,6 +4079,5 @@ SourceFile: "TinyFrameworkToBeRenamed.java"
 RuntimeVisibleAnnotations:
   x: #x()
     com.android.hoststubgen.hosthelper.HostStubGenProcessedAsKeep
-RuntimeInvisibleAnnotations:
   x: #x()
     android.hosttest.annotation.HostSideTestWholeClassKeep

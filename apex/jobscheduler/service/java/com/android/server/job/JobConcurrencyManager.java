@@ -1521,8 +1521,7 @@ class JobConcurrencyManager {
         final int numControllers = controllers.size();
         final PowerManager.WakeLock wl = mPowerManager.newWakeLock(
                 PowerManager.PARTIAL_WAKE_LOCK, jobStatus.getWakelockTag());
-        wl.setWorkSource(mService.deriveWorkSource(
-                jobStatus.getSourceUid(), jobStatus.getSourcePackageName()));
+        wl.setWorkSource(mService.deriveWorkSource(jobStatus.getSourceUid()));
         wl.setReferenceCounted(false);
         // Since the quota controller will start counting from the time prepareForExecutionLocked()
         // is called, hold a wakelock to make sure the CPU doesn't suspend between that call and

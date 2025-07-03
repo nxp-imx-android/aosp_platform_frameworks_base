@@ -101,7 +101,6 @@ test_module_config {
         "com.android.wm.shell.functional.EnterDesktopViaMenuOfStaticOverviewTaskTest",
         "com.android.wm.shell.functional.EnterDesktopViaStaticDesktopOverviewTaskTest",
         "com.android.wm.shell.functional.EnterDesktopWithDragExistingWindowsTest",
-        "com.android.wm.shell.functional.EnterDesktopWithDragTest",
         "com.android.wm.shell.functional.EnterDesktopWithDragWindowsLimitTest",
         "com.android.wm.shell.functional.ExitDesktopWithDragToTopDragZoneTest",
         "com.android.wm.shell.functional.FocusAppFromAllAppsTest",
@@ -126,6 +125,7 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.CloseAllAppsWithBackNavigationTest",
         "com.android.wm.shell.functional.fundamentals.EnterDesktopFromSplitScreenWithAppHandleMenuTest",
         "com.android.wm.shell.functional.fundamentals.EnterDesktopWithAppHandleMenuTest",
+        "com.android.wm.shell.functional.fundamentals.EnterDesktopWithDragTest",
         "com.android.wm.shell.functional.fundamentals.EnterSplitScreenWithAppHandleMenuTest",
         "com.android.wm.shell.functional.fundamentals.ExitDesktopToFullScreenWithAppHeaderMenuTest",
         "com.android.wm.shell.functional.fundamentals.ExitDesktopToSplitScreenWithAppHeaderMenuTest",
@@ -208,13 +208,6 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.EnterDesktopWithDragExistingWindowsTest"],
-}
-
-test_module_config {
-    name: "FunctionalTestsDesktopMode-EnterDesktopWithDragTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.EnterDesktopWithDragTest"],
 }
 
 test_module_config {
@@ -383,6 +376,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.fundamentals.EnterDesktopWithAppHandleMenuTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithDragTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.EnterDesktopWithDragTest"],
 }
 
 test_module_config {

@@ -2659,10 +2659,11 @@ public abstract class WallpaperService extends Service {
             if (mEngine == null || mEngine.mSurfaceControl == null) {
                 return null;
             }
-            CompletableFuture<SurfaceControl> futureResult = new CompletableFuture<>();
-            Message msg = mCaller.obtainMessageO(MSG_MIRROR_SURFACE_CONTROL, futureResult);
-            mCaller.sendMessage(msg);
+            Trace.beginSection("WPMS.mirrorSurfaceControl");
             try {
+                CompletableFuture<SurfaceControl> futureResult = new CompletableFuture<>();
+                Message msg = mCaller.obtainMessageO(MSG_MIRROR_SURFACE_CONTROL, futureResult);
+                mCaller.sendMessage(msg);
                 return futureResult.get(5, TimeUnit.SECONDS);
             } catch (InterruptedException | ExecutionException e) {
                 Log.e(TAG, "mirrorSurfaceControl failed with an exception: ", e);
@@ -2670,6 +2671,8 @@ public abstract class WallpaperService extends Service {
             } catch (TimeoutException e) {
                 Log.e(TAG, "mirrorSurfaceControl timed out", e);
                 return null;
+            } finally {
+                Trace.endSection();
             }
         }
 

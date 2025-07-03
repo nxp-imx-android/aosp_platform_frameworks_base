@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -39,7 +38,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.android.compose.modifiers.height
 import com.android.compose.theme.PlatformTheme
 import com.android.keyguard.dagger.KeyguardStatusBarViewComponent
@@ -127,10 +125,9 @@ constructor(
     @Composable
     private fun SignOutButton() {
         val context = LocalContext.current
-        val isVisible by viewModel.isSignOutButtonVisible.collectAsStateWithLifecycle()
-        if (isVisible) {
+        if (viewModel.isSignOutButtonVisible) {
             Button(
-                onClick = viewModel.onSignOut,
+                onClick = viewModel::onSignOut,
                 contentPadding = PaddingValues(start = 4.dp, end = 8.dp),
                 modifier = Modifier.padding(end = 8.dp),
             ) {

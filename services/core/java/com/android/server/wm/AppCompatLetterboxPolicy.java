@@ -55,7 +55,8 @@ class AppCompatLetterboxPolicy {
     @NonNull
     private final ActivityRecord mActivityRecord;
     @NonNull
-    private final AppCompatLetterboxPolicyState mLetterboxPolicyState;
+    @VisibleForTesting
+    final AppCompatLetterboxPolicyState mLetterboxPolicyState;
     @NonNull
     private final AppCompatRoundedCorners mAppCompatRoundedCorners;
     @NonNull
@@ -333,7 +334,8 @@ class AppCompatLetterboxPolicy {
      * Existing {@link AppCompatLetterboxPolicyState} implementation.
      * TODO(b/375339716): Clean code for legacy implementation.
      */
-    private class LegacyLetterboxPolicyState implements AppCompatLetterboxPolicyState {
+    @VisibleForTesting
+    class LegacyLetterboxPolicyState implements AppCompatLetterboxPolicyState {
 
         @Nullable
         private Letterbox mLetterbox;
@@ -460,7 +462,8 @@ class AppCompatLetterboxPolicy {
     /**
      * {@link AppCompatLetterboxPolicyState} implementation for the letterbox presentation on shell.
      */
-    private class ShellLetterboxPolicyState implements AppCompatLetterboxPolicyState {
+    @VisibleForTesting
+    class ShellLetterboxPolicyState implements AppCompatLetterboxPolicyState {
 
         private final Rect mInnerBounds = new Rect();
         private final Rect mOuterBounds = new Rect();
@@ -485,6 +488,11 @@ class AppCompatLetterboxPolicy {
             mActivityRecord.mAppCompatController.getReachabilityPolicy()
                     .setLetterboxInnerBoundsSupplier(() -> mInnerBounds);
             updateSurfacesBounds();
+            if (mActivityRecord.mAppCompatController.getReachabilityOverrides()
+                    .isDoubleTapEvent()) {
+                // We need to notify Shell that letterbox position has changed.
+                mActivityRecord.getTask().dispatchTaskInfoChangedIfNeeded(true /* force */);
+            }
         }
 
         @Override

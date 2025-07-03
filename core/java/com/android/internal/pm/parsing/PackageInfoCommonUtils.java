@@ -39,6 +39,7 @@ import android.content.pm.ServiceInfo;
 import android.content.pm.Signature;
 import android.content.pm.SigningDetails;
 import android.content.pm.SigningInfo;
+import android.content.pm.ValidPurposeInfo;
 import android.os.Debug;
 import android.os.PatternMatcher;
 import android.os.UserHandle;
@@ -58,10 +59,12 @@ import com.android.internal.pm.pkg.component.ParsedPermission;
 import com.android.internal.pm.pkg.component.ParsedProvider;
 import com.android.internal.pm.pkg.component.ParsedService;
 import com.android.internal.pm.pkg.component.ParsedUsesPermission;
+import com.android.internal.pm.pkg.component.ParsedValidPurpose;
 import com.android.internal.pm.pkg.parsing.ParsingPackageHidden;
 import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
 import com.android.internal.pm.pkg.parsing.ParsingUtils;
 import com.android.internal.util.ArrayUtils;
+import com.android.internal.util.CollectionUtils;
 import com.android.server.pm.pkg.AndroidPackage;
 
 import java.util.List;
@@ -510,7 +513,16 @@ public class PackageInfoCommonUtils {
         pi.flags = p.getFlags();
         pi.knownCerts = p.getKnownCerts();
         pi.requiresPurpose = p.isPurposeRequired();
-        pi.validPurposes = p.getValidPurposes();
+        pi.requiresPurposeTargetSdkVersion = p.getRequiresPurposeTargetSdkVersion();
+        for (ParsedValidPurpose validPurpose : p.getValidPurposes()) {
+            if (validPurpose != null) {
+                pi.validPurposes =
+                        CollectionUtils.add(pi.validPurposes, validPurpose.getName(),
+                                new ValidPurposeInfo(
+                                        validPurpose.getName(),
+                                        validPurpose.getMaxTargetSdkVersion()));
+            }
+        }
 
         if ((flags & PackageManager.GET_META_DATA) == 0) {
             pi.metaData = null;

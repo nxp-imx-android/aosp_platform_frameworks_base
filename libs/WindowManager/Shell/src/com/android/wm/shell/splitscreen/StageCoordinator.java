@@ -48,6 +48,7 @@ import static com.android.wm.shell.common.split.SplitScreenUtils.reverseSplitPos
 import static com.android.wm.shell.common.split.SplitScreenUtils.splitFailureMessage;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_SPLIT_SCREEN;
 import static com.android.wm.shell.shared.TransitionUtil.isClosingType;
+import static com.android.wm.shell.shared.TransitionUtil.isOpeningMode;
 import static com.android.wm.shell.shared.TransitionUtil.isOpeningType;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.FLAG_IS_DIVIDER_BAR;
 import static com.android.wm.shell.shared.split.SplitScreenConstants.SNAP_TO_2_10_90;
@@ -1619,21 +1620,40 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
      * not in split screen, {@link #mLastActiveStage} should be set to STAGE_TYPE_UNDEFINED, and we
      * will do a no-op.
      */
-    void dismissSplitKeepingLastActiveStage(@ExitReason int reason) {
-        if (!isSplitActive() || mLastActiveStage == STAGE_TYPE_UNDEFINED) {
+    void dismissSplitKeepingLastActiveStage(@ExitReason int exitReason) {
+        if (mLastActiveStage == STAGE_TYPE_UNDEFINED) {
             // no-op
             return;
         }
 
-        // Need manually clear here due to this transition might be aborted due to keyguard
-        // on top and lead to no visible change.
-        clearSplitPairedInRecents(reason);
-        final WindowContainerTransaction wct = new WindowContainerTransaction();
-        prepareExitSplitScreen(mLastActiveStage, wct, reason);
-        mSplitTransitions.startDismissTransition(wct, this, mLastActiveStage, reason);
-        setSplitsVisible(false);
+        dismissSplit(mLastActiveStage, exitReason);
         mBreakOnNextWake = false;
-        logExit(reason);
+    }
+
+    /**
+     * Dismisses split in the background.
+     */
+    public void dismissSplitInBackground(@ExitReason int exitReason) {
+        dismissSplit(STAGE_TYPE_UNDEFINED, exitReason);
+    }
+
+    /**
+     * Starts a new transition to dismiss split.
+     */
+    private void dismissSplit(@StageType int stageToTop, @ExitReason int exitReason) {
+        if (!isSplitActive()) {
+            return;
+        }
+        ProtoLog.d(WM_SHELL_SPLIT_SCREEN, "dismissSplit: stageToTop=%s reason=%s",
+                stageTypeToString(stageToTop), exitReasonToString(exitReason));
+
+        // Need manually clear here due to this transition might be aborted due to no visible change
+        clearSplitPairedInRecents(exitReason);
+        final WindowContainerTransaction wct = new WindowContainerTransaction();
+        prepareExitSplitScreen(stageToTop, wct, exitReason);
+        mSplitTransitions.startDismissTransition(wct, this, stageToTop, exitReason);
+        setSplitsVisible(false);
+        logExit(exitReason);
     }
 
     void exitSplitScreenOnHide(boolean exitSplitScreenOnHide) {
@@ -3175,20 +3195,8 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     // the remote handler.
                     return null;
                 }
-                boolean anyStageContainsSingleFullscreenTask;
-                if (enableFlexibleSplit()) {
-                    anyStageContainsSingleFullscreenTask =
-                            mStageOrderOperator.getActiveStages().stream()
-                                    .anyMatch(stageListener ->
-                                            stageListener.containsTask(triggerTask.taskId)
-                                                    && stageListener.getChildCount() == 1);
-                } else {
-                    anyStageContainsSingleFullscreenTask =
-                            (mMainStage.containsTask(triggerTask.taskId)
-                                    && mMainStage.getChildCount() == 1)
-                                    || (mSideStage.containsTask(triggerTask.taskId)
-                                    && mSideStage.getChildCount() == 1);
-                }
+                boolean anyStageContainsSingleFullscreenTask = isLastTaskInAnyStage(
+                        triggerTask.taskId);
                 if (anyStageContainsSingleFullscreenTask) {
                     // A splitting task is opening to fullscreen causes one side of the split empty,
                     // so appends operations to exit split.
@@ -3247,6 +3255,23 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                     SNAP_TO_2_50_50);
         }
         return out;
+    }
+
+    /**
+     * @return The provided taskId is the last child of any stage.
+     */
+    private boolean isLastTaskInAnyStage(int taskId) {
+        if (enableFlexibleSplit()) {
+            return mStageOrderOperator.getActiveStages().stream()
+                    .anyMatch(stageListener ->
+                            stageListener.containsTask(taskId)
+                                    && stageListener.getChildCount() == 1);
+        } else {
+            return (mMainStage.containsTask(taskId)
+                    && mMainStage.getChildCount() == 1)
+                    || (mSideStage.containsTask(taskId)
+                    && mSideStage.getChildCount() == 1);
+        }
     }
 
     /** @return whether the transition-request implies entering pip from split. */
@@ -3396,6 +3421,53 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
                 ? STAGE_TYPE_SIDE
                 : STAGE_TYPE_MAIN;
         prepareExitSplitScreen(topStage, outWCT, EXIT_REASON_UNKNOWN);
+    }
+
+    /**
+     * When we launch an app, there are times when the app trampolines itself into another activity
+     * and ends up breaking a split pair (because that second activity already existed as part of a
+     * pair). This method is used to detect whether that happened, so we can clean up the split
+     * state.
+     * @return whether the transition implies a split task being launched in fullscreen resulting
+     *         in splitscreen being broken.
+     */
+    public boolean transitionImpliesSplitToFullscreen(TransitionInfo info) {
+        if (!isSplitActive() || isSplitScreenVisible()) {
+            // Not in split, or if visible then we would have already handled it.
+            return false;
+        }
+
+        for (int i = 0; i < info.getChanges().size(); i++) {
+            final TransitionInfo.Change change = info.getChanges().get(i);
+            final TaskInfo task = change.getTaskInfo();
+            if (task == null || task.getActivityType() == ACTIVITY_TYPE_HOME
+                    || task.getActivityType() == ACTIVITY_TYPE_RECENTS) {
+                continue;
+            }
+
+            final boolean isOpening = isOpeningMode(change.getMode());
+            final boolean inFullscreen = task.getWindowingMode() == WINDOWING_MODE_FULLSCREEN;
+            if (isOpening && inFullscreen) {
+                // Note: currently we still rely on non-transition signals to update the stage
+                // children so we may end up with an empty stage, but once we migrate away from that
+                // we'll actually need to check that the task being launched into fullscreen is
+                // actually the last child of a stage
+                final boolean hasEmptyStage;
+                if (enableFlexibleSplit()) {
+                    hasEmptyStage = mStageOrderOperator.getActiveStages().stream()
+                            .anyMatch(stage -> stage.getChildCount() == 0);
+                } else {
+                    hasEmptyStage = mMainStage.getChildCount() == 0
+                            || mSideStage.getChildCount() == 0;
+                }
+                if (isLastTaskInAnyStage(task.taskId) || hasEmptyStage) {
+                    ProtoLog.d(WM_SHELL_SPLIT_SCREEN,
+                            "Fullscreen task launch transition will break split");
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override
@@ -4408,6 +4480,7 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         pw.println(prefix + TAG + " mDisplayId=" + mDisplayId);
         pw.println(innerPrefix + "mDividerVisible=" + mDividerVisible);
         pw.println(innerPrefix + "isSplitActive=" + isSplitActive());
+        pw.println(innerPrefix + "mLastActiveStage=" + mLastActiveStage);
         pw.println(innerPrefix + "isSplitVisible=" + isSplitScreenVisible());
         pw.println(innerPrefix + "isLeftRightSplit="
                 + (mSplitLayout != null ? isLeftRightSplit() : "null"));

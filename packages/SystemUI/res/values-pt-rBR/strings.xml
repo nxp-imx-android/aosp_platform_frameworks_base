@@ -843,7 +843,8 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Ativar"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Ativada (reconhecimento facial)"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Silenciar e agrupar"</string>
-    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"Usar o Organizador de Notificações"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Para <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Promoções, novos recursos e muito mais"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Principais notícias, editoriais e muito mais"</string>
@@ -853,7 +854,7 @@
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"Agora, você pode receber resumos das suas conversas mais longas"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"O Organizador agrupa e silencia notificações de prioridade mais baixa"</string>
     <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# notificação}one{# notificação}many{# de notificações}other{# notificações}}"</string>
-    <string name="inline_done_button" msgid="6043094985588909584">"Concluído"</string>
+    <string name="inline_done_button" msgid="6043094985588909584">"Ok"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"Aplicar"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"Desativar"</string>
     <string name="notification_silence_title" msgid="8608090968400832335">"Silenciosas"</string>
@@ -1094,6 +1095,16 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Editar a ordem das Configurações rápidas."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu liga/desliga"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Página <xliff:g id="ID_1">%1$d</xliff:g> de <xliff:g id="ID_2">%2$d</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Tela de bloqueio"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Desligando…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Ver etapas de cuidado"</string>
@@ -1665,4 +1676,8 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Deslize do canto superior esquerdo para baixo para abrir as notificações"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Deslize de cima para baixo no canto direito para abrir as Configurações Rápidas"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Voltar"</string>
+    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <skip />
+    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <skip />
 </resources>

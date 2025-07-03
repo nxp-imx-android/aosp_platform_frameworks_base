@@ -38,6 +38,7 @@ import android.view.InputMonitor
 import android.view.MotionEvent
 import android.view.SurfaceControl
 import android.view.WindowInsets.Type.statusBars
+import android.window.DesktopExperienceFlags
 import com.android.dx.mockito.inline.extended.StaticMockitoSession
 import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.policy.DesktopModeCompatPolicy
@@ -56,8 +57,8 @@ import com.android.wm.shell.common.DisplayInsetsController
 import com.android.wm.shell.common.DisplayLayout
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController
 import com.android.wm.shell.common.MultiInstanceHelper
-import com.android.wm.shell.common.UserProfileContexts
 import com.android.wm.shell.common.SyncTransactionQueue
+import com.android.wm.shell.common.UserProfileContexts
 import com.android.wm.shell.compatui.api.CompatUIHandler
 import com.android.wm.shell.desktopmode.DesktopActivityOrientationChangeHandler
 import com.android.wm.shell.desktopmode.DesktopImmersiveController
@@ -93,30 +94,29 @@ import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHostSuppl
 import com.android.wm.shell.windowdecor.tiling.DesktopTilingDecorViewModel
 import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder
 import com.android.wm.shell.windowdecor.viewholder.AppHeaderViewHolder
-import java.util.Optional
-import java.util.function.Supplier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
 import org.junit.After
 import org.junit.Before
 import org.mockito.Mockito
 import org.mockito.Mockito.anyInt
-import org.mockito.kotlin.KArgumentCaptor
 import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.doNothing
-import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.util.Optional
+import java.util.function.Supplier
 
 /**
  * Utility class for tests of [DesktopModeWindowDecorViewModel]
  */
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
-    private val mockDesktopModeWindowDecorFactory = mock<DesktopModeWindowDecoration.Factory>()
+    private val mockWindowDecorFactory = mock<WindowDecorationWrapper.Factory>()
     protected val mockMainHandler = mock<Handler>()
     protected val mockMainChoreographer = mock<Choreographer>()
     protected val mockTaskOrganizer = mock<ShellTaskOrganizer>()
@@ -166,7 +166,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected val mockDesktopRepository: DesktopRepository = mock<DesktopRepository>()
     protected val mockRecentsTransitionHandler = mock<RecentsTransitionHandler>()
     protected val mockTilingWindowDecoration = mock<DesktopTilingDecorViewModel>()
-    protected val mockWindowDecoration = mock<DesktopModeWindowDecoration>()
+    protected val mockWindowDecoration = mock<WindowDecorationWrapper>()
     protected val motionEvent = mock<MotionEvent>()
     private val displayLayout = mock<DisplayLayout>()
     private val display = mock<Display>()
@@ -183,7 +183,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     private val transactionFactory = Supplier<SurfaceControl.Transaction> {
         SurfaceControl.Transaction()
     }
-    protected val windowDecorByTaskIdSpy = spy(SparseArray<DesktopModeWindowDecoration>())
+    protected val windowDecorByTaskIdSpy = spy(SparseArray<WindowDecorationWrapper>())
 
     protected lateinit var mockitoSession: StaticMockitoSession
     protected lateinit var shellInit: ShellInit
@@ -233,6 +233,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             mockMainChoreographer,
             mock<MainCoroutineDispatcher>(),
             mock<CoroutineScope>(),
+            mock<CoroutineScope>(),
             bgExecutor,
             shellInit,
             mockShellCommandHandler,
@@ -250,7 +251,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             mockAssistContentRequester,
             mockWindowDecorViewHostSupplier,
             mockMultiInstanceHelper,
-            mockDesktopModeWindowDecorFactory,
+            mockWindowDecorFactory,
             mockInputMonitorFactory,
             transactionFactory,
             mockAppHeaderViewHolderFactory,
@@ -366,20 +367,22 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
             }
     }
 
-    protected fun setUpMockDecorationForTask(
-        task: RunningTaskInfo,
-        windowDecorationActions: KArgumentCaptor<WindowDecorationActions> =
-            argumentCaptor<WindowDecorationActions>()
-    ): DesktopModeWindowDecoration {
-        val decoration = Mockito.mock(DesktopModeWindowDecoration::class.java)
-        whenever(
-            mockDesktopModeWindowDecorFactory.create(
-                any(), any(), any(), any(), any(), any(), any(), eq(task), any(), any(), any(),
-                any(), any(), any(), any(), any(), any(), any(), any(), any(), any(), any(),
-                any(), any(), any(), any(), any(), any(), any(), any(),
-                windowDecorationActions.capture())
-        ).thenReturn(decoration)
-        decoration.mTaskInfo = task
+    protected fun setUpMockDecorationForTask(task: RunningTaskInfo): WindowDecorationWrapper {
+        val decoration = Mockito.mock(WindowDecorationWrapper::class.java)
+        if (DesktopExperienceFlags.ENABLE_WINDOW_DECORATION_REFACTOR.isTrue) {
+            whenever(
+                mockWindowDecorFactory.fromDefaultDecoration(
+                    argThat { decor -> decor != null && decor.taskInfo == task }
+                )
+            ).thenReturn(decoration)
+        } else {
+            whenever(
+                mockWindowDecorFactory.fromDesktopDecoration(
+                    argThat { decor -> decor != null && decor.mTaskInfo.equals(task) },
+                )
+            ).thenReturn(decoration)
+        }
+        whenever(decoration.taskInfo).thenReturn(task)
         whenever(decoration.user).thenReturn(mockUserHandle)
         if (task.windowingMode == WINDOWING_MODE_MULTI_WINDOW) {
             whenever(mockSplitScreenController.isTaskInSplitScreen(task.taskId))

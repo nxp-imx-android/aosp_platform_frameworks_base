@@ -34,7 +34,7 @@ import kotlin.math.abs
  * drag action, to maintain a fixed aspect ratio before being used by the task positioner.
  */
 class FixedAspectRatioTaskPositionerDecorator (
-    private val windowDecoration: DesktopModeWindowDecoration,
+    private val windowDecoration: WindowDecorationWrapper,
     decoratedTaskPositioner: TaskPositioner
 ) : AbstractTaskPositionerDecorator(decoratedTaskPositioner) {
 
@@ -53,12 +53,12 @@ class FixedAspectRatioTaskPositionerDecorator (
             return super.onDragPositioningStart(originalCtrlType, displayId, x, y)
         }
 
-        lastRepositionedBounds.set(getBounds(windowDecoration.mTaskInfo))
+        lastRepositionedBounds.set(getBounds(windowDecoration.taskInfo))
         startingPoint.set(x, y)
         lastValidPoint.set(x, y)
         val startingBoundWidth = lastRepositionedBounds.width()
         val startingBoundHeight = lastRepositionedBounds.height()
-        startingAspectRatio = calculateAspectRatio(windowDecoration.mTaskInfo)
+        startingAspectRatio = calculateAspectRatio(windowDecoration.taskInfo)
         isTaskPortrait = startingBoundWidth <= startingBoundHeight
 
         lastRepositionedBounds.set(
@@ -253,7 +253,7 @@ class FixedAspectRatioTaskPositionerDecorator (
      * can handle aspect ratio changes itself so again we do not need to handle it here.
      */
     private fun requiresFixedAspectRatio(): Boolean {
-        return originalCtrlType.isResizing() && !windowDecoration.mTaskInfo.isResizeable
+        return originalCtrlType.isResizing() && !windowDecoration.taskInfo.isResizeable
     }
 
     @VisibleForTesting

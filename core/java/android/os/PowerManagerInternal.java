@@ -106,6 +106,7 @@ public abstract class PowerManagerInternal {
             case PowerManager.DRAW_WAKE_LOCK -> "DRAW_WAKE_LOCK";
             case PowerManager.SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK ->
                     "SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK";
+            case PowerManager.PARTIAL_SLEEP_WAKE_LOCK -> "PARTIAL_SLEEP_WAKE_LOCK";
             default -> "???";
         };
     }

@@ -44,6 +44,7 @@ import android.Manifest;
 import android.annotation.EnforcePermission;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
 import android.app.ActivityManager;
 import android.app.AppGlobals;
 import android.app.AppOpsManager;
@@ -1966,10 +1967,20 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
     }
 
     @Override
-    @EnforcePermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT)
+    @RequiresPermission(value = Manifest.permission.DEVELOPER_VERIFICATION_AGENT,
+            conditional = true)
     public @PackageInstaller.DeveloperVerificationPolicy int getDeveloperVerificationPolicy(
             int userId) {
-        getDeveloperVerificationPolicy_enforcePermission();
+        final int callingUid = getCallingUid();
+        final int callingPid = getCallingPid();
+        if (mContext.checkPermission(Manifest.permission.DEVELOPER_VERIFICATION_AGENT, callingPid,
+                callingUid) != PackageManager.PERMISSION_GRANTED) {
+            if (!isCallerDeveloperVerificationPolicyDelegate(
+                    mPm.snapshotComputer(), callingUid, userId)) {
+                throw new SecurityException(
+                        "Caller is not allowed to read the developer verification policy");
+            }
+        }
         synchronized (mDeveloperVerificationPolicyPerUser) {
             if (mDeveloperVerificationPolicyPerUser.indexOfKey(userId) < 0) {
                 throw new IllegalStateException(
@@ -1981,18 +1992,22 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
     }
 
     @Override
-    @EnforcePermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT)
+    @RequiresPermission(value = Manifest.permission.DEVELOPER_VERIFICATION_AGENT,
+            conditional = true)
     public boolean setDeveloperVerificationPolicy(
             @PackageInstaller.DeveloperVerificationPolicy int policy, int userId) {
-        setDeveloperVerificationPolicy_enforcePermission();
+        // Write is more restrictive than read. Having the permission granted is not enough.
+        // Only the verifier or the delegate app can change the developer verification policy.
+        final int callingUid = getCallingUid();
+        final Computer snapshot = mPm.snapshotComputer();
+        if (!isCallerDeveloperVerifier(snapshot, callingUid, userId)
+                && !isCallerDeveloperVerificationPolicyDelegate(snapshot, callingUid, userId)) {
+            throw new SecurityException(
+                    "Caller is not allowed to change the developer verification policy");
+        }
         if (mDeveloperVerifierController.getVerifierPackageName() == null) {
             // The system doesn't have a specified verifier package.
             return false;
-        }
-        final int callingUid = getCallingUid();
-        // Only the verifier currently bound by the system can change the policy, except for Shell
-        if (!PackageManagerServiceUtils.isRootOrShell(callingUid)) {
-            mDeveloperVerifierController.assertCallerIsCurrentVerifier(callingUid);
         }
         if (!isValidVerificationPolicy(policy)) {
             return false;
@@ -2008,6 +2023,54 @@ public class PackageInstallerService extends IPackageInstaller.Stub implements
             }
         }
         return true;
+    }
+
+    @Override
+    @android.annotation.EnforcePermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT)
+    @Nullable
+    public String getDeveloperVerificationPolicyDelegatePackage(int userId) {
+        getDeveloperVerificationPolicyDelegatePackage_enforcePermission();
+        // This method can only be called by the verifier app
+        final Computer snapshot = mPm.snapshotComputer();
+        final int callingUid = getCallingUid();
+        if (!isCallerDeveloperVerifier(snapshot, callingUid, userId)) {
+            throw new SecurityException("The caller is not the developer verifier and cannot query"
+                    + " the policy delegate app.");
+        }
+        final String delegatePackageName = mPm.getDeveloperVerificationPolicyDelegatePackageName();
+        if (delegatePackageName == null) {
+            return null;
+        }
+        // Check that the delegate app is installed and that the caller can see the delegate app.
+        final PackageStateInternal delegatePs = snapshot.getPackageStateFiltered(
+                delegatePackageName, callingUid, userId);
+        if (delegatePs == null || !delegatePs.getUserStateOrDefault(userId).isInstalled()) {
+            return null;
+        }
+        return delegatePs.getPackageName();
+    }
+
+    private boolean isCallerDeveloperVerifier(Computer snapshot, int callingUid, int userId) {
+        final String verifierPackageName = mDeveloperVerifierController.getVerifierPackageName();
+        if (verifierPackageName == null) {
+            return false;
+        }
+        // Here we only care about the UID of the verifier app, so we don't do apps filter
+        final int verifierUid = snapshot.getPackageUidInternal(
+                verifierPackageName, 0 /* flags */, userId, SYSTEM_UID);
+        return UserHandle.isSameApp(callingUid, verifierUid);
+    }
+
+    private boolean isCallerDeveloperVerificationPolicyDelegate(
+            Computer snapshot, int callingUid, int userId) {
+        final String delegatePackageName = mPm.getDeveloperVerificationPolicyDelegatePackageName();
+        if (delegatePackageName == null) {
+            return false;
+        }
+        // Here we only care about the UID of the delegate app, so we don't do apps filter
+        final int delegateUid = snapshot.getPackageUidInternal(
+                delegatePackageName, 0 /* flags */, userId, SYSTEM_UID);
+        return UserHandle.isSameApp(callingUid, delegateUid);
     }
 
     @Override

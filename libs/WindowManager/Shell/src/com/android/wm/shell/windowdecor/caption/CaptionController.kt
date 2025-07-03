@@ -30,6 +30,9 @@ import android.view.WindowManager
 import android.window.DesktopModeFlags
 import android.window.WindowContainerTransaction
 import com.android.app.tracing.traceSection
+import com.android.wm.shell.windowdecor.HandleMenuController
+import com.android.wm.shell.windowdecor.ManageWindowsMenuController
+import com.android.wm.shell.windowdecor.MaximizeMenuController
 import com.android.wm.shell.windowdecor.TaskFocusStateConsumer
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams.OccludingCaptionElement.Alignment
@@ -71,6 +74,15 @@ abstract class CaptionController<T>(
     var hasGlobalFocus = false
     var isDragging = false
 
+    /** Controller for maximize menu or null if caption does not implement a maximize menu. */
+    open val maximizeMenuController: MaximizeMenuController? = null
+    /** Controller for handle menu or null if caption does not implement a handle menu. */
+    open val handleMenuController: HandleMenuController? = null
+    /**
+     * Controller for manage windows menu or null if caption does not implement a manage windows
+     * menu.
+     */
+    open val manageWindowsMenuController: ManageWindowsMenuController? = null
 
     /** Inflates the correct caption view and returns the view's view holder. */
     protected abstract fun createCaptionView(): WindowDecorationViewHolder<*>
@@ -453,7 +465,7 @@ abstract class CaptionController<T>(
     /**
      * Checks whether the touch event falls inside the customizable caption region.
      */
-    private fun checkTouchEventInCustomizableRegion(ev: MotionEvent): Boolean =
+    fun checkTouchEventInCustomizableRegion(ev: MotionEvent): Boolean =
         captionLayoutResult.customizableCaptionRegion.contains(
             ev.rawX.toInt(),
             ev.rawY.toInt()

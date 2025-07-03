@@ -407,6 +407,16 @@ flag {
 }
 
 flag {
+    namespace: "system_performance"
+    name: "binder_cache_transaction_trace_names"
+    description: "Reuse transaction names caches across binder instances of the same interface."
+    bug: "330738126"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
      namespace: "system_performance"
      name: "enable_has_binders"
      is_exported: true
@@ -435,6 +445,13 @@ flag {
      namespace: "system_performance"
      name: "perfetto_sdk_tracing_v2"
      description: "Tracing using Perfetto SDK API."
+     bug: "303199244"
+}
+
+flag {
+     namespace: "system_performance"
+     name: "perfetto_sdk_tracing_v3"
+     description: "Tracing using Perfetto SDK API from the 'dev.perfetto.sdk' package."
      bug: "303199244"
 }
 

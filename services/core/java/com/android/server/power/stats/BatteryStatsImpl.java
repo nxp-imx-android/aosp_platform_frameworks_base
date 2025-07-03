@@ -5648,7 +5648,6 @@ public class BatteryStatsImpl extends BatteryStats {
                     state = Display.STATE_OFF;
                 }
             }
-            FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_STATE_CHANGED, state);
         }
 
         final boolean batteryRunning = mOnBatteryTimeBase.isRunning();

@@ -66,7 +66,7 @@ public class DragPositioningCallbackUtility {
      */
     static boolean changeBounds(int ctrlType, Rect repositionTaskBounds, Rect taskBoundsAtDragStart,
             Rect stableBounds, PointF delta, DisplayController displayController,
-            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
+            WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
         // If task is being dragged rather than resized, return since this method only handles
         // with resizing
         if (ctrlType == CTRL_TYPE_UNDEFINED) {
@@ -144,7 +144,7 @@ public class DragPositioningCallbackUtility {
         // location or to a stable bound edge, reset all the bounds to maintain the applications
         // aspect ratio.
         if (DesktopModeFlags.ENABLE_WINDOWING_SCALED_RESIZING.isTrue()
-                && !isAspectRatioMaintained && !windowDecoration.mTaskInfo.isResizeable) {
+                && !isAspectRatioMaintained && !windowDecoration.getTaskInfo().isResizeable) {
             repositionTaskBounds.top = oldTop;
             repositionTaskBounds.bottom = oldBottom;
             repositionTaskBounds.right = oldRight;
@@ -161,11 +161,12 @@ public class DragPositioningCallbackUtility {
     /**
      * Set bounds using a {@link SurfaceControl.Transaction}.
      */
-    static void setPositionOnDrag(WindowDecoration decoration, Rect repositionTaskBounds,
+    static void setPositionOnDrag(WindowDecorationWrapper decoration, Rect repositionTaskBounds,
             Rect taskBoundsAtDragStart, PointF repositionStartPoint, SurfaceControl.Transaction t,
             float x, float y) {
         updateTaskBounds(repositionTaskBounds, taskBoundsAtDragStart, repositionStartPoint, x, y);
-        t.setPosition(decoration.mTaskSurface, repositionTaskBounds.left, repositionTaskBounds.top);
+        t.setPosition(decoration.getTaskSurface(), repositionTaskBounds.left,
+                repositionTaskBounds.top);
     }
 
     static void updateTaskBounds(Rect repositionTaskBounds, Rect taskBoundsAtDragStart,
@@ -218,7 +219,7 @@ public class DragPositioningCallbackUtility {
      */
     public static boolean isExceedingWidthConstraint(int repositionedWidth, int startingWidth,
             Rect maxResizeBounds, DisplayController displayController,
-            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
+            WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
         boolean isSizeIncreasing = (repositionedWidth - startingWidth) > 0;
         // Check if width is less than the minimum width constraint.
         if (repositionedWidth < getMinWidth(displayController, windowDecoration,
@@ -244,7 +245,7 @@ public class DragPositioningCallbackUtility {
      */
     public static boolean isExceedingHeightConstraint(int repositionedHeight, int startingHeight,
             Rect maxResizeBounds, DisplayController displayController,
-            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
+            WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
         boolean isSizeIncreasing = (repositionedHeight - startingHeight) > 0;
         // Check if height is less than the minimum height constraint.
         if (repositionedHeight < getMinHeight(displayController, windowDecoration,
@@ -259,44 +260,44 @@ public class DragPositioningCallbackUtility {
     }
 
     private static float getMinWidth(DisplayController displayController,
-            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
-        return windowDecoration.mTaskInfo.minWidth < 0 ? getDefaultMinWidth(displayController,
+            WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
+        return windowDecoration.getTaskInfo().minWidth < 0 ? getDefaultMinWidth(displayController,
                 windowDecoration, canEnterDesktopMode)
-                : windowDecoration.mTaskInfo.minWidth;
+                : windowDecoration.getTaskInfo().minWidth;
     }
 
     private static float getMinHeight(DisplayController displayController,
-            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
-        return windowDecoration.mTaskInfo.minHeight < 0 ? getDefaultMinHeight(displayController,
+            WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
+        return windowDecoration.getTaskInfo().minHeight < 0 ? getDefaultMinHeight(displayController,
                 windowDecoration, canEnterDesktopMode)
-                : windowDecoration.mTaskInfo.minHeight;
+                : windowDecoration.getTaskInfo().minHeight;
     }
 
     private static float getDefaultMinWidth(DisplayController displayController,
-            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
+            WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
         if (isSizeConstraintForDesktopModeEnabled(canEnterDesktopMode)) {
             return WindowDecoration.loadDimensionPixelSize(
-                    windowDecoration.mDecorWindowContext.getResources(),
+                    windowDecoration.getDecorWindowContext().getResources(),
                     R.dimen.desktop_mode_minimum_window_width);
         }
         return getDefaultMinSize(displayController, windowDecoration);
     }
 
     private static float getDefaultMinHeight(DisplayController displayController,
-            WindowDecoration windowDecoration, boolean canEnterDesktopMode) {
+            WindowDecorationWrapper windowDecoration, boolean canEnterDesktopMode) {
         if (isSizeConstraintForDesktopModeEnabled(canEnterDesktopMode)) {
             return WindowDecoration.loadDimensionPixelSize(
-                    windowDecoration.mDecorWindowContext.getResources(),
+                    windowDecoration.getDecorWindowContext().getResources(),
                     R.dimen.desktop_mode_minimum_window_height);
         }
         return getDefaultMinSize(displayController, windowDecoration);
     }
 
     private static float getDefaultMinSize(DisplayController displayController,
-            WindowDecoration windowDecoration) {
-        float density = displayController.getDisplayLayout(windowDecoration.mTaskInfo.displayId)
+            WindowDecorationWrapper windowDecoration) {
+        float density = displayController.getDisplayLayout(windowDecoration.getTaskInfo().displayId)
                 .densityDpi() * DisplayMetrics.DENSITY_DEFAULT_SCALE;
-        return windowDecoration.mTaskInfo.defaultMinSize * density;
+        return windowDecoration.getTaskInfo().defaultMinSize * density;
     }
 
     private static boolean isSizeConstraintForDesktopModeEnabled(boolean canEnterDesktopMode) {

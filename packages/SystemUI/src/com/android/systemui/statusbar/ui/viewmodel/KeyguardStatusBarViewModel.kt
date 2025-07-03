@@ -20,6 +20,7 @@ import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.keyguard.domain.interactor.KeyguardInteractor
+import com.android.systemui.lifecycle.HydratedActivatable
 import com.android.systemui.scene.domain.interactor.SceneInteractor
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.scene.shared.model.Overlays
@@ -59,9 +60,9 @@ constructor(
     sceneInteractor: SceneInteractor,
     private val keyguardInteractor: KeyguardInteractor,
     keyguardStatusBarInteractor: KeyguardStatusBarInteractor,
-    userLogoutInteractor: UserLogoutInteractor,
+    private val userLogoutInteractor: UserLogoutInteractor,
     batteryController: BatteryController,
-) {
+) : HydratedActivatable(enableEnqueuedActivations = true) {
 
     private val showingHeadsUpStatusBar: Flow<Boolean> =
         if (SceneContainerFlag.isEnabled && !StatusBarNoHunBehavior.isEnabled) {
@@ -114,8 +115,10 @@ constructor(
             Flags.signOutButtonOnKeyguardStatusBar() &&
                 keyguardInteractor.isSignOutButtonOnStatusBarEnabled
 
-    val isSignOutButtonVisible: StateFlow<Boolean> =
-        userLogoutInteractor.isLogoutToSystemUserEnabled
+    val isSignOutButtonVisible: Boolean by
+        userLogoutInteractor.isLogoutToSystemUserEnabled.hydratedStateOf()
 
-    val onSignOut: () -> Unit = { userLogoutInteractor.logOutToSystemUser() }
+    fun onSignOut() {
+        enqueueOnActivatedScope { userLogoutInteractor.logOutToSystemUser() }
+    }
 }

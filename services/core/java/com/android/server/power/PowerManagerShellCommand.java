@@ -277,6 +277,7 @@ class PowerManagerShellCommand extends ShellCommand {
             case "DRAW_WAKE_LOCK" -> PowerManager.DRAW_WAKE_LOCK;
             case "SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK" ->
                     PowerManager.SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK;
+            case "PARTIAL_SLEEP_WAKE_LOCK" -> PowerManager.PARTIAL_SLEEP_WAKE_LOCK;
             case "PROXIMITY_SCREEN_OFF_WAKE_LOCK" -> PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK;
             default -> INVALID_WAKELOCK;
         };

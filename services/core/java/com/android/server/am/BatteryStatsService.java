@@ -1785,6 +1785,7 @@ public final class BatteryStatsService extends IBatteryStats.Stub
     @EnforcePermission(UPDATE_DEVICE_STATS)
     public void noteScreenState(final int displayId, final int state, final int reason) {
         super.noteScreenState_enforcePermission();
+        FrameworkStatsLog.write(FrameworkStatsLog.SCREEN_STATE_CHANGED, state);
 
         synchronized (mClock) {
             final long elapsedRealtime = mClock.elapsedRealtime();

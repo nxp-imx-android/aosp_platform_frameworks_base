@@ -38,17 +38,6 @@ flag {
 }
 
 flag {
-    namespace: "backstage_power"
-    name: "avoid_repeated_bcast_re_enqueues"
-    description: "Avoid re-enqueueing a broadcast repeatedly"
-    bug: "319225224"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "skip_unimportant_connections"
     namespace: "backstage_power"
     description: "Avoid OomAdjuster calculations for connections that won't change importance"
@@ -77,17 +66,6 @@ flag {
     description: "Add watchdog-specific dropbox headers"
     bug: "330682397"
     is_fixed_read_only: true
-}
-
-flag {
-    name: "log_broadcast_sent_event"
-    namespace: "backstage_power"
-    description: "Log the broadcast send event to Statsd"
-    bug: "355261986"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

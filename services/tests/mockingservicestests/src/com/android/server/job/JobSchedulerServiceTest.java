@@ -26,14 +26,13 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mock;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.mockitoSession;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
+import static com.android.server.job.Flags.FLAG_BATCH_ACTIVE_BUCKET_JOBS;
+import static com.android.server.job.Flags.FLAG_BATCH_CONNECTIVITY_JOBS_PER_NETWORK;
+import static com.android.server.job.Flags.FLAG_THERMAL_RESTRICTIONS_TO_FGS_JOBS;
 import static com.android.server.job.JobSchedulerService.ACTIVE_INDEX;
 import static com.android.server.job.JobSchedulerService.RARE_INDEX;
 import static com.android.server.job.JobSchedulerService.sElapsedRealtimeClock;
 import static com.android.server.job.JobSchedulerService.sUptimeMillisClock;
-import static com.android.server.job.Flags.FLAG_BATCH_ACTIVE_BUCKET_JOBS;
-import static com.android.server.job.Flags.FLAG_BATCH_CONNECTIVITY_JOBS_PER_NETWORK;
-import static com.android.server.job.Flags.FLAG_CREATE_WORK_CHAIN_BY_DEFAULT;
-import static com.android.server.job.Flags.FLAG_THERMAL_RESTRICTIONS_TO_FGS_JOBS;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -63,9 +62,7 @@ import android.app.job.JobScheduler;
 import android.app.job.JobWorkItem;
 import android.app.usage.UsageStatsManagerInternal;
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.IContentProvider;
 import android.content.Intent;
 import android.content.PermissionChecker;
 import android.content.pm.PackageManager;
@@ -2720,30 +2717,15 @@ public class JobSchedulerServiceTest {
         }
     }
 
-    @RequiresFlagsEnabled(FLAG_CREATE_WORK_CHAIN_BY_DEFAULT)
     @Test
-    public void testDeriveWorkSource_flagCreateWorkChainByDefaultEnabled() {
-        final WorkSource workSource = mService.deriveWorkSource(TEST_UID, "com.test.pkg");
+    public void testDeriveWorkSource() {
+        final WorkSource workSource = mService.deriveWorkSource(TEST_UID);
         assertEquals(TEST_UID, workSource.getAttributionUid());
 
         assertEquals(1, workSource.getWorkChains().size());
         final WorkChain workChain = workSource.getWorkChains().get(0);
         final int[] expectedUids = {TEST_UID, Process.SYSTEM_UID};
         assertArrayEquals(expectedUids, workChain.getUids());
-    }
-
-    @RequiresFlagsDisabled(FLAG_CREATE_WORK_CHAIN_BY_DEFAULT)
-    @Test
-    public void testDeriveWorkSource_flagCreateWorkChainByDefaultDisabled() {
-        final ContentResolver contentResolver = mock(ContentResolver.class);
-        doReturn(contentResolver).when(mContext).getContentResolver();
-        final IContentProvider iContentProvider = mock(IContentProvider.class);
-        doReturn(iContentProvider).when(contentResolver).acquireProvider(anyString());
-
-        final WorkSource workSource = mService.deriveWorkSource(TEST_UID, "com.test.pkg");
-        assertEquals(TEST_UID, workSource.getAttributionUid());
-
-        assertNull(workSource.getWorkChains());
     }
 
     private void setBatteryLevel(int level) {

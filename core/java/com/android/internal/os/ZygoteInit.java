@@ -16,10 +16,9 @@
 
 package com.android.internal.os;
 
+import static android.net.http.Flags.preloadHttpengineInZygote;
 import static android.system.OsConstants.S_IRWXG;
 import static android.system.OsConstants.S_IRWXO;
-
-import static android.net.http.Flags.preloadHttpengineInZygote;
 
 import static com.android.internal.util.FrameworkStatsLog.BOOT_TIME_EVENT_ELAPSED_TIME__EVENT__SECONDARY_ZYGOTE_INIT_START;
 import static com.android.internal.util.FrameworkStatsLog.BOOT_TIME_EVENT_ELAPSED_TIME__EVENT__ZYGOTE_INIT_START;
@@ -28,8 +27,8 @@ import android.app.ApplicationLoaders;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.pm.SharedLibraryInfo;
 import android.content.res.Resources;
-import android.os.Build;
 import android.net.http.HttpEngine;
+import android.os.Build;
 import android.os.Environment;
 import android.os.IInstalld;
 import android.os.Process;
@@ -197,6 +196,9 @@ public class ZygoteInit {
         Log.i(TAG, "Preloading shared libraries...");
         System.loadLibrary("android");
         System.loadLibrary("jnigraphics");
+        if (android.os.Flags.perfettoSdkTracingV3()) {
+            System.loadLibrary("perfetto_framework_jni");
+        }
 
         // TODO(b/206676167): This library is only used for renderscript today. When renderscript is
         // removed, this load can be removed as well.

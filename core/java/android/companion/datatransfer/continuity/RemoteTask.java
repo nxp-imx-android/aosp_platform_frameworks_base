@@ -45,7 +45,7 @@ public final class RemoteTask implements Parcelable {
     @NonNull private final String mLabel;
     private final boolean mIsHandoffEnabled;
     @NonNull private final String mSourceDeviceName;
-    private final int mLastUsedTimestampMillis;
+    private final long mLastUsedTimestampMillis;
     @Nullable private final Icon mIcon;
 
     public static final @NonNull Parcelable.Creator<RemoteTask> CREATOR =
@@ -77,7 +77,7 @@ public final class RemoteTask implements Parcelable {
         mLabel = in.readString();
         mIsHandoffEnabled = in.readBoolean();
         mSourceDeviceName = in.readString();
-        mLastUsedTimestampMillis = in.readInt();
+        mLastUsedTimestampMillis = in.readLong();
         if (in.readInt() != 0) {
             mIcon = in.readParcelable(Icon.class.getClassLoader(), Icon.class);
         } else {
@@ -139,7 +139,7 @@ public final class RemoteTask implements Parcelable {
     /**
      * Returns the last used timestamp of the task.
      */
-    public int getLastUsedTimestampMillis() {
+    public long getLastUsedTimestampMillis() {
         return mLastUsedTimestampMillis;
     }
 
@@ -183,7 +183,7 @@ public final class RemoteTask implements Parcelable {
         dest.writeString(mLabel);
         dest.writeBoolean(mIsHandoffEnabled);
         dest.writeString(mSourceDeviceName);
-        dest.writeInt(mLastUsedTimestampMillis);
+        dest.writeLong(mLastUsedTimestampMillis);
         if (mIcon != null) {
             dest.writeInt(1);
             mIcon.writeToParcel(dest, flags);
@@ -202,7 +202,7 @@ public final class RemoteTask implements Parcelable {
         @Nullable private Icon mIcon = null;
         private boolean mIsHandoffEnabled = false;
         @NonNull private String mSourceDeviceName = "";
-        private int mLastUsedTimestampMillis = 0;
+        private long mLastUsedTimestampMillis = 0;
 
         /**
          * Creates a new builder for a task with the given ID.
@@ -276,7 +276,7 @@ public final class RemoteTask implements Parcelable {
          * @param lastUsedTimestampMillis The last used timestamp of the remote task.
          */
         @NonNull
-        public Builder setLastUsedTimestampMillis(int lastUsedTimestampMillis) {
+        public Builder setLastUsedTimestampMillis(long lastUsedTimestampMillis) {
             mLastUsedTimestampMillis = lastUsedTimestampMillis;
             return this;
         }

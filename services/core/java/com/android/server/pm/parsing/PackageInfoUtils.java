@@ -43,6 +43,7 @@ import android.content.pm.SharedLibraryInfo;
 import android.content.pm.Signature;
 import android.content.pm.SigningDetails;
 import android.content.pm.SigningInfo;
+import android.content.pm.ValidPurposeInfo;
 import android.content.pm.overlay.OverlayPaths;
 import android.os.Environment;
 import android.os.PatternMatcher;
@@ -67,9 +68,11 @@ import com.android.internal.pm.pkg.component.ParsedProcess;
 import com.android.internal.pm.pkg.component.ParsedProvider;
 import com.android.internal.pm.pkg.component.ParsedService;
 import com.android.internal.pm.pkg.component.ParsedUsesPermission;
+import com.android.internal.pm.pkg.component.ParsedValidPurpose;
 import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
 import com.android.internal.pm.pkg.parsing.ParsingUtils;
 import com.android.internal.util.ArrayUtils;
+import com.android.internal.util.CollectionUtils;
 import com.android.server.SystemConfig;
 import com.android.server.pm.PackageArchiver;
 import com.android.server.pm.parsing.pkg.AndroidPackageUtils;
@@ -86,7 +89,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 
 /**
  * Methods that use a {@link PackageStateInternal} use it to override information provided from the
@@ -781,7 +783,16 @@ public class PackageInfoUtils {
         pi.flags = p.getFlags();
         pi.knownCerts = p.getKnownCerts();
         pi.requiresPurpose = p.isPurposeRequired();
-        pi.validPurposes = p.getValidPurposes();
+        pi.requiresPurposeTargetSdkVersion = p.getRequiresPurposeTargetSdkVersion();
+        for (ParsedValidPurpose validPurpose : p.getValidPurposes()) {
+            if (validPurpose != null) {
+                pi.validPurposes =
+                        CollectionUtils.add(pi.validPurposes, validPurpose.getName(),
+                                new ValidPurposeInfo(
+                                        validPurpose.getName(),
+                                        validPurpose.getMaxTargetSdkVersion()));
+            }
+        }
 
         if ((flags & PackageManager.GET_META_DATA) == 0) {
             pi.metaData = null;

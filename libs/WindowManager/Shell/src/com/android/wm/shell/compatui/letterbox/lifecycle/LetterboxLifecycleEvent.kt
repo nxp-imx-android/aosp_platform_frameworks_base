@@ -19,6 +19,7 @@ package com.android.wm.shell.compatui.letterbox.lifecycle
 import android.graphics.Rect
 import android.view.SurfaceControl
 import android.window.TransitionInfo.Change
+import android.window.TransitionInfo.FLAG_TRANSLUCENT
 import android.window.WindowContainerToken
 import com.android.wm.shell.compatui.letterbox.LetterboxKey
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleEventType.CLOSE
@@ -44,7 +45,8 @@ data class LetterboxLifecycleEvent(
     val letterboxBounds: Rect? = null,
     val containerToken: WindowContainerToken? = null,
     val taskLeash: SurfaceControl? = null,
-    val isBubble: Boolean = false
+    val isBubble: Boolean = false,
+    val isTranslucent: Boolean = false
 )
 
 /**
@@ -79,6 +81,11 @@ fun Change.shouldSkipForLetterbox(): Boolean =
  * [ActivityTransitionInfo].
  */
 fun Change.isActivityChange(): Boolean = activityTransitionInfo != null
+
+/**
+ * Returns [true] if the [Change] is related to a translucent container.
+ */
+fun Change.isTranslucent() = hasFlags(FLAG_TRANSLUCENT)
 
 /** Returns [true] if the Task hosts Activities */
 fun Change.isChangeForALeafTask(): Boolean =

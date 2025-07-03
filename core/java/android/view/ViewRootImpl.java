@@ -190,6 +190,7 @@ import android.graphics.drawable.GradientDrawable;
 import android.hardware.SyncFence;
 import android.hardware.display.DisplayManager.DisplayListener;
 import android.hardware.display.DisplayManagerGlobal;
+import android.hardware.input.InputManager;
 import android.hardware.input.InputManagerGlobal;
 import android.hardware.input.InputSettings;
 import android.media.AudioManager;
@@ -6431,9 +6432,12 @@ public final class ViewRootImpl implements ViewParent,
             Log.e(mTag, "No input channel to request Pointer Capture.");
             return;
         }
-        InputManagerGlobal
-                .getInstance()
-                .requestPointerCapture(inputToken, enabled);
+        final InputManager inputManager = mContext.getSystemService(InputManager.class);
+        if (inputManager == null) {
+            Log.e(mTag, "Missing InputManager; cannot request pointer capture.");
+            return;
+        }
+        inputManager.requestPointerCapture(inputToken, enabled);
     }
 
     private void handlePointerCaptureChanged(boolean hasCapture) {

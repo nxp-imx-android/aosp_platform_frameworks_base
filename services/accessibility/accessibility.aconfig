@@ -156,13 +156,6 @@ flag {
 }
 
 flag {
-    name: "enable_magnification_keyboard_control"
-    namespace: "accessibility"
-    description: "Whether to enable keyboard control for magnification"
-    bug: "355487062"
-}
-
-flag {
     name: "enable_mouse_key_enhancement"
     namespace: "accessibility"
     description: "Whether user can change mouse key acceleration, speed and use numeric keypad."

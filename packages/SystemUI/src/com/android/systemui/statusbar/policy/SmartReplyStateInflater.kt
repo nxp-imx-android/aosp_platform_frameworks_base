@@ -319,14 +319,23 @@ constructor(
                 smartActions = SmartActions(systemGeneratedActions, true /* fromAssistant */)
             }
         }
-        val hasPhishingAction =
-            smartActions?.actions?.any {
+
+        val phishingSystemGeneratedActions =
+            entry.smartActions.filter {
                 it.isContextual &&
                     it.semanticAction ==
                         Notification.Action.SEMANTIC_ACTION_CONVERSATION_IS_PHISHING
-            } ?: false
-        var suppressedActions: SuppressedActions? = null
+            }
+        val hasPhishingAction = phishingSystemGeneratedActions.isNotEmpty()
         if (hasPhishingAction) {
+            // If there are system phishing actions, remove all smart replies and other
+            // non-phishing smart actions (regardless whether they are app or system generated).
+            smartReplies = null
+            smartActions = SmartActions(phishingSystemGeneratedActions, true /* fromAssistant */)
+        }
+
+        var suppressedActions: SuppressedActions? = null
+        if (hasPhishingAction && notification.actions != null) {
             // If there is a phishing action, calculate the indices of the actions with RemoteInput
             //  as those need to be hidden from the view.
             val suppressedActionIndices =

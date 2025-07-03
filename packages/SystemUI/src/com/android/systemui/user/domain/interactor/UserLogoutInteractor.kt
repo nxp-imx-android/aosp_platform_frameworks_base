@@ -47,11 +47,9 @@ constructor(
 
     val isLogoutToSystemUserEnabled: StateFlow<Boolean> = userRepository.isUserManagerLogoutEnabled
 
-    fun logOutToSystemUser() {
-        applicationScope.launch {
-            if (isLogoutToSystemUserEnabled.value) {
-                userRepository.logOutWithUserManager()
-            }
+    suspend fun logOutToSystemUser() {
+        if (isLogoutToSystemUserEnabled.value) {
+            userRepository.logOutWithUserManager()
         }
     }
 

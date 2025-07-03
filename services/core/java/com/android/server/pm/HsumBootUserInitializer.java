@@ -370,6 +370,12 @@ public final class HsumBootUserInitializer {
 
     private void switchToBootUser(@UserIdInt int bootUserId) {
         Slogf.i(TAG, "Switching to boot user %d", bootUserId);
+        if (bootUserId == UserHandle.USER_SYSTEM) {
+            // System user is already the foreground user, so onUserSwitching() will not be called
+            // for the system user to record the last entered foreground time. Therefore explicitly
+            // set the time now.
+            mUms.setLastEnteredForegroundTimeToNow(bootUserId);
+        }
         final boolean started = mAms.startUserInForegroundWithListener(bootUserId,
                 /* unlockListener= */ null);
         if (!started) {

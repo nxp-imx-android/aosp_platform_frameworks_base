@@ -5988,7 +5988,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
                     mNavigationModeUri, false, this, UserHandle.USER_ALL);
             contentResolver.registerContentObserver(
                     mUserSetupCompleteUri, false, this, UserHandle.USER_ALL);
-            if (isRepeatKeysFeatureFlagEnabled() && Flags.enableMagnificationKeyboardControl()) {
+            if (isRepeatKeysFeatureFlagEnabled()) {
                 contentResolver.registerContentObserver(
                         mRepeatKeysEnabledUri, false, this, UserHandle.USER_ALL);
                 contentResolver.registerContentObserver(
@@ -6285,7 +6285,7 @@ public class AccessibilityManagerService extends IAccessibilityManager.Stub
     }
 
     boolean readRepeatKeysSettingsLocked(AccessibilityUserState userState) {
-        if (!isRepeatKeysFeatureFlagEnabled() || !Flags.enableMagnificationKeyboardControl()) {
+        if (!isRepeatKeysFeatureFlagEnabled()) {
             return false;
         }
         final boolean isRepeatKeysEnabled = Settings.Secure.getIntForUser(

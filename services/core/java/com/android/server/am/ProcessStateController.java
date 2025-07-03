@@ -40,6 +40,7 @@ import com.android.server.ServiceThread;
 import com.android.server.wm.WindowProcessController;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -58,8 +59,6 @@ public class ProcessStateController {
     private final Object mLock;
     private final Object mProcLock;
 
-    private final Handler mActivityStateHandler;
-
     private final Consumer<ProcessRecord> mTopChangeCallback;
 
     private final GlobalState mGlobalState = new GlobalState();
@@ -67,14 +66,12 @@ public class ProcessStateController {
     private ProcessStateController(ActivityManagerService ams, ProcessList processList,
             ActiveUids activeUids, ServiceThread handlerThread,
             CachedAppOptimizer cachedAppOptimizer, Object lock, Object procLock,
-            Looper activityStateLooper, Consumer<ProcessRecord> topChangeCallback,
-            OomAdjuster.Injector oomAdjInjector) {
+            Consumer<ProcessRecord> topChangeCallback, OomAdjuster.Injector oomAdjInjector) {
         mOomAdjuster = new OomAdjusterImpl(ams, processList, activeUids, handlerThread,
                 mGlobalState, cachedAppOptimizer, oomAdjInjector);
 
         mLock = lock;
         mProcLock = procLock;
-        mActivityStateHandler = new Handler(activityStateLooper);
         mTopChangeCallback = topChangeCallback;
         final Handler serviceHandler = new Handler(handlerThread.getLooper());
         mServiceBinderCallUpdater = (cr, hasOngoingCalls) -> serviceHandler.post(() -> {
@@ -145,6 +142,15 @@ public class ProcessStateController {
     public void runFollowUpUpdate() {
         mGlobalState.commitStagedState();
         mOomAdjuster.updateOomAdjFollowUpTargetsLocked();
+    }
+
+    /**
+     * Create an ActivityStateAsyncUpdater to asynchronously update ProcessStateController with
+     * important Activity state changes.
+     * @param looper which looper to post the async work to.
+     */
+    public ActivityStateAsyncUpdater createActivityStateAsyncUpdater(Looper looper) {
+        return new ActivityStateAsyncUpdater(this, looper);
     }
 
     /**
@@ -241,74 +247,15 @@ public class ProcessStateController {
     }
 
     /*************************** Global State Events ***************************/
-    /**
-     * Set which process state Top processes should get.
-     */
-    public void setTopProcessStateAsync(@ActivityManager.ProcessState int procState) {
-        if (!Flags.pushActivityStateToOomadjuster()) return;
-
-        mActivityStateHandler.post(() -> {
-            synchronized (mLock) {
-                setTopProcessState(procState);
-            }
-        });
-    }
 
     @GuardedBy("mLock")
     private void setTopProcessState(@ActivityManager.ProcessState int procState) {
         mGlobalState.mTopProcessState = procState;
     }
 
-    /**
-     * Set whether the device is currently unlocking.
-     * Note: this does not require locking on {@link #mLock}
-     */
-    public void setDeviceUnlocking(boolean unlocking) {
-        if (!Flags.pushActivityStateToOomadjuster()) return;
-
-        // This method is called from locations with uncertain ordering guarantees.
-        // Just stage the state and commit it right before an OomAdjuster update.
-        mGlobalState.mUnlockingStaged = unlocking;
-    }
-
-    /**
-     * Set whether the top process is occluded by the notification shade.
-     */
-    public void setExpandedNotificationShadeAsync(boolean expandedShade) {
-        if (!Flags.pushActivityStateToOomadjuster()) return;
-
-        mActivityStateHandler.post(() -> {
-            synchronized (mLock) {
-                setExpandedNotificationShade(expandedShade);
-            }
-        });
-    }
-
     @GuardedBy("mLock")
     private void setExpandedNotificationShade(boolean expandedShade) {
         mGlobalState.mExpandedNotificationShade = expandedShade;
-    }
-
-    /**
-     * Set the Top process, also clear the Previous process and demotion reason, if necessary.
-     */
-    public void setTopProcessAsync(@Nullable WindowProcessController wpc, boolean clearPrev,
-            boolean cancelExpandedShade) {
-        if (!Flags.pushActivityStateToOomadjuster()) return;
-
-        final ProcessRecord top = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-
-        mActivityStateHandler.post(() -> {
-            synchronized (mLock) {
-                setTopProcess(top);
-                if (clearPrev) {
-                    setPreviousProcess(null);
-                }
-                if (cancelExpandedShade) {
-                    setExpandedNotificationShade(false);
-                }
-            }
-        });
     }
 
     @GuardedBy("mLock")
@@ -318,37 +265,9 @@ public class ProcessStateController {
         mTopChangeCallback.accept(proc);
     }
 
-    /**
-     * Set which process is considered the Previous process, if any.
-     */
-    public void setPreviousProcessAsync(@Nullable WindowProcessController wpc) {
-        if (!Flags.pushActivityStateToOomadjuster()) return;
-
-        final ProcessRecord prev = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-        mActivityStateHandler.post(() -> {
-            synchronized (mLock) {
-                setPreviousProcess(prev);
-            }
-        });
-    }
-
     @GuardedBy("mLock")
     private void setPreviousProcess(@Nullable ProcessRecord proc) {
         mGlobalState.mPreviousProcess = proc;
-    }
-
-    /**
-     * Set which process is considered the Home process, if any.
-     */
-    public void setHomeProcessAsync(@Nullable WindowProcessController wpc) {
-        if (!Flags.pushActivityStateToOomadjuster()) return;
-
-        final ProcessRecord home = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-        mActivityStateHandler.post(() -> {
-            synchronized (mLock) {
-                setHomeProcess(home);
-            }
-        });
     }
 
     @GuardedBy("mLock")
@@ -356,37 +275,9 @@ public class ProcessStateController {
         mGlobalState.mHomeProcess = proc;
     }
 
-    /**
-     * Set which process is considered the Heavy Weight process, if any.
-     */
-    public void setHeavyWeightProcessAsync(@Nullable WindowProcessController wpc) {
-        if (!Flags.pushActivityStateToOomadjuster()) return;
-
-        final ProcessRecord heavy = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-        mActivityStateHandler.post(() -> {
-            synchronized (mLock) {
-                setHeavyWeightProcess(heavy);
-            }
-        });
-    }
-
     @GuardedBy("mLock")
     private void setHeavyWeightProcess(@Nullable ProcessRecord proc) {
         mGlobalState.mHeavyWeightProcess = proc;
-    }
-
-    /**
-     * Set which process is showing UI while the screen is off, if any.
-     */
-    public void setVisibleDozeUiProcessAsync(@Nullable WindowProcessController wpc) {
-        if (!Flags.pushActivityStateToOomadjuster()) return;
-
-        final ProcessRecord dozeUi = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-        mActivityStateHandler.post(() -> {
-            synchronized (mLock) {
-                setVisibleDozeUiProcess(dozeUi);
-            }
-        });
     }
 
     @GuardedBy("mLock")
@@ -549,39 +440,9 @@ public class ProcessStateController {
         proc.mState.setHasShownUi(hasShownUi);
     }
 
-    /**
-     * Note whether the process has an activity or not.
-     */
-    public void setHasActivityAsync(@NonNull WindowProcessController wpc, boolean hasActivity) {
-        if (!Flags.pushActivityStateToOomadjuster()) return;
-
-        final ProcessRecord activity = (ProcessRecord) wpc.mOwner;
-        mActivityStateHandler.post(() -> {
-            synchronized (mLock) {
-                setHasActivity(activity, hasActivity);
-            }
-        });
-    }
-
     @GuardedBy("mLock")
     private void setHasActivity(@NonNull ProcessRecord proc, boolean hasActivity) {
         proc.mState.setHasActivities(hasActivity);
-    }
-
-    /**
-     * Set the Activity State for a process, including the Activity state flags and when a
-     */
-    public void setActivityStateAsync(@NonNull WindowProcessController wpc, int flags,
-            long perceptibleStopTimeMs) {
-        if (!Flags.pushActivityStateToOomadjuster()) return;
-
-        final ProcessRecord activity = (ProcessRecord) wpc.mOwner;
-        mActivityStateHandler.post(() -> {
-            synchronized (mLock) {
-                setActivityStateFlags(activity, flags);
-                setPerceptibleTaskStoppedTimeMillis(activity, perceptibleStopTimeMs);
-            }
-        });
     }
 
     @GuardedBy("mLock")
@@ -592,21 +453,6 @@ public class ProcessStateController {
     @GuardedBy("mLock")
     private void setPerceptibleTaskStoppedTimeMillis(@NonNull ProcessRecord proc, long uptimeMs) {
         proc.mState.setPerceptibleTaskStoppedTimeMillis(uptimeMs);
-    }
-
-    /**
-     * Set whether a process has had any recent tasks.
-     */
-    public void setHasRecentTasksAsync(@NonNull WindowProcessController wpc,
-            boolean hasRecentTasks) {
-        if (!Flags.pushActivityStateToOomadjuster()) return;
-
-        final ProcessRecord proc = (ProcessRecord) wpc.mOwner;
-        mActivityStateHandler.post(() -> {
-            synchronized (mLock) {
-                setHasRecentTasks(proc, hasRecentTasks);
-            }
-        });
     }
 
     @GuardedBy("mLock")
@@ -928,6 +774,301 @@ public class ProcessStateController {
     }
 
     /**
+     * Helper class for sending Activity related state from Window Manager to
+     * ProcessStateController. Because ProcessStateController is guarded by a lock WindowManager
+     * avoids acquiring, all of the work will posted to the provided Looper's thread with the
+     * provided lock object.
+     *
+     * ActivityStateAsyncUpdater is not thread-safe and its usage should always be guarded by the
+     * WindowManagerGlobalLock.
+     */
+    public static class ActivityStateAsyncUpdater {
+        private final ProcessStateController mPsc;
+        private final Looper mLooper;
+        private AsyncBatchSession mBatchSession;
+
+        private ActivityStateAsyncUpdater(ProcessStateController psc, Looper looper) {
+            mPsc = psc;
+            mLooper = looper;
+        }
+
+        /**
+         * Start a batch session. Any async work will not be posted to the Handler thread until
+         * the returned AsyncBatchSession is closed.
+         */
+        public AsyncBatchSession startBatchSession() {
+            if (!Flags.pushActivityStateToOomadjuster()) return null;
+
+            final AsyncBatchSession session = getBatchSession();
+            session.start();
+            return session;
+        }
+
+        /**
+         * Trigger an OomAdjuster full update.
+         */
+        public void runUpdateAsync() {
+            getBatchSession().runUpdate();
+        }
+
+        /**
+         * Set whether the device is currently unlocking.
+         */
+        public void setDeviceUnlocking(boolean unlocking) {
+            if (!Flags.pushActivityStateToOomadjuster()) return;
+
+            mPsc.mGlobalState.mUnlockingStaged = unlocking;
+        }
+
+        /**
+         * Set whether the top process is occluded by the notification shade.
+         */
+        public void setExpandedNotificationShadeAsync(boolean expandedShade) {
+            if (!Flags.pushActivityStateToOomadjuster()) return;
+
+            getBatchSession().enqueue(() -> mPsc.setExpandedNotificationShade(expandedShade));
+        }
+
+        /**
+         * Set the Top process, also clear the Previous process and demotion reason, if necessary.
+         */
+        public void setTopProcessAsync(@Nullable WindowProcessController wpc, boolean clearPrev,
+                boolean cancelExpandedShade) {
+            if (!Flags.pushActivityStateToOomadjuster()) return;
+
+            final ProcessRecord top = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+            getBatchSession().enqueue(() -> {
+                mPsc.setTopProcess(top);
+                if (clearPrev) {
+                    mPsc.setPreviousProcess(null);
+                }
+                if (cancelExpandedShade) {
+                    mPsc.setExpandedNotificationShade(false);
+                }
+            });
+        }
+
+        /**
+         * Set which process state Top processes should get.
+         */
+        public void setTopProcessStateAsync(@ActivityManager.ProcessState int procState) {
+            if (!Flags.pushActivityStateToOomadjuster()) return;
+
+            getBatchSession().enqueue(() -> mPsc.setTopProcessState(procState));
+        }
+
+        /**
+         * Set which process is considered the Previous process, if any.
+         */
+        public void setPreviousProcessAsync(@Nullable WindowProcessController wpc) {
+            if (!Flags.pushActivityStateToOomadjuster()) return;
+
+            final ProcessRecord prev = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+            getBatchSession().enqueue(() -> mPsc.setPreviousProcess(prev));
+        }
+
+
+        /**
+         * Set which process is considered the Home process, if any.
+         */
+        public void setHomeProcessAsync(@Nullable WindowProcessController wpc) {
+            if (!Flags.pushActivityStateToOomadjuster()) return;
+
+            final ProcessRecord home = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+            getBatchSession().enqueue(() -> mPsc.setHomeProcess(home));
+        }
+
+
+        /**
+         * Set which process is considered the Heavy Weight process, if any.
+         */
+        public void setHeavyWeightProcessAsync(@Nullable WindowProcessController wpc) {
+            if (!Flags.pushActivityStateToOomadjuster()) return;
+
+            final ProcessRecord heavy = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+            getBatchSession().enqueue(() -> mPsc.setHeavyWeightProcess(heavy));
+        }
+
+        /**
+         * Set which process is showing UI while the screen is off, if any.
+         */
+        public void setVisibleDozeUiProcessAsync(@Nullable WindowProcessController wpc) {
+            if (!Flags.pushActivityStateToOomadjuster()) return;
+
+            final ProcessRecord dozeUi = wpc != null ? (ProcessRecord) wpc.mOwner : null;
+            getBatchSession().enqueue(() -> mPsc.setVisibleDozeUiProcess(dozeUi));
+        }
+
+        /**
+         * Note whether the process has an activity or not.
+         */
+        public void setHasActivityAsync(@NonNull WindowProcessController wpc, boolean hasActivity) {
+            if (!Flags.pushActivityStateToOomadjuster()) return;
+
+            final ProcessRecord activity = (ProcessRecord) wpc.mOwner;
+            getBatchSession().enqueue(() -> mPsc.setHasActivity(activity, hasActivity));
+        }
+
+        /**
+         * Set the Activity State for a process, including the Activity state flags and when a
+         */
+        public void setActivityStateAsync(@NonNull WindowProcessController wpc, int flags,
+                long perceptibleStopTimeMs) {
+            if (!Flags.pushActivityStateToOomadjuster()) return;
+
+            final ProcessRecord activity = (ProcessRecord) wpc.mOwner;
+            getBatchSession().enqueue(() -> {
+                mPsc.setActivityStateFlags(activity, flags);
+                mPsc.setPerceptibleTaskStoppedTimeMillis(activity, perceptibleStopTimeMs);
+            });
+        }
+
+        /**
+         * Set whether a process has had any recent tasks.
+         */
+        public void setHasRecentTasksAsync(@NonNull WindowProcessController wpc,
+                boolean hasRecentTasks) {
+            if (!Flags.pushActivityStateToOomadjuster()) return;
+
+            final ProcessRecord proc = (ProcessRecord) wpc.mOwner;
+            getBatchSession().enqueue(() -> mPsc.setHasRecentTasks(proc, hasRecentTasks));
+        }
+
+        private AsyncBatchSession getBatchSession() {
+            if (mBatchSession == null) {
+                final Handler h = new Handler(mLooper);
+                final Runnable update = () -> mPsc.runFullUpdate(
+                        ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY);
+                mBatchSession = new AsyncBatchSession(h, mPsc.mLock, update);
+            }
+            return mBatchSession;
+        }
+    }
+
+    public static class AsyncBatchSession implements AutoCloseable {
+        final Handler mHandler;
+        final Object mLock;
+        private final Runnable mUpdateRunnable;
+        private final Runnable mLockedUpdateRunnable;
+        private boolean mRunUpdate = false;
+        private boolean mBoostPriority = false;
+        private int mNestedStartCount = 0;
+
+        private ArrayList<Runnable> mBatchList = new ArrayList<>();
+
+        AsyncBatchSession(Handler handler, Object lock, Runnable updateRunnable) {
+            mHandler = handler;
+            mLock = lock;
+            mUpdateRunnable = updateRunnable;
+            mLockedUpdateRunnable = () -> {
+                synchronized (lock) {
+                    updateRunnable.run();
+                }
+            };
+        }
+
+        /**
+         * If the BatchSession is currently active, posting the batched work to the front of the
+         * Handler queue when the session is closed.
+         */
+        public void postToHead() {
+            if (isActive()) {
+                mBoostPriority = true;
+            }
+        }
+
+        /**
+         * Enqueue the work to be run asynchronously done on a Handler thread.
+         * If batch session is currently active, queue up the work to be run when the session ends.
+         * Otherwise, the work will be immediately enqueued on to the Handler thread.
+         */
+        public void enqueue(Runnable runnable) {
+            if (isActive()) {
+                mBatchList.add(runnable);
+            } else {
+                // Not in session, just post to the handler immediately.
+                mHandler.post(() -> {
+                    synchronized (mLock) {
+                        runnable.run();
+                    }
+                });
+            }
+        }
+
+        /**
+         * Trigger an update to be asynchronously done on a Handler thread.
+         * If batch session is currently active, the update will be run at the end of the batched
+         * work.
+         * Otherwise, the update will be immediately enqueued on to the Handler thread (and any
+         * previously posted update will be removed in favor of this most recent trigger).
+         */
+        public void runUpdate() {
+            if (isActive()) {
+                // Mark that an update should be done after the batched work is done.
+                mRunUpdate = true;
+            } else {
+                // Not in session, just post to the handler immediately (and clear any existing
+                // posted update).
+                mHandler.removeCallbacks(mLockedUpdateRunnable);
+                mHandler.post(mLockedUpdateRunnable);
+            }
+        }
+
+        void start() {
+            mNestedStartCount++;
+        }
+
+        private boolean isActive() {
+            return mNestedStartCount > 0;
+        }
+
+        @Override
+        public void close() {
+            if (mNestedStartCount == 0) {
+                Slog.wtfStack(TAG, "close() called on an unstarted BatchSession!");
+                return;
+            }
+
+            mNestedStartCount--;
+
+            if (isActive()) {
+                // Still in an active batch session.
+                return;
+            }
+
+            final ArrayList<Runnable> list = new ArrayList<>(mBatchList);
+            final boolean runUpdate = mRunUpdate;
+
+            // Return if there is nothing to do.
+            if (list.isEmpty() && !runUpdate) return;
+
+            mBatchList.clear();
+            mRunUpdate = false;
+
+            // offload all of the queued up work to the ActivityStateHandler thread.
+            final Runnable batchedWorkload = () -> {
+                synchronized (mLock) {
+                    for (int i = 0, size = list.size(); i < size; i++) {
+                        list.get(i).run();
+                    }
+                    if (runUpdate) {
+                        mUpdateRunnable.run();
+                    }
+                }
+            };
+
+            if (mBoostPriority) {
+                // The priority of this BatchSession has been boosted. Post to the front of the
+                // Handler queue.
+                mBoostPriority = false;
+                mHandler.postAtFrontOfQueue(batchedWorkload);
+            } else {
+                mHandler.post(batchedWorkload);
+            }
+        }
+    }
+
+    /**
      * Builder for ProcessStateController.
      */
     public static class Builder {
@@ -939,7 +1080,6 @@ public class ProcessStateController {
         private CachedAppOptimizer mCachedAppOptimizer = null;
         private Object mLock = null;
         private Consumer<ProcessRecord> mTopChangeCallback = null;
-        private Looper mActivityStateLooper = null;
         private OomAdjuster.Injector mOomAdjInjector = null;
 
         public Builder(ActivityManagerService ams, ProcessList processList, ActiveUids activeUids) {
@@ -961,10 +1101,6 @@ public class ProcessStateController {
             if (mLock == null) {
                 mLock = new Object();
             }
-            if (mActivityStateLooper == null) {
-                // Just use the OomAdjuster Looper.
-                mActivityStateLooper = mHandlerThread.getLooper();
-            }
             if (mTopChangeCallback == null) {
                 mTopChangeCallback = proc -> {};
             }
@@ -972,8 +1108,8 @@ public class ProcessStateController {
                 mOomAdjInjector = new OomAdjuster.Injector();
             }
             return new ProcessStateController(mAms, mProcessList, mActiveUids, mHandlerThread,
-                    mCachedAppOptimizer, mLock, mAms.mProcLock, mActivityStateLooper,
-                    mTopChangeCallback, mOomAdjInjector);
+                    mCachedAppOptimizer, mLock, mAms.mProcLock, mTopChangeCallback,
+                    mOomAdjInjector);
         }
 
         /**
@@ -1008,14 +1144,6 @@ public class ProcessStateController {
          */
         public Builder setLockObject(Object lock) {
             mLock = lock;
-            return this;
-        }
-
-        /**
-         * Set what looper async Activity state changes are processed on.
-         */
-        public Builder setActivityStateLooper(Looper looper) {
-            mActivityStateLooper = looper;
             return this;
         }
 

@@ -21,6 +21,7 @@ import android.content.pm.PackageManager
 import android.content.pm.PermissionGroupInfo
 import android.content.pm.PermissionInfo
 import android.content.pm.SigningDetails
+import android.content.pm.ValidPurposeInfo
 import android.health.connect.HealthPermissions
 import android.os.Build
 import android.os.Bundle
@@ -31,6 +32,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.android.internal.pm.pkg.component.ParsedPermission
 import com.android.internal.pm.pkg.component.ParsedPermissionGroup
 import com.android.internal.pm.pkg.component.ParsedUsesPermission
+import com.android.internal.pm.pkg.component.ParsedValidPurpose
 import com.android.modules.utils.testing.ExtendedMockitoRule
 import com.android.server.extendedtestutils.wheneverStatic
 import com.android.server.permission.access.MutableAccessState
@@ -63,8 +65,6 @@ abstract class BasePermissionPolicyTest {
     protected val defaultPermissionTree =
         mockParsedPermission(PERMISSION_TREE_NAME, PACKAGE_NAME_0, isTree = true)
     protected val defaultPermission = mockParsedPermission(PERMISSION_NAME_0, PACKAGE_NAME_0)
-    protected val defaultPermissionWithValidPurpose = mockParsedPermission(PERMISSION_NAME_0,
-            PLATFORM_PACKAGE_NAME, isPurposeRequired = true, validPurposes = setOf(VALID_PURPOSE))
 
     protected val appIdPermissionPolicy = AppIdPermissionPolicy()
 
@@ -116,7 +116,12 @@ abstract class BasePermissionPolicyTest {
                     group = parsedPermission.group
                     flags = parsedPermission.flags
                     requiresPurpose = parsedPermission.isPurposeRequired
-                    validPurposes = parsedPermission.validPurposes
+                    requiresPurposeTargetSdkVersion =
+                        parsedPermission.requiresPurposeTargetSdkVersion
+                    validPurposes =
+                        parsedPermission.validPurposes.associate {
+                            it.name to ValidPurposeInfo(it.name, it.maxTargetSdkVersion)
+                        }
                 }
             }
     }
@@ -250,7 +255,8 @@ abstract class BasePermissionPolicyTest {
         flags: Int = 0,
         isTree: Boolean = false,
         isPurposeRequired: Boolean = false,
-        validPurposes: Set<String> = emptySet(),
+        requiresPurposeTargetSdkVersion: Int = BUILD_VERSION_CODES_C,
+        validPurposes: List<ParsedValidPurpose> = emptyList(),
     ): ParsedPermission = mock {
         whenever(name).thenReturn(permissionName)
         whenever(this.packageName).thenReturn(packageName)
@@ -261,6 +267,7 @@ abstract class BasePermissionPolicyTest {
         whenever(this.flags).thenReturn(flags)
         whenever(this.isTree).thenReturn(isTree)
         whenever(this.isPurposeRequired).thenReturn(isPurposeRequired)
+        whenever(this.requiresPurposeTargetSdkVersion).thenReturn(requiresPurposeTargetSdkVersion)
         whenever(this.validPurposes).thenReturn(validPurposes)
     }
 
@@ -272,6 +279,14 @@ abstract class BasePermissionPolicyTest {
         whenever(name).thenReturn(permissionName)
         whenever(this.usesPermissionFlags).thenReturn(flags)
         whenever(this.purposes).thenReturn(purposes)
+    }
+
+    protected fun mockParsedValidPurpose(
+        purposeName: String,
+        maxTargetSdkVersion: Int = Int.MAX_VALUE,
+    ): ParsedValidPurpose = mock {
+        whenever(name).thenReturn(purposeName)
+        whenever(this.maxTargetSdkVersion).thenReturn(maxTargetSdkVersion)
     }
 
     protected fun mockParsedPermissionGroup(
@@ -402,7 +417,8 @@ abstract class BasePermissionPolicyTest {
 
         @JvmStatic protected val PERMISSION_TREE_NAME = "permissionTree"
 
-        @JvmStatic protected val VALID_PURPOSE = "validPurpose"
+        @JvmStatic protected val VALID_PURPOSE_0 = "validPurpose0"
+        @JvmStatic protected val VALID_PURPOSE_1 = "validPurpose1"
         @JvmStatic protected val INVALID_PURPOSE = "invalidPurpose"
 
         @JvmStatic protected val PERMISSION_NAME_0 = "permissionName0"
@@ -432,7 +448,8 @@ abstract class BasePermissionPolicyTest {
         @JvmStatic protected val USER_ID_0 = 0
         @JvmStatic protected val USER_ID_NEW = 1
 
-        // TODO(b/419394842) - Remove and use Android C build version code directly when available.
+        // TODO(b/419394842) - Remove and use defined build version codes directly when available.
         @JvmStatic protected val BUILD_VERSION_CODES_C = Build.VERSION_CODES.BAKLAVA + 1
+        @JvmStatic protected val BUILD_VERSION_CODES_D = Build.VERSION_CODES.BAKLAVA + 2
     }
 }

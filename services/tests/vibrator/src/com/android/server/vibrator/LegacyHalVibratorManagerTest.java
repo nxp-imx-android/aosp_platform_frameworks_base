@@ -18,6 +18,8 @@ package com.android.server.vibrator;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.os.test.TestLooper;
+
 import com.android.server.vibrator.VintfHalVibratorManager.LegacyHalVibratorManager;
 
 import org.junit.Rule;
@@ -31,10 +33,14 @@ public class LegacyHalVibratorManagerTest {
     @Rule public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock HalVibratorManager.Callbacks mHalCallbackMock;
+    private final TestLooper mTestLooper = new TestLooper();
+    private final HalVibratorHelper mVibratorHelper =
+            new HalVibratorHelper(mTestLooper.getLooper());
 
     @Test
     public void init_returnsAllFalseExceptVibratorIds() {
-        HalVibratorManager manager = new LegacyHalVibratorManager(new int[] { 1, 2 });
+        HalVibratorManager manager = new LegacyHalVibratorManager(new int[] { 1, 2 },
+                mVibratorHelper::newVibratorController);
         manager.init(mHalCallbackMock);
 
         assertThat(manager.getVibratorIds()).asList().containsExactly(1, 2).inOrder();
@@ -44,5 +50,19 @@ public class LegacyHalVibratorManagerTest {
         assertThat(manager.cancelSynced()).isFalse();
         assertThat(manager.startSession(1, new int[] { 2 })).isFalse();
         assertThat(manager.endSession(1, false)).isFalse();
+    }
+
+    @Test
+    public void getVibrator_returnsVibratorOnlyForValidIds() {
+        HalVibratorManager manager = new LegacyHalVibratorManager(new int[] { 1, 2 },
+                mVibratorHelper::newVibratorController);
+
+        assertThat(manager.getVibrator(-1)).isNull();
+        assertThat(manager.getVibrator(0)).isNull();
+        assertThat(manager.getVibrator(1)).isNotNull();
+        assertThat(manager.getVibrator(1).getInfo().getId()).isEqualTo(1);
+        assertThat(manager.getVibrator(2)).isNotNull();
+        assertThat(manager.getVibrator(2).getInfo().getId()).isEqualTo(2);
+        assertThat(manager.getVibrator(3)).isNull();
     }
 }

@@ -1,0 +1,245 @@
+/*
+ * Copyright (C) 2025 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License athasEqualMessages
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package android.os;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
+import androidx.test.runner.AndroidJUnit4;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.concurrent.CountDownLatch;
+
+@RunWith(AndroidJUnit4.class)
+public final class MessageStackTest {
+    private static final String TAG = "MessageStackTest";
+
+    private static final int THREAD_COUNT = 8;
+    private static final int PER_THREAD_MESSAGE_COUNT = 10000;
+
+    /**
+     * Verify stack size after pushing messages.
+     */
+    @Test
+    public void testPush() {
+        MessageStack stack = new MessageStack();
+        for (int i = 0; i < 10; i++) {
+            stack.pushMessage(new Message());
+        }
+        assertEquals(10, stack.sizeForTest());
+    }
+
+    /**
+     * Verify heap size after sweeping messages from a MessageStack.
+     */
+    @Test
+    public void testHeapSweep() {
+        MessageStack stack = new MessageStack();
+        for (int i = 0; i < 10; i++) {
+            stack.pushMessage(new Message());
+        }
+        stack.heapSweep();
+        assertEquals(10, stack.combinedHeapSizesForTest());
+    }
+
+    /**
+     * Verify stack and heap sizes after pushing, sweeping, and removing messages.
+     */
+    @Test
+    public void testPop() {
+        MessageStack stack = new MessageStack();
+        for (int i = 0; i < 10; i++) {
+            stack.pushMessage(new Message());
+        }
+        stack.heapSweep();
+
+        Message m = stack.pop(false);
+        assertEquals(9, stack.sizeForTest());
+        assertEquals(9, stack.combinedHeapSizesForTest());
+    }
+
+    /**
+     * Verify stack and heap sizes after updating the messages in the freelist and removing them.
+     * Also check that the remaining messages in the stack didn't meet the previous conditions for
+     * removal.
+     */
+    @Test
+    public void testUpdateFreelistAndDrainFreelist() {
+        MessageStack stack = new MessageStack();
+        Handler h = new Handler(Looper.getMainLooper());
+        int removeWhat = 1;
+        int keepWhat = 2;
+
+        // Interleave to-remove and to-keep messages.
+        for (int i = 0; i < 5; i++) {
+            stack.pushMessage(Message.obtain(h, removeWhat));
+            stack.pushMessage(Message.obtain(h, keepWhat));
+        }
+        stack.heapSweep();
+        stack.updateFreelist(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, removeWhat, null, null, 0);
+
+        assertEquals(5, stack.freelistSizeForTest());
+        stack.drainFreelist();
+        assertEquals(0, stack.freelistSizeForTest());
+
+        assertEquals(5, stack.sizeForTest());
+        assertEquals(5, stack.combinedHeapSizesForTest());
+
+        int initialSize = 5;
+        for (int i = 0; i < initialSize; i++) {
+            Message m = stack.pop(false);
+            assertEquals(m.what, keepWhat);
+        }
+
+        assertEquals(0, stack.sizeForTest());
+        assertEquals(0, stack.combinedHeapSizesForTest());
+    }
+
+    /**
+     * Push messages from multiple threads and verify stack and heap sizes.
+     */
+    @Test
+    public void testConcurrentPush() throws InterruptedException {
+        MessageStack stack = new MessageStack();
+
+        CountDownLatch latch = new CountDownLatch(THREAD_COUNT);
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            new Thread(() -> {
+                for (int j = 0; j < PER_THREAD_MESSAGE_COUNT; j++) {
+                    stack.pushMessage(new Message());
+                }
+                latch.countDown();
+            }).start();
+        }
+        latch.await();
+
+        stack.heapSweep();
+
+        int expectedSize = THREAD_COUNT * PER_THREAD_MESSAGE_COUNT;
+        assertEquals(expectedSize, stack.sizeForTest());
+        assertEquals(expectedSize, stack.combinedHeapSizesForTest());
+    }
+
+    /**
+     * Push and pop messages from multiple threads and verify stack and heap sizes.
+     */
+    @Test
+    public void testConcurrentPushAndPop() throws InterruptedException {
+        MessageStack stack = new MessageStack();
+
+        CountDownLatch latch = new CountDownLatch(THREAD_COUNT);
+        for (int i = 0; i < THREAD_COUNT - 1; i++) {
+            new Thread(() -> {
+                for (int j = 0; j < PER_THREAD_MESSAGE_COUNT; j++) {
+                    stack.pushMessage(new Message());
+                }
+                latch.countDown();
+            }).start();
+        }
+        new Thread(() -> {
+            for (int j = 0; j < PER_THREAD_MESSAGE_COUNT; j++) {
+                // Pop until non-null result (i.e. until a message has been added by one of the
+                // previous threads).
+                do {
+                    stack.heapSweep();
+                } while (stack.pop(false) == null);
+            }
+            latch.countDown();
+        }).start();
+        latch.await();
+
+        stack.heapSweep();
+
+        int expectedSize = (THREAD_COUNT - 2) * PER_THREAD_MESSAGE_COUNT;
+        assertEquals(expectedSize, stack.sizeForTest());
+        assertEquals(expectedSize, stack.combinedHeapSizesForTest());
+    }
+
+    /**
+     * Peek and remove messages and verify stack and heap sizes.
+     */
+    @Test
+    public void testPeekAndRemove() {
+        MessageStack stack = new MessageStack();
+        for (int i = 0; i < 10; i++) {
+            stack.pushMessage(new Message());
+        }
+        stack.heapSweep();
+
+        Message m = stack.peek(false);
+        assertEquals(10, stack.sizeForTest());
+        assertEquals(10, stack.combinedHeapSizesForTest());
+
+        stack.remove(m);
+        assertEquals(9, stack.sizeForTest());
+        assertEquals(9, stack.combinedHeapSizesForTest());
+    }
+
+    /**
+     * Peek messages from a stack with only removed messages and verify that the return is null.
+     */
+    @Test
+    public void testPeekOnlyRemovedMessages() {
+        MessageStack stack = new MessageStack();
+        Handler h = new Handler(Looper.getMainLooper());
+        int removeWhat = 1;
+
+        for (int i = 0; i < 10; i++) {
+            stack.pushMessage(Message.obtain(h, removeWhat));
+        }
+        stack.heapSweep();
+        stack.updateFreelist(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, removeWhat, null, null, 0);
+
+        assertNull(stack.peek(false));
+    }
+
+    /**
+     * Peek messages from a stack with only removed messages and verify stack and heap sizes.
+     */
+    @Test
+    public void testPeekRemovedMessagesAndDrainFreelist() {
+        MessageStack stack = new MessageStack();
+        Handler h = new Handler(Looper.getMainLooper());
+        int removeWhat = 1;
+
+        for (int i = 0; i < 10; i++) {
+            stack.pushMessage(Message.obtain(h, removeWhat));
+        }
+        stack.heapSweep();
+        assertEquals(10, stack.sizeForTest());
+        assertEquals(10, stack.combinedHeapSizesForTest());
+
+        stack.updateFreelist(new MessageQueue.MatchHandlerWhatAndObject(),
+                h, removeWhat, null, null, 0);
+        assertEquals(0, stack.sizeForTest());
+        assertEquals(10, stack.freelistSizeForTest());
+        assertEquals(10, stack.combinedHeapSizesForTest());
+
+        assertNull(stack.peek(false));
+        assertEquals(0, stack.sizeForTest());
+        assertEquals(10, stack.freelistSizeForTest());
+        assertEquals(0, stack.combinedHeapSizesForTest());
+
+        stack.drainFreelist();
+        assertEquals(0, stack.freelistSizeForTest());
+    }
+
+}

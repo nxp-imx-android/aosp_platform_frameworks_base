@@ -2995,7 +2995,6 @@ package android.app.supervision {
     method @NonNull public String getAccountName();
     method @NonNull public String getAccountType();
     method public int getState();
-    method public void readFromParcel(@NonNull android.os.Parcel);
     method public void writeToParcel(@NonNull android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.app.supervision.SupervisionRecoveryInfo> CREATOR;
     field public static final String EXTRA_SUPERVISION_RECOVERY_INFO = "android.app.supervision.extra.SUPERVISION_RECOVERY_INFO";
@@ -3465,7 +3464,7 @@ package android.companion.datatransfer.continuity {
     method @Nullable public android.graphics.drawable.Icon getIcon();
     method public int getId();
     method @NonNull public String getLabel();
-    method public int getLastUsedTimestampMillis();
+    method public long getLastUsedTimestampMillis();
     method @NonNull public String getSourceDeviceName();
     method public boolean isHandoffEnabled();
     method public void writeToParcel(@NonNull android.os.Parcel, int);
@@ -3479,7 +3478,7 @@ package android.companion.datatransfer.continuity {
     method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setHandoffEnabled(boolean);
     method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setIcon(@Nullable android.graphics.drawable.Icon);
     method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setLabel(@NonNull String);
-    method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setLastUsedTimestampMillis(int);
+    method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setLastUsedTimestampMillis(long);
     method @NonNull public android.companion.datatransfer.continuity.RemoteTask.Builder setSourceDeviceName(@NonNull String);
   }
 
@@ -4327,11 +4326,12 @@ package android.content.pm {
   }
 
   public class PackageInstaller {
-    method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT) public final int getDeveloperVerificationPolicy();
+    method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(value=android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT, conditional=true) public final int getDeveloperVerificationPolicy();
+    method @FlaggedApi("android.content.pm.verification_service") @Nullable @RequiresPermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT) public String getDeveloperVerificationPolicyDelegatePackage();
     method @FlaggedApi("android.content.pm.verification_service") @Nullable @RequiresPermission(android.Manifest.permission.SET_DEVELOPER_VERIFICATION_USER_RESPONSE) public android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo getDeveloperVerificationUserConfirmationInfo(int);
     method @NonNull public android.content.pm.PackageInstaller.InstallInfo readInstallInfo(@NonNull java.io.File, int) throws android.content.pm.PackageInstaller.PackageParsingException;
     method @FlaggedApi("android.content.pm.read_install_info") @NonNull public android.content.pm.PackageInstaller.InstallInfo readInstallInfo(@NonNull android.os.ParcelFileDescriptor, @Nullable String, int) throws android.content.pm.PackageInstaller.PackageParsingException;
-    method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT) public final boolean setDeveloperVerificationPolicy(int);
+    method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(value=android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT, conditional=true) public final boolean setDeveloperVerificationPolicy(int);
     method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(android.Manifest.permission.SET_DEVELOPER_VERIFICATION_USER_RESPONSE) public void setDeveloperVerificationUserResponse(int, int);
     method @RequiresPermission(android.Manifest.permission.INSTALL_PACKAGES) public void setPermissionsResult(int, boolean);
     field @FlaggedApi("android.content.pm.verification_service") public static final String ACTION_CONFIRM_DEVELOPER_VERIFICATION = "android.content.pm.action.CONFIRM_DEVELOPER_VERIFICATION";
@@ -16625,6 +16625,9 @@ package android.telephony {
     field public static final int SIM_ACTIVATION_STATE_UNKNOWN = 0; // 0x0
     field public static final int SIM_STATE_LOADED = 10; // 0xa
     field public static final int SIM_STATE_PRESENT = 11; // 0xb
+    field @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") public static final int SIM_TYPE_EMBEDDED = 2; // 0x2
+    field @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") public static final int SIM_TYPE_PHYSICAL = 1; // 0x1
+    field @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") public static final int SIM_TYPE_UNKNOWN = -1; // 0xffffffff
     field public static final int SRVCC_STATE_HANDOVER_CANCELED = 3; // 0x3
     field public static final int SRVCC_STATE_HANDOVER_COMPLETED = 1; // 0x1
     field public static final int SRVCC_STATE_HANDOVER_FAILED = 2; // 0x2
@@ -16739,6 +16742,8 @@ package android.telephony {
     method public boolean getIsExtendedApduSupported();
     method @Deprecated public int getLogicalSlotIdx();
     method @NonNull public java.util.Collection<android.telephony.UiccPortInfo> getPorts();
+    method @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") public int getSimType();
+    method @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") @NonNull public int[] getSupportedSimTypes();
     method public boolean isRemovable();
     method public void writeToParcel(android.os.Parcel, int);
     field public static final int CARD_STATE_INFO_ABSENT = 1; // 0x1
@@ -16750,10 +16755,12 @@ package android.telephony {
 
   public final class UiccSlotMapping implements android.os.Parcelable {
     ctor public UiccSlotMapping(int, int, int);
+    ctor @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") public UiccSlotMapping(int, int, int, int);
     method public int describeContents();
     method @IntRange(from=0) public int getLogicalSlotIndex();
     method @IntRange(from=0) public int getPhysicalSlotIndex();
     method @IntRange(from=0) public int getPortIndex();
+    method @FlaggedApi("com.android.internal.telephony.flags.support_slot_switching_2psim_1esim_config") public int getSimType();
     method public void writeToParcel(@Nullable android.os.Parcel, int);
     field @NonNull public static final android.os.Parcelable.Creator<android.telephony.UiccSlotMapping> CREATOR;
   }
@@ -19999,7 +20006,7 @@ package android.window {
   }
 
   @FlaggedApi("com.android.graphics.surfaceflinger.flags.readback_screenshot") public static final class ScreenCapture.ScreenCaptureParams.Builder {
-    ctor public ScreenCapture.ScreenCaptureParams.Builder(@NonNull android.view.Display);
+    ctor public ScreenCapture.ScreenCaptureParams.Builder(int);
     method @NonNull public android.window.ScreenCapture.ScreenCaptureParams build();
     method @NonNull public android.window.ScreenCapture.ScreenCaptureParams.Builder setCaptureMode(int);
     method @NonNull public android.window.ScreenCapture.ScreenCaptureParams.Builder setPixelFormat(int);

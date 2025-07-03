@@ -843,7 +843,8 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"הפעלה"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"פועל – מבוסס על זיהוי פנים"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"השתקה וקיבוץ"</string>
-    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"שימוש בכלי לארגון התראות"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"ליישום <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"מבצעים, תכונות חדשות ועוד"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"כתבות מובילות, מאמרי דעה ועוד"</string>
@@ -852,8 +853,7 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"הפעלה"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"עכשיו אפשר לסכם את השיחות הארוכות כדי לקבל תקצירים מהירים"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"הכלי לארגון התראות מקבץ ומשתיק התראות פחות חשובות"</string>
-    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
-    <skip />
+    <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{התראה אחת}one{‫# התראות}two{‫# התראות}other{‫# התראות}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"סיום"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"אישור"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"השבתה"</string>
@@ -1095,6 +1095,16 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"שינוי הסדר של ההגדרות המהירות."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"תפריט הפעלה"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"דף <xliff:g id="ID_1">%1$d</xliff:g> מתוך <xliff:g id="ID_2">%2$d</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"מסך נעילה"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"בתהליך כיבוי…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"לצפייה בשלבי הטיפול"</string>
@@ -1580,7 +1590,7 @@
     <string name="shortcut_helper_add_shortcut_button_label" msgid="7655779534665954910">"הוספת קיצור דרך"</string>
     <string name="shortcut_helper_delete_shortcut_button_label" msgid="3148773472696137052">"מחיקת קיצור הדרך"</string>
     <string name="shortcut_helper_app_custom_shortcut_limit_exceeded" msgid="7766416877791564255">"הגעת למגבלה של 10 קיצורי דרך מותאמים אישית לאפליקציות"</string>
-    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"כדי להוסיף קיצור דרך חדש, עליך למחוק אחד קיים"</string>
+    <string name="shortcut_helper_app_custom_shortcut_limit_exceeded_instruction" msgid="6146855266321804624">"כדי להוסיף קיצור דרך חדש, עליך למחוק קיצור דרך אחד"</string>
     <string name="launch_keyboard_tutorial_notification_title" msgid="8849933155160522519">"ניווט באמצעות המקלדת"</string>
     <string name="launch_keyboard_tutorial_notification_content" msgid="2131074100205028210">"מידע על מקשי הקיצור"</string>
     <string name="launch_touchpad_tutorial_notification_title" msgid="2243780062772196901">"ניווט באמצעות לוח המגע"</string>
@@ -1666,4 +1676,8 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"כדי לפתוח את ההתראות, מחליקים מהפינה הימנית העליונה"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"כדי לפתוח את ההגדרות המהירות, מחליקים מהפינה השמאלית העליונה"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"חזרה"</string>
+    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <skip />
+    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <skip />
 </resources>

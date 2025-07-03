@@ -54,7 +54,7 @@ import org.mockito.Mockito.`when` as whenever
 @RunWith(AndroidTestingRunner::class)
 class DragPositioningCallbackUtilityTest {
     @Mock
-    private lateinit var mockWindowDecoration: WindowDecoration<*>
+    private lateinit var mockWindowDecoration: WindowDecorationWrapper
 
     @Mock
     private lateinit var taskToken: WindowContainerToken
@@ -89,11 +89,12 @@ class DragPositioningCallbackUtilityTest {
         }
 
         initializeTaskInfo()
-        mockWindowDecoration.mDisplay = mockDisplay
-        mockWindowDecoration.mDecorWindowContext = mockContext
-        mockWindowDecoration.mTaskInfo.isResizeable = true
-        whenever(mockContext.getResources()).thenReturn(mockResources)
-        whenever(mockWindowDecoration.mDecorWindowContext.resources).thenReturn(mockResources)
+        whenever(mockWindowDecoration.display).thenReturn(mockDisplay)
+        whenever(mockWindowDecoration.decorWindowContext).thenReturn(mockContext)
+
+        mockWindowDecoration.taskInfo.isResizeable = true
+        whenever(mockContext.resources).thenReturn(mockResources)
+        whenever(mockContext.resources).thenReturn(mockResources)
         whenever(mockResources.getDimensionPixelSize(R.dimen.desktop_mode_minimum_window_width))
             .thenReturn(DESKTOP_MODE_MIN_WIDTH)
         whenever(mockResources.getDimensionPixelSize(R.dimen.desktop_mode_minimum_window_height))
@@ -148,7 +149,7 @@ class DragPositioningCallbackUtilityTest {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_heightLessThanMin_resetToStartingBounds() {
-        mockWindowDecoration.mTaskInfo.isResizeable = false
+        mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint = PointF(STARTING_BOUNDS.right.toFloat(), STARTING_BOUNDS.top.toFloat())
         val repositionTaskBounds = Rect(STARTING_BOUNDS)
 
@@ -174,7 +175,7 @@ class DragPositioningCallbackUtilityTest {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_initialHeightLessThanMin_increasingBounds_resizeAllowed() {
-        mockWindowDecoration.mTaskInfo.isResizeable = false
+        mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint = PointF(BELOW_MIN_HEIGHT_BOUNDS.right.toFloat(),
             BELOW_MIN_HEIGHT_BOUNDS.bottom.toFloat())
         val repositionTaskBounds = Rect(BELOW_MIN_HEIGHT_BOUNDS)
@@ -202,7 +203,7 @@ class DragPositioningCallbackUtilityTest {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_initialHeightMoreThanMax_decreasingBounds_resizeAllowed() {
-        mockWindowDecoration.mTaskInfo.isResizeable = false
+        mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint = PointF(EXCEEDS_MAX_HEIGHT_BOUNDS.right.toFloat(),
             EXCEEDS_MAX_HEIGHT_BOUNDS.top.toFloat())
         val repositionTaskBounds = Rect(EXCEEDS_MAX_HEIGHT_BOUNDS)
@@ -230,7 +231,7 @@ class DragPositioningCallbackUtilityTest {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_widthLessThanMin_resetToStartingBounds() {
-        mockWindowDecoration.mTaskInfo.isResizeable = false
+        mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint = PointF(STARTING_BOUNDS.right.toFloat(), STARTING_BOUNDS.top.toFloat())
         val repositionTaskBounds = Rect(STARTING_BOUNDS)
 
@@ -256,7 +257,7 @@ class DragPositioningCallbackUtilityTest {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_initialWidthLessThanMin_increasingBounds_resizeAllowed() {
-        mockWindowDecoration.mTaskInfo.isResizeable = false
+        mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint = PointF(BELOW_MIN_WIDTH_BOUNDS.right.toFloat(),
             BELOW_MIN_WIDTH_BOUNDS.bottom.toFloat())
         val repositionTaskBounds = Rect(BELOW_MIN_WIDTH_BOUNDS)
@@ -284,7 +285,7 @@ class DragPositioningCallbackUtilityTest {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_initialWidthMoreThanMax_decreasingBounds_resizeAllowed() {
-        mockWindowDecoration.mTaskInfo.isResizeable = false
+        mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint = PointF(EXCEEDS_MAX_WIDTH_BOUNDS.left.toFloat(),
             EXCEEDS_MAX_WIDTH_BOUNDS.top.toFloat())
         val repositionTaskBounds = Rect(EXCEEDS_MAX_WIDTH_BOUNDS)
@@ -466,7 +467,7 @@ class DragPositioningCallbackUtilityTest {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_WINDOWING_SCALED_RESIZING)
     fun testChangeBounds_unresizeableApp_beyondStableBounds_resetToStartingBounds() {
-        mockWindowDecoration.mTaskInfo.isResizeable = false
+        mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint = PointF(
             STARTING_BOUNDS.right.toFloat(),
             STARTING_BOUNDS.bottom.toFloat()
@@ -692,7 +693,7 @@ class DragPositioningCallbackUtilityTest {
     @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_SIZE_CONSTRAINTS)
     fun testMaxHeight_initialHeightMoreThanMax_decreasingHeight_resizeAllowed() {
-        mockWindowDecoration.mTaskInfo.isResizeable = false
+        mockWindowDecoration.taskInfo.isResizeable = false
         val startingPoint = PointF(EXCEEDS_MAX_HEIGHT_BOUNDS.right.toFloat(),
             EXCEEDS_MAX_HEIGHT_BOUNDS.top.toFloat())
         val repositionTaskBounds = Rect(EXCEEDS_MAX_HEIGHT_BOUNDS)
@@ -745,15 +746,17 @@ class DragPositioningCallbackUtilityTest {
     }
 
     private fun initializeTaskInfo(taskMinWidth: Int = MIN_WIDTH, taskMinHeight: Int = MIN_HEIGHT) {
-        mockWindowDecoration.mTaskInfo = ActivityManager.RunningTaskInfo().apply {
-            taskId = TASK_ID
-            token = taskToken
-            minWidth = taskMinWidth
-            minHeight = taskMinHeight
-            defaultMinSize = DEFAULT_MIN
-            displayId = DISPLAY_ID
-            configuration.windowConfiguration.setBounds(STARTING_BOUNDS)
-        }
+        whenever(mockWindowDecoration.taskInfo).thenReturn(
+            ActivityManager.RunningTaskInfo().apply {
+                taskId = TASK_ID
+                token = taskToken
+                minWidth = taskMinWidth
+                minHeight = taskMinHeight
+                defaultMinSize = DEFAULT_MIN
+                displayId = DISPLAY_ID
+                configuration.windowConfiguration.setBounds(STARTING_BOUNDS)
+            }
+        )
     }
 
     companion object {

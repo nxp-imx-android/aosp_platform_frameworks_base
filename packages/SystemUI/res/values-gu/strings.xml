@@ -843,7 +843,8 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"ચાલુ કરો"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"ચાલુ છે - ચહેરા આધારિત રોટેશન"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"સાઇલન્ટ અને બંડલ"</string>
-    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"નોટિફિકેશન ઑર્ગેનાઇઝરનો ઉપયોગ કરો"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> માટે"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"વેચાણ, નવી સુવિધાઓ અને બીજું ઘણું"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"લોકપ્રિય સ્ટોરી, એડિટોરિયલ અને બીજું ઘણું"</string>
@@ -852,8 +853,7 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"ચાલુ કરો"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"તમારી વધુ લાંબી વાતચીતોનો હવે તમને ઝડપી રીકેપ આપવા માટે સારાંશ તૈયાર થઈ શકે છે"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"નોટિફિકેશન ઑર્ગેનાઇઝર બંડલ બનાવે છે અને ઓછી પ્રાધાન્યતાવાળા નોટિફિકેશનને સાઇલન્ટ કરે છે"</string>
-    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
-    <skip />
+    <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# નોટિફિકેશન}one{# નોટિફિકેશન}other{# નોટિફિકેશન}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"થઈ ગયું"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"લાગુ કરો"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"બંધ કરો"</string>
@@ -1095,6 +1095,16 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"ઝડપી સેટિંગના ક્રમમાં ફેરફાર કરો."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"પાવર મેનૂ"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g>માંથી <xliff:g id="ID_1">%1$d</xliff:g> પેજ"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"લૉક સ્ક્રીન"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"શટ ડાઉન કરી રહ્યાં છીએ…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"સારસંભાળના પગલાં જુઓ"</string>
@@ -1666,4 +1676,8 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"નોટિફિકેશન ખોલવા માટે સૌથી ઉપર ડાબી બાજુએથી નીચે સ્વાઇપ કરો"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"ઝડપી સેટિંગ ખોલવા માટે સૌથી ઉપર જમણી બાજુએથી નીચે સ્વાઇપ કરો"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"પાછળ"</string>
+    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <skip />
+    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <skip />
 </resources>

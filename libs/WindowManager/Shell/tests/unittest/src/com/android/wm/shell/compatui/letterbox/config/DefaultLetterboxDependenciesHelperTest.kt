@@ -22,6 +22,8 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.desktopmode.DesktopRepository
 import com.android.wm.shell.util.testLetterboxDependenciesHelper
 import java.util.function.Consumer
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.any
@@ -45,7 +47,7 @@ class DefaultLetterboxDependenciesHelperTest : ShellTestCase() {
                 inputChange { }
                 r.configureDesktopRepository(isAnyDeskActive = false)
                 validateIsDesktopWindowingAction { shouldDestroy ->
-                    assert(!shouldDestroy)
+                    assertFalse(shouldDestroy)
                 }
             }
         }
@@ -58,7 +60,7 @@ class DefaultLetterboxDependenciesHelperTest : ShellTestCase() {
                 inputChange { }
                 r.configureDesktopRepository(isAnyDeskActive = true)
                 validateIsDesktopWindowingAction { shouldDestroy ->
-                    assert(shouldDestroy)
+                    assertTrue(shouldDestroy)
                 }
             }
         }

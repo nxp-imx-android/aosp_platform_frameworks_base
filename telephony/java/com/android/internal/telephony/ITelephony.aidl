@@ -1805,6 +1805,8 @@ interface ITelephony {
      *
      * @return {@code true} if the switch succeeds, {@code false} if the switch fails.
      */
+    @JavaPassthrough(annotation="@android.annotation.RequiresPermission("
+                      + "android.Manifest.permission.MODIFY_PHONE_STATE)")
     boolean setSimSlotMapping(in List<UiccSlotMapping> slotMapping);
 
     /**

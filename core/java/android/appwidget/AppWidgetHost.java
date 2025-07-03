@@ -50,6 +50,7 @@ import com.android.internal.appwidget.IAppWidgetService;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -81,7 +82,6 @@ public class AppWidgetHost {
     private final Callbacks mCallbacks;
     private final SparseArray<AppWidgetHostListener> mListeners = new SparseArray<>();
     private InteractionHandler mInteractionHandler;
-    private final Handler mMainHandler;
 
     static class Callbacks extends IAppWidgetHost.Stub {
         private final WeakReference<Handler> mWeakHandler;
@@ -214,7 +214,6 @@ public class AppWidgetHost {
         mHandler = new UpdateHandler(looper);
         mCallbacks = new Callbacks(mHandler);
         mDisplayMetrics = context.getResources().getDisplayMetrics();
-        mMainHandler = new Handler(Looper.getMainLooper());
         bindService(context);
     }
 

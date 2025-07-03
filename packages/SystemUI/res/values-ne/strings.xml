@@ -843,7 +843,8 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"सक्रिय पार्नुहोस्"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"अन छ - अनुहारमा आधारित"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"साइलेन्ट पार्नुहोस् र बन्डल बनाउनुहोस्"</string>
-    <string name="notification_guts_single_bundle_notif_title" msgid="3186784466618443494">"नोटिफिकेसन व्यवस्थित गर्ने सुविधा प्रयोग गर्नुहोस्"</string>
+    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
+    <skip />
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> को"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"बिक्री, नयाँ सुविधा र अन्य कुरा"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"लोकप्रिय समाचार, सम्पादकीय र अन्य सामग्री"</string>
@@ -852,8 +853,7 @@
     <string name="notification_onboarding_summaries_turn_on" msgid="5050003857531272655">"अन गर्नुहोस्"</string>
     <string name="notification_onboarding_summaries_message" msgid="6061524903176459064">"तपाईंलाई छोटा रिक्यापहरू उपलब्ध गराउन अब तपाईंका लामा वार्तालापहरूको सारांश बनाउन सकिने छ"</string>
     <string name="notification_onboarding_bundles_message" msgid="9038023612294384832">"नोटिफिकेसन व्यवस्थित गर्ने सुविधाले खासै महत्त्वपूर्ण नभएका नोटिफिकेसनहरू गाभ्छ र साइलेन्ट पार्छ"</string>
-    <!-- no translation found for notification_bundle_header_counter (5515532701569242265) -->
-    <skip />
+    <string name="notification_bundle_header_counter" msgid="5515532701569242265">"{count,plural, =1{# नोटिफिकेसन}other{# वटा नोटिफिकेसन}}"</string>
     <string name="inline_done_button" msgid="6043094985588909584">"सम्पन्न भयो"</string>
     <string name="inline_ok_button" msgid="603075490581280343">"लागू गर्नुहोस्"</string>
     <string name="inline_turn_off_notifications" msgid="2653064779176881329">"अफ गर्नुहोस्"</string>
@@ -1095,6 +1095,16 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"द्रुत सेटिङमा भएका विकल्पहरूको क्रम बदल्नुहोस्।"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"पावर मेनु"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g> मध्ये पृष्ठ <xliff:g id="ID_1">%1$d</xliff:g>"</string>
+    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
+    <skip />
+    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
+    <skip />
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लक स्क्रिन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"सट डाउन गरिँदै छ..."</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"डिभाइसको हेरचाह गर्ने तरिका हेर्नुहोस्"</string>
@@ -1666,4 +1676,8 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"नोटिफिकेसनहरू खोल्न सिरानको बायाँतिरबाट तलतिर स्वाइप गर्नुहोस्"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"द्रुत सेटिङ खोल्न सिरानको दायाँतिरबाट तलतिर स्वाइप गर्नुहोस्"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"पछाडि"</string>
+    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <skip />
+    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <skip />
 </resources>

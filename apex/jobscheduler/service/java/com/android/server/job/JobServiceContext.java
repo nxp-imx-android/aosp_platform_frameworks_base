@@ -447,8 +447,7 @@ public final class JobServiceContext implements ServiceConnection {
 
             mWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                     job.getWakelockTag());
-            mWakeLock.setWorkSource(
-                    mService.deriveWorkSource(job.getSourceUid(), job.getSourcePackageName()));
+            mWakeLock.setWorkSource(mService.deriveWorkSource(job.getSourceUid()));
             mWakeLock.setReferenceCounted(false);
             mWakeLock.acquire();
 

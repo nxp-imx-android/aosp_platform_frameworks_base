@@ -2968,14 +2968,18 @@ class RootWindowContainer extends WindowContainer<DisplayContent>
         if (mTmpOccludingRegion != null) {
             mTmpOccludingRegion.setEmpty();
         }
-        boolean changed = false;
-        if (!mTaskSupervisor.inActivityVisibilityUpdate()) {
-            changed = mTaskSupervisor.computeProcessActivityStateBatch();
-        }
-        if (mRankTaskLayersRunnable.mCheckUpdateOomAdj) {
-            mRankTaskLayersRunnable.mCheckUpdateOomAdj = false;
-            if (changed) {
-                mService.updateOomAdj();
+        // Multiple OomAdjuster affecting state changes can occur, wrap those state changes in a
+        // BatchSession.
+        try (var unused = mService.mActivityStateUpdater.startBatchSession()) {
+            boolean changed = false;
+            if (!mTaskSupervisor.inActivityVisibilityUpdate()) {
+                changed = mTaskSupervisor.computeProcessActivityStateBatch();
+            }
+            if (mRankTaskLayersRunnable.mCheckUpdateOomAdj) {
+                mRankTaskLayersRunnable.mCheckUpdateOomAdj = false;
+                if (changed) {
+                    mService.updateOomAdj();
+                }
             }
         }
     }

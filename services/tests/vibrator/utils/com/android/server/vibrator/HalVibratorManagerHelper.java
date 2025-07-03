@@ -33,13 +33,16 @@ import com.android.server.vibrator.VintfHalVibratorManager.DefaultHalVibratorMan
 import com.android.server.vibrator.VintfHalVibratorManager.LegacyHalVibratorManager;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Provides real {@link HalVibratorManager} implementations for testing, backed with fake and
  * configurable hardware capabilities.
  */
 public class HalVibratorManagerHelper {
+    private final Map<Integer, HalVibratorHelper> mVibratorHelpers = new HashMap<>();
     private final Handler mHandler;
 
     private FakeVibrationSession mLastSession;
@@ -73,20 +76,33 @@ public class HalVibratorManagerHelper {
     /** Create new {@link DefaultHalVibratorManager} for testing. */
     public DefaultHalVibratorManager newDefaultVibratorManager() {
         FakeVibratorManager fakeManager = new FakeVibratorManager();
-        return new DefaultHalVibratorManager(new FakeVibratorManagerSupplier(fakeManager));
+        return new DefaultHalVibratorManager(new FakeVibratorManagerSupplier(fakeManager),
+                id -> mVibratorHelpers.get(id).newVibratorController(id));
+    }
+
+    /** Return the helper class for given vibrator, or null if ID not found. */
+    public HalVibratorHelper getVibratorHelper(int vibratorId) {
+        return mVibratorHelpers.get(vibratorId);
     }
 
     /** Create new {@link LegacyHalVibratorManager} for testing. */
     public LegacyHalVibratorManager newLegacyVibratorManager() {
-        return new LegacyHalVibratorManager(mVibratorIds);
+        return new LegacyHalVibratorManager(mVibratorIds,
+                id -> mVibratorHelpers.get(id).newVibratorController(id));
     }
 
-    public void setCapabilities(long capabilities) {
-        mCapabilities = capabilities;
+    public void setCapabilities(long... capabilities) {
+        mCapabilities = Arrays.stream(capabilities).reduce(0, (a, b) -> a | b);
     }
 
     public void setVibratorIds(int[] vibratorIds) {
         mVibratorIds = vibratorIds;
+        mVibratorHelpers.clear();
+        if (vibratorIds != null) {
+            for (int id : vibratorIds) {
+                mVibratorHelpers.put(id, new HalVibratorHelper(mHandler.getLooper()));
+            }
+        }
     }
 
     public void setSessionEndDelayMs(long sessionEndDelayMs) {
@@ -176,6 +192,11 @@ public class HalVibratorManagerHelper {
     /** Provides fake implementation of {@link VibratorManagerService.NativeWrapper} for testing. */
     public final class FakeNativeWrapper extends VibratorManagerService.NativeWrapper {
         private HalVibratorManager.Callbacks mCallbacks;
+
+        @Override
+        public HalVibrator createVibrator(int vibratorId) {
+            return mVibratorHelpers.get(vibratorId).newVibratorController(vibratorId);
+        }
 
         @Override
         public void init(HalVibratorManager.Callbacks callback) {

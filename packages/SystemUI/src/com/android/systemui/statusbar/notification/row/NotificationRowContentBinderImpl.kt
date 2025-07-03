@@ -939,26 +939,22 @@ constructor(
             row: ExpandableNotificationRow,
             provider: NotifLayoutInflaterFactory.Provider,
         ): NewRemoteViews {
-            contracted?.let {
-                it.layoutInflaterFactory = provider.provide(row, FLAG_CONTENT_VIEW_CONTRACTED)
+
+            fun RemoteViews?.setLayoutInflaterFactoryRecursively(@InflationFlag layoutType: Int) {
+                val layoutInflaterFactory = provider.provide(row, layoutType)
+                this?.visitRemoteViews { it.layoutInflaterFactory = layoutInflaterFactory }
             }
-            expanded?.let {
-                it.layoutInflaterFactory = provider.provide(row, FLAG_CONTENT_VIEW_EXPANDED)
-            }
-            headsUp?.let {
-                it.layoutInflaterFactory = provider.provide(row, FLAG_CONTENT_VIEW_HEADS_UP)
-            }
-            public?.let {
-                it.layoutInflaterFactory = provider.provide(row, FLAG_CONTENT_VIEW_PUBLIC)
-            }
+
+            contracted.setLayoutInflaterFactoryRecursively(FLAG_CONTENT_VIEW_CONTRACTED)
+            expanded.setLayoutInflaterFactoryRecursively(FLAG_CONTENT_VIEW_EXPANDED)
+            headsUp.setLayoutInflaterFactoryRecursively(FLAG_CONTENT_VIEW_HEADS_UP)
+            public.setLayoutInflaterFactoryRecursively(FLAG_CONTENT_VIEW_PUBLIC)
+
             if (android.app.Flags.notificationsRedesignAppIcons()) {
-                normalGroupHeader?.let {
-                    it.layoutInflaterFactory = provider.provide(row, FLAG_GROUP_SUMMARY_HEADER)
-                }
-                minimizedGroupHeader?.let {
-                    it.layoutInflaterFactory =
-                        provider.provide(row, FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER)
-                }
+                normalGroupHeader.setLayoutInflaterFactoryRecursively(FLAG_GROUP_SUMMARY_HEADER)
+                minimizedGroupHeader.setLayoutInflaterFactoryRecursively(
+                    FLAG_LOW_PRIORITY_GROUP_SUMMARY_HEADER
+                )
             }
             return this
         }

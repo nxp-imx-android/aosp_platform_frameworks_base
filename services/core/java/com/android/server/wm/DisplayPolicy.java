@@ -817,13 +817,13 @@ public class DisplayPolicy {
             }
             if (awake) {
                 mService.mAtmService.mVisibleDozeUiProcess = null;
-                mService.mAtmService.mProcessStateController.setVisibleDozeUiProcessAsync(null);
+                mService.mAtmService.mActivityStateUpdater.setVisibleDozeUiProcessAsync(null);
             } else if (mScreenOnFully && mNotificationShade != null) {
                 // Screen is still on, so it may be showing an always-on UI.
                 final WindowProcessController visibleDozeUiProcess =
                         mNotificationShade.getProcess();
                 mService.mAtmService.mVisibleDozeUiProcess = visibleDozeUiProcess;
-                mService.mAtmService.mProcessStateController.setVisibleDozeUiProcessAsync(
+                mService.mAtmService.mActivityStateUpdater.setVisibleDozeUiProcessAsync(
                         visibleDozeUiProcess);
             }
             mService.mAtmService.mKeyguardController.updateDeferTransitionForAod(

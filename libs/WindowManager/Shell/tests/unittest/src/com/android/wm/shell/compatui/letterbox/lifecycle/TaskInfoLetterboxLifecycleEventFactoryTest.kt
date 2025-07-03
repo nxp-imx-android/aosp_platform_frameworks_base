@@ -23,10 +23,15 @@ import android.view.SurfaceControl
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.util.testLetterboxLifecycleEventFactory
-import java.util.function.Consumer
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.mock
+import java.util.function.Consumer
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Tests for [TaskInfoLetterboxLifecycleEventFactory].
@@ -46,10 +51,10 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
                     // Empty Change
                 }
                 validateCanHandle { canHandle ->
-                    assert(canHandle == false)
+                    assertFalse(canHandle)
                 }
                 validateCreateLifecycleEvent { event ->
-                    assert(event == null)
+                    assertNull(event)
                 }
             }
         }
@@ -67,11 +72,11 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
                     endAbsBounds = Rect(0, 0, 500, 1000)
                 }
                 validateCanHandle { canHandle ->
-                    assert(canHandle == true)
+                    assertTrue(canHandle)
                 }
                 validateCreateLifecycleEvent { event ->
-                    assert(event != null)
-                    assert(event?.isBubble == true)
+                    assertNotNull(event)
+                    assertTrue(event.isBubble)
                 }
             }
         }
@@ -82,14 +87,15 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
                 inputChange {
+                    runningTaskInfo { }
                     endAbsBounds = Rect(100, 200, 2000, 1000)
                 }
                 validateCanHandle { canHandle ->
-                    assert(canHandle == true)
+                    assertTrue(canHandle)
                 }
                 validateCreateLifecycleEvent { event ->
-                    assert(event != null)
-                    assert(event?.taskBounds == Rect(0, 0, 1900, 1800))
+                    assertNotNull(event)
+                    assertEquals(Rect(0, 0, 1900, 800), event.taskBounds)
                 }
             }
         }
@@ -106,11 +112,11 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
                     endAbsBounds = Rect(0, 0, 500, 1000)
                 }
                 validateCanHandle { canHandle ->
-                    assert(canHandle == true)
+                    assertTrue(canHandle)
                 }
                 validateCreateLifecycleEvent { event ->
-                    assert(event != null)
-                    assert(event?.letterboxBounds == null)
+                    assertNotNull(event)
+                    assertNull(event.letterboxBounds)
                 }
             }
         }
@@ -128,11 +134,11 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
                     endAbsBounds = Rect(100, 50, 2500, 1500)
                 }
                 validateCanHandle { canHandle ->
-                    assert(canHandle == true)
+                    assertTrue(canHandle)
                 }
                 validateCreateLifecycleEvent { event ->
-                    assert(event != null)
-                    assert(event?.letterboxBounds == Rect(200, 150, 2400, 1150))
+                    assertNotNull(event)
+                    assertEquals(Rect(200, 150, 2200, 1150), event.letterboxBounds)
                 }
             }
         }
@@ -144,16 +150,17 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
                 val inputLeash = mock<SurfaceControl>()
                 inputChange {
+                    runningTaskInfo {}
                     endAbsBounds = Rect(0, 0, 500, 1000)
                     endRelOffset = Point(100, 200)
                     leash { inputLeash }
                 }
                 validateCanHandle { canHandle ->
-                    assert(canHandle == true)
+                    assertTrue(canHandle)
                 }
                 validateCreateLifecycleEvent { event ->
-                    assert(event != null)
-                    assert(event?.taskLeash == inputLeash)
+                    assertNotNull(event)
+                    assertEquals(inputLeash, event.taskLeash)
                 }
             }
         }
@@ -165,16 +172,18 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
                 val inputToken = mock<WindowContainerToken>()
                 inputChange {
+                    runningTaskInfo { ti ->
+                        ti.token = inputToken
+                    }
                     endAbsBounds = Rect(0, 0, 500, 1000)
                     endRelOffset = Point(100, 200)
-                    token { inputToken }
                 }
                 validateCanHandle { canHandle ->
-                    assert(canHandle == true)
+                    assertTrue(canHandle)
                 }
                 validateCreateLifecycleEvent { event ->
-                    assert(event != null)
-                    assert(event?.containerToken == inputToken)
+                    assertNotNull(event)
+                    assertEquals(inputToken, event.containerToken)
                 }
             }
         }

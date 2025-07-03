@@ -621,13 +621,15 @@ class ActivityClientController extends IActivityClientController.Stub {
                 final ActivityRecord r = ActivityRecord.isInRootTaskLocked(token);
                 if (r == null) return;
 
-                // TODO: This should probably only loop over the task since you need to be in the
-                // same task to return results.
-                r.getRootTask().forAllActivities(activity -> {
-                    activity.finishIfSubActivity(r /* parent */, resultWho, requestCode);
-                }, true /* traverseTopToBottom */);
+                try (var unused = mService.mActivityStateUpdater.startBatchSession()) {
+                    // TODO: This should probably only loop over the task since you need to be in
+                    //  the same task to return results.
+                    r.getRootTask().forAllActivities(activity -> {
+                        activity.finishIfSubActivity(r /* parent */, resultWho, requestCode);
+                    }, true /* traverseTopToBottom */);
 
-                mService.updateOomAdj();
+                    mService.updateOomAdj();
+                }
             }
         } finally {
             Binder.restoreCallingIdentity(origId);

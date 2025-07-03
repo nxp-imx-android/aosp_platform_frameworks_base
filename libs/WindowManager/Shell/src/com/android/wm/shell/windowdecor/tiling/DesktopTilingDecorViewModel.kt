@@ -49,7 +49,7 @@ import com.android.wm.shell.sysui.ShellController
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
-import com.android.wm.shell.windowdecor.DesktopModeWindowDecoration
+import com.android.wm.shell.windowdecor.WindowDecorationWrapper
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
@@ -88,7 +88,7 @@ class DesktopTilingDecorViewModel(
 
     fun snapToHalfScreen(
         taskInfo: ActivityManager.RunningTaskInfo,
-        desktopModeWindowDecoration: DesktopModeWindowDecoration,
+        windowDecoration: WindowDecorationWrapper,
         position: DesktopTasksController.SnapPosition,
         currentBounds: Rect,
         destinationBounds: Rect? = null,
@@ -129,7 +129,7 @@ class DesktopTilingDecorViewModel(
         transitions.registerObserver(handler)
         return handler.onAppTiled(
             taskInfo,
-            desktopModeWindowDecoration,
+            windowDecoration,
             position,
             currentBounds,
             destinationBounds,

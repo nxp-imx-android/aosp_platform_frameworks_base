@@ -823,17 +823,7 @@ public class BluetoothUtils {
             Log.d(TAG, "Skip check hasConnectedBroadcastSourceForBtDevice due to arg is null");
             return false;
         }
-        if (isAudioSharingHysteresisModeFixAvailable(localBtManager.getContext())) {
-            return hasActiveLocalBroadcastSourceForBtDevice(device, localBtManager);
-        }
-        LocalBluetoothLeBroadcastAssistant assistant =
-                localBtManager.getProfileManager().getLeAudioBroadcastAssistantProfile();
-        if (device == null || assistant == null) {
-            Log.d(TAG, "Skip check hasConnectedBroadcastSourceForBtDevice due to arg is null");
-            return false;
-        }
-        List<BluetoothLeBroadcastReceiveState> sourceList = assistant.getAllSources(device);
-        return !sourceList.isEmpty() && sourceList.stream().anyMatch(BluetoothUtils::isConnected);
+        return hasActiveLocalBroadcastSourceForBtDevice(device, localBtManager);
     }
 
     /**

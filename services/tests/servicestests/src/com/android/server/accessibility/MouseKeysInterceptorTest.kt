@@ -77,13 +77,6 @@ class MouseKeysInterceptorTest {
         // when the handler processes the initial key down event, satisfying the required
         // time interval (MOVE_REPEAT_DELAY_MILLS). It should be >= MOVE_REPEAT_DELAY_MILLS.
         const val KEYBOARD_POST_EVENT_DELAY_MILLIS_FOR_MOUSE_POINTER = 30L
-        // The maximum movement step, in pixels per interval, that the mouse pointer can reach when
-        // FLAG_ENABLE_MOUSE_KEY_ENHANCEMENT is enabled. This directly corresponds to
-        // `mMaxMovementStep` in the MouseKeysInterceptor.
-        const val MAX_MOVEMENT_STEP = 10.0f
-        // The acceleration factor applied to the mouse pointer's movement step per interval.
-        // This directly corresponds to `mAcceleration` in the MouseKeysInterceptor.
-        const val ACCELERATION = 0.1f
         // The initial movement step for the mouse pointer before acceleration begins.
         // This directly corresponds to `INITIAL_MOUSE_POINTER_MOVEMENT_STEP` in the
         // MouseKeysInterceptor.
@@ -184,6 +177,10 @@ class MouseKeysInterceptorTest {
         val setting = if (usePrimaryKeys) 1 else 0
         Settings.Secure.putIntForUser(testableContext.getContentResolver(),
             Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_USE_PRIMARY_KEYS, setting, USER_ID)
+        Settings.Secure.putIntForUser(testableContext.getContentResolver(),
+            Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_MAX_SPEED, 5, USER_ID)
+        Settings.Secure.putFloatForUser(testableContext.getContentResolver(),
+            Settings.Secure.ACCESSIBILITY_MOUSE_KEYS_ACCELERATION, 0.2f, USER_ID)
 
         mouseKeysInterceptor = MouseKeysInterceptor(mockAms, testableContext,
             testLooper.looper, DISPLAY_ID, testTimeSource, USER_ID)
@@ -236,12 +233,11 @@ class MouseKeysInterceptorTest {
                 USE_PRIMARY_KEYS)
         val downEvent = KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN,
             keyCode, 0, 0, DEVICE_ID, 0)
-        val expectedStepValue = INITIAL_STEP_BEFORE_ACCEL * (1.0f + ACCELERATION)
-
         mouseKeysInterceptor.onKeyEvent(downEvent, 0)
         testLooper.dispatchAll()
 
         // Verify the sendRelativeEvent method is called once and capture the arguments
+        val expectedStepValue = INITIAL_STEP_BEFORE_ACCEL * (1.0f + mouseKeysInterceptor.mAcceleration)
         verifyRelativeEvents(expectedX = floatArrayOf(-expectedStepValue / sqrt(2.0f)),
             expectedY = floatArrayOf(expectedStepValue / sqrt(2.0f)))
     }
@@ -409,12 +405,11 @@ class MouseKeysInterceptorTest {
             USE_NUMPAD_KEYS)
         val downEvent = KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN,
             keyCode, 0, 0, DEVICE_ID, 0)
-        val expectedStepValue = INITIAL_STEP_BEFORE_ACCEL * (1.0f + ACCELERATION)
-
         mouseKeysInterceptor.onKeyEvent(downEvent, 0)
         testLooper.dispatchAll()
 
         // Verify the sendRelativeEvent method is called once and capture the arguments
+        val expectedStepValue = INITIAL_STEP_BEFORE_ACCEL * (1.0f + mouseKeysInterceptor.mAcceleration)
         verifyRelativeEvents(expectedX = floatArrayOf(0f),
             expectedY = floatArrayOf(-expectedStepValue))
     }
@@ -429,12 +424,11 @@ class MouseKeysInterceptorTest {
             USE_PRIMARY_KEYS)
         val downEvent = KeyEvent(downTime, downTime, KeyEvent.ACTION_DOWN,
             keyCode, 0, 0, DEVICE_ID, 0)
-        val expectedStepValue = INITIAL_STEP_BEFORE_ACCEL * (1.0f + ACCELERATION)
-
         mouseKeysInterceptor.onKeyEvent(downEvent, 0)
         testLooper.dispatchAll()
 
         // Verify the sendRelativeEvent method is called once and capture the arguments
+        val expectedStepValue = INITIAL_STEP_BEFORE_ACCEL * (1.0f + mouseKeysInterceptor.mAcceleration)
         verifyRelativeEvents(expectedX = floatArrayOf(0f),
             expectedY = floatArrayOf(-expectedStepValue))
     }
@@ -458,7 +452,8 @@ class MouseKeysInterceptorTest {
 
         // Update initial calculations
         currentMovementStepForExpectation = minOf(
-            currentMovementStepForExpectation * (1 + ACCELERATION), MAX_MOVEMENT_STEP)
+            currentMovementStepForExpectation * (1 + mouseKeysInterceptor.mAcceleration),
+            mouseKeysInterceptor.mMaxMovementStep)
         expectedRelativeXs.add(0f)
         expectedRelativeYs.add(-currentMovementStepForExpectation)
 
@@ -468,7 +463,8 @@ class MouseKeysInterceptorTest {
             clock.fastForward(MOVE_REPEAT_DELAY_MILLS)
             testLooper.dispatchAll()
             currentMovementStepForExpectation = minOf(
-                currentMovementStepForExpectation * (1 + ACCELERATION), MAX_MOVEMENT_STEP)
+                currentMovementStepForExpectation * (1 + mouseKeysInterceptor.mAcceleration),
+                    mouseKeysInterceptor.mMaxMovementStep)
             expectedRelativeXs.add(0f)
             expectedRelativeYs.add(-currentMovementStepForExpectation)
         }
@@ -516,12 +512,13 @@ class MouseKeysInterceptorTest {
 
         val allEvents = captor.allValues
         val lastCapturedEvent = allEvents.last()
-        assertThat(lastCapturedEvent.relativeX).isEqualTo(MAX_MOVEMENT_STEP)
+        assertThat(lastCapturedEvent.relativeX).isEqualTo(mouseKeysInterceptor.mMaxMovementStep)
         assertThat(lastCapturedEvent.relativeY).isEqualTo(0f)
 
         // Also check a few before last to ensure it was capped
         val thirdLastCapturedEvent = allEvents[allEvents.size - 3]
-        assertThat(thirdLastCapturedEvent.relativeX).isEqualTo(MAX_MOVEMENT_STEP)
+        assertThat(thirdLastCapturedEvent.relativeX).isEqualTo(
+                mouseKeysInterceptor.mMaxMovementStep)
         assertThat(thirdLastCapturedEvent.relativeY).isEqualTo(0f)
     }
 
@@ -564,8 +561,7 @@ class MouseKeysInterceptorTest {
         testLooper.dispatchAll()
 
         // Calculate expected first step for a new press
-        val expectedFirstStepAfterReset = INITIAL_STEP_BEFORE_ACCEL * (1 + ACCELERATION)
-
+        val expectedFirstStepAfterReset = INITIAL_STEP_BEFORE_ACCEL * (1 + mouseKeysInterceptor.mAcceleration)
         // Verify the sendRelativeEvent method is called once and capture the arguments
         verifyRelativeEvents(expectedX = floatArrayOf(0f),
             expectedY = floatArrayOf(expectedFirstStepAfterReset))
@@ -584,7 +580,7 @@ class MouseKeysInterceptorTest {
         mouseKeysInterceptor.onKeyEvent(numpadKeyDownEvent, 0)
         testLooper.dispatchAll()
 
-        val expectedStepValue = INITIAL_STEP_BEFORE_ACCEL * (1.0f + ACCELERATION)
+        val expectedStepValue = INITIAL_STEP_BEFORE_ACCEL * (1.0f + mouseKeysInterceptor.mAcceleration)
         verifyRelativeEvents(expectedX = floatArrayOf(-expectedStepValue), expectedY = floatArrayOf(0f))
         assertThat(nextInterceptor.events).isEmpty()
 

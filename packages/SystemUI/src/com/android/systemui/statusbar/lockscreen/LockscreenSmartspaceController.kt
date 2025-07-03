@@ -22,6 +22,7 @@ import android.app.smartspace.SmartspaceConfig
 import android.app.smartspace.SmartspaceManager
 import android.app.smartspace.SmartspaceSession
 import android.app.smartspace.SmartspaceTarget
+import android.app.smartspace.SmartspaceTargetEvent
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -506,12 +507,18 @@ constructor(
         statusBarStateController.addCallback(statusBarStateListener)
         bypassController.registerOnBypassStateChangedListener(bypassStateChangedListener)
 
-        datePlugin?.setEventDispatcher { e -> session?.notifySmartspaceEvent(e) }
-        weatherPlugin?.setEventDispatcher { e -> session?.notifySmartspaceEvent(e) }
-        plugin?.setEventDispatcher { e -> session?.notifySmartspaceEvent(e) }
+        datePlugin?.setEventDispatcher { e -> notifySmartspaceEvent(e) }
+        weatherPlugin?.setEventDispatcher { e -> notifySmartspaceEvent(e) }
+        plugin?.setEventDispatcher { e -> notifySmartspaceEvent(e) }
 
         updateBypassEnabled()
         reloadSmartspace()
+    }
+
+    /** Pushes a given SmartspaceTargetEvent to the SmartspaceSession. */
+    private fun notifySmartspaceEvent(targetEvent: SmartspaceTargetEvent) {
+        Log.d(TAG, "notifySmartspaceEvent: $targetEvent")
+        session?.notifySmartspaceEvent(targetEvent)
     }
 
     /** Requests the smartspace session for an update. */

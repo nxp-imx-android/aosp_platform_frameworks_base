@@ -108,6 +108,7 @@ import com.android.wm.shell.shared.multiinstance.ManageWindowsViewContainer;
 import com.android.wm.shell.splitscreen.SplitScreenController;
 import com.android.wm.shell.transition.Transitions;
 import com.android.wm.shell.windowdecor.common.DecorThemeUtil;
+import com.android.wm.shell.windowdecor.common.ExclusionRegionListener;
 import com.android.wm.shell.windowdecor.common.Theme;
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader;
 import com.android.wm.shell.windowdecor.common.viewhost.WindowDecorViewHost;
@@ -126,7 +127,7 @@ import kotlin.jvm.functions.Function1;
 import kotlinx.coroutines.CoroutineScope;
 import kotlinx.coroutines.MainCoroutineDispatcher;
 
-import java.util.List;
+import java.util.ArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -138,7 +139,8 @@ import java.util.function.Supplier;
  *
  * The shadow's thickness is 20dp when the window is in focus and 5dp when the window isn't.
  */
-public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLinearLayout> {
+public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLinearLayout>
+        implements HandleMenuController, ManageWindowsMenuController, MaximizeMenuController {
     private static final String TAG = "DesktopModeWindowDecoration";
 
     @VisibleForTesting
@@ -1260,7 +1262,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         return new Point(menuLeft, menuTop);
     }
 
-    boolean isHandleMenuActive() {
+    @Override
+    public boolean isHandleMenuActive() {
         return mHandleMenu != null;
     }
 
@@ -1428,7 +1431,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     /**
      * Create and display maximize menu window
      */
-    void createMaximizeMenu() {
+    @Override
+    public void createMaximizeMenu() {
         if (isMaximizeMenuActive()) return;
         mDesktopModeUiEventLogger.log(mTaskInfo,
                 DesktopUiEventEnum.DESKTOP_WINDOW_MAXIMIZE_BUTTON_REVEAL_MENU);
@@ -1457,7 +1461,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     }
 
     /** Set whether the app header's maximize button is hovered. */
-    void setAppHeaderMaximizeButtonHovered(boolean hovered) {
+    @Override
+    public void setAppHeaderMaximizeButtonHovered(boolean hovered) {
         mIsAppHeaderMaximizeButtonHovered = hovered;
         onMaximizeHoverStateChanged();
     }
@@ -1466,7 +1471,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
      * Called when either one of the maximize button in the app header or the maximize menu has
      * changed its hover state.
      */
-    void onMaximizeHoverStateChanged() {
+    @Override
+    public void onMaximizeHoverStateChanged() {
         if (!mIsMaximizeMenuHovered && !mIsAppHeaderMaximizeButtonHovered) {
             // Neither is hovered, close the menu.
             if (isMaximizeMenuActive()) {
@@ -1496,14 +1502,16 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mMaximizeMenu = null;
     }
 
-    boolean isMaximizeMenuActive() {
+    @Override
+    public boolean isMaximizeMenuActive() {
         return mMaximizeMenu != null;
     }
 
     /**
      * Updates app info and creates and displays handle menu window.
      */
-    void createHandleMenu(boolean minimumInstancesFound) {
+    @Override
+    public void createHandleMenu(boolean minimumInstancesFound) {
         if (isHandleMenuActive()) return;
         mMinimumInstancesFound = minimumInstancesFound;
         if (AppToWebUtils.canShowAppLinks(mDisplay, mDesktopState)) {
@@ -1595,7 +1603,9 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mMinimumInstancesFound = false;
     }
 
-    void createManageWindowsMenu(@NonNull List<Pair<Integer, TaskSnapshot>> snapshotList) {
+    @Override
+    public void createManageWindowsMenu(
+            @NonNull ArrayList<Pair<Integer, TaskSnapshot>> snapshotList) {
         final Function1<Integer, Unit> onOpenInstanceListener = (requestedTaskId) -> {
             closeManageWindowsMenu();
             if (mTaskInfo.taskId != requestedTaskId) {
@@ -1986,14 +1996,16 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     /**
      * Called when there is a {@link MotionEvent#ACTION_HOVER_EXIT} on the maximize window button.
      */
-    void onMaximizeButtonHoverExit() {
+    @Override
+    public void onMaximizeButtonHoverExit() {
         asAppHeader(mWindowDecorViewHolder).onMaximizeWindowHoverExit();
     }
 
     /**
      * Called when there is a {@link MotionEvent#ACTION_HOVER_ENTER} on the maximize window button.
      */
-    void onMaximizeButtonHoverEnter() {
+    @Override
+    public void onMaximizeButtonHoverEnter() {
         asAppHeader(mWindowDecorViewHolder).onMaximizeWindowHoverEnter();
     }
 
@@ -2018,76 +2030,6 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 + "}";
     }
 
-    static class Factory {
-
-        DesktopModeWindowDecoration create(
-                Context context,
-                @NonNull Context userContext,
-                DisplayController displayController,
-                @NonNull WindowDecorTaskResourceLoader appResourceProvider,
-                SplitScreenController splitScreenController,
-                DesktopUserRepositories desktopUserRepositories,
-                ShellTaskOrganizer taskOrganizer,
-                ActivityManager.RunningTaskInfo taskInfo,
-                SurfaceControl taskSurface,
-                @ShellMainThread Handler handler,
-                @ShellMainThread ShellExecutor mainExecutor,
-                @ShellMainThread MainCoroutineDispatcher mainDispatcher,
-                @ShellBackgroundThread CoroutineScope bgScope,
-                @ShellBackgroundThread ShellExecutor bgExecutor,
-                Transitions transitions,
-                Choreographer choreographer,
-                SyncTransactionQueue syncQueue,
-                AppHeaderViewHolder.Factory appHeaderViewHolderFactory,
-                AppHandleViewHolder.Factory appHandleViewHolderFactory,
-                RootTaskDisplayAreaOrganizer rootTaskDisplayAreaOrganizer,
-                AppToWebGenericLinksParser genericLinksParser,
-                AssistContentRequester assistContentRequester,
-                @NonNull WindowDecorViewHostSupplier<WindowDecorViewHost>
-                        windowDecorViewHostSupplier,
-                MultiInstanceHelper multiInstanceHelper,
-                WindowDecorCaptionRepository windowDecorCaptionRepository,
-                DesktopModeEventLogger desktopModeEventLogger,
-                DesktopModeUiEventLogger desktopModeUiEventLogger,
-                DesktopModeCompatPolicy desktopModeCompatPolicy,
-                DesktopState desktopState,
-                DesktopConfig desktopConfig,
-                WindowDecorationActions windowDecorationActions) {
-            return new DesktopModeWindowDecoration(
-                    context,
-                    userContext,
-                    displayController,
-                    appResourceProvider,
-                    splitScreenController,
-                    desktopUserRepositories,
-                    taskOrganizer,
-                    taskInfo,
-                    taskSurface,
-                    handler,
-                    mainExecutor,
-                    mainDispatcher,
-                    bgScope,
-                    bgExecutor,
-                    transitions,
-                    choreographer,
-                    syncQueue,
-                    appHeaderViewHolderFactory,
-                    appHandleViewHolderFactory,
-                    rootTaskDisplayAreaOrganizer,
-                    genericLinksParser,
-                    assistContentRequester,
-                    windowDecorViewHostSupplier,
-                    multiInstanceHelper,
-                    windowDecorCaptionRepository,
-                    desktopModeEventLogger,
-                    desktopModeUiEventLogger,
-                    desktopModeCompatPolicy,
-                    desktopState,
-                    desktopConfig,
-                    windowDecorationActions);
-        }
-    }
-
     @VisibleForTesting
     static class CapturedLink {
         private final long mTimeStamp;
@@ -2102,16 +2044,5 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         private void setUsed() {
             mUsed = true;
         }
-    }
-
-    interface ExclusionRegionListener {
-        /** Inform the implementing class of this task's change in region resize handles */
-        void onExclusionRegionChanged(int taskId, Region region);
-
-        /**
-         * Inform the implementing class that this task no longer needs an exclusion region,
-         * likely due to it closing.
-         */
-        void onExclusionRegionDismissed(int taskId);
     }
 }

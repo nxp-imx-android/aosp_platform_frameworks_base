@@ -3270,8 +3270,9 @@ class ActivityStarter {
                 return null;
             }
             final TaskFragment taskFragment = wc.asTaskFragment();
-            if (taskFragment == null || taskFragment.isRemovalRequested()) {
-                // Skip if the TaskFragment is going to be finished.
+            if (taskFragment == null || taskFragment.isRemovalRequested()
+                    || taskFragment.isForceHidden()) {
+                // Skip if the TaskFragment is going to be finished or is hidden.
                 continue;
             }
             if (taskFragment.getActivity(ActivityRecord::canBeTopRunning) == null) {

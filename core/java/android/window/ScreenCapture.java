@@ -30,7 +30,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.RemoteException;
 import android.os.SystemProperties;
-import android.view.Display;
 import android.view.IWindowManager;
 import android.view.WindowManagerGlobal;
 
@@ -321,8 +320,8 @@ public class ScreenCapture {
             private boolean mPreserveDisplayColors = false;
 
             /** Builder constructor. */
-            public Builder(@NonNull Display display) {
-                mDisplayId = display.getDisplayId();
+            public Builder(int displayId) {
+                mDisplayId = displayId;
             }
 
             /**
@@ -568,6 +567,12 @@ public class ScreenCapture {
         }
     }
 
+    /**
+     * Returns true if optimized screen capture is enabled on the device.
+     *
+     * <p>If false, then capture requests with
+     * {@link ScreenCaptureParams#CAPTURE_MODE_REQUIRE_OPTIMIZED} will always fail.
+     */
     public static boolean isScreenCaptureOptimizationEnabled() {
         return SystemProperties.getBoolean("debug.sf.productionize_readback_screenshot", false);
     }

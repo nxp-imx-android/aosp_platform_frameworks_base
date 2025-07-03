@@ -276,6 +276,7 @@ android_ravenwood_test {
         "perfetto_trace_android_track_event_extension_java_protos",
         "perfetto_trace_java_protos",
         "platform-compat-test-rules",
+        "platform-parametric-runner-lib",
         "platform-test-annotations",
         "testng",
         "TestParameterInjector",

@@ -43,7 +43,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -245,36 +244,57 @@ public final class MessageQueue {
 
     private void decAndTraceMessageCount() {
         mMessageCount.decrementAndGet();
-        if (PerfettoTrace.MQ_CATEGORY.isEnabled()) {
+        if (PerfettoTrace.isMQCategoryEnabled()) {
             traceMessageCount();
         }
     }
 
     private void incAndTraceMessageCount(Message msg, long when) {
         mMessageCount.incrementAndGet();
-        if (PerfettoTrace.MQ_CATEGORY.isEnabled()) {
+        if (PerfettoTrace.isMQCategoryEnabled()) {
             msg.sendingThreadName = Thread.currentThread().getName();
             final long eventId = msg.eventId = PerfettoTrace.getFlowId();
 
             traceMessageCount();
             final long messageDelayMs = Math.max(0L, when - SystemClock.uptimeMillis());
-            PerfettoTrace.instant(PerfettoTrace.MQ_CATEGORY, "message_queue_send")
-                    .setFlow(eventId)
-                    .beginProto()
-                    .beginNested(2004 /* message_queue */)
-                    .addField(2 /* receiving_thread_name */, mThreadName)
-                    .addField(3 /* message_code */, msg.what)
-                    .addField(4 /* message_delay_ms */, messageDelayMs)
-                    .endNested()
-                    .endProto()
-                    .emit();
+            if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
+                com.android.internal.dev.perfetto.sdk.PerfettoTrace.instant(
+                                PerfettoTrace.MQ_CATEGORY_V3, "message_queue_send")
+                        .setFlow(eventId)
+                        .beginProto()
+                        .beginNested(2004 /* message_queue */)
+                        .addField(2 /* receiving_thread_name */, mThreadName)
+                        .addField(3 /* message_code */, msg.what)
+                        .addField(4 /* message_delay_ms */, messageDelayMs)
+                        .endNested()
+                        .endProto()
+                        .emit();
+            } else {
+                PerfettoTrace.instant(PerfettoTrace.MQ_CATEGORY, "message_queue_send")
+                        .setFlow(eventId)
+                        .beginProto()
+                        .beginNested(2004 /* message_queue */)
+                        .addField(2 /* receiving_thread_name */, mThreadName)
+                        .addField(3 /* message_code */, msg.what)
+                        .addField(4 /* message_delay_ms */, messageDelayMs)
+                        .endNested()
+                        .endProto()
+                        .emit();
+            }
         }
     }
 
     private void traceMessageCount() {
-        PerfettoTrace.counter(PerfettoTrace.MQ_CATEGORY, mMessageCount.get())
-                .usingThreadCounterTrack(mTid, mThreadName)
-                .emit();
+        if (PerfettoTrace.IS_USE_SDK_TRACING_API_V3) {
+            com.android.internal.dev.perfetto.sdk.PerfettoTrace.counter(
+                            PerfettoTrace.MQ_CATEGORY_V3, mMessageCount.get())
+                    .usingThreadCounterTrack(mTid, mThreadName)
+                    .emit();
+        } else {
+            PerfettoTrace.counter(PerfettoTrace.MQ_CATEGORY, mMessageCount.get())
+                    .usingThreadCounterTrack(mTid, mThreadName)
+                    .emit();
+        }
     }
 
     // Disposes of the underlying message queue.
@@ -1543,7 +1563,11 @@ public final class MessageQueue {
         }
     }
 
-    static final class MatchHandlerWhatAndObject extends MessageCompare {
+    /**
+     * Matches handler, what, and object if non-null.
+     * @hide
+     */
+    public static final class MatchHandlerWhatAndObject extends MessageCompare {
         @Override
         public boolean compareMessage(Message m, Handler h, int what, Object object, Runnable r,
                 long when) {
@@ -2593,7 +2617,7 @@ public final class MessageQueue {
                 MethodHandles.Lookup l = MethodHandles.lookup();
                 sRemovedFromStack = l.findVarHandle(MessageQueue.MessageNode.class,
                         "mRemovedFromStackValue", boolean.class);
-            } catch (Exception e) {
+            } catch (ReflectiveOperationException e) {
                 throw new ExceptionInInitializerError(e);
             }
         }
@@ -2673,7 +2697,7 @@ public final class MessageQueue {
                     long.class);
             sMptrRefCount = l.findVarHandle(MessageQueue.class, "mMptrRefCountValue",
                     long.class);
-        } catch (Exception e) {
+        } catch (ReflectiveOperationException e) {
             throw new ExceptionInInitializerError(e);
         }
     }
@@ -2790,7 +2814,7 @@ public final class MessageQueue {
                 MethodHandles.Lookup l = MethodHandles.lookup();
                 sCounts = l.findVarHandle(MessageQueue.MessageCounts.class, "mCountsValue",
                         long.class);
-            } catch (Exception e) {
+            } catch (ReflectiveOperationException e) {
                 throw new ExceptionInInitializerError(e);
             }
         }

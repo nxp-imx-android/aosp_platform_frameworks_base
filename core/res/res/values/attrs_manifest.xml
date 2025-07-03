@@ -2455,7 +2455,8 @@
         <attr name="requiresPurpose" format="boolean" />
         <!-- Required to be set when {@code requiresPurpose} is {@code true}; optional otherwise.
              Use it to specify the app's minimum target SDK version for which purpose validation
-             should be enforced in order to prevent app compatibility issues. -->
+             should be enforced in order to prevent app compatibility issues. This must be set to
+             at least SDK version 37. -->
         <attr name="requiresPurposeTargetSdkVersion"  format="integer" />
 </declare-styleable>
 

@@ -16,9 +16,9 @@
 
 package com.android.server.job;
 
-import static android.app.job.JobParameters.OVERRIDE_HANDLE_ABANDONED_JOBS;
 import static android.Manifest.permission.INTERACT_ACROSS_USERS_FULL;
 import static android.Manifest.permission.MANAGE_ACTIVITY_TASKS;
+import static android.app.job.JobParameters.OVERRIDE_HANDLE_ABANDONED_JOBS;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED;
 import static android.content.pm.PackageManager.COMPONENT_ENABLED_STATE_DISABLED_USER;
 import static android.text.format.DateUtils.HOUR_IN_MILLIS;
@@ -1633,18 +1633,12 @@ public class JobSchedulerService extends com.android.server.SystemService
     }
 
     @NonNull
-    public WorkSource deriveWorkSource(int sourceUid, @Nullable String sourcePackageName) {
-        if (Flags.createWorkChainByDefault()
-                || WorkSource.isChainedBatteryAttributionEnabled(getContext())) {
-            WorkSource ws = new WorkSource();
-            ws.createWorkChain()
-                    .addNode(sourceUid, null)
-                    .addNode(Process.SYSTEM_UID, "JobScheduler");
-            return ws;
-        } else {
-            return sourcePackageName == null
-                    ? new WorkSource(sourceUid) : new WorkSource(sourceUid, sourcePackageName);
-        }
+    public WorkSource deriveWorkSource(int sourceUid) {
+        WorkSource ws = new WorkSource();
+        ws.createWorkChain()
+                .addNode(sourceUid, null)
+                .addNode(Process.SYSTEM_UID, "JobScheduler");
+        return ws;
     }
 
     @Nullable

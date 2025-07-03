@@ -22,11 +22,14 @@ import android.os.Build
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.permission.flags.Flags
+import com.android.internal.pm.pkg.component.ParsedPermission
+import com.android.internal.pm.pkg.component.ParsedValidPurpose
 import com.android.server.permission.access.GetStateScope
 import com.android.server.permission.access.immutable.* // ktlint-disable no-wildcard-imports
 import com.android.server.permission.access.permission.AppIdPermissionPolicy
 import com.android.server.permission.access.permission.Permission
 import com.android.server.permission.access.permission.PermissionFlags
+import com.android.server.pm.pkg.PackageState
 import com.android.server.testutils.mock
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
@@ -71,10 +74,7 @@ class AppIdPermissionPolicyTest : BasePermissionPolicyTest() {
     @Test
     @EnableFlags(Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
     fun testOnPackageAdded_requestsPermissionWithNoPurpose_permissionRevoked() {
-        testOnPackageAddedForPurposeDeclaration(
-            BUILD_VERSION_CODES_C,
-            emptySet()
-        )
+        testOnPackageAddedForPurposeDeclaration(purposes = emptySet())
 
         val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0)
         val expectedNewFlags = PermissionFlags.INSTALL_GRANTED or PermissionFlags.PURPOSE_REVOKED
@@ -93,10 +93,7 @@ class AppIdPermissionPolicyTest : BasePermissionPolicyTest() {
     @Test
     @DisableFlags(Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
     fun testOnPackageAdded_requestsPermissionWithNoPurposeAndFlagDisabled_permissionGranted() {
-        testOnPackageAddedForPurposeDeclaration(
-            BUILD_VERSION_CODES_C,
-            emptySet()
-        )
+        testOnPackageAddedForPurposeDeclaration(purposes = emptySet())
 
         val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0)
         val expectedNewFlags = PermissionFlags.INSTALL_GRANTED
@@ -115,10 +112,7 @@ class AppIdPermissionPolicyTest : BasePermissionPolicyTest() {
     @Test
     @EnableFlags(Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
     fun testOnPackageAdded_requestsPermissionWithInvalidPurpose_permissionRevoked() {
-        testOnPackageAddedForPurposeDeclaration(
-            BUILD_VERSION_CODES_C,
-            setOf(INVALID_PURPOSE)
-        )
+        testOnPackageAddedForPurposeDeclaration(purposes = setOf(INVALID_PURPOSE))
 
         val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0)
         val expectedNewFlags = PermissionFlags.INSTALL_GRANTED or PermissionFlags.PURPOSE_REVOKED
@@ -138,9 +132,8 @@ class AppIdPermissionPolicyTest : BasePermissionPolicyTest() {
     @EnableFlags(Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
     fun testOnPackageAdded_requestsPermissionWithValidAndInvalidPurpose_permissionGranted() {
         testOnPackageAddedForPurposeDeclaration(
-            BUILD_VERSION_CODES_C,
             // At least one valid purpose is sufficient for the permission to be granted.
-            setOf(VALID_PURPOSE, INVALID_PURPOSE),
+            purposes = setOf(VALID_PURPOSE_0, INVALID_PURPOSE),
             oldFlags = PermissionFlags.INSTALL_REVOKED or PermissionFlags.PURPOSE_REVOKED
         )
 
@@ -162,8 +155,7 @@ class AppIdPermissionPolicyTest : BasePermissionPolicyTest() {
     @EnableFlags(Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
     fun testOnPackageAdded_requestsPermissionWithValidPurpose_permissionGranted() {
         testOnPackageAddedForPurposeDeclaration(
-            BUILD_VERSION_CODES_C,
-            setOf(VALID_PURPOSE),
+            purposes = setOf(VALID_PURPOSE_0),
             oldFlags = PermissionFlags.INSTALL_REVOKED or PermissionFlags.PURPOSE_REVOKED
         )
 
@@ -185,8 +177,8 @@ class AppIdPermissionPolicyTest : BasePermissionPolicyTest() {
     @EnableFlags(Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
     fun testOnPackageAdded_requestsPermissionWithNoPurposeTargetingOldSdk_permissionGranted() {
         testOnPackageAddedForPurposeDeclaration(
-            Build.VERSION_CODES.BAKLAVA,
-            emptySet()
+            purposes = emptySet(),
+            targetSdkVersion = Build.VERSION_CODES.BAKLAVA
         )
 
         val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0)
@@ -208,29 +200,13 @@ class AppIdPermissionPolicyTest : BasePermissionPolicyTest() {
     fun testOnPackageAdded_requestsPermissionWithValidPurposeInAnotherPackage_permissionGranted() {
         // Set package1 with valid purpose, so it should be sufficient for any other package
         // sharing the same UID to pass the purpose validation check.
-        val sharedUidPackage1 =
-            mockPackageState(
-                APP_ID_0,
-                mockAndroidPackage(
-                    PACKAGE_NAME_1,
-                    targetSdkVersion = BUILD_VERSION_CODES_C,
-                    requestedPermissions = setOf(PERMISSION_NAME_0),
-                    usesPermissionMapping =
-                        mapOf(
-                            PERMISSION_NAME_0 to
-                                mockParsedUsesPermission(
-                                    PERMISSION_NAME_0,
-                                    purposes = setOf(VALID_PURPOSE)
-                                )
-                        )
-                )
-            )
+        val sharedUidPackage1 = mockPackageStateForPurposeDeclaration(
+            PACKAGE_NAME_1,
+            purposes = setOf(VALID_PURPOSE_0)
+        )
         addPackageState(sharedUidPackage1)
 
-        testOnPackageAddedForPurposeDeclaration(
-            BUILD_VERSION_CODES_C,
-            emptySet()
-        )
+        testOnPackageAddedForPurposeDeclaration(purposes = emptySet())
 
         val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0)
         val expectedNewFlags = PermissionFlags.INSTALL_GRANTED
@@ -250,23 +226,14 @@ class AppIdPermissionPolicyTest : BasePermissionPolicyTest() {
     fun testOnPackageAdded_requestsPermissionWithNoPurposeAndAnotherPackageTargetingOldSdk_permissionGranted() {
         // Set package1 targeting old SDK, so it should be sufficient for any other package
         // sharing the same UID to pass the purpose validation check.
-        val sharedUidPackage1 =
-            mockPackageState(
-                APP_ID_0,
-                mockAndroidPackage(
-                    PACKAGE_NAME_1,
-                    targetSdkVersion = Build.VERSION_CODES.BAKLAVA,
-                    requestedPermissions = setOf(PERMISSION_NAME_0),
-                    usesPermissionMapping =
-                        mapOf(PERMISSION_NAME_0 to mockParsedUsesPermission(PERMISSION_NAME_0))
-                )
-            )
+        val sharedUidPackage1 = mockPackageStateForPurposeDeclaration(
+            PACKAGE_NAME_1,
+            purposes = emptySet(),
+            targetSdkVersion = Build.VERSION_CODES.BAKLAVA,
+        )
         addPackageState(sharedUidPackage1)
 
-        testOnPackageAddedForPurposeDeclaration(
-            BUILD_VERSION_CODES_C,
-            emptySet()
-        )
+        testOnPackageAddedForPurposeDeclaration(purposes = emptySet())
 
         val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0)
         val expectedNewFlags = PermissionFlags.INSTALL_GRANTED
@@ -283,29 +250,166 @@ class AppIdPermissionPolicyTest : BasePermissionPolicyTest() {
         assertThat(PermissionFlags.isPermissionGranted(actualFlags)).isTrue()
     }
 
+    @Test
+    @EnableFlags(Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
+    fun testOnPackageAdded_requestsPermissionWithDeprecatedPurposeOnLastValidSdk_permissionGranted() {
+        testOnPackageAddedForPurposeDeclaration(purposes = setOf(VALID_PURPOSE_1))
+
+        val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0)
+        val expectedNewFlags = PermissionFlags.INSTALL_GRANTED
+
+        assertWithMessage(
+            "After onPackageAdded() is called for appId $APP_ID_0 that requests a permission," +
+                " which requires purpose, with a deprecated purpose whose maxTargetSdkVersion" +
+                " matches the app's targetSdkVersion, permission flags ($actualFlags) should be" +
+                " install granted ($expectedNewFlags)."
+        )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+
+        assertThat(PermissionFlags.isPermissionGranted(actualFlags)).isTrue()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
+    fun testOnPackageAdded_requestsPermissionWithNoPurposeTargetSdkLowerThanRequiresPurposeSdk_permissionGranted() {
+        testOnPackageAddedForPurposeDeclaration(
+            purposes = emptySet(),
+            requiresPurposeTargetSdkVersion = BUILD_VERSION_CODES_D
+        )
+
+        val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0)
+        val expectedNewFlags = PermissionFlags.INSTALL_GRANTED
+
+        assertWithMessage(
+            "After onPackageAdded() is called for appId $APP_ID_0 that requests a permission," +
+                " which requires purpose, with no purpose but the app's targetSdkVersion is lower" +
+                " than the permission's requiresPurposeTargetSdkVersion, permission flags" +
+                " ($actualFlags) should be install granted ($expectedNewFlags)."
+        )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+
+        assertThat(PermissionFlags.isPermissionGranted(actualFlags)).isTrue()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
+    fun testOnPackageAdded_requestsPermissionWithDeprecatedPurpose_permissionRevoked() {
+        testOnPackageAddedForPurposeDeclaration(
+            purposes = setOf(VALID_PURPOSE_1), // This purpose is deprecated as of Android C.
+            targetSdkVersion = BUILD_VERSION_CODES_D
+        )
+
+        val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0)
+        val expectedNewFlags = PermissionFlags.INSTALL_GRANTED or PermissionFlags.PURPOSE_REVOKED
+
+        assertWithMessage(
+            "After onPackageAdded() is called for appId $APP_ID_0 that requests a permission," +
+                " which requires purpose, with a deprecated purpose, the actual permission flags" +
+                " ($actualFlags) should be install granted + purpose revoked ($expectedNewFlags)."
+        )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+
+        assertThat(PermissionFlags.isPermissionGranted(actualFlags)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
+    fun testOnPackageAdded_requestsPermissionWithDeprecatedAndValidPurpose_permissionGranted() {
+        testOnPackageAddedForPurposeDeclaration(
+            purposes = setOf(VALID_PURPOSE_1, VALID_PURPOSE_0),
+            targetSdkVersion = BUILD_VERSION_CODES_D,
+        )
+
+        val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0)
+        val expectedNewFlags = PermissionFlags.INSTALL_GRANTED
+
+        assertWithMessage(
+            "After onPackageAdded() is called for appId $APP_ID_0 that requests a permission," +
+                " which requires purpose, with a deprecated and active (valid) purpose, the" +
+                " permission flags ($actualFlags) should be install granted ($expectedNewFlags)."
+        )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+
+        assertThat(PermissionFlags.isPermissionGranted(actualFlags)).isTrue()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
+    fun testOnPackageRemoved_removeLastSharedUidPackageWithValidPurpose_permissionRevoked() {
+        testSharedUidOnPackageRemovedForPurposeDeclaration(
+            purposesForRemovedPackage = setOf(VALID_PURPOSE_0),
+            purposesForRetainedPackage = emptySet(),
+        )
+
+        val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0)
+        val expectedNewFlags = PermissionFlags.INSTALL_GRANTED or PermissionFlags.PURPOSE_REVOKED
+
+        assertWithMessage(
+            "After onPackageRemoved() is called for package $PACKAGE_NAME_0 / appId $APP_ID_0" +
+                " that requests a purpose-required permission with a valid purpose, the actual" +
+                " permission flags ($actualFlags) for $APP_ID_0 should be install granted +" +
+                " purpose revoked ($expectedNewFlags) as $PACKAGE_NAME_1 / appId $APP_ID_0 does" +
+                " not declare a valid purpose."
+        )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+
+        assertThat(PermissionFlags.isPermissionGranted(actualFlags)).isFalse()
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_PURPOSE_DECLARATION_ENABLED)
+    fun testOnPackageRemoved_removeSharedUidPackageWithValidPurpose_permissionStillGranted() {
+        testSharedUidOnPackageRemovedForPurposeDeclaration(
+            purposesForRemovedPackage = setOf(VALID_PURPOSE_0),
+            purposesForRetainedPackage = setOf(VALID_PURPOSE_0)
+        )
+
+        val actualFlags = getPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0)
+        val expectedNewFlags = PermissionFlags.INSTALL_GRANTED
+
+        assertWithMessage(
+            "After onPackageRemoved() is called for package $PACKAGE_NAME_0 / appId $APP_ID_0" +
+                " that requests a purpose-required permission with a valid purpose, the actual" +
+                " permission flags ($actualFlags) for $APP_ID_0 should still be install granted" +
+                " ($expectedNewFlags) as $PACKAGE_NAME_1 / appId $APP_ID_0 declares valid purpose."
+        )
+            .that(actualFlags)
+            .isEqualTo(expectedNewFlags)
+
+        assertThat(PermissionFlags.isPermissionGranted(actualFlags)).isTrue()
+    }
+
     private fun testOnPackageAddedForPurposeDeclaration(
-        targetSdkVersion: Int,
         purposes: Set<String>,
+        targetSdkVersion: Int = BUILD_VERSION_CODES_C,
+        requiresPurposeTargetSdkVersion: Int = BUILD_VERSION_CODES_C,
         oldFlags: Int = PermissionFlags.INSTALL_GRANTED,
     ) {
-        val addedPackage =
-            mockPackageState(
-                APP_ID_0,
-                mockAndroidPackage(
-                    PACKAGE_NAME_0,
-                    targetSdkVersion = targetSdkVersion,
-                    requestedPermissions = setOf(PERMISSION_NAME_0),
-                    usesPermissionMapping =
-                        mapOf(
-                            PERMISSION_NAME_0 to
-                                mockParsedUsesPermission(PERMISSION_NAME_0, purposes = purposes)
-                        )
+        val addedPackage = mockPackageStateForPurposeDeclaration(
+            PACKAGE_NAME_0,
+            purposes = purposes,
+            targetSdkVersion = targetSdkVersion
+        )
+        val permission = mockPermissionRequiringPurpose(
+            requiresPurposeTargetSdkVersion = requiresPurposeTargetSdkVersion,
+            validPurposes =
+                listOf(
+                    mockParsedValidPurpose(VALID_PURPOSE_0),
+                    mockParsedValidPurpose(VALID_PURPOSE_1, requiresPurposeTargetSdkVersion)
                 )
-            )
-        val platformPackage = mockPackageState(PLATFORM_APP_ID, mockAndroidPackage(PLATFORM_PACKAGE_NAME))
+        )
+        val platformPackage = mockPackageState(
+            PLATFORM_APP_ID,
+            mockAndroidPackage(PLATFORM_PACKAGE_NAME)
+        )
         addPackageState(platformPackage)
         addPackageState(addedPackage)
-        addPermission(defaultPermissionWithValidPurpose)
+        addPermission(permission)
         setPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0, oldFlags)
 
         mutateState {
@@ -314,6 +418,66 @@ class AppIdPermissionPolicyTest : BasePermissionPolicyTest() {
             }
         }
     }
+
+    private fun testSharedUidOnPackageRemovedForPurposeDeclaration(
+        purposesForRemovedPackage: Set<String>,
+        purposesForRetainedPackage: Set<String>,
+    ) {
+        val removedPackage = mockPackageStateForPurposeDeclaration(
+            PACKAGE_NAME_0,
+            purposes = purposesForRemovedPackage
+        )
+        val retainedPackage = mockPackageStateForPurposeDeclaration(
+            PACKAGE_NAME_1,
+            purposes = purposesForRetainedPackage
+        )
+        val platformPackage = mockPackageState(
+            PLATFORM_APP_ID,
+            mockAndroidPackage(PLATFORM_PACKAGE_NAME)
+        )
+        val permission = mockPermissionRequiringPurpose()
+        addPackageState(platformPackage)
+        addPackageState(removedPackage)
+        addPackageState(retainedPackage)
+        addPermission(permission)
+        setPermissionFlags(APP_ID_0, USER_ID_0, PERMISSION_NAME_0, PermissionFlags.INSTALL_GRANTED)
+
+        mutateState {
+            removePackageState(removedPackage)
+            with(appIdPermissionPolicy) {
+                onPackageRemoved(PACKAGE_NAME_0, APP_ID_0)
+            }
+        }
+    }
+
+    private fun mockPackageStateForPurposeDeclaration(
+        packageName: String,
+        purposes: Set<String>,
+        targetSdkVersion: Int = BUILD_VERSION_CODES_C,
+    ) : PackageState = mockPackageState(
+            APP_ID_0,
+            mockAndroidPackage(
+                packageName,
+                targetSdkVersion = targetSdkVersion,
+                requestedPermissions = setOf(PERMISSION_NAME_0),
+                usesPermissionMapping =
+                    mapOf(
+                        PERMISSION_NAME_0 to
+                            mockParsedUsesPermission(PERMISSION_NAME_0, purposes = purposes)
+                    )
+            )
+        )
+
+    private fun mockPermissionRequiringPurpose(
+        requiresPurposeTargetSdkVersion: Int = BUILD_VERSION_CODES_C,
+        validPurposes: List<ParsedValidPurpose> = listOf(mockParsedValidPurpose(VALID_PURPOSE_0))
+    ) : ParsedPermission = mockParsedPermission(
+            PERMISSION_NAME_0,
+            PLATFORM_PACKAGE_NAME,
+            isPurposeRequired = true,
+            requiresPurposeTargetSdkVersion = requiresPurposeTargetSdkVersion,
+            validPurposes = validPurposes
+        )
 
     @Test
     fun testOnStorageVolumeMounted_nonSystemAppAfterNonSystemUpdate_remainsRevoked() {

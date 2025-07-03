@@ -59,6 +59,8 @@ import com.android.wm.shell.windowdecor.HandleMenu
 import com.android.wm.shell.windowdecor.HandleMenu.Companion.shouldShowChangeAspectRatioButton
 import com.android.wm.shell.windowdecor.HandleMenu.Companion.shouldShowRestartButton
 import com.android.wm.shell.windowdecor.HandleMenu.HandleMenuFactory
+import com.android.wm.shell.windowdecor.HandleMenuController
+import com.android.wm.shell.windowdecor.ManageWindowsMenuController
 import com.android.wm.shell.windowdecor.WindowDecorLinearLayout
 import com.android.wm.shell.windowdecor.WindowDecoration2.RelayoutParams
 import com.android.wm.shell.windowdecor.WindowDecoration2.SurfaceControlViewHostFactory
@@ -74,6 +76,7 @@ import com.android.wm.shell.windowdecor.viewholder.AppHandleViewHolder.HandleDat
 import com.android.wm.shell.windowdecor.viewholder.WindowDecorationViewHolder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
+import kotlinx.coroutines.launch
 
 
 /**
@@ -94,6 +97,7 @@ class AppHandleController(
     private val decorationSurface: SurfaceControl,
     @ShellMainThread private val mainHandler: Handler,
     @ShellMainThread private val mainDispatcher: MainCoroutineDispatcher,
+    @ShellMainThread private val mainScope: CoroutineScope,
     @ShellBackgroundThread private val bgScope: CoroutineScope,
     private val windowManagerWrapper: WindowManagerWrapper,
     private val multiInstanceHelper: MultiInstanceHelper,
@@ -119,7 +123,7 @@ class AppHandleController(
     windowDecorViewHostSupplier,
     surfaceControlBuilderSupplier,
     surfaceControlViewHostFactory
-) {
+), HandleMenuController, ManageWindowsMenuController {
 
     override val captionType = CaptionType.APP_HANDLE
     private lateinit var viewHolder: AppHandleViewHolder
@@ -128,7 +132,10 @@ class AppHandleController(
     private var openByDefaultDialog: OpenByDefaultDialog? = null
     private var manageWindowsMenu: DesktopHandleManageWindowsMenu? = null
 
-    private val isHandleMenuActive
+    override val handleMenuController = this
+    override val manageWindowsMenuController = this
+
+    override val isHandleMenuActive: Boolean
         get() = handleMenu != null
     private val isOpenByDefaultDialogActive
         get() = openByDefaultDialog != null
@@ -303,20 +310,23 @@ class AppHandleController(
     }
 
     /** Updates app info and creates and displays handle menu window. */
-    private suspend fun createHandleMenu(minimumInstancesFound: Boolean) {
+     override fun createHandleMenu(minimumInstancesFound: Boolean) {
         if (isHandleMenuActive) return
-        val isBrowserApp = isBrowserApp()
-        val appToWebIntent = if (canShowAppLinks(display, desktopState)) {
-            appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
-        } else {
-            // Skip request for assist content as it is only used for links, which are not supported
-            null
+        mainScope.launch {
+            val isBrowserApp = isBrowserApp()
+            val appToWebIntent = if (canShowAppLinks(display, desktopState)) {
+                appToWebRepository.getAppToWebIntent(taskInfo, isBrowserApp)
+            } else {
+                // Skip request for assist content as it is only used for links, which are not
+                // supported
+                null
+            }
+            createHandleMenu(
+                openInAppOrBrowserIntent = appToWebIntent,
+                isBrowserApp = isBrowserApp,
+                minimumInstancesFound = minimumInstancesFound
+            )
         }
-        createHandleMenu(
-            openInAppOrBrowserIntent = appToWebIntent,
-            isBrowserApp = isBrowserApp,
-            minimumInstancesFound = minimumInstancesFound
-        )
     }
 
     /** Creates and shows the handle menu. */
@@ -389,7 +399,7 @@ class AppHandleController(
     }
 
     /** Checks if a [MotionEvent] occurs in caption. */
-    private fun checkTouchEventInCaption(ev: MotionEvent): Boolean {
+    fun checkTouchEventInCaption(ev: MotionEvent): Boolean {
         val inputPoint = offsetCaptionLocation(ev)
         return inputPoint.x >= captionLayoutResult.captionX
                 && inputPoint.x <= captionLayoutResult.captionX + captionLayoutResult.captionWidth
@@ -409,7 +419,7 @@ class AppHandleController(
      * Indicates that an app handle drag has been interrupted, this can happen e.g. if we receive an
      * unknown transition during the drag-to-desktop transition.
      */
-    private fun handleDragInterrupted() {
+    fun handleDragInterrupted() {
         viewHolder.setHandleHovered(false)
         viewHolder.setHandlePressed(false)
     }
@@ -433,7 +443,8 @@ class AppHandleController(
         return appHandleViewHolder
     }
 
-    private fun createManageWindowsMenu(snapshotList: List<Pair<Int, TaskSnapshot>>) {
+    /** Creates and shows the manage windows menu. */
+    override fun createManageWindowsMenu(snapshotList: ArrayList<Pair<Int, TaskSnapshot>>) {
         manageWindowsMenu = DesktopHandleManageWindowsMenu(
             callerTaskInfo = taskInfo,
             splitScreenController = splitScreenController,

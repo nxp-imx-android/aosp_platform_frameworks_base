@@ -239,6 +239,7 @@ public final class PowerManagerService extends SystemService
     static final int WAKE_LOCK_DOZE = 1 << 6;
     static final int WAKE_LOCK_DRAW = 1 << 7;
     static final int WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE = 1 << 8;
+    static final int WAKE_LOCK_PARTIAL_SLEEP = 1 << 9;
 
     // Summarizes the user activity state.
     static final int USER_ACTIVITY_SCREEN_BRIGHT = 1 << 0;
@@ -2098,6 +2099,8 @@ public final class PowerManagerService extends SystemService
                 case PowerManager.SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK:
                     return mSystemReady && mFeatureFlags.isEarlyScreenTimeoutDetectorEnabled()
                             && mScreenTimeoutOverridePolicy != null;
+                case PowerManager.PARTIAL_SLEEP_WAKE_LOCK:
+                    return mFeatureFlags.isPartialSleepWakelocksFeatureEnabled();
                 default:
                     return false;
             }
@@ -2975,6 +2978,8 @@ public final class PowerManagerService extends SystemService
                 return WAKE_LOCK_DRAW;
             case PowerManager.SCREEN_TIMEOUT_OVERRIDE_WAKE_LOCK:
                 return WAKE_LOCK_SCREEN_TIMEOUT_OVERRIDE;
+            case PowerManager.PARTIAL_SLEEP_WAKE_LOCK:
+                return WAKE_LOCK_PARTIAL_SLEEP;
         }
         return 0;
     }
@@ -5178,6 +5183,9 @@ public final class PowerManagerService extends SystemService
             proto.write(
                     PowerManagerServiceDumpProto.ActiveWakeLocksProto.IS_DRAW,
                     (mWakeLockSummary & WAKE_LOCK_DRAW) != 0);
+            proto.write(
+                    PowerManagerServiceDumpProto.ActiveWakeLocksProto.IS_PARTIAL_SLEEP,
+                    (mWakeLockSummary & WAKE_LOCK_PARTIAL_SLEEP) != 0);
             proto.end(activeWakeLocksToken);
 
             proto.write(PowerManagerServiceDumpProto.NOTIFY_LONG_SCHEDULED_MS, mNotifyLongScheduled);

@@ -24,12 +24,14 @@ import android.text.TextUtils;
 import android.util.ArraySet;
 
 import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.pm.pkg.parsing.ParsingUtils;
 import com.android.internal.util.DataClass;
 import com.android.internal.util.Parcelling;
 import com.android.internal.util.Parcelling.BuiltIn.ForInternedString;
 import com.android.internal.util.Parcelling.BuiltIn.ForStringSet;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -51,6 +53,7 @@ public class ParsedPermissionImpl extends ParsedComponentImpl implements ParsedP
     private String group;
     private int requestRes;
     private int protectionLevel;
+    private int requiresPurposeTargetSdkVersion;
     private boolean tree;
     private boolean purposeRequired;
     @Nullable
@@ -58,7 +61,7 @@ public class ParsedPermissionImpl extends ParsedComponentImpl implements ParsedP
     @Nullable
     private Set<String> knownCerts;
     @Nullable
-    private Set<String> validPurposes;
+    private List<ParsedValidPurpose> validPurposes;
 
     @VisibleForTesting
     public ParsedPermissionImpl() {
@@ -94,8 +97,8 @@ public class ParsedPermissionImpl extends ParsedComponentImpl implements ParsedP
 
     @NonNull
     @Override
-    public Set<String> getValidPurposes() {
-        return validPurposes == null ? Collections.emptySet() : validPurposes;
+    public List<ParsedValidPurpose> getValidPurposes() {
+        return validPurposes == null ? Collections.emptyList() : validPurposes;
     }
 
     public String toString() {
@@ -116,11 +119,12 @@ public class ParsedPermissionImpl extends ParsedComponentImpl implements ParsedP
         dest.writeString(this.group);
         dest.writeInt(this.requestRes);
         dest.writeInt(this.protectionLevel);
+        dest.writeInt(this.requiresPurposeTargetSdkVersion);
         dest.writeBoolean(this.tree);
         dest.writeBoolean(this.purposeRequired);
         dest.writeParcelable((ParsedPermissionGroupImpl) this.parsedPermissionGroup, flags);
         sForStringSet.parcel(knownCerts, dest, flags);
-        sForStringSet.parcel(validPurposes, dest, flags);
+        ParsingUtils.writeParcelableList(dest, this.validPurposes);
     }
 
     protected ParsedPermissionImpl(Parcel in) {
@@ -129,12 +133,14 @@ public class ParsedPermissionImpl extends ParsedComponentImpl implements ParsedP
         this.group = TextUtils.safeIntern(in.readString());
         this.requestRes = in.readInt();
         this.protectionLevel = in.readInt();
+        this.requiresPurposeTargetSdkVersion = in.readInt();
         this.tree = in.readBoolean();
         this.purposeRequired = in.readBoolean();
         this.parsedPermissionGroup = in.readParcelable(
                 ParsedPermissionGroupImpl.class.getClassLoader(), ParsedPermissionGroupImpl.class);
         this.knownCerts = sForStringSet.unparcel(in);
-        this.validPurposes = sForStringSet.unparcel(in);
+        this.validPurposes =
+                ParsingUtils.createTypedInterfaceList(in, ParsedValidPurposeImpl.CREATOR);
     }
 
     @NonNull
@@ -172,15 +178,17 @@ public class ParsedPermissionImpl extends ParsedComponentImpl implements ParsedP
             @Nullable String group,
             int requestRes,
             int protectionLevel,
+            int requiresPurposeTargetSdkVersion,
             boolean tree,
             boolean purposeRequired,
             @Nullable ParsedPermissionGroup parsedPermissionGroup,
             @Nullable Set<String> knownCerts,
-            @Nullable Set<String> validPurposes) {
+            @Nullable List<ParsedValidPurpose> validPurposes) {
         this.backgroundPermission = backgroundPermission;
         this.group = group;
         this.requestRes = requestRes;
         this.protectionLevel = protectionLevel;
+        this.requiresPurposeTargetSdkVersion = requiresPurposeTargetSdkVersion;
         this.tree = tree;
         this.purposeRequired = purposeRequired;
         this.parsedPermissionGroup = parsedPermissionGroup;
@@ -208,6 +216,11 @@ public class ParsedPermissionImpl extends ParsedComponentImpl implements ParsedP
     @DataClass.Generated.Member
     public int getProtectionLevel() {
         return protectionLevel;
+    }
+
+    @DataClass.Generated.Member
+    public int getRequiresPurposeTargetSdkVersion() {
+        return requiresPurposeTargetSdkVersion;
     }
 
     @DataClass.Generated.Member
@@ -239,6 +252,12 @@ public class ParsedPermissionImpl extends ParsedComponentImpl implements ParsedP
     }
 
     @DataClass.Generated.Member
+    public @NonNull ParsedPermissionImpl setRequiresPurposeTargetSdkVersion( int value) {
+        requiresPurposeTargetSdkVersion = value;
+        return this;
+    }
+
+    @DataClass.Generated.Member
     public @NonNull ParsedPermissionImpl setTree( boolean value) {
         tree = value;
         return this;
@@ -263,16 +282,16 @@ public class ParsedPermissionImpl extends ParsedComponentImpl implements ParsedP
     }
 
     @DataClass.Generated.Member
-    public @NonNull ParsedPermissionImpl setValidPurposes(@NonNull Set<String> value) {
+    public @NonNull ParsedPermissionImpl setValidPurposes(@NonNull List<ParsedValidPurpose> value) {
         validPurposes = value;
         return this;
     }
 
     @DataClass.Generated(
-            time = 1746843945877L,
+            time = 1750112502414L,
             codegenVersion = "1.0.23",
             sourceFile = "frameworks/base/core/java/com/android/internal/pm/pkg/component/ParsedPermissionImpl.java",
-            inputSignatures = "private static final  com.android.internal.util.Parcelling.BuiltIn.ForStringSet sForStringSet\nprivate @android.annotation.Nullable java.lang.String backgroundPermission\nprivate @android.annotation.Nullable @com.android.internal.util.DataClass.ParcelWith(com.android.internal.util.Parcelling.BuiltIn.ForInternedString.class) java.lang.String group\nprivate  int requestRes\nprivate  int protectionLevel\nprivate  boolean tree\nprivate  boolean purposeRequired\nprivate @android.annotation.Nullable com.android.internal.pm.pkg.component.ParsedPermissionGroup parsedPermissionGroup\nprivate @android.annotation.Nullable java.util.Set<java.lang.String> knownCerts\nprivate @android.annotation.Nullable java.util.Set<java.lang.String> validPurposes\npublic static final @android.annotation.NonNull android.os.Parcelable.Creator<com.android.internal.pm.pkg.component.ParsedPermissionImpl> CREATOR\npublic  com.android.internal.pm.pkg.component.ParsedPermissionGroup getParsedPermissionGroup()\npublic  com.android.internal.pm.pkg.component.ParsedPermissionImpl setGroup(java.lang.String)\nprotected  void setKnownCert(java.lang.String)\nprotected  void setKnownCerts(java.lang.String[])\npublic @android.annotation.NonNull @java.lang.Override java.util.Set<java.lang.String> getKnownCerts()\npublic @android.annotation.NonNull @java.lang.Override java.util.Set<java.lang.String> getValidPurposes()\npublic  java.lang.String toString()\npublic @java.lang.Override int describeContents()\npublic @java.lang.Override void writeToParcel(android.os.Parcel,int)\nclass ParsedPermissionImpl extends com.android.internal.pm.pkg.component.ParsedComponentImpl implements [com.android.internal.pm.pkg.component.ParsedPermission, android.os.Parcelable]\n@com.android.internal.util.DataClass(genGetters=true, genSetters=true, genBuilder=false, genParcelable=false)")
+            inputSignatures = "private static final  com.android.internal.util.Parcelling.BuiltIn.ForStringSet sForStringSet\nprivate @android.annotation.Nullable java.lang.String backgroundPermission\nprivate @android.annotation.Nullable @com.android.internal.util.DataClass.ParcelWith(com.android.internal.util.Parcelling.BuiltIn.ForInternedString.class) java.lang.String group\nprivate  int requestRes\nprivate  int protectionLevel\nprivate  int requiresPurposeTargetSdkVersion\nprivate  boolean tree\nprivate  boolean purposeRequired\nprivate @android.annotation.Nullable com.android.internal.pm.pkg.component.ParsedPermissionGroup parsedPermissionGroup\nprivate @android.annotation.Nullable java.util.Set<java.lang.String> knownCerts\nprivate @android.annotation.Nullable java.util.List<com.android.internal.pm.pkg.component.ParsedValidPurpose> validPurposes\npublic static final @android.annotation.NonNull android.os.Parcelable.Creator<com.android.internal.pm.pkg.component.ParsedPermissionImpl> CREATOR\npublic  com.android.internal.pm.pkg.component.ParsedPermissionGroup getParsedPermissionGroup()\npublic  com.android.internal.pm.pkg.component.ParsedPermissionImpl setGroup(java.lang.String)\nprotected  void setKnownCert(java.lang.String)\nprotected  void setKnownCerts(java.lang.String[])\npublic @android.annotation.NonNull @java.lang.Override java.util.Set<java.lang.String> getKnownCerts()\npublic @android.annotation.NonNull @java.lang.Override java.util.List<com.android.internal.pm.pkg.component.ParsedValidPurpose> getValidPurposes()\npublic  java.lang.String toString()\npublic @java.lang.Override int describeContents()\npublic @java.lang.Override void writeToParcel(android.os.Parcel,int)\nclass ParsedPermissionImpl extends com.android.internal.pm.pkg.component.ParsedComponentImpl implements [com.android.internal.pm.pkg.component.ParsedPermission, android.os.Parcelable]\n@com.android.internal.util.DataClass(genGetters=true, genSetters=true, genBuilder=false, genParcelable=false)")
     @Deprecated
     private void __metadata() {}
 

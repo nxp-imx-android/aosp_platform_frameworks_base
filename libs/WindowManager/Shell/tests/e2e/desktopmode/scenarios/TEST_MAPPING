@@ -46,9 +46,6 @@
       "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragExistingWindowsTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-EnterDesktopWithDragWindowsLimitTest"
     },
     {
@@ -119,6 +116,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithAppHandleMenuTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-EnterDesktopWithDragTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-EnterSplitScreenWithAppHandleMenuTest"

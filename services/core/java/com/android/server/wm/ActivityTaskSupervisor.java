@@ -1121,7 +1121,7 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
         if (app != null && mService.mHomeProcess != app) {
             scheduleStartHome("homeChanged");
             mService.mHomeProcess = app;
-            mService.mProcessStateController.setHomeProcessAsync(app);
+            mService.mActivityStateUpdater.setHomeProcessAsync(app);
         }
     }
 
@@ -1281,7 +1281,8 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             return false;
         }
 
-        if (DesktopExperienceFlags.ENABLE_MIRROR_DISPLAY_NO_ACTIVITY.isTrue()) {
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
+                && DesktopExperienceFlags.ENABLE_MIRROR_DISPLAY_NO_ACTIVITY.isTrue()) {
             if (!displayContent.mDisplay.canHostTasks()) {
                 Slog.w(TAG, "Launch on display check: activity launch is not allowed on a "
                         + "display that cannot host tasks");
@@ -2648,7 +2649,11 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     void endActivityVisibilityUpdate() {
         mVisibilityTransactionDepth--;
         if (mVisibilityTransactionDepth == 0) {
-            computeProcessActivityStateBatch();
+            // Multiple OomAdjuster affecting state changes can occur, wrap those state changes in
+            // a BatchSession.
+            try (var unused = mService.mActivityStateUpdater.startBatchSession()) {
+                computeProcessActivityStateBatch();
+            }
         }
     }
 
