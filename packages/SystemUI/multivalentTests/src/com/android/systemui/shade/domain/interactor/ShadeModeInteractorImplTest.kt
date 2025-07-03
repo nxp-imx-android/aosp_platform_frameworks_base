@@ -16,13 +16,16 @@
 
 package com.android.systemui.shade.domain.interactor
 
+import android.content.testableContext
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.flags.EnableSceneContainer
 import com.android.systemui.kosmos.collectLastValue
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
+import com.android.systemui.res.R
 import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
@@ -55,6 +58,36 @@ class ShadeModeInteractorImplTest : SysuiTestCase() {
             enableSplitShade()
 
             assertThat(shadeMode).isEqualTo(ShadeMode.Split)
+        }
+
+    @Test
+    fun legacyShadeMode_disableSplitShade_wideScreen_dualShade() =
+        kosmos.runTest {
+            enableSplitShade()
+            testableContext.orCreateTestableResources.addOverride(
+                R.bool.config_disableSplitShade,
+                true,
+            )
+            fakeConfigurationRepository.onAnyConfigurationChange()
+
+            val shadeMode by collectLastValue(underTest.shadeMode)
+
+            assertThat(shadeMode).isEqualTo(ShadeMode.Dual)
+        }
+
+    @Test
+    fun legacyShadeMode_disableSplitShade_narrowScreen_singleShade() =
+        kosmos.runTest {
+            val shadeMode by collectLastValue(underTest.shadeMode)
+            enableSingleShade()
+
+            testableContext.orCreateTestableResources.addOverride(
+                R.bool.config_disableSplitShade,
+                true,
+            )
+            fakeConfigurationRepository.onAnyConfigurationChange()
+
+            assertThat(shadeMode).isEqualTo(ShadeMode.Single)
         }
 
     @Test
