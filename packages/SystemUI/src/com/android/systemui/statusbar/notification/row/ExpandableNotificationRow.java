@@ -24,7 +24,6 @@ import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_
 
 import static com.android.systemui.Flags.notificationRowAccessibilityExpanded;
 import static com.android.systemui.Flags.notificationRowTransparency;
-import static com.android.systemui.Flags.notificationsPinnedHunInShade;
 import static com.android.systemui.flags.Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE;
 import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE;
 import static com.android.systemui.statusbar.notification.NotificationUtils.logKey;
@@ -3677,7 +3676,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         // Must stay on screen in the open shade regardless how much the stack is scrolled if:
         // 1. Is HUN and not marked as seen yet (isHeadsUp && mustStayOnScreen)
         // 2. Is an FSI HUN (isPinned)
-        return mIsHeadsUp && mMustStayOnScreen || notificationsPinnedHunInShade() && isPinned();
+        return mIsHeadsUp && mMustStayOnScreen || isPinned();
     }
 
     /**
