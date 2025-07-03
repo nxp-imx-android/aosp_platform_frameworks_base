@@ -90,6 +90,8 @@ fun ActionList(
     modifier: Modifier = Modifier,
     padding: PaddingValues = PaddingValues(0.dp),
     horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+    portrait: Boolean = true,
+    pillCenter: Offset = Offset.Zero,
 ) {
     val density = LocalDensity.current
     val minOverscrollDelta = (-8).dp
@@ -326,6 +328,8 @@ fun ActionList(
                         columnSpacingPx * max((childHeights.size - index - 1f), 0f)
             }
 
+            var chipWidthPx by remember { mutableIntStateOf(0) }
+
             Chip(
                 action = action,
                 modifier =
@@ -333,12 +337,20 @@ fun ActionList(
                             if (index < childHeights.size) {
                                 childHeights[index] = it.height
                             }
+                            chipWidthPx = it.width
                         }
                         .graphicsLayer {
-                            translationY = (1f - translation) * appxColumnY
+                            if (portrait) {
+                                translationY = (1f - translation) * appxColumnY
+                                translationX = 0f
+                            } else {
+                                translationY = (1f - translation) * (appxColumnY - pillCenter.y)
+                                translationX = (1f - translation) * chipWidthPx.toFloat()
+                            }
                             scaleX = scale
                             scaleY = scale
-                            transformOrigin = TransformOrigin(0.5f, 1f)
+                            transformOrigin =
+                                if (portrait) TransformOrigin(0.5f, 1f) else TransformOrigin(1f, 0f)
                         },
             )
         }
