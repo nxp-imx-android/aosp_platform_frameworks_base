@@ -130,10 +130,13 @@ flag {
 }
 
 flag {
-    name: "enable_compatui_sysui_launcher"
+    name: "enable_compatui_sysui_launcher_fix"
     namespace: "large_screen_experiences_app_compat"
     description: "Enables sysui animation for user aspect ratio button"
     bug: "300357441"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
