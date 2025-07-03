@@ -32,4 +32,4 @@ data class ActionModel(
     val oneTapDelayMs: Long = 0L,
 )
 
-data class IconModel(val drawable: Drawable, val iconId: String)
+data class IconModel(val small: Drawable, val large: Drawable, val iconId: String)

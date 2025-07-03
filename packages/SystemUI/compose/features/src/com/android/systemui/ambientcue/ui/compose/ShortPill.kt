@@ -41,9 +41,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.IconButtonColors
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -75,7 +74,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
-import com.android.compose.PlatformIconButton
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.compose.modifier.animatedActionBorder
 import com.android.systemui.ambientcue.ui.utils.FilterUtils
@@ -295,9 +293,7 @@ private fun CloseButton(onCloseClick: () -> Unit, modifier: Modifier = Modifier)
         FilledIconButton(
             onClick = onCloseClick,
             modifier =
-                modifier
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainer),
+                modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainer),
             colors =
                 IconButtonDefaults.filledIconButtonColors(
                     containerColor = Color.Transparent,
@@ -318,7 +314,7 @@ private fun CloseButton(onCloseClick: () -> Unit, modifier: Modifier = Modifier)
 @Composable
 private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modifier = Modifier) {
     Image(
-        painter = rememberDrawablePainter(action.icon.drawable),
+        painter = rememberDrawablePainter(action.icon.small),
         contentDescription = stringResource(id = R.string.ambient_cue_icon_content_description),
         modifier =
             modifier
