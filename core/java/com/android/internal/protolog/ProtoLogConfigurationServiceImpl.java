@@ -375,10 +375,17 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
     ) {
         // For each client, if its groups intersect the given list, send the command to toggle.
         synchronized (mConfigLock) {
+            final String[] groupsToToggle;
+            if (groups.length == 0) {
+                groupsToToggle = mRegisteredGroups.toArray(new String[0]);
+            } else {
+                groupsToToggle = groups;
+            }
+
             for (var clientRecord : mClientRecords.values()) {
                 final ArraySet<String> affectedGroups;
                 affectedGroups = new ArraySet<>(clientRecord.groups);
-                affectedGroups.retainAll(Arrays.asList(groups));
+                affectedGroups.retainAll(Arrays.asList(groupsToToggle));
 
                 if (!affectedGroups.isEmpty()) {
                     final var clientGroups = affectedGroups.toArray(new String[0]);
@@ -397,7 +404,7 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
             }
 
             // Groups that actually have no clients associated indicate some kind of a bug.
-            Set<String> noOpGroups = new ArraySet<>(groups);
+            Set<String> noOpGroups = new ArraySet<>(Arrays.asList(groupsToToggle));
             mClientRecords.forEach((k, r) -> noOpGroups.removeAll(r.groups));
 
             // Send out a warning in logcat and the PrintWriter for unrecognized groups.
@@ -409,7 +416,7 @@ public class ProtoLogConfigurationServiceImpl extends IProtoLogConfigurationServ
             }
 
             // Flip the status of the groups in our record-keeping.
-            for (String group : groups) {
+            for (String group : groupsToToggle) {
                 mLogGroupToLogcatStatus.put(group, enabled);
             }
         }

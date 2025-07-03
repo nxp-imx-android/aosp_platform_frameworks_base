@@ -83,8 +83,10 @@ public class ProtoLogCommandHandler extends ShellCommand {
         pw.println("    list - lists all ProtoLog groups registered with ProtoLog service");
         pw.println("    status <group> - print the status of a ProtoLog group");
         pw.println();
-        pw.println("  logcat (enable | disable) <group>");
-        pw.println("    enable or disable ProtoLog to logcat");
+        pw.println("  logcat (enable | disable) <group>?");
+        pw.println("    Enable or disable ProtoLog to logcat. Passing no groups to the command "
+                + "will enable/disable all groups. Passing a group or space separated list of "
+                + "groups to the command will enable/disable those groups only.");
         pw.println();
     }
 
@@ -150,7 +152,7 @@ public class ProtoLogCommandHandler extends ShellCommand {
     private int handleLogcatCommands(@Nullable String cmd) {
         PrintWriter pw = getOutPrintWriter();
 
-        if (cmd == null || peekNextArg() == null) {
+        if (cmd == null) {
             pw.println("Incomplete command. Use 'cmd protolog help' for guidance.");
             return 0;
         }
