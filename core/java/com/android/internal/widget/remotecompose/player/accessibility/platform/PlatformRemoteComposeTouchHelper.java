@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.internal.widget.remotecompose.accessibility;
+package com.android.internal.widget.remotecompose.player.accessibility.platform;
 
-import static com.android.internal.widget.remotecompose.accessibility.RemoteComposeDocumentAccessibility.RootId;
+import static com.android.internal.widget.remotecompose.player.accessibility.RemoteComposeDocumentAccessibility.RootId;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
@@ -28,10 +28,13 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.android.internal.widget.ExploreByTouchHelper;
 import com.android.internal.widget.remotecompose.core.CoreDocument;
-import com.android.internal.widget.remotecompose.core.RemoteContextAware;
+import com.android.internal.widget.remotecompose.core.RemoteContextActions;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.semantics.AccessibilitySemantics;
 import com.android.internal.widget.remotecompose.core.semantics.AccessibleComponent.Mode;
+import com.android.internal.widget.remotecompose.player.accessibility.CoreDocumentAccessibility;
+import com.android.internal.widget.remotecompose.player.accessibility.RemoteComposeDocumentAccessibility;
+import com.android.internal.widget.remotecompose.player.accessibility.SemanticNodeApplier;
 
 import java.util.List;
 
@@ -51,12 +54,14 @@ public class PlatformRemoteComposeTouchHelper extends ExploreByTouchHelper {
         this.mHost = host;
     }
 
+    /**
+     * access the helper
+     */
     public static PlatformRemoteComposeTouchHelper forRemoteComposePlayer(
             View player, @NonNull CoreDocument coreDocument) {
         return new PlatformRemoteComposeTouchHelper(
                 player,
-                new CoreDocumentAccessibility(
-                        coreDocument, ((RemoteContextAware) player).getRemoteContext()),
+                new CoreDocumentAccessibility(coreDocument, ((RemoteContextActions) player)),
                 new AndroidPlatformSemanticNodeApplier(player));
     }
 
@@ -101,6 +106,9 @@ public class PlatformRemoteComposeTouchHelper extends ExploreByTouchHelper {
         }
     }
 
+    /**
+     * returns the list of visible children
+     */
     @SuppressWarnings("JdkImmutableCollections")
     public List<Integer> getVisibleChildVirtualViews() {
         Component rootComponent = mRemoteDocA11y.findComponentById(RootId);
@@ -145,7 +153,8 @@ public class PlatformRemoteComposeTouchHelper extends ExploreByTouchHelper {
     }
 
     @Override
-    protected void onPopulateEventForVirtualView(int virtualViewId, AccessibilityEvent event) {}
+    protected void onPopulateEventForVirtualView(
+            int virtualViewId, @NonNull AccessibilityEvent event) {}
 
     @Override
     protected boolean onPerformActionForVirtualView(

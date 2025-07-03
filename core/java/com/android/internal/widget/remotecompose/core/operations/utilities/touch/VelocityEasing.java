@@ -31,18 +31,22 @@ package com.android.internal.widget.remotecompose.core.operations.utilities.touc
  * limitations under the License.
  */
 
+import android.annotation.Nullable;
+
 /**
- * This computes an form of easing such that the values constrained to be consistent in velocity The
+ * This computes a form of easing such that the values constrained to be consistent in velocity The
  * easing function is also constrained by the configure To have: a maximum time to stop, a maximum
  * velocity, a maximum acceleration
  */
 public class VelocityEasing {
+    private static final boolean DEBUG = false;
+
     private float mStartPos = 0;
     private float mStartV = 0;
     private float mEndPos = 0;
     private float mDuration = 0;
 
-    private Stage[] mStage = {new Stage(1), new Stage(2), new Stage(3)};
+    private final Stage[] mStage = {new Stage(1), new Stage(2), new Stage(3)};
     private int mNumberOfStages = 0;
     private Easing mEasing;
     private double mEasingAdapterDistance = 0;
@@ -118,7 +122,7 @@ public class VelocityEasing {
         String s = " ";
         for (int i = 0; i < mNumberOfStages; i++) {
             Stage stage = mStage[i];
-            s += " $i $stage";
+            s += " " + i + " " + stage;
         }
         return s;
     }
@@ -141,7 +145,7 @@ public class VelocityEasing {
             float maxTime,
             float maxAcceleration,
             float maxVelocity,
-            Easing easing) {
+            @Nullable Easing easing) {
         float pos = currentPos;
         float velocity = currentVelocity;
         if (pos == destination) {
@@ -191,6 +195,9 @@ public class VelocityEasing {
             float maxTime,
             float maxA,
             float maxV) {
+        if (DEBUG) {
+            System.out.println("maxV " + maxV);
+        }
         float timeToBreak = currentVelocity / maxA;
         float brakeDist = currentVelocity * timeToBreak / 2;
         float cruseDist = destination - currentPos - brakeDist;
@@ -261,6 +268,17 @@ public class VelocityEasing {
             float maxA,
             float maxV,
             float maxTime) {
+        if (DEBUG) {
+            System.out.println(
+                    "mStartPos "
+                            + mStartPos
+                            + " mStartV "
+                            + mStartV
+                            + "maxA "
+                            + maxA
+                            + " maxV "
+                            + maxV);
+        }
         float t1 = maxTime / 3;
         float t2 = t1 * 2;
         float distance = destination - currentPos;
@@ -271,8 +289,8 @@ public class VelocityEasing {
         float d1 = (currentVelocity + v1) * t1 / 2;
         float d2 = (v1 + v1) * (t2 - t1) / 2;
         mNumberOfStages = 3;
-        float acc = (v1 - currentVelocity) / t1;
-        float dec = v1 / dt3;
+        // float acc = (v1 - currentVelocity) / t1;
+        // float dec = v1 / dt3;
         mStage[0].setUp(currentVelocity, currentPos, 0f, v1, currentPos + d1, t1);
         mStage[1].setUp(v1, currentPos + d1, t1, v1, currentPos + d1 + d2, t2);
         mStage[2].setUp(v1, currentPos + d1 + d2, t2, 0f, destination, maxTime);
@@ -306,7 +324,7 @@ public class VelocityEasing {
         int last = mNumberOfStages - 1;
         float initialVelocity = mStage[last].mStartV;
         float distance = mStage[last].mEndPos - mStage[last].mStartPos;
-        float duration = mStage[last].mEndTime - mStage[last].mStartTime;
+        // float duration = mStage[last].mEndTime - mStage[last].mStartTime;
         double baseVel = mEasing.getDiff(0.0);
         mEasingAdapterB = initialVelocity / (baseVel * distance);
         mEasingAdapterA = 1 - mEasingAdapterB;
@@ -326,7 +344,7 @@ public class VelocityEasing {
         Easing clone();
     }
 
-    class Stage {
+    static class Stage {
         private float mStartV = 0;
         private float mStartPos = 0;
         private float mStartTime = 0;
