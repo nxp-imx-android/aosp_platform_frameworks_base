@@ -97,10 +97,6 @@ public class DisplayManagerFlags {
             com.android.graphics.surfaceflinger.flags.Flags::syncedResolutionSwitch
     );
 
-    private final FlagState mBrightnessIntRangeUserPerceptionFlagState = new FlagState(
-            Flags.FLAG_BRIGHTNESS_INT_RANGE_USER_PERCEPTION,
-            Flags::brightnessIntRangeUserPerception);
-
     private final FlagState mResolutionBackupRestore = new FlagState(
             Flags.FLAG_RESOLUTION_BACKUP_RESTORE,
             Flags::resolutionBackupRestore);
@@ -400,10 +396,6 @@ public class DisplayManagerFlags {
         return mSyncedResolutionSwitch.isEnabled();
     }
 
-    public boolean isBrightnessIntRangeUserPerceptionEnabled() {
-        return mBrightnessIntRangeUserPerceptionFlagState.isEnabled();
-    }
-
     public boolean isResolutionBackupRestoreEnabled() {
         return mResolutionBackupRestore.isEnabled();
     }
@@ -672,7 +664,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mSmallAreaDetectionFlagState);
         pw.println(" " + mDisplayConfigErrorHalFlagState);
         pw.println(" " + mSyncedResolutionSwitch);
-        pw.println(" " + mBrightnessIntRangeUserPerceptionFlagState);
         pw.println(" " + mBrightnessWearBedtimeModeClamperFlagState);
         pw.println(" " + mAutoBrightnessModesFlagState);
         pw.println(" " + mFastHdrTransitions);

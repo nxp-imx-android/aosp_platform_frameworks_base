@@ -2861,9 +2861,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         if (mBatteryStats != null) {
             try {
                 // TODO(brightnessfloat): change BatteryStats to use float
-                int brightnessInt = mFlags.isBrightnessIntRangeUserPerceptionEnabled()
-                        ? BrightnessSynchronizer.brightnessFloatToIntSetting(mContext, brightness)
-                        : BrightnessSynchronizer.brightnessFloatToInt(brightness);
+                int brightnessInt = BrightnessSynchronizer.brightnessFloatToInt(brightness);
                 mBatteryStats.noteScreenBrightness(mDisplayId, brightnessInt);
             } catch (RemoteException e) {
                 // same process
