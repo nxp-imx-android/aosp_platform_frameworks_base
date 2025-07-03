@@ -28,9 +28,9 @@ class LetterboxDependenciesHelperTestContext(
 
     val deskId: Int = -1
 
-    fun validateIsDesktopWindowingAction(verifier: (Boolean) -> Unit) {
+    fun validateShouldSupportInputSurface(verifier: (Boolean) -> Unit) {
         // We execute the test subject using the input
-        verifier(testSubjectFactory().shouldDestroyLetterboxSurfaces(inputObject))
+        verifier(testSubjectFactory().shouldSupportInputSurface(inputObject))
     }
 }
 

@@ -25,6 +25,10 @@ import com.android.wm.shell.desktopmode.DesktopRepository
 class DefaultLetterboxDependenciesHelper(val desktopRepository: DesktopRepository) :
     LetterboxDependenciesHelper {
 
-    override fun shouldDestroyLetterboxSurfaces(change: TransitionInfo.Change): Boolean =
-        desktopRepository.isAnyDeskActive(change.endDisplayId)
+    /**
+     * When in Desktop Windowing the reachability feature is disabled so the creation of the input
+     * surface for event detection can be ignored.
+     */
+    override fun shouldSupportInputSurface(change: TransitionInfo.Change): Boolean =
+        !desktopRepository.isAnyDeskActive(change.endDisplayId)
 }
