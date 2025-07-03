@@ -310,6 +310,7 @@ class WindowManagerLockscreenVisibilityManagerTest : SysuiTestCase() {
     }
 
     @Test
+    @RequiresFlagsDisabled(Flags.FLAG_ENSURE_KEYGUARD_DOES_TRANSITION_STARTING)
     fun lockscreenEventuallyShown_ifReshown_afterGoingAwayExecutionDelayed() {
         underTest.setLockscreenShown(true)
         uiBgExecutor.runAllReady()
