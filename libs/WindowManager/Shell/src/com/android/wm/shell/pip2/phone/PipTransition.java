@@ -1178,6 +1178,11 @@ public class PipTransition extends PipTransitionController implements
 
                 Preconditions.checkState(hasValidTokenAndLeash,
                         "Unexpected bundle for " + mPipTransitionState);
+                mPipInteractionHandler.begin(mPipTransitionState.getPinnedTaskLeash(),
+                        PipInteractionHandler.INTERACTION_ENTER_PIP);
+                break;
+            case PipTransitionState.ENTERED_PIP:
+                mPipInteractionHandler.end();
                 break;
             case PipTransitionState.EXITED_PIP:
                 mPipTransitionState.setPinnedTaskLeash(null);
