@@ -108,8 +108,7 @@ import java.util.concurrent.ThreadLocalRandom;
             new ConcurrentHashMap<>();
 
     @NonNull
-    private BluetoothDeviceRoutesManager.OnBroadcastSinkVolumeChangedListener
-            mVolumeChangedListener;
+    private BluetoothDeviceRoutesManager.OnBroadcastSinkChangedListener mSinkChangedListener;
 
     BluetoothProfileMonitor(
             @NonNull Context context,
@@ -119,14 +118,14 @@ import java.util.concurrent.ThreadLocalRandom;
         mHandler = new Handler(Objects.requireNonNull(looper));
         mBluetoothAdapter = Objects.requireNonNull(bluetoothAdapter);
         // no-op listener, will be overridden in start()
-        mVolumeChangedListener = () -> {};
+        mSinkChangedListener = () -> {};
     }
 
     /* package */ void start(
             @NonNull
-                    BluetoothDeviceRoutesManager.OnBroadcastSinkVolumeChangedListener
-                            volumeListener) {
-        mVolumeChangedListener = volumeListener;
+                    BluetoothDeviceRoutesManager.OnBroadcastSinkChangedListener
+                            sinkChangedListener) {
+        mSinkChangedListener = sinkChangedListener;
         mBluetoothAdapter.getProfileProxy(mContext, mProfileListener, BluetoothProfile.A2DP);
         mBluetoothAdapter.getProfileProxy(mContext, mProfileListener, BluetoothProfile.HEARING_AID);
         mBluetoothAdapter.getProfileProxy(mContext, mProfileListener, BluetoothProfile.LE_AUDIO);
@@ -590,7 +589,7 @@ import java.util.concurrent.ThreadLocalRandom;
         }
     }
 
-    private static final class BroadcastAssistantCallback
+    private final class BroadcastAssistantCallback
             implements BluetoothLeBroadcastAssistant.Callback {
         @Override
         public void onSearchStarted(int reason) {}
@@ -608,7 +607,9 @@ import java.util.concurrent.ThreadLocalRandom;
         public void onSourceFound(@NonNull BluetoothLeBroadcastMetadata source) {}
 
         @Override
-        public void onSourceAdded(@NonNull BluetoothDevice sink, int sourceId, int reason) {}
+        public void onSourceAdded(@NonNull BluetoothDevice sink, int sourceId, int reason) {
+            mSinkChangedListener.onBroadcastSinkChanged();
+        }
 
         @Override
         public void onSourceAddFailed(
@@ -623,7 +624,9 @@ import java.util.concurrent.ThreadLocalRandom;
         public void onSourceModifyFailed(@NonNull BluetoothDevice sink, int sourceId, int reason) {}
 
         @Override
-        public void onSourceRemoved(@NonNull BluetoothDevice sink, int sourceId, int reason) {}
+        public void onSourceRemoved(@NonNull BluetoothDevice sink, int sourceId, int reason) {
+            mSinkChangedListener.onBroadcastSinkChanged();
+        }
 
         @Override
         public void onSourceRemoveFailed(@NonNull BluetoothDevice sink, int sourceId, int reason) {}
@@ -640,7 +643,7 @@ import java.util.concurrent.ThreadLocalRandom;
         public void onDeviceVolumeChanged(@NonNull BluetoothDevice device, int volume) {
             mVolumeMap.put(device, volume);
             if (isMediaOnlyDeviceInBroadcast(device)) {
-                mVolumeChangedListener.onBroadcastSinkVolumeChanged();
+                mSinkChangedListener.onBroadcastSinkChanged();
             }
         }
     }

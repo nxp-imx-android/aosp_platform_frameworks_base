@@ -76,11 +76,11 @@ import java.util.stream.Collectors;
         void onBluetoothRoutesUpdated();
     }
 
-    /** Interface for receiving events about Broadcast sinks volume changes. */
-    interface OnBroadcastSinkVolumeChangedListener {
+    /** Interface for receiving events about Broadcast sinks changes. */
+    interface OnBroadcastSinkChangedListener {
 
-        /** Called when Bluetooth sink volume in broadcast has changed. */
-        void onBroadcastSinkVolumeChanged();
+        /** Called when Bluetooth sink in broadcast has changed. */
+        void onBroadcastSinkChanged();
     }
 
     @NonNull
