@@ -776,6 +776,7 @@ public class Activity extends ContextThemeWrapper
         ContentCaptureManager.ContentCaptureClient {
     private static final String TAG = "Activity";
     private static final boolean DEBUG_LIFECYCLE = false;
+    private static final long SLOW_OP_DURATION_MS = 500;
 
     /** Standard activity result: operation canceled. */
     public static final int RESULT_CANCELED    = 0;
@@ -1660,10 +1661,22 @@ public class Activity extends ContextThemeWrapper
         Object[] callbacks = collectActivityLifecycleCallbacks();
         if (callbacks != null) {
             for (int i = 0; i < callbacks.length; i++) {
+                final long startTime = SystemClock.uptimeMillis();
                 ((Application.ActivityLifecycleCallbacks) callbacks[i]).onActivityPostResumed(this);
+                final long duration = SystemClock.uptimeMillis() - startTime;
+                if (duration > SLOW_OP_DURATION_MS) {
+                    Log.w(TAG, "Slow operation dispatchActivityPostResumed"
+                            + ", duration=" + duration + ", callback=" + callbacks[i]);
+                }
             }
         }
+        final long startTime = SystemClock.uptimeMillis();
         getApplication().dispatchActivityPostResumed(this);
+        final long duration = SystemClock.uptimeMillis() - startTime;
+        if (duration > SLOW_OP_DURATION_MS) {
+            Log.w(TAG, "Slow operation Application#dispatchActivityPostResumed"
+                    + ", duration=" + duration);
+        }
     }
 
     private void dispatchActivityPrePaused() {
@@ -9402,7 +9415,7 @@ public class Activity extends ContextThemeWrapper
         final long startTime = SystemClock.uptimeMillis();
         // mResumed is set by the instrumentation
         mInstrumentation.callActivityOnResume(this);
-        final long duration = SystemClock.uptimeMillis() - startTime;
+        long duration = SystemClock.uptimeMillis() - startTime;
         EventLogTags.writeWmOnResumeCalled(mIdent, getComponentName().getClassName(), reason,
                 duration);
         if (!mCalled) {
@@ -9428,13 +9441,30 @@ public class Activity extends ContextThemeWrapper
         mFragments.dispatchResume();
         mFragments.execPendingActions();
 
+        duration = SystemClock.uptimeMillis() - startTime;
+        if (duration > SLOW_OP_DURATION_MS) {
+            Log.w(TAG, "Slow operation Fragment dispatchResume since onResume"
+                    + ", duration=" + duration);
+        }
+
         onPostResume();
         if (!mCalled) {
             throw new SuperNotCalledException(
                 "Activity " + mComponent.toShortString() +
                 " did not call through to super.onPostResume()");
         }
+        duration = SystemClock.uptimeMillis() - startTime;
+        if (duration > SLOW_OP_DURATION_MS) {
+            Log.w(TAG, "Slow operation onPostResume since onResume, duration=" + duration);
+        }
+
         dispatchActivityPostResumed();
+
+        duration = SystemClock.uptimeMillis() - startTime;
+        if (duration > SLOW_OP_DURATION_MS) {
+            Log.w(TAG, "Slow operation dispatchActivityPostResumed since onResume"
+                    + ", duration=" + duration);
+        }
         Trace.traceEnd(Trace.TRACE_TAG_WINDOW_MANAGER);
     }
 
