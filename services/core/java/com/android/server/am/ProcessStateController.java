@@ -40,6 +40,7 @@ import com.android.server.ServiceThread;
 import com.android.server.wm.WindowProcessController;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -777,14 +778,37 @@ public class ProcessStateController {
      * ProcessStateController. Because ProcessStateController is guarded by a lock WindowManager
      * avoids acquiring, all of the work will posted to the provided Looper's thread with the
      * provided lock object.
+     *
+     * ActivityStateAsyncUpdater is not thread-safe and its usage should always be guarded by the
+     * WindowManagerGlobalLock.
      */
     public static class ActivityStateAsyncUpdater {
         private final ProcessStateController mPsc;
-        private final Handler mHandler;
+        private final Looper mLooper;
+        private AsyncBatchSession mBatchSession;
 
         private ActivityStateAsyncUpdater(ProcessStateController psc, Looper looper) {
             mPsc = psc;
-            mHandler = new Handler(looper);
+            mLooper = looper;
+        }
+
+        /**
+         * Start a batch session. Any async work will not be posted to the Handler thread until
+         * the returned AsyncBatchSession is closed.
+         */
+        public AsyncBatchSession startBatchSession() {
+            if (!Flags.pushActivityStateToOomadjuster()) return null;
+
+            final AsyncBatchSession session = getBatchSession();
+            session.start();
+            return session;
+        }
+
+        /**
+         * Trigger an OomAdjuster full update.
+         */
+        public void runUpdateAsync() {
+            getBatchSession().runUpdate();
         }
 
         /**
@@ -802,11 +826,7 @@ public class ProcessStateController {
         public void setExpandedNotificationShadeAsync(boolean expandedShade) {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
-            mHandler.post(() -> {
-                synchronized (mPsc.mLock) {
-                    mPsc.setExpandedNotificationShade(expandedShade);
-                }
-            });
+            getBatchSession().enqueue(() -> mPsc.setExpandedNotificationShade(expandedShade));
         }
 
         /**
@@ -817,15 +837,13 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord top = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-            mHandler.post(() -> {
-                synchronized (mPsc.mLock) {
-                    mPsc.setTopProcess(top);
-                    if (clearPrev) {
-                        mPsc.setPreviousProcess(null);
-                    }
-                    if (cancelExpandedShade) {
-                        mPsc.setExpandedNotificationShade(false);
-                    }
+            getBatchSession().enqueue(() -> {
+                mPsc.setTopProcess(top);
+                if (clearPrev) {
+                    mPsc.setPreviousProcess(null);
+                }
+                if (cancelExpandedShade) {
+                    mPsc.setExpandedNotificationShade(false);
                 }
             });
         }
@@ -836,11 +854,7 @@ public class ProcessStateController {
         public void setTopProcessStateAsync(@ActivityManager.ProcessState int procState) {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
-            mHandler.post(() -> {
-                synchronized (mPsc.mLock) {
-                    mPsc.setTopProcessState(procState);
-                }
-            });
+            getBatchSession().enqueue(() -> mPsc.setTopProcessState(procState));
         }
 
         /**
@@ -850,12 +864,9 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord prev = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-            mHandler.post(() -> {
-                synchronized (mPsc.mLock) {
-                    mPsc.setPreviousProcess(prev);
-                }
-            });
+            getBatchSession().enqueue(() -> mPsc.setPreviousProcess(prev));
         }
+
 
         /**
          * Set which process is considered the Home process, if any.
@@ -864,12 +875,9 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord home = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-            mHandler.post(() -> {
-                synchronized (mPsc.mLock) {
-                    mPsc.setHomeProcess(home);
-                }
-            });
+            getBatchSession().enqueue(() -> mPsc.setHomeProcess(home));
         }
+
 
         /**
          * Set which process is considered the Heavy Weight process, if any.
@@ -878,11 +886,7 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord heavy = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-            mHandler.post(() -> {
-                synchronized (mPsc.mLock) {
-                    mPsc.setHeavyWeightProcess(heavy);
-                }
-            });
+            getBatchSession().enqueue(() -> mPsc.setHeavyWeightProcess(heavy));
         }
 
         /**
@@ -892,11 +896,7 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord dozeUi = wpc != null ? (ProcessRecord) wpc.mOwner : null;
-            mHandler.post(() -> {
-                synchronized (mPsc.mLock) {
-                    mPsc.setVisibleDozeUiProcess(dozeUi);
-                }
-            });
+            getBatchSession().enqueue(() -> mPsc.setVisibleDozeUiProcess(dozeUi));
         }
 
         /**
@@ -906,11 +906,7 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord activity = (ProcessRecord) wpc.mOwner;
-            mHandler.post(() -> {
-                synchronized (mPsc.mLock) {
-                    mPsc.setHasActivity(activity, hasActivity);
-                }
-            });
+            getBatchSession().enqueue(() -> mPsc.setHasActivity(activity, hasActivity));
         }
 
         /**
@@ -921,11 +917,9 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord activity = (ProcessRecord) wpc.mOwner;
-            mHandler.post(() -> {
-                synchronized (mPsc.mLock) {
-                    mPsc.setActivityStateFlags(activity, flags);
-                    mPsc.setPerceptibleTaskStoppedTimeMillis(activity, perceptibleStopTimeMs);
-                }
+            getBatchSession().enqueue(() -> {
+                mPsc.setActivityStateFlags(activity, flags);
+                mPsc.setPerceptibleTaskStoppedTimeMillis(activity, perceptibleStopTimeMs);
             });
         }
 
@@ -937,11 +931,140 @@ public class ProcessStateController {
             if (!Flags.pushActivityStateToOomadjuster()) return;
 
             final ProcessRecord proc = (ProcessRecord) wpc.mOwner;
-            mHandler.post(() -> {
-                synchronized (mPsc.mLock) {
-                    mPsc.setHasRecentTasks(proc, hasRecentTasks);
+            getBatchSession().enqueue(() -> mPsc.setHasRecentTasks(proc, hasRecentTasks));
+        }
+
+        private AsyncBatchSession getBatchSession() {
+            if (mBatchSession == null) {
+                final Handler h = new Handler(mLooper);
+                final Runnable update = () -> mPsc.runFullUpdate(
+                        ActivityManagerInternal.OOM_ADJ_REASON_ACTIVITY);
+                mBatchSession = new AsyncBatchSession(h, mPsc.mLock, update);
+            }
+            return mBatchSession;
+        }
+    }
+
+    public static class AsyncBatchSession implements AutoCloseable {
+        final Handler mHandler;
+        final Object mLock;
+        private final Runnable mUpdateRunnable;
+        private final Runnable mLockedUpdateRunnable;
+        private boolean mRunUpdate = false;
+        private boolean mBoostPriority = false;
+        private int mNestedStartCount = 0;
+
+        private ArrayList<Runnable> mBatchList = new ArrayList<>();
+
+        AsyncBatchSession(Handler handler, Object lock, Runnable updateRunnable) {
+            mHandler = handler;
+            mLock = lock;
+            mUpdateRunnable = updateRunnable;
+            mLockedUpdateRunnable = () -> {
+                synchronized (lock) {
+                    updateRunnable.run();
                 }
-            });
+            };
+        }
+
+        /**
+         * If the BatchSession is currently active, posting the batched work to the front of the
+         * Handler queue when the session is closed.
+         */
+        public void postToHead() {
+            if (isActive()) {
+                mBoostPriority = true;
+            }
+        }
+
+        /**
+         * Enqueue the work to be run asynchronously done on a Handler thread.
+         * If batch session is currently active, queue up the work to be run when the session ends.
+         * Otherwise, the work will be immediately enqueued on to the Handler thread.
+         */
+        public void enqueue(Runnable runnable) {
+            if (isActive()) {
+                mBatchList.add(runnable);
+            } else {
+                // Not in session, just post to the handler immediately.
+                mHandler.post(() -> {
+                    synchronized (mLock) {
+                        runnable.run();
+                    }
+                });
+            }
+        }
+
+        /**
+         * Trigger an update to be asynchronously done on a Handler thread.
+         * If batch session is currently active, the update will be run at the end of the batched
+         * work.
+         * Otherwise, the update will be immediately enqueued on to the Handler thread (and any
+         * previously posted update will be removed in favor of this most recent trigger).
+         */
+        public void runUpdate() {
+            if (isActive()) {
+                // Mark that an update should be done after the batched work is done.
+                mRunUpdate = true;
+            } else {
+                // Not in session, just post to the handler immediately (and clear any existing
+                // posted update).
+                mHandler.removeCallbacks(mLockedUpdateRunnable);
+                mHandler.post(mLockedUpdateRunnable);
+            }
+        }
+
+        void start() {
+            mNestedStartCount++;
+        }
+
+        private boolean isActive() {
+            return mNestedStartCount > 0;
+        }
+
+        @Override
+        public void close() {
+            if (mNestedStartCount == 0) {
+                Slog.wtfStack(TAG, "close() called on an unstarted BatchSession!");
+                return;
+            }
+
+            mNestedStartCount--;
+
+            if (isActive()) {
+                // Still in an active batch session.
+                return;
+            }
+
+            final ArrayList<Runnable> list = new ArrayList<>(mBatchList);
+            final boolean runUpdate = mRunUpdate;
+
+            // Return if there is nothing to do.
+            if (list.isEmpty() && !runUpdate) return;
+
+            mBatchList.clear();
+            mRunUpdate = false;
+
+            // offload all of the queued up work to the ActivityStateHandler thread.
+            final Runnable batchedWorkload = () -> {
+                synchronized (mLock) {
+                    for (int i = 0, size = list.size(); i < size; i++) {
+                        list.get(i).run();
+                    }
+                    if (runUpdate) {
+                        mUpdateRunnable.run();
+                    }
+                }
+            };
+
+            if (mBoostPriority) {
+                // The priority of this BatchSession has been boosted. Post to the front of the
+                // Handler queue.
+                mBoostPriority = false;
+                mHandler.postAtFrontOfQueue(batchedWorkload);
+            } else {
+                mHandler.post(batchedWorkload);
+            }
         }
     }
 

@@ -2649,7 +2649,11 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
     void endActivityVisibilityUpdate() {
         mVisibilityTransactionDepth--;
         if (mVisibilityTransactionDepth == 0) {
-            computeProcessActivityStateBatch();
+            // Multiple OomAdjuster affecting state changes can occur, wrap those state changes in
+            // a BatchSession.
+            try (var unused = mService.mActivityStateUpdater.startBatchSession()) {
+                computeProcessActivityStateBatch();
+            }
         }
     }
 
