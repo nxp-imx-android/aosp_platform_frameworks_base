@@ -152,17 +152,22 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             return RESULT_SKIP;
         }
 
+        // If activity is null attempt to use task top activity if available.
+        final ActivityRecord targetActivity = activity != null ? activity
+                : task.getTopMostActivity();
+
         if (DesktopExperienceFlags.HANDLE_INCOMPATIBLE_TASKS_IN_DESKTOP_LAUNCH_PARAMS.isTrue()
-                && activity != null) {
+                && targetActivity != null) {
             final boolean isActivityStackTransparent = !task.forAllActivities(r ->
-                    (r.occludesParent())) && !activity.occludesParent();
+                    (r.occludesParent())) && !targetActivity.occludesParent();
             final AtomicInteger numActivities = new AtomicInteger(1);
             task.forAllActivities((r) -> {
                 numActivities.incrementAndGet();
             });
             if (mDesktopModeCompatPolicy.isTopActivityExemptFromDesktopWindowing(
-                    activity.mActivityComponent, activity.isNoDisplay(), isActivityStackTransparent,
-                    numActivities.get(), task.getUserId(), activity.info)) {
+                    targetActivity.mActivityComponent, targetActivity.isNoDisplay(),
+                    isActivityStackTransparent, numActivities.get(), task.getUserId(),
+                    targetActivity.info)) {
                 appendLog("activity exempt from desktop, launching in fullscreen");
                 outParams.mWindowingMode = WINDOWING_MODE_FULLSCREEN;
                 return RESULT_DONE;
@@ -255,7 +260,7 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
         if (DesktopModeFlags.INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES.isTrue()) {
             ActivityRecord topVisibleFreeformActivity =
                     task.getDisplayContent().getTopMostVisibleFreeformActivity();
-            if (shouldInheritExistingTaskBounds(topVisibleFreeformActivity, activity, task)) {
+            if (shouldInheritExistingTaskBounds(topVisibleFreeformActivity, targetActivity, task)) {
                 appendLog("inheriting bounds from existing closing instance");
                 outParams.mBounds.set(topVisibleFreeformActivity.getBounds());
                 appendLog("final desktop mode task bounds set to %s", outParams.mBounds);
@@ -264,8 +269,8 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
             }
         }
 
-        DesktopModeBoundsCalculator.updateInitialBounds(task, layout, activity, options, display,
-                outParams, this::appendLog);
+        DesktopModeBoundsCalculator.updateInitialBounds(task, layout, targetActivity, options,
+                display, outParams, this::appendLog);
         appendLog("final desktop mode task bounds set to %s", outParams.mBounds);
         if (options != null && options.getFlexibleLaunchSize()) {
             // Return result done to prevent other modifiers from respecting option bounds and

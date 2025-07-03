@@ -141,14 +141,15 @@ public final class DesktopModeBoundsCalculator {
      */
     @NonNull
     private static Rect calculateInitialBounds(@NonNull Task task,
-            @NonNull ActivityRecord activity, @NonNull Rect stableBounds,
+            @Nullable ActivityRecord activity, @NonNull Rect stableBounds,
             @Nullable ActivityOptions options, @NonNull DisplayContent displayContent,
             boolean shouldRespectOptionPosition, int captionHeight
     ) {
         // Display bounds not taking into account insets.
         final Rect screenBounds = displayContent.getBounds();
         final Size idealSize = calculateIdealSize(screenBounds, DESKTOP_MODE_INITIAL_BOUNDS_SCALE);
-        if (!DesktopModeFlags.ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS.isTrue()) {
+        if (!DesktopModeFlags.ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS.isTrue()
+                || activity == null) {
             return centerInScreen(idealSize, screenBounds);
         }
         if (activity.mAppCompatController.getAspectRatioOverrides()
