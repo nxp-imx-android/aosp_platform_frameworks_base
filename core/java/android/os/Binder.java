@@ -46,6 +46,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
 /**
@@ -305,6 +306,15 @@ public class Binder implements IBinder {
     private IInterface mOwner;
     @Nullable
     private String mDescriptor;
+
+    /** A holder so we don't eagerly allocate the transaction trace names cache. */
+    private static class TransactionTraceNamesCacheHolder {
+        /** A map of the transaction names keyed by simple descriptors. */
+        static final ConcurrentHashMap<String, AtomicReferenceArray<String>> sNamesCache =
+                new ConcurrentHashMap<>();
+    }
+
+    /** Cached value to the above map. */
     private volatile AtomicReferenceArray<String> mTransactionTraceNames = null;
     private volatile String mSimpleDescriptor = null;
     private static final int TRANSACTION_TRACE_NAME_ID_LIMIT = 1024;
@@ -990,12 +1000,36 @@ public class Binder implements IBinder {
      */
     @VisibleForTesting
     public final @Nullable String getTransactionTraceName(int transactionCode) {
-        final boolean isInterfaceUserDefined = getMaxTransactionId() == 0;
+        final boolean isInterfaceUserDefined = getMaxTransactionId() == -1;
         if (mTransactionTraceNames == null) {
-            final int highestId = isInterfaceUserDefined ? TRANSACTION_TRACE_NAME_ID_LIMIT
-                    : Math.min(getMaxTransactionId(), TRANSACTION_TRACE_NAME_ID_LIMIT);
             mSimpleDescriptor = getSimpleDescriptor();
-            mTransactionTraceNames = new AtomicReferenceArray(highestId + 1);
+            if (Flags.binderCacheTransactionTraceNames()) {
+                // Prefer the full descriptor to avoid mixing up the method names for different
+                // interfaces with the same simple descriptor.
+                String key = mDescriptor != null ? mDescriptor : getClass().getName();
+                // Check if we have it in the static cache already.
+                var transactionTraceNames = TransactionTraceNamesCacheHolder.sNamesCache.get(key);
+                if (transactionTraceNames == null) {
+                    // Not in the static cache. Create a new array.
+                    final int highestId = isInterfaceUserDefined ? TRANSACTION_TRACE_NAME_ID_LIMIT
+                            : Math.min(getMaxTransactionId(), TRANSACTION_TRACE_NAME_ID_LIMIT);
+                    transactionTraceNames = new AtomicReferenceArray(highestId + 1);
+                    // Try to put it in the static cache.
+                    var oldTransactionTraceNames =
+                            TransactionTraceNamesCacheHolder.sNamesCache.putIfAbsent(
+                                    key, transactionTraceNames);
+                    if (oldTransactionTraceNames != null) {
+                        // Another thread must have added an entry to the static cache in the mean
+                        // time. Use the one already in the cache.
+                        transactionTraceNames = oldTransactionTraceNames;
+                    }
+                }
+                mTransactionTraceNames = transactionTraceNames;
+            } else {
+                final int highestId = isInterfaceUserDefined ? TRANSACTION_TRACE_NAME_ID_LIMIT
+                        : Math.min(getMaxTransactionId(), TRANSACTION_TRACE_NAME_ID_LIMIT);
+                mTransactionTraceNames = new AtomicReferenceArray(highestId + 1);
+            }
         }
 
         final int index = isInterfaceUserDefined
@@ -1046,7 +1080,7 @@ public class Binder implements IBinder {
      * @hide
      */
     public int getMaxTransactionId() {
-        return 0;
+        return -1;
     }
 
     /**
@@ -1407,7 +1441,6 @@ public class Binder implements IBinder {
         // If the call was {@link IBinder#FLAG_ONEWAY} then these exceptions
         // disappear into the ether.
         final boolean tagEnabled = Trace.isTagEnabled(Trace.TRACE_TAG_AIDL);
-        final boolean hasFullyQualifiedName = getMaxTransactionId() > 0;
         final String transactionTraceName;
 
         if (tagEnabled) {
