@@ -67,7 +67,7 @@ public abstract class HalVibratorManagerTestCase {
     @Test
     @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void init_initializesHalAndClearSyncedAndSessions() {
-        mHelper.setCapabilities(IVibratorManager.CAP_SYNC | IVibratorManager.CAP_START_SESSIONS);
+        mHelper.setCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_START_SESSIONS);
         mHelper.setVibratorIds(new int[] {1, 2});
         HalVibratorManager manager = newVibratorManager();
         manager.init(mHalCallbackMock);
@@ -87,7 +87,7 @@ public abstract class HalVibratorManagerTestCase {
 
     @Test
     public void hasCapability_checksAllFlagBits() {
-        mHelper.setCapabilities(IVibratorManager.CAP_SYNC | IVibratorManager.CAP_START_SESSIONS);
+        mHelper.setCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_START_SESSIONS);
         HalVibratorManager manager = newInitializedVibratorManager();
 
         assertThat(manager.hasCapability(IVibratorManager.CAP_SYNC)).isTrue();
@@ -96,6 +96,32 @@ public abstract class HalVibratorManagerTestCase {
         assertThat(manager.hasCapability(
                 IVibratorManager.CAP_SYNC | IVibratorManager.CAP_PREPARE_ON)).isFalse();
         assertThat(manager.hasCapability(IVibratorManager.CAP_TRIGGER_CALLBACK)).isFalse();
+    }
+
+    @Test
+    public void getVibrator_validVibratorId_returnsValidVibrators() {
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newInitializedVibratorManager();
+        assertThat(manager.getVibrator(1)).isNotNull();
+        assertThat(manager.getVibrator(1).getInfo().getId()).isEqualTo(1);
+        assertThat(manager.getVibrator(2)).isNotNull();
+        assertThat(manager.getVibrator(2).getInfo().getId()).isEqualTo(2);
+    }
+
+    @Test
+    public void getVibrator_beforeInit_returnsNull() {
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newVibratorManager();
+        assertThat(manager.getVibrator(1)).isNull();
+        assertThat(manager.getVibrator(2)).isNull();
+    }
+
+    @Test
+    public void getVibrator_badVibratorId_returnsNull() {
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newInitializedVibratorManager();
+        assertThat(manager.getVibrator(3)).isNull();
+        assertThat(manager.getVibrator(-1)).isNull();
     }
 
     @Test
@@ -170,7 +196,7 @@ public abstract class HalVibratorManagerTestCase {
 
     @Test
     public void triggerSynced_triggerCallback_returnsVibrationId() {
-        mHelper.setCapabilities(IVibratorManager.CAP_SYNC | IVibratorManager.CAP_TRIGGER_CALLBACK);
+        mHelper.setCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_TRIGGER_CALLBACK);
         mHelper.setVibratorIds(new int[] {1, 2});
         HalVibratorManager manager = newInitializedVibratorManager();
 
