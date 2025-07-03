@@ -168,17 +168,16 @@ public abstract class ActivityManagerInternal {
      *
      * The automatic stopping is not guaranteed, and there are cases in which it won't be.
      * Similarly, there is no guarantee that the user will not be stopped prior to the given
-     * duration.
-     *
-     * In the current implementation, this value simply replaces any default inactive stopping time
-     * (from config_backgroundUserScheduledStopTimeSecs), but that is subject to change.
+     * duration (such as if too many users are running, or the user has been in the background for
+     * long enough that it is considered dispensable).
      *
      * Automatically stopping background users is not currently enabled for devices supporting
      * {@link android.os.UserManager#isVisibleBackgroundUsersEnabled() visible background users};
      * on such devices, the user will still be started but not stopped.
      *
      * @param userId ID of the user to start
-     * @param durSecs in how many seconds we should attempt to stop the user
+     * @param durSecs in how many seconds we should attempt to stop the user, typically something on
+     *                the order of a few minutes
      * @return true if the user has been successfully started
      */
     public abstract boolean startUserInBackgroundTemporarily(@UserIdInt int userId, int durSecs);

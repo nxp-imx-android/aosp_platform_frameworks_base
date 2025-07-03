@@ -8947,10 +8947,11 @@ public class ActivityManagerService extends IActivityManager.Stub
                     com.android.internal.R.integer.config_multiuserMaxRunningUsers);
             final boolean delayUserDataLocking = res.getBoolean(
                     com.android.internal.R.bool.config_multiuserDelayUserDataLocking);
-            final int backgroundUserScheduledStopTimeSecs = res.getInteger(
-                    com.android.internal.R.integer.config_backgroundUserScheduledStopTimeSecs);
+            final int backgroundUserConsideredDispensableTimeSecs = res.getInteger(
+                    com.android.internal.R.integer
+                            .config_backgroundUserConsideredDispensableTimeSecs);
             mUserController.setInitialConfig(userSwitchUiEnabled, maxRunningUsers,
-                    delayUserDataLocking, backgroundUserScheduledStopTimeSecs);
+                    delayUserDataLocking, backgroundUserConsideredDispensableTimeSecs);
         }
         mAppErrors.loadAppsNotReportingCrashesFromConfig(res.getString(
                 com.android.internal.R.string.config_appsNotReportingCrashes));

@@ -3202,9 +3202,11 @@
     <!-- Maximum number of users we allow to be running at a time. -->
     <integer name="config_multiuserMaxRunningUsers">3</integer>
 
-    <!-- Number of seconds of uptime after a full user enters the background before we attempt to
-         stop it due to inactivity. Set to -1 to disable scheduling stopping background users. -->
-    <integer name="config_backgroundUserScheduledStopTimeSecs">1800</integer> <!-- 30 minutes -->
+    <!-- Number of seconds of uptime after a full user enters the background before we consider
+         it as no longer important, and therefore can consider automatically stopping it.
+         Set to -1 to disable this feature (i.e. don't auto-stop background users after some elapsed
+         time). -->
+    <integer name="config_backgroundUserConsideredDispensableTimeSecs">93600</integer> <!-- 26 hours -->
 
     <!-- Whether to delay user data locking for background user.
          If false, user switched-out from user switching will still be in running state until
