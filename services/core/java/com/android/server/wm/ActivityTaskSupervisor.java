@@ -1281,7 +1281,8 @@ public class ActivityTaskSupervisor implements RecentTasks.Callbacks {
             return false;
         }
 
-        if (DesktopExperienceFlags.ENABLE_MIRROR_DISPLAY_NO_ACTIVITY.isTrue()) {
+        if (DesktopExperienceFlags.ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT.isTrue()
+                && DesktopExperienceFlags.ENABLE_MIRROR_DISPLAY_NO_ACTIVITY.isTrue()) {
             if (!displayContent.mDisplay.canHostTasks()) {
                 Slog.w(TAG, "Launch on display check: activity launch is not allowed on a "
                         + "display that cannot host tasks");

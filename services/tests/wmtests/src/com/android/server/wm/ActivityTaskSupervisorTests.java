@@ -30,6 +30,7 @@ import static com.android.dx.mockito.inline.extended.ExtendedMockito.never;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.reset;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.spyOn;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.verify;
+import static com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT;
 
 import static com.google.common.truth.Truth.assertThat;
 
@@ -62,6 +63,7 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.view.Display;
 
 import androidx.test.filters.MediumTest;
@@ -359,8 +361,11 @@ public class ActivityTaskSupervisorTests extends WindowTestsBase {
      * Ensures that an arbitrary activity can be launched on a display the can host tasks, and
      * cannot be launched on a display that cannot host tasks.
      */
-    @EnableFlags(Flags.FLAG_ENABLE_MIRROR_DISPLAY_NO_ACTIVITY)
     @Test
+    @RequiresFlagsEnabled({
+            FLAG_ENABLE_DISPLAY_CONTENT_MODE_MANAGEMENT,
+            Flags.FLAG_ENABLE_MIRROR_DISPLAY_NO_ACTIVITY
+    })
     public void testDisplayCanLaunchActivities_canHostTasksDisplay() {
         final Display display = mDisplayContent.mDisplay;
         // An empty info without FLAG_ALLOW_EMBEDDED.
