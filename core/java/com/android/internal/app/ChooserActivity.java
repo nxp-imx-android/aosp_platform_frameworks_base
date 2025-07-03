@@ -1228,8 +1228,8 @@ public class ChooserActivity extends ResolverActivity implements
                             "",
                             -1,
                             false);
-                    // Action bar is user-independent, always start as primary
-                    safelyStartActivityAsUser(ti, getPersonalProfileUserHandle());
+                    // Action bar is user-independent, always start as the launching user
+                    safelyStartActivityAsUser(ti, UserHandle.of(UserHandle.myUserId()));
                     finish();
                 }
         );
