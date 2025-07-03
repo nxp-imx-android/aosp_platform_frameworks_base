@@ -17,6 +17,7 @@
 package com.android.server.wm.flicker.helpers
 
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.Context
 import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -123,12 +124,7 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         device: UiDevice,
         motionEventHelper: MotionEventHelper
     ) {
-        val windowRect = wmHelper.getWindowRegion(innerHelper).bounds
-        val startX = windowRect.centerX()
-
-        // Start dragging a little under the top to prevent dragging the notification shade.
-        val startY = 10
-
+        val (startX, startY) = getAppHandleDragPosition(wmHelper)
         val displayRect = getDisplayRect(wmHelper)
 
         // The position we want to drag to
@@ -142,6 +138,63 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
         } else {
             device.drag(startX, startY, startX, endY, 100)
         }
+    }
+
+    /**
+     * Drags a window to one side of the screen to enter split-screen mode.
+     *
+     * This function simulates a user dragging an application window from near the top-center
+     * to either the left or right edge of the display, triggering a split-screen view.
+     *
+     * @param wmHelper Helper class to get information about the window manager state, such as the
+     * window's current position and size.
+     * @param device The UiDevice instance used to interact with the device, specifically to perform
+     * the drag gesture.
+     * @param direction The target side of the screen to drag the window to, either
+     * {@link SplitDirection#LEFT} or {@link SplitDirection#RIGHT}.
+     * @param motionEventHelper A helper for dispatching motion events. It is used for touch-based
+     * input.
+     */
+    fun dragFromFullscreenToSplit(
+        wmHelper: WindowManagerStateHelper,
+        device: UiDevice,
+        direction: SplitDirection,
+        motionEventHelper: MotionEventHelper = MotionEventHelper(getInstrumentation(), TOUCH),
+    ) {
+        if (!isInFullscreenMode(wmHelper)) {
+            error("Should be in Fullscreen mode")
+        }
+
+        val (startX, startY) = getAppHandleDragPosition(wmHelper)
+        val displayRect = getDisplayRect(wmHelper)
+
+        // Determine the end coordinates for the drag.
+        val endY = displayRect.centerY()
+        val endX = when (direction) {
+            SplitDirection.LEFT -> displayRect.left + 20 // Target the left edge with an offset.
+            SplitDirection.RIGHT -> displayRect.right - 20 // Target the right edge with an offset.
+        }
+
+        val steps = 100 // Number of move steps in the drag gesture.
+
+        // Perform the drag action.
+        if (motionEventHelper.inputMethod == TOUCH
+            && DesktopModeFlags.ENABLE_HOLD_TO_DRAG_APP_HANDLE.isTrue) {
+            // We need more sleep because we are waiting for the split screen indicator.
+            motionEventHelper.holdToDrag(startX, startY, endX, endY, steps, sleepTimeBeforeDrop = 1000)
+        } else {
+            // Use standard UiDevice.drag for other input methods (e.g., mouse).
+            device.drag(startX, startY, endX, endY, steps)
+        }
+    }
+
+    private fun getAppHandleDragPosition(wmHelper: WindowManagerStateHelper): Pair<Int, Int> {
+        val windowRect = wmHelper.getWindowRegion(innerHelper).bounds
+        val startX = windowRect.centerX()
+
+        // Start dragging a little under the top to prevent dragging the notification shade.
+        val startY = 10
+        return Pair(startX, startY)
     }
 
     private fun getMaximizeButtonForTheApp(caption: UiObject2?): UiObject2 {
@@ -731,6 +784,9 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
     private fun isInDesktopWindowingMode(wmHelper: WindowManagerStateHelper) =
         wmHelper.getWindow(innerHelper)?.windowingMode == WINDOWING_MODE_FREEFORM
 
+    private fun isInFullscreenMode(wmHelper: WindowManagerStateHelper) =
+        wmHelper.getWindow(innerHelper)?.windowingMode == WINDOWING_MODE_FULLSCREEN
+
     private fun isAnyDesktopWindowVisible(wmHelper: WindowManagerStateHelper) =
         wmHelper.currentState.wmState.hasFreeformWindow()
 
@@ -770,6 +826,11 @@ open class DesktopModeAppHelper(private val innerHelper: StandardAppHelper) :
 
     enum class WindowDraggingDirection {
         CENTER
+    }
+
+    enum class SplitDirection {
+        LEFT,
+        RIGHT
     }
 
     private companion object {
