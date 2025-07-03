@@ -813,14 +813,15 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
     /**
      * Checks if a given route should be displayed as selectable route. This function checks: 1) if
-     * max devices for broadcast reached 2) the selected route(s) is a broadcast supported route 3)
-     * the target route is a broadcast supported route.
+     * LE Audio broadcast is support for the device, 2) if the current selected route is a BLE
+     * headset and 3) the target route is a BLE headset.
      *
      * @param targetRoute the route for checking
      * @return true if the target route should be displayed as a selectable route
      */
     private synchronized boolean isRouteSelectable(MediaRoute2Info targetRoute) {
-        return getSelectedRoutes().getFirst().getType() == MediaRoute2Info.TYPE_BLE_HEADSET
+        return mBluetoothRouteController.isLEAudioBroadcastSupported()
+                && getSelectedRoutes().getFirst().getType() == MediaRoute2Info.TYPE_BLE_HEADSET
                 && targetRoute.getType() == MediaRoute2Info.TYPE_BLE_HEADSET;
     }
 
