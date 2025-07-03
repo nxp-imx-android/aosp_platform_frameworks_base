@@ -137,12 +137,9 @@ public class ScreenRecordTile extends QSTileImpl<QSTile.BooleanState>
             new ScreenCaptureActivityIntentParameters(ScreenCaptureType.RECORD, false, null, null,
                     UserHandle.CURRENT, 0
             ).fillIntent(intent);
-            mActivityStarter.postQSRunnableDismissingKeyguard(new Runnable() {
-                @Override
-                public void run() {
-                    mActivityStarter.startActivity(intent, true);
-                }
-            });
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            mActivityStarter.postQSRunnableDismissingKeyguard(
+                    () -> mActivityStarter.startActivity(intent, true));
         } else {
             // TODO(b/409330121): call mController.onScreenRecordQsTileClick() instead.
             handleClick(() -> showDialog(expandable));
