@@ -52,12 +52,6 @@ public final class UidRecord {
     private boolean mProcAdjChanged;
 
     @CompositeRWLock({"mService", "mProcLock"})
-    private int mCurAdj;
-
-    @CompositeRWLock({"mService", "mProcLock"})
-    private int mSetAdj;
-
-    @CompositeRWLock({"mService", "mProcLock"})
     private int mCurCapability;
 
     @CompositeRWLock({"mService", "mProcLock"})
@@ -97,9 +91,6 @@ public final class UidRecord {
 
     @CompositeRWLock({"mService", "mProcLock"})
     private boolean mSetIdle;
-
-    @CompositeRWLock({"mService", "mProcLock"})
-    private int mNumProcs;
 
     @CompositeRWLock({"mService", "mProcLock"})
     private ArraySet<ProcessRecord> mProcRecords = new ArraySet<>();
@@ -461,7 +452,6 @@ public final class UidRecord {
             ProtoUtils.writeBitWiseFlagsToProtoEnum(proto, UidRecordProto.LAST_REPORTED_CHANGES,
                     mLastReportedChange, ORIG_ENUMS, PROTO_ENUMS);
         }
-        proto.write(UidRecordProto.NUM_PROCS, mNumProcs);
 
         long seqToken = proto.start(UidRecordProto.NETWORK_STATE_UPDATE);
         proto.write(UidRecordProto.ProcStateSequence.CURURENT, curProcStateSeq);
@@ -543,8 +533,11 @@ public final class UidRecord {
                 sb.append("procadj");
             }
         }
-        sb.append(" procs:");
-        sb.append(mNumProcs);
+
+        // Keep the legacy field to maintain backward compatibility for downstream readers.
+        // TODO: b/425766486 - Remove the fixed string.
+        sb.append(" procs:0");
+
         sb.append(" seq(");
         sb.append(curProcStateSeq);
         sb.append(",");

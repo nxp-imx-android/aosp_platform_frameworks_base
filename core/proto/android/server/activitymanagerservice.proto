@@ -808,7 +808,7 @@ message UidRecordProto {
         CHANGE_PROCADJ = 7;
     }
     repeated Change last_reported_changes = 8;
-    optional int32 num_procs = 9;
+    optional int32 num_procs = 9 [deprecated=true];
 
     message ProcStateSequence {
         option (.android.msg_privacy).dest = DEST_AUTOMATIC;
