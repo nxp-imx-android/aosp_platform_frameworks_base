@@ -75,9 +75,9 @@ public class PowerManagerFlags {
             new FlagState(Flags.FLAG_ENABLE_APP_WAKELOCK_DATA_SOURCE,
                     Flags::enableAppWakelockDataSource);
 
-    private final FlagState mSleeplocks = new FlagState(
-            Flags.FLAG_SLEEPLOCKS,
-            Flags::sleeplocks
+    private final FlagState mPartialSleepWakelocks = new FlagState(
+            Flags.FLAG_PARTIAL_SLEEP_WAKELOCKS,
+            Flags::partialSleepWakelocks
     );
 
     /** Returns whether early-screen-timeout-detector is enabled on not. */
@@ -151,8 +151,8 @@ public class PowerManagerFlags {
      * @return Whether new wakelock to keep device asleep - for the user, but ensures the CPU
      * remains awake - is enabled.
      */
-    public boolean isSleeplocksFeatureEnabled() {
-        return mSleeplocks.isEnabled();
+    public boolean isPartialSleepWakelocksFeatureEnabled() {
+        return mPartialSleepWakelocks.isEnabled();
     }
 
     /**
@@ -169,7 +169,7 @@ public class PowerManagerFlags {
         pw.println(" " + mDisableFrozenProcessWakelocks);
         pw.println(" " + mForceDisableWakelocks);
         pw.println(" " + mEnableAppWakelockDataSource);
-        pw.println(" " + mSleeplocks);
+        pw.println(" " + mPartialSleepWakelocks);
     }
 
     private static class FlagState {

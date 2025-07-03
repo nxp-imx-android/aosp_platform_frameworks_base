@@ -51,6 +51,7 @@ message PowerManagerServiceDumpProto {
         optional bool is_stay_awake = 6;
         optional bool is_doze = 7;
         optional bool is_draw = 8;
+        optional bool is_partial_sleep = 9;
     }
     message UserActivityProto {
         option (.android.msg_privacy).dest = DEST_AUTOMATIC;
