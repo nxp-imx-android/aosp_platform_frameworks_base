@@ -1409,7 +1409,7 @@ constructor(
         val startScale = state.dragAnimator.scale
         val startPosition = state.dragAnimator.position
         val startBoundsWithOffset =
-            Rect(startBounds).apply { offset(startPosition.x.toInt(), startPosition.y.toInt()) }
+            Rect(startBounds).apply { offsetTo(startPosition.x.toInt(), startPosition.y.toInt()) }
 
         logV(
             "animateEndDragToDesktop: startBounds=$startBounds, endBounds=$endBounds, " +
