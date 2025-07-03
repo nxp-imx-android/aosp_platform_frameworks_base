@@ -16,14 +16,12 @@
 
 package com.android.wm.shell.compatui;
 
-import static android.provider.Settings.Secure.LAUNCHER_TASKBAR_EDUCATION_SHOWING;
 import static android.window.TaskConstants.TASK_CHILD_LAYER_COMPAT_UI;
 
 import android.annotation.Nullable;
 import android.app.TaskInfo;
 import android.content.Context;
 import android.graphics.Rect;
-import android.provider.Settings;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -120,7 +118,7 @@ class RestartDialogWindowManager extends CompatUIWindowManagerAbstract {
     @Override
     protected boolean eligibleToShowLayout() {
         // We don't show this dialog if the user has explicitly selected so clicking on a checkbox.
-        return mRequestRestartDialog && !isTaskbarEduShowing() && (mLayout != null
+        return mRequestRestartDialog && (mLayout != null
                 || mCompatUIConfiguration.shouldShowRestartDialogAgain(getLastTaskInfo()));
     }
 
@@ -242,11 +240,5 @@ class RestartDialogWindowManager extends CompatUIWindowManagerAbstract {
         final Rect taskBounds = getTaskBounds();
         return getWindowLayoutParams(/* width= */ taskBounds.width(), /* height= */
                 taskBounds.height());
-    }
-
-    @VisibleForTesting
-    boolean isTaskbarEduShowing() {
-        return Settings.Secure.getInt(mContext.getContentResolver(),
-                LAUNCHER_TASKBAR_EDUCATION_SHOWING, /* def= */ 0) == 1;
     }
 }
