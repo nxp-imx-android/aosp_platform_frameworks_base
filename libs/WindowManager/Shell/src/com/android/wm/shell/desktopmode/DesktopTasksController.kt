@@ -1024,9 +1024,8 @@ class DesktopTasksController(
         val excludedTasks =
             getFocusedNonDesktopTasks(DEFAULT_DISPLAY, userId).map { task -> task.taskId }
         // Preserve focus state on reconnect, regardless if focused task is restored or not.
-        val globallyFocusedTask = shellTaskOrganizer.getRunningTaskInfo(
-            focusTransitionObserver.globallyFocusedTaskId
-        )
+        val globallyFocusedTask =
+            shellTaskOrganizer.getRunningTaskInfo(focusTransitionObserver.globallyFocusedTaskId)
         mainScope.launch {
             preservedTaskIdsByDeskId.forEach { (preservedDeskId, preservedTaskIds) ->
                 val newDeskId =
@@ -2339,10 +2338,11 @@ class DesktopTasksController(
                 )
                 return@moveToNextDisplay false
             }
-            if (!getFocusedNonDesktopTasks(displayId, userId).isEmpty()) {
+            val focusedNonDesktopTasks = getFocusedNonDesktopTasks(displayId, userId)
+            if (!focusedNonDesktopTasks.isEmpty()) {
                 logD(
-                    "moveToNextDesktopDisplay: Skip displayId=$displayId as the focused " +
-                        "task is not desktop task focused non desktop tasks."
+                    "moveToNextDesktopDisplay: Skip displayId=$displayId as it has focused " +
+                        "non desktop tasks ${focusedNonDesktopTasks.joinToString()}"
                 )
                 return@moveToNextDisplay false
             }
@@ -2697,7 +2697,7 @@ class DesktopTasksController(
     ) {
         val displayId = taskInfo.displayId
         val displayLayout = displayController.getDisplayLayout(displayId)
-        if (displayLayout == null)  {
+        if (displayLayout == null) {
             logW("Display %d is not found, task displayId might be stale", displayId)
             return
         }
