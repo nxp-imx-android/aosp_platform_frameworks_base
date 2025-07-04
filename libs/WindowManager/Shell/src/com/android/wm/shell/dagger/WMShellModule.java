@@ -559,7 +559,8 @@ public abstract class WMShellModule {
             DesktopState desktopState,
             Optional<DesktopImeHandler> desktopImeHandler,
             Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver,
-            Optional<DesktopInOrderTransitionObserver> desktopInOrderTransitionObserver) {
+            Optional<DesktopInOrderTransitionObserver> desktopInOrderTransitionObserver,
+            DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver) {
         return new FreeformTaskTransitionObserver(
                 shellInit,
                 transitions,
@@ -572,7 +573,8 @@ public abstract class WMShellModule {
                 desktopState,
                 desktopImeHandler,
                 desktopBackNavTransitionObserver,
-                desktopInOrderTransitionObserver);
+                desktopInOrderTransitionObserver,
+                desktopModeLoggerTransitionObserver);
     }
 
     @WMSingleton
@@ -1037,7 +1039,8 @@ public abstract class WMShellModule {
             Optional<DesksTransitionObserver> desksTransitionObserver,
             DesktopState desktopState,
             Optional<DesktopImeHandler> desktopImeHandler,
-            Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver) {
+            Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver,
+            DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver) {
         if (enableInorderTransitionCallbacksForDesktop()
                 && ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
                 && desktopState.canEnterDesktopMode()) {
@@ -1046,7 +1049,8 @@ public abstract class WMShellModule {
                     focusTransitionObserver,
                     desksTransitionObserver,
                     desktopImeHandler,
-                    desktopBackNavTransitionObserver));
+                    desktopBackNavTransitionObserver,
+                    desktopModeLoggerTransitionObserver));
         }
         return Optional.empty();
     }
@@ -1556,13 +1560,12 @@ public abstract class WMShellModule {
     @Provides
     static DesktopModeLoggerTransitionObserver provideDesktopModeLoggerTransitionObserver(
             ShellInit shellInit,
-            Transitions transitions,
             DesktopModeEventLogger desktopModeEventLogger,
             Optional<DesktopTasksLimiter> desktopTasksLimiter,
             DesktopState desktopState,
             DesksOrganizer desksOrganizer) {
         return new DesktopModeLoggerTransitionObserver(
-                shellInit, transitions, desktopModeEventLogger,
+                shellInit, desktopModeEventLogger,
                 desktopTasksLimiter, desktopState, desksOrganizer);
     }
 
