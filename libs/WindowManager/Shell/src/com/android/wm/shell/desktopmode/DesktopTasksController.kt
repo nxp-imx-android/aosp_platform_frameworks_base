@@ -1074,6 +1074,8 @@ class DesktopTasksController(
         remoteTransition: RemoteTransition? = null,
         callback: IMoveToDesktopCallback? = null,
     ): Boolean {
+        val targetDisplayId = taskRepository.getDisplayForDesk(deskId)
+        val displayLayout = displayController.getDisplayLayout(targetDisplayId) ?: return false
         val task = recentTasksController?.findTaskInBackground(taskId)
         if (task == null) {
             logW("moveBackgroundTaskToDesktop taskId=%d not found", taskId)
@@ -1092,7 +1094,10 @@ class DesktopTasksController(
         wct.startTask(
             taskId,
             ActivityOptions.makeBasic()
-                .apply { launchWindowingMode = WINDOWING_MODE_FREEFORM }
+                .apply {
+                    launchWindowingMode = WINDOWING_MODE_FREEFORM
+                    launchBounds = getInitialBounds(displayLayout, task, deskId)
+                }
                 .toBundle(),
         )
 
@@ -3750,7 +3755,7 @@ class DesktopTasksController(
 
     private fun getInitialBounds(
         displayLayout: DisplayLayout,
-        taskInfo: RunningTaskInfo,
+        taskInfo: TaskInfo,
         deskId: Int,
     ): Rect {
         val bounds =
