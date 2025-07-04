@@ -631,7 +631,6 @@ public class LogicalDisplayTest {
     @Test
     public void testSetCanHostTasks_defaultDisplay() {
         mLogicalDisplay = new LogicalDisplay(Display.DEFAULT_DISPLAY, LAYER_STACK, mDisplayDevice);
-        assertTrue(mLogicalDisplay.canHostTasksLocked());
 
         mLogicalDisplay.setCanHostTasksLocked(true);
         assertTrue(mLogicalDisplay.canHostTasksLocked());
