@@ -4179,6 +4179,7 @@ class DesktopTasksController(
         deskId: Int,
         remoteTransition: RemoteTransition? = null,
         taskIdToReorderToFront: Int? = null,
+        transitionSource: DesktopModeTransitionSource = DesktopModeTransitionSource.UNKNOWN,
     ) =
         traceSection(
             Trace.TRACE_TAG_WINDOW_MANAGER,
@@ -5302,12 +5303,14 @@ class DesktopTasksController(
             deskId: Int,
             remoteTransition: RemoteTransition?,
             taskIdInFront: Int,
+            transitionSource: DesktopModeTransitionSource,
         ) {
             executeRemoteCallWithTaskPermission(controller, "activateDesk") { c ->
                 c.activateDesk(
                     deskId,
                     remoteTransition,
                     if (taskIdInFront != INVALID_TASK_ID) taskIdInFront else null,
+                    transitionSource,
                 )
             }
         }
