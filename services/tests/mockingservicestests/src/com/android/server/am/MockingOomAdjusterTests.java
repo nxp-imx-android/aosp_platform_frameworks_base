@@ -137,6 +137,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -4307,8 +4308,18 @@ public class MockingOomAdjusterTests {
         }
 
         @Override
-        public void performCompaction(CachedAppOptimizer.CompactProfile action, int pid) {
-        }
+        public void performCompaction(CachedAppOptimizer.CompactProfile action, int pid)
+                throws IOException {}
+
+        @Override
+        public void performMemcgCompaction(
+                CachedAppOptimizer.CompactProfile action, int uid, int pid
+        )
+                throws IOException {}
+
+        @Override
+        public void performNativeCompaction(CachedAppOptimizer.CompactProfile action, int pid)
+                throws IOException {}
     }
 
     private static class TestCachedAppOptimizer extends CachedAppOptimizer {

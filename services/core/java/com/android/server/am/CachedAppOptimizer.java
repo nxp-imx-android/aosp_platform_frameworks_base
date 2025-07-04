@@ -317,7 +317,9 @@ public class CachedAppOptimizer {
     @VisibleForTesting
     interface ProcessDependencies {
         long[] getRss(int pid);
-        void performCompaction(CompactProfile action, int pid) throws IOException;
+        void performCompaction(CompactProfile action, int pid) throws IOException; // deprecated
+        void performMemcgCompaction(CompactProfile action, int uid, int pid) throws IOException;
+        void performNativeCompaction(CompactProfile action, int pid) throws IOException;
     }
 
     // This indicates the compaction we want to perform
@@ -750,7 +752,9 @@ public class CachedAppOptimizer {
      * @param compactionFlags selects the compaction type as defined by COMPACT_ACTION_{TYPE}_FLAG
      *         constants
      */
-    static private native void compactProcess(int pid, int compactionFlags);
+    private static native void compactProcess(int pid, int compactionFlags);
+    private static native void performNativeMemcgCompaction(int uid, int pid, int compactionFlags);
+    private static native void compactNativeProcess(int pid, int compactionFlags);
 
     static private native void cancelCompaction();
 
@@ -1674,6 +1678,7 @@ public class CachedAppOptimizer {
                     long start = SystemClock.uptimeMillis();
                     ProcessRecord proc;
                     final ProcessCachedOptimizerRecord opt;
+                    int uid;
                     int pid;
                     final String name;
                     CompactProfile lastCompactProfile;
@@ -1695,6 +1700,7 @@ public class CachedAppOptimizer {
                         opt = proc.mOptRecord;
                         forceCompaction = opt.isForceCompact();
                         opt.setForceCompact(false); // since this is a one-shot operation
+                        uid = proc.uid;
                         pid = proc.getPid();
                         name = proc.processName;
                         opt.setHasPendingCompact(false);
@@ -1769,7 +1775,13 @@ public class CachedAppOptimizer {
                                         + " source: " + compactSource.name());
                         long zramUsedKbBefore = getUsedZramMemory();
                         long startCpuTime = threadCpuTimeNs();
-                        mProcessDependencies.performCompaction(resolvedProfile, pid);
+
+                        if (Flags.useMemcgForCompaction()) {
+                            mProcessDependencies.performMemcgCompaction(resolvedProfile, uid, pid);
+                        } else {
+                            mProcessDependencies.performCompaction(resolvedProfile, pid);
+                        }
+
                         long endCpuTime = threadCpuTimeNs();
                         long[] rssAfter = mProcessDependencies.getRss(pid);
                         long end = SystemClock.uptimeMillis();
@@ -1842,7 +1854,11 @@ public class CachedAppOptimizer {
                                     + " type=" + compactProfile.name());
                     Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "compactNative");
                     try {
-                        mProcessDependencies.performCompaction(compactProfile, pid);
+                        if (Flags.useMemcgForCompaction()) {
+                            mProcessDependencies.performNativeCompaction(compactProfile, pid);
+                        } else {
+                            mProcessDependencies.performCompaction(compactProfile, pid);
+                        }
                     } catch (Exception e) {
                         Slog.d(TAG_AM, "Failed compacting native pid= " + pid);
                     }
@@ -2184,7 +2200,7 @@ public class CachedAppOptimizer {
     }
 
     /**
-     * Default implementation for ProcessDependencies, public vor visibility to OomAdjuster class.
+     * Default implementation for ProcessDependencies, public for visibility to OomAdjuster class.
      */
     private static final class DefaultProcessDependencies implements ProcessDependencies {
         public static volatile int mPidCompacting = -1;
@@ -2207,6 +2223,45 @@ public class CachedAppOptimizer {
                 compactProcess(pid, COMPACT_ACTION_ANON_FLAG);
             }
             mPidCompacting = -1;
+        }
+
+        @Override
+        public void performMemcgCompaction(CompactProfile profile, int uid, int pid)
+                throws IOException {
+            int compactionFlags = getCompactionFlags(profile);
+            mPidCompacting = pid;
+            performNativeMemcgCompaction(uid, pid, compactionFlags);
+            mPidCompacting = -1;
+        }
+
+        // Compaction normally requires the UID to identify the correct cgroup path for the process
+        // so that we can use memory cgroup reclaim without looking up its cgroup placement. Most
+        // of the time the (real/effective/saved) UID of the process matches its UID cgroup
+        // placement, but that is not true for native processes launched under adb shells which have
+        // UIDs of 2000 but live under the adbd cgroup in uid_0 as a child or grandchild of adbd.
+        // Both the UID and the PID would cause the generated cgroup path to be incorrect for shell
+        // processes in this case. So here we do not attempt to use cgroup reclaim, and always scan
+        // all VMAs and madvise the individual process.
+        // An alternative would be to reclaim the adbd cgroup, but this would compact *all* shells
+        // (and any running commands under them) which could be more than just the specified pid.
+        @Override
+        public void performNativeCompaction(CompactProfile profile, int pid)
+                throws IOException {
+            int compactionFlags = getCompactionFlags(profile);
+            mPidCompacting = pid;
+            compactNativeProcess(pid, compactionFlags);
+            mPidCompacting = -1;
+        }
+
+        private static int getCompactionFlags(CompactProfile profile) {
+            if (profile == CompactProfile.FULL) {
+                return COMPACT_ACTION_FILE_FLAG | COMPACT_ACTION_ANON_FLAG;
+            } else if (profile == CompactProfile.SOME) {
+                return COMPACT_ACTION_FILE_FLAG;
+            } else if (profile == CompactProfile.ANON) {
+                return COMPACT_ACTION_ANON_FLAG;
+            }
+            return 0;
         }
     }
 
