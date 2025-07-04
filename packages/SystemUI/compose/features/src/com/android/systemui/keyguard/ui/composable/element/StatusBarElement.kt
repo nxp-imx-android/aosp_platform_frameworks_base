@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.android.compose.modifiers.height
@@ -141,9 +143,8 @@ constructor(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    checkNotNull(
-                        context.getString(com.android.internal.R.string.global_action_logout)
-                    )
+                    text = stringResource(com.android.internal.R.string.global_action_logout),
+                    modifier = Modifier.wrapContentHeight(unbounded = true),
                 )
             }
         }
