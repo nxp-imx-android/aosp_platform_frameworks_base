@@ -958,31 +958,6 @@ public class MediaSwitchingController
         dialog.show();
     }
 
-    void launchMediaOutputBroadcastDialog(View mediaOutputDialog, BroadcastSender broadcastSender) {
-        MediaSwitchingController controller =
-                new MediaSwitchingController(
-                        mContext,
-                        mPackageName,
-                        mUserHandle,
-                        mToken,
-                        mMediaSessionManager,
-                        mLocalBluetoothManager,
-                        mActivityStarter,
-                        mNotifCollection,
-                        mDialogTransitionAnimator,
-                        mNearbyMediaDevicesManager,
-                        mAudioManager,
-                        mPowerExemptionManager,
-                        mKeyGuardManager,
-                        mFeatureFlags,
-                        mClock,
-                        mVolumePanelGlobalStateInteractor,
-                        mUserTracker);
-        MediaOutputBroadcastDialog dialog = new MediaOutputBroadcastDialog(mContext, true,
-                broadcastSender, controller, mMainExecutor, mBackgroundExecutor);
-        dialog.show();
-    }
-
     String getBroadcastName() {
         LocalBluetoothLeBroadcast broadcast =
                 mLocalBluetoothManager.getProfileManager().getLeAudioBroadcastProfile();

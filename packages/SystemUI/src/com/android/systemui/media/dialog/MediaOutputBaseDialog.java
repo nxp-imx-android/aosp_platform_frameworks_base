@@ -581,7 +581,6 @@ public abstract class MediaOutputBaseDialog extends SystemUIDialog
     }
 
     protected void startLeBroadcastDialog() {
-        mMediaSwitchingController.launchMediaOutputBroadcastDialog(mDialogView, mBroadcastSender);
         refresh();
     }
 
