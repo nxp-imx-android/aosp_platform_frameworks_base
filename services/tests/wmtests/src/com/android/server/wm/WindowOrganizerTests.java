@@ -280,7 +280,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
         rootTask.setTaskOrganizer(null);
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
 
-        verify(mWm.mAtmService).removeTask(eq(rootTask));
+        verify(mWm.mAtmService).removeTask(eq(rootTask), any());
     }
 
     @Test
@@ -298,7 +298,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
         rootTask.setTaskOrganizer(null);
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
 
-        verify(mWm.mAtmService, never()).removeTask(eq(rootTask));
+        verify(mWm.mAtmService, never()).removeTask(eq(rootTask), any());
     }
 
     @Test

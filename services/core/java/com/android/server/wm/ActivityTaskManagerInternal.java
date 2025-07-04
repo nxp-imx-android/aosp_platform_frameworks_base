@@ -821,4 +821,7 @@ public abstract class ActivityTaskManagerInternal {
     public abstract void requestHandoffTaskData(
         int taskId,
         @NonNull IHandoffTaskDataReceiver receiver);
+
+    /** Requests to remove a Task by the given Task ID, along with the corresponding reason. */
+    public abstract boolean removeTask(int taskId, @NonNull String reason);
 }
