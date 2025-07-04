@@ -627,11 +627,7 @@ public class AudioPolicy {
      */
     @TestApi
     @NonNull
-    @FlaggedApi(Flags.FLAG_AUDIO_MIX_TEST_API)
     public List<AudioMix> getMixes() {
-        if (!Flags.audioMixTestApi()) {
-            return Collections.emptyList();
-        }
         synchronized (mLock) {
             return List.copyOf(mConfig.getMixes());
         }
