@@ -182,7 +182,7 @@ fun ContentScope.CollapsedShadeHeader(
     isSplitShade: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val cutoutLocation = LocalDisplayCutout.current.location
+    val cutoutLocation = LocalDisplayCutout.current().location
     val horizontalPadding =
         max(LocalScreenCornerRadius.current / 2f, Shade.Dimensions.HorizontalPadding)
 
@@ -459,16 +459,19 @@ private fun CutoutAwareShadeHeader(
     startContent: @Composable () -> Unit,
     endContent: @Composable () -> Unit,
 ) {
-    val cutoutWidth = LocalDisplayCutout.current.width()
-    val cutoutHeight = LocalDisplayCutout.current.height()
-    val cutoutTop = LocalDisplayCutout.current.top
-    val cutoutLocation = LocalDisplayCutout.current.location
+    val cutoutProvider = LocalDisplayCutout.current
     val statusBarHeight = ShadeHeader.Dimensions.StatusBarHeight
-
     Layout(
         modifier = modifier.sysuiResTag(ShadeHeader.TestTags.Root),
         contents = listOf(startContent, endContent),
     ) { measurables, constraints ->
+        val cutout = cutoutProvider()
+
+        val cutoutWidth = cutout.width()
+        val cutoutHeight = cutout.height()
+        val cutoutTop = cutout.top
+        val cutoutLocation = cutout.location
+
         check(constraints.hasBoundedWidth)
         check(measurables.size == 2)
         check(measurables[0].size == 1)
@@ -593,7 +596,7 @@ private fun BatteryIconLegacy(
     val inverseColor =
         Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimaryInverse)
 
-    val cutoutLocation = LocalDisplayCutout.current.location
+    val cutoutLocation = LocalDisplayCutout.current().location
 
     AndroidView(
         factory = { context ->

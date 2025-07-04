@@ -64,7 +64,8 @@ constructor(
     @Composable
     fun StatusBar(modifier: Modifier = Modifier) {
         val context = LocalContext.current
-        val viewDisplayCutout = LocalDisplayCutout.current.viewDisplayCutoutKeyguardStatusBarView
+        val viewDisplayCutout =
+            LocalDisplayCutout.current().viewDisplayCutoutKeyguardStatusBarView
 
         @SuppressLint("InflateParams")
         val view =
