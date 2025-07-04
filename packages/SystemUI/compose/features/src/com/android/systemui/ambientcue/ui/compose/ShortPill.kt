@@ -16,6 +16,7 @@
 
 package com.android.systemui.ambientcue.ui.compose
 
+import android.view.Surface.ROTATION_90
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateFloat
@@ -87,6 +88,7 @@ fun ShortPill(
     horizontal: Boolean = true,
     visible: Boolean = true,
     expanded: Boolean = false,
+    rotation: Int = 0,
     onClick: () -> Unit = {},
     onCloseClick: () -> Unit = {},
 ) {
@@ -169,7 +171,11 @@ fun ShortPill(
                         radius = if (horizontal) halfWidth else halfHeight,
                     )
                 translate(
-                    left = if (horizontal) halfWidth else size.width,
+                    left =
+                        if (horizontal) halfWidth
+                        else {
+                            if (rotation == ROTATION_90) size.width else 0f
+                        },
                     top = if (horizontal) size.height else halfHeight,
                 ) {
                     scale(

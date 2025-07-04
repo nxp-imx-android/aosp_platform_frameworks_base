@@ -17,6 +17,8 @@
 package com.android.systemui.ambientcue.ui.compose
 
 import android.content.res.Configuration
+import android.view.Surface.ROTATION_270
+import android.view.Surface.ROTATION_90
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -38,6 +40,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -130,11 +133,15 @@ private fun TaskBarAnd3ButtonAmbientCue(
     LaunchedEffect(expanded, touchableRegion) {
         onShouldInterceptTouches(true, if (expanded) null else touchableRegion)
     }
+    val content = LocalContext.current
+    val rotation = content.display.rotation
+
     ActionList(
         actions = actions,
         visible = visible,
         expanded = expanded,
-        horizontalAlignment = Alignment.End,
+        horizontalAlignment =
+            if (!portrait && rotation == ROTATION_270) Alignment.Start else Alignment.End,
         onDismiss = { viewModel.collapse() },
         showEducation = viewModel.showLongPressEducation,
         modifier =
@@ -143,8 +150,13 @@ private fun TaskBarAnd3ButtonAmbientCue(
                     translationX = screenWidthPx - size.width
                     translationY = pillCenter.y - size.height
                 } else {
-                    translationX = screenWidthPx - pillSize.height - size.width
-                    translationY = pillCenter.y - pillSize.width
+                    if (rotation == ROTATION_90) {
+                        translationX = screenWidthPx - pillSize.height - size.width
+                        translationY = pillCenter.y - pillSize.width
+                    } else if (rotation == ROTATION_270) {
+                        translationX = pillSize.width
+                        translationY = pillCenter.y - pillSize.width
+                    }
                 }
             },
         padding =
@@ -156,16 +168,22 @@ private fun TaskBarAnd3ButtonAmbientCue(
                     bottom = SHORT_PILL_ACTIONS_VERTICAL_PADDING.dp,
                 )
             } else {
-                PaddingValues()
+                if (rotation == ROTATION_90) {
+                    PaddingValues()
+                } else {
+                    PaddingValues(start = ACTIONS_HORIZONTAL_PADDING.dp)
+                }
             },
         portrait = portrait,
         pillCenter = pillCenter,
+        rotation = rotation,
     )
     ShortPill(
         actions = actions,
         visible = visible,
         horizontal = portrait,
         expanded = expanded,
+        rotation = rotation,
         modifier =
             if (pillPositionInWindow == null) {
                 modifier.padding(bottom = 12.dp, end = 24.dp).onGloballyPositioned {
