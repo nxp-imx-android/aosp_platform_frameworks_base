@@ -24,7 +24,6 @@ import android.graphics.Rect
 import android.util.Log
 import android.view.WindowInsetsController.Appearance
 import android.window.TaskSnapshot
-import com.android.launcher3.Flags.enableRefactorTaskThumbnail
 
 /** Data for a single thumbnail. */
 data class ThumbnailData(
@@ -64,21 +63,15 @@ data class ThumbnailData(
                     ex,
                 )
             }
-            if (enableRefactorTaskThumbnail()) {
-                // These bitmaps are used with custom rendering logic (PreviewPositionHelper) that
-                // doesn't account for bitmap density
-                thumbnail?.density = Bitmap.DENSITY_NONE
-            } else {
-                if (snapshot.densityDpi > 0 && thumbnail?.density != snapshot.densityDpi) {
-                    Log.d(
-                        TAG,
-                        "Updating thumbnail.density from " +
-                            thumbnail?.density +
-                            " to " +
-                            snapshot.densityDpi,
-                    )
-                    thumbnail?.density = snapshot.densityDpi
-                }
+            if (snapshot.densityDpi > 0 && thumbnail?.density != snapshot.densityDpi) {
+                Log.d(
+                    TAG,
+                    "Updating thumbnail.density from " +
+                        thumbnail?.density +
+                        " to " +
+                        snapshot.densityDpi,
+                )
+                thumbnail?.density = snapshot.densityDpi
             }
             return thumbnail
                 ?: Bitmap.createBitmap(snapshot.taskSize.x, snapshot.taskSize.y, ARGB_8888).apply {
