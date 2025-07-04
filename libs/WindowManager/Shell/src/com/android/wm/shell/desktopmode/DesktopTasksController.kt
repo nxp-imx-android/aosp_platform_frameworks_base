@@ -4249,13 +4249,13 @@ class DesktopTasksController(
             handler?.setTransition(transition)
             runOnTransitStart?.invoke(transition)
 
-        // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
-        if (!desktopState.enableMultipleDesktops) {
-            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-                toDesktopAnimationDurationMs
-            )
+            // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
+            if (!desktopState.enableMultipleDesktops) {
+                desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                    toDesktopAnimationDurationMs
+                )
+            }
         }
-    }
 
     private fun addDeskRemovalChanges(
         wct: WindowContainerTransaction,
