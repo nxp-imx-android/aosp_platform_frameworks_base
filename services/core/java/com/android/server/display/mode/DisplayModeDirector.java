@@ -1620,7 +1620,6 @@ public class DisplayModeDirector {
             }
 
             if (info.type == Display.TYPE_EXTERNAL
-                    && mDisplayManagerFlags.isUserRefreshRateForExternalDisplayEnabled()
                     && !isRefreshRateSynchronizationEnabled()) {
                 mVotesStorage.updateVote(info.displayId,
                         Vote.PRIORITY_USER_SETTING_DISPLAY_PREFERRED_SIZE,

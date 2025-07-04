@@ -186,10 +186,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_BLOCK_AUTOBRIGHTNESS_CHANGES_ON_STYLUS_USAGE,
             Flags::blockAutobrightnessChangesOnStylusUsage
     );
-    private final FlagState mIsUserRefreshRateForExternalDisplayEnabled = new FlagState(
-            Flags.FLAG_ENABLE_USER_REFRESH_RATE_FOR_EXTERNAL_DISPLAY,
-            Flags::enableUserRefreshRateForExternalDisplay
-    );
 
     private final FlagState mEnableApplyDisplayChangedDuringDisplayAdded = new FlagState(
             Flags.FLAG_ENABLE_APPLY_DISPLAY_CHANGED_DURING_DISPLAY_ADDED,
@@ -505,14 +501,6 @@ public class DisplayManagerFlags {
     }
 
     /**
-     * @return {@code true} if need to use user refresh rate settings for
-     * external displays.
-     */
-    public boolean isUserRefreshRateForExternalDisplayEnabled() {
-        return mIsUserRefreshRateForExternalDisplayEnabled.isEnabled();
-    }
-
-    /**
      * @return {@code true} if hasArrSupport API is enabled.
      */
     public boolean hasArrSupportFlag() {
@@ -674,7 +662,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
         pw.println(" " + mEnableApplyDisplayChangedDuringDisplayAdded);
         pw.println(" " + mBlockAutobrightnessChangesOnStylusUsage);
-        pw.println(" " + mIsUserRefreshRateForExternalDisplayEnabled);
         pw.println(" " + mHasArrSupport);
         pw.println(" " + mAutoBrightnessModeBedtimeWearFlagState);
         pw.println(" " + mGetSupportedRefreshRatesFlagState);
