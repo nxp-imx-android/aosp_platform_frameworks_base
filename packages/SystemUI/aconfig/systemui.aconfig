@@ -658,6 +658,13 @@ flag {
 }
 
 flag {
+    name: "captions_toggle_in_volume_dialog_v1"
+    namespace: "systemui"
+    description: "Bring the captions toggle back to the volume rocker."
+    bug: "425471100"
+}
+
+flag {
     name: "clipboard_announce_live_region"
     namespace: "systemui"
     description: "Use live region for clipboard status announcement"
