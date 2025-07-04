@@ -155,6 +155,7 @@ import static android.view.WindowManager.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENAB
 import static android.view.WindowManager.PROPERTY_ALLOW_UNTRUSTED_ACTIVITY_EMBEDDING_STATE_SHARING;
 import static android.view.WindowManager.TRANSIT_RELAUNCH;
 import static android.view.WindowManager.hasWindowExtensionsEnabled;
+import static android.window.DesktopExperienceFlags.ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS;
 import static android.window.DesktopExperienceFlags.ENABLE_PIP_PARAMS_UPDATE_NOTIFICATION_BUGFIX;
 import static android.window.DesktopExperienceFlags.ENABLE_RESTART_MENU_FOR_CONNECTED_DISPLAYS;
 import static android.window.TransitionInfo.FLAGS_IS_OCCLUDED_NO_ANIMATION;
@@ -7525,6 +7526,24 @@ final class ActivityRecord extends WindowToken {
                 && newParentConfiguration.assetsSeq > requestedOverrideConfig.assetsSeq) {
             requestedOverrideConfig.assetsSeq = ASSETS_SEQ_UNDEFINED;
         }
+
+        // Retain the following configs for PiP so that the activity doesn't get destroyed and
+        // recreated on display transfer.
+        if (ENABLE_DRAGGING_PIP_ACROSS_DISPLAYS.isTrue() && inPinnedWindowingMode()) {
+            final Configuration lastReportedMergedConfig =
+                    mLastReportedConfiguration.getMergedConfiguration();
+            int configChanges = info.getRealConfigChanged();
+            if ((configChanges & ActivityInfo.CONFIG_COLOR_MODE) == 0) {
+                requestedOverrideConfig.colorMode = lastReportedMergedConfig.colorMode;
+            }
+            if ((configChanges & ActivityInfo.CONFIG_TOUCHSCREEN) == 0) {
+                requestedOverrideConfig.touchscreen = lastReportedMergedConfig.touchscreen;
+            }
+            if ((configChanges & ActivityInfo.CONFIG_DENSITY) == 0) {
+                requestedOverrideConfig.densityDpi = lastReportedMergedConfig.densityDpi;
+            }
+        }
+
         super.resolveOverrideConfiguration(newParentConfiguration);
         final Configuration resolvedConfig = getResolvedOverrideConfiguration();
 
