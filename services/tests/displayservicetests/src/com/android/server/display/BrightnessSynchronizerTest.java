@@ -62,7 +62,6 @@ import org.mockito.MockitoAnnotations;
 @SmallTest
 @RunWith(TestParameterInjector.class)
 public class BrightnessSynchronizerTest {
-    private static final float EPSILON = 0.00001f;
     private static final Uri BRIGHTNESS_URI =
             Settings.System.getUriFor(Settings.System.SCREEN_BRIGHTNESS);
     private static final float BRIGHTNESS_MAX = 0.6f;

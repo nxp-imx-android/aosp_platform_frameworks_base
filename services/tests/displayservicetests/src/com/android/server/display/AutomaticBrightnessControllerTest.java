@@ -54,6 +54,7 @@ import androidx.test.InstrumentationRegistry;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
+import com.android.internal.display.BrightnessSynchronizer;
 import com.android.server.display.brightness.clamper.BrightnessClamperController;
 import com.android.server.display.config.HysteresisLevels;
 import com.android.server.display.feature.DisplayManagerFlags;
@@ -86,7 +87,7 @@ public class AutomaticBrightnessControllerTest {
     private static final int LIGHT_SENSOR_WARMUP_TIME = 0;
     private static final int AMBIENT_LIGHT_HORIZON_SHORT = 1000;
     private static final int AMBIENT_LIGHT_HORIZON_LONG = 2000;
-    private static final float EPSILON = 0.001f;
+    private static final float EPSILON = BrightnessSynchronizer.EPSILON;
     private OffsettableClock mClock = new OffsettableClock();
     private TestLooper mTestLooper;
     private Context mContext;
