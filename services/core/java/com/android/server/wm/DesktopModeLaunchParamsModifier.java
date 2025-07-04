@@ -36,6 +36,7 @@ import android.app.ActivityOptions;
 import android.app.WindowConfiguration;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.Rect;
 import android.window.DesktopExperienceFlags;
 import android.window.DesktopModeFlags;
 
@@ -245,16 +246,21 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
 
         if ((options == null || options.getLaunchBounds() == null) && task.hasOverrideBounds()) {
             if (DesktopModeFlags.DISABLE_DESKTOP_LAUNCH_PARAMS_OUTSIDE_DESKTOP_BUG_FIX.isTrue()) {
-                // We are in desktop, return result done to prevent other modifiers from modifying
-                // exiting task bounds or resolved windowing mode.
-                if (ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue()) {
-                    outParams.mBounds.set(task.getRequestedOverrideBounds());
+                final Rect overrideTaskBounds = task.getRequestedOverrideBounds();
+                if (DesktopExperienceFlags.IGNORE_OVERRIDE_TASK_BOUNDS_IF_INCOMPATIBLE_WITH_DISPLAY
+                        .isTrue() && areTaskBoundsValidForDisplay(overrideTaskBounds, display)) {
+                    // We are in desktop, return result done to prevent other modifiers from
+                    // modifying exiting task bounds or resolved windowing mode.
+                    if (ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS.isTrue()) {
+                        outParams.mBounds.set(overrideTaskBounds);
+                    }
+                    appendLog("task-has-override-bounds=%s", overrideTaskBounds);
+                    return RESULT_DONE;
                 }
-                appendLog("task-has-override-bounds=%s", task.getRequestedOverrideBounds());
-                return RESULT_DONE;
+            } else {
+                appendLog("current task has bounds set, not overriding");
+                return RESULT_SKIP;
             }
-            appendLog("current task has bounds set, not overriding");
-            return RESULT_SKIP;
         }
 
         if (DesktopModeFlags.INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES.isTrue()) {
@@ -342,6 +348,16 @@ class DesktopModeLaunchParamsModifier implements LaunchParamsModifier {
                  WINDOWING_MODE_FREEFORM -> true;
             default -> false;
         };
+    }
+
+    /**
+     * Returns true if the given bounds are within the stables bounds of a given display.
+     */
+    private boolean areTaskBoundsValidForDisplay(@NonNull Rect taskBounds,
+            @NonNull DisplayContent displayContent) {
+        final Rect displayStableBounds = new Rect();
+        displayContent.getStableRect(displayStableBounds);
+        return displayStableBounds.contains(taskBounds);
     }
 
     /**
