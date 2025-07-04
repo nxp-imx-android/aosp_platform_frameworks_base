@@ -35,7 +35,7 @@ public class CoreSemantics extends Operation implements AccessibilityModifier {
     public int mTextId = 0;
     public int mStateDescriptionId = 0;
     public boolean mEnabled = true;
-    public Mode mMode = Mode.SET;
+    public @NonNull Mode mMode = Mode.SET;
     public boolean mClickable = false;
 
     @Override
@@ -50,12 +50,12 @@ public class CoreSemantics extends Operation implements AccessibilityModifier {
     }
 
     @Override
-    public Mode getMode() {
+    public @NonNull Mode getMode() {
         return mMode;
     }
 
     @Override
-    public void write(WireBuffer buffer) {
+    public void write(@NonNull WireBuffer buffer) {
         buffer.writeInt(mContentDescriptionId);
         buffer.writeByte((mRole != null) ? mRole.ordinal() : -1);
         buffer.writeInt(mTextId);
@@ -76,7 +76,7 @@ public class CoreSemantics extends Operation implements AccessibilityModifier {
     }
 
     @Override
-    public void apply(RemoteContext context) {
+    public void apply(@NonNull RemoteContext context) {
         // Handled via touch helper
     }
 
@@ -114,9 +114,9 @@ public class CoreSemantics extends Operation implements AccessibilityModifier {
         return builder.toString();
     }
 
-    @Nullable
+    @NonNull
     @Override
-    public String deepToString(String indent) {
+    public String deepToString(@NonNull String indent) {
         return indent + this;
     }
 
@@ -136,7 +136,7 @@ public class CoreSemantics extends Operation implements AccessibilityModifier {
      * @param operations The list of operations to which the read CoreSemantics object will be
      *     added.
      */
-    public static void read(WireBuffer buffer, List<Operation> operations) {
+    public static void read(@NonNull WireBuffer buffer, @NonNull List<Operation> operations) {
         CoreSemantics semantics = new CoreSemantics();
 
         semantics.read(buffer);
@@ -145,7 +145,7 @@ public class CoreSemantics extends Operation implements AccessibilityModifier {
     }
 
     @Override
-    public Integer getContentDescriptionId() {
+    public @NonNull Integer getContentDescriptionId() {
         return mContentDescriptionId != 0 ? mContentDescriptionId : null;
     }
 
@@ -153,12 +153,13 @@ public class CoreSemantics extends Operation implements AccessibilityModifier {
         return mStateDescriptionId != 0 ? mStateDescriptionId : null;
     }
 
+    @Override
     public @Nullable Integer getTextId() {
         return mTextId != 0 ? mTextId : null;
     }
 
     @Override
-    public void serialize(MapSerializer serializer) {
+    public void serialize(@NonNull MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER, SerializeTags.A11Y)
                 .addType("CoreSemantics")

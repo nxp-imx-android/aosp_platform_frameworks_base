@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.internal.widget.remotecompose.accessibility;
+package com.android.internal.widget.remotecompose.player.accessibility;
 
 import android.view.View;
 
@@ -27,7 +27,28 @@ import com.android.internal.widget.remotecompose.core.CoreDocument;
  * accessibility events and provide accessibility information for the remote compose content.
  */
 public interface RemoteComposeAccessibilityRegistrar {
+
+    /**
+     * Sets the accessibility delegate for the given remote compose player. Used when a new document
+     * is displayed.
+     *
+     * <p>This method configures the accessibility services for the remote compose player, enabling
+     * assistive technologies to interact with the UI elements rendered by the player.
+     *
+     * @param remoteComposePlayer The View representing the remote compose player.
+     * @param document The CoreDocument containing the accessibility information for the UI
+     *     elements.
+     */
     void setAccessibilityDelegate(View remoteComposePlayer, CoreDocument document);
 
+    /**
+     * Clears the accessibility delegate for the given remote compose player. Used when the document
+     * is no longer displayed.
+     *
+     * <p>This method removes the accessibility services for the remote compose player, disabling
+     * assistive technologies from interacting with the UI elements rendered by the player.
+     *
+     * @param remoteComposePlayer The View representing the remote compose player.
+     */
     void clearAccessibilityDelegate(View remoteComposePlayer);
 }

@@ -27,8 +27,7 @@ public interface Platform {
      * @param image
      * @return
      */
-    @Nullable
-    byte[] imageToByteArray(@NonNull Object image);
+    @Nullable byte [] imageToByteArray(@NonNull Object image);
 
     /**
      * Returns the width of a platform-specific image object
@@ -60,8 +59,7 @@ public interface Platform {
      * @param path
      * @return
      */
-    @Nullable
-    float[] pathToFloatArray(@NonNull Object path);
+    @Nullable float [] pathToFloatArray(@NonNull Object path);
 
     enum LogCategory {
         DEBUG,
@@ -77,7 +75,7 @@ public interface Platform {
      * @param category
      * @param message
      */
-    void log(LogCategory category, String message);
+    void log(@NonNull LogCategory category, @NonNull String message);
 
     /**
      * Represents a precomputed text layout, for complex text painting / measuring / layout. Allows
@@ -128,6 +126,6 @@ public interface Platform {
                 }
 
                 @Override
-                public void log(LogCategory category, String message) {}
+                public void log(@NonNull LogCategory category, @NonNull String message) {}
             };
 }
