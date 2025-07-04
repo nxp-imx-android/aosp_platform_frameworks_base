@@ -790,6 +790,7 @@ public class MediaSwitchingController
     }
 
     boolean removeDeviceFromPlayMedia(MediaDevice device) {
+        mMetricLogger.logInteractionContraction(device);
         return mLocalMediaManager.removeDeviceFromPlayMedia(device);
     }
 
@@ -843,7 +844,12 @@ public class MediaSwitchingController
     }
 
     void releaseSession() {
-        mMetricLogger.logInteractionStopCasting();
+        if (Flags.enableOutputSwitcherPersonalAudioSharing()
+                && getSessionReleaseType() == RoutingSessionInfo.RELEASE_TYPE_SHARING) {
+            mMetricLogger.logInteractionStopSharing();
+        } else {
+            mMetricLogger.logInteractionStopCasting();
+        }
         mLocalMediaManager.releaseSession();
     }
 
