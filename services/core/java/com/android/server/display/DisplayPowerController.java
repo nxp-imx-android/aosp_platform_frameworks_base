@@ -2678,6 +2678,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "    ");
         mAutomaticBrightnessStrategy.dump(ipw);
 
+        if (mDisplayOffloadSession != null) {
+            pw.println("  mDisplayOffloadSession.isActive()="
+                    + mDisplayOffloadSession.isActive());
+        }
+
         if (mScreenBrightnessRampAnimator != null) {
             pw.println("  mScreenBrightnessRampAnimator.isAnimating()="
                     + mScreenBrightnessRampAnimator.isAnimating());
