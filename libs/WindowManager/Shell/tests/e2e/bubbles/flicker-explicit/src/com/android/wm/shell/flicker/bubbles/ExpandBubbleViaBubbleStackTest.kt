@@ -17,16 +17,14 @@
 package com.android.wm.shell.flicker.bubbles
 
 import android.platform.test.annotations.Presubmit
-import androidx.test.filters.RequiresDevice
 import android.platform.test.annotations.RequiresFlagsEnabled
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.Flags
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesExpandedTestCases
-import com.android.wm.shell.flicker.bubbles.testcase.BubbleStackAlwaysVisibleTestCases
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
-import com.android.wm.shell.flicker.bubbles.utils.collapseBubbleViaBackKey
-import com.android.wm.shell.flicker.bubbles.utils.expandBubbleViaTapOnBubbleStack
+import com.android.wm.shell.flicker.bubbles.utils.collapseBubbleAppViaBackKey
+import com.android.wm.shell.flicker.bubbles.utils.expandBubbleAppViaTapOnBubbleStack
 import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.setUpBeforeTransition
 import org.junit.Assume.assumeFalse
@@ -51,39 +49,34 @@ import org.junit.runners.MethodSorters
  *     Expand the [testApp] bubble via clicking floating bubble icon
  * ```
  * Verified tests:
- * - [BubbleFlickerTestBase]
- * - [BubbleStackAlwaysVisibleTestCases]
- * - [BubbleAppBecomesExpandedTestCases]
+ * - [ExpandBubbleTestBase]
  */
 @RequiresFlagsEnabled(Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE)
 @RunWith(AndroidJUnit4::class)
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class ExpandBubbleViaBubbleStackTest :
-    BubbleFlickerTestBase(), BubbleStackAlwaysVisibleTestCases, BubbleAppBecomesExpandedTestCases {
-
-    override val traceDataReader
-        get() = recordTraceWithTransitionRule.reader
-
-    // TODO(b/396020056): Verify expand bubble with bubble bar.
-    @Before
-    fun setUp() {
-        assumeFalse(tapl.isTablet)
-    }
+class ExpandBubbleViaBubbleStackTest : ExpandBubbleTestBase() {
 
     companion object : FlickerPropertyInitializer() {
-
         @ClassRule
         @JvmField
         val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = {
                 setUpBeforeTransition(instrumentation, wmHelper)
                 launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
-                collapseBubbleViaBackKey(testApp, tapl, wmHelper)
+                collapseBubbleAppViaBackKey(testApp, tapl, wmHelper)
             },
-            transition = { expandBubbleViaTapOnBubbleStack(uiDevice, testApp, wmHelper) },
+            transition = { expandBubbleAppViaTapOnBubbleStack(uiDevice, testApp, wmHelper) },
             tearDownAfterTransition = { testApp.exit(wmHelper) }
         )
+    }
+
+    override val traceDataReader
+        get() = recordTraceWithTransitionRule.reader
+
+    @Before
+    fun setUp() {
+        assumeFalse(tapl.isTablet)
     }
 }

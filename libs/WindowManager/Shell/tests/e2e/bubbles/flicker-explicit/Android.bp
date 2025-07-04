@@ -81,8 +81,22 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-EnterBubbleWithImeViaBubbleMenuTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    include_filters: ["com.android.wm.shell.flicker.bubbles.EnterBubbleWithImeViaBubbleMenuTest"],
+    test_suites: ["device-tests"],
+}
+
+test_module_config {
     name: "WMShellExplicitFlickerTestsBubbles-ExpandBubbleViaBubbleStackTest",
     base: "WMShellExplicitFlickerTestsBubbles",
     include_filters: ["com.android.wm.shell.flicker.bubbles.ExpandBubbleViaBubbleStackTest"],
+    test_suites: ["device-tests"],
+}
+
+test_module_config {
+    name: "WMShellExplicitFlickerTestsBubbles-ExpandBubbleWithImeViaBubbleBarTest",
+    base: "WMShellExplicitFlickerTestsBubbles",
+    include_filters: ["com.android.wm.shell.flicker.bubbles.ExpandBubbleWithImeViaBubbleBarTest"],
     test_suites: ["device-tests"],
 }
