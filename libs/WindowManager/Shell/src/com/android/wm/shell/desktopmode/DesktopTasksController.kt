@@ -1010,6 +1010,7 @@ class DesktopTasksController(
                 wct = wct,
                 transitionSource = transitionSource,
                 remoteTransition = remoteTransition,
+                callback = callback,
             )
         }
         mainScope.launch {
@@ -1020,6 +1021,7 @@ class DesktopTasksController(
                     wct = wct,
                     transitionSource = transitionSource,
                     remoteTransition = remoteTransition,
+                    callback = callback,
                 )
             } catch (t: Throwable) {
                 logE("Failed to move task to default desk: %s", t.message)
