@@ -638,8 +638,6 @@ package android.telephony {
 
   @FlaggedApi("com.android.internal.telephony.flags.enable_phone_number_parsing_api") public class TelephonyFrameworkInitializer {
     method @Nullable public static android.os.TelephonyServiceManager getTelephonyServiceManager();
-    method public static void registerServiceWrappers();
-    method public static void setTelephonyServiceManager(@NonNull android.os.TelephonyServiceManager);
   }
 
   public class TelephonyManager {
