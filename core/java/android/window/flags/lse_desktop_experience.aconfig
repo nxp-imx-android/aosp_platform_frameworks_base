@@ -1529,6 +1529,16 @@ flag {
 }
 
 flag {
+    name: "repository_based_persistence"
+    namespace: "lse_desktop_experience"
+    description: "Persists the whole repository instead of just persisting a single desk per event"
+    bug: "425916459"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "respect_fullscreen_activity_option_in_desktop_launch_params"
     namespace: "lse_desktop_experience"
     description: "Prevents DesktopModeLaunchParamsModifier from modifying launch params for /n"
