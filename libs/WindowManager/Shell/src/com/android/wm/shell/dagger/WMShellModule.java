@@ -93,6 +93,9 @@ import com.android.wm.shell.common.split.SplitState;
 import com.android.wm.shell.compatui.api.CompatUIHandler;
 import com.android.wm.shell.compatui.letterbox.DelegateLetterboxTransitionObserver;
 import com.android.wm.shell.compatui.letterbox.LetterboxCommandHandler;
+import com.android.wm.shell.compatui.letterbox.config.DefaultLetterboxDependenciesHelper;
+import com.android.wm.shell.compatui.letterbox.config.IgnoreLetterboxDependenciesHelper;
+import com.android.wm.shell.compatui.letterbox.config.LetterboxDependenciesHelper;
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxCleanupAdapter;
 import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskListenerAdapter;
 import com.android.wm.shell.crashhandling.ShellCrashHandler;
@@ -1935,6 +1938,18 @@ public abstract class WMShellModule {
     static OverviewToDesktopTransitionObserver provideOverviewToDesktopTransitionObserver(
             Transitions transitions, ShellInit shellInit) {
         return new OverviewToDesktopTransitionObserver(transitions, shellInit);
+    }
+
+    @WMSingleton
+    @Provides
+    static LetterboxDependenciesHelper provideLetterboxDependenciesHelper(
+            @NonNull DesktopState desktopState,
+            @NonNull Optional<DesktopUserRepositories> desktopRepositories) {
+        if (desktopState.canEnterDesktopMode()) {
+            return new DefaultLetterboxDependenciesHelper(desktopRepositories.get().getCurrent());
+        } else {
+            return new IgnoreLetterboxDependenciesHelper();
+        }
     }
 
     @WMSingleton

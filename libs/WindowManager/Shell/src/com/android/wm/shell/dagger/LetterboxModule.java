@@ -21,6 +21,7 @@ import android.annotation.NonNull;
 import com.android.wm.shell.compatui.letterbox.DelegateLetterboxTransitionObserver;
 import com.android.wm.shell.compatui.letterbox.LetterboxControllerStrategy;
 import com.android.wm.shell.compatui.letterbox.MixedLetterboxController;
+import com.android.wm.shell.compatui.letterbox.config.LetterboxDependenciesHelper;
 import com.android.wm.shell.compatui.letterbox.lifecycle.ActivityLetterboxLifecycleEventFactory;
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleController;
 import com.android.wm.shell.compatui.letterbox.lifecycle.LetterboxLifecycleControllerImpl;
@@ -59,7 +60,8 @@ public abstract class LetterboxModule {
     @Provides
     static LetterboxLifecycleEventFactory provideLetterboxLifecycleEventFactory(
             @NonNull SkipLetterboxLifecycleEventFactory skipLetterboxLifecycleEventFactory,
-            @NonNull LetterboxTaskInfoRepository letterboxTaskInfoRepository
+            @NonNull LetterboxTaskInfoRepository letterboxTaskInfoRepository,
+            @NonNull LetterboxDependenciesHelper letterboxDependenciesHelper
     ) {
         // The order of the LetterboxLifecycleEventFactory implementation matters because the
         // first that can handle a Change will be chosen for the LetterboxLifecycleEvent creation.
@@ -67,9 +69,10 @@ public abstract class LetterboxModule {
                 // Filters out transitions not related to Letterboxing.
                 skipLetterboxLifecycleEventFactory,
                 // Handle Transition for Activities
-                new ActivityLetterboxLifecycleEventFactory(letterboxTaskInfoRepository),
+                new ActivityLetterboxLifecycleEventFactory(letterboxTaskInfoRepository,
+                        letterboxDependenciesHelper),
                 // Creates a LetterboxLifecycleEvent in case of Task transitions.
-                new TaskInfoLetterboxLifecycleEventFactory()
+                new TaskInfoLetterboxLifecycleEventFactory(letterboxDependenciesHelper)
         ));
     }
 
