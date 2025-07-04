@@ -151,16 +151,6 @@ flag {
 }
 
 flag {
-    name: "notifications_pinned_hun_in_shade"
-    namespace: "systemui"
-    description: "Fixes displaying pinned HUNs in the Shade, making sure that their y and z positions are correct."
-    bug: "385041854"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "notifications_hun_accessibility_refactor"
     namespace: "systemui"
     description: "Refactors where notification HUN accessibility events happen"
