@@ -49,6 +49,7 @@ import com.android.wm.shell.R;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.InputMethod;
 import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.ResizeTrigger;
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController;
 
 /**
  * Utility class that contains logic common to classes implementing {@link DragPositioningCallback}
@@ -159,6 +160,23 @@ public class DragPositioningCallbackUtility {
             isAspectRatioMaintained = false;
         }
 
+        int taskId = windowDecoration.getTaskInfo().taskId;
+        PinnedLayerController pinnedLayerController = windowDecoration.getPinnedLayerController();
+        if (pinnedLayerController != null && pinnedLayerController.isPinned(taskId)) {
+            if (isExceedingPinnedLayerConstraint(repositionTaskBounds.width(),
+                    stableBounds.width())) {
+                repositionTaskBounds.left = oldLeft;
+                repositionTaskBounds.right = oldRight;
+                isAspectRatioMaintained = false;
+            }
+            if (isExceedingPinnedLayerConstraint(repositionTaskBounds.height(),
+                    stableBounds.height())) {
+                repositionTaskBounds.top = oldTop;
+                repositionTaskBounds.bottom = oldBottom;
+                isAspectRatioMaintained = false;
+            }
+        }
+
         // If the application is unresizeable and any bounds have been set back to their old
         // location or to a stable bound edge, reset all the bounds to maintain the applications
         // aspect ratio.
@@ -175,6 +193,12 @@ public class DragPositioningCallbackUtility {
         return oldLeft != repositionTaskBounds.left || oldTop != repositionTaskBounds.top
                 || oldRight != repositionTaskBounds.right
                 || oldBottom != repositionTaskBounds.bottom;
+    }
+
+    private static boolean isExceedingPinnedLayerConstraint(int taskDimension,
+            int screenDimension) {
+        double maxDimension = screenDimension * 0.8;
+        return (double) taskDimension > maxDimension;
     }
 
     /**

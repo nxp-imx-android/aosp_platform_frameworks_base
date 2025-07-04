@@ -76,6 +76,7 @@ import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.education.AppHandleEducationController
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.recents.RecentsTransitionHandler
 import com.android.wm.shell.recents.RecentsTransitionStateListener
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
@@ -181,6 +182,8 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
     protected lateinit var desktopConfig: FakeDesktopConfig
     private val mockUserProfileContexts = mock<UserProfileContexts>()
 
+    private val mockPinnedLayerController = mock<PinnedLayerController>()
+
     private val transactionFactory =
         Supplier<SurfaceControl.Transaction> { SurfaceControl.Transaction() }
     protected val windowDecorByTaskIdSpy = spy(SparseArray<WindowDecorationWrapper>())
@@ -282,6 +285,7 @@ open class DesktopModeWindowDecorViewModelTestsBase : ShellTestCase() {
                 desktopConfig,
                 mockUserProfileContexts,
                 mockLockTaskChangeListener,
+                mockPinnedLayerController,
             )
         desktopModeWindowDecorViewModel.setSplitScreenController(mockSplitScreenController)
         whenever(mockDisplayController.getDisplayLayout(any())).thenReturn(mockDisplayLayout)

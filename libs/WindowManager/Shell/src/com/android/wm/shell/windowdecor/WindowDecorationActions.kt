@@ -89,4 +89,11 @@ interface WindowDecorationActions {
 
     /** Opens the handle menu. */
     fun onOpenHandleMenu(taskId: Int)
+
+    /**
+     * Opens an arbitrary Intent.
+     *
+     * @param intent to be launched
+     */
+    fun onOpenIntent(taskId: Int, intent: Intent)
 }

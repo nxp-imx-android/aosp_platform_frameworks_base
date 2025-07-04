@@ -42,6 +42,7 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.desktopmode.FakeShellDesktopState
 import com.android.wm.shell.desktopmode.ShellDesktopState
+import com.android.wm.shell.pinnedlayer.phone.PinnedLayerController
 import com.android.wm.shell.shared.desktopmode.DesktopConfig
 import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
@@ -122,6 +123,7 @@ object WindowDecorationTestHelper {
         appHeaderViewHolderFactory: AppHeaderViewHolder.Factory =
             AppHeaderViewHolder.DefaultFactory(),
         windowDecorationExclusionTracker: WindowDecorationGestureExclusionTracker = mock(),
+        pinnedLayerController: PinnedLayerController = mock(),
     ): TestWindowDecoration {
         val viewHostSupplier = TestWindowDecorViewHostSupplier(scope)
         val decoration =
@@ -158,6 +160,7 @@ object WindowDecorationTestHelper {
                 lockTaskChangeListener = mock(),
                 surfaceControlTransactionSupplier = { StubTransaction() },
                 appHeaderViewHolderFactory = appHeaderViewHolderFactory,
+                pinnedLayerController = pinnedLayerController,
             )
         val wrapped = decoration.wrapped()
         val positioner =
