@@ -40,15 +40,20 @@ abstract class AltTabSwitchInDesktopMode(
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val firstApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
-    private val secondApp = MailAppHelper(instrumentation)
-    private val thirdApp = NewTasksAppHelper(instrumentation)
+    val firstApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+    val secondApp = DesktopModeAppHelper(MailAppHelper(instrumentation))
+    val thirdApp = DesktopModeAppHelper(NewTasksAppHelper(instrumentation))
+
+    val appsInDesktop: ArrayList<DesktopModeAppHelper> = ArrayList()
 
     @Before
     fun setup() {
         firstApp.enterDesktopMode(wmHelper, device)
+        appsInDesktop.add(firstApp)
         secondApp.launchViaIntent(wmHelper)
+        appsInDesktop.add(secondApp)
         thirdApp.launchViaIntent(wmHelper)
+        appsInDesktop.add(thirdApp)
     }
 
     @Test
