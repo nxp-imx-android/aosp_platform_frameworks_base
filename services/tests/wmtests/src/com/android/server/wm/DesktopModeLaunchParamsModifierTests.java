@@ -576,6 +576,34 @@ public class DesktopModeLaunchParamsModifierTests extends
     }
 
     @Test
+    @EnableFlags({Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE,
+            Flags.FLAG_INHERIT_TASK_BOUNDS_FOR_TRAMPOLINE_TASK_LAUNCHES})
+    public void testDontInheritTaskBoundsFromSameTask() {
+        setupDesktopModeLaunchParamsModifier();
+
+        final String packageName = "com.same.package";
+        // Setup existing task.
+        final DisplayContent dc = spy(createNewDisplay());
+        final Task existingFreeformTask = spy(new TaskBuilder(mSupervisor).setCreateActivity(true)
+                .setWindowingMode(WINDOWING_MODE_FREEFORM).setPackage(packageName).build());
+        existingFreeformTask.topRunningActivity().launchMode = LAUNCH_SINGLE_INSTANCE;
+        existingFreeformTask.setBounds(
+                /* left */ 0,
+                /* top */ 0,
+                /* right */ 500,
+                /* bottom */ 500);
+        doReturn(existingFreeformTask.getRootActivity()).when(dc)
+                .getTopMostVisibleFreeformActivity();
+        existingFreeformTask.onDisplayChanged(dc);
+        // Mock task to not trigger override bounds logic.
+        doReturn(false).when(existingFreeformTask).hasOverrideBounds();
+
+        // New instance should not inherit task bounds of old instance.
+        new CalculateRequestBuilder().setTask(existingFreeformTask).calculate();
+        assertNotEquals(existingFreeformTask.getBounds(), mResult.mBounds);
+    }
+
+    @Test
     @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_WINDOWING_MODE)
     @DisableFlags(Flags.FLAG_ENABLE_WINDOWING_DYNAMIC_INITIAL_BOUNDS)
     public void testUsesDesiredBoundsIfEmptyLayoutAndActivityOptionsBounds() {
