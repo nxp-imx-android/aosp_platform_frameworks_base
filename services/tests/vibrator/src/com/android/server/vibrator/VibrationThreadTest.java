@@ -29,7 +29,6 @@ import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
@@ -111,8 +110,6 @@ public class VibrationThreadTest {
     private static final String PACKAGE_NAME = "package";
     private static final VibrationAttributes ATTRS = new VibrationAttributes.Builder().build();
     private static final int TEST_RAMP_STEP_DURATION = 5;
-    private static final int TEST_DEFAULT_AMPLITUDE = 255;
-    private static final float TEST_DEFAULT_SCALE_LEVEL_GAIN = 1.4f;
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
@@ -126,16 +123,17 @@ public class VibrationThreadTest {
     @Mock private PackageManagerInternal mPackageManagerInternalMock;
     @Mock private VibrationThread.VibratorManagerHooks mManagerHooks;
     @Mock private HalVibrator.Callbacks mHalCallbacks;
-    @Mock private VibrationConfig mVibrationConfigMock;
     @Mock private VibratorFrameworkStatsLogger mStatsLoggerMock;
 
     private ContextWrapper mContextSpy;
     private final SparseArray<HalVibratorHelper> mVibratorHelpers = new SparseArray<>();
     private final SparseArray<VibrationEffect> mFallbackEffects = new SparseArray<>();
-    private VibrationSettings mVibrationSettings;
-    private VibrationScaler mVibrationScaler;
     private TestLooper mTestLooper;
     private TestLooperAutoDispatcher mCustomTestLooperDispatcher;
+    private VibrationConfig.Builder mVibrationConfigBuilder;
+
+    private VibrationSettings mVibrationSettings;
+    private VibrationScaler mVibrationScaler;
     private VibrationThread mThread;
 
     // Setup every time a new vibration is dispatched to the VibrationThread.
@@ -146,17 +144,6 @@ public class VibrationThreadTest {
     public void setUp() throws Exception {
         mTestLooper = new TestLooper();
 
-        when(mVibrationConfigMock.getDefaultVibrationIntensity(anyInt()))
-                .thenReturn(Vibrator.VIBRATION_INTENSITY_MEDIUM);
-        when(mVibrationConfigMock.getRampStepDurationMs()).thenReturn(TEST_RAMP_STEP_DURATION);
-        when(mVibrationConfigMock.getDefaultVibrationAmplitude())
-                .thenReturn(TEST_DEFAULT_AMPLITUDE);
-        when(mVibrationConfigMock.getDefaultVibrationScaleLevelGain())
-                .thenReturn(TEST_DEFAULT_SCALE_LEVEL_GAIN);
-        when(mVibrationConfigMock.getVibrationScaleFactor(anyInt(), anyFloat()))
-                .thenAnswer(invocation -> invocation.getArgument(1));
-        when(mVibrationConfigMock.getExternalVibrationScaleFactor(anyInt(), anyFloat()))
-                .thenAnswer(invocation -> invocation.getArgument(1));
         when(mPackageManagerInternalMock.getSystemUiServiceComponent())
                 .thenReturn(new ComponentName("", ""));
         doAnswer(answer -> {
@@ -171,16 +158,13 @@ public class VibrationThreadTest {
         mContextSpy = spy(new ContextWrapper(InstrumentationRegistry.getContext()));
         ContentResolver contentResolver = mSettingsProviderRule.mockContentResolver(mContextSpy);
         when(mContextSpy.getContentResolver()).thenReturn(contentResolver);
-        mVibrationSettings = new VibrationSettings(mContextSpy,
-                new Handler(mTestLooper.getLooper()), mVibrationConfigMock, mFallbackEffects);
-        mVibrationScaler = new VibrationScaler(mVibrationConfigMock, mVibrationSettings);
+
+        mVibrationConfigBuilder = new VibrationConfig.Builder(null); // use defaults
+        mVibrationConfigBuilder.setRampStepDurationMs(TEST_RAMP_STEP_DURATION);
 
         mockVibrators(VIBRATOR_ID);
 
-        PowerManager.WakeLock wakeLock = mContextSpy.getSystemService(
-                PowerManager.class).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "*vibrator*");
-        mThread = new VibrationThread(wakeLock, mManagerHooks);
-        mThread.start();
+        createThreadAndSettings();
     }
 
     @After
@@ -1772,7 +1756,8 @@ public class VibrationThreadTest {
         int expectedDuration = 100;
         int rampDownDuration = 200;
 
-        when(mVibrationConfigMock.getRampDownDurationMs()).thenReturn(rampDownDuration);
+        mVibrationConfigBuilder.setRampDownDurationMs(rampDownDuration);
+        createThreadAndSettings();
         mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
 
         HalVibration vibration = createVibration(
@@ -2035,7 +2020,8 @@ public class VibrationThreadTest {
 
     @Test
     public void vibrate_waveformWithRampDown_addsRampDownAfterVibrationCompleted() {
-        when(mVibrationConfigMock.getRampDownDurationMs()).thenReturn(15);
+        mVibrationConfigBuilder.setRampDownDurationMs(15);
+        createThreadAndSettings();
         mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
 
         VibrationEffect effect = VibrationEffect.createWaveform(
@@ -2063,7 +2049,8 @@ public class VibrationThreadTest {
     @Test
     public void vibrate_waveformWithRampDown_triggersCallbackWhenOriginalVibrationEnds()
             throws Exception {
-        when(mVibrationConfigMock.getRampDownDurationMs()).thenReturn(10_000);
+        mVibrationConfigBuilder.setRampDownDurationMs(10_000);
+        createThreadAndSettings();
         mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
 
         VibrationEffect effect = VibrationEffect.createOneShot(10, 200);
@@ -2093,7 +2080,8 @@ public class VibrationThreadTest {
     @Test
     public void vibrate_waveformCancelledWithRampDown_addsRampDownAfterVibrationCancelled()
             throws Exception {
-        when(mVibrationConfigMock.getRampDownDurationMs()).thenReturn(15);
+        mVibrationConfigBuilder.setRampDownDurationMs(15);
+        createThreadAndSettings();
         mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
 
         VibrationEffect effect = VibrationEffect.createOneShot(10_000, 240);
@@ -2119,7 +2107,8 @@ public class VibrationThreadTest {
 
     @Test
     public void vibrate_prebakedWithRampDown_doesNotAddRampDown() {
-        when(mVibrationConfigMock.getRampDownDurationMs()).thenReturn(15);
+        mVibrationConfigBuilder.setRampDownDurationMs(15);
+        createThreadAndSettings();
         mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL);
         mVibratorHelpers.get(VIBRATOR_ID).setSupportedEffects(EFFECT_CLICK);
 
@@ -2138,7 +2127,8 @@ public class VibrationThreadTest {
     @Test
     @EnableFlags(Flags.FLAG_VENDOR_VIBRATION_EFFECTS)
     public void vibrate_vendorEffectWithRampDown_doesNotAddRampDown() {
-        when(mVibrationConfigMock.getRampDownDurationMs()).thenReturn(15);
+        mVibrationConfigBuilder.setRampDownDurationMs(15);
+        createThreadAndSettings();
         mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_PERFORM_VENDOR_EFFECTS);
 
         VibrationEffect effect = VibrationEffect.createVendorEffect(createTestVendorData());
@@ -2155,7 +2145,8 @@ public class VibrationThreadTest {
 
     @Test
     public void vibrate_composedWithRampDown_doesNotAddRampDown() {
-        when(mVibrationConfigMock.getRampDownDurationMs()).thenReturn(15);
+        mVibrationConfigBuilder.setRampDownDurationMs(15);
+        createThreadAndSettings();
         mVibratorHelpers.get(VIBRATOR_ID).setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL,
                 IVibrator.CAP_COMPOSE_EFFECTS);
         mVibratorHelpers.get(VIBRATOR_ID).setSupportedPrimitives(PRIMITIVE_CLICK);
@@ -2177,7 +2168,8 @@ public class VibrationThreadTest {
     @Test
     @DisableFlags(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
     public void vibrate_pwleWithRampDown_doesNotAddRampDown() {
-        when(mVibrationConfigMock.getRampDownDurationMs()).thenReturn(15);
+        mVibrationConfigBuilder.setRampDownDurationMs(15);
+        createThreadAndSettings();
         HalVibratorHelper vibratorHelper = mVibratorHelpers.get(VIBRATOR_ID);
         vibratorHelper.setCapabilities(IVibrator.CAP_AMPLITUDE_CONTROL,
                 IVibrator.CAP_COMPOSE_PWLE_EFFECTS);
@@ -2343,6 +2335,17 @@ public class VibrationThreadTest {
                 mContextSpy.getContentResolver(), settingName, value, UserHandle.USER_CURRENT);
         // FakeSettingsProvider doesn't support testing triggering ContentObserver yet.
         mVibrationSettings.mSettingObserver.onChange(false);
+    }
+
+    private void createThreadAndSettings() {
+        mVibrationSettings = new VibrationSettings(mContextSpy,
+                new Handler(mTestLooper.getLooper()), mVibrationConfigBuilder.build(),
+                mFallbackEffects);
+        mVibrationScaler = new VibrationScaler(mVibrationConfigBuilder.build(), mVibrationSettings);
+        PowerManager.WakeLock wakeLock = mContextSpy.getSystemService(
+                PowerManager.class).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "*vibrator*");
+        mThread = new VibrationThread(wakeLock, mManagerHooks);
+        mThread.start();
     }
 
     private HalVibration startThreadAndDispatcher(VibrationEffect effect) {
