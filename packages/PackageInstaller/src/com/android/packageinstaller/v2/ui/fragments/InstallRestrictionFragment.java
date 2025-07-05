@@ -35,13 +35,13 @@ import com.android.packageinstaller.v2.model.InstallStage;
 import com.android.packageinstaller.v2.ui.InstallActionListener;
 import com.android.packageinstaller.v2.ui.UiUtil;
 
-public class SimpleErrorFragment extends DialogFragment {
+public class InstallRestrictionFragment extends DialogFragment {
 
-    private static final String LOG_TAG = SimpleErrorFragment.class.getSimpleName();
+    private static final String LOG_TAG = InstallRestrictionFragment.class.getSimpleName();
     private int mMessageResId;
     private InstallActionListener mInstallActionListener;
 
-    public SimpleErrorFragment() {
+    public InstallRestrictionFragment() {
         // Required for DialogFragment
     }
 
@@ -50,11 +50,11 @@ public class SimpleErrorFragment extends DialogFragment {
      *
      * @return an instance of the fragment
      */
-    public static SimpleErrorFragment newInstance(int messageResId) {
+    public static InstallRestrictionFragment newInstance(int messageResId) {
         Bundle args = new Bundle();
         args.putInt(ARGS_MESSAGE, messageResId);
 
-        SimpleErrorFragment fragment = new SimpleErrorFragment();
+        InstallRestrictionFragment fragment = new InstallRestrictionFragment();
         fragment.setArguments(args);
         return fragment;
     }

@@ -113,7 +113,7 @@ public class UninstallConfirmationFragment extends DialogFragment {
 
             TextView keepDataBytes = keepDataLayout.requireViewById(R.id.keep_data_bytes);
             keepDataBytes.setText(formatFileSize(getContext(), appDataSize));
-
+            keepDataLayout.setOnClickListener(v -> mKeepData.toggle());
             mKeepData = keepDataLayout.requireViewById(R.id.keep_data_checkbox);
         }
 

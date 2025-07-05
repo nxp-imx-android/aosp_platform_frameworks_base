@@ -57,9 +57,9 @@ public class InstallStagingFragment extends DialogFragment {
                 UiUtil.getInstallationLayoutResId(requireContext()), null);
         mProgressBar = dialogView.requireViewById(R.id.progress_bar);
         mProgressBar.setVisibility(View.VISIBLE);
-        mProgressBar.setProgress(0);
-        mProgressBar.setMax(100);
         mProgressBar.setIndeterminate(false);
+        mProgressBar.setMax(100);
+        mProgressBar.setProgress(0);
 
         mDialog = UiUtil.getAlertDialog(requireContext(), getString(R.string.title_install_staging),
                 dialogView, /* positiveBtnText= */ null, getString(R.string.button_cancel),

@@ -47,9 +47,9 @@ import com.android.packageinstaller.R;
 import com.android.packageinstaller.v2.model.InstallUserActionRequired;
 import com.android.packageinstaller.v2.ui.InstallActionListener;
 
-public class VerificationConfirmationFragment extends DialogFragment {
+public class DeveloperVerificationConfirmationFragment extends DialogFragment {
 
-    public static final String LOG_TAG = "VerificationConf";
+    public static final String LOG_TAG = "DeveloperVerificationConf";
     @NonNull
     private final InstallUserActionRequired mDialogData;
     @NonNull
@@ -60,7 +60,8 @@ public class VerificationConfirmationFragment extends DialogFragment {
     private Button mNegativeBtn;
     private Button mNeutralBtn;
 
-    public VerificationConfirmationFragment(@NonNull InstallUserActionRequired dialogData) {
+    public DeveloperVerificationConfirmationFragment(
+            @NonNull InstallUserActionRequired dialogData) {
         mDialogData = dialogData;
     }
 
