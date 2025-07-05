@@ -17,6 +17,7 @@
 package com.android.internal.jank;
 
 import android.annotation.IntDef;
+import android.util.Log;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.util.FrameworkStatsLog;
@@ -28,6 +29,8 @@ import java.util.Arrays;
 /** @hide */
 public class Cuj {
     @VisibleForTesting
+    private static final String TAG = "Cuj";
+
     public static final int MAX_LENGTH_OF_CUJ_NAME = 82;
 
     // Every value must have a corresponding entry in CUJ_STATSD_INTERACTION_TYPE.
@@ -985,7 +988,11 @@ public class Cuj {
     }
 
     public static int getStatsdInteractionType(@CujType int cujType) {
-        return CUJ_TO_STATSD_INTERACTION_TYPE[cujType];
+      if (cujType < 0 || cujType >= CUJ_TO_STATSD_INTERACTION_TYPE.length) {
+        Log.e(TAG, "getStatsdInteractionType: cujType: " + cujType + " is out of range.");
+        return NO_STATSD_LOGGING;
+      }
+      return CUJ_TO_STATSD_INTERACTION_TYPE[cujType];
     }
 
     /** Returns whether the measurements for the given CUJ should be written to statsd. */

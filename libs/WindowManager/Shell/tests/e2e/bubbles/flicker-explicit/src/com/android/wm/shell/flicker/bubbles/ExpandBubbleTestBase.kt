@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.internal.widget.remotecompose.core;
+
+package com.android.wm.shell.flicker.bubbles
+
+import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesExpandedTestCases
+import com.android.wm.shell.flicker.bubbles.testcase.BubbleAlwaysVisibleTestCases
 
 /**
- * This interface defines a contract for objects that are aware of a {@link RemoteContext}.
- *
- * <p>PlayerViews should implement to provide access to the RemoteContext.
+ * The set to verify bubble expands from collapsed state, which verifies
+ * - [BubbleFlickerTestBase]
+ * - [BubbleAlwaysVisibleTestCases]
+ * - [BubbleAppBecomesExpandedTestCases]
  */
-public interface RemoteContextAware {
-
-    /**
-     * Returns the remote context
-     *
-     * @return a RemoteContext
-     */
-    RemoteContext getRemoteContext();
-}
+abstract class ExpandBubbleTestBase : BubbleFlickerTestBase(),
+    BubbleAlwaysVisibleTestCases,
+    BubbleAppBecomesExpandedTestCases

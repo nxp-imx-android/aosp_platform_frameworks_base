@@ -122,6 +122,22 @@ public class MediaOutputMetricLogger {
     }
 
     /**
+     * Do the metric logging of stop sharing.
+     */
+    public void logInteractionStopSharing() {
+        if (DEBUG) {
+            Log.d(TAG, "logInteraction - Stop sharing");
+        }
+
+        SysUiStatsLog.write(
+                SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
+                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__STOP_SHARING,
+                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__TARGET__UNKNOWN_TYPE,
+                getLoggingPackageName(),
+                /*isSuggestedDevice = */false);
+    }
+
+    /**
      * Do the metric logging of stop casting.
      */
     public void logInteractionStopCasting() {
@@ -148,6 +164,22 @@ public class MediaOutputMetricLogger {
         SysUiStatsLog.write(
                 SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
                 SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__EXPANSION,
+                getInteractionDeviceType(source),
+                getLoggingPackageName(),
+                source.isSuggestedDevice());
+    }
+
+    /**
+     * Do the metric logging of device contraction.
+     */
+    public void logInteractionContraction(MediaDevice source) {
+        if (DEBUG) {
+            Log.d(TAG, "logInteraction - Contraction");
+        }
+
+        SysUiStatsLog.write(
+                SysUiStatsLog.MEDIAOUTPUT_OP_INTERACTION_REPORT,
+                SysUiStatsLog.MEDIA_OUTPUT_OP_INTERACTION_REPORTED__INTERACTION_TYPE__CONTRACTION,
                 getInteractionDeviceType(source),
                 getLoggingPackageName(),
                 source.isSuggestedDevice());

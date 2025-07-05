@@ -16,6 +16,7 @@
 
 package com.android.systemui.shade.domain.interactor
 
+import android.content.applicationContext
 import android.content.testableContext
 import android.provider.Settings
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
@@ -35,6 +36,7 @@ val Kosmos.shadeModeInteractor by Fixture {
     ShadeModeInteractorImpl(
         applicationScope = applicationCoroutineScope,
         backgroundDispatcher = testDispatcher,
+        context = applicationContext,
         repository = shadeRepository,
         secureSettingsRepository = fakeSecureSettingsRepository,
         tableLogBuffer = logcatTableLogBuffer(this, "sceneFrameworkTableLogBuffer"),
@@ -53,6 +55,8 @@ val Kosmos.shadeMode by Fixture { shadeModeInteractor.shadeMode }
  */
 fun Kosmos.enableDualShade(wideLayout: Boolean? = null) {
     runBlocking { fakeSecureSettingsRepository.setBoolean(Settings.Secure.DUAL_SHADE, true) }
+    testableContext.orCreateTestableResources.addOverride(R.bool.config_disableSplitShade, true)
+    fakeConfigurationRepository.onAnyConfigurationChange()
 
     if (wideLayout != null) {
         overrideLargeScreenResources(isLargeScreen = wideLayout)
@@ -64,6 +68,8 @@ fun Kosmos.enableDualShade(wideLayout: Boolean? = null) {
 // TODO(b/391578667): Make this user-aware once supported by FakeSecureSettingsRepository.
 fun Kosmos.disableDualShade() {
     runBlocking { fakeSecureSettingsRepository.setBoolean(Settings.Secure.DUAL_SHADE, false) }
+    testableContext.orCreateTestableResources.addOverride(R.bool.config_disableSplitShade, false)
+    fakeConfigurationRepository.onAnyConfigurationChange()
 }
 
 fun Kosmos.enableSingleShade() {

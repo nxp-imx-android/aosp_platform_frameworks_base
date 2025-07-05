@@ -1145,6 +1145,19 @@ public final class CachedAppOptimizerTest {
             mRss = mRssAfterCompaction;
         }
 
+        @Override
+        public void performMemcgCompaction(
+                CachedAppOptimizer.CompactProfile profile, int uid, int pid
+        ) throws IOException {
+            mRss = mRssAfterCompaction;
+        }
+
+        @Override
+        public void performNativeCompaction(CachedAppOptimizer.CompactProfile profile, int pid)
+                throws IOException {
+            mRss = mRssAfterCompaction;
+        }
+
         public void setRss(long[] newValues) {
             mRss = newValues;
         }

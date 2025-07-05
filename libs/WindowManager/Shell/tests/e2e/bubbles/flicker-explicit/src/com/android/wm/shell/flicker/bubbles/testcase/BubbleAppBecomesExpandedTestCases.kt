@@ -17,6 +17,7 @@
 package com.android.wm.shell.flicker.bubbles.testcase
 
 import android.tools.traces.component.ComponentNameMatcher
+import android.tools.traces.component.ComponentNameMatcher.Companion.BUBBLE
 import android.tools.traces.component.ComponentNameMatcher.Companion.LAUNCHER
 import com.android.wm.shell.flicker.bubbles.utils.BubbleFlickerSubjects
 import org.junit.Test
@@ -121,5 +122,23 @@ interface BubbleAppBecomesExpandedTestCases : BubbleFlickerSubjects {
     @Test
     fun appLayerHasRoundedCorner() {
         layerTraceEntrySubjectAtEnd.hasRoundedCorners(testApp)
+    }
+
+    /**
+     * Verifies the bubble window covers the bubble app.
+     */
+    @Test
+    fun bubbleWindowCoversBubbleAppWindow() {
+        wmStateSubjectAtEnd.visibleRegion(BUBBLE)
+            .coversAtLeast(wmStateSubjectAtEnd.visibleRegion(testApp).region)
+    }
+
+    /**
+     * Verifies the bubble layer covers the bubble app.
+     */
+    @Test
+    fun bubbleLayerCoversBubbleAppLayer() {
+        layerTraceEntrySubjectAtEnd.visibleRegion(BUBBLE)
+            .coversAtLeast(layerTraceEntrySubjectAtEnd.visibleRegion(testApp).region)
     }
 }

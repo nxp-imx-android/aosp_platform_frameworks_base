@@ -21,6 +21,7 @@ import static android.window.OnBackInvokedDispatcher.PRIORITY_OVERLAY;
 import static android.window.OnBackInvokedDispatcher.PRIORITY_SYSTEM_NAVIGATION_OBSERVER;
 
 import static com.android.window.flags.Flags.FLAG_MULTIPLE_SYSTEM_NAVIGATION_OBSERVER_CALLBACKS;
+import static com.android.window.flags.Flags.FLAG_PREDICTIVE_BACK_CALLBACK_CANCELLATION_FIX;
 import static com.android.window.flags.Flags.FLAG_PREDICTIVE_BACK_PRIORITY_SYSTEM_NAVIGATION_OBSERVER;
 import static com.android.window.flags.Flags.FLAG_PREDICTIVE_BACK_TIMESTAMP_API;
 
@@ -443,6 +444,64 @@ public class WindowOnBackInvokedDispatcherTest {
     }
 
     @Test
+    @RequiresFlagsEnabled(FLAG_PREDICTIVE_BACK_CALLBACK_CANCELLATION_FIX)
+    public void onDetachFromWindow_cancelsInProgressNonTopCallback() throws RemoteException {
+        mDispatcher.registerOnBackInvokedCallback(PRIORITY_DEFAULT, mCallback1);
+
+        OnBackInvokedCallbackInfo callbackInfo = assertSetCallbackInfo();
+
+        callbackInfo.getCallback().onBackStarted(mBackEvent);
+
+        waitForIdle();
+        verify(mCallback1).onBackStarted(any(BackEvent.class));
+
+        // Register another callback. Back event dispatching continues to be routed to mCallback1
+        mDispatcher.registerOnBackInvokedCallback(PRIORITY_DEFAULT, mCallback2);
+
+        // This should trigger mCallback1.onBackCancelled()
+        mDispatcher.detachFromWindow();
+        // This should be ignored by mCallback1
+        callbackInfo.getCallback().onBackInvoked();
+
+        waitForIdle();
+        verify(mCallback1).onBackCancelled();
+        verify(mCallback1, never()).onBackInvoked();
+        verify(mCallback2, never()).onBackStarted(any());
+        verify(mCallback2, never()).onBackCancelled();
+        verify(mCallback2, never()).onBackInvoked();
+    }
+
+    @Test
+    @RequiresFlagsEnabled(FLAG_PREDICTIVE_BACK_CALLBACK_CANCELLATION_FIX)
+    public void callbackEvents_continueAfterNewRegistration_andUnregistration()
+            throws RemoteException {
+        mDispatcher.registerOnBackInvokedCallback(PRIORITY_DEFAULT, mCallback1);
+
+        OnBackInvokedCallbackInfo callbackInfo = assertSetCallbackInfo();
+
+        callbackInfo.getCallback().onBackStarted(mBackEvent);
+
+        waitForIdle();
+        verify(mCallback1).onBackStarted(any(BackEvent.class));
+
+        // Register another callback. Back event dispatching continues to be routed to mCallback1
+        mDispatcher.registerOnBackInvokedCallback(PRIORITY_DEFAULT, mCallback2);
+        waitForIdle();
+
+        // Unregister the second callback again
+        mDispatcher.unregisterOnBackInvokedCallback(mCallback2);
+
+        callbackInfo.getCallback().onBackInvoked();
+
+        waitForIdle();
+        verify(mCallback1).onBackInvoked();
+        verify(mCallback1, never()).onBackCancelled();
+        verify(mCallback2, never()).onBackStarted(any());
+        verify(mCallback2, never()).onBackCancelled();
+        verify(mCallback2, never()).onBackInvoked();
+    }
+
+    @Test
     public void updatesDispatchingState() throws RemoteException {
         mDispatcher.registerOnBackInvokedCallback(PRIORITY_DEFAULT, mCallback1);
         OnBackInvokedCallbackInfo callbackInfo = assertSetCallbackInfo();
@@ -731,8 +790,7 @@ public class WindowOnBackInvokedDispatcherTest {
                 /* frameTimeMillis = */ 0,
                 /* progress = */ progress,
                 /* triggerBack = */ false,
-                /* swipeEdge = */ BackEvent.EDGE_LEFT,
-                /* departingAnimationTarget = */ null);
+                /* swipeEdge = */ BackEvent.EDGE_LEFT);
     }
 
     private void verifyImeCallackRegistrations() throws RemoteException {

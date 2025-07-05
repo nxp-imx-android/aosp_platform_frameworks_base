@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.internal.widget.remotecompose.accessibility;
+package com.android.internal.widget.remotecompose.player.accessibility;
 
+import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.graphics.PointF;
 import android.os.Bundle;
@@ -22,7 +23,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.Operation;
-import com.android.internal.widget.remotecompose.core.RemoteContext;
+import com.android.internal.widget.remotecompose.core.RemoteContextActions;
 import com.android.internal.widget.remotecompose.core.operations.layout.ClickModifierOperation;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 import com.android.internal.widget.remotecompose.core.operations.layout.LayoutComponent;
@@ -32,7 +33,6 @@ import com.android.internal.widget.remotecompose.core.operations.layout.modifier
 import com.android.internal.widget.remotecompose.core.semantics.AccessibilitySemantics;
 import com.android.internal.widget.remotecompose.core.semantics.AccessibleComponent;
 import com.android.internal.widget.remotecompose.core.semantics.CoreSemantics;
-import com.android.internal.widget.remotecompose.core.semantics.ScrollableComponent;
 import com.android.internal.widget.remotecompose.core.semantics.ScrollableComponent.ScrollDirection;
 
 import java.util.ArrayList;
@@ -49,11 +49,12 @@ import java.util.stream.Stream;
  */
 public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibility {
     private final CoreDocument mDocument;
-    private final RemoteContext mRemoteContext;
+    private final RemoteContextActions mRemoteContextActions;
 
-    public CoreDocumentAccessibility(CoreDocument document, RemoteContext remoteContext) {
+    public CoreDocumentAccessibility(
+            CoreDocument document, RemoteContextActions mRemoteContextActions) {
         this.mDocument = document;
-        this.mRemoteContext = remoteContext;
+        this.mRemoteContextActions = mRemoteContextActions;
     }
 
     @Nullable
@@ -98,6 +99,14 @@ public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibi
         return result;
     }
 
+    /**
+     * Performs the given accessibility action on the specified component.
+     *
+     * @param component The component on which to perform the action.
+     * @param action The accessibility action to perform.
+     * @param arguments Optional arguments for the action.
+     * @return True if the action was successfully performed, false otherwise.
+     */
     public boolean performAction(Component component, int action, Bundle arguments) {
         boolean needsRepaint = true;
 
@@ -105,11 +114,11 @@ public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibi
             if (isClickAction(action)) {
                 return performClick(component);
             } else if (isScrollForwardAction(action)) {
-                return scrollDirection(mRemoteContext, component, ScrollDirection.FORWARD);
+                return scrollDirection(component, ScrollDirection.FORWARD);
             } else if (isScrollBackwardAction(action)) {
-                return scrollDirection(mRemoteContext, component, ScrollDirection.BACKWARD);
+                return scrollDirection(component, ScrollDirection.BACKWARD);
             } else if (isShowOnScreenAction(action)) {
-                return showOnScreen(mRemoteContext, component);
+                return showOnScreen(component);
             } else {
                 needsRepaint = false;
                 return false;
@@ -141,68 +150,30 @@ public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibi
         return action == AccessibilityNodeInfo.ACTION_CLICK;
     }
 
-    private boolean showOnScreen(RemoteContext context, Component component) {
-        ScrollableComponent scrollable = findScrollable(component);
-
-        if (scrollable != null) {
-            return scrollable.showOnScreen(context, component);
-        }
-
-        return false;
-    }
-
-    @Nullable
-    private static ScrollableComponent findScrollable(Component component) {
-        Component parent = component.getParent();
-
-        while (parent != null) {
-            ScrollableComponent scrollable = parent.selfOrModifier(ScrollableComponent.class);
-
-            if (scrollable != null) {
-                return scrollable;
-            } else {
-                parent = parent.getParent();
-            }
-        }
-
-        return null;
+    private boolean showOnScreen(Component component) {
+        return mRemoteContextActions.showOnScreen(component);
     }
 
     /**
      * scroll content by the given offset
      *
-     * @param context
      * @param component
      * @param pixels
      * @return
      */
-    public int scrollByOffset(RemoteContext context, Component component, int pixels) {
-        ScrollableComponent scrollable = component.selfOrModifier(ScrollableComponent.class);
-
-        if (scrollable != null) {
-            return scrollable.scrollByOffset(context, pixels);
-        }
-
-        return 0;
+    public int scrollByOffset(@NonNull Component component, int pixels) {
+        return mRemoteContextActions.scrollByOffset(component, pixels);
     }
 
     /**
      * scroll content in a given direction
      *
-     * @param context
      * @param component
      * @param direction
      * @return
      */
-    public boolean scrollDirection(
-            RemoteContext context, Component component, ScrollDirection direction) {
-        ScrollableComponent scrollable = component.selfOrModifier(ScrollableComponent.class);
-
-        if (scrollable != null) {
-            return scrollable.scrollDirection(context, direction);
-        }
-
-        return false;
+    public boolean scrollDirection(@NonNull Component component, ScrollDirection direction) {
+        return mRemoteContextActions.scrollDirection(component, direction);
     }
 
     /**
@@ -211,9 +182,8 @@ public class CoreDocumentAccessibility implements RemoteComposeDocumentAccessibi
      * @param component
      * @return
      */
-    public boolean performClick(Component component) {
-        mDocument.performClick(mRemoteContext, component.getComponentId(), "");
-        return true;
+    public boolean performClick(@NonNull Component component) {
+        return mRemoteContextActions.performClick(mDocument, component, "");
     }
 
     @Nullable

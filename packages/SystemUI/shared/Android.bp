@@ -65,7 +65,6 @@ android_library {
         "androidx.lifecycle_lifecycle-runtime-ktx",
         "androidx.lifecycle_lifecycle-viewmodel-ktx",
         "androidx.recyclerview_recyclerview",
-        "com_android_launcher3_flags_lib",
         "kotlinx_coroutines_android",
         "kotlinx_coroutines",
         "dagger2",

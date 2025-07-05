@@ -40,8 +40,6 @@ import com.android.internal.widget.remotecompose.core.operations.utilities.Strin
 import java.util.List;
 
 public class ImageLayout extends LayoutManager implements VariableSupport {
-
-    private static final boolean DEBUG = false;
     private int mBitmapId = -1;
     private int mScaleType;
     private float mAlpha = 1f;

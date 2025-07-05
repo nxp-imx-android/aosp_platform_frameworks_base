@@ -19,6 +19,7 @@ package android.window;
 import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFINED;
 
 import static com.android.window.flags.Flags.multipleSystemNavigationObserverCallbacks;
+import static com.android.window.flags.Flags.predictiveBackCallbackCancellationFix;
 import static com.android.window.flags.Flags.predictiveBackSystemOverrideCallback;
 import static com.android.window.flags.Flags.predictiveBackPrioritySystemNavigationObserver;
 import static com.android.window.flags.Flags.predictiveBackTimestampApi;
@@ -318,16 +319,27 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
             mOnBackInvokedCallbacks.remove(priority);
         }
         mAllCallbacks.remove(callback);
-        // Re-populate the top callback to WM if the removed callback was previously the top
-        // one.
+        // Re-populate the top callback to WM if the removed callback was previously the top one.
         if (previousTopCallback == callback) {
-            // We should call onBackCancelled() when an active callback is removed from
+            setTopOnBackInvokedCallback(getTopCallback());
+            if (!predictiveBackCallbackCancellationFix()) {
+                // We should call onBackCancelled() when an active callback is removed from the
+                // dispatcher.
+                mProgressAnimator.removeOnBackCancelledFinishCallback();
+                mProgressAnimator.removeOnBackInvokedFinishCallback();
+                sendCancelledIfInProgress(callback);
+                mHandler.post(mProgressAnimator::reset);
+            }
+        }
+
+        if (predictiveBackCallbackCancellationFix() && mProgressAnimator.isBackAnimationInProgress()
+                && mProgressAnimator.getActiveBackCallback() == callback) {
+            // We should call onBackCancelled() when an active callback is removed from the
             // dispatcher.
             mProgressAnimator.removeOnBackCancelledFinishCallback();
             mProgressAnimator.removeOnBackInvokedFinishCallback();
             sendCancelledIfInProgress(callback);
             mHandler.post(mProgressAnimator::reset);
-            setTopOnBackInvokedCallback(getTopCallback());
         }
     }
 
@@ -358,8 +370,10 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
         }
     }
 
-    private void sendCancelledIfInProgress(@NonNull OnBackInvokedCallback callback) {
-        boolean isInProgress = mProgressAnimator.isBackAnimationInProgress();
+    private void sendCancelledIfInProgress(@Nullable OnBackInvokedCallback callback) {
+        boolean isInProgress = callback != null && mProgressAnimator.isBackAnimationInProgress()
+                && (!predictiveBackCallbackCancellationFix()
+                        || mProgressAnimator.getActiveBackCallback() == callback);
         if (isInProgress && callback instanceof OnBackAnimationCallback) {
             OnBackAnimationCallback animatedCallback = (OnBackAnimationCallback) callback;
             animatedCallback.onBackCancelled();
@@ -382,12 +396,16 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
                 mImeDispatcher = null;
             }
             if (!mAllCallbacks.isEmpty()) {
-                OnBackInvokedCallback topCallback = getTopCallback();
-                if (topCallback != null) {
-                    sendCancelledIfInProgress(topCallback);
+                if (predictiveBackCallbackCancellationFix()) {
+                    sendCancelledIfInProgress(mProgressAnimator.getActiveBackCallback());
                 } else {
-                    // Should not be possible
-                    Log.e(TAG, "There is no topCallback, even if mAllCallbacks is not empty");
+                    OnBackInvokedCallback topCallback = getTopCallback();
+                    if (topCallback != null) {
+                        sendCancelledIfInProgress(topCallback);
+                    } else {
+                        // Should not be possible
+                        Log.e(TAG, "There is no topCallback, even if mAllCallbacks is not empty");
+                    }
                 }
                 // Clear binder references in WM.
                 setTopOnBackInvokedCallback(null);
@@ -598,7 +616,13 @@ public class WindowOnBackInvokedDispatcher implements OnBackInvokedDispatcher {
 
                 if (callback != null) {
                     callback.onBackStarted(BackEvent.fromBackMotionEvent(backEvent));
-                    mProgressAnimator.onBackStarted(backEvent, callback::onBackProgressed);
+                    if (predictiveBackCallbackCancellationFix()) {
+                        mProgressAnimator.onBackStarted(backEvent, callback::onBackProgressed,
+                                callback);
+                    } else {
+                        mProgressAnimator.onBackStarted(backEvent, callback::onBackProgressed);
+
+                    }
                 }
             });
         }

@@ -22,9 +22,7 @@ import static android.service.notification.NotificationListenerService.REASON_CA
 import static android.view.accessibility.AccessibilityEvent.CONTENT_CHANGE_TYPE_EXPANDED;
 import static android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED;
 
-import static com.android.systemui.Flags.notificationRowAccessibilityExpanded;
 import static com.android.systemui.Flags.notificationRowTransparency;
-import static com.android.systemui.Flags.notificationsPinnedHunInShade;
 import static com.android.systemui.flags.Flags.ENABLE_NOTIFICATIONS_SIMULATE_SLOW_MEASURE;
 import static com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE;
 import static com.android.systemui.statusbar.notification.NotificationUtils.logKey;
@@ -3677,7 +3675,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         // Must stay on screen in the open shade regardless how much the stack is scrolled if:
         // 1. Is HUN and not marked as seen yet (isHeadsUp && mustStayOnScreen)
         // 2. Is an FSI HUN (isPinned)
-        return mIsHeadsUp && mMustStayOnScreen || notificationsPinnedHunInShade() && isPinned();
+        return mIsHeadsUp && mMustStayOnScreen || isPinned();
     }
 
     /**
@@ -4273,9 +4271,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             if (mExpansionChangedListener != null) {
                 mExpansionChangedListener.onExpansionChanged(nowExpanded);
             }
-            if (notificationRowAccessibilityExpanded()) {
-                notifyAccessibilityContentExpansionChanged();
-            }
+            notifyAccessibilityContentExpansionChanged();
         }
     }
 
@@ -4332,40 +4328,16 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             info.addAction(AccessibilityAction.ACTION_DISMISS);
         }
 
-        if (notificationRowAccessibilityExpanded()) {
-            if (isAccessibilityExpandable()) {
-                if (isShowingExpanded()) {
-                    info.addAction(AccessibilityAction.ACTION_COLLAPSE);
-                    info.setExpandedState(AccessibilityNodeInfo.EXPANDED_STATE_FULL);
-                } else {
-                    info.addAction(AccessibilityAction.ACTION_EXPAND);
-                    info.setExpandedState(AccessibilityNodeInfo.EXPANDED_STATE_COLLAPSED);
-                }
+        if (isAccessibilityExpandable()) {
+            if (isShowingExpanded()) {
+                info.addAction(AccessibilityAction.ACTION_COLLAPSE);
+                info.setExpandedState(AccessibilityNodeInfo.EXPANDED_STATE_FULL);
             } else {
-                info.setExpandedState(AccessibilityNodeInfo.EXPANDED_STATE_UNDEFINED);
+                info.addAction(AccessibilityAction.ACTION_EXPAND);
+                info.setExpandedState(AccessibilityNodeInfo.EXPANDED_STATE_COLLAPSED);
             }
         } else {
-            boolean expandable = shouldShowPublic();
-            boolean isExpanded = false;
-            if (!expandable) {
-                if (mIsSummaryWithChildren) {
-                    expandable = true;
-                    if (!mIsMinimized || isExpanded()) {
-                        isExpanded = isGroupExpanded();
-                    }
-                } else {
-                    expandable = mPrivateLayout.isContentExpandable();
-                    isExpanded = isExpanded();
-                }
-            }
-
-            if (expandable) {
-                if (isExpanded) {
-                    info.addAction(AccessibilityAction.ACTION_COLLAPSE);
-                } else {
-                    info.addAction(AccessibilityAction.ACTION_EXPAND);
-                }
-            }
+            info.setExpandedState(AccessibilityNodeInfo.EXPANDED_STATE_UNDEFINED);
         }
 
         NotificationMenuRowPlugin provider = getProvider();
@@ -4653,10 +4625,8 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
             pw.print(", mShowNoBackground: " + mShowNoBackground);
             pw.print(", clipBounds: " + getClipBounds());
             pw.print(", isPromotedOngoing: " + isPromotedOngoing());
-            if (notificationRowAccessibilityExpanded()) {
-                pw.print(", isShowingExpanded: " + isShowingExpanded());
-                pw.print(", isAccessibilityExpandable: " + isAccessibilityExpandable());
-            }
+            pw.print(", isShowingExpanded: " + isShowingExpanded());
+            pw.print(", isAccessibilityExpandable: " + isAccessibilityExpandable());
             pw.print(", isExpandable: " + isExpandable());
             pw.print(", mExpandable: " + mExpandable);
             pw.print(", isUserExpanded: " + isUserExpanded());

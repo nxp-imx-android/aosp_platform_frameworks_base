@@ -58,6 +58,7 @@ public class ActivityOptions {
             public static final String LABEL = "ImeAppAutoFocus";
             public static final ComponentName COMPONENT = new ComponentName(FLICKER_APP_PACKAGE,
                     FLICKER_APP_PACKAGE + ".ImeActivityAutoFocus");
+            public static final String RES_ID_IME_BOTTOM_INSET = "ime_bottom_inset";
         }
 
         public static class StateInitializeActivity {

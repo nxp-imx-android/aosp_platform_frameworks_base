@@ -26,7 +26,7 @@ import com.android.wm.shell.Flags
 import com.android.wm.shell.flicker.bubbles.testcase.BubbleAppBecomesNotExpandedTestCases
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
-import com.android.wm.shell.flicker.bubbles.utils.dismissBubbleViaBubbleView
+import com.android.wm.shell.flicker.bubbles.utils.dismissBubbleAppViaBubbleView
 import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.setUpBeforeTransition
 import org.junit.Assume.assumeFalse
@@ -38,18 +38,19 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 
 /**
- * Test dismiss bubble via dragging bubble to the dismiss view when the bubble is in expanded state.
+ * Test dismiss bubble app via dragging bubble to the dismiss view when the bubble is in expanded
+ * state.
  *
  * To run this test: `atest WMShellExplicitFlickerTestsBubbles:DismissExpandedBubbleTest`
  *
  * Pre-steps:
  * ```
- *     Launch [simpleApp] into bubble
+ *     Launch [testApp] into bubble
  * ```
  *
  * Actions:
  * ```
- *     Dismiss bubble via dragging bubble icon to the dismiss view
+ *     Dismiss bubble app via dragging bubble icon to the dismiss view
  * ```
  * Verified tests:
  * - [BubbleFlickerTestBase]
@@ -66,7 +67,6 @@ class DismissExpandedBubbleViaBubbleViewTest :
     BubbleFlickerTestBase(),
     BubbleAppBecomesNotExpandedTestCases
 {
-
     companion object : FlickerPropertyInitializer() {
 
         @ClassRule
@@ -76,7 +76,7 @@ class DismissExpandedBubbleViaBubbleViewTest :
                 setUpBeforeTransition(instrumentation, wmHelper)
                 launchBubbleViaBubbleMenu(testApp, tapl, wmHelper)
             },
-            transition = { dismissBubbleViaBubbleView(uiDevice, wmHelper) }
+            transition = { dismissBubbleAppViaBubbleView(uiDevice, wmHelper) }
         )
     }
 

@@ -208,7 +208,7 @@ public class DrawText extends PaintOperation implements VariableSupport {
     }
 
     @Override
-    public void serialize(MapSerializer serializer) {
+    public void serialize(@NonNull MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("textId", mTextID)

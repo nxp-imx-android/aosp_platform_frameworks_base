@@ -589,7 +589,7 @@ public abstract class MediaRoute2ProviderService extends Service {
         if (audioManager == null) {
             return;
         }
-        audioRecord.stop();
+        audioRecord.release();
         audioManager.unregisterAudioPolicy(audioPolicy);
     }
 

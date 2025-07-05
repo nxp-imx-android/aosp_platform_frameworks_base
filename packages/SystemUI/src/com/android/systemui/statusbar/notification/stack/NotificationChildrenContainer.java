@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.ComposeView;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.internal.widget.NotificationExpandButton;
+import com.android.systemui.Flags;
 import com.android.systemui.res.R;
 import com.android.systemui.scene.shared.flag.SceneContainerFlag;
 import com.android.systemui.statusbar.CrossFadeHelper;
@@ -828,7 +829,13 @@ public class NotificationChildrenContainer extends ViewGroup
         } else if (!childrenExpanded) {
             intrinsicHeight += mCollapsedBottomPadding;
         }
-        return intrinsicHeight;
+
+        if (Flags.notificationChildrenContainerMinHeight()) {
+            // The height should at the very minimum be able to accommodate the header.
+            return Math.max(mHeaderHeight, intrinsicHeight);
+        } else {
+            return intrinsicHeight;
+        }
     }
 
     /**
@@ -1616,7 +1623,13 @@ public class NotificationChildrenContainer extends ViewGroup
             visibleChildren++;
         }
         minExpandHeight += mCollapsedBottomPadding;
-        return minExpandHeight;
+
+        if (Flags.notificationChildrenContainerMinHeight()) {
+            // The height should at the very minimum be able to accommodate the header.
+            return Math.max(minExpandHeight, mHeaderHeight);
+        } else {
+            return minExpandHeight;
+        }
     }
 
     public boolean showingAsLowPriority() {

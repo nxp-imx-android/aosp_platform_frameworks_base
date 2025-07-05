@@ -55,6 +55,8 @@ public class BackProgressAnimator implements DynamicAnimation.OnAnimationUpdateL
     private static final float BUTTON_SPRING_STIFFNESS = 100;
     private final SpringAnimation mSpring;
     private ProgressCallback mCallback;
+    @Nullable
+    private OnBackAnimationCallback mBackCallback;
     private float mProgress = 0;
     private float mVelocity = 0;
     private BackMotionEvent mLastBackEvent;
@@ -146,8 +148,22 @@ public class BackProgressAnimator implements DynamicAnimation.OnAnimationUpdateL
      * Starts the back progress animation.
      *
      * @param event the {@link BackMotionEvent} that started the gesture.
-     * @param callback the back callback to invoke for the gesture. It will receive back progress
-     *                 dispatches as the progress animation updates.
+     * @param callback the progress callback to invoke for the gesture. It will receive back
+     *                 progress dispatches as the progress animation updates.
+     * @param backCallback the target back callback of the current back gesture
+     */
+    public void onBackStarted(BackMotionEvent event, ProgressCallback callback,
+            @NonNull OnBackAnimationCallback backCallback) {
+        mBackCallback = backCallback;
+        onBackStarted(event, callback);
+    }
+
+    /**
+     * Starts the back progress animation.
+     *
+     * @param event the {@link BackMotionEvent} that started the gesture.
+     * @param callback the progress callback to invoke for the gesture. It will receive back
+     *                 progress dispatches as the progress animation updates.
      */
     public void onBackStarted(BackMotionEvent event, ProgressCallback callback) {
         mLastBackEvent = event;
@@ -195,6 +211,7 @@ public class BackProgressAnimator implements DynamicAnimation.OnAnimationUpdateL
         mBackAnimationInProgress = false;
         mLastBackEvent = null;
         mCallback = null;
+        mBackCallback = null;
         mProgress = 0;
     }
 
@@ -258,6 +275,16 @@ public class BackProgressAnimator implements DynamicAnimation.OnAnimationUpdateL
     @VisibleForTesting(visibility = PACKAGE)
     public boolean isBackAnimationInProgress() {
         return mBackAnimationInProgress;
+    }
+
+    /**
+     *
+     * If provided in {@link  BackProgressAnimator#onBackStarted}, returns the back callback while
+     * the animation is in progress. Otherwise returns null.
+     */
+    @Nullable
+    public OnBackAnimationCallback getActiveBackCallback() {
+        return mBackCallback;
     }
 
     /**

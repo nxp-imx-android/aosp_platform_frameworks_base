@@ -77,6 +77,16 @@ flag {
 }
 
 flag {
+   name: "notification_children_container_min_height"
+   namespace: "systemui"
+   description: "Enforce a minimum height for the NotificationChildrenContainer"
+   bug: "429118181"
+   metadata {
+        purpose: PURPOSE_BUGFIX
+   }
+}
+
+flag {
    name: "notification_ambient_suppression_after_inflation"
    namespace: "systemui"
    description: "Move the DND visual effects filter to the finalize stage of the pipeline when it is doze-dependent, but keep it in the pre-group stage when it is doze-independent."
@@ -151,16 +161,6 @@ flag {
 }
 
 flag {
-    name: "notifications_pinned_hun_in_shade"
-    namespace: "systemui"
-    description: "Fixes displaying pinned HUNs in the Shade, making sure that their y and z positions are correct."
-    bug: "385041854"
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
     name: "notifications_hun_accessibility_refactor"
     namespace: "systemui"
     description: "Refactors where notification HUN accessibility events happen"
@@ -218,16 +218,6 @@ flag {
         " before we discovered a resources threading issue, which we worked around by applying the"
         " same color as a tint to the background drawable of footer buttons."
     bug: "294830092"
-}
-
-flag {
-  name: "notification_row_accessibility_expanded"
-  namespace: "systemui"
-  description: "Prepare ExpandableNotificationRow for new A11y expansion APIs."
-  bug: "380027122"
-  metadata {
-    purpose: PURPOSE_BUGFIX
-  }
 }
 
 flag {

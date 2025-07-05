@@ -1010,6 +1010,7 @@ class DesktopTasksController(
                 wct = wct,
                 transitionSource = transitionSource,
                 remoteTransition = remoteTransition,
+                callback = callback,
             )
         }
         mainScope.launch {
@@ -1020,6 +1021,7 @@ class DesktopTasksController(
                     wct = wct,
                     transitionSource = transitionSource,
                     remoteTransition = remoteTransition,
+                    callback = callback,
                 )
             } catch (t: Throwable) {
                 logE("Failed to move task to default desk: %s", t.message)
@@ -4249,13 +4251,13 @@ class DesktopTasksController(
             handler?.setTransition(transition)
             runOnTransitStart?.invoke(transition)
 
-        // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
-        if (!desktopState.enableMultipleDesktops) {
-            desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
-                toDesktopAnimationDurationMs
-            )
+            // Replaced by |IDesktopTaskListener#onActiveDeskChanged|.
+            if (!desktopState.enableMultipleDesktops) {
+                desktopModeEnterExitTransitionListener?.onEnterDesktopModeTransitionStarted(
+                    toDesktopAnimationDurationMs
+                )
+            }
         }
-    }
 
     private fun addDeskRemovalChanges(
         wct: WindowContainerTransaction,

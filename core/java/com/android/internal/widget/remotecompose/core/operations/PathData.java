@@ -140,7 +140,7 @@ public class PathData extends Operation implements VariableSupport, Serializable
      * @param id the id of the path
      * @param data the path
      */
-    public static void apply(@NonNull WireBuffer buffer, int id, @NonNull float[] data) {
+    public static void apply(@NonNull WireBuffer buffer, int id, @NonNull float [] data) {
         buffer.start(Operations.DATA_PATH);
         buffer.writeInt(id);
         buffer.writeInt(data.length);
@@ -185,7 +185,7 @@ public class PathData extends Operation implements VariableSupport, Serializable
      * @return string describing the path
      */
     @NonNull
-    public static String pathString(@Nullable float[] path) {
+    public static String pathString(@Nullable float [] path) {
         if (path == null) {
             return "null";
         }
@@ -242,7 +242,7 @@ public class PathData extends Operation implements VariableSupport, Serializable
     }
 
     @Override
-    public void serialize(MapSerializer serializer) {
+    public void serialize(@NonNull MapSerializer serializer) {
         serializer.addType(CLASS_NAME).add("id", mInstanceId).addPath("path", mFloatPath);
     }
 }

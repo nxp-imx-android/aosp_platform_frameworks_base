@@ -1420,6 +1420,17 @@ flag {
 }
 
 flag {
+    name: "ignore_override_task_bounds_if_incompatible_with_display"
+    namespace: "lse_desktop_experience"
+    description: "Ignores a tasks override bounds during the desktop launch params bounds /n"
+                 "calculation if the bounds do not fit in the displays stable bounds."
+    bug: "422364585"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "include_top_transparent_fullscreen_task_in_desktop_heuristic"
     namespace: "lse_desktop_experience"
     description: "Whether to include any top transparent fullscreen task launched in desktop /n"
@@ -1515,6 +1526,16 @@ flag {
     description: "Allows to reparent a window token to a different display"
     is_fixed_read_only: true
     bug: "381258683"
+}
+
+flag {
+    name: "repository_based_persistence"
+    namespace: "lse_desktop_experience"
+    description: "Persists the whole repository instead of just persisting a single desk per event"
+    bug: "425916459"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }
 
 flag {
