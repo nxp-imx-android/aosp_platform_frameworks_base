@@ -145,8 +145,8 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
      * The value is reset if a disconnection happens.
      */
     private long mConnectAttempted = -1;
-    private boolean isAclConnectedBrEdr = false;
-    private boolean isAclConnectedLe = false;
+    private boolean mIsAclConnectedBrEdr = false;
+    private boolean mIsAclConnectedLe = false;
 
     // Active device state
     private boolean mIsActiveDeviceA2dp = false;
@@ -1088,7 +1088,9 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
             Log.d(
                     TAG,
                     "onUuidChanged: Time since last connect/manual disconnect="
-                            + (SystemClock.elapsedRealtime() - lastConnectAttempted));
+                            + (SystemClock.elapsedRealtime() - lastConnectAttempted)
+                            + ", last connect attempt: "
+                            + mConnectAttempted);
         }
 
         /*
@@ -1145,21 +1147,40 @@ public class CachedBluetoothDevice implements Comparable<CachedBluetoothDevice> 
         boolean isUpdatedToConnected = state == BluetoothAdapter.STATE_CONNECTED;
         if (isUpdatedToConnected) {
             // Only update timestamp for the first ACL connection
-            if (!isAclConnectedLe && !isAclConnectedBrEdr) {
+            if (!mIsAclConnectedLe && !mIsAclConnectedBrEdr) {
                 mConnectAttempted = SystemClock.elapsedRealtime();
+                if (BluetoothUtils.D) {
+                    Log.d(
+                            TAG,
+                            "onAclStateChanged: device "
+                                    + mDevice.getAnonymizedAddress()
+                                    + ", connect time is updated: "
+                                    + mConnectAttempted
+                                    + ", le connection status: "
+                                    + mIsAclConnectedLe
+                                    + ", br/edr connection status: "
+                                    + mIsAclConnectedBrEdr);
+                }
             }
         }
 
         if (transport == BluetoothDevice.TRANSPORT_LE) {
-            isAclConnectedLe = isUpdatedToConnected;
+            mIsAclConnectedLe = isUpdatedToConnected;
         } else {
-            isAclConnectedBrEdr = isUpdatedToConnected;
+            mIsAclConnectedBrEdr = isUpdatedToConnected;
         }
 
         if (!isUpdatedToConnected) {
             // Reset the connection time if both classic and LE are disconnected.
-            if (!isAclConnectedLe && !isAclConnectedBrEdr) {
+            if (!mIsAclConnectedLe && !mIsAclConnectedBrEdr) {
                 mConnectAttempted = -1;
+                if (BluetoothUtils.D) {
+                    Log.d(
+                            TAG,
+                            "onAclStateChanged: device "
+                                    + mDevice.getAnonymizedAddress()
+                                    + ", connect time is reset");
+                }
             }
         }
     }
