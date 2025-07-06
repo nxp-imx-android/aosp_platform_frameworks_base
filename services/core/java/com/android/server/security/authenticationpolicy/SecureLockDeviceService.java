@@ -47,7 +47,7 @@ import android.os.UserHandle;
 import android.security.authenticationpolicy.AuthenticationPolicyManager;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.DisableSecureLockDeviceRequestStatus;
 import android.security.authenticationpolicy.AuthenticationPolicyManager.EnableSecureLockDeviceRequestStatus;
-import android.security.authenticationpolicy.AuthenticationPolicyManager.IsSecureLockDeviceAvailableRequestStatus;
+import android.security.authenticationpolicy.AuthenticationPolicyManager.GetSecureLockDeviceAvailabilityRequestStatus;
 import android.security.authenticationpolicy.DisableSecureLockDeviceParams;
 import android.security.authenticationpolicy.EnableSecureLockDeviceParams;
 import android.security.authenticationpolicy.ISecureLockDeviceStatusListener;
@@ -186,8 +186,8 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     @Override
     public void registerSecureLockDeviceStatusListener(@NonNull UserHandle user,
             @NonNull ISecureLockDeviceStatusListener listener) {
-        @IsSecureLockDeviceAvailableRequestStatus int isSecureLockDeviceAvailableForCurrentUser =
-                isSecureLockDeviceAvailable(user);
+        @GetSecureLockDeviceAvailabilityRequestStatus int secureLockDeviceAvailability =
+                getSecureLockDeviceAvailability(user);
         boolean isSecureLockDeviceEnabled = isSecureLockDeviceEnabled();
 
         // Register the listener with the UserHandle as its identifying cookie
@@ -197,13 +197,12 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
                         + user.getIdentifier());
             }
             try {
-                listener.onSecureLockDeviceAvailableStatusChanged(
-                        isSecureLockDeviceAvailableForCurrentUser);
+                listener.onSecureLockDeviceAvailableStatusChanged(secureLockDeviceAvailability);
                 listener.onSecureLockDeviceEnabledStatusChanged(
                         isSecureLockDeviceEnabled);
                 if (DEBUG) {
                     Slog.d(TAG, "Sent initial enabled state " + isSecureLockDeviceEnabled
-                            + " and available state " + isSecureLockDeviceAvailableForCurrentUser
+                            + " and available state " + secureLockDeviceAvailability
                             + " to listener " + listener.asBinder() + "for user "
                             + user.getIdentifier());
                 }
@@ -271,16 +270,16 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
     }
 
     /**
-     * @see AuthenticationPolicyManager#isSecureLockDeviceAvailable()
+     * @see AuthenticationPolicyManager#getSecureLockDeviceAvailability()
      * @param user {@link UserHandle} to check that secure lock device is available fo
-     * @return {@link IsSecureLockDeviceAvailableRequestStatus} int indicating whether secure lock
-     * device is available for the calling user
+     * @return {@link GetSecureLockDeviceAvailabilityRequestStatus} int indicating whether secure
+     * lock device is available for the calling user
      *
      * @hide
      */
     @Override
-    @IsSecureLockDeviceAvailableRequestStatus
-    public int isSecureLockDeviceAvailable(UserHandle user) {
+    @GetSecureLockDeviceAvailabilityRequestStatus
+    public int getSecureLockDeviceAvailability(UserHandle user) {
         if (!secureLockDevice()) {
             return ERROR_UNSUPPORTED;
         }
@@ -323,9 +322,9 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
         if (!secureLockdown()) {
             return ERROR_UNSUPPORTED;
         }
-        int isSecureLockDeviceAvailable = isSecureLockDeviceAvailable(user);
-        if (isSecureLockDeviceAvailable != SUCCESS) {
-            return isSecureLockDeviceAvailable;
+        int secureLockDeviceAvailability = getSecureLockDeviceAvailability(user);
+        if (secureLockDeviceAvailability != SUCCESS) {
+            return secureLockDeviceAvailability;
         }
 
         if (isSecureLockDeviceEnabled()) {
@@ -486,18 +485,17 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
                     continue;
                 }
 
-                @IsSecureLockDeviceAvailableRequestStatus
-                int isSecureLockDeviceAvailableForUser = isSecureLockDeviceAvailable(user);
+                @GetSecureLockDeviceAvailabilityRequestStatus
+                int secureLockDeviceAvailability = getSecureLockDeviceAvailability(user);
 
                 if (DEBUG) {
                     Slog.d(TAG, "Notifying listener " + listener.asBinder() + " for user "
                             + user.getIdentifier() + " of secure lock device status update: "
                             + "enabled = " + isSecureLockDeviceEnabled + ", available = "
-                            + isSecureLockDeviceAvailableForUser);
+                            + secureLockDeviceAvailability);
                 }
                 try {
-                    listener.onSecureLockDeviceAvailableStatusChanged(
-                            isSecureLockDeviceAvailableForUser);
+                    listener.onSecureLockDeviceAvailableStatusChanged(secureLockDeviceAvailability);
                     listener.onSecureLockDeviceEnabledStatusChanged(isSecureLockDeviceEnabled);
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Failed to notify listener " + listener.asBinder() + " for "
@@ -536,18 +534,17 @@ public class SecureLockDeviceService extends SecureLockDeviceServiceInternal {
                     continue;
                 }
 
-                @IsSecureLockDeviceAvailableRequestStatus
-                int isSecureLockDeviceAvailableForUser = isSecureLockDeviceAvailable(
+                @GetSecureLockDeviceAvailabilityRequestStatus
+                int secureLockDeviceAvailability = getSecureLockDeviceAvailability(
                         registeringUserHandle);
 
                 if (DEBUG) {
                     Slog.d(TAG, "Notifying listener " + listener.asBinder() + " for user "
                             + userId + " of secure lock device availability update: "
-                            + isSecureLockDeviceAvailableForUser);
+                            + secureLockDeviceAvailability);
                 }
                 try {
-                    listener.onSecureLockDeviceAvailableStatusChanged(
-                            isSecureLockDeviceAvailableForUser);
+                    listener.onSecureLockDeviceAvailableStatusChanged(secureLockDeviceAvailability);
                 } catch (RemoteException e) {
                     Slog.e(TAG, "Failed to notify listener " + listener.asBinder() + " for "
                             + "user " + userId + ", RemoteException thrown: ", e);

@@ -30,7 +30,7 @@ oneway interface ISecureLockDeviceStatusListener {
     /**
      * Called when the availability of secure lock device changes for the listening user.
      * @param available An int of type
-     * {@link AuthenticationPolicyManager.IsSecureLockDeviceAvailableRequestStatus} that
+     * {@link AuthenticationPolicyManager.GetSecureLockDeviceAvailabilityRequestStatus} that
      *                  indicates if the listening user has the necessary requirements to
      *                  enable secure lock device ({@link #SUCCESS} if the user can enable
      *                  secure lock device).

@@ -260,11 +260,11 @@ public class SecureLockDeviceServiceTest {
         setupBiometrics(OTHER_USER_ID, true /* hasBiometricEnrolled */,
                 true /* isStrongBiometric */);
 
-        int isSecureLockDeviceAvailable =
-                mSecureLockDeviceService.isSecureLockDeviceAvailable(mUser);
+        int secureLockDeviceAvailability =
+                mSecureLockDeviceService.getSecureLockDeviceAvailability(mUser);
         int enableSecureLockDeviceRequestStatus = enableSecureLockDevice(mUser);
 
-        assertThat(isSecureLockDeviceAvailable).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
+        assertThat(secureLockDeviceAvailability).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
         assertThat(enableSecureLockDeviceRequestStatus).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
     }
 
@@ -273,37 +273,37 @@ public class SecureLockDeviceServiceTest {
         setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
                 false /* isStrongBiometric */);
 
-        int isSecureLockDeviceAvailable =
-                mSecureLockDeviceService.isSecureLockDeviceAvailable(mUser);
+        int secureLockDeviceAvailability =
+                mSecureLockDeviceService.getSecureLockDeviceAvailability(mUser);
         int enableSecureLockDeviceRequestStatus = enableSecureLockDevice(mUser);
 
-        assertThat(isSecureLockDeviceAvailable).isEqualTo(ERROR_INSUFFICIENT_BIOMETRICS);
+        assertThat(secureLockDeviceAvailability).isEqualTo(ERROR_INSUFFICIENT_BIOMETRICS);
         assertThat(enableSecureLockDeviceRequestStatus).isEqualTo(ERROR_INSUFFICIENT_BIOMETRICS);
     }
 
     @Test
-    public void isSecureLockDeviceAvailable_noBiometricsEnrolled() {
+    public void getSecureLockDeviceAvailability_noBiometricsEnrolled() {
         setupBiometrics(TEST_USER_ID, false /* hasBiometricEnrolled */,
                 false /* isStrongBiometric */);
 
-        int isSecureLockDeviceAvailable =
-                mSecureLockDeviceService.isSecureLockDeviceAvailable(mUser);
+        int secureLockDeviceAvailability =
+                mSecureLockDeviceService.getSecureLockDeviceAvailability(mUser);
         int enableSecureLockDeviceRequestStatus = enableSecureLockDevice(mUser);
 
-        assertThat(isSecureLockDeviceAvailable).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
+        assertThat(secureLockDeviceAvailability).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
         assertThat(enableSecureLockDeviceRequestStatus).isEqualTo(ERROR_NO_BIOMETRICS_ENROLLED);
     }
 
     @Test
-    public void isSecureLockDeviceAvailable_success() {
+    public void getSecureLockDeviceAvailability_success() {
         setupBiometrics(TEST_USER_ID, true /* hasBiometricEnrolled */,
                 true /* isStrongBiometric */);
 
-        int isSecureLockDeviceAvailable =
-                mSecureLockDeviceService.isSecureLockDeviceAvailable(mUser);
+        int secureLockDeviceAvailability =
+                mSecureLockDeviceService.getSecureLockDeviceAvailability(mUser);
         int enableSecureLockDeviceRequestStatus = enableSecureLockDevice(mUser);
 
-        assertThat(isSecureLockDeviceAvailable).isEqualTo(SUCCESS);
+        assertThat(secureLockDeviceAvailability).isEqualTo(SUCCESS);
         assertThat(enableSecureLockDeviceRequestStatus).isEqualTo(SUCCESS);
     }
 
