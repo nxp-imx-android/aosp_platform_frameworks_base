@@ -13092,19 +13092,28 @@ public class View implements Drawable.Callback, KeyEvent.Callback,
         }
     }
 
-    private void deepCopyRectsObjectRecycling(@NonNull ArrayList<Rect> dest, List<Rect> src) {
-        dest.ensureCapacity(src.size());
-        for (int i = 0; i < src.size(); i++) {
-            if (i < dest.size()) {
-                // Replace if there is an old rect to refresh
-                dest.get(i).set(src.get(i));
+    private void deepCopyRectsObjectRecycling(
+            @NonNull ArrayList<Rect> dest, @NonNull List<Rect> src) {
+        final int srcN = src.size();
+        final int destN = dest.size();
+        dest.ensureCapacity(srcN);
+
+        // Copy over the existing elements in-place.
+        for (int i = 0; i < srcN && i < destN; i++) {
+            final Rect destVal = dest.get(i);
+            final Rect srcVal = src.get(i);
+            if (srcVal == null || destVal == null) {
+                dest.set(i, Rect.copyOrNull(srcVal));
             } else {
-                // Add a rect if the list enlarged
-                dest.add(Rect.copyOrNull(src.get(i)));
+                destVal.set(srcVal);
             }
         }
-        while (dest.size() > src.size()) {
-            // Remove elements if the list shrank
+        // Add new elements if the list needs to grow.
+        for (int i = destN; i < srcN; i++) {
+            dest.add(Rect.copyOrNull(src.get(i)));
+        }
+        // Remove elements if the list needs to shrink.
+        for (int i = destN; i > srcN; i--) {
             dest.removeLast();
         }
     }
