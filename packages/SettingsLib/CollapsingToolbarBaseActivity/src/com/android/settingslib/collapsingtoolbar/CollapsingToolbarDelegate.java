@@ -179,9 +179,9 @@ public class CollapsingToolbarDelegate {
             }
         }
 
-        mPrimaryButton = view.findViewById(R.id.primary_button);
-        mSecondaryButton = view.findViewById(R.id.secondary_button);
-        mActionButton = view.findViewById(R.id.action_button);
+        initToolbarPrimaryButton(view.findViewById(R.id.primary_button));
+        initToolbarSecondaryButton(view.findViewById(R.id.secondary_button));
+        initToolbarActionButton(view.findViewById(R.id.action_button));
 
         initFloatingToolbar(context, view.findViewById(R.id.floating_toolbar));
         return view;
@@ -207,6 +207,21 @@ public class CollapsingToolbarDelegate {
             }
         }
         autoSetCollapsingToolbarLayoutScrolling(appBarLayout);
+    }
+
+    /** Initialize toolbar's primary button. */
+    public void initToolbarPrimaryButton(MaterialButton primaryButton) {
+        mPrimaryButton = primaryButton;
+    }
+
+    /** Initialize toolbar's secondary button. */
+    public void initToolbarSecondaryButton(MaterialButton secondaryButton) {
+        mSecondaryButton = secondaryButton;
+    }
+
+    /** Initialize toolbar's action button. */
+    public void initToolbarActionButton(MaterialButton actionButton) {
+        mActionButton = actionButton;
     }
 
     /**
