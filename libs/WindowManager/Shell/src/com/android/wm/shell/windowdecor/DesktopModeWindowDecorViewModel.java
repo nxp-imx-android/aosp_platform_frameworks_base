@@ -267,6 +267,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
     private final LatencyTracker mLatencyTracker;
     private final CompatUIHandler mCompatUI;
     private final UserProfileContexts mUserProfileContexts;
+    private CaptionTouchStatusListener mCaptionTouchStatusListener;
 
     public DesktopModeWindowDecorViewModel(
             Context context,
@@ -1055,6 +1056,18 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
         mDesktopTilingDecorViewModel.onDeskRemoved(deskId);
     }
 
+    /** Registers a {@link CaptionTouchStatusListener}. */
+    public void registerCaptionTouchStatusListener(CaptionTouchStatusListener l) {
+        mCaptionTouchStatusListener = l;
+    }
+
+    /** Listener for caption touch events. */
+    public interface CaptionTouchStatusListener {
+        /** Called when the caption is pressed. */
+        void onCaptionPressed();
+        /** Called when the caption is released. */
+        void onCaptionReleased();
+    }
     @VisibleForTesting
     public class DesktopModeTouchEventListener extends GestureDetector.SimpleOnGestureListener
             implements View.OnClickListener, View.OnTouchListener, View.OnLongClickListener,
@@ -1395,6 +1408,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
         private boolean handleFreeformMotionEvent(WindowDecorationWrapper decoration,
                 RunningTaskInfo taskInfo, View v, MotionEvent e) {
+            updateTouchStatus(e);
             final int id = v.getId();
             if (mGestureDetector.onTouchEvent(e)) {
                 return true;
@@ -1538,6 +1552,22 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
                     if (!mDragInterrupted) {
                         setIsDragging(decor, true /* isDragging */);
                     }
+                    break;
+                }
+            }
+        }
+
+        private void updateTouchStatus(MotionEvent e) {
+            if (mCaptionTouchStatusListener == null) {
+                return;
+            }
+            switch (e.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    mCaptionTouchStatusListener.onCaptionPressed();
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL: {
+                    mCaptionTouchStatusListener.onCaptionReleased();
                     break;
                 }
             }
