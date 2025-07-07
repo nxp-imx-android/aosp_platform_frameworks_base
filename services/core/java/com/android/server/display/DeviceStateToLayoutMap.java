@@ -71,7 +71,6 @@ class DeviceStateToLayoutMap {
 
     private final SparseArray<Layout> mLayoutMap = new SparseArray<>();
     private final DisplayIdProducer mIdProducer;
-    private final boolean mIsPortInDisplayLayoutEnabled;
 
     DeviceStateToLayoutMap(DisplayIdProducer idProducer, DisplayManagerFlags flags) {
         this(idProducer, flags, getConfigFile());
@@ -79,7 +78,6 @@ class DeviceStateToLayoutMap {
 
     DeviceStateToLayoutMap(DisplayIdProducer idProducer, DisplayManagerFlags flags,
             File configFile) {
-        mIsPortInDisplayLayoutEnabled = flags.isPortInDisplayLayoutEnabled();
         mIdProducer = idProducer;
         loadLayoutsFromConfig(configFile);
         createLayout(STATE_DEFAULT, DEFAULT_LAYOUT_NAME);
@@ -100,7 +98,6 @@ class DeviceStateToLayoutMap {
         ipw.println("-----------------------");
         ipw.increaseIndent();
 
-        ipw.println("mIsPortInDisplayLayoutEnabled=" + mIsPortInDisplayLayoutEnabled);
         ipw.println("Registered Layouts:");
         for (int i = 0; i < mLayoutMap.size(); i++) {
             ipw.println("state(" + mLayoutMap.keyAt(i) + "): " + mLayoutMap.valueAt(i));
@@ -175,7 +172,7 @@ class DeviceStateToLayoutMap {
         if (xmlAddress != null) {
             return DisplayAddress.fromPhysicalDisplayId(xmlAddress.longValue());
         }
-        if (!mIsPortInDisplayLayoutEnabled || display.getPort_optional() == null) {
+        if (display.getPort_optional() == null) {
             throw new IllegalArgumentException(
                   "Must specify a display identifier in display layout configuration: " + display);
         }
