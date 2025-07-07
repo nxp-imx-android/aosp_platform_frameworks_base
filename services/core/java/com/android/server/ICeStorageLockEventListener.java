@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 
-package android.os.storage;
-
+package com.android.server;
 
 /**
  * Callback class for receiving CE storage lock events from StorageManagerService.
- * @hide
  */
 public interface ICeStorageLockEventListener {
 

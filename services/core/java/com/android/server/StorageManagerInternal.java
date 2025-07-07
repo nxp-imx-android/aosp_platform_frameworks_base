@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package android.os.storage;
+package com.android.server;
 
 import android.annotation.FlaggedApi;
 import android.annotation.NonNull;
@@ -31,9 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Mount service local interface.
- *
- * @hide Only for use within the system server.
+ * Internal interface to StorageManagerService, only for use within the system server.
  */
 public abstract class StorageManagerInternal {
     /**
