@@ -455,4 +455,16 @@ public abstract class InputManagerInternal {
      * @param token token identifying the device to remove
      */
     public abstract void closeVirtualInputDevice(IBinder token);
+
+    /**
+     * Sets whether to show the positions of the touches on the given display, even if the
+     * global setting {@link android.provider.Settings.System#SHOW_TOUCHES} is turned off.
+     *
+     * <p>No-op if no display with the given id exists.</p>
+     *
+     * @param displayId The ID of the display on which touches should be shown or not.
+     * @param enabled Whether to show touches on the given display.
+     */
+    // TODO(b/447645639): Make this an InputManager API.
+    public abstract void setForceShowTouchesOnDisplay(int displayId, boolean enabled);
 }

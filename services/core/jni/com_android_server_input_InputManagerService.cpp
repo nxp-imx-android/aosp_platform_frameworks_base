@@ -357,7 +357,8 @@ public:
     void setTouchpadAccelerationEnabled(bool enabled);
     void setTouchpadsEnabled(bool enabled);
     void setInputDeviceEnabled(uint32_t deviceId, bool enabled);
-    void setShowTouches(bool enabled);
+    void setShowTouchesEnabled(bool enabled);
+    void setForceShowTouchesOnDisplay(ui::LogicalDisplayId displayId, bool enabled);
     void setNonInteractiveDisplays(const std::set<ui::LogicalDisplayId>& displayIds);
     void reloadCalibration();
     void reloadPointerIcons();
@@ -1697,8 +1698,13 @@ void NativeInputManager::setInputDeviceEnabled(uint32_t deviceId, bool enabled) 
     }
 }
 
-void NativeInputManager::setShowTouches(bool enabled) {
+void NativeInputManager::setShowTouchesEnabled(bool enabled) {
     mInputManager->getChoreographer().setShowTouchesEnabled(enabled);
+}
+
+void NativeInputManager::setForceShowTouchesOnDisplay(ui::LogicalDisplayId displayId,
+                                                      bool enabled) {
+    mInputManager->getChoreographer().setForceShowTouchesOnDisplay(displayId, enabled);
 }
 
 void NativeInputManager::requestPointerCapture(const sp<IBinder>& windowToken,
@@ -2666,10 +2672,17 @@ static void nativeSetTouchpadsEnabled(JNIEnv* env, jobject nativeImplObj, jboole
     getNativeInputManager(env, nativeImplObj)->setTouchpadsEnabled(enabled);
 }
 
-static void nativeSetShowTouches(JNIEnv* env, jobject nativeImplObj, jboolean enabled) {
+static void nativeSetShowTouchesEnabled(JNIEnv* env, jobject nativeImplObj, jboolean enabled) {
     NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
 
-    im->setShowTouches(enabled);
+    im->setShowTouchesEnabled(enabled);
+}
+
+static void nativeSetForceShowTouchesOnDisplay(JNIEnv* env, jobject nativeImplObj, jint displayId,
+                                               jboolean enabled) {
+    NativeInputManager* im = getNativeInputManager(env, nativeImplObj);
+
+    im->setForceShowTouchesOnDisplay(ui::LogicalDisplayId{displayId}, enabled);
 }
 
 static void nativeSetNonInteractiveDisplays(JNIEnv* env, jobject nativeImplObj,
@@ -3412,7 +3425,8 @@ static const JNINativeMethod gInputManagerMethods[] = {
         {"setTouchpadSystemGesturesEnabled", "(Z)V", (void*)nativeSetTouchpadSystemGesturesEnabled},
         {"setTouchpadAccelerationEnabled", "(Z)V", (void*)nativeSetTouchpadAccelerationEnabled},
         {"setTouchpadsEnabled", "(Z)V", (void*)nativeSetTouchpadsEnabled},
-        {"setShowTouches", "(Z)V", (void*)nativeSetShowTouches},
+        {"setShowTouchesEnabled", "(Z)V", (void*)nativeSetShowTouchesEnabled},
+        {"setForceShowTouchesOnDisplay", "(IZ)V", (void*)nativeSetForceShowTouchesOnDisplay},
         {"setNonInteractiveDisplays", "([I)V", (void*)nativeSetNonInteractiveDisplays},
         {"reloadCalibration", "()V", (void*)nativeReloadCalibration},
         {"vibrate", "(I[J[III)V", (void*)nativeVibrate},

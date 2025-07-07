@@ -4012,6 +4012,12 @@ public class InputManagerService extends IInputManager.Stub
         public void closeVirtualInputDevice(IBinder token) {
             mVirtualInputDeviceController.unregisterInputDevice(token);
         }
+
+        @Override
+        public void setForceShowTouchesOnDisplay(int displayId, boolean enabled) {
+            updateAdditionalDisplayInputProperties(displayId,
+                    properties -> properties.forceShowTouches = enabled);
+        }
     }
 
     @Override
@@ -4024,6 +4030,7 @@ public class InputManagerService extends IInputManager.Stub
 
         static final boolean DEFAULT_POINTER_ICON_VISIBLE = true;
         static final boolean DEFAULT_MOUSE_SCALING_ENABLED = true;
+        static final boolean DEFAULT_FORCE_SHOW_TOUCHES = false;
 
         /**
          * Whether to enable mouse pointer scaling on this display. Note that this only affects
@@ -4036,18 +4043,24 @@ public class InputManagerService extends IInputManager.Stub
         // Whether the pointer icon should be visible or hidden on this display.
         public boolean pointerIconVisible;
 
+        // Whether to show the positions of the touches on the given display, despite the global
+        // setting for "show touches" being turned off.
+        public boolean forceShowTouches;
+
         AdditionalDisplayInputProperties() {
             reset();
         }
 
         public boolean allDefaults() {
             return mouseScalingEnabled == DEFAULT_MOUSE_SCALING_ENABLED
-                    && pointerIconVisible == DEFAULT_POINTER_ICON_VISIBLE;
+                    && pointerIconVisible == DEFAULT_POINTER_ICON_VISIBLE
+                    && forceShowTouches == DEFAULT_FORCE_SHOW_TOUCHES;
         }
 
         public void reset() {
             mouseScalingEnabled = DEFAULT_MOUSE_SCALING_ENABLED;
             pointerIconVisible = DEFAULT_POINTER_ICON_VISIBLE;
+            forceShowTouches = DEFAULT_FORCE_SHOW_TOUCHES;
         }
     }
 
@@ -4062,6 +4075,7 @@ public class InputManagerService extends IInputManager.Stub
             }
             final boolean oldPointerIconVisible = properties.pointerIconVisible;
             final boolean oldMouseScalingEnabled = properties.mouseScalingEnabled;
+            final boolean oldShowTouchesEnabled = properties.forceShowTouches;
             updater.accept(properties);
             if (oldPointerIconVisible != properties.pointerIconVisible) {
                 mNative.setPointerIconVisibility(displayId, properties.pointerIconVisible);
@@ -4069,6 +4083,9 @@ public class InputManagerService extends IInputManager.Stub
             if (oldMouseScalingEnabled != properties.mouseScalingEnabled) {
                 mNative.setMouseScalingEnabled(displayId,
                         properties.mouseScalingEnabled);
+            }
+            if (oldShowTouchesEnabled != properties.forceShowTouches) {
+                mNative.setForceShowTouchesOnDisplay(displayId, properties.forceShowTouches);
             }
             if (properties.allDefaults()) {
                 mAdditionalDisplayInputProperties.remove(displayId);
