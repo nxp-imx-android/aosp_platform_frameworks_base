@@ -17,6 +17,7 @@
 package android.app;
 
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
+import static android.app.userrecovery.flags.Flags.enableUserRecoveryManager;
 import static android.hardware.serial.flags.Flags.enableSerialApi;
 import static android.provider.flags.Flags.newStoragePublicApi;
 import static android.server.Flags.removeGameManagerServiceFromWear;
@@ -64,6 +65,8 @@ import android.app.usage.IStorageStatsManager;
 import android.app.usage.IUsageStatsManager;
 import android.app.usage.StorageStatsManager;
 import android.app.usage.UsageStatsManager;
+import android.app.userrecovery.IUserRecoveryManager;
+import android.app.userrecovery.UserRecoveryManager;
 import android.app.wallpapereffectsgeneration.IWallpaperEffectsGenerationManager;
 import android.app.wallpapereffectsgeneration.WallpaperEffectsGenerationManager;
 import android.app.wearable.IWearableSensingManager;
@@ -972,6 +975,22 @@ public final class SystemServiceRegistry {
                         }
                     });
         }
+
+      if (enableUserRecoveryManager()) {
+            registerService(Context.USER_RECOVERY_SERVICE, UserRecoveryManager.class,
+                    new CachedServiceFetcher<>() {
+                        @Override
+                        public UserRecoveryManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                                    IUserRecoveryManager service;
+                            service = IUserRecoveryManager.Stub.asInterface(
+                                    ServiceManager.getServiceOrThrow(
+                                        Context.USER_RECOVERY_SERVICE));
+                            return new UserRecoveryManager(service, ctx.getOuterContext());
+                        }
+                    });
+        }
+
 
         registerService(Context.VIRTUAL_DEVICE_SERVICE, VirtualDeviceManager.class,
                 new CachedServiceFetcher<VirtualDeviceManager>() {
