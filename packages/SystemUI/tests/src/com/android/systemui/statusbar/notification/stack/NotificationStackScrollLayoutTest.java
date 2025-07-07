@@ -76,7 +76,6 @@ import com.android.systemui.flags.FakeFeatureFlags;
 import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.Flags;
 import com.android.systemui.kosmos.KosmosJavaAdapter;
-import com.android.systemui.qs.flags.NewQsUI;
 import com.android.systemui.qs.flags.QSComposeFragment;
 import com.android.systemui.res.R;
 import com.android.systemui.shade.QSHeaderBoundsProvider;
@@ -88,7 +87,6 @@ import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.notification.collection.EntryAdapter;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManager;
-import com.android.systemui.statusbar.notification.collection.render.GroupExpansionManagerImpl;
 import com.android.systemui.statusbar.notification.collection.render.GroupMembershipManager;
 import com.android.systemui.statusbar.notification.data.repository.HeadsUpRepository;
 import com.android.systemui.statusbar.notification.emptyshade.ui.view.EmptyShadeView;
@@ -748,7 +746,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags({QSComposeFragment.FLAG_NAME, NewQsUI.FLAG_NAME})
+    @DisableFlags(QSComposeFragment.FLAG_NAME)
     @DisableSceneContainer
     public void testInsideQSHeader_noOffset() {
         ViewGroup qsHeader = mock(ViewGroup.class);
@@ -766,7 +764,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     @Test
-    @DisableFlags({QSComposeFragment.FLAG_NAME, NewQsUI.FLAG_NAME})
+    @DisableFlags(QSComposeFragment.FLAG_NAME)
     @DisableSceneContainer
     public void testInsideQSHeader_Offset() {
         ViewGroup qsHeader = mock(ViewGroup.class);
@@ -787,7 +785,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({QSComposeFragment.FLAG_NAME, NewQsUI.FLAG_NAME})
+    @EnableFlags(QSComposeFragment.FLAG_NAME)
     @DisableSceneContainer
     public void testInsideQSHeader_noOffset_qsCompose() {
         ViewGroup qsHeader = mock(ViewGroup.class);
@@ -814,7 +812,7 @@ public class NotificationStackScrollLayoutTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags({QSComposeFragment.FLAG_NAME, NewQsUI.FLAG_NAME})
+    @EnableFlags(QSComposeFragment.FLAG_NAME)
     @DisableSceneContainer
     public void testInsideQSHeader_Offset_qsCompose() {
         ViewGroup qsHeader = mock(ViewGroup.class);

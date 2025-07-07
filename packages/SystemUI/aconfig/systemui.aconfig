@@ -940,14 +940,6 @@ flag {
 }
 
 flag {
-    name: "qs_ui_refactor"
-    namespace: "systemui"
-    description: "Enables the new QS UI pipeline that follows recommended architecture and uses"
-      " Compose for the UI."
-    bug: "325099249"
-}
-
-flag {
     name: "qs_ui_refactor_compose_fragment"
     namespace: "systemui"
     description: "Uses a different QS fragment in NPVC that uses the new compose UI and recommended architecture. This flag depends on qs_ui_refactor flag."
