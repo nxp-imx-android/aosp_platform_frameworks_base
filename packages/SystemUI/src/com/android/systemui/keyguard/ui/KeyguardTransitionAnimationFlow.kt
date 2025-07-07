@@ -17,7 +17,6 @@ package com.android.systemui.keyguard.ui
 
 import android.view.animation.Interpolator
 import com.android.app.animation.Interpolators.LINEAR
-import com.android.keyguard.logging.KeyguardTransitionAnimationLogger
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
@@ -51,7 +50,6 @@ class KeyguardTransitionAnimationFlow
 @Inject
 constructor(
     private val transitionInteractor: KeyguardTransitionInteractor,
-    private val logger: KeyguardTransitionAnimationLogger,
     private val shadeInteractor: Lazy<ShadeInteractor>,
 ) {
     /** Invoke once per transition between FROM->TO states to get access to a shared flow. */
@@ -180,7 +178,6 @@ constructor(
 
             val start = (startTime / transitionDuration).toFloat()
             val chunks = (transitionDuration / duration).toFloat()
-            logger.logCreate(name, start)
 
             fun stepToValue(step: TransitionStep): Float? {
                 val value = (step.value - start) * chunks
@@ -229,18 +226,17 @@ constructor(
                         null
                     } else {
                         StateToValue(
-                                from = step.from,
-                                to = step.to,
-                                transitionState = step.transitionState,
-                                value =
-                                    when (step.transitionState) {
-                                        STARTED -> stepToValue(step)
-                                        RUNNING -> stepToValue(step)
-                                        CANCELED -> onCancel?.invoke()
-                                        FINISHED -> onFinish?.invoke()
-                                    },
-                            )
-                            .also { logger.logTransitionStep(name, step, it.value) }
+                            from = step.from,
+                            to = step.to,
+                            transitionState = step.transitionState,
+                            value =
+                                when (step.transitionState) {
+                                    STARTED -> stepToValue(step)
+                                    RUNNING -> stepToValue(step)
+                                    CANCELED -> onCancel?.invoke()
+                                    FINISHED -> onFinish?.invoke()
+                                },
+                        )
                     }
                 }
                 .distinctUntilChanged()
