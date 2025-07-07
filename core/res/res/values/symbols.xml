@@ -6289,6 +6289,8 @@
   <java-symbol type="string" name="proximity_provider_service_package_name" />
   <java-symbol type="string" name="proximity_provider_service_class_name" />
 
+  <java-symbol type="string" name="exit_toast_on_long_press_escape" />
+
   <!-- For App Functions -->
   <java-symbol type="array" name="config_appFunctionDeviceSettingsPackages" />
 </resources>
