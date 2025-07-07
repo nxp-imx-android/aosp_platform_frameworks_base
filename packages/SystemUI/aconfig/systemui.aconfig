@@ -1923,6 +1923,13 @@ flag {
 }
 
 flag {
+    name: "desktop_screen_capture_app_window"
+    namespace: "systemui"
+    description: "Enables the app window region option for desktop screen capture."
+    bug: "422833825"
+}
+
+flag {
     name: "new_screen_record_toolbar"
     namespace: "systemui"
     description: "Enables the new screen record flow."
