@@ -20,8 +20,10 @@ import static android.app.admin.DevicePolicyResources.Strings.Settings.CONTROLLE
 
 import static com.android.settingslib.RestrictedLockUtils.EnforcedAdmin;
 
+import android.app.admin.DevicePolicyIdentifiers;
 import android.app.admin.DevicePolicyManager;
 import android.app.admin.EnforcingAdmin;
+import android.app.admin.PolicyEnforcementInfo;
 import android.app.admin.UnknownAuthority;
 import android.app.admin.flags.Flags;
 import android.content.Context;
@@ -47,6 +49,56 @@ import java.util.Objects;
  * by device admins via user restrictions.
  */
 public class RestrictedPreferenceHelper {
+
+    /**
+     * Represents a restriction that a RestrictedPreference tracks. A restriction can either
+     * be a user restriction represented by a constant from {@link android.os.UserManager} or
+     * a policy represented by a constant from {@link DevicePolicyIdentifiers}.
+     */
+    private static class Restriction {
+        private final String mRestriction;
+        private final boolean mIsUserRestriction;
+
+        private Restriction(String restriction, boolean isUserRestriction) {
+            mRestriction = restriction;
+            mIsUserRestriction = isUserRestriction;
+        }
+
+        /**
+         * Creates a user restriction. {@code userRestriction} must be a user restriction
+         * constant from {@link android.os.UserManager}.
+         */
+        static Restriction ofUserRestriction(@NonNull String userRestriction) {
+            return new Restriction(userRestriction, /* isUserRestriction= */true);
+        }
+
+        /**
+         * Creates a restriction that represents an admin policy. {@code policyIdentifier} must be a
+         * constant from {@link DevicePolicyIdentifiers}.
+         */
+        static Restriction ofPolicyIdentifier(@NonNull String policyIdentifier) {
+            return new Restriction(policyIdentifier, /* isUserRestriction= */false);
+        }
+
+        String getRestriction() {
+            return mRestriction;
+        }
+
+        boolean isUserRestriction() {
+            return mIsUserRestriction;
+        }
+
+        /**
+         * Returns the device policy identifier of the restriction.
+         */
+        String getDevicePolicyIdentifier() {
+            if (mIsUserRestriction) {
+                return DevicePolicyIdentifiers.getIdentifierForUserRestriction(mRestriction);
+            }
+            return mRestriction;
+        }
+    }
+
     private static final String TAG = "RestrictedPreferenceHelper";
 
     private static final String REASON_PHONE_STATE = "phone_state";
@@ -71,7 +123,7 @@ public class RestrictedPreferenceHelper {
     // TODO(b/414733570): Remove when feature is enabled and all calls have moved to use
     //  mEnforcingAdmin.
     EnforcedAdmin mEnforcedAdmin;
-    private String mAttrUserRestriction = null;
+    private Restriction mRestriction = null;
     private boolean mDisabledSummary = false;
 
     private boolean mDisabledByEcm;
@@ -97,12 +149,11 @@ public class RestrictedPreferenceHelper {
                     data = userRestriction.string;
                 }
             }
-            mAttrUserRestriction = data == null ? null : data.toString();
-            // If the system has set the user restriction, then we shouldn't add the padlock.
-            if (RestrictedLockUtilsInternal.hasBaseUserRestriction(mContext, mAttrUserRestriction,
-                    UserHandle.myUserId())) {
-                mAttrUserRestriction = null;
+            if (data == null) {
                 return;
+            }
+            if (!hasBaseUserRestriction(data.toString())) {
+                mRestriction = Restriction.ofUserRestriction(data.toString());
             }
 
             final TypedValue useAdminDisabledSummary =
@@ -158,11 +209,14 @@ public class RestrictedPreferenceHelper {
 
     public boolean isRestrictionEnforcedByAdvancedProtection() {
         if (Flags.policyTransparencyRefactorEnabled()) {
+            if (mRestriction == null) {
+                return false;
+            }
             return mEnforcingAdmin != null
                     && RestrictedLockUtilsInternal.isPolicyEnforcedByAdvancedProtection(mContext,
                     // When the feature is enabled and we're using mEnforcingAdmin, the user
-                    // restriction is always stored on mAttrUserRestriction.
-                    mAttrUserRestriction, UserHandle.myUserId());
+                    // restriction is always stored on mRestriction.
+                    mRestriction.getRestriction(), UserHandle.myUserId());
         } else {
             return mEnforcedAdmin != null
                     && RestrictedLockUtilsInternal.isPolicyEnforcedByAdvancedProtection(mContext,
@@ -171,14 +225,43 @@ public class RestrictedPreferenceHelper {
     }
 
     /**
-     * Configures the user restriction that this preference will track. This is equivalent to
-     * specifying {@link R.styleable#RestrictedPreference_userRestriction} in XML and allows
-     * configuring user restriction at runtime.
+     * Configures the user restriction that this preference will track and updates the disabled
+     * state. This is equivalent to specifying
+     * {@link R.styleable#RestrictedPreference_userRestriction} in XML and allows
+     * configuring user restriction at runtime. Note that this will overwrite the policy value if
+     * it's set previously set by {@link #setAdminPolicyRestriction(String)}.
      */
     public void setUserRestriction(@Nullable String userRestriction) {
-        mAttrUserRestriction = userRestriction == null ||
-                RestrictedLockUtilsInternal.hasBaseUserRestriction(mContext, userRestriction,
-                        UserHandle.myUserId()) ? null : userRestriction;
+        if (Flags.policyTransparencyRefactorEnabled()) {
+            if (userRestriction == null) {
+                return;
+            }
+            // We don't need to check for base restriction here because {@link
+            // checkAdminRestrictionEnforced} method considers it.
+            mRestriction = Restriction.ofUserRestriction(userRestriction);
+            setDisabledByEnforcingAdmin(checkAdminRestrictionEnforced());
+            return;
+        }
+        mRestriction =
+                userRestriction == null || RestrictedLockUtilsInternal.hasBaseUserRestriction(
+                        mContext, userRestriction, UserHandle.myUserId()) ? null
+                        : Restriction.ofUserRestriction(userRestriction);
+        setDisabledByAdmin(checkRestrictionEnforced());
+    }
+
+    /**
+     * Configures the admin policy that this preference will track and updates the disabled state.
+     * This option is for setting the policy identifier. For user restrictions, see
+     * {@link #setUserRestriction(String)}. Note that setting this value will overwrite the user
+     * restriction value that was previously set.
+     */
+    public void setAdminPolicyRestriction(@NonNull String adminPolicyIdentifier) {
+        Objects.requireNonNull(adminPolicyIdentifier);
+        mRestriction = Restriction.ofPolicyIdentifier(adminPolicyIdentifier);
+        if (Flags.policyTransparencyRefactorEnabled()) {
+            setDisabledByEnforcingAdmin(checkAdminRestrictionEnforced());
+            return;
+        }
         setDisabledByAdmin(checkRestrictionEnforced());
     }
 
@@ -194,9 +277,9 @@ public class RestrictedPreferenceHelper {
     @SuppressWarnings("NewApi")
     public boolean performClick() {
         if (mDisabledByAdmin) {
-            if (Flags.policyTransparencyRefactorEnabled()) {
+            if (Flags.policyTransparencyRefactorEnabled() && mRestriction != null) {
                 RestrictedLockUtils.sendShowAdminSupportDetailsIntent(
-                        mContext, mEnforcingAdmin, mAttrUserRestriction);
+                        mContext, mEnforcingAdmin, mRestriction.getRestriction());
             } else {
                 RestrictedLockUtils.sendShowAdminSupportDetailsIntent(mContext, mEnforcedAdmin);
             }
@@ -220,21 +303,42 @@ public class RestrictedPreferenceHelper {
      * Disable / enable if we have been passed the restriction in the xml.
      */
     public void onAttachedToHierarchy() {
-        if (mAttrUserRestriction != null) {
-            checkRestrictionAndSetDisabled(mAttrUserRestriction, UserHandle.myUserId());
+        // mRestriction will be set as a user restriction if it's passed in xml.
+        if (mRestriction != null && mRestriction.isUserRestriction()) {
+            checkRestrictionAndSetDisabled(mRestriction.getRestriction(), UserHandle.myUserId());
         }
     }
 
     /**
-     * Set the user restriction that is used to disable this preference.
+     * Checks if the user restriction is enforced by the admin and updates the disabled state.
      *
      * @param userRestriction constant from {@link android.os.UserManager}
      * @param userId user to check the restriction for.
      */
-    public void checkRestrictionAndSetDisabled(String userRestriction, int userId) {
+    public void checkRestrictionAndSetDisabled(@NonNull String userRestriction, int userId) {
+        Objects.requireNonNull(userRestriction);
+        if (Flags.policyTransparencyRefactorEnabled()) {
+            setDisabledByEnforcingAdmin(
+                    checkAdminRestrictionEnforced(Restriction.ofUserRestriction(userRestriction),
+                            userId));
+            return;
+        }
         EnforcedAdmin admin = RestrictedLockUtilsInternal.checkIfRestrictionEnforced(mContext,
                 userRestriction, userId);
         setDisabledByAdmin(admin);
+    }
+
+    /**
+     * Checks if the admin policy is enforced by the admin and updates the disabled state.
+     *
+     * @param policyIdentifier constant from {@link DevicePolicyIdentifiers}
+     * @param userId user to check the policy for.
+     */
+    public void checkPolicyAndSetDisabled(@NonNull String policyIdentifier, int userId) {
+        Objects.requireNonNull(policyIdentifier);
+        setDisabledByEnforcingAdmin(
+                checkAdminRestrictionEnforced(Restriction.ofPolicyIdentifier(policyIdentifier),
+                        userId));
     }
 
     /**
@@ -272,11 +376,50 @@ public class RestrictedPreferenceHelper {
      * @return EnforcedAdmin if we have been passed the restriction in the xml.
      */
     public EnforcedAdmin checkRestrictionEnforced() {
-        if (mAttrUserRestriction == null) {
+        if (mRestriction == null) {
             return null;
         }
+        if (Flags.policyTransparencyRefactorEnabled()) {
+            // Use new DPM API if the flag is enabled.
+            EnforcingAdmin enforcingAdmin = checkAdminRestrictionEnforced();
+            if (enforcingAdmin == null) {
+                return null;
+            }
+            return new EnforcedAdmin(enforcingAdmin.getComponentName(),
+                    mRestriction.getRestriction(), enforcingAdmin.getUserHandle());
+        }
         return RestrictedLockUtilsInternal.checkIfRestrictionEnforced(mContext,
-                mAttrUserRestriction, UserHandle.myUserId());
+                mRestriction.getRestriction(), UserHandle.myUserId());
+    }
+
+    /**
+     * Checks if the restriction represented by this preference is enforced by an admin on the
+     * current running user and returns that admin. If not, returns null. The restriction should be
+     * set by {@link #setUserRestriction(String)} or {@link #setAdminPolicyRestriction(String)} or
+     * through XML attribute {@link R.styleable#RestrictedPreference_userRestriction} before calling
+     * this.
+     */
+    @Nullable
+    public EnforcingAdmin checkAdminRestrictionEnforced() {
+        if (mRestriction == null) {
+            return null;
+        }
+        return checkAdminRestrictionEnforced(mRestriction, UserHandle.myUserId());
+    }
+
+    private EnforcingAdmin checkAdminRestrictionEnforced(Restriction restriction, int userId) {
+        final DevicePolicyManager dpm = mContext.getSystemService(DevicePolicyManager.class);
+        if (dpm == null) {
+            return null;
+        }
+        PolicyEnforcementInfo policyEnforcementInfo = dpm.getEnforcingAdminsForPolicy(
+                restriction.getDevicePolicyIdentifier(),
+                userId);
+        // Don't set it disabled by admin if only system is enforcing a restriction.
+        if (policyEnforcementInfo.isOnlyEnforcedBySystem()) {
+            return null;
+        }
+        return policyEnforcementInfo.getMostImportantEnforcingAdmin();
     }
 
     /**
@@ -292,8 +435,8 @@ public class RestrictedPreferenceHelper {
             EnforcingAdmin enforcingAdmin = getEnforcingAdminFromEnforcedAdmin(admin);
             // Ensure that mAttrUserRestriction is set to the value passed in admin if it's unset.
             // If it's already set, we don't need to update the value.
-            if (admin != null && mAttrUserRestriction == null) {
-                mAttrUserRestriction = admin.enforcedRestriction;
+            if (admin != null && mRestriction == null) {
+                mRestriction = Restriction.ofUserRestriction(admin.enforcedRestriction);
             }
             return setDisabledByEnforcingAdmin(enforcingAdmin);
         }
@@ -332,8 +475,7 @@ public class RestrictedPreferenceHelper {
      *
      * @param admin details of the admin who enforced the restriction. If it is {@code null}, then
      *              this preference will be enabled. Otherwise, it will be disabled. Only gray out
-     *              the
-     *              preference which is not {@link RestrictedTopLevelPreference}.
+     *              the preference which is not {@link RestrictedTopLevelPreference}.
      * @return true if the disabled state was changed.
      */
     public boolean setDisabledByEnforcingAdmin(@Nullable EnforcingAdmin admin) {
@@ -441,5 +583,20 @@ public class RestrictedPreferenceHelper {
                 UnknownAuthority.UNKNOWN_AUTHORITY,
                 admin.user == null ? UserHandle.of(UserHandle.myUserId()) : admin.user,
                 admin.component);
+    }
+
+    private boolean hasBaseUserRestriction(String userRestriction) {
+        if (Flags.policyTransparencyRefactorEnabled()) {
+            DevicePolicyManager dpm = mContext.getSystemService(DevicePolicyManager.class);
+            if (dpm == null) {
+                return false;
+            }
+            PolicyEnforcementInfo policyEnforcementInfo = dpm.getEnforcingAdminsForPolicy(
+                    DevicePolicyIdentifiers.getIdentifierForUserRestriction(userRestriction),
+                            UserHandle.myUserId());
+            return policyEnforcementInfo.isOnlyEnforcedBySystem();
+        }
+        return RestrictedLockUtilsInternal.hasBaseUserRestriction(mContext, userRestriction,
+                UserHandle.myUserId());
     }
 }

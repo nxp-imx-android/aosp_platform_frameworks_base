@@ -55,6 +55,7 @@ android_robolectric_test {
         "androidx.fragment_fragment",
         "androidx.test.core",
         "androidx.test.ext.junit",
+        "device_policy_aconfig_flags_lib",
         "flag-junit",
         "kotlinx_coroutines_test",
         "mockito-robolectric-prebuilt", // mockito deps order matters
