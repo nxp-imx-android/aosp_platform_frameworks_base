@@ -4331,7 +4331,7 @@ package android.content.pm {
     method @FlaggedApi("android.content.pm.verification_service") @Nullable @RequiresPermission(android.Manifest.permission.SET_DEVELOPER_VERIFICATION_USER_RESPONSE) public android.content.pm.PackageInstaller.DeveloperVerificationUserConfirmationInfo getDeveloperVerificationUserConfirmationInfo(int);
     method @NonNull public android.content.pm.PackageInstaller.InstallInfo readInstallInfo(@NonNull java.io.File, int) throws android.content.pm.PackageInstaller.PackageParsingException;
     method @FlaggedApi("android.content.pm.read_install_info") @NonNull public android.content.pm.PackageInstaller.InstallInfo readInstallInfo(@NonNull android.os.ParcelFileDescriptor, @Nullable String, int) throws android.content.pm.PackageInstaller.PackageParsingException;
-    method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(value=android.Manifest.permission.DEVELOPER_VERIFICATION_AGENT, conditional=true) public final boolean setDeveloperVerificationPolicy(int);
+    method @FlaggedApi("android.content.pm.verification_service") public final boolean setDeveloperVerificationPolicy(int);
     method @FlaggedApi("android.content.pm.verification_service") @RequiresPermission(android.Manifest.permission.SET_DEVELOPER_VERIFICATION_USER_RESPONSE) public void setDeveloperVerificationUserResponse(int, int);
     method @RequiresPermission(android.Manifest.permission.INSTALL_PACKAGES) public void setPermissionsResult(int, boolean);
     field @FlaggedApi("android.content.pm.verification_service") public static final String ACTION_CONFIRM_DEVELOPER_VERIFICATION = "android.content.pm.action.CONFIRM_DEVELOPER_VERIFICATION";
