@@ -5059,7 +5059,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         deferWindowLayout();
         try {
             if (values != null) {
-                changes = updateGlobalConfigurationLocked(values, initLocale, persistent, userId);
+                changes = updateGlobalConfigurationWithTransition(
+                        values, initLocale, persistent, userId);
                 mTmpUpdateConfigurationResult.changes = changes;
             }
 
@@ -5071,6 +5072,38 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
         }
         mTmpUpdateConfigurationResult.activityRelaunched = !kept;
         return kept;
+    }
+
+    /** This is mainly to handle changes in locale, font scale/weight, uiMode, asset paths. */
+    @ActivityInfo.Config
+    private int updateGlobalConfigurationWithTransition(@NonNull Configuration values,
+            boolean initLocale, boolean persistent, @UserIdInt int userId) {
+        final int changes = getGlobalConfiguration().diffPublicOnly(values);
+        if (changes == 0) {
+            return 0;
+        }
+        ActionChain chain = null;
+        final TransitionController tc = mRootWindowContainer.mTransitionController;
+        if (tc.isShellTransitionsEnabled()) {
+            chain = mChainTracker.startTransit("updateGlobalConfig");
+            Transition transition = chain.getTransition();
+            if (transition == null || !transition.isCollecting()) {
+                transition = tc.createTransition(TRANSIT_CHANGE);
+                chain.attachTransition(tc.requestStartTransition(transition, null /* startTask */,
+                        null /* remoteTransition */, null /* displayChange */));
+            }
+            for (int i = mRootWindowContainer.getChildCount() - 1; i >= 0; i--) {
+                final DisplayContent dc = mRootWindowContainer.getChildAt(i);
+                dc.collectDisplayChange(transition);
+                transition.setKnownConfigChanges(dc, changes);
+            }
+            startPowerMode(POWER_MODE_REASON_CHANGE_DISPLAY);
+        }
+        updateGlobalConfigurationLocked(values, initLocale, persistent, userId);
+        if (chain != null) {
+            mChainTracker.endPartial();
+        }
+        return changes;
     }
 
     /**
