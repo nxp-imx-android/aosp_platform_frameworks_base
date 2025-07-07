@@ -35,6 +35,7 @@ public final class AppFunctionAgentAllowlistStorage {
     private static final String TAG = "AppFunctionAgentAllowlistStorage";
 
     @NonNull private final AtomicFile mAtomicFile;
+    @NonNull private final Object mAllowlistStorageLock = new Object();
 
     /**
      * Creates an instance that manages the allowlist at the specified file path.
@@ -57,19 +58,21 @@ public final class AppFunctionAgentAllowlistStorage {
     @WorkerThread
     @Nullable
     public List<SignedPackage> readPreviousValidAllowlist() {
-        if (!mAtomicFile.exists()) {
-            Slog.d(TAG, "Allowlist file does not exist.");
-            return null;
-        }
+        synchronized (mAllowlistStorageLock) {
+            if (!mAtomicFile.exists()) {
+                Slog.d(TAG, "Allowlist file does not exist.");
+                return null;
+            }
 
-        try {
-            byte[] data = mAtomicFile.readFully();
-            String allowlistString = new String(data, StandardCharsets.UTF_8);
-            return SignedPackageParser.parseList(allowlistString);
-        } catch (Exception e) {
-            Slog.e(TAG, "Error reading or parsing allowlist file", e);
-            mAtomicFile.delete();
-            return null;
+            try {
+                byte[] data = mAtomicFile.readFully();
+                String allowlistString = new String(data, StandardCharsets.UTF_8);
+                return SignedPackageParser.parseList(allowlistString);
+            } catch (Exception e) {
+                Slog.e(TAG, "Error reading or parsing allowlist file", e);
+                mAtomicFile.delete();
+                return null;
+            }
         }
     }
 
@@ -82,15 +85,17 @@ public final class AppFunctionAgentAllowlistStorage {
      */
     @WorkerThread
     public void writeCurrentAllowlist(@NonNull String allowlistString) {
-        FileOutputStream fos = null;
-        try {
-            fos = mAtomicFile.startWrite();
-            fos.write(allowlistString.getBytes(StandardCharsets.UTF_8));
-            mAtomicFile.finishWrite(fos);
-        } catch (IOException e) {
-            Slog.e(TAG, "Error writing allowlist file", e);
-            if (fos != null) {
-                mAtomicFile.failWrite(fos);
+        synchronized (mAllowlistStorageLock) {
+            FileOutputStream fos = null;
+            try {
+                fos = mAtomicFile.startWrite();
+                fos.write(allowlistString.getBytes(StandardCharsets.UTF_8));
+                mAtomicFile.finishWrite(fos);
+            } catch (IOException e) {
+                Slog.e(TAG, "Error writing allowlist file", e);
+                if (fos != null) {
+                    mAtomicFile.failWrite(fos);
+                }
             }
         }
     }
