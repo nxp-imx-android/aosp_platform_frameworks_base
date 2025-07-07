@@ -499,7 +499,7 @@ public class AuthContainerView extends LinearLayout
             return;
         }
 
-        if (Flags.bpFallbackOptions()) {
+        if (Flags.bpFallbackOptions() || Flags.bpInitializeComposeWatch()) {
             ComposeInitializer.INSTANCE.onAttachedToWindow(this);
         }
 
@@ -574,7 +574,7 @@ public class AuthContainerView extends LinearLayout
             findOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(mBackCallback);
         }
         super.onDetachedFromWindow();
-        if (Flags.bpFallbackOptions()) {
+        if (Flags.bpFallbackOptions() || Flags.bpInitializeComposeWatch()) {
             ComposeInitializer.INSTANCE.onDetachedFromWindow(this);
         }
         mWakefulnessLifecycle.removeObserver(this);

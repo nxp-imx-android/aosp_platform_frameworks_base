@@ -100,3 +100,13 @@ flag {
   description: "This flag is for the integration of Identity Check with Watch"
   bug: "397954948"
 }
+
+flag {
+  name: "bp_initialize_compose_watch"
+  namespace: "wear_frameworks"
+  description: "Initialize lifecycle to enable compose to run outside activities"
+  bug: "414859063"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
