@@ -50,7 +50,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class UnlockKeyguardToSplitScreen(override val flicker: LegacyFlickerTest) :
+class UnlockKeyguardToSplitScreenTest(override val flicker: LegacyFlickerTest) :
     UnlockKeyguardToSplitScreenBenchmark(flicker), ICommonAssertions {
     /** {@inheritDoc} */
     override val transition: FlickerBuilder.() -> Unit
