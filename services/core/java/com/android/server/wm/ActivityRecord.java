@@ -3590,7 +3590,8 @@ final class ActivityRecord extends WindowToken {
         }
 
         final Task rootTask = getRootTask();
-        final boolean mayAdjustTop = (isState(RESUMED) || rootTask.getTopResumedActivity() == null)
+        final boolean mayAdjustTop = !Flags.polishCloseWallpaperIncludesOpenChange()
+                && (isState(RESUMED) || rootTask.getTopResumedActivity() == null)
                 && rootTask.isFocusedRootTaskOnDisplay()
                 // Do not adjust focus task because the task will be reused to launch new activity.
                 && !task.isClearingToReuseTask();
