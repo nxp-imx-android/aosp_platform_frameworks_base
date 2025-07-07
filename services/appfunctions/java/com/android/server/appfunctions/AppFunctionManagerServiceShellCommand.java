@@ -110,6 +110,7 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
         pw.println();
 
         if (accessCheckFlagsEnabled()) {
+            // grant-app-function-access
             pw.println(
                     "  grant-app-function-access --agent-package <AGENT_PACKAGE_NAME> "
                             + "--target-package <TARGET_PACKAGE_NAME> [--agent-user <USER_ID>] "
@@ -125,6 +126,8 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                     "    --target-user <USER_ID> (optional): The user ID for the target package. "
                             + "Defaults to the current user.");
             pw.println();
+
+            // revoke-app-function-access
             pw.println(
                     "  revoke-app-function-access --agent-package <AGENT_PACKAGE_NAME> "
                             + "--target-package <TARGET_PACKAGE_NAME> [--agent-user <USER_ID>] "
@@ -139,6 +142,24 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                             + "Defaults to the current user.");
             pw.println(
                     "    --target-user <USER_ID> (optional): The user ID for the target package. "
+                            + "Defaults to the current user.");
+            pw.println();
+
+            // list-valid-agents
+            pw.println(
+                    "  list-valid-agents [--user <USER_ID>]");
+            pw.println("    Lists all valid agents.");
+            pw.println(
+                    "    --user <USER_ID> (optional): The user ID to list valid agents for. "
+                            + "Defaults to the current user.");
+            pw.println();
+
+            // list-valid-targets
+            pw.println(
+                    "  list-valid-targets [--user <USER_ID>]");
+            pw.println("    Lists all valid targets.");
+            pw.println(
+                    "    --user <USER_ID> (optional): The user ID to list valid targets for. "
                             + "Defaults to the current user.");
             pw.println();
         }
@@ -168,6 +189,16 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
                         return -1;
                     }
                     return runRevokeAppFunctionAccess();
+                case "list-valid-agents":
+                    if (!accessCheckFlagsEnabled()) {
+                        return -1;
+                    }
+                    return listValidAgents();
+                case "list-valid-targets":
+                    if (!accessCheckFlagsEnabled()) {
+                        return -1;
+                    }
+                    return listValidTargets();
                 default:
                     return handleDefaultCommands(cmd);
             }
@@ -508,6 +539,44 @@ public class AppFunctionManagerServiceShellCommand extends ShellCommand {
             return -1;
         }
         pw.println("Access revoked successfully.");
+        return 0;
+    }
+
+    private int listValidAgents() throws Exception {
+        final PrintWriter pw = getOutPrintWriter();
+        int userId = ActivityManager.getCurrentUser();
+        String opt;
+
+        while ((opt = getNextOption()) != null) {
+            if (opt.equals("--user")) {
+                userId = UserHandle.parseUserArg(getNextArgRequired());
+            } else {
+                pw.println("Unknown option: " + opt);
+                return -1;
+            }
+        }
+
+        final List<String> validAgents = mService.getValidAgents(userId);
+        pw.println("Valid agents: " + validAgents.toString());
+        return 0;
+    }
+
+    private int listValidTargets() throws Exception {
+        final PrintWriter pw = getOutPrintWriter();
+        int userId = ActivityManager.getCurrentUser();
+        String opt;
+
+        while ((opt = getNextOption()) != null) {
+            if (opt.equals("--user")) {
+                userId = UserHandle.parseUserArg(getNextArgRequired());
+            } else {
+                pw.println("Unknown option: " + opt);
+                return -1;
+            }
+        }
+
+        final List<String> validTargets = mService.getValidTargets(userId);
+        pw.println("Valid targets: " + validTargets.toString());
         return 0;
     }
 
