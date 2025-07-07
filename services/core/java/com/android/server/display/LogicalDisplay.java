@@ -252,7 +252,9 @@ final class LogicalDisplay {
         mIsAnisotropyCorrectionEnabled = isAnisotropyCorrectionEnabled;
         mAlwaysRotateDisplayDeviceEnabled = isAlwaysRotateDisplayDeviceEnabled;
         mSyncedResolutionSwitchEnabled = isSyncedResolutionSwitchEnabled;
-        mCanHostTasks = (mDisplayId == Display.DEFAULT_DISPLAY);
+
+        // No need to initialize mCanHostTasks here; it's handled in
+        // DisplayManagerService#setupLogicalDisplay().
     }
 
     public void setDevicePositionLocked(int position) {
@@ -1043,6 +1045,12 @@ final class LogicalDisplay {
         mPrimaryDisplayDeviceInfo = null;
         mBaseDisplayInfo.copyFrom(EMPTY_DISPLAY_INFO);
         mInfo.set(null);
+
+        // Since mCanHostTasks depends on mPrimaryDisplayDevice, we should refresh mCanHostTasks
+        // when mPrimaryDisplayDevice changes.
+        if (device != null) {
+            mCanHostTasks = validateCanHostTasksLocked(mCanHostTasks);
+        }
 
         return old;
     }
