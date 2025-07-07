@@ -733,6 +733,7 @@ public class DefaultMixedHandler implements MixedTransitionHandler,
         // In order to play display level animation, force the type to CHANGE (it could be PIP).
         final TransitionInfo changeInfo = info.getType() != TRANSIT_CHANGE
                 ? subCopy(info, TRANSIT_CHANGE, true /* withChanges */) : info;
+        changeInfo.getChanges().remove(pipChange);
         final MixedTransition mixed = createDefaultMixedTransition(
                 MixedTransition.TYPE_ENTER_PIP_WITH_DISPLAY_CHANGE, transition);
         mActiveTransitions.add(mixed);
