@@ -1,0 +1,16 @@
+{
+  "wm": [
+    {
+      "name": "FlickerTestsRotation-CatchAll"
+    },
+    {
+      "name": "FlickerTestsRotation-ChangeAppRotationTest"
+    },
+    {
+      "name": "FlickerTestsRotation-OpenShowWhenLockedSeamlessAppRotationTest"
+    },
+    {
+      "name": "FlickerTestsRotation-SeamlessAppRotationTest"
+    }
+  ]
+}

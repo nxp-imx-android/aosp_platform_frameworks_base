@@ -135,6 +135,11 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.QuickSwitchBetweenDesktopAndFullscreenTest",
         "com.android.wm.shell.functional.fundamentals.SwitchFocusBetweenAppsTest",
         "com.android.wm.shell.functional.fundamentals.SwitchToHomeFromDesktopTest",
+        "com.android.wm.shell.functional.fundamentals.focus.ClickAndFocusTest",
+        "com.android.wm.shell.functional.fundamentals.focus.CloseThenMoveFocusTest",
+        "com.android.wm.shell.functional.fundamentals.focus.DragAndKeepFocusTest",
+        "com.android.wm.shell.functional.fundamentals.focus.MoveToNextDisplayAndFocusTest",
+        "com.android.wm.shell.functional.fundamentals.focus.OpenAndFocusTest",
         "com.android.wm.shell.functional.maximize.MaximizeAppWindowTest",
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowAndPipTest",
         "com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowTest",
@@ -449,10 +454,38 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest",
+    name: "FunctionalTestsDesktopMode-fundamentals-focus-ClickAndFocusTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowAndPipTest"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.ClickAndFocusTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-focus-CloseThenMoveFocusTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.CloseThenMoveFocusTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-focus-DragAndKeepFocusTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.DragAndKeepFocusTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-focus-MoveToNextDisplayAndFocusTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.MoveToNextDisplayAndFocusTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-focus-OpenAndFocusTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.focus.OpenAndFocusTest"],
 }
 
 test_module_config {
@@ -460,6 +493,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.maximize.MaximizeAppWindowTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-resizing-ResizeAppCornerMultiWindowAndPipTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.resizing.ResizeAppCornerMultiWindowAndPipTest"],
 }
 
 test_module_config {

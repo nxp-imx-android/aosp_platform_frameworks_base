@@ -48,6 +48,7 @@ test_module_config {
         "com.android.wm.shell.flicker.fundamentals.CloseAllAppsWithBackNavigationTest",
         "com.android.wm.shell.flicker.fundamentals.EnterDesktopFromSplitScreenWithAppHandleMenuFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.EnterDesktopWithAppHandleMenuFlickerTest",
+        "com.android.wm.shell.flicker.fundamentals.EnterDesktopWithDragFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.EnterSplitScreenWithAppHandleMenuFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.ExitDesktopToFullScreenWithAppHeaderMenuFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.ExitDesktopToSplitScreenWithAppHeaderMenuFlickerTest",
@@ -57,8 +58,10 @@ test_module_config {
         "com.android.wm.shell.flicker.fundamentals.QuickSwitchBetweenDesktopAndFullscreenTest",
         "com.android.wm.shell.flicker.fundamentals.SwitchFocusBetweenAppsTest",
         "com.android.wm.shell.flicker.fundamentals.SwitchToHomeFromDesktopTest",
+        "com.android.wm.shell.flicker.maximize.MaximizeAppDoubleTapAppHeaderFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppNonResizableFlickerTest",
+        "com.android.wm.shell.flicker.maximize.MaximizeAppViaHeaderMenuFlickerTest",
         "com.android.wm.shell.flicker.resizing.ResizeAppToMaximumWindowSizeFlickerTest",
         "com.android.wm.shell.flicker.resizing.ResizeAppToMinimumWindowSizeFlickerTest",
         "com.android.wm.shell.flicker.resizing.ResizeAppWithCornerResizeFlickerTest",
@@ -105,6 +108,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.fundamentals.EnterDesktopWithAppHandleMenuFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-fundamentals-EnterDesktopWithDragFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.EnterDesktopWithDragFlickerTest"],
 }
 
 test_module_config {
@@ -171,6 +181,13 @@ test_module_config {
 }
 
 test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppDoubleTapAppHeaderFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.maximize.MaximizeAppDoubleTapAppHeaderFlickerTest"],
+}
+
+test_module_config {
     name: "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppFlickerTest",
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -182,6 +199,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.maximize.MaximizeAppNonResizableFlickerTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppViaHeaderMenuFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.maximize.MaximizeAppViaHeaderMenuFlickerTest"],
 }
 
 test_module_config {
