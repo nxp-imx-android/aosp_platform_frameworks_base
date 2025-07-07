@@ -360,7 +360,6 @@ private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modi
                             )
                     }
                 )
-                .padding(1.dp)
                 .clip(CircleShape)
                 .background(backgroundColor),
     )
