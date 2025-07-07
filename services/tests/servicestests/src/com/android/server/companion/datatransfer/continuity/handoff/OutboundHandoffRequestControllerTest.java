@@ -29,6 +29,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.ArgumentMatchers.any;
 
 import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
@@ -37,9 +38,12 @@ import com.android.server.companion.datatransfer.continuity.messages.HandoffRequ
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 
+import android.app.ActivityManager;
 import android.app.HandoffActivityData;
 import android.content.Context;
 import android.content.ComponentName;
+import android.content.pm.PackageManager;
+import android.content.pm.ActivityInfo;
 import android.content.Intent;
 import android.companion.AssociationInfo;
 import android.companion.CompanionDeviceManager;
@@ -64,6 +68,7 @@ public class OutboundHandoffRequestControllerTest {
     private ICompanionDeviceManager mMockCompanionDeviceManagerService;
 
     @Mock private ConnectedAssociationStore mMockConnectedAssociationStore;
+    @Mock private PackageManager mMockPackageManager;
 
     private OutboundHandoffRequestController mOutboundHandoffRequestController;
 
@@ -72,6 +77,7 @@ public class OutboundHandoffRequestControllerTest {
         MockitoAnnotations.initMocks(this);
         mContext = createMockContext();
         mMockCompanionDeviceManagerService = createMockCompanionDeviceManager(mContext);
+        doReturn(mMockPackageManager).when(mContext).getPackageManager();
 
         mOutboundHandoffRequestController = new OutboundHandoffRequestController(
             mContext,
@@ -110,7 +116,11 @@ public class OutboundHandoffRequestControllerTest {
             = new HandoffActivityData.Builder(expectedComponentName)
                 .setExtras(expectedExtras)
                 .build();
-        doNothing().when(mContext).startActivityAsUser(any(), any(), any());
+        when(mMockPackageManager.getActivityInfo(
+            eq(expectedComponentName), eq(PackageManager.MATCH_DEFAULT_ONLY)))
+            .thenReturn(new ActivityInfo());
+        doReturn(ActivityManager.START_SUCCESS)
+            .when(mContext).startActivitiesAsUser(any(), any(), any());
 
         HandoffRequestResultMessage handoffRequestResultMessage = new HandoffRequestResultMessage(
             taskId,
@@ -121,9 +131,9 @@ public class OutboundHandoffRequestControllerTest {
             handoffRequestResultMessage);
 
         // Verify the intent was launched.
-        ArgumentCaptor<Intent> intentCaptor = ArgumentCaptor.forClass(Intent.class);
-        verify(mContext, times(1)).startActivityAsUser(intentCaptor.capture(), any(), any());
-        Intent actualIntent = intentCaptor.getValue();
+        ArgumentCaptor<Intent[]> intentCaptor = ArgumentCaptor.forClass(Intent[].class);
+        verify(mContext, times(1)).startActivitiesAsUser(intentCaptor.capture(), any(), any());
+        Intent actualIntent = intentCaptor.getValue()[0];
         assertThat(actualIntent.getComponent()).isEqualTo(expectedComponentName);
         assertThat(actualIntent.getExtras().size()).isEqualTo(1);
         for (String key : actualIntent.getExtras().keySet()) {
@@ -212,7 +222,7 @@ public class OutboundHandoffRequestControllerTest {
             failureStatusCode);
 
         // Verify no intent was launched.
-        verify(mContext, never()).startActivityAsUser(any(), any(), any());
+        verify(mContext, never()).startActivitiesAsUser(any(), any(), any());
     }
 
     @Test
@@ -244,7 +254,7 @@ public class OutboundHandoffRequestControllerTest {
             TaskContinuityManager.HANDOFF_REQUEST_RESULT_FAILURE_NO_DATA_PROVIDED_BY_TASK);
 
         // Verify no intent was launched.
-        verify(mContext, never()).startActivityAsUser(any(), any(), any());
+        verify(mContext, never()).startActivitiesAsUser(any(), any(), any());
     }
 
     private final class HandoffRequestCallbackHolder {
