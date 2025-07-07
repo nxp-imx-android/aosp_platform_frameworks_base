@@ -165,14 +165,12 @@ interface ConnectivityModule {
             mapper: AirplaneModeTileMapper,
             stateInteractor: AirplaneModeTileDataInteractor,
             userActionInteractor: AirplaneModeTileUserActionInteractor,
-            internetDetailsViewModelFactory: InternetDetailsViewModel.Factory,
         ): QSTileViewModel =
             factory.create(
                 TileSpec.create(AIRPLANE_MODE_TILE_SPEC),
                 userActionInteractor,
                 stateInteractor,
                 mapper,
-                internetDetailsViewModelFactory.create(),
             )
 
         @Provides
