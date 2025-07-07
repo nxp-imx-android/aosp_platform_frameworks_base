@@ -343,7 +343,7 @@ private fun CloseButton(onCloseClick: () -> Unit, modifier: Modifier = Modifier)
 @Composable
 private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modifier = Modifier) {
     Image(
-        painter = rememberDrawablePainter(action.icon.drawable),
+        painter = rememberDrawablePainter(action.icon.small),
         contentDescription = stringResource(id = R.string.ambient_cue_icon_content_description),
         modifier =
             modifier

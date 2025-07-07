@@ -43,7 +43,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
@@ -70,8 +69,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -79,7 +78,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.lerp
-import com.android.compose.PlatformIconButton
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.compose.modifier.animatedActionBorder
 import com.android.systemui.ambientcue.ui.utils.FilterUtils
@@ -276,7 +274,7 @@ fun NavBarPill(
                                             .padding(start = 6.dp, end = 6.dp),
                                 ) {
                                     Image(
-                                        painter = rememberDrawablePainter(action.icon.drawable),
+                                        painter = rememberDrawablePainter(action.icon.small),
                                         contentDescription =
                                             stringResource(
                                                 id = R.string.ambient_cue_icon_content_description
@@ -318,7 +316,7 @@ fun NavBarPill(
                             } else {
                                 // Smaller app icons
                                 Image(
-                                    painter = rememberDrawablePainter(action.icon.drawable),
+                                    painter = rememberDrawablePainter(action.icon.small),
                                     contentDescription = action.label,
                                     modifier =
                                         Modifier.then(

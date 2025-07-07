@@ -190,7 +190,8 @@ constructor(
                         ActionViewModel(
                             icon =
                                 IconViewModel(
-                                    drawable = action.icon.drawable,
+                                    large = action.icon.large,
+                                    small = action.icon.small,
                                     iconId = action.icon.iconId,
                                     repeatCount = 0,
                                 ),
