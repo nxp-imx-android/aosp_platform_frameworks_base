@@ -59,6 +59,26 @@ class MixedLetterboxControllerTest : ShellTestCase() {
         }
     }
 
+    @Test
+    fun `When strategy shouldSupportInputSurface is true input surface is created`() {
+        runTestScenario { r ->
+            r.configureStrategyFor(LetterboxMode.SINGLE_SURFACE)
+            r.configureStrategyFor(shouldSupportInputSurface = true)
+            r.sendCreateSurfaceRequest()
+            r.checkCreateInvokedOnInputController()
+        }
+    }
+
+    @Test
+    fun `When strategy shouldSupportInputSurface is false input surface is destroyed`() {
+        runTestScenario { r ->
+            r.configureStrategyFor(LetterboxMode.SINGLE_SURFACE)
+            r.configureStrategyFor(shouldSupportInputSurface = false)
+            r.sendCreateSurfaceRequest()
+            r.checkDestroyInvokedOnInputController()
+        }
+    }
+
     /**
      * Runs a test scenario providing a Robot.
      */
@@ -76,6 +96,12 @@ class MixedLetterboxControllerTest : ShellTestCase() {
 
         fun configureStrategyFor(letterboxMode: LetterboxMode) {
             doReturn(letterboxMode).`when`(controllerStrategy).getLetterboxImplementationMode()
+        }
+
+        fun configureStrategyFor(shouldSupportInputSurface: Boolean) {
+            doReturn(
+                shouldSupportInputSurface
+            ).`when`(controllerStrategy).shouldSupportInputSurface()
         }
 
         fun checkCreateInvokedOnSingleController(times: Int = 1) {
@@ -96,11 +122,24 @@ class MixedLetterboxControllerTest : ShellTestCase() {
             )
         }
 
+        fun checkCreateInvokedOnInputController(times: Int = 1) {
+            verify(inputController, times(times)).createLetterboxSurface(
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        }
+
         fun checkDestroyInvokedOnSingleController(times: Int = 1) {
             verify(singleLetterboxController, times(times)).destroyLetterboxSurface(any(), any())
         }
 
         fun checkDestroyInvokedOnMultiController(times: Int = 1) {
+            verify(multipleLetterboxController, times(times)).destroyLetterboxSurface(any(), any())
+        }
+
+        fun checkDestroyInvokedOnInputController(times: Int = 1) {
             verify(multipleLetterboxController, times(times)).destroyLetterboxSurface(any(), any())
         }
 

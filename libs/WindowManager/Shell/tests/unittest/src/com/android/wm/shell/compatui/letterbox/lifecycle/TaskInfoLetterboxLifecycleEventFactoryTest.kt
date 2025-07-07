@@ -22,16 +22,19 @@ import android.testing.AndroidTestingRunner
 import android.view.SurfaceControl
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
+import com.android.wm.shell.compatui.letterbox.config.LetterboxDependenciesHelper
 import com.android.wm.shell.util.testLetterboxLifecycleEventFactory
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.kotlin.mock
 import java.util.function.Consumer
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 
 /**
  * Tests for [TaskInfoLetterboxLifecycleEventFactory].
@@ -167,6 +170,29 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
     }
 
     @Test
+    fun `supportsInput comes from LetterboxDependencyHelper`() {
+        runTestScenario { r ->
+            testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
+                inputChange {
+                    runningTaskInfo {}
+                }
+
+                r.shouldSupportInputSurface(shouldSupportInputSurface = true)
+                validateCreateLifecycleEvent { event ->
+                    assertNotNull(event)
+                    assertTrue(event.supportsInput)
+                }
+
+                r.shouldSupportInputSurface(shouldSupportInputSurface = false)
+                validateCreateLifecycleEvent { event ->
+                    assertNotNull(event)
+                    assertFalse(event.supportsInput)
+                }
+            }
+        }
+    }
+
+    @Test
     fun `With TaskInfo token from TaskInfo`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
@@ -202,8 +228,16 @@ class TaskInfoLetterboxLifecycleEventFactoryTest {
      */
     class TaskInfoLetterboxLifecycleEventFactoryRobotTest {
 
+        private val dependencyHelper: LetterboxDependenciesHelper =
+            mock<LetterboxDependenciesHelper>()
+
         fun getLetterboxLifecycleEventFactory(): () -> LetterboxLifecycleEventFactory = {
-            TaskInfoLetterboxLifecycleEventFactory()
+            TaskInfoLetterboxLifecycleEventFactory(dependencyHelper)
+        }
+
+        fun shouldSupportInputSurface(shouldSupportInputSurface: Boolean) {
+            doReturn(shouldSupportInputSurface).`when`(dependencyHelper)
+                .shouldSupportInputSurface(any())
         }
     }
 }

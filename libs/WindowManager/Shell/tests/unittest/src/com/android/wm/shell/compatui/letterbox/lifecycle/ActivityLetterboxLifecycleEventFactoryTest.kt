@@ -22,17 +22,21 @@ import android.view.SurfaceControl
 import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.ShellTestCase
+import com.android.wm.shell.compatui.letterbox.config.LetterboxDependenciesHelper
 import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskInfoRepository
 import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskInfoState
 import com.android.wm.shell.util.testLetterboxLifecycleEventFactory
-import org.junit.Test
-import org.junit.runner.RunWith
-import org.mockito.kotlin.mock
 import java.util.function.Consumer
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
 
 /**
  * Tests for [ActivityLetterboxLifecycleEventFactory].
@@ -132,6 +136,33 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     }
 
     @Test
+    fun `supportsInput comes from LetterboxDependencyHelper`() {
+        runTestScenario { r ->
+            testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
+                inputChange {
+                    activityTransitionInfo {
+                        taskId = 10
+                    }
+                }
+                val testLeash = mock<SurfaceControl>()
+                val testToken = mock<WindowContainerToken>()
+                r.addToTaskRepository(10, LetterboxTaskInfoState(testToken, testLeash))
+                r.shouldSupportInputSurface(shouldSupportInputSurface = true)
+                validateCreateLifecycleEvent { event ->
+                    assertNotNull(event)
+                    assertTrue(event.supportsInput)
+                }
+
+                r.shouldSupportInputSurface(shouldSupportInputSurface = false)
+                validateCreateLifecycleEvent { event ->
+                    assertNotNull(event)
+                    assertFalse(event.supportsInput)
+                }
+            }
+        }
+    }
+
+    @Test
     fun `Event is null if repository has no task data`() {
         runTestScenario { r ->
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
@@ -166,8 +197,16 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
         private val letterboxTaskInfoRepository: LetterboxTaskInfoRepository =
             LetterboxTaskInfoRepository()
 
+        private val dependencyHelper: LetterboxDependenciesHelper =
+            mock<LetterboxDependenciesHelper>()
+
         fun getLetterboxLifecycleEventFactory(): () -> LetterboxLifecycleEventFactory = {
-            ActivityLetterboxLifecycleEventFactory(letterboxTaskInfoRepository)
+            ActivityLetterboxLifecycleEventFactory(letterboxTaskInfoRepository, dependencyHelper)
+        }
+
+        fun shouldSupportInputSurface(shouldSupportInputSurface: Boolean) {
+            doReturn(shouldSupportInputSurface).`when`(dependencyHelper)
+                .shouldSupportInputSurface(any())
         }
 
         fun addToTaskRepository(key: Int, state: LetterboxTaskInfoState) {

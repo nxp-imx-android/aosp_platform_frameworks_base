@@ -33,7 +33,7 @@ class MixedLetterboxController @Inject constructor(
     private val singleSurfaceController: SingleSurfaceLetterboxController,
     private val multipleSurfaceController: MultiSurfaceLetterboxController,
     private val controllerStrategy: LetterboxControllerStrategy,
-    private val inputController: LetterboxInputController
+    private val inputController: LetterboxInputController,
 ) : LetterboxController by singleSurfaceController.append(multipleSurfaceController)
     .append(inputController) {
 
@@ -59,6 +59,10 @@ class MixedLetterboxController @Inject constructor(
                 )
             }
         }
-        inputController.createLetterboxSurface(key, transaction, parentLeash, token)
+        if (controllerStrategy.shouldSupportInputSurface()) {
+            inputController.createLetterboxSurface(key, transaction, parentLeash, token)
+        } else {
+            inputController.destroyLetterboxSurface(key, transaction)
+        }
     }
 }

@@ -37,6 +37,9 @@ class LetterboxControllerStrategy @Inject constructor(
     @Volatile
     private var currentMode: LetterboxMode = SINGLE_SURFACE
 
+    @Volatile
+    private var supportsInputSurface: Boolean = false
+
     fun configureLetterboxMode(event: LetterboxLifecycleEvent) {
         // Decides whether to use a single surface or multiple surfaces for the letterbox.
         // The primary trade-off is memory usage versus rendering performance.
@@ -51,10 +54,16 @@ class LetterboxControllerStrategy @Inject constructor(
             letterboxConfiguration.isLetterboxActivityCornersRounded() -> SINGLE_SURFACE
             else -> MULTIPLE_SURFACES
         }
+        supportsInputSurface = event.supportsInput
     }
 
     /**
      * @return The specific mode to use for implementing letterboxing for the given [request].
      */
     fun getLetterboxImplementationMode(): LetterboxMode = currentMode
+
+    /**
+     * Tells if the input surface should be created or not. This enabled reachability.
+     */
+    fun shouldSupportInputSurface(): Boolean = supportsInputSurface
 }

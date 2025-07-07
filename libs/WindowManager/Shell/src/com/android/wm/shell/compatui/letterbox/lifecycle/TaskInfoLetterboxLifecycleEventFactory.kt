@@ -18,12 +18,15 @@ package com.android.wm.shell.compatui.letterbox.lifecycle
 
 import android.graphics.Rect
 import android.window.TransitionInfo.Change
+import com.android.wm.shell.compatui.letterbox.config.LetterboxDependenciesHelper
 
 /**
  * [LetterboxLifecycleEventFactory] implementation which creates a [LetterboxLifecycleEvent] from
  * a [TransitionInfo.Change] using a [TaskInfo] when present.
  */
-class TaskInfoLetterboxLifecycleEventFactory : LetterboxLifecycleEventFactory {
+class TaskInfoLetterboxLifecycleEventFactory(
+    private val letterboxDependenciesHelper: LetterboxDependenciesHelper
+) : LetterboxLifecycleEventFactory {
     override fun canHandle(change: Change): Boolean = change.taskInfo != null
 
     override fun createLifecycleEvent(change: Change): LetterboxLifecycleEvent? {
@@ -51,7 +54,8 @@ class TaskInfoLetterboxLifecycleEventFactory : LetterboxLifecycleEventFactory {
                 containerToken = ti.token,
                 taskLeash = change.leash,
                 isBubble = ti.isAppBubble,
-                isTranslucent = change.isTranslucent()
+                isTranslucent = change.isTranslucent(),
+                supportsInput = letterboxDependenciesHelper.shouldSupportInputSurface(change)
             )
         }
         return null

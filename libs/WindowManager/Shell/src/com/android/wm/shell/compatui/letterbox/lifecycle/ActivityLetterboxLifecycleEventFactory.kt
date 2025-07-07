@@ -19,6 +19,7 @@ package com.android.wm.shell.compatui.letterbox.lifecycle
 import android.graphics.Rect
 import android.window.TransitionInfo.Change
 import com.android.internal.protolog.ProtoLog
+import com.android.wm.shell.compatui.letterbox.config.LetterboxDependenciesHelper
 import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskInfoRepository
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
 
@@ -27,7 +28,8 @@ import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_APP_COMPAT
  * a [TransitionInfo.Change] using a [ActivityTransitionInfo] when present.
  */
 class ActivityLetterboxLifecycleEventFactory(
-    private val taskRepository: LetterboxTaskInfoRepository
+    private val taskRepository: LetterboxTaskInfoRepository,
+    private val letterboxDependenciesHelper: LetterboxDependenciesHelper
 ) : LetterboxLifecycleEventFactory {
 
     companion object {
@@ -65,7 +67,8 @@ class ActivityLetterboxLifecycleEventFactory(
                 letterboxBounds = letterboxBounds,
                 taskLeash = taskItem.containerLeash,
                 containerToken = taskItem.containerToken,
-                isTranslucent = change.isTranslucent()
+                isTranslucent = change.isTranslucent(),
+                supportsInput = letterboxDependenciesHelper.shouldSupportInputSurface(change)
             )
         }
         ProtoLog.w(WM_SHELL_APP_COMPAT, "$TAG: Task not found for taskId: $taskId")
