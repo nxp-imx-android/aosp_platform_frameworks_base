@@ -36,25 +36,28 @@ import android.view.WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
 import android.view.WindowlessWindowManager
 import android.widget.FrameLayout
 import android.window.TaskConstants
+import android.window.TaskConstants.TASK_CHILD_SHELL_LAYER_LETTERBOX_ROUNDED_CORNERS
 import com.android.wm.shell.R
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
+import com.android.wm.shell.common.suppliers.SurfaceBuilderSupplier
 import com.android.wm.shell.compatui.letterbox.LetterboxConfiguration
-import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersFactory.Position.BOTTOM_LEFT
-import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersFactory.Position.BOTTOM_RIGHT
-import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersFactory.Position.TOP_LEFT
-import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersFactory.Position.TOP_RIGHT
+import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersDrawableFactory.Position.BOTTOM_LEFT
+import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersDrawableFactory.Position.BOTTOM_RIGHT
+import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersDrawableFactory.Position.TOP_LEFT
+import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersDrawableFactory.Position.TOP_RIGHT
 
 /**
  * Overlay responsible for handling letterbox rounded corners in Shell.
  */
-class AppCompatRoundedCornersSurface(
+class RoundedCornersSurface(
     private val context: Context,
     config: Configuration?,
     private val syncQueue: SyncTransactionQueue,
     private val parentSurface: SurfaceControl,
-    private val cornersFactory: LetterboxRoundedCornersFactory,
-    private val letterboxConfiguration: LetterboxConfiguration
+    private val cornersFactory: LetterboxRoundedCornersDrawableFactory,
+    private val letterboxConfiguration: LetterboxConfiguration,
+    private val surfaceBuilderSupplier: SurfaceBuilderSupplier
 ) : WindowlessWindowManager(config, parentSurface, /* hostInputToken */ null) {
 
     private var viewHost: SurfaceControlViewHost? = null
@@ -90,7 +93,7 @@ class AppCompatRoundedCornersSurface(
         attrs: WindowManager.LayoutParams
     ): SurfaceControl {
         val className = javaClass.simpleName
-        val builder = SurfaceControl.Builder()
+        val builder = surfaceBuilderSupplier.get()
             .setContainerLayer()
             .setName(className + "Leash")
             .setHidden(false)
@@ -169,7 +172,7 @@ class AppCompatRoundedCornersSurface(
         visible: Boolean,
         immediate: Boolean = false
     ) {
-        val drawable = background as? RoundedCornersDrawable
+        val drawable = background as? LetterboxRoundedCornersDrawable
         drawable?.let {
             if (visible) it.show(executor, immediate) else it.hide(executor, immediate)
         }
@@ -238,7 +241,7 @@ class AppCompatRoundedCornersSurface(
     }
 
     private fun View.applyCornerAttrs(
-        position: RoundedCornersFactory.Position,
+        position: RoundedCornersDrawableFactory.Position,
         radius: Float,
         cornerGravity: Int,
         color: Color

@@ -18,25 +18,25 @@ package com.android.wm.shell.compatui.letterbox.roundedcorners
 
 import android.graphics.Color
 import android.graphics.drawable.Drawable
-import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersDrawable.FlipType.FLIP_HORIZONTAL
-import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersDrawable.FlipType.FLIP_VERTICAL
-import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersFactory.Position
+import com.android.wm.shell.compatui.letterbox.roundedcorners.LetterboxRoundedCornersDrawable.FlipType.FLIP_HORIZONTAL
+import com.android.wm.shell.compatui.letterbox.roundedcorners.LetterboxRoundedCornersDrawable.FlipType.FLIP_VERTICAL
+import com.android.wm.shell.compatui.letterbox.roundedcorners.RoundedCornersDrawableFactory.Position
 import com.android.wm.shell.dagger.WMSingleton
 import javax.inject.Inject
 
 /**
- * [RoundedCornersFactory] implementation returning rounded corners [Drawable]s using
+ * [LetterboxRoundedCornersFactory] implementation returning rounded corners [Drawable]s using
  * SVG format.
  */
 @WMSingleton
-class LetterboxRoundedCornersFactory @Inject constructor(
-) : RoundedCornersFactory<RoundedCornersDrawable> {
+class LetterboxRoundedCornersDrawableFactory @Inject constructor(
+) : RoundedCornersDrawableFactory<LetterboxRoundedCornersDrawable> {
     override fun getRoundedCornerDrawable(
         color: Color,
         position: Position,
         radius: Float
-    ): RoundedCornersDrawable {
-        val corners = RoundedCornersDrawable(color, radius)
+    ): LetterboxRoundedCornersDrawable {
+        val corners = LetterboxRoundedCornersDrawable(color, radius)
         return when (position) {
             Position.TOP_LEFT -> corners
             Position.TOP_RIGHT -> corners.flip(FLIP_HORIZONTAL)

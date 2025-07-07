@@ -22,7 +22,7 @@ import android.graphics.drawable.Drawable
 /**
  * Abstraction for the object responsible of the creation of the rounded corners Drawables.
  */
-interface RoundedCornersFactory<T : Drawable> {
+interface RoundedCornersDrawableFactory<T : Drawable> {
 
     enum class Position { TOP_LEFT, TOP_RIGHT, BOTTOM_RIGHT, BOTTOM_LEFT }
 
