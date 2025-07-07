@@ -2854,6 +2854,8 @@
     <string name="accessibility_key_gesture_dialog_magnifier_intro">This allows you to quickly zoom in on the screen to make content larger.</string>
     <!-- The text for the TalkBack introduction. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_dialog_talkback_intro"><xliff:g name="feature_name" example="TalkBack">%1$s</xliff:g> is a screen reader that allows you to hear items spoken aloud. It can be helpful for people who have difficulty seeing the screen.</string>
+    <!-- The text for the Voice Access introduction. [CHAR LIMIT=NONE] -->
+    <string name="accessibility_key_gesture_dialog_va_intro"><xliff:g name="feature_name" example="Voice Access">%1$s</xliff:g> lets you control your device hands-free.</string>
     <!-- Positive button text for the dialog. [CHAR LIMIT=NONE] -->
     <string name="accessibility_key_gesture_dialog_positive_button_text">Turn on</string>
 
