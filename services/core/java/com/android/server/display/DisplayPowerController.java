@@ -234,6 +234,28 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__BUCKET_INDEX__RANGE_2750_3000,
     };
 
+    private static final float[] LUX_BUCKET_BOUNDARIES = {
+        0f, 0.1f, 0.3f, 1f, 3f, 10f, 30f, 100f, 300f, 1000f,
+        3000f, 10000f, 30000f, 100000f};
+
+    private static final int[] LUX_RANGE_INDEX = {
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_UNKNOWN,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_0_01,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_01_03,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_03_1,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_1_3,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_3_10,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_10_30,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_30_100,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_100_300,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_300_1000,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_1000_3000,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_3000_10000,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_10000_30000,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_30000_100000,
+        FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_100000_INF,
+    };
+
     private final String mTag;
 
     private final Object mLock = new Object();
@@ -2922,6 +2944,29 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         return FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED__ENTIRE_REASON__REASON_UNKNOWN;
     }
 
+    /**
+     * Maps a given lux value to the corresponding bucket index.
+     * The buckets are defined by LUX_BUCKET_BOUNDARIES.
+     * The bucket represents the range [left, right), where 'left' is the previous
+     * boundary and 'right' is the current one.
+     *
+     * @param lux The ambient light value in lux.
+     * @return The corresponding bucket index from LUX_RANGE_INDEX.
+     */
+    static int mapLuxToProtoEnumBucket(float lux) {
+
+        for (int i = 0; i < LUX_BUCKET_BOUNDARIES.length; i++) {
+            if (lux < LUX_BUCKET_BOUNDARIES[i]) {
+                return LUX_RANGE_INDEX[i];
+            }
+        }
+
+        // If the lux value is greater than or equal to the last boundary, it falls into
+        // the last bucket: [100000, +inf).
+        return FrameworkStatsLog
+            .DISPLAY_BRIGHTNESS_CHANGED__LUX_BUCKET__LUX_RANGE_100000_INF;
+    }
+
     private void logBrightnessEvent(BrightnessEvent event, float unmodifiedBrightness,
             DisplayBrightnessState brightnessState) {
         int modifier = event.getReason().getModifier();
@@ -2940,6 +2985,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         float appliedThermalCapNits =
                 event.getThermalMax() == PowerManager.BRIGHTNESS_MAX
                 ? -1f : mDisplayBrightnessController.convertToAdjustedNits(event.getThermalMax());
+        int luxBucket = mapLuxToProtoEnumBucket(event.getLux());
         if (mIsDisplayInternal) {
             FrameworkStatsLog.write(FrameworkStatsLog.DISPLAY_BRIGHTNESS_CHANGED,
                     mDisplayBrightnessController
@@ -2968,7 +3014,8 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
                     (flags & BrightnessEvent.FLAG_DOZE_SCALE) > 0,
                     (flags & BrightnessEvent.FLAG_USER_SET) > 0,
                     event.getAutoBrightnessMode() == AUTO_BRIGHTNESS_MODE_IDLE,
-                    (flags & BrightnessEvent.FLAG_LOW_POWER_MODE) > 0);
+                    (flags & BrightnessEvent.FLAG_LOW_POWER_MODE) > 0,
+                    luxBucket);
         }
     }
 
