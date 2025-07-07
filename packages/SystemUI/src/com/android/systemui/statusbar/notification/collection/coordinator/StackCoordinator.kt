@@ -38,7 +38,7 @@ import javax.inject.Inject
 @CoordinatorScope
 class StackCoordinator
 @Inject
-internal constructor(
+constructor(
     private val groupExpansionManagerImpl: GroupExpansionManagerImpl,
     private val renderListInteractor: RenderNotificationListInteractor,
     private val activeNotificationsInteractor: ActiveNotificationsInteractor,
