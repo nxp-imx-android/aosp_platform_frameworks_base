@@ -111,7 +111,11 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         whenever(runBlocking { persistentRepository.readDesktop(any(), any()) })
             .thenReturn(Desktop.getDefaultInstance())
         shellInit.init()
-        repo.addDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESKTOP_ID)
+        repo.addDesk(
+            displayId = DEFAULT_DISPLAY,
+            deskId = DEFAULT_DESKTOP_ID,
+            uniqueDisplayId = UNIQUE_DISPLAY_ID,
+        )
         repo.setActiveDesk(displayId = DEFAULT_DISPLAY, deskId = DEFAULT_DESKTOP_ID)
     }
 
@@ -165,7 +169,11 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun addTask_multipleDisplays_notifiesCorrectListener() {
-        repo.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
+        repo.addDesk(
+            displayId = SECOND_DISPLAY,
+            deskId = SECOND_DISPLAY,
+            uniqueDisplayId = UNIQUE_DISPLAY_ID,
+        )
         val listener = TestListener()
         repo.addActiveTaskListener(listener)
 
@@ -179,7 +187,11 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
 
     @Test
     fun addTask_multipleDisplays_moveToAnotherDisplay() {
-        repo.addDesk(displayId = SECOND_DISPLAY, deskId = SECOND_DISPLAY)
+        repo.addDesk(
+            displayId = SECOND_DISPLAY,
+            deskId = SECOND_DISPLAY,
+            uniqueDisplayId = UNIQUE_DISPLAY_ID,
+        )
         repo.addTask(DEFAULT_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         repo.addTask(SECOND_DISPLAY, taskId = 1, isVisible = true, taskBounds = TEST_TASK_BOUNDS)
         assertThat(repo.getFreeformTasksInZOrder(DEFAULT_DISPLAY)).isEmpty()
@@ -418,6 +430,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateDesktop(
                         DEFAULT_USER_ID,
                         DEFAULT_DESKTOP_ID,
+                        UNIQUE_DISPLAY_ID,
                         visibleTasks = ArraySet(arrayOf(1)),
                         minimizedTasks = ArraySet(),
                         freeformTasksInZOrder = arrayListOf(),
@@ -428,6 +441,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateDesktop(
                         DEFAULT_USER_ID,
                         DEFAULT_DESKTOP_ID,
+                        UNIQUE_DISPLAY_ID,
                         visibleTasks = ArraySet(arrayOf(1, 2)),
                         minimizedTasks = ArraySet(),
                         freeformTasksInZOrder = arrayListOf(),
@@ -502,6 +516,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 .addOrUpdateDesktop(
                     DEFAULT_USER_ID,
                     DEFAULT_DESKTOP_ID,
+                    UNIQUE_DISPLAY_ID,
                     visibleTasks = ArraySet(),
                     minimizedTasks = ArraySet(),
                     freeformTasksInZOrder = arrayListOf(),
@@ -567,6 +582,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 .addOrUpdateDesktop(
                     DEFAULT_USER_ID,
                     DEFAULT_DESKTOP_ID,
+                    UNIQUE_DISPLAY_ID,
                     visibleTasks = ArraySet(),
                     minimizedTasks = ArraySet(),
                     freeformTasksInZOrder = arrayListOf(),
@@ -1034,6 +1050,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateDesktop(
                         DEFAULT_USER_ID,
                         DEFAULT_DESKTOP_ID,
+                        UNIQUE_DISPLAY_ID,
                         visibleTasks = ArraySet(),
                         minimizedTasks = ArraySet(),
                         freeformTasksInZOrder = arrayListOf(5),
@@ -1044,6 +1061,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateDesktop(
                         DEFAULT_USER_ID,
                         DEFAULT_DESKTOP_ID,
+                        UNIQUE_DISPLAY_ID,
                         visibleTasks = ArraySet(arrayOf(5)),
                         minimizedTasks = ArraySet(),
                         freeformTasksInZOrder = arrayListOf(6, 5),
@@ -1054,6 +1072,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateDesktop(
                         DEFAULT_USER_ID,
                         DEFAULT_DESKTOP_ID,
+                        UNIQUE_DISPLAY_ID,
                         visibleTasks = ArraySet(arrayOf(5, 6)),
                         minimizedTasks = ArraySet(),
                         freeformTasksInZOrder = arrayListOf(7, 6, 5),
@@ -1139,6 +1158,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateDesktop(
                         DEFAULT_USER_ID,
                         DEFAULT_DESKTOP_ID,
+                        UNIQUE_DISPLAY_ID,
                         visibleTasks = ArraySet(),
                         minimizedTasks = ArraySet(),
                         freeformTasksInZOrder = arrayListOf(5),
@@ -1149,6 +1169,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateDesktop(
                         DEFAULT_USER_ID,
                         DEFAULT_DESKTOP_ID,
+                        UNIQUE_DISPLAY_ID,
                         visibleTasks = ArraySet(arrayOf(5)),
                         minimizedTasks = ArraySet(),
                         freeformTasksInZOrder = arrayListOf(6, 5),
@@ -1159,6 +1180,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateDesktop(
                         DEFAULT_USER_ID,
                         DEFAULT_DESKTOP_ID,
+                        UNIQUE_DISPLAY_ID,
                         visibleTasks = ArraySet(arrayOf(5, 6)),
                         minimizedTasks = ArraySet(),
                         freeformTasksInZOrder = arrayListOf(7, 6, 5),
@@ -1169,6 +1191,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                     .addOrUpdateDesktop(
                         DEFAULT_USER_ID,
                         DEFAULT_DESKTOP_ID,
+                        UNIQUE_DISPLAY_ID,
                         visibleTasks = ArraySet(arrayOf(5, 7)),
                         minimizedTasks = ArraySet(arrayOf(6)),
                         freeformTasksInZOrder = arrayListOf(7, 6, 5),
@@ -1259,6 +1282,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 .addOrUpdateDesktop(
                     DEFAULT_USER_ID,
                     DEFAULT_DESKTOP_ID,
+                    UNIQUE_DISPLAY_ID,
                     visibleTasks = ArraySet(),
                     minimizedTasks = ArraySet(),
                     freeformTasksInZOrder = arrayListOf(1),
@@ -1269,6 +1293,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 .addOrUpdateDesktop(
                     DEFAULT_USER_ID,
                     DEFAULT_DESKTOP_ID,
+                    UNIQUE_DISPLAY_ID,
                     visibleTasks = ArraySet(),
                     minimizedTasks = ArraySet(),
                     freeformTasksInZOrder = ArrayList(),
@@ -1306,6 +1331,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 .addOrUpdateDesktop(
                     DEFAULT_USER_ID,
                     DEFAULT_DESKTOP_ID,
+                    UNIQUE_DISPLAY_ID,
                     visibleTasks = ArraySet(),
                     minimizedTasks = ArraySet(),
                     freeformTasksInZOrder = arrayListOf(1),
@@ -1316,6 +1342,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
                 .addOrUpdateDesktop(
                     DEFAULT_USER_ID,
                     DEFAULT_DESKTOP_ID,
+                    UNIQUE_DISPLAY_ID,
                     visibleTasks = ArraySet(),
                     minimizedTasks = ArraySet(),
                     freeformTasksInZOrder = ArrayList(),
@@ -1915,7 +1942,11 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
         repo.addDesk(SECOND_DISPLAY, deskId = 8)
         repo.addDesk(SECOND_DISPLAY, deskId = 9)
 
-        repo.onDeskDisplayChanged(deskId = 8, newDisplayId = DEFAULT_DISPLAY)
+        repo.onDeskDisplayChanged(
+            deskId = 8,
+            newDisplayId = DEFAULT_DISPLAY,
+            newUniqueDisplayId = UNIQUE_DISPLAY_ID,
+        )
         executor.flushAll()
 
         assertThat(repo.getDeskIds(DEFAULT_DISPLAY)).containsExactly(0, 6, 7, 8)
@@ -2175,7 +2206,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
     )
     @DisableFlags(Flags.FLAG_REPOSITORY_BASED_PERSISTENCE)
     fun removeTaskFromDesk_updatesPersistence() = runTest {
-        repo.addDesk(DEFAULT_DISPLAY, deskId = 6)
+        repo.addDesk(DEFAULT_DISPLAY, deskId = 6, uniqueDisplayId = UNIQUE_DISPLAY_ID)
         repo.addTaskToDesk(
             DEFAULT_DISPLAY,
             deskId = 6,
@@ -2191,6 +2222,7 @@ class DesktopRepositoryTest(flags: FlagsParameterization) : ShellTestCase() {
             .addOrUpdateDesktop(
                 userId = eq(DEFAULT_USER_ID),
                 desktopId = eq(6),
+                uniqueDisplayId = eq(UNIQUE_DISPLAY_ID),
                 visibleTasks = any(),
                 minimizedTasks = any(),
                 freeformTasksInZOrder = any(),

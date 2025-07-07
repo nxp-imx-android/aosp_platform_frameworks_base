@@ -22,11 +22,12 @@ message DesktopTask {
 }
 
 message Desktop {
-  optional int32 display_id = 1;
+  optional int32 display_id = 1 [deprecated=true];
   optional int32 desktop_id = 2;
   // Stores a mapping between task id and the tasks. The key is the task id.
   map<int32, DesktopTask> tasks_by_task_id = 3;
   repeated int32 z_ordered_tasks = 4;
+  optional string unique_display_id = 5;
 }
 
 message DesktopRepositoryState {

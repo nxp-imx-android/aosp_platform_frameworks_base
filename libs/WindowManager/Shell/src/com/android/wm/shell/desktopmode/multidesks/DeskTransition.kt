@@ -139,6 +139,7 @@ sealed interface DeskTransition {
         override val userId: Int,
         val deskId: Int,
         val displayId: Int,
+        val uniqueDisplayId: String?,
     ) : DeskTransition {
         override fun copyWithToken(token: IBinder): DeskTransition = copy(token)
     }

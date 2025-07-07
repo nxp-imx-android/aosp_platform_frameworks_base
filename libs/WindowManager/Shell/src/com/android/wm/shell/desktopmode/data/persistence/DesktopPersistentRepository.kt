@@ -133,6 +133,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                                     desk.rightTiledTaskId,
                                 )
                                 .updateZOrder(desk.freeformTasksInZOrder)
+                                .updateUniqueDisplayId(desk.uniqueDisplayId)
                                 .build()
 
                         currentUserRepoBuilder.putDesktop(desk.deskId, updatedDesktop)
@@ -159,6 +160,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
     suspend fun addOrUpdateDesktop(
         userId: Int,
         desktopId: Int = 0,
+        uniqueDisplayId: String? = null,
         visibleTasks: ArraySet<Int> = ArraySet(),
         minimizedTasks: ArraySet<Int> = ArraySet(),
         freeformTasksInZOrder: ArrayList<Int> = ArrayList(),
@@ -193,7 +195,7 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
                                 rightTiledTask,
                             )
                             .updateZOrder(freeformTasksInZOrder)
-
+                            .updateUniqueDisplayId(uniqueDisplayId)
                     persistentRepositories
                         .toBuilder()
                         .putDesktopRepoByUser(
@@ -349,6 +351,15 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
         ): Desktop.Builder {
             clearZOrderedTasks()
             addAllZOrderedTasks(freeformTasksInZOrder)
+            return this
+        }
+
+        private fun Desktop.Builder.updateUniqueDisplayId(
+            uniqueDisplayId: String?
+        ): Desktop.Builder {
+            if (uniqueDisplayId != null) {
+                this.uniqueDisplayId = uniqueDisplayId
+            }
             return this
         }
 

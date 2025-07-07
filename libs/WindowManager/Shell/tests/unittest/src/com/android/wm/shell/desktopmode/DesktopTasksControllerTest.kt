@@ -412,6 +412,10 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
         whenever(displayController.getDisplayContext(anyInt())).thenReturn(mockDisplayContext)
         whenever(mockDisplayContext.resources).thenReturn(resources)
         whenever(displayController.getDisplay(anyInt())).thenReturn(display)
+        whenever(displayController.getDisplayUniqueId(SECONDARY_DISPLAY_ID))
+            .thenReturn(SECOND_DISPLAY_UNIQUE_ID)
+        whenever(displayController.getDisplayUniqueId(DEFAULT_DISPLAY))
+            .thenReturn(DEFAULT_DISPLAY_UNIQUE_ID)
         whenever(displayLayout.getStableBounds(any())).thenAnswer { i ->
             (i.arguments.first() as Rect).set(STABLE_BOUNDS)
         }
@@ -11017,7 +11021,11 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
                 )
             val wctCaptor = argumentCaptor<WindowContainerTransaction>()
             taskRepository.preserveDisplay(SECOND_DISPLAY, SECOND_DISPLAY_UNIQUE_ID)
-            taskRepository.onDeskDisplayChanged(DISCONNECTED_DESK_ID, DEFAULT_DISPLAY)
+            taskRepository.onDeskDisplayChanged(
+                DISCONNECTED_DESK_ID,
+                DEFAULT_DISPLAY,
+                DEFAULT_DISPLAY_UNIQUE_ID,
+            )
             whenever(desksOrganizer.createDesk(eq(SECOND_DISPLAY_ON_RECONNECT), any(), any()))
                 .thenAnswer { invocation ->
                     (invocation.arguments[2] as DesksOrganizer.OnCreateCallback).onCreated(
@@ -12077,7 +12085,8 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
     private companion object {
         const val SECOND_DISPLAY = 2
         const val SECOND_DISPLAY_ON_RECONNECT = 3
-        const val SECOND_DISPLAY_UNIQUE_ID = "UNIQUE_ID"
+        const val DEFAULT_DISPLAY_UNIQUE_ID = "UNIQUE_ID_1"
+        const val SECOND_DISPLAY_UNIQUE_ID = "UNIQUE_ID_2"
         val STABLE_BOUNDS = Rect(0, 0, 1000, 1000)
         const val MAX_TASK_LIMIT = 6
         private const val TASKBAR_FRAME_HEIGHT = 200

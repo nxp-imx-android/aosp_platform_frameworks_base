@@ -51,10 +51,10 @@ data class Desk(
     var topTransparentFullscreenTaskData: TopTransparentFullscreenTaskData? = null,
     var leftTiledTaskId: Int? = null,
     var rightTiledTaskId: Int? = null,
+    // The display's unique id that will remain the same across reboots.
+    var uniqueDisplayId: String? = null,
 ) {
     // TODO: b/417907552 - Add these variables to persistent repository.
-    // The display's unique id that will remain the same across reboots.
-    var uniqueDisplayId: String? = null
     // Bounds of tasks in this desk mapped to their respective task ids. Used for reconnect.
     var boundsByTaskId: MutableMap<Int, Rect> = mutableMapOf()
 
