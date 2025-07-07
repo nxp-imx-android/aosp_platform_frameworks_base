@@ -17,6 +17,7 @@
 package com.android.wm.shell.compatui.letterbox.lifecycle
 
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+import android.content.res.Configuration
 import android.testing.AndroidTestingRunner
 import android.view.SurfaceControl
 import android.window.WindowContainerToken
@@ -126,6 +127,9 @@ class TaskIdResolverTest : ShellTestCase() {
 
             @JvmStatic
             val TEST_LEASH = mock<SurfaceControl>()
+
+            @JvmStatic
+            val TEST_CONFIGURATION = Configuration()
         }
 
         private val letterboxTaskInfoRepository: LetterboxTaskInfoRepository =
@@ -145,7 +149,8 @@ class TaskIdResolverTest : ShellTestCase() {
                 containerToken = TEST_TOKEN,
                 containerLeash = TEST_LEASH,
                 taskId = taskId,
-                parentTaskId = parentTaskId
+                parentTaskId = parentTaskId,
+                configuration = TEST_CONFIGURATION
             )
     }
 }

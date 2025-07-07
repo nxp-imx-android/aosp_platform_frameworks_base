@@ -18,6 +18,7 @@ package com.android.wm.shell.compatui.letterbox.state
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.ActivityTaskManager
+import android.content.res.Configuration
 import android.view.SurfaceControl
 import android.window.WindowContainerToken
 import com.android.internal.protolog.ProtoLog
@@ -30,10 +31,11 @@ import javax.inject.Inject
 
 /** Encapsulate the [TaskInfo] information useful for letterboxing in shell. */
 data class LetterboxTaskInfoState(
-    val containerToken: WindowContainerToken,
+    val containerToken: WindowContainerToken? = null,
     val containerLeash: SurfaceControl,
     val taskId: Int = ActivityTaskManager.INVALID_TASK_ID,
     val parentTaskId: Int = ActivityTaskManager.INVALID_TASK_ID,
+    val configuration: Configuration,
 )
 
 /**
@@ -65,10 +67,23 @@ fun LetterboxTaskInfoRepository.updateTaskLeafState(
                     containerLeash = leash,
                     parentTaskId = taskInfo.parentTaskId,
                     taskId = taskInfo.taskId,
+                    configuration = taskInfo.configuration,
                 ),
             overrideIfPresent = true,
         )
     } else {
         delete(taskInfo.taskId)
     }
+}
+
+/** Updates the configuration given the [TaskInfo] and the leash. */
+fun LetterboxTaskInfoRepository.updateConfiguration(
+    taskInfo: RunningTaskInfo,
+    leash: SurfaceControl,
+) {
+    insert(
+        taskInfo.taskId,
+        LetterboxTaskInfoState(taskInfo.token, leash, configuration = taskInfo.configuration),
+        overrideIfPresent = true,
+    )
 }

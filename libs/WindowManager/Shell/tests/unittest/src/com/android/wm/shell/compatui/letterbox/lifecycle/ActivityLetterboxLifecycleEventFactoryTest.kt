@@ -16,6 +16,7 @@
 
 package com.android.wm.shell.compatui.letterbox.lifecycle
 
+import android.content.res.Configuration
 import android.graphics.Rect
 import android.testing.AndroidTestingRunner
 import android.view.SurfaceControl
@@ -74,7 +75,10 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                     }
                     endAbsBounds = Rect(100, 50, 2000, 1500)
                 }
-                r.addToTaskRepository(10, LetterboxTaskInfoState(testToken, testLeash))
+                r.addToTaskRepository(
+                    10,
+                    LetterboxTaskInfoState(testToken, testLeash, configuration = Configuration())
+                )
                 validateCanHandle { canHandle ->
                     assertTrue(canHandle)
                 }
@@ -100,7 +104,10 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                         }
                     }
                 }
-                r.addToTaskRepository(10, LetterboxTaskInfoState(testToken, testLeash))
+                r.addToTaskRepository(
+                    10,
+                    LetterboxTaskInfoState(testToken, testLeash, configuration = Configuration())
+                )
                 validateCanHandle { canHandle ->
                     assertTrue(canHandle)
                 }
@@ -118,7 +125,10 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
             testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
                 val testLeash = mock<SurfaceControl>()
                 val testToken = mock<WindowContainerToken>()
-                r.addToTaskRepository(10, LetterboxTaskInfoState(testToken, testLeash))
+                r.addToTaskRepository(
+                    10,
+                    LetterboxTaskInfoState(testToken, testLeash, configuration = Configuration())
+                )
                 inputChange {
                     activityTransitionInfo {
                         taskId = 10
@@ -146,7 +156,10 @@ class ActivityLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                 }
                 val testLeash = mock<SurfaceControl>()
                 val testToken = mock<WindowContainerToken>()
-                r.addToTaskRepository(10, LetterboxTaskInfoState(testToken, testLeash))
+                r.addToTaskRepository(
+                    10,
+                    LetterboxTaskInfoState(testToken, testLeash, configuration = Configuration())
+                )
                 r.shouldSupportInputSurface(shouldSupportInputSurface = true)
                 validateCreateLifecycleEvent { event ->
                     assertNotNull(event)

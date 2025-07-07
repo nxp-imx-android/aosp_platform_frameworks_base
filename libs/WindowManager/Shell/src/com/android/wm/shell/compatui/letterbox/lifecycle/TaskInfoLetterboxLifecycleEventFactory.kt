@@ -21,6 +21,7 @@ import android.window.TransitionInfo.Change
 import com.android.window.flags.Flags
 import com.android.wm.shell.compatui.letterbox.config.LetterboxDependenciesHelper
 import com.android.wm.shell.compatui.letterbox.state.LetterboxTaskInfoRepository
+import com.android.wm.shell.compatui.letterbox.state.updateConfiguration
 import com.android.wm.shell.compatui.letterbox.state.updateTaskLeafState
 
 /**
@@ -49,6 +50,14 @@ class TaskInfoLetterboxLifecycleEventFactory(
                     Rect(absBounds).apply { offset(-taskBoundsAbs.left, -taskBoundsAbs.top) }
                 }
             val shouldSupportInput = letterboxDependenciesHelper.shouldSupportInputSurface(change)
+            if (Flags.appCompatRefactoringRoundedCorners()) {
+                // Sometimes the [TransitionObserver] is notified before than the
+                // [TaskAppearedListener] and the related information (e.g. [Configuration])
+                // are required soon. This is the case, for instance, of rounded corners
+                // implementation which require the [Configuration] when the related surfaces
+                // are created.
+                letterboxTaskInfoRepository.updateConfiguration(ti, change.leash)
+            }
             if (Flags.appCompatRefactoringFixMultiwindowTaskHierarchy()) {
                 // Because the [TransitionObserver] is invoked before the [OnTaskAppearedListener]s
                 // it's important to store the information about the Task to be reused below for the

@@ -17,6 +17,7 @@
 package com.android.wm.shell.compatui.letterbox.lifecycle
 
 import android.app.WindowConfiguration.WINDOWING_MODE_MULTI_WINDOW
+import android.content.res.Configuration
 import android.graphics.Point
 import android.graphics.Rect
 import android.platform.test.annotations.DisableFlags
@@ -251,6 +252,46 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
     @Test
     @EnableFlags(
         Flags.FLAG_APP_COMPAT_REFACTORING,
+        Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS
+    )
+    @DisableFlags(Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY)
+    fun `With TaskInfo token leash and configuration are persistend with no hierarchy flag`() {
+        runTestScenario { r ->
+            testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
+                val inputToken = mock<WindowContainerToken>()
+                val inputLeash = mock<SurfaceControl>()
+                val inputConfiguration = Configuration()
+                inputChange {
+                    runningTaskInfo { ti ->
+                        ti.taskId = 10
+                        ti.token = inputToken
+                        ti.configuration.setTo(inputConfiguration)
+                    }
+                    leash { inputLeash }
+                    endAbsBounds = Rect(0, 0, 500, 1000)
+                    endRelOffset = Point(100, 200)
+                }
+                validateCanHandle { canHandle ->
+                    assertTrue(canHandle)
+                }
+                validateCreateLifecycleEvent { event ->
+                    assertNotNull(event)
+                    assertEquals(inputToken, event.containerToken)
+                }
+                r.useRepository { repository ->
+                    val item = repository.find(10)
+                    assertNotNull(item)
+                    assertEquals(item.containerToken, inputToken)
+                    assertEquals(item.containerLeash, inputLeash)
+                    assertEquals(0, item.configuration.compareTo(inputConfiguration))
+                }
+            }
+        }
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_APP_COMPAT_REFACTORING,
         Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY
     )
     fun `Change without TaskInfo cannot create the event and returns null with task hierarchy`() {
@@ -436,6 +477,7 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                 val parentToken = mock<WindowContainerToken>()
                 val inputLeash = mock<SurfaceControl>()
                 val inputToken = mock<WindowContainerToken>()
+                val inputConfiguration = Configuration()
                 // Insert data into the repository about a legitimate task which was a leaf task.
                 r.useRepository { repo ->
                     repo.insert(
@@ -444,7 +486,8 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                             containerToken = inputToken,
                             containerLeash = inputLeash,
                             taskId = 10,
-                            parentTaskId = 20
+                            parentTaskId = 20,
+                            configuration = inputConfiguration
                         ),
                         overrideIfPresent = true
                     )
@@ -509,6 +552,47 @@ class TaskInfoLetterboxLifecycleEventFactoryTest : ShellTestCase() {
                 validateCreateLifecycleEvent { event ->
                     assertNotNull(event)
                     assertFalse(event.supportsInput)
+                }
+            }
+        }
+    }
+
+    @Test
+    @EnableFlags(
+        Flags.FLAG_APP_COMPAT_REFACTORING,
+        Flags.FLAG_APP_COMPAT_REFACTORING_ROUNDED_CORNERS,
+        Flags.FLAG_APP_COMPAT_REFACTORING_FIX_MULTIWINDOW_TASK_HIERARCHY
+    )
+    fun `With TaskInfo token leash and configuration are persisted with hierarchy enabled`() {
+        runTestScenario { r ->
+            testLetterboxLifecycleEventFactory(r.getLetterboxLifecycleEventFactory()) {
+                val inputToken = mock<WindowContainerToken>()
+                val inputLeash = mock<SurfaceControl>()
+                val inputConfiguration = Configuration()
+                inputChange {
+                    runningTaskInfo { ti ->
+                        ti.taskId = 10
+                        ti.token = inputToken
+                        ti.appCompatTaskInfo.setIsLeafTask(true)
+                        ti.configuration.setTo(inputConfiguration)
+                    }
+                    leash { inputLeash }
+                    endAbsBounds = Rect(0, 0, 500, 1000)
+                    endRelOffset = Point(100, 200)
+                }
+                validateCanHandle { canHandle ->
+                    assertTrue(canHandle)
+                }
+                validateCreateLifecycleEvent { event ->
+                    assertNotNull(event)
+                    assertEquals(inputToken, event.containerToken)
+                }
+                r.useRepository { repository ->
+                    val item = repository.find(10)
+                    assertNotNull(item)
+                    assertEquals(item.containerToken, inputToken)
+                    assertEquals(item.containerLeash, inputLeash)
+                    assertEquals(0, item.configuration.compareTo(inputConfiguration))
                 }
             }
         }
