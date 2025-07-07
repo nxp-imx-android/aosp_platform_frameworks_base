@@ -17,6 +17,8 @@
 package android.os;
 
 import android.annotation.Nullable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 
@@ -24,6 +26,7 @@ import java.lang.invoke.VarHandle;
  * Treiber stack of Message objects, used in NewNewMessageQueue.
  * @hide
  */
+@RavenwoodKeepWholeClass
 public final class MessageStack {
     private static final String TAG = "MessageStack";
 
