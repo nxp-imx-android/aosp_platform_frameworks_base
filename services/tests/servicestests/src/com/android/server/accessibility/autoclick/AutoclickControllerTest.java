@@ -34,6 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.flag.junit.SetFlagsRule;
@@ -1524,6 +1525,23 @@ public class AutoclickControllerTest {
         // Verify that the click type is reset to left click.
         assertThat(mController.getActiveClickTypeForTest())
                 .isEqualTo(AutoclickTypePanel.AUTOCLICK_TYPE_LEFT_CLICK);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onConfigurationChanged_tellsPanelToUpdateTheme() throws Exception {
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Create a spy on the real object to verify method calls.
+        AutoclickIndicatorView spyIndicatorView = spy(mController.mAutoclickIndicatorView);
+        mController.mAutoclickIndicatorView = spyIndicatorView;
+
+        // Simulate a theme change.
+        Configuration newConfig = new Configuration();
+        mController.onConfigurationChanged(newConfig);
+
+        // Verify updateConfiguration was called.
+        verify(spyIndicatorView).onConfigurationChanged(newConfig);
     }
     /**
      * =========================================================================
