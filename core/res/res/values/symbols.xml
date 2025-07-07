@@ -5895,6 +5895,8 @@
   <java-symbol type="dimen" name="accessibility_autoclick_type_panel_button_size" />
   <java-symbol type="dimen" name="accessibility_autoclick_type_panel_divider_height" />
   <java-symbol type="dimen" name="accessibility_autoclick_type_panel_divider_width" />
+  <java-symbol type="dimen" name="accessibility_autoclick_panel_resting_elevation" />
+  <java-symbol type="dimen" name="accessibility_autoclick_panel_hover_elevation" />
   <java-symbol type="id" name="accessibility_autoclick_type_panel" />
   <java-symbol type="id" name="accessibility_autoclick_button_group_container" />
   <java-symbol type="id" name="accessibility_autoclick_click_type_button_group_container" />

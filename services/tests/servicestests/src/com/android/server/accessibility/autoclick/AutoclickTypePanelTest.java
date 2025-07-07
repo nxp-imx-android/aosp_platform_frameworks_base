@@ -519,28 +519,28 @@ public class AutoclickTypePanelTest {
 
     @Test
     public void hovered_IsHovered() {
-        AutoclickLinearLayout mContext = mAutoclickTypePanel.getContentViewForTesting();
+        AutoclickTypeLinearLayout contentView = mAutoclickTypePanel.getContentViewForTesting();
 
         assertThat(mAutoclickTypePanel.isHovered()).isFalse();
-        mContext.onInterceptHoverEvent(getFakeMotionHoverMoveEvent());
+        contentView.onInterceptHoverEvent(getFakeMotionHoverMoveEvent());
         assertThat(mAutoclickTypePanel.isHovered()).isTrue();
     }
 
     @Test
     public void hovered_OnHoverChange_isHovered() {
-        AutoclickLinearLayout mContext = mAutoclickTypePanel.getContentViewForTesting();
+        View contentView = mAutoclickTypePanel.getContentViewForTesting();
 
         mHovered = false;
-        mContext.onHoverChanged(true);
+        contentView.onHoverChanged(true);
         assertThat(mHovered).isTrue();
     }
 
     @Test
     public void hovered_OnHoverChange_isNotHovered() {
-        AutoclickLinearLayout mContext = mAutoclickTypePanel.getContentViewForTesting();
+        View contentView = mAutoclickTypePanel.getContentViewForTesting();
 
         mHovered = true;
-        mContext.onHoverChanged(false);
+        contentView.onHoverChanged(false);
         assertThat(mHovered).isFalse();
     }
 

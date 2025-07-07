@@ -137,7 +137,7 @@ public class AutoclickTypePanel {
 
     private final Context mContext;
 
-    private final AutoclickLinearLayout mContentView;
+    private final AutoclickTypeLinearLayout mContentView;
 
     private final WindowManager mWindowManager;
 
@@ -204,7 +204,7 @@ public class AutoclickTypePanel {
 
         // Inflate the panel layout.
         mContentView =
-                (AutoclickLinearLayout) LayoutInflater.from(context)
+                (AutoclickTypeLinearLayout) LayoutInflater.from(context)
                         .inflate(R.layout.accessibility_autoclick_type_panel, null);
         mContentView.setOnHoverChangedListener(mClickPanelController::onHoverChange);
         mLeftClickButton =
@@ -797,18 +797,39 @@ public class AutoclickTypePanel {
     /**
      * Returns true if cursor is over content view but not over any buttons.
      */
-    public boolean isHoveringDraggableArea() {
+    public boolean isHoveringDraggableArea(MotionEvent event) {
         if (!mContentView.isHovered()) {
             return false;
         }
 
+        // Get the absolute raw coordinates of the cursor on the screen.
+        final float rawX = event.getRawX();
+        final float rawY = event.getRawY();
+
+        // Create a reusable array to hold a view's location on the screen.
+        final int[] location = new int[2];
+
+
         View[] buttons = {mLeftClickButton, mRightClickButton, mDoubleClickButton,
                 mScrollButton, mDragButton, mLongPressButton, mPauseButton, mPositionButton};
         for (View button : buttons) {
-            if (button.isHovered()) {
-                return false;
+            if (button.isShown()) {
+                // Get the absolute top-left corner of the button on the screen.
+                button.getLocationOnScreen(location);
+                final int left = location[0];
+                final int top = location[1];
+
+                // Calculate the absolute right and bottom edges.
+                final int right = left + button.getWidth();
+                final int bottom = top + button.getHeight();
+
+                if (rawX >= left && rawX <= right && rawY >= top && rawY <= bottom) {
+                    // The cursor is definitively inside this button's bounds.
+                    return false;
+                }
             }
         }
+
         return true;
     }
 
@@ -822,31 +843,38 @@ public class AutoclickTypePanel {
                 mPauseButton, mPositionButton
         };
 
-        // Set hover behavior for the panel.
+        // Set elevation and cursor icon as hover behavior for the panel.
         mContentView.setOnHoverListener((v, event) -> {
-            updateCursorIcon();
-            return false;
-        });
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_HOVER_ENTER:
+                    v.setElevation(mContext.getResources().getDimensionPixelSize(
+                            R.dimen.accessibility_autoclick_panel_hover_elevation));
+                    break;
 
-        // Set hover behavior for all buttons.
-        for (View button : mAllButtons) {
-            button.setOnHoverListener((v, event) -> {
-                updateCursorIcon();
-                return false;
-            });
-        }
+                case MotionEvent.ACTION_HOVER_MOVE:
+                    updateCursorIcon(event);
+                    break;
+
+                case MotionEvent.ACTION_HOVER_EXIT:
+                    v.setElevation(mContext.getResources().getDimensionPixelSize(
+                            R.dimen.accessibility_autoclick_panel_resting_elevation));
+                    break;
+            }
+            return true;
+        });
     }
 
     /**
      * Updates cursor based on hover state: grab for draggable areas, arrow for buttons.
      */
-    private void updateCursorIcon() {
+    private void updateCursorIcon(MotionEvent event) {
         // Don't update cursor icon while dragging to avoid overriding the grabbing cursor during
         // drag.
         if (mIsDragging) {
             return;
         }
-        int cursorType = isHoveringDraggableArea() ? PointerIcon.TYPE_GRAB : PointerIcon.TYPE_ARROW;
+        int cursorType = isHoveringDraggableArea(event)
+                ? PointerIcon.TYPE_GRAB : PointerIcon.TYPE_ARROW;
         mCurrentCursor = PointerIcon.getSystemIcon(mContext, cursorType);
         mContentView.setPointerIcon(mCurrentCursor);
     }
@@ -858,7 +886,7 @@ public class AutoclickTypePanel {
 
     @VisibleForTesting
     @NonNull
-    AutoclickLinearLayout getContentViewForTesting() {
+    AutoclickTypeLinearLayout getContentViewForTesting() {
         return mContentView;
     }
 
