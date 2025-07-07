@@ -278,6 +278,7 @@ android.os.Looper
 android.os.Message
 android.os.MessageHeap
 android.os.MessageQueue
+android.os.MessageStack
 android.os.PackageTagsList
 android.os.Parcel
 android.os.ParcelFileDescriptor
