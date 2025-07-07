@@ -3498,35 +3498,35 @@ public class MockingOomAdjusterTests {
         // GIVEN: perceptible adjustment is NOT enabled (perceptible stop time is not set)
         // EXPECT: zero adjustment
         // TLDR: App is not set as a perceptible task and hence no oom_adj boosting.
-        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.initialize(app, CACHED_APP_MIN_ADJ,
+        mService.mOomAdjuster.mTmpOomAdjWindowCalculator.initialize(app, CACHED_APP_MIN_ADJ,
                 false, false, PROCESS_STATE_CACHED_ACTIVITY,
                 SCHED_GROUP_DEFAULT, 0, 0, PROCESS_STATE_IMPORTANT_FOREGROUND);
-        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.onOtherActivity(-1);
-        assertEquals(CACHED_APP_MIN_ADJ, mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.adj);
+        mService.mOomAdjuster.mTmpOomAdjWindowCalculator.onOtherActivity(-1);
+        assertEquals(CACHED_APP_MIN_ADJ, mService.mOomAdjuster.mTmpOomAdjWindowCalculator.getAdj());
 
         // GIVEN: perceptible adjustment is enabled (perceptible stop time is set) and
         //        elapsed time < PERCEPTIBLE_TASK_TIMEOUT
         // EXPECT: adjustment to PERCEPTIBLE_MEDIUM_APP_ADJ
         // TLDR: App is a perceptible task (e.g. opened from launcher) and has oom_adj boosting.
-        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.initialize(app, CACHED_APP_MIN_ADJ,
+        mService.mOomAdjuster.mTmpOomAdjWindowCalculator.initialize(app, CACHED_APP_MIN_ADJ,
                 false, false, PROCESS_STATE_CACHED_ACTIVITY,
                 SCHED_GROUP_DEFAULT, 0, 0, PROCESS_STATE_IMPORTANT_FOREGROUND);
         mInjector.reset();
-        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.onOtherActivity(now);
+        mService.mOomAdjuster.mTmpOomAdjWindowCalculator.onOtherActivity(now);
         assertEquals(PERCEPTIBLE_MEDIUM_APP_ADJ,
-                mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.adj);
+                mService.mOomAdjuster.mTmpOomAdjWindowCalculator.getAdj());
 
         // GIVEN: perceptible adjustment is enabled (perceptible stop time is set) and
         //        elapsed time >  PERCEPTIBLE_TASK_TIMEOUT
         // EXPECT: adjustment to PREVIOUS_APP_ADJ
         // TLDR: App is a perceptible task (e.g. opened from launcher) and has oom_adj boosting, but
         //       time has elapsed and has dropped to a lower boosting of PREVIOUS_APP_ADJ
-        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.initialize(app, CACHED_APP_MIN_ADJ,
+        mService.mOomAdjuster.mTmpOomAdjWindowCalculator.initialize(app, CACHED_APP_MIN_ADJ,
                 false, false, PROCESS_STATE_CACHED_ACTIVITY,
                 SCHED_GROUP_DEFAULT, 0, 0, PROCESS_STATE_IMPORTANT_FOREGROUND);
         mInjector.jumpUptimeAheadTo(OomAdjuster.PERCEPTIBLE_TASK_TIMEOUT_MILLIS + 1000);
-        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.onOtherActivity(0);
-        assertEquals(PREVIOUS_APP_ADJ, mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.adj);
+        mService.mOomAdjuster.mTmpOomAdjWindowCalculator.onOtherActivity(0);
+        assertEquals(PREVIOUS_APP_ADJ, mService.mOomAdjuster.mTmpOomAdjWindowCalculator.getAdj());
     }
 
     /**

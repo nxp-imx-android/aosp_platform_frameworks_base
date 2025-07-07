@@ -1339,9 +1339,9 @@ public class OomAdjusterImpl extends OomAdjuster {
         // Examine all non-top activities.
         boolean foregroundActivities = app == topApp;
         if (!foregroundActivities && state.getHasActivities()) {
-            state.computeOomAdjFromActivitiesIfNecessary(mTmpComputeOomAdjWindowCallback,
-                    adj, foregroundActivities, hasVisibleActivities, procState, schedGroup,
-                    appUid, logUid, PROCESS_STATE_CUR_TOP);
+            mTmpOomAdjWindowCalculator.computeOomAdjFromActivitiesIfNecessary(app, adj,
+                    foregroundActivities, hasVisibleActivities, procState, schedGroup, appUid,
+                    logUid, PROCESS_STATE_CUR_TOP);
 
             adj = state.getCachedAdj();
             foregroundActivities = state.getCachedForegroundActivities();
