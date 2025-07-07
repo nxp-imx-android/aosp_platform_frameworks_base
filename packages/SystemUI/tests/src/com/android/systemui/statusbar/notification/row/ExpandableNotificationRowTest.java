@@ -52,7 +52,9 @@ import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper;
 import android.testing.TestableLooper.RunWithLooper;
 import android.util.DisplayMetrics;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.ImageView;
 
 import androidx.test.ext.junit.runners.AndroidJUnit4;
@@ -71,8 +73,11 @@ import com.android.systemui.statusbar.SysuiStatusBarStateController;
 import com.android.systemui.statusbar.notification.AboveShelfChangedListener;
 import com.android.systemui.statusbar.notification.FeedbackIcon;
 import com.android.systemui.statusbar.notification.SourceType;
+import com.android.systemui.statusbar.notification.collection.BundleEntryAdapter;
+import com.android.systemui.statusbar.notification.collection.BundleSpec;
 import com.android.systemui.statusbar.notification.collection.NotificationEntry;
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder;
+import com.android.systemui.statusbar.notification.collection.PipelineEntry;
 import com.android.systemui.statusbar.notification.headsup.PinnedStatus;
 import com.android.systemui.statusbar.notification.icon.IconPack;
 import com.android.systemui.statusbar.notification.promoted.PromotedNotificationUi;
@@ -291,15 +296,11 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
     @EnableFlags(NotificationBundleUi.FLAG_NAME)
     public void testGroupWithinGroupIntrinsicHeightCalculationWhenGroupExpanded() throws Exception {
         // GIVEN a group within a group
-        Notification bundleNotif = new Notification.Builder(mContext, "channel")
-                .setSmallIcon(R.drawable.ic_menu)
-                .setGroupSummary(true)
-                .setGroup("group1")
-                .build();
-        NotificationEntry bundleEntry = new NotificationEntryBuilder()
-                .setNotification(bundleNotif)
-                .build();
-        ExpandableNotificationRow bundle = mKosmos.createRow(bundleEntry);
+        final ExpandableNotificationRow bundle = mKosmos.createRowBundle(
+                BundleSpec.Companion.getNEWS());
+        final PipelineEntry bundleEntry =
+                ((BundleEntryAdapter) bundle.getEntryAdapter()).getEntry();
+
         Notification groupNotif = new Notification.Builder(mContext, "channel")
                 .setSmallIcon(R.drawable.ic_menu)
                 .setGroupSummary(true)
@@ -323,6 +324,67 @@ public class ExpandableNotificationRowTest extends SysuiTestCase {
         assertThat(group.isGroupExpanded()).isEqualTo(true);
         assertThat(group.getIntrinsicHeight())
                 .isEqualTo(group.getChildrenContainer().getIntrinsicHeight());
+    }
+
+    @Test
+    @EnableFlags(NotificationBundleUi.FLAG_NAME)
+    public void testGroupsInsideBundles_clickableWhenExpanded() throws Exception {
+        // GIVEN a group within a group
+        final ExpandableNotificationRow bundle = mKosmos.createRowBundle(
+                BundleSpec.Companion.getNEWS());
+        final PipelineEntry bundleEntry =
+                ((BundleEntryAdapter) bundle.getEntryAdapter()).getEntry();
+
+        Notification groupNotif = new Notification.Builder(mContext, "channel")
+                .setSmallIcon(R.drawable.ic_menu)
+                .setGroupSummary(true)
+                .setGroup("groupInBundle")
+                .build();
+        NotificationEntry groupEntry = new NotificationEntryBuilder()
+                .setNotification(groupNotif)
+                .setParent(bundleEntry)
+                .build();
+        ExpandableNotificationRow group = mKosmos.createRow(groupEntry);
+        ExpandableNotificationRow child = mKosmos.createRow();
+
+        bundle.addChildNotification(group, 0);
+        group.addChildNotification(child, 0);
+
+        OnClickListener l = mock(OnClickListener.class);
+        group.setOnClickListener(l);
+
+        // Check that the group summary is clickable before it is expanded
+        assertThat(group.isGroupExpanded()).isEqualTo(false);
+        assertThat(group.isClickable()).isTrue();
+        assertThat(group.isBundledSummaryClickable()).isTrue();
+        assertThat(group.isSummaryWithChildren()).isTrue();
+        assertThat(child.isClickable()).isFalse();
+
+        // Check that the touch events are handled
+        MotionEvent touchDown = MotionEvent.obtain(
+                /* downTime= */ 1234,
+                /* eventTime= */ 1234,
+                MotionEvent.ACTION_DOWN,
+                101,
+                201,
+                0);
+        assertThat(group.onTouchEvent(touchDown)).isTrue();
+        MotionEvent touchUp = MotionEvent.obtain(
+                /* downTime= */ 1235,
+                /* eventTime= */ 1235,
+                MotionEvent.ACTION_UP,
+                101,
+                201,
+                0);
+        assertThat(group.onTouchEvent(touchUp)).isTrue();
+
+        // WHEN group is expanded
+        group.expandNotification();
+        mKosmos.getGroupExpansionManager().setGroupExpanded(group.getEntryAdapter(), true);
+
+        // THEN group is expanded and is not clickable
+        assertThat(group.isGroupExpanded()).isEqualTo(true);
+        assertThat(group.isBundledSummaryClickable()).isFalse();
     }
 
     @Test
