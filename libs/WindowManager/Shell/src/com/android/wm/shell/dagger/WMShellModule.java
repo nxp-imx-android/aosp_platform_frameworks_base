@@ -1184,7 +1184,7 @@ public abstract class WMShellModule {
                     desktopModeWindowDecorViewModel, desktopTasksController,
                     desktopUserRepositories,
                     inputManager, shellTaskOrganizer, focusTransitionObserver,
-                    mainExecutor, displayController));
+                    mainExecutor, displayController, desktopState));
         }
         return Optional.empty();
     }
