@@ -385,8 +385,8 @@ public class AutoclickTypePanel {
                 .setTint(
                         mContext.getColor(
                                 isSelected
-                                        ? R.color.materialColorSurfaceContainer
-                                        : R.color.materialColorPrimary));
+                                        ? R.color.materialColorOnPrimary
+                                        : R.color.materialColorOnSurface));
     }
 
     public void show() {
