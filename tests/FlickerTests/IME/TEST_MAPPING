@@ -1,0 +1,52 @@
+{
+  "wm": [
+    {
+      "name": "FlickerTestsIme-CatchAll"
+    },
+    {
+      "name": "FlickerTestsIme-CloseImeOnDismissPopupDialogTest"
+    },
+    {
+      "name": "FlickerTestsIme-CloseImeOnGoHomeTest"
+    },
+    {
+      "name": "FlickerTestsIme-CloseImeShownOnAppStartOnGoHomeTest"
+    },
+    {
+      "name": "FlickerTestsIme-CloseImeShownOnAppStartToAppOnPressBackTest"
+    },
+    {
+      "name": "FlickerTestsIme-CloseImeToAppOnPressBackTest"
+    },
+    {
+      "name": "FlickerTestsIme-CloseImeToHomeOnFinishActivityTest"
+    },
+    {
+      "name": "FlickerTestsIme-OpenImeWindowToFixedPortraitAppTest"
+    },
+    {
+      "name": "FlickerTestsIme-ShowImeOnAppStartWhenLaunchingAppFromFixedOrientationTest"
+    },
+    {
+      "name": "FlickerTestsIme-ShowImeOnAppStartWhenLaunchingAppFromOverviewTest"
+    },
+    {
+      "name": "FlickerTestsIme-ShowImeOnAppStartWhenLaunchingAppFromQuickSwitchTest"
+    },
+    {
+      "name": "FlickerTestsIme-ShowImeOnAppStartWhenLaunchingAppTest"
+    },
+    {
+      "name": "FlickerTestsIme-ShowImeOnUnlockScreenTest"
+    },
+    {
+      "name": "FlickerTestsIme-ShowImeWhenFocusingOnInputFieldTest"
+    },
+    {
+      "name": "FlickerTestsIme-ShowImeWhileDismissingThemedPopupDialogTest"
+    },
+    {
+      "name": "FlickerTestsIme-ShowImeWhileEnteringOverviewTest"
+    }
+  ]
+}

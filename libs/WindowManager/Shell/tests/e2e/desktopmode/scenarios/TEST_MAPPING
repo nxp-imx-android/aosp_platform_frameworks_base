@@ -148,6 +148,21 @@
       "name": "FunctionalTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest"
     },
     {
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-ClickAndFocusTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-CloseThenMoveFocusTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-DragAndKeepFocusTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-MoveToNextDisplayAndFocusTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-focus-OpenAndFocusTest"
+    },
+    {
       "name": "FunctionalTestsDesktopMode-maximize-MaximizeAppWindowTest"
     },
     {

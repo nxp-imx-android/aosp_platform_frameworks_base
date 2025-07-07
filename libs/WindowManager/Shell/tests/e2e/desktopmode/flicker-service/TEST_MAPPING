@@ -13,6 +13,9 @@
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-EnterDesktopWithAppHandleMenuFlickerTest"
     },
     {
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-EnterDesktopWithDragFlickerTest"
+    },
+    {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-EnterSplitScreenWithAppHandleMenuFlickerTest"
     },
     {
@@ -40,10 +43,16 @@
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest"
     },
     {
+      "name": "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppDoubleTapAppHeaderFlickerTest"
+    },
+    {
       "name": "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppFlickerTest"
     },
     {
       "name": "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppNonResizableFlickerTest"
+    },
+    {
+      "name": "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppViaHeaderMenuFlickerTest"
     },
     {
       "name": "WMShellFlickerTestsDesktopMode-resizing-ResizeAppToMaximumWindowSizeFlickerTest"

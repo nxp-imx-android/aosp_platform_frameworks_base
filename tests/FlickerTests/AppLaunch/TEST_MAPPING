@@ -1,6 +1,9 @@
 {
   "wm": [
     {
+      "name": "FlickerTestsAppLaunch-ActivityTransitionTest"
+    },
+    {
       "name": "FlickerTestsAppLaunch-CatchAll"
     },
     {
@@ -25,7 +28,7 @@
       "name": "FlickerTestsAppLaunch-OpenCameraFromHomeOnDoubleClickPowerButtonTest"
     },
     {
-      "name": "FlickerTestsAppLaunch-OpenTransferSplashscreenAppFromLauncherTransition"
+      "name": "FlickerTestsAppLaunch-OverrideTaskTransitionTest"
     },
     {
       "name": "FlickerTestsAppLaunch-TaskTransitionTest"

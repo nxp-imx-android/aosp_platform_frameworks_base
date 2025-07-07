@@ -4,7 +4,7 @@
       "name": "WMShellExplicitFlickerTestsBubbles-CatchAll"
     },
     {
-      "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleViaBackTest"
+      "name": "WMShellExplicitFlickerTestsBubbles-CollapseBubbleAppViaBackTest"
     },
     {
       "name": "WMShellExplicitFlickerTestsBubbles-DismissExpandedBubbleViaBubbleViewTest"

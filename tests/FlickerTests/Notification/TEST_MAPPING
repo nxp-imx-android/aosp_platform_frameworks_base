@@ -1,0 +1,22 @@
+{
+  "wm": [
+    {
+      "name": "FlickerTestsNotification-CatchAll"
+    },
+    {
+      "name": "FlickerTestsNotification-OpenAppFromLockscreenNotificationColdTest"
+    },
+    {
+      "name": "FlickerTestsNotification-OpenAppFromLockscreenNotificationWarmTest"
+    },
+    {
+      "name": "FlickerTestsNotification-OpenAppFromLockscreenNotificationWithOverlayAppTest"
+    },
+    {
+      "name": "FlickerTestsNotification-OpenAppFromNotificationColdTest"
+    },
+    {
+      "name": "FlickerTestsNotification-OpenAppFromNotificationWarmTest"
+    }
+  ]
+}

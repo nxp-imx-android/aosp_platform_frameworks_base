@@ -1,0 +1,16 @@
+{
+  "wm": [
+    {
+      "name": "FlickerTestsQuickswitch-CatchAll"
+    },
+    {
+      "name": "FlickerTestsQuickswitch-QuickSwitchBetweenTwoAppsBackTest"
+    },
+    {
+      "name": "FlickerTestsQuickswitch-QuickSwitchBetweenTwoAppsForwardTest"
+    },
+    {
+      "name": "FlickerTestsQuickswitch-QuickSwitchFromLauncherTest"
+    }
+  ]
+}
