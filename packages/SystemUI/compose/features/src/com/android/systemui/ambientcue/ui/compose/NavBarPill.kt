@@ -44,11 +44,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -209,7 +207,8 @@ fun NavBarPill(
                     .padding(bottom = 4.dp),
         ) {
             val closeButtonSize = 28.dp
-            Spacer(modifier = Modifier.size(closeButtonSize))
+            val closeButtonTouchTargetSize = 36.dp
+            Spacer(modifier = Modifier.size(closeButtonTouchTargetSize))
 
             Box {
                 Row(
@@ -349,19 +348,24 @@ fun NavBarPill(
                 )
             }
 
-            // Remove default padding and size.
-            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+            // Expand the clickable area.
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier =
+                    Modifier.size(closeButtonTouchTargetSize)
+                        .clickable(
+                            onClick = onCloseClick,
+                            interactionSource = null,
+                            indication = null,
+                        ),
+            ) {
                 // Close button
                 FilledIconButton(
                     onClick = onCloseClick,
-                    modifier =
-                        Modifier.size(closeButtonSize)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceContainer),
+                    modifier = Modifier.size(closeButtonSize),
                     colors =
                         IconButtonDefaults.filledIconButtonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
                         ),
                 ) {
                     Icon(

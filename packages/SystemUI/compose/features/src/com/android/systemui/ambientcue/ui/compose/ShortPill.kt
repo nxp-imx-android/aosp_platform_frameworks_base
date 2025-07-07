@@ -44,11 +44,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -211,7 +209,7 @@ fun ShortPill(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = fadeOutModifier.then(scaleAnimationModifier),
             ) {
-                Spacer(modifier = Modifier.size(closeButtonSize))
+                Spacer(modifier = Modifier.size(closeButtonTouchTargetSize))
 
                 Box(
                     contentAlignment = Alignment.Center,
@@ -296,10 +294,10 @@ fun ShortPill(
             with(density) {
                 val offsetX =
                     pillContentPosition.x.toDp() + (pillContentSize.width.toDp() / 2) -
-                        (closeButtonSize / 2)
+                        (closeButtonTouchTargetSize / 2)
                 val offsetY =
                     pillContentPosition.y.toDp() + (pillContentSize.height.toDp() / 2) -
-                        (closeButtonSize / 2)
+                        (closeButtonTouchTargetSize / 2)
 
                 CloseButton(
                     onCloseClick = onCloseClick,
@@ -316,17 +314,20 @@ fun ShortPill(
 
 @Composable
 private fun CloseButton(onCloseClick: () -> Unit, modifier: Modifier = Modifier) {
-    // Remove default padding and size.
-    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+    // Expand the clickable area.
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier =
+            Modifier.size(closeButtonTouchTargetSize)
+                .clickable(onClick = onCloseClick, interactionSource = null, indication = null),
+    ) {
         // Close button
         FilledIconButton(
             onClick = onCloseClick,
-            modifier =
-                modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainer),
+            modifier = modifier,
             colors =
                 IconButtonDefaults.filledIconButtonColors(
-                    containerColor = Color.Transparent,
-                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainer
                 ),
         ) {
             Icon(
@@ -364,3 +365,5 @@ private fun Icon(action: ActionViewModel, backgroundColor: Color, modifier: Modi
                 .background(backgroundColor),
     )
 }
+
+private val closeButtonTouchTargetSize = 36.dp
