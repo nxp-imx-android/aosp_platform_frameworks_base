@@ -3847,17 +3847,29 @@ class DesktopTasksController(
             displayLayout.getStableBoundsForDesktopMode(stableBounds)
         }
 
-        val activeTasks = taskRepository.getExpandedTasksIdsInDeskOrdered(deskId)
-        activeTasks
+        val expandedTasks = taskRepository.getExpandedTasksIdsInDeskOrdered(deskId)
+        expandedTasks
             .firstOrNull { !taskRepository.isClosingTask(it) }
-            ?.let { activeTask ->
-                shellTaskOrganizer.getRunningTaskInfo(activeTask)?.let {
-                    cascadeWindow(
-                        context.resources,
-                        stableBounds,
-                        it.configuration.windowConfiguration.bounds,
-                        bounds,
-                    )
+            ?.let { taskId: Int ->
+                val taskInfo =
+                    shellTaskOrganizer.getRunningTaskInfo(taskId)
+                        ?: recentTasksController?.findTaskInBackground(taskId)
+                taskInfo?.let {
+                    val taskBounds = it.configuration.windowConfiguration.bounds
+                    if (!taskBounds.isEmpty()) {
+                        cascadeWindow(context.resources, stableBounds, taskBounds, bounds)
+                        return@let
+                    }
+                    // RecentsTaskInfo might not have configuration bounds populated yet so use
+                    // task lastNonFullscreenBounds if available. If null or empty bounds are found
+                    // do not cascade.
+                    if (it is RecentTaskInfo) {
+                        it.lastNonFullscreenBounds?.let {
+                            if (!it.isEmpty()) {
+                                cascadeWindow(context.resources, stableBounds, it, bounds)
+                            }
+                        }
+                    }
                 }
             }
     }
