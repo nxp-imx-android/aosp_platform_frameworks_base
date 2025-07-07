@@ -20,7 +20,6 @@ import android.annotation.Nullable;
 
 import com.android.internal.widget.remotecompose.core.operations.paint.PaintBundle;
 
-import java.time.Clock;
 import java.util.HashMap;
 
 /** Specify an abstract paint context used by RemoteCompose commands to draw */
@@ -74,10 +73,6 @@ public abstract class PaintContext {
     public void saveLayer(float x, float y, float width, float height) {
         // TODO
         matrixSave();
-    }
-
-    public @NonNull Clock getClock() {
-        return mContext.getClock();
     }
 
     /**
@@ -218,7 +213,7 @@ public abstract class PaintContext {
      *
      * @param paint
      */
-    public abstract void replacePaint(@NonNull PaintBundle paint);
+    public abstract void replacePaint(PaintBundle paint);
 
     /**
      * draw a round rect
@@ -261,7 +256,7 @@ public abstract class PaintContext {
      * @param bounds the bounds (left, top, right, bottom)
      */
     public abstract void getTextBounds(
-            int textId, int start, int end, int flags, @NonNull float [] bounds);
+            int textId, int start, int end, int flags, @NonNull float[] bounds);
 
     /**
      * Compute complex text layout
@@ -285,7 +280,7 @@ public abstract class PaintContext {
      *
      * @return an instance of a ComputedTextLayout (typically if complex text drawing is used)
      */
-    public abstract @Nullable Platform.ComputedTextLayout layoutComplexText(
+    public abstract Platform.ComputedTextLayout layoutComplexText(
             int textId,
             int start,
             int end,
@@ -322,7 +317,7 @@ public abstract class PaintContext {
      *
      * @param computedTextLayout pre-computed text layout
      */
-    public abstract void drawComplexText(@Nullable Platform.ComputedTextLayout computedTextLayout);
+    public abstract void drawComplexText(Platform.ComputedTextLayout computedTextLayout);
 
     /**
      * Draw an interpolation between two paths
@@ -451,7 +446,7 @@ public abstract class PaintContext {
      * @return true if in debug mode, false otherwise
      */
     public boolean isDebug() {
-        return mContext.isBasicDebug();
+        return mContext.isDebug();
     }
 
     /**
@@ -502,10 +497,10 @@ public abstract class PaintContext {
     /**
      * Returns a String from an id
      *
-     * @param textId
+     * @param textID
      * @return the string if found
      */
-    public abstract @Nullable String getText(int textId);
+    public abstract @Nullable String getText(int textID);
 
     /**
      * Returns true if the document has been encoded for at least the given version MAJOR.MINOR
@@ -518,23 +513,4 @@ public abstract class PaintContext {
     public boolean supportsVersion(int major, int minor, int patch) {
         return mContext.supportsVersion(major, minor, patch);
     }
-
-    /**
-     * Sets the Matrix from the path
-     *
-     * @param pathId id of the path
-     * @param fraction fractional position in the path to use
-     * @param vOffset vertical offset
-     * @param flags flags
-     */
-    public abstract void matrixFromPath(int pathId, float fraction, float vOffset, int flags);
-
-    /**
-     * Redirect drawing to a bitmap (0 = back to main canvas)
-     *
-     * @param bitmapId id of bitmap to draw to or 0 to draw to the canvas
-     * @param mode flags support init of bitmap 0 = clear to color, 1 = no clear
-     * @param color set the initial color of the bitmap
-     */
-    public abstract void drawToBitmap(int bitmapId, int mode, int color);
 }

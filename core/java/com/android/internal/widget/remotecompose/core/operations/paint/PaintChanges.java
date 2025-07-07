@@ -146,8 +146,8 @@ public interface PaintChanges {
      * @param tileMode
      */
     void setLinearGradient(
-            @NonNull int [] colorsArray,
-            @Nullable float [] stopsArray,
+            @NonNull int[] colorsArray,
+            @Nullable float[] stopsArray,
             float startX,
             float startY,
             float endX,
@@ -165,8 +165,8 @@ public interface PaintChanges {
      * @param tileMode
      */
     void setRadialGradient(
-            @NonNull int [] colorsArray,
-            @Nullable float [] stopsArray,
+            @NonNull int[] colorsArray,
+            @Nullable float[] stopsArray,
             float centerX,
             float centerY,
             float radius,
@@ -181,10 +181,7 @@ public interface PaintChanges {
      * @param centerY
      */
     void setSweepGradient(
-            @NonNull int [] colorsArray,
-            @Nullable float [] stopsArray,
-            float centerX,
-            float centerY);
+            @NonNull int[] colorsArray, @Nullable float[] stopsArray, float centerX, float centerY);
 
     /**
      * Set Color filter mod
@@ -195,33 +192,11 @@ public interface PaintChanges {
     void setColorFilter(int color, int mode);
 
     /**
-     * Set TypeFace 0,1,2
+     * Set TypeFace 0,1,2 TODO above should point to a string to be decoded
      *
-     * @param fontType the type of font 0,1,or 2
-     * @param weight the weight of the font
-     * @param italic if the font is italic
+     * @param fontType
+     * @param weight
+     * @param italic
      */
     void setTypeFace(int fontType, int weight, boolean italic);
-
-    /**
-     * Set the shader matrix
-     *
-     * @param matrixId the id of the matrix
-     */
-    void setShaderMatrix(float matrixId);
-
-    /**
-     * @param fontType String to be looked up in system
-     * @param weight the weight of the font
-     * @param italic if the font is italic
-     */
-    void setTypeFace(@NonNull String fontType, int weight, boolean italic);
-
-    /**
-     * Set the font variation axes
-     *
-     * @param tags tags
-     * @param values values
-     */
-    void setFontVariationAxes(@NonNull String[] tags, @NonNull float [] values);
 }

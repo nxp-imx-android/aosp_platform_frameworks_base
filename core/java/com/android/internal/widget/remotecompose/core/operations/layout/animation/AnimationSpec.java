@@ -137,7 +137,7 @@ public class AnimationSpec extends Operation implements ModifierOperation {
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addType("AnimationSpec")
                 .add("animationId", mAnimationId)

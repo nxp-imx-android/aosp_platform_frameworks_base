@@ -169,7 +169,8 @@ public class CollapsibleRowLayout extends RowLayout {
             boolean verticalWrap,
             @NonNull MeasurePass measure,
             @NonNull Size size) {
-        computeVisibleChildren(context, maxWidth, maxHeight, horizontalWrap, measure, size);
+        computeVisibleChildren(
+                context, maxWidth, maxHeight, horizontalWrap, verticalWrap, measure, size);
     }
 
     @Override
@@ -180,7 +181,7 @@ public class CollapsibleRowLayout extends RowLayout {
             float minHeight,
             float maxHeight,
             @NonNull MeasurePass measure) {
-        computeVisibleChildren(context, maxWidth, maxHeight, false, measure, null);
+        computeVisibleChildren(context, maxWidth, maxHeight, false, false, measure, null);
     }
 
     @Override
@@ -189,7 +190,7 @@ public class CollapsibleRowLayout extends RowLayout {
         super.internalLayoutMeasure(context, measure);
         // Check again for visibility
         ComponentMeasure m = measure.get(this);
-        computeVisibleChildren(context, m.getW(), m.getH(), false, measure, null);
+        computeVisibleChildren(context, m.getW(), m.getH(), false, false, measure, null);
     }
 
     private void computeVisibleChildren(
@@ -197,6 +198,7 @@ public class CollapsibleRowLayout extends RowLayout {
             float maxWidth,
             float maxHeight,
             boolean horizontalWrap,
+            boolean verticalWrap,
             @NonNull MeasurePass measure,
             @Nullable Size size) {
         int visibleChildren = 0;

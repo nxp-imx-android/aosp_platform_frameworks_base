@@ -39,10 +39,10 @@ public class DataListIds extends Operation implements VariableSupport, ArrayAcce
     private static final int OP_CODE = Operations.ID_LIST;
     private static final String CLASS_NAME = "IdListData";
     private final int mId;
-    private final @NonNull int [] mIds;
+    @NonNull private final int[] mIds;
     private static final int MAX_LIST = 2000;
 
-    public DataListIds(int id, @NonNull int [] ids) {
+    public DataListIds(int id, @NonNull int[] ids) {
         mId = id;
         mIds = ids;
     }
@@ -71,7 +71,7 @@ public class DataListIds extends Operation implements VariableSupport, ArrayAcce
      * @param id the id of the array
      * @param ids the values of the array
      */
-    public static void apply(@NonNull WireBuffer buffer, int id, @NonNull int [] ids) {
+    public static void apply(@NonNull WireBuffer buffer, int id, @NonNull int[] ids) {
         buffer.start(OP_CODE);
         buffer.writeInt(id);
         buffer.writeInt(ids.length);
@@ -134,8 +134,9 @@ public class DataListIds extends Operation implements VariableSupport, ArrayAcce
         return mIds[index];
     }
 
+    @Nullable
     @Override
-    public @Nullable float [] getFloats() {
+    public float[] getFloats() {
         return null;
     }
 
@@ -151,7 +152,7 @@ public class DataListIds extends Operation implements VariableSupport, ArrayAcce
 
     @SuppressWarnings("JdkImmutableCollections")
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer.addType(CLASS_NAME).add("id", mId).add("ids", List.of(mIds));
     }
 }

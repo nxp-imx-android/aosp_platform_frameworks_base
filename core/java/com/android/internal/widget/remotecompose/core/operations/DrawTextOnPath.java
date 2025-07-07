@@ -157,7 +157,7 @@ public class DrawTextOnPath extends PaintOperation implements VariableSupport, S
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("pathId", mPathId)

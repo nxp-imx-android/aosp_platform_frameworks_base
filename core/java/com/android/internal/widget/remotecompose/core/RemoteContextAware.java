@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.internal.widget.remotecompose.player.player.platform;
+package com.android.internal.widget.remotecompose.core;
 
-import android.content.Context;
-import android.provider.Settings;
+/**
+ * This interface defines a contract for objects that are aware of a {@link RemoteContext}.
+ *
+ * <p>PlayerViews should implement to provide access to the RemoteContext.
+ */
+public interface RemoteContextAware {
 
-/** Class to retrieve values from {@link Settings}. */
-public class SettingsRetriever {
-    /** Determines whether the Remove Animations accessibility setting is enabled. */
-    public static Boolean animationsEnabled(Context context) {
-        return !(Settings.Global.getFloat(
-                        context.getContentResolver(), Settings.Global.ANIMATOR_DURATION_SCALE, 1.0f)
-                == 0f);
-    }
+    /**
+     * Returns the remote context
+     *
+     * @return a RemoteContext
+     */
+    RemoteContext getRemoteContext();
 }

@@ -19,7 +19,6 @@ import static com.android.internal.widget.remotecompose.core.documentation.Docum
 import static com.android.internal.widget.remotecompose.core.documentation.DocumentedOperation.SHORT;
 
 import android.annotation.NonNull;
-import android.annotation.Nullable;
 
 import com.android.internal.widget.remotecompose.core.Operation;
 import com.android.internal.widget.remotecompose.core.Operations;
@@ -36,7 +35,7 @@ import java.util.List;
 public class ImageAttribute extends PaintOperation {
     private static final int OP_CODE = Operations.ATTRIBUTE_IMAGE;
     private static final String CLASS_NAME = "ImageAttribute";
-    private final @Nullable int [] mArgs;
+    private final int[] mArgs;
     public int mId;
     int mImageId;
     short mType;
@@ -52,7 +51,7 @@ public class ImageAttribute extends PaintOperation {
      * @param type the type of value to return
      * @param args support for additional arguments (currently none)
      */
-    public ImageAttribute(int id, int imageId, short type, @Nullable int [] args) {
+    public ImageAttribute(int id, int imageId, short type, int[] args) {
         this.mId = id;
         this.mImageId = imageId;
         this.mType = type;
@@ -97,7 +96,7 @@ public class ImageAttribute extends PaintOperation {
      * @param args the value of the float
      */
     public static void apply(
-            @NonNull WireBuffer buffer, int id, int imageId, short type, @Nullable int [] args) {
+            @NonNull WireBuffer buffer, int id, int imageId, short type, int[] args) {
         buffer.start(OP_CODE);
         buffer.writeInt(id);
         buffer.writeInt(imageId);
@@ -151,6 +150,8 @@ public class ImageAttribute extends PaintOperation {
         return indent + toString();
     }
 
+    @NonNull float[] mBounds = new float[4];
+
     @Override
     public void paint(@NonNull PaintContext context) {
         BitmapData bitmapData = (BitmapData) context.getContext().getObject(mImageId);
@@ -165,7 +166,7 @@ public class ImageAttribute extends PaintOperation {
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("id", mId)

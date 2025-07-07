@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.internal.widget.remotecompose.player.accessibility.platform;
+package com.android.internal.widget.remotecompose.accessibility;
 
 import android.annotation.NonNull;
 import android.view.View;
 
 import com.android.internal.widget.remotecompose.core.CoreDocument;
-import com.android.internal.widget.remotecompose.core.RemoteContextActions;
-import com.android.internal.widget.remotecompose.player.accessibility.CoreDocumentAccessibility;
-import com.android.internal.widget.remotecompose.player.accessibility.RemoteComposeAccessibilityRegistrar;
+import com.android.internal.widget.remotecompose.core.RemoteContextAware;
 
 /**
  * Trivial wrapper for calling setAccessibilityDelegate on a View. This exists primarily because the
@@ -30,39 +28,20 @@ import com.android.internal.widget.remotecompose.player.accessibility.RemoteComp
  */
 public class PlatformRemoteComposeAccessibilityRegistrar
         implements RemoteComposeAccessibilityRegistrar {
-
-    /**
-     * return helper
-     *
-     * @param player
-     * @param coreDocument
-     * @return
-     */
     public PlatformRemoteComposeTouchHelper forRemoteComposePlayer(
             View player, @NonNull CoreDocument coreDocument) {
         return new PlatformRemoteComposeTouchHelper(
                 player,
-                new CoreDocumentAccessibility(coreDocument, ((RemoteContextActions) player)),
+                new CoreDocumentAccessibility(
+                        coreDocument, ((RemoteContextAware) player).getRemoteContext()),
                 new AndroidPlatformSemanticNodeApplier(player));
     }
 
-    /**
-     * set delegate
-     *
-     * @param remoteComposePlayer The View representing the remote compose player.
-     * @param document The CoreDocument containing the accessibility information for the UI
-     *     elements.
-     */
     public void setAccessibilityDelegate(View remoteComposePlayer, CoreDocument document) {
         remoteComposePlayer.setAccessibilityDelegate(
                 forRemoteComposePlayer(remoteComposePlayer, document));
     }
 
-    /**
-     * clear delegate
-     *
-     * @param remoteComposePlayer The View representing the remote compose player.
-     */
     public void clearAccessibilityDelegate(View remoteComposePlayer) {
         remoteComposePlayer.setAccessibilityDelegate(null);
     }

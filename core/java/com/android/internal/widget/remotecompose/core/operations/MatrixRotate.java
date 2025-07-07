@@ -47,7 +47,7 @@ public class MatrixRotate extends DrawBase3 {
                         return new MatrixRotate(v1, v2, v3);
                     }
                 };
-        read(buffer, operations, m);
+        read(m, buffer, operations);
     }
 
     /**
@@ -113,7 +113,7 @@ public class MatrixRotate extends DrawBase3 {
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serialize(serializer, "rotate", "pivotX", "pivotY").addType(CLASS_NAME);
     }
 }

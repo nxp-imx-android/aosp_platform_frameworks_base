@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.internal.widget.remotecompose.player.accessibility.platform;
+package com.android.internal.widget.remotecompose.accessibility;
 
 import android.graphics.Rect;
 import android.view.View;
@@ -22,7 +22,6 @@ import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 
 import com.android.internal.widget.remotecompose.core.operations.RootContentBehavior;
 import com.android.internal.widget.remotecompose.core.semantics.ScrollableComponent;
-import com.android.internal.widget.remotecompose.player.accessibility.BaseSemanticNodeApplier;
 
 import java.util.List;
 

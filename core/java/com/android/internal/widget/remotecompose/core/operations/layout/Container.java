@@ -28,5 +28,6 @@ public interface Container {
      *
      * @return a list of child operations
      */
-    @NonNull ArrayList<Operation> getList();
+    @NonNull
+    ArrayList<Operation> getList();
 }

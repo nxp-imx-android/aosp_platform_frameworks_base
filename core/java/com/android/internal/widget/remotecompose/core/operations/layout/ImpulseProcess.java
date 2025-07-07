@@ -43,7 +43,7 @@ public class ImpulseProcess extends PaintOperation
     public ImpulseProcess() {}
 
     @Override
-    public void registerListening(@NonNull RemoteContext context) {
+    public void registerListening(RemoteContext context) {
         for (Operation operation : mList) {
             if (operation instanceof VariableSupport) {
                 VariableSupport variableSupport = (VariableSupport) operation;
@@ -53,7 +53,7 @@ public class ImpulseProcess extends PaintOperation
     }
 
     @Override
-    public void updateVariables(@NonNull RemoteContext context) {
+    public void updateVariables(RemoteContext context) {
         for (Operation operation : mList) {
             if (operation instanceof VariableSupport) {
                 VariableSupport variableSupport = (VariableSupport) operation;
@@ -68,7 +68,6 @@ public class ImpulseProcess extends PaintOperation
      * @return list to be filled
      */
     @NonNull
-    @Override
     public ArrayList<Operation> getList() {
         return mList;
     }
@@ -157,7 +156,7 @@ public class ImpulseProcess extends PaintOperation
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer.addType(CLASS_NAME).add("list", mList);
     }
 }

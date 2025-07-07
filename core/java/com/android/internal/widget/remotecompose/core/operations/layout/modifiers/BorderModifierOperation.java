@@ -128,10 +128,7 @@ public class BorderModifierOperation extends DecoratorModifierOperation {
 
     @Override
     public void layout(
-            @NonNull RemoteContext context,
-            @NonNull Component component,
-            float width,
-            float height) {
+            @NonNull RemoteContext context, Component component, float width, float height) {
         this.mWidth = width;
         this.mHeight = height;
     }
@@ -290,7 +287,7 @@ public class BorderModifierOperation extends DecoratorModifierOperation {
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
                 .addType("BorderModifierOperation")

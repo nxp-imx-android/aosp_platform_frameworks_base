@@ -164,7 +164,7 @@ public class ClickArea extends Operation
     }
 
     @Override
-    public @NonNull Integer getContentDescriptionId() {
+    public Integer getContentDescriptionId() {
         return mContentDescription;
     }
 
@@ -235,7 +235,7 @@ public class ClickArea extends Operation
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("id", mId)

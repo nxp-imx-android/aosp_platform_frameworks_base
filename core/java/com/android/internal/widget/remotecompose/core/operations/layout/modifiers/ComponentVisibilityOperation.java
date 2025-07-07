@@ -144,13 +144,10 @@ public class ComponentVisibilityOperation extends Operation
 
     @Override
     public void layout(
-            @NonNull RemoteContext context,
-            @NonNull Component component,
-            float width,
-            float height) {}
+            @NonNull RemoteContext context, Component component, float width, float height) {}
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
                 .addType("ComponentVisibilityOperation")

@@ -47,7 +47,7 @@ public class FloatConstant extends Operation implements Serializable {
      *
      * @param from value to copy from
      */
-    public void update(@NonNull FloatConstant from) {
+    public void update(FloatConstant from) {
         mValue = from.mValue;
     }
 
@@ -131,7 +131,7 @@ public class FloatConstant extends Operation implements Serializable {
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer.addType(CLASS_NAME).add("id", mId).add("value", mValue);
     }
 }

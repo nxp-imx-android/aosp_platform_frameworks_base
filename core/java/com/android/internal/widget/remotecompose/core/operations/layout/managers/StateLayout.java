@@ -56,7 +56,7 @@ public class StateLayout extends LayoutManager {
     @NonNull public Map<Integer, Component[]> statePaintedComponents = new HashMap<>();
 
     public int MAX_CACHE_ELEMENTS = 16;
-    public @NonNull int [] cacheListElementsId = new int[MAX_CACHE_ELEMENTS];
+    @NonNull public int[] cacheListElementsId = new int[MAX_CACHE_ELEMENTS];
 
     public boolean inTransition = false;
 
@@ -595,14 +595,8 @@ public class StateLayout extends LayoutManager {
                 new StateLayout(null, componentId, animationId, 0f, 0f, 100f, 100f, indexId));
     }
 
-    @NonNull
     @Override
-    protected String getSerializedName() {
-        return "STATE_LAYOUT";
-    }
-
-    @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         super.serialize(serializer);
         serializer.add("indexId", mIndexId);
     }

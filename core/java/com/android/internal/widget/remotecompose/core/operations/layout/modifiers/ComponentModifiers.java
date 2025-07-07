@@ -64,11 +64,11 @@ public class ComponentModifiers extends PaintOperation
     @NonNull
     @Override
     public String toString() {
-        StringBuilder str = new StringBuilder("ComponentModifiers \n");
+        String str = "ComponentModifiers \n";
         for (ModifierOperation modifierOperation : mList) {
-            str.append("    ").append(modifierOperation.toString()).append("\n");
+            str += "    " + modifierOperation.toString() + "\n";
         }
-        return str.toString();
+        return str;
     }
 
     @Override
@@ -135,10 +135,7 @@ public class ComponentModifiers extends PaintOperation
 
     @Override
     public void layout(
-            @NonNull RemoteContext context,
-            @NonNull Component component,
-            float width,
-            float height) {
+            @NonNull RemoteContext context, Component component, float width, float height) {
         float w = width;
         float h = height;
         for (ModifierOperation op : mList) {
@@ -180,11 +177,7 @@ public class ComponentModifiers extends PaintOperation
 
     @Override
     public void onTouchDown(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y) {
+            RemoteContext context, CoreDocument document, Component component, float x, float y) {
         for (ModifierOperation op : mList) {
             if (op instanceof TouchHandler) {
                 ((TouchHandler) op).onTouchDown(context, document, component, x, y);
@@ -194,9 +187,9 @@ public class ComponentModifiers extends PaintOperation
 
     @Override
     public void onTouchUp(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
+            RemoteContext context,
+            CoreDocument document,
+            Component component,
             float x,
             float y,
             float dx,
@@ -210,11 +203,7 @@ public class ComponentModifiers extends PaintOperation
 
     @Override
     public void onTouchCancel(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y) {
+            RemoteContext context, CoreDocument document, Component component, float x, float y) {
         for (ModifierOperation op : mList) {
             if (op instanceof TouchHandler) {
                 ((TouchHandler) op).onTouchCancel(context, document, component, x, y);
@@ -224,11 +213,7 @@ public class ComponentModifiers extends PaintOperation
 
     @Override
     public void onTouchDrag(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y) {
+            RemoteContext context, CoreDocument document, Component component, float x, float y) {
         for (ModifierOperation op : mList) {
             if (op instanceof TouchHandler) {
                 ((TouchHandler) op).onTouchDrag(context, document, component, x, y);
@@ -339,7 +324,7 @@ public class ComponentModifiers extends PaintOperation
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
                 .addType("ComponentModifiers")

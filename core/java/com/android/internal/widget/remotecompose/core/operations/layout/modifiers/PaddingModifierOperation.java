@@ -181,7 +181,7 @@ public class PaddingModifierOperation extends Operation implements ModifierOpera
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
                 .addType("PaddingModifierOperation")

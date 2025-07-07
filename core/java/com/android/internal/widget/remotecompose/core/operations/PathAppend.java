@@ -39,7 +39,6 @@ import java.util.List;
 public class PathAppend extends PaintOperation implements VariableSupport, Serializable {
     private static final int OP_CODE = Operations.PATH_ADD;
     private static final String CLASS_NAME = "PathAppend";
-    private static final int MAX_PATH_BUFFER = 2000;
     int mInstanceId;
     float[] mFloatPath;
     float[] mOutputPath;
@@ -78,7 +77,7 @@ public class PathAppend extends PaintOperation implements VariableSupport, Seria
 
     @NonNull
     @Override
-    public String deepToString(@NonNull String indent) {
+    public String deepToString(String indent) {
         return PathData.pathString(mFloatPath);
     }
 
@@ -141,7 +140,7 @@ public class PathAppend extends PaintOperation implements VariableSupport, Seria
      * @param id id of the path
      * @param data the path data to append
      */
-    public static void apply(@NonNull WireBuffer buffer, int id, @NonNull float [] data) {
+    public static void apply(@NonNull WireBuffer buffer, int id, @NonNull float[] data) {
         buffer.start(OP_CODE);
         buffer.writeInt(id);
         buffer.writeInt(data.length);
@@ -159,9 +158,6 @@ public class PathAppend extends PaintOperation implements VariableSupport, Seria
     public static void read(@NonNull WireBuffer buffer, @NonNull List<Operation> operations) {
         int id = buffer.readInt();
         int len = buffer.readInt();
-        if (len > MAX_PATH_BUFFER) {
-            throw new RuntimeException("path too long");
-        }
         float[] data = new float[len];
         for (int i = 0; i < data.length; i++) {
             data[i] = buffer.readFloat();
@@ -183,7 +179,7 @@ public class PathAppend extends PaintOperation implements VariableSupport, Seria
     }
 
     @Override
-    public void paint(@NonNull PaintContext context) {
+    public void paint(PaintContext context) {
         apply(context.getContext());
     }
 
@@ -217,7 +213,7 @@ public class PathAppend extends PaintOperation implements VariableSupport, Seria
      * @return text representation of path
      */
     @NonNull
-    public static String pathString(@Nullable float [] path) {
+    public static String pathString(@Nullable float[] path) {
         if (path == null) {
             return "null";
         }
@@ -261,7 +257,7 @@ public class PathAppend extends PaintOperation implements VariableSupport, Seria
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer.addType(CLASS_NAME).add("id", mInstanceId).addPath("path", mFloatPath);
     }
 }
