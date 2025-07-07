@@ -109,17 +109,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "force_show_system_bar_for_bubble"
-    description: "Ensure system bar are shown for Bubble"
-    bug: "329124127"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "reparent_to_default_with_display_removal"
     description: "Enable WindowContext to reparent to the default display with display detached"
     bug: "404532651"

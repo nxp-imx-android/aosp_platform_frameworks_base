@@ -2609,9 +2609,6 @@ public class DisplayPolicy {
     }
 
     private boolean fillsDisplayWindowingMode(@NonNull WindowState win) {
-        if (!com.android.window.flags.Flags.forceShowSystemBarForBubble()) {
-            return true;
-        }
         if (!WindowConfiguration.inMultiWindowMode(win.getWindowingMode())) {
             // Always accept the window not in multi-window mode.
             return true;
@@ -2660,10 +2657,6 @@ public class DisplayPolicy {
             }
         }
         if (winCandidate == null) {
-            if (!com.android.window.flags.Flags.forceShowSystemBarForBubble()) {
-                // Before this feature, this method early returns when winCandidate is null.
-                return;
-            }
             final ActivityRecord focusedApp = mDisplayContent.mFocusedApp;
             if (focusedApp == null || fillsDisplayWindowingMode(focusedApp)) {
                 // Don't change the system UI controlling window when the new one is not ready.
