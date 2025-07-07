@@ -206,13 +206,6 @@ final class LogicalDisplay {
             new SparseArray<>();
 
     /**
-     * If enabled, will not check for {@link Display#FLAG_ROTATES_WITH_CONTENT} in LogicalDisplay
-     * and simply use the {@link DisplayInfo#rotation} supplied by WindowManager via
-     * {@link #setDisplayInfoOverrideFromWindowManagerLocked}
-     */
-    private boolean mAlwaysRotateDisplayDeviceEnabled;
-
-    /**
      * If the aspect ratio of the resolution of the display does not match the physical aspect
      * ratio of the display, then without this feature enabled, picture would appear stretched to
      * the user. This is because applications assume that they are rendered on square pixels
@@ -233,11 +226,11 @@ final class LogicalDisplay {
     private boolean mCanHostTasks;
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice) {
-        this(displayId, layerStack, primaryDisplayDevice, false, false, false);
+        this(displayId, layerStack, primaryDisplayDevice, false, false);
     }
 
     LogicalDisplay(int displayId, int layerStack, DisplayDevice primaryDisplayDevice,
-            boolean isAnisotropyCorrectionEnabled, boolean isAlwaysRotateDisplayDeviceEnabled,
+            boolean isAnisotropyCorrectionEnabled,
             boolean isSyncedResolutionSwitchEnabled) {
         mDisplayId = displayId;
         mLayerStack = layerStack;
@@ -250,7 +243,6 @@ final class LogicalDisplay {
         mPowerThrottlingDataId = DisplayDeviceConfig.DEFAULT_ID;
         mBaseDisplayInfo.thermalBrightnessThrottlingDataId = mThermalBrightnessThrottlingDataId;
         mIsAnisotropyCorrectionEnabled = isAnisotropyCorrectionEnabled;
-        mAlwaysRotateDisplayDeviceEnabled = isAlwaysRotateDisplayDeviceEnabled;
         mSyncedResolutionSwitchEnabled = isSyncedResolutionSwitchEnabled;
 
         // No need to initialize mCanHostTasks here; it's handled in
@@ -708,18 +700,9 @@ final class LogicalDisplay {
         // Set the orientation.
         // The orientation specifies how the physical coordinate system of the display
         // is rotated when the contents of the logical display are rendered.
-        int orientation = Surface.ROTATION_0;
-
-        // FLAG_ROTATES_WITH_CONTENT is now handled in DisplayContent. When the flag
-        // mAlwaysRotateDisplayDeviceEnabled is removed, we should also remove this check for
-        // ROTATES_WITH_CONTENT here and always set the orientation.
-        if ((displayDeviceInfo.flags & DisplayDeviceInfo.FLAG_ROTATES_WITH_CONTENT) != 0
-                    || mAlwaysRotateDisplayDeviceEnabled) {
-            orientation = displayInfo.rotation;
-        }
-
+        // FLAG_ROTATES_WITH_CONTENT is now handled in DisplayContent.
         // Apply the physical rotation of the display device itself.
-        orientation = (orientation + displayDeviceInfo.rotation) % 4;
+        final int orientation = (displayInfo.rotation + displayDeviceInfo.rotation) % 4;
 
         // Set the frame.
         // The frame specifies the rotated physical coordinates into which the viewport
