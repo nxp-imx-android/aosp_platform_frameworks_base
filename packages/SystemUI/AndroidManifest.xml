@@ -543,6 +543,7 @@
             android:exported="false"
             android:finishOnCloseSystemDialogs="true"
             android:launchMode="singleInstance"
+            android:showForAllUsers="true"
             android:theme="@style/ScreenCapture" />
 
         <service android:name=".screenrecord.service.ScreenRecordingService" />
