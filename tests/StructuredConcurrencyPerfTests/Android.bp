@@ -41,6 +41,7 @@ java_defaults {
         // binary, which will be run on device to create metrics
         "androidx.benchmark_benchmark-macro-junit4",
         "androidx.benchmark_benchmark-traceprocessor",
+        "androidx.compose.runtime_runtime",
     ],
     test_suites: ["performance-tests"],
     platform_apis: true,

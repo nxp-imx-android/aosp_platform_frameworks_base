@@ -37,16 +37,23 @@ interface StateBuilder<M : R, R, T> {
     fun combineState(a: R, b: R, transform: (T, T) -> T): R
 
     fun combineState(a: R, b: R, c: R, transform: (T, T, T) -> T): R
+
+    fun dispose() {}
 }
 
 abstract class StateBenchmarkTask<M : R, R, T>(val stateBuilder: StateBuilder<M, R, T>) {
     abstract fun ConcurrentBenchmarkBuilder.build()
+
+    fun dispose() {
+        stateBuilder.dispose()
+    }
 }
 
 fun <M : R, R, T> ConcurrentBenchmarkRule.runBenchmark(benchmark: StateBenchmarkTask<M, R, T>) {
     with(ConcurrentBenchmarkBuilder()) {
         with(benchmark) { build() }
         measure()
+        benchmark.dispose()
     }
 }
 
