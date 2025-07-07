@@ -19,18 +19,21 @@ package com.android.wm.shell.flicker.bubbles
 import android.graphics.Bitmap
 import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsEnabled
+import android.tools.NavBar
 import android.tools.Rotation
 import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.ImeShownOnAppStartHelper
 import com.android.wm.shell.Flags
+import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.bubbles.testcase.ImeBecomesVisibleAndBubbleIsShrunkTestCase
+import com.android.wm.shell.flicker.bubbles.utils.ApplyPerParameterRule
 import com.android.wm.shell.flicker.bubbles.utils.FlickerPropertyInitializer
 import com.android.wm.shell.flicker.bubbles.utils.RecordTraceWithTransitionRule
 import com.android.wm.shell.flicker.bubbles.utils.launchBubbleViaBubbleMenu
 import com.android.wm.shell.flicker.bubbles.utils.setUpBeforeTransition
-import org.junit.ClassRule
 import org.junit.FixMethodOrder
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runners.MethodSorters
 
@@ -59,8 +62,8 @@ import org.junit.runners.MethodSorters
 @RequiresDevice
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 @Presubmit
-class EnterBubbleWithImeViaBubbleMenuTest :
-    EnterBubbleViaBubbleMenuTest(), ImeBecomesVisibleAndBubbleIsShrunkTestCase {
+class EnterBubbleWithImeViaBubbleMenuTest(navBar: NavBar) :
+    EnterBubbleViaBubbleMenuTest(navBar), ImeBecomesVisibleAndBubbleIsShrunkTestCase {
 
     companion object : FlickerPropertyInitializer() {
         /**
@@ -73,9 +76,7 @@ class EnterBubbleWithImeViaBubbleMenuTest :
          */
         private var imeInset: Int = -1
 
-        @ClassRule
-        @JvmField
-        val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
+        private val recordTraceWithTransitionRule = RecordTraceWithTransitionRule(
             setUpBeforeTransition = {
                 setUpBeforeTransition(instrumentation, wmHelper)
             },
@@ -91,6 +92,12 @@ class EnterBubbleWithImeViaBubbleMenuTest :
         override val testApp
             get() = ImeShownOnAppStartHelper(instrumentation, Rotation.ROTATION_0)
     }
+
+    @get:Rule
+    override val setUpRule = ApplyPerParameterRule(
+        Utils.testSetupRule(navBar).around(recordTraceWithTransitionRule),
+        params = arrayOf(navBar)
+    )
 
     override val traceDataReader
         get() = recordTraceWithTransitionRule.reader
