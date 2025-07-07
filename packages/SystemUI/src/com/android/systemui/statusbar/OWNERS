@@ -7,6 +7,8 @@ evanlaird@google.com
 justinweir@google.com
 pixel@google.com
 
+per-file *ActivityStarter* = set noparent
+per-file *ActivityStarter* = acul@google.com, agvard@google.com, cinek@google.com, jdemeulenaere@google.com, mpietal@google.com
 per-file *Biometric* = set noparent
 per-file *Biometric* = file:../keyguard/OWNERS
 per-file *Doze* = set noparent
