@@ -51,7 +51,6 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.util.function.TriConsumer;
 import com.android.launcher3.icons.IconProvider;
-import com.android.window.flags.Flags;
 import com.android.wm.shell.ShellTaskOrganizer;
 import com.android.wm.shell.common.ExternalInterfaceBinder;
 import com.android.wm.shell.common.RemoteCallable;
@@ -144,9 +143,7 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
         mShellTaskOrganizer.initStartingWindow(this);
         mShellController.addExternalInterface(IStartingWindow.DESCRIPTOR,
                 this::createExternalInterface, this);
-        if (Flags.removeStartingInTransition()) {
-            mTransitions.registerObserver(mRemoveStartingObserver);
-        }
+        mTransitions.registerObserver(mRemoveStartingObserver);
     }
 
     @VisibleForTesting
@@ -363,10 +360,8 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
      * Called when a task need a starting window.
      */
     public void addStartingWindow(StartingWindowInfo windowInfo) {
-        if (Flags.removeStartingInTransition()) {
-            mShellMainExecutor.execute(() -> mRemoveStartingObserver.onAddingWindow(
-                    windowInfo.taskInfo.taskId, windowInfo.transitionToken, windowInfo.appToken));
-        }
+        mShellMainExecutor.execute(() -> mRemoveStartingObserver.onAddingWindow(
+                windowInfo.taskInfo.taskId, windowInfo.transitionToken, windowInfo.appToken));
         mSplashScreenExecutor.execute(() -> {
             Trace.traceBegin(TRACE_TAG_WINDOW_MANAGER, "addStartingWindow");
 
@@ -396,11 +391,9 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
                     mTaskLaunchingCallback.accept(taskId, suggestionType, color);
                 }
             }
-            if (Flags.removeStartingInTransition()) {
-                if (!mStartingSurfaceDrawer.hasStartingWindow(taskId, isWindowless)) {
-                    mShellMainExecutor.execute(() ->
-                            mRemoveStartingObserver.forceRemoveWindow(taskId, windowInfo.appToken));
-                }
+            if (!mStartingSurfaceDrawer.hasStartingWindow(taskId, isWindowless)) {
+                mShellMainExecutor.execute(() ->
+                        mRemoveStartingObserver.forceRemoveWindow(taskId, windowInfo.appToken));
             }
             Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
         });
@@ -438,12 +431,8 @@ public class StartingWindowController implements RemoteCallable<StartingWindowCo
      */
     public void removeStartingWindow(StartingWindowRemovalInfo removalInfo) {
         final int taskId = removalInfo.taskId;
-        if (Flags.removeStartingInTransition()) {
-            mShellMainExecutor.execute(() ->
-                    mRemoveStartingObserver.requestRemoval(taskId, removalInfo));
-        } else {
-            removeStartingWindowInner(removalInfo);
-        }
+        mShellMainExecutor.execute(() ->
+                mRemoveStartingObserver.requestRemoval(taskId, removalInfo));
     }
 
     void removeStartingWindowInner(StartingWindowRemovalInfo removalInfo) {

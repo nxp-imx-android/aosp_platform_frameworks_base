@@ -2769,13 +2769,7 @@ final class ActivityRecord extends WindowToken {
         final boolean animate;
         final boolean hasImeSurface;
         if (mStartingData != null) {
-            if (!Flags.removeStartingInTransition()) {
-                if (getSyncTransactionCommitCallbackDepth() > 0 || mSyncState != SYNC_STATE_NONE) {
-                    mStartingData.mRemoveAfterTransaction = AFTER_TRANSACTION_REMOVE_DIRECTLY;
-                    mStartingData.mPrepareRemoveAnimation = prepareAnimation;
-                    return;
-                }
-            } else if (mSyncState != SYNC_STATE_NONE) {
+            if (mSyncState != SYNC_STATE_NONE) {
                 mStartingData.mRemoveAfterTransaction = AFTER_TRANSACTION_REMOVE_DIRECTLY;
                 mStartingData.mPrepareRemoveAnimation = prepareAnimation;
                 return;

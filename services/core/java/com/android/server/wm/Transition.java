@@ -2153,9 +2153,6 @@ class Transition implements BLASTSyncEngine.TransactionReadyListener {
     }
 
     private void removeStartingWindowIfAny() {
-        if (!Flags.removeStartingInTransition()) {
-            return;
-        }
         // Skip if player is not enabled.
         if (!mIsPlayerEnabled) {
             return;
