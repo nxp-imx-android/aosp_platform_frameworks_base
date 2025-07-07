@@ -89,7 +89,6 @@ import com.android.server.pm.UserManagerInternal;
 import com.android.server.statusbar.StatusBarManagerInternal;
 
 import java.io.PrintWriter;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2347,11 +2346,7 @@ class MediaRouter2ServiceImpl {
 
         UserRecord(int userId, @NonNull Looper looper) {
             mUserId = userId;
-            mHandler =
-                    new UserHandler(
-                            /* service= */ MediaRouter2ServiceImpl.this,
-                            /* userRecord= */ this,
-                            looper);
+            mHandler = new UserHandler(/* userRecord= */ this, looper);
         }
 
         void init() {
@@ -2970,11 +2965,8 @@ class MediaRouter2ServiceImpl {
         }
     }
 
-    static final class UserHandler extends Handler implements
-            MediaRoute2ProviderWatcher.Callback,
-            MediaRoute2Provider.Callback {
-
-        private final WeakReference<MediaRouter2ServiceImpl> mServiceRef;
+    private final class UserHandler extends Handler
+            implements MediaRoute2ProviderWatcher.Callback, MediaRoute2Provider.Callback {
         private final UserRecord mUserRecord;
         private final MediaRoute2ProviderWatcher mWatcher;
 
@@ -3028,22 +3020,17 @@ class MediaRouter2ServiceImpl {
         }
 
         // TODO: (In Android S+) Pull out SystemMediaRoute2Provider out of UserHandler.
-        UserHandler(
-                @NonNull MediaRouter2ServiceImpl service,
-                @NonNull UserRecord userRecord,
-                @NonNull Looper looper) {
+        UserHandler(@NonNull UserRecord userRecord, @NonNull Looper looper) {
             super(looper, /* callback= */ null, /* async= */ true);
-            mServiceRef = new WeakReference<>(service);
             mUserRecord = userRecord;
             mSystemProvider =
                     Flags.enableMirroringInMediaRouter2()
                             ? SystemMediaRoute2Provider2.create(
-                                    service.mContext, UserHandle.of(userRecord.mUserId), looper)
+                                    mContext, UserHandle.of(userRecord.mUserId), looper)
                             : SystemMediaRoute2Provider.create(
-                                    service.mContext, UserHandle.of(userRecord.mUserId), looper);
+                                    mContext, UserHandle.of(userRecord.mUserId), looper);
             mRouteProviders.add(getSystemProvider());
-            mWatcher = new MediaRoute2ProviderWatcher(service.mContext, this,
-                    this, mUserRecord.mUserId);
+            mWatcher = new MediaRoute2ProviderWatcher(mContext, this, this, mUserRecord.mUserId);
         }
 
         void init() {
@@ -3145,12 +3132,8 @@ class MediaRouter2ServiceImpl {
         }
 
         public void maybeUpdateDiscoveryPreferenceForUid(int uid) {
-            MediaRouter2ServiceImpl service = mServiceRef.get();
-            if (service == null) {
-                return;
-            }
             boolean isUidRelevant;
-            synchronized (service.mLock) {
+            synchronized (mLock) {
                 isUidRelevant =
                         mUserRecord.mRouterRecords.stream().anyMatch(router -> router.mUid == uid)
                                 | mUserRecord.mManagerRecords.stream()
@@ -3713,9 +3696,6 @@ class MediaRouter2ServiceImpl {
 
             // For system provider, notify all routers.
             if (provider == getSystemProvider()) {
-                if (mServiceRef.get() == null) {
-                    return;
-                }
                 notifySessionInfoChangedToRouters(getRouterRecords(true), sessionInfo);
                 notifySessionInfoChangedToRouters(
                         getRouterRecords(false), getSystemProvider().getDefaultSessionInfo());
@@ -3836,22 +3816,14 @@ class MediaRouter2ServiceImpl {
         }
 
         private List<RouterRecord> getRouterRecords() {
-            MediaRouter2ServiceImpl service = mServiceRef.get();
-            if (service == null) {
-                return Collections.emptyList();
-            }
-            synchronized (service.mLock) {
+            synchronized (mLock) {
                 return new ArrayList<>(mUserRecord.mRouterRecords);
             }
         }
 
         private List<RouterRecord> getRouterRecords(boolean hasSystemRoutingPermission) {
-            MediaRouter2ServiceImpl service = mServiceRef.get();
             List<RouterRecord> routerRecords = new ArrayList<>();
-            if (service == null) {
-                return routerRecords;
-            }
-            synchronized (service.mLock) {
+            synchronized (mLock) {
                 for (RouterRecord routerRecord : mUserRecord.mRouterRecords) {
                     if (hasSystemRoutingPermission
                             == routerRecord.hasSystemRoutingPermission()) {
@@ -3863,11 +3835,7 @@ class MediaRouter2ServiceImpl {
         }
 
         private List<ManagerRecord> getManagerRecords() {
-            MediaRouter2ServiceImpl service = mServiceRef.get();
-            if (service == null) {
-                return Collections.emptyList();
-            }
-            synchronized (service.mLock) {
+            synchronized (mLock) {
                 return new ArrayList<>(mUserRecord.mManagerRecords);
             }
         }
@@ -3952,12 +3920,8 @@ class MediaRouter2ServiceImpl {
 
         private void notifyDiscoveryPreferenceChangedToManagers(@NonNull String routerPackageName,
                 @Nullable RouteDiscoveryPreference discoveryPreference) {
-            MediaRouter2ServiceImpl service = mServiceRef.get();
-            if (service == null) {
-                return;
-            }
             List<IMediaRouter2Manager> managers = new ArrayList<>();
-            synchronized (service.mLock) {
+            synchronized (mLock) {
                 for (ManagerRecord managerRecord : mUserRecord.mManagerRecords) {
                     managers.add(managerRecord.mManager);
                 }
@@ -3975,12 +3939,8 @@ class MediaRouter2ServiceImpl {
 
         private void notifyRouteListingPreferenceChangeToManagers(
                 String routerPackageName, @Nullable RouteListingPreference routeListingPreference) {
-            MediaRouter2ServiceImpl service = mServiceRef.get();
-            if (service == null) {
-                return;
-            }
             List<IMediaRouter2Manager> managers = new ArrayList<>();
-            synchronized (service.mLock) {
+            synchronized (mLock) {
                 for (ManagerRecord managerRecord : mUserRecord.mManagerRecords) {
                     managers.add(managerRecord.mManager);
                 }
@@ -4005,12 +3965,7 @@ class MediaRouter2ServiceImpl {
                 String routerPackageName,
                 String suggestingPackageName,
                 @Nullable List<SuggestedDeviceInfo> suggestedDeviceInfo) {
-            MediaRouter2ServiceImpl service = mServiceRef.get();
-            if (service == null) {
-                return;
-            }
-            List<IMediaRouter2Manager> managers = new ArrayList<>();
-            synchronized (service.mLock) {
+            synchronized (mLock) {
                 for (ManagerRecord managerRecord : mUserRecord.mManagerRecords) {
                     if (TextUtils.equals(managerRecord.mTargetPackageName, routerPackageName)) {
                         managerRecord.notifyDeviceSuggestionsUpdated(
@@ -4027,11 +3982,7 @@ class MediaRouter2ServiceImpl {
         }
 
         private void notifyDeviceSuggestionRequestedOnHandler(String routerPackageName) {
-            MediaRouter2ServiceImpl service = mServiceRef.get();
-            if (service == null) {
-                return;
-            }
-            synchronized (service.mLock) {
+            synchronized (mLock) {
                 for (ManagerRecord managerRecord : mUserRecord.mManagerRecords) {
                     if (TextUtils.equals(managerRecord.mTargetPackageName, routerPackageName)) {
                         managerRecord.notifyDeviceSuggestionRequested();
@@ -4046,19 +3997,15 @@ class MediaRouter2ServiceImpl {
         }
 
         private void updateDiscoveryPreferenceOnHandler() {
-            MediaRouter2ServiceImpl service = mServiceRef.get();
-            if (service == null) {
-                return;
-            }
             List<RouterRecord> activeRouterRecords;
             List<RouterRecord> allRouterRecords = getRouterRecords();
 
-            boolean areManagersScanning = areManagersScanning(service, getManagerRecords());
+            boolean areManagersScanning = areManagersScanning(getManagerRecords());
 
             if (areManagersScanning) {
                 activeRouterRecords = allRouterRecords;
             } else {
-                activeRouterRecords = getIndividuallyActiveRouters(service, allRouterRecords);
+                activeRouterRecords = getIndividuallyActiveRouters(allRouterRecords);
             }
 
             Set<String> activelyScanningPackages = new HashSet<>();
@@ -4077,8 +4024,8 @@ class MediaRouter2ServiceImpl {
             for (RouterRecord record : activeRouterRecords) {
                 perAppPreferences.put(record.mPackageName, record.mDiscoveryPreference);
             }
-            if (updateScanningOnUserRecord(service, activelyScanningPackages, newPreference,
-                    perAppPreferences)) {
+            if (updateScanningOnUserRecord(
+                    activelyScanningPackages, newPreference, perAppPreferences)) {
                 updateDiscoveryPreferenceForProviders(activelyScanningPackages);
             }
         }
@@ -4092,11 +4039,10 @@ class MediaRouter2ServiceImpl {
         }
 
         private boolean updateScanningOnUserRecord(
-                MediaRouter2ServiceImpl service,
                 Set<String> activelyScanningPackages,
                 RouteDiscoveryPreference newPreference,
                 Map<String, RouteDiscoveryPreference> perAppPreferences) {
-            synchronized (service.mLock) {
+            synchronized (mLock) {
                 if (newPreference.equals(mUserRecord.mCompositeDiscoveryPreference)
                         && perAppPreferences.equals(mUserRecord.mPerAppPreferences)
                         && activelyScanningPackages.equals(mUserRecord.mActivelyScanningPackages)) {
@@ -4157,38 +4103,38 @@ class MediaRouter2ServiceImpl {
         }
 
         @NonNull
-        private static List<RouterRecord> getIndividuallyActiveRouters(
-                MediaRouter2ServiceImpl service, List<RouterRecord> allRouterRecords) {
-            if (!service.mPowerManager.isInteractive() && !Flags.enableScreenOffScanning()) {
+        private List<RouterRecord> getIndividuallyActiveRouters(
+                List<RouterRecord> allRouterRecords) {
+            if (!mPowerManager.isInteractive() && !Flags.enableScreenOffScanning()) {
                 return Collections.emptyList();
             }
 
             return allRouterRecords.stream()
                     .filter(
                             record ->
-                                    isPackageImportanceSufficientForScanning(
-                                                    service, record.mPackageName)
+                                    isPackageImportanceSufficientForScanning(record.mPackageName)
                                             || record.mScanningState
                                                     == SCANNING_STATE_SCANNING_FULL)
                     .collect(Collectors.toList());
         }
 
-        private static boolean areManagersScanning(
-                MediaRouter2ServiceImpl service, List<ManagerRecord> managerRecords) {
-            if (!service.mPowerManager.isInteractive() && !Flags.enableScreenOffScanning()) {
+        private boolean areManagersScanning(List<ManagerRecord> managerRecords) {
+            if (!mPowerManager.isInteractive() && !Flags.enableScreenOffScanning()) {
                 return false;
             }
 
-            return managerRecords.stream().anyMatch(manager ->
-                    (manager.mScanningState == SCANNING_STATE_WHILE_INTERACTIVE
-                            && isPackageImportanceSufficientForScanning(service,
-                            manager.mOwnerPackageName))
-                            || manager.mScanningState == SCANNING_STATE_SCANNING_FULL);
+            return managerRecords.stream()
+                    .anyMatch(
+                            manager ->
+                                    (manager.mScanningState == SCANNING_STATE_WHILE_INTERACTIVE
+                                                    && isPackageImportanceSufficientForScanning(
+                                                            manager.mOwnerPackageName))
+                                            || manager.mScanningState
+                                                    == SCANNING_STATE_SCANNING_FULL);
         }
 
-        private static boolean isPackageImportanceSufficientForScanning(
-                MediaRouter2ServiceImpl service, String packageName) {
-            return service.mActivityManager.getPackageImportance(packageName)
+        private boolean isPackageImportanceSufficientForScanning(String packageName) {
+            return mActivityManager.getPackageImportance(packageName)
                     <= REQUIRED_PACKAGE_IMPORTANCE_FOR_SCANNING;
         }
 
