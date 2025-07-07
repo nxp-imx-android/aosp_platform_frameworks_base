@@ -138,6 +138,9 @@ import com.android.wm.shell.desktopmode.ToggleResizeDesktopTaskTransitionHandler
 import com.android.wm.shell.desktopmode.VisualIndicatorUpdateScheduler;
 import com.android.wm.shell.desktopmode.WindowDecorCaptionRepository;
 import com.android.wm.shell.desktopmode.compatui.SystemModalsTransitionHandler;
+import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer;
+import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializerImpl;
+import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository;
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopDisplayModeController;
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager;
 import com.android.wm.shell.desktopmode.desktopwallpaperactivity.DesktopWallpaperActivityTokenProvider;
@@ -150,9 +153,6 @@ import com.android.wm.shell.desktopmode.education.data.AppToWebEducationDatastor
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer;
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver;
 import com.android.wm.shell.desktopmode.multidesks.RootTaskDesksOrganizer;
-import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository;
-import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer;
-import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializerImpl;
 import com.android.wm.shell.draganddrop.DragAndDropController;
 import com.android.wm.shell.draganddrop.GlobalDragListener;
 import com.android.wm.shell.freeform.FreeformComponents;

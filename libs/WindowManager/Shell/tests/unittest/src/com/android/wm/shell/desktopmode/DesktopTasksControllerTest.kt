@@ -131,6 +131,10 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createHomeTask
 import com.android.wm.shell.desktopmode.DesktopTestHelpers.createSplitScreenTask
 import com.android.wm.shell.desktopmode.ExitDesktopTaskTransitionHandler.FULLSCREEN_ANIMATION_DURATION
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
+import com.android.wm.shell.desktopmode.data.DesktopRepositoryInitializer
+import com.android.wm.shell.desktopmode.data.TopTransparentFullscreenTaskData
+import com.android.wm.shell.desktopmode.data.persistence.Desktop
+import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository
 import com.android.wm.shell.desktopmode.desktopfirst.DESKTOP_FIRST_DISPLAY_WINDOWING_MODE
 import com.android.wm.shell.desktopmode.desktopfirst.DesktopFirstListenerManager
 import com.android.wm.shell.desktopmode.desktopfirst.TOUCH_FIRST_DISPLAY_WINDOWING_MODE
@@ -140,9 +144,6 @@ import com.android.wm.shell.desktopmode.multidesks.DeskTransition
 import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.desktopmode.multidesks.DesksTransitionObserver
 import com.android.wm.shell.desktopmode.multidesks.PreserveDisplayRequestHandler
-import com.android.wm.shell.desktopmode.persistence.Desktop
-import com.android.wm.shell.desktopmode.persistence.DesktopPersistentRepository
-import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer
 import com.android.wm.shell.draganddrop.DragAndDropController
 import com.android.wm.shell.freeform.FreeformTaskTransitionStarter
 import com.android.wm.shell.recents.RecentTasksController
@@ -6076,10 +6077,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             }
 
         val topTransparentTaskData =
-            DesktopRepository.TopTransparentFullscreenTaskData(
-                topTransparentTask.taskId,
-                topTransparentTask.token,
-            )
+            TopTransparentFullscreenTaskData(topTransparentTask.taskId, topTransparentTask.token)
         controller.handleRequest(Binder(), createTransition(topTransparentTask))
         assertThat(taskRepository.getTopTransparentFullscreenTaskData(DEFAULT_DISPLAY))
             .isEqualTo(topTransparentTaskData)
