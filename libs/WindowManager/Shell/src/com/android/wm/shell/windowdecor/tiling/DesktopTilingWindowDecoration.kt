@@ -38,7 +38,6 @@ import android.window.TransitionInfo.Change
 import android.window.TransitionRequestInfo
 import android.window.WindowContainerTransaction
 import com.android.internal.annotations.VisibleForTesting
-import com.android.internal.jank.InteractionJankMonitor
 import com.android.launcher3.icons.BaseIconFactory
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -95,7 +94,6 @@ class DesktopTilingWindowDecoration(
     @ShellMainThread private val mainExecutor: ShellExecutor,
     private val desktopState: DesktopState,
     private val shellController: ShellController,
-    private val interactionJankMonitor: InteractionJankMonitor,
     private val transactionSupplier: Supplier<Transaction> = Supplier { Transaction() },
 ) :
     Transitions.TransitionHandler,
@@ -266,7 +264,6 @@ class DesktopTilingWindowDecoration(
                     dividerBounds,
                     displayContext,
                     isDarkMode,
-                    interactionJankMonitor
                 )
             }
         // a leash to present the divider on top of, without re-parenting.
