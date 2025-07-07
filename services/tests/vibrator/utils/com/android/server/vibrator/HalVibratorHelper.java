@@ -23,6 +23,7 @@ import android.os.Looper;
 import android.os.Parcel;
 import android.os.PersistableBundle;
 import android.os.VibrationEffect;
+import android.os.VibrationEffect.VendorEffect;
 import android.os.VibratorInfo;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
@@ -33,7 +34,6 @@ import android.os.vibrator.VibrationEffectSegment;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -47,11 +47,12 @@ public final class HalVibratorHelper {
 
     private final Handler mHandler;
 
-    private final Map<Long, PrebakedSegment> mEnabledAlwaysOnEffects = new HashMap<>();
+    // Iterate over maps in key order (i.e. vibration id) by using TreeMap.
+    private final Map<Long, PrebakedSegment> mEnabledAlwaysOnEffects = new TreeMap<>();
     private final Map<Long, List<VibrationEffectSegment>> mEffectSegments = new TreeMap<>();
-    private final Map<Long, List<VibrationEffect.VendorEffect>> mVendorEffects = new TreeMap<>();
+    private final Map<Long, List<VendorEffect>> mVendorEffects = new TreeMap<>();
     private final Map<Long, List<PwlePoint>> mEffectPwlePoints = new TreeMap<>();
-    private final Map<Long, List<Integer>> mBraking = new HashMap<>();
+    private final Map<Long, List<Integer>> mBraking = new TreeMap<>();
     private final List<Float> mAmplitudes = new ArrayList<>();
     private final List<Boolean> mExternalControlStates = new ArrayList<>();
     private int mConnectCount;
@@ -268,22 +269,22 @@ public final class HalVibratorHelper {
     }
 
     /** Return the amplitudes set, including zeroes for each time the vibrator was turned off. */
-    public List<Float> getAmplitudes() {
+    public synchronized List<Float> getAmplitudes() {
         return new ArrayList<>(mAmplitudes);
     }
 
     /** Return the braking values passed to the compose PWLE method. */
-    public List<Integer> getBraking(long vibrationId) {
-        return getRecordForVibration(mBraking, vibrationId);
+    public synchronized List<Integer> getBraking(long vibrationId) {
+        return copyRecordsForVibration(mBraking, vibrationId);
     }
 
     /** Return list of {@link VibrationEffectSegment} played by this controller, in order. */
-    public List<VibrationEffectSegment> getEffectSegments(long vibrationId) {
-        return getRecordForVibration(mEffectSegments, vibrationId);
+    public synchronized List<VibrationEffectSegment> getEffectSegments(long vibrationId) {
+        return copyRecordsForVibration(mEffectSegments, vibrationId);
     }
 
     /** Returns a list of all effect segments, for all vibration ID. */
-    public List<VibrationEffectSegment> getAllEffectSegments() {
+    public synchronized List<VibrationEffectSegment> getAllEffectSegments() {
         // Returns segments in order of vibrationId, which increases over time. TreeMap gives order.
         ArrayList<VibrationEffectSegment> result = new ArrayList<>();
         for (List<VibrationEffectSegment> subList : mEffectSegments.values()) {
@@ -292,59 +293,66 @@ public final class HalVibratorHelper {
         return result;
     }
 
-    /** Return list of {@link VibrationEffect.VendorEffect} played by this controller, in order. */
-    public List<VibrationEffect.VendorEffect> getVendorEffects(long vibrationId) {
-        return getRecordForVibration(mVendorEffects, vibrationId);
+    /** Return list of {@link VendorEffect} played by this controller, in order. */
+    public synchronized List<VendorEffect> getVendorEffects(long vibrationId) {
+        return copyRecordsForVibration(mVendorEffects, vibrationId);
     }
 
     /** Returns a list of all vendor effects, for all vibration IDs. */
-    public List<VibrationEffect.VendorEffect> getAllVendorEffects() {
+    public synchronized List<VendorEffect> getAllVendorEffects() {
         // Returns segments in order of vibrationId, which increases over time. TreeMap gives order.
-        ArrayList<VibrationEffect.VendorEffect> result = new ArrayList<>();
-        for (List<VibrationEffect.VendorEffect> subList : mVendorEffects.values()) {
+        ArrayList<VendorEffect> result = new ArrayList<>();
+        for (List<VendorEffect> subList : mVendorEffects.values()) {
             result.addAll(subList);
         }
         return result;
     }
 
     /** Return list of {@link PwlePoint} played by this controller, in order. */
-    public List<PwlePoint> getEffectPwlePoints(long vibrationId) {
-        return getRecordForVibration(mEffectPwlePoints, vibrationId);
+    public synchronized List<PwlePoint> getEffectPwlePoints(long vibrationId) {
+        return copyRecordsForVibration(mEffectPwlePoints, vibrationId);
     }
 
     /** Return list of states set for external control to the fake vibrator hardware. */
-    public List<Boolean> getExternalControlStates() {
-        return mExternalControlStates;
+    public synchronized List<Boolean> getExternalControlStates() {
+        return new ArrayList<>(mExternalControlStates);
     }
 
     /** Returns the number of times the vibrator was turned off. */
-    public int getOffCount() {
+    public synchronized int getOffCount() {
         return mOffCount;
     }
 
     /** Return the {@link PrebakedSegment} effect enabled with given id, or {@code null}. */
     @Nullable
-    public PrebakedSegment getAlwaysOnEffect(int id) {
+    public synchronized PrebakedSegment getAlwaysOnEffect(int id) {
         return mEnabledAlwaysOnEffects.get((long) id);
     }
 
-    private void recordEffectSegment(long vibrationId, VibrationEffectSegment segment) {
-        getRecordForVibration(mEffectSegments, vibrationId).add(segment);
+    private synchronized void recordEffectSegment(long vibrationId,
+            VibrationEffectSegment segment) {
+        getRecordsForVibration(mEffectSegments, vibrationId).add(segment);
     }
 
-    private void recordVendorEffect(long vibrationId, VibrationEffect.VendorEffect vendorEffect) {
-        getRecordForVibration(mVendorEffects, vibrationId).add(vendorEffect);
+    private synchronized void recordVendorEffect(long vibrationId, VendorEffect vendorEffect) {
+        getRecordsForVibration(mVendorEffects, vibrationId).add(vendorEffect);
     }
 
-    private void recordEffectPwlePoint(long vibrationId, PwlePoint pwlePoint) {
-        getRecordForVibration(mEffectPwlePoints, vibrationId).add(pwlePoint);
+    private synchronized void recordEffectPwlePoint(long vibrationId, PwlePoint pwlePoint) {
+        getRecordsForVibration(mEffectPwlePoints, vibrationId).add(pwlePoint);
     }
 
-    private void recordBraking(long vibrationId, int braking) {
-        getRecordForVibration(mBraking, vibrationId).add(braking);
+    private synchronized void recordBraking(long vibrationId, int braking) {
+        getRecordsForVibration(mBraking, vibrationId).add(braking);
     }
 
-    private static <T> List<T> getRecordForVibration(Map<Long, List<T>> records, long vibrationId) {
+    private static <T> List<T> copyRecordsForVibration(
+            Map<Long, List<T>> records, long vibrationId) {
+        return new ArrayList<>(getRecordsForVibration(records, vibrationId));
+    }
+
+    private static <T> List<T> getRecordsForVibration(
+            Map<Long, List<T>> records, long vibrationId) {
         return records.computeIfAbsent(vibrationId, unused -> new ArrayList<>());
     }
 
@@ -411,7 +419,7 @@ public final class HalVibratorHelper {
             }
             PersistableBundle bundle = PersistableBundle.CREATOR.createFromParcel(vendorData);
             recordVendorEffect(vibrationId,
-                    new VibrationEffect.VendorEffect(bundle, (int) strength, scale, adaptiveScale));
+                    new VendorEffect(bundle, (int) strength, scale, adaptiveScale));
             applyLatency(mOnLatency);
             scheduleListener(mVendorEffectDuration, vibrationId, stepId);
             // HAL has unknown duration for vendor effects.
