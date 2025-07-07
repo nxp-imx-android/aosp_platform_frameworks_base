@@ -61,7 +61,7 @@ constructor(
     private val iconBindingFailureTracker: StatusBarIconViewBindingFailureTracker,
     private val nicAodViewModel: NotificationIconContainerAlwaysOnDisplayViewModel,
     private val nicAodIconViewStore: AlwaysOnDisplayNotificationIconViewStore,
-    private val systemBarUtilsState: SystemBarUtilsState,
+    @ShadeDisplayAware private val systemBarUtilsState: SystemBarUtilsState,
     private val keyguardClockViewModel: KeyguardClockViewModel,
 ) {
 
