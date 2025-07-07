@@ -18,11 +18,13 @@ package com.android.wm.shell.desktopmode
 
 import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
+import android.app.WindowConfiguration.WINDOWING_MODE_FULLSCREEN
 import android.content.Context
 import android.hardware.input.InputManager
 import android.hardware.input.InputManager.KeyGestureEventHandler
 import android.hardware.input.KeyGestureEvent
 import android.os.IBinder
+import android.view.Display.DEFAULT_DISPLAY
 import android.window.DesktopExperienceFlags
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
@@ -32,6 +34,7 @@ import com.android.wm.shell.desktopmode.DesktopModeEventLogger.Companion.Minimiz
 import com.android.wm.shell.desktopmode.common.ToggleTaskSizeInteraction
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.annotations.ShellMainThread
+import com.android.wm.shell.shared.desktopmode.DesktopState
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel
 import java.util.Optional
@@ -47,6 +50,7 @@ class DesktopModeKeyGestureHandler(
     private val focusTransitionObserver: FocusTransitionObserver,
     @ShellMainThread private val mainExecutor: ShellExecutor,
     private val displayController: DisplayController,
+    private val desktopState: DesktopState,
 ) : KeyGestureEventHandler {
 
     init {
@@ -69,18 +73,11 @@ class DesktopModeKeyGestureHandler(
         when (event.keyGestureType) {
             KeyGestureEvent.KEY_GESTURE_TYPE_MOVE_TO_NEXT_DISPLAY -> {
                 logV("Key gesture MOVE_TO_NEXT_DISPLAY is handled")
-                getGloballyFocusedDesktopTask()?.let {
-                    logV("Found globally focused desktop task to move: ${it.taskId}")
+                getGloballyFocusedTaskToMoveToNextDisplay()?.let {
                     mainExecutor.execute {
                         desktopTasksController.get().moveToNextDesktopDisplay(it.taskId)
                     }
                 }
-                    ?: logW(
-                        "No globally focused desktop task to move: " +
-                            "globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
-                        focusTransitionObserver.globallyFocusedTaskId,
-                        focusTransitionObserver.globallyFocusedDisplayId,
-                    )
             }
             KeyGestureEvent.KEY_GESTURE_TYPE_SWITCH_TO_PREVIOUS_DESK -> {
                 logV("Key gesture SWITCH_TO_PREVIOUS_DESK is handled")
@@ -175,6 +172,59 @@ class DesktopModeKeyGestureHandler(
             repository.isActiveTask(taskInfo.taskId) &&
                 focusTransitionObserver.hasGlobalFocus(taskInfo)
         }
+    }
+
+    private fun getGloballyFocusedTaskToMoveToNextDisplay(): RunningTaskInfo? {
+        getGloballyFocusedDesktopTask()?.let { desktopTask ->
+            logV(
+                "getGloballyFocusedTaskToMoveToNextDisplay: Found globally focused desktop task to move: %d",
+                desktopTask.taskId,
+            )
+            return@getGloballyFocusedTaskToMoveToNextDisplay desktopTask
+        }
+
+        if (!DesktopExperienceFlags.MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE.isTrue) {
+            logV(
+                "getGloballyFocusedTaskToMoveToNextDisplay: Skip focusing fullscreen task because " +
+                    "MOVE_TO_NEXT_DISPLAY_SHORTCUT_WITH_PROJECTED_MODE is disabled"
+            )
+            return null
+        }
+
+        if (!desktopState.isProjectedMode()) {
+            logV(
+                "getGloballyFocusedTaskToMoveToNextDisplay: Skip focusing fullscreen task because the device is not " +
+                    "in the projected mode"
+            )
+            return null
+        }
+
+        if (focusTransitionObserver.globallyFocusedDisplayId != DEFAULT_DISPLAY) {
+            logV(
+                "getGloballyFocusedTaskToMoveToNextDisplay: Skip focusing fullscreen task because the focused " +
+                    "display is not default display"
+            )
+            return null
+        }
+
+        desktopTasksController
+            .get()
+            .getFocusedNonDesktopTasks(focusTransitionObserver.globallyFocusedDisplayId)
+            .find { it.windowingMode == WINDOWING_MODE_FULLSCREEN }
+            ?.let { fullscreenTask ->
+                logV(
+                    "getGloballyFocusedTaskToMoveToNextDisplay: Found globally focused fullscreen task to move: %d",
+                    fullscreenTask.taskId,
+                )
+                return@getGloballyFocusedTaskToMoveToNextDisplay fullscreenTask
+            }
+
+        logW(
+            "No globally focused task to move: globallyFocusedTaskId=%d globallyFocusedDisplayId=%d",
+            focusTransitionObserver.globallyFocusedTaskId,
+            focusTransitionObserver.globallyFocusedDisplayId,
+        )
+        return null
     }
 
     private fun logV(msg: String, vararg arguments: Any?) {

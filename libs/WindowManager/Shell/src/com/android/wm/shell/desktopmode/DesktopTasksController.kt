@@ -459,7 +459,7 @@ class DesktopTasksController(
      * Returns all focused tasks in full screen or split screen mode in [displayId] excluding home
      * activity and desk roots.
      */
-    private fun getFocusedNonDesktopTasks(displayId: Int): List<RunningTaskInfo> =
+    fun getFocusedNonDesktopTasks(displayId: Int): List<RunningTaskInfo> =
         shellTaskOrganizer.getRunningTasks(displayId).filter { taskInfo ->
             val focused = taskInfo.isFocused
             val isNotDesktop =
