@@ -4151,6 +4151,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     // Shell handles the request; see task supervisor's
                     // processStoppingAndFinishingActivities.
                     enterPipTransition.collect(r);
+                    // Collecting the current task of the PiP-candidate activity prevents
+                    // WindowAnimator from updating its surface visibility until the potential
+                    // PiP transition formally starts.
+                    enterPipTransition.collect(r.getTask());
                     getTransitionController().requestStartTransition(enterPipTransition,
                             r.getTask(), null /* remoteTransition */, null /* displayChange */);
                     // can run during finish, so partial
