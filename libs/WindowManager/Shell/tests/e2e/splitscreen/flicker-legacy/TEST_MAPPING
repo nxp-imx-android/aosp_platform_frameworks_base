@@ -4,55 +4,55 @@
       "name": "WMShellFlickerTestsSplitScreen-CatchAll"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-CopyContentInSplit"
+      "name": "WMShellFlickerTestsSplitScreen-CopyContentInSplitTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-DismissSplitScreenByDivider"
+      "name": "WMShellFlickerTestsSplitScreen-DismissSplitScreenByDividerTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-DismissSplitScreenByGoHome"
+      "name": "WMShellFlickerTestsSplitScreen-DismissSplitScreenByGoHomeTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-DragDividerToResize"
+      "name": "WMShellFlickerTestsSplitScreen-DragDividerToResizeTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-EnterSplitScreenByDragFromAllApps"
+      "name": "WMShellFlickerTestsSplitScreen-EnterSplitScreenByDragFromAllAppsTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-EnterSplitScreenByDragFromNotification"
+      "name": "WMShellFlickerTestsSplitScreen-EnterSplitScreenByDragFromNotificationTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-EnterSplitScreenByDragFromShortcut"
+      "name": "WMShellFlickerTestsSplitScreen-EnterSplitScreenByDragFromShortcutTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-EnterSplitScreenByDragFromTaskbar"
+      "name": "WMShellFlickerTestsSplitScreen-EnterSplitScreenByDragFromTaskbarTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-EnterSplitScreenFromOverview"
+      "name": "WMShellFlickerTestsSplitScreen-EnterSplitScreenFromOverviewTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-MultipleShowImeRequestsInSplitScreen"
+      "name": "WMShellFlickerTestsSplitScreen-MultipleShowImeRequestsInSplitScreenTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-SwitchAppByDoubleTapDivider"
+      "name": "WMShellFlickerTestsSplitScreen-SwitchAppByDoubleTapDividerTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-SwitchBackToSplitFromAnotherApp"
+      "name": "WMShellFlickerTestsSplitScreen-SwitchBackToSplitFromAnotherAppTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-SwitchBackToSplitFromHome"
+      "name": "WMShellFlickerTestsSplitScreen-SwitchBackToSplitFromHomeTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-SwitchBackToSplitFromRecent"
+      "name": "WMShellFlickerTestsSplitScreen-SwitchBackToSplitFromRecentTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-SwitchBetweenSplitPairs"
+      "name": "WMShellFlickerTestsSplitScreen-SwitchBetweenSplitPairsNoPipTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-SwitchBetweenSplitPairsNoPip"
+      "name": "WMShellFlickerTestsSplitScreen-SwitchBetweenSplitPairsTest"
     },
     {
-      "name": "WMShellFlickerTestsSplitScreen-UnlockKeyguardToSplitScreen"
+      "name": "WMShellFlickerTestsSplitScreen-UnlockKeyguardToSplitScreenTest"
     }
   ]
 }
