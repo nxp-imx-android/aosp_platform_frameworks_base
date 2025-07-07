@@ -9289,6 +9289,7 @@ package android.app.backup {
     method public void onRestoreFile(android.os.ParcelFileDescriptor, long, java.io.File, int, long, long) throws java.io.IOException;
     method public void onRestoreFinished();
     field public static final int FLAG_CLIENT_SIDE_ENCRYPTION_ENABLED = 1; // 0x1
+    field @FlaggedApi("com.android.server.backup.enable_cross_platform_transfer") public static final int FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS = 8; // 0x8
     field public static final int FLAG_DEVICE_TO_DEVICE_TRANSFER = 2; // 0x2
     field public static final int TYPE_DIRECTORY = 2; // 0x2
     field public static final int TYPE_FILE = 1; // 0x1
