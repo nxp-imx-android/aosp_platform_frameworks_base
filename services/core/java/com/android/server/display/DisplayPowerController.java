@@ -1228,7 +1228,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         if (mScreenBrightnessRampAnimator == null) {
             return;
         }
-        if (mFlags.isAdaptiveTone1Enabled() && isIdle) {
+        if (isIdle) {
             mScreenBrightnessRampAnimator.setAnimationTimeLimits(
                     mBrightnessRampIncreaseMaxTimeIdleMillis,
                     mBrightnessRampDecreaseMaxTimeIdleMillis);

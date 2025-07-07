@@ -41,10 +41,6 @@ public class DisplayManagerFlags {
     // 'adb shell setprop persist.log.tag.DisplayManagerFlags DEBUG && adb reboot'
     private static final boolean DEBUG = DebugUtils.isDebuggable(TAG);
 
-    private final FlagState mAdaptiveToneImprovements1 = new FlagState(
-            Flags.FLAG_ENABLE_ADAPTIVE_TONE_IMPROVEMENTS_1,
-            Flags::enableAdaptiveToneImprovements1);
-
     private final FlagState mAdaptiveToneImprovements2 = new FlagState(
             Flags.FLAG_ENABLE_ADAPTIVE_TONE_IMPROVEMENTS_2,
             Flags::enableAdaptiveToneImprovements2);
@@ -295,13 +291,6 @@ public class DisplayManagerFlags {
     /** Returns whether power throttling clamper is enabled on not. */
     public boolean isPowerThrottlingClamperEnabled() {
         return mPowerThrottlingClamperFlagState.isEnabled();
-    }
-
-    /**
-     * Returns whether adaptive tone improvements are enabled
-     */
-    public boolean isAdaptiveTone1Enabled() {
-        return mAdaptiveToneImprovements1.isEnabled();
     }
 
     /**
@@ -609,7 +598,6 @@ public class DisplayManagerFlags {
     public void dump(PrintWriter pw) {
         pw.println("DisplayManagerFlags:");
         pw.println("--------------------");
-        pw.println(" " + mAdaptiveToneImprovements1);
         pw.println(" " + mAdaptiveToneImprovements2);
         pw.println(" " + mBackUpSmoothDisplayAndForcePeakRefreshRateFlagState);
         pw.println(" " + mConnectedDisplayErrorHandlingFlagState);
