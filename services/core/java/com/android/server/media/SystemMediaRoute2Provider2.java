@@ -19,10 +19,13 @@ package com.android.server.media;
 import static android.media.MediaRoute2Info.FEATURE_LIVE_AUDIO;
 import static android.media.MediaRoute2Info.FEATURE_LIVE_VIDEO;
 import static android.media.MediaRoute2Info.PLAYBACK_VOLUME_FIXED;
+import static android.media.MediaRoute2ProviderService.REQUEST_ID_NONE;
 
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.app.RunningAppProcessInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -47,6 +50,7 @@ import com.android.server.media.MediaRoute2ProviderServiceProxy.SystemMediaSessi
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -67,7 +71,21 @@ import java.util.stream.Stream;
      */
     private static final float VOLUME_KEY_PRESS_STEP = 0.05f;
 
+    /**
+     * The minimum {@link ActivityManager.RunningAppProcessInfo package importance} that an app must
+     * hold for its media to be re-routed.
+     *
+     * <p>If an app's importance falls below this threshold, any associated routing sessions are
+     * released.
+     *
+     * <p>Note that importance is inversely proportional to the numeric value: A smaller numeric
+     * value means more importance.
+     */
+    private static final int MINIMUM_IMPORTANCE_FOR_REROUTING =
+            ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE;
+
     private final PackageManager mPackageManager;
+    private final ActivityManager mActivityManager;
 
     @GuardedBy("mLock")
     private MediaRoute2ProviderInfo mLastSystemProviderInfo;
@@ -112,11 +130,16 @@ import java.util.stream.Stream;
         return instance;
     }
 
+    @SuppressLint("MissingPermission") // We are running within the system_server.
     private SystemMediaRoute2Provider2(Context context, UserHandle user, Looper looper) {
         super(context, COMPONENT_NAME, user, looper);
         mPackageManager = context.getPackageManager();
+        mActivityManager = Objects.requireNonNull(context.getSystemService(ActivityManager.class));
+        mActivityManager.addOnUidImportanceListener(
+                this::onUidImportanceChanged, MINIMUM_IMPORTANCE_FOR_REROUTING);
     }
 
+    @SuppressLint("MissingPermission") // We are running within the system_server.
     @Override
     public void transferToRoute(
             long requestId,
@@ -168,19 +191,20 @@ import java.util.stream.Stream;
             }
 
             if (serviceTargetRoute != null) {
-                boolean isGlobalSession = TextUtils.isEmpty(clientPackageName);
-                int uid;
-                if (isGlobalSession) {
-                    uid = Process.INVALID_UID;
-                } else {
-                    uid = fetchUid(clientPackageName, clientUserHandle);
-                    if (uid == Process.INVALID_UID) {
-                        throw new IllegalArgumentException(
-                                "Cannot resolve transfer for "
-                                        + clientPackageName
-                                        + " and "
-                                        + clientUserHandle);
-                    }
+                int uid = fetchUid(clientPackageName, clientUserHandle);
+                int packageImportance =
+                        uid != Process.INVALID_UID
+                                ? mActivityManager.getUidImportance(uid)
+                                : RunningAppProcessInfo.IMPORTANCE_GONE;
+                if (packageImportance > MINIMUM_IMPORTANCE_FOR_REROUTING) {
+                    String message =
+                            TextUtils.formatSimple(
+                                    "Ignoring transfer request for '%s' uid=%d due to package"
+                                            + " importance=%d",
+                                    clientPackageName, uid, packageImportance);
+                    Log.w(TAG, message);
+                    notifyRequestFailed(requestId, MediaRoute2ProviderService.REASON_REJECTED);
+                    return;
                 }
                 var pendingCreationCallback =
                         new SystemMediaSessionCallbackImpl(
@@ -385,6 +409,37 @@ import java.util.stream.Stream;
         }
         updateSessionInfo();
         notifyGlobalSessionInfoUpdated();
+    }
+
+    /**
+     * Cleans up any ongoing service-managed routing sessions for apps that fall below the {@link
+     * #MINIMUM_IMPORTANCE_FOR_REROUTING importance threshold}.
+     */
+    private void onUidImportanceChanged(int uid, int importance) {
+        if (importance <= MINIMUM_IMPORTANCE_FOR_REROUTING) {
+            // We only care about packages that have dropped their importance below the threshold.
+            return;
+        }
+        releaseSessionsForUid(uid);
+    }
+
+    /** Releases any sessions associated with the given uid. */
+    private void releaseSessionsForUid(int uid) {
+        var packageNamesForUid = mPackageManager.getPackagesForUid(uid);
+        if (packageNamesForUid == null) {
+            return;
+        }
+        synchronized (mLock) {
+            for (String packageName : packageNamesForUid) {
+                var sessionRecord = mPackageNameToSessionRecord.get(packageName);
+                if (sessionRecord != null) {
+                    mHandler.post(
+                            () ->
+                                    releaseSession(
+                                            REQUEST_ID_NONE, sessionRecord.getServiceSessionId()));
+                }
+            }
+        }
     }
 
     /**
@@ -774,6 +829,8 @@ import java.util.stream.Stream;
         }
 
         // @GuardedBy("SystemMediaRoute2Provider2.this.mLock")
+
+        /** Returns the session's original id, as published by the service. */
         public String getServiceSessionId() {
             return mSourceSessionInfo.getOriginalId();
         }
