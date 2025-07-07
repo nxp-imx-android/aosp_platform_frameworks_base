@@ -2203,25 +2203,30 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     public boolean removeTask(int taskId) {
         mAmInternal.enforceCallingPermission(REMOVE_TASKS, "removeTask()");
         synchronized (mGlobalLock) {
+            final int pid = Binder.getCallingPid();
             final long ident = Binder.clearCallingIdentity();
             try {
-                final Task task = mRootWindowContainer.anyTaskForId(taskId,
-                        MATCH_ATTACHED_TASK_OR_RECENT_TASKS);
-                if (task == null) {
-                    Slog.w(TAG, "removeTask: No task remove with id=" + taskId);
-                    return false;
-                }
-                removeTask(task);
-                return true;
+                return removeTask(taskId, "remove-by-pid#" + pid);
             } finally {
                 Binder.restoreCallingIdentity(ident);
             }
         }
     }
 
-    void removeTask(@NonNull Task task) {
+    boolean removeTask(int taskId, @NonNull String reason) {
+        final Task task = mRootWindowContainer.anyTaskForId(taskId,
+                MATCH_ATTACHED_TASK_OR_RECENT_TASKS);
+        if (task == null) {
+            Slog.w(TAG, "removeTask: No task remove with id=" + taskId);
+            return false;
+        }
+        removeTask(task, reason);
+        return true;
+    }
+
+    void removeTask(@NonNull Task task, @NonNull String reason) {
         if (task.isLeafTask()) {
-            mTaskSupervisor.removeTask(task, true, REMOVE_FROM_RECENTS, "remove-task");
+            mTaskSupervisor.removeTask(task, true, REMOVE_FROM_RECENTS, reason);
         } else {
             mTaskSupervisor.removeRootTask(task);
         }
@@ -7914,6 +7919,13 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             int taskId,
             @NonNull IHandoffTaskDataReceiver receiver) {
             ActivityTaskManagerService.this.requestHandoffTaskData(taskId, receiver);
+        }
+
+        @Override
+        public boolean removeTask(int taskId, @NonNull String reason) {
+            synchronized (ActivityTaskManagerService.this.mGlobalLock) {
+                return ActivityTaskManagerService.this.removeTask(taskId, reason);
+            }
         }
     }
 
