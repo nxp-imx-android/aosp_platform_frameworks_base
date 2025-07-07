@@ -270,11 +270,9 @@ static jobject getBitmapFromVideoFrame(
     ScopedLocalRef<jobject> config(env, ABitmapConfig_getConfigFromFormat(env, outColorType));
 
     uint32_t width, height, displayWidth, displayHeight;
-    bool swapWidthAndHeight = false;
     if (videoFrame->mRotationAngle == 90 || videoFrame->mRotationAngle == 270) {
         width = videoFrame->mHeight;
         height = videoFrame->mWidth;
-        swapWidthAndHeight = true;
         displayWidth = videoFrame->mDisplayHeight;
         displayHeight = videoFrame->mDisplayWidth;
     } else {
