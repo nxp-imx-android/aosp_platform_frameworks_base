@@ -41,7 +41,8 @@ constructor(private val squeezeEffectRepository: SqueezeEffectRepository) {
             ) { isEnabled, isPowerButtonPressedAsSingleGesture, isPowerButtonLongPressed ->
                 val useInitialRumble = squeezeEffectRepository.useHapticRumble()
                 when {
-                    !isPowerButtonPressedAsSingleGesture -> PowerButtonSemantics.CANCEL_SQUEEZE
+                    isEnabled && !isPowerButtonPressedAsSingleGesture ->
+                        PowerButtonSemantics.CANCEL_SQUEEZE
                     isEnabled && isPowerButtonPressedAsSingleGesture && useInitialRumble ->
                         PowerButtonSemantics.START_SQUEEZE_WITH_RUMBLE
                     isEnabled && isPowerButtonPressedAsSingleGesture && !useInitialRumble ->

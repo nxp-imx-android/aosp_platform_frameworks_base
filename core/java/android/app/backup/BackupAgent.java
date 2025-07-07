@@ -16,6 +16,7 @@
 
 package android.app.backup;
 
+import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.Nullable;
 import android.app.IBackupAgent;
@@ -190,6 +191,16 @@ public abstract class BackupAgent extends ContextWrapper {
      * Flag for {@link BackupDataOutput#getTransportFlags()} and {@link
      * FullBackupDataOutput#getTransportFlags()} only.
      *
+     * <p>Indicates this is a cross-platform transfer to or from iOS. The user's backup data is sent
+     * directly to another device over e.g. USB or WiFi.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER)
+    public static final int FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS = 1 << 3;
+
+    /**
+     * Flag for {@link BackupDataOutput#getTransportFlags()} and {@link
+     * FullBackupDataOutput#getTransportFlags()} only.
+     *
      * <p>Used for internal testing only. Do not check this flag in production code.
      *
      * @hide
@@ -203,7 +214,8 @@ public abstract class BackupAgent extends ContextWrapper {
             value = {
                 FLAG_CLIENT_SIDE_ENCRYPTION_ENABLED,
                 FLAG_DEVICE_TO_DEVICE_TRANSFER,
-                FLAG_FAKE_CLIENT_SIDE_ENCRYPTION_ENABLED
+                FLAG_FAKE_CLIENT_SIDE_ENCRYPTION_ENABLED,
+                FLAG_CROSS_PLATFORM_DATA_TRANSFER_IOS
             })
     public @interface BackupTransportFlags {}
 

@@ -20,6 +20,7 @@ package com.android.wm.shell.flicker.bubbles.utils
 
 import android.app.Instrumentation
 import android.graphics.Point
+import android.platform.systemui_tapl.ui.Root
 import android.tools.Rotation
 import android.tools.device.apphelpers.StandardAppHelper
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
@@ -200,6 +201,8 @@ private fun waitAndAssertBubbleAppInExpandedState(
         .withTopVisibleApp(testApp)
         .withBubbleShown()
         .waitForAndVerify()
+
+    Root.get().expandedBubbleStack.verifyBubbleOverflowIsVisible()
 }
 
 private fun waitAndAssertBubbleAppInCollapseState(wmHelper: WindowManagerStateHelper) {

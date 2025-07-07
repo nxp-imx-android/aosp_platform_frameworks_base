@@ -90,7 +90,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
                 )
                 .padding(start = 12.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
     ) {
-        val painter = rememberDrawablePainter(action.icon.drawable)
+        val painter = rememberDrawablePainter(action.icon.large)
         Image(
             painter = painter,
             contentDescription = stringResource(id = R.string.ambient_cue_icon_content_description),

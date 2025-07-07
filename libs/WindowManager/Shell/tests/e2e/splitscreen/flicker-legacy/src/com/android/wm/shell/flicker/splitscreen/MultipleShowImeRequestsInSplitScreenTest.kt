@@ -42,7 +42,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class MultipleShowImeRequestsInSplitScreen(override val flicker: LegacyFlickerTest) :
+class MultipleShowImeRequestsInSplitScreenTest(override val flicker: LegacyFlickerTest) :
         MultipleShowImeRequestsInSplitScreenBenchmark(flicker), ICommonAssertions {
     override val transition: FlickerBuilder.() -> Unit
         get() = {

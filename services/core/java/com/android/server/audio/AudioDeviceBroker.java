@@ -1832,12 +1832,12 @@ public class AudioDeviceBroker {
         return mBluetoothA2dpEnabled.get();
     }
 
-    /*package*/ int getLeAudioDeviceGroupId(BluetoothDevice device) {
-        return mBtHelper.getLeAudioDeviceGroupId(device);
+    /*package*/ int getLeAudioDeviceGroupId(BluetoothDevice device, int profile) {
+        return mBtHelper.getLeAudioDeviceGroupId(device, profile);
     }
 
-    /*package*/ List<Pair<String, String>> getLeAudioGroupAddresses(int groupId) {
-        return mBtHelper.getLeAudioGroupAddresses(groupId);
+    /*package*/ List<Pair<String, String>> getLeAudioGroupAddresses(int groupId, int profile) {
+        return mBtHelper.getLeAudioGroupAddresses(groupId, profile);
     }
 
     /*package*/ void broadcastStickyIntentToCurrentProfileGroup(Intent intent) {
@@ -3108,6 +3108,10 @@ public class AudioDeviceBroker {
     @Nullable
     AdiDeviceState findBtDeviceStateForAddress(String address, int deviceType) {
         return mDeviceInventory.findBtDeviceStateForAddress(address, deviceType);
+    }
+
+    boolean hasAlwaysRingDevice() {
+        return mDeviceInventory.hasAlwaysRingDevice();
     }
 
     void addAudioDeviceWithCategoryInInventoryIfNeeded(@NonNull String address,

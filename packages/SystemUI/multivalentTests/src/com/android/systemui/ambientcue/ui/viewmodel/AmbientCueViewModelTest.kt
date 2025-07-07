@@ -312,11 +312,17 @@ class AmbientCueViewModelTest : SysuiTestCase() {
             ActionModel(
                 icon =
                     IconModel(
-                        applicationContext.resources.getDrawable(
-                            R.drawable.ic_content_paste_spark,
-                            applicationContext.theme,
-                        ),
-                        "test.icon",
+                        small =
+                            applicationContext.resources.getDrawable(
+                                R.drawable.ic_content_paste_spark,
+                                applicationContext.theme,
+                            ),
+                        large =
+                            applicationContext.resources.getDrawable(
+                                R.drawable.ic_content_paste_spark,
+                                applicationContext.theme,
+                            ),
+                        iconId = "test.icon",
                     ),
                 label = "Sunday Morning",
                 attribution = null,

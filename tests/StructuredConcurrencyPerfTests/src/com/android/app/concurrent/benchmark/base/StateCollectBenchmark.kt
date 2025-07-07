@@ -33,25 +33,25 @@ interface StateCollectBenchmark : BenchmarkWithStateProvider {
     val consumerCount: Int
 
     companion object {
-        val PRODUCER_LIST = listOf(1, 2, 5, 10, 25)
-        val CONSUMER_LIST = listOf(1, 10, 25, 50, 100)
+        val PRODUCER_LIST = listOf(10, 25, 50)
+        val CONSUMER_LIST = listOf(10, 25, 50)
     }
 
     @Test
-    fun benchmark_stateListeners() {
+    fun benchmark_stateObservers_shallow() {
         class Benchmark<M : R, R>(stateBuilder: StateBuilder<M, R, Int>) :
             StateBenchmarkTask<M, R, Int>(stateBuilder) {
-            var receivedVal = Array(producerCount) { IntArray(consumerCount) }
+            var receivedVal = Array(consumerCount) { IntArray(producerCount) }
             var producers = List(producerCount) { stateBuilder.createMutableState(0) }
 
             override fun ConcurrentBenchmarkBuilder.build() {
                 if (consumerCount != 0) {
                     beforeFirstIteration(producerCount * consumerCount) { barrier ->
-                        stateBuilder.readScope {
-                            producers.forEachIndexed { producerIndex, state ->
-                                repeat(consumerCount) { consumerIndex ->
+                        repeat(consumerCount) { consumerIndex ->
+                            stateBuilder.readScope {
+                                producers.forEachIndexed { producerIndex, state ->
                                     state.observe { newValue ->
-                                        receivedVal[producerIndex][consumerIndex] = newValue
+                                        receivedVal[consumerIndex][producerIndex] = newValue
                                         barrier.countDown()
                                     }
                                 }
@@ -102,7 +102,7 @@ interface ChainedStateCollectBenchmark : BenchmarkWithStateProvider {
     }
 
     @Test
-    fun benchmark() {
+    fun benchmark_stateObservers_chained() {
         class Benchmark<M : R, R>(stateBuilder: StateBuilder<M, R, Int>) :
             StateBenchmarkTask<M, R, Int>(stateBuilder) {
             var receivedVal = 0

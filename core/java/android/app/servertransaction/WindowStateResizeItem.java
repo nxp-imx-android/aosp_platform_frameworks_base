@@ -30,6 +30,8 @@ import android.view.WindowRelayoutResult;
 import android.window.ActivityWindowInfo;
 import android.window.ClientWindowFrames;
 
+import com.android.window.flags.Flags;
+
 import java.util.Objects;
 
 /**
@@ -65,7 +67,7 @@ public class WindowStateResizeItem extends WindowStateTransactionItem {
         } else {
             mLayout.activityWindowInfo = null;
         }
-        mReportDraw = reportDraw;
+        mReportDraw = Flags.alwaysSeqIdLayout() ? false : reportDraw;
         mForceLayout = forceLayout;
         mDisplayId = displayId;
         mLayout.syncSeqId = syncSeqId;
@@ -76,8 +78,7 @@ public class WindowStateResizeItem extends WindowStateTransactionItem {
     @Override
     public void execute(@NonNull ClientTransactionHandler client, @NonNull IWindow window,
             @NonNull PendingTransactionActions pendingActions) {
-        Trace.traceBegin(Trace.TRACE_TAG_WINDOW_MANAGER,
-                mReportDraw ? "windowResizedReport" : "windowResized");
+        Trace.traceBegin(Trace.TRACE_TAG_WINDOW_MANAGER, "windowResized");
         try {
             window.resized(mLayout, mReportDraw, mForceLayout, mDisplayId, mSyncWithBuffers,
                     mDragResizing);

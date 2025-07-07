@@ -48,7 +48,7 @@ import org.junit.runners.Parameterized
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-class OpenActivityFromBubbleOnLocksreenTest(flicker: LegacyFlickerTest) :
+class OpenActivityFromBubbleOnLockscreenTest(flicker: LegacyFlickerTest) :
     BaseBubbleScreen(flicker) {
 
     /** {@inheritDoc} */

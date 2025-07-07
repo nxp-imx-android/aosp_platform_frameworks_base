@@ -4540,7 +4540,9 @@ class Task extends TaskFragment {
      */
     void setMainWindowSizeChangeTransaction(SurfaceControl.Transaction t) {
         setMainWindowSizeChangeTransaction(t, this);
-        forAllWindows(WindowState::requestRedrawForSync, true);
+        if (!Flags.alwaysSeqIdLayout()) {
+            forAllWindows(WindowState::requestRedrawForSync, true);
+        }
     }
 
     private void setMainWindowSizeChangeTransaction(SurfaceControl.Transaction t, Task origin) {
@@ -6891,7 +6893,9 @@ class Task extends TaskFragment {
             // Set activity type before adding the root task to TaskDisplayArea, so home task can
             // be cached, see TaskDisplayArea#addRootTaskReferenceIfNeeded().
             if (mActivityType != ACTIVITY_TYPE_UNDEFINED) {
-                task.setActivityType(mActivityType);
+                // Set directly because onParentChanged will propagate it.
+                task.getRequestedOverrideConfiguration().windowConfiguration.setActivityType(
+                        mActivityType);
             }
 
             if (mParent != null) {

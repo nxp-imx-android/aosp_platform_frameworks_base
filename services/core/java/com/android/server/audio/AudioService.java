@@ -6696,12 +6696,12 @@ public class AudioService extends IAudioService.Stub
 
     /* package */ void updateRingerModeMutedStreams() {
         synchronized (mSettingsLock) {
-            muteRingerModeStreams();
+            updateStreamMuteFromRingerMode();
         }
     }
 
     @GuardedBy("mSettingsLock")
-    private void muteRingerModeStreams() {
+    private void updateStreamMuteFromRingerMode() {
         // Mute stream if not previously muted by ringer mode and (ringer mode
         // is not RINGER_MODE_NORMAL OR stream is zen muted) and stream is affected by ringer mode.
         // Unmute stream if previously muted by ringer/zen mode and ringer mode
@@ -6717,12 +6717,12 @@ public class AudioService extends IAudioService.Stub
                 || ringerMode == AudioManager.RINGER_MODE_SILENT;
         final boolean shouldRingSco = ringerMode == AudioManager.RINGER_MODE_VIBRATE
                 && mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_SCO;
-        final boolean shouldRingBle = ringerMode == AudioManager.RINGER_MODE_VIBRATE
+        final boolean shouldRingBle =  ringerMode == AudioManager.RINGER_MODE_VIBRATE
                 && (mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_BLE_HEADSET
                 || mBtCommDeviceActive.get() == BT_COMM_DEVICE_ACTIVE_BLE_SPEAKER);
         // Ask audio policy engine to force use Bluetooth SCO/BLE channel if needed
         final String eventSource =
-                "muteRingerModeStreams() from u/pid:" + Binder.getCallingUid()
+                "updateStreamMuteFromRingerMode() from u/pid:" + Binder.getCallingUid()
                         + "/" + Binder.getCallingPid();
         int forceUse = AudioSystem.FORCE_NONE;
         if (shouldRingSco) {
@@ -6773,15 +6773,15 @@ public class AudioService extends IAudioService.Stub
                     }
                 }
                 sRingerAndZenModeMutedStreams &= ~(1 << streamType);
-                vss.mute(false, "muteRingerModeStreams");
+                vss.mute(false, "updateStreamMuteFromRingerMode");
             } else {
                 // mute
                 sRingerAndZenModeMutedStreams |= (1 << streamType);
-                vss.mute(true, "muteRingerModeStreams");
+                vss.mute(true, "updateStreamMuteFromRingerMode");
             }
         }
         sMuteLogger.enqueue(new AudioServiceEvents.RingerZenMutedStreamsEvent(
-                sRingerAndZenModeMutedStreams, "muteRingerModeStreams"));
+                sRingerAndZenModeMutedStreams, "updateStreamMuteFromRingerMode"));
     }
 
     private boolean isAlarm(int streamType) {
@@ -6807,7 +6807,7 @@ public class AudioService extends IAudioService.Stub
         synchronized(mSettingsLock) {
             change = mRingerMode != ringerMode;
             mRingerMode = ringerMode;
-            muteRingerModeStreams();
+            updateStreamMuteFromRingerMode();
         }
 
         // Post a persist ringer mode msg
@@ -15494,10 +15494,27 @@ public class AudioService extends IAudioService.Stub
         // AudioAttributes of the notification record is 0 (non-zero volume implies
         // not silenced by SILENT or VIBRATE ringer mode)
         final int stream = AudioAttributes.toLegacyStreamType(aa);
-        final boolean mutingFromVolume = getStreamVolume(stream) == 0;
-        if (mutingFromVolume) {
+        boolean maybeMutingFromVolume = getStreamVolume(stream) == 0;
+
+        // Exception with ringMyCar
+        //       if in vibrate mode,
+        //       and if an HFP device is available and is of type carkit
+        //            or headphones,
+        //       then ringtones should play even when the stream is muted.
+        if (ringMyCar()
+                && maybeMutingFromVolume
+                && (getRingerModeExternal() == RINGER_MODE_VIBRATE)
+                && (stream == AudioSystem.STREAM_RING)) {
+            final boolean hasAlwaysRingDevice = mDeviceBroker.hasAlwaysRingDevice();
+            if (hasAlwaysRingDevice) {
+                Slog.i(TAG, "shouldNotificationSoundPlay found always ring device");
+            }
+            maybeMutingFromVolume = !hasAlwaysRingDevice;
+        }
+
+        if (maybeMutingFromVolume) {
             Slog.i(TAG, "shouldNotificationSoundPlay false: muted stream:" + stream
-                    + " attr:" + aa);
+                        + " attr:" + aa);
             return false;
         }
 

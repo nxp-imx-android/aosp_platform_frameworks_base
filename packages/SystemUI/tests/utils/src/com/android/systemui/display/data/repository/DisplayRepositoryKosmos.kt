@@ -22,6 +22,8 @@ import android.os.fakeHandler
 import android.view.Display
 import android.view.mockIWindowManager
 import com.android.app.displaylib.fakes.FakePerDisplayRepository
+import com.android.systemui.common.ui.ConfigurationState
+import com.android.systemui.common.ui.configurationState
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent
 import com.android.systemui.display.dagger.SystemUIPhoneDisplaySubcomponent
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
@@ -46,6 +48,8 @@ import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBar
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.HomeStatusBarViewModel.HomeStatusBarViewModelFactory
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewBinder
 import com.android.systemui.statusbar.pipeline.shared.ui.viewmodel.homeStatusBarViewModelFactory
+import com.android.systemui.statusbar.ui.SystemBarUtilsState
+import com.android.systemui.statusbar.ui.systemBarUtilsState
 import com.android.systemui.statusbar.window.StatusBarWindowStateController
 import com.android.systemui.util.mockito.mock
 import javax.inject.Provider
@@ -72,6 +76,8 @@ fun Kosmos.createFakeDisplaySubcomponent(
         this.ongoingActivityChipsViewModel,
     darkIconDispatcher: DarkIconDispatcher = this.fakeDarkIconDispatcher,
     sysUiDarkIconDispatcher: SysuiDarkIconDispatcher = this.fakeDarkIconDispatcher,
+    systemBarUtilsState: SystemBarUtilsState = this.systemBarUtilsState,
+    configurationState: ConfigurationState = this.configurationState,
 ): SystemUIPhoneDisplaySubcomponent {
     return object : SystemUIPhoneDisplaySubcomponent {
         override val displayCoroutineScope: CoroutineScope
@@ -91,6 +97,12 @@ fun Kosmos.createFakeDisplaySubcomponent(
 
         override val ongoingActivityChipsViewModel: OngoingActivityChipsViewModel
             get() = ongoingActivityChipsViewModel
+
+        override val systemBarUtilsState: SystemBarUtilsState
+            get() = systemBarUtilsState
+
+        override val configurationState: ConfigurationState
+            get() = configurationState
 
         override val homeStatusBarComponentFactory: HomeStatusBarComponent.Factory
             get() = mock<HomeStatusBarComponent.Factory>()

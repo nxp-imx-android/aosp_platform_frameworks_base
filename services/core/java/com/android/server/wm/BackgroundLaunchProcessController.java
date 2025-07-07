@@ -153,7 +153,7 @@ class BackgroundLaunchProcessController {
 
         // If app switching is not allowed, we ignore all the start activity grace period
         // exception so apps cannot start itself in onPause() after pressing home button.
-        if (checkConfiguration.checkOtherExemptions && appSwitchState == APP_SWITCH_ALLOW) {
+        if (checkConfiguration.gracePeriod > 0 && appSwitchState == APP_SWITCH_ALLOW) {
             // Allow if any activity in the caller has either started or finished very recently, and
             // it must be started or finished after last stop app switches time.
             if (lastActivityLaunchTime > lastStopAppSwitchesTime

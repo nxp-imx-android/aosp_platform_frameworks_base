@@ -16,7 +16,7 @@
 
 package com.android.server.ondeviceintelligence;
 
-import static android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService.DEVICE_CONFIG_UPDATE_BUNDLE_KEY;
+import static android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService.UpdateProcessingStateKeys.KEY_DEVICE_CONFIG_UPDATE;
 import static android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService.MODEL_LOADED_BUNDLE_KEY;
 import static android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService.MODEL_UNLOADED_BUNDLE_KEY;
 import static android.service.ondeviceintelligence.OnDeviceSandboxedInferenceService.MODEL_LOADED_BROADCAST_INTENT;
@@ -546,8 +546,8 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                     ensureRemoteInferenceServiceInitialized();
                     int callerUid = Binder.getCallingUid();
                     boolean shouldAddInferenceInfo = request.getBoolean(
-                                    OnDeviceIntelligenceManager.KEY_REQUEST_INFERENCE_INFO,
-                                    false);
+                            OnDeviceIntelligenceManager.KEY_REQUEST_INFERENCE_INFO,
+                            false);
                     result = mRemoteInferenceService.postAsync(
                             service -> {
                                 AndroidFuture future = new AndroidFuture();
@@ -562,7 +562,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                                                 mInferenceInfoStore,
                                                 shouldAddInferenceInfo));
                                 return future.orTimeout(getIdleTimeoutMs(),
-                                            TimeUnit.MILLISECONDS);
+                                        TimeUnit.MILLISECONDS);
                             });
                     result.whenCompleteAsync((c, e) -> BundleUtil.tryCloseResource(request),
                             resourceClosingExecutor);
@@ -599,8 +599,8 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                     ensureRemoteInferenceServiceInitialized();
                     int callerUid = Binder.getCallingUid();
                     boolean shouldAddInferenceInfo = request.getBoolean(
-                                    OnDeviceIntelligenceManager.KEY_REQUEST_INFERENCE_INFO,
-                                    false);
+                            OnDeviceIntelligenceManager.KEY_REQUEST_INFERENCE_INFO,
+                            false);
                     result = mRemoteInferenceService.postAsync(
                             service -> {
                                 AndroidFuture future = new AndroidFuture();
@@ -644,9 +644,9 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
                 try {
                     String[] serviceNames = getServiceNames();
                     writer.println(configPrefix
-                        + "OnDeviceIntelligenceService: " + serviceNames[0]);
+                            + "OnDeviceIntelligenceService: " + serviceNames[0]);
                     writer.println(configPrefix
-                        + "OnDeviceSandboxedInferenceService: " + serviceNames[1]);
+                            + "OnDeviceSandboxedInferenceService: " + serviceNames[1]);
                 } catch (Resources.NotFoundException e) {
                     writer.println(configPrefix + "Could not get service names: " + e);
                 }
@@ -669,8 +669,8 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
             @Override
             public void registerInferenceServiceLifecycleListener(ILifecycleListener listener)
                     throws RemoteException {
-                Slog.d(TAG, "OnDeviceIntelligenceManagerInternal"+
-                                "registerInferenceServiceLifecycleListener");
+                Slog.d(TAG, "OnDeviceIntelligenceManagerInternal" +
+                        "registerInferenceServiceLifecycleListener");
                 Objects.requireNonNull(listener);
                 mContext.enforceCallingPermission(
                         Manifest.permission.USE_ON_DEVICE_INTELLIGENCE, TAG);
@@ -685,7 +685,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
             public void unregisterInferenceServiceLifecycleListener(ILifecycleListener listener)
                     throws RemoteException {
                 Slog.d(TAG, "OnDeviceIntelligenceManagerInternal"
-                            + "unregisterInferenceServiceLifecycleListener");
+                        + "unregisterInferenceServiceLifecycleListener");
                 Objects.requireNonNull(listener);
                 mContext.enforceCallingPermission(
                         Manifest.permission.USE_ON_DEVICE_INTELLIGENCE, TAG);
@@ -732,10 +732,12 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
             public void updateProcessingState(
                     Bundle processingState,
                     IProcessingUpdateStatusCallback callback) {
-                callbackExecutor.execute(() -> {
+              sanitizeStateParams(processingState);
+              callbackExecutor.execute(() -> {
                     AndroidFuture<Void> result = null;
                     try {
-                        sanitizeStateParams(processingState);
+                        // Reserved for use by system-server.
+                        processingState.remove(KEY_DEVICE_CONFIG_UPDATE);
                         ensureRemoteInferenceServiceInitialized();
                         result = mRemoteInferenceService.post(
                                 service -> service.updateProcessingState(
@@ -898,7 +900,7 @@ public class OnDeviceIntelligenceManagerService extends SystemService {
             persistableBundle.putString(key, props.getString(key, ""));
         }
         Bundle bundle = new Bundle();
-        bundle.putParcelable(DEVICE_CONFIG_UPDATE_BUNDLE_KEY, persistableBundle);
+        bundle.putParcelable(KEY_DEVICE_CONFIG_UPDATE, persistableBundle);
         ensureRemoteInferenceServiceInitialized();
         mRemoteInferenceService.run(service -> service.updateProcessingState(
                 bundle,

@@ -940,4 +940,36 @@ public class WindowConfiguration implements Parcelable, Comparable<WindowConfigu
             default: return String.valueOf(alwaysOnTop);
         }
     }
+
+    /** @hide */
+    @NonNull
+    public static String diffToString(@WindowConfig long diff) {
+        if (diff == 0) return "_";
+        final StringBuilder sb = new StringBuilder();
+        if ((diff & WINDOW_CONFIG_BOUNDS) != 0) {
+            sb.append(sb.isEmpty() ? "" : "|").append("BOUNDS");
+        }
+        if ((diff & WINDOW_CONFIG_APP_BOUNDS) != 0) {
+            sb.append(sb.isEmpty() ? "" : "|").append("APP_BOUNDS");
+        }
+        if ((diff & WINDOW_CONFIG_MAX_BOUNDS) != 0) {
+            sb.append(sb.isEmpty() ? "" : "|").append("MAX_BOUNDS");
+        }
+        if ((diff & WINDOW_CONFIG_WINDOWING_MODE) != 0) {
+            sb.append(sb.isEmpty() ? "" : "|").append("WINDOWING_MODE");
+        }
+        if ((diff & WINDOW_CONFIG_ACTIVITY_TYPE) != 0) {
+            sb.append(sb.isEmpty() ? "" : "|").append("ACTIVITY_TYPE");
+        }
+        if ((diff & WINDOW_CONFIG_ALWAYS_ON_TOP) != 0) {
+            sb.append(sb.isEmpty() ? "" : "|").append("ALWAYS_ON_TOP");
+        }
+        if ((diff & WINDOW_CONFIG_ROTATION) != 0) {
+            sb.append(sb.isEmpty() ? "" : "|").append("ROTATION");
+        }
+        if ((diff & WINDOW_CONFIG_DISPLAY_ROTATION) != 0) {
+            sb.append(sb.isEmpty() ? "" : "|").append("DISPLAY_ROTATION");
+        }
+        return sb.toString();
+    }
 }

@@ -16,25 +16,22 @@
 
 package com.android.wm.shell.flicker.splitscreen
 
-import android.platform.test.annotations.Postsubmit
 import android.platform.test.annotations.Presubmit
-import android.tools.NavBar
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
 import android.tools.flicker.legacy.LegacyFlickerTestFactory
 import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
-import com.android.wm.shell.flicker.splitscreen.benchmark.EnterSplitScreenByDragFromAllAppsBenchmark
+import com.android.wm.shell.flicker.splitscreen.benchmark.SwitchBetweenSplitPairsBenchmark
 import com.android.wm.shell.flicker.utils.ICommonAssertions
 import com.android.wm.shell.flicker.utils.SPLIT_SCREEN_DIVIDER_COMPONENT
+import com.android.wm.shell.flicker.utils.appWindowBecomesInvisible
 import com.android.wm.shell.flicker.utils.appWindowBecomesVisible
-import com.android.wm.shell.flicker.utils.appWindowIsVisibleAtEnd
+import com.android.wm.shell.flicker.utils.layerBecomesInvisible
 import com.android.wm.shell.flicker.utils.layerBecomesVisible
-import com.android.wm.shell.flicker.utils.layerIsVisibleAtEnd
-import com.android.wm.shell.flicker.utils.splitAppLayerBoundsBecomesVisibleByDrag
 import com.android.wm.shell.flicker.utils.splitAppLayerBoundsIsVisibleAtEnd
-import com.android.wm.shell.flicker.utils.splitScreenDividerBecomesVisible
+import com.android.wm.shell.flicker.utils.splitAppLayerBoundsSnapToDivider
 import org.junit.FixMethodOrder
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,17 +39,16 @@ import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
 
 /**
- * Test enter split screen by dragging app icon from all apps. This test is only for large screen
- * devices.
+ * Test quick switch between two split pairs.
  *
- * To run this test: `atest WMShellFlickerTestsSplitScreen:EnterSplitScreenByDragFromAllApps`
+ * To run this test: `atest WMShellFlickerTestsSplitScreen:SwitchBetweenSplitPairs`
  */
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class EnterSplitScreenByDragFromAllApps(override val flicker: LegacyFlickerTest) :
-    EnterSplitScreenByDragFromAllAppsBenchmark(flicker), ICommonAssertions {
+class SwitchBetweenSplitPairsTest(override val flicker: LegacyFlickerTest) :
+    SwitchBetweenSplitPairsBenchmark(flicker), ICommonAssertions {
     override val transition: FlickerBuilder.() -> Unit
         get() = {
             defaultSetup(this)
@@ -60,99 +56,145 @@ class EnterSplitScreenByDragFromAllApps(override val flicker: LegacyFlickerTest)
             thisTransition(this)
         }
 
-    @FlakyTest(bugId = 245472831)
-    @Test
-    fun splitScreenDividerBecomesVisible() {
-        flicker.splitScreenDividerBecomesVisible()
-    }
-
-    // TODO(b/245472831): Back to splitScreenDividerBecomesVisible after shell transition ready.
     @Presubmit
     @Test
-    fun splitScreenDividerIsVisibleAtEnd() {
-        flicker.assertLayersEnd { this.isVisible(SPLIT_SCREEN_DIVIDER_COMPONENT) }
-    }
+    fun splitScreenDividerInvisibleAtMiddle() =
+        flicker.assertLayers {
+            this.isVisible(SPLIT_SCREEN_DIVIDER_COMPONENT)
+                .then()
+                .isInvisible(SPLIT_SCREEN_DIVIDER_COMPONENT)
+                .then()
+                .isVisible(SPLIT_SCREEN_DIVIDER_COMPONENT)
+        }
 
-    @Presubmit @Test fun primaryAppLayerIsVisibleAtEnd() = flicker.layerIsVisibleAtEnd(primaryApp)
+    @FlakyTest(bugId = 247095572)
+    @Test
+    fun primaryAppLayerBecomesVisible() = flicker.layerBecomesVisible(primaryApp)
 
-    @Presubmit
+    @FlakyTest(bugId = 247095572)
     @Test
     fun secondaryAppLayerBecomesVisible() = flicker.layerBecomesVisible(secondaryApp)
+
+    @FlakyTest(bugId = 247095572)
+    @Test
+    fun thirdAppLayerBecomesInvisible() = flicker.layerBecomesInvisible(thirdApp)
+
+    @FlakyTest(bugId = 247095572)
+    @Test
+    fun fourthAppLayerBecomesInvisible() = flicker.layerBecomesInvisible(fourthApp)
 
     @Presubmit
     @Test
     fun primaryAppBoundsIsVisibleAtEnd() =
         flicker.splitAppLayerBoundsIsVisibleAtEnd(
             primaryApp,
-            landscapePosLeft = false,
+            landscapePosLeft = tapl.isTablet,
             portraitPosTop = false
         )
 
     @Presubmit
     @Test
-    fun secondaryAppBoundsBecomesVisible() =
-        flicker.splitAppLayerBoundsBecomesVisibleByDrag(secondaryApp)
+    fun secondaryAppBoundsIsVisibleAtEnd() =
+        flicker.splitAppLayerBoundsIsVisibleAtEnd(
+            secondaryApp,
+            landscapePosLeft = !tapl.isTablet,
+            portraitPosTop = true
+        )
 
     @Presubmit
     @Test
-    fun primaryAppWindowIsVisibleAtEnd() = flicker.appWindowIsVisibleAtEnd(primaryApp)
+    fun thirdAppBoundsIsVisibleAtBegin() =
+        flicker.assertLayersStart {
+            this.splitAppLayerBoundsSnapToDivider(
+                thirdApp,
+                landscapePosLeft = tapl.isTablet,
+                portraitPosTop = false,
+                flicker.scenario.startRotation
+            )
+        }
+
+    @Presubmit
+    @Test
+    fun fourthAppBoundsIsVisibleAtBegin() =
+        flicker.assertLayersStart {
+            this.splitAppLayerBoundsSnapToDivider(
+                fourthApp,
+                landscapePosLeft = !tapl.isTablet,
+                portraitPosTop = true,
+                flicker.scenario.startRotation
+            )
+        }
+
+    @Presubmit
+    @Test
+    fun primaryAppWindowBecomesVisible() = flicker.appWindowBecomesVisible(primaryApp)
 
     @Presubmit
     @Test
     fun secondaryAppWindowBecomesVisible() = flicker.appWindowBecomesVisible(secondaryApp)
 
-    /** {@inheritDoc} */
-    @Postsubmit @Test override fun entireScreenCovered() = super.entireScreenCovered()
+    @Presubmit
+    @Test
+    fun thirdAppWindowBecomesVisible() = flicker.appWindowBecomesInvisible(thirdApp)
+
+    @Presubmit
+    @Test
+    fun fourthAppWindowBecomesVisible() = flicker.appWindowBecomesInvisible(fourthApp)
 
     /** {@inheritDoc} */
-    @Postsubmit
+    @FlakyTest(bugId = 251268711)
+    @Test
+    override fun entireScreenCovered() = super.entireScreenCovered()
+
+    /** {@inheritDoc} */
+    @Presubmit
     @Test
     override fun navBarLayerIsVisibleAtStartAndEnd() = super.navBarLayerIsVisibleAtStartAndEnd()
 
     /** {@inheritDoc} */
-    @Postsubmit
+    @FlakyTest(bugId = 206753786)
     @Test
     override fun navBarLayerPositionAtStartAndEnd() = super.navBarLayerPositionAtStartAndEnd()
 
     /** {@inheritDoc} */
-    @Postsubmit
+    @Presubmit
     @Test
     override fun navBarWindowIsAlwaysVisible() = super.navBarWindowIsAlwaysVisible()
 
     /** {@inheritDoc} */
-    @Postsubmit
+    @Presubmit
     @Test
     override fun statusBarLayerIsVisibleAtStartAndEnd() =
         super.statusBarLayerIsVisibleAtStartAndEnd()
 
     /** {@inheritDoc} */
-    @Postsubmit
+    @Presubmit
     @Test
     override fun statusBarLayerPositionAtStartAndEnd() = super.statusBarLayerPositionAtStartAndEnd()
 
     /** {@inheritDoc} */
-    @Postsubmit
+    @Presubmit
     @Test
     override fun statusBarWindowIsAlwaysVisible() = super.statusBarWindowIsAlwaysVisible()
 
     /** {@inheritDoc} */
-    @Postsubmit
+    @Presubmit
     @Test
     override fun taskBarLayerIsVisibleAtStartAndEnd() = super.taskBarLayerIsVisibleAtStartAndEnd()
 
     /** {@inheritDoc} */
-    @Postsubmit
+    @Presubmit
     @Test
     override fun taskBarWindowIsAlwaysVisible() = super.taskBarWindowIsAlwaysVisible()
 
     /** {@inheritDoc} */
-    @Postsubmit
+    @FlakyTest
     @Test
     override fun visibleLayersShownMoreThanOneConsecutiveEntry() =
         super.visibleLayersShownMoreThanOneConsecutiveEntry()
 
     /** {@inheritDoc} */
-    @Postsubmit
+    @Presubmit
     @Test
     override fun visibleWindowsShownMoreThanOneConsecutiveEntry() =
         super.visibleWindowsShownMoreThanOneConsecutiveEntry()
@@ -160,10 +202,6 @@ class EnterSplitScreenByDragFromAllApps(override val flicker: LegacyFlickerTest)
     companion object {
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
-        fun getParams() =
-            LegacyFlickerTestFactory.nonRotationTests(
-                // TODO(b/176061063):The 3 buttons of nav bar do not exist in the hierarchy.
-                supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
-            )
+        fun getParams() = LegacyFlickerTestFactory.nonRotationTests()
     }
 }

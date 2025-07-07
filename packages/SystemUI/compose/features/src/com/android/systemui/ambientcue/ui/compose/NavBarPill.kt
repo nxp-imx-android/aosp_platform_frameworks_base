@@ -43,13 +43,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,8 +67,8 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -79,7 +76,6 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.util.lerp
-import com.android.compose.PlatformIconButton
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.compose.modifier.animatedActionBorder
 import com.android.systemui.ambientcue.ui.utils.FilterUtils
@@ -211,7 +207,8 @@ fun NavBarPill(
                     .padding(bottom = 4.dp),
         ) {
             val closeButtonSize = 28.dp
-            Spacer(modifier = Modifier.size(closeButtonSize))
+            val closeButtonTouchTargetSize = 36.dp
+            Spacer(modifier = Modifier.size(closeButtonTouchTargetSize))
 
             Box {
                 Row(
@@ -276,7 +273,7 @@ fun NavBarPill(
                                             .padding(start = 6.dp, end = 6.dp),
                                 ) {
                                     Image(
-                                        painter = rememberDrawablePainter(action.icon.drawable),
+                                        painter = rememberDrawablePainter(action.icon.small),
                                         contentDescription =
                                             stringResource(
                                                 id = R.string.ambient_cue_icon_content_description
@@ -318,7 +315,7 @@ fun NavBarPill(
                             } else {
                                 // Smaller app icons
                                 Image(
-                                    painter = rememberDrawablePainter(action.icon.drawable),
+                                    painter = rememberDrawablePainter(action.icon.small),
                                     contentDescription = action.label,
                                     modifier =
                                         Modifier.then(
@@ -351,19 +348,24 @@ fun NavBarPill(
                 )
             }
 
-            // Remove default padding and size.
-            CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
+            // Expand the clickable area.
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier =
+                    Modifier.size(closeButtonTouchTargetSize)
+                        .clickable(
+                            onClick = onCloseClick,
+                            interactionSource = null,
+                            indication = null,
+                        ),
+            ) {
                 // Close button
                 FilledIconButton(
                     onClick = onCloseClick,
-                    modifier =
-                        Modifier.size(closeButtonSize)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surfaceContainer),
+                    modifier = Modifier.size(closeButtonSize),
                     colors =
                         IconButtonDefaults.filledIconButtonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
                         ),
                 ) {
                     Icon(

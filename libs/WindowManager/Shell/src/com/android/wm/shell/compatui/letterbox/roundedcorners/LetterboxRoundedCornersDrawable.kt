@@ -36,7 +36,7 @@ import com.android.wm.shell.common.ShellExecutor
 /**
  * Rounded corner [Drawable] implementation
  */
-class RoundedCornersDrawable(
+class LetterboxRoundedCornersDrawable(
     private var cornerColor: Color,
     private var radius: Float = 0f
 ) : Drawable() {
@@ -181,7 +181,7 @@ class RoundedCornersDrawable(
     private fun RectF.toRect() =
         Rect(this.top.toInt(), this.left.toInt(), this.right.toInt(), this.bottom.toInt())
 
-    fun flip(flipType: FlipType): RoundedCornersDrawable {
+    fun flip(flipType: FlipType): LetterboxRoundedCornersDrawable {
         when (flipType) {
             FlipType.FLIP_VERTICAL -> verticalFlipped = !verticalFlipped
             FlipType.FLIP_HORIZONTAL -> horizontalFlipped = !horizontalFlipped

@@ -407,7 +407,7 @@ public class Process {
     public static final int THREAD_PRIORITY_LOWEST = 19;
 
     /**
-     * Standard priority background threads.  This gives your thread a slightly
+     * Standard priority background threads.  This gives your thread a significantly
      * lower than normal priority, so that it will have less chance of impacting
      * the responsiveness of the user interface.
      * Use with {@link #setThreadPriority(int)} and
@@ -418,7 +418,7 @@ public class Process {
 
     /**
      * Standard priority of threads that are currently running a user interface
-     * that the user is interacting with.  Applications can not normally
+     * that the user is interacting with.  Applications do not normally
      * change to this priority; the system will automatically adjust your
      * application threads as the user moves through the UI.
      * Use with {@link #setThreadPriority(int)} and
@@ -429,8 +429,7 @@ public class Process {
 
     /**
      * Standard priority of system display threads, involved in updating
-     * the user interface.  Applications can not
-     * normally change to this priority.
+     * the user interface.
      * Use with {@link #setThreadPriority(int)} and
      * {@link #setThreadPriority(int, int)}, <b>not</b> with the normal
      * {@link java.lang.Thread} class.
@@ -439,8 +438,7 @@ public class Process {
 
     /**
      * Standard priority of the most important display threads, for compositing
-     * the screen and retrieving input events.  Applications can not normally
-     * change to this priority.
+     * the screen and retrieving input events.
      * Use with {@link #setThreadPriority(int)} and
      * {@link #setThreadPriority(int, int)}, <b>not</b> with the normal
      * {@link java.lang.Thread} class.
@@ -448,7 +446,7 @@ public class Process {
     public static final int THREAD_PRIORITY_URGENT_DISPLAY = -8;
 
     /**
-     * Standard priority of video threads.  Applications can not normally
+     * Standard priority of video threads.  Applications should not normally
      * change to this priority.
      * Use with {@link #setThreadPriority(int)} and
      * {@link #setThreadPriority(int, int)}, <b>not</b> with the normal
@@ -463,7 +461,7 @@ public class Process {
     public static final int THREAD_PRIORITY_TOP_APP_BOOST = -10;
 
     /**
-     * Standard priority of audio threads.  Applications can not normally
+     * Standard priority of audio threads.  Applications should not normally
      * change to this priority.
      * Use with {@link #setThreadPriority(int)} and
      * {@link #setThreadPriority(int, int)}, <b>not</b> with the normal
@@ -473,7 +471,7 @@ public class Process {
 
     /**
      * Standard priority of the most important audio threads.
-     * Applications can not normally change to this priority.
+     * Applications should not normally change to this priority.
      * Use with {@link #setThreadPriority(int)} and
      * {@link #setThreadPriority(int, int)}, <b>not</b> with the normal
      * {@link java.lang.Thread} class.
@@ -497,13 +495,15 @@ public class Process {
     public static final int SCHED_OTHER = 0;
 
     /**
-     * First-In First-Out scheduling policy
+     * First-In First-Out real-time scheduling policy.
+     * Deadlock prone; use with extreme caution.
      * @hide
      */
     public static final int SCHED_FIFO = 1;
 
     /**
-     * Round-Robin scheduling policy
+     * Round-Robin real-time scheduling policy.
+     * Deadlock prone; use with extreme caution.
      * @hide
      */
     public static final int SCHED_RR = 2;

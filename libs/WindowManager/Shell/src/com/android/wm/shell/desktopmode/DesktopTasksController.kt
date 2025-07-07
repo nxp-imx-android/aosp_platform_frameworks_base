@@ -817,7 +817,6 @@ class DesktopTasksController(
      * TODO: b/365873835 - Restore for all users, not just current.
      */
     fun restoreDisplay(displayId: Int, uniqueDisplayId: String) {
-        if (!DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue) return
         logD("restoreDisplay: displayId=$displayId, uniqueDisplayId=$uniqueDisplayId")
         // TODO: b/365873835 - Utilize DesktopTask data class once it is
         //  implemented in DesktopRepository.

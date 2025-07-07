@@ -45,7 +45,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class CopyContentInSplit(override val flicker: LegacyFlickerTest) :
+class CopyContentInSplitTest(override val flicker: LegacyFlickerTest) :
     CopyContentInSplitBenchmark(flicker), ICommonAssertions {
     override val transition: FlickerBuilder.() -> Unit
         get() = {

@@ -271,16 +271,7 @@ public class DeviceStateToLayoutMapTest {
     }
 
     @Test
-    public void testPortInLayout_disabledFlag() {
-        Mockito.when(mMockFlags.isPortInDisplayLayoutEnabled()).thenReturn(false);
-        assertThrows("Expected IllegalArgumentException when using <port>",
-                IllegalArgumentException.class,
-                () -> setupDeviceStateToLayoutMap(getPortContent()));
-    }
-
-    @Test
     public void testPortInLayout_readLayout() throws Exception {
-        Mockito.when(mMockFlags.isPortInDisplayLayoutEnabled()).thenReturn(true);
         setupDeviceStateToLayoutMap(getPortContent());
 
         Layout configLayout = mDeviceStateToLayoutMap.get(0);

@@ -89,6 +89,7 @@ import android.os.RemoteException;
 import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.annotations.RequiresFlagsDisabled;
+import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.util.ArrayMap;
 import android.util.Rational;
 import android.view.Display;
@@ -280,7 +281,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
         rootTask.setTaskOrganizer(null);
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
 
-        verify(mWm.mAtmService).removeTask(eq(rootTask));
+        verify(mWm.mAtmService).removeTask(eq(rootTask), any());
     }
 
     @Test
@@ -298,7 +299,7 @@ public class WindowOrganizerTests extends WindowTestsBase {
         rootTask.setTaskOrganizer(null);
         mWm.mAtmService.mTaskOrganizerController.dispatchPendingEvents();
 
-        verify(mWm.mAtmService, never()).removeTask(eq(rootTask));
+        verify(mWm.mAtmService, never()).removeTask(eq(rootTask), any());
     }
 
     @Test
@@ -1614,6 +1615,37 @@ public class WindowOrganizerTests extends WindowTestsBase {
         verify(mockCallback).onTransactionReady(anyInt(), any());
         assertFalse(w1.syncNextBuffer());
         assertFalse(w2.syncNextBuffer());
+    }
+
+    @Test
+    @RequiresFlagsEnabled(Flags.FLAG_ALWAYS_SEQ_ID_LAYOUT)
+    public void testNonBLASTWindowSyncWithNoChanges() throws Exception {
+        final Task rootTaskController = createRootTask();
+        final Task task = createTask(rootTaskController);
+        final WindowState w1 = createAppWindow(task, TYPE_APPLICATION, "Enlightened Window 1");
+        final WindowState w2 = createAppWindow(task, TYPE_APPLICATION, "Enlightened Window 2");
+        makeWindowVisible(w1);
+        makeWindowVisible(w2);
+        // Simulate window 1 as having no changes (hence no need to redraw)
+        w1.mWinAnimator.mDrawState = WindowStateAnimator.HAS_DRAWN;
+        w1.setLastConfigReportedToClientForTest(true);
+
+        IWindowContainerTransactionCallback mockCallback =
+                mock(IWindowContainerTransactionCallback.class);
+        int id = mWm.mAtmService.mWindowOrganizerController.startSyncWithOrganizer(mockCallback);
+        mWm.mSyncEngine.setSyncMethod(id, BLASTSyncEngine.METHOD_NONE);
+
+        mWm.mAtmService.mWindowOrganizerController.addToSyncSet(id, task);
+        mWm.mAtmService.mWindowOrganizerController.setSyncReady(id);
+
+        verify(mockCallback, never()).onTransactionReady(anyInt(), any());
+        assertTrue(w1.syncNextBuffer());
+        assertTrue(w2.syncNextBuffer());
+
+        // Make w2 ready and since w1 has no changes, the whole sync should finish.
+        w2.immediatelyNotifyBlastSync();
+        mWm.mSyncEngine.onSurfacePlacement();
+        verify(mockCallback).onTransactionReady(anyInt(), any());
     }
 
     @Test

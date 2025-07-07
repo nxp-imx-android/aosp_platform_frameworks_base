@@ -156,7 +156,6 @@ public class InsetsPolicyTest extends WindowTestsBase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_FORCE_SHOW_SYSTEM_BAR_FOR_BUBBLE)
     public void testControlsForDispatch_nonFullscreenMultiWindowTaskVisible() {
         addStatusBar();
         addNavigationBar();

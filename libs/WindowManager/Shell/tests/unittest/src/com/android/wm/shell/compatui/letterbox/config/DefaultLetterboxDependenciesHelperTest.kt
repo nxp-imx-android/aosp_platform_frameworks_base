@@ -41,26 +41,26 @@ import org.mockito.kotlin.mock
 class DefaultLetterboxDependenciesHelperTest : ShellTestCase() {
 
     @Test
-    fun `Should not destroy letterbox surfaces if not isAnyDeskActive`() {
+    fun `When in Desktop Windowing the input surface should not be created`() {
         runTestScenario { r ->
             testLetterboxDependenciesHelper(r.getLetterboxLifecycleEventFactory()) {
                 inputChange { }
-                r.configureDesktopRepository(isAnyDeskActive = false)
-                validateIsDesktopWindowingAction { shouldDestroy ->
-                    assertFalse(shouldDestroy)
+                r.configureDesktopRepository(isAnyDeskActive = true)
+                validateShouldSupportInputSurface { shouldSupportInputSurface ->
+                    assertFalse(shouldSupportInputSurface)
                 }
             }
         }
     }
 
     @Test
-    fun `Should destroy letterbox surfaces if isAnyDeskActive`() {
+    fun `When NOT in Desktop Windowing the input surface should be created`() {
         runTestScenario { r ->
             testLetterboxDependenciesHelper(r.getLetterboxLifecycleEventFactory()) {
                 inputChange { }
-                r.configureDesktopRepository(isAnyDeskActive = true)
-                validateIsDesktopWindowingAction { shouldDestroy ->
-                    assertTrue(shouldDestroy)
+                r.configureDesktopRepository(isAnyDeskActive = false)
+                validateShouldSupportInputSurface { shouldSupportInputSurface ->
+                    assertTrue(shouldSupportInputSurface)
                 }
             }
         }

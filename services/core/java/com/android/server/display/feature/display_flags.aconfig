@@ -13,14 +13,6 @@ flag {
 }
 
 flag {
-    name: "enable_port_in_display_layout"
-    namespace: "display_manager"
-    description: "Allows refering to displays by port in display layout"
-    bug: "303058435"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "resolution_backup_restore"
     namespace: "display_manager"
     description: "Backup/Restore support for High Resolution setting"
@@ -169,17 +161,6 @@ flag {
     description: "Feature flag for fast transitions into/out of HDR"
     bug: "292124102"
     is_fixed_read_only: true
-}
-
-flag {
-    name: "always_rotate_display_device"
-    namespace: "display_manager"
-    description: "Use rotation from WindowManager no matter whether FLAG_ROTATES_WITH_CONTENT is set or not"
-    bug: "302326003"
-    is_fixed_read_only: true
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

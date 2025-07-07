@@ -1,0 +1,40 @@
+{
+  "wm": [
+    {
+      "name": "FlickerTestsActivityEmbedding-CatchAll"
+    },
+    {
+      "name": "FlickerTestsActivityEmbedding-close-CloseSecondaryActivityInSplitTest"
+    },
+    {
+      "name": "FlickerTestsActivityEmbedding-layoutchange-HorizontalSplitChangeRatioTest"
+    },
+    {
+      "name": "FlickerTestsActivityEmbedding-open-MainActivityStartsSecondaryWithAlwaysExpandTest"
+    },
+    {
+      "name": "FlickerTestsActivityEmbedding-open-OpenActivityEmbeddingPlaceholderSplitTest"
+    },
+    {
+      "name": "FlickerTestsActivityEmbedding-open-OpenActivityEmbeddingSecondaryToSplitTest"
+    },
+    {
+      "name": "FlickerTestsActivityEmbedding-open-OpenThirdActivityOverSplitTest"
+    },
+    {
+      "name": "FlickerTestsActivityEmbedding-open-OpenTrampolineActivityTest"
+    },
+    {
+      "name": "FlickerTestsActivityEmbedding-pip-SecondaryActivityEnterPipTest"
+    },
+    {
+      "name": "FlickerTestsActivityEmbedding-rotation-RotateSplitNoChangeTest"
+    },
+    {
+      "name": "FlickerTestsActivityEmbedding-rtl-RTLStartSecondaryWithPlaceholderTest"
+    },
+    {
+      "name": "FlickerTestsActivityEmbedding-splitscreen-EnterSystemSplitTest"
+    }
+  ]
+}

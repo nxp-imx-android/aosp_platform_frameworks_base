@@ -17,45 +17,36 @@
 package com.android.wm.shell.flicker.splitscreen
 
 import android.platform.test.annotations.Presubmit
-import android.platform.test.annotations.RequiresFlagsDisabled
-import android.platform.test.flag.junit.CheckFlagsRule
-import android.platform.test.flag.junit.DeviceFlagsValueProvider
+import android.tools.NavBar
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
 import android.tools.flicker.legacy.FlickerBuilder
 import android.tools.flicker.legacy.LegacyFlickerTest
 import android.tools.flicker.legacy.LegacyFlickerTestFactory
 import androidx.test.filters.FlakyTest
 import androidx.test.filters.RequiresDevice
-import com.android.wm.shell.Flags
-import com.android.wm.shell.flicker.splitscreen.benchmark.DismissSplitScreenByGoHomeBenchmark
+import com.android.wm.shell.flicker.splitscreen.benchmark.SwitchBackToSplitFromRecentBenchmark
 import com.android.wm.shell.flicker.utils.ICommonAssertions
-import com.android.wm.shell.flicker.utils.appWindowBecomesInvisible
-import com.android.wm.shell.flicker.utils.layerBecomesInvisible
-import com.android.wm.shell.flicker.utils.splitAppLayerBoundsBecomesInvisible
-import com.android.wm.shell.flicker.utils.splitScreenDividerBecomesInvisible
+import com.android.wm.shell.flicker.utils.appWindowBecomesVisible
+import com.android.wm.shell.flicker.utils.layerBecomesVisible
+import com.android.wm.shell.flicker.utils.splitAppLayerBoundsIsVisibleAtEnd
+import com.android.wm.shell.flicker.utils.splitScreenDividerBecomesVisible
 import org.junit.FixMethodOrder
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.junit.runners.Parameterized
 
 /**
- * Test dismiss split screen by go home.
+ * Test switch back to split pair from recent.
  *
- * To run this test: `atest WMShellFlickerTestsSplitScreen:DismissSplitScreenByGoHome`
+ * To run this test: `atest WMShellFlickerTestsSplitScreen:SwitchBackToSplitFromRecent`
  */
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-@RequiresFlagsDisabled(Flags.FLAG_ENABLE_PIP2)
-class DismissSplitScreenByGoHome(override val flicker: LegacyFlickerTest) :
-    DismissSplitScreenByGoHomeBenchmark(flicker), ICommonAssertions {
-    @JvmField
-    @Rule
-    val checkFlagsRule: CheckFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-
+class SwitchBackToSplitFromRecentTest(override val flicker: LegacyFlickerTest) :
+    SwitchBackToSplitFromRecentBenchmark(flicker), ICommonAssertions {
     override val transition: FlickerBuilder.() -> Unit
         get() = {
             defaultSetup(this)
@@ -65,31 +56,27 @@ class DismissSplitScreenByGoHome(override val flicker: LegacyFlickerTest) :
 
     @Presubmit
     @Test
-    fun splitScreenDividerBecomesInvisible() = flicker.splitScreenDividerBecomesInvisible()
+    fun splitScreenDividerBecomesVisible() = flicker.splitScreenDividerBecomesVisible()
 
-    @FlakyTest(bugId = 241525302)
-    @Test
-    fun primaryAppLayerBecomesInvisible() = flicker.layerBecomesInvisible(primaryApp)
+    @Presubmit @Test fun primaryAppLayerBecomesVisible() = flicker.layerBecomesVisible(primaryApp)
 
-    // TODO(b/245472831): Move back to presubmit after shell transitions landing.
-    @FlakyTest(bugId = 245472831)
+    @Presubmit
     @Test
-    fun secondaryAppLayerBecomesInvisible() = flicker.layerBecomesInvisible(secondaryApp)
+    fun secondaryAppLayerBecomesVisible() = flicker.layerBecomesVisible(secondaryApp)
 
-    // TODO(b/245472831): Move back to presubmit after shell transitions landing.
-    @FlakyTest(bugId = 245472831)
+    @Presubmit
     @Test
-    fun primaryAppBoundsBecomesInvisible() =
-        flicker.splitAppLayerBoundsBecomesInvisible(
+    fun primaryAppBoundsIsVisibleAtEnd() =
+        flicker.splitAppLayerBoundsIsVisibleAtEnd(
             primaryApp,
             landscapePosLeft = tapl.isTablet,
             portraitPosTop = false
         )
 
-    @FlakyTest(bugId = 250530241)
+    @Presubmit
     @Test
-    fun secondaryAppBoundsBecomesInvisible() =
-        flicker.splitAppLayerBoundsBecomesInvisible(
+    fun secondaryAppBoundsIsVisibleAtEnd() =
+        flicker.splitAppLayerBoundsIsVisibleAtEnd(
             secondaryApp,
             landscapePosLeft = !tapl.isTablet,
             portraitPosTop = true
@@ -97,16 +84,14 @@ class DismissSplitScreenByGoHome(override val flicker: LegacyFlickerTest) :
 
     @Presubmit
     @Test
-    fun primaryAppWindowBecomesInvisible() = flicker.appWindowBecomesInvisible(primaryApp)
+    fun primaryAppWindowBecomesVisible() = flicker.appWindowBecomesVisible(primaryApp)
 
     @Presubmit
     @Test
-    fun secondaryAppWindowBecomesInvisible() = flicker.appWindowBecomesInvisible(secondaryApp)
+    fun secondaryAppWindowBecomesVisible() = flicker.appWindowBecomesVisible(secondaryApp)
 
     /** {@inheritDoc} */
-    @FlakyTest(bugId = 251268711)
-    @Test
-    override fun entireScreenCovered() = super.entireScreenCovered()
+    @Presubmit @Test override fun entireScreenCovered() = super.entireScreenCovered()
 
     /** {@inheritDoc} */
     @Presubmit
@@ -114,7 +99,7 @@ class DismissSplitScreenByGoHome(override val flicker: LegacyFlickerTest) :
     override fun navBarLayerIsVisibleAtStartAndEnd() = super.navBarLayerIsVisibleAtStartAndEnd()
 
     /** {@inheritDoc} */
-    @FlakyTest(bugId = 206753786)
+    @Presubmit
     @Test
     override fun navBarLayerPositionAtStartAndEnd() = super.navBarLayerPositionAtStartAndEnd()
 
@@ -164,6 +149,10 @@ class DismissSplitScreenByGoHome(override val flicker: LegacyFlickerTest) :
     companion object {
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
-        fun getParams() = LegacyFlickerTestFactory.nonRotationTests()
+        fun getParams() =
+            LegacyFlickerTestFactory.nonRotationTests(
+                // TODO(b/176061063):The 3 buttons of nav bar do not exist in the hierarchy.
+                supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
+            )
     }
 }

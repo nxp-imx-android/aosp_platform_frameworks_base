@@ -47,7 +47,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class DismissSplitScreenByDivider(override val flicker: LegacyFlickerTest) :
+class DismissSplitScreenByDividerTest(override val flicker: LegacyFlickerTest) :
     DismissSplitScreenByDividerBenchmark(flicker), ICommonAssertions {
 
     override val transition: FlickerBuilder.() -> Unit

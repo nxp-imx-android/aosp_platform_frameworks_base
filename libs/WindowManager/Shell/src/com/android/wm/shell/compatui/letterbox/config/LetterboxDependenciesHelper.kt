@@ -25,7 +25,7 @@ import android.window.TransitionInfo.Change
 interface LetterboxDependenciesHelper {
 
     /**
-     * Tells if we need to destroy the existing letterbox surfaces for a given [Change].
+     * Tells if the input surface should be created or not. This enables reachability.
      */
-    fun shouldDestroyLetterboxSurfaces(change: Change): Boolean
+    fun shouldSupportInputSurface(change: Change): Boolean
 }

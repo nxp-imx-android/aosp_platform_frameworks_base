@@ -69,7 +69,10 @@ class DesktopDisplayEventHandler(
         val uniqueDisplayId = displayController.getDisplay(displayId)?.uniqueId
         uniqueDisplayId?.let {
             uniqueIdByDisplayId[displayId] = it
-            if (desktopUserRepositories.current.hasPreservedDisplayForUniqueDisplayId(it)) {
+            if (
+                DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue &&
+                    desktopUserRepositories.current.hasPreservedDisplayForUniqueDisplayId(it)
+            ) {
                 desktopTasksController.restoreDisplay(displayId, it)
                 return@OnDisplayAreaChangeListener
             }
@@ -99,7 +102,9 @@ class DesktopDisplayEventHandler(
                     }
                 }
             )
-            desktopTasksController.preserveDisplayRequestHandler = this
+            if (DesktopExperienceFlags.ENABLE_DISPLAY_RECONNECT_INTERACTION.isTrue) {
+                desktopTasksController.preserveDisplayRequestHandler = this
+            }
         }
     }
 

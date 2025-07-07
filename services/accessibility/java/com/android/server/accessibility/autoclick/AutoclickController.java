@@ -39,8 +39,10 @@ import android.accessibilityservice.AccessibilityTrace;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityThread;
+import android.content.ComponentCallbacks;
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
@@ -85,7 +87,8 @@ import com.android.server.accessibility.Flags;
  *
  * Each instance is associated to a single user (and it does not handle user switch itself).
  */
-public class AutoclickController extends BaseEventStreamTransformation {
+public class AutoclickController extends BaseEventStreamTransformation implements
+        ComponentCallbacks {
 
     // Default duration between mouse movement stops and the auto click happens.
     public static final int DEFAULT_AUTOCLICK_DELAY_TIME = Flags.enableAutoclickIndicator()
@@ -335,6 +338,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
         };
 
         mAutoclickTypePanel.show();
+        mContext.registerComponentCallbacks(this);
         mWindowManager.addView(mAutoclickIndicatorView, mAutoclickIndicatorView.getLayoutParams());
     }
 
@@ -370,6 +374,7 @@ public class AutoclickController extends BaseEventStreamTransformation {
 
     @Override
     public void onDestroy() {
+        mContext.unregisterComponentCallbacks(this);
         if (mAutoclickSettingsObserver != null) {
             mAutoclickSettingsObserver.stop();
             mAutoclickSettingsObserver = null;
@@ -573,6 +578,19 @@ public class AutoclickController extends BaseEventStreamTransformation {
     @VisibleForTesting
     @AutoclickType int getActiveClickTypeForTest() {
         return mActiveClickType;
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        if (mAutoclickIndicatorView != null) {
+            // When system configuration is changed, update the indicator view configuration.
+            mAutoclickIndicatorView.onConfigurationChanged(newConfig);
+        }
+    }
+
+    @Override
+    public void onLowMemory() {
+
     }
 
     /**

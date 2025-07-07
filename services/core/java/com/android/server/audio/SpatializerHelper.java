@@ -547,6 +547,9 @@ public class SpatializerHelper {
         if (!isDeviceCompatibleWithSpatializationModes(ada)) {
             return;
         }
+        if (ada.getInternalType() == AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
+            return;
+        }
         loglogi("addCompatibleAudioDevice: dev=" + ada);
         final AdiDeviceState deviceState = findSACompatibleDeviceStateForAudioDeviceAttributes(ada);
         AdiDeviceState updatedDevice = null; // non-null on update.
@@ -619,6 +622,9 @@ public class SpatializerHelper {
     }
 
     synchronized void removeCompatibleAudioDevice(@NonNull AudioDeviceAttributes ada) {
+        if (ada.getInternalType() == AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
+            return;
+        }
         loglogi("removeCompatibleAudioDevice: dev=" + ada);
 
         final AdiDeviceState deviceState = findSACompatibleDeviceStateForAudioDeviceAttributes(ada);
@@ -1273,6 +1279,9 @@ public class SpatializerHelper {
     synchronized boolean setHasHeadTracker(@NonNull AudioDeviceAttributes ada) {
         if (!mIsHeadTrackingSupported) {
             Log.v(TAG, "no headtracking support, setHasHeadTracker always false for " + ada);
+            return false;
+        }
+        if (ada.getInternalType() == AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
             return false;
         }
         final AdiDeviceState deviceState = findSACompatibleDeviceStateForAudioDeviceAttributes(ada);

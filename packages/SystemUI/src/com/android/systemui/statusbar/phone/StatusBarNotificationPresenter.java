@@ -35,7 +35,6 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.android.internal.statusbar.IStatusBarService;
-import com.android.systemui.Flags;
 import com.android.systemui.InitController;
 import com.android.systemui.dagger.SysUISingleton;
 import com.android.systemui.deviceentry.domain.interactor.DeviceUnlockedInteractor;
@@ -207,13 +206,9 @@ class StatusBarNotificationPresenter implements NotificationPresenter, CommandQu
                 && !mQsController.getExpanded()
                 && mStatusBarStateController.getState() == StatusBarState.SHADE_LOCKED
                 && !isCollapsing()) {
-            if (Flags.notificationShadeCloseWaitsForChildAnimations()) {
-                // wait for child animations before we close the shade to have a smooth transition
-                mNsslController.runAfterAnimationFinished(
-                        () -> mStatusBarStateController.setState(StatusBarState.KEYGUARD));
-            } else {
-                mStatusBarStateController.setState(StatusBarState.KEYGUARD);
-            }
+            // wait for child animations before we close the shade to have a smooth transition
+            mNsslController.runAfterAnimationFinished(
+                    () -> mStatusBarStateController.setState(StatusBarState.KEYGUARD));
         }
     }
 

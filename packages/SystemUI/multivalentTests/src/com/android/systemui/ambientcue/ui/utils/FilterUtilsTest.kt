@@ -42,7 +42,7 @@ class FilterUtilsTest : SysuiTestCase() {
     fun setUp() {
         calendarAction1 =
             ActionViewModel(
-                icon = IconViewModel(mock(), "calendar_icon", 0),
+                icon = IconViewModel(mock(), mock(), "calendar_icon", 0),
                 label = "Sunday Morning",
                 attribution = null,
                 onClick = {},
@@ -51,7 +51,7 @@ class FilterUtilsTest : SysuiTestCase() {
             )
         calendarAction2 =
             ActionViewModel(
-                icon = IconViewModel(mock(), "calendar_icon", 0),
+                icon = IconViewModel(mock(), mock(), "calendar_icon", 0),
                 label = "Sunday Evening",
                 attribution = null,
                 onClick = {},
@@ -60,7 +60,7 @@ class FilterUtilsTest : SysuiTestCase() {
             )
         mapsAction =
             ActionViewModel(
-                icon = IconViewModel(mock(), "map_icon", 0),
+                icon = IconViewModel(mock(), mock(), "map_icon", 0),
                 label = "Philz Coffee San Carlos",
                 onClick = {},
                 onLongClick = {},

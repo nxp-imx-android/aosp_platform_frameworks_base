@@ -44,7 +44,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class DragDividerToResize(override val flicker: LegacyFlickerTest) :
+class DragDividerToResizeTest(override val flicker: LegacyFlickerTest) :
     DragDividerToResizeBenchmark(flicker), ICommonAssertions {
     override val transition: FlickerBuilder.() -> Unit
         get() = {

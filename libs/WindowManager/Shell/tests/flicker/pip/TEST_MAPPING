@@ -1,13 +1,13 @@
 {
   "wm": [
     {
-      "name": "WMShellFlickerTestsPip-CatchAll"
-    },
-    {
       "name": "WMShellFlickerTestsPip-AutoEnterPipOnGoToHomeTest"
     },
     {
       "name": "WMShellFlickerTestsPip-AutoEnterPipWithSourceRectHintTest"
+    },
+    {
+      "name": "WMShellFlickerTestsPip-CatchAll"
     },
     {
       "name": "WMShellFlickerTestsPip-ClosePipBySwipingDownTest"
@@ -40,9 +40,6 @@
       "name": "WMShellFlickerTestsPip-FromSplitScreenEnterPipOnUserLeaveHintTest"
     },
     {
-      "name": "WMShellFlickerTestsPip-MovePipDownOnShelfHeightChange"
-    },
-    {
       "name": "WMShellFlickerTestsPip-MovePipOnImeVisibilityChangeTest"
     },
     {
@@ -61,37 +58,25 @@
       "name": "WMShellFlickerTestsPip-PipPinchInTest"
     },
     {
-      "name": "WMShellFlickerTestsPip-SetRequestedOrientationWhilePinned"
+      "name": "WMShellFlickerTestsPip-nonmatchparent-BottomHalfAutoEnterPipOnGoToHomeTest"
     },
     {
-      "name": "WMShellFlickerTestsPip-ShowPipAndRotateDisplay"
+      "name": "WMShellFlickerTestsPip-nonmatchparent-BottomHalfEnterPipOnUserLeaveHintTest"
     },
     {
-      "name": "WMShellFlickerTestsPip-BottomHalfExitPipToAppViaExpandButtonTest"
+      "name": "WMShellFlickerTestsPip-nonmatchparent-BottomHalfEnterPipViaAppUiButtonTest"
     },
     {
-      "name": "WMShellFlickerTestsPip-BottomHalfExitPipToAppViaIntentTest"
+      "name": "WMShellFlickerTestsPip-nonmatchparent-BottomHalfExitPipToAppViaExpandButtonTest"
     },
     {
-      "name": "WMShellFlickerTestsPip-BottomHalfAutoEnterPipOnGoToHomeTest"
+      "name": "WMShellFlickerTestsPip-nonmatchparent-BottomHalfExitPipToAppViaIntentTest"
     },
     {
-      "name": "WMShellFlickerTestsPip-BottomHalfEnterPipOnUserLeaveHintTest"
+      "name": "WMShellFlickerTestsPip-nonmatchparent-BottomHalfFromSplitScreenAutoEnterPipOnGoToHomeTest"
     },
     {
-      "name": "WMShellFlickerTestsPip-BottomHalfEnterPipViaAppUiButtonTest"
-    },
-    {
-      "name": "WMShellFlickerTestsPip-BottomHalfEnterPipToOtherOrientation"
-    },
-    {
-      "name": "WMShellFlickerTestsPip-BottomHalfSetRequestedOrientationWhilePinned"
-    },
-    {
-      "name": "WMShellFlickerTestsPip-BottomHalfFromSplitScreenAutoEnterPipOnGoToHomeTest"
-    },
-    {
-      "name": "WMShellFlickerTestsPip-BottomHalfFromSplitScreenEnterPipOnUserLeaveHintTest"
+      "name": "WMShellFlickerTestsPip-nonmatchparent-BottomHalfFromSplitScreenEnterPipOnUserLeaveHintTest"
     }
   ]
 }

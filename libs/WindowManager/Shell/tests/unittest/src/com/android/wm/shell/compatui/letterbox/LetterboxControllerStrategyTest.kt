@@ -79,6 +79,25 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
     }
 
     @Test
+    fun `shouldSupportInputSurface comes from the Event`() {
+        runTestScenario { r ->
+            r.configureLetterboxMode(
+                r.SIMPLE_TEST_EVENT.copy(
+                    supportsInput = true
+                )
+            )
+            r.checkShouldSupportInputSurface(expected = true)
+
+            r.configureLetterboxMode(
+                r.SIMPLE_TEST_EVENT.copy(
+                    supportsInput = false
+                )
+            )
+            r.checkShouldSupportInputSurface(expected = false)
+        }
+    }
+
+    @Test
     fun `LetterboxMode is MULTIPLE_SURFACES with no rounded corners`() {
         runTestScenario { r ->
             r.configureRoundedCornerRadius(false)
@@ -114,7 +133,8 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
 
         init {
             letterboxConfiguration = LetterboxConfiguration(ctx)
-            letterboxStrategy = LetterboxControllerStrategy(letterboxConfiguration)
+            letterboxStrategy =
+                LetterboxControllerStrategy(letterboxConfiguration)
         }
 
         fun configureRoundedCornerRadius(enabled: Boolean) {
@@ -130,6 +150,10 @@ class LetterboxControllerStrategyTest : ShellTestCase() {
         fun checkLetterboxModeIsSingle(expected: Boolean = true) {
             val expectedMode = if (expected) SINGLE_SURFACE else MULTIPLE_SURFACES
             assertEquals(expectedMode, letterboxStrategy.getLetterboxImplementationMode())
+        }
+
+        fun checkShouldSupportInputSurface(expected: Boolean = true) {
+            assertEquals(expected, letterboxStrategy.shouldSupportInputSurface())
         }
 
         fun checkLetterboxModeIsMultiple(expected: Boolean = true) {

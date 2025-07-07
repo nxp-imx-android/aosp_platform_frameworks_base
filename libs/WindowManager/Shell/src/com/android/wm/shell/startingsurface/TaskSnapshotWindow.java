@@ -47,6 +47,7 @@ import android.window.TaskSnapshot;
 
 import com.android.internal.protolog.ProtoLog;
 import com.android.internal.view.BaseIWindow;
+import com.android.window.flags.Flags;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.protolog.ShellProtoLogGroup;
 
@@ -70,6 +71,8 @@ public class TaskSnapshotWindow {
     private final int mOrientationOnCreation;
 
     private final boolean mHasImeSurface;
+
+    private int mSeqId = -1;
 
     static TaskSnapshotWindow create(StartingWindowInfo info, IBinder appToken,
             TaskSnapshot snapshot, ShellExecutor splashScreenExecutor,
@@ -199,7 +202,8 @@ public class TaskSnapshotWindow {
 
     private void reportDrawn() {
         try {
-            mSession.finishDrawing(mWindow, null /* postDrawTransaction */, Integer.MAX_VALUE);
+            mSession.finishDrawing(mWindow, null /* postDrawTransaction */,
+                    Flags.alwaysSeqIdLayout() ? mSeqId : Integer.MAX_VALUE);
         } catch (RemoteException e) {
             clearWindowSynced();
         }
@@ -229,8 +233,16 @@ public class TaskSnapshotWindow {
                     // ASAP as we are going to wait on the new window in any case to unfreeze
                     // the screen, and the starting window is not needed anymore.
                     snapshot.clearWindowSynced();
-                } else if (reportDraw) {
+                } else if (!Flags.alwaysSeqIdLayout() && reportDraw) {
                     if (snapshot.mHasDrawn) {
+                        snapshot.reportDrawn();
+                    }
+                }
+                if (Flags.alwaysSeqIdLayout() && layout.syncSeqId > snapshot.mSeqId) {
+                    snapshot.mSeqId = layout.syncSeqId;
+                    if (snapshot.mHasDrawn
+                            // Consider "cleared" as drawn (since it has "drawn emptiness")
+                            || clearSnapshot) {
                         snapshot.reportDrawn();
                     }
                 }

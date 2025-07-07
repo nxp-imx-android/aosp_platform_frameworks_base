@@ -40,7 +40,9 @@ import com.android.wm.shell.desktopmode.DesktopTestHelpers.createFreeformTask
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.FocusTransitionObserver
 import com.android.wm.shell.transition.Transitions
+import com.android.wm.shell.windowdecor.DesktopModeWindowDecorViewModel
 import com.google.common.truth.Truth.assertThat
+import java.util.Optional
 import kotlin.test.Test
 import org.junit.Before
 import org.mockito.ArgumentCaptor
@@ -69,6 +71,7 @@ class DesktopImeHandlerTest : ShellTestCase() {
     private val focusTransitionObserver = mock<FocusTransitionObserver>()
     private val desktopUserRepositories = mock<DesktopUserRepositories>()
     private val tasksRepository = mock<DesktopRepository>()
+    private val desktopModeWindowDecorViewModel = mock<DesktopModeWindowDecorViewModel>()
 
     private lateinit var imeHandler: DesktopImeHandler
     private lateinit var shellInit: ShellInit
@@ -89,6 +92,7 @@ class DesktopImeHandlerTest : ShellTestCase() {
                 focusTransitionObserver,
                 shellTaskOrganizer,
                 displayImeController,
+                Optional.of(desktopModeWindowDecorViewModel),
                 displayController,
                 transitions,
                 mainExecutor = mock(),
@@ -288,6 +292,69 @@ class DesktopImeHandlerTest : ShellTestCase() {
 
         // No transition is started because the IME is floating
         verify(transitions, never()).startTransition(eq(TRANSIT_CHANGE), wct.capture(), anyOrNull())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX)
+    @DisableFlags(Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
+    fun onImeStartPositioning_captionPressed_noOp() {
+        setUpLandscapeDisplay()
+        val wct = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
+        val taskBounds = Rect(0, 400, 500, 1600)
+        var freeformTask = createFreeformTask(DEFAULT_DISPLAY, taskBounds)
+        freeformTask.isFocused = true
+        whenever(shellTaskOrganizer.getRunningTasks(any())).thenReturn(arrayListOf(freeformTask))
+        whenever(shellTaskOrganizer.getRunningTaskInfo(freeformTask.taskId))
+            .thenReturn(freeformTask)
+
+        imeHandler.onCaptionPressed()
+        imeHandler.onImeStartPositioning(
+            DEFAULT_DISPLAY,
+            hiddenTop = DISPLAY_DIMENSION_SHORT,
+            shownTop = IME_HEIGHT,
+            showing = true,
+            isFloating = false,
+            t = mock(),
+        )
+
+        // No transition is started because the IME is floating
+        verify(transitions, never()).startTransition(eq(TRANSIT_CHANGE), wct.capture(), anyOrNull())
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_DESKTOP_IME_BUGFIX)
+    @DisableFlags(Flags.FLAG_ENABLE_DISPLAY_FOCUS_IN_SHELL_TRANSITIONS)
+    fun onImeStartPositioning_captionPressedAndReleased_movesTask() {
+        setUpLandscapeDisplay()
+        val wct = ArgumentCaptor.forClass(WindowContainerTransaction::class.java)
+        val taskBounds = Rect(0, 400, 500, 1600)
+        val expectedBounds =
+            Rect(
+                taskBounds.left,
+                STATUS_BAR_HEIGHT,
+                taskBounds.right,
+                STATUS_BAR_HEIGHT + taskBounds.height(),
+            )
+        var freeformTask = createFreeformTask(DEFAULT_DISPLAY, taskBounds)
+        freeformTask.isFocused = true
+        whenever(shellTaskOrganizer.getRunningTasks(any())).thenReturn(arrayListOf(freeformTask))
+        whenever(shellTaskOrganizer.getRunningTaskInfo(freeformTask.taskId))
+            .thenReturn(freeformTask)
+
+        imeHandler.onCaptionPressed()
+        imeHandler.onCaptionReleased()
+        imeHandler.onImeStartPositioning(
+            DEFAULT_DISPLAY,
+            hiddenTop = DISPLAY_DIMENSION_SHORT,
+            shownTop = IME_HEIGHT,
+            showing = true,
+            isFloating = false,
+            t = mock(),
+        )
+
+        // Moves the task up to the top of stable bounds
+        verify(transitions).startTransition(eq(TRANSIT_CHANGE), wct.capture(), anyOrNull())
+        assertThat(findBoundsChange(wct.value, freeformTask)).isEqualTo(expectedBounds)
     }
 
     @Test

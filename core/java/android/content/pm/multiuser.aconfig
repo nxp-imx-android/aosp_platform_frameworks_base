@@ -83,6 +83,17 @@ flag {
     bug: "409327566"
 }
 
+flag {
+    name: "widget_scaling_bugfix"
+    namespace: "multiuser"
+    description: "When flag is enabled, scaling fixes are applied to the widget"
+    bug: "430040190"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+
 # End Multiuser Widget flags #
 
 flag {

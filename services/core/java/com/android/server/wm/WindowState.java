@@ -394,6 +394,20 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     int mPrepareSyncSeqId = 0;
 
     /**
+     * The latest (or future) seqId requiring a buffer from the client. If this is > mSyncSeqId, it
+     * means that a BLAST sync is pending but hasn't been sent to client yet.
+     */
+    int mBufferSeqId = 0;
+
+    /**
+     * This is {@code true} when a client resize-request was queued (in WMS.mResizingWindows)
+     * while the associated SyncGroup was "open" (not ready). This is needed because actual dispatch
+     * of resized messages is posted to surface-placement which runs after the associated SyncGroup
+     * has been closed.
+     */
+    private boolean mPendingSyncResize = false;
+
+    /**
      * Special mode that is intended only for the rounded corner overlay: during rotation
      * transition, we un-rotate the window token such that the window appears as it did before the
      * rotation.
@@ -1396,9 +1410,14 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
         final WindowStateAnimator winAnimator = mWinAnimator;
         final boolean didFrameInsetsChange = setReportResizeHints();
-        // The latest configuration will be returned by the out parameter of relayout, so it is
-        // unnecessary to report resize if this window is running relayout.
-        final boolean configChanged = !mInRelayout && !isLastConfigReportedToClient();
+        final boolean configChanged;
+        if (Flags.alwaysSeqIdLayout()) {
+            configChanged = !mLastConfigReportedToClient;
+        } else {
+            // The latest configuration will be returned by the out parameter of relayout, so it is
+            // unnecessary to report resize if this window is running relayout.
+            configChanged = !mInRelayout && !isLastConfigReportedToClient();
+        }
         if (DEBUG_CONFIGURATION && configChanged) {
             Slog.v(TAG_WM, "Win " + this + " config changed: " + getConfiguration());
         }
@@ -1413,15 +1432,20 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
         final boolean contentChanged = didFrameInsetsChange || configChanged
                 || dragResizingChanged || attachedFrameChanged;
-        // Cancel unchanged non-sync-buffer redraw request to avoid unnecessary reportResized().
-        if (!contentChanged && !mRedrawForSyncReported && mPrepareSyncSeqId <= 0
-                && mDrawHandlers.isEmpty()) {
-            mRedrawForSyncReported = true;
+
+        if (!Flags.alwaysSeqIdLayout()) {
+            // Cancel unchanged non-sync-buffer redraw request to avoid unnecessary reportResized().
+            if (!contentChanged && !mRedrawForSyncReported && mPrepareSyncSeqId <= 0
+                    && mDrawHandlers.isEmpty()) {
+                mRedrawForSyncReported = true;
+            }
         }
 
-        // Add a window that is using blastSync to the resizing list if it hasn't been reported
-        // already. This because the window is waiting on a finishDrawing from the client.
-        if (contentChanged || insetsChanged || shouldSendRedrawForSync()) {
+        // If a buffer is requested (BLAST) then we must redraw to produce that buffer.
+        final boolean requireRedraw = Flags.alwaysSeqIdLayout() ? mBufferSeqId > mSyncSeqId
+                : shouldSendRedrawForSync();
+
+        if (contentChanged || insetsChanged || requireRedraw) {
             ProtoLog.v(WM_DEBUG_RESIZE,
                         "Resize reasons for w=%s:  %s configChanged=%b didFrameInsetsChange=%b",
                         this, mWindowFrames.getInsetsChangedInfo(),
@@ -1445,6 +1469,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             if (!mWmService.mResizingWindows.contains(this)) {
                 ProtoLog.v(WM_DEBUG_RESIZE, "Resizing window %s", this);
                 mWmService.mResizingWindows.add(this);
+                if (Flags.alwaysSeqIdLayout()) {
+                    if (mSyncState != SYNC_STATE_NONE && !getSyncGroup().mReady) {
+                        mPendingSyncResize = true;
+                    }
+                }
             }
         }
     }
@@ -2078,6 +2107,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         if (mHasSurface && !isGoneForLayout() && !resizingWindows.contains(this)) {
             ProtoLog.d(WM_DEBUG_RESIZE, "onResize: Resizing %s", this);
             resizingWindows.add(this);
+            if (Flags.alwaysSeqIdLayout()) {
+                if (mSyncState != SYNC_STATE_NONE && !getSyncGroup().mReady) {
+                    mPendingSyncResize = true;
+                }
+            }
         }
         if (mControllableInsetProvider != null) {
             mControllableInsetProvider.onWindowBoundsChanged();
@@ -2180,6 +2214,21 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         return mLastConfigReportedToClient;
     }
 
+    /**
+     * Increments the seqId for cases where we are expecting/requiring the client to call
+     * relayout (adding or making a window visible). This relies on the fact that relayout still
+     * sends the latest configuration so we can "pretend" that we already sent the configuration
+     * (to prevent additional resize messages).
+     *
+     * @return the seqId.
+     */
+    int incrementSeqForRelayout() {
+        if (!Flags.alwaysSeqIdLayout()) return -1;
+        ++mSyncSeqId;
+        mLastConfigReportedToClient = true;
+        return mSyncSeqId;
+    }
+
     @Override
     public void onConfigurationChanged(Configuration newParentConfig) {
         // Get from super to avoid using the updated global config from the override method.
@@ -2228,6 +2277,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
 
         mRemoved = true;
+        if (Flags.alwaysSeqIdLayout()) {
+            mPendingSyncResize = false;
+        }
         // Destroy surface before super call. The general pattern is that the children need
         // to be removed before the parent (so that the sync-engine tracking works). Since
         // WindowStateAnimator is a "virtual" child, we have to do it manually here.
@@ -3198,7 +3250,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         try {
             if (DEBUG_VISIBILITY) Slog.v(TAG,
                     "Setting visibility of " + this + ": " + clientVisible);
-            final int seqId = -1;
+            final int seqId = clientVisible ? incrementSeqForRelayout() : -1;
+            if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+                Trace.instant(TRACE_TAG_WINDOW_MANAGER, "wm.sendAppVis_" + getWindowTag()
+                        + " id=" + seqId + " vis=" + clientVisible + " surf=" + mHasSurface);
+            }
             mClient.dispatchAppVisibility(clientVisible, seqId);
         } catch (RemoteException e) {
             // The remote client fails to process the visibility message. That means it is in a
@@ -3610,7 +3666,13 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                 outActivityWindowInfo.set(mLastReportedActivityWindowInfo);
             }
         }
-        mLastConfigReportedToClient = true;
+        if (!Flags.alwaysSeqIdLayout()) {
+            mLastConfigReportedToClient = true;
+        }
+    }
+
+    void setLastConfigReportedToClientForTest(boolean reported) {
+        mLastConfigReportedToClient = reported;
     }
 
     void fillInsetsState(@NonNull InsetsState outInsetsState, boolean copySources) {
@@ -3677,10 +3739,39 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         final boolean syncWithBuffers;
         final boolean reportDraw;
         final int seqIdToSend;
-        final boolean syncRedraw = shouldSendRedrawForSync();
-        syncWithBuffers = syncRedraw && shouldSyncWithBuffers();
-        reportDraw = syncRedraw || drawPending;
-        seqIdToSend = syncWithBuffers ? mSyncSeqId : -1;
+        if (!Flags.alwaysSeqIdLayout()) {
+            final boolean syncRedraw = shouldSendRedrawForSync();
+            syncWithBuffers = syncRedraw && shouldSyncWithBuffers();
+            reportDraw = syncRedraw || drawPending;
+            seqIdToSend = syncWithBuffers ? mSyncSeqId : -1;
+        } else {
+            reportDraw = false;
+            syncWithBuffers = mBufferSeqId > mSyncSeqId;
+            if (syncWithBuffers) {
+                if (mSyncState != SYNC_STATE_NONE) {
+                    // We are about to request a new buffer, so drop the existing buffer (if it
+                    // exists) since we won't use it and it occupies one of the available buffers
+                    // in the buffer-queue which, if exhausted, will cause a deadlock.
+                    ProtoLog.d(WM_DEBUG_SYNC_ENGINE, "Requesting a new buffer for a window that "
+                            + "may already be holding one, so try dropping it. win=%s", this);
+                    dropBufferFrom(mSyncTransaction);
+                }
+                mSyncSeqId = mBufferSeqId;
+            } else {
+                ++mSyncSeqId;
+            }
+            // If a sync is open (not-ready), or was open when this resize was queued, then we need
+            // now wait for this new resize to report back.
+            if (mSyncState == SYNC_STATE_READY && (mPendingSyncResize || !getSyncGroup().mReady)) {
+                mSyncState = SYNC_STATE_WAITING_FOR_DRAW;
+            }
+            mPendingSyncResize = false;
+            seqIdToSend = mSyncSeqId;
+            if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+                Trace.instant(TRACE_TAG_WINDOW_MANAGER, "wm.reportResized_" + getWindowTag()
+                        + " id=" + mSyncSeqId + " buf=" + syncWithBuffers);
+            }
+        }
         final boolean isDragResizeChanged = isDragResizeChanged();
         final boolean forceRelayout = syncWithBuffers || isDragResizeChanged;
         final DisplayContent displayContent = getDisplayContent();
@@ -3691,13 +3782,18 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
         final boolean isDragResizing = isDragResizing();
 
-        markRedrawForSyncReported();
+        if (!Flags.alwaysSeqIdLayout()) {
+            markRedrawForSyncReported();
+        }
         getProcess().scheduleClientTransactionItem(
                 new WindowStateResizeItem(mClient, mLastReportedFrames, reportDraw,
                         mLastReportedConfiguration, mLastReportedInsetsState, forceRelayout,
                         displayId, seqIdToSend, syncWithBuffers, isDragResizing,
                         mLastReportedActivityWindowInfo));
         onResizePostDispatched(drawPending, prevRotation, displayId);
+        if (Flags.alwaysSeqIdLayout()) {
+            mLastConfigReportedToClient = true;
+        }
         Trace.traceEnd(TRACE_TAG_WINDOW_MANAGER);
     }
 
@@ -4004,7 +4100,11 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             }
         }
         proto.write(SYNC_SEQ_ID, mSyncSeqId);
-        proto.write(BUFFER_SEQ_ID, mPrepareSyncSeqId);
+        if (Flags.alwaysSeqIdLayout()) {
+            proto.write(BUFFER_SEQ_ID, mBufferSeqId);
+        } else {
+            proto.write(BUFFER_SEQ_ID, mPrepareSyncSeqId);
+        }
         proto.end(token);
     }
 
@@ -4180,6 +4280,7 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         }
 
         pw.println(prefix + "mPrepareSyncSeqId=" + mPrepareSyncSeqId);
+        pw.println(prefix + "mBufferSeqId=" + mBufferSeqId);
     }
 
     @Override
@@ -5641,22 +5742,26 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
         // in WAITING state rather than READY.
         mSyncState = SYNC_STATE_WAITING_FOR_DRAW;
 
-        if (mPrepareSyncSeqId > 0) {
-            // another prepareSync during existing sync (eg. reparented), so pre-emptively
-            // drop buffer (if exists). If the buffer hasn't been received yet, it will be
-            // dropped in finishDrawing.
-            ProtoLog.d(WM_DEBUG_SYNC_ENGINE, "Preparing to sync a window that was already in the"
-                            + " sync, so try dropping buffer. win=%s", this);
-            dropBufferFrom(mSyncTransaction);
-        }
+        if (!Flags.alwaysSeqIdLayout()) {
+            if (mPrepareSyncSeqId > 0) {
+                // another prepareSync during existing sync (eg. reparented), so pre-emptively
+                // drop buffer (if exists). If the buffer hasn't been received yet, it will be
+                // dropped in finishDrawing.
+                ProtoLog.d(WM_DEBUG_SYNC_ENGINE, "Preparing to sync a window that was already in "
+                                + "the sync, so try dropping buffer. win=%s", this);
+                dropBufferFrom(mSyncTransaction);
+            }
 
-        mSyncSeqId++;
-        if (getSyncMethod() == BLASTSyncEngine.METHOD_BLAST) {
-            mPrepareSyncSeqId = mSyncSeqId;
-            requestRedrawForSync();
-        } else if (mHasSurface && mWinAnimator.mDrawState != DRAW_PENDING) {
-            // Only need to request redraw if the window has reported draw.
-            requestRedrawForSync();
+            mSyncSeqId++;
+            if (getSyncMethod() == BLASTSyncEngine.METHOD_BLAST) {
+                mPrepareSyncSeqId = mSyncSeqId;
+                requestRedrawForSync();
+            } else if (mHasSurface && mWinAnimator.mDrawState != DRAW_PENDING) {
+                // Only need to request redraw if the window has reported draw.
+                requestRedrawForSync();
+            }
+        } else if (mBufferSeqId <= mSyncSeqId && getSyncMethod() == BLASTSyncEngine.METHOD_BLAST) {
+            mBufferSeqId = mSyncSeqId + 1;
         }
         return true;
     }
@@ -5669,7 +5774,8 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             return true;
         }
         if (mSyncState == SYNC_STATE_WAITING_FOR_DRAW && mLastConfigReportedToClient && isDrawn()
-                && mPrepareSyncSeqId <= 0) {
+                && (Flags.alwaysSeqIdLayout()
+                        ? mBufferSeqId <= mSyncSeqId : mPrepareSyncSeqId <= 0)) {
             // Complete the sync state immediately for a drawn window that doesn't need to redraw.
             onSyncFinishedDrawing();
         }
@@ -5680,7 +5786,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
     void finishSync(Transaction outMergedTransaction, BLASTSyncEngine.SyncGroup group,
             boolean cancel) {
         if (isDifferentSyncGroup(group)) return;
-        mPrepareSyncSeqId = 0;
+        if (!Flags.alwaysSeqIdLayout()) {
+            mPrepareSyncSeqId = 0;
+        }
         if (cancel) {
             // This is leaving sync so any buffers left in the sync have a chance of
             // being applied out-of-order and can also block the buffer queue for this
@@ -5708,15 +5816,32 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
                     .notifyStartingWindowDrawn(mActivityRecord);
         }
 
-        final boolean syncActive = mPrepareSyncSeqId > 0;
-        final boolean syncStillPending = syncActive && mPrepareSyncSeqId > syncSeqId;
-        if (syncStillPending && postDrawTransaction != null) {
-            ProtoLog.d(WM_DEBUG_SYNC_ENGINE, "Got a buffer for request id=%d but latest request is"
-                    + " id=%d. Since the buffer is out-of-date, drop it. win=%s", syncSeqId,
-                    mPrepareSyncSeqId, this);
-            // sync is waiting for a newer seqId, so this buffer is obsolete and can be dropped
-            // to free up the buffer queue.
-            dropBufferFrom(postDrawTransaction);
+        final boolean syncActive;
+        final boolean syncStillPending;
+        if (Flags.alwaysSeqIdLayout()) {
+            syncStillPending = false;
+            syncActive = mSyncState == SYNC_STATE_WAITING_FOR_DRAW;
+            final boolean syncBuffersPending = syncActive && mBufferSeqId > syncSeqId;
+            if (syncBuffersPending && postDrawTransaction != null) {
+                ProtoLog.d(WM_DEBUG_SYNC_ENGINE,
+                        "Got a buffer for request id=%d but latest request is"
+                                + " id=%d. Since the buffer is out-of-date, drop it. win=%s",
+                        syncSeqId, mBufferSeqId, this);
+                // sync is waiting for a newer seqId, so this buffer is obsolete and can be dropped
+                // to free up the buffer queue.
+                dropBufferFrom(postDrawTransaction);
+            }
+        } else {
+            syncActive = mPrepareSyncSeqId > 0;
+            syncStillPending = syncActive && mPrepareSyncSeqId > syncSeqId;
+            if (syncStillPending && postDrawTransaction != null) {
+                ProtoLog.d(WM_DEBUG_SYNC_ENGINE, "Got a buffer for request id=%d but latest request"
+                                + " is id=%d. Since the buffer is out-of-date, drop it. win=%s",
+                        syncSeqId, mPrepareSyncSeqId, this);
+                // sync is waiting for a newer seqId, so this buffer is obsolete and can be dropped
+                // to free up the buffer queue.
+                dropBufferFrom(postDrawTransaction);
+            }
         }
 
         final boolean hasSyncHandlers = executeDrawHandlers(postDrawTransaction, syncSeqId);
@@ -5733,16 +5858,18 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             postDrawTransaction = null;
             skipLayout = true;
         } else if (syncActive) {
-            // Currently in a Sync that is using BLAST.
-            if (!syncStillPending) {
+            // Currently in a Sync.
+            if (Flags.alwaysSeqIdLayout() ? syncSeqId >= mSyncSeqId : !syncStillPending) {
                 layoutNeeded = onSyncFinishedDrawing();
             }
-            if (postDrawTransaction != null) {
+            if (postDrawTransaction != null
+                    && (!Flags.alwaysSeqIdLayout()
+                            || getSyncMethod() == BLASTSyncEngine.METHOD_BLAST)) {
                 mSyncTransaction.merge(postDrawTransaction);
                 // Consume the transaction because the sync group will merge it.
                 postDrawTransaction = null;
             }
-        } else if (syncNextBuffer()) {
+        } else if (!Flags.alwaysSeqIdLayout() && syncNextBuffer()) {
             // Sync that is not using BLAST
             layoutNeeded = onSyncFinishedDrawing();
         }
@@ -5830,6 +5957,9 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
      * See {@link WindowState#mDrawHandlers}
      */
     boolean syncNextBuffer() {
+        if (Flags.alwaysSeqIdLayout()) {
+            return (mSyncState == SYNC_STATE_WAITING_FOR_DRAW) || !mDrawHandlers.isEmpty();
+        }
         return mSyncState != SYNC_STATE_NONE || !mDrawHandlers.isEmpty();
     }
 
@@ -5849,10 +5979,18 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
             Slog.w(TAG, "applyWithNextDraw with mSyncState=" + mSyncState + ", " + this
                     + ", " + Debug.getCallers(8));
         }
-        mSyncSeqId++;
-        mDrawHandlers.add(new DrawHandler(mSyncSeqId, consumer));
+        if (Flags.alwaysSeqIdLayout()) {
+            // Draw handlers require buffer.
+            if (mBufferSeqId <= mSyncSeqId) {
+                mBufferSeqId = mSyncSeqId + 1;
+            }
+            mDrawHandlers.add(new DrawHandler(mBufferSeqId, consumer));
+        } else {
+            mSyncSeqId++;
+            mDrawHandlers.add(new DrawHandler(mSyncSeqId, consumer));
 
-        requestRedrawForSync();
+            requestRedrawForSync();
+        }
 
         mWmService.mH.sendNewMessageDelayed(WINDOW_STATE_BLAST_SYNC_TIMEOUT, this,
             BLAST_TIMEOUT_DURATION);
@@ -5986,7 +6124,15 @@ class WindowState extends WindowContainer<WindowState> implements WindowManagerP
 
     public boolean cancelAndRedraw(int seqId) {
         // Cancel any draw requests during a sync.
-        return mPrepareSyncSeqId > 0;
+        if (!Flags.alwaysSeqIdLayout()) {
+            return mPrepareSyncSeqId > 0;
+        }
+        final boolean cancel = Math.max(mSyncSeqId, mBufferSeqId) > seqId;
+        if (cancel) {
+            Trace.instant(TRACE_TAG_WINDOW_MANAGER, "cancelDraw clientSeqId=" + seqId
+                    + " serverSeqId=" + mSyncSeqId + " bufferSeqId=" + mBufferSeqId);
+        }
+        return cancel;
     }
 
     public boolean isActivityWindow() {

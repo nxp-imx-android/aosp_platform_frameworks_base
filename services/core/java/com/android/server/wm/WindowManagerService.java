@@ -2092,6 +2092,11 @@ public class WindowManagerService extends IWindowManager.Stub
             result.frames.attachedFrame = null;
         }
         result.frames.compatScale = win.getCompatScaleForClient();
+        result.syncSeqId = win.incrementSeqForRelayout();
+        if (Trace.isTagEnabled(TRACE_TAG_WINDOW_MANAGER)) {
+            Trace.instant(TRACE_TAG_WINDOW_MANAGER, "wm.addWindow_" + win.getWindowTag()
+                    + " id=" + result.syncSeqId);
+        }
 
         if (res >= ADD_OKAY && win.isPresentation()) {
             mPresentationController.onPresentationAdded(win, uid);
@@ -2477,7 +2482,8 @@ public class WindowManagerService extends IWindowManager.Stub
                 return 0;
             }
 
-            if (win.cancelAndRedraw(syncSeqId) && win.mPrepareSyncSeqId <= syncSeqId) {
+            if (win.cancelAndRedraw(syncSeqId)
+                    && (Flags.alwaysSeqIdLayout() || (win.mPrepareSyncSeqId <= syncSeqId))) {
                 // The client has reported the sync draw, but we haven't finished it yet.
                 // Don't let the client perform a non-sync draw at this time.
                 result |= RELAYOUT_RES_CANCEL_AND_REDRAW;
@@ -2848,7 +2854,8 @@ public class WindowManagerService extends IWindowManager.Stub
             }
 
             if (outRelayoutResult != null) {
-                if (win.syncNextBuffer() && viewVisibility == View.VISIBLE
+                if (!Flags.alwaysSeqIdLayout()
+                        && win.syncNextBuffer() && viewVisibility == View.VISIBLE
                         && win.mSyncSeqId > syncSeqId && !displayContent.mWaitingForConfig) {
                     outRelayoutResult.syncSeqId = win.shouldSyncWithBuffers()
                             ? win.mSyncSeqId

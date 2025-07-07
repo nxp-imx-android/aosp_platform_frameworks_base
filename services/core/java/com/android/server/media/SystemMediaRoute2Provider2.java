@@ -315,6 +315,27 @@ import java.util.stream.Stream;
         notifyRequestFailed(requestId, MediaRoute2ProviderService.REASON_ROUTE_NOT_AVAILABLE);
     }
 
+    @Override
+    public void releaseSession(long requestId, String sessionOriginalId) {
+        if (SYSTEM_SESSION_ID.equals(sessionOriginalId)) {
+            super.releaseSession(requestId, sessionOriginalId);
+            return;
+        }
+        synchronized (mLock) {
+            var sessionRecord = mSessionOriginalIdToSessionRecord.get(sessionOriginalId);
+            if (sessionRecord != null) {
+                sessionRecord.removeSelfFromSessionMaps();
+                var proxyRecord = sessionRecord.getProxyRecord();
+                if (proxyRecord != null) {
+                    proxyRecord.releaseSession(requestId, sessionRecord.getServiceSessionId());
+                }
+                updateSessionInfo();
+                return;
+            }
+        }
+        notifyRequestFailed(requestId, MediaRoute2ProviderService.REASON_REJECTED);
+    }
+
     /**
      * Returns the uid that corresponds to the given name and user handle, or {@link
      * Process#INVALID_UID} if a uid couldn't be found.

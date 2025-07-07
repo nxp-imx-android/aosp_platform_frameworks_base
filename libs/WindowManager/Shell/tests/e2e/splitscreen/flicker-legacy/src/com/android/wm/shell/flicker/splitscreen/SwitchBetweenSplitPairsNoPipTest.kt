@@ -45,7 +45,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class SwitchBetweenSplitPairsNoPip(override val flicker: LegacyFlickerTest) :
+class SwitchBetweenSplitPairsNoPipTest(override val flicker: LegacyFlickerTest) :
     SplitScreenBase(flicker) {
 
     val thirdApp = SplitScreenUtils.getSendNotification(instrumentation)

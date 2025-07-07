@@ -21,6 +21,7 @@ import static android.view.accessibility.AccessibilityManager.AUTOCLICK_CURSOR_A
 
 import android.animation.ValueAnimator;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
@@ -46,6 +47,8 @@ public class AutoclickIndicatorView extends View {
     static final int SHOW_INDICATOR_DELAY_TIME = 150;
 
     static final int MINIMAL_ANIMATION_DURATION = 50;
+
+    private final int mColor = R.color.materialColorPrimary;
 
     // Radius of the indicator circle.
     private int mRadius = AUTOCLICK_CURSOR_AREA_SIZE_DEFAULT;
@@ -77,7 +80,7 @@ public class AutoclickIndicatorView extends View {
         super(context);
 
         mPaint = new Paint();
-        mPaint.setColor(context.getColor(R.color.materialColorPrimary));
+        mPaint.setColor(context.getColor(mColor));
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeWidth(10);
 
@@ -139,6 +142,17 @@ public class AutoclickIndicatorView extends View {
         int screenHeight = displayMetrics.heightPixels;
 
         setMeasuredDimension(screenWidth, screenHeight);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        post(new Runnable() {
+            @Override
+            public void run() {
+                // Only color needs to be updated when system theme is changed.
+                mPaint.setColor(getContext().getColor(mColor));
+            }
+        });
     }
 
     public void setCoordination(float x, float y) {

@@ -173,11 +173,22 @@ constructor(
                                 ActionModel(
                                     icon =
                                         IconModel(
-                                            chip.icon?.loadDrawable(applicationContext)
-                                                ?: applicationContext.getDrawable(
-                                                    R.drawable.ic_paste_spark
-                                                )!!,
-                                            chip?.icon?.resPackage + "#" + chip?.icon?.resId,
+                                            small =
+                                                (chip.icon
+                                                        ?.loadDrawable(applicationContext)
+                                                        ?: applicationContext.getDrawable(
+                                                            R.drawable.ic_paste_spark
+                                                        )!!)
+                                                    .mutate(),
+                                            large =
+                                                (chip.icon
+                                                        ?.loadDrawable(applicationContext)
+                                                        ?: applicationContext.getDrawable(
+                                                            R.drawable.ic_paste_spark
+                                                        )!!)
+                                                    .mutate(),
+                                            iconId =
+                                                chip?.icon?.resPackage + "#" + chip?.icon?.resId,
                                         ),
                                     label = title,
                                     attribution = chip.subtitle?.toString(),

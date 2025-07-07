@@ -24,6 +24,6 @@
             android:pathData="M0,0h24v24h-24z"/>
         <path
             android:pathData="M14,17.7V6.3H17.35V17.7H14ZM6.65,17.7V6.3H10V17.7H6.65Z"
-            android:fillColor="@color/materialColorPrimary"/>
+            android:fillColor="@color/materialColorOnSurface"/>
     </group>
 </vector>

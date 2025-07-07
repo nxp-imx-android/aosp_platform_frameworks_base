@@ -31,11 +31,13 @@ android_library {
     ],
 
     static_libs: [
+        // Private APIs
+        "PlatformComposeCore",
+
+        // Public APIs
+        "//frameworks/libs/systemui/mechanics:mechanics",
         "androidx.compose.runtime_runtime",
         "androidx.compose.material3_material3",
-
-        "PlatformComposeCore",
-        "mechanics",
     ],
 
     kotlincflags: [

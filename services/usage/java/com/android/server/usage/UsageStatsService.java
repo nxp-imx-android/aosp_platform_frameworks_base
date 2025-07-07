@@ -2354,23 +2354,16 @@ public class UsageStatsService extends SystemService implements
 
         private void reportUserInteractionInnerHelper(String packageName, @UserIdInt int userId,
                 PersistableBundle extras) {
-            if (Flags.reportUsageStatsPermission()) {
-                if (!canReportUsageStats()) {
-                    throw new SecurityException(
-                        "Only the system or holders of the REPORT_USAGE_STATS"
-                            + " permission are allowed to call reportUserInteraction");
-                }
-                if (userId != UserHandle.getCallingUserId()) {
-                    // Cross-user event reporting.
-                    getContext().enforceCallingPermission(
-                            Manifest.permission.INTERACT_ACROSS_USERS_FULL,
-                            "Caller doesn't have INTERACT_ACROSS_USERS_FULL permission");
-                }
-            } else {
-                if (!isCallingUidSystem()) {
-                    throw new SecurityException("Only system is allowed to call"
-                        + " reportUserInteraction");
-                }
+            if (!canReportUsageStats()) {
+                throw new SecurityException(
+                    "Only the system or holders of the REPORT_USAGE_STATS"
+                        + " permission are allowed to call reportUserInteraction");
+            }
+            if (userId != UserHandle.getCallingUserId()) {
+                // Cross-user event reporting.
+                getContext().enforceCallingPermission(
+                        Manifest.permission.INTERACT_ACROSS_USERS_FULL,
+                        "Caller doesn't have INTERACT_ACROSS_USERS_FULL permission");
             }
 
             // Verify if this package exists before reporting an event for it.
@@ -2810,12 +2803,10 @@ public class UsageStatsService extends SystemService implements
                 return;
             }
 
-            if (Flags.reportUsageStatsPermission()) {
-                if (!canReportUsageStats()) {
-                    throw new SecurityException(
-                        "Only the system or holders of the REPORT_USAGE_STATS"
-                            + " permission are allowed to call reportChooserSelection");
-                }
+            if (!canReportUsageStats()) {
+                throw new SecurityException(
+                    "Only the system or holders of the REPORT_USAGE_STATS"
+                        + " permission are allowed to call reportChooserSelection");
             }
 
             // Verify if this package exists before reporting an event for it.

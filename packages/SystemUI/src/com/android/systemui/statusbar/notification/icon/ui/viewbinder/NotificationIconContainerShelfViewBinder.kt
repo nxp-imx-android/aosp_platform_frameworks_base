@@ -32,7 +32,7 @@ class NotificationIconContainerShelfViewBinder
 constructor(
     private val viewModel: NotificationIconContainerShelfViewModel,
     @ShadeDisplayAware private val configuration: ConfigurationState,
-    private val systemBarUtilsState: SystemBarUtilsState,
+    @ShadeDisplayAware private val systemBarUtilsState: SystemBarUtilsState,
     private val failureTracker: StatusBarIconViewBindingFailureTracker,
     private val viewStore: ShelfNotificationIconViewStore,
 ) {
