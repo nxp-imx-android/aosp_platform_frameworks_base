@@ -40,6 +40,8 @@ android_test {
         "flickerlib-trace_processor_shell",
         "flickertestapplib",
         "platform-test-annotations",
+        "systemui-tapl",
+        "systemui-helper",
         "wm-flicker-common-app-helpers",
         "wm-shell-flicker-utils",
     ],
