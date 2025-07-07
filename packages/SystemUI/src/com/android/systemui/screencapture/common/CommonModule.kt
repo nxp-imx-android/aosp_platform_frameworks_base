@@ -16,11 +16,43 @@
 
 package com.android.systemui.screencapture.common
 
+import android.content.Context
+import com.android.launcher3.icons.IconFactory
+import com.android.systemui.screencapture.common.data.repository.ScreenCaptureIconRepository
+import com.android.systemui.screencapture.common.data.repository.ScreenCaptureIconRepositoryImpl
+import com.android.systemui.screencapture.common.data.repository.ScreenCaptureLabelRepository
+import com.android.systemui.screencapture.common.data.repository.ScreenCaptureLabelRepositoryImpl
+import com.android.systemui.screencapture.common.data.repository.ScreenCaptureThumbnailRepository
+import com.android.systemui.screencapture.common.data.repository.ScreenCaptureThumbnailRepositoryImpl
+import dagger.Binds
 import dagger.Module
+import dagger.Provides
 
 /**
  * Dagger Module for bindings common to all [ScreenCaptureComponent]s.
  *
  * This module must be included in the Subcomponent or replaced with equivalent bindings.
  */
-@Module interface CommonModule
+@Module
+interface CommonModule {
+    @Binds
+    fun bindScreenCaptureIconRepository(
+        impl: ScreenCaptureIconRepositoryImpl
+    ): ScreenCaptureIconRepository
+
+    @Binds
+    fun bindScreenCaptureLabelRepository(
+        impl: ScreenCaptureLabelRepositoryImpl
+    ): ScreenCaptureLabelRepository
+
+    @Binds
+    fun bindScreenCaptureThumbnailRepository(
+        impl: ScreenCaptureThumbnailRepositoryImpl
+    ): ScreenCaptureThumbnailRepository
+
+    companion object {
+        @Provides
+        @ScreenCapture
+        fun provideIconFactory(context: Context): IconFactory = IconFactory.obtain(context)
+    }
+}
