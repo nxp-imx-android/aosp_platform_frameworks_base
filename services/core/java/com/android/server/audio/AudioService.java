@@ -7915,6 +7915,15 @@ public class AudioService extends IAudioService.Stub
                 .record();
     }
 
+    /**
+     * @see AudioManager#isScoManagedByAudio()
+     * @return true if SCO is managed by audio, false otherwise
+     */
+    @android.annotation.EnforcePermission(BLUETOOTH_PRIVILEGED)
+    public boolean isScoManagedByAudio() {
+        super.isScoManagedByAudio_enforcePermission();
+        return mDeviceBroker.isScoManagedByAudio();
+    }
 
     /*package*/ ContentResolver getContentResolver() {
         return mContentResolver;
