@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -41,9 +42,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.IconButtonColors
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -75,7 +75,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEach
-import com.android.compose.PlatformIconButton
 import com.android.compose.ui.graphics.painter.rememberDrawablePainter
 import com.android.systemui.ambientcue.ui.compose.modifier.animatedActionBorder
 import com.android.systemui.ambientcue.ui.utils.FilterUtils
@@ -98,6 +97,9 @@ fun ShortPill(
     val scrimColor = MaterialTheme.colorScheme.primary
     val minSize = 48.dp
     val closeButtonSize = 28.dp
+    // (shortPillBoxWidth, shortPillBoxLength) is the smallest size to fully cover recent app area.
+    val shortPillBoxWidth = 48.dp
+    val shortPillBoxLength = 68.dp
     val transitionTween: TweenSpec<Float> = tween(250, delayMillis = 200)
 
     val visibleState = remember { MutableTransitionState(false) }
@@ -198,7 +200,6 @@ fun ShortPill(
                 .background(backgroundColor)
                 .animatedActionBorder(strokeWidth = 1.dp, cornerRadius = 16.dp, visible = visible)
                 .widthIn(0.dp, minSize * 2)
-                .then(if (expanded) Modifier else Modifier.clickable { onClick() })
                 .padding(4.dp)
 
         val filteredActions = FilterUtils.filterActions(actions)
@@ -212,28 +213,44 @@ fun ShortPill(
             ) {
                 Spacer(modifier = Modifier.size(closeButtonSize))
 
-                Row(
-                    horizontalArrangement =
-                        Arrangement.spacedBy(-4.dp, Alignment.CenterHorizontally),
-                    verticalAlignment = Alignment.CenterVertically,
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier =
-                        pillModifier.defaultMinSize(minWidth = minSize).onGloballyPositioned {
-                            coordinates ->
-                            pillContentSize = coordinates.size
-                            pillContentPosition = coordinates.positionInParent()
-                        },
-                ) {
-                    filteredActions.take(3).fastForEach { action ->
-                        Icon(action, backgroundColor)
-                        if (actions.size == 1) {
-                            Text(
-                                text = action.label,
-                                color = outlineColor,
-                                style = actionTextStyle,
-                                overflow = TextOverflow.Ellipsis,
-                                maxLines = 1,
-                                modifier = Modifier.padding(horizontal = 8.dp),
+                        Modifier.widthIn(shortPillBoxLength, minSize * 2)
+                            .height(shortPillBoxWidth)
+                            .then(
+                                if (expanded) Modifier
+                                else
+                                    Modifier.clickable(
+                                        indication = null,
+                                        interactionSource = null,
+                                    ) {
+                                        onClick()
+                                    }
                             )
+                            .onGloballyPositioned { coordinates ->
+                                pillContentSize = coordinates.size
+                                pillContentPosition = coordinates.positionInParent()
+                            },
+                ) {
+                    Row(
+                        horizontalArrangement =
+                            Arrangement.spacedBy(-4.dp, Alignment.CenterHorizontally),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = pillModifier.defaultMinSize(minWidth = minSize),
+                    ) {
+                        filteredActions.take(3).fastForEach { action ->
+                            Icon(action, backgroundColor)
+                            if (actions.size == 1) {
+                                Text(
+                                    text = action.label,
+                                    color = outlineColor,
+                                    style = actionTextStyle,
+                                    overflow = TextOverflow.Ellipsis,
+                                    maxLines = 1,
+                                    modifier = Modifier.padding(horizontal = 8.dp),
+                                )
+                            }
                         }
                     }
                 }
@@ -248,16 +265,26 @@ fun ShortPill(
             ) {
                 Spacer(modifier = Modifier.size(closeButtonSize))
 
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(-4.dp, Alignment.CenterVertically),
+                Box(
+                    contentAlignment = Alignment.Center,
                     modifier =
-                        pillModifier.defaultMinSize(minHeight = minSize).onGloballyPositioned {
-                            coordinates ->
-                            pillContentSize = coordinates.size
-                            pillContentPosition = coordinates.positionInParent()
-                        },
+                        Modifier.widthIn(shortPillBoxWidth, minSize * 2)
+                            .height(shortPillBoxLength)
+                            .then(if (expanded) Modifier else Modifier.clickable { onClick() })
+                            .onGloballyPositioned { coordinates ->
+                                pillContentSize = coordinates.size
+                                pillContentPosition = coordinates.positionInParent()
+                            },
                 ) {
-                    filteredActions.take(3).fastForEach { action -> Icon(action, backgroundColor) }
+                    Column(
+                        verticalArrangement =
+                            Arrangement.spacedBy(-4.dp, Alignment.CenterVertically),
+                        modifier = pillModifier.defaultMinSize(minHeight = minSize),
+                    ) {
+                        filteredActions.take(3).fastForEach { action ->
+                            Icon(action, backgroundColor)
+                        }
+                    }
                 }
 
                 CloseButton(onCloseClick = onCloseClick, modifier = Modifier.size(closeButtonSize))
@@ -295,9 +322,7 @@ private fun CloseButton(onCloseClick: () -> Unit, modifier: Modifier = Modifier)
         FilledIconButton(
             onClick = onCloseClick,
             modifier =
-                modifier
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainer),
+                modifier.clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainer),
             colors =
                 IconButtonDefaults.filledIconButtonColors(
                     containerColor = Color.Transparent,
