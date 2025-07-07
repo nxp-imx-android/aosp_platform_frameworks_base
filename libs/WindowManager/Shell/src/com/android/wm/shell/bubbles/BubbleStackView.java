@@ -2230,6 +2230,17 @@ public class BubbleStackView extends FrameLayout
         // expand / collapse on.
         bubble.getIconView().setTranslationX(mStackAnimationController.getStackPosition().x);
 
+        // If it is currently being animated out (and newly added again here), remove the view
+        // and add it back so that it animates in.
+        if (Flags.fixBubblesAddSameBubbleBeingRemoved()
+                && bubble.getIconView().getParent() != null) {
+            mBubbleContainer.removeViewNoAnimation(bubble.getIconView());
+            // If the view was being animated out, need to reset its state
+            bubble.getIconView().setAlpha(1f);
+            bubble.getIconView().setVisibility(VISIBLE);
+            bubble.getIconView().setScaleX(1f);
+            bubble.getIconView().setScaleY(1f);
+        }
         mBubbleContainer.addView(bubble.getIconView(), 0,
                 new FrameLayout.LayoutParams(mPositioner.getBubbleSize(),
                         mPositioner.getBubbleSize()));
@@ -2247,34 +2258,81 @@ public class BubbleStackView extends FrameLayout
 
     // via BubbleData.Listener
     void removeBubble(Bubble bubble) {
-        if (isExpanded() && getBubbleCount() == 1) {
+        boolean isLastBubble = getBubbleCount() == 1;
+        if (isExpanded() && isLastBubble) {
             mRemovingLastBubbleWhileExpanded = true;
             // We're expanded while the last bubble is being removed. Let the scrim animate away
             // and then remove our views (removing the icon view triggers the removal of the
             // bubble window so do that at the end of the animation so we see the scrim animate).
             BadgedImageView iconView = bubble.getIconView();
+            BubbleExpandedView bev = bubble.getExpandedView();
             final BubbleViewProvider expandedBubbleBeforeScrim = mExpandedBubble;
             // Notify the stack anim controller before running the scrim animation. In case
             // another bubble gets added during it.
             mStackAnimationController.onLastBubbleRemoved();
+
             showScrim(false, () -> {
                 mRemovingLastBubbleWhileExpanded = false;
-                bubble.cleanupExpandedView();
-                if (iconView != null) {
-                    mBubbleContainer.removeView(iconView);
-                }
-                bubble.cleanupViews(); // cleans up the icon view
-                updateExpandedView(); // resets state for no expanded bubble
-                // Bubble keys may not have changed if we receive an update to the same bubble.
-                // Compare bubble object instances to see if the expanded bubble has changed.
-                if (expandedBubbleBeforeScrim == mExpandedBubble) {
-                    // Only clear expanded bubble if it has not changed since the scrim animation
-                    // started.
-                    // Scrim animation can take some time run and it is possible for a new bubble
-                    // to be added while the animation is running. This causes the expanded
-                    // bubble to change. Make sure we only clear the expanded bubble if it did
-                    // not change between when the scrim animation started and completed.
-                    mExpandedBubble = null;
+                if (Flags.fixBubblesAddSameBubbleBeingRemoved()) {
+                    boolean removedBubbleBackInStack = mBubbleData.hasBubbleInStackWithKey(
+                            bubble.getKey());
+                    // In the time it takes for the scrim animation, that bubble may have gotten
+                    // a new update and be added back -- only remove the view if it's not in the
+                    // stack.
+                    if (!removedBubbleBackInStack) {
+                        if (iconView != null) {
+                            mBubbleContainer.removeView(iconView);
+                        }
+                        if (bev != null) {
+                            mExpandedViewContainer.removeView(bev);
+                        }
+                    } else if (bev != null) {
+                        // If we were dragging out, reset the expanded view in case the bubble gets
+                        // re-added
+                        bev.setContentAlpha(1f);
+                        bev.setBackgroundAlpha(1f);
+                    }
+
+                    mExpandedViewContainer.setAnimationMatrix(null);
+                    mExpandedViewTemporarilyHidden = false;
+
+                    if (!removedBubbleBackInStack) {
+                        // Not in the stack -- clean up all the views
+                        bubble.cleanupViews();
+                    }
+
+                    // Bubble keys may not have changed if we receive an update to the same bubble.
+                    // Compare bubble object instances to see if the expanded bubble has changed.
+                    if (expandedBubbleBeforeScrim == mExpandedBubble && !removedBubbleBackInStack) {
+                        // Only clear expanded bubble if it has not changed since the scrim
+                        // animation started.
+                        // Scrim animation can take some time run and it is possible for a new
+                        // bubble to be added while the animation is running.
+                        // This causes the expanded bubble to change. Make sure we only clear the
+                        // expanded bubble if it did not change between when the scrim animation
+                        // started and completed.
+                        mExpandedBubble = null;
+                        updateExpandedView();
+                    }
+                } else {
+                    bubble.cleanupExpandedView();
+                    if (iconView != null) {
+                        mBubbleContainer.removeView(iconView);
+                    }
+                    bubble.cleanupViews(); // cleans up the icon view
+                    updateExpandedView(); // resets state for no expanded bubble
+                    // Bubble keys may not have changed if we receive an update to the same bubble.
+                    // Compare bubble object instances to see if the expanded bubble has changed.
+                    if (expandedBubbleBeforeScrim == mExpandedBubble) {
+                        // Only clear expanded bubble if it has not changed since the scrim
+                        // animation started.
+                        // Scrim animation can take some time run and it is possible for a new
+                        // bubble to be added while the animation is running.
+                        // This causes the expanded bubble to change. Make sure we only clear the
+                        // expanded bubble if it did not change between when the scrim animation
+                        // started and completed.
+                        mExpandedBubble = null;
+                    }
                 }
             });
             logBubbleEvent(bubble, FrameworkStatsLog.BUBBLE_UICHANGED__ACTION__DISMISSED);
@@ -2289,13 +2347,14 @@ public class BubbleStackView extends FrameLayout
             if (v instanceof BadgedImageView
                     && ((BadgedImageView) v).getKey().equals(bubble.getKey())) {
                 mBubbleContainer.removeViewAt(i);
-                if (mBubbleData.hasOverflowBubbleWithKey(bubble.getKey())) {
+                if (!isLastBubble && mBubbleData.hasOverflowBubbleWithKey(bubble.getKey())) {
+                    // Overflow bubbles show the icon view so just clean up the expanded view.
                     bubble.cleanupExpandedView();
                 } else {
                     bubble.cleanupViews();
                 }
                 updateExpandedView();
-                if (getBubbleCount() == 0 && !isExpanded()) {
+                if (isLastBubble && !isExpanded()) {
                     // This is the last bubble and the stack is collapsed
                     updateStackPosition();
                 }
@@ -2734,6 +2793,12 @@ public class BubbleStackView extends FrameLayout
                         mScaleOutSpringConfig)
                 .addUpdateListener((target, values) ->
                         mExpandedViewContainer.setAnimationMatrix(mExpandedViewContainerMatrix))
+                .withEndActions(() -> {
+                    if (Flags.fixBubblesAddSameBubbleBeingRemoved()
+                            && mExpandedViewTemporarilyHidden) {
+                        mExpandedViewContainer.removeView(mExpandedBubble.getExpandedView());
+                    }
+                })
                 .start();
 
         // Animate alpha from 1f to 0f.
@@ -2749,6 +2814,12 @@ public class BubbleStackView extends FrameLayout
         }
 
         mExpandedViewTemporarilyHidden = false;
+        if (Flags.fixBubblesAddSameBubbleBeingRemoved()
+                && mExpandedBubble != null
+                && mExpandedBubble.getExpandedView() != null
+                && mExpandedBubble.getExpandedView().getParent() == null) {
+            mExpandedViewContainer.addView(mExpandedBubble.getExpandedView());
+        }
 
         PhysicsAnimator.getInstance(mExpandedViewContainerMatrix)
                 .spring(AnimatableScaleMatrix.SCALE_X,
