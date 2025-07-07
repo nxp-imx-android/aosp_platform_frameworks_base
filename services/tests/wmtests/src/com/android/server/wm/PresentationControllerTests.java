@@ -20,6 +20,7 @@ import static android.view.Display.DEFAULT_DISPLAY;
 import static android.view.Display.FLAG_PRESENTATION;
 import static android.view.Display.FLAG_PRIVATE;
 import static android.view.Display.FLAG_TRUSTED;
+import static android.view.Display.TYPE_EXTERNAL;
 import static android.view.WindowManager.TRANSIT_CLOSE;
 import static android.view.WindowManager.TRANSIT_OPEN;
 import static android.view.WindowManager.TRANSIT_WAKE;
@@ -228,7 +229,7 @@ public class PresentationControllerTests extends WindowTestsBase {
 
     @EnableFlags(FLAG_ENABLE_PRESENTATION_FOR_CONNECTED_DISPLAYS)
     @Test
-    public void testPresentationCannotLaunchOnNonPresentationDisplayWithoutHostHavingGlobalFocus() {
+    public void testPresentationCannotLaunchOnInternalDisplayWithoutHostHavingGlobalFocus() {
         final int uid = Binder.getCallingUid();
         // Adding a presentation window on an internal display requires a host task
         // with global focus on another display.
@@ -361,6 +362,7 @@ public class PresentationControllerTests extends WindowTestsBase {
         final DisplayInfo displayInfo = new DisplayInfo();
         displayInfo.copyFrom(mDisplayInfo);
         displayInfo.flags = FLAG_PRESENTATION | FLAG_TRUSTED;
+        displayInfo.type = TYPE_EXTERNAL;
         if (isPrivateDisplay) {
             displayInfo.flags |= FLAG_PRIVATE;
             displayInfo.ownerUid = Binder.getCallingUid();
