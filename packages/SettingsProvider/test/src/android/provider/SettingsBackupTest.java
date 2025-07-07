@@ -875,7 +875,7 @@ public class SettingsBackupTest {
                         Settings.Secure.NAS_SETTINGS_UPDATED,
                         Settings.Secure.NAV_BAR_FORCE_VISIBLE,
                         Settings.Secure.NAV_BAR_KIDS_MODE,
-                        Settings.Secure.NAV_BAR_ORDER,
+                        Settings.Secure.NAVIGATIONBAR_KEY_ORDER,
                         Settings.Secure.NEARBY_FAST_PAIR_SETTINGS_DEVICES_COMPONENT,
                         Settings.Secure.NEARBY_SHARING_SLICE_URI,
                         Settings.Secure.NOTIFIED_NON_ACCESSIBILITY_CATEGORY_SERVICES,
