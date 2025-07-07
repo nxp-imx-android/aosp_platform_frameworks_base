@@ -20,6 +20,7 @@ import android.app.ActivityManager.RunningTaskInfo
 import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.Intent
 import android.graphics.Rect
+import android.platform.test.annotations.DesktopTest
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.testing.AndroidTestingRunner
@@ -173,6 +174,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_PERCEPTIBLE_TASKS)
+    @DesktopTest(cujs = ["b/429989932"])
     fun onTaskOpening_freeformTask_enablePerceptibleTask() {
         val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = false }
         desktopTaskChangeListener.onTaskOpening(task)
@@ -181,6 +183,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_PERCEPTIBLE_TASKS)
+    @DesktopTest(cujs = ["b/429989932"])
     fun onTaskOpening_fullscreenTask_notEnablePerceptibleTask() {
         val task = createFullscreenTask().apply { isVisible = true }
         desktopTaskChangeListener.onTaskOpening(task)
@@ -234,6 +237,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_PERCEPTIBLE_TASKS)
+    @DesktopTest(cujs = ["b/429989932"])
     fun onTaskChanging_fullscreenTask_notEnablePerceptibleTask() {
         val task = createFullscreenTask().apply { isVisible = true }
         desktopTaskChangeListener.onTaskChanging(task)
@@ -242,6 +246,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_PERCEPTIBLE_TASKS)
+    @DesktopTest(cujs = ["b/429989932"])
     fun onTaskChanging_freeformTask_enablePerceptibleTask() {
         val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = true }
         desktopTaskChangeListener.onTaskChanging(task)
@@ -327,6 +332,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_PERCEPTIBLE_TASKS)
+    @DesktopTest(cujs = ["b/429989932"])
     fun onTaskMovingToFront_fullscreenTask_notEnablePerceptibleTask() {
         val task = createFullscreenTask().apply { isVisible = true }
         desktopTaskChangeListener.onTaskMovingToFront(task)
@@ -335,6 +341,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_PERCEPTIBLE_TASKS)
+    @DesktopTest(cujs = ["b/429989932"])
     fun onTaskMovingToFront_freeformTask_enablePerceptibleTask() {
         val task = createFreeformTask(bounds = TASK_BOUNDS).apply { isVisible = true }
         desktopTaskChangeListener.onTaskMovingToFront(task)
@@ -466,6 +473,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION, FLAG_PERCEPTIBLE_TASKS)
+    @DesktopTest(cujs = ["b/429989932"])
     fun onTaskClosing_backNavEnabled_disablePerceptibleTask() {
         val task = createFreeformTask().apply { isVisible = true }
         desktopTaskChangeListener.onTaskOpening(task)
@@ -478,6 +486,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
 
     @Test
     @EnableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION, FLAG_PERCEPTIBLE_TASKS)
+    @DesktopTest(cujs = ["b/429989932"])
     fun onTaskClosing_backNavEnabled_minimizedTask_perceptibleTasks_noop() {
         val task = createFreeformTask().apply { isVisible = true }
         desktopTaskChangeListener.onTaskOpening(task)
@@ -492,6 +501,7 @@ class DesktopTaskChangeListenerTest : ShellTestCase() {
     @Test
     @EnableFlags(FLAG_PERCEPTIBLE_TASKS)
     @DisableFlags(FLAG_ENABLE_DESKTOP_WINDOWING_BACK_NAVIGATION)
+    @DesktopTest(cujs = ["b/429989932"])
     fun onTaskClosing_backNavDisabled_closingTask_disablePerceptibleTask() {
         val task = createFreeformTask().apply { isVisible = true }
         desktopTaskChangeListener.onTaskOpening(task)
