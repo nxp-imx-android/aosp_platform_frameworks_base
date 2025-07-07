@@ -22,7 +22,6 @@ import android.graphics.Rect
 import android.testing.AndroidTestingRunner
 import android.util.SparseArray
 import androidx.test.filters.SmallTest
-import com.android.internal.jank.InteractionJankMonitor
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -91,7 +90,6 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
     private val shellInit: ShellInit = mock()
     private val shellController: ShellController = mock()
     private val configuration: Configuration = mock()
-    private val jankMonitor: InteractionJankMonitor = mock()
     private lateinit var desktopTilingDecorViewModel: DesktopTilingDecorViewModel
     @Captor private lateinit var callbackCaptor: ArgumentCaptor<Runnable>
 
@@ -118,7 +116,6 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
                 desktopState,
                 shellInit,
                 shellController,
-                jankMonitor,
             )
         whenever(contextMock.createContextAsUser(any(), any())).thenReturn(contextMock)
         whenever(displayControllerMock.getDisplayLayout(any())).thenReturn(displayLayout)

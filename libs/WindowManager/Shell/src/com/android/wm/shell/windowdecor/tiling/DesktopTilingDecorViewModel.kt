@@ -28,7 +28,6 @@ import androidx.core.util.getOrElse
 import androidx.core.util.keyIterator
 import androidx.core.util.valueIterator
 import com.android.internal.annotations.VisibleForTesting
-import com.android.internal.jank.InteractionJankMonitor
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.R
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
@@ -75,7 +74,6 @@ class DesktopTilingDecorViewModel(
     private val desktopState: DesktopState,
     private val shellInit: ShellInit,
     private val shellController: ShellController,
-    private val interactionJankMonitor: InteractionJankMonitor,
 ) : DisplayChangeController.OnDisplayChangingListener {
     @VisibleForTesting
     var tilingHandlerByUserAndDeskId = SparseArray<SparseArray<DesktopTilingWindowDecoration>>()
@@ -125,7 +123,6 @@ class DesktopTilingDecorViewModel(
                             mainExecutor,
                             desktopState,
                             shellController,
-                            interactionJankMonitor,
                         )
                         .also { userHandlerList[deskId] = it }
                 }

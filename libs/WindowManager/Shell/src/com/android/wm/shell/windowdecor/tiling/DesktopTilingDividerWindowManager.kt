@@ -41,10 +41,7 @@ import android.view.WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION
 import android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY
 import android.view.WindowManager.LayoutParams.TYPE_DOCK_DIVIDER
 import android.view.WindowlessWindowManager
-import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_TILE_RESIZING
-import com.android.internal.jank.InteractionJankMonitor
 import com.android.wm.shell.R
-import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 
 /**
@@ -60,7 +57,6 @@ class DesktopTilingDividerWindowManager(
     private var dividerBounds: Rect,
     private val displayContext: Context,
     private val isDarkMode: Boolean,
-    private val interactionJankMonitor: InteractionJankMonitor,
 ) : WindowlessWindowManager(config, leash, null), DividerMoveCallback, View.OnLayoutChangeListener {
     private lateinit var viewHost: SurfaceControlViewHost
     private var tilingDividerView: TilingDividerView? = null
@@ -263,20 +259,7 @@ class DesktopTilingDividerWindowManager(
 
     override fun onDividerMoveStart(pos: Int, motionEvent: MotionEvent) {
         setSlippery(false)
-        beginJankMonitoring()
         transitionHandler.onDividerHandleDragStart(motionEvent)
-    }
-
-    private fun beginJankMonitoring() {
-        val dividerView = tilingDividerView ?: return
-        interactionJankMonitor.begin(
-            InteractionJankMonitor.Configuration.Builder.withView(CUJ_DESKTOP_MODE_TILE_RESIZING, dividerView)
-                .setTimeout(LONG_CUJ_TIMEOUT_MS)
-        )
-    }
-
-    private fun endJankMonitoring() {
-        interactionJankMonitor.end(CUJ_DESKTOP_MODE_TILE_RESIZING)
     }
 
     /**
@@ -297,7 +280,6 @@ class DesktopTilingDividerWindowManager(
      */
     override fun onDividerMovedEnd(pos: Int, motionEvent: MotionEvent) {
         setSlippery(true)
-        endJankMonitoring()
         val t = transactionSupplier.get()
         t.setPosition(leash, pos.toFloat() - maxRoundedCornerRadius, dividerBounds.top.toFloat())
         val dividerWidth = dividerBounds.width()
@@ -380,8 +362,5 @@ class DesktopTilingDividerWindowManager(
     companion object {
         private const val DIVIDER_FADE_IN_ALPHA_DURATION = 300L
         private const val DIVIDER_FADE_IN_ALPHA_SLOW_DURATION = 900L
-        // Timeout used for resize and drag CUJs, this is longer than the default timeout to avoid
-        // timing out in the middle of a resize or drag action.
-        private val LONG_CUJ_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(10L)
     }
 }

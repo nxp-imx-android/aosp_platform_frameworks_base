@@ -991,9 +991,7 @@ public abstract class WMShellModule {
             @ShellMainThread ShellExecutor mainExecutor,
             DesktopState desktopState,
             ShellInit shellInit,
-            ShellController shellController,
-            InteractionJankMonitor interactionJankMonitor
-    ) {
+            ShellController shellController) {
         return new DesktopTilingDecorViewModel(
                 context,
                 mainDispatcher,
@@ -1012,8 +1010,7 @@ public abstract class WMShellModule {
                 mainExecutor,
                 desktopState,
                 shellInit,
-                shellController,
-                interactionJankMonitor
+                shellController
         );
     }
 
