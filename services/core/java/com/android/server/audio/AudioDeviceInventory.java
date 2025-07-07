@@ -26,6 +26,7 @@ import static android.media.AudioSystem.DEVICE_OUT_HEARING_AID;
 import static android.media.AudioSystem.isBluetoothA2dpOutDevice;
 import static android.media.AudioSystem.isBluetoothDevice;
 import static android.media.AudioSystem.isBluetoothLeOutDevice;
+import static android.media.AudioSystem.isBluetoothLeOutUnicastDevice;
 import static android.media.AudioSystem.isBluetoothOutDevice;
 import static android.media.AudioSystem.isBluetoothScoOutDevice;
 
@@ -169,7 +170,8 @@ public class AudioDeviceInventory {
         }
         synchronized (mDeviceInventoryLock) {
             AdiDeviceState ads = findBtDeviceStateForAddress(address, deviceType);
-            if (ads == null && peerAddress != null) {
+            if (ads == null && peerAddress != null
+                    && deviceType != AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
                 ads = findBtDeviceStateForAddress(peerAddress, deviceType);
             }
             if (ads != null) {
@@ -177,7 +179,8 @@ public class AudioDeviceInventory {
                 // do not reset the category back to unknown since it might have been set
                 // before by the user
                 if (ads.getAudioDeviceCategory() != category && (userDefined
-                        || category != AUDIO_DEVICE_CATEGORY_UNKNOWN)) {
+                        || category != AUDIO_DEVICE_CATEGORY_UNKNOWN)
+                        && deviceType != AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
                     ads.setAudioDeviceCategory(category);
                     mDeviceBroker.postUpdatedAdiDeviceState(ads, false /*initSA*/);
                     mDeviceBroker.postPersistAudioDeviceSettings();
@@ -192,8 +195,12 @@ public class AudioDeviceInventory {
             mDeviceInventory.put(ads.getDeviceId(), ads);
             checkDeviceInventorySize_l();
 
-            mDeviceBroker.postUpdatedAdiDeviceState(ads, true /*initSA*/);
-            mDeviceBroker.postPersistAudioDeviceSettings();
+            if (deviceType != AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
+                mDeviceBroker.postUpdatedAdiDeviceState(ads, true /*initSA*/);
+                mDeviceBroker.postPersistAudioDeviceSettings();
+            } else {
+                mDeviceBroker.postSynchronizeAdiDevicesInInventory(ads);
+            }
         }
     }
 
@@ -204,6 +211,9 @@ public class AudioDeviceInventory {
      */
     void addOrUpdateAudioDeviceCategoryInInventory(
             AdiDeviceState deviceState, boolean syncInventory) {
+        if (deviceState.getInternalDeviceType() == AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
+            return;
+        }
         AtomicBoolean updatedCategory = new AtomicBoolean(false);
         synchronized (mDeviceInventoryLock) {
             if (deviceState.updateAudioDeviceCategory()) {
@@ -330,27 +340,50 @@ public class AudioDeviceInventory {
                 continue;
             }
             if (di.mDeviceAddress.equals(updatedDevice.getDeviceAddress())) {
-                for (AdiDeviceState ads2 : mDeviceInventory.values()) {
-                    if (!(di.mDeviceType == ads2.getInternalDeviceType()
+                if (di.mDeviceType == AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
+                    for (AdiDeviceState ads2 : mDeviceInventory.values()) {
+                        if (!(isBluetoothLeOutUnicastDevice(ads2.getInternalDeviceType())
                             && di.mPeerDeviceAddress.equals(ads2.getDeviceAddress()))) {
-                        continue;
-                    }
-                    if (mDeviceBroker.isSADevice(updatedDevice)
+                            continue;
+                        }
+                        if (mDeviceBroker.isSADevice(updatedDevice)
                             == mDeviceBroker.isSADevice(ads2)) {
-                        ads2.setHasHeadTracker(updatedDevice.hasHeadTracker());
-                        ads2.setHeadTrackerEnabled(updatedDevice.isHeadTrackerEnabled());
-                        ads2.setSAEnabled(updatedDevice.isSAEnabled());
-                    }
-                    ads2.setAudioDeviceCategory(updatedDevice.getAudioDeviceCategory());
+                            updatedDevice.setHasHeadTracker(false);
+                            updatedDevice.setHeadTrackerEnabled(false);
+                            updatedDevice.setSAEnabled(ads2.isSAEnabled());
+                        }
+                        updatedDevice.setAudioDeviceCategory(ads2.getAudioDeviceCategory());
 
-                    mDeviceBroker.postUpdatedAdiDeviceState(ads2, false /*initSA*/);
-                    AudioService.sDeviceLogger.enqueue(new EventLogger.StringEvent(
-                            "synchronizeBleDeviceInInventory synced device pair ads1="
+                        mDeviceBroker.postUpdatedAdiDeviceState(updatedDevice, false /*initSA*/);
+                        AudioService.sDeviceLogger.enqueue(new EventLogger.StringEvent(
+                                "synchronizeBleDeviceInInventory synced broadcast device ="
+                                    + updatedDevice + " with ads =" + ads2).printLog(TAG));
+                        return true;
+                    }
+                } else {
+                    for (AdiDeviceState ads2 : mDeviceInventory.values()) {
+                        if (!(di.mDeviceType == ads2.getInternalDeviceType()
+                                && di.mPeerDeviceAddress.equals(ads2.getDeviceAddress()))) {
+                            continue;
+                        }
+                        if (mDeviceBroker.isSADevice(updatedDevice)
+                                == mDeviceBroker.isSADevice(ads2)) {
+                            ads2.setHasHeadTracker(updatedDevice.hasHeadTracker());
+                            ads2.setHeadTrackerEnabled(updatedDevice.isHeadTrackerEnabled());
+                            ads2.setSAEnabled(updatedDevice.isSAEnabled());
+                        }
+                        ads2.setAudioDeviceCategory(updatedDevice.getAudioDeviceCategory());
+
+                        mDeviceBroker.postUpdatedAdiDeviceState(ads2, false /*initSA*/);
+                        AudioService.sDeviceLogger.enqueue(new EventLogger.StringEvent(
+                                "synchronizeBleDeviceInInventory synced device pair ads1="
                                     + updatedDevice + " ads2=" + ads2).printLog(TAG));
-                    return true;
+                        return true;
+                    }
                 }
             }
-            if (di.mPeerDeviceAddress.equals(updatedDevice.getDeviceAddress())) {
+            if (di.mDeviceType != AudioSystem.DEVICE_OUT_BLE_BROADCAST
+                    && di.mPeerDeviceAddress.equals(updatedDevice.getDeviceAddress())) {
                 for (AdiDeviceState ads2 : mDeviceInventory.values()) {
                     if (!(di.mDeviceType == ads2.getInternalDeviceType()
                             && di.mDeviceAddress.equals(ads2.getDeviceAddress()))) {
@@ -367,7 +400,7 @@ public class AudioDeviceInventory {
                     mDeviceBroker.postUpdatedAdiDeviceState(ads2, false /*initSA*/);
                     AudioService.sDeviceLogger.enqueue(new EventLogger.StringEvent(
                             "synchronizeBleDeviceInInventory synced device pair ads1="
-                                    + updatedDevice + " peer ads2=" + ads2).printLog(TAG));
+                                + updatedDevice + " peer ads2=" + ads2).printLog(TAG));
                     return true;
                 }
             }
@@ -377,6 +410,9 @@ public class AudioDeviceInventory {
 
     @GuardedBy("mDeviceInventoryLock")
     private boolean synchronizeDeviceProfilesInInventory(AdiDeviceState updatedDevice) {
+        if (updatedDevice.getInternalDeviceType() == AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
+            return false;
+        }
         for (AdiDeviceState ads : mDeviceInventory.values()) {
             if (updatedDevice.getInternalDeviceType() == ads.getInternalDeviceType()
                     || !updatedDevice.getDeviceAddress().equals(ads.getDeviceAddress())) {
@@ -1182,7 +1218,8 @@ public class AudioDeviceInventory {
             for (DeviceInfo di : mConnectedDevices.values()) {
                 if (di.mGroupId == groupId) {
                     if (addresses.isEmpty()) {
-                        addresses = mDeviceBroker.getLeAudioGroupAddresses(groupId);
+                        addresses = mDeviceBroker.getLeAudioGroupAddresses(
+                                groupId, BluetoothProfile.LE_AUDIO);
                     }
                     if (di.mPeerDeviceAddress.equals("")) {
                         for (Pair<String, String> addr : addresses) {
@@ -2712,13 +2749,14 @@ public class AudioDeviceInventory {
             String name = BtHelper.getName(btInfo.mDevice);
 
             // Find LE Group ID and peer headset address if available
-            final int groupId = mDeviceBroker.getLeAudioDeviceGroupId(btInfo.mDevice);
+            final int groupId =
+                    mDeviceBroker.getLeAudioDeviceGroupId(btInfo.mDevice, btInfo.mProfile);
             String peerAddress = "";
             String peerIdentityAddress = "";
             if (groupId != BluetoothLeAudio.GROUP_ID_INVALID) {
                 List<Pair<String, String>> addresses =
-                        mDeviceBroker.getLeAudioGroupAddresses(groupId);
-                if (addresses.size() > 1) {
+                        mDeviceBroker.getLeAudioGroupAddresses(groupId, btInfo.mProfile);
+                if (addresses.size() >= 1) {
                     for (Pair<String, String> addr : addresses) {
                         if (!addr.first.equals(address)) {
                             peerAddress = addr.first;
@@ -2759,7 +2797,6 @@ public class AudioDeviceInventory {
             }
             // Reset LEA suspend state each time a new sink is connected
             mDeviceBroker.clearLeAudioSuspended(true /* internalOnly */);
-
             if (btInfo.mIsLeOutput) {
                 mDeviceBroker.postAccessoryPlugMediaUnmute(device);
                 setCurrentAudioRouteNameIfPossible(name, /*fromA2dp=*/false);
@@ -3198,7 +3235,8 @@ public class AudioDeviceInventory {
             AdiDeviceState devState = AdiDeviceState.fromPersistedString(setting);
             // Note if the device is not compatible with spatialization mode or the device
             // type is not canonical, it will be ignored in {@link SpatializerHelper}.
-            if (devState != null) {
+            if (devState != null
+                    && devState.getInternalDeviceType() != AudioSystem.DEVICE_OUT_BLE_BROADCAST) {
                 addOrUpdateDeviceSAStateInInventory(devState, false /*syncInventory*/);
                 addOrUpdateAudioDeviceCategoryInInventory(devState, false /*syncInventory*/);
             }
