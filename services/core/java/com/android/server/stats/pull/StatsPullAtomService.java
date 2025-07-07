@@ -1054,15 +1054,7 @@ public class StatsPullAtomService extends SystemService {
         registerSettingsStats();
         registerStorageHealth();
         registerInstalledIncrementalPackages();
-        registerKeystoreStorageStats();
-        registerKeystoreKeyCreationWithGeneralInfo();
-        registerKeystoreKeyCreationWithAuthInfo();
-        registerKeystoreKeyCreationWithPurposeModesInfo();
-        registerKeystoreAtomWithOverflow();
-        registerKeystoreKeyOperationWithPurposeAndModesInfo();
-        registerKeystoreKeyOperationWithGeneralInfo();
-        registerRkpErrorStats();
-        registerKeystoreCrashStats();
+        registerKeystorePullers();
         registerAccessibilityShortcutStats();
         registerAccessibilityFloatingMenuStats();
         registerMediaCapabilitiesStats();
@@ -4642,76 +4634,26 @@ public class StatsPullAtomService extends SystemService {
         return StatsManager.PULL_SUCCESS;
     }
 
-    private void registerKeystoreStorageStats() {
-        mStatsManager.setPullAtomCallback(
+    private void registerKeystorePullers() {
+        int[] atomTags = new int[] {
                 FrameworkStatsLog.KEYSTORE2_STORAGE_STATS,
-                null, // use default PullAtomMetadata values,
-                DIRECT_EXECUTOR,
-                mStatsCallbackImpl);
-    }
-
-    private void registerKeystoreKeyCreationWithGeneralInfo() {
-        mStatsManager.setPullAtomCallback(
                 FrameworkStatsLog.KEYSTORE2_KEY_CREATION_WITH_GENERAL_INFO,
-                null, // use default PullAtomMetadata values,
-                DIRECT_EXECUTOR,
-                mStatsCallbackImpl);
-    }
-
-    private void registerKeystoreKeyCreationWithAuthInfo() {
-        mStatsManager.setPullAtomCallback(
                 FrameworkStatsLog.KEYSTORE2_KEY_CREATION_WITH_AUTH_INFO,
-                null, // use default PullAtomMetadata values,
-                DIRECT_EXECUTOR,
-                mStatsCallbackImpl);
-    }
-
-    private void registerKeystoreKeyCreationWithPurposeModesInfo() {
-        mStatsManager.setPullAtomCallback(
                 FrameworkStatsLog.KEYSTORE2_KEY_CREATION_WITH_PURPOSE_AND_MODES_INFO,
-                null, // use default PullAtomMetadata values,
-                DIRECT_EXECUTOR,
-                mStatsCallbackImpl);
-    }
-
-    private void registerKeystoreAtomWithOverflow() {
-        mStatsManager.setPullAtomCallback(
                 FrameworkStatsLog.KEYSTORE2_ATOM_WITH_OVERFLOW,
-                null, // use default PullAtomMetadata values,
-                DIRECT_EXECUTOR,
-                mStatsCallbackImpl);
-    }
-
-    private void registerKeystoreKeyOperationWithPurposeAndModesInfo() {
-        mStatsManager.setPullAtomCallback(
                 FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_WITH_PURPOSE_AND_MODES_INFO,
-                null, // use default PullAtomMetadata values,
-                DIRECT_EXECUTOR,
-                mStatsCallbackImpl);
-    }
-
-    private void registerKeystoreKeyOperationWithGeneralInfo() {
-        mStatsManager.setPullAtomCallback(
                 FrameworkStatsLog.KEYSTORE2_KEY_OPERATION_WITH_GENERAL_INFO,
-                null, // use default PullAtomMetadata values,
-                DIRECT_EXECUTOR,
-                mStatsCallbackImpl);
-    }
-
-    private void registerRkpErrorStats() {
-        mStatsManager.setPullAtomCallback(
                 FrameworkStatsLog.RKP_ERROR_STATS,
-                null, // use default PullAtomMetadata values,
-                DIRECT_EXECUTOR,
-                mStatsCallbackImpl);
-    }
+                FrameworkStatsLog.KEYSTORE2_CRASH_STATS
+        };
 
-    private void registerKeystoreCrashStats() {
-        mStatsManager.setPullAtomCallback(
-                FrameworkStatsLog.KEYSTORE2_CRASH_STATS,
-                null, // use default PullAtomMetadata values,
-                DIRECT_EXECUTOR,
-                mStatsCallbackImpl);
+        for (int atomTag : atomTags) {
+            mStatsManager.setPullAtomCallback(
+                    atomTag,
+                    null, // use default PullAtomMetadata values,
+                    DIRECT_EXECUTOR,
+                    mStatsCallbackImpl);
+        }
     }
 
     private void registerAccessibilityShortcutStats() {
