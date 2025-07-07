@@ -1121,19 +1121,21 @@ public class WindowStateTests extends WindowTestsBase {
         win.updateResizingWindowIfNeeded();
         assertThat(mWm.mResizingWindows).doesNotContain(win);
 
-        // Non blast sync doesn't require to force resizing, because it won't use syncSeqId.
-        // And if the window is already drawn, it can report sync finish immediately so that the
-        // sync group won't be blocked.
-        win.finishSync(mTransaction, syncGroup, false /* cancel */);
-        syncGroup.mSyncMethod = BLASTSyncEngine.METHOD_NONE;
-        win.mSyncGroup = syncGroup;
-        win.mWinAnimator.mDrawState = WindowStateAnimator.HAS_DRAWN;
-        win.prepareSync();
-        assertEquals(SYNC_STATE_WAITING_FOR_DRAW, win.mSyncState);
-        win.updateResizingWindowIfNeeded();
-        assertThat(mWm.mResizingWindows).doesNotContain(win);
-        assertTrue(win.isSyncFinished(syncGroup));
-        assertEquals(WindowContainer.SYNC_STATE_READY, win.mSyncState);
+        if (!Flags.alwaysSeqIdLayout()) {
+            // Non blast sync doesn't require to force resizing, because it won't use syncSeqId.
+            // And if the window is already drawn, it can report sync finish immediately so that the
+            // sync group won't be blocked.
+            win.finishSync(mTransaction, syncGroup, false /* cancel */);
+            syncGroup.mSyncMethod = BLASTSyncEngine.METHOD_NONE;
+            win.mSyncGroup = syncGroup;
+            win.mWinAnimator.mDrawState = WindowStateAnimator.HAS_DRAWN;
+            win.prepareSync();
+            assertEquals(SYNC_STATE_WAITING_FOR_DRAW, win.mSyncState);
+            win.updateResizingWindowIfNeeded();
+            assertThat(mWm.mResizingWindows).doesNotContain(win);
+            assertTrue(win.isSyncFinished(syncGroup));
+            assertEquals(WindowContainer.SYNC_STATE_READY, win.mSyncState);
+        }
     }
 
     @Test

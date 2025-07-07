@@ -129,6 +129,7 @@ import static android.window.DesktopModeFlags.ENABLE_CAPTION_COMPAT_INSET_FORCE_
 
 import static com.android.internal.annotations.VisibleForTesting.Visibility.PACKAGE;
 import static com.android.text.flags.Flags.disableHandwritingInitiatorForIme;
+import static com.android.window.flags.Flags.alwaysSeqIdLayout;
 import static com.android.window.flags.Flags.enableWindowContextResourcesUpdateOnConfigChange;
 import static com.android.window.flags.Flags.predictiveBackSwipeEdgeNoneApi;
 import static com.android.window.flags.Flags.reduceChangedExclusionRectsMsgs;
@@ -767,6 +768,8 @@ public final class ViewRootImpl implements ViewParent,
 
     private boolean mDrewOnceForSync = false;
 
+    int mSeqId = 0;
+    int mLastSeqId = 0;
     int mSyncSeqId = 0;
     int mLastSyncSeqId = 0;
 
@@ -1597,6 +1600,10 @@ public final class ViewRootImpl implements ViewParent,
                     mTmpFrames.attachedFrame = addResult.frames.attachedFrame;
                     mTmpFrames.compatScale = addResult.frames.compatScale;
                     mInvCompatScale = 1f / addResult.frames.compatScale;
+                    mSeqId = Math.max(addResult.syncSeqId, mSeqId);
+                    if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
+                        Trace.instant(Trace.TRACE_TAG_VIEW, mTag + " setView id=" + mSeqId);
+                    }
                 } catch (RemoteException | RuntimeException e) {
                     mView = null;
                     mAttachInfo.mRootView = null;
@@ -2225,9 +2232,10 @@ public final class ViewRootImpl implements ViewParent,
     void handleAppVisibility(boolean visible, int seqId) {
         if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
             Trace.instant(Trace.TRACE_TAG_VIEW, TextUtils.formatSimple(
-                    "%s visibilityChanged oldVisibility=%b newVisibility=%b", mTag,
-                    mAppVisible, visible));
+                    "%s visibilityChanged oldVisibility=%b newVisibility=%b seqId=%d mSeqId=%d",
+                    mTag, mAppVisible, visible, seqId, mSeqId));
         }
+        mSeqId = Math.max(seqId, mSeqId);
         if (mAppVisible != visible) {
             final boolean previousVisible = getHostVisibility() == View.VISIBLE;
             mAppVisible = visible;
@@ -2290,10 +2298,18 @@ public final class ViewRootImpl implements ViewParent,
         final boolean displayChanged = mDisplay.getDisplayId() != displayId;
         final boolean compatScaleChanged = mTmpFrames.compatScale != compatScale;
         final boolean dragResizingChanged = mPendingDragResizing != dragResizing;
+        if (alwaysSeqIdLayout()) {
+            reportDraw = seqId > mSeqId;
+        }
         if (!reportDraw && !frameChanged && !configChanged && !attachedFrameChanged
                 && !displayChanged && !forceLayout
                 && !compatScaleChanged && !dragResizingChanged) {
             return;
+        }
+        if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
+            Trace.instant(Trace.TRACE_TAG_VIEW, TextUtils.formatSimple("%s handleResized "
+                            + "frameChanged=%b configChanged=%b seqId=%d mSeqId=%d buf=%b",
+                    mTag, frameChanged, configChanged, seqId, mSeqId, syncWithBuffers));
         }
 
         mPendingDragResizing = dragResizing;
@@ -2325,7 +2341,14 @@ public final class ViewRootImpl implements ViewParent,
         }
 
         mForceNextWindowRelayout |= forceLayout;
-        mSyncSeqId = seqId > mSyncSeqId ? seqId : mSyncSeqId;
+        mSeqId = seqId > mSeqId ? seqId : mSeqId;
+        if (alwaysSeqIdLayout()) {
+            if (syncWithBuffers) {
+                mSyncSeqId = seqId > mSyncSeqId ? seqId : mSyncSeqId;
+            }
+        } else {
+            mSyncSeqId = seqId > mSyncSeqId ? seqId : mSyncSeqId;
+        }
 
         if (reportDraw) {
             reportNextDraw("resized");
@@ -3750,9 +3773,9 @@ public final class ViewRootImpl implements ViewParent,
             if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
                 Trace.traceBegin(Trace.TRACE_TAG_VIEW,
                         TextUtils.formatSimple("%s-relayoutWindow#"
-                                        + "first=%b/resize=%b/vis=%b/params=%b/force=%b", mTag,
-                                mFirst, windowShouldResize, viewVisibilityChanged, params != null,
-                                mForceNextWindowRelayout));
+                                        + "first=%b/resize=%b/vis=%b/params=%b/force=%b/seqId=%d",
+                                mTag, mFirst, windowShouldResize, viewVisibilityChanged,
+                                params != null, mForceNextWindowRelayout, mSeqId));
             }
 
             mForceNextWindowRelayout = false;
@@ -3790,16 +3813,34 @@ public final class ViewRootImpl implements ViewParent,
                         == RELAYOUT_RES_CANCEL_AND_REDRAW;
                 cancelReason = "relayout";
                 final boolean dragResizing = mPendingDragResizing;
-                if (mSyncSeqId > mLastSyncSeqId) {
-                    mLastSyncSeqId = mSyncSeqId;
-                    if (DEBUG_BLAST) {
-                        Log.d(mTag, "Relayout called with blastSync");
+                if (alwaysSeqIdLayout()) {
+                    if (mSeqId > mLastSeqId) {
+                        mLastSeqId = mSeqId;
+                        reportNextDraw("relayout");
+                        if (!cancelDraw) {
+                            mDrewOnceForSync = false;
+                        }
                     }
-                    reportNextDraw("relayout");
-                    mSyncBuffer = true;
-                    isSyncRequest = true;
-                    if (!cancelDraw) {
-                        mDrewOnceForSync = false;
+                    if (mSyncSeqId > mLastSyncSeqId) {
+                        mLastSyncSeqId = mSyncSeqId;
+                        if (DEBUG_BLAST) {
+                            Log.d(mTag, "Relayout called with blastSync");
+                        }
+                        mSyncBuffer = true;
+                        isSyncRequest = true;
+                    }
+                } else {
+                    if (mSyncSeqId > mLastSyncSeqId) {
+                        mLastSyncSeqId = mSyncSeqId;
+                        if (DEBUG_BLAST) {
+                            Log.d(mTag, "Relayout called with blastSync");
+                        }
+                        reportNextDraw("relayout");
+                        mSyncBuffer = true;
+                        isSyncRequest = true;
+                        if (!cancelDraw) {
+                            mDrewOnceForSync = false;
+                        }
                     }
                 }
 
@@ -4135,7 +4176,7 @@ public final class ViewRootImpl implements ViewParent,
             // traversal. So we don't know if the sync is complete that we can continue to draw.
             // Here invokes cancelDraw to obtain the information.
             try {
-                cancelDraw = mWindowSession.cancelDraw(mWindow, 0);
+                cancelDraw = mWindowSession.cancelDraw(mWindow, alwaysSeqIdLayout() ? mSeqId : 0);
                 cancelReason = "wm_sync";
                 if (DEBUG_BLAST) {
                     Log.d(mTag, "cancelDraw returned " + cancelDraw);
@@ -4525,7 +4566,7 @@ public final class ViewRootImpl implements ViewParent,
             return;
         }
 
-        final int seqId = mSyncSeqId;
+        final int seqId = alwaysSeqIdLayout() ? mSeqId : mSyncSeqId;
         mWmsRequestSyncGroupState = WMS_SYNC_PENDING;
         mWmsRequestSyncGroup = new SurfaceSyncGroup("wmsSync-" + mTag, t -> {
             mWmsRequestSyncGroupState = WMS_SYNC_MERGED;
@@ -9483,6 +9524,7 @@ public final class ViewRootImpl implements ViewParent,
         if ((mViewFrameInfo.flags & FrameInfo.FLAG_WINDOW_VISIBILITY_CHANGED) == 0
                 && mWindowAttributes.type != TYPE_APPLICATION_STARTING
                 && mSyncSeqId <= mLastSyncSeqId
+                && (mSeqId <= mLastSeqId || !alwaysSeqIdLayout())
                 && winConfigFromAm.diff(winConfigFromWm, false /* compareUndefined */) == 0) {
             final InsetsState state = mInsetsController.getState();
             final Rect displayCutoutSafe = mTempRect;
@@ -9506,8 +9548,25 @@ public final class ViewRootImpl implements ViewParent,
             final boolean sizeChanged =
                     newFrame.width() != oldFrame.width() || newFrame.height() != oldFrame.height();
             relayoutAsync = !positionChanged || !sizeChanged;
+            if (!relayoutAsync && Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
+                Trace.instant(Trace.TRACE_TAG_VIEW, "relayoutSync "
+                        + oldFrame.width() + "x" + oldFrame.height()
+                        + "+" + oldFrame.left + "," + oldFrame.top
+                        + "->" + newFrame.width() + "x" + newFrame.height()
+                        + "+" + newFrame.left + "," + newFrame.top);
+            }
         } else {
             relayoutAsync = false;
+            if (Trace.isTagEnabled(Trace.TRACE_TAG_VIEW)) {
+                Trace.instant(Trace.TRACE_TAG_VIEW, "relayoutSync visChange="
+                        + ((mViewFrameInfo.flags & FrameInfo.FLAG_WINDOW_VISIBILITY_CHANGED) != 0)
+                        + " starting=" + (mWindowAttributes.type == TYPE_APPLICATION_STARTING)
+                        + " bufferId=" + mSyncSeqId + ">" + mLastSyncSeqId
+                        + " seqId=" + mSeqId + ">" + mLastSeqId
+                        + " winCfg=" + WindowConfiguration.diffToString(
+                                winConfigFromAm.diff(winConfigFromWm, false /* compareUndefined */))
+                );
+            }
         }
 
         float appScale = mAttachInfo.mApplicationScale;
@@ -9535,7 +9594,7 @@ public final class ViewRootImpl implements ViewParent,
         final int requestedHeight = (int) (measuredHeight * appScale + 0.5f);
         int relayoutResult = 0;
         mRelayoutSeq++;
-        final int seqId = mLastSyncSeqId;
+        final int seqId = alwaysSeqIdLayout() ? mSeqId : mLastSyncSeqId;
         if (relayoutAsync) {
             mWindowSession.relayoutAsync(mWindow, params,
                     requestedWidth, requestedHeight, viewVisibility,
@@ -9557,7 +9616,7 @@ public final class ViewRootImpl implements ViewParent,
                 }
             }
             final int maybeSyncSeqId = mRelayoutResult.syncSeqId;
-            if (maybeSyncSeqId > 0) {
+            if (maybeSyncSeqId > (alwaysSeqIdLayout() ? mSyncSeqId : 0)) {
                 mSyncSeqId = maybeSyncSeqId;
             }
 
@@ -10207,7 +10266,8 @@ public final class ViewRootImpl implements ViewParent,
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     private void dispatchResized(WindowRelayoutResult layout, boolean reportDraw,
             boolean forceLayout, int displayId, boolean syncWithBuffers, boolean dragResizing) {
-        Message msg = mHandler.obtainMessage(reportDraw ? MSG_RESIZED_REPORT : MSG_RESIZED);
+        Message msg = mHandler.obtainMessage((reportDraw && !alwaysSeqIdLayout())
+                ? MSG_RESIZED_REPORT : MSG_RESIZED);
         SomeArgs args = SomeArgs.obtain();
         args.arg1 = layout;
         args.argi1 = forceLayout ? 1 : 0;
