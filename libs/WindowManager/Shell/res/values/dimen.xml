@@ -260,10 +260,10 @@
     <dimen name="bubble_popup_elevation">2dp</dimen>
     <!-- The size of the caption bar inset at the top of bubble bar expanded view. -->
     <dimen name="bubble_bar_expanded_view_caption_height">36dp</dimen>
-    <!-- The width of the caption bar at the top of bubble bar expanded view. -->
-    <dimen name="bubble_bar_expanded_view_caption_width">80dp</dimen>
     <!-- The height of the handle shown for the caption menu in the bubble bar expanded view. -->
     <dimen name="bubble_bar_expanded_view_handle_height">4dp</dimen>
+    <!-- The width of the handle shown for the caption menu in the bubble bar expanded view. -->
+    <dimen name="bubble_bar_expanded_view_handle_width">80dp</dimen>
     <!-- Width of the expanded bubble bar view shown when the bubble is expanded. -->
     <dimen name="bubble_bar_expanded_view_width">412dp</dimen>
     <!-- Offset of the expanded view when it starts sliding in as part of the switch animation -->

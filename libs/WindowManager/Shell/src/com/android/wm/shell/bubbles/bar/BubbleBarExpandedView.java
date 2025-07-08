@@ -27,6 +27,7 @@ import static java.lang.Math.max;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Insets;
 import android.graphics.Outline;
 import android.graphics.Rect;
@@ -128,7 +129,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     @Nullable
     private Listener mListener;
 
-    private BubbleBarHandleView mHandleView;
+    private BubbleBarCaptionView mCaptionView;
     @Nullable
     private BubbleTaskView mBubbleTaskView;
     @Nullable
@@ -212,7 +213,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         setElevation(getResources().getDimensionPixelSize(R.dimen.bubble_elevation));
         mCaptionHeight = context.getResources().getDimensionPixelSize(
                 R.dimen.bubble_bar_expanded_view_caption_height);
-        mHandleView = findViewById(R.id.bubble_bar_handle_view);
+        mCaptionView = findViewById(R.id.bubble_bar_caption_view);
         applyThemeAttrs();
         setClipToOutline(true);
         setOutlineProvider(new ViewOutlineProvider() {
@@ -249,7 +250,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
             mOverflowView.initialize(expandedViewManager, positioner);
             addView(mOverflowView);
             // Don't show handle for overflow
-            mHandleView.setVisibility(View.GONE);
+            getHandleView().setVisibility(View.GONE);
         } else {
             mBubbleTaskView = bubbleTaskView;
             mTaskView = bubbleTaskView.getTaskView();
@@ -264,22 +265,20 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
             }
             setupTaskView();
 
-            // Handle view needs to draw on top of task view.
-            mHandleView.setElevation(1);
-
-            mHandleView.setAccessibilityDelegate(new HandleViewAccessibilityDelegate());
+            getHandleView().setAccessibilityDelegate(new HandleViewAccessibilityDelegate());
         }
-        mMenuViewController = new BubbleBarMenuViewController(mContext, mHandleView, this);
+        mMenuViewController =
+                new BubbleBarMenuViewController(mContext, getHandleView(), this);
         mMenuViewController.setListener(new BubbleBarMenuViewController.Listener() {
             @Override
             public void onMenuVisibilityChanged(boolean visible) {
                 setObscured(visible);
                 if (visible) {
-                    mHandleView.setFocusable(false);
-                    mHandleView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+                    getHandleView().setFocusable(false);
+                    getHandleView().setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
                 } else {
-                    mHandleView.setFocusable(true);
-                    mHandleView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_AUTO);
+                    getHandleView().setFocusable(true);
+                    getHandleView().setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_AUTO);
                 }
             }
 
@@ -311,7 +310,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
                 }
             }
         });
-        mHandleView.setOnClickListener(view -> {
+        getHandleView().setOnClickListener(view -> {
             mMenuViewController.showMenu(true /* animated */);
         });
     }
@@ -332,7 +331,7 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     }
 
     public BubbleBarHandleView getHandleView() {
-        return mHandleView;
+        return mCaptionView.getHandleView();
     }
 
     /** Updates the view based on the current theme. */
@@ -416,6 +415,12 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     public void onTaskInfoChanged(ActivityManager.RunningTaskInfo taskInfo) {
         if (!isValidToBubble(taskInfo)) {
             Toast.makeText(mContext, R.string.bubble_not_supported_text, Toast.LENGTH_SHORT).show();
+        } else if (mCaptionView != null && taskInfo != null && taskInfo.taskDescription != null) {
+            final int bgColor = taskInfo.taskDescription.getBackgroundColor();
+            if (Color.alpha(bgColor) != 0) {
+                // Set the caption's color to the color override of the task if not transparent.
+                mCaptionView.setBackgroundColor(bgColor);
+            }
         }
         if (mBubble != null && taskInfo != null && taskInfo.topActivityInfo != null) {
             // TODO(b/419379112): Whether a Foldable device is large screen or a small screen
@@ -748,10 +753,9 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
                 new RegionSamplingHelper.SamplingCallback() {
                     @Override
                     public void onRegionDarknessChanged(boolean isRegionDark) {
-                        if (mHandleView != null) {
-                            mHandleView.updateHandleColor(isRegionDark,
-                                    true /* animated */);
-                        }
+                        // TODO(b/403612933): Handle bar color changes should be updated with the
+                        // caption color now, so this is essentially a no-op. Clean up the region
+                        // sampling code since it is not needed.
                     }
 
                     @Override

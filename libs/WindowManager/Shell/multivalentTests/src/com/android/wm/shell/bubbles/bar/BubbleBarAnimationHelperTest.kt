@@ -21,6 +21,7 @@ import android.app.Activity
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Insets
 import android.graphics.Outline
 import android.graphics.Rect
@@ -149,9 +150,12 @@ class BubbleBarAnimationHelperTest {
     @Test
     fun animateSwitch_bubbleToBubble_handleColorTransferred() {
         val fromBubble = createBubble(key = "from").initialize(container)
+        val uiMode =
+            context.getResources().getConfiguration().uiMode and Configuration.UI_MODE_NIGHT_MASK
+        val isSystemDark = uiMode.toInt() == Configuration.UI_MODE_NIGHT_YES
         fromBubble.bubbleBarExpandedView!!
             .handleView
-            .updateHandleColor(/* isRegionDark= */ true, /* animated= */ false)
+            .updateHandleColor(/* isRegionDark= */ isSystemDark, /* animated= */ false)
         val toBubble = createBubble(key = "to").initialize(container)
 
         activityScenario.onActivity {

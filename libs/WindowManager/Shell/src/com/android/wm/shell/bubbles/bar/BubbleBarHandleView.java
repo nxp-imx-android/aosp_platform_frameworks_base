@@ -88,7 +88,7 @@ public class BubbleBarHandleView extends View {
         mHandleHeight = getResources().getDimensionPixelSize(
                 R.dimen.bubble_bar_expanded_view_handle_height);
         mHandleWidth = getResources().getDimensionPixelSize(
-                R.dimen.bubble_bar_expanded_view_caption_width);
+                R.dimen.bubble_bar_expanded_view_handle_width);
         mHandleLightColor = ContextCompat.getColor(getContext(),
                 R.color.bubble_bar_expanded_view_handle_light);
         mHandleDarkColor = ContextCompat.getColor(getContext(),
