@@ -19,14 +19,19 @@ package com.android.systemui.accessibility.keygesture.domain
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Handler
 import android.os.UserHandle
 import androidx.annotation.VisibleForTesting
 import com.android.internal.accessibility.common.KeyGestureEventConstants
+import com.android.internal.accessibility.util.FrameworkObjectProvider
+import com.android.internal.accessibility.util.TtsPrompt
 import com.android.systemui.accessibility.data.repository.AccessibilityShortcutsRepository
 import com.android.systemui.accessibility.keygesture.domain.model.KeyGestureConfirmInfo
 import com.android.systemui.broadcast.BroadcastDispatcher
 import com.android.systemui.dagger.SysUISingleton
+import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.dagger.qualifiers.Background
+import com.android.systemui.dagger.qualifiers.Main
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -38,9 +43,11 @@ import kotlinx.coroutines.withContext
 class KeyGestureDialogInteractor
 @Inject
 constructor(
+    @Application private val context: Context,
     private val repository: AccessibilityShortcutsRepository,
     private val broadcastDispatcher: BroadcastDispatcher,
     @Background private val backgroundDispatcher: CoroutineDispatcher,
+    @Main private val handler: Handler,
 ) {
     /** Emits whenever a launch key gesture dialog broadcast is received. */
     val keyGestureConfirmDialogRequest: Flow<KeyGestureConfirmInfo?> =
@@ -56,6 +63,10 @@ constructor(
 
     fun onPositiveButtonClick(targetName: String) {
         repository.enableShortcutsForTargets(targetName)
+    }
+
+    fun performTtsPromptForText(text: CharSequence): TtsPrompt {
+        return TtsPrompt(context, handler, FrameworkObjectProvider(), text)
     }
 
     private suspend fun processDialogRequest(intent: Intent): KeyGestureConfirmInfo? {
@@ -79,6 +90,7 @@ constructor(
                     null
                 } else {
                     KeyGestureConfirmInfo(
+                        keyGestureType,
                         titleToContent.first,
                         titleToContent.second,
                         targetName,
