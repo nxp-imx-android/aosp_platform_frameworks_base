@@ -557,5 +557,14 @@ public class AuthenticationPolicyService extends SystemService {
 
             mWatchRangingService.cancelWatchRangingForRequestId(authenticationRequestId);
         }
+
+        @Override
+        @EnforcePermission(USE_BIOMETRIC_INTERNAL)
+        public void isWatchRangingAvailable(
+                @NonNull IProximityResultCallback proximityResultCallback) {
+            isWatchRangingAvailable_enforcePermission();
+
+            mWatchRangingService.isWatchRangingAvailable(proximityResultCallback);
+        }
     };
 }

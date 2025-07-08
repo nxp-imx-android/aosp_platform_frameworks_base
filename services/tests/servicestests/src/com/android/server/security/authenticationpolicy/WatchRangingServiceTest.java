@@ -19,6 +19,7 @@ package com.android.server.security.authenticationpolicy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -161,7 +162,22 @@ public class WatchRangingServiceTest {
                 mProximityResultCallback);
         waitForIdle();
 
-        verify(mProximityResultCallback).onError(eq(ProximityResultCode.NO_ASSOCIATED_DEVICE));
+        //TestableContext calls onServiceDisconnected when the service is unbound. This causes the
+        //error callback to be triggered twice.
+        verify(mProximityResultCallback, times(2))
+                .onError(eq(ProximityResultCode.NO_ASSOCIATED_DEVICE));
+    }
+
+    @Test
+    public void isWatchRangingAvailable() throws RemoteException {
+        when(mProximityProviderService.isProximityCheckingAvailable())
+                .thenReturn(ProximityResultCode.PRIMARY_DEVICE_RANGING_NOT_SUPPORTED);
+
+        mWatchRangingService.isWatchRangingAvailable(mProximityResultCallback);
+        waitForIdle();
+
+        verify(mProximityResultCallback).onError(
+                eq(ProximityResultCode.PRIMARY_DEVICE_RANGING_NOT_SUPPORTED));
     }
 
     private void waitForIdle() {
