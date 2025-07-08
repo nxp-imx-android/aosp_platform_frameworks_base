@@ -1312,11 +1312,12 @@ public class ScrimController implements ViewTreeObserver.OnPreDrawListener, Dump
         }
 
         // We also want to hide FLAG_SHOW_WHEN_LOCKED activities under the scrim.
-        boolean hideFlagShowWhenLockedActivities =
-                (mState == ScrimState.PULSING || mState == ScrimState.AOD)
-                && mKeyguardOccluded;
-        if (hideFlagShowWhenLockedActivities) {
-            mBehindAlpha = 1;
+        if (mState == ScrimState.PULSING || mState == ScrimState.AOD) {
+            if (mKeyguardOccluded) {
+                mBehindAlpha = 1;
+            } else {
+                mBehindAlpha = 0;
+            }
         }
         // Prevent notification scrim flicker when transitioning away from keyguard.
         if (mKeyguardStateController.isKeyguardGoingAway()) {
