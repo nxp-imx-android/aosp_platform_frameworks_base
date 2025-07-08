@@ -9287,6 +9287,7 @@ package android.app.backup {
     method public void onQuotaExceeded(long, long);
     method public abstract void onRestore(android.app.backup.BackupDataInput, int, android.os.ParcelFileDescriptor) throws java.io.IOException;
     method public void onRestore(android.app.backup.BackupDataInput, long, android.os.ParcelFileDescriptor) throws java.io.IOException;
+    method @FlaggedApi("com.android.server.backup.enable_cross_platform_transfer") public void onRestoreFile(@NonNull android.app.backup.FullRestoreDataInput) throws java.io.IOException;
     method public void onRestoreFile(android.os.ParcelFileDescriptor, long, java.io.File, int, long, long) throws java.io.IOException;
     method public void onRestoreFinished();
     field public static final int FLAG_CLIENT_SIDE_ENCRYPTION_ENABLED = 1; // 0x1
@@ -9348,6 +9349,18 @@ package android.app.backup {
   public class FullBackupDataOutput {
     method public long getQuota();
     method public int getTransportFlags();
+  }
+
+  @FlaggedApi("com.android.server.backup.enable_cross_platform_transfer") public class FullRestoreDataInput {
+    method public long getAppVersionCode();
+    method @NonNull public String getContentVersion();
+    method @NonNull public android.os.ParcelFileDescriptor getData();
+    method @NonNull public java.io.File getDestination();
+    method public long getMode();
+    method public long getModificationTimeSeconds();
+    method public long getSize();
+    method public int getTransportFlags();
+    method public int getType();
   }
 
   public abstract class RestoreObserver {
