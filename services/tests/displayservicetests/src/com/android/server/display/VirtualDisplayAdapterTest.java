@@ -240,31 +240,7 @@ public class VirtualDisplayAdapterTest {
     }
 
     @Test
-    public void testCreateManyVirtualDisplays_LimitFlagDisabled() {
-        when(mFeatureFlags.isVirtualDisplayLimitEnabled()).thenReturn(false);
-
-        // Displays for the same package
-        for (int i = 0; i < MAX_DEVICES_PER_PACKAGE * 2; i++) {
-            IVirtualDisplayCallback callback = createCallback();
-            DisplayDevice device = mAdapter.createVirtualDisplayLocked(callback,
-                    mMediaProjectionMock, 1234, "test.package", "123",
-                    mSurfaceMock, /* flags= */ 0, mVirtualDisplayConfigMock);
-            assertNotNull(device);
-        }
-
-        // Displays for different packages
-        for (int i = 0; i < MAX_DEVICES * 2; i++) {
-            IVirtualDisplayCallback callback = createCallback();
-            DisplayDevice device = mAdapter.createVirtualDisplayLocked(callback,
-                    mMediaProjectionMock, 1234 + i, "test.package", "123",
-                    mSurfaceMock, /* flags= */ 0, mVirtualDisplayConfigMock);
-            assertNotNull(device);
-        }
-    }
-
-    @Test
     public void testCreateVirtualDisplay_MaxDisplaysPerPackage() {
-        when(mFeatureFlags.isVirtualDisplayLimitEnabled()).thenReturn(true);
         List<IVirtualDisplayCallback> callbacks = new ArrayList<>();
         int ownerUid = 1234;
 
@@ -335,7 +311,6 @@ public class VirtualDisplayAdapterTest {
 
     @Test
     public void testCreateVirtualDisplay_MaxDisplays() {
-        when(mFeatureFlags.isVirtualDisplayLimitEnabled()).thenReturn(true);
         List<IVirtualDisplayCallback> callbacks = new ArrayList<>();
         int firstOwnerUid = 1000;
 
