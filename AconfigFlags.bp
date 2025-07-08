@@ -1570,6 +1570,18 @@ java_aconfig_library {
 }
 
 java_aconfig_library {
+    name: "surfaceflinger_exported_flags_lib",
+    aconfig_declarations: "surfaceflinger_flags",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    mode: "exported",
+    min_sdk_version: "30",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.permission",
+    ],
+}
+
+java_aconfig_library {
     name: "libgui_flags_java_lib",
     aconfig_declarations: "libgui_flags",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
