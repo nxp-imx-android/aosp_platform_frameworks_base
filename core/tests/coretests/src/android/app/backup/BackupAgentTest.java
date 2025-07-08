@@ -301,7 +301,7 @@ public class BackupAgentTest {
         }
 
         @Override
-        public long onMeasureFullBackup(long quotaBytes, int transportFlags) {
+        public long onEstimateFullBackupBytes(long quotaBytes, int transportFlags) {
             mOnMeasureFullBackupCalled = true;
             return mSize;
         }

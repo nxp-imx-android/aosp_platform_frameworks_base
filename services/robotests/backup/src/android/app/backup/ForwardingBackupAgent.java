@@ -77,8 +77,8 @@ public class ForwardingBackupAgent extends BackupAgent {
     }
 
     @Override
-    public long onMeasureFullBackup(long quotaBytes, int transportFlags) throws IOException {
-        return mBackupAgent.onMeasureFullBackup(quotaBytes, transportFlags);
+    public long onEstimateFullBackupBytes(long quotaBytes, int transportFlags) throws IOException {
+        return mBackupAgent.onEstimateFullBackupBytes(quotaBytes, transportFlags);
     }
 
     @Override
