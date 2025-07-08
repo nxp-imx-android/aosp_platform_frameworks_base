@@ -15183,6 +15183,7 @@ package android.telecom {
     field @Deprecated public static final String EXTRA_CLEAR_MISSED_CALLS_INTENT = "android.telecom.extra.CLEAR_MISSED_CALLS_INTENT";
     field public static final String EXTRA_CONNECTION_SERVICE = "android.telecom.extra.CONNECTION_SERVICE";
     field public static final String EXTRA_CURRENT_TTY_MODE = "android.telecom.extra.CURRENT_TTY_MODE";
+    field @FlaggedApi("com.android.server.telecom.flags.promote_extra_do_not_log_call_to_system_api") @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE) public static final String EXTRA_DO_NOT_LOG_CALL = "android.telecom.extra.DO_NOT_LOG_CALL";
     field public static final String EXTRA_IS_USER_INTENT_EMERGENCY_CALL = "android.telecom.extra.IS_USER_INTENT_EMERGENCY_CALL";
     field public static final String EXTRA_TTY_PREFERRED_MODE = "android.telecom.extra.TTY_PREFERRED_MODE";
     field public static final String EXTRA_UNKNOWN_CALL_HANDLE = "android.telecom.extra.UNKNOWN_CALL_HANDLE";

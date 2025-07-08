@@ -244,10 +244,16 @@ public class TelecomManager {
             "android.telecom.extra.DEFAULT_CALL_SCREENING_APP_COMPONENT_NAME";
 
     /**
-     * Optional extra to indicate a call should not be added to the call log.
+     * When placing a new outgoing call via {@link #placeCall(Uri, Bundle)} or adding a new
+     * incoming call via {@link #addNewIncomingCall(PhoneAccountHandle, Bundle)}, this extra can be
+     * included in the extras {@link android.os.Bundle} and set to {@code true} to prevent the call
+     * from being logged.
      *
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(Flags.FLAG_PROMOTE_EXTRA_DO_NOT_LOG_CALL_TO_SYSTEM_API)
+    @RequiresPermission(android.Manifest.permission.MODIFY_PHONE_STATE)
     public static final String EXTRA_DO_NOT_LOG_CALL =
             "android.telecom.extra.DO_NOT_LOG_CALL";
 
