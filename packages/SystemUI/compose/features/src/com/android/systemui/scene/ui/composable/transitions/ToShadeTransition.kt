@@ -24,6 +24,7 @@ import com.android.systemui.media.controls.ui.composable.MediaCarousel
 import com.android.systemui.notifications.ui.composable.Notifications
 import com.android.systemui.qs.ui.composable.QuickSettings
 import com.android.systemui.scene.shared.model.Scenes
+import com.android.systemui.shade.ui.composable.Shade
 import com.android.systemui.shade.ui.composable.ShadeHeader
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -41,6 +42,8 @@ fun TransitionBuilder.toShadeTransition(durationScale: Double = 1.0) {
         fade(QuickSettings.Elements.SplitShadeQuickSettings)
         fade(QuickSettings.Elements.FooterActions)
     }
+
+    fade(Shade.Elements.BackgroundScrim)
 
     val qsTranslation = -ShadeHeader.Dimensions.CollapsedHeightForTransitions * 0.66f
     translate(QuickSettings.Elements.QuickQuickSettings, y = qsTranslation)

@@ -50,7 +50,6 @@ import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.overscroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -64,9 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -314,7 +311,8 @@ fun ContentScope.NotificationScrollingStack(
     val density = LocalDensity.current
     val screenCornerRadius = LocalScreenCornerRadius.current
     val scrimCornerRadius = dimensionResource(R.dimen.notification_scrim_corner_radius)
-    val scrimBackgroundColor = MaterialTheme.colorScheme.surface
+    // TODO(b/428779792): update color to match BC25 spec
+    val surfaceEffect0Color = Color.Gray.copy(alpha = 0.5f)
     val scrollState =
         shadeSession.rememberSaveableSession(saver = ScrollState.Saver, key = "ScrollState") {
             ScrollState(initial = 0)
@@ -609,27 +607,21 @@ fun ContentScope.NotificationScrollingStack(
                     Modifier.clickable(onClick = { onEmptySpaceClick?.invoke() })
                 }
     ) {
-        // Creates a cutout in the background scrim in the shape of the notifications scrim.
-        // Only visible when notif scrim alpha < 1, during shade expansion.
-        if (shouldPunchHoleBehindScrim) {
-            Spacer(
-                modifier =
-                    Modifier.fillMaxSize().drawBehind {
-                        drawRect(Color.Black, blendMode = BlendMode.DstOut)
-                    }
-            )
-        }
         Box(
             modifier =
                 Modifier.graphicsLayer {
-                        alpha =
-                            if (shouldPunchHoleBehindScrim) {
-                                (expansionFraction / EXPANSION_FOR_MAX_SCRIM_ALPHA).coerceAtMost(1f)
-                            } else 1f
+                    alpha =
+                        (expansionFraction / EXPANSION_FOR_MAX_SCRIM_ALPHA).coerceAtMost(1f)
                     }
-                    .thenIf(shouldShowScrim) { Modifier.background(scrimBackgroundColor) }
-                    .thenIf(shouldFillMaxSize) { Modifier.fillMaxSize() }
-                    .thenIf(supportNestedScrolling) { Modifier.padding(bottom = minScrimTop) }
+                    .thenIf(shouldShowScrim) {
+                        Modifier.background(surfaceEffect0Color)
+                    }
+                    .thenIf(shouldFillMaxSize) {
+                        Modifier.fillMaxSize()
+                    }
+                    .thenIf(supportNestedScrolling) {
+                        Modifier.padding(bottom = minScrimTop)
+                    }
                     .debugBackground(viewModel, DEBUG_BOX_COLOR)
         ) {
             Column(
