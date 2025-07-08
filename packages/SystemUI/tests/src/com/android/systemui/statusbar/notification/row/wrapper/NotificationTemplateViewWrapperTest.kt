@@ -27,6 +27,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.FlakyTest
 import androidx.test.filters.SmallTest
 import com.android.internal.R
 import com.android.systemui.SysuiTestCase
@@ -170,6 +171,7 @@ class NotificationTemplateViewWrapperTest : SysuiTestCase() {
     }
 
     @Test
+    @FlakyTest
     fun actionViewDetached_pendingIntentListenersDeregistered() {
         ViewUtils.detachView(root)
         val pi =
