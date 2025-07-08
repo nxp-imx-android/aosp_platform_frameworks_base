@@ -21,7 +21,6 @@ import android.os.SystemClock
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
-import com.android.internal.logging.MetricsLogger
 import com.android.systemui.statusbar.notification.NotificationActivityStarter
 import com.android.systemui.statusbar.notification.collection.coordinator.BundleCoordinator.Companion.debugBundleAppName
 import com.android.systemui.statusbar.notification.collection.coordinator.VisualStabilityCoordinator
@@ -36,20 +35,18 @@ import com.android.systemui.statusbar.notification.row.NotificationActionClickMa
 import com.android.systemui.statusbar.notification.row.OnUserInteractionCallback
 import com.android.systemui.statusbar.notification.row.RowContentBindParams
 import com.android.systemui.statusbar.notification.row.RowContentBindStage
-import com.android.systemui.statusbar.notification.row.icon.NotificationIconStyleProvider
 import kotlinx.coroutines.flow.StateFlow
 
 class NotificationEntryAdapter(
     private val notificationActivityStarter: NotificationActivityStarter,
-    private val metricsLogger: MetricsLogger,
     private val peopleNotificationIdentifier: PeopleNotificationIdentifier,
-    private val iconStyleProvider: NotificationIconStyleProvider,
     private val visualStabilityCoordinator: VisualStabilityCoordinator,
     private val notificationActionClickManager: NotificationActionClickManager,
     private val highPriorityProvider: HighPriorityProvider,
     private val headsUpManager: HeadsUpManager,
     private val onUserInteractionCallback: OnUserInteractionCallback,
     private val entry: NotificationEntry,
+    private val notifPipeline: NotifPipeline,
 ) : EntryAdapter {
     override fun getBackingHashCode(): Int {
         return entry.hashCode()
@@ -272,28 +269,30 @@ class NotificationEntryAdapter(
     }
 
     override fun isBundled(): Boolean {
-        return entry.isBundled || (!debugBundleAppName.isNullOrEmpty() && hasBundleParent())
-    }
-
-    private fun hasBundleParent(): Boolean {
-        var parent: PipelineEntry? = entry.parent
-        while (parent != null) {
-            if (parent is BundleEntry) {
-                return true
-            }
-            parent = parent.parent
-        }
-        return false
+        return entry.isBundled || entry.isDebugBundled
     }
 
     override fun isBundle(): Boolean {
         return false
     }
 
-    override fun onBundleDisabled() {
+    override fun onBundleDisabledForEntry() {
         visualStabilityCoordinator.temporarilyAllowFreeMovement(entry, SystemClock.uptimeMillis())
         if (isGroupRoot()) {
-            row.attachedChildren?.forEach { it.entryAdapter.onBundleDisabled() }
+            row.attachedChildren?.forEach { it.entryAdapter.onBundleDisabledForEntry() }
+        }
+    }
+
+    override fun onBundleDisabledForApp() {
+        val now = SystemClock.uptimeMillis()
+        for (notif in notifPipeline.allNotifs) {
+            if (
+                notif.sbn.packageName == entry.sbn.packageName &&
+                    notif.sbn.user == entry.sbn.user &&
+                    (notif.isBundled || notif.isDebugBundled)
+            ) {
+                visualStabilityCoordinator.temporarilyAllowFreeMovement(notif, now)
+            }
         }
     }
 
@@ -302,5 +301,20 @@ class NotificationEntryAdapter(
         return -1
     }
 }
+
+private val NotificationEntry.isDebugBundled: Boolean
+    get() = !debugBundleAppName.isNullOrEmpty() && hasBundleParent
+
+private val NotificationEntry.hasBundleParent: Boolean
+    get() {
+        var parent: PipelineEntry? = parent
+        while (parent != null) {
+            if (parent is BundleEntry) {
+                return true
+            }
+            parent = parent.parent
+        }
+        return false
+    }
 
 private const val TAG = "NotifEntryAdapter"
