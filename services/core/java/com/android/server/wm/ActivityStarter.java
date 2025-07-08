@@ -872,7 +872,8 @@ class ActivityStarter {
                     ProtoLog.v(WM_DEBUG_CONFIGURATION,
                                 "Updating to new configuration after starting activity.");
 
-                    mService.updateConfigurationLocked(mRequest.globalConfig, null, false);
+                    mService.updateConfigurationLocked(mRequest.globalConfig,
+                            false /* initLocale */);
                 }
 
                 // The original options may have additional info about metrics. The mOptions is not
