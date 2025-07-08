@@ -445,6 +445,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private final SparseArray<ScreenOnListener> mScreenOnListeners = new SparseArray<>();
 
     Context mContext;
+    Injector mInjector;
     WindowManagerFuncs mWindowManagerFuncs;
     WindowManagerInternal mWindowManagerInternal;
     PowerManager mPowerManager;
@@ -1338,12 +1339,14 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         final PowerManager.WakeData lastWakeUp = mPowerManagerInternal.getLastWakeup();
         if (lastWakeUp != null && (lastWakeUp.wakeReason == PowerManager.WAKE_REASON_GESTURE
                 || lastWakeUp.wakeReason == PowerManager.WAKE_REASON_LIFT
-                || lastWakeUp.wakeReason == PowerManager.WAKE_REASON_BIOMETRIC)) {
-            final long now = SystemClock.uptimeMillis();
+                || lastWakeUp.wakeReason == PowerManager.WAKE_REASON_BIOMETRIC
+                || lastWakeUp.wakeReason == PowerManager.WAKE_REASON_TAP)) {
+            final long now = mInjector.getUptimeMillis();
             if (mPowerButtonSuppressionDelayMillis > 0
                     && (now < lastWakeUp.wakeTime + mPowerButtonSuppressionDelayMillis)) {
                 Slog.i(TAG, "Sleep from power button suppressed. Time since gesture: "
-                        + (now - lastWakeUp.wakeTime) + "ms");
+                        + (now - lastWakeUp.wakeTime) + "ms. Gesture: "
+                        + PowerManager.wakeReasonToString(lastWakeUp.wakeReason));
                 return false;
             }
         }
@@ -1800,7 +1803,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mGlobalActions.showDialog(keyguardShowing, isDeviceProvisioned());
         // since it took two seconds of long press to bring this up,
         // poke the wake lock so they have some time to see the dialog.
-        mPowerManager.userActivity(SystemClock.uptimeMillis(), false);
+        mPowerManager.userActivity(mInjector.getUptimeMillis(), false);
     }
 
     private void cancelGlobalActionsAction() {
@@ -2229,6 +2232,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         WindowWakeUpPolicy getWindowWakeUpPolicy() {
             return new WindowWakeUpPolicy(mContext);
         }
+
+        long getUptimeMillis() {
+            return SystemClock.uptimeMillis();
+        }
     }
 
     /** {@inheritDoc} */
@@ -2239,6 +2246,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
 
     @VisibleForTesting
     void init(Injector injector) {
+        mInjector = injector;
         mContext = injector.getContext();
         mWindowManagerFuncs = injector.getWindowManagerFuncs();
         mWindowManagerInternal = LocalServices.getService(WindowManagerInternal.class);
@@ -3501,7 +3509,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 if (shouldLaunchAssist) {
                     launchAssistAction(
                             isPowerLongPress ? null : Intent.EXTRA_ASSIST_INPUT_HINT_KEYBOARD,
-                            deviceId, event.getDisplayId(), SystemClock.uptimeMillis(),
+                            deviceId, event.getDisplayId(), mInjector.getUptimeMillis(),
                             isPowerLongPress
                                     ? AssistUtils.INVOCATION_TYPE_POWER_BUTTON_LONG_PRESS
                                     : AssistUtils.INVOCATION_TYPE_UNKNOWN);
@@ -3974,7 +3982,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
         if (startKeyguardExitAnimation) {
             if (DEBUG_KEYGUARD) Slog.d(TAG, "Starting keyguard exit animation");
-            startKeyguardExitAnimation(SystemClock.uptimeMillis());
+            startKeyguardExitAnimation(mInjector.getUptimeMillis());
         }
         return redoLayout;
     }
@@ -4283,7 +4291,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         if (lidOpen) {
             mWindowWakeUpPolicy.wakeUpFromLid();
         } else if (getLidBehavior() != LID_BEHAVIOR_SLEEP) {
-            mPowerManager.userActivity(SystemClock.uptimeMillis(), false);
+            mPowerManager.userActivity(mInjector.getUptimeMillis(), false);
         }
     }
 
@@ -5180,7 +5188,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         mHavePendingMediaKeyRepeatWithWakeLock = false;
 
         KeyEvent repeatEvent = KeyEvent.changeTimeRepeat(event,
-                SystemClock.uptimeMillis(), 1, event.getFlags() | KeyEvent.FLAG_LONG_PRESS);
+                mInjector.getUptimeMillis(), 1, event.getFlags() | KeyEvent.FLAG_LONG_PRESS);
         if (DEBUG_INPUT) {
             Slog.d(TAG, "dispatchMediaKeyRepeatWithWakeLock: " + repeatEvent);
         }
@@ -6131,7 +6139,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                     mWindowManagerFuncs.lockDeviceNow();
                     break;
                 case LID_BEHAVIOR_SLEEP:
-                    goToSleep(SystemClock.uptimeMillis(),
+                    goToSleep(mInjector.getUptimeMillis(),
                             PowerManager.GO_TO_SLEEP_REASON_LID_SWITCH,
                             PowerManager.GO_TO_SLEEP_FLAG_NO_DOZE);
                     break;
@@ -6351,7 +6359,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     @Override
     public void keepScreenOnStoppedLw() {
         if (isKeyguardShowingAndNotOccluded()) {
-            mPowerManager.userActivity(SystemClock.uptimeMillis(), false);
+            mPowerManager.userActivity(mInjector.getUptimeMillis(), false);
         }
     }
 
