@@ -16,31 +16,43 @@
 
 package com.android.systemui.common.ui.compose.windowinsets
 
+import android.content.Context
+import android.graphics.Point
+import android.view.WindowInsets
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.State
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.flow.StateFlow
+import com.android.internal.policy.ScreenDecorationsUtils
 
-/** The bounds and [CutoutLocation] of the current display. */
-val LocalDisplayCutout = staticCompositionLocalOf { DisplayCutout() }
+/**
+ * The bounds and [CutoutLocation] of the current display.
+ *
+ * This is provided as a [State] and not as a simple [DisplayCutout] as the cutout is calculated
+ * from insets and can change after recomposition but before layout. If a plain DisplayCutout was
+ * provided and the value was read during recomposition, it would result in a frame using the wrong
+ * value after new insets are received.
+ */
+val LocalDisplayCutout: ProvidableCompositionLocal<() -> DisplayCutout> = staticCompositionLocalOf {
+    { DisplayCutout() }
+}
 
 /** The corner radius in px of the current display. */
 val LocalScreenCornerRadius = staticCompositionLocalOf { 0.dp }
 
 @Composable
-fun ScreenDecorProvider(
-    displayCutout: StateFlow<DisplayCutout>,
-    screenCornerRadius: StateFlow<Float>,
-    content: @Composable () -> Unit,
-) {
-    val cutout by displayCutout.collectAsStateWithLifecycle()
-    val screenCornerRadiusPx by screenCornerRadius.collectAsStateWithLifecycle()
-
+fun ScreenDecorProvider(windowInsets: () -> WindowInsets?, content: @Composable () -> Unit) {
+    val context = LocalContext.current
+    val screenCornerRadiusPx =
+        remember(context.display.uniqueId) { ScreenDecorationsUtils.getWindowCornerRadius(context) }
     val screenCornerRadiusDp = with(LocalDensity.current) { screenCornerRadiusPx.toDp() }
+    val cutout = remember(windowInsets, context) { { windowInsets().toCutout(context) } }
 
     CompositionLocalProvider(
         LocalScreenCornerRadius provides screenCornerRadiusDp,
@@ -48,4 +60,34 @@ fun ScreenDecorProvider(
     ) {
         content()
     }
+}
+
+private fun WindowInsets?.toCutout(context: Context): DisplayCutout {
+    val boundingRect = this?.displayCutout?.boundingRectTop
+    val width = boundingRect?.let { boundingRect.right - boundingRect.left } ?: 0
+    val left = boundingRect?.left?.toDp(context) ?: 0.dp
+    val top = boundingRect?.top?.toDp(context) ?: 0.dp
+    val right = boundingRect?.right?.toDp(context) ?: 0.dp
+    val bottom = boundingRect?.bottom?.toDp(context) ?: 0.dp
+    val location =
+        when {
+            width <= 0f -> CutoutLocation.NONE
+            left <= 0.dp -> CutoutLocation.LEFT
+            right >= getDisplayWidth(context) -> CutoutLocation.RIGHT
+            else -> CutoutLocation.CENTER
+        }
+    val viewDisplayCutout = this?.displayCutout
+    return DisplayCutout(left, top, right, bottom, location, viewDisplayCutout)
+}
+
+// TODO(b/298525212): remove once Compose exposes window inset bounds.
+private fun Int.toDp(context: Context): Dp {
+    return (this.toFloat() / context.resources.displayMetrics.density).dp
+}
+
+// TODO(b/298525212): remove once Compose exposes window inset bounds.
+private fun getDisplayWidth(context: Context): Dp {
+    val point = Point()
+    checkNotNull(context.display).getRealSize(point)
+    return point.x.toDp(context)
 }
