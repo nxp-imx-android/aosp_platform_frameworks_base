@@ -62,6 +62,8 @@ constructor(
             )
         }
 
+    val nonAuthUIAlpha: Flow<Float> = dozingTransitionFlows.nonAuthUIAlpha(from = GONE)
+
     val notificationAlpha: Flow<Float> =
         transitionAnimation.sharedFlow(
             duration = 500.milliseconds,

@@ -245,6 +245,26 @@ constructor(
             }
             .dumpWhileCollecting("topClippingBounds")
 
+    /**
+     * Alpha for the non-authentication related views. While DOZING, the pulsing auth state may
+     * request for non-authentication related views to hide. Therefore, use this flow to update the
+     * opacity of non-auth views.
+     */
+    val nonAuthUIAlpha: Flow<Float> =
+        merge(
+            alternateBouncerToDozingTransitionViewModel.nonAuthUIAlpha,
+            glanceableHubToDozingTransitionViewModel.nonAuthUIAlpha,
+            goneToDozingTransitionViewModel.nonAuthUIAlpha,
+            lockscreenToDozingTransitionViewModel.nonAuthUIAlpha,
+            occludedToDozingTransitionViewModel.nonAuthUIAlpha,
+            primaryBouncerToDozingTransitionViewModel.nonAuthUIAlpha,
+            dozingToDreamingTransitionViewModel.nonAuthUIAlpha,
+            dozingToGoneTransitionViewModel.nonAuthUIAlpha,
+            dozingToLockscreenTransitionViewModel.nonAuthUIAlpha,
+            dozingToOccludedTransitionViewModel.nonAuthUIAlpha,
+            dozingToPrimaryBouncerTransitionViewModel.nonAuthUIAlpha,
+        )
+
     /** An observable for the alpha level for the entire keyguard root view. */
     fun alpha(viewState: ViewStateAccessor): Flow<Float> {
         return combine(

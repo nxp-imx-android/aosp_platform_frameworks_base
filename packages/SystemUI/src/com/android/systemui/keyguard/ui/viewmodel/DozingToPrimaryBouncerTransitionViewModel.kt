@@ -72,6 +72,14 @@ constructor(private val blurConfig: BlurConfig, animationFlow: KeyguardTransitio
             emptyFlow()
         }
 
+    val nonAuthUIAlpha: Flow<Float> =
+        transitionAnimation.sharedFlow(
+            duration = TO_PRIMARY_BOUNCER_DURATION,
+            onStep = { null },
+            onCancel = { 1f },
+            onFinish = { 1f },
+        )
+
     val notificationAlpha: Flow<Float> = lockscreenAlpha
 
     override val notificationBlurRadius: Flow<Float> =

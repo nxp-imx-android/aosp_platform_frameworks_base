@@ -606,7 +606,7 @@ public class DozeTriggers implements DozeMachine.Part {
         // When we're already showing selective UI (or no UI) while pulsing, we can directly
         // go to other pulsing states.
         if (selectiveUiPulsing) {
-            if (reason == DozeLog.PULSE_REASON_FINGERPRINT_PULSE) {
+            if (reason == DozeLog.PULSE_REASON_FINGERPRINT_PULSE_SHOW_AUTH_UI) {
                 mMachine.requestState(State.DOZE_PULSING_AUTH_UI);
             }  else {
                 mMachine.requestState(State.DOZE_PULSING);
@@ -760,7 +760,7 @@ public class DozeTriggers implements DozeMachine.Part {
         public void onUltrasonicUdfpsPulseWhileScreenOff(FingerprintAuthenticationStatus state) {
             if (!udfpsScreenOffUnlockFlicker()) return;
             mDozeLog.traceUltrasonicScreenOffPulseEvent(state);
-            requestPulse(DozeLog.PULSE_REASON_FINGERPRINT_PULSE, true, null);
+            requestPulse(DozeLog.PULSE_REASON_FINGERPRINT_PULSE_SHOW_AUTH_UI, true, null);
 
         }
         @Override
@@ -768,7 +768,9 @@ public class DozeTriggers implements DozeMachine.Part {
             mUdfpsHelpMessagesThisAodSession++;
             mDozeLog.traceFingerprintScreenOffPulseEvent(state, mUdfpsHelpMessagesThisAodSession);
             if (mUdfpsHelpMessagesThisAodSession >= 3) {
-                requestPulse(DozeLog.PULSE_REASON_FINGERPRINT_PULSE, true, null);
+                requestPulse(DozeLog.PULSE_REASON_FINGERPRINT_PULSE_SHOW_FULL_UI, true, null);
+            } else {
+                requestPulse(DozeLog.PULSE_REASON_FINGERPRINT_PULSE_SHOW_AUTH_UI, true, null);
             }
         }
     };
