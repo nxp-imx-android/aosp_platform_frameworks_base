@@ -94,9 +94,9 @@ class SingleSurfaceLetterboxControllerTest : ShellTestCase() {
         runTestScenario { r ->
             r.sendCreateSurfaceRequest()
             r.sendUpdateSurfaceVisibilityRequest(visible = true)
-            r.sendUpdateSurfaceVisibilityRequest(visible = true, displayId = ANOTHER_TASK_ID)
+            r.sendUpdateSurfaceVisibilityRequest(visible = true, taskId = ANOTHER_TASK_ID)
 
-            r.checkVisibilityUpdated(times = 2, expectedVisibility = true)
+            r.checkVisibilityUpdated(times = 1, expectedVisibility = true)
         }
     }
 
