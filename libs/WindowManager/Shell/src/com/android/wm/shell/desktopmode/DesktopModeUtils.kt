@@ -39,6 +39,7 @@ import com.android.internal.policy.DesktopModeCompatUtils
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.DisplayLayout
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import kotlin.math.ceil
 
 val DESKTOP_MODE_INITIAL_BOUNDS_SCALE: Float =

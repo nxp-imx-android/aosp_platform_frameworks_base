@@ -28,7 +28,7 @@ import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.DisplayController
 import com.android.wm.shell.common.pip.PipBoundsState
 import com.android.wm.shell.common.pip.PipDisplayLayoutState
-import com.android.wm.shell.desktopmode.DesktopRepository
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import com.android.wm.shell.pip2.phone.PipTransitionState.SCHEDULED_BOUNDS_CHANGE
 import com.android.wm.shell.pip2.phone.PipTransitionState.UNDEFINED

@@ -25,6 +25,7 @@ import android.window.DesktopModeFlags
 import androidx.annotation.VisibleForTesting
 import com.android.internal.protolog.ProtoLog
 import com.android.server.am.Flags
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.freeform.TaskChangeListener
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 import com.android.wm.shell.shared.desktopmode.DesktopState

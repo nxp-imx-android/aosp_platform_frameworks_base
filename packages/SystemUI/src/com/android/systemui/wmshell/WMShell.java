@@ -64,7 +64,7 @@ import com.android.systemui.statusbar.policy.KeyguardStateController;
 import com.android.systemui.util.kotlin.JavaAdapter;
 import com.android.wm.shell.dagger.WMComponent;
 import com.android.wm.shell.desktopmode.DesktopMode;
-import com.android.wm.shell.desktopmode.DesktopRepository;
+import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.onehanded.OneHanded;
 import com.android.wm.shell.onehanded.OneHandedEventCallback;
 import com.android.wm.shell.onehanded.OneHandedTransitionCallback;

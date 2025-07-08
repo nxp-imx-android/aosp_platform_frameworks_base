@@ -27,6 +27,7 @@ import android.window.WindowContainerTransaction
 import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.common.pip.PipDesktopState
+import com.android.wm.shell.desktopmode.data.DesktopRepository
 import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
 
 /** Controller to perform extra handling to PiP transitions while in Desktop mode. */

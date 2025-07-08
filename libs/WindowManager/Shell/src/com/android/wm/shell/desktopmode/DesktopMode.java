@@ -19,6 +19,7 @@ package com.android.wm.shell.desktopmode;
 import android.annotation.NonNull;
 import android.graphics.Region;
 
+import com.android.wm.shell.desktopmode.data.DesktopRepository;
 import com.android.wm.shell.shared.annotations.ExternalThread;
 import com.android.wm.shell.shared.desktopmode.DesktopFirstListener;
 import com.android.wm.shell.shared.desktopmode.DesktopModeTransitionSource;
