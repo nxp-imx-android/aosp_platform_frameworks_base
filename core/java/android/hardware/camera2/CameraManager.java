@@ -45,6 +45,7 @@ import android.content.AttributionSource;
 import android.content.AttributionSourceState;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.CompatibilityInfo;
 import android.graphics.Point;
 import android.hardware.CameraExtensionSessionStats;
 import android.hardware.CameraStatus;
@@ -1721,21 +1722,32 @@ public final class CameraManager {
             return ICameraService.ROTATION_OVERRIDE_NONE;
         }
 
-        // Isolated process does not have access to ActivityTaskManager service, which is used
-        // indirectly in `ActivityManager.getAppTasks()`.
-        if (context != null && !Process.isIsolated()) {
-            final ActivityManager activityManager = context.getSystemService(ActivityManager.class);
-            if (activityManager != null) {
-                for (ActivityManager.AppTask appTask : activityManager.getAppTasks()) {
-                    final TaskInfo taskInfo = appTask.getTaskInfo();
-                    final int freeformCameraCompatMode = taskInfo.appCompatTaskInfo
-                            .cameraCompatTaskInfo.freeformCameraCompatMode;
-                    if (isInCameraCompatMode(freeformCameraCompatMode)
-                            && taskInfo.topActivity != null
-                            && taskInfo.topActivity.getPackageName().equals(packageName)) {
-                        // WindowManager has requested rotation override.
-                        return getRotationOverrideForCompatFreeform(freeformCameraCompatMode,
-                                taskInfo.appCompatTaskInfo.cameraCompatTaskInfo.displayRotation);
+        if (com.android.window.flags.Flags
+                .enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
+            final int simulateReqOrientationOverride = getRotationOverrideForCompatFreeform(
+                    CompatibilityInfo.getOverrideCameraRotation());
+            if (simulateReqOrientationOverride != ICameraService.ROTATION_OVERRIDE_NONE) {
+                return simulateReqOrientationOverride;
+            }
+        } else {
+            // Isolated process does not have access to ActivityTaskManager service, which is used
+            // indirectly in `ActivityManager.getAppTasks()`.
+            if (context != null && !Process.isIsolated()) {
+                final ActivityManager activityManager = context.getSystemService(
+                        ActivityManager.class);
+                if (activityManager != null) {
+                    for (ActivityManager.AppTask appTask : activityManager.getAppTasks()) {
+                        final TaskInfo taskInfo = appTask.getTaskInfo();
+                        final int freeformCameraCompatMode = taskInfo.appCompatTaskInfo
+                                .cameraCompatTaskInfo.freeformCameraCompatMode;
+                        if (isInCameraCompatMode(freeformCameraCompatMode)
+                                && taskInfo.topActivity != null
+                                && taskInfo.topActivity.getPackageName().equals(packageName)) {
+                            // WindowManager has requested rotation override.
+                            return getRotationOverrideForCompatFreeform(freeformCameraCompatMode,
+                                    taskInfo.appCompatTaskInfo.cameraCompatTaskInfo
+                                            .displayRotation);
+                        }
                     }
                 }
             }
@@ -1762,6 +1774,17 @@ public final class CameraManager {
             freeformCameraCompatMode) {
         return (freeformCameraCompatMode != CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_UNSPECIFIED)
                 && (freeformCameraCompatMode != CameraCompatTaskInfo.CAMERA_COMPAT_FREEFORM_NONE);
+    }
+
+    private static int getRotationOverrideForCompatFreeform(
+            @Surface.Rotation int requestedRotation) {
+        if (requestedRotation == ROTATION_90) {
+            return ICameraService.ROTATION_OVERRIDE_ROTATION_ONLY;
+        } else if (requestedRotation == ROTATION_270) {
+            return ICameraService.ROTATION_OVERRIDE_ROTATION_ONLY_REVERSE;
+        } else {
+            return ICameraService.ROTATION_OVERRIDE_NONE;
+        }
     }
 
     private static int getRotationOverrideForCompatFreeform(

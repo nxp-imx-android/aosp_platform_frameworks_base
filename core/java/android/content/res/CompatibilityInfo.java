@@ -153,6 +153,19 @@ public class CompatibilityInfo implements Parcelable {
     @Surface.Rotation
     public int applicationDisplayRotation = WindowConfiguration.ROTATION_UNDEFINED;
 
+    /**
+     * Application's camera feed rotation (using rotate-and-crop).
+     *
+     * <p>This field is used to communicate to the camera framework by how many degrees the camera
+     * feed should be rotated on the Camera HAL before it is sent to the app which uses the camera.
+     *
+     * <p>Rotate-and-crop is a part of camera compat treatment, used to simulate an environment that
+     * the current fixed-orientation app has requested. These apps often make assumptions about
+     * device, camera, and window orientations, which are more decoupled on large screens.
+     */
+    @Surface.Rotation
+    public int applicationCameraRotation = WindowConfiguration.ROTATION_UNDEFINED;
+
     /** The process level override inverted scale. See {@link #HAS_OVERRIDE_SCALING}. */
     private static float sOverrideInvertedScale = 1f;
 
@@ -162,6 +175,10 @@ public class CompatibilityInfo implements Parcelable {
     /** The process level override display rotation. */
     @Surface.Rotation
     private static int sOverrideDisplayRotation = WindowConfiguration.ROTATION_UNDEFINED;
+
+    /** The process level camera rotate-and-crop rotation. */
+    @Surface.Rotation
+    private static int sOverrideCameraRotation = WindowConfiguration.ROTATION_UNDEFINED;
 
     @UnsupportedAppUsage
     @Deprecated
@@ -377,6 +394,11 @@ public class CompatibilityInfo implements Parcelable {
     /** Returns {@code true} if {@link #sOverrideDisplayRotation} should be set. */
     public boolean isOverrideDisplayRotationRequired() {
         return applicationDisplayRotation != WindowConfiguration.ROTATION_UNDEFINED;
+    }
+
+    /** Returns {@code true} if {@link #sOverrideCameraRotation} should be set. */
+    public boolean isOverrideCameraRotationRequired() {
+        return applicationCameraRotation != WindowConfiguration.ROTATION_UNDEFINED;
     }
 
     @UnsupportedAppUsage
@@ -755,7 +777,7 @@ public class CompatibilityInfo implements Parcelable {
         return sOverrideDisplayRotation != WindowConfiguration.ROTATION_UNDEFINED;
     }
 
-    /** @see #sOverrideInvertedScale */
+    /** @see #sOverrideDisplayRotation */
     public static void setOverrideDisplayRotation(@Surface.Rotation int displayRotation) {
         sOverrideDisplayRotation = displayRotation;
     }
@@ -763,6 +785,16 @@ public class CompatibilityInfo implements Parcelable {
     /** @see #sOverrideDisplayRotation */
     public static int getOverrideDisplayRotation() {
         return sOverrideDisplayRotation;
+    }
+
+    /** @see #sOverrideCameraRotation */
+    public static void setOverrideCameraRotation(@Surface.Rotation int cameraRotation) {
+        sOverrideCameraRotation = cameraRotation;
+    }
+
+    /** @see #sOverrideCameraRotation */
+    public static int getOverrideCameraRotation() {
+        return sOverrideCameraRotation;
     }
 
     /**
@@ -827,6 +859,7 @@ public class CompatibilityInfo implements Parcelable {
         if (!isCompatibilityFlagsEqual(oc)) return false;
         if (!isScaleEqual(oc)) return false;
         if (!isDisplayRotationEqual(oc)) return false;
+        if (!isCameraRotationEqual(oc)) return false;
         return true;
     }
 
@@ -837,6 +870,9 @@ public class CompatibilityInfo implements Parcelable {
     public int getCompatibilityChangesForConfig(@Nullable CompatibilityInfo o) {
         int changes = 0;
         if (!isDisplayRotationEqual(o)) {
+            changes |= ActivityInfo.CONFIG_WINDOW_CONFIGURATION;
+        }
+        if (!isCameraRotationEqual(o)) {
             changes |= ActivityInfo.CONFIG_WINDOW_CONFIGURATION;
         }
         if (!isScaleEqual(o) || !isCompatibilityFlagsEqual(o)) {
@@ -859,6 +895,10 @@ public class CompatibilityInfo implements Parcelable {
 
     private boolean isDisplayRotationEqual(@Nullable CompatibilityInfo oc) {
         return oc != null && oc.applicationDisplayRotation == applicationDisplayRotation;
+    }
+
+    private boolean isCameraRotationEqual(@Nullable CompatibilityInfo oc) {
+        return oc != null && oc.applicationCameraRotation == applicationCameraRotation;
     }
 
     private boolean isCompatibilityFlagsEqual(@Nullable CompatibilityInfo oc) {
@@ -886,6 +926,11 @@ public class CompatibilityInfo implements Parcelable {
             sb.append(" overrideDisplayRotation=");
             sb.append(applicationDisplayRotation);
         }
+        if (com.android.window.flags.Flags.enableCameraCompatCompatibilityInfoRotateAndCropBugfix()
+                && isOverrideCameraRotationRequired()) {
+            sb.append(" overrideCameraRotation=");
+            sb.append(applicationCameraRotation);
+        }
         if (!supportsScreen()) {
             sb.append(" resizing");
         }
@@ -909,6 +954,10 @@ public class CompatibilityInfo implements Parcelable {
         result = 31 * result + Float.floatToIntBits(applicationDensityScale);
         result = 31 * result + Float.floatToIntBits(applicationDensityInvertedScale);
         result = 31 * result + applicationDisplayRotation;
+        if (com.android.window.flags.Flags
+                .enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
+            result = 31 * result + applicationCameraRotation;
+        }
         return result;
     }
 
@@ -926,6 +975,10 @@ public class CompatibilityInfo implements Parcelable {
         dest.writeFloat(applicationDensityScale);
         dest.writeFloat(applicationDensityInvertedScale);
         dest.writeInt(applicationDisplayRotation);
+        if (com.android.window.flags.Flags
+                .enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
+            dest.writeInt(applicationCameraRotation);
+        }
     }
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
@@ -950,6 +1003,10 @@ public class CompatibilityInfo implements Parcelable {
         applicationDensityScale = source.readFloat();
         applicationDensityInvertedScale = source.readFloat();
         applicationDisplayRotation = source.readInt();
+        if (com.android.window.flags.Flags
+                .enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
+            applicationCameraRotation = source.readInt();
+        }
     }
 
     /**

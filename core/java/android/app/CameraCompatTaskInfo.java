@@ -32,6 +32,8 @@ import android.view.Surface;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+// TODO(b/430274604): Remove after WindowManager -> Camera Framework communication for camera compat
+// moves to CompatibilityInfo.
 /**
  * Stores Camera Compat information about a particular Task.
  * @hide
@@ -91,7 +93,7 @@ public class CameraCompatTaskInfo implements Parcelable {
      */
     // TODO(b/414347702): Revisit data structure.
     @FreeformCameraCompatMode
-    public int freeformCameraCompatMode;
+    public int freeformCameraCompatMode = CAMERA_COMPAT_FREEFORM_UNSPECIFIED;
 
     /**
      * Real display rotation, never affected by camera compat sandboxing.
@@ -100,7 +102,7 @@ public class CameraCompatTaskInfo implements Parcelable {
      */
     // TODO(b/414347702): Revisit data structure.
     @Surface.Rotation
-    public int displayRotation;
+    public int displayRotation = ROTATION_UNDEFINED;
 
     private CameraCompatTaskInfo() {
         // Do nothing

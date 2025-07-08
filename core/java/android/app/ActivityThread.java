@@ -1447,6 +1447,7 @@ public final class ActivityThread extends ClientTransactionHandler
             data.startRequestedUptime = startRequestedUptime;
             updateCompatOverrideScale(compatInfo);
             updateCompatOverrideDisplayRotation(compatInfo);
+            updateCompatOverrideCameraRotation(compatInfo);
             CompatibilityInfo.applyOverrideIfNeeded(config);
             sendMessage(H.BIND_APPLICATION, data);
         }
@@ -1467,6 +1468,18 @@ public final class ActivityThread extends ClientTransactionHandler
             } else {
                 CompatibilityInfo.setOverrideDisplayRotation(
                         WindowConfiguration.ROTATION_UNDEFINED);
+            }
+        }
+
+        private void updateCompatOverrideCameraRotation(@NonNull CompatibilityInfo info) {
+            if (com.android.window.flags.Flags
+                    .enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
+                if (info.isOverrideCameraRotationRequired()) {
+                    CompatibilityInfo.setOverrideCameraRotation(info.applicationCameraRotation);
+                } else {
+                    CompatibilityInfo.setOverrideCameraRotation(
+                            WindowConfiguration.ROTATION_UNDEFINED);
+                }
             }
         }
 
@@ -2173,6 +2186,7 @@ public final class ActivityThread extends ClientTransactionHandler
             ucd.info = info;
             updateCompatOverrideScale(info);
             updateCompatOverrideDisplayRotation(info);
+            updateCompatOverrideCameraRotation(info);
             sendMessage(H.UPDATE_PACKAGE_COMPATIBILITY_INFO, ucd);
         }
 

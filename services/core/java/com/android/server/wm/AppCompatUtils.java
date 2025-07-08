@@ -229,11 +229,15 @@ final class AppCompatUtils {
                 !info.isTopActivityTransparent && !appCompatTaskInfo.isTopActivityInSizeCompat()
                         && aspectRatioOverrides.shouldEnableUserAspectRatioSettings();
         appCompatTaskInfo.setEligibleForUserAspectRatioButton(eligibleForAspectRatioButton);
-        appCompatTaskInfo.cameraCompatTaskInfo.freeformCameraCompatMode =
-                AppCompatCameraPolicy.getCameraCompatFreeformMode(top);
-        appCompatTaskInfo.cameraCompatTaskInfo.displayRotation =
-                Flags.enableCameraCompatCheckDeviceRotationBugfix()
-                        ? AppCompatCameraPolicy.getCameraDeviceRotation(top) : ROTATION_UNDEFINED;
+        // Obsolete way of sending camera compat mode data to CameraManager.
+        if (!Flags.enableCameraCompatCompatibilityInfoRotateAndCropBugfix()) {
+            appCompatTaskInfo.cameraCompatTaskInfo.freeformCameraCompatMode =
+                    AppCompatCameraPolicy.getCameraCompatFreeformMode(top);
+            appCompatTaskInfo.cameraCompatTaskInfo.displayRotation =
+                    Flags.enableCameraCompatCheckDeviceRotationBugfix()
+                            ? AppCompatCameraPolicy.getCameraDeviceRotation(top)
+                            : ROTATION_UNDEFINED;
+        }
         appCompatTaskInfo.setHasMinAspectRatioOverride(top.mAppCompatController
                 .getDesktopAspectRatioPolicy().hasMinAspectRatioOverride(task));
         appCompatTaskInfo.setOptOutEdgeToEdge(top.mOptOutEdgeToEdge);
