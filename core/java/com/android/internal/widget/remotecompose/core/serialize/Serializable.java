@@ -15,8 +15,6 @@
  */
 package com.android.internal.widget.remotecompose.core.serialize;
 
-import android.annotation.NonNull;
-
 /** Implementation for any class that wants to serialize itself */
 public interface Serializable {
 
@@ -25,5 +23,5 @@ public interface Serializable {
      *
      * @param serializer Interface to the serializer
      */
-    void serialize(@NonNull MapSerializer serializer);
+    void serialize(MapSerializer serializer);
 }

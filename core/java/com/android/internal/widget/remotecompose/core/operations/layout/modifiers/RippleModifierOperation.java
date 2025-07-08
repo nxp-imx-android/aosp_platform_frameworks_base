@@ -50,7 +50,7 @@ public class RippleModifierOperation extends DecoratorModifierOperation implemen
     float mWidth = 0;
     float mHeight = 0;
 
-    public @NonNull float [] locationInWindow = new float[2];
+    @NonNull public float[] locationInWindow = new float[2];
 
     @NonNull PaintBundle mPaint = new PaintBundle();
 
@@ -59,10 +59,9 @@ public class RippleModifierOperation extends DecoratorModifierOperation implemen
      *
      * @param x
      * @param y
-     * @param timeStampMillis
      */
-    public void animateRipple(float x, float y, long timeStampMillis) {
-        mAnimateRippleStart = timeStampMillis;
+    public void animateRipple(float x, float y) {
+        mAnimateRippleStart = System.currentTimeMillis();
         mAnimateRippleX = x;
         mAnimateRippleY = y;
     }
@@ -99,7 +98,7 @@ public class RippleModifierOperation extends DecoratorModifierOperation implemen
         }
         context.needsRepaint();
 
-        float progress = (context.getClock().millis() - mAnimateRippleStart);
+        float progress = (System.currentTimeMillis() - mAnimateRippleStart);
         progress /= (float) mAnimateRippleDuration;
         if (progress > 1f) {
             mAnimateRippleStart = 0;
@@ -136,10 +135,7 @@ public class RippleModifierOperation extends DecoratorModifierOperation implemen
 
     @Override
     public void layout(
-            @NonNull RemoteContext context,
-            @NonNull Component component,
-            float width,
-            float height) {
+            @NonNull RemoteContext context, Component component, float width, float height) {
         mWidth = width;
         mHeight = height;
     }
@@ -191,24 +187,19 @@ public class RippleModifierOperation extends DecoratorModifierOperation implemen
 
     @Override
     public void onTouchDown(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y) {
+            RemoteContext context, CoreDocument document, Component component, float x, float y) {
         locationInWindow[0] = 0f;
         locationInWindow[1] = 0f;
         component.getLocationInWindow(locationInWindow);
-        animateRipple(
-                x - locationInWindow[0], y - locationInWindow[1], context.getClock().millis());
+        animateRipple(x - locationInWindow[0], y - locationInWindow[1]);
         context.hapticEffect(3);
     }
 
     @Override
     public void onTouchUp(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
+            RemoteContext context,
+            CoreDocument document,
+            Component component,
             float x,
             float y,
             float dx,
@@ -216,22 +207,14 @@ public class RippleModifierOperation extends DecoratorModifierOperation implemen
 
     @Override
     public void onTouchDrag(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y) {}
+            RemoteContext context, CoreDocument document, Component component, float x, float y) {}
 
     @Override
     public void onTouchCancel(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y) {}
+            RemoteContext context, CoreDocument document, Component component, float x, float y) {}
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
                 .addType("RippleModifierOperation")

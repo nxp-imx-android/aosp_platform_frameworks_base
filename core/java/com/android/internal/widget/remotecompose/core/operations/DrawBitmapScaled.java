@@ -195,7 +195,7 @@ public class DrawBitmapScaled extends PaintOperation
     }
 
     @Override
-    public @NonNull Integer getContentDescriptionId() {
+    public Integer getContentDescriptionId() {
         return mContentDescId;
     }
 
@@ -233,7 +233,7 @@ public class DrawBitmapScaled extends PaintOperation
      * @param dstBottom the bottom most pixel in the destination
      * @param scaleType the type of scale operation
      * @param scaleFactor the scalefactor to use with fixed scale
-     * @param cdId the content description id
+     * @param cdId the content discription id
      */
     public static void apply(
             @NonNull WireBuffer buffer,
@@ -377,7 +377,7 @@ public class DrawBitmapScaled extends PaintOperation
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("imageId", mImageId)

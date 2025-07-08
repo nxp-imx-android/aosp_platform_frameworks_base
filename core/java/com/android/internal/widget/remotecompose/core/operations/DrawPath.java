@@ -111,7 +111,7 @@ public class DrawPath extends PaintOperation implements Serializable {
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer.addType(CLASS_NAME).add("id", mId).add("start", mStart).add("end", mEnd);
     }
 }

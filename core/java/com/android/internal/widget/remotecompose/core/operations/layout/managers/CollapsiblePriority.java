@@ -27,8 +27,6 @@ public class CollapsiblePriority {
     public static final int HORIZONTAL = 0;
     public static final int VERTICAL = 1;
 
-    private CollapsiblePriority() {}
-
     /**
      * Returns the priority of a child component
      *

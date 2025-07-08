@@ -77,7 +77,7 @@ public class PathCreate extends PaintOperation implements VariableSupport, Seria
 
     @NonNull
     @Override
-    public String deepToString(@NonNull String indent) {
+    public String deepToString(String indent) {
         return pathString(mFloatPath);
     }
 
@@ -182,7 +182,7 @@ public class PathCreate extends PaintOperation implements VariableSupport, Seria
      * @return the text representing the path
      */
     @NonNull
-    public static String pathString(@Nullable float [] path) {
+    public static String pathString(@Nullable float[] path) {
         if (path == null) {
             return "null";
         }
@@ -231,7 +231,7 @@ public class PathCreate extends PaintOperation implements VariableSupport, Seria
     }
 
     @Override
-    public void paint(@NonNull PaintContext context) {
+    public void paint(PaintContext context) {
         apply(context.getContext());
     }
 
@@ -241,7 +241,7 @@ public class PathCreate extends PaintOperation implements VariableSupport, Seria
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer.addType(CLASS_NAME).add("id", mInstanceId).addPath("path", mFloatPath);
     }
 }

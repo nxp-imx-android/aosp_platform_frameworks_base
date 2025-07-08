@@ -15,8 +15,6 @@
  */
 package com.android.internal.widget.remotecompose.core.operations.layout;
 
-import android.annotation.NonNull;
-
 import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
 
@@ -33,9 +31,5 @@ public interface ClickHandler {
      * @param y the y position of the click in document coordinates
      */
     void onClick(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y);
+            RemoteContext context, CoreDocument document, Component component, float x, float y);
 }

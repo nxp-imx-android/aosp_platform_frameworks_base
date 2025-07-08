@@ -15,9 +15,6 @@
  */
 package com.android.internal.widget.remotecompose.core;
 
-import android.annotation.NonNull;
-import android.annotation.Nullable;
-
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
 
 /** Interface used by objects to register for touch events */
@@ -29,7 +26,7 @@ public interface TouchListener {
      * @param x the x location of the down touch
      * @param y the y location of the down touch
      */
-    void touchDown(@NonNull RemoteContext context, float x, float y);
+    void touchDown(RemoteContext context, float x, float y);
 
     /**
      * called on touch up
@@ -40,7 +37,7 @@ public interface TouchListener {
      * @param dx the x velocity when the touch up happened
      * @param dy the y valocity when the touch up happened
      */
-    void touchUp(@NonNull RemoteContext context, float x, float y, float dx, float dy);
+    void touchUp(RemoteContext context, float x, float y, float dx, float dy);
 
     /**
      * Drag event (occur between down and up)
@@ -49,12 +46,12 @@ public interface TouchListener {
      * @param x the x coord of the drag
      * @param y the y coord of the drag
      */
-    void touchDrag(@NonNull RemoteContext context, float x, float y);
+    void touchDrag(RemoteContext context, float x, float y);
 
     /**
      * Called after the touch event handler is inflated
      *
      * @param component component it is under
      */
-    void setComponent(@Nullable Component component);
+    void setComponent(Component component);
 }

@@ -18,7 +18,7 @@ package com.android.internal.widget.remotecompose.core.operations.utilities;
 import android.annotation.Nullable;
 
 /**
- * interface to allow expressions to access collections TODO: define a convention for when access is
+ * interface to allow expressions to access collections Todo define a convention for when access is
  * unavailable
  */
 public interface CollectionsAccess {
@@ -28,7 +28,7 @@ public interface CollectionsAccess {
      *
      * @param id the id of the float array
      * @param index the index of the value
-     * @return float value
+     * @return
      */
     float getFloatValue(int id, int index);
 
@@ -36,15 +36,16 @@ public interface CollectionsAccess {
      * Get the array of float if it is a float array
      *
      * @param id the id of the float array
-     * @return float array
+     * @return
      */
-    @Nullable float [] getFloats(int id);
+    @Nullable
+    float[] getFloats(int id);
 
     /**
      * Get the number of entries in the list
      *
      * @param id the id of the list
-     * @return int value
+     * @return
      */
     int getListLength(int id);
 
@@ -53,7 +54,7 @@ public interface CollectionsAccess {
      *
      * @param listId the list id
      * @param index the index into the list
-     * @return id of the entry
+     * @return
      */
     int getId(int listId, int index);
 
@@ -62,7 +63,7 @@ public interface CollectionsAccess {
      *
      * @param listId the list id to access
      * @param index the index into the list
-     * @return value (as an integer)
+     * @return
      */
     default int getIntValue(int listId, int index) {
         return (int) getFloatValue(listId, index);
