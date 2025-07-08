@@ -466,7 +466,7 @@ class MultiDisplayVeiledResizeTaskPositionerTest : ShellTestCase() {
         )
 
         // Verify task is reordered to top
-        verify(mockShellTaskOrganizer)
+        verify(mockShellTaskOrganizer, never())
             .applyTransaction(
                 argThat { wct ->
                     return@argThat wct.hierarchyOps.any { hierarchyOps ->
