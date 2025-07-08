@@ -7393,25 +7393,6 @@ public class NotificationManagerService extends SystemService {
         }
 
         @Override
-        public void updateNotificationChannelGroupFromPrivilegedListener(
-                INotificationListener token, String pkg, UserHandle user,
-                NotificationChannelGroup group) throws RemoteException {
-            Objects.requireNonNull(user);
-            verifyPrivilegedListener(token, user, false);
-            int packageUid = getUidForPackageAndUser(pkg, user);
-            if (packageUid == INVALID_UID) {
-                return;
-            }
-            NotificationChannelGroup previous = mPreferencesHelper.getNotificationChannelGroup(
-                    group.getId(), pkg, packageUid);
-            if (previous == null) {
-                return;
-            }
-            createNotificationChannelGroup(pkg, packageUid, group, false, true);
-            handleSavePolicyFile();
-        }
-
-        @Override
         public void updateNotificationChannelFromPrivilegedListener(INotificationListener token,
                 String pkg, UserHandle user, NotificationChannel channel) throws RemoteException {
             Objects.requireNonNull(channel);
