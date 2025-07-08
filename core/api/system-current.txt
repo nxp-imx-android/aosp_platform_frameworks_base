@@ -3559,7 +3559,7 @@ package android.companion.virtual {
     method public boolean hasCustomCameraSupport();
   }
 
-  public final class VirtualDeviceManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class VirtualDeviceManager {
     method @NonNull @RequiresPermission(android.Manifest.permission.CREATE_VIRTUAL_DEVICE) public android.companion.virtual.VirtualDeviceManager.VirtualDevice createVirtualDevice(int, @NonNull android.companion.virtual.VirtualDeviceParams);
     method @NonNull public java.util.Set<java.lang.String> getAllPersistentDeviceIds();
     method @Nullable public CharSequence getDisplayNameForPersistentDeviceId(@NonNull String);
@@ -5196,7 +5196,7 @@ package android.hardware.biometrics {
     method public int getStrength();
   }
 
-  public class BiometricManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class BiometricManager {
     method @FlaggedApi("android.hardware.biometrics.move_fm_api_to_bm") @NonNull @RequiresPermission(android.Manifest.permission.SET_BIOMETRIC_DIALOG_ADVANCED) public java.util.Map<java.lang.Integer,android.hardware.biometrics.BiometricEnrollmentStatus> getEnrollmentStatus();
     field @FlaggedApi("android.hardware.biometrics.move_fm_api_to_bm") public static final int TYPE_FACE = 8; // 0x8
     field @FlaggedApi("android.hardware.biometrics.move_fm_api_to_bm") public static final int TYPE_FINGERPRINT = 2; // 0x2

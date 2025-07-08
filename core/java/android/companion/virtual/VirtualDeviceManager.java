@@ -16,6 +16,7 @@
 
 package android.companion.virtual;
 
+import static android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME;
 import static android.media.AudioManager.AUDIO_SESSION_ID_GENERATE;
 
 import android.Manifest;
@@ -26,6 +27,7 @@ import android.annotation.IntRange;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.annotation.RequiresPermission;
+import android.annotation.RestrictedForEnvironment;
 import android.annotation.SuppressLint;
 import android.annotation.SystemApi;
 import android.annotation.SystemService;
@@ -68,6 +70,7 @@ import android.hardware.input.VirtualTouchscreen;
 import android.hardware.input.VirtualTouchscreenConfig;
 import android.media.AudioManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserHandle;
@@ -101,6 +104,8 @@ import java.util.function.IntConsumer;
  * <p class="note">Not to be confused with the Android Studio's Virtual Device Manager, which allows
  * for device emulation.
  */
+@RestrictedForEnvironment(
+        environments = ENVIRONMENT_SDK_RUNTIME, from = Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 @SystemService(Context.VIRTUAL_DEVICE_SERVICE)
 public final class VirtualDeviceManager {
 

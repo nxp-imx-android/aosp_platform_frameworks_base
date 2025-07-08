@@ -9378,7 +9378,7 @@ package android.app.blob {
     field @NonNull public static final android.os.Parcelable.Creator<android.app.blob.BlobHandle> CREATOR;
   }
 
-  public class BlobStoreManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class BlobStoreManager {
     method public void abandonSession(@IntRange(from=1) long) throws java.io.IOException;
     method public void acquireLease(@NonNull android.app.blob.BlobHandle, @IdRes int, long) throws java.io.IOException;
     method public void acquireLease(@NonNull android.app.blob.BlobHandle, @NonNull CharSequence, long) throws java.io.IOException;
@@ -9838,7 +9838,7 @@ package android.app.slice {
     field @Deprecated public static final String FORMAT_TEXT = "text";
   }
 
-  @Deprecated public class SliceManager {
+  @Deprecated @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class SliceManager {
     method @Deprecated @Nullable public android.app.slice.Slice bindSlice(@NonNull android.net.Uri, @NonNull java.util.Set<android.app.slice.SliceSpec>);
     method @Deprecated @Nullable public android.app.slice.Slice bindSlice(@NonNull android.content.Intent, @NonNull java.util.Set<android.app.slice.SliceSpec>);
     method @Deprecated public int checkSlicePermission(@NonNull android.net.Uri, int, int);
@@ -10503,7 +10503,7 @@ package android.companion.virtual {
     field @NonNull public static final android.os.Parcelable.Creator<android.companion.virtual.VirtualDevice> CREATOR;
   }
 
-  public final class VirtualDeviceManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class VirtualDeviceManager {
     method @Nullable public android.companion.virtual.VirtualDevice getVirtualDevice(int);
     method @NonNull public java.util.List<android.companion.virtual.VirtualDevice> getVirtualDevices();
     method public void registerVirtualDeviceListener(@NonNull java.util.concurrent.Executor, @NonNull android.companion.virtual.VirtualDeviceManager.VirtualDeviceListener);
@@ -19611,7 +19611,7 @@ package android.hardware {
 
 package android.hardware.biometrics {
 
-  public class BiometricManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class BiometricManager {
     method @Deprecated @RequiresPermission(android.Manifest.permission.USE_BIOMETRIC) public int canAuthenticate();
     method @RequiresPermission(android.Manifest.permission.USE_BIOMETRIC) public int canAuthenticate(int);
     method @RequiresPermission(android.Manifest.permission.USE_BIOMETRIC) public long getLastAuthenticationTime(int);
@@ -21177,7 +21177,7 @@ package android.hardware.display {
 
 package android.hardware.fingerprint {
 
-  @Deprecated public class FingerprintManager {
+  @Deprecated @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class FingerprintManager {
     method @Deprecated @RequiresPermission(anyOf={android.Manifest.permission.USE_BIOMETRIC, android.Manifest.permission.USE_FINGERPRINT}) public void authenticate(@Nullable android.hardware.fingerprint.FingerprintManager.CryptoObject, @Nullable android.os.CancellationSignal, int, @NonNull android.hardware.fingerprint.FingerprintManager.AuthenticationCallback, @Nullable android.os.Handler);
     method @Deprecated @RequiresPermission(android.Manifest.permission.USE_FINGERPRINT) public boolean hasEnrolledFingerprints();
     method @Deprecated @RequiresPermission(android.Manifest.permission.USE_FINGERPRINT) public boolean isHardwareDetected();

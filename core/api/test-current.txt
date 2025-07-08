@@ -795,7 +795,7 @@ package android.app.assist {
 
 package android.app.blob {
 
-  public class BlobStoreManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class BlobStoreManager {
     method @Nullable public android.app.blob.LeaseInfo getLeaseInfo(@NonNull android.app.blob.BlobHandle) throws java.io.IOException;
     method public void waitForIdle(long) throws java.lang.InterruptedException, java.util.concurrent.TimeoutException;
   }
@@ -963,7 +963,7 @@ package android.companion {
 
 package android.companion.virtual {
 
-  public final class VirtualDeviceManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public final class VirtualDeviceManager {
     method public int getAudioPlaybackSessionId(int);
     method public int getAudioRecordingSessionId(int);
     method public int getDeviceIdForDisplayId(int);
@@ -1596,7 +1596,7 @@ package android.hardware {
 
 package android.hardware.biometrics {
 
-  public class BiometricManager {
+  @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class BiometricManager {
     method @NonNull @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public android.hardware.biometrics.BiometricTestSession createTestSession(int);
     method @NonNull @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public java.util.List<android.hardware.biometrics.SensorProperties> getSensorProperties();
     method @NonNull @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public String getUiPackage();
@@ -1830,7 +1830,7 @@ package android.hardware.display {
 
 package android.hardware.fingerprint {
 
-  @Deprecated public class FingerprintManager {
+  @Deprecated @RestrictedForEnvironment(environments=android.annotation.RestrictedForEnvironment.ENVIRONMENT_SDK_RUNTIME, from=android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) public class FingerprintManager {
     method @Deprecated @NonNull @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public android.hardware.biometrics.BiometricTestSession createTestSession(int);
     method @Deprecated @NonNull @RequiresPermission(android.Manifest.permission.TEST_BIOMETRIC) public java.util.List<android.hardware.biometrics.SensorProperties> getSensorProperties();
   }
