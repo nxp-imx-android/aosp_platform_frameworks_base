@@ -6870,7 +6870,6 @@ public abstract class Context {
      * @see #getSystemService(String)
      * @see android.telephony.satellite.SatelliteManager
      */
-    @FlaggedApi(com.android.internal.telephony.flags.Flags.FLAG_SATELLITE_STATE_CHANGE_LISTENER)
     public static final String SATELLITE_SERVICE = "satellite";
 
     /**
