@@ -1705,16 +1705,12 @@ public class AppStandbyController
         }
         // Clear out the list of restored apps that need to have their standby buckets adjusted
         // if they still haven't been installed two days after initial restore.
-        final long delayMillis = Flags.persistRestoreToRareAppsList()
-                ? AppIdleHistory.RESTORE_TO_RARE_APPS_LIST_EXPIRY : 8 * ONE_HOUR;
-        mHandler.postDelayed(() -> mAppsToRestoreToRare.remove(userId), delayMillis);
+        mHandler.postDelayed(() -> mAppsToRestoreToRare.remove(userId),
+                AppIdleHistory.RESTORE_TO_RARE_APPS_LIST_EXPIRY);
 
         // Persist the file in case the device reboots within 2 days after the initial restore.
-        if (Flags.persistRestoreToRareAppsList()) {
-            synchronized (mAppIdleLock) {
-                mAppIdleHistory.writeRestoreToRareAppsList(
-                        userId, mAppsToRestoreToRare.get(userId));
-            }
+        synchronized (mAppIdleLock) {
+            mAppIdleHistory.writeRestoreToRareAppsList(userId, mAppsToRestoreToRare.get(userId));
         }
     }
 
@@ -2279,8 +2275,7 @@ public class AppStandbyController
                     clearAppIdleForPackage(pkgName, userId);
                 } else {
                     // Do a lazy read of the persisted list, if necessary.
-                    if (Flags.persistRestoreToRareAppsList()
-                            && mAppsToRestoreToRare.get(userId) == null) {
+                    if (mAppsToRestoreToRare.get(userId) == null) {
                         synchronized (mAppIdleLock) {
                             final ArraySet<String> restoredApps =
                                     mAppIdleHistory.readRestoreToRareAppsList(userId);
@@ -2464,8 +2459,6 @@ public class AppStandbyController
         pw.println("Flags: ");
         pw.println("    " + Flags.FLAG_ADJUST_DEFAULT_BUCKET_ELEVATION_PARAMS
                 + ": " + Flags.adjustDefaultBucketElevationParams());
-        pw.println("    " + Flags.FLAG_PERSIST_RESTORE_TO_RARE_APPS_LIST
-                + ": " + Flags.persistRestoreToRareAppsList());
         pw.println();
 
         synchronized (mCarrierPrivilegedLock) {
