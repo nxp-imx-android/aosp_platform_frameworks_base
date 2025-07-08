@@ -84,6 +84,7 @@ import static com.android.server.am.ProcessList.SERVICE_B_ADJ;
 import static com.android.server.am.ProcessList.SYSTEM_ADJ;
 import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 import static com.android.server.am.ProcessList.VISIBLE_APP_ADJ;
+import static com.android.server.am.ProcessList.VISIBLE_APP_MAX_ADJ;
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_CAMERA_MICROPHONE_CAPABILITY;
 import static com.android.server.am.psc.PlatformCompatCache.CACHED_COMPAT_CHANGE_PROCESS_CAPABILITY;
 
@@ -864,8 +865,12 @@ public class OomAdjusterImpl extends OomAdjuster {
             final int curAdj = state.getCurAdj();
             // Processes assigned the PREV oomscore will have a laddered oomscore with respect to
             // their positions in the LRU list. i.e. prev+0, prev+1, prev+2, etc.
-            final boolean isPrevApp = PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ;
-            if (curAdj >= UNKNOWN_ADJ || (Flags.oomadjusterPrevLaddering() && isPrevApp)) {
+            final boolean isPrevApp = Flags.oomadjusterPrevLaddering()
+                    && PREVIOUS_APP_ADJ <= curAdj && curAdj <= PREVIOUS_APP_MAX_ADJ;
+            final boolean isVisApp = Flags.oomadjusterVisLaddering()
+                    && Flags.removeLruSpamPrevention()
+                    && VISIBLE_APP_ADJ <= curAdj && curAdj <= VISIBLE_APP_MAX_ADJ;
+            if (curAdj >= UNKNOWN_ADJ || isPrevApp || isVisApp) {
                 needLruAdjust = true;
             }
         }
