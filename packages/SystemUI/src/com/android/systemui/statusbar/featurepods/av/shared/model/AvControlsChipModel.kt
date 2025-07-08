@@ -16,12 +16,7 @@
 
 package com.android.systemui.statusbar.featurepods.av.shared.model
 
-/**
- * Model used to display a VC/Privacy control chip in the status bar.
- *
- * The class currently wraps only the SensorActivityModel, however in future it is intended to
- * contain more elements as we add functionality into the status bar chip.
- */
+/** Model used to display a VC/Privacy control chip in the status bar. */
 data class AvControlsChipModel(
     val sensorActivityModel: SensorActivityModel = SensorActivityModel.Inactive
 )
