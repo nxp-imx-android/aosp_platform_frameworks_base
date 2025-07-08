@@ -319,6 +319,16 @@ public final class Call {
             "android.telecom.extra.ASSERTED_DISPLAY_NAME";
 
     /**
+     * Boolean indicating that the call is a video
+     * ring back tone call. {@link Connection#setExtras(Bundle)} or
+     * {@link Connection#putExtras(Bundle)} should be used to notify
+     * Telecom this extra has been set.
+     */
+    @FlaggedApi(Flags.FLAG_IS_USING_VIDEO_RINGBACK)
+    public static final String EXTRA_IS_USING_VIDEO_RINGBACK =
+                      "android.telecom.extra.IS_USING_VIDEO_RINGBACK";
+
+    /**
      * Reject reason used with {@link #reject(int)} to indicate that the user is rejecting this
      * call because they have declined to answer it.  This typically means that they are unable
      * to answer the call at this time and would prefer it be sent to voicemail.

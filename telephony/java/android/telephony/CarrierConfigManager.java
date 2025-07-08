@@ -10354,6 +10354,13 @@ public class CarrierConfigManager {
             "call_composer_picture_server_url_string";
 
     /**
+     * Indicates if the carrier supports a video color ring back tone call (CRBT).
+     */
+    @FlaggedApi(com.android.server.telecom.flags.Flags.FLAG_IS_USING_VIDEO_RINGBACK)
+    public static final String KEY_SUPPORTS_VIDEO_RINGBACK_BOOL =
+            "supports_video_back_tone_bool";
+
+    /**
      * Determines the default RTT mode.
      *
      * Upon first boot, when the user has not yet set a value for their preferred RTT mode,
@@ -11634,6 +11641,7 @@ public class CarrierConfigManager {
         sDefaults.putString(KEY_DEFAULT_PREFERRED_APN_NAME_STRING, "");
         sDefaults.putBoolean(KEY_SUPPORTS_CALL_COMPOSER_BOOL, false);
         sDefaults.putBoolean(KEY_SUPPORTS_BUSINESS_CALL_COMPOSER_BOOL, false);
+        sDefaults.putBoolean(KEY_SUPPORTS_VIDEO_RINGBACK_BOOL, false);
         sDefaults.putString(KEY_CALL_COMPOSER_PICTURE_SERVER_URL_STRING, "");
         sDefaults.putBoolean(KEY_USE_ACS_FOR_RCS_BOOL, false);
         sDefaults.putBoolean(KEY_NETWORK_TEMP_NOT_METERED_SUPPORTED_BOOL, true);
