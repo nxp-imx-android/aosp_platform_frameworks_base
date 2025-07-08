@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shared.clocks
+package com.android.systemui.customization.clocks
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -59,7 +59,7 @@ class DigitTranslateAnimator(private val updateCallback: (VPointF) -> Unit) {
             bounceAnimator.duration = duration
             interpolator?.let { bounceAnimator.interpolator = it }
             if (onAnimationEnd != null) {
-                val listener =
+                bounceAnimator.addListener(
                     object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator) {
                             onAnimationEnd.run()
@@ -70,7 +70,7 @@ class DigitTranslateAnimator(private val updateCallback: (VPointF) -> Unit) {
                             bounceAnimator.removeListener(this)
                         }
                     }
-                bounceAnimator.addListener(listener)
+                )
             }
             bounceAnimator.start()
         } else {

@@ -16,14 +16,31 @@
 package android.app;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.HandlerExecutor;
+import android.os.Looper;
 import android.platform.test.ravenwood.RavenwoodAppDriver;
+
+import java.util.concurrent.Executor;
 
 /**
  * Inject Ravenwood methods to {@link ActivityThread}.
+ *
+ * TODO: Stop using Objensis to instantiate ActivityThread and start using more of the
+ * real code, rather than handling all methods here with @RavenwoodRedirect.
+ * At that point, the initialization logic should be moved from RavenwoodAppDriver to this class.
  */
-public class ActivityThread_ravenwood {
+public final class ActivityThread_ravenwood {
     private ActivityThread_ravenwood() {
     }
+
+    /** Backdoor to set ActivityThread's package-private member field. */
+    public static void setInstrumentation(ActivityThread at, Instrumentation inst) {
+        at.mInstrumentation = inst;
+    }
+
+    private static final Handler sHandler = new Handler(Looper.getMainLooper());
+    private static final HandlerExecutor sHandlerExecutor = new HandlerExecutor(sHandler);
 
     /** Override the corresponding ActivityThread method. */
     public static Context currentSystemContext() {
@@ -33,5 +50,17 @@ public class ActivityThread_ravenwood {
     /** Override the corresponding ActivityThread method. */
     public static Application currentApplication() {
         return RavenwoodAppDriver.getInstance().getApplication();
+    }
+
+    static Looper getLooper(ActivityThread at) {
+        return Looper.getMainLooper();
+    }
+
+    static Handler getHandler(ActivityThread at) {
+        return sHandler;
+    }
+
+    static Executor getExecutor(ActivityThread at) {
+        return sHandlerExecutor;
     }
 }

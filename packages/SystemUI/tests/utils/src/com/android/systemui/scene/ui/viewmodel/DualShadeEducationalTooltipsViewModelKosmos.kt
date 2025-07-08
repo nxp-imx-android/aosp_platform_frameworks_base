@@ -23,10 +23,14 @@ import com.android.systemui.scene.domain.interactor.dualShadeEducationInteractor
 
 val Kosmos.dualShadeEducationalTooltipsViewModelFactory by Fixture {
     object : DualShadeEducationalTooltipsViewModel.Factory {
-        override fun create(context: Context): DualShadeEducationalTooltipsViewModel {
+        override fun create(
+            context: Context,
+            ignoreTestHarness: Boolean,
+        ): DualShadeEducationalTooltipsViewModel {
             return DualShadeEducationalTooltipsViewModel(
                 interactor = dualShadeEducationInteractor,
                 context = context,
+                ignoreTestHarness = ignoreTestHarness,
             )
         }
     }

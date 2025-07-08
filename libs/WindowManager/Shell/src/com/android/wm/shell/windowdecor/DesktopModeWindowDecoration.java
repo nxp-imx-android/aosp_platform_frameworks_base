@@ -89,6 +89,7 @@ import com.android.wm.shell.apptoweb.AssistContentRequester;
 import com.android.wm.shell.apptoweb.OpenByDefaultDialog;
 import com.android.wm.shell.common.DisplayController;
 import com.android.wm.shell.common.DisplayLayout;
+import com.android.wm.shell.common.LockTaskChangeListener;
 import com.android.wm.shell.common.MultiInstanceHelper;
 import com.android.wm.shell.common.ShellExecutor;
 import com.android.wm.shell.common.SyncTransactionQueue;
@@ -160,6 +161,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
     private final DesktopState mDesktopState;
     private final DesktopConfig mDesktopConfig;
     private final WindowDecorationActions mWindowDecorationActions;
+    private final LockTaskChangeListener mLockTaskChangeListener;
 
     private WindowDecorationViewHolder mWindowDecorViewHolder;
     private View.OnClickListener mOnCaptionButtonClickListener;
@@ -258,7 +260,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopState desktopState,
             DesktopConfig desktopConfig,
-            WindowDecorationActions windowDecorationActions) {
+            WindowDecorationActions windowDecorationActions,
+            LockTaskChangeListener lockTaskChangeListener) {
         this (context, userContext, displayController, taskResourceLoader, splitScreenController,
                 desktopUserRepositories, taskOrganizer, taskInfo, taskSurface, handler,
                 mainExecutor, mainDispatcher, bgScope, bgExecutor, transitions, choreographer,
@@ -273,7 +276,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 HandleMenu.HandleMenuFactory.INSTANCE, multiInstanceHelper,
                 windowDecorCaptionRepository, desktopModeEventLogger,
                 desktopModeUiEventLogger, desktopModeCompatPolicy,
-                desktopState, desktopConfig, windowDecorationActions);
+                desktopState, desktopConfig, windowDecorationActions, lockTaskChangeListener);
     }
 
     DesktopModeWindowDecoration(
@@ -315,7 +318,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             DesktopModeCompatPolicy desktopModeCompatPolicy,
             DesktopState desktopState,
             DesktopConfig desktopConfig,
-            WindowDecorationActions windowDecorationActions) {
+            WindowDecorationActions windowDecorationActions,
+            LockTaskChangeListener lockTaskChangeListener) {
         super(context, handler, transitions, userContext, displayController, taskOrganizer,
                 taskInfo, taskSurface, surfaceControlBuilderSupplier,
                 surfaceControlTransactionSupplier, windowContainerTransactionSupplier,
@@ -348,6 +352,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
         mDesktopState = desktopState;
         mDesktopConfig = desktopConfig;
         mWindowDecorationActions = windowDecorationActions;
+        mLockTaskChangeListener = lockTaskChangeListener;
     }
 
     /**
@@ -485,7 +490,7 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                         && DesktopModeFlags
                         .ENABLE_DESKTOP_RECENTS_TRANSITIONS_CORNERS_BUGFIX.isTrue(),
                 mDesktopModeCompatPolicy.shouldExcludeCaptionFromAppBounds(taskInfo),
-                mDesktopConfig, inSyncWithTransition);
+                mDesktopConfig, inSyncWithTransition, mLockTaskChangeListener.isTaskLocked());
 
         final WindowDecorLinearLayout oldRootView = mResult.mRootView;
         final SurfaceControl oldDecorationSurface = mDecorationContainerSurface;
@@ -996,7 +1001,8 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             boolean shouldIgnoreCornerRadius,
             boolean shouldExcludeCaptionFromAppBounds,
             DesktopConfig desktopConfig,
-            boolean inSyncWithTransition) {
+            boolean inSyncWithTransition,
+            boolean isTaskLocked) {
         final int captionLayoutId = getDesktopModeWindowDecorLayoutId(taskInfo.getWindowingMode());
         final boolean isAppHeader =
                 captionLayoutId == R.layout.desktop_mode_app_header;
@@ -1026,6 +1032,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
                 showCaption = taskInfo.isFreeform()
                         || (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
             }
+
+            if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
+                    && !taskInfo.isFreeform()) {
+                showCaption = showCaption && !isTaskLocked;
+            }
         } else {
             // Caption should always be visible in freeform mode. When not in freeform,
             // align with the status bar except when showing over keyguard (where it should not
@@ -1037,6 +1048,11 @@ public class DesktopModeWindowDecoration extends WindowDecoration<WindowDecorLin
             //   status bar is shown?
             showCaption = taskInfo.isFreeform()
                     || (isStatusBarVisible && !isKeyguardVisibleAndOccluded);
+
+            if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
+                    && !taskInfo.isFreeform()) {
+                showCaption = showCaption && !isTaskLocked;
+            }
         }
         relayoutParams.mIsCaptionVisible = showCaption;
         final boolean isBottomSplit = !splitScreenController.isLeftRightSplit()

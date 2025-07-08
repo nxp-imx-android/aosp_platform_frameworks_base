@@ -208,6 +208,9 @@ fun NavBarPill(
         ) {
             val closeButtonSize = 28.dp
             val closeButtonTouchTargetSize = 36.dp
+            val filteredActions = FilterUtils.filterActions(actions)
+            val expandActionLabel = stringResource(id = R.string.ambient_cue_expand_action)
+
             Spacer(modifier = Modifier.size(closeButtonTouchTargetSize))
 
             Box {
@@ -223,13 +226,29 @@ fun NavBarPill(
                                 cornerRadius = 16.dp,
                                 visible = visible,
                             )
-                            .then(if (expanded) Modifier else Modifier.clickable { onClick() })
+                            .then(
+                                if (expanded) Modifier
+                                else
+                                    Modifier.clickable(
+                                        // Set expand action when the action is not one-tap action.
+                                        onClickLabel =
+                                            if (
+                                                filteredActions.size == 1 &&
+                                                    filteredActions[0].actionType ==
+                                                        ActionType.MA &&
+                                                    filteredActions[0].oneTapEnabled
+                                            )
+                                                null
+                                            else expandActionLabel
+                                    ) {
+                                        onClick()
+                                    }
+                            )
                             .padding(2.dp)
                             .onGloballyPositioned { expandedSize = it.size },
                 ) {
                     // Should have at most 1 expanded chip
                     var expandedChip = false
-                    val filteredActions = FilterUtils.filterActions(actions)
                     filteredActions.fastForEachIndexed { index, action ->
                         val isMrAction = action.actionType == ActionType.MR
 

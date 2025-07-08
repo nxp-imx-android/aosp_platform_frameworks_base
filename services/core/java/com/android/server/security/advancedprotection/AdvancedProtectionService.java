@@ -18,6 +18,7 @@ package com.android.server.security.advancedprotection;
 
 import static android.provider.Settings.Secure.ADVANCED_PROTECTION_MODE;
 import static android.provider.Settings.Secure.AAPM_USB_DATA_PROTECTION;
+
 import static com.android.internal.util.ConcurrentUtils.DIRECT_EXECUTOR;
 
 import android.Manifest;
@@ -44,9 +45,9 @@ import android.security.advancedprotection.AdvancedProtectionFeature;
 import android.security.advancedprotection.AdvancedProtectionManager;
 import android.security.advancedprotection.AdvancedProtectionManager.FeatureId;
 import android.security.advancedprotection.AdvancedProtectionManager.SupportDialogType;
+import android.security.advancedprotection.AdvancedProtectionProtoEnums;
 import android.security.advancedprotection.IAdvancedProtectionCallback;
 import android.security.advancedprotection.IAdvancedProtectionService;
-import android.security.advancedprotection.AdvancedProtectionProtoEnums;
 import android.util.ArrayMap;
 import android.util.Slog;
 import android.util.StatsEvent;
@@ -62,16 +63,15 @@ import com.android.server.security.advancedprotection.features.AdvancedProtectio
 import com.android.server.security.advancedprotection.features.AdvancedProtectionProvider;
 import com.android.server.security.advancedprotection.features.DisallowCellular2GAdvancedProtectionHook;
 import com.android.server.security.advancedprotection.features.DisallowInstallUnknownSourcesAdvancedProtectionHook;
+import com.android.server.security.advancedprotection.features.DisallowWepAdvancedProtectionProvider;
 import com.android.server.security.advancedprotection.features.MemoryTaggingExtensionHook;
 import com.android.server.security.advancedprotection.features.UsbDataAdvancedProtectionHook;
-import com.android.server.security.advancedprotection.features.DisallowWepAdvancedProtectionProvider;
 
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /** @hide */
 public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
@@ -120,12 +120,10 @@ public class AdvancedProtectionService extends IAdvancedProtectionService.Stub {
             Slog.e(TAG, "Failed to initialize DisallowInstallUnknownSources", e);
           }
         }
-        if (android.security.Flags.aapmFeatureMemoryTaggingExtension()) {
-          try {
+        try {
             mHooks.add(new MemoryTaggingExtensionHook(mContext, enabled));
-          } catch (Exception e) {
+        } catch (Exception e) {
             Slog.e(TAG, "Failed to initialize MemoryTaggingExtension", e);
-          }
         }
         if (android.security.Flags.aapmFeatureDisableCellular2g()) {
           try {

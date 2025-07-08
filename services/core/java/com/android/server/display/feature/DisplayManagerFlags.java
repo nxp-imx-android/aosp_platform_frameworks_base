@@ -165,11 +165,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_OFFLOAD_SESSION_CANCEL_BLOCK_SCREEN_ON,
             Flags::offloadSessionCancelBlockScreenOn);
 
-    private final FlagState mVirtualDisplayLimit =
-            new FlagState(
-                    Flags.FLAG_VIRTUAL_DISPLAY_LIMIT,
-                    Flags::virtualDisplayLimit);
-
     private final FlagState mNormalBrightnessForDozeParameter = new FlagState(
             Flags.FLAG_NORMAL_BRIGHTNESS_FOR_DOZE_PARAMETER,
             Flags::normalBrightnessForDozeParameter
@@ -177,11 +172,6 @@ public class DisplayManagerFlags {
     private final FlagState mBlockAutobrightnessChangesOnStylusUsage = new FlagState(
             Flags.FLAG_BLOCK_AUTOBRIGHTNESS_CHANGES_ON_STYLUS_USAGE,
             Flags::blockAutobrightnessChangesOnStylusUsage
-    );
-
-    private final FlagState mEnableApplyDisplayChangedDuringDisplayAdded = new FlagState(
-            Flags.FLAG_ENABLE_APPLY_DISPLAY_CHANGED_DURING_DISPLAY_ADDED,
-            Flags::enableApplyDisplayChangedDuringDisplayAdded
     );
 
     private final FlagState mEnableBatteryStatsForAllDisplays = new FlagState(
@@ -447,10 +437,6 @@ public class DisplayManagerFlags {
         return mSynthetic60hzModes.isEnabled();
     }
 
-    public boolean isVirtualDisplayLimitEnabled() {
-        return mVirtualDisplayLimit.isEnabled();
-    }
-
     /**
      * @return Whether the useDozeBrightness parameter should be used
      */
@@ -465,13 +451,6 @@ public class DisplayManagerFlags {
       */
     public boolean isBatteryStatsEnabledForAllDisplays() {
         return mEnableBatteryStatsForAllDisplays.isEnabled();
-    }
-
-    /**
-      * @return {@code true} if need to apply display changes during display added event.
-      */
-    public boolean isApplyDisplayChangedDuringDisplayAddedEnabled() {
-        return mEnableApplyDisplayChangedDuringDisplayAdded.isEnabled();
     }
 
     /**
@@ -637,10 +616,8 @@ public class DisplayManagerFlags {
         pw.println(" " + mIgnoreAppPreferredRefreshRate);
         pw.println(" " + mSynthetic60hzModes);
         pw.println(" " + mOffloadSessionCancelBlockScreenOn);
-        pw.println(" " + mVirtualDisplayLimit);
         pw.println(" " + mNormalBrightnessForDozeParameter);
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
-        pw.println(" " + mEnableApplyDisplayChangedDuringDisplayAdded);
         pw.println(" " + mBlockAutobrightnessChangesOnStylusUsage);
         pw.println(" " + mHasArrSupport);
         pw.println(" " + mAutoBrightnessModeBedtimeWearFlagState);

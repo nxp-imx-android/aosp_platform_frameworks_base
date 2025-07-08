@@ -365,6 +365,16 @@ flag {
   is_exported: true
 }
 
+flag {
+  name: "notification_is_animated_action_api"
+  namespace: "systemui"
+  description: "This flag enables the API to define if an action requires special visual treatment."
+  bug: "417509471"
+  metadata {
+    purpose: PURPOSE_FEATURE
+  }
+}
+
 # End: exported flags that cannot be removed
 
 

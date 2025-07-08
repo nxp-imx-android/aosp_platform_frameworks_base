@@ -49,7 +49,8 @@ public class ChooserActivityLoggerImpl implements ChooserActivityLogger {
                 /* previewType = 8 */ typeFromPreviewInt(previewType),
                 /* intentType = 9 */ typeFromIntentString(intent),
                 /* num_provided_custom_actions = 10 */ 0,
-                /* reselection_action_provided = 11 */ false);
+                /* reselection_action_provided = 11 */ false,
+                /* is_interactive_mode = 12 */ false);
     }
 
     @Override

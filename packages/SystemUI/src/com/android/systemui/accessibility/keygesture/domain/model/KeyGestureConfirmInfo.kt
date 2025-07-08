@@ -19,6 +19,7 @@ package com.android.systemui.accessibility.keygesture.domain.model
 import androidx.annotation.DrawableRes
 
 data class KeyGestureConfirmInfo(
+    val keyGestureType: Int,
     val title: String,
     val contentText: CharSequence,
     val targetName: String,

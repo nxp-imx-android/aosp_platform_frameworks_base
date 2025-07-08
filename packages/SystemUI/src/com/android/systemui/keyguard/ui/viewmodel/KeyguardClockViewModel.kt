@@ -18,6 +18,7 @@ package com.android.systemui.keyguard.ui.viewmodel
 
 import android.content.Context
 import android.content.res.Resources
+import android.util.LayoutDirection
 import androidx.constraintlayout.helper.widget.Layer
 import com.android.keyguard.ClockEventController
 import com.android.systemui.common.ui.domain.interactor.ConfigurationInteractor
@@ -256,7 +257,9 @@ constructor(
                     isShadeLayoutWide,
                     configurationValues,
                     currentClock ->
-                    if (hasCustomWeatherDataDisplay) {
+                    val isRtlLayout = configurationValues.layoutDirection == LayoutDirection.RTL
+
+                    if (hasCustomWeatherDataDisplay || isRtlLayout) {
                         return@combine true
                     }
 

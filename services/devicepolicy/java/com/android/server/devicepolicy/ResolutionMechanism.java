@@ -23,12 +23,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 abstract class ResolutionMechanism<V> {
+
     /**
      * The most generic resolution logic where we know both the policy value and the admin who
      * sets it.
      */
     @Nullable
-    abstract PolicyValue<V> resolve(LinkedHashMap<EnforcingAdmin, PolicyValue<V>> adminPolicies);
+    abstract ResolvedPolicy<V> resolve(LinkedHashMap<EnforcingAdmin, PolicyValue<V>> adminPolicies);
 
     /**
      * A special resolution logic that does not care about admins who set them. Only applicable to

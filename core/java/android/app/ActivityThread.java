@@ -182,6 +182,8 @@ import android.provider.DeviceConfigServiceManager;
 import android.provider.Downloads;
 import android.provider.FontsContract;
 import android.provider.Settings;
+import android.ravenwood.annotation.RavenwoodIgnore;
+import android.ravenwood.annotation.RavenwoodRedirect;
 import android.renderscript.RenderScriptCacheDir;
 import android.se.omapi.SeFrameworkInitializer;
 import android.se.omapi.SeServiceManager;
@@ -3065,6 +3067,7 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage
+    @RavenwoodRedirect
     public Handler getHandler() {
         return mH;
     }
@@ -3302,10 +3305,12 @@ public final class ActivityThread extends ClientTransactionHandler
     }
 
     @UnsupportedAppUsage
+    @RavenwoodRedirect
     public Looper getLooper() {
         return mLooper;
     }
 
+    @RavenwoodRedirect
     public Executor getExecutor() {
         return mExecutor;
     }
@@ -9231,6 +9236,7 @@ public final class ActivityThread extends ClientTransactionHandler
         return false;
     }
 
+    @RavenwoodIgnore
     void addApplication(@NonNull Application app) {
         mAllApplications.add(app);
         VMDebug.addApplication(app.mLoadedApk.mPackageName);

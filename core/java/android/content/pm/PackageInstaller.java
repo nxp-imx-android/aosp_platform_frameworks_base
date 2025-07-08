@@ -452,7 +452,9 @@ public class PackageInstaller {
      * receive different status codes from {@link #EXTRA_STATUS} depending on their target SDK and
      * privileged status:
      * <p>
-     *      Non-privileged installers targeting 36 or less will first receive the
+     *      Non-privileged installers targeting
+     *      {@link android.os.Build.VERSION_CODES#VANILLA_ICE_CREAM API 35}
+     *      or less will first receive the
      *      {@link #STATUS_PENDING_USER_ACTION} status code without this reason code. They will be
      *      forced through the user action flow to allow the OS to inform the user of such
      *      verification context before continuing to fail the install. If the user has the option
@@ -461,14 +463,17 @@ public class PackageInstaller {
      *      along with this reason code that explains why the verification had failed.
      * </p>
      * <p>
-     *     Privileged installer targeting 36 or less will directly receive the
+     *     Privileged installer targeting
+     *     {@link android.os.Build.VERSION_CODES#VANILLA_ICE_CREAM API 35}
+     *     or less will directly receive the
      *     {@link #STATUS_FAILURE_ABORTED} status code. This is because they are not expected to
      *     have the capability of handling the {@link #STATUS_PENDING_USER_ACTION} flow, so the
      *     installation will directly fail. This reason code will be supplied to them for
      *     providing additional information.
      * </p>
      * <p>
-     *     All installers targeting 37 and higher will receive a {@link #STATUS_FAILURE_ABORTED}
+     *     All installers targeting {@link android.os.Build.VERSION_CODES#BAKLAVA API 36}
+     *     or higher will receive a {@link #STATUS_FAILURE_ABORTED}
      *     status code along with this reason code, so the installers can explain the failure to the
      *     user accordingly. An {@link Intent#EXTRA_INTENT} will also be populated with an intent
      *     that can provide additional context where appropriate, should the installer prefer to
@@ -1775,8 +1780,6 @@ public class PackageInstaller {
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     @SystemApi
-    @RequiresPermission(value = Manifest.permission.DEVELOPER_VERIFICATION_AGENT,
-            conditional = true)
     public final boolean setDeveloperVerificationPolicy(@DeveloperVerificationPolicy int policy) {
         try {
             return mInstaller.setDeveloperVerificationPolicy(policy, mUserId);

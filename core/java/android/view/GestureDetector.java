@@ -250,6 +250,7 @@ public class GestureDetector {
     private int mTapTimeout;
     private int mDoubleTapTimeout;
     private int mDoubleTapMinTime;
+    private ViewConfiguration mViewConfiguration = null;
 
     // constants for Message.what used by GestureHandler below
     private static final int SHOW_PRESS = 1;
@@ -503,17 +504,17 @@ public class GestureDetector {
             mDoubleTapMinTime = ViewConfiguration.getDoubleTapMinTime();
         } else {
             StrictMode.assertConfigurationContext(context, "GestureDetector#init");
-            final ViewConfiguration configuration = ViewConfiguration.get(context);
-            touchSlop = configuration.getScaledTouchSlop();
-            doubleTapTouchSlop = configuration.getScaledDoubleTapTouchSlop();
-            doubleTapSlop = configuration.getScaledDoubleTapSlop();
-            mMinimumFlingVelocity = configuration.getScaledMinimumFlingVelocity();
-            mMaximumFlingVelocity = configuration.getScaledMaximumFlingVelocity();
-            mAmbiguousGestureMultiplier = configuration.getScaledAmbiguousGestureMultiplier();
+            mViewConfiguration = ViewConfiguration.get(context);
+            touchSlop = mViewConfiguration.getScaledTouchSlop();
+            doubleTapTouchSlop = mViewConfiguration.getScaledDoubleTapTouchSlop();
+            doubleTapSlop = mViewConfiguration.getScaledDoubleTapSlop();
+            mMinimumFlingVelocity = mViewConfiguration.getScaledMinimumFlingVelocity();
+            mMaximumFlingVelocity = mViewConfiguration.getScaledMaximumFlingVelocity();
+            mAmbiguousGestureMultiplier = mViewConfiguration.getScaledAmbiguousGestureMultiplier();
             if (Flags.viewconfigurationApis()) {
-                mTapTimeout = configuration.getTapTimeoutMillis();
-                mDoubleTapTimeout = configuration.getDoubleTapTimeoutMillis();
-                mDoubleTapMinTime = configuration.getDoubleTapMinTimeMillis();
+                mTapTimeout = mViewConfiguration.getTapTimeoutMillis();
+                mDoubleTapTimeout = mViewConfiguration.getDoubleTapTimeoutMillis();
+                mDoubleTapMinTime = mViewConfiguration.getDoubleTapMinTimeMillis();
             } else {
                 mTapTimeout = ViewConfiguration.getTapTimeout();
                 mDoubleTapTimeout = ViewConfiguration.getDoubleTapTimeout();
@@ -687,7 +688,7 @@ public class GestureDetector {
                                     TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__LONG_PRESS,
                                     0 /* arg2 */),
                             mCurrentDownEvent.getDownTime()
-                                    + ViewConfiguration.getLongPressTimeout());
+                                    + getLongPressTimeoutMillis());
                 }
                 mHandler.sendEmptyMessageAtTime(SHOW_PRESS,
                         mCurrentDownEvent.getDownTime() + mTapTimeout);
@@ -728,14 +729,14 @@ public class GestureDetector {
                             // will happen in response to user input. To prevent this,
                             // reschedule long press with a modified timeout.
                             mHandler.removeMessages(LONG_PRESS);
-                            final long longPressTimeout = ViewConfiguration.getLongPressTimeout();
                             mHandler.sendMessageAtTime(
                                     mHandler.obtainMessage(
                                             LONG_PRESS,
                                             TOUCH_GESTURE_CLASSIFIED__CLASSIFICATION__LONG_PRESS,
                                             0 /* arg2 */),
                                     ev.getDownTime()
-                                        + (long) (longPressTimeout * mAmbiguousGestureMultiplier));
+                                        + (long) (getLongPressTimeoutMillis()
+                                            * mAmbiguousGestureMultiplier));
                         }
                         // Inhibit default scroll. If a gesture is ambiguous, we prevent scroll
                         // until the gesture is resolved.
@@ -906,6 +907,12 @@ public class GestureDetector {
         mInLongPress = false;
         mInContextClick = false;
         mIgnoreNextUpEvent = false;
+    }
+
+    private int getLongPressTimeoutMillis() {
+        return mViewConfiguration != null && Flags.viewconfigurationApis()
+                ? mViewConfiguration.getLongPressTimeoutMillis()
+                : ViewConfiguration.getLongPressTimeout();
     }
 
     private boolean isConsideredDoubleTap(@NonNull MotionEvent firstDown,

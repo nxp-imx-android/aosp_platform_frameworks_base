@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.tiles.impl.flashlight.ui.mapper
 
+import android.content.res.Configuration
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
 import android.widget.Button
@@ -31,6 +32,7 @@ import com.android.systemui.qs.tiles.impl.flashlight.qsFlashlightTileConfig
 import com.android.systemui.res.R
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth.assertThat
+import java.util.Locale
 import junit.framework.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -251,6 +253,9 @@ class FlashlightTileMapperTest : SysuiTestCase() {
     @Test
     fun availableLevelEnabled_whenDataInCorrectRange() =
         kosmos.runTest {
+            context.orCreateTestableResources.overrideConfiguration(
+                Configuration(context.resources.configuration).apply { setLocale(Locale.US) }
+            )
             val actual =
                 underTest.map(
                     qsTileConfig,
@@ -261,11 +266,31 @@ class FlashlightTileMapperTest : SysuiTestCase() {
                 .isEqualTo(
                     createFlashlightState(
                         activationState = QSTileState.ActivationState.ACTIVE,
-                        secondaryLabel =
-                            context.getString(
-                                R.string.quick_settings_flashlight_tile_level_percentage,
-                                46, // 21/45 = 0.46
-                            ),
+                        secondaryLabel = "47%",
+                        toggleable = true,
+                    )
+                )
+        }
+
+    @EnableFlags(com.android.systemui.Flags.FLAG_FLASHLIGHT_STRENGTH)
+    @Test
+    fun availableLevelEnabled_whenDataInCorrectRange_withFrenchLocale() =
+        kosmos.runTest {
+            context.orCreateTestableResources.overrideConfiguration(
+                Configuration(context.resources.configuration).apply { setLocale(Locale.FRANCE) }
+            )
+
+            val actual =
+                underTest.map(
+                    qsTileConfig,
+                    FlashlightModel.Available.Level(true, DEFAULT_LEVEL, MAX_LEVEL),
+                )
+
+            assertThat(actual)
+                .isEqualTo(
+                    createFlashlightState(
+                        activationState = QSTileState.ActivationState.ACTIVE,
+                        secondaryLabel = "47 %", // extra NBSP
                         toggleable = true,
                     )
                 )

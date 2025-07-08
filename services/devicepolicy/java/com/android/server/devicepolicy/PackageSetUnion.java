@@ -17,8 +17,8 @@
 package com.android.server.devicepolicy;
 
 import android.annotation.NonNull;
-import android.app.admin.PolicyValue;
 import android.app.admin.PackageSetPolicyValue;
+import android.app.admin.PolicyValue;
 import android.app.admin.StringSetUnion;
 
 import java.util.HashSet;
@@ -29,17 +29,19 @@ import java.util.Set;
 final class PackageSetUnion extends ResolutionMechanism<Set<String>> {
 
     @Override
-    PolicyValue<Set<String>> resolve(
+    ResolvedPolicy<Set<String>> resolve(
             @NonNull LinkedHashMap<EnforcingAdmin, PolicyValue<Set<String>>> adminPolicies) {
         Objects.requireNonNull(adminPolicies);
         if (adminPolicies.isEmpty()) {
             return null;
         }
         Set<String> unionOfPolicies = new HashSet<>();
-        for (PolicyValue<Set<String>> policy : adminPolicies.values()) {
-            unionOfPolicies.addAll(policy.getValue());
+        for (PolicyValue<Set<String>> policyValue : adminPolicies.values()) {
+            unionOfPolicies.addAll(policyValue.getValue());
         }
-        return new PackageSetPolicyValue(unionOfPolicies);
+        return new ResolvedPolicy<>(new PackageSetPolicyValue(unionOfPolicies),
+                // Since it's union, all admins contribute to the final value.
+                adminPolicies.keySet());
     }
 
     @Override

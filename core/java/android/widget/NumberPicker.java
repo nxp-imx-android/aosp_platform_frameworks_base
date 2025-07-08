@@ -940,10 +940,10 @@ public class NumberPicker extends LinearLayout {
                     onScrollerFinished(mAdjustScroller);
                 } else if (mLastDownEventY < mTopSelectionDividerTop) {
                     postChangeCurrentByOneFromLongPress(
-                            false, ViewConfiguration.getLongPressTimeout());
+                            false, getLongPressTimeoutMillis());
                 } else if (mLastDownEventY > mBottomSelectionDividerBottom) {
                     postChangeCurrentByOneFromLongPress(
-                            true, ViewConfiguration.getLongPressTimeout());
+                            true, getLongPressTimeoutMillis());
                 } else {
                     mPerformClickOnTap = true;
                     postBeginSoftInputOnLongPressCommand();
@@ -2127,7 +2127,7 @@ public class NumberPicker extends LinearLayout {
         } else {
             removeCallbacks(mBeginSoftInputOnLongPressCommand);
         }
-        postDelayed(mBeginSoftInputOnLongPressCommand, ViewConfiguration.getLongPressTimeout());
+        postDelayed(mBeginSoftInputOnLongPressCommand, getLongPressTimeoutMillis());
     }
 
     /**

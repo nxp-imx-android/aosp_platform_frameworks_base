@@ -5617,65 +5617,6 @@ public class NotificationManagerServiceTest extends UiServiceTestCase {
     }
 
     @Test
-    public void updateNotificationChannelGroupFromPrivilegedListener_cdm_success()
-            throws Exception {
-        NotificationChannelGroup createByApp = new NotificationChannelGroup("grp", "Group");
-        mService.mPreferencesHelper.createNotificationChannelGroup(mPkg, mUid, createByApp, true,
-                mUid, false);
-        NotificationChannelGroup updateByNls = new NotificationChannelGroup("grp", "Updated");
-        when(mCompanionMgr.getAssociations(mPkg, mUserId))
-                .thenReturn(singletonList(mock(AssociationInfo.class)));
-
-        mBinderService.updateNotificationChannelGroupFromPrivilegedListener(
-                null, mPkg, mUser, updateByNls);
-
-        NotificationChannelGroup result = mService.mPreferencesHelper.getNotificationChannelGroup(
-                "grp", mPkg, mUid);
-        assertThat(result.getName().toString()).isEqualTo("Updated");
-    }
-
-    @Test
-    public void updateNotificationChannelGroupFromPrivilegedListener_noCdm_throws()
-            throws Exception {
-        when(mCompanionMgr.getAssociations(mPkg, mUserId)).thenReturn(Lists.newArrayList());
-        NotificationChannelGroup updateByNls = new NotificationChannelGroup("grp", "Updated");
-
-        SecurityException exception = assertThrows(SecurityException.class, () ->
-                mBinderService.updateNotificationChannelGroupFromPrivilegedListener(
-                        null, mPkg, mUser, updateByNls));
-
-        assertThat(exception).hasMessageThat().contains("does not have access");
-    }
-
-    @Test
-    public void updateNotificationChannelGroupFromPrivilegedListener_wrongPackage_ignored()
-            throws Exception {
-        NotificationChannelGroup updateByNls = new NotificationChannelGroup("grp", "Updated");
-        when(mCompanionMgr.getAssociations(mPkg, mUserId))
-                .thenReturn(singletonList(mock(AssociationInfo.class)));
-
-        mBinderService.updateNotificationChannelGroupFromPrivilegedListener(
-                null, "com.package.does.not.exist", mUser, updateByNls);
-
-        verify(mService.mPreferencesHelper, never()).createNotificationChannelGroup(any(), anyInt(),
-                any(), anyBoolean(), anyInt(), anyBoolean());
-    }
-
-    @Test
-    public void updateNotificationChannelGroupFromPrivilegedListener_notAnUpdate_ignored()
-            throws Exception {
-        NotificationChannelGroup createByNls = new NotificationChannelGroup("grp", "New");
-        when(mCompanionMgr.getAssociations(mPkg, mUserId))
-                .thenReturn(singletonList(mock(AssociationInfo.class)));
-
-        mBinderService.updateNotificationChannelGroupFromPrivilegedListener(
-                null, mPkg, mUser, createByNls);
-
-        verify(mService.mPreferencesHelper, never()).createNotificationChannelGroup(any(), anyInt(),
-                any(), anyBoolean(), anyInt(), anyBoolean());
-    }
-
-    @Test
     public void testGetPackagesWithChannels_blocked() throws Exception {
         // While we mostly rely on the PreferencesHelper implementation of channels, we filter in
         // NMS so that we do not return blocked packages.

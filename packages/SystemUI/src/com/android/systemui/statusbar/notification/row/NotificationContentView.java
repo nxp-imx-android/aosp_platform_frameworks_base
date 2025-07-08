@@ -1837,13 +1837,24 @@ public class NotificationContentView extends FrameLayout implements Notification
             if (DEBUG && !suppressedActionIndices.isEmpty()) {
                 Log.d(TAG, "Suppressing actions with indices: " + suppressedActionIndices);
             }
+            int suppressedActionCount = 0;
             for (int i = 0; i < actionsList.getChildCount(); i++) {
                 View actionBtn = actionsList.getChildAt(i);
                 Object actionIndex =
                         actionBtn.getTag(com.android.internal.R.id.notification_action_index_tag);
                 boolean suppressAction = actionIndex instanceof Integer
                         && suppressedActionIndices.contains(actionIndex);
-                actionBtn.setVisibility(suppressAction ? View.GONE : View.VISIBLE);
+                if (suppressAction) {
+                    actionBtn.setVisibility(View.GONE);
+                    suppressedActionCount++;
+                } else {
+                    actionBtn.setVisibility(View.VISIBLE);
+                }
+            }
+            // If all the actions in the actionList ViewGroup are suppressed, hide the ViewGroup
+            // as well to remove the empty space with no action buttons.
+            if (suppressedActionCount >= actionsList.getChildCount()) {
+                actionsList.setVisibility(View.GONE);
             }
         }
     }

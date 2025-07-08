@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.android.server.audio;
 
 import static android.media.AudioManager.ADJUST_LOWER;
@@ -26,19 +25,19 @@ import android.annotation.RequiresPermission;
 import android.content.Context;
 import android.media.AudioAttributes;
 import android.media.AudioDeviceAttributes;
-import android.media.AudioDeviceVolumeManager;
 import android.media.AudioDeviceInfo;
+import android.media.AudioDeviceVolumeManager;
 import android.media.AudioManager;
 import android.media.VolumeInfo;
 import android.media.audiopolicy.AudioProductStrategy;
 import android.os.ShellCommand;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 
 class AudioManagerShellCommand extends ShellCommand {
     private static final String TAG = "AudioManagerShellCommand";
@@ -84,6 +83,10 @@ class AudioManagerShellCommand extends ShellCommand {
                 return getStreamVolume();
             case "set-device-volume":
                 return setDeviceVolume();
+            case "is-stream-mute":
+                return getIsStreamMute();
+            case "is-volume-fixed":
+                return getIsVolumeFixed();
             case "adj-mute":
                 return adjMute();
             case "adj-unmute":
@@ -143,6 +146,10 @@ class AudioManagerShellCommand extends ShellCommand {
         pw.println("    Gets the volume for STREAM_TYPE");
         pw.println("  set-device-volume STREAM_TYPE VOLUME_INDEX NATIVE_DEVICE_TYPE");
         pw.println("    Sets for NATIVE_DEVICE_TYPE the STREAM_TYPE volume to VOLUME_INDEX");
+        pw.println("  is-stream-mute STREAM_TYPE");
+        pw.println("    Returns whether the STREAM_TYPE is muted.");
+        pw.println("  is-volume-fixed");
+        pw.println("    Returns whether the volume is fixed for the device");
         pw.println("  adj-mute STREAM_TYPE");
         pw.println("    mutes the STREAM_TYPE");
         pw.println("  adj-unmute STREAM_TYPE");
@@ -384,6 +391,19 @@ class AudioManagerShellCommand extends ShellCommand {
                                 + ada
                                 + ")");
         advm.setDeviceVolume(volume, ada);
+        return 0;
+    }
+
+    private int getIsStreamMute() {
+        final int stream = readIntArg();
+        final boolean isMuted = mAudioManager.isStreamMute(stream);
+        getOutPrintWriter().println(isMuted ? "true" : "false");
+        return 0;
+    }
+
+    private int getIsVolumeFixed() {
+        final boolean isFixed = mAudioManager.isVolumeFixed();
+        getOutPrintWriter().println(isFixed ? "true" : "false");
         return 0;
     }
 

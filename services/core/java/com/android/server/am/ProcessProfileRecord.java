@@ -17,6 +17,8 @@
 package com.android.server.am;
 
 import static android.app.ActivityManager.PROCESS_STATE_NONEXISTENT;
+import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_ACTIVITY;
+import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_EMPTY;
 import static android.app.ProcessMemoryState.HOSTING_COMPONENT_TYPE_STARTED_SERVICE;
 
@@ -739,6 +741,24 @@ final class ProcessProfileRecord implements ProcessStateRecord.StartedServiceObs
             addHostingComponentType(HOSTING_COMPONENT_TYPE_STARTED_SERVICE);
         } else {
             clearHostingComponentType(HOSTING_COMPONENT_TYPE_STARTED_SERVICE);
+        }
+    }
+
+    @Override
+    public void onIsReceivingBroadcastChanged(boolean isReceivingBroadcast) {
+        if (isReceivingBroadcast) {
+            addHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);
+        } else {
+            clearHostingComponentType(HOSTING_COMPONENT_TYPE_BROADCAST_RECEIVER);
+        }
+    }
+
+    @Override
+    public void onHasActivitiesChanged(boolean hasActivities) {
+        if (hasActivities) {
+            addHostingComponentType(HOSTING_COMPONENT_TYPE_ACTIVITY);
+        } else {
+            clearHostingComponentType(HOSTING_COMPONENT_TYPE_ACTIVITY);
         }
     }
 }

@@ -56,6 +56,8 @@ public class AnonymousSourceFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Log.i(LOG_TAG, "Creating " + LOG_TAG);
 
+        // There is no root view here. Ok to pass null view root
+        @SuppressWarnings("InflateParams")
         View dialogView = getLayoutInflater().inflate(
                 UiUtil.getInstallationLayoutResId(requireContext()), null);
         TextView customMessage = dialogView.requireViewById(R.id.custom_message);

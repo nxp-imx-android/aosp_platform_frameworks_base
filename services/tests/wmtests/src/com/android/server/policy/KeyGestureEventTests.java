@@ -29,6 +29,7 @@ import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_HOME_ALL_A
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_HOME_ASSIST;
 import static com.android.server.policy.PhoneWindowManager.LONG_PRESS_HOME_NOTIFICATION_PANEL;
 
+import android.app.ActivityTaskManager;
 import android.app.role.RoleManager;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -50,6 +51,7 @@ import junitparams.Parameters;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 
 @Presubmit
 @MediumTest
@@ -485,5 +487,14 @@ public class KeyGestureEventTests extends ShortcutKeyTestBase {
         mPhoneWindowManager.assertActivityTargetLaunched(
                 new ComponentName("com.test", "com.test.BookmarkTest"));
 
+    }
+
+    @Test
+    public void testKeyGesture_quitFocusedTask() throws RemoteException {
+        mPhoneWindowManager.overrideFocusedRootTask(
+                Mockito.mock(ActivityTaskManager.RootTaskInfo.class));
+        sendKeyGestureEventComplete(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK);
+
+        mPhoneWindowManager.assertTaskClosed();
     }
 }

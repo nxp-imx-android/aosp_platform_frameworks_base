@@ -18,12 +18,13 @@ package com.android.packageinstaller.v2.ui.fragments;
 
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_ABORT_REASON;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -31,6 +32,7 @@ import androidx.fragment.app.DialogFragment;
 
 import com.android.packageinstaller.R;
 import com.android.packageinstaller.v2.model.UninstallAborted;
+import com.android.packageinstaller.v2.ui.UiUtil;
 import com.android.packageinstaller.v2.ui.UninstallActionListener;
 
 /**
@@ -74,13 +76,20 @@ public class UninstallErrorFragment extends DialogFragment {
         setDialogData(requireArguments());
 
         Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + mDialogData);
-        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext())
-                .setMessage(mDialogData.getDialogTextResource())
-                .setTitle(mDialogData.getDialogTitleResource())
-                .setPositiveButton(R.string.button_close,
-                (dialogInt, which) -> mUninstallActionListener.onNegativeResponse());
 
-        return builder.create();
+        // There is no root view here. Ok to pass null view root
+        @SuppressWarnings("InflateParams")
+        View dialogView = getLayoutInflater().inflate(R.layout.uninstall_fragment_layout, null);
+        final TextView customMessage = dialogView.requireViewById(R.id.custom_message);
+        customMessage.setVisibility(View.VISIBLE);
+        customMessage.setText(mDialogData.getDialogTextResource());
+
+        return UiUtil.getAlertDialog(requireContext(),
+                getString(mDialogData.getDialogTitleResource()),
+                dialogView, /* positiveBtnText= */ null, getString(R.string.button_close),
+                /* positiveBtnListener= */ null,
+                (dialogInt, which) -> mUninstallActionListener.onNegativeResponse(),
+                /* themeResId= */ 0);
     }
 
     @Override

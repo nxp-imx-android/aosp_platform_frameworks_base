@@ -74,3 +74,10 @@ flag {
     description: "Cover IntentSender API in addition to PendingIntent."
     bug: "405995292"
 }
+
+flag {
+    name: "bal_report_aborted_activity_starts"
+    namespace: "responsible_apis"
+    description: "Report aborted activity starts in the calling process."
+    bug: "427863001"
+}

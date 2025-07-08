@@ -2099,3 +2099,10 @@ flag {
       purpose: PURPOSE_BUGFIX
     }
 }
+
+flag {
+    name: "do_not_use_run_blocking"
+    namespace: "systemui"
+    description: "Gets rid of runBlocking usages wherever possible, across all of sysui."
+    bug: "423462317"
+}

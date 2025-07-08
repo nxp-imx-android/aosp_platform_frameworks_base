@@ -525,6 +525,8 @@ public final class AuthenticationPolicyManager {
     }
 
     /**
+     * Cancels watch ranging for the given authentication request id.
+     *
      * @hide
      */
     @RequiresPermission(USE_BIOMETRIC_INTERNAL)
@@ -532,6 +534,21 @@ public final class AuthenticationPolicyManager {
     public void cancelWatchRangingForRequestId(long authenticationRequestId) {
         try {
             mAuthenticationPolicyService.cancelWatchRangingForRequestId(authenticationRequestId);
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
+    /**
+     * Checks if watch ranging is available. Returns value using IProximityResultCallback.
+     *
+     * @hide
+     */
+    @RequiresPermission(USE_BIOMETRIC_INTERNAL)
+    @FlaggedApi(FLAG_IDENTITY_CHECK_WATCH)
+    public void isWatchRangingAvailable(@NonNull IProximityResultCallback resultCallback) {
+        try {
+            mAuthenticationPolicyService.isWatchRangingAvailable(resultCallback);
         } catch (RemoteException e) {
             throw e.rethrowFromSystemServer();
         }

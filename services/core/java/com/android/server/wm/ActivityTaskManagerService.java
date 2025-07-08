@@ -518,16 +518,6 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
 
     private final WindowStyleCache<ActivityRecord.WindowStyle> mWindowStyleCache =
             new WindowStyleCache<>(ActivityRecord.WindowStyle::new);
-    final UpdateConfigurationResult mTmpUpdateConfigurationResult =
-            new UpdateConfigurationResult();
-
-    // TODO(b/258618073): Remove this and make the related methods return whether config is changed.
-    static final class UpdateConfigurationResult {
-        // Configuration changes that were updated.
-        int changes;
-        // If the activity was relaunched to match the new configuration.
-        boolean activityRelaunched;
-    }
 
     /** Current sequencing integer of the configuration, for skipping old configurations. */
     private int mConfigurationSeq;
@@ -991,7 +981,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             mWindowManager.mRoot.onSettingsRetrieved();
             // This happens before any activities are started, so we can change global configuration
             // in-place.
-            updateConfigurationLocked(configuration, null, true);
+            updateConfigurationLocked(configuration, true /* initLocale */);
             final Configuration globalConfig = getGlobalConfiguration();
             ProtoLog.v(WM_DEBUG_CONFIGURATION, "Initial config: %s", globalConfig);
 
@@ -4149,6 +4139,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                     // Shell handles the request; see task supervisor's
                     // processStoppingAndFinishingActivities.
                     enterPipTransition.collect(r);
+                    // Collecting the current task of the PiP-candidate activity prevents
+                    // WindowAnimator from updating its surface visibility until the potential
+                    // PiP transition formally starts.
+                    enterPipTransition.collect(r.getTask());
                     getTransitionController().requestStartTransition(enterPipTransition,
                             r.getTask(), null /* remoteTransition */, null /* displayChange */);
                     // can run during finish, so partial
@@ -4328,9 +4322,7 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 if (values != null) {
                     Settings.System.clearConfiguration(values);
                 }
-                updateConfigurationLocked(values, null, false, false /* persistent */,
-                        UserHandle.USER_NULL, false /* deferResume */);
-                return mTmpUpdateConfigurationResult.changes != 0;
+                return updateConfigurationLocked(values, false /* initLocale */);
             } finally {
                 Binder.restoreCallingIdentity(origId);
             }
@@ -5014,16 +5006,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 : new Configuration();
     }
 
-    boolean updateConfigurationLocked(Configuration values, ActivityRecord starting,
-            boolean initLocale) {
-        return updateConfigurationLocked(values, starting, initLocale, false /* deferResume */);
-    }
-
-    boolean updateConfigurationLocked(Configuration values, ActivityRecord starting,
-            boolean initLocale, boolean deferResume) {
+    boolean updateConfigurationLocked(@NonNull Configuration values, boolean initLocale) {
         // pass UserHandle.USER_NULL as userId because we don't persist configuration for any user
-        return updateConfigurationLocked(values, starting, initLocale, false /* persistent */,
-                UserHandle.USER_NULL, deferResume);
+        return updateConfigurationLocked(values, initLocale, false /* persistent */,
+                UserHandle.USER_NULL);
     }
 
     public void updatePersistentConfiguration(Configuration values, @UserIdInt int userId) {
@@ -5033,8 +5019,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 // Window configuration is unrelated to persistent configuration (e.g. font scale,
                 // locale). Unset it to avoid affecting the current display configuration.
                 values.windowConfiguration.setToDefaults();
-                updateConfigurationLocked(values, null, false, true, userId,
-                        false /* deferResume */);
+                updateConfigurationLocked(values, false /* initLocale */, true /* persistent */,
+                        userId);
             }
         } finally {
             Binder.restoreCallingIdentity(origId);
@@ -5044,34 +5030,24 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     /**
      * Do either or both things: (1) change the current configuration, and (2)
      * make sure the given activity is running with the (now) current
-     * configuration.  Returns true if the activity has been left running, or
-     * false if <var>starting</var> is being destroyed to match the new
-     * configuration.
+     * configuration.  Returns true if the configuration is updated.
      *
      * @param userId is only used when persistent parameter is set to true to persist configuration
      *               for that particular user
      */
-    boolean updateConfigurationLocked(Configuration values, ActivityRecord starting,
-            boolean initLocale, boolean persistent, int userId, boolean deferResume) {
-        int changes = 0;
-        boolean kept = true;
+    boolean updateConfigurationLocked(@NonNull Configuration values, boolean initLocale,
+            boolean persistent, @UserIdInt int userId) {
+        final int changes;
 
         deferWindowLayout();
         try {
-            if (values != null) {
-                changes = updateGlobalConfigurationWithTransition(
-                        values, initLocale, persistent, userId);
-                mTmpUpdateConfigurationResult.changes = changes;
-            }
-
-            if (!deferResume) {
-                kept = ensureConfigAndVisibilityAfterUpdate(starting, changes);
-            }
+            changes = updateGlobalConfigurationWithTransition(
+                    values, initLocale, persistent, userId);
+            ensureConfigAndVisibilityAfterUpdate(null /* starting */, changes);
         } finally {
             continueWindowLayout();
         }
-        mTmpUpdateConfigurationResult.activityRelaunched = !kept;
-        return kept;
+        return changes != 0;
     }
 
     /** This is mainly to handle changes in locale, font scale/weight, uiMode, asset paths. */
@@ -5871,11 +5847,10 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
     }
 
     /** Applies latest configuration and/or visibility updates if needed. */
-    boolean ensureConfigAndVisibilityAfterUpdate(ActivityRecord starting, int changes) {
+    void ensureConfigAndVisibilityAfterUpdate(@Nullable ActivityRecord starting, int changes) {
         if (starting == null && mTaskSupervisor.isRootVisibilityUpdateDeferred()) {
-            return true;
+            return;
         }
-        boolean kept = true;
         final Task mainRootTask = mRootWindowContainer.getTopDisplayFocusedRootTask();
         // mainRootTask is null during startup.
         if (mainRootTask != null) {
@@ -5887,14 +5862,12 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
             }
 
             if (starting != null) {
-                kept = starting.ensureActivityConfiguration();
+                starting.ensureActivityConfiguration();
                 // And we need to make sure at this point that all other activities
                 // are made visible with the correct configuration.
                 mRootWindowContainer.ensureActivitiesVisible(starting);
             }
         }
-
-        return kept;
     }
 
     void scheduleAppGcsLocked() {
@@ -7641,9 +7614,8 @@ public class ActivityTaskManagerService extends IActivityTaskManager.Stub {
                 final int currentUserId = mAmInternal.getCurrentUserId();
                 Settings.System.adjustConfigurationForUser(mContext.getContentResolver(),
                         configuration, currentUserId, Settings.System.canWrite(mContext));
-                updateConfigurationLocked(configuration, null /* starting */,
-                        false /* initLocale */, false /* persistent */, currentUserId,
-                        false /* deferResume */);
+                updateConfigurationLocked(configuration, false /* initLocale */,
+                        false /* persistent */, currentUserId);
             }
         }
 

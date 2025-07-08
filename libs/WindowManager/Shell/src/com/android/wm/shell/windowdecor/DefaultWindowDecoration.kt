@@ -53,6 +53,7 @@ import com.android.wm.shell.apptoweb.AppToWebGenericLinksParser
 import com.android.wm.shell.apptoweb.AppToWebRepository
 import com.android.wm.shell.apptoweb.AssistContentRequester
 import com.android.wm.shell.common.DisplayController
+import com.android.wm.shell.common.LockTaskChangeListener
 import com.android.wm.shell.common.MultiInstanceHelper
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.common.SyncTransactionQueue
@@ -134,6 +135,7 @@ class DefaultWindowDecoration @JvmOverloads constructor(
     private val windowContainerTransactionSupplier: () -> WindowContainerTransaction =
         { WindowContainerTransaction() },
     surfaceControlSupplier: () -> SurfaceControl = { SurfaceControl() },
+    private val lockTaskChangeListener: LockTaskChangeListener
 ) : WindowDecoration2<WindowDecorLinearLayout>(
     taskInfo,
     context,
@@ -493,7 +495,7 @@ class DefaultWindowDecoration @JvmOverloads constructor(
             cornerRadiusId = getCornerRadiusId(captionType, shouldIgnoreCornerRadius),
             borderSettingsId = getBorderSettingsId(captionType, taskInfo, hasGlobalFocus),
             boxShadowSettingsIds = getShadowSettingsIds(captionType, hasGlobalFocus),
-            isCaptionVisible = shouldShowCaption(taskInfo),
+            isCaptionVisible = shouldShowCaption(taskInfo, lockTaskChangeListener.isTaskLocked),
             windowDecorConfig = windowDecorConfig,
             asyncViewHost = asyncViewHost,
             applyStartTransactionOnDraw = applyStartTransactionOnDraw,
@@ -611,13 +613,20 @@ class DefaultWindowDecoration @JvmOverloads constructor(
         }
 
 
-    private fun shouldShowCaption(taskInfo: RunningTaskInfo): Boolean =
+    private fun shouldShowCaption(taskInfo: RunningTaskInfo, isTaskLocked: Boolean): Boolean {
+        var showCaption: Boolean
         if (DesktopModeFlags.ENABLE_DESKTOP_IMMERSIVE_DRAG_BUGFIX.isTrue && isDragging) {
             // If the task is being dragged, the caption should not be hidden so that it continues
             // receiving input
-            true
+            showCaption = true
         } else if (DesktopModeFlags.ENABLE_FULLY_IMMERSIVE_IN_DESKTOP.isTrue && inFullImmersive) {
-            isStatusBarVisible && !isKeyguardVisibleAndOccluded
+            showCaption = isStatusBarVisible && !isKeyguardVisibleAndOccluded
+
+            if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
+                && !taskInfo.isFreeform
+            ) {
+                showCaption = showCaption && !isTaskLocked
+            }
         } else {
             // Caption should always be visible in freeform mode. When not in freeform,
             // align with the status bar except when showing over keyguard (where it should not
@@ -627,8 +636,17 @@ class DefaultWindowDecoration @JvmOverloads constructor(
             //   forcibly-shown. It may be that the InsetsState (from which |mIsStatusBarVisible|
             //   is set) still contains an invisible insets source in immersive cases even if the
             //   status bar is shown?
-            taskInfo.isFreeform || (isStatusBarVisible && !isKeyguardVisibleAndOccluded)
+            showCaption = taskInfo.isFreeform || (isStatusBarVisible && !isKeyguardVisibleAndOccluded)
+
+            if (DesktopExperienceFlags.ENABLE_DESKTOP_WINDOWING_ENTERPRISE_BUGFIX.isTrue()
+                && !taskInfo.isFreeform
+            ) {
+                showCaption = showCaption && !isTaskLocked
+            }
         }
+
+        return showCaption
+    }
 
     private fun updateDragResizeListenerIfNeeded(containerSurface: SurfaceControl) {
         val taskPositionChanged = !taskInfo.positionInParent.equals(taskPositionInParent)

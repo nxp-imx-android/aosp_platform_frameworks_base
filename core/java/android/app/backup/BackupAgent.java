@@ -160,8 +160,8 @@ public abstract class BackupAgent extends ContextWrapper {
     public static final int TYPE_SYMLINK = 3;
 
     /**
-     * Flag for {@link BackupDataOutput#getTransportFlags()} and {@link
-     * FullBackupDataOutput#getTransportFlags()} only.
+     * Flag for {@link BackupDataOutput#getTransportFlags()}, {@link
+     * FullBackupDataOutput#getTransportFlags()} and {@link #onMeasureFullBackup(long, int)} only.
      *
      * <p>The transport has client-side encryption enabled. i.e., the user's backup has been
      * encrypted with a key known only to the device, and not to the remote storage solution. Even
@@ -171,8 +171,8 @@ public abstract class BackupAgent extends ContextWrapper {
     public static final int FLAG_CLIENT_SIDE_ENCRYPTION_ENABLED = 1;
 
     /**
-     * Flag for {@link BackupDataOutput#getTransportFlags()} and {@link
-     * FullBackupDataOutput#getTransportFlags()} only.
+     * Flag for {@link BackupDataOutput#getTransportFlags()}, {@link
+     * FullBackupDataOutput#getTransportFlags()} and {@link #onMeasureFullBackup(long, int)} only.
      *
      * <p>The transport is for a device-to-device transfer. There is no third party or intermediate
      * storage. The user's backup data is sent directly to another device over e.g., USB or WiFi.
@@ -634,6 +634,26 @@ public abstract class BackupAgent extends ContextWrapper {
         manifestExcludeSet = backupScheme.maybeParseAndGetCanonicalExcludePaths();
 
         return new IncludeExcludeRules(manifestIncludeMap, manifestExcludeSet);
+    }
+
+    /**
+     * Estimate how much data in bytes a full backup will deliver. This is used during the preflight
+     * check to make sure the size doesn't exceed the backup quota.
+     *
+     * <p>By default, the backup size is measured by calling {@link
+     * #onFullBackup(FullBackupDataOutput)} and looking at the size of the backup it produces while
+     * discarding the data. This method can be overridden to provide an alternative, more efficient
+     * estimation if necessary.
+     *
+     * @param quotaBytes The maximum data size that the transport currently permits this application
+     *     to store as a backup.
+     * @param transportFlags flags with additional information about the backup transport.
+     * @return estimated size of the full backup. If the returned size is negative, the backup agent
+     *     will fallback to using {@link #onFullBackup(FullBackupDataOutput)} to measure the size.
+     */
+    @FlaggedApi(Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER)
+    public long onMeasureFullBackup(long quotaBytes, int transportFlags) throws IOException {
+        return -1;
     }
 
     /**
@@ -1348,6 +1368,7 @@ public abstract class BackupAgent extends ContextWrapper {
 
         public void doMeasureFullBackup(
                 long quotaBytes, int token, IBackupManager callbackBinder, int transportFlags) {
+            long estimatedBackupSize = -1;
             FullBackupDataOutput measureOutput =
                     new FullBackupDataOutput(quotaBytes, transportFlags);
 
@@ -1356,7 +1377,15 @@ public abstract class BackupAgent extends ContextWrapper {
             // Ensure that we're running with the app's normal permission level
             final long ident = Binder.clearCallingIdentity();
             try {
-                BackupAgent.this.onFullBackup(measureOutput);
+                if (Flags.enableCrossPlatformTransfer()) {
+                    estimatedBackupSize =
+                            BackupAgent.this.onMeasureFullBackup(quotaBytes, transportFlags);
+                    if (estimatedBackupSize < 0) {
+                        BackupAgent.this.onFullBackup(measureOutput);
+                    }
+                } else {
+                    BackupAgent.this.onFullBackup(measureOutput);
+                }
             } catch (IOException ex) {
                 Log.d(
                         TAG,
@@ -1373,7 +1402,11 @@ public abstract class BackupAgent extends ContextWrapper {
                 Binder.restoreCallingIdentity(ident);
                 try {
                     callbackBinder.opCompleteForUser(
-                            getBackupUserId(), token, measureOutput.getSize());
+                            getBackupUserId(),
+                            token,
+                            estimatedBackupSize >= 0
+                                    ? estimatedBackupSize
+                                    : measureOutput.getSize());
                 } catch (RemoteException e) {
                     // timeout, so we're safe
                 }

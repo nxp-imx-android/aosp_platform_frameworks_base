@@ -261,30 +261,11 @@ flag {
 }
 
 flag {
-    name: "virtual_display_limit"
-    namespace: "display_manager"
-    description: "Limit the number of virtual displays that can be created."
-    bug: "261791612"
-    is_fixed_read_only: true
-}
-
-flag {
     name: "enable_battery_stats_for_all_displays"
     namespace: "display_manager"
     description: "Flag to enable battery stats for all displays."
     bug: "366112793"
     is_fixed_read_only: true
-}
-
-flag {
-    name: "enable_apply_display_changed_during_display_added"
-    namespace: "display_manager"
-    description: "Apply display changes after display added"
-    bug: "368131655"
-    is_fixed_read_only: true
-    metadata {
-      purpose: PURPOSE_BUGFIX
-    }
 }
 
 flag {

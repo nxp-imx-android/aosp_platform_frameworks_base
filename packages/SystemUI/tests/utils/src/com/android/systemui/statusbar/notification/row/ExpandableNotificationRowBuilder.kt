@@ -61,9 +61,12 @@ import com.android.systemui.statusbar.notification.BundleInteractionLogger
 import com.android.systemui.statusbar.notification.ColorUpdateLogger
 import com.android.systemui.statusbar.notification.ConversationNotificationManager
 import com.android.systemui.statusbar.notification.ConversationNotificationProcessor
+import com.android.systemui.statusbar.notification.collection.BundleEntry
+import com.android.systemui.statusbar.notification.collection.BundleSpec
 import com.android.systemui.statusbar.notification.collection.GroupEntryBuilder
 import com.android.systemui.statusbar.notification.collection.NotificationEntry
 import com.android.systemui.statusbar.notification.collection.NotificationEntryBuilder
+import com.android.systemui.statusbar.notification.collection.PipelineEntry
 import com.android.systemui.statusbar.notification.collection.buildNotificationEntry
 import com.android.systemui.statusbar.notification.collection.buildSummaryNotificationEntry
 import com.android.systemui.statusbar.notification.collection.mockNotifCollection
@@ -425,13 +428,11 @@ class ExpandableNotificationRowBuilder(
         return generateRow(entry, INFLATION_FLAGS)
     }
 
-    private fun generateRow(
-        entry: NotificationEntry,
-        @InflationFlag extraInflationFlags: Int,
-    ): ExpandableNotificationRow {
-        // NOTE: This flag is read when the ExpandableNotificationRow is inflated, so it needs to be
-        //  set, but we do not want to override an existing value that is needed by a specific test.
+    fun createRowBundle(spec: BundleSpec): ExpandableNotificationRow {
+        return generateRow(BundleEntry(spec))
+    }
 
+    private fun initRow(entry: PipelineEntry): ExpandableNotificationRow {
         val userTracker = Mockito.mock(UserTracker::class.java, STUB_ONLY)
         whenever(userTracker.userHandle).thenReturn(context.user)
 
@@ -443,13 +444,7 @@ class ExpandableNotificationRowBuilder(
                 Mockito.mock(AsyncRowInflater::class.java, STUB_ONLY),
             )
         val row = rowInflaterTask.inflateSynchronously(context, null, entry)
-
         val entryAdapter = kosmos.entryAdapterFactory.create(entry)
-
-        entry.row = row
-        mIconManager.createIcons(entry)
-        mBindPipelineEntryListener.onEntryInit(entry)
-        mBindPipeline.manageRow(entry, row)
         row.initialize(
             entryAdapter, // if (NotificationBundleUi.isEnabled) entryAdapter else null,
             entry, // if (NotificationBundleUi.isEnabled) null else entry,
@@ -481,8 +476,29 @@ class ExpandableNotificationRowBuilder(
             Mockito.mock(BundleInteractionLogger::class.java, STUB_ONLY),
         )
         row.setAboveShelfChangedListener {}
+        return row
+    }
+
+    private fun generateRow(
+        entry: NotificationEntry,
+        @InflationFlag extraInflationFlags: Int,
+    ): ExpandableNotificationRow {
+        // NOTE: This flag is read when the ExpandableNotificationRow is inflated, so it needs to be
+        //  set, but we do not want to override an existing value that is needed by a specific test.
+
+        val row = initRow(entry)
+        entry.row = row
+        mIconManager.createIcons(entry)
+        mBindPipelineEntryListener.onEntryInit(entry)
+        mBindPipeline.manageRow(entry, row)
         mBindStage.getStageParams(entry).requireContentViews(extraInflationFlags)
         inflateAndWait(entry)
+        return row
+    }
+
+    private fun generateRow(entry: BundleEntry): ExpandableNotificationRow {
+        val row = initRow(entry)
+        entry.row = row
         return row
     }
 

@@ -127,12 +127,12 @@ class WindowDecorationGestureExclusionTracker(
                 is IllegalArgumentException, is RemoteException -> {
                     // Catching both IllegalArgumentException and RemoteException with Exception
                     Slog.e(TAG,
-                        "Failed to unregister window manager callbacks for display: $displayId", ex)
+                        "Failed to unregister window manager callbacks for display: $displayId")
                 }
                 else -> throw ex
             }
-            exclusionRegions.remove(displayId)
         }
+        exclusionRegions.remove(displayId)
     }
 
     override fun toString(): String {

@@ -16,6 +16,7 @@
 
 package com.android.systemui.accessibility.keygesture.ui
 
+import android.hardware.input.KeyGestureEvent
 import android.text.Annotation
 import android.text.Spanned
 import androidx.compose.foundation.text.InlineTextContent
@@ -118,7 +119,18 @@ constructor(
                 }
             }
 
-        currentDialog?.show()
+        currentDialog?.let { dialog ->
+            dialog.show()
+
+            // We need to announce the text for the TalkBack dialog.
+            if (
+                keyGestureConfirmInfo.keyGestureType ==
+                    KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_SCREEN_READER
+            ) {
+                val tts = interactor.performTtsPromptForText(keyGestureConfirmInfo.contentText)
+                dialog.setOnDismissListener { tts.dismiss() }
+            }
+        }
     }
 
     private fun dismissDialog() {

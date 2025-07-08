@@ -333,6 +333,10 @@
         <intent>
             <action android:name="android.intent.action.CREATE_NOTE" />
         </intent>
+        <!-- Required for apps targeting Android 11 that use text-to-speech -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
     </queries>
 
     <!-- Permission to register process observer -->

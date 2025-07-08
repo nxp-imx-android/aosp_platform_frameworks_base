@@ -201,6 +201,7 @@ fun ShortPill(
                 .padding(4.dp)
 
         val filteredActions = FilterUtils.filterActions(actions)
+        val expandActionLabel = stringResource(id = R.string.ambient_cue_expand_action)
 
         // The layout for the un-expanded state (pill + side button)
         if (horizontal) {
@@ -222,6 +223,16 @@ fun ShortPill(
                                     Modifier.clickable(
                                         indication = null,
                                         interactionSource = null,
+                                        // Set expand action when the action is not one-tap action.
+                                        onClickLabel =
+                                            if (
+                                                filteredActions.size == 1 &&
+                                                    filteredActions[0].actionType ==
+                                                        ActionType.MA &&
+                                                    filteredActions[0].oneTapEnabled
+                                            )
+                                                null
+                                            else expandActionLabel,
                                     ) {
                                         onClick()
                                     }

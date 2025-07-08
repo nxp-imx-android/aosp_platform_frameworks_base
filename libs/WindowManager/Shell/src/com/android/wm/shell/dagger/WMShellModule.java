@@ -82,6 +82,7 @@ import com.android.wm.shell.common.DisplayLayout;
 import com.android.wm.shell.common.FloatingContentCoordinator;
 import com.android.wm.shell.common.HomeIntentProvider;
 import com.android.wm.shell.common.LaunchAdjacentController;
+import com.android.wm.shell.common.LockTaskChangeListener;
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorController;
 import com.android.wm.shell.common.MultiDisplayDragMoveIndicatorSurface;
 import com.android.wm.shell.common.MultiInstanceHelper;
@@ -994,7 +995,9 @@ public abstract class WMShellModule {
             @ShellMainThread ShellExecutor mainExecutor,
             DesktopState desktopState,
             ShellInit shellInit,
-            ShellController shellController) {
+            ShellController shellController,
+            InteractionJankMonitor interactionJankMonitor
+    ) {
         return new DesktopTilingDecorViewModel(
                 context,
                 mainDispatcher,
@@ -1013,7 +1016,8 @@ public abstract class WMShellModule {
                 mainExecutor,
                 desktopState,
                 shellInit,
-                shellController
+                shellController,
+                interactionJankMonitor
         );
     }
 
@@ -1187,7 +1191,7 @@ public abstract class WMShellModule {
                     desktopModeWindowDecorViewModel, desktopTasksController,
                     desktopUserRepositories,
                     inputManager, shellTaskOrganizer, focusTransitionObserver,
-                    mainExecutor, displayController));
+                    mainExecutor, displayController, desktopState));
         }
         return Optional.empty();
     }
@@ -1239,7 +1243,8 @@ public abstract class WMShellModule {
             DesksOrganizer desksOrganizer,
             ShellDesktopState shelldesktopState,
             DesktopConfig desktopConfig,
-            UserProfileContexts userProfileContexts
+            UserProfileContexts userProfileContexts,
+            LockTaskChangeListener lockTaskChangeListener
     ) {
         if (!shelldesktopState.canEnterDesktopModeOrShowAppHandle()) {
             return Optional.empty();
@@ -1258,7 +1263,15 @@ public abstract class WMShellModule {
                 desktopModeUiEventLogger, taskResourceLoader, recentsTransitionHandler,
                 desktopModeCompatPolicy, desktopTilingDecorViewModel,
                 multiDisplayDragMoveIndicatorController, compatUI.orElse(null),
-                desksOrganizer, shelldesktopState, desktopConfig, userProfileContexts));
+                desksOrganizer, shelldesktopState, desktopConfig, userProfileContexts,
+                lockTaskChangeListener));
+    }
+
+    @WMSingleton
+    @Provides
+    static LockTaskChangeListener provideLockTaskChangeListener(ShellInit shellInit,
+            TaskStackListenerImpl taskStackListenerImpl) {
+        return new LockTaskChangeListener(shellInit, taskStackListenerImpl);
     }
 
     @WMSingleton

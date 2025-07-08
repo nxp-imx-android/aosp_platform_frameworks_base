@@ -19,8 +19,11 @@ import android.graphics.Typeface
 import android.os.Vibrator
 import android.view.LayoutInflater
 import com.android.systemui.customization.R
+import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
-import com.android.systemui.log.core.MessageBuffer
+import com.android.systemui.customization.clocks.TimeKeeper
+import com.android.systemui.customization.clocks.TimeKeeperImpl
+import com.android.systemui.customization.clocks.TypefaceCache
 import com.android.systemui.plugins.clocks.AxisPresetConfig
 import com.android.systemui.plugins.clocks.ClockAxisStyle
 import com.android.systemui.plugins.clocks.ClockController
@@ -36,17 +39,6 @@ import com.android.systemui.shared.clocks.FlexClockController.Companion.getDefau
 private val TAG = DefaultClockProvider::class.simpleName
 const val DEFAULT_CLOCK_ID = "DEFAULT"
 const val FLEX_CLOCK_ID = "DIGITAL_CLOCK_FLEX"
-
-data class ClockContext(
-    val context: Context,
-    val resources: Resources,
-    val settings: ClockSettings,
-    val typefaceCache: TypefaceCache,
-    val messageBuffers: ClockMessageBuffers,
-    val messageBuffer: MessageBuffer,
-    val vibrator: Vibrator?,
-    val timeKeeper: TimeKeeper,
-)
 
 /** Provides the default system clock */
 class DefaultClockProvider
@@ -96,11 +88,11 @@ constructor(
                     resources,
                     clockSettings,
                     typefaceCache,
-                    buffers,
                     buffers.infraMessageBuffer,
                     vibrator,
                     timeKeeperFactory(),
-                )
+                ),
+                buffers,
             )
         } else {
             DefaultClockController(ctx, layoutInflater, resources, settings, messageBuffers)

@@ -39,6 +39,7 @@ import com.android.server.LocalServices;
 import com.android.server.SystemService;
 import com.android.server.biometrics.BiometricHandlerProvider;
 
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -121,6 +122,24 @@ public class WatchRangingService implements WatchRangingServiceInternal {
         });
     }
 
+    @Override
+    public void isWatchRangingAvailable(@NonNull IProximityResultCallback proximityResultCallback) {
+        mHandler.post(() -> bindAndStartRequest(proximityResultCallback,
+                ProximityResultCode.PRIMARY_DEVICE_RANGING_NOT_SUPPORTED,
+                proximityProviderService -> {
+                    try {
+                        final int resultCode =
+                                proximityProviderService.isProximityCheckingAvailable();
+                        onError(proximityResultCallback, resultCode);
+                    } catch (RemoteException e) {
+                        Slog.e(TAG, "Remote exception thrown when"
+                                + "isProximityCheckingAvailable triggered");
+                        onError(proximityResultCallback,
+                                ProximityResultCode.PRIMARY_DEVICE_RANGING_NOT_SUPPORTED);
+                    }
+                }));
+    }
+
     private void unbindProximityProviderService() {
         if (mProximityProviderServiceConnection != null) {
             mContext.unbindService(mProximityProviderServiceConnection);
@@ -134,14 +153,14 @@ public class WatchRangingService implements WatchRangingServiceInternal {
         LocalServices.addService(WatchRangingServiceInternal.class, this);
     }
 
-    private void bindAndStartWatchRanging(long authenticationRequestId,
-            IProximityResultCallback proximityResultCallback) {
+    private void bindAndStartRequest(IProximityResultCallback proximityResultCallback,
+            int defaultError, Consumer<IProximityProviderService> request) {
         mProximityProviderServiceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
                 if (service == null) {
                     Slog.d(TAG, "No service found for proximity provider.");
-                    onError(proximityResultCallback, ProximityResultCode.NO_ASSOCIATED_DEVICE);
+                    onError(proximityResultCallback, defaultError);
                     return;
                 }
                 mProximityProviderService = mProximityProviderServiceFunction.apply(service);
@@ -149,21 +168,13 @@ public class WatchRangingService implements WatchRangingServiceInternal {
                     Slog.e(TAG, "Proximity provider service is null");
                     return;
                 }
-                final ICancellationSignal cancellationSignal =
-                        anyWatchNearby(mProximityProviderService, proximityResultCallback);
-                if (cancellationSignal != null) {
-                    mCancellationSignalForWatchRanging = new CancellationSignalForWatchRanging(
-                            authenticationRequestId, cancellationSignal);
-                } else {
-                    onError(proximityResultCallback, ProximityResultCode.NO_ASSOCIATED_DEVICE);
-                    unbindProximityProviderService();
-                }
+                request.accept(mProximityProviderService);
             }
 
             @Override
             public void onServiceDisconnected(ComponentName name) {
                 Slog.e(TAG, "Proximity provider service disconnected");
-                onError(proximityResultCallback, ProximityResultCode.NO_RANGING_RESULT);
+                onError(proximityResultCallback, defaultError);
             }
         };
 
@@ -178,8 +189,27 @@ public class WatchRangingService implements WatchRangingServiceInternal {
 
         if (!bindSuccessful) {
             Slog.d(TAG, "Couldn't find service for ProximityProviderService");
-            onError(proximityResultCallback, ProximityResultCode.NO_ASSOCIATED_DEVICE);
+            onError(proximityResultCallback, defaultError);
         }
+    }
+
+    private void bindAndStartWatchRanging(long authenticationRequestId,
+            IProximityResultCallback proximityResultCallback) {
+        Slog.d(TAG, "Binding to ProximityProviderService and starting watch ranging");
+        bindAndStartRequest(proximityResultCallback, ProximityResultCode.NO_ASSOCIATED_DEVICE,
+                proximityProviderService -> {
+                    final ICancellationSignal cancellationSignal =
+                            anyWatchNearby(mProximityProviderService, proximityResultCallback);
+                    if (cancellationSignal != null) {
+                        mCancellationSignalForWatchRanging =
+                                new CancellationSignalForWatchRanging(authenticationRequestId,
+                                        cancellationSignal);
+                    } else {
+                        onError(proximityResultCallback,
+                                ProximityResultCode.NO_ASSOCIATED_DEVICE);
+                        unbindProximityProviderService();
+                    }
+                });
     }
 
     private void onError(IProximityResultCallback proximityResultCallback,

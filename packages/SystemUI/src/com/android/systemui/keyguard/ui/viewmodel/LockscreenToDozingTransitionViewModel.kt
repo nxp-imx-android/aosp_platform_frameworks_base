@@ -52,6 +52,8 @@ constructor(
             transitionAnimation.immediatelyTransitionTo(1f)
         }
 
+    val nonAuthUIAlpha: Flow<Float> = dozingTransitionFlows.nonAuthUIAlpha(from = LOCKSCREEN)
+
     val shortcutsAlpha: Flow<Float> =
         transitionAnimation.sharedFlow(
             duration = 250.milliseconds,

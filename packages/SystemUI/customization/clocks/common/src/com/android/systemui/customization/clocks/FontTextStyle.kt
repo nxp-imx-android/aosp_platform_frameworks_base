@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-package com.android.keyguard.logging
+package com.android.systemui.customization.clocks
 
-import com.android.systemui.kosmos.Kosmos
-import com.android.systemui.util.mockito.mock
+import android.view.animation.Interpolator
+import com.android.systemui.animation.TextAnimator
 
-var Kosmos.keyguardTransitionAnimationLogger by
-    Kosmos.Fixture { mock<KeyguardTransitionAnimationLogger>() }
+data class FontTextStyle(
+    val lineHeight: Float? = null,
+    val fontSizeScale: Float? = null,
+    val transitionDuration: Long = TextAnimator.DEFAULT_ANIMATION_DURATION,
+    val transitionInterpolator: Interpolator? = null,
+)

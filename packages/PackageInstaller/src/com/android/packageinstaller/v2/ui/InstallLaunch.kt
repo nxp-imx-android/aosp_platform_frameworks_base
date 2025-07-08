@@ -52,8 +52,8 @@ import com.android.packageinstaller.v2.ui.fragments.InstallInstallingFragment
 import com.android.packageinstaller.v2.ui.fragments.InstallStagingFragment
 import com.android.packageinstaller.v2.ui.fragments.InstallSuccessFragment
 import com.android.packageinstaller.v2.ui.fragments.ParseErrorFragment
-import com.android.packageinstaller.v2.ui.fragments.SimpleErrorFragment
-import com.android.packageinstaller.v2.ui.fragments.VerificationConfirmationFragment
+import com.android.packageinstaller.v2.ui.fragments.InstallRestrictionFragment
+import com.android.packageinstaller.v2.ui.fragments.DeveloperVerificationConfirmationFragment
 import com.android.packageinstaller.v2.viewmodel.InstallViewModel
 import com.android.packageinstaller.v2.viewmodel.InstallViewModelFactory
 
@@ -167,7 +167,7 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
                     }
 
                     InstallUserActionRequired.USER_ACTION_REASON_VERIFICATION_CONFIRMATION -> {
-                        val actionDialog = VerificationConfirmationFragment(uar)
+                        val actionDialog = DeveloperVerificationConfirmationFragment(uar)
                         showDialogInner(actionDialog)
                     }
 
@@ -258,11 +258,11 @@ class InstallLaunch : FragmentActivity(), InstallActionListener {
         }
         return when (restriction) {
             UserManager.DISALLOW_INSTALL_APPS ->
-                SimpleErrorFragment.newInstance(R.string.message_no_install_apps_restriction)
+                InstallRestrictionFragment.newInstance(R.string.message_no_install_apps_restriction)
 
             UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES,
             UserManager.DISALLOW_INSTALL_UNKNOWN_SOURCES_GLOBALLY ->
-                SimpleErrorFragment.newInstance(R.string.message_no_install_unknown_apps_restriction)
+                InstallRestrictionFragment.newInstance(R.string.message_no_install_unknown_apps_restriction)
 
             else -> null
         }

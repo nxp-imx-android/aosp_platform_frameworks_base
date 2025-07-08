@@ -16,7 +16,7 @@
 
 package com.android.wm.shell.functional.resizing
 
-import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.Presubmit
 import android.platform.test.rule.ScreenRecordRule
 import com.android.wm.shell.scenarios.SnapResizeAppWindowWithButton
 import org.junit.runner.RunWith
@@ -24,6 +24,6 @@ import org.junit.runners.BlockJUnit4ClassRunner
 
 /* Functional test for [SnapResizeAppWindowWithButton]. */
 @RunWith(BlockJUnit4ClassRunner::class)
-@Postsubmit
+@Presubmit
 @ScreenRecordRule.ScreenRecord
 class SnapResizeAppWindowWithButtonTest : SnapResizeAppWindowWithButton()

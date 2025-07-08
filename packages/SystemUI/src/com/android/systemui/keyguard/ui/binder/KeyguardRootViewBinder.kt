@@ -205,6 +205,18 @@ object KeyguardRootViewBinder {
                         }
                     }
 
+                    if (Flags.newDozingKeyguardStates()) {
+                        launch("$TAG#nonAuthUIAlpha") {
+                            viewModel.nonAuthUIAlpha.collect { alpha ->
+                                for (childView in childViews) {
+                                    if (!authUiIds.contains(childView.key)) {
+                                        childView.value.alpha = alpha
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     launch("$TAG#zoomOut") {
                         viewModel.scaleFromZoomOut.collect { scaleFromZoomOut ->
                             view.scaleX = scaleFromZoomOut
@@ -587,6 +599,7 @@ object KeyguardRootViewBinder {
     private val deviceEntryIcon = R.id.device_entry_icon_view
     private val nsslPlaceholderId = R.id.nssl_placeholder
     private val authInteractionProperties = AuthInteractionProperties()
+    private val authUiIds = setOf(deviceEntryIcon, indicationArea)
 
     private const val ID = "occluding_app_device_entry_unlock_msg"
     private const val AOD_ICONS_APPEAR_DURATION: Long = 200

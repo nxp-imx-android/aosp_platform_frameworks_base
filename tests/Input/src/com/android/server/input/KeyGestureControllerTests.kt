@@ -144,6 +144,7 @@ class KeyGestureControllerTests {
         const val RANDOM_PID2 = 12
         const val RANDOM_DISPLAY_ID = 123
         const val SCREENSHOT_CHORD_DELAY: Long = 1000
+        const val LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS: Long = 1000
         // App delegate that consumes all keys that it receives
         val BLOCKING_APP = AppDelegate { _ -> true }
         // App delegate that doesn't consume any keys that it receives
@@ -311,9 +312,7 @@ class KeyGestureControllerTests {
             )
             .thenReturn(true)
         Mockito.`when`(inputManager.appLaunchBookmarks).thenAnswer {
-            keyGestureController.appLaunchBookmarks.map {
-                bookmark -> InputGestureData(bookmark)
-            }
+            keyGestureController.appLaunchBookmarks.map { bookmark -> InputGestureData(bookmark) }
         }
         keyGestureController.systemRunning()
         testLooper.dispatchAll()
@@ -1270,6 +1269,62 @@ class KeyGestureControllerTests {
                 KeyEvent.META_CTRL_ON,
             )
         assertEquals(-1, keyGestureController.interceptKeyBeforeDispatching(null, event, 0))
+    }
+
+    @Test
+    fun testLongPressEscape_withKeyCapture_exitCalled() {
+        setupKeyGestureController()
+        enableKeyCaptureForFocussedWindow()
+        var callback = 0
+        val handler = KeyGestureHandler { _, _ -> callback++ }
+        keyGestureController.registerKeyGestureHandler(
+            intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK),
+            handler,
+            TEST_PID,
+        )
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_ESCAPE),
+            timeDelayMs = 2 * LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS
+        )
+        keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
+        assertEquals(1, callback)
+    }
+
+    @Test
+    fun testLongPressEscape_withoutKeyCapture_exitNotCalled() {
+        setupKeyGestureController()
+        var callback = 0
+        val handler = KeyGestureHandler { _, _ -> callback++ }
+        keyGestureController.registerKeyGestureHandler(
+            intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK),
+            handler,
+            TEST_PID,
+        )
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_ESCAPE),
+            timeDelayMs = 2 * LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS
+        )
+        keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
+        assertEquals(0, callback)
+    }
+
+    @Test
+    fun testLongPressEscape_withKeyCapture_exitNotCalled_insufficientDuration() {
+        setupKeyGestureController()
+        enableKeyCaptureForFocussedWindow()
+        var callback = 0
+        val handler = KeyGestureHandler { _, _ -> callback++ }
+        keyGestureController.registerKeyGestureHandler(
+            intArrayOf(KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK),
+            handler,
+            TEST_PID,
+        )
+        sendKeys(
+            intArrayOf(KeyEvent.KEYCODE_ESCAPE),
+            timeDelayMs = LONG_PRESS_DELAY_FOR_ESCAPE_MILLIS / 2
+        )
+        keyGestureController.unregisterKeyGestureHandler(handler, TEST_PID)
+        assertEquals(0, callback)
     }
 
     private fun testKeyGestureProduced(test: KeyGestureData, appDelegate: AppDelegate) {

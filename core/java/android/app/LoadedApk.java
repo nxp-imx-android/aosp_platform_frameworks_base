@@ -51,10 +51,14 @@ import android.os.SystemProperties;
 import android.os.Trace;
 import android.os.UserHandle;
 import android.provider.Settings;
+import android.ravenwood.annotation.RavenwoodIgnore;
 import android.ravenwood.annotation.RavenwoodKeep;
 import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepStaticInitializer;
+import android.ravenwood.annotation.RavenwoodRedirect;
 import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.ravenwood.annotation.RavenwoodReplace;
+import android.ravenwood.annotation.RavenwoodThrow;
 import android.security.net.config.NetworkSecurityConfigProvider;
 import android.text.TextUtils;
 import android.util.AndroidRuntimeException;
@@ -114,6 +118,7 @@ final class ServiceConnectionLeaked extends AndroidRuntimeException {
  */
 @RavenwoodKeepPartialClass
 @RavenwoodRedirectionClass("LoadedApk_ravenwood")
+@RavenwoodKeepStaticInitializer
 public final class LoadedApk {
     static final String TAG = "LoadedApk";
     static final boolean DEBUG = false;
@@ -183,6 +188,7 @@ public final class LoadedApk {
 
     private final Object mLock = new Object();
 
+    @RavenwoodKeep
     Application getApplication() {
         return mApplication;
     }
@@ -869,6 +875,7 @@ public final class LoadedApk {
     }
 
     @GuardedBy("mLock")
+    @RavenwoodThrow(comment = "Class loader hierarchy not supported")
     private void createOrUpdateClassLoaderLocked(List<String> addedPaths) {
         if (mPackageName.equals("android")) {
             // Note: This branch is taken for system server and we don't need to setup
@@ -1163,6 +1170,7 @@ public final class LoadedApk {
     }
 
     @UnsupportedAppUsage
+    @RavenwoodRedirect
     public ClassLoader getClassLoader() {
         ClassLoader ret = mClassLoader;
         if (ret != null) {
@@ -1257,6 +1265,7 @@ public final class LoadedApk {
      * user to set their own if we detect that they are using a
      * Java library that expects it to be set.
      */
+    @RavenwoodIgnore(reason = "Class loader hierarchy not supported")
     private void initializeJavaContextClassLoader() {
         IPackageManager pm = ActivityThread.getPackageManager();
         android.content.pm.PackageInfo pi =
@@ -1352,6 +1361,7 @@ public final class LoadedApk {
     }
 
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public String getAppDir() {
         return mAppDir;
     }
@@ -1361,6 +1371,7 @@ public final class LoadedApk {
     }
 
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public String getResDir() {
         return mResDir;
     }
@@ -1389,6 +1400,7 @@ public final class LoadedApk {
         return mOverlayPaths;
     }
 
+    @RavenwoodKeep
     public String getDataDir() {
         return mDataDir;
     }
@@ -1416,32 +1428,32 @@ public final class LoadedApk {
     }
 
     @UnsupportedAppUsage
-    @RavenwoodReplace(comment = "mResources needs to be set explicitly on ravenwood for now")
+    @RavenwoodKeep
     public Resources getResources() {
         if (mResources == null) {
-            final String[] splitPaths;
-            try {
-                splitPaths = getSplitPaths(null);
-            } catch (NameNotFoundException e) {
-                // This should never fail.
-                throw new AssertionError("null split not found");
-            }
-
-            if (Process.myUid() == mApplicationInfo.uid) {
-                ResourcesManager.getInstance().initializeApplicationPaths(mResDir, splitPaths);
-            }
-
-            mResources = ResourcesManager.getInstance().getResources(null, mResDir,
-                    splitPaths, mLegacyOverlayDirs, mOverlayPaths,
-                    mApplicationInfo.sharedLibraryFiles, null, null, getCompatibilityInfo(),
-                    getClassLoader(), null);
+            mResources = getResourcesInner();
         }
         return mResources;
     }
 
-    private Resources getResources$ravenwood() {
-        return Objects.requireNonNull(mResources,
-                "mResources needs to be set explicitly on ravenwood for now");
+    @RavenwoodRedirect
+    private Resources getResourcesInner() {
+        final String[] splitPaths;
+        try {
+            splitPaths = getSplitPaths(null);
+        } catch (NameNotFoundException e) {
+            // This should never fail.
+            throw new AssertionError("null split not found");
+        }
+
+        if (Process.myUid() == mApplicationInfo.uid) {
+            ResourcesManager.getInstance().initializeApplicationPaths(mResDir, splitPaths);
+        }
+
+        return ResourcesManager.getInstance().getResources(null, mResDir,
+                splitPaths, mLegacyOverlayDirs, mOverlayPaths,
+                mApplicationInfo.sharedLibraryFiles, null, null, getCompatibilityInfo(),
+                getClassLoader(), null);
     }
 
     /**
@@ -1449,6 +1461,7 @@ public final class LoadedApk {
      * the cached Application instance.
      */
     @UnsupportedAppUsage
+    @RavenwoodKeep
     public Application makeApplication(boolean forceDefaultAppClass,
             Instrumentation instrumentation) {
         return makeApplicationInner(forceDefaultAppClass, instrumentation,
@@ -1457,19 +1470,25 @@ public final class LoadedApk {
 
     /**
      * This is for all the (internal) callers, for which we do return the cached instance.
+     *
+     * TODO: The name "inner" is confusing. It's more like "makeApplication*Real*".
+     * makeApplication() is _not_ used within the framework and we should use this method instead
+     * throughout. We leave makeApplication() untouched with its old behavior for 3p apps
+     * using this hidden API directly.
      */
+    @RavenwoodKeep
     public Application makeApplicationInner(boolean forceDefaultAppClass,
             Instrumentation instrumentation) {
         return makeApplicationInner(forceDefaultAppClass, instrumentation,
                 /* allowDuplicateInstances= */ false);
     }
 
+    @RavenwoodKeep
     private Application makeApplicationInner(boolean forceDefaultAppClass,
             Instrumentation instrumentation, boolean allowDuplicateInstances) {
         if (mApplication != null) {
             return mApplication;
         }
-
 
         if (Trace.isTagEnabled(Trace.TRACE_TAG_ACTIVITY_MANAGER)) {
             Trace.traceBegin(Trace.TRACE_TAG_ACTIVITY_MANAGER, "makeApplication");
@@ -1527,16 +1546,12 @@ public final class LoadedApk {
                 ContextImpl appContext = ContextImpl.createAppContext(mActivityThread, this);
                 // The network security config needs to be aware of multiple
                 // applications in the same process to handle discrepancies
-                NetworkSecurityConfigProvider.handleNewApplication(appContext);
+                callNetworkSecurityConfigProviderHandleNewApplication(appContext);
                 app = mActivityThread.mInstrumentation.newApplication(
                         cl, appClass, appContext);
                 appContext.setOuterContext(app);
             } catch (Exception e) {
-                if (!mActivityThread.mInstrumentation.onException(app, e)) {
-                    throw new RuntimeException(
-                        "Unable to instantiate application " + appClass
-                        + " package " + mPackageName, e);
-                }
+                onNewApplicationFailed(e, app, appClass);
             }
             mActivityThread.addApplication(app);
             mApplication = app;
@@ -1563,7 +1578,31 @@ public final class LoadedApk {
         }
     }
 
+    @RavenwoodIgnore(blockedBy = NetworkSecurityConfigProvider.class)
+    private static void callNetworkSecurityConfigProviderHandleNewApplication(Context appContext) {
+        NetworkSecurityConfigProvider.handleNewApplication(appContext);
+    }
+
+    @RavenwoodReplace(reason = "On Ravenwood, just throw without consulting Instrumentation")
+    private void onNewApplicationFailed(Exception e, Application app, String appClass) {
+        if (!mActivityThread.mInstrumentation.onException(app, e)) {
+            throwForNewApplicationFailure(e, app, appClass);
+        }
+    }
+
+    private void onNewApplicationFailed$ravenwood(Exception e, Application app, String appClass) {
+        throwForNewApplicationFailure(e, app, appClass);
+    }
+
+    @RavenwoodKeep
+    private void throwForNewApplicationFailure(Exception e, Application app, String appClass) {
+        throw new RuntimeException(
+                "Unable to instantiate application " + appClass
+                        + " package " + mPackageName, e);
+    }
+
     @UnsupportedAppUsage
+    @RavenwoodKeep
     private void rewriteRValues(ClassLoader cl, String packageName, int id) {
         final Class<?> rClazz;
         try {

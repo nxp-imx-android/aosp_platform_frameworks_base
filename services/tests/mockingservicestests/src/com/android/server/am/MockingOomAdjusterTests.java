@@ -75,6 +75,7 @@ import static com.android.server.am.ProcessList.SERVICE_B_ADJ;
 import static com.android.server.am.ProcessList.SYSTEM_ADJ;
 import static com.android.server.am.ProcessList.UNKNOWN_ADJ;
 import static com.android.server.am.ProcessList.VISIBLE_APP_ADJ;
+import static com.android.server.am.ProcessList.VISIBLE_APP_MAX_ADJ;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_PAUSING_OR_PAUSED;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING;
 import static com.android.server.wm.WindowProcessController.ACTIVITY_STATE_FLAG_IS_STOPPING_FINISHING;
@@ -1160,7 +1161,7 @@ public class MockingOomAdjusterTests {
 
         // Bind to many services from that previous activity and populated an LRU list.
         for (int i = 0; i < numberOfApps - 1; i++) {
-            apps[i] = makeDefaultProcessRecord(MOCKAPP_PID + i, MOCKAPP_UID + i,
+            apps[i] = makeDefaultProcessRecord(MOCKAPP_PID + i + 1, MOCKAPP_UID + i + 1,
                     MOCKAPP_PROCESSNAME + i, MOCKAPP_PACKAGENAME + i, false);
             bindService(apps[i], previous,
                     null, null, Context.BIND_IMPORTANT, mock(IBinder.class));
@@ -1203,6 +1204,58 @@ public class MockingOomAdjusterTests {
             assertProcStates(apps[i], PROCESS_STATE_LAST_ACTIVITY, expectedAdj,
                     SCHED_GROUP_BACKGROUND, "service");
             assertNoImplicitCpuTime(apps[i]);
+        }
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags({Flags.FLAG_REMOVE_LRU_SPAM_PREVENTION, Flags.FLAG_OOMADJUSTER_VIS_LADDERING})
+    public void testUpdateOomAdj_DoPending_VisibleApp() {
+        testUpdateOomAdj_VisibleApp(apps -> {
+            for (ProcessRecord app : apps) {
+                mProcessStateController.enqueueUpdateTarget(app);
+            }
+            mProcessStateController.runPendingUpdate(OOM_ADJ_REASON_NONE);
+        });
+    }
+
+    @SuppressWarnings("GuardedBy")
+    @Test
+    @EnableFlags({Flags.FLAG_REMOVE_LRU_SPAM_PREVENTION, Flags.FLAG_OOMADJUSTER_VIS_LADDERING})
+    public void testUpdateOomAdj_DoAll_VisibleApp() {
+        testUpdateOomAdj_VisibleApp(apps -> {
+            mProcessStateController.runFullUpdate(OOM_ADJ_REASON_NONE);
+        });
+    }
+
+    private void testUpdateOomAdj_VisibleApp(Consumer<ProcessRecord[]> updater) {
+        final int numberOfApps = 105;
+        final ProcessRecord[] apps = new ProcessRecord[numberOfApps];
+        // Create an activity that has recently been backgrounded.
+        final ProcessRecord visible = makeDefaultProcessRecord(MOCKAPP_PID, MOCKAPP_UID,
+                MOCKAPP_PROCESSNAME, MOCKAPP_PACKAGENAME, true);
+        setTopProcess(visible);
+        setHasActivity(visible.getWindowProcessController(), true);
+
+        // Bind to many services from that previous activity and populated an LRU list.
+        for (int i = 0; i < numberOfApps - 1; i++) {
+            apps[i] = makeDefaultProcessRecord(MOCKAPP_PID + i + 1, MOCKAPP_UID + i + 1,
+                    MOCKAPP_PROCESSNAME + i, MOCKAPP_PACKAGENAME + i, false);
+            bindService(apps[i], visible,
+                    null, null, Context.BIND_AUTO_CREATE, mock(IBinder.class));
+        }
+        // Set the most recently used spot as the activity.
+        apps[numberOfApps - 1] = visible;
+        setWakefulness(PowerManagerInternal.WAKEFULNESS_AWAKE);
+        setProcessesToLru(apps);
+        updater.accept(apps);
+        assertProcStates(visible, PROCESS_STATE_TOP, FOREGROUND_APP_ADJ,
+                SCHED_GROUP_TOP_APP, "top-activity");
+        for (int i = 0; i < numberOfApps - 1; i++) {
+            final int mruIndex = numberOfApps - i - 2;
+            final int expectedAdj = Math.min(VISIBLE_APP_ADJ + mruIndex, VISIBLE_APP_MAX_ADJ);
+            assertProcStates(apps[i], PROCESS_STATE_BOUND_TOP, expectedAdj,
+                    SCHED_GROUP_DEFAULT, "service");
         }
     }
 
@@ -2462,8 +2515,9 @@ public class MockingOomAdjusterTests {
         bindService(app1, client2, null, null, 0, mock(IBinder.class));
         mProcessStateController.setHasForegroundServices(client2.mServices, false, 0, false);
         updateOomAdj(app1, client1, client2);
-        assertProcStates(app1, PROCESS_STATE_IMPORTANT_FOREGROUND, VISIBLE_APP_ADJ,
-                SCHED_GROUP_TOP_APP);
+        assertProcStates(app1, PROCESS_STATE_IMPORTANT_FOREGROUND, VISIBLE_APP_ADJ
+                        + (Flags.oomadjusterVisLaddering() && Flags.removeLruSpamPrevention()
+                        ? 1 : 0), SCHED_GROUP_TOP_APP);
     }
 
     @SuppressWarnings("GuardedBy")
@@ -3498,35 +3552,35 @@ public class MockingOomAdjusterTests {
         // GIVEN: perceptible adjustment is NOT enabled (perceptible stop time is not set)
         // EXPECT: zero adjustment
         // TLDR: App is not set as a perceptible task and hence no oom_adj boosting.
-        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.initialize(app, CACHED_APP_MIN_ADJ,
+        mService.mOomAdjuster.mTmpOomAdjWindowCalculator.initialize(app, CACHED_APP_MIN_ADJ,
                 false, false, PROCESS_STATE_CACHED_ACTIVITY,
                 SCHED_GROUP_DEFAULT, 0, 0, PROCESS_STATE_IMPORTANT_FOREGROUND);
-        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.onOtherActivity(-1);
-        assertEquals(CACHED_APP_MIN_ADJ, mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.adj);
+        mService.mOomAdjuster.mTmpOomAdjWindowCalculator.onOtherActivity(-1);
+        assertEquals(CACHED_APP_MIN_ADJ, mService.mOomAdjuster.mTmpOomAdjWindowCalculator.getAdj());
 
         // GIVEN: perceptible adjustment is enabled (perceptible stop time is set) and
         //        elapsed time < PERCEPTIBLE_TASK_TIMEOUT
         // EXPECT: adjustment to PERCEPTIBLE_MEDIUM_APP_ADJ
         // TLDR: App is a perceptible task (e.g. opened from launcher) and has oom_adj boosting.
-        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.initialize(app, CACHED_APP_MIN_ADJ,
+        mService.mOomAdjuster.mTmpOomAdjWindowCalculator.initialize(app, CACHED_APP_MIN_ADJ,
                 false, false, PROCESS_STATE_CACHED_ACTIVITY,
                 SCHED_GROUP_DEFAULT, 0, 0, PROCESS_STATE_IMPORTANT_FOREGROUND);
         mInjector.reset();
-        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.onOtherActivity(now);
+        mService.mOomAdjuster.mTmpOomAdjWindowCalculator.onOtherActivity(now);
         assertEquals(PERCEPTIBLE_MEDIUM_APP_ADJ,
-                mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.adj);
+                mService.mOomAdjuster.mTmpOomAdjWindowCalculator.getAdj());
 
         // GIVEN: perceptible adjustment is enabled (perceptible stop time is set) and
         //        elapsed time >  PERCEPTIBLE_TASK_TIMEOUT
         // EXPECT: adjustment to PREVIOUS_APP_ADJ
         // TLDR: App is a perceptible task (e.g. opened from launcher) and has oom_adj boosting, but
         //       time has elapsed and has dropped to a lower boosting of PREVIOUS_APP_ADJ
-        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.initialize(app, CACHED_APP_MIN_ADJ,
+        mService.mOomAdjuster.mTmpOomAdjWindowCalculator.initialize(app, CACHED_APP_MIN_ADJ,
                 false, false, PROCESS_STATE_CACHED_ACTIVITY,
                 SCHED_GROUP_DEFAULT, 0, 0, PROCESS_STATE_IMPORTANT_FOREGROUND);
         mInjector.jumpUptimeAheadTo(OomAdjuster.PERCEPTIBLE_TASK_TIMEOUT_MILLIS + 1000);
-        mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.onOtherActivity(0);
-        assertEquals(PREVIOUS_APP_ADJ, mService.mOomAdjuster.mTmpComputeOomAdjWindowCallback.adj);
+        mService.mOomAdjuster.mTmpOomAdjWindowCalculator.onOtherActivity(0);
+        assertEquals(PREVIOUS_APP_ADJ, mService.mOomAdjuster.mTmpOomAdjWindowCalculator.getAdj());
     }
 
     /**

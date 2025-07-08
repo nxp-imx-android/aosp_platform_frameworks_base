@@ -945,8 +945,6 @@
     <string name="quick_settings_close_user_panel">Close</string>
     <!-- QuickSettings: Control panel: Label for connected device. [CHAR LIMIT=NONE] -->
     <string name="quick_settings_connected">Connected</string>
-    <!-- QuickSettings: Control panel: Label for connected device, showing remote device battery level. [CHAR LIMIT=NONE] -->
-    <string name="quick_settings_connected_battery_level">Connected, battery <xliff:g id="battery_level_as_percentage">%1$s</xliff:g></string>
     <!-- QuickSettings: Control panel: Label for connecting device. [CHAR LIMIT=NONE] -->
     <string name="quick_settings_connecting">Connecting...</string>
     <!-- QuickSettings: Tethering. [CHAR LIMIT=NONE] -->
@@ -4467,4 +4465,10 @@
 
     <!-- Content description for arrow in Pager Dots to navigate to next page [CHAR LIMIT=NONE] -->
     <string name="pager_dots_next_content_description">Next</string>
+
+    <!-- Description for the Ambient Cue accessibility action label for autofilling. [CHAR LIMIT=NONE] -->
+    <string name="ambient_cue_autofill_action">autofill</string>
+
+    <!-- Description for the Ambient Cue accessibility action label for expanding. [CHAR LIMIT=NONE] -->
+    <string name="ambient_cue_expand_action">expand</string>
 </resources>

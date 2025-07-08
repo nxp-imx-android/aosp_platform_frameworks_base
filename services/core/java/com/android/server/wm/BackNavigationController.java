@@ -36,7 +36,6 @@ import static android.window.SystemOverrideOnBackInvokedCallback.OVERRIDE_UNDEFI
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_BACK_PREVIEW;
 import static com.android.server.wm.SurfaceAnimator.ANIMATION_TYPE_PREDICT_BACK;
-import static com.android.server.wm.WindowContainer.SYNC_STATE_NONE;
 import static com.android.server.wm.WindowManagerService.UPDATE_FOCUS_NORMAL;
 
 import android.annotation.BinderThread;
@@ -1349,13 +1348,6 @@ class BackNavigationController {
                     next.mAppWindowDrawn = true;
                 }
                 allWindowDrawn &= next.mAppWindowDrawn;
-            }
-            if (!Flags.removeStartingInTransition()) {
-                // Do not remove windowless surfaces if the transaction has not been applied.
-                if (activity.getSyncTransactionCommitCallbackDepth() > 0
-                        || activity.mSyncState != SYNC_STATE_NONE) {
-                    return;
-                }
             }
             if (allWindowDrawn) {
                 mOpenAnimAdaptor.cleanUpWindowlessSurface(true);

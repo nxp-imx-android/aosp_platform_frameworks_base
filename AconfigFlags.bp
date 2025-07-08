@@ -30,6 +30,7 @@ aconfig_declarations_group {
         "android.app.flags-aconfig-java",
         "android.app.jank.flags-aconfig-java",
         "android.app.ondeviceintelligence-aconfig-java",
+        "android.app.userrecovery.flags-aconfig-java",
         "android.app.smartspace.flags-aconfig-java",
         "android.app.supervision.flags-aconfig-java",
         "android.app.usage.flags-aconfig-java",
@@ -250,7 +251,9 @@ java_aconfig_library {
     mode: "exported",
     min_sdk_version: "30",
     apex_available: [
+        "//apex_available:platform",
         "com.android.wifi",
+        "com.android.extservices",
     ],
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
 }
@@ -1297,6 +1300,21 @@ aconfig_declarations {
     visibility: [":__subpackages__"],
 }
 
+// User Recovery
+aconfig_declarations {
+    name: "android.app.userrecovery.flags-aconfig",
+    exportable: true,
+    package: "android.app.userrecovery.flags",
+    container: "system",
+    srcs: ["core/java/android/app/userrecovery/flags/flags.aconfig"],
+}
+
+java_aconfig_library {
+    name: "android.app.userrecovery.flags-aconfig-java",
+    aconfig_declarations: "android.app.userrecovery.flags-aconfig",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
 // Thread network
 aconfig_declarations {
     name: "com.android.net.thread.platform.flags-aconfig",
@@ -1551,6 +1569,18 @@ java_aconfig_library {
     name: "surfaceflinger_flags_java_lib",
     aconfig_declarations: "surfaceflinger_flags",
     defaults: ["framework-minus-apex-aconfig-java-defaults"],
+}
+
+java_aconfig_library {
+    name: "surfaceflinger_exported_flags_lib",
+    aconfig_declarations: "surfaceflinger_flags",
+    defaults: ["framework-minus-apex-aconfig-java-defaults"],
+    mode: "exported",
+    min_sdk_version: "30",
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.permission",
+    ],
 }
 
 java_aconfig_library {

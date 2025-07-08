@@ -34,6 +34,8 @@
     <!-- END: Ported from WearableSupport -->
 
     <!-- Text color, typeface, size, and style for "app label" text. -->
+    <attr name="textAppearanceInstallerTitle" format="reference" />
+    <!-- Text color, typeface, size, and style for "app label" text. -->
     <attr name="textAppearanceInstallerAppLabel" format="reference" />
     <!-- Text color, typeface, size, and style for "custom message" text. -->
     <attr name="textAppearanceInstallerCustomMessage" format="reference" />

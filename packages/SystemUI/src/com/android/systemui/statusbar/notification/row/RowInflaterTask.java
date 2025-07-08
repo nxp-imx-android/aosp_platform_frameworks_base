@@ -31,7 +31,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.asynclayoutinflater.view.AsyncLayoutFactory;
 
-import com.android.systemui.Flags;
 import com.android.systemui.res.R;
 import com.android.systemui.settings.UserTracker;
 import com.android.systemui.statusbar.InflationTask;
@@ -128,7 +127,7 @@ public class RowInflaterTask implements InflationTask, AsyncRowInflater.OnInflat
      */
     @VisibleForTesting
     public ExpandableNotificationRow inflateSynchronously(@NonNull Context context,
-            @Nullable ViewGroup parent, @NonNull NotificationEntry entry) {
+            @Nullable ViewGroup parent, @NonNull PipelineEntry entry) {
         final LayoutInflater inflater = new BasicRowInflater(context);
         inflater.setFactory2(makeRowFactory(entry));
         final ExpandableNotificationRow inflate = (ExpandableNotificationRow) inflater.inflate(
@@ -138,9 +137,17 @@ public class RowInflaterTask implements InflationTask, AsyncRowInflater.OnInflat
         return inflate;
     }
 
-    private RowAsyncLayoutFactory makeRowFactory(NotificationEntry entry) {
-        return new RowAsyncLayoutFactory(
-                entry, mSystemClock, mLogger, mUserTracker.getUserHandle());
+    private RowAsyncLayoutFactory makeRowFactory(PipelineEntry entry) {
+        if (entry instanceof NotificationEntry) {
+            return new RowAsyncLayoutFactory(
+                (NotificationEntry) entry, mSystemClock, mLogger, mUserTracker.getUserHandle());
+        } else if (entry instanceof BundleEntry) {
+            return new RowAsyncLayoutFactory(
+                (BundleEntry) entry, mSystemClock, mLogger, mUserTracker.getUserHandle());
+        } else {
+            throw new IllegalArgumentException(
+                    "Entry must be either NotificationEntry or BundleEntry");
+        }
     }
 
     @VisibleForTesting

@@ -347,7 +347,7 @@ class VeiledResizeTaskPositionerTest : ShellTestCase() {
         )
 
         // Verify task is reordered to top
-        verify(mockShellTaskOrganizer).applyTransaction(argThat { wct ->
+        verify(mockShellTaskOrganizer, never()).applyTransaction(argThat { wct ->
             return@argThat wct.hierarchyOps.any { hierarchyOps ->
                 hierarchyOps.container == taskBinder && hierarchyOps.toTop }
         })

@@ -89,4 +89,6 @@ constructor(
         } else {
             emptyFlow()
         }
+
+    val nonAuthUIAlpha: Flow<Float> = dozingTransitionFlows.nonAuthUIAlpha(from = PRIMARY_BOUNCER)
 }

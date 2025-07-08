@@ -21,13 +21,13 @@ import android.platform.test.ravenwood.RavenwoodAppDriver;
  * Helper class to access package-private stuff in {@code android.app}, such as {@link ContextImpl}.
  */
 public class RavenwoodAndroidAppBridge {
-    private final ContextImpl mSystemContext;
+    private final RavenwoodAppDriver mAppDriver;
 
     public RavenwoodAndroidAppBridge(RavenwoodAppDriver appDriver) {
-        mSystemContext = ContextImpl.createSystemContext(appDriver.getActivityThread());
+        mAppDriver = appDriver;
     }
 
     public ContextImpl getSystemContext() {
-        return mSystemContext;
+        return (ContextImpl) mAppDriver.getSystemContextImpl();
     }
 }

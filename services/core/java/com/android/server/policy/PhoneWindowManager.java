@@ -3467,7 +3467,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                 KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_DO_NOT_DISTURB,
                 KeyGestureEvent.KEY_GESTURE_TYPE_RINGER_TOGGLE_CHORD,
                 KeyGestureEvent.KEY_GESTURE_TYPE_GLOBAL_ACTIONS,
-                KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT
+                KeyGestureEvent.KEY_GESTURE_TYPE_TV_TRIGGER_BUG_REPORT,
+                KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK
         ));
         if (!com.android.window.flags.Flags.grantManageKeyGesturesToRecents()) {
             // When grantManageKeyGesturesToRecents is enabled, the event is handled in the
@@ -3671,6 +3672,25 @@ public class PhoneWindowManager implements WindowManagerPolicy {
                             "Key gesture DND", true);
                 }
                 break;
+            case KeyGestureEvent.KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK:
+                if (complete) {
+                    try {
+                        RootTaskInfo currentRootTask =
+                                mActivityManagerService.getFocusedRootTaskInfo();
+                        if (currentRootTask == null) {
+                            Slog.e(TAG,
+                                    "onKeyGesture: KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK the current"
+                                            + " root task is null" );
+                            return;
+                        }
+                        mActivityManagerService.removeTask(currentRootTask.taskId);
+                    } catch (RemoteException e) {
+                        Slog.e(TAG,
+                                "onKeyGesture: KEY_GESTURE_TYPE_QUIT_FOCUSED_TASK failed to close"
+                                        + " the current root task",
+                                e);
+                    }
+                }
             default:
                 Log.w(TAG, "Received a key gesture " + event
                         + " that was not registered by this handler");

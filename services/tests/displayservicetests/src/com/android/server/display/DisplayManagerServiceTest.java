@@ -3000,7 +3000,6 @@ public class DisplayManagerServiceTest {
 
     @Test
     public void testConnectExternalDisplay_allowsEnableAndDisableDisplay() {
-        when(mMockFlags.isApplyDisplayChangedDuringDisplayAddedEnabled()).thenReturn(true);
         manageDisplaysPermission(/* granted= */ true);
         BatteryStatsService.overrideService(mMockedBatteryStats);
         DisplayManagerService displayManager = new DisplayManagerService(mContext, mBasicInjector);

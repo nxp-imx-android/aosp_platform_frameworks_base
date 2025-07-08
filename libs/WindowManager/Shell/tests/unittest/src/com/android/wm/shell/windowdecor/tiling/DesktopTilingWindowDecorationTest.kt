@@ -32,6 +32,7 @@ import android.window.TransitionInfo
 import android.window.TransitionInfo.Change
 import android.window.WindowContainerTransaction
 import androidx.test.filters.SmallTest
+import com.android.internal.jank.InteractionJankMonitor
 import com.android.wm.shell.RootTaskDisplayAreaOrganizer
 import com.android.wm.shell.ShellTaskOrganizer
 import com.android.wm.shell.ShellTestCase
@@ -119,6 +120,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
     private val shellController: ShellController = mock()
     private val mainExecutor: ShellExecutor = mock()
     private val configuration: Configuration = mock()
+    private val jankMonitor: InteractionJankMonitor = mock()
     private lateinit var tilingDecoration: DesktopTilingWindowDecoration
     private lateinit var desktopState: FakeDesktopState
 
@@ -152,6 +154,7 @@ class DesktopTilingWindowDecorationTest : ShellTestCase() {
                 mainExecutor,
                 desktopState,
                 shellController,
+                jankMonitor,
             )
         whenever(context.createContextAsUser(any(), any())).thenReturn(context)
         whenever(userRepositories.current).thenReturn(desktopRepository)

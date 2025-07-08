@@ -1270,7 +1270,7 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getActionMasked() != MotionEvent.ACTION_DOWN
-                || !isChildInGroup() || isGroupExpanded()) {
+                || !isChildInGroup() || isGroupExpanded() || isBundledSummaryClickable()) {
             return super.onTouchEvent(event);
         } else {
             return false;
@@ -1557,9 +1557,19 @@ public class ExpandableNotificationRow extends ActivatableNotificationView
         };
     }
 
+    @VisibleForTesting
+    protected boolean isBundledSummaryClickable() {
+        if (NotificationBundleUi.isEnabled()) {
+            return mIsSummaryWithChildren && !isGroupExpanded() && isChildInGroup();
+        } else {
+            return false;
+        }
+    }
+
     private void updateClickAndFocus() {
         boolean normalChild = !isChildInGroup() || isGroupExpanded();
-        boolean clickable = mOnClickListener != null && normalChild;
+        boolean clickable = mOnClickListener != null
+                && (normalChild || isBundledSummaryClickable());
         if (isFocusable() != normalChild) {
             setFocusable(normalChild);
         }

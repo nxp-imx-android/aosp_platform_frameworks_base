@@ -80,7 +80,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.R;
-import com.android.internal.accessibility.AccessibilityShortcutController.FrameworkObjectProvider;
+import com.android.internal.accessibility.util.FrameworkObjectProvider;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -163,7 +163,8 @@ public class AccessibilityShortcutControllerTest {
         when(mFrameworkObjectProvider.getSystemUiContext()).thenReturn(mContext);
         when(mFrameworkObjectProvider.getTextToSpeech(eq(mContext), any()))
                 .thenReturn(mTextToSpeech);
-        when(mFrameworkObjectProvider.getRingtone(eq(mContext), any())).thenReturn(mRingtone);
+        when(mFrameworkObjectProvider.getDefaultAccessibilityNotificationRingtone(eq(mContext)))
+                .thenReturn(mRingtone);
 
         TestableResources resources = mContext.getOrCreateTestableResources();
         resources.addOverride(

@@ -24,11 +24,18 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import com.android.app.animation.Interpolators
 import com.android.systemui.animation.GSFAxes
+import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.DefaultClockFaceLayout
+import com.android.systemui.customization.clocks.DigitalTimeFormatter
+import com.android.systemui.customization.clocks.DigitalTimespec
+import com.android.systemui.customization.clocks.FontTextStyle
 import com.android.systemui.customization.clocks.FontUtils.get
 import com.android.systemui.customization.clocks.FontUtils.set
 import com.android.systemui.customization.clocks.R
 import com.android.systemui.customization.clocks.ViewUtils.computeLayoutDiff
+import com.android.systemui.customization.clocks.view.DigitalAlignment
+import com.android.systemui.customization.clocks.view.HorizontalAlignment
+import com.android.systemui.customization.clocks.view.VerticalAlignment
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.ClockAnimations
 import com.android.systemui.plugins.clocks.ClockAxisStyle
@@ -42,17 +49,25 @@ import com.android.systemui.plugins.clocks.ClockPositionAnimationArgs
 import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.ThemeConfig
 import com.android.systemui.plugins.clocks.TimeFormatKind
+import com.android.systemui.plugins.clocks.VRectF
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
 import com.android.systemui.shared.clocks.FlexClockController.Companion.getDefaultAxes
-import com.android.systemui.shared.clocks.view.FlexClockView
-import com.android.systemui.shared.clocks.view.HorizontalAlignment
-import com.android.systemui.shared.clocks.view.VerticalAlignment
+import com.android.systemui.shared.clocks.view.FlexClockViewGroup
 import java.util.Locale
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-// TODO(b/364680879): Merge w/ ComposedDigitalLayerController
+interface FlexClockViewController {
+    val view: View
+    val events: ClockEvents
+    val animations: ClockAnimations
+    val faceEvents: ClockFaceEvents
+    val config: ClockFaceConfig
+
+    var onViewBoundsChanged: ((VRectF) -> Unit)?
+}
+
 class FlexClockFaceController(
     private val clockCtx: ClockContext,
     private val isLargeClock: Boolean,
@@ -68,15 +83,15 @@ class FlexClockFaceController(
         clockCtx.resources.getDimensionPixelSize(R.dimen.keyguard_large_clock_top_margin)
     private val timeFormatter =
         DigitalTimeFormatter("h:mm", clockCtx.timeKeeper, enableContentDescription = true)
-    val layerController: SimpleClockLayerController
+    val layerController: FlexClockViewController
 
     init {
         layerController =
             if (isLargeClock) {
-                ComposedDigitalLayerController(clockCtx)
+                FlexClockViewGroupController(clockCtx)
             } else {
                 val cfg = SMALL_LAYER_CONFIG.copy(timeFormatter = timeFormatter)
-                SimpleDigitalHandLayerController(clockCtx, cfg, isLargeClock)
+                FlexClockTextViewController(clockCtx, cfg, isLargeClock)
             }
         layerController.view.layoutParams =
             FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT).apply { gravity = Gravity.CENTER }
@@ -213,7 +228,9 @@ class FlexClockFaceController(
 
             override fun onPositionAnimated(args: ClockPositionAnimationArgs) {
                 layerController.animations.onPositionAnimated(args)
-                if (isLargeClock) (view as? FlexClockView)?.offsetGlyphsForStepClockAnimation(args)
+                if (isLargeClock) {
+                    (view as? FlexClockViewGroup)?.offsetGlyphsForStepClockAnimation(args)
+                }
             }
 
             override fun onFidgetTap(x: Float, y: Float) {
@@ -239,7 +256,7 @@ class FlexClockFaceController(
                 aodStyle =
                     FontTextStyle(
                         transitionInterpolator = Interpolators.EMPHASIZED,
-                        transitionDuration = FlexClockView.AOD_TRANSITION_DURATION,
+                        transitionDuration = FlexClockViewGroup.AOD_TRANSITION_DURATION,
                     ),
                 alignment = DigitalAlignment(HorizontalAlignment.START, VerticalAlignment.CENTER),
                 timespec = DigitalTimespec.TIME_FULL_FORMAT,

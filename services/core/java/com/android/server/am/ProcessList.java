@@ -266,6 +266,9 @@ public final class ProcessList {
     // This is a process only hosting activities that are visible to the
     // user, so we'd prefer they don't disappear.
     public static final int VISIBLE_APP_ADJ = 100;
+    public static final int VISIBLE_APP_MAX_ADJ = Flags.oomadjusterVisLaddering()
+            && Flags.removeLruSpamPrevention() ? 199 : 100;
+
     static final int VISIBLE_APP_LAYER_MAX = PERCEPTIBLE_APP_ADJ - VISIBLE_APP_ADJ - 1;
 
     // This is a process that was recently TOP and moved to FGS. Continue to treat it almost

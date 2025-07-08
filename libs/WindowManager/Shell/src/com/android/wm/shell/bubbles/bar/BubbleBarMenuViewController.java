@@ -15,6 +15,8 @@
  */
 package com.android.wm.shell.bubbles.bar;
 
+import static com.android.wm.shell.bubbles.bar.BubbleBarCaptionView.CAPTION_ELEVATION;
+
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
@@ -198,6 +200,8 @@ class BubbleBarMenuViewController {
         mMenuView = (BubbleBarMenuView) LayoutInflater.from(mContext).inflate(
                 R.layout.bubble_bar_menu_view, mRootView, false);
         mMenuView.setOnCloseListener(() -> hideMenu(true  /* animated */));
+        // Set the elevation to draw on top of the caption view.
+        mMenuView.setElevation(CAPTION_ELEVATION + 1);
         if (mBubble != null) {
             mMenuView.updateInfo(mBubble);
             mMenuView.updateActions(createMenuActions(mBubble));

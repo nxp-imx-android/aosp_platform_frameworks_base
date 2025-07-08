@@ -19,7 +19,6 @@ package com.android.systemui.keyguard.ui.viewmodel
 import android.util.MathUtils
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.keyguard.domain.interactor.FromDozingTransitionInteractor
-import com.android.systemui.keyguard.domain.interactor.KeyguardTransitionInteractor
 import com.android.systemui.keyguard.shared.model.Edge
 import com.android.systemui.keyguard.shared.model.KeyguardState.DOZING
 import com.android.systemui.keyguard.shared.model.KeyguardState.LOCKSCREEN
@@ -28,9 +27,8 @@ import com.android.systemui.keyguard.ui.transitions.DeviceEntryIconTransition
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 
 /**
  * Breaks down DOZING->LOCKSCREEN transition into discrete steps for corresponding views to consume.
@@ -40,7 +38,6 @@ class DozingToLockscreenTransitionViewModel
 @Inject
 constructor(
     animationFlow: KeyguardTransitionAnimationFlow,
-    keyguardTransitionInteractor: KeyguardTransitionInteractor,
     dozingTransitionFlows: DozingTransitionFlows,
 ) : DeviceEntryIconTransition {
     private val transitionAnimation =
@@ -69,20 +66,32 @@ constructor(
         )
     }
 
-    val clockDozeAmount: Flow<Float> =
-        dozingTransitionFlows.lockscreenAlpha
-            .map { it > 0f }
-            .distinctUntilChanged()
-            .flatMapLatest { lockscreenWasShowing ->
-                keyguardTransitionInteractor.transition(Edge.create(DOZING, LOCKSCREEN)).map {
-                    dozingToLockscreenTransition ->
-                    if (lockscreenWasShowing) {
-                        1f - dozingToLockscreenTransition.value
-                    } else {
-                        0f
-                    }
-                }
+    val nonAuthUIAlpha: Flow<Float> =
+        dozingTransitionFlows.wasHiddenAuthUIShowingWhileDozing.flatMapLatest { uiShowing ->
+            if (uiShowing) { // already showing; no need to update alpha
+                emptyFlow()
+            } else { // fade in
+                transitionAnimation.sharedFlow(
+                    duration = 150.milliseconds,
+                    onStep = { it },
+                    onFinish = { 1f },
+                    onCancel = { 1f },
+                )
             }
+        }
+
+    val clockDozeAmount: Flow<Float> =
+        dozingTransitionFlows.wasHiddenAuthUIShowingWhileDozing.flatMapLatest { uiShowing ->
+            if (uiShowing) {
+                transitionAnimation.sharedFlow(
+                    onStep = { 1f - it },
+                    onFinish = { 0f },
+                    onCancel = { 0f },
+                )
+            } else {
+                transitionAnimation.immediatelyTransitionTo(0f)
+            }
+        }
 
     val deviceEntryBackgroundViewAlpha: Flow<Float> =
         transitionAnimation.immediatelyTransitionTo(1f)

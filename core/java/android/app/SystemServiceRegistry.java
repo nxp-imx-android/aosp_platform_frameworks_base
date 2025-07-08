@@ -17,6 +17,7 @@
 package android.app;
 
 import static android.app.appfunctions.flags.Flags.enableAppFunctionManager;
+import static android.app.userrecovery.flags.Flags.enableUserRecoveryManager;
 import static android.hardware.serial.flags.Flags.enableSerialApi;
 import static android.provider.flags.Flags.newStoragePublicApi;
 import static android.server.Flags.removeGameManagerServiceFromWear;
@@ -64,6 +65,8 @@ import android.app.usage.IStorageStatsManager;
 import android.app.usage.IUsageStatsManager;
 import android.app.usage.StorageStatsManager;
 import android.app.usage.UsageStatsManager;
+import android.app.userrecovery.IUserRecoveryManager;
+import android.app.userrecovery.UserRecoveryManager;
 import android.app.wallpapereffectsgeneration.IWallpaperEffectsGenerationManager;
 import android.app.wallpapereffectsgeneration.WallpaperEffectsGenerationManager;
 import android.app.wearable.IWearableSensingManager;
@@ -232,6 +235,12 @@ import android.print.PrintManager;
 import android.provider.E2eeContactKeysManager;
 import android.provider.ProviderFrameworkInitializer;
 import android.ranging.RangingFrameworkInitializer;
+import android.ravenwood.annotation.RavenwoodKeep;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodKeepStaticInitializer;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodRedirect;
+import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.safetycenter.SafetyCenterFrameworkInitializer;
 import android.scheduling.SchedulingFrameworkInitializer;
 import android.security.FileIntegrityManager;
@@ -294,6 +303,7 @@ import com.android.internal.os.IBinaryTransparencyService;
 import com.android.internal.os.IDropBoxManagerService;
 import com.android.internal.policy.PhoneLayoutInflater;
 import com.android.internal.util.Preconditions;
+import com.android.modules.utils.ravenwood.RavenwoodHelper;
 
 import java.util.Map;
 import java.util.Objects;
@@ -305,6 +315,11 @@ import java.util.Objects;
  * @hide
  */
 @SystemApi
+@RavenwoodKeepPartialClass(comment =
+        "The whole service registration is done in SystemServiceRegistry_ravenwood"
+)
+@RavenwoodKeepStaticInitializer
+@RavenwoodRedirectionClass("SystemServiceRegistry_ravenwood")
 public final class SystemServiceRegistry {
     private static final String TAG = "SystemServiceRegistry";
 
@@ -337,6 +352,11 @@ public final class SystemServiceRegistry {
     private SystemServiceRegistry() { }
 
     static {
+        registerServices();
+    }
+
+    @RavenwoodRedirect
+    private static void registerServices() {
         //CHECKSTYLE:OFF IndentationCheck
         registerService(Context.ACCESSIBILITY_SERVICE, AccessibilityManager.class,
                 new CachedServiceFetcher<AccessibilityManager>() {
@@ -972,6 +992,22 @@ public final class SystemServiceRegistry {
                         }
                     });
         }
+
+      if (enableUserRecoveryManager()) {
+            registerService(Context.USER_RECOVERY_SERVICE, UserRecoveryManager.class,
+                    new CachedServiceFetcher<>() {
+                        @Override
+                        public UserRecoveryManager createService(ContextImpl ctx)
+                                throws ServiceNotFoundException {
+                                    IUserRecoveryManager service;
+                            service = IUserRecoveryManager.Stub.asInterface(
+                                    ServiceManager.getServiceOrThrow(
+                                        Context.USER_RECOVERY_SERVICE));
+                            return new UserRecoveryManager(service, ctx.getOuterContext());
+                        }
+                    });
+        }
+
 
         registerService(Context.VIRTUAL_DEVICE_SERVICE, VirtualDeviceManager.class,
                 new CachedServiceFetcher<VirtualDeviceManager>() {
@@ -1940,10 +1976,12 @@ public final class SystemServiceRegistry {
      * Creates an array which is used to cache per-Context service instances.
      * @hide
      */
+    @RavenwoodKeep
     public static Object[] createServiceCache() {
         return new Object[sServiceCacheSize];
     }
 
+    @RavenwoodKeep
     private static ServiceFetcher<?> getSystemServiceFetcher(String name) {
         if (name == null) {
             return null;
@@ -1969,6 +2007,7 @@ public final class SystemServiceRegistry {
      * Gets a system service from a given context.
      * @hide
      */
+    @RavenwoodKeep
     public static Object getSystemService(@NonNull ContextImpl ctx, String name) {
         final ServiceFetcher<?> fetcher = getSystemServiceFetcher(name);
         if (fetcher == null) {
@@ -2058,6 +2097,7 @@ public final class SystemServiceRegistry {
      * Gets the name of the system-level service that is represented by the specified class.
      * @hide
      */
+    @RavenwoodKeep
     public static String getSystemServiceName(Class<?> serviceClass) {
         if (serviceClass == null) {
             return null;
@@ -2074,11 +2114,28 @@ public final class SystemServiceRegistry {
      * Statically registers a system service with the context.
      * This method must be called during static initialization only.
      */
+    @RavenwoodKeep
     private static <T> void registerService(@NonNull String serviceName,
             @NonNull Class<T> serviceClass, @NonNull ServiceFetcher<T> serviceFetcher) {
         SYSTEM_SERVICE_NAMES.put(serviceClass, serviceName);
         SYSTEM_SERVICE_FETCHERS.put(serviceName, serviceFetcher);
         SYSTEM_SERVICE_CLASS_NAMES.put(serviceName, serviceClass.getSimpleName());
+    }
+
+    /**
+     * Provides a package-private access to {@link #registerService}. Must be only used on
+     * Ravenwood.
+     * (We don't use @RavenwoodReplace because a package-private $ravenwood method can
+     * be used on the device side too anyway)
+     */
+    @RavenwoodKeep
+    static <T> void registerServiceForRavenwood(@NonNull String serviceName,
+            @NonNull Class<T> serviceClass, @NonNull ServiceFetcher<T> serviceFetcher) {
+        if (!RavenwoodHelper.isRunningOnRavenwood()) {
+            throw new IllegalStateException(
+                    "registerServiceForRavenwood must not be called once static {} is done");
+        }
+        registerService(serviceName, serviceClass, serviceFetcher);
     }
 
     /**
@@ -2089,6 +2146,7 @@ public final class SystemServiceRegistry {
      * @hide
      */
     @Nullable
+    @RavenwoodRedirect
     public static String getSystemServiceClassName(@NonNull String name) {
         return SYSTEM_SERVICE_CLASS_NAMES.get(name);
     }
@@ -2339,6 +2397,7 @@ public final class SystemServiceRegistry {
      * Base interface for classes that fetch services.
      * These objects must only be created during static initialization.
      */
+    @RavenwoodKeepWholeClass
     static abstract interface ServiceFetcher<T> {
         T getService(ContextImpl ctx);
 
@@ -2359,6 +2418,7 @@ public final class SystemServiceRegistry {
      * Override this class when the system service constructor needs a
      * ContextImpl and should be cached and retained by that context.
      */
+    @RavenwoodKeepWholeClass
     static abstract class CachedServiceFetcher<T> implements ServiceFetcher<T> {
         private final int mCacheIndex;
 
@@ -2471,6 +2531,7 @@ public final class SystemServiceRegistry {
      * Override this class when the system service does not need a ContextImpl
      * and should be cached and retained process-wide.
      */
+    @RavenwoodKeepWholeClass
     static abstract class StaticServiceFetcher<T> implements ServiceFetcher<T> {
         /**
          * Indicates whether a service reference has been cached.
@@ -2525,6 +2586,7 @@ public final class SystemServiceRegistry {
     }
 
     /** @hide */
+    @RavenwoodKeepWholeClass
     public static void onServiceNotFound(ServiceNotFoundException e) {
         // We're mostly interested in tracking down long-lived core system
         // components that might stumble if they obtain bad references; just

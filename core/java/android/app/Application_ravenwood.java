@@ -24,8 +24,8 @@ import android.content.Context;
  * It's more of a "reverse" redirect class.
  */
 public class Application_ravenwood {
-    /** Calls {@link Application#attach} */
-    public static void attach(Application application, Context context) {
-        application.attach(context);
+    /** Backdoor to {@link Application#attach}, which is package-private */
+    public static void attachBaseContext(Application application, Context baseContext) {
+        application.attach(baseContext);
     }
 }

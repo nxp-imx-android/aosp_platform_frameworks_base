@@ -35,6 +35,7 @@ import android.app.ApplicationExitInfo.Reason;
 import android.app.ApplicationExitInfo.SubReason;
 import android.app.BackgroundStartPrivileges;
 import android.app.IApplicationThread;
+import android.content.ComponentName;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ProcessInfo;
@@ -66,6 +67,7 @@ import com.android.internal.app.procstats.ProcessStats;
 import com.android.internal.os.Zygote;
 import com.android.server.FgThread;
 import com.android.server.am.OomAdjusterImpl.ProcessRecordNode;
+import com.android.server.am.psc.PlatformCompatCache.CachedCompatChangeId;
 import com.android.server.wm.WindowProcessController;
 import com.android.server.wm.WindowProcessListener;
 
@@ -79,7 +81,7 @@ import java.util.function.Consumer;
  * Full information about a particular process that
  * is currently running.
  */
-class ProcessRecord implements WindowProcessListener {
+class ProcessRecord implements WindowProcessListener, ProcessStateRecord.ProcessRecordReader {
     static final String TAG = TAG_WITH_CLASS_NAME ? "ProcessRecord" : TAG_AM;
 
     final ActivityManagerService mService; // where we came from
@@ -626,7 +628,8 @@ class ProcessRecord implements WindowProcessListener {
         mErrorState = new ProcessErrorStateRecord(this);
         mWindowProcessController = new WindowProcessController(
                 mService.mActivityTaskManager, info, processName, uid, userId, this, this);
-        mState = new ProcessStateRecord(processName, uid, mWindowProcessController, mProfile, this);
+        mState = new ProcessStateRecord(processName, uid, mWindowProcessController, mProfile, this,
+                mService, mService.mProcLock);
         mOptRecord = new ProcessCachedOptimizerRecord(this);
         final long now = SystemClock.uptimeMillis();
         mProfile.init(now);
@@ -1171,16 +1174,49 @@ class ProcessRecord implements WindowProcessListener {
         return mState.isCached();
     }
 
-    boolean hasActivities() {
+    @Override
+    public boolean hasActivities() {
         return mWindowProcessController.hasActivities();
+    }
+
+    @Override
+    public boolean isHeavyWeightProcess() {
+        return mWindowProcessController.isHeavyWeightProcess();
+    }
+
+    @Override
+    public boolean hasVisibleActivities() {
+        return mWindowProcessController.hasVisibleActivities();
+    }
+
+    @Override
+    public boolean isHomeProcess() {
+        return mWindowProcessController.isHomeProcess();
+    }
+
+    @Override
+    public boolean isPreviousProcess() {
+        return mWindowProcessController.isPreviousProcess();
+    }
+
+    @Override
+    public boolean hasRecentTasks() {
+        return mWindowProcessController.hasRecentTasks();
+    }
+
+    @Override
+    public boolean isReceivingBroadcast(int[] outSchedGroup) {
+        return mService.isReceivingBroadcastLocked(this, outSchedGroup);
+    }
+
+    @Override
+    public boolean hasCompatChange(@CachedCompatChangeId int cachedCompatChangeId) {
+        return mService.mOomAdjuster.isChangeEnabled(cachedCompatChangeId, info,
+                false/* default */);
     }
 
     boolean hasActivitiesOrRecentTasks() {
         return mWindowProcessController.hasActivitiesOrRecentTasks();
-    }
-
-    boolean hasRecentTasks() {
-        return mWindowProcessController.hasRecentTasks();
     }
 
     @GuardedBy("mService")
@@ -1365,6 +1401,36 @@ class ProcessRecord implements WindowProcessListener {
             proto.write(ProcessRecordProto.LRU_INDEX, lruIndex);
         }
         proto.end(token);
+    }
+
+    @GuardedBy(anyOf = {"mService", "mProcLock"})
+    String makeAdjReason() {
+        final Object adjSource = mState.getAdjSource();
+        final Object adjTarget = mState.getAdjTarget();
+        if (adjSource == null && adjTarget == null) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder(128);
+        sb.append(' ');
+        if (adjTarget instanceof ComponentName) {
+            sb.append(((ComponentName) adjTarget).flattenToShortString());
+        } else if (adjTarget != null) {
+            sb.append(adjTarget);
+        } else {
+            sb.append("{null}");
+        }
+        sb.append("<=");
+        if (adjSource instanceof ProcessRecord) {
+            sb.append("Proc{");
+            sb.append(((ProcessRecord) adjSource).toShortString());
+            sb.append("}");
+        } else if (adjSource != null) {
+            sb.append(adjSource);
+        } else {
+            sb.append("{null}");
+        }
+        return sb.toString();
     }
 
     public String toShortString() {

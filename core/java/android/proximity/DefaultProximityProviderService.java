@@ -62,7 +62,7 @@ public class DefaultProximityProviderService extends Service {
 
                 @Override
                 public int isProximityCheckingAvailable() {
-                    return ProximityResultCode.NO_ASSOCIATED_DEVICE;
+                    return ProximityResultCode.PRIMARY_DEVICE_RANGING_NOT_SUPPORTED;
                 }
             };
 

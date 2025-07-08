@@ -150,11 +150,11 @@ constructor(
                 transitionKey = transitionKey,
             )
         } else {
-            changeSingeShadeScene(Scenes.Shade, transitionKey, loggingReason)
+            changeSingleShadeScene(Scenes.Shade, transitionKey, loggingReason)
         }
     }
 
-    private fun changeSingeShadeScene(
+    private fun changeSingleShadeScene(
         sceneKey: SceneKey,
         transitionKey: TransitionKey?,
         loggingReason: String,
@@ -188,7 +188,7 @@ constructor(
         } else {
             val toScene =
                 if (shadeModeInteractor.isSplitShade) Scenes.Shade else Scenes.QuickSettings
-            changeSingeShadeScene(toScene, transitionKey, loggingReason)
+            changeSingleShadeScene(toScene, transitionKey, loggingReason)
         }
     }
 

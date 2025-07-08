@@ -64,7 +64,6 @@ import android.annotation.Nullable;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.TaskDescription;
-import android.app.ActivityThread;
 import android.app.HandoffActivityData;
 import android.app.HandoffFailureCode;
 import android.app.IApplicationThread;
@@ -988,9 +987,20 @@ public class ActivityTaskManagerServiceTests extends WindowTestsBase {
 
     @Test
     public void testPackageConfigUpdate_locales_successfullyApplied() {
-        Configuration config = mAtm.getGlobalConfiguration();
+        registerTestTransitionPlayer();
+        addNewDisplayContentAt(DisplayContent.POSITION_TOP);
+        final DisplayContent dc0 = mRootWindowContainer.getChildAt(0);
+        final DisplayContent dc1 = mRootWindowContainer.getChildAt(1);
+        dc0.setLastHasContent();
+        dc1.setLastHasContent();
+        final Configuration config = new Configuration();
         config.setLocales(LocaleList.forLanguageTags("en-XC"));
-        mAtm.updateGlobalConfigurationLocked(config, true, true, DEFAULT_USER_ID);
+        mAtm.updateConfigurationLocked(config, true /* initLocale */, true /* persistent */,
+                DEFAULT_USER_ID);
+
+        assertTrue(dc0.inTransition());
+        assertTrue(dc1.inTransition());
+
         mAtm.mProcessMap.put(Binder.getCallingPid(), createWindowProcessController(
                 DEFAULT_PACKAGE_NAME, DEFAULT_USER_ID));
 

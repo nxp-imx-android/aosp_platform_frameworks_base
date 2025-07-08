@@ -113,6 +113,7 @@ import android.os.ShellCommand;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.UserManager;
+import android.permission.flags.Flags;
 import android.provider.Settings;
 import android.safetycenter.SafetyCenterManager;
 import android.service.voice.VoiceInteractionManagerInternal;
@@ -127,11 +128,11 @@ import android.util.ArraySet;
 import android.util.IndentingPrintWriter;
 import android.util.Log;
 import android.util.Pair;
+import android.util.SparseIntArray;
 import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.R;
 import com.android.internal.annotations.GuardedBy;
-import com.android.internal.camera.flags.Flags;
 import com.android.internal.messages.nano.SystemMessageProto.SystemMessage;
 import com.android.internal.os.BackgroundThread;
 import com.android.internal.util.DumpUtils;
@@ -164,16 +165,16 @@ public final class SensorPrivacyService extends SystemService {
             SensorPrivacyService.class.getName() + ".action.disable_sensor_privacy";
 
     public static final int REMINDER_DIALOG_DELAY_MILLIS = 500;
-    @FlaggedApi(Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
+    @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
     private static final int ACTION__TOGGLE_ON =
             PRIVACY_SENSOR_TOGGLE_INTERACTION__ACTION__TOGGLE_ON;
-    @FlaggedApi(Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
+    @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
     private static final int ACTION__TOGGLE_ON_EXCEPT_ALLOWLISTED_APPS =
             PRIVACY_SENSOR_TOGGLE_INTERACTION__ACTION__TOGGLE_ON_EXCEPT_ALLOWLISTED_APPS;
-    @FlaggedApi(Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
+    @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
     private static final int ACTION__TOGGLE_OFF =
             PRIVACY_SENSOR_TOGGLE_INTERACTION__ACTION__TOGGLE_OFF;
-    @FlaggedApi(Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
+    @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
     private static final int ACTION__ACTION_UNKNOWN =
             PRIVACY_SENSOR_TOGGLE_INTERACTION__ACTION__ACTION_UNKNOWN;
     private final Context mContext;
@@ -355,7 +356,7 @@ public final class SensorPrivacyService extends SystemService {
                     (toggleType, userId, sensor, state) -> {
                         mHandler.handleSensorPrivacyChanged(
                                 userId, toggleType, sensor, state.isEnabled());
-                        if (Flags.cameraPrivacyAllowlist()) {
+                        if (com.android.internal.camera.flags.Flags.cameraPrivacyAllowlist()) {
                             mHandler.handleSensorPrivacyChanged(
                                     userId, toggleType, sensor, state.getState());
                         }
@@ -448,7 +449,8 @@ public final class SensorPrivacyService extends SystemService {
         private void onSensorUseStarted(int uid, String packageName, int sensor) {
             UserHandle user = UserHandle.of(mCurrentUser);
 
-            if (Flags.cameraPrivacyAllowlist() && (sensor == CAMERA) && isAutomotive(mContext)) {
+            if (com.android.internal.camera.flags.Flags.cameraPrivacyAllowlist()
+                    && (sensor == CAMERA) && isAutomotive(mContext)) {
                 if (!isCameraPrivacyEnabled(packageName)) {
                     return;
                 }
@@ -836,7 +838,7 @@ public final class SensorPrivacyService extends SystemService {
 
 
         @Override
-        @FlaggedApi(Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
+        @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
         @RequiresPermission(Manifest.permission.MANAGE_SENSOR_PRIVACY)
         public void setToggleSensorPrivacyState(int userId, int source, int sensor, int state) {
             if (DEBUG) {
@@ -869,7 +871,7 @@ public final class SensorPrivacyService extends SystemService {
                     state);
         }
 
-        @FlaggedApi(Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
+        @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
         private void setToggleSensorPrivacyStateUnchecked(int toggleType, int userId, int source,
                 int sensor, int state) {
             if (DEBUG) {
@@ -902,7 +904,7 @@ public final class SensorPrivacyService extends SystemService {
             });
         }
 
-        @FlaggedApi(Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
+        @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
         private void logSensorPrivacyStateToggle(int source, int sensor, int state,
                 long lastChange, boolean onShutDown) {
             long logMins = Math.max(0, (getCurrentTimeMillis() - lastChange) / (1000 * 60));
@@ -964,7 +966,7 @@ public final class SensorPrivacyService extends SystemService {
         }
 
         @Override
-        @FlaggedApi(Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
+        @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
         @RequiresPermission(Manifest.permission.MANAGE_SENSOR_PRIVACY)
         public void setToggleSensorPrivacyStateForProfileGroup(int userId, int source, int sensor,
                 int  state) {
@@ -981,7 +983,7 @@ public final class SensorPrivacyService extends SystemService {
         }
 
         @Override
-        @FlaggedApi(Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
+        @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
         @RequiresPermission(Manifest.permission.OBSERVE_SENSOR_PRIVACY)
         public List<String> getCameraPrivacyAllowlist() {
             enforceObserveSensorPrivacyPermission();
@@ -1001,7 +1003,7 @@ public final class SensorPrivacyService extends SystemService {
         }
 
         @Override
-        @FlaggedApi(Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
+        @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
         @RequiresPermission(Manifest.permission.OBSERVE_SENSOR_PRIVACY)
         public boolean isCameraPrivacyEnabled(String packageName) {
             if (DEBUG) {
@@ -1031,7 +1033,7 @@ public final class SensorPrivacyService extends SystemService {
         }
 
         @Override
-        @FlaggedApi(Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
+        @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
         @RequiresPermission(Manifest.permission.OBSERVE_SENSOR_PRIVACY)
         public int getToggleSensorPrivacyState(int toggleType, int sensor) {
             if (DEBUG) {
@@ -1322,7 +1324,7 @@ public final class SensorPrivacyService extends SystemService {
             if (listener == null) {
                 throw new NullPointerException("listener cannot be null");
             }
-            mHandler.addListener(listener);
+            mHandler.addListener(listener, Binder.getCallingUid());
         }
 
         /**
@@ -1334,7 +1336,7 @@ public final class SensorPrivacyService extends SystemService {
             if (listener == null) {
                 throw new IllegalArgumentException("listener cannot be null");
             }
-            mHandler.addToggleListener(listener);
+            mHandler.addToggleListener(listener, Binder.getCallingUid());
         }
 
         /**
@@ -1653,7 +1655,7 @@ public final class SensorPrivacyService extends SystemService {
                         }
                         break;
                         case "enable_except_allowlisted_apps" : {
-                            if (Flags.cameraPrivacyAllowlist()) {
+                            if (com.android.internal.camera.flags.Flags.cameraPrivacyAllowlist()) {
                                 int sensor = sensorStrToId(getNextArgRequired());
                                 if ((!isAutomotive(mContext)) || (sensor != CAMERA)) {
                                     pw.println("Command not valid for this sensor");
@@ -1687,7 +1689,7 @@ public final class SensorPrivacyService extends SystemService {
                     pw.println("  disable USER_ID SENSOR");
                     pw.println("    Disable privacy for a certain sensor.");
                     pw.println("");
-                    if (Flags.cameraPrivacyAllowlist()) {
+                    if (com.android.internal.camera.flags.Flags.cameraPrivacyAllowlist()) {
                         if (isAutomotive(mContext)) {
                             pw.println("  enable_except_allowlisted_apps "
                                     + "USER_ID SENSOR");
@@ -1706,6 +1708,7 @@ public final class SensorPrivacyService extends SystemService {
      */
     private final class SensorPrivacyHandler extends Handler {
         private static final int MESSAGE_SENSOR_PRIVACY_CHANGED = 1;
+        private static final int MAX_LISTENERS_PER_UID = 10;
 
         private final Object mListenerLock = new Object();
 
@@ -1715,6 +1718,10 @@ public final class SensorPrivacyService extends SystemService {
         @GuardedBy("mListenerLock")
         private final RemoteCallbackList<ISensorPrivacyListener>
                 mToggleSensorListeners = new RemoteCallbackList<>();
+        @GuardedBy("mListenerLock")
+        private final SparseIntArray mNumberOfListenersPerUid = new SparseIntArray();
+        @GuardedBy("mListenerLock")
+        private final SparseIntArray mNumberOfToggleListenersPerUid = new SparseIntArray();
         @GuardedBy("mListenerLock")
         private final ArrayMap<ISensorPrivacyListener, Pair<DeathRecipient, Integer>>
                 mDeathRecipients;
@@ -1726,18 +1733,34 @@ public final class SensorPrivacyService extends SystemService {
             mContext = context;
         }
 
-        public void addListener(ISensorPrivacyListener listener) {
+        public void addListener(ISensorPrivacyListener listener, int callingUid) {
             synchronized (mListenerLock) {
+                int numListeners = mNumberOfListenersPerUid.get(callingUid, 0);
+
+                if (Flags.limitSensorPrivacyListeners() && numListeners >= MAX_LISTENERS_PER_UID) {
+                    throw new IllegalStateException("Too many sensor privacy listeners "
+                            + "registered for uid=" + callingUid);
+                }
+
                 if (mListeners.register(listener)) {
-                    addDeathRecipient(listener);
+                    mNumberOfListenersPerUid.put(callingUid, numListeners + 1);
+                    addDeathRecipient(listener, callingUid);
                 }
             }
         }
 
-        public void addToggleListener(ISensorPrivacyListener listener) {
+        public void addToggleListener(ISensorPrivacyListener listener, int callingUid) {
             synchronized (mListenerLock) {
+                int numListeners = mNumberOfToggleListenersPerUid.get(callingUid, 0);
+
+                if (Flags.limitSensorPrivacyListeners() && numListeners >= MAX_LISTENERS_PER_UID) {
+                    throw new IllegalStateException("Too many toggle sensor privacy listeners "
+                            + "registered for uid=" + callingUid);
+                }
+
                 if (mToggleSensorListeners.register(listener)) {
-                    addDeathRecipient(listener);
+                    mNumberOfToggleListenersPerUid.put(callingUid, numListeners + 1);
+                    addDeathRecipient(listener, callingUid);
                 }
             }
         }
@@ -1804,7 +1827,7 @@ public final class SensorPrivacyService extends SystemService {
             mSensorPrivacyServiceImpl.showSensorStateChangedActivity(sensor, toggleType);
         }
 
-        @FlaggedApi(Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
+        @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_PRIVACY_ALLOWLIST)
         public void handleSensorPrivacyChanged(int userId, int toggleType, int sensor,
                 int state) {
             if (userId == mCurrentUser) {
@@ -1843,10 +1866,10 @@ public final class SensorPrivacyService extends SystemService {
                     mSensorPrivacyServiceImpl, key, token));
         }
 
-        private void addDeathRecipient(ISensorPrivacyListener listener) {
+        private void addDeathRecipient(ISensorPrivacyListener listener, int callingUid) {
             Pair<DeathRecipient, Integer> deathRecipient = mDeathRecipients.get(listener);
             if (deathRecipient == null) {
-                deathRecipient = new Pair<>(new DeathRecipient(listener), 1);
+                deathRecipient = new Pair<>(new DeathRecipient(listener, callingUid), 1);
             } else {
                 int newRefCount = deathRecipient.second + 1;
                 deathRecipient = new Pair<>(deathRecipient.first, newRefCount);
@@ -1874,9 +1897,11 @@ public final class SensorPrivacyService extends SystemService {
     private final class DeathRecipient implements IBinder.DeathRecipient {
 
         private ISensorPrivacyListener mListener;
+        private int mCallingUid;
 
-        DeathRecipient(ISensorPrivacyListener listener) {
+        DeathRecipient(ISensorPrivacyListener listener, int callingUid) {
             mListener = listener;
+            mCallingUid = callingUid;
             try {
                 mListener.asBinder().linkToDeath(this, 0);
             } catch (RemoteException e) {
@@ -1887,6 +1912,8 @@ public final class SensorPrivacyService extends SystemService {
         public void binderDied() {
             mSensorPrivacyServiceImpl.removeSensorPrivacyListener(mListener);
             mSensorPrivacyServiceImpl.removeToggleSensorPrivacyListener(mListener);
+            mSensorPrivacyServiceImpl.mHandler.mNumberOfListenersPerUid.delete(mCallingUid);
+            mSensorPrivacyServiceImpl.mHandler.mNumberOfToggleListenersPerUid.delete(mCallingUid);
         }
 
         public void destroy() {

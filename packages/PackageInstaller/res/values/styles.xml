@@ -46,6 +46,9 @@
         <item name="android:textAppearance">@android:style/TextAppearance.DeviceDefault.Headline</item>
     </style>
 
+    <style name="TextAppearance.PackageInstaller.Title" parent="@android:style/TextAppearance.DeviceDefault.Headline">
+    </style>
+
     <style name="TextAppearance.PackageInstaller.AppLabel" parent="@android:style/TextAppearance.DeviceDefault.SearchResult.Subtitle">
         <item name="android:textColor">?android:attr/textColorPrimary</item>
         <item name="android:textFontWeight">600</item>
@@ -77,6 +80,7 @@
     </style>
 
     <style name="Widget.PackageInstaller.Material.Button" parent="@style/Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:insetTop">8dp</item>
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:minHeight">@dimen/button_min_height</item>
         <item name="android:textAppearance">@style/TextAppearance.PackageInstaller.LabelLarge</item>
@@ -85,7 +89,7 @@
 
     <style name="Widget.PackageInstaller.Material.Button.Colored" parent="@style/Widget.Material3.Button">
         <item name="android:insetBottom">0dp</item>
-        <item name="android:insetTop">0dp</item>
+        <item name="android:insetTop">8dp</item>
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:minHeight">@dimen/button_min_height</item>
         <item name="android:paddingHorizontal">16dp</item>
@@ -96,7 +100,7 @@
 
     <style name="Widget.PackageInstaller.Material.Button.Outlined" parent="@style/Widget.Material3.Button.OutlinedButton">
         <item name="android:insetBottom">0dp</item>
-        <item name="android:insetTop">0dp</item>
+        <item name="android:insetTop">8dp</item>
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:minHeight">@dimen/button_min_height</item>
         <item name="android:paddingHorizontal">16dp</item>

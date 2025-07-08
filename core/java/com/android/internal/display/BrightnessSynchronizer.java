@@ -60,7 +60,8 @@ public class BrightnessSynchronizer {
     private static final int MSG_RUN_UPDATE = 1;
 
     // The tolerance within which we consider brightness values approximately equal to eachother.
-    public static final float EPSILON = 0.0000001f;
+    public static final float EPSILON = 0.0001f;
+
     private static int sBrightnessUpdateCount = 1;
 
     private final Context mContext;

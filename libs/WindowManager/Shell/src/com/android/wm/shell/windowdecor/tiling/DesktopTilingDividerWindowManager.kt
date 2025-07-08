@@ -41,7 +41,12 @@ import android.view.WindowManager.LayoutParams.PRIVATE_FLAG_NO_MOVE_ANIMATION
 import android.view.WindowManager.LayoutParams.PRIVATE_FLAG_TRUSTED_OVERLAY
 import android.view.WindowManager.LayoutParams.TYPE_DOCK_DIVIDER
 import android.view.WindowlessWindowManager
+import com.android.internal.jank.Cuj.CUJ_DESKTOP_MODE_TILE_RESIZING
+import com.android.internal.jank.InteractionJankMonitor
+import com.android.internal.protolog.ProtoLog
 import com.android.wm.shell.R
+import com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_DESKTOP_MODE
+import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 
 /**
@@ -57,6 +62,7 @@ class DesktopTilingDividerWindowManager(
     private var dividerBounds: Rect,
     private val displayContext: Context,
     private val isDarkMode: Boolean,
+    private val interactionJankMonitor: InteractionJankMonitor,
 ) : WindowlessWindowManager(config, leash, null), DividerMoveCallback, View.OnLayoutChangeListener {
     private lateinit var viewHost: SurfaceControlViewHost
     private var tilingDividerView: TilingDividerView? = null
@@ -136,6 +142,7 @@ class DesktopTilingDividerWindowManager(
      * @param relativeLeash the task leash that the TilingDividerView should be shown on top of.
      */
     fun generateViewHost(relativeLeash: SurfaceControl) {
+        logV("Generating tiling view host.")
         val surfaceControlViewHost =
             SurfaceControlViewHost(
                 displayContext,
@@ -203,6 +210,7 @@ class DesktopTilingDividerWindowManager(
         if (!dividerShown) {
             return
         }
+        logD("Hiding tiling divider bar.")
         cancelAnimation()
         val t = transactionSupplier.get()
         t.hide(leash)
@@ -219,6 +227,7 @@ class DesktopTilingDividerWindowManager(
     /** Shows the divider bar. */
     fun showDividerBar(isTilingVisibleAfterRecents: Boolean) {
         if (dividerShown || runningAnimator != null) return
+        logD("Showing tiling divider bar.")
         val dividerAnimatorT = transactionSupplier.get()
         val dividerAnimDuration =
             if (isTilingVisibleAfterRecents) {
@@ -258,8 +267,32 @@ class DesktopTilingDividerWindowManager(
     }
 
     override fun onDividerMoveStart(pos: Int, motionEvent: MotionEvent) {
+        logD("Tiling divider move start.")
         setSlippery(false)
+        beginJankMonitoring()
         transitionHandler.onDividerHandleDragStart(motionEvent)
+    }
+
+    private fun beginJankMonitoring() {
+        val dividerView =
+            tilingDividerView
+                ?: run {
+                    logE(
+                        "Attempting to monitor tiling jank without a tiling divider is not possible."
+                    )
+                    return
+                }
+        interactionJankMonitor.begin(
+            InteractionJankMonitor.Configuration.Builder.withView(
+                    CUJ_DESKTOP_MODE_TILE_RESIZING,
+                    dividerView,
+                )
+                .setTimeout(LONG_CUJ_TIMEOUT_MS)
+        )
+    }
+
+    private fun endJankMonitoring() {
+        interactionJankMonitor.end(CUJ_DESKTOP_MODE_TILE_RESIZING)
     }
 
     /**
@@ -279,7 +312,9 @@ class DesktopTilingDividerWindowManager(
      * WindowContainerTransactions if the sizes of the tiled tasks changed.
      */
     override fun onDividerMovedEnd(pos: Int, motionEvent: MotionEvent) {
+        logD("Tiling divider move end.")
         setSlippery(true)
+        endJankMonitoring()
         val t = transactionSupplier.get()
         t.setPosition(leash, pos.toFloat() - maxRoundedCornerRadius, dividerBounds.top.toFloat())
         val dividerWidth = dividerBounds.width()
@@ -362,5 +397,21 @@ class DesktopTilingDividerWindowManager(
     companion object {
         private const val DIVIDER_FADE_IN_ALPHA_DURATION = 300L
         private const val DIVIDER_FADE_IN_ALPHA_SLOW_DURATION = 900L
+        // Timeout used for resize and drag CUJs, this is longer than the default timeout to avoid
+        // timing out in the middle of a resize or drag action.
+        private val LONG_CUJ_TIMEOUT_MS = TimeUnit.SECONDS.toMillis(10L)
+        private val TAG = DesktopTilingDividerWindowManager::class.java.simpleName
+    }
+
+    private fun logD(msg: String, vararg arguments: Any?) {
+        ProtoLog.d(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logV(msg: String, vararg arguments: Any?) {
+        ProtoLog.v(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
+    }
+
+    private fun logE(msg: String, vararg arguments: Any?) {
+        ProtoLog.e(WM_SHELL_DESKTOP_MODE, "%s: $msg", TAG, *arguments)
     }
 }

@@ -26,7 +26,7 @@ import java.util.Objects;
 final class FlagUnion extends ResolutionMechanism<Integer> {
 
     @Override
-    IntegerPolicyValue resolve(
+    ResolvedPolicy<Integer> resolve(
             @NonNull LinkedHashMap<EnforcingAdmin, PolicyValue<Integer>> adminPolicies) {
         Objects.requireNonNull(adminPolicies);
         if (adminPolicies.isEmpty()) {
@@ -34,10 +34,12 @@ final class FlagUnion extends ResolutionMechanism<Integer> {
         }
 
         Integer unionOfPolicies = 0;
-        for (PolicyValue<Integer> policy : adminPolicies.values()) {
-            unionOfPolicies |= policy.getValue();
+        for (PolicyValue<Integer> policyValue : adminPolicies.values()) {
+            unionOfPolicies |= policyValue.getValue();
         }
-        return new IntegerPolicyValue(unionOfPolicies);
+        return new ResolvedPolicy<>(new IntegerPolicyValue(unionOfPolicies),
+                // Since it's union, all admins contribute to the final value.
+                adminPolicies.keySet());
     }
 
     @Override

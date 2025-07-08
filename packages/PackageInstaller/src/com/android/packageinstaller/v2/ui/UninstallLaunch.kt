@@ -108,13 +108,17 @@ class UninstallLaunch : FragmentActivity(), UninstallActionListener {
         when (uninstallStage.stageCode) {
             UninstallStage.STAGE_ABORTED -> {
                 val aborted = uninstallStage as UninstallAborted
-                if (aborted.abortReason == UninstallAborted.ABORT_REASON_APP_UNAVAILABLE ||
-                    aborted.abortReason == UninstallAborted.ABORT_REASON_USER_NOT_ALLOWED
-                ) {
-                    val errorDialog = UninstallErrorFragment.newInstance(aborted)
-                    showDialogInner(errorDialog)
-                } else {
-                    setResult(aborted.activityResultCode, null, true)
+                when (aborted.abortReason) {
+                    UninstallAborted.ABORT_REASON_APP_UNAVAILABLE,
+                    UninstallAborted.ABORT_REASON_UNKNOWN,
+                    UninstallAborted.ABORT_REASON_USER_NOT_ALLOWED -> {
+                        val errorDialog = UninstallErrorFragment.newInstance(aborted)
+                        showDialogInner(errorDialog)
+                    }
+
+                    else -> {
+                        setResult(aborted.activityResultCode, null, true)
+                    }
                 }
             }
 

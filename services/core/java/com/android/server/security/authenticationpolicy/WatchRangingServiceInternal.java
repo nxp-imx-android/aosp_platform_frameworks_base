@@ -43,4 +43,11 @@ public interface WatchRangingServiceInternal {
      * @param authenticationRequestId request id for authentication session
      */
     void cancelWatchRangingForRequestId(long authenticationRequestId);
+
+    /**
+     * Checks if watch ranging is available or not.
+     *
+     * @param proximityResultCallback callback to return the result
+     */
+    void isWatchRangingAvailable(@NonNull IProximityResultCallback proximityResultCallback);
 }
