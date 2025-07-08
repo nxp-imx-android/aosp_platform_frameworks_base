@@ -1100,7 +1100,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final IBinder window = new Binder();
         final InputTransferToken inputTransferToken = mock(InputTransferToken.class);
 
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(SecurityException.class, () ->
                 mWm.grantInputChannel(session, callingUid, callingPid, DEFAULT_DISPLAY,
                         surfaceControl, window, null /* hostInputToken */, FLAG_NOT_FOCUSABLE,
                         PRIVATE_FLAG_TRUSTED_OVERLAY, INPUT_FEATURE_SPY, TYPE_APPLICATION,
@@ -1162,7 +1162,7 @@ public class WindowManagerServiceTests extends WindowTestsBase {
                 eq(surfaceControl),
                 argThat(h -> (h.inputConfig & InputConfig.SPY) == 0));
 
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(SecurityException.class, () ->
                 mWm.updateInputChannel(inputChannel.getToken(), null /* hostInputToken */,
                         DEFAULT_DISPLAY, surfaceControl,
                         FLAG_NOT_FOCUSABLE, PRIVATE_FLAG_TRUSTED_OVERLAY, INPUT_FEATURE_SPY,
@@ -1205,14 +1205,17 @@ public class WindowManagerServiceTests extends WindowTestsBase {
         final IBinder window = new Binder();
         final InputTransferToken inputTransferToken = mock(InputTransferToken.class);
 
+        assertThrows(SecurityException.class, () -> mWm.grantInputChannel(session, callingUid,
+                callingPid, DEFAULT_DISPLAY, surfaceControl,
+                window, null /* hostInputToken */, FLAG_NOT_FOCUSABLE, 0 /* privateFlags */,
+                INPUT_FEATURE_SENSITIVE_FOR_PRIVACY, TYPE_APPLICATION, null /* windowToken */,
+                inputTransferToken, "TestInputChannel"));
+
         final InputChannel inputChannel = mWm.grantInputChannel(session, callingUid, callingPid,
                 DEFAULT_DISPLAY, surfaceControl,
                 window, null /* hostInputToken */, FLAG_NOT_FOCUSABLE, 0 /* privateFlags */,
-                INPUT_FEATURE_SENSITIVE_FOR_PRIVACY, TYPE_APPLICATION, null /* windowToken */,
+                0 /* inputFeatures */, TYPE_APPLICATION, null /* windowToken */,
                 inputTransferToken, "TestInputChannel");
-        verify(mTransaction).setInputWindowInfo(
-                eq(surfaceControl),
-                argThat(h -> (h.inputConfig & InputConfig.SENSITIVE_FOR_PRIVACY) == 0));
 
         mWm.updateInputChannel(inputChannel.getToken(), null /* hostInputToken */,
                 DEFAULT_DISPLAY, surfaceControl,
