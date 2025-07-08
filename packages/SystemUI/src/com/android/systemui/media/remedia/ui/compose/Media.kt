@@ -1435,7 +1435,7 @@ private interface AnimatedColorScheme {
     val background: Color
 }
 
-private object Media {
+object Media {
 
     /**
      * Scenes.
@@ -1481,6 +1481,7 @@ private object Media {
         val NextButton = ElementKey("next")
         val SeekBarSlider = ElementKey("seek_bar_slider")
         val OutputSwitcherButton = ElementKey("output_switcher")
+        val mediaCarousel = ElementKey("media_carousel")
 
         fun additionalActionButton(index: Int): ElementKey {
             return ElementKey("additional_action_$index")

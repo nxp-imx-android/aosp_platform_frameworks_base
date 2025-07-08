@@ -1391,7 +1391,7 @@ private fun Modifier.gesturesDisabled(disabled: Boolean) =
     }
 
 @Composable
-private fun MediaObject(
+private fun ContentScope.MediaObject(
     mediaHost: MediaHost,
     modifier: Modifier = Modifier,
     mediaLogger: MediaViewLogger,
@@ -1401,13 +1401,15 @@ private fun MediaObject(
     update: UniqueObjectHostView.() -> Unit = {},
 ) {
     if (Flags.mediaControlsInCompose()) {
-        Media(
-            viewModelFactory = mediaViewModelFactory,
-            presentationStyle = MediaPresentationStyle.Default,
-            behavior = behavior,
-            onDismissed = { mediaCarouselInteractor.onSwipeToDismiss() },
-            modifier = modifier,
-        )
+        Element(key = Media.Elements.mediaCarousel, modifier = modifier) {
+            Media(
+                viewModelFactory = mediaViewModelFactory,
+                presentationStyle = MediaPresentationStyle.Default,
+                behavior = behavior,
+                onDismissed = { mediaCarouselInteractor.onSwipeToDismiss() },
+                modifier = Modifier,
+            )
+        }
     } else {
         Box {
             AndroidView(
