@@ -432,8 +432,15 @@ public class Cuj {
      */
     public static final int CUJ_LAUNCHER_OVERVIEW_CLEAR_ALL = 139;
 
+    /**
+     * Track when tile resizing divider is simultaneously resizing apps.
+     *
+     * <p> Tracking starts when the divider move handle is dragged and ends when the drag ends.
+     */
+    public static final int CUJ_DESKTOP_MODE_TILE_RESIZING = 140;
+
     // When adding a CUJ, update this and make sure to also update CUJ_TO_STATSD_INTERACTION_TYPE.
-    @VisibleForTesting static final int LAST_CUJ = CUJ_LAUNCHER_OVERVIEW_CLEAR_ALL;
+    @VisibleForTesting static final int LAST_CUJ = CUJ_DESKTOP_MODE_TILE_RESIZING;
 
     /** @hide */
     @IntDef({
@@ -564,7 +571,8 @@ public class Cuj {
             CUJ_WEAR_QSS_TRAY_OPEN,
             CUJ_WEAR_NOTIFICATION_TRAY_OPEN,
             CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE,
-            CUJ_LAUNCHER_OVERVIEW_CLEAR_ALL
+            CUJ_LAUNCHER_OVERVIEW_CLEAR_ALL,
+            CUJ_DESKTOP_MODE_TILE_RESIZING,
     })
     @Retention(RetentionPolicy.SOURCE)
     public @interface CujType {}
@@ -706,6 +714,7 @@ public class Cuj {
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_WEAR_NOTIFICATION_TRAY_OPEN] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__WEAR_NOTIFICATION_TRAY_OPEN;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE;
         CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_LAUNCHER_OVERVIEW_CLEAR_ALL] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__LAUNCHER_OVERVIEW_CLEAR_ALL;
+        CUJ_TO_STATSD_INTERACTION_TYPE[CUJ_DESKTOP_MODE_TILE_RESIZING] = FrameworkStatsLog.UIINTERACTION_FRAME_INFO_REPORTED__INTERACTION_TYPE__DESKTOP_MODE_TILE_RESIZING;
     }
 
     private Cuj() {
@@ -980,6 +989,8 @@ public class Cuj {
                 return "DESKTOP_MODE_SHADE_WINDOW_DISPLAY_CHANGE";
             case CUJ_LAUNCHER_OVERVIEW_CLEAR_ALL:
                 return "LAUNCHER_OVERVIEW_CLEAR_ALL";
+            case CUJ_DESKTOP_MODE_TILE_RESIZING:
+                return "DESKTOP_MODE_TILE_RESIZING";
         }
         return "UNKNOWN";
     }
