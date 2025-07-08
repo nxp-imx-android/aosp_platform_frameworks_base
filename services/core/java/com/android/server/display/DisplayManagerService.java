@@ -2481,9 +2481,7 @@ public final class DisplayManagerService extends SystemService {
 
         mExternalDisplayPolicy.handleLogicalDisplayContentModeChange(display);
 
-        if (mFlags.isApplyDisplayChangedDuringDisplayAddedEnabled()) {
-            applyDisplayChangedLocked(display);
-        }
+        applyDisplayChangedLocked(display);
 
         // The default display should always be added to the topology. Other displays will be added
         // upon calling onDisplayBelongToTopologyChanged().
