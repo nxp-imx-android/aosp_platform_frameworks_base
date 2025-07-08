@@ -31,7 +31,6 @@ import android.app.Application;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.content.Context;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
-import android.sdk.Flags;
 import android.sysprop.BackportedFixesProperties;
 import android.sysprop.DeviceProperties;
 import android.sysprop.SocProperties;
@@ -430,7 +429,6 @@ public class Build {
          * Possible values are defined in {@link
          * android.os.Build.VERSION_CODES_FULL}.
          */
-        @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
         public static final int SDK_INT_FULL = parseFullVersion(SystemProperties.get(
                     "ro.build.version.sdk_full", ""));
 
@@ -1279,7 +1277,6 @@ public class Build {
         /**
          * Baklava.
          */
-        @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
         public static final int BAKLAVA = 36;
     }
 
@@ -1296,7 +1293,6 @@ public class Build {
      *
      * @see android.os.Build.VERSION#SDK_INT_FULL
      */
-    @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
     @SuppressLint("AcronymName")
     public static class VERSION_CODES_FULL {
         private VERSION_CODES_FULL() {}
@@ -1497,7 +1493,6 @@ public class Build {
      *
      * @return The major version encoded in a VERSION_CODES_FULL value
      */
-    @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
     public static int getMajorSdkVersion(@SdkIntFull int sdkIntFull) {
         return sdkIntFull / VERSION_CODES_FULL.SDK_INT_MULTIPLIER;
     }
@@ -1508,7 +1503,6 @@ public class Build {
      *
      * @return The minor version encoded in a VERSION_CODES_FULL value
      */
-    @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
     public static int getMinorSdkVersion(@SdkIntFull int sdkIntFull) {
         return sdkIntFull % VERSION_CODES_FULL.SDK_INT_MULTIPLIER;
     }

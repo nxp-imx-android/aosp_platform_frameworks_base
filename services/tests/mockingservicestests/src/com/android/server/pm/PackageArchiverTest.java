@@ -152,8 +152,7 @@ public class PackageArchiverTest {
         when(rule.mocks().getInjector().getPackageInstallerService(
                 nullable(ComponentName.class))).thenReturn(mInstallerService);
         final int sdkVersion = Build.VERSION_CODES.CUR_DEVELOPMENT;
-        final int sdkVersionFull = (android.sdk.Flags.majorMinorVersioningScheme())
-                ? Build.parseFullVersion(String.valueOf(sdkVersion)) : 0;
+        final int sdkVersionFull = Build.parseFullVersion(String.valueOf(sdkVersion));
         mPackageManagerService = spy(new PackageManagerService(rule.mocks().getInjector(),
                 /* factoryTest= */false,
                 MockSystem.Companion.getDEFAULT_VERSION_INFO().fingerprint,
