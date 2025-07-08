@@ -165,11 +165,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_OFFLOAD_SESSION_CANCEL_BLOCK_SCREEN_ON,
             Flags::offloadSessionCancelBlockScreenOn);
 
-    private final FlagState mVirtualDisplayLimit =
-            new FlagState(
-                    Flags.FLAG_VIRTUAL_DISPLAY_LIMIT,
-                    Flags::virtualDisplayLimit);
-
     private final FlagState mNormalBrightnessForDozeParameter = new FlagState(
             Flags.FLAG_NORMAL_BRIGHTNESS_FOR_DOZE_PARAMETER,
             Flags::normalBrightnessForDozeParameter
@@ -442,10 +437,6 @@ public class DisplayManagerFlags {
         return mSynthetic60hzModes.isEnabled();
     }
 
-    public boolean isVirtualDisplayLimitEnabled() {
-        return mVirtualDisplayLimit.isEnabled();
-    }
-
     /**
      * @return Whether the useDozeBrightness parameter should be used
      */
@@ -625,7 +616,6 @@ public class DisplayManagerFlags {
         pw.println(" " + mIgnoreAppPreferredRefreshRate);
         pw.println(" " + mSynthetic60hzModes);
         pw.println(" " + mOffloadSessionCancelBlockScreenOn);
-        pw.println(" " + mVirtualDisplayLimit);
         pw.println(" " + mNormalBrightnessForDozeParameter);
         pw.println(" " + mEnableBatteryStatsForAllDisplays);
         pw.println(" " + mBlockAutobrightnessChangesOnStylusUsage);
