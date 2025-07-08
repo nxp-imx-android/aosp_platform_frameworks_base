@@ -23,6 +23,7 @@ import static android.app.Flags.FLAG_LIVE_WALLPAPER_CONTENT_HANDLING;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static android.os.ParcelFileDescriptor.MODE_READ_ONLY;
 
+import static com.android.server.backup.Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER;
 import static com.android.window.flags.Flags.FLAG_MULTI_CROP;
 import static com.android.window.flags.Flags.multiCrop;
 
@@ -1994,8 +1995,9 @@ public class WallpaperManager {
      *                   which={@link #FLAG_LOCK} if there is a shared home + lock wallpaper.
      * @hide
      */
-    @SuppressLint("UnflaggedApi")
-    @TestApi
+    @FlaggedApi(FLAG_ENABLE_CROSS_PLATFORM_TRANSFER)
+    @UnsupportedAppUsage
+    @SystemApi
     @Nullable
     public ParcelFileDescriptor getWallpaperFile(@SetWallpaperFlags int which, boolean getCropped) {
         return getWallpaperFile(which, mContext.getUserId(), getCropped);
@@ -2584,8 +2586,9 @@ public class WallpaperManager {
      * @param which       Flags indicating which wallpaper(s) to configure with the new imagery.
      * @hide
      */
-    @FlaggedApi(FLAG_LIVE_WALLPAPER_CONTENT_HANDLING)
-    @TestApi
+    @FlaggedApi(FLAG_ENABLE_CROSS_PLATFORM_TRANSFER)
+    @UnsupportedAppUsage
+    @SystemApi
     @RequiresPermission(android.Manifest.permission.SET_WALLPAPER)
     public int setBitmapWithDescription(@Nullable Bitmap fullImage,
             @NonNull WallpaperDescription description, boolean allowBackup,
@@ -3630,6 +3633,9 @@ public class WallpaperManager {
      * Only the OS itself may use this method.
      * @hide
      */
+    @SystemApi
+    @FlaggedApi(FLAG_ENABLE_CROSS_PLATFORM_TRANSFER)
+    @RequiresPermission(READ_WALLPAPER_INTERNAL)
     public boolean isWallpaperBackupEligible(int which) {
         if (sGlobals.mService == null) {
             Log.w(TAG, "WallpaperService not running");
