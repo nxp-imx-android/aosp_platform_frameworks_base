@@ -79,13 +79,8 @@ constructor(
     private val reposBySubIdK: Incremental<Int, MobileConnectionRepositoryKairosAdapter> =
         buildIncremental {
             kairosRepo.mobileConnectionsBySubId
-                .mapValues { (subId, repo) ->
-                    buildSpec {
-                        MobileConnectionRepositoryKairosAdapter(
-                            kairosRepo = repo,
-                            carrierConfig = carrierConfigRepo.getOrCreateConfigForSubId(subId),
-                        )
-                    }
+                .mapValues { (_, repo) ->
+                    buildSpec { MobileConnectionRepositoryKairosAdapter(kairosRepo = repo) }
                 }
                 .applyLatestSpecForKey(
                     name = nameTag("MobileConnectionsRepositoryKairosAdapter.reposBySubIdK")

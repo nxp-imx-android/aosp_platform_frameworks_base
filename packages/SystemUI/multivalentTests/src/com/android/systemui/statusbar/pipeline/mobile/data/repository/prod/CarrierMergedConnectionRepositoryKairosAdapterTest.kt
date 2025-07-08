@@ -23,8 +23,6 @@ import com.android.systemui.kairos.ExperimentalKairosApi
 import com.android.systemui.kairos.launchKairosNetwork
 import com.android.systemui.kairos.stateOf
 import com.android.systemui.kosmos.testScope
-import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfig
-import com.android.systemui.statusbar.pipeline.mobile.data.model.testCarrierConfig
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.fake
 import com.android.systemui.statusbar.pipeline.wifi.data.repository.wifiRepository
 import kotlinx.coroutines.Job
@@ -60,11 +58,7 @@ class CarrierMergedConnectionRepositoryKairosAdapterTest :
                             isInEcmMode = stateOf(false),
                         )
                     }
-                    adapter =
-                        MobileConnectionRepositoryKairosAdapter(
-                            repo,
-                            SystemUiCarrierConfig(SUB_ID, testCarrierConfig()),
-                        )
+                    adapter = MobileConnectionRepositoryKairosAdapter(repo)
                     Unit
                 }
             }

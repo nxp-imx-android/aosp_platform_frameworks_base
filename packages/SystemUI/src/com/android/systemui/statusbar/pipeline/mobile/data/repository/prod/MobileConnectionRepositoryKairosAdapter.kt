@@ -23,7 +23,6 @@ import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.statusbar.pipeline.mobile.data.model.DataConnectionState
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.ResolvedNetworkType
-import com.android.systemui.statusbar.pipeline.mobile.data.model.SystemUiCarrierConfig
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepositoryKairos
 import com.android.systemui.statusbar.pipeline.shared.data.model.DataActivityModel
@@ -32,8 +31,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 @ExperimentalKairosApi
 fun BuildScope.MobileConnectionRepositoryKairosAdapter(
-    kairosRepo: MobileConnectionRepositoryKairos,
-    carrierConfig: SystemUiCarrierConfig,
+    kairosRepo: MobileConnectionRepositoryKairos
 ): MobileConnectionRepositoryKairosAdapter =
     MobileConnectionRepositoryKairosAdapter(
         subId = kairosRepo.subId,
@@ -43,8 +41,18 @@ fun BuildScope.MobileConnectionRepositoryKairosAdapter(
                     "MobileConnectionRepositoryKairosAdapter(subId=${kairosRepo.subId}).carrierId"
                 }
             ),
-        inflateSignalStrength = carrierConfig.shouldInflateSignalStrength,
-        allowNetworkSliceIndicator = carrierConfig.allowNetworkSliceIndicator,
+        inflateSignalStrength =
+            kairosRepo.inflateSignalStrength.toStateFlow(
+                nameTag {
+                    "MobileConnectionRepositoryKairosAdapter(subId=${kairosRepo.subId}).inflateSignalStrength"
+                }
+            ),
+        allowNetworkSliceIndicator =
+            kairosRepo.allowNetworkSliceIndicator.toStateFlow(
+                nameTag {
+                    "MobileConnectionRepositoryKairosAdapter(subId=${kairosRepo.subId}).allowNetworkSliceIndicator"
+                }
+            ),
         tableLogBuffer = kairosRepo.tableLogBuffer,
         isEmergencyOnly =
             kairosRepo.isEmergencyOnly.toStateFlow(
