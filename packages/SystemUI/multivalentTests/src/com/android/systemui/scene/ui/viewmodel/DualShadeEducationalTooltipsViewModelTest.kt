@@ -66,7 +66,10 @@ class DualShadeEducationalTooltipsViewModelTest(
         overrideResource(R.string.dual_shade_educational_tooltip_qs, QS_TOOLTIP)
 
         underTest =
-            kosmos.dualShadeEducationalTooltipsViewModelFactory.create(kosmos.applicationContext)
+            kosmos.dualShadeEducationalTooltipsViewModelFactory.create(
+                kosmos.applicationContext,
+                ignoreTestHarness = true,
+            )
         underTest.activateIn(kosmos.testScope)
         kosmos.runCurrent()
     }

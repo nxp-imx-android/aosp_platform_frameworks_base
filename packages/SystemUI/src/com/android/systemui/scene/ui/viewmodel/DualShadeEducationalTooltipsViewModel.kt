@@ -16,6 +16,7 @@
 
 package com.android.systemui.scene.ui.viewmodel
 
+import android.app.ActivityManager
 import android.content.Context
 import androidx.compose.ui.unit.IntRect
 import com.android.systemui.lifecycle.ExclusiveActivatable
@@ -34,7 +35,15 @@ class DualShadeEducationalTooltipsViewModel
 constructor(
     private val interactor: DualShadeEducationInteractor,
     @Assisted private val context: Context,
+    @Assisted private val ignoreTestHarness: Boolean,
 ) : ExclusiveActivatable() {
+
+    /**
+     * Avoid showing the dual shade educational tooltips in test harness mode and not explicitly
+     * allowed, as the tooltip may interfere with test automation.
+     */
+    private val disableEducationTooltips =
+        !ignoreTestHarness && ActivityManager.isRunningInUserTestHarness()
 
     /**
      * The tooltip to show, or `null` if none should be shown.
@@ -45,10 +54,14 @@ constructor(
      */
     val visibleTooltip: DualShadeEducationalTooltipViewModel?
         get() =
-            when (interactor.education) {
-                DualShadeEducationModel.ForNotificationsShade -> notificationsTooltip()
-                DualShadeEducationModel.ForQuickSettingsShade -> quickSettingsTooltip()
-                else -> null
+            if (disableEducationTooltips) {
+                null
+            } else {
+                when (interactor.education) {
+                    DualShadeEducationModel.ForNotificationsShade -> notificationsTooltip()
+                    DualShadeEducationModel.ForQuickSettingsShade -> quickSettingsTooltip()
+                    else -> null
+                }
             }
 
     override suspend fun onActivated(): Nothing = coroutineScope { awaitCancellation() }
@@ -87,6 +100,9 @@ constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(context: Context): DualShadeEducationalTooltipsViewModel
+        fun create(
+            context: Context,
+            ignoreTestHarness: Boolean = false,
+        ): DualShadeEducationalTooltipsViewModel
     }
 }
