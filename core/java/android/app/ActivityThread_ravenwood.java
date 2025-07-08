@@ -15,52 +15,31 @@
  */
 package android.app;
 
-import android.content.Context;
-import android.os.Handler;
-import android.os.HandlerExecutor;
-import android.os.Looper;
-import android.platform.test.ravenwood.RavenwoodAppDriver;
+import static org.junit.Assert.assertEquals;
 
-import java.util.concurrent.Executor;
+import android.os.Looper;
 
 /**
  * Inject Ravenwood methods to {@link ActivityThread}.
  *
- * TODO: Stop using Objensis to instantiate ActivityThread and start using more of the
- * real code, rather than handling all methods here with @RavenwoodRedirect.
- * At that point, the initialization logic should be moved from RavenwoodAppDriver to this class.
+ * TODO: Move the initialization logic from {@link RavenwoodAppDriver} to this class.
+ * TODO: Port more initialization logic from {@link ActivityThread}.
  */
 public final class ActivityThread_ravenwood {
     private ActivityThread_ravenwood() {
     }
 
-    /** Backdoor to set ActivityThread's package-private member field. */
-    public static void setInstrumentation(ActivityThread at, Instrumentation inst) {
-        at.mInstrumentation = inst;
-    }
+    /**
+     * Create a new instance, and also set it to sCurrentActivityThread.
+     * @return
+     */
+    public static ActivityThread createInstance() {
+        // This must be called on the main thread.
+        assertEquals(Looper.getMainLooper().getThread(), Thread.currentThread());
+        final var at = new ActivityThread();
 
-    private static final Handler sHandler = new Handler(Looper.getMainLooper());
-    private static final HandlerExecutor sHandlerExecutor = new HandlerExecutor(sHandler);
+        ActivityThread.staticInitForRavenwood(at);
 
-    /** Override the corresponding ActivityThread method. */
-    public static Context currentSystemContext() {
-        return RavenwoodAppDriver.getInstance().getAndroidAppBridge().getSystemContext();
-    }
-
-    /** Override the corresponding ActivityThread method. */
-    public static Application currentApplication() {
-        return RavenwoodAppDriver.getInstance().getApplication();
-    }
-
-    static Looper getLooper(ActivityThread at) {
-        return Looper.getMainLooper();
-    }
-
-    static Handler getHandler(ActivityThread at) {
-        return sHandler;
-    }
-
-    static Executor getExecutor(ActivityThread at) {
-        return sHandlerExecutor;
+        return at;
     }
 }

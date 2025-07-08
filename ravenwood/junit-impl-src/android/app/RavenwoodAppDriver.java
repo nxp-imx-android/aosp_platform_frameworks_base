@@ -13,29 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package android.platform.test.ravenwood;
+package android.app;
 
 import android.annotation.NonNull;
-import android.app.ActivityThread;
-import android.app.ActivityThread_ravenwood;
-import android.app.Application;
-import android.app.ContextImpl_ravenwood;
-import android.app.ContextImpl_ravenwood.ReallyContextImpl;
-import android.app.IUiAutomationConnection;
-import android.app.Instrumentation;
-import android.app.LoadedApk;
-import android.app.RavenwoodAndroidAppBridge;
-import android.app.UiAutomation;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
+import android.platform.test.ravenwood.RavenwoodEnvironment;
+import android.platform.test.ravenwood.RavenwoodSystemServer;
+import android.platform.test.ravenwood.RavenwoodUtils;
 
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.internal.annotations.GuardedBy;
 import com.android.ravenwood.common.SneakyThrow;
-
-import org.objenesis.ObjenesisStd;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -71,53 +62,46 @@ public final class RavenwoodAppDriver {
     @GuardedBy("mLoadedApkCache")
     private final Map<String, LoadedApk> mLoadedApkCache = new HashMap<>();
 
-    private final ObjenesisStd mObjenesis;
-
     /** This is an empty instance created by Objenesis. None of its fields are initialized. */
     private final ActivityThread mActivityThread;
 
-    @ReallyContextImpl
-    private final Context mSystemContextImpl;
+    private final ContextImpl mSystemContextImpl;
 
     private final LoadedApk mTargetLoadedApk;
     private final LoadedApk mInstLoadedApk;
 
-    @ReallyContextImpl
-    private final Context mInstContext;
+    private final ContextImpl mInstContext;
     private final Context mTargetContext;
 
     private final Instrumentation mInstrumentation;
-
-    private final RavenwoodAndroidAppBridge mAppBridge;
 
     /**
      * Constructor. It essentially simulates the start of an app lifecycle.
      *
      * TODO: This is basically a scale down version of what ActivityThread.bindApplication() and
      * handleBindApplication() do.
-     * Use more of the real ActivityThread code, and move to ActivityThread when we stop using
-     * Objenesis.
+     * Use more of the real ActivityThread code, and move it to ActivityThread.
      */
     private RavenwoodAppDriver() {
         var env = RavenwoodEnvironment.getInstance();
-        mObjenesis = new ObjenesisStd();
 
-        mActivityThread = mObjenesis.newInstance(ActivityThread.class);
+        // This must happen on the main thread.
+        mActivityThread = ActivityThread_ravenwood.createInstance();
         mTargetLoadedApk = makeLoadedApk(mActivityThread, env.getTargetPackageName());
         mInstLoadedApk = makeLoadedApk(mActivityThread, env.getInstPackageName());
 
         // Create the system context.
-        mSystemContextImpl = ContextImpl_ravenwood.createSystemContext(mActivityThread);
+        mSystemContextImpl = ContextImpl.createSystemContext(mActivityThread);
 
         // Create the target's context. Note, it's called "appContext" in handleBindApplication,
         // but its _not_ an of the Application class. We'll create the app object later,
         // using makeApplicationInner.
-        var appContext = ContextImpl_ravenwood.createAppContext(
+        var appContext = ContextImpl.createAppContext(
                 mActivityThread, mTargetLoadedApk);
 
         // Create the instrumentation context.
         // (in handleBindApplication too, this happens before creating the target context.)
-        mInstContext = ContextImpl_ravenwood.createAppContext(mActivityThread, mInstLoadedApk);
+        mInstContext = ContextImpl.createAppContext(mActivityThread, mInstLoadedApk);
 
         // Initialize the instrumentation, using the "inst" context.
         // See also ActivityThread.initInstrumentation().
@@ -136,7 +120,7 @@ public final class RavenwoodAppDriver {
         mInstrumentation.basicInit(mInstContext, appContext, uiAutomation);
 
         // Need to set it, as it's used by LoadedApk afer this.
-        ActivityThread_ravenwood.setInstrumentation(mActivityThread, mInstrumentation);
+        mActivityThread.mInstrumentation = mInstrumentation;
         InstrumentationRegistry.registerInstance(mInstrumentation, instArgs);
 
         // Create the Application instance, which will be the "target" context.
@@ -150,6 +134,7 @@ public final class RavenwoodAppDriver {
                 /*instrumentation=*/ null
         );
 
+        mActivityThread.mInitialApplication = application;
         mTargetContext = appContext;
 
         mInstrumentation.onCreate(instArgs);
@@ -157,8 +142,6 @@ public final class RavenwoodAppDriver {
 
         // Maybe do it first?
         RavenwoodSystemServer.init(mSystemContextImpl);
-
-        mAppBridge = new RavenwoodAndroidAppBridge(this);
     }
 
     /**
@@ -196,6 +179,11 @@ public final class RavenwoodAppDriver {
         return ai;
     }
 
+    /**
+     * Make a LoadedApk instance for a package.
+     *
+     * TODO: Use ActivityThread.getPackageInfo().
+     */
     private LoadedApk makeLoadedApk(
             ActivityThread activityThread,
             String packageName
@@ -226,19 +214,11 @@ public final class RavenwoodAppDriver {
         }
     }
 
-    /**
-     * Return the helper to access {@code android.app} package-private stuff.
-     */
-    public RavenwoodAndroidAppBridge getAndroidAppBridge() {
-        return mAppBridge;
-    }
-
     public ActivityThread getActivityThread() {
         return mActivityThread;
     }
 
-    @ReallyContextImpl
-    public Context getSystemContextImpl() {
+    public ContextImpl getSystemContext() {
         return mSystemContextImpl;
     }
 
