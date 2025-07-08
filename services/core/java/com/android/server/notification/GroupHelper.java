@@ -604,11 +604,14 @@ public class GroupHelper {
             maybeUngroupOnSectionChanged(record, prevSectionKey);
         }
 
-        // This notification is already aggregated
-        if (record.getGroupKey().equals(fullAggregateGroupKey.toString())) {
-            return false;
-        }
         synchronized (mAggregatedNotifications) {
+            // This notification is already aggregated
+            if (record.getGroupKey().equals(fullAggregateGroupKey.toString())) {
+                // Update summary if flags updated
+                maybeUpdateSummaryAttributes(record, fullAggregateGroupKey, sectioner);
+                return false;
+            }
+
             ArrayMap<String, NotificationAttributes> ungrouped =
                 mUngroupedAbuseNotifications.getOrDefault(fullAggregateGroupKey, new ArrayMap<>());
             ungrouped.put(record.getKey(), new NotificationAttributes(
@@ -657,6 +660,36 @@ public class GroupHelper {
         }
 
         return sbnToBeAutogrouped;
+    }
+
+    @GuardedBy("mAggregatedNotifications")
+    private void maybeUpdateSummaryAttributes(NotificationRecord childRecord,
+            FullyQualifiedGroupKey fullAggregateGroupKey,
+            NotificationSectioner sectioner) {
+        final ArrayMap<String, NotificationAttributes> aggregatedNotificationsAttrs =
+                mAggregatedNotifications.getOrDefault(fullAggregateGroupKey, new ArrayMap<>());
+        NotificationAttributes oldAttrs = aggregatedNotificationsAttrs.get(childRecord.getKey());
+        if (oldAttrs != null) {
+            NotificationAttributes newAttr = new NotificationAttributes(
+                    childRecord.getFlags(),
+                    childRecord.getNotification().getSmallIcon(),
+                    childRecord.getNotification().color,
+                    childRecord.getNotification().visibility,
+                    childRecord.getNotification().getGroupAlertBehavior(),
+                    childRecord.getChannel().getId());
+            if (!oldAttrs.equals(newAttr)) {
+                aggregatedNotificationsAttrs.put(childRecord.getKey(), newAttr);
+                mAggregatedNotifications.put(fullAggregateGroupKey, aggregatedNotificationsAttrs);
+
+                if (DEBUG) {
+                    Slog.i(TAG, "maybeUpdateSummaryAttributes: " + childRecord);
+                }
+
+                // Update aggregate summary
+                updateAggregateAppGroup(fullAggregateGroupKey, childRecord.getKey(), true,
+                        sectioner.mSummaryId);
+            }
+        }
     }
 
     /**
