@@ -33,6 +33,7 @@ import static java.util.stream.Collectors.joining;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
+import android.companion.virtualdevice.flags.Flags;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
@@ -537,7 +538,9 @@ public class EdgeBackGestureHandler {
             }
         }
         mLongPressTimeout = Math.min(MAX_LONG_PRESS_TIMEOUT,
-                ViewConfiguration.getLongPressTimeout());
+                Flags.viewconfigurationApis()
+                        ? ViewConfiguration.get(context).getLongPressTimeoutMillis()
+                        : ViewConfiguration.getLongPressTimeout());
 
         mGestureNavigationSettingsObserver = new GestureNavigationSettingsObserver(
                 mUiThreadContext.getHandler(), bgHandler, mContext,

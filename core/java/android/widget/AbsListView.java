@@ -2988,10 +2988,10 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
 
             final boolean longClickable = isLongClickable();
             Drawable d = selector.getCurrent();
+            final int longPressTimeoutMillis = getLongPressTimeoutMillis();
             if (d != null && d instanceof TransitionDrawable) {
                 if (longClickable) {
-                    ((TransitionDrawable) d).startTransition(
-                            ViewConfiguration.getLongPressTimeout());
+                    ((TransitionDrawable) d).startTransition(longPressTimeoutMillis);
                 } else {
                     ((TransitionDrawable) d).resetTransition();
                 }
@@ -3001,7 +3001,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                     mPendingCheckForKeyLongPress = new CheckForKeyLongPress();
                 }
                 mPendingCheckForKeyLongPress.rememberWindowAttachCount();
-                postDelayed(mPendingCheckForKeyLongPress, ViewConfiguration.getLongPressTimeout());
+                postDelayed(mPendingCheckForKeyLongPress, longPressTimeoutMillis);
             }
         }
     }
@@ -3603,14 +3603,14 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                         positionSelector(mMotionPosition, child);
                         refreshDrawableState();
 
-                        final int longPressTimeout = ViewConfiguration.getLongPressTimeout();
                         final boolean longClickable = isLongClickable();
-
+                        final int longPressTimeoutMillis = getLongPressTimeoutMillis();
                         if (mSelector != null) {
                             final Drawable d = mSelector.getCurrent();
                             if (d != null && d instanceof TransitionDrawable) {
                                 if (longClickable) {
-                                    ((TransitionDrawable) d).startTransition(longPressTimeout);
+                                    ((TransitionDrawable) d).startTransition(
+                                            longPressTimeoutMillis);
                                 } else {
                                     ((TransitionDrawable) d).resetTransition();
                                 }
@@ -3624,7 +3624,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
                             }
                             mPendingCheckForLongPress.setCoords(x, y);
                             mPendingCheckForLongPress.rememberWindowAttachCount();
-                            postDelayed(mPendingCheckForLongPress, longPressTimeout);
+                            postDelayed(mPendingCheckForLongPress, longPressTimeoutMillis);
                         } else {
                             mTouchMode = TOUCH_MODE_DONE_WAITING;
                         }
