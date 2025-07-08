@@ -1076,6 +1076,7 @@ package android.app {
   }
 
   public static class Notification.Action implements android.os.Parcelable {
+    field @FlaggedApi("android.app.notification_is_animated_action_api") public static final String EXTRA_IS_ANIMATED = "android.extra.IS_ANIMATED";
     field public static final int SEMANTIC_ACTION_CONVERSATION_IS_PHISHING = 12; // 0xc
     field public static final int SEMANTIC_ACTION_MARK_CONVERSATION_AS_PRIORITY = 11; // 0xb
   }
