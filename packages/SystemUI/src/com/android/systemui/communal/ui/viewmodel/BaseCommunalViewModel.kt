@@ -28,10 +28,8 @@ import com.android.systemui.communal.domain.model.CommunalContentModel
 import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.communal.widgets.WidgetConfigurator
 import com.android.systemui.keyguard.shared.model.KeyguardState
-import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.controls.ui.controller.MediaCarouselController
 import com.android.systemui.media.controls.ui.view.MediaHost
-import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
 import kotlinx.coroutines.flow.Flow
@@ -46,8 +44,6 @@ abstract class BaseCommunalViewModel(
     private val communalInteractor: CommunalInteractor,
     val mediaHost: MediaHost,
     val mediaCarouselController: MediaCarouselController,
-    val mediaViewModelFactory: MediaViewModel.Factory,
-    val mediaCarouselInteractor: MediaCarouselInteractor,
 ) {
     val currentScene: StateFlow<SceneKey> = communalSceneInteractor.currentScene
 

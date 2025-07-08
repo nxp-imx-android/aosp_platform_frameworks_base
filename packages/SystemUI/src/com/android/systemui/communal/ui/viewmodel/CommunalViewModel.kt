@@ -44,13 +44,11 @@ import com.android.systemui.keyguard.ui.transitions.BlurConfig
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.CommunalLog
-import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.controls.ui.controller.MediaCarouselController
 import com.android.systemui.media.controls.ui.controller.MediaHierarchyManager
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.controls.ui.view.MediaHostState
 import com.android.systemui.media.dagger.MediaModule
-import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
 import com.android.systemui.statusbar.KeyguardIndicationController
@@ -104,16 +102,12 @@ constructor(
     @Named(SWIPE_TO_HUB) private val swipeToHub: Boolean,
     private val communalSceneLogger: CommunalSceneLogger,
     private val falsingInteractor: FalsingInteractor,
-    mediaViewModelFactory: MediaViewModel.Factory,
-    mediaCarouselInteractor: MediaCarouselInteractor,
 ) :
     BaseCommunalViewModel(
         communalSceneInteractor,
         communalInteractor,
         mediaHost,
         mediaCarouselController,
-        mediaViewModelFactory,
-        mediaCarouselInteractor,
     ) {
 
     private val logger = Logger(logBuffer, "CommunalViewModel")
