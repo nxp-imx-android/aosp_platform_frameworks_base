@@ -9151,7 +9151,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      */
     @Override
     public boolean getAutoTimeEnabled(@Nullable ComponentName who, String callerPackageName) {
-        if (!mHasFeature) {
+        if (!mHasFeature && !Flags.removeDeviceAdminFeatureChecks()) {
             return false;
         }
         CallerIdentity caller = getCallerIdentity(who);
@@ -9172,7 +9172,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      */
     @Override
     public void setAutoTimePolicy(String callerPackageName, int policy) {
-        if (!mHasFeature) {
+        if (!mHasFeature && !Flags.removeDeviceAdminFeatureChecks()) {
             return;
         }
 
@@ -9212,7 +9212,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      */
     @Override
     public int getAutoTimePolicy(String callerPackageName) {
-        if (!mHasFeature) {
+        if (!mHasFeature && !Flags.removeDeviceAdminFeatureChecks()) {
             return DevicePolicyManager.AUTO_TIME_NOT_CONTROLLED_BY_POLICY;
         }
         CallerIdentity caller = getCallerIdentity(callerPackageName);
@@ -9258,7 +9258,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      */
     @Override
     public boolean getAutoTimeZoneEnabled(@Nullable ComponentName who, String callerPackageName) {
-        if (!mHasFeature) {
+        if (!mHasFeature && !Flags.removeDeviceAdminFeatureChecks()) {
             return false;
         }
 
@@ -9279,7 +9279,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      * Set auto time zone state.
      */
     public void setAutoTimeZonePolicy(String callerPackageName, int policy) {
-        if (!mHasFeature) {
+        if (!mHasFeature && !Flags.removeDeviceAdminFeatureChecks()) {
             return;
         }
 
@@ -9315,7 +9315,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      */
     @Override
     public int getAutoTimeZonePolicy(String callerPackageName) {
-        if (!mHasFeature) {
+        if (!mHasFeature && !Flags.removeDeviceAdminFeatureChecks()) {
             return DevicePolicyManager.AUTO_TIME_ZONE_NOT_CONTROLLED_BY_POLICY;
         }
         CallerIdentity caller = getCallerIdentity(callerPackageName);

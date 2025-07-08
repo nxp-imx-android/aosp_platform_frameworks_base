@@ -459,3 +459,13 @@ flag {
     purpose: PURPOSE_BUGFIX
   }
 }
+
+flag {
+  name: "remove_device_admin_feature_checks"
+  namespace: "enterprise"
+  description: "Remove device_admin feature checks for coexistence enabled APIs."
+  bug: "420867009"
+  metadata {
+    purpose: PURPOSE_BUGFIX
+  }
+}
