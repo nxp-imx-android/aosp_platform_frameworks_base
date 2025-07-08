@@ -53,7 +53,7 @@ public final class TaskContinuityMessage {
                 mData = RemoteTaskRemovedMessage.readFromProto(pis);
                 break;
             case (int) android.companion.TaskContinuityMessage.REMOTE_TASK_UPDATED:
-                mData = new RemoteTaskUpdatedMessage(pis);
+                mData = RemoteTaskUpdatedMessage.readFromProto(pis);
                 break;
             case (int) android.companion.TaskContinuityMessage.HANDOFF_REQUEST:
                 mData = HandoffRequestMessage.readFromProto(pis);

@@ -128,12 +128,12 @@ public final class TaskContinuityManagerService extends SystemService {
             case ContinuityDeviceConnected continuityDeviceConnected:
                 mRemoteTaskStore.setTasks(
                     associationId,
-                    continuityDeviceConnected.getRemoteTasks());
+                    continuityDeviceConnected.remoteTasks());
                 break;
             case RemoteTaskAddedMessage remoteTaskAddedMessage:
                 mRemoteTaskStore.addTask(
                     associationId,
-                    remoteTaskAddedMessage.getTask());
+                    remoteTaskAddedMessage.task());
                 break;
             case RemoteTaskRemovedMessage remoteTaskRemovedMessage:
                 mRemoteTaskStore.removeTask(
@@ -143,7 +143,7 @@ public final class TaskContinuityManagerService extends SystemService {
             case RemoteTaskUpdatedMessage remoteTaskUpdatedMessage:
                 mRemoteTaskStore.updateTask(
                     associationId,
-                    remoteTaskUpdatedMessage.getTask());
+                    remoteTaskUpdatedMessage.task());
                 break;
             case HandoffRequestResultMessage handoffRequestResultMessage:
                 mOutboundHandoffRequestController.onHandoffRequestResultMessageReceived(

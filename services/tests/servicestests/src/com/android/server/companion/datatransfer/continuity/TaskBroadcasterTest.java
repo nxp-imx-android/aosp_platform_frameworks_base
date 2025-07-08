@@ -130,8 +130,7 @@ public class TaskBroadcasterTest {
         throws Exception {
 
         mTaskBroadcaster.stopBroadcasting();
-        verify(mMockConnectedAssociationStore, never())
-            .addObserver(mTaskBroadcaster);
+        verify(mMockConnectedAssociationStore, never()).addObserver(mTaskBroadcaster);
     }
 
     @Test
@@ -140,29 +139,26 @@ public class TaskBroadcasterTest {
 
         // Start broadcasting, verifying an association listener is added.
         mTaskBroadcaster.startBroadcasting();
-        verify(mMockConnectedAssociationStore, times(1))
-            .addObserver(mTaskBroadcaster);
-        verify(mMockActivityTaskManager, times(1))
-            .registerTaskStackListener(mTaskBroadcaster);
+        verify(mMockConnectedAssociationStore, times(1)).addObserver(mTaskBroadcaster);
+        verify(mMockActivityTaskManager, times(1)).registerTaskStackListener(mTaskBroadcaster);
 
         // Stop broadcasting, verifying the association listener is removed.
         mTaskBroadcaster.stopBroadcasting();
-        verify(mMockConnectedAssociationStore, times(1))
-            .removeObserver(mTaskBroadcaster);
-        verify(mMockActivityTaskManager, times(1))
-            .unregisterTaskStackListener(mTaskBroadcaster);
+        verify(mMockConnectedAssociationStore, times(1)).removeObserver(mTaskBroadcaster);
+        verify(mMockActivityTaskManager, times(1)).unregisterTaskStackListener(mTaskBroadcaster);
     }
 
     @Test
     public void testStartBroadcasting_startsBroadcasting() throws Exception {
         // Start broadcasting, verifying a transport listener is added.
         mTaskBroadcaster.startBroadcasting();
-        verify(mMockConnectedAssociationStore, times(1))
-            .addObserver(mTaskBroadcaster);
+        verify(mMockConnectedAssociationStore, times(1)).addObserver(mTaskBroadcaster);
 
         // Setup a fake foreground task.
-        String expectedLabel = "test";
-        ActivityManager.RunningTaskInfo taskInfo = setupTask(1, expectedLabel, 0);
+        int taskId = 100;
+        String taskLabel = "test";
+        long taskLastActiveTime = 100;
+        ActivityManager.RunningTaskInfo taskInfo = setupTask(taskId, taskLabel, taskLastActiveTime);
 
         when(mMockActivityTaskManager.getTasks(Integer.MAX_VALUE, true))
             .thenReturn(Arrays.asList(taskInfo));
@@ -182,18 +178,15 @@ public class TaskBroadcasterTest {
             messageCaptor.getValue());
         assertThat(taskContinuityMessage.getData()).isInstanceOf(
             ContinuityDeviceConnected.class);
-        ContinuityDeviceConnected continuityDeviceConnected
+        ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
+            Arrays.asList(new RemoteTaskInfo(
+                taskId,
+                taskLabel,
+                taskLastActiveTime,
+                mSerializedTaskIcon)));
+        ContinuityDeviceConnected actualMessage
             = (ContinuityDeviceConnected) taskContinuityMessage.getData();
-        assertThat(continuityDeviceConnected.getCurrentForegroundTaskId())
-            .isEqualTo(taskInfo.taskId);
-        assertThat(continuityDeviceConnected.getRemoteTasks()).hasSize(1);
-        RemoteTaskInfo expectedTaskInfo = new RemoteTaskInfo(
-            taskInfo.taskId,
-            expectedLabel,
-            0,
-            mSerializedTaskIcon);
-        assertThat(continuityDeviceConnected.getRemoteTasks().get(0))
-            .isEqualTo(expectedTaskInfo);
+        assertThat(actualMessage).isEqualTo(expectedMessage);
     }
 
     @Test
@@ -208,7 +201,8 @@ public class TaskBroadcasterTest {
         // Define a new task.
         String taskLabel = "newTask";
         int taskId = 123;
-        ActivityManager.RunningTaskInfo taskInfo = setupTask(taskId, taskLabel, 0);
+        long taskLastActiveTime = 0;
+        ActivityManager.RunningTaskInfo taskInfo = setupTask(taskId, taskLabel, taskLastActiveTime);
 
         // Mock ActivityTaskManager to return the new task.
         when(mMockActivityTaskManager.getTasks(Integer.MAX_VALUE, true))
@@ -226,14 +220,15 @@ public class TaskBroadcasterTest {
         byte[] capturedMessage = messageCaptor.getValue();
         TaskContinuityMessage taskContinuityMessage = new TaskContinuityMessage(capturedMessage);
         assertThat(taskContinuityMessage.getData()).isInstanceOf(RemoteTaskAddedMessage.class);
-        RemoteTaskAddedMessage remoteTaskAddedMessage =
+        RemoteTaskAddedMessage expectedMessage = new RemoteTaskAddedMessage(
+            new RemoteTaskInfo(
+                taskId,
+                taskLabel,
+                taskLastActiveTime,
+                mSerializedTaskIcon));
+        RemoteTaskAddedMessage actualMessage =
                 (RemoteTaskAddedMessage) taskContinuityMessage.getData();
-        RemoteTaskInfo expectedTaskInfo = new RemoteTaskInfo(
-            taskId,
-            taskLabel,
-            0,
-            mSerializedTaskIcon);
-        assertEquals(expectedTaskInfo, remoteTaskAddedMessage.getTask());
+        assertThat(actualMessage).isEqualTo(expectedMessage);
     }
 
         @Test
@@ -274,7 +269,8 @@ public class TaskBroadcasterTest {
         // Simulate a task being moved to front.
         int taskId = 1;
         String taskLabel = "newTask";
-        ActivityManager.RunningTaskInfo taskInfo = setupTask(taskId, taskLabel, 0);
+        long taskLastActiveTime = 0;
+        ActivityManager.RunningTaskInfo taskInfo = setupTask(taskId, taskLabel, taskLastActiveTime);
         mTaskBroadcaster.onTaskMovedToFront(taskInfo);
 
         // Verify sendMessage is called for each association.
@@ -283,18 +279,16 @@ public class TaskBroadcasterTest {
             eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
             messageCaptor.capture(),
             eq(new int[] {1}));
-        TaskContinuityMessage actualMessage = new TaskContinuityMessage(messageCaptor.getValue());
-        assertThat(actualMessage.getData()).isInstanceOf(RemoteTaskUpdatedMessage.class);
-        RemoteTaskUpdatedMessage remoteTaskUpdated
-            = (RemoteTaskUpdatedMessage) actualMessage.getData();
-
-        RemoteTaskInfo expectedTaskInfo = new RemoteTaskInfo(
-            taskId,
-            taskLabel,
-            0,
-            mSerializedTaskIcon);
-
-        assertThat(remoteTaskUpdated.getTask()).isEqualTo(expectedTaskInfo);
+        TaskContinuityMessage sentMessage = new TaskContinuityMessage(messageCaptor.getValue());
+        assertThat(sentMessage.getData()).isInstanceOf(RemoteTaskUpdatedMessage.class);
+        RemoteTaskUpdatedMessage expectedMessage = new RemoteTaskUpdatedMessage(
+            new RemoteTaskInfo(
+                taskId,
+                taskLabel,
+                taskLastActiveTime,
+                mSerializedTaskIcon));
+        RemoteTaskUpdatedMessage actualMessage = (RemoteTaskUpdatedMessage) sentMessage.getData();
+        assertThat(actualMessage).isEqualTo(expectedMessage);
     }
 
     private ActivityManager.RunningTaskInfo setupTask(

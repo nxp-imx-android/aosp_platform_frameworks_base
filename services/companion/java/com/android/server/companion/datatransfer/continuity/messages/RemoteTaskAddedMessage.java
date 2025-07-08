@@ -26,13 +26,7 @@ import java.io.IOException;
 /**
  * Deserialized version of the {@link RemoteTaskAdded} proto.
  */
-public class RemoteTaskAddedMessage implements TaskContinuityMessageData {
-
-    private RemoteTaskInfo mTask;
-
-    public RemoteTaskAddedMessage(RemoteTaskInfo task) {
-        mTask = task;
-    }
+public record RemoteTaskAddedMessage(RemoteTaskInfo task) implements TaskContinuityMessageData {
 
     static RemoteTaskAddedMessage readFromProto(ProtoInputStream pis) throws IOException {
         RemoteTaskInfo task = null;
@@ -45,6 +39,10 @@ public class RemoteTaskAddedMessage implements TaskContinuityMessageData {
                     pis.end(taskToken);
                     break;
             }
+        }
+
+        if (task == null) {
+            throw new IOException("RemoteTaskAddedMessage is missing task field");
         }
 
         return new RemoteTaskAddedMessage(task);
@@ -60,11 +58,7 @@ public class RemoteTaskAddedMessage implements TaskContinuityMessageData {
         long taskToken = pos.start(
             android.companion.RemoteTaskAddedMessage.TASK);
 
-        mTask.writeToProto(pos);
+        task().writeToProto(pos);
         pos.end(taskToken);
-    }
-
-    public RemoteTaskInfo getTask() {
-        return mTask;
     }
 }
