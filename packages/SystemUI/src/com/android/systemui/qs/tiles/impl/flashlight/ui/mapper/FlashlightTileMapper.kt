@@ -29,6 +29,7 @@ import com.android.systemui.qs.tiles.base.shared.model.QSTileState
 import com.android.systemui.qs.tiles.base.ui.model.QSTileDataToStateMapper
 import com.android.systemui.res.R
 import com.android.systemui.shade.ShadeDisplayAware
+import java.text.NumberFormat
 import javax.inject.Inject
 
 /** Maps [FlashlightModel] to [QSTileState]. */
@@ -109,7 +110,7 @@ constructor(
     }
 
     private fun QSTileState.Builder.buildLevelState(data: FlashlightModel.Available.Level) {
-        val percentage = getValidPercentage(data)
+        val percentage = calculatePercentage(data)
         if (percentage == null) {
             activationState = QSTileState.ActivationState.UNAVAILABLE
             icon =
@@ -128,8 +129,12 @@ constructor(
                     null,
                     R.drawable.qs_flashlight_icon_on,
                 )
-            secondaryLabel =
-                res.getString(R.string.quick_settings_flashlight_tile_level_percentage, percentage)
+
+            val percentInstance =
+                res.configuration.locales.get(0)?.let { NumberFormat.getPercentInstance(it) }
+                    ?: NumberFormat.getPercentInstance()
+
+            secondaryLabel = percentInstance.format(percentage)
             supportedActions =
                 setOf(QSTileState.UserAction.CLICK, QSTileState.UserAction.TOGGLE_CLICK)
             expandedAccessibilityClass = Button::class
@@ -165,7 +170,7 @@ constructor(
         expandedAccessibilityClass = Switch::class
     }
 
-    private fun getValidPercentage(data: FlashlightModel.Available.Level): Int? {
+    private fun calculatePercentage(data: FlashlightModel.Available.Level): Float? {
         if (data.level < BASE_LEVEL || data.level > data.max) {
             logger.wtf(
                 "FlashlightMapper: invalid Level data. level:${data.level}, max:${data.max}."
@@ -173,8 +178,7 @@ constructor(
             return null
         }
 
-        val percentage = ((data.level / data.max.toFloat()) * 100).toInt()
-        return percentage
+        return data.level.toFloat() / data.max
     }
 
     private companion object {
