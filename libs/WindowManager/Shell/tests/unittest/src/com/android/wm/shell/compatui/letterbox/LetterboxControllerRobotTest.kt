@@ -43,7 +43,7 @@ abstract class LetterboxControllerRobotTest {
         val ANOTHER_TASK_ID = 10
 
         @JvmStatic
-        private val TOKEN = mock<WindowContainerToken>()
+        val TOKEN = mock<WindowContainerToken>()
     }
 
     lateinit var letterboxController: LetterboxController
