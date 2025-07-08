@@ -26,6 +26,8 @@ import static android.view.MotionEvent.ACTION_UP;
 import static android.view.WindowManagerPolicyConstants.NAV_BAR_MODE_3BUTTON;
 import static android.window.BackEvent.EDGE_NONE;
 
+import static com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler.DEBUG_MISSING_GESTURE;
+import static com.android.systemui.navigationbar.gestural.EdgeBackGestureHandler.DEBUG_MISSING_GESTURE_TAG;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_AWAKE;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_BOUNCER_SHOWING;
 import static com.android.systemui.shared.system.QuickStepContract.SYSUI_STATE_COMMUNAL_HUB_SHOWING;
@@ -345,6 +347,10 @@ public class LauncherProxyService implements CallbackController<LauncherProxyLis
         @Override
         public void onBackEvent(@Nullable KeyEvent keyEvent, int displayId) throws RemoteException {
             if (predictiveBackSwipeEdgeNoneApi() && mBackAnimation != null && keyEvent != null) {
+                if (DEBUG_MISSING_GESTURE && keyEvent.isCanceled()) {
+                    Log.d(DEBUG_MISSING_GESTURE_TAG,
+                            "Cancel back [launcher key event]: " + keyEvent);
+                }
                 mBackAnimation.setTriggerBack(!keyEvent.isCanceled());
                 mBackAnimation.onBackMotion(/* touchX */ 0, /* touchY */ 0, keyEvent.getAction(),
                         EDGE_NONE, displayId);

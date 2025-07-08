@@ -143,7 +143,7 @@ public class EdgeBackGestureHandler {
     private static final int MAX_NUM_LOGGED_PREDICTIONS = 10;
     private static final int MAX_NUM_LOGGED_GESTURES = 10;
 
-    static final boolean DEBUG_MISSING_GESTURE = true;
+    public static final boolean DEBUG_MISSING_GESTURE = true;
     public static final String DEBUG_MISSING_GESTURE_TAG = "NoBackGesture";
 
     private ISystemGestureExclusionListener mGestureExclusionListener =
