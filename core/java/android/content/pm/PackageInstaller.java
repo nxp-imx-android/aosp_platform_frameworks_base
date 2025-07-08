@@ -1780,8 +1780,6 @@ public class PackageInstaller {
      */
     @FlaggedApi(Flags.FLAG_VERIFICATION_SERVICE)
     @SystemApi
-    @RequiresPermission(value = Manifest.permission.DEVELOPER_VERIFICATION_AGENT,
-            conditional = true)
     public final boolean setDeveloperVerificationPolicy(@DeveloperVerificationPolicy int policy) {
         try {
             return mInstaller.setDeveloperVerificationPolicy(policy, mUserId);
