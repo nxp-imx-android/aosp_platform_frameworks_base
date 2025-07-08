@@ -28,10 +28,15 @@ import com.android.systemui.communal.domain.model.CommunalContentModel
 import com.android.systemui.communal.shared.model.EditModeState
 import com.android.systemui.communal.widgets.WidgetConfigurator
 import com.android.systemui.keyguard.shared.model.KeyguardState
+import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.controls.ui.controller.MediaCarouselController
 import com.android.systemui.media.controls.ui.view.MediaHost
+import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
+import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
+import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.util.kotlin.BooleanFlowOperators.anyOf
 import com.android.systemui.util.kotlin.BooleanFlowOperators.not
+import dagger.Lazy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,6 +49,8 @@ abstract class BaseCommunalViewModel(
     private val communalInteractor: CommunalInteractor,
     val mediaHost: MediaHost,
     val mediaCarouselController: MediaCarouselController,
+    val mediaViewModelFactory: MediaViewModel.Factory,
+    val mediaCarouselInteractorLazy: Lazy<MediaCarouselInteractor>,
 ) {
     val currentScene: StateFlow<SceneKey> = communalSceneInteractor.currentScene
 
@@ -78,6 +85,14 @@ abstract class BaseCommunalViewModel(
      * vertical, which the lazy horizontal grid does not handle.
      */
     val glanceableTouchAvailable: Flow<Boolean> = anyOf(not(isTouchConsumed), isNestedScrolling)
+
+    val mediaUiBehavior: MediaUiBehavior
+        get() =
+            MediaUiBehavior(
+                isCarouselDismissible = false,
+                isCarouselScrollingEnabled = false,
+                carouselVisibility = MediaCarouselVisibility.WhenAnyCardIsActive,
+            )
 
     /**
      * The up-to-date value of the grid scroll offset. persisted to interactor on
