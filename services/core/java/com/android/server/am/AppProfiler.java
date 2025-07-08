@@ -1595,7 +1595,7 @@ public class AppProfiler {
                 if (memInfos != null) {
                     memInfos.add(new ProcessMemInfo(rec.processName, rec.getPid(),
                                 state.getSetAdj(), state.getSetProcState(),
-                                state.getAdjType(), state.makeAdjReason()));
+                                state.getAdjType(), rec.makeAdjReason()));
                 }
                 final ProcessProfileRecord profile = rec.mProfile;
                 if ((profile.getLastLowMemory() + mService.mConstants.GC_MIN_INTERVAL) <= now) {
