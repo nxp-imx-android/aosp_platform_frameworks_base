@@ -2046,27 +2046,29 @@ class RecentTasks {
      * or the windowing mode with the task, so they can be undefined when restored.
      */
     private boolean hasCompatibleActivityTypeAndWindowingMode(Task t1, Task t2) {
-        final int activityType = t1.getActivityType();
-        final int windowingMode = t1.getWindowingMode();
-        final boolean isUndefinedType = activityType == ACTIVITY_TYPE_UNDEFINED;
-        final boolean isUndefinedMode = windowingMode == WINDOWING_MODE_UNDEFINED;
-        final int otherActivityType = t2.getActivityType();
-        final int otherWindowingMode = t2.getWindowingMode();
-        final boolean isOtherUndefinedType = otherActivityType == ACTIVITY_TYPE_UNDEFINED;
-        final boolean isOtherUndefinedMode = otherWindowingMode == WINDOWING_MODE_UNDEFINED;
+        final int activityType1 = t1.getActivityType();
+        final int activityType2 = t2.getActivityType();
+        final boolean isCompatibleType = activityType1 == activityType2
+                || activityType1 == ACTIVITY_TYPE_UNDEFINED
+                || activityType2 == ACTIVITY_TYPE_UNDEFINED;
 
-        // An activity type and windowing mode is compatible if they are the exact same type/mode,
-        // or if one of the type/modes is undefined. This is with the exception of
-        // freeform/fullscreen where both modes are assumed to be compatible with each other.
-        final boolean isCompatibleType = activityType == otherActivityType
-                || isUndefinedType || isOtherUndefinedType;
-        final boolean isCompatibleMode = windowingMode == otherWindowingMode
-                || (windowingMode == WINDOWING_MODE_FREEFORM
-                && otherWindowingMode == WINDOWING_MODE_FULLSCREEN)
-                || (windowingMode == WINDOWING_MODE_FULLSCREEN
-                && otherWindowingMode == WINDOWING_MODE_FREEFORM)
-                || isUndefinedMode || isOtherUndefinedMode;
+        if (!isCompatibleType) return false;
 
-        return isCompatibleType && isCompatibleMode;
+        final int windowingMode1 = t1.getWindowingMode();
+        final int windowingMode2 = t2.getWindowingMode();
+
+        if (com.android.window.flags.Flags.fixTaskCompatibleModes()) {
+            // Unless one of them is pinned and the other is not, all modes are compatible.
+            return (windowingMode1 == windowingMode2) || (windowingMode1 != WINDOWING_MODE_PINNED
+                    && windowingMode2 != WINDOWING_MODE_PINNED);
+        } else {
+            return windowingMode1 == windowingMode2
+                    || windowingMode1 == WINDOWING_MODE_UNDEFINED
+                    || windowingMode2 == WINDOWING_MODE_UNDEFINED
+                    || (windowingMode1 == WINDOWING_MODE_FREEFORM
+                    && windowingMode2 == WINDOWING_MODE_FULLSCREEN)
+                    || (windowingMode1 == WINDOWING_MODE_FULLSCREEN
+                    && windowingMode2 == WINDOWING_MODE_FREEFORM);
+        }
     }
 }
