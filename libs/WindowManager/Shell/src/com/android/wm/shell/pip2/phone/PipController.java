@@ -69,6 +69,7 @@ import com.android.wm.shell.common.pip.PipBoundsState;
 import com.android.wm.shell.common.pip.PipDisplayLayoutState;
 import com.android.wm.shell.common.pip.PipKeepClearAlgorithmInterface;
 import com.android.wm.shell.common.pip.PipMediaController;
+import com.android.wm.shell.common.pip.PipSnapAlgorithm;
 import com.android.wm.shell.common.pip.PipUiEventLogger;
 import com.android.wm.shell.common.pip.PipUtils;
 import com.android.wm.shell.pip.Pip;
@@ -429,7 +430,12 @@ public class PipController implements ConfigurationChangeListener,
         if (displayId != mPipDisplayLayoutState.getDisplayId()) {
             return;
         }
-        final float snapFraction = mPipBoundsAlgorithm.getSnapFraction(mPipBoundsState.getBounds());
+
+        final PipSnapAlgorithm snapAlgorithm = mPipBoundsAlgorithm.getSnapAlgorithm();
+        final float snapFraction = snapAlgorithm.getSnapFraction(
+                mPipBoundsState.getBounds(),
+                mPipBoundsAlgorithm.getMovementBounds(mPipBoundsState.getBounds()),
+                mPipBoundsState.getStashedState());
 
         // Update the display layout caches even if we are not in PiP.
         setDisplayLayout(mDisplayController.getDisplayLayout(displayId));
@@ -463,13 +469,16 @@ public class PipController implements ConfigurationChangeListener,
             Rect toBounds = new Rect(0, 0,
                     (int) Math.ceil(mPipBoundsState.getMaxSize().x * boundsScale),
                     (int) Math.ceil(mPipBoundsState.getMaxSize().y * boundsScale));
-            // Update the caches to reflect the new display layout in the movement bounds;
-            // temporarily update bounds to be at the top left for the movement bounds calculation.
+
+            // The policy is to keep PiP snap fraction invariant.
+            snapAlgorithm.applySnapFraction(toBounds,
+                    mPipBoundsAlgorithm.getMovementBounds(toBounds), snapFraction,
+                    mPipBoundsState.getStashedState(), mPipBoundsState.getStashOffset(),
+                    mPipDisplayLayoutState.getDisplayBounds(),
+                    mPipDisplayLayoutState.getDisplayLayout().stableInsets());
+
             mPipBoundsState.setBounds(toBounds);
             mPipTouchHandler.updateMovementBounds();
-            // The policy is to keep PiP snap fraction invariant.
-            mPipBoundsAlgorithm.applySnapFraction(toBounds, snapFraction);
-            mPipBoundsState.setBounds(toBounds);
             mPipTouchHandler.setUserResizeBounds(toBounds);
         }
         if (mPipTransitionState.getPipTaskToken() == null) {
