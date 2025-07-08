@@ -3374,8 +3374,7 @@ public final class SurfaceControl implements Parcelable {
 
         /**
          * Sets the SurfaceControl to the specified position relative to the parent
-         * SurfaceControl. Assumes that the position values are finite. Otherwise, an
-         * exception is thrown.
+         * SurfaceControl
          *
          * @param sc The SurfaceControl to change position
          * @param x the X position
@@ -3385,8 +3384,6 @@ public final class SurfaceControl implements Parcelable {
         @NonNull
         public Transaction setPosition(@NonNull SurfaceControl sc, float x, float y) {
             checkPreconditions(sc);
-            Preconditions.checkArgument(Float.isFinite(x), "Infinite x position");
-            Preconditions.checkArgument(Float.isFinite(y), "Infinite y position");
             if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
                 SurfaceControlRegistry.getProcessInstance().checkCallStackDebugging(
                         "setPosition", this, sc, "x=" + x + " y=" + y);
@@ -3623,10 +3620,6 @@ public final class SurfaceControl implements Parcelable {
         public Transaction setMatrix(SurfaceControl sc,
                 float dsdx, float dtdx, float dtdy, float dsdy) {
             checkPreconditions(sc);
-            Preconditions.checkArgument(Float.isFinite(dsdx), "Infinite matrix dsdx");
-            Preconditions.checkArgument(Float.isFinite(dtdx), "Infinite matrix dtdx");
-            Preconditions.checkArgument(Float.isFinite(dtdy), "Infinite matrix dtdy");
-            Preconditions.checkArgument(Float.isFinite(dsdy), "Infinite matrix dsdy");
             if (SurfaceControlRegistry.sCallStackDebuggingEnabled) {
                 SurfaceControlRegistry.getProcessInstance().checkCallStackDebugging(
                         "setMatrix", this, sc,
@@ -3639,7 +3632,7 @@ public final class SurfaceControl implements Parcelable {
 
         /**
          * Sets the transform and position of a {@link SurfaceControl} from a 3x3 transformation
-         * matrix. Assumes that the matrix values are finite. Otherwise, an exception is thrown.
+         * matrix.
          *
          * @param sc     SurfaceControl to set matrix of
          * @param matrix The matrix to apply.
