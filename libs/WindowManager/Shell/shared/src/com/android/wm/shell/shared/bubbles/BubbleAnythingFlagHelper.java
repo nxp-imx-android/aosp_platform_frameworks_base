@@ -31,11 +31,6 @@ public class BubbleAnythingFlagHelper {
         return enableBubbleAnything() || Flags.enableCreateAnyBubble();
     }
 
-    /** Whether creating any bubble and app compat fixes for bubbles are enabled. */
-    public static boolean enableCreateAnyBubbleWithAppCompatFixes() {
-        return Flags.enableCreateAnyBubble() && Flags.enableBubbleAppCompatFixes();
-    }
-
     /**
      * Whether creating any bubble and transforming to fullscreen, or the overall bubble anything
      * feature is enabled.

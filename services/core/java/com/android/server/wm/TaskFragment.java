@@ -2519,8 +2519,7 @@ class TaskFragment extends WindowContainer<WindowContainer> {
                 // For floating tasks and app bubbles, calculate the smallest width from the bounds
                 // of the task, because they should not be affected by insets.
                 boolean shouldUseTaskBounds = WindowConfiguration.isFloating(windowingMode);
-                if (com.android.wm.shell.Flags.enableCreateAnyBubble()
-                        && com.android.wm.shell.Flags.enableBubbleAppCompatFixes()) {
+                if (com.android.wm.shell.Flags.enableCreateAnyBubble()) {
                     final Task task = getTask();
                     if (task != null) {
                         // TODO(b/407669465): Update mLaunchNextToBubble usage when migrated.
