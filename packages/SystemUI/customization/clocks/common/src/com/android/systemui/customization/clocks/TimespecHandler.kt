@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shared.clocks
+package com.android.systemui.customization.clocks
 
 import android.icu.text.SimpleDateFormat
 import android.icu.util.Calendar
 import android.icu.util.TimeZone
 import android.icu.util.ULocale
-import com.android.systemui.plugins.clocks.ClockViewIds
 import com.android.systemui.plugins.clocks.TimeFormatKind
 import java.util.Date
 import java.util.Locale
@@ -149,15 +148,6 @@ class DigitalTimeFormatter(
     fun getContentDescription(): String? {
         return contentDescriptionFormat?.format(timeKeeper.time)
     }
-}
-
-enum class DigitalTimespec(private val hourViewId: Int, private val minuteViewId: Int) {
-    TIME_FULL_FORMAT(ClockViewIds.TIME_FULL_FORMAT, ClockViewIds.TIME_FULL_FORMAT),
-    DIGIT_PAIR(ClockViewIds.HOUR_DIGIT_PAIR, ClockViewIds.MINUTE_DIGIT_PAIR),
-    FIRST_DIGIT(ClockViewIds.HOUR_FIRST_DIGIT, ClockViewIds.MINUTE_FIRST_DIGIT),
-    SECOND_DIGIT(ClockViewIds.HOUR_SECOND_DIGIT, ClockViewIds.MINUTE_SECOND_DIGIT);
-
-    fun getViewId(isHour: Boolean): Int = if (isHour) hourViewId else minuteViewId
 }
 
 class DigitalTimespecHandler(val timespec: DigitalTimespec, val formatter: DigitalTimeFormatter) {

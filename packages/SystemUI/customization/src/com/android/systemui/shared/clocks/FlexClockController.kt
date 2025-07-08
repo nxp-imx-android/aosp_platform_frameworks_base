@@ -20,7 +20,9 @@ import android.content.res.Resources
 import android.icu.util.TimeZone
 import com.android.systemui.animation.GSFAxes
 import com.android.systemui.customization.R
+import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.FontUtils.put
+import com.android.systemui.customization.clocks.FontUtils.set
 import com.android.systemui.customization.clocks.FontUtils.toClockAxis
 import com.android.systemui.plugins.clocks.AlarmData
 import com.android.systemui.plugins.clocks.AxisPresetConfig
@@ -32,25 +34,29 @@ import com.android.systemui.plugins.clocks.ClockEventListeners
 import com.android.systemui.plugins.clocks.ClockEvents
 import com.android.systemui.plugins.clocks.ClockFontAxis
 import com.android.systemui.plugins.clocks.ClockFontAxis.Companion.merge
+import com.android.systemui.plugins.clocks.ClockMessageBuffers
 import com.android.systemui.plugins.clocks.ClockSettings
 import com.android.systemui.plugins.clocks.TimeFormatKind
 import com.android.systemui.plugins.clocks.WeatherData
 import com.android.systemui.plugins.clocks.ZenData
-import com.android.systemui.shared.clocks.view.FlexClockView
+import com.android.systemui.shared.clocks.view.FlexClockViewGroup
 import java.io.PrintWriter
 import java.util.Locale
 
 /** Controller for the default flex clock */
-class FlexClockController(private val clockCtx: ClockContext) : ClockController {
+class FlexClockController(
+    private val clockCtx: ClockContext,
+    private val messageBuffers: ClockMessageBuffers,
+) : ClockController {
     override val smallClock =
         FlexClockFaceController(
-            clockCtx.copy(messageBuffer = clockCtx.messageBuffers.smallClockMessageBuffer),
+            clockCtx.copy(messageBuffer = messageBuffers.smallClockMessageBuffer),
             isLargeClock = false,
         )
 
     override val largeClock =
         FlexClockFaceController(
-            clockCtx.copy(messageBuffer = clockCtx.messageBuffers.largeClockMessageBuffer),
+            clockCtx.copy(messageBuffer = messageBuffers.largeClockMessageBuffer),
             isLargeClock = true,
         )
 
@@ -67,7 +73,7 @@ class FlexClockController(private val clockCtx: ClockContext) : ClockController 
             override var isReactiveTouchInteractionEnabled = false
                 set(value) {
                     field = value
-                    val view = largeClock.view as FlexClockView
+                    val view = largeClock.view as FlexClockViewGroup
                     view.isReactiveTouchInteractionEnabled = value
                 }
 

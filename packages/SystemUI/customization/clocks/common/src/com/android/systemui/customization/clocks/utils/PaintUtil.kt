@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 The Android Open Source Project
+ * Copyright (C) 2025 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package com.android.systemui.shared.clocks
+package com.android.systemui.customization.clocks
 
-import android.view.View
-import com.android.systemui.plugins.clocks.ClockAnimations
-import com.android.systemui.plugins.clocks.ClockEvents
-import com.android.systemui.plugins.clocks.ClockFaceConfig
-import com.android.systemui.plugins.clocks.ClockFaceEvents
+import android.graphics.Paint
+import android.graphics.Rect
+import com.android.systemui.customization.clocks.FontUtils.set
 import com.android.systemui.plugins.clocks.VRectF
 
-interface SimpleClockLayerController {
-    val view: View
-    val events: ClockEvents
-    val animations: ClockAnimations
-    val faceEvents: ClockFaceEvents
-    val config: ClockFaceConfig
+object PaintUtil {
+    private val tempRect = Rect()
 
-    var onViewBoundsChanged: ((VRectF) -> Unit)?
+    fun Paint.getTextBounds(text: CharSequence): VRectF {
+        this.getTextBounds(text, 0, text.length, tempRect)
+        return VRectF(tempRect)
+    }
 }

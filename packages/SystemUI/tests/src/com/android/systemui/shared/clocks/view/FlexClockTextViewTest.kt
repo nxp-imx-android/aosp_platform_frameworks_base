@@ -19,14 +19,13 @@ import android.graphics.Typeface
 import android.testing.AndroidTestingRunner
 import androidx.test.filters.SmallTest
 import com.android.systemui.SysuiTestCase
+import com.android.systemui.customization.clocks.ClockContext
 import com.android.systemui.customization.clocks.ClockLogger
-import com.android.systemui.plugins.clocks.ClockMessageBuffers
+import com.android.systemui.customization.clocks.FixedTimeKeeper
+import com.android.systemui.customization.clocks.FontTextStyle
+import com.android.systemui.customization.clocks.TypefaceCache
 import com.android.systemui.plugins.clocks.ClockSettings
-import com.android.systemui.shared.clocks.ClockContext
-import com.android.systemui.shared.clocks.FixedTimeKeeper
-import com.android.systemui.shared.clocks.FontTextStyle
-import com.android.systemui.shared.clocks.TypefaceCache
-import com.android.systemui.shared.clocks.view.SimpleDigitalClockTextView
+import com.android.systemui.shared.clocks.view.FlexClockTextView
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -34,9 +33,9 @@ import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidTestingRunner::class)
-class SimpleDigitalClockTextViewTest : SysuiTestCase() {
+class FlexClockTextViewTest : SysuiTestCase() {
     private val messageBuffer = ClockLogger.DEBUG_MESSAGE_BUFFER
-    private lateinit var underTest: SimpleDigitalClockTextView
+    private lateinit var underTest: FlexClockTextView
     private val defaultLargeClockTextSize = 500F
     private val smallerTextSize = 300F
     private val largerTextSize = 800F
@@ -45,7 +44,7 @@ class SimpleDigitalClockTextViewTest : SysuiTestCase() {
     @Before
     fun setup() {
         underTest =
-            SimpleDigitalClockTextView(
+            FlexClockTextView(
                 ClockContext(
                     context,
                     context.resources,
@@ -57,7 +56,6 @@ class SimpleDigitalClockTextViewTest : SysuiTestCase() {
                             Typeface.NORMAL,
                         )
                     },
-                    ClockMessageBuffers(messageBuffer),
                     messageBuffer,
                     vibrator = null,
                     timeKeeper = FixedTimeKeeper(0),
