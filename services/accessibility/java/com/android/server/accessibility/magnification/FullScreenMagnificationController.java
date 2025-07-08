@@ -520,7 +520,7 @@ public class FullScreenMagnificationController implements
                             mCurrentMagnificationSpec.offsetX, mCurrentMagnificationSpec.offsetY)) {
                         sendSpecToAnimation(mCurrentMagnificationSpec, null);
                     }
-                    onMagnificationChangedLocked(/* isScaleTransient= */ false);
+                    onMagnificationChangedLocked(/* isScaleTransient= */ true);
                 }
                 magnified.recycle();
             }
@@ -610,10 +610,12 @@ public class FullScreenMagnificationController implements
         /**
          * This is invoked whenever magnification change happens.
          *
-         * @param isScaleTransient represents that if the scale is being changed and the changed
-         *                         value may be short lived and be updated again soon.
-         *                         Calling the method usually notifies input manager to update the
-         *                         cursor scale, but setting this value {@code true} prevents it.
+         * @param isScaleTransient Set to {@code true} if the scale is changing transiently (e.g.
+         *                         during a pinch gesture), or if the scale is not changing but the
+         *                         magnified region is moving (e.g. during a pan gesture).
+         *                         When {@code true}, the input manager is not notified of the
+         *                         scale change. The input manager should only be notified of the
+         *                         final, stable scale by calling this method with {@code false}.
          */
         @GuardedBy("mLock")
         void onMagnificationChangedLocked(boolean isScaleTransient) {
@@ -929,6 +931,10 @@ public class FullScreenMagnificationController implements
          *                of the viewport, or {@link Float#NaN} to leave unchanged
          * @param centerY the unscaled, screen-relative Y coordinate of the center
          *                of the viewport, or {@link Float#NaN} to leave unchanged
+         * @param isScaleTransient {@code true} if the scale is for a short time
+         *                         and potentially changed soon. {@code false}
+         *                         otherwise. For details, see
+         *                         {@link #onMagnificationChangedLocked}
          * @return {@code true} if the magnification spec changed or {@code false}
          *         otherwise
          */
@@ -985,7 +991,7 @@ public class FullScreenMagnificationController implements
             }
 
             if (updateCurrentSpecWithOffsetsLocked(offsetX, offsetY)) {
-                onMagnificationChangedLocked(/* isScaleTransient= */ false);
+                onMagnificationChangedLocked(/* isScaleTransient= */ true);
             }
             if (id != INVALID_SERVICE_ID) {
                 mIdOfLastServiceToMagnify = id;
@@ -1699,8 +1705,10 @@ public class FullScreenMagnificationController implements
      * @param scale the target scale, must be >= 1
      * @param pivotX the screen-relative X coordinate around which to scale
      * @param pivotY the screen-relative Y coordinate around which to scale
-     * @param isScaleTransient {@code true} if the scale is for a short time and potentially changed
-     *                         soon. {@code false} otherwise.
+     * @param isScaleTransient {@code true} if the scale is for a short time
+     *                         and potentially changed soon. {@code false}
+     *                         otherwise. For details, see
+     *                         {@link DisplayMagnification#onMagnificationChangedLocked}
      * @param animate {@code true} to animate the transition, {@code false}
      *                to transition immediately
      * @param id the ID of the service requesting the change
@@ -1744,7 +1752,7 @@ public class FullScreenMagnificationController implements
                 return false;
             }
             return display.setScaleAndCenter(Float.NaN, centerX, centerY,
-                    /* isScaleTransient= */ false, animate ? STUB_ANIMATION_CALLBACK : null, id);
+                    /* isScaleTransient= */ true, animate ? STUB_ANIMATION_CALLBACK : null, id);
         }
     }
 
@@ -1782,8 +1790,10 @@ public class FullScreenMagnificationController implements
      *                         center and scale, or {@link Float#NaN} to leave unchanged
      * @param centerY          the screen-relative Y coordinate around which to
      *                         center and scale, or {@link Float#NaN} to leave unchanged
-     * @param isScaleTransient {@code true} if the scale is for a short time and potentially changed
-     *                         soon. {@code false} otherwise.
+     * @param isScaleTransient {@code true} if the scale is for a short time
+     *                         and potentially changed soon. {@code false}
+     *                         otherwise. For details, see
+     *                         {@link DisplayMagnification#onMagnificationChangedLocked}
      * @param animate          {@code true} to animate the transition, {@code false}
      *                         to transition immediately
      * @param id               the ID of the service requesting the change
@@ -1807,8 +1817,10 @@ public class FullScreenMagnificationController implements
      *                center and scale, or {@link Float#NaN} to leave unchanged
      * @param centerY the screen-relative Y coordinate around which to
      *                center and scale, or {@link Float#NaN} to leave unchanged
-     * @param isScaleTransient {@code true} if the scale is for a short time and potentially changed
-     *                         soon. {@code false} otherwise.
+     * @param isScaleTransient {@code true} if the scale is for a short time
+     *                         and potentially changed soon. {@code false}
+     *                         otherwise. For details, see
+     *                         {@link DisplayMagnification#onMagnificationChangedLocked}
      * @param animationCallback Called when the animation result is valid.
      *                           {@code null} to transition immediately
      * @param id the ID of the service requesting the change
