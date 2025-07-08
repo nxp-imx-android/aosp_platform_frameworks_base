@@ -47,11 +47,9 @@ import com.android.systemui.keyguard.shared.model.KeyguardState
 import com.android.systemui.log.LogBuffer
 import com.android.systemui.log.core.Logger
 import com.android.systemui.log.dagger.CommunalLog
-import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.media.controls.ui.controller.MediaCarouselController
 import com.android.systemui.media.controls.ui.view.MediaHost
 import com.android.systemui.media.dagger.MediaModule
-import com.android.systemui.media.remedia.ui.viewmodel.MediaViewModel
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.statusbar.policy.KeyguardStateController
@@ -89,16 +87,12 @@ constructor(
     private val packageManager: PackageManager,
     @Named(LAUNCHER_PACKAGE) private val launcherPackage: String,
     mediaCarouselController: MediaCarouselController,
-    mediaViewModelFactory: MediaViewModel.Factory,
-    mediaCarouselInteractor: MediaCarouselInteractor,
 ) :
     BaseCommunalViewModel(
         communalSceneInteractor,
         communalInteractor,
         mediaHost,
         mediaCarouselController,
-        mediaViewModelFactory,
-        mediaCarouselInteractor,
     ) {
 
     private val logger = Logger(logBuffer, "CommunalEditModeViewModel")

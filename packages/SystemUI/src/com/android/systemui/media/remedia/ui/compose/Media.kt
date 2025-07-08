@@ -235,16 +235,10 @@ private fun CardCarouselContent(
     val isSwipingEnabled = behavior.isCarouselScrollingEnabled && !isFalseTouchDetected
 
     val roundedCornerShape = RoundedCornerShape(32.dp)
-    val padding =
-        if (presentationStyle == MediaPresentationStyle.Large) {
-            0.dp
-        } else {
-            8.dp
-        }
 
     Box(
         modifier =
-            modifier.padding(padding).clip(roundedCornerShape).pointerInput(behavior) {
+            modifier.padding(8.dp).clip(roundedCornerShape).pointerInput(behavior) {
                 if (behavior.isCarouselScrollFalseTouch != null) {
                     awaitEachGesture {
                         awaitFirstDown(false, PointerEventPass.Initial)
@@ -356,16 +350,6 @@ private fun Card(
                             colorScheme = colorScheme,
                             threeRows = true,
                             fillHeight = false,
-                        )
-                    }
-
-                    scene(Media.Scenes.Large) {
-                        CardForeground(
-                            expandable = it,
-                            viewModel = viewModel,
-                            colorScheme = colorScheme,
-                            threeRows = true,
-                            fillHeight = true,
                         )
                     }
 
@@ -1408,8 +1392,6 @@ private fun RevealedContent(
 enum class MediaPresentationStyle {
     /** The "normal" 3-row carousel look. */
     Default,
-    /** Similar to [Default] but with full height. Used in communal hub. */
-    Large,
     /** Similar to [Default] but not as tall (2-row carousel look). */
     Compressed,
     /** A special single-row treatment that fits nicely in quick settings. */
@@ -1448,8 +1430,6 @@ private object Media {
     object Scenes {
         /** The "normal" 3-row carousel look. */
         val Default = SceneKey("default")
-        /** Similar to [Default] but with full height. Used in communal hub. */
-        val Large = SceneKey("large")
         /** Similar to [Default] but not as tall (2-row carousel look). */
         val Compressed = SceneKey("compressed")
         /** A special single-row treatment that fits nicely in quick settings. */
@@ -1459,7 +1439,6 @@ private object Media {
     /** Definitions of how scene changes are transition-animated. */
     val Transitions = transitions {
         from(Scenes.Default, to = Scenes.Compact) {}
-        from(Scenes.Default, to = Scenes.Large) {}
         from(Scenes.Default, to = Scenes.Compressed) { fade(Elements.SeekBarSlider) }
         from(Scenes.Compact, to = Scenes.Compressed) { fade(Elements.SeekBarSlider) }
     }
@@ -1491,7 +1470,6 @@ private object Media {
 private fun MediaPresentationStyle.toScene(): SceneKey {
     return when (this) {
         MediaPresentationStyle.Default -> Media.Scenes.Default
-        MediaPresentationStyle.Large -> Media.Scenes.Large
         MediaPresentationStyle.Compressed -> Media.Scenes.Compressed
         MediaPresentationStyle.Compact -> Media.Scenes.Compact
     }
