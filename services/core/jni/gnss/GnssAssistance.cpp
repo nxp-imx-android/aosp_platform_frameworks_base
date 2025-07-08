@@ -2142,13 +2142,13 @@ void GnssAssistanceUtil::setGnssAlmanac(JNIEnv* env, jobject gnssAlmanacObj,
             env->CallLongMethod(gnssAlmanacObj, method_gnssAlmanacGetIssueDateMillis);
     jint ioda = env->CallIntMethod(gnssAlmanacObj, method_gnssAlmanacGetIoda);
     jint weekNumber = env->CallIntMethod(gnssAlmanacObj, method_gnssAlmanacGetWeekNumber);
-    jlong toaSeconds = env->CallLongMethod(gnssAlmanacObj, method_gnssAlmanacGetToaSeconds);
+    jint toaSeconds = env->CallIntMethod(gnssAlmanacObj, method_gnssAlmanacGetToaSeconds);
     jboolean isCompleteAlmanacProvided =
             env->CallBooleanMethod(gnssAlmanacObj, method_gnssAlmanacIsCompleteAlmanacProvided);
     gnssAlmanac.issueDateMs = issueDateMillis;
     gnssAlmanac.ioda = static_cast<int32_t>(ioda);
     gnssAlmanac.weekNumber = static_cast<int32_t>(weekNumber);
-    gnssAlmanac.toaSeconds = toaSeconds;
+    gnssAlmanac.toaSeconds = static_cast<int32_t>(toaSeconds);
     gnssAlmanac.isCompleteAlmanacProvided = isCompleteAlmanacProvided;
 
     jobject satelliteAlmanacsListObj =
