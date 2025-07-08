@@ -37,7 +37,6 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.UserManager;
-import android.platform.test.annotations.EnableFlags;
 import android.view.Display;
 import android.window.StartingWindowRemovalInfo;
 import android.window.TransitionInfo;
@@ -134,7 +133,6 @@ public class StartingWindowControllerTests extends ShellTestCase {
     }
 
     @Test
-    @EnableFlags(com.android.window.flags.Flags.FLAG_REMOVE_STARTING_IN_TRANSITION)
     public void testRemoveStartingInShell() {
         final int taskId = 1;
         final IBinder token = new Binder();
