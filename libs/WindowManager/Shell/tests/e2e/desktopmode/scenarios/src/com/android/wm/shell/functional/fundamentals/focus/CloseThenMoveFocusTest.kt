@@ -16,12 +16,12 @@
 
 package com.android.wm.shell.functional.fundamentals.focus
 
-import android.platform.test.annotations.Postsubmit
+import android.platform.test.annotations.Presubmit
 import com.android.wm.shell.scenarios.CloseThenMoveFocus
 import org.junit.runner.RunWith
 import org.junit.runners.BlockJUnit4ClassRunner
 
 /* Functional test for [CloseThenMoveFocus]. */
 @RunWith(BlockJUnit4ClassRunner::class)
-@Postsubmit
+@Presubmit
 class CloseThenMoveFocusTest : CloseThenMoveFocus()
