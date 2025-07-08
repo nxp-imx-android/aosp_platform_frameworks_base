@@ -501,7 +501,6 @@ public class AppWidgetManager {
      * impression of the widget.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
     static final String EVENT_TYPE_WIDGET_INTERACTION = "widget_interaction";
 
     /**
@@ -509,7 +508,6 @@ public class AppWidgetManager {
      * widget user interaction events.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
     public static final String EVENT_CATEGORY_APPWIDGET = "android.appwidget";
 
     /**
@@ -523,7 +521,6 @@ public class AppWidgetManager {
      * @see android.widget.RemoteViews#setAppWidgetEventTag
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
     static final String EXTRA_EVENT_CLICKED_VIEWS =
             "android.appwidget.extra.EVENT_CLICKED_VIEWS";
 
@@ -538,7 +535,6 @@ public class AppWidgetManager {
      * @see android.widget.RemoteViews#setAppWidgetEventTag
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
     static final String EXTRA_EVENT_SCROLLED_VIEWS =
             "android.appwidget.extra.EVENT_SCROLLED_VIEWS";
 
@@ -547,18 +543,17 @@ public class AppWidgetManager {
      * during which the widget was visible.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
     static final String EXTRA_EVENT_DURATION_MS =
             "android.appwidget.extra.EVENT_DURATION_MS";
 
     /**
      * This bundle extra contains an integer array with 4 elements that describe the left, top,
-     * right, and bottom coordinates of the widget at the end of the interaction event.
+     * right, and bottom coordinates (in that order) of the widget at the end of the interaction
+     * event.
      *
      * This Rect indicates the current position and size of the widget.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
     static final String EXTRA_EVENT_POSITION_RECT =
             "android.appwidget.extra.EVENT_POSITION_RECT";
 
@@ -567,7 +562,6 @@ public class AppWidgetManager {
      * time range that this event represents.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
     static final String EXTRA_EVENT_START = "android.appwidget.extra.EVENT_START";
 
     /**
@@ -575,7 +569,6 @@ public class AppWidgetManager {
      * range that this event represents.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_ENGAGEMENT_METRICS)
     static final String EXTRA_EVENT_END = "android.appwidget.extra.EVENT_END";
 
     private static final String TAG = "AppWidgetManager";
