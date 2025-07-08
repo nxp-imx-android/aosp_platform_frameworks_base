@@ -2184,11 +2184,11 @@
         android:featureFlag="android.location.flags.population_density_provider"
         android:protectionLevel="signature" />
 
-    <!-- @SystemApi @hide Allows an application to access location bypass allowlist.
+    <!-- @SystemApi @hide Allows an application to read location bypass allowlist.
          <p>Not for use by third-party applications.
          @FlaggedApi(android.location.flags.Flags.FLAG_CHANGE_GET_ADAS_ALLOWLIST_FROM_HIDDEN_TO_SYSTEM)
     -->
-    <permission android:name="android.permission.ACCESS_LOCATION_BYPASS_ALLOWLIST"
+    <permission android:name="android.permission.READ_LOCATION_BYPASS_ALLOWLIST"
         android:protectionLevel="signature|privileged"
         android:featureFlag="android.location.flags.change_get_adas_allowlist_from_hidden_to_system" />
 

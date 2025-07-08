@@ -18,14 +18,14 @@ package com.android.server.location;
 
 import static android.Manifest.permission.ACCESS_COARSE_LOCATION;
 import static android.Manifest.permission.ACCESS_FINE_LOCATION;
-import static android.Manifest.permission.ACCESS_LOCATION_BYPASS_ALLOWLIST;
 import static android.Manifest.permission.LOCATION_BYPASS;
+import static android.Manifest.permission.READ_LOCATION_BYPASS_ALLOWLIST;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 import android.annotation.IntDef;
+import android.annotation.RequiresPermission;
 import android.app.AppOpsManager;
 import android.content.Context;
-import android.annotation.RequiresPermission;
 import android.os.Binder;
 
 import java.lang.annotation.ElementType;
@@ -158,14 +158,14 @@ public final class LocationPermissions {
      * Throws a security exception if the given uid/pid does not hold the required access bypass
      * allowlist permissions.
      */
-    @RequiresPermission(ACCESS_LOCATION_BYPASS_ALLOWLIST)
+    @RequiresPermission(READ_LOCATION_BYPASS_ALLOWLIST)
     public static void enforceAccessBypassAllowlistPermission(Context context, int uid, int pid) {
-        if (context.checkPermission(ACCESS_LOCATION_BYPASS_ALLOWLIST, pid, uid)
+        if (context.checkPermission(READ_LOCATION_BYPASS_ALLOWLIST, pid, uid)
                 == PERMISSION_GRANTED) {
             return;
         }
         throw new SecurityException(
-                "uid" + uid + " does not have " + ACCESS_LOCATION_BYPASS_ALLOWLIST + ".");
+                "uid" + uid + " does not have " + READ_LOCATION_BYPASS_ALLOWLIST + ".");
     }
 
     /**
