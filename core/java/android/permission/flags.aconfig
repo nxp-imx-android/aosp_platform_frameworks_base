@@ -581,3 +581,11 @@ flag {
     description: "This flag is used to read cell information from TelephonyManager"
     bug: "391621017"
 }
+
+flag {
+    name: "limit_sensor_privacy_listeners"
+    is_fixed_read_only: true
+    namespace: "permissions"
+    description: "Limit the number of sensor privacy listeners allowed per uid"
+    bug: "400358935"
+}
