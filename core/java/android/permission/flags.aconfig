@@ -591,6 +591,15 @@ flag {
 }
 
 flag {
+    name: "open_safety_center_apis"
+    is_exported: true
+    namespace: "safety_center"
+    description: "This flag is used to flag opening up and extending Safety Center APIs"
+    bug: "425924062"
+    is_fixed_read_only: true
+}
+
+flag {
     name: "deprecate_default_permission_pregrant_policy"
     namespace: "permissions"
     description: "Add support for deprecating unused Default Permission Pregrant Policy"
