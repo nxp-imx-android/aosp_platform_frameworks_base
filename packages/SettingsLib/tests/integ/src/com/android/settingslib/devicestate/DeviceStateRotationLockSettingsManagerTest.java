@@ -35,7 +35,6 @@ import android.hardware.devicestate.DeviceState;
 import android.hardware.devicestate.DeviceStateManager;
 import android.os.UserHandle;
 import android.provider.Settings;
-import android.util.SparseIntArray;
 
 import androidx.test.InstrumentationRegistry;
 import androidx.test.filters.SmallTest;
@@ -193,10 +192,19 @@ public class DeviceStateRotationLockSettingsManagerTest {
     }
 
     @Test
-    public void updateSettingMap_throwsUnsupportedOperationException() {
+    public void getDefaultRotationLockSetting_throwsUnsupportedOperationException() {
         final UnsupportedOperationException exception = assertThrows(
                 UnsupportedOperationException.class,
-                () -> mManager.updateSetting(new SparseIntArray(), new SparseIntArray()));
+                () -> mManager.getDefaultRotationLockSetting());
+        assertThat(exception.getMessage()).isEqualTo(
+                "This API is only support by refactored settings manager.");
+    }
+
+    @Test
+    public void getRotationLockSetting_throwsUnsupportedOperationException() {
+        final UnsupportedOperationException exception = assertThrows(
+                UnsupportedOperationException.class,
+                () -> mManager.getRotationLockSetting());
         assertThat(exception.getMessage()).isEqualTo(
                 "This API is only support by refactored settings manager.");
     }

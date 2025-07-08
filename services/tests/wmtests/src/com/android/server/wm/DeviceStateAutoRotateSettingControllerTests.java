@@ -40,9 +40,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -65,8 +63,9 @@ import com.android.internal.R;
 import com.android.internal.util.test.FakeSettingsProvider;
 import com.android.internal.util.test.FakeSettingsProviderRule;
 import com.android.server.policy.WindowManagerPolicy;
-import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager.DeviceStateAutoRotateSettingListener;
-import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManagerImpl;
+import com.android.server.wm.utils.TestDeviceStateAutoRotateManager;
+import com.android.server.wm.utils.TestDeviceStateAutoRotateManager.TestDeviceStateAutoRotateSetting;
+import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager;
 import com.android.settingslib.devicestate.PostureDeviceStateConverter;
 
 import org.junit.Before;
@@ -129,12 +128,8 @@ public class DeviceStateAutoRotateSettingControllerTests {
     @Mock
     private DisplayRotation mMockDisplayRotation;
     @Mock
-    private DeviceStateAutoRotateSettingManagerImpl mMockAutoRotateSettingManager;
-    @Mock
     private PostureDeviceStateConverter mMockPostureDeviceStateConverter;
 
-    @Captor
-    private ArgumentCaptor<DeviceStateAutoRotateSettingListener> mSettingListenerArgumentCaptor;
     @Captor
     private ArgumentCaptor<DeviceStateController.DeviceStateListener> mDeviceStateListenerCaptor;
     @Captor
@@ -142,6 +137,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
 
     private final TestLooper mTestLooper = new TestLooper();
     private DeviceStateAutoRotateSettingController mDeviceStateAutoRotateSettingController;
+    private TestDeviceStateAutoRotateManager mTestAutoRotateSettingManager;
 
     @Before
     public void setup() {
@@ -169,20 +165,20 @@ public class DeviceStateAutoRotateSettingControllerTests {
         when(mockRoot.getDefaultDisplay()).thenReturn(mockDisplayContent);
         when(mockDisplayContent.getDisplayRotation()).thenReturn(mMockDisplayRotation);
 
+        setUpMockPostureHelper();
+        mTestAutoRotateSettingManager = new TestDeviceStateAutoRotateManager(
+                mMockPostureDeviceStateConverter);
+        final TestDeviceStateAutoRotateSetting defaultDeviceStateAutoRotateSetting =
+                mTestAutoRotateSettingManager.new TestDeviceStateAutoRotateSetting(
+                        createDeviceStateAutoRotateSettingMap(DEVICE_STATE_ROTATION_LOCK_UNLOCKED,
+                                DEVICE_STATE_ROTATION_LOCK_UNLOCKED));
+        mTestAutoRotateSettingManager.setDefaultDeviceStateAutoRotateSetting(
+                defaultDeviceStateAutoRotateSetting);
         setAccelerometerRotationSetting(ACCELEROMETER_ROTATION_OFF);
         setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_LOCKED_SETTING);
-        doAnswer(invocation -> {
-                    SparseIntArray proposedSettingMap = invocation.getArgument(0);
-                    when(mMockAutoRotateSettingManager.getRotationLockSetting()).thenReturn(
-                            proposedSettingMap);
-                    return proposedSettingMap.clone();
-                }
-
-        ).when(mMockAutoRotateSettingManager).updateSetting(any(), any());
-        setUpMockPostureHelper();
 
         mDeviceStateAutoRotateSettingController = new DeviceStateAutoRotateSettingController(
-                mMockDeviceStateController, mMockAutoRotateSettingManager, mMockWm,
+                mMockDeviceStateController, mTestAutoRotateSettingManager, mMockWm,
                 mMockPostureDeviceStateConverter) {
             @Override
             Handler getHandler() {
@@ -191,8 +187,6 @@ public class DeviceStateAutoRotateSettingControllerTests {
         };
         mTestLooper.dispatchAll();
 
-        verify(mMockAutoRotateSettingManager).registerListener(
-                mSettingListenerArgumentCaptor.capture());
         verify(mMockResolver).registerContentObserver(
                 eq(getUriFor(ACCELEROMETER_ROTATION)), anyBoolean(),
                 mAccelerometerRotationSettingObserver.capture(), eq(UserHandle.USER_CURRENT));
@@ -209,7 +203,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mTestLooper.dispatchAll();
 
         verifyDeviceStateAutoRotateSettingSet(
-                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING, /* numberOfTimes= */ 1);
+                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
 
     }
 
@@ -244,7 +238,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mTestLooper.dispatchAll();
 
         verifyDeviceStateAutoRotateSettingSet(
-                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING, /* numberOfTimes= */ 1);
+                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
     }
 
     @Test
@@ -256,7 +250,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mTestLooper.dispatchAll();
 
         verifyDeviceStateAutoRotateSettingSet(
-                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING, /* numberOfTimes= */ 1);
+                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
     }
 
     @Test
@@ -264,7 +258,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceState(FOLDED);
         setDeviceStateAutoRotateSetting(FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
 
-        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestAutoRotateSettingManager.notifyListeners();
         mTestLooper.dispatchAll();
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_ON);
@@ -274,7 +268,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
     public void onDeviceStateChange_updatesAccelerometerRotation() {
         setDeviceState(FOLDED);
         setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_UNLOCKED_SETTING);
-        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestAutoRotateSettingManager.notifyListeners();
         mTestLooper.dispatchAll();
 
         setDeviceState(OPEN);
@@ -296,15 +290,12 @@ public class DeviceStateAutoRotateSettingControllerTests {
     public void dSAutoRotateCorrupted_writesDefaultSettingWhileRespectingAccelerometerRotation() {
         setDeviceState(FOLDED);
         setDeviceStateAutoRotateSetting(null);
-        when(mMockAutoRotateSettingManager.getDefaultRotationLockSetting()).thenReturn(
-                createDeviceStateAutoRotateSettingMap(DEVICE_STATE_ROTATION_LOCK_UNLOCKED,
-                        DEVICE_STATE_ROTATION_LOCK_UNLOCKED));
 
-        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestAutoRotateSettingManager.notifyListeners();
         mTestLooper.dispatchAll();
 
         verifyDeviceStateAutoRotateSettingSet(
-                FOLDED_LOCKED_OPEN_UNLOCKED_SETTING, /* numberOfTimes= */ 1);
+                FOLDED_LOCKED_OPEN_UNLOCKED_SETTING);
     }
 
     @Test
@@ -321,16 +312,16 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mTestLooper.dispatchAll();
 
         verifyDeviceStateAutoRotateSettingSet(
-                FOLDED_LOCKED_OPEN_LOCKED_SETTING, /* numberOfTimes= */ 1);
+                FOLDED_LOCKED_OPEN_LOCKED_SETTING);
 
         // Change device state auto rotate setting to unlocked for both states
         setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_UNLOCKED_SETTING);
         setAccelerometerRotationSetting(ACCELEROMETER_ROTATION_ON);
-        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestAutoRotateSettingManager.notifyListeners();
         mTestLooper.dispatchAll();
 
         verifyDeviceStateAutoRotateSettingSet(
-                FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING, /* numberOfTimes= */ 2);
+                FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING);
     }
 
     @Test
@@ -338,7 +329,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceState(FOLDED);
         setDeviceStateAutoRotateSetting(FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
         setAccelerometerRotationSetting(ACCELEROMETER_ROTATION_ON);
-        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestAutoRotateSettingManager.notifyListeners();
         mTestLooper.dispatchAll();
 
         setDeviceState(OPEN);
@@ -378,7 +369,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_ON);
         verifyDeviceStateAutoRotateSettingSet(
-                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING, /* numberOfTimes= */ 1);
+                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
     }
 
     @Test
@@ -391,7 +382,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_ON);
         verifyDeviceStateAutoRotateSettingSet(
-                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING, /* numberOfTimes= */ 1);
+                FOLDED_UNLOCKED_OPEN_LOCKED_SETTING);
     }
 
     @Test
@@ -407,8 +398,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceState(FOLDED);
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_OFF);
-        verifyDeviceStateAutoRotateSettingSet(
-                FOLDED_LOCKED_OPEN_UNLOCKED_SETTING, /* numberOfTimes= */ 3);
+        verifyDeviceStateAutoRotateSettingSet(FOLDED_LOCKED_OPEN_UNLOCKED_SETTING);
     }
 
     @Test
@@ -424,8 +414,18 @@ public class DeviceStateAutoRotateSettingControllerTests {
         setDeviceState(FOLDED);
 
         verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_ON);
-        verifyDeviceStateAutoRotateSettingSet(
-                FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING, /* numberOfTimes= */ 2);
+        verifyDeviceStateAutoRotateSettingSet(FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING);
+    }
+
+    @Test
+    public void dSUnavailable_cleanDevice_defaultDSAutoRotateSettingSet() {
+        setDeviceStateAutoRotateSetting(null);
+        mTestLooper.dispatchAll();
+
+        setDeviceState(FOLDED);
+
+        verifyDeviceStateAutoRotateSettingSet(FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING);
+        verifyAccelerometerRotationSettingSet(ACCELEROMETER_ROTATION_ON);
     }
 
     @Test
@@ -520,7 +520,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mTestLooper.dispatchAll();
 
         setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_LOCKED_SETTING);
-        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestAutoRotateSettingManager.notifyListeners();
         mTestLooper.dispatchAll();
 
         verify(mMockDisplayRotation).setUserRotationSetting(
@@ -541,7 +541,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mTestLooper.dispatchAll();
 
         setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_LOCKED_SETTING);
-        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestAutoRotateSettingManager.notifyListeners();
         mTestLooper.dispatchAll();
 
         verify(mMockDisplayRotation).setUserRotationSetting(
@@ -562,7 +562,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mTestLooper.dispatchAll();
 
         setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_LOCKED_SETTING);
-        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestAutoRotateSettingManager.notifyListeners();
         mTestLooper.dispatchAll();
 
         verify(mMockDisplayRotation).setUserRotationSetting(
@@ -582,7 +582,7 @@ public class DeviceStateAutoRotateSettingControllerTests {
         mTestLooper.dispatchAll();
 
         setDeviceStateAutoRotateSetting(FOLDED_LOCKED_OPEN_LOCKED_SETTING);
-        mSettingListenerArgumentCaptor.getValue().onSettingsChanged();
+        mTestAutoRotateSettingManager.notifyListeners();
         mTestLooper.dispatchAll();
 
         verify(mMockDisplayRotation).setUserRotationSetting(
@@ -590,9 +590,15 @@ public class DeviceStateAutoRotateSettingControllerTests {
     }
 
     private void setDeviceStateAutoRotateSetting(SparseIntArray deviceStateAutoRotateSetting) {
-        when(mMockAutoRotateSettingManager.getRotationLockSetting()).thenAnswer(invocation ->
-                deviceStateAutoRotateSetting == null ? null
-                        : deviceStateAutoRotateSetting.clone());
+        TestDeviceStateAutoRotateSetting testDeviceStateAutoRotateSetting =
+                mTestAutoRotateSettingManager.new TestDeviceStateAutoRotateSetting(
+                        deviceStateAutoRotateSetting);
+        if (deviceStateAutoRotateSetting == null) {
+            testDeviceStateAutoRotateSetting = null;
+        }
+
+        mTestAutoRotateSettingManager.setDeviceStateAutoRotateSetting(
+                testDeviceStateAutoRotateSetting);
     }
 
     private void setAccelerometerRotationSetting(int accelerometerRotationSetting) {
@@ -623,23 +629,13 @@ public class DeviceStateAutoRotateSettingControllerTests {
     }
 
     private void verifyDeviceStateAutoRotateSettingSet(
-            SparseIntArray proposedSettingMap, int numberOfTimes) {
-        final ArgumentCaptor<SparseIntArray> proposedSettingMapCaptor = ArgumentCaptor.forClass(
-                SparseIntArray.class);
-        verify(mMockAutoRotateSettingManager, times(numberOfTimes)).updateSetting(
-                proposedSettingMapCaptor.capture(), any());
-        assertIntArrayEqual(proposedSettingMap, proposedSettingMapCaptor.getValue());
-    }
-
-    private void assertIntArrayEqual(SparseIntArray expectedIntArray,
-            SparseIntArray actualIntArray) {
-        assertThat(expectedIntArray.size()).isEqualTo(actualIntArray.size());
-        for (int i = 0; i < expectedIntArray.size(); i++) {
-            int expectedKey = expectedIntArray.keyAt(i);
-            int expectedValue = expectedIntArray.valueAt(i);
-            assertThat(actualIntArray.indexOfKey(expectedKey)).isGreaterThan(-1);
-            assertThat(actualIntArray.get(expectedKey)).isEqualTo(expectedValue);
-        }
+            SparseIntArray expectedSettingMap) {
+        final DeviceStateAutoRotateSettingManager.DeviceStateAutoRotateSetting expectedValue =
+                mTestAutoRotateSettingManager.new TestDeviceStateAutoRotateSetting(
+                        expectedSettingMap);
+        final DeviceStateAutoRotateSettingManager.DeviceStateAutoRotateSetting actualValue =
+                mTestAutoRotateSettingManager.getRotationLockSetting();
+        assertThat(expectedValue.equals(actualValue)).isTrue();
     }
 
     private void setUpMockPostureHelper() {
