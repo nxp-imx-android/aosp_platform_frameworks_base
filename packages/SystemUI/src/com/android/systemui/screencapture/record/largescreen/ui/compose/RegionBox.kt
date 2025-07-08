@@ -39,9 +39,10 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.android.systemui.common.shared.model.Icon as IconModel
 import com.android.systemui.res.R
 import com.android.systemui.screencapture.common.ui.compose.PrimaryButton
+import com.android.systemui.screencapture.common.ui.compose.loadIcon
+import com.android.systemui.screencapture.common.ui.viewmodel.DrawableLoaderViewModel
 
 /**
  * Determines which zone (corner or edge) of a box is being touched based on the press offset.
@@ -96,6 +97,7 @@ fun RegionBox(
     initialWidth: Dp,
     initialHeight: Dp,
     onDragEnd: (offset: Offset, width: Dp, height: Dp) -> Unit,
+    drawableLoaderViewModel: DrawableLoaderViewModel,
     initialOffset: Offset = Offset.Zero,
     modifier: Modifier = Modifier,
 ) {
@@ -143,6 +145,7 @@ fun RegionBox(
                 with(density) { rect.height.toDp() },
             )
         },
+        drawableLoaderViewModel = drawableLoaderViewModel,
         modifier = modifier,
     )
 }
@@ -163,13 +166,9 @@ private fun ResizableRectangle(
     onResizeDrag: (dragAmount: Offset, zone: ResizeZone, maxWidth: Float, maxHeight: Float) -> Unit,
     onBoxDrag: (dragAmount: Offset, maxWidth: Float, maxHeight: Float) -> Unit,
     onDragEnd: () -> Unit,
+    drawableLoaderViewModel: DrawableLoaderViewModel,
     modifier: Modifier = Modifier,
 ) {
-    // TODO(b/422855266): Preload icons in the view model to avoid loading icons in UI thread and
-    // improve performance
-    val screenshotIcon =
-        IconModel.Resource(res = R.drawable.ic_screen_capture_camera, contentDescription = null)
-
     // The width of the border stroke around the region box.
     val borderStrokeWidth = 4.dp
     // The touch area for detecting an edge or corner resize drag.
@@ -245,7 +244,12 @@ private fun ResizableRectangle(
                 onClick = {
                     // TODO(b/417534202): trigger a screenshot of the selected area.
                 },
-                icon = screenshotIcon,
+                icon =
+                    loadIcon(
+                        viewModel = drawableLoaderViewModel,
+                        resId = R.drawable.ic_screen_capture_camera,
+                        contentDescription = null,
+                    ),
             )
         }
     }
