@@ -1113,10 +1113,7 @@ class MediaRouter2ServiceImpl {
             Slog.w(TAG, "showMediaOutputSwitcher only works when called from foreground");
             return false;
         }
-        synchronized (mLock) {
-            mStatusBarManagerInternal.showMediaOutputSwitcher(packageName, userHandle,
-                    sessionToken);
-        }
+        mStatusBarManagerInternal.showMediaOutputSwitcher(packageName, userHandle, sessionToken);
         return true;
     }
 
