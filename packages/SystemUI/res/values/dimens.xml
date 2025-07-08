@@ -880,6 +880,12 @@
     <!-- Border width for avatars in the face pile shown on one-line (children of a group) conversation notifications -->
     <dimen name="conversation_single_line_face_pile_protection_width">1dp</dimen>
 
+    <!-- The height/thickness of progress of the progress bar in ProgressStyle Notification -->
+    <dimen name="notification_aod_progress_style_progress_thickness">2dp</dimen>
+
+    <!-- The height/thickness of ahead progress of the progress bar in ProgressStyle Notification -->
+    <dimen name="notification_aod_progress_style_ahead_progress_thickness">1dp</dimen>
+
     <!-- The minimum amount of top overscroll to go to the quick settings. -->
     <dimen name="min_top_overscroll_to_qs">36dp</dimen>
 
