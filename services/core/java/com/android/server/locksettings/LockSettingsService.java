@@ -112,7 +112,6 @@ import android.security.keystore.recovery.KeyChainProtectionParams;
 import android.security.keystore.recovery.KeyChainSnapshot;
 import android.security.keystore.recovery.RecoveryCertPath;
 import android.security.keystore.recovery.WrappedApplicationKey;
-import android.security.keystore2.AndroidKeyStoreLoadStoreParameter;
 import android.security.keystore2.AndroidKeyStoreProvider;
 import android.service.gatekeeper.IGateKeeperService;
 import android.service.notification.StatusBarNotification;
@@ -618,11 +617,7 @@ public class LockSettingsService extends ILockSettings.Stub {
 
         public KeyStore getKeyStore() {
             try {
-                KeyStore ks = KeyStore.getInstance(
-                        SyntheticPasswordCrypto.androidKeystoreProviderName());
-                ks.load(new AndroidKeyStoreLoadStoreParameter(
-                        SyntheticPasswordCrypto.keyNamespace()));
-                return ks;
+                return SyntheticPasswordCrypto.getKeyStore();
             } catch (Exception e) {
                 throw new IllegalStateException("Cannot load keystore", e);
             }
