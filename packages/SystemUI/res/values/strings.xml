@@ -348,6 +348,9 @@
     <!-- Button to stop a screen recording [CHAR LIMIT=35] -->
     <string name="screenrecord_stop_dialog_button">Stop recording</string>
 
+    <!-- Header for the carousel to choose an app for screen recording. [CHAR LIMIT=50] -->
+    <string name="screen_record_capture_target_choose_app">Choose an app to record</string>
+
     <!-- Button text in the region select box for triggering a screenshot of the selected area. [CHAR LIMIT=35] -->
     <string name="screen_capture_region_selection_button">Capture selected area</string>
     <!-- Button text in the toolbar for choosing the screenshot type. [CHAR LIMIT=35] -->

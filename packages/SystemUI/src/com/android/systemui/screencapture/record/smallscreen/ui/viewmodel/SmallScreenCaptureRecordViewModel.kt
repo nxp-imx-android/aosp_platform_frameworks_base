@@ -19,14 +19,30 @@ package com.android.systemui.screencapture.record.smallscreen.ui.viewmodel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.lifecycle.HydratedActivatable
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.coroutineScope
 
-class SmallScreenCaptureRecordViewModel @AssistedInject constructor() : HydratedActivatable() {
+class SmallScreenCaptureRecordViewModel
+@AssistedInject
+constructor(recordDetailsAppSelectorViewModelFactory: RecordDetailsAppSelectorViewModel.Factory) :
+    HydratedActivatable() {
+
+    val recordDetailsAppSelectorViewModel: RecordDetailsAppSelectorViewModel =
+        recordDetailsAppSelectorViewModelFactory.create()
 
     var detailsPopup: RecordDetailsPopupType by mutableStateOf(RecordDetailsPopupType.Settings)
         private set
+
+    override suspend fun onActivated() {
+        coroutineScope {
+            launchTraced("RecordDetailsAppSelectorViewModel#activate") {
+                recordDetailsAppSelectorViewModel.activate()
+            }
+        }
+    }
 
     fun showSettings() {
         detailsPopup = RecordDetailsPopupType.Settings
