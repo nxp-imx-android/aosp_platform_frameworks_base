@@ -17,6 +17,9 @@ package com.android.ravenwoodtest.coretest;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.ravenwood.annotation.RavenwoodKeep;
+import android.ravenwood.annotation.RavenwoodRedirect;
+import android.ravenwood.annotation.RavenwoodReplace;
 import android.ravenwood.annotation.RavenwoodSupported.RavenwoodProvidingImplementation;
 
 import org.junit.Test;
@@ -27,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -34,18 +38,53 @@ import java.util.stream.Collectors;
  * and {@link RavenwoodProvidingImplementation} are used correctly.
  */
 public class RavenwoodSupportedAnnotationTest {
+    /** HostStubGenProcessedAsThrowButSupported annotation  */
     private static final Class<? extends Annotation> RAVENWOOD_SUPPORTED_ANNOT =
             getThrowButSupportedAnnotation();
 
+    /** Ravenwood annotations that mark methods as "available"  */
+    private static final ArrayList<Class<? extends Annotation>> RAVENWOOD_AVAILABLE_ANNOTS =
+            new ArrayList<>();
+    static {
+        RAVENWOOD_AVAILABLE_ANNOTS.add(RavenwoodKeep.class);
+        RAVENWOOD_AVAILABLE_ANNOTS.add(RavenwoodReplace.class);
+        RAVENWOOD_AVAILABLE_ANNOTS.add(RavenwoodRedirect.class);
+    }
+
+    /** Test if a method has any of {@link #RAVENWOOD_AVAILABLE_ANNOTS}. */
+    private static final Predicate<Method> sWithAvailableAnnotation = (m) -> {
+        for (var annot : RAVENWOOD_AVAILABLE_ANNOTS) {
+            if (m.getAnnotation(annot) != null) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    private static final Predicate<Method> sAllMethods = (m) -> true;
+
     @Test
     public void testContext() throws Exception {
-        check("android.content.Context", "android.platform.test.ravenwood.RavenwoodContext");
+        check("android.content.Context", "android.app.ContextImpl",
+                // Compare to methods with @RavenwoodKeep, etc
+                sWithAvailableAnnotation
+        );
     }
 
     @Test
     public void testPackageManager() throws Exception {
         check("android.content.pm.PackageManager",
-                "android.platform.test.ravenwood.RavenwoodPackageManager");
+                "android.platform.test.ravenwood.RavenwoodPackageManager",
+                sAllMethods // RavenwoodPackageManager doesn't use @RavenwoodKeep, etc
+        );
+    }
+
+    @Test
+    public void testPermissionEnforcer() throws Exception {
+        check("android.os.PermissionEnforcer",
+                "android.platform.test.ravenwood.RavenwoodPermissionEnforcer",
+                sAllMethods // RavenwoodPackageManager doesn't use @RavenwoodKeep, etc
+        );
     }
 
     @SuppressWarnings("unchecked")
@@ -58,8 +97,9 @@ public class RavenwoodSupportedAnnotationTest {
         }
     }
 
-    private static void check(String frameworkClass, String subclass) throws Exception {
-        check(Class.forName(frameworkClass), Class.forName(subclass));
+    private static void check(String frameworkClass, String subclass,
+            Predicate<Method> methodFilter) throws Exception {
+        check(Class.forName(frameworkClass), Class.forName(subclass), methodFilter);
     }
 
     /** Class to hold a Method with its signature. */
@@ -127,13 +167,16 @@ public class RavenwoodSupportedAnnotationTest {
      * meaning methods overriding the super methods.
      */
     private static List<MethodRef> findOverridingMethods(Class<?> subclass,
-            List<MethodRef> superMethods) {
+            List<MethodRef> superMethods, Predicate<Method> methodFilter) {
         // Create a set of super method signatures.
         var superMethodSet = new HashSet<String>();
         superMethods.forEach(superMethod -> superMethodSet.add(superMethod.getSignature()));
 
         var ret = new ArrayList<MethodRef>();
         for (var m : subclass.getDeclaredMethods()) {
+            if (!methodFilter.test(m)) {
+                continue;
+            }
             var sig = getMethodSignature(m);
             if (superMethodSet.contains(sig)) {
                 ret.add(new MethodRef(m));
@@ -161,7 +204,8 @@ public class RavenwoodSupportedAnnotationTest {
      * @param frameworkClass target (base) class
      * @param subclass subclass that provides the implementation.
      */
-    private static void check(Class<?> frameworkClass, Class<?> subclass) throws Exception {
+    private static void check(Class<?> frameworkClass, Class<?> subclass,
+            Predicate<Method> methodFilter) throws Exception {
         // First, check the class's annotation too.
         var anot = subclass.getAnnotation(RavenwoodProvidingImplementation.class);
         assertThat(anot).isNotNull();
@@ -175,8 +219,9 @@ public class RavenwoodSupportedAnnotationTest {
                 .filter(m -> m.method.isAnnotationPresent(RAVENWOOD_SUPPORTED_ANNOT))
                 .collect(Collectors.toList());
 
-        // Methods in the subclass that
-        var overridingMethods = findOverridingMethods(subclass, frameworkMethods);
+        // Find the implementation methods.
+        var overridingMethods = findOverridingMethods(subclass, frameworkMethods,
+                methodFilter);
 
         supportedFrameworkMethods.sort(Comparator.comparing(MethodRef::getSignature));
         overridingMethods.sort(Comparator.comparing(MethodRef::getSignature));

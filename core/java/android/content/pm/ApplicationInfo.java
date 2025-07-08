@@ -40,6 +40,7 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.os.UserHandle;
 import android.os.storage.StorageManager;
+import android.ravenwood.annotation.RavenwoodIgnore;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.Printer;
@@ -2943,6 +2944,7 @@ public class ApplicationInfo extends PackageItemInfo implements Parcelable {
      * @hide
      */
     @Nullable
+    @RavenwoodIgnore(reason = "Custom Application class not supported yet")
     public String getCustomApplicationClassNameForProcess(String processName) {
         if (mAppClassNamesByProcess != null) {
             String byProcess = mAppClassNamesByProcess.get(processName);

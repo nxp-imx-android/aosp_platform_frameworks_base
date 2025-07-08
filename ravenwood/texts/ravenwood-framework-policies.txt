@@ -55,3 +55,7 @@ class android.hardware.display.DisplayManagerGlobal allow-annotation
 class android.app.ActivityThread allow-annotation
     method currentSystemContext allow-annotation
     method currentApplication allow-annotation
+    method getLooper allow-annotation
+    method getHandler allow-annotation
+    method getExecutor allow-annotation
+    method addApplication allow-annotation

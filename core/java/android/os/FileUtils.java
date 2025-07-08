@@ -23,9 +23,9 @@ import static android.os.ParcelFileDescriptor.MODE_READ_WRITE;
 import static android.os.ParcelFileDescriptor.MODE_TRUNCATE;
 import static android.os.ParcelFileDescriptor.MODE_WRITE_ONLY;
 import static android.system.OsConstants.EINVAL;
+import static android.system.OsConstants.EIO;
 import static android.system.OsConstants.ENOSYS;
 import static android.system.OsConstants.F_OK;
-import static android.system.OsConstants.EIO;
 import static android.system.OsConstants.O_ACCMODE;
 import static android.system.OsConstants.O_APPEND;
 import static android.system.OsConstants.O_CREAT;
@@ -52,6 +52,9 @@ import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.provider.DocumentsContract.Document;
 import android.provider.MediaStore;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodRedirect;
+import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.StructStat;
@@ -96,7 +99,8 @@ import java.util.zip.CheckedInputStream;
 /**
  * Utility methods useful for working with files.
  */
-@android.ravenwood.annotation.RavenwoodKeepWholeClass
+@RavenwoodKeepWholeClass
+@RavenwoodRedirectionClass("FileUtils_ravenwood")
 public final class FileUtils {
     private static final String TAG = "FileUtils";
 
@@ -165,7 +169,6 @@ public final class FileUtils {
      * @hide
      */
     @UnsupportedAppUsage
-    @android.ravenwood.annotation.RavenwoodThrow(reason = "Requires kernel support")
     public static int setPermissions(File path, int mode, int uid, int gid) {
         return setPermissions(path.getAbsolutePath(), mode, uid, gid);
     }
@@ -180,7 +183,7 @@ public final class FileUtils {
      * @hide
      */
     @UnsupportedAppUsage
-    @android.ravenwood.annotation.RavenwoodThrow(reason = "Requires kernel support")
+    @RavenwoodRedirect(comment = "uid and gid are ignored")
     public static int setPermissions(String path, int mode, int uid, int gid) {
         try {
             Os.chmod(path, mode);
