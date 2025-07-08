@@ -115,7 +115,6 @@ test_module_config {
         "com.android.wm.shell.functional.OpenAppWithExternalDisplayConnectedTest",
         "com.android.wm.shell.functional.OpenTrampolineAppInDesktopModeTaskLimitTest",
         "com.android.wm.shell.functional.OpenUnlimitedAppsTest",
-        "com.android.wm.shell.functional.SwitchToOverviewFromDesktopTest",
         "com.android.wm.shell.functional.TabTearingDesktopWindowingLimitTest",
         "com.android.wm.shell.functional.TabTearingTest",
         "com.android.wm.shell.functional.UnmaximizeAppWindowTest",
@@ -135,6 +134,7 @@ test_module_config {
         "com.android.wm.shell.functional.fundamentals.QuickSwitchBetweenDesktopAndFullscreenTest",
         "com.android.wm.shell.functional.fundamentals.SwitchFocusBetweenAppsTest",
         "com.android.wm.shell.functional.fundamentals.SwitchToHomeFromDesktopTest",
+        "com.android.wm.shell.functional.fundamentals.SwitchToOverviewFromDesktopTest",
         "com.android.wm.shell.functional.fundamentals.focus.ClickAndFocusTest",
         "com.android.wm.shell.functional.fundamentals.focus.CloseThenMoveFocusTest",
         "com.android.wm.shell.functional.fundamentals.focus.DragAndKeepFocusTest",
@@ -314,13 +314,6 @@ test_module_config {
 }
 
 test_module_config {
-    name: "FunctionalTestsDesktopMode-SwitchToOverviewFromDesktopTest",
-    base: "FunctionalTestsDesktopMode",
-    test_suites: ["device-tests"],
-    include_filters: ["com.android.wm.shell.functional.SwitchToOverviewFromDesktopTest"],
-}
-
-test_module_config {
     name: "FunctionalTestsDesktopMode-TabTearingDesktopWindowingLimitTest",
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
@@ -451,6 +444,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.fundamentals.SwitchToHomeFromDesktopTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-SwitchToOverviewFromDesktopTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.SwitchToOverviewFromDesktopTest"],
 }
 
 test_module_config {

@@ -43,13 +43,13 @@ import org.junit.Test
 */
 @Ignore("Base Test Class")
 abstract class SwitchToOverviewFromDesktop
-constructor(val navigationMode: NavBar = NavBar.MODE_GESTURAL) : TestScenarioBase() {
+constructor(val navigationMode: NavBar = NavBar.MODE_GESTURAL, val rotation: Rotation = Rotation.ROTATION_0) : TestScenarioBase() {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val tapl = LauncherInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val device = UiDevice.getInstance(instrumentation)
-    private val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
+    val testApp = DesktopModeAppHelper(SimpleAppHelper(instrumentation))
 
     @Rule @JvmField val testSetupRule = Utils.testSetupRule(navigationMode, Rotation.ROTATION_0)
 

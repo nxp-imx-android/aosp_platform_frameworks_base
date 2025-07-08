@@ -88,9 +88,6 @@
       "name": "FunctionalTestsDesktopMode-OpenUnlimitedAppsTest"
     },
     {
-      "name": "FunctionalTestsDesktopMode-SwitchToOverviewFromDesktopTest"
-    },
-    {
       "name": "FunctionalTestsDesktopMode-TabTearingDesktopWindowingLimitTest"
     },
     {
@@ -143,6 +140,9 @@
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-SwitchFocusBetweenAppsTest"
+    },
+    {
+      "name": "FunctionalTestsDesktopMode-fundamentals-SwitchToOverviewFromDesktopTest"
     },
     {
       "name": "FunctionalTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest"
