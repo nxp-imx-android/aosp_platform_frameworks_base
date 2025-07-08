@@ -91,7 +91,7 @@ public class CommunalTouchHandler implements TouchHandler {
 
         mFlows.add(collectFlow(
                 mLifecycle,
-                BooleanFlowOperators.INSTANCE.allOf(
+                BooleanFlowOperators.allOf(
                         mCommunalInteractor.isCommunalAvailable(),
                         keyguardInteractor.isKeyguardShowing()
                 ),
