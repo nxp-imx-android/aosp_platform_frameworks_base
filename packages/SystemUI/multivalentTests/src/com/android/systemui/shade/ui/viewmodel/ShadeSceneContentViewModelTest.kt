@@ -33,8 +33,10 @@ import com.android.systemui.keyguard.data.repository.fakeDeviceEntryFingerprintA
 import com.android.systemui.keyguard.shared.model.SuccessFingerprintAuthenticationStatus
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.collectLastValue
+import com.android.systemui.kosmos.runCurrent
 import com.android.systemui.kosmos.runTest
 import com.android.systemui.kosmos.testScope
+import com.android.systemui.kosmos.useStandardTestDispatcher
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.lifecycle.activateIn
 import com.android.systemui.media.controls.data.repository.mediaFilterRepository
@@ -51,7 +53,6 @@ import com.android.systemui.testKosmos
 import com.android.systemui.unfold.fakeUnfoldTransitionProgressProvider
 import com.google.common.truth.Truth.assertThat
 import java.util.Locale
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -137,38 +138,35 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
 
     @Test
     fun unfoldTransitionProgress() =
-        kosmos.runTest {
+        testKosmos().useStandardTestDispatcher().runTest {
+            // Set up and activate a new `underTest` which uses the StandardTestDispatcher.
+            val underTest = shadeSceneContentViewModel
+            underTest.activateIn(testScope)
+
             enableSingleShade()
+            runCurrent()
             val maxTranslation = prepareConfiguration()
-            val translations by
-                collectLastValue(
-                    combine(
-                        underTest.unfoldTranslationX(isOnStartSide = true),
-                        underTest.unfoldTranslationX(isOnStartSide = false),
-                    ) { start, end ->
-                        Translations(start = start, end = end)
-                    }
-                )
 
             val unfoldProvider = fakeUnfoldTransitionProgressProvider
             unfoldProvider.onTransitionStarted()
-            assertThat(translations?.start).isEqualTo(0f)
-            assertThat(translations?.end).isEqualTo(-0f)
+            assertThat(underTest.unfoldTranslationXForStartSide).isEqualTo(0f)
 
             repeat(10) { repetition ->
                 val transitionProgress = 0.1f * (repetition + 1)
                 unfoldProvider.onTransitionProgress(transitionProgress)
-                assertThat(translations?.start).isEqualTo((1 - transitionProgress) * maxTranslation)
-                assertThat(translations?.end).isEqualTo(-(1 - transitionProgress) * maxTranslation)
+                runCurrent()
+
+                assertThat(underTest.unfoldTranslationXForStartSide)
+                    .isEqualTo((1 - transitionProgress) * maxTranslation)
             }
 
             unfoldProvider.onTransitionFinishing()
-            assertThat(translations?.start).isEqualTo(0f)
-            assertThat(translations?.end).isEqualTo(-0f)
+            runCurrent()
+            assertThat(underTest.unfoldTranslationXForStartSide).isEqualTo(0f)
 
             unfoldProvider.onTransitionFinished()
-            assertThat(translations?.start).isEqualTo(0f)
-            assertThat(translations?.end).isEqualTo(-0f)
+            runCurrent()
+            assertThat(underTest.unfoldTranslationXForStartSide).isEqualTo(0f)
         }
 
     @Test
@@ -213,6 +211,4 @@ class ShadeSceneContentViewModelTest : SysuiTestCase() {
         sceneInteractor.changeScene(key, "test")
         sceneInteractor.setTransitionState(flowOf(ObservableTransitionState.Idle(key)))
     }
-
-    private data class Translations(val start: Float, val end: Float)
 }
