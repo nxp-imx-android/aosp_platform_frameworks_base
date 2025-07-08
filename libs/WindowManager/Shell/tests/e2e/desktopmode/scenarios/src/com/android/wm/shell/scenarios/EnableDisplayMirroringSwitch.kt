@@ -20,8 +20,6 @@ import android.app.Instrumentation
 import android.platform.test.annotations.RequiresFlagsEnabled
 import android.platform.test.flag.junit.DeviceFlagsValueProvider
 import android.provider.Settings
-import android.tools.NavBar
-import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.launcher3.tapl.LauncherInstrumentation
@@ -29,8 +27,8 @@ import com.android.server.display.feature.flags.Flags.FLAG_ENABLE_DISPLAY_CONTEN
 import com.android.systemui.shared.Flags.FLAG_STATUS_BAR_CONNECTED_DISPLAYS
 import com.android.window.flags.Flags.FLAG_ENABLE_TASKBAR_CONNECTED_DISPLAYS
 import com.android.wm.shell.Utils
-import org.junit.Assume
 import org.junit.After
+import org.junit.Assume
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -47,15 +45,13 @@ abstract class EnableDisplayMirroringSwitch : TestScenarioBase() {
     private val tapl = LauncherInstrumentation()
 
     @get:Rule(order = 0) val checkFlagsRule = DeviceFlagsValueProvider.createCheckFlagsRule()
-    @get:Rule(order = 1) val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL,
-        Rotation.ROTATION_0)
-    @get:Rule(order = 2) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
+    @get:Rule(order = 1) val connectedDisplayRule = SimulatedConnectedDisplayTestRule()
 
     @Before
     fun setup() {
         Assume.assumeTrue("isTablet", tapl.isTablet)
         // Ensure the mirroring is disabled.
-        Settings.Secure.putInt(instrumentation.context.contentResolver,MIRROR_SETTING, 0)
+        Settings.Secure.putInt(instrumentation.context.contentResolver, MIRROR_SETTING, 0)
         connectedDisplayRule.setupTestDisplay()
     }
 

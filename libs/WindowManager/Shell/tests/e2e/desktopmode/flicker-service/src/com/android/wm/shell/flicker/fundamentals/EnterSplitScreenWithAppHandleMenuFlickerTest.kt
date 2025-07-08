@@ -54,7 +54,7 @@ class EnterSplitScreenWithAppHandleMenuFlickerTest(flicker: LegacyFlickerTest) :
     override val transition: FlickerBuilder.() -> Unit
         get() = {
             setup {
-                scenario.setup()
+                scenario.baseSetup()
             }
             transitions {
                 scenario.enterSplitScreenFromAppHandle()
