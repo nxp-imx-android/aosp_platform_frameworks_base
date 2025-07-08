@@ -4467,4 +4467,10 @@
 
     <!-- Content description for arrow in Pager Dots to navigate to next page [CHAR LIMIT=NONE] -->
     <string name="pager_dots_next_content_description">Next</string>
+
+    <!-- Description for the Ambient Cue accessibility action label for autofilling. [CHAR LIMIT=NONE] -->
+    <string name="ambient_cue_autofill_action">autofill</string>
+
+    <!-- Description for the Ambient Cue accessibility action label for expanding. [CHAR LIMIT=NONE] -->
+    <string name="ambient_cue_expand_action">expand</string>
 </resources>

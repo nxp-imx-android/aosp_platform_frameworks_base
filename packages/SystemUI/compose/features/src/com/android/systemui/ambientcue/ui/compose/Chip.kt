@@ -67,6 +67,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
                     (MaterialTheme.typography.labelLarge.fontSize.value * fontScale).dp.toSp()
                 },
         )
+    val autofillActionLabel = stringResource(id = R.string.ambient_cue_autofill_action)
 
     val haptics = LocalHapticFeedback.current
     Row(
@@ -79,6 +80,7 @@ fun Chip(action: ActionViewModel, modifier: Modifier = Modifier) {
                 .defaultMinSize(minHeight = 48.dp)
                 .widthIn(max = 288.dp)
                 .combinedClickable(
+                    onClickLabel = autofillActionLabel,
                     onClick = {
                         haptics.performHapticFeedback(HapticFeedbackType.Confirm)
                         action.onClick()
