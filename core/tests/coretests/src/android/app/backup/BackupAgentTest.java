@@ -18,6 +18,7 @@ package android.app.backup;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.IBackupAgent;
@@ -28,6 +29,8 @@ import android.app.backup.FullBackup.BackupScheme.PathWithRequiredFlags;
 import android.content.Context;
 import android.os.ParcelFileDescriptor;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
+import android.platform.test.annotations.EnableFlags;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
 import android.util.ArraySet;
@@ -179,6 +182,53 @@ public class BackupAgentTest {
         }
     }
 
+    @Test
+    @DisableFlags({Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER})
+    public void doMeasureFullBackup_flagOff_callOnFullBackup() throws Exception {
+        TestMeasureSizeBackupAgent agent = new TestMeasureSizeBackupAgent(1024);
+        agent.attach(mContext);
+        agent.onCreate(USER_HANDLE, BackupDestination.CLOUD, OperationType.BACKUP);
+        IBackupAgent agentBinder = (IBackupAgent) agent.onBind();
+
+        agentBinder.doMeasureFullBackup(
+                /* quotaBytes= */ 2048, /* token= */ 0, mIBackupManager, /* transportFlags= */ 0);
+
+        assertThat(agent.mOnMeasureFullBackupCalled).isFalse();
+        assertThat(agent.mOnFullBackupCalled).isTrue();
+        verify(mIBackupManager).opCompleteForUser(USER_HANDLE.getIdentifier(), 0, 0);
+    }
+
+    @Test
+    @EnableFlags({Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER})
+    public void doMeasureFullBackup_flagOn_callsOnMeasureFullBackup() throws Exception {
+        TestMeasureSizeBackupAgent agent = new TestMeasureSizeBackupAgent(1024);
+        agent.attach(mContext);
+        agent.onCreate(USER_HANDLE, BackupDestination.CLOUD, OperationType.BACKUP);
+        IBackupAgent agentBinder = (IBackupAgent) agent.onBind();
+
+        agentBinder.doMeasureFullBackup(
+                /* quotaBytes= */ 2048, /* token= */ 0, mIBackupManager, /* transportFlags= */ 0);
+
+        assertThat(agent.mOnMeasureFullBackupCalled).isTrue();
+        assertThat(agent.mOnFullBackupCalled).isFalse();
+        verify(mIBackupManager).opCompleteForUser(USER_HANDLE.getIdentifier(), 0, 1024);
+    }
+
+    @Test
+    public void doMeasureFullBackup_flagOn_negativeSize_callsOnFullBackup() throws Exception {
+        TestMeasureSizeBackupAgent agent = new TestMeasureSizeBackupAgent(-1);
+        agent.attach(mContext);
+        agent.onCreate(USER_HANDLE, BackupDestination.CLOUD, OperationType.BACKUP);
+        IBackupAgent agentBinder = (IBackupAgent) agent.onBind();
+
+        agentBinder.doMeasureFullBackup(
+                /* quotaBytes= */ 2048, /* token= */ 0, mIBackupManager, /* transportFlags= */ 0);
+
+        assertThat(agent.mOnMeasureFullBackupCalled).isTrue();
+        assertThat(agent.mOnFullBackupCalled).isTrue();
+        verify(mIBackupManager).opCompleteForUser(USER_HANDLE.getIdentifier(), 0, 0);
+    }
+
     private BackupAgent getAgentForBackupDestination(@BackupDestination int backupDestination) {
         BackupAgent agent = new TestFullBackupAgent();
         agent.onCreate(USER_HANDLE, backupDestination);
@@ -219,6 +269,41 @@ public class BackupAgentTest {
                 long mtime)
                 throws IOException {
             // Ignore the file and don't consume any data.
+        }
+    }
+
+    private static class TestMeasureSizeBackupAgent extends BackupAgent {
+        private final long mSize;
+        private boolean mOnFullBackupCalled;
+        private boolean mOnMeasureFullBackupCalled;
+
+        TestMeasureSizeBackupAgent(long size) {
+            this.mSize = size;
+        }
+
+        @Override
+        public void onBackup(
+                ParcelFileDescriptor oldState,
+                BackupDataOutput data,
+                ParcelFileDescriptor newState) {
+            // Left empty as this is a full backup agent.
+        }
+
+        @Override
+        public void onRestore(
+                BackupDataInput data, int appVersionCode, ParcelFileDescriptor newState) {
+            // Left empty as this is a full backup agent.
+        }
+
+        @Override
+        public void onFullBackup(FullBackupDataOutput data) {
+            mOnFullBackupCalled = true;
+        }
+
+        @Override
+        public long onMeasureFullBackup(long quotaBytes, int transportFlags) {
+            mOnMeasureFullBackupCalled = true;
+            return mSize;
         }
     }
 }
