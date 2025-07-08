@@ -179,4 +179,26 @@ public class UiUtil {
             return builder.create();
         }
     }
+
+    /**
+     * If material design is enabled, return the MaterialAlertDialog. Otherwise, return the
+     * system AlertDialog.
+     */
+    public static Dialog getAlertDialog(@NonNull Context context, @NonNull View titleView,
+            @NonNull View contentView, @StringRes int negativeBtnTextResId,
+            @Nullable DialogInterface.OnClickListener negativeBtnListener) {
+        if (PackageUtil.isMaterialDesignEnabled(context)) {
+            return new MaterialAlertDialogBuilder(context)
+                    .setCustomTitle(titleView)
+                    .setView(contentView)
+                    .setNegativeButton(negativeBtnTextResId, negativeBtnListener)
+                    .create();
+        } else {
+            return new AlertDialog.Builder(context)
+                    .setCustomTitle(titleView)
+                    .setView(contentView)
+                    .setNegativeButton(negativeBtnTextResId, negativeBtnListener)
+                    .create();
+        }
+    }
 }

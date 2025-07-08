@@ -18,7 +18,6 @@ package com.android.packageinstaller.v2.ui.fragments;
 
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_MESSAGE;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -34,14 +33,15 @@ import androidx.fragment.app.DialogFragment;
 import com.android.packageinstaller.R;
 import com.android.packageinstaller.v2.model.InstallStage;
 import com.android.packageinstaller.v2.ui.InstallActionListener;
+import com.android.packageinstaller.v2.ui.UiUtil;
 
-public class SimpleErrorFragment extends DialogFragment {
+public class InstallRestrictionFragment extends DialogFragment {
 
-    private static final String LOG_TAG = SimpleErrorFragment.class.getSimpleName();
+    private static final String LOG_TAG = InstallRestrictionFragment.class.getSimpleName();
     private int mMessageResId;
     private InstallActionListener mInstallActionListener;
 
-    public SimpleErrorFragment() {
+    public InstallRestrictionFragment() {
         // Required for DialogFragment
     }
 
@@ -50,11 +50,11 @@ public class SimpleErrorFragment extends DialogFragment {
      *
      * @return an instance of the fragment
      */
-    public static SimpleErrorFragment newInstance(int messageResId) {
+    public static InstallRestrictionFragment newInstance(int messageResId) {
         Bundle args = new Bundle();
         args.putInt(ARGS_MESSAGE, messageResId);
 
-        SimpleErrorFragment fragment = new SimpleErrorFragment();
+        InstallRestrictionFragment fragment = new InstallRestrictionFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -69,26 +69,25 @@ public class SimpleErrorFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         mMessageResId = requireArguments().getInt(ARGS_MESSAGE);
+        final String message = getString(mMessageResId);
 
-        Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" +
-            "Dialog message: " + requireContext().getString(mMessageResId));
+        Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + "Dialog message: " + message);
 
-        View dialogView = getLayoutInflater().inflate(R.layout.install_fragment_layout, null);
+        // There is no root view here. Ok to pass null view root
+        @SuppressWarnings("InflateParams")
+        View dialogView = getLayoutInflater().inflate(
+                UiUtil.getInstallationLayoutResId(requireContext()), null);
         TextView customMessage = dialogView.requireViewById(R.id.custom_message);
-        customMessage.setText(mMessageResId);
+        customMessage.setText(message);
         customMessage.setVisibility(View.VISIBLE);
         customMessage.setGravity(Gravity.CENTER);
 
         View titleView = getLayoutInflater()
                 .inflate(R.layout.install_blocked_custom_title_layout, null);
 
-        return new AlertDialog.Builder(requireContext())
-            .setCustomTitle(titleView)
-            .setView(dialogView)
-            .setNegativeButton(R.string.button_close,
+        return UiUtil.getAlertDialog(requireContext(), titleView, dialogView, R.string.button_close,
                 (dialog, which) ->
-                    mInstallActionListener.onNegativeResponse(InstallStage.STAGE_ABORTED))
-            .create();
+                        mInstallActionListener.onNegativeResponse(InstallStage.STAGE_ABORTED));
     }
 
     @Override

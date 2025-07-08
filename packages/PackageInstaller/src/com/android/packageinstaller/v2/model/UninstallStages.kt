@@ -97,24 +97,25 @@ data class UninstallAborted(val abortReason: Int) : UninstallStage(STAGE_ABORTED
                 dialogTextResource = R.string.message_uninstall_app_not_found
             }
 
+            ABORT_REASON_UNKNOWN -> {
+                dialogTitleResource = R.string.title_uninstall_failed
+                dialogTextResource = R.string.message_uninstall_failed
+            }
+
             ABORT_REASON_USER_NOT_ALLOWED -> {
                 dialogTitleResource = R.string.title_uninstall_user_not_allowed
                 dialogTextResource = R.string.message_uninstall_user_not_allowed
             }
 
-            ABORT_REASON_UNINSTALL_DONE -> {
+            else -> {
                 dialogTitleResource = 0
                 dialogTextResource = 0
-            }
-
-            else -> {
-                dialogTitleResource = R.string.title_uninstall_failed
-                dialogTextResource = R.string.message_uninstall_failed
             }
         }
     }
 
     companion object {
+        const val ABORT_REASON_UNKNOWN = -1
         const val ABORT_REASON_GENERIC_ERROR = 0
         const val ABORT_REASON_APP_UNAVAILABLE = 1
         const val ABORT_REASON_USER_NOT_ALLOWED = 2

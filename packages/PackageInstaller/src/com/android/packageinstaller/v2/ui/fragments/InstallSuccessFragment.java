@@ -94,6 +94,8 @@ public class InstallSuccessFragment extends DialogFragment {
 
         Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + mDialogData);
 
+        // There is no root view here. Ok to pass null view root
+        @SuppressWarnings("InflateParams")
         View dialogView = getLayoutInflater().inflate(R.layout.install_fragment_layout, null);
         dialogView.requireViewById(R.id.app_snippet).setVisibility(View.VISIBLE);
         ((ImageView) dialogView.requireViewById(R.id.app_icon))

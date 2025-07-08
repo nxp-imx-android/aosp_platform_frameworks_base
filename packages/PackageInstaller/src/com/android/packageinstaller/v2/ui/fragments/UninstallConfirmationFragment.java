@@ -92,6 +92,8 @@ public class UninstallConfirmationFragment extends DialogFragment {
 
         Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + mDialogData);
 
+        // There is no root view here. Ok to pass null view root
+        @SuppressWarnings("InflateParams")
         View dialogView = getLayoutInflater().inflate(R.layout.uninstall_fragment_layout, null);
         dialogView.requireViewById(R.id.app_snippet).setVisibility(View.VISIBLE);
         ((ImageView) dialogView.requireViewById(R.id.app_icon))
@@ -111,7 +113,7 @@ public class UninstallConfirmationFragment extends DialogFragment {
 
             TextView keepDataBytes = keepDataLayout.requireViewById(R.id.keep_data_bytes);
             keepDataBytes.setText(formatFileSize(getContext(), appDataSize));
-
+            keepDataLayout.setOnClickListener(v -> mKeepData.toggle());
             mKeepData = keepDataLayout.requireViewById(R.id.keep_data_checkbox);
         }
 

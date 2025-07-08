@@ -22,13 +22,14 @@ import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_ERROR_DIALO
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_MESSAGE;
 import static com.android.packageinstaller.v2.model.PackageUtil.ARGS_RESULT_INTENT;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
@@ -36,6 +37,7 @@ import androidx.fragment.app.DialogFragment;
 import com.android.packageinstaller.R;
 import com.android.packageinstaller.v2.model.InstallAborted;
 import com.android.packageinstaller.v2.ui.InstallActionListener;
+import com.android.packageinstaller.v2.ui.UiUtil;
 
 public class ParseErrorFragment extends DialogFragment {
 
@@ -79,14 +81,21 @@ public class ParseErrorFragment extends DialogFragment {
         setDialogData(requireArguments());
 
         Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + mDialogData);
-        return new AlertDialog.Builder(requireContext())
-            .setTitle(R.string.title_cant_install_app)
-            .setMessage(R.string.message_parse_failed)
-            .setNegativeButton(R.string.button_close,
-                (dialog, which) ->
-                    mInstallActionListener.onNegativeResponse(
-                        mDialogData.getActivityResultCode(), mDialogData.getResultIntent()))
-            .create();
+
+        // There is no root view here. Ok to pass null view root
+        @SuppressWarnings("InflateParams")
+        View dialogView = getLayoutInflater().inflate(
+                UiUtil.getInstallationLayoutResId(requireContext()), null);
+        final TextView customMessage = dialogView.requireViewById(R.id.custom_message);
+        customMessage.setVisibility(View.VISIBLE);
+        customMessage.setText(R.string.message_parse_failed);
+
+        return UiUtil.getAlertDialog(requireContext(), getString(R.string.title_cant_install_app),
+                dialogView, /* positiveBtnText= */ null, getString(R.string.button_close),
+                /* positiveBtnListener= */ null,
+                (dialog, which) -> mInstallActionListener.onNegativeResponse(
+                        mDialogData.getActivityResultCode(), mDialogData.getResultIntent()),
+                /* themeResId= */ 0);
     }
 
     @Override

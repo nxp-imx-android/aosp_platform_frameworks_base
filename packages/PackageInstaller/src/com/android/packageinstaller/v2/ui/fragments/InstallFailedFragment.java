@@ -94,9 +94,10 @@ public class InstallFailedFragment extends DialogFragment {
 
         Log.i(LOG_TAG, "Creating " + LOG_TAG + "\n" + mDialogData);
 
+        // There is no root view here. Ok to pass null view root
+        @SuppressWarnings("InflateParams")
         View dialogView = getLayoutInflater().inflate(
                 UiUtil.getInstallationLayoutResId(requireContext()), null);
-        dialogView.requireViewById(R.id.custom_message).setVisibility(View.VISIBLE);
         dialogView.requireViewById(R.id.app_snippet).setVisibility(View.VISIBLE);
         ((ImageView) dialogView.requireViewById(R.id.app_icon))
             .setImageDrawable(mDialogData.getAppIcon());
@@ -114,6 +115,7 @@ public class InstallFailedFragment extends DialogFragment {
         Log.i(LOG_TAG, "Installation status code: " + statusCode);
 
         final TextView customMessage = dialogView.requireViewById(R.id.custom_message);
+        customMessage.setVisibility(View.VISIBLE);
         int titleResId = R.string.title_install_failed_not_installed;
         int positiveButtonResId = Resources.ID_NULL;
         DialogInterface.OnClickListener positiveButtonListener = null;
