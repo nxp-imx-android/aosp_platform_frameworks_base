@@ -478,6 +478,7 @@ public final class DisplayInfo implements Parcelable {
                 && largestNominalAppHeight == other.largestNominalAppHeight
                 && logicalWidth == other.logicalWidth
                 && logicalHeight == other.logicalHeight
+                && isDisplayModeSizeEqual(other)
                 && Objects.equals(displayCutout, other.displayCutout)
                 && rotation == other.rotation
                 && hasArrSupport == other.hasArrSupport
@@ -784,11 +785,19 @@ public final class DisplayInfo implements Parcelable {
         return findMode(defaultModeId);
     }
 
-    private Display.Mode findMode(int id) {
+    private Display.Mode findModeOrNull(int id) {
         for (int i = 0; i < supportedModes.length; i++) {
             if (supportedModes[i].getModeId() == id) {
                 return supportedModes[i];
             }
+        }
+        return null;
+    }
+
+    private Display.Mode findMode(int id) {
+        var mode = findModeOrNull(id);
+        if (mode != null) {
+            return mode;
         }
         throw new IllegalStateException(
                 "Unable to locate mode id=" + id + ",supportedModes=" + Arrays.toString(
@@ -912,6 +921,37 @@ public final class DisplayInfo implements Parcelable {
      */
     public boolean hasAccess(int uid) {
         return Display.hasAccess(uid, flags, ownerUid, displayId);
+    }
+
+    /**
+     * Checks whether the physical mode display size changed.
+     * This is important for sending notifications to the rest of the system
+     * whenever physical display size changes. E.g. WindowManager and Settings
+     * rely on this information.
+     * ModeId change may also not involve display size changes, but rather only
+     * refresh rate may change. Refresh rate changes are tracked via other means,
+     * and physical display size change needs to be checked independently.
+     * These are the reasons for existence of this method.
+     */
+    private boolean isDisplayModeSizeEqual(DisplayInfo other) {
+        if (modeId == other.modeId) {
+            // If the mode ids are the same, the sizes are equal.
+            return true;
+        }
+        var currentMode = findModeOrNull(modeId);
+        var otherMode = other.findModeOrNull(other.modeId);
+        if (otherMode == currentMode) {
+            // If the modes are the same, the sizes are equal.
+            return true;
+        } else if (currentMode == null || otherMode == null) {
+            // Only one of the displays has a mode, we can't compare the sizes.
+            // Mark infos as different.
+            return false;
+        } else {
+            // Both displays have a mode, compare the sizes.
+            return otherMode.getPhysicalWidth() == currentMode.getPhysicalWidth()
+                    && otherMode.getPhysicalHeight() == currentMode.getPhysicalHeight();
+        }
     }
 
     private void getMetricsWithSize(DisplayMetrics outMetrics, CompatibilityInfo compatInfo,
