@@ -4467,11 +4467,16 @@ public class AudioService extends IAudioService.Stub
             if (streamTypeAlias == getBluetoothContextualVolumeStream()
                     && AudioSystem.DEVICE_OUT_ALL_A2DP_SET.contains(deviceType)
                     && (flags & AudioManager.FLAG_BLUETOOTH_ABS_VOLUME) == 0) {
+                // the AVRCP index is always in the range of STREAM_MUSIC
+                int avrcpIndex = newIndex / 10;
+                if (streamType != AudioSystem.STREAM_MUSIC) {
+                    avrcpIndex = rescaleIndex(avrcpIndex, streamType, AudioSystem.STREAM_MUSIC);
+                }
                 if (DEBUG_VOL) {
                     Log.d(TAG, "adjustStreamVolume: postSetAvrcpAbsoluteVolumeIndex index="
-                            + newIndex + "stream=" + streamType);
+                            + newIndex + "stream=" + streamType + "avrcpIndex=" + avrcpIndex);
                 }
-                mDeviceBroker.postSetAvrcpAbsoluteVolumeIndex(newIndex / 10);
+                mDeviceBroker.postSetAvrcpAbsoluteVolumeIndex(avrcpIndex);
                 volumeHandled = true;
             }
 
