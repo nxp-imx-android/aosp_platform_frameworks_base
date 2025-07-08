@@ -258,6 +258,17 @@
      This represents 16dp for the left margin + 40dp for the icon + 16dp for the right margin -->
     <dimen name="notification_2025_content_margin_start">72dp</dimen>
 
+    <!-- The margin on the start of the content view (accommodates the icon), 2025 redesign version
+     This represents 16dp for the left margin + 40dp for the icon + 16dp for the right margin, minus
+      5dp for padding the inner view needs to avoid truncating italic text -->
+    <dimen name="notification_2025_content_margin_start_summarization">67dp</dimen>
+
+    <!-- The margin value to use for text message views that are displaying a summarization -->
+    <dimen name="notification_text_message_start_padding_summarization">5dp</dimen>
+
+    <!-- The margin value to use for text message views that are not displaying a summarization -->
+    <dimen name="notification_text_message_start_padding">0dp</dimen>
+
     <!-- The margin on the start of the media actions, selected to ensure that action icons which
      are visually 12x12 in a 24x24 drawable will align correctly with the text.  This means that
      stock media action icons will align, but icons may be visually up to 20x20 and remain in-spec,

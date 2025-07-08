@@ -163,6 +163,8 @@ public interface MessagingMessage extends MessagingLinearLayout.MessagingChild {
 
     int getVisibility();
 
+    default void updateViewForSummarization(boolean summarizationShowing) {}
+
     /**
      * Finalize inflation of the MessagingMessages, which should be called on Main Thread.
      * @hide

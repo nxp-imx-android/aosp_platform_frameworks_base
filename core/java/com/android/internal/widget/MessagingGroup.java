@@ -528,12 +528,13 @@ public class MessagingGroup extends NotificationOptimizedLinearLayout implements
         }
     }
 
-    public void setMessages(List<MessagingMessage> group) {
+    public void setMessages(List<MessagingMessage> group, boolean showingSummarization) {
         // Let's now make sure all children are added and in the correct order
         int textMessageIndex = 0;
         MessagingImageMessage isolatedMessage = null;
         for (int messageIndex = 0; messageIndex < group.size(); messageIndex++) {
             MessagingMessage message = group.get(messageIndex);
+            message.updateViewForSummarization(showingSummarization);
             if (message.getGroup() != this) {
                 message.setMessagingGroup(this);
                 mAddedMessages.add(message);
