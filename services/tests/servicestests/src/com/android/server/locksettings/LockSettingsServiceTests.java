@@ -731,6 +731,18 @@ public class LockSettingsServiceTests extends BaseLockSettingsServiceTests {
         assertEquals(Duration.ZERO, response.getTimeoutAsDuration());
     }
 
+    @Test
+    @EnableFlags(com.android.server.flags.Flags.FLAG_KEYSTORE_IN_MEMORY_CLEANUP)
+    public void testLockUser_locksCeStorageAndKeystore() throws Exception {
+        final int userId = PRIMARY_USER_ID;
+        final LockscreenCredential password = newPassword("password");
+        setCredential(PRIMARY_USER_ID, password);
+        mLocalService.lockUser(userId);
+
+        // Verify that lockCeStorage is called on the correct user ID.
+        verify(mInjector.getStorageManager()).lockCeStorage(eq(userId));
+    }
+
     // Same as preceding test case, but uses a nonzero timeout.
     @Test
     @EnableFlags(android.security.Flags.FLAG_SOFTWARE_RATELIMITER)
