@@ -9929,6 +9929,9 @@
             </intent-filter>
         </service>
 
+        <service android:name="com.android.server.appwidget.ReportWidgetEventsJob"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
         <provider
             android:name="com.android.server.textclassifier.IconsContentProvider"
             android:authorities="com.android.textclassifier.icons"

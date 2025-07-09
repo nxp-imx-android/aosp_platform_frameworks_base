@@ -56,4 +56,9 @@ public abstract class AppWidgetManagerInternal {
      */
     public abstract void applyResourceOverlaysToWidgets(Set<String> packageNames, int userId,
             boolean updateFrameworkRes);
+
+    /**
+     * Trigger reporting of widget usage events to UsageStatsService.
+     */
+    public abstract void reportWidgetEventsToUsageStats();
 }
