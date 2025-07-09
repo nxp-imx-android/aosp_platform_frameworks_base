@@ -16,6 +16,7 @@
 
 package android.app.backup;
 
+import android.annotation.BytesLong;
 import android.annotation.FlaggedApi;
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -652,7 +653,8 @@ public abstract class BackupAgent extends ContextWrapper {
      *     will fallback to using {@link #onFullBackup(FullBackupDataOutput)} to measure the size.
      */
     @FlaggedApi(Flags.FLAG_ENABLE_CROSS_PLATFORM_TRANSFER)
-    public long onMeasureFullBackup(long quotaBytes, int transportFlags) throws IOException {
+    @BytesLong
+    public long onEstimateFullBackupBytes(long quotaBytes, int transportFlags) throws IOException {
         return -1;
     }
 
@@ -1419,7 +1421,7 @@ public abstract class BackupAgent extends ContextWrapper {
             try {
                 if (Flags.enableCrossPlatformTransfer()) {
                     estimatedBackupSize =
-                            BackupAgent.this.onMeasureFullBackup(quotaBytes, transportFlags);
+                            BackupAgent.this.onEstimateFullBackupBytes(quotaBytes, transportFlags);
                     if (estimatedBackupSize < 0) {
                         BackupAgent.this.onFullBackup(measureOutput);
                     }

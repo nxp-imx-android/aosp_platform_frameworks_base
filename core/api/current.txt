@@ -9282,8 +9282,8 @@ package android.app.backup {
     method public abstract void onBackup(android.os.ParcelFileDescriptor, android.app.backup.BackupDataOutput, android.os.ParcelFileDescriptor) throws java.io.IOException;
     method public void onCreate();
     method public void onDestroy();
+    method @FlaggedApi("com.android.server.backup.enable_cross_platform_transfer") public long onEstimateFullBackupBytes(long, int) throws java.io.IOException;
     method public void onFullBackup(android.app.backup.FullBackupDataOutput) throws java.io.IOException;
-    method @FlaggedApi("com.android.server.backup.enable_cross_platform_transfer") public long onMeasureFullBackup(long, int) throws java.io.IOException;
     method public void onQuotaExceeded(long, long);
     method public abstract void onRestore(android.app.backup.BackupDataInput, int, android.os.ParcelFileDescriptor) throws java.io.IOException;
     method public void onRestore(android.app.backup.BackupDataInput, long, android.os.ParcelFileDescriptor) throws java.io.IOException;
