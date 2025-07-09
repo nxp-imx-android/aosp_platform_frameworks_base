@@ -2058,6 +2058,16 @@ flag {
 }
 
 flag {
+    name: "gesture_between_hub_and_lockscreen_motion"
+    namespace: "systemui"
+    description: "Motion update when gestures into and out of glanceable hub from lockscreen."
+    bug: "404535174"
+    metadata {
+      purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
    name: "clear_shortcut_icon_tint"
    namespace: "systemui"
    description: "Clear any tint present on incoming lockscreen shortcuts icons"
