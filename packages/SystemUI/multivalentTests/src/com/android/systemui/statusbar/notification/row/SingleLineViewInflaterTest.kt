@@ -38,14 +38,14 @@ import com.android.systemui.statusbar.notification.row.ui.viewmodel.Conversation
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.FacePile
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleIcon
 import com.android.systemui.statusbar.notification.row.ui.viewmodel.SingleLineViewModel
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertIsNot
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
@@ -118,7 +118,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         assertEquals(LAST_MESSAGE, singleLineViewModel.contentText)
         assertNull(
             singleLineViewModel.conversationData?.conversationSenderName,
-            "Sender name should be null for one-on-one conversation"
+            "Sender name should be null for one-on-one conversation",
         )
         assertTrue {
             singleLineViewModel.conversationData
@@ -144,7 +144,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         assertEquals(LAST_MESSAGE, singleLineViewModel.contentText)
         assertNull(
             singleLineViewModel.conversationData,
-            "conversationData should be null for legacy messaging conversation"
+            "conversationData should be null for legacy messaging conversation",
         )
     }
 
@@ -165,7 +165,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         assertEquals(LAST_MESSAGE, singleLineViewModel.contentText)
         assertNull(
             singleLineViewModel.conversationData,
-            "conversationData should be null for legacy messaging conversation"
+            "conversationData should be null for legacy messaging conversation",
         )
     }
 
@@ -189,7 +189,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         assertEquals(LAST_MESSAGE, singleLineViewModel.contentText)
         assertNull(
             singleLineViewModel.conversationData?.conversationSenderName,
-            "Sender name should be null for one-on-one conversation"
+            "Sender name should be null for one-on-one conversation",
         )
         assertTrue {
             singleLineViewModel.conversationData
@@ -219,9 +219,9 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         assertEquals(
             context.resources.getString(
                 com.android.internal.R.string.conversation_single_line_name_display,
-                LAST_SENDER_NAME
+                LAST_SENDER_NAME,
             ),
-            singleLineViewModel.conversationData?.conversationSenderName
+            singleLineViewModel.conversationData?.conversationSenderName,
         )
         assertTrue {
             singleLineViewModel.conversationData
@@ -249,23 +249,19 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         assertEquals(
             context.resources.getString(
                 com.android.internal.R.string.conversation_single_line_name_display,
-                LAST_SENDER_NAME
+                LAST_SENDER_NAME,
             ),
-            singleLineViewModel.conversationData?.conversationSenderName
+            singleLineViewModel.conversationData?.conversationSenderName,
         )
 
         val backgroundColor =
             Notification.Builder.recoverBuilder(context, notification)
-                .getBackgroundColor(/* isHeader = */ false)
+                .getBackgroundColor(/* isHeader= */ false)
         assertTrue {
             singleLineViewModel.conversationData
                 ?.avatar
                 ?.equalsTo(
-                    FacePile(
-                        firstSenderIconDrawable,
-                        lastSenderIconDrawable,
-                        backgroundColor,
-                    )
+                    FacePile(firstSenderIconDrawable, lastSenderIconDrawable, backgroundColor)
                 ) == true
         }
     }
@@ -289,7 +285,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         assertEquals(LAST_MESSAGE, singleLineViewModel.contentText)
         assertNull(
             singleLineViewModel.conversationData?.conversationSenderName,
-            "Sender name should be null for one-on-one conversation"
+            "Sender name should be null for one-on-one conversation",
         )
         assertTrue {
             singleLineViewModel.conversationData
@@ -389,12 +385,12 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
         if (expectMessagingStyle) {
             assertIs<Notification.MessagingStyle>(
                 builder.style,
-                "Notification style should be MessagingStyle"
+                "Notification style should be MessagingStyle",
             )
         } else {
             assertIsNot<Notification.MessagingStyle>(
                 builder.style,
-                message = "Notification style should not be MessagingStyle"
+                message = "Notification style should not be MessagingStyle",
             )
         }
 
@@ -408,7 +404,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
             builder,
             context,
             false,
-            "summary"
+            "summary",
         )
     }
 
@@ -424,7 +420,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
             Bitmap.createBitmap(
                 largeIconDimension.toInt(),
                 largeIconDimension.toInt(),
-                Bitmap.Config.ARGB_8888
+                Bitmap.Config.ARGB_8888,
             )
         val c = Canvas(b)
         val paint = Paint()
@@ -432,7 +428,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
             largeIconDimension / 2,
             largeIconDimension / 2,
             largeIconDimension.coerceAtMost(largeIconDimension) / 2,
-            paint
+            paint,
         )
         d.setBounds(0, 0, largeIconDimension.toInt(), largeIconDimension.toInt())
         paint.setXfermode(PorterDuffXfermode(PorterDuff.Mode.SRC_IN))
@@ -480,8 +476,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
                 }
                 res
             } else false
-        }
-            ?: kotlin.run { false }
+        } ?: kotlin.run { false }
 
     private fun Bitmap.toPixels() =
         IntArray(width * height).apply { getPixels(this, 0, width, 0, 0, width, height) }
