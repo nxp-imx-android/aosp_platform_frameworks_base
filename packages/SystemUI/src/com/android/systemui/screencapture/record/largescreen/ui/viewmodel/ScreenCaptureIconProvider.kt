@@ -31,7 +31,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 
 data class ScreenCaptureIcons(
-    val screenshot: Icon,
+    val screenshotToolbar: Icon,
+    val screenshotButton: Icon,
     val screenRecord: Icon,
     val fullscreen: Icon,
     val region: Icon,
@@ -55,7 +56,8 @@ constructor(
         flow {
                 emit(
                     ScreenCaptureIcons(
-                        screenshot = loadIcon(R.drawable.ic_screen_capture_camera),
+                        screenshotToolbar = loadIcon(R.drawable.ic_screen_capture_camera),
+                        screenshotButton = loadIcon(R.drawable.ic_screen_capture_camera),
                         screenRecord = loadIcon(R.drawable.ic_screenrecord),
                         fullscreen = loadIcon(R.drawable.ic_screen_capture_fullscreen),
                         region = loadIcon(R.drawable.ic_screen_capture_region),

@@ -19,12 +19,14 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
 import com.android.systemui.kosmos.Kosmos.Fixture
+import com.android.systemui.kosmos.backgroundScope
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.screenCaptureRecordLargeScreenFeaturesInteractor
 import com.android.systemui.screencapture.record.largescreen.domain.interactor.screenshotInteractor
 
 val Kosmos.preCaptureViewModel by Fixture {
     PreCaptureViewModel(
         applicationContext = applicationContext,
+        backgroundScope = backgroundScope,
         iconProvider = screenCaptureIconProviderKosmos,
         screenshotInteractor = screenshotInteractor,
         featuresInteractor = screenCaptureRecordLargeScreenFeaturesInteractor,
