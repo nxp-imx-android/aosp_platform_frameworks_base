@@ -720,7 +720,7 @@ public final class DisplayManagerService extends SystemService {
         mExtraDisplayEventLogging = !TextUtils.isEmpty(mExtraDisplayLoggingPackageName);
         mExternalDisplayStatsService = new ExternalDisplayStatsService(mContext, mHandler,
                 () -> !shouldMirrorBuiltInDisplay());
-        mDisplayNotificationManager = new DisplayNotificationManager(mFlags, mContext,
+        mDisplayNotificationManager = new DisplayNotificationManager(mContext,
                 mExternalDisplayStatsService);
         mExternalDisplayPolicy = new ExternalDisplayPolicy(new ExternalDisplayPolicyInjector());
         mPluginManager = new PluginManager(mContext, mFlags);

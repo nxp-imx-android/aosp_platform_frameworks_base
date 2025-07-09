@@ -55,10 +55,6 @@ public class DisplayManagerFlags {
             Flags.FLAG_DISPLAY_TOPOLOGY_API,
             Flags::displayTopologyApi);
 
-    private final FlagState mConnectedDisplayErrorHandlingFlagState = new FlagState(
-            Flags.FLAG_ENABLE_CONNECTED_DISPLAY_ERROR_HANDLING,
-            Flags::enableConnectedDisplayErrorHandling);
-
     private final FlagState mPowerThrottlingClamperFlagState = new FlagState(
             Flags.FLAG_ENABLE_POWER_THROTTLING_CLAMPER,
             Flags::enablePowerThrottlingClamper);
@@ -257,11 +253,6 @@ public class DisplayManagerFlags {
     /** Returns whether displayoffload is enabled on not */
     public boolean isDisplayOffloadEnabled() {
         return mDisplayOffloadFlagState.isEnabled();
-    }
-
-    /** Returns whether error notifications for connected displays are enabled on not */
-    public boolean isConnectedDisplayErrorHandlingEnabled() {
-        return mConnectedDisplayErrorHandlingFlagState.isEnabled();
     }
 
     /** Returns whether brightness range is allowed to extend below traditional range. */
@@ -476,7 +467,6 @@ public class DisplayManagerFlags {
     public void dump(PrintWriter pw) {
         pw.println("DisplayManagerFlags:");
         pw.println("--------------------");
-        pw.println(" " + mConnectedDisplayErrorHandlingFlagState);
         pw.println(" " + mDisplayOffloadFlagState);
         pw.println(" " + mDisplayTopology);
         pw.println(" " + mDisplayTopologyApi);
