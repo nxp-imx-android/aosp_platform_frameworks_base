@@ -1775,9 +1775,7 @@ class WindowOrganizerController extends IWindowOrganizerController.Stub
                     effects |= TRANSACT_EFFECTS_LIFECYCLE;
                 }
 
-                final Bundle bundle = Flags.fixSetAdjacentTaskFragmentsWithParams()
-                        ? operation.getBundle()
-                        : hop.getLaunchOptions();
+                final Bundle bundle = operation.getBundle();
                 final WindowContainerTransaction.TaskFragmentAdjacentParams adjacentParams =
                         bundle != null
                                 ? new WindowContainerTransaction.TaskFragmentAdjacentParams(bundle)

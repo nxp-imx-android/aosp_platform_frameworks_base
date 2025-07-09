@@ -161,17 +161,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "fix_set_adjacent_task_fragments_with_params"
-    description: "Fix the params set through setAdjacentTaskFragments"
-    bug: "418159069"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "update_task_min_dimensions_with_root_activity"
     description: "Update minWidth/Height when the root activity is changed."
     bug: "416987720"
