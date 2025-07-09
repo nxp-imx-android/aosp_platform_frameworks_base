@@ -1583,6 +1583,13 @@ flag {
 }
 
 flag {
+    name: "desktop_av_controls_popup"
+    namespace: "systemui"
+    description: "AV Popup on Large Screen"
+    bug: "394074417"
+}
+
+flag {
     name: "desktop_effects_qs_tile"
     namespace: "systemui"
     description: "Enables the QS tile for desktop effects"
