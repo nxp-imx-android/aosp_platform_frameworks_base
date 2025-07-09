@@ -16,11 +16,11 @@
 
 package com.android.systemui.screencapture.record.largescreen.domain.interactor
 
+import com.android.systemui.Flags
 import com.android.systemui.dagger.SysUISingleton
 import javax.inject.Inject
 
 @SysUISingleton
 class ScreenCaptureRecordLargeScreenFeaturesInteractor @Inject constructor() {
-    // TODO(b/427497534) Guard behind a new feature flag specific for app window region.
-    val appWindowRegionSupported = true
+    val appWindowRegionSupported = Flags.desktopScreenCaptureAppWindow()
 }
