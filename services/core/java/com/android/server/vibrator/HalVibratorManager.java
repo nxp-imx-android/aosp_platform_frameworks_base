@@ -32,8 +32,8 @@ interface HalVibratorManager {
         void onVibrationSessionComplete(long sessionId);
     }
 
-    /** Initializes the HAL and set the callback instance for future interactions. */
-    void init(@NonNull Callbacks callbacks);
+    /** Initializes the HAL and set callback instances for future interactions. */
+    void init(@NonNull Callbacks callbacks, @NonNull HalVibrator.Callbacks vibratorCallbacks);
 
     /** Notifies the boot phase system ready. This might load some HAL static data. */
     void onSystemReady();

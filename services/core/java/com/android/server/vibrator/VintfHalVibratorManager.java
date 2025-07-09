@@ -107,8 +107,8 @@ class VintfHalVibratorManager {
         }
 
         @Override
-        public void init(@NonNull Callbacks callbacks) {
-            mCallbacks = callbacks;
+        public void init(@NonNull Callbacks cb, @NonNull HalVibrator.Callbacks vibratorCb) {
+            mCallbacks = cb;
 
             // Load vibrator hardware info. The vibrator ids and manager capabilities are loaded
             // once and assumed unchanged for the lifecycle of this service. Each vibrator can still
@@ -122,7 +122,9 @@ class VintfHalVibratorManager {
             mCapabilities = capabilities.orElse(0).longValue();
             mVibratorIds = vibratorIds.orElseGet(() -> new int[0]);
             for (int id : mVibratorIds) {
-                mVibrators.put(id, mVibratorFactory.apply(id));
+                HalVibrator vibrator = mVibratorFactory.apply(id);
+                vibrator.init(vibratorCb);
+                mVibrators.put(id, vibrator);
             }
 
             // Reset the hardware to a default state.
@@ -135,6 +137,9 @@ class VintfHalVibratorManager {
 
         @Override
         public void onSystemReady() {
+            for (int i = 0; i < mVibrators.size(); i++) {
+                mVibrators.valueAt(i).onSystemReady();
+            }
         }
 
         @Override
@@ -404,11 +409,17 @@ class VintfHalVibratorManager {
         }
 
         @Override
-        public void init(@NonNull Callbacks callbacks) {
+        public void init(@NonNull Callbacks cb, @NonNull HalVibrator.Callbacks vibratorCb) {
+            for (int i = 0; i < mVibrators.size(); i++) {
+                mVibrators.valueAt(i).init(vibratorCb);
+            }
         }
 
         @Override
         public void onSystemReady() {
+            for (int i = 0; i < mVibrators.size(); i++) {
+                mVibrators.valueAt(i).onSystemReady();
+            }
         }
 
         @Override

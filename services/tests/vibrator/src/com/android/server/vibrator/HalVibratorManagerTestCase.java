@@ -21,6 +21,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 
+import android.hardware.vibrator.IVibrator;
 import android.hardware.vibrator.IVibratorManager;
 import android.os.test.TestLooper;
 import android.os.vibrator.Flags;
@@ -39,6 +40,7 @@ public abstract class HalVibratorManagerTestCase {
     @Rule public final SetFlagsRule mSetFlagsRule = new SetFlagsRule();
 
     @Mock HalVibratorManager.Callbacks mHalCallbackMock;
+    @Mock HalVibrator.Callbacks mHalVibratorCallbackMock;
 
     final TestLooper mTestLooper = new TestLooper();
     final HalVibratorManagerHelper mHelper = new HalVibratorManagerHelper(mTestLooper.getLooper());
@@ -47,7 +49,7 @@ public abstract class HalVibratorManagerTestCase {
 
     HalVibratorManager newInitializedVibratorManager() {
         HalVibratorManager manager = newVibratorManager();
-        manager.init(mHalCallbackMock);
+        manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
         manager.onSystemReady();
         return manager;
     }
@@ -57,7 +59,7 @@ public abstract class HalVibratorManagerTestCase {
         mHelper.setCapabilities(IVibratorManager.CAP_SYNC);
         mHelper.setVibratorIds(new int[] {1, 2});
         HalVibratorManager manager = newVibratorManager();
-        manager.init(mHalCallbackMock);
+        manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
 
         assertThat(mHelper.getConnectCount()).isEqualTo(1);
         assertThat(manager.getCapabilities()).isEqualTo(IVibratorManager.CAP_SYNC);
@@ -70,7 +72,7 @@ public abstract class HalVibratorManagerTestCase {
         mHelper.setCapabilities(IVibratorManager.CAP_SYNC, IVibratorManager.CAP_START_SESSIONS);
         mHelper.setVibratorIds(new int[] {1, 2});
         HalVibratorManager manager = newVibratorManager();
-        manager.init(mHalCallbackMock);
+        manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
 
         assertThat(mHelper.getConnectCount()).isEqualTo(1);
         assertThat(mHelper.getCancelSyncedCount()).isEqualTo(1);
@@ -81,8 +83,41 @@ public abstract class HalVibratorManagerTestCase {
     public void init_withNullVibratorIds_returnsEmptyArray() {
         mHelper.setVibratorIds(null);
         HalVibratorManager manager = newVibratorManager();
-        manager.init(mHalCallbackMock);
+        manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
         assertThat(manager.getVibratorIds()).isEmpty();
+    }
+
+    @Test
+    public void init_initializesAllVibrators() {
+        mHelper.setVibratorIds(new int[] {1, 2});
+        HalVibratorManager manager = newVibratorManager();
+        manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
+
+        assertThat(mHelper.getVibratorHelper(1).isInitialized()).isTrue();
+        assertThat(mHelper.getVibratorHelper(2).isInitialized()).isTrue();
+    }
+
+    @Test
+    public void onSystemReady_triggersAllVibratorsOnSystemReady() {
+        mHelper.setVibratorIds(new int[] {1, 2});
+        mHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        mHelper.getVibratorHelper(2).setLoadInfoToFail();
+        HalVibratorManager manager = newVibratorManager();
+        manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
+
+        assertThat(manager.getVibrator(1).getInfo().getCapabilities())
+                .isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
+        assertThat(manager.getVibrator(2).getInfo().getCapabilities())
+                .isEqualTo(0);
+
+        mHelper.getVibratorHelper(2).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        manager.onSystemReady();
+
+        // Capabilities from vibrator 2 reloaded after failure.
+        assertThat(manager.getVibrator(1).getInfo().getCapabilities())
+                .isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
+        assertThat(manager.getVibrator(2).getInfo().getCapabilities())
+                .isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
     }
 
     @Test
