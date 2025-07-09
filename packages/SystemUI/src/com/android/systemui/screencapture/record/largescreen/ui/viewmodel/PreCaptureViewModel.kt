@@ -116,7 +116,8 @@ constructor(
                 onClick = { updateCaptureType(ScreenCaptureType.SCREEN_RECORD) },
             ),
             RadioButtonGroupItemViewModel(
-                icon = icons?.screenshotToolbar,
+                selectedIcon = icons?.screenshotToolbar,
+                unselectedIcon = icons?.screenshotToolbarUnselected,
                 label =
                     applicationContext.getString(R.string.screen_capture_toolbar_capture_button),
                 isSelected = selectedType == ScreenCaptureType.SCREENSHOT,

@@ -18,10 +18,34 @@ package com.android.systemui.screencapture.record.largescreen.ui.viewmodel
 
 import com.android.systemui.common.shared.model.Icon
 
-/** Models a single button within the RadioButtonGroup. */
-data class RadioButtonGroupItemViewModel(
+data class RadioButtonGroupItemViewModel
+constructor(
     val label: String? = null,
-    val icon: Icon? = null,
+    val selectedIcon: Icon? = null,
+    val unselectedIcon: Icon? = null,
     val isSelected: Boolean,
     val onClick: () -> Unit,
-)
+) {
+    init {
+        require((selectedIcon != null) == (unselectedIcon != null)) {
+            "selectedIcon and unselectedIcon must both be provided or both be null."
+        }
+    }
+
+    /** Secondary constructor for cases where the icon is the same whether selected or not. */
+    constructor(
+        label: String? = null,
+        icon: Icon? = null,
+        isSelected: Boolean,
+        onClick: () -> Unit,
+    ) : this(
+        label = label,
+        selectedIcon = icon,
+        unselectedIcon = icon,
+        isSelected = isSelected,
+        onClick = onClick,
+    )
+
+    val icon: Icon?
+        get() = if (isSelected) selectedIcon else unselectedIcon
+}

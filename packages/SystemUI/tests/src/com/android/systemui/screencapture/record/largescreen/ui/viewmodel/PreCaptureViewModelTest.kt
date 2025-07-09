@@ -96,6 +96,22 @@ class PreCaptureViewModelTest : SysuiTestCase() {
         }
 
     @Test
+    fun updateCaptureType_usesCorrectIconWhenSelected() =
+        testScope.runTest {
+            val (screenRecordButton, screenshotButton) = viewModel.captureTypeButtonViewModels
+            assertThat(screenRecordButton.icon).isEqualTo(viewModel.icons?.screenRecord)
+            // Screenshot is selected by default.
+            assertThat(screenshotButton.icon).isEqualTo(viewModel.icons?.screenshotToolbar)
+
+            viewModel.updateCaptureType(ScreenCaptureType.SCREEN_RECORD)
+
+            val (screenRecordButton2, screenshotButton2) = viewModel.captureTypeButtonViewModels
+            assertThat(screenRecordButton2.icon).isEqualTo(viewModel.icons?.screenRecord)
+            assertThat(screenshotButton2.icon)
+                .isEqualTo(viewModel.icons?.screenshotToolbarUnselected)
+        }
+
+    @Test
     @EnableFlags(Flags.FLAG_DESKTOP_SCREEN_CAPTURE_APP_WINDOW)
     fun updateCaptureRegion_updatesSelectedCaptureRegionButtonViewModel() =
         testScope.runTest {
