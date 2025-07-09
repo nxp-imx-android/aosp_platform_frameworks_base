@@ -62,6 +62,7 @@ import android.os.VibrationAttributes;
 import android.os.VibrationEffect;
 import android.os.VibratorInfo;
 import android.os.vibrator.Flags;
+import android.os.vibrator.IVibrationSession;
 import android.os.vibrator.IVibrationSessionCallback;
 import android.os.vibrator.PrebakedSegment;
 import android.os.vibrator.PrimitiveSegment;
@@ -101,6 +102,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -2687,9 +2689,10 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         public static final long VIBRATION_END_TIMEOUT_MS = 500; // Clean up shouldn't be too long.
 
         private final class CommonOptions {
-            public boolean force = false;
+            public boolean shouldForce = false;
+            public boolean isInBackground = false;
+            public boolean isInSession = false;
             public String description = "Shell command";
-            public boolean background = false;
             @VibrationAttributes.Usage public int usage;
 
             CommonOptions() {
@@ -2710,11 +2713,15 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                     switch (nextArg) {
                         case "-f":
                             getNextArgRequired(); // consume "-f"
-                            force = true;
+                            shouldForce = true;
+                            break;
+                        case "-S":
+                            getNextArgRequired(); // consume "-S"
+                            isInSession = true;
                             break;
                         case "-B":
                             getNextArgRequired(); // consume "-B"
-                            background = true;
+                            isInBackground = true;
                             break;
                         case "-d":
                             getNextArgRequired(); // consume "-d"
@@ -2796,19 +2803,93 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
          */
         private void runVibrate(CommonOptions commonOptions, CombinedVibration combined) {
             VibrationAttributes attrs = createVibrationAttributes(commonOptions);
+            if (commonOptions.isInSession && commonOptions.isInBackground) {
+                getOutPrintWriter().println(
+                        "Session vibrations cannot run in background, running in foreground...");
+            }
             // If running in the background, bind to death of the server binder rather than the
             // client, and the cancel command likewise uses the server binder reference to
             // only cancel background vibrations.
-            IBinder deathBinder = commonOptions.background ? VibratorManagerService.this
+            IBinder deathBinder = !commonOptions.isInSession && commonOptions.isInBackground
+                    ? VibratorManagerService.this
                     : mShellCallbacksToken;
             int uid = Binder.getCallingUid();
             // Resolve the package name for the client based on the process UID, to cover cases like
             // rooted shell clients using ROOT_UID.
             String resolvedPackageName = AppOpsManager.resolvePackageName(uid, SHELL_PACKAGE_NAME);
-            HalVibration vib = vibrateWithPermissionCheck(uid, Context.DEVICE_ID_DEFAULT,
-                    resolvedPackageName, combined, attrs, commonOptions.description, deathBinder);
-            maybeWaitOnVibration(vib, commonOptions);
+            if (commonOptions.isInSession) {
+                ShellVibrationSessionCallback cb = new ShellVibrationSessionCallback(mHandler,
+                        getOutPrintWriter(), deathBinder, combined, commonOptions.description);
+                VendorVibrationSession session = startVendorVibrationSessionInternal(uid,
+                        Context.DEVICE_ID_DEFAULT, resolvedPackageName,
+                        mVibratorManager.getVibratorIds(), attrs, commonOptions.description, cb);
+                waitOnSession(cb);
+            } else {
+                HalVibration vib = vibrateWithPermissionCheck(uid, Context.DEVICE_ID_DEFAULT,
+                        resolvedPackageName, combined, attrs, commonOptions.description,
+                        deathBinder);
+                maybeWaitOnVibration(vib, commonOptions);
+            }
         }
+
+        /** Vibration session callback implementation for shell vibrations in session. */
+        private static class ShellVibrationSessionCallback extends IVibrationSessionCallback.Stub {
+            private final Handler mHandler;
+            private final PrintWriter mPrinter;
+            private final IBinder mDeathBinder;
+            private final CombinedVibration mVibration;
+            private final String mReason;
+
+            /** A {@link CountDownLatch} to enable waiting for completion. */
+            private final CountDownLatch mCompletionLatch = new CountDownLatch(1);
+
+            ShellVibrationSessionCallback(Handler handler, PrintWriter printer, IBinder deathBinder,
+                    CombinedVibration vibration, String reason) {
+                mHandler = handler;
+                mPrinter = printer;
+                mDeathBinder = deathBinder;
+                mVibration = vibration;
+                mReason = reason;
+            }
+
+            @Override
+            public IBinder asBinder() {
+                return mDeathBinder;
+            }
+
+            @Override
+            public void onStarted(IVibrationSession session) throws RemoteException {
+                mPrinter.println("Session started, vibrating...");
+                session.vibrate(mVibration, mReason);
+                // Wait for vibration to be dispatched by VibrationThread before ending session.
+                mHandler.postDelayed(() -> {
+                    try {
+                        mPrinter.println("Finishing session...");
+                        session.finishSession();
+                    } catch (RemoteException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, 500);
+            }
+
+            @Override
+            public void onFinishing() {
+                mPrinter.println("Session finishing...");
+            }
+
+            @Override
+            public void onFinished(int status) {
+                mPrinter.println("Session finished with status "
+                        + android.os.vibrator.VendorVibrationSession.sessionStatusToString(status));
+                mCompletionLatch.countDown();
+            }
+
+            /** Waits indefinitely until service ends this session. */
+            public void waitForEnd() throws InterruptedException {
+                mCompletionLatch.await();
+            }
+        }
+
 
         private int runMono() {
             runVibrate(new CommonOptions(), CombinedVibration.createParallel(nextEffect()));
@@ -2859,9 +2940,9 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             CommonOptions commonOptions = new CommonOptions(/* defaultUsage= */ USAGE_UNKNOWN);
             int constant = parseInt(getNextArgRequired(), "Expected haptic feedback constant id");
 
-            IBinder deathBinder = commonOptions.background ? VibratorManagerService.this
+            IBinder deathBinder = commonOptions.isInBackground ? VibratorManagerService.this
                     : mShellCallbacksToken;
-            int flags = commonOptions.force
+            int flags = commonOptions.shouldForce
                     ? HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING : 0;
             HalVibration vib = performHapticFeedbackInternal(Binder.getCallingUid(),
                     Context.DEVICE_ID_DEFAULT, SHELL_PACKAGE_NAME, constant, commonOptions.usage,
@@ -3177,7 +3258,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
 
         private VibrationAttributes createVibrationAttributes(CommonOptions commonOptions) {
             // This will bypass user settings, Do Not Disturb and other interruption policies.
-            final int flags = commonOptions.force ? ATTRIBUTES_ALL_BYPASS_FLAGS : 0;
+            final int flags = commonOptions.shouldForce ? ATTRIBUTES_ALL_BYPASS_FLAGS : 0;
             return new VibrationAttributes.Builder()
                     .setFlags(flags)
                     .setUsage(commonOptions.usage)
@@ -3203,7 +3284,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         }
 
         private void maybeWaitOnVibration(HalVibration vib, CommonOptions commonOptions) {
-            if (vib != null && !commonOptions.background) {
+            if (vib != null && !commonOptions.isInBackground) {
                 try {
                     // Waits for the client vibration to finish, but the VibrationThread may still
                     // do cleanup after this.
@@ -3213,6 +3294,13 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                             mVibrationSettings.getRampDownDuration() + VIBRATION_END_TIMEOUT_MS);
                 } catch (InterruptedException e) {
                 }
+            }
+        }
+
+        private void waitOnSession(ShellVibrationSessionCallback callback) {
+            try {
+                callback.waitForEnd();
+            } catch (InterruptedException e) {
             }
         }
 
@@ -3313,6 +3401,9 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
                 pw.println("  -B");
                 pw.println("    Run in the background; without this option the shell cmd will");
                 pw.println("    block until the vibration has completed.");
+                pw.println("  -S");
+                pw.println("    Run vibration in a vendor session. Only vibration commands will");
+                pw.println("    apply this option. The -B option will be ignored.");
                 pw.println("  -u <usage>");
                 pw.println("    Specify the usage for the haptic feedback or vibration.");
                 pw.println("  -d <description>");
