@@ -194,7 +194,8 @@ public final class DocumentsContract {
     public static final String EXTRA_EXCLUDE_SELF = "android.provider.extra.EXCLUDE_SELF";
 
     /**
-     * Set this in a DocumentsUI intent to add users ids to be excluded from the roots list.
+     * Set this in a DocumentsUI intent to add users that should be excluded from the roots list.
+     * This is expected to be an {@link ArrayList} of {@link UserHandle}s.
      *
      * This will only be supported if there is at least one user to be shown in DocumentsUI picker.
      *
