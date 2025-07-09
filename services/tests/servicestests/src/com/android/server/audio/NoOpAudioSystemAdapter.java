@@ -24,6 +24,7 @@ import android.media.audiopolicy.AudioProductStrategy;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,6 +36,7 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
     private boolean mIsMicMuted = false;
     private boolean mMuteMicrophoneFails = false;
     private boolean mIsStreamActive = false;
+    private List<AudioProductStrategy> mAudioProductStrategies = Collections.emptyList();
 
     public void configureIsMicrophoneMuted(boolean muted) {
         mIsMicMuted = muted;
@@ -46,6 +48,15 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
 
     public void configureMuteMicrophoneToFail(boolean fail) {
         mMuteMicrophoneFails = fail;
+    }
+
+    /**
+     * Configure the audio product strategies.
+     *
+     * @param strategies that will be returned by getAudioProductStrategies()
+     */
+    public void configureAudioProductStrategies(List<AudioProductStrategy> strategies) {
+        mAudioProductStrategies = strategies;
     }
 
     //-----------------------------------------------------------------
@@ -187,11 +198,6 @@ public class NoOpAudioSystemAdapter extends AudioSystemAdapter {
 
     @Override
     public List<AudioProductStrategy> getAudioProductStrategies(boolean filterInternal) {
-        return new ArrayList<>();
-    }
-
-    @Override
-    public int getVolumeGroupIdFromStreamType(int stream) {
-        return 0;
+        return mAudioProductStrategies;
     }
 }

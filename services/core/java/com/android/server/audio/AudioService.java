@@ -596,7 +596,8 @@ public class AudioService extends IAudioService.Stub
         if (groupId != AudioVolumeGroup.DEFAULT_VOLUME_GROUP) {
             return groupId;
         }
-        return mAudioSystem.getVolumeGroupIdFromStreamType(stream);
+        return AudioProductStrategy.getVolumeGroupIdForStreamType(
+                getAudioProductStrategies(/* filterInternal= */ true), stream);
     }
 
     /**
@@ -1500,7 +1501,8 @@ public class AudioService extends IAudioService.Stub
                 int minVolume = -1;
 
                 if (volumeGroupManagementUpdate()) {
-                    int groupId = mAudioSystem.getVolumeGroupIdFromStreamType(streamType);
+                    int groupId = AudioProductStrategy.getVolumeGroupIdForStreamType(
+                            getAudioProductStrategies(/* filterInternal= */ true), streamType);
                     if (groupId != AudioVolumeGroup.DEFAULT_VOLUME_GROUP) {
                         maxVolume = AudioSystem.getMaxVolumeIndexForGroup(groupId);
                         minVolume = AudioSystem.getMinVolumeIndexForGroup(groupId);
@@ -1508,7 +1510,8 @@ public class AudioService extends IAudioService.Stub
                 } else {
                     AudioAttributes attr =
                             AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(
-                                    streamType);
+                                    mAudioSystem.getAudioProductStrategies(
+                                            /* filterInternal*/ true), streamType);
                     maxVolume = AudioSystem.getMaxVolumeIndexForAttributes(attr);
                     minVolume = AudioSystem.getMinVolumeIndexForAttributes(attr);
                 }
@@ -8686,10 +8689,12 @@ public class AudioService extends IAudioService.Stub
      */
     @NonNull
     private Set<AudioDeviceAttributes> getDeviceSetForStreamDirect(int stream) {
-        return AudioSystem.generateAudioDeviceTypesSet(
-                getDevicesForAttributesInt(
-                        AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(
-                                stream), true /* forVolume */));
+        AudioAttributes attributes =
+                AudioProductStrategy.getAudioAttributesForStrategyWithLegacyStreamType(
+                        mAudioSystem.getAudioProductStrategies(/* filterInternal*/ true),
+                        stream);
+        return AudioSystem.generateAudioDeviceTypesSet(getDevicesForAttributesInt(attributes,
+                /* forVolume= */ true));
     }
 
     /**

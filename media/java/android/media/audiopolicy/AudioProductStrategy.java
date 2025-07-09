@@ -257,6 +257,29 @@ public final class AudioProductStrategy implements Parcelable {
         return builder.build();
     }
 
+
+    /**
+     * Gets audio attributes for legacy stream type
+     * @param strategies strategies to search over
+     * @param streamType to match against AudioProductStrategy
+     * @return the AudioAttributes for the first strategy found with the associated stream type
+     *          If no match is found, returns AudioAttributes with unknown content_type and usage
+     *
+     * @hide
+     */
+    @NonNull
+    public static AudioAttributes getAudioAttributesForStrategyWithLegacyStreamType(
+            List<AudioProductStrategy> strategies, int streamType) {
+        Objects.requireNonNull(strategies, "Product strategies must not be null");
+        for (var strategy : strategies) {
+            var group = strategy.getAudioAttributeGroupForLegacyStreamType(streamType);
+            if (group != null) {
+                return group.getAudioAttributes();
+            }
+        }
+        return DEFAULT_ATTRIBUTES;
+    }
+
     /**
      * @param audioAttributes to identify {@link AudioProductStrategy} with
      * @return legacy stream type associated with matched {@link AudioProductStrategy}. If no
@@ -427,6 +450,29 @@ public final class AudioProductStrategy implements Parcelable {
 
     private static native int native_get_legacy_stream_for_audio_attributes(
             AudioAttributes attributes);
+
+    /**
+     * Return a volume group id for legacy stream type
+     *
+     * @param strategies list of audio product strategies which should be searched
+     * @param stream legacy stream type to query
+     * @return volume group id if the list of audio product strategies contains a matching legacy
+     * stream, {*code DEFAULT_VOLUME_GROUP} if the legacy stream is not found in the product
+     * strategies
+     *
+     * @hide
+     */
+    public static int getVolumeGroupIdForStreamType(
+            List<AudioProductStrategy> strategies, int stream) {
+        Objects.requireNonNull(strategies, "Product strategies must not be null");
+        for (AudioProductStrategy strategy : strategies) {
+            int group = strategy.getVolumeGroupIdForLegacyStreamType(stream);
+            if (group != DEFAULT_VOLUME_GROUP) {
+                return group;
+            }
+        }
+        return DEFAULT_VOLUME_GROUP;
+    }
 
     @Override
     public boolean equals(@Nullable Object o) {
