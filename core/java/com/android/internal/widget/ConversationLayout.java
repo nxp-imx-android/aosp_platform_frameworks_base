@@ -171,6 +171,8 @@ public class ConversationLayout extends FrameLayout
     private boolean mPrecomputedTextEnabled = false;
     @Nullable
     private ConversationHeaderData mConversationHeaderData;
+    private int mSpacingForExpander;
+    private int mSpacingForImage;
 
     public ConversationLayout(@NonNull Context context) {
         super(context);
@@ -312,6 +314,23 @@ public class ConversationLayout extends FrameLayout
                 R.string.conversation_title_fallback_one_to_one);
         mFallbackGroupChatName = getResources().getString(
                 R.string.conversation_title_fallback_group_chat);
+
+        // Calculate the amount of space necessary for the expander (adjusted with the font size).
+        int iconMarginEnd = getResources().getDimensionPixelSize(
+                R.dimen.notification_2025_right_icon_margin_end);
+        int extraSpaceForExpander = getResources().getDimensionPixelSize(
+                R.dimen.notification_2025_extra_space_for_expander);
+        mSpacingForExpander = iconMarginEnd + extraSpaceForExpander;
+
+        // Unlike large icons which can be wider than tall, isolated image messages can only
+        // be square, so we can use the fixed width directly to calculate the amount of space
+        // necessary for the image.
+        int imageWidth = getResources().getDimensionPixelSize(
+                R.dimen.notification_right_icon_size);
+        int iconMarginStart = getResources().getDimensionPixelSize(
+                R.dimen.notification_2025_right_icon_content_margin);
+        mSpacingForImage = iconMarginStart + imageWidth;
+
         mAppName = findViewById(R.id.app_name_text);
         mAppNameDivider = findViewById(R.id.app_name_divider);
         mAppNameGone = mAppName.getVisibility() == GONE;
@@ -766,11 +785,8 @@ public class ConversationLayout extends FrameLayout
                 mRightIconView.setImageDrawable(null);
                 mRightIconView.setVisibility(GONE);
             }
-        } else {
-            // Only alter the spacing if we're not showing the large icon; otherwise it's already
-            // been adjusted in Notification.java and we shouldn't override it.
-            adjustSpacingForImage();
         }
+        adjustSpacingForImage();
     }
 
     /**
@@ -779,11 +795,10 @@ public class ConversationLayout extends FrameLayout
      */
     private void adjustSpacingForImage() {
         if (notificationsRedesignTemplates()) {
-            int spacingForExpander = getSpacingForExpander();
-            updateMarginEnd(mImageMessageContainer, spacingForExpander);
+            updateMarginEnd(mImageMessageContainer, mSpacingForExpander);
 
             int spacingForImage = getSpacingForImage();
-            int textMargin = spacingForImage + spacingForExpander;
+            int textMargin = spacingForImage + mSpacingForExpander;
             updateMarginEnd(mTopLine, textMargin);
             // Only apply spacing to second line if there's an image - otherwise the text should
             // flow under the expander.
@@ -794,29 +809,11 @@ public class ConversationLayout extends FrameLayout
     }
 
     /**
-     * Calculate the amount of space necessary for the expander (adjusted with the font size).
-     */
-    private int getSpacingForExpander() {
-        int iconMarginEnd = getResources().getDimensionPixelSize(
-                R.dimen.notification_2025_right_icon_margin_end);
-        int extraSpaceForExpander = getResources().getDimensionPixelSize(
-                R.dimen.notification_2025_extra_space_for_expander);
-
-        return iconMarginEnd + extraSpaceForExpander;
-    }
-
-    /**
      * Calculate the amount of space necessary for the image if present.
      */
     private int getSpacingForImage() {
         if (mImageMessageContainer != null && mImageMessageContainer.getVisibility() == VISIBLE) {
-            // Unlike large icons which can be wider than tall, isolated image messages can only
-            // be square, so we can use the fixed width directly.
-            int imageWidth = getResources().getDimensionPixelSize(
-                    R.dimen.notification_right_icon_size);
-            int iconMarginStart = getResources().getDimensionPixelSize(
-                    R.dimen.notification_2025_right_icon_content_margin);
-            return iconMarginStart + imageWidth;
+            return mSpacingForImage;
         }
         return 0;
     }
