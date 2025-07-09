@@ -82,6 +82,9 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
     // generates and manages transparently to the user. Implies mType == CREDENTIAL_TYPE_PASSWORD.
     private final boolean mIsUnifiedProfilePassword;
 
+    // Whether the credential was unmarshalled from a Parcel, rather than constructed directly.
+    private final boolean mIsFromParcel;
+
     /**
      * Private constructor, use static builder methods instead.
      *
@@ -93,7 +96,8 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
             int type,
             byte[] credential,
             boolean hasInvalidChars,
-            boolean isUnifiedProfilePassword) {
+            boolean isUnifiedProfilePassword,
+            boolean isFromParcel) {
         Objects.requireNonNull(credential);
         if (type == CREDENTIAL_TYPE_NONE) {
             Preconditions.checkArgument(credential.length == 0);
@@ -115,6 +119,7 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
         mCredential = credential;
         mHasInvalidChars = hasInvalidChars;
         mIsUnifiedProfilePassword = isUnifiedProfilePassword;
+        mIsFromParcel = isFromParcel;
     }
 
     private LockscreenCredential(int type, CharSequence credential) {
@@ -122,14 +127,15 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
                 type,
                 charsToBytesTruncating(credential),
                 hasInvalidChars(credential),
-                /* isUnifiedProfilePassword= */ false);
+                /* isUnifiedProfilePassword= */ false,
+                /* isFromParcel= */ false);
     }
 
     /**
      * Creates a LockscreenCredential object representing a none credential.
      */
     public static LockscreenCredential createNone() {
-        return new LockscreenCredential(CREDENTIAL_TYPE_NONE, new byte[0], false, false);
+        return new LockscreenCredential(CREDENTIAL_TYPE_NONE, new byte[0], false, false, false);
     }
 
     /**
@@ -140,7 +146,8 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
                 CREDENTIAL_TYPE_PATTERN,
                 LockPatternUtils.patternToByteArray(pattern),
                 /* hasInvalidChars= */ false,
-                /* isUnifiedProfilePassword= */ false);
+                /* isUnifiedProfilePassword= */ false,
+                /* isFromParcel= */ false);
     }
 
     /**
@@ -161,7 +168,8 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
                 CREDENTIAL_TYPE_PASSWORD,
                 copyOfArrayNonMovable(password),
                 /* hasInvalidChars= */ false,
-                /* isUnifiedProfilePassword= */ true);
+                /* isUnifiedProfilePassword= */ true,
+                /* isFromParcel= */ false);
     }
 
     /**
@@ -271,16 +279,23 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
                 mType,
                 mCredential != null ? copyOfArrayNonMovable(mCredential) : null,
                 mHasInvalidChars,
-                mIsUnifiedProfilePassword);
+                mIsUnifiedProfilePassword,
+                /* Any duplicate copy is not from a Parcel, so set isFromParcel=false */
+                /* isFromParcel= */ false);
     }
 
-    /**
-     * Zeroize the credential bytes.
-     */
+    /** Zeroizes the credential bytes. */
     public void zeroize() {
         if (mCredential != null) {
             ArrayUtils.zeroize(mCredential);
             mCredential = null;
+        }
+    }
+
+    /** Zeroizes the given LockscreenCredential if it is non-null and was created from a Parcel. */
+    public static void zeroizeIfFromParcel(@Nullable LockscreenCredential credential) {
+        if (credential != null && credential.mIsFromParcel) {
+            credential.zeroize();
         }
     }
 
@@ -412,7 +427,8 @@ public class LockscreenCredential implements Parcelable, AutoCloseable {
                             source.readInt(),
                             source.createByteArray(),
                             source.readBoolean(),
-                            source.readBoolean());
+                            source.readBoolean(),
+                            /* isFromParcel= */ true);
                 }
 
                 @Override

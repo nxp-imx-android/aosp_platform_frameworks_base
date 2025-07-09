@@ -1328,17 +1328,25 @@ public class LockSettingsService extends ILockSettings.Stub {
     public void setSeparateProfileChallengeEnabled(int userId, boolean enabled,
             LockscreenCredential profileUserPassword) {
         checkWritePermission();
-        if (!mHasSecureLockScreen
-                && profileUserPassword != null
-                && profileUserPassword.getType() != CREDENTIAL_TYPE_NONE) {
-            throw new UnsupportedOperationException(
-                    "This operation requires secure lock screen feature.");
+        try {
+            if (!mHasSecureLockScreen
+                    && profileUserPassword != null
+                    && profileUserPassword.getType() != CREDENTIAL_TYPE_NONE) {
+                throw new UnsupportedOperationException(
+                        "This operation requires secure lock screen feature.");
+            }
+            synchronized (mSeparateChallengeLock) {
+                setSeparateProfileChallengeEnabledLocked(
+                        userId,
+                        enabled,
+                        profileUserPassword != null
+                                ? profileUserPassword
+                                : LockscreenCredential.createNone());
+            }
+            notifySeparateProfileChallengeChanged(userId);
+        } finally {
+            LockscreenCredential.zeroizeIfFromParcel(profileUserPassword);
         }
-        synchronized (mSeparateChallengeLock) {
-            setSeparateProfileChallengeEnabledLocked(userId, enabled, profileUserPassword != null
-                    ? profileUserPassword : LockscreenCredential.createNone());
-        }
-        notifySeparateProfileChallengeChanged(userId);
     }
 
     @GuardedBy("mSeparateChallengeLock")
@@ -1841,10 +1849,11 @@ public class LockSettingsService extends ILockSettings.Stub {
                                 + "ACCESS_KEYGUARD_SECURE_STORAGE");
             }
         }
-        credential.validateBasicRequirements();
 
         final long identity = Binder.clearCallingIdentity();
         try {
+            credential.validateBasicRequirements();
+
             enforceFrpNotActive();
             // When changing credential for profiles with unified challenge, some callers
             // will pass in empty credential while others will pass in the credential of
@@ -1885,6 +1894,8 @@ public class LockSettingsService extends ILockSettings.Stub {
             return true;
         } finally {
             Binder.restoreCallingIdentity(identity);
+            LockscreenCredential.zeroizeIfFromParcel(credential);
+            LockscreenCredential.zeroizeIfFromParcel(savedCredential);
         }
     }
 
@@ -2348,6 +2359,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             return doVerifyCredential(credential, userId, progressCallback, 0 /* flags */);
         } finally {
             Binder.restoreCallingIdentity(identity);
+            LockscreenCredential.zeroizeIfFromParcel(credential);
             scheduleGc();
         }
     }
@@ -2367,6 +2379,7 @@ public class LockSettingsService extends ILockSettings.Stub {
             return doVerifyCredential(credential, userId, null /* progressCallback */, flags);
         } finally {
             Binder.restoreCallingIdentity(identity);
+            LockscreenCredential.zeroizeIfFromParcel(credential);
             scheduleGc();
         }
     }
@@ -2540,10 +2553,8 @@ public class LockSettingsService extends ILockSettings.Stub {
         }
     }
 
-    @Override
-    public VerifyCredentialResponse verifyTiedProfileChallenge(LockscreenCredential credential,
-            int userId, @LockPatternUtils.VerifyFlag int flags) {
-        checkPasswordReadPermission();
+    private VerifyCredentialResponse doVerifyTiedProfileChallenge(
+            LockscreenCredential credential, int userId, @LockPatternUtils.VerifyFlag int flags) {
         Slogf.i(TAG, "Verifying tied profile challenge for user %d", userId);
 
         if (!isProfileWithUnifiedLock(userId)) {
@@ -2573,6 +2584,17 @@ public class LockSettingsService extends ILockSettings.Stub {
             throw new IllegalStateException("Unable to get tied profile token");
         } finally {
             scheduleGc();
+        }
+    }
+
+    @Override
+    public VerifyCredentialResponse verifyTiedProfileChallenge(
+            LockscreenCredential credential, int userId, @LockPatternUtils.VerifyFlag int flags) {
+        checkPasswordReadPermission();
+        try {
+            return doVerifyTiedProfileChallenge(credential, userId, flags);
+        } finally {
+            LockscreenCredential.zeroizeIfFromParcel(credential);
         }
     }
 
@@ -3340,7 +3362,11 @@ public class LockSettingsService extends ILockSettings.Stub {
     @Override
     public byte[] getHashFactor(LockscreenCredential currentCredential, int userId) {
         checkPasswordReadPermission();
-        return getHashFactorInternal(currentCredential, userId);
+        try {
+            return getHashFactorInternal(currentCredential, userId);
+        } finally {
+            LockscreenCredential.zeroizeIfFromParcel(currentCredential);
+        }
     }
 
     private long addEscrowToken(@NonNull byte[] token, @TokenType int type, int userId,
