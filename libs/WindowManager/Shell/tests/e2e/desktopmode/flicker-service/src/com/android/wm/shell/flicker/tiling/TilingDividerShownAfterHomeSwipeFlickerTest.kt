@@ -42,10 +42,12 @@ import org.junit.runners.Parameterized
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 class TilingDividerShownAfterHomeSwipeFlickerTest(flicker: LegacyFlickerTest) :
     DesktopModeBaseTest(flicker) {
+    inner class TileResizingWithDragScenario : TileResizingWithDrag(flicker.scenario.startRotation)
+
     @Rule
     @JvmField
     val testSetupRule = Utils.testSetupRule(NavBar.MODE_GESTURAL, flicker.scenario.startRotation)
-    val scenario = TileResizingWithDrag()
+    val scenario = TileResizingWithDragScenario()
 
     override val transition: FlickerBuilder.() -> Unit
         get() = {
