@@ -23,7 +23,12 @@ import static com.android.systemui.ambient.touch.TouchSurfaceKt.SURFACE_HUB;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -57,8 +62,14 @@ public class ScrimManagerTest extends SysuiTestCase {
     @Mock
     KeyguardStateController mKeyguardStateController;
 
-    @Mock
-    ScrimManager.Callback mCallback;
+    ScrimManager.Callback mCallback = spy(new ScrimManager.Callback() {
+        @Override
+        public void onScrimControllerChanged(ScrimController controller) {
+            mCurrentController = controller;
+        }
+    });
+
+    private ScrimController mCurrentController;
 
     private final FakeExecutor mExecutor = new FakeExecutor(new FakeSystemClock());
 
@@ -74,13 +85,16 @@ public class ScrimManagerTest extends SysuiTestCase {
                 ArgumentCaptor.forClass(KeyguardStateController.Callback.class);
         final ScrimManager manager = new ScrimManager(mExecutor, mBouncerScrimController,
                 mBouncerlessScrimController, SURFACE_HUB, mKeyguardStateController);
+        verify(mKeyguardStateController, never()).addCallback(any());
+        manager.addCallback(mCallback);
+        mExecutor.runAllReady();
         verify(mKeyguardStateController).addCallback(callbackCaptor.capture());
 
-        assertThat(manager.getCurrentController()).isEqualTo(mBouncerScrimController);
+        assertThat(mCurrentController).isEqualTo(mBouncerScrimController);
         when(mKeyguardStateController.canDismissLockScreen()).thenReturn(true);
         callbackCaptor.getValue().onKeyguardShowingChanged();
         mExecutor.runAllReady();
-        assertThat(manager.getCurrentController()).isEqualTo(mBouncerlessScrimController);
+        assertThat(mCurrentController).isEqualTo(mBouncerlessScrimController);
     }
 
     @Test
@@ -90,9 +104,11 @@ public class ScrimManagerTest extends SysuiTestCase {
                 ArgumentCaptor.forClass(KeyguardStateController.Callback.class);
         final ScrimManager manager = new ScrimManager(mExecutor, mBouncerScrimController,
                 mBouncerlessScrimController, SURFACE_HUB, mKeyguardStateController);
-        verify(mKeyguardStateController).addCallback(callbackCaptor.capture());
+        verify(mKeyguardStateController, never()).addCallback(any());
 
         manager.addCallback(mCallback);
+        mExecutor.runAllReady();
+        verify(mKeyguardStateController).addCallback(callbackCaptor.capture());
         when(mKeyguardStateController.canDismissLockScreen()).thenReturn(true);
         callbackCaptor.getValue().onKeyguardShowingChanged();
         mExecutor.runAllReady();
@@ -107,12 +123,41 @@ public class ScrimManagerTest extends SysuiTestCase {
                 ArgumentCaptor.forClass(KeyguardStateController.Callback.class);
         final ScrimManager manager = new ScrimManager(mExecutor, mBouncerScrimController,
                 mBouncerlessScrimController, SURFACE_DREAM, mKeyguardStateController);
+        verify(mKeyguardStateController, never()).addCallback(any());
+
+        manager.addCallback(mCallback);
+        mExecutor.runAllReady();
         verify(mKeyguardStateController).addCallback(callbackCaptor.capture());
 
-        assertThat(manager.getCurrentController()).isEqualTo(mBouncerlessScrimController);
+        assertThat(mCurrentController).isEqualTo(mBouncerlessScrimController);
         when(mKeyguardStateController.canDismissLockScreen()).thenReturn(true);
         callbackCaptor.getValue().onKeyguardShowingChanged();
         mExecutor.runAllReady();
-        assertThat(manager.getCurrentController()).isEqualTo(mBouncerlessScrimController);
+        assertThat(mCurrentController).isEqualTo(mBouncerlessScrimController);
+    }
+
+    @Test
+    public void testKeyguardStateCallbackRegistration() {
+        final ScrimManager manager = new ScrimManager(mExecutor, mBouncerScrimController,
+                mBouncerlessScrimController, SURFACE_DREAM, mKeyguardStateController);
+        ArgumentCaptor<KeyguardStateController.Callback> callbackCaptor =
+                ArgumentCaptor.forClass(KeyguardStateController.Callback.class);
+        final ScrimManager.Callback firstMock = mock(ScrimManager.Callback.class);
+        final ScrimManager.Callback secondMock = mock(ScrimManager.Callback.class);
+
+        verify(mKeyguardStateController, never()).addCallback(any());
+        manager.addCallback(firstMock);
+        mExecutor.runAllReady();
+        verify(mKeyguardStateController).addCallback(callbackCaptor.capture());
+        clearInvocations(mKeyguardStateController);
+        manager.addCallback(secondMock);
+        mExecutor.runAllReady();
+        verify(mKeyguardStateController, never()).addCallback(any());
+        manager.removeCallback(firstMock);
+        mExecutor.runAllReady();
+        verify(mKeyguardStateController, never()).removeCallback(any());
+        manager.removeCallback(secondMock);
+        mExecutor.runAllReady();
+        verify(mKeyguardStateController).removeCallback(callbackCaptor.getValue());
     }
 }

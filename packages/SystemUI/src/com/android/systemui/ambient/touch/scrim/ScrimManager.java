@@ -80,9 +80,6 @@ public class ScrimManager {
         mBouncerScrimController = bouncerScrimController;
         mKeyguardStateController = keyguardStateController;
         mTouchSurface = surface;
-
-        mKeyguardStateController.addCallback(mKeyguardStateCallback);
-        updateController();
     }
 
     private void updateController() {
@@ -105,20 +102,27 @@ public class ScrimManager {
      * Adds a {@link Callback} to receive future changes to the active {@link ScrimController}.
      */
     public void addCallback(Callback callback) {
-        mExecutor.execute(() -> mCallbacks.add(callback));
+        mExecutor.execute(() -> {
+            if (mCallbacks.isEmpty()) {
+                mKeyguardStateController.addCallback(mKeyguardStateCallback);
+                updateController();
+            }
+            mCallbacks.add(callback);
+            callback.onScrimControllerChanged(mCurrentController);
+        });
     }
 
     /**
      * Removes the {@link Callback} from receiving further updates.
      */
     public void removeCallback(Callback callback) {
-        mExecutor.execute(() -> mCallbacks.remove(callback));
-    }
+        mExecutor.execute(() -> {
+            mCallbacks.remove(callback);
 
-    /**
-     * Returns the currently get {@link ScrimController}.
-     */
-    public ScrimController getCurrentController() {
-        return mCurrentController;
+            if (mCallbacks.isEmpty()) {
+                mKeyguardStateController.removeCallback(mKeyguardStateCallback);
+                mCurrentController = null;
+            }
+        });
     }
 }

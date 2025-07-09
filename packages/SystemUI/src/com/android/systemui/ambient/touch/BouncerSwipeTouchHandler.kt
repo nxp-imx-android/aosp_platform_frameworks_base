@@ -295,7 +295,6 @@ constructor(
             notificationShadeWindowController.setForcePluginOpen(true, this)
         }
         scrimManager.addCallback(scrimManagerCallback)
-        currentScrimController = scrimManager.currentController
         isKeyguardScreenRotationAllowed = keyguardStateController.isKeyguardScreenRotationAllowed()
 
         session.registerCallback {
