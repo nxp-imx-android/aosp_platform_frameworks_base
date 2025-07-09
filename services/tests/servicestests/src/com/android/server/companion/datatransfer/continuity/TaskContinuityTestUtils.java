@@ -31,9 +31,6 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
-
 import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.mockito.ArgumentCaptor;
@@ -63,21 +60,6 @@ public final class TaskContinuityTestUtils {
             .thenReturn(companionDeviceManager);
 
         return mockCompanionDeviceManagerService;
-    }
-
-    public static TaskContinuityMessageData verifyMessageSent(
-        ICompanionDeviceManager companionDeviceManagerService,
-        int[] associationIds,
-        int times) throws Exception {
-
-        ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
-        verify(companionDeviceManagerService, times(times)).sendMessage(
-            eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
-            messageCaptor.capture(),
-            eq(associationIds));
-        TaskContinuityMessage taskContinuityMessage = new TaskContinuityMessage(
-            messageCaptor.getValue());
-        return taskContinuityMessage.getData();
     }
 
     public static ActivityManager.RunningTaskInfo createRunningTaskInfo(

@@ -24,6 +24,7 @@ import static org.mockito.Mockito.never;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.AdditionalMatchers.aryEq;
 
 import static com.android.server.companion.datatransfer.contextsync.BitmapUtils.renderDrawableToByteArray;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createMockContext;
@@ -59,14 +60,13 @@ import androidx.test.platform.app.InstrumentationRegistry;
 import com.android.server.companion.datatransfer.continuity.connectivity.ConnectedAssociationStore;
 import com.android.server.companion.datatransfer.continuity.messages.ContinuityDeviceConnected;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskRemovedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskUpdatedMessage;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
 
 import com.android.frameworks.servicestests.R;
-
 
 import org.junit.Before;
 import org.junit.Test;
@@ -168,25 +168,16 @@ public class TaskBroadcasterTest {
         mTaskBroadcaster.onTransportConnected(associationInfo);
 
         // Verify the message is sent.
-        ArgumentCaptor<byte[]> messageCaptor
-            = ArgumentCaptor.forClass(byte[].class);
-        verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
-            eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
-            messageCaptor.capture(),
-            eq(new int[] {1}));
-        TaskContinuityMessage taskContinuityMessage = new TaskContinuityMessage(
-            messageCaptor.getValue());
-        assertThat(taskContinuityMessage.getData()).isInstanceOf(
-            ContinuityDeviceConnected.class);
         ContinuityDeviceConnected expectedMessage = new ContinuityDeviceConnected(
             Arrays.asList(new RemoteTaskInfo(
                 taskId,
                 taskLabel,
                 taskLastActiveTime,
                 mSerializedTaskIcon)));
-        ContinuityDeviceConnected actualMessage
-            = (ContinuityDeviceConnected) taskContinuityMessage.getData();
-        assertThat(actualMessage).isEqualTo(expectedMessage);
+        verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
+            eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
+            aryEq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+            eq(new int[] {1}));
     }
 
     @Test
@@ -212,26 +203,19 @@ public class TaskBroadcasterTest {
         mTaskBroadcaster.onTaskCreated(taskId, null);
 
         // Verify sendMessage is called
-        ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
-        verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
-                eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
-                messageCaptor.capture(),
-                any(int[].class));
-        byte[] capturedMessage = messageCaptor.getValue();
-        TaskContinuityMessage taskContinuityMessage = new TaskContinuityMessage(capturedMessage);
-        assertThat(taskContinuityMessage.getData()).isInstanceOf(RemoteTaskAddedMessage.class);
         RemoteTaskAddedMessage expectedMessage = new RemoteTaskAddedMessage(
             new RemoteTaskInfo(
                 taskId,
                 taskLabel,
                 taskLastActiveTime,
                 mSerializedTaskIcon));
-        RemoteTaskAddedMessage actualMessage =
-                (RemoteTaskAddedMessage) taskContinuityMessage.getData();
-        assertThat(actualMessage).isEqualTo(expectedMessage);
+        verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
+                eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
+                aryEq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+                any(int[].class));
     }
 
-        @Test
+    @Test
     public void testOnTaskRemoved_sendsMessageToAllAssociations() throws Exception {
         // Start broadcasting.
         int taskId = 123;
@@ -244,17 +228,11 @@ public class TaskBroadcasterTest {
         mTaskBroadcaster.onTaskRemoved(taskId);
 
         // Verify sendMessage is called
-        ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
+        RemoteTaskRemovedMessage expectedMessage = new RemoteTaskRemovedMessage(taskId);
         verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
                 eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
-                messageCaptor.capture(),
+                aryEq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
                 any(int[].class));
-        byte[] capturedMessage = messageCaptor.getValue();
-        TaskContinuityMessage taskContinuityMessage = new TaskContinuityMessage(capturedMessage);
-        assertThat(taskContinuityMessage.getData()).isInstanceOf(RemoteTaskRemovedMessage.class);
-        RemoteTaskRemovedMessage remoteTaskRemovedMessage =
-                (RemoteTaskRemovedMessage) taskContinuityMessage.getData();
-        assertThat(remoteTaskRemovedMessage.taskId()).isEqualTo(taskId);
     }
 
     @Test
@@ -274,21 +252,16 @@ public class TaskBroadcasterTest {
         mTaskBroadcaster.onTaskMovedToFront(taskInfo);
 
         // Verify sendMessage is called for each association.
-        ArgumentCaptor<byte[]> messageCaptor = ArgumentCaptor.forClass(byte[].class);
-        verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
-            eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
-            messageCaptor.capture(),
-            eq(new int[] {1}));
-        TaskContinuityMessage sentMessage = new TaskContinuityMessage(messageCaptor.getValue());
-        assertThat(sentMessage.getData()).isInstanceOf(RemoteTaskUpdatedMessage.class);
         RemoteTaskUpdatedMessage expectedMessage = new RemoteTaskUpdatedMessage(
             new RemoteTaskInfo(
                 taskId,
                 taskLabel,
                 taskLastActiveTime,
                 mSerializedTaskIcon));
-        RemoteTaskUpdatedMessage actualMessage = (RemoteTaskUpdatedMessage) sentMessage.getData();
-        assertThat(actualMessage).isEqualTo(expectedMessage);
+       verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
+            eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
+            aryEq(TaskContinuityMessageSerializer.serialize(expectedMessage)),
+            eq(new int[] {1}));
     }
 
     private ActivityManager.RunningTaskInfo setupTask(

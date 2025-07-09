@@ -23,6 +23,7 @@ import android.companion.CompanionDeviceManager;
 import android.util.Slog;
 
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 
 import java.util.function.BiConsumer;
 
@@ -94,7 +95,8 @@ class TaskContinuityMessageReceiver {
     private void onMessageReceived(int associationId, byte[] data) {
         Slog.v(TAG, "Received message from association id: " + associationId);
       try {
-            TaskContinuityMessage taskContinuityMessage = new TaskContinuityMessage(data);
+            TaskContinuityMessage taskContinuityMessage
+                = TaskContinuityMessageSerializer.deserialize(data);
             if (mOnTaskContinuityMessageReceivedListener != null) {
                 mOnTaskContinuityMessageReceivedListener.accept(
                     associationId,

@@ -39,6 +39,7 @@ import com.android.server.LocalServices;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 import com.android.server.wm.ActivityTaskManagerInternal;
 
 import java.io.IOException;
@@ -131,10 +132,6 @@ public class InboundHandoffRequestController extends IHandoffTaskDataReceiver.St
                 .get(handoffRequestResultMessage.taskId());
             mPendingHandoffRequests.remove(handoffRequestResultMessage.taskId());
 
-            TaskContinuityMessage taskContinuityMessage = new TaskContinuityMessage.Builder()
-                .setData(handoffRequestResultMessage)
-                .build();
-
             int[] associationIdsArray = new int[associationIds.size()];
             for (int i = 0; i < associationIds.size(); i++) {
                 associationIdsArray[i] = associationIds.get(i);
@@ -144,7 +141,7 @@ public class InboundHandoffRequestController extends IHandoffTaskDataReceiver.St
             try {
                 mCompanionDeviceManager.sendMessage(
                     MESSAGE_ONEWAY_TASK_CONTINUITY,
-                    taskContinuityMessage.toBytes(),
+                    TaskContinuityMessageSerializer.serialize(handoffRequestResultMessage),
                     associationIdsArray);
             } catch (IOException e) {
                 Slog.e(TAG, "Failed to send message to associations " + associationIds, e);

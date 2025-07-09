@@ -21,7 +21,7 @@ import android.util.proto.ProtoOutputStream;
 
 import java.io.IOException;
 
-public record RemoteTaskRemovedMessage(int taskId) implements TaskContinuityMessageData {
+public record RemoteTaskRemovedMessage(int taskId) implements TaskContinuityMessage {
 
     public static RemoteTaskRemovedMessage readFromProto(ProtoInputStream pis) throws IOException {
         int taskId = 0;

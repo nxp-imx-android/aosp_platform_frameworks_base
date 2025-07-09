@@ -19,7 +19,7 @@ package com.android.server.companion.datatransfer.continuity.handoff;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createAssociationInfo;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createMockContext;
 import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.createMockCompanionDeviceManager;
-import static com.android.server.companion.datatransfer.continuity.TaskContinuityTestUtils.verifyMessageSent;
+import static org.mockito.AdditionalMatchers.aryEq;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -35,7 +35,7 @@ import com.android.server.companion.datatransfer.continuity.connectivity.Connect
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestMessage;
 import com.android.server.companion.datatransfer.continuity.messages.HandoffRequestResultMessage;
 import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessage;
-import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageData;
+import com.android.server.companion.datatransfer.continuity.messages.TaskContinuityMessageSerializer;
 
 import android.app.HandoffActivityData;
 import android.content.Context;
@@ -95,12 +95,10 @@ public class OutboundHandoffRequestControllerTest {
 
         // Verify HandoffRequestMessage was sent.
         HandoffRequestMessage expectedHandoffRequestMessage = new HandoffRequestMessage(taskId);
-        TaskContinuityMessageData actualMessageData = verifyMessageSent(
-            mMockCompanionDeviceManagerService,
-            new int[] {associationId},
-            1);
-        assertThat(actualMessageData).isInstanceOf(HandoffRequestMessage.class);
-        assertThat(actualMessageData).isEqualTo(expectedHandoffRequestMessage);
+        verify(mMockCompanionDeviceManagerService).sendMessage(
+            eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
+            eq(TaskContinuityMessageSerializer.serialize(expectedHandoffRequestMessage)),
+            aryEq(new int[] {associationId}));
 
         // Simulate a response message.
         ComponentName expectedComponentName = new ComponentName(
@@ -179,12 +177,11 @@ public class OutboundHandoffRequestControllerTest {
             taskId,
             secondCallback.callback);
 
-        // Verify HandoffRequestMessage was sent only once.
-        TaskContinuityMessageData sentMessage = verifyMessageSent(
-            mMockCompanionDeviceManagerService,
-            new int[] {associationId},
-            1);
-        assertThat(sentMessage).isInstanceOf(HandoffRequestMessage.class);
+        HandoffRequestMessage expectedHandoffRequestMessage = new HandoffRequestMessage(taskId);
+        verify(mMockCompanionDeviceManagerService, times(1)).sendMessage(
+            eq(CompanionDeviceManager.MESSAGE_ONEWAY_TASK_CONTINUITY),
+            eq(TaskContinuityMessageSerializer.serialize(expectedHandoffRequestMessage)),
+            aryEq(new int[] {associationId}));
     }
 
     @Test
