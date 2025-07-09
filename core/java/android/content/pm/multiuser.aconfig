@@ -353,13 +353,6 @@ flag {
 }
 
 flag {
-    name: "delete_private_space_from_reset"
-    namespace: "profile_experiences"
-    description: "Add entrypoint in Settings Reset options for deleting private space when lock is forgotten"
-    bug: "329601751"
-}
-
-flag {
     name: "allow_main_user_to_access_blocked_number_provider"
     namespace: "multiuser"
     description: "Allow MAIN user to access blocked number provider"
