@@ -16,6 +16,7 @@
 
 package com.android.systemui.supervision.data.repository
 
+import android.app.admin.devicePolicyManager
 import android.app.role.roleManager
 import android.content.applicationContext
 import com.android.systemui.kosmos.Kosmos
@@ -29,6 +30,7 @@ var Kosmos.supervisionRepository by
             roleManager = roleManager,
             supervisionManagerProvider = { supervisionManager },
             userRepository = userRepository,
+            devicePolicyManager = devicePolicyManager,
             context = applicationContext,
             backgroundDispatcher = testDispatcher,
         )

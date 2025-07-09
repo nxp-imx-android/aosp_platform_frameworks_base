@@ -16,6 +16,7 @@
 
 package com.android.systemui.qs.footer
 
+import android.app.admin.DevicePolicyManager
 import android.app.role.RoleManager
 import android.app.supervision.SupervisionManager
 import android.content.Context
@@ -189,6 +190,7 @@ class FooterActionsTestUtils(
     private fun supervisionRepository(
         roleManager: RoleManager = mock(),
         supervisionManager: SupervisionManager = mock(),
+        devicePolicyManager: DevicePolicyManager = mock(),
         userRepository: UserRepository = FakeUserRepository(),
         @Application context: Context = this.context.applicationContext,
         bgDispatcher: CoroutineDispatcher = StandardTestDispatcher(scheduler),
@@ -197,6 +199,7 @@ class FooterActionsTestUtils(
             { supervisionManager },
             userRepository,
             roleManager,
+            devicePolicyManager,
             context,
             bgDispatcher,
         )
