@@ -171,13 +171,15 @@ constructor(
     }
 
     override fun onHostStopListening() {
-        // Remove listeners
-        _appWidgetProviders.value.keys.forEach { appWidgetId ->
-            appWidgetHost.removeListener(appWidgetId)
-        }
+        bgScope.launch {
+            // Remove listeners
+            _appWidgetProviders.value.keys.forEach { appWidgetId ->
+                appWidgetHost.removeListener(appWidgetId)
+            }
 
-        // Clear providers
-        _appWidgetProviders.value = emptyMap()
+            // Clear providers
+            _appWidgetProviders.value = emptyMap()
+        }
     }
 
     override fun onAllocateAppWidgetId(appWidgetId: Int) {

@@ -61,8 +61,7 @@ public class RemoteComposeState implements CollectionsAccess {
     private final boolean[] mFloatOverride = new boolean[MAX_DATA];
 
     private int mNextId = START_ID;
-    private final @NonNull int [] mIdMaps =
-            new int[] {START_ID, NanMap.START_VAR, NanMap.START_ARRAY};
+    @NonNull private int[] mIdMaps = new int[] {START_ID, NanMap.START_VAR, NanMap.START_ARRAY};
     @Nullable private RemoteContext mRemoteContext = null;
 
     /**
@@ -101,7 +100,7 @@ public class RemoteComposeState implements CollectionsAccess {
      * id.
      */
     public int cacheData(@NonNull Object item) {
-        int id = createNextAvailableId();
+        int id = nextId();
         mDataIntMap.put(item, id);
         mIntDataMap.put(id, item);
         return id;
@@ -112,7 +111,7 @@ public class RemoteComposeState implements CollectionsAccess {
      * id.
      */
     public int cacheData(@NonNull Object item, int type) {
-        int id = createNextAvailableId(type);
+        int id = nextId(type);
         mDataIntMap.put(item, id);
         mIntDataMap.put(id, item);
         return id;
@@ -138,22 +137,22 @@ public class RemoteComposeState implements CollectionsAccess {
     }
 
     /**
-     * Get the path associated with the Data
+     * Get the path asociated with the Data
      *
      * @param id of path
      * @return path object
      */
-    public @Nullable Object getPath(int id) {
+    public Object getPath(int id) {
         return mPathMap.get(id);
     }
 
     /**
      * Cache a path object. Object will be cleared if you update path data.
      *
-     * @param id number associated with path
+     * @param id number asociated with path
      * @param path the path object typically Android Path
      */
-    public void putPath(int id, @NonNull Object path) {
+    public void putPath(int id, Object path) {
         mPathMap.put(id, path);
     }
 
@@ -164,18 +163,18 @@ public class RemoteComposeState implements CollectionsAccess {
      * @param id the integer asociated with the data and path
      * @param data the array of floats that represents the path
      */
-    public void putPathData(int id, @NonNull float [] data) {
+    public void putPathData(int id, float[] data) {
         mPathData.put(id, data);
         mPathMap.remove(id);
     }
 
     /**
-     * Get the path data associated with the id
+     * Get the path data asociated with the id
      *
      * @param id number that represents the path
      * @return path data
      */
-    public @Nullable float [] getPathData(int id) {
+    public float[] getPathData(int id) {
         return mPathData.get(id);
     }
 
@@ -198,7 +197,7 @@ public class RemoteComposeState implements CollectionsAccess {
 
     /** Insert an item in the cache */
     public int cacheFloat(float item) {
-        int id = createNextAvailableId();
+        int id = nextId();
         mFloatMap.put(id, item);
         mIntegerMap.put(id, (int) item);
         return id;
@@ -244,7 +243,7 @@ public class RemoteComposeState implements CollectionsAccess {
      * @return the id of the integer
      */
     public int cacheInteger(int item) {
-        int id = createNextAvailableId();
+        int id = nextId();
         mIntegerMap.put(id, item);
         mFloatMap.put(id, item);
         return id;
@@ -270,7 +269,7 @@ public class RemoteComposeState implements CollectionsAccess {
     /**
      * Adds a integer Override.
      *
-     * @param id value id
+     * @param id
      * @param value the new value
      */
     public void overrideInteger(int id, int value) {
@@ -316,8 +315,8 @@ public class RemoteComposeState implements CollectionsAccess {
     /**
      * Modify the color at id.
      *
-     * @param id value id
-     * @param color color (as an int)
+     * @param id
+     * @param color
      */
     public void updateColor(int id, int color) {
         if (id < sMaxColors && mColorOverride[id]) {
@@ -340,8 +339,8 @@ public class RemoteComposeState implements CollectionsAccess {
     /**
      * Adds a colorOverride. This is a list of ids and their colors optimized for playback;
      *
-     * @param id value id
-     * @param color color (as an int)
+     * @param id
+     * @param color
      */
     public void overrideColor(int id, int color) {
         if (id >= sMaxColors) {
@@ -355,7 +354,9 @@ public class RemoteComposeState implements CollectionsAccess {
 
     /** Clear the color Overrides */
     public void clearColorOverride() {
-        Arrays.fill(mColorOverride, false);
+        for (int i = 0; i < mColorOverride.length; i++) {
+            mColorOverride[i] = false;
+        }
     }
 
     /**
@@ -413,9 +414,9 @@ public class RemoteComposeState implements CollectionsAccess {
     /**
      * Get the next available id
      *
-     * @return next available id
+     * @return
      */
-    public int createNextAvailableId() {
+    public int nextId() {
         return mNextId++;
     }
 
@@ -425,7 +426,7 @@ public class RemoteComposeState implements CollectionsAccess {
      *
      * @return return a unique id in the set
      */
-    public int createNextAvailableId(int type) {
+    public int nextId(int type) {
         if (0 == type) {
             return mNextId++;
         }
@@ -480,17 +481,15 @@ public class RemoteComposeState implements CollectionsAccess {
      * @param context The context
      * @return The number of ops to update
      */
-    public int getOpsToUpdate(@NonNull RemoteContext context, long currentTime) {
+    public int getOpsToUpdate(@NonNull RemoteContext context) {
         if (mVarListeners.get(RemoteContext.ID_CONTINUOUS_SEC) != null) {
             return 1;
         }
         if (mVarListeners.get(RemoteContext.ID_TIME_IN_SEC) != null) {
-            int sub = (int) (currentTime % 1000);
-            return 2 + 1000 - sub;
+            return 1000;
         }
         if (mVarListeners.get(RemoteContext.ID_TIME_IN_MIN) != null) {
-            int sub = (int) (currentTime % 60000);
-            return 2 + 1000 * 60 - sub;
+            return 1000 * 60;
         }
         return -1;
     }
@@ -525,29 +524,17 @@ public class RemoteComposeState implements CollectionsAccess {
 
     @Override
     public float getFloatValue(int id, int index) {
-        ArrayAccess array = mCollectionMap.get(id & 0xFFFFF);
-        if (array != null) {
-            return array.getFloatValue(index);
-        }
-        return 0f;
+        return mCollectionMap.get(id & 0xFFFFF).getFloatValue(index); // TODO: potential npe
     }
 
     @Override
-    public @Nullable float [] getFloats(int id) {
-        ArrayAccess array = mCollectionMap.get(id & 0xFFFFF);
-        if (array != null) {
-            return array.getFloats();
-        }
-        return null;
+    public @Nullable float[] getFloats(int id) {
+        return mCollectionMap.get(id & 0xFFFFF).getFloats(); // TODO: potential npe
     }
 
     @Override
     public int getId(int id, int index) {
-        ArrayAccess array = mCollectionMap.get(id & 0xFFFFF);
-        if (array != null) {
-            return array.getId(index);
-        }
-        return -1;
+        return mCollectionMap.get(id & 0xFFFFF).getId(index);
     }
 
     /**
@@ -572,11 +559,7 @@ public class RemoteComposeState implements CollectionsAccess {
 
     @Override
     public int getListLength(int id) {
-        ArrayAccess array = mCollectionMap.get(id & 0xFFFFF);
-        if (array != null) {
-            return array.getLength();
-        }
-        return 0;
+        return mCollectionMap.get(id & 0xFFFFF).getLength();
     }
 
     /**

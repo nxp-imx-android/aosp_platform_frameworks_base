@@ -149,17 +149,17 @@ public class PathTween extends PaintOperation implements VariableSupport, Serial
 
     @NonNull
     @Override
-    public String deepToString(@NonNull String indent) {
+    public String deepToString(String indent) {
         return indent + toString();
     }
 
     @Override
-    public void paint(@NonNull PaintContext context) {
+    public void paint(PaintContext context) {
         context.tweenPath(mOutId, mPathId1, mPathId2, mTweenOut);
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("outId", mOutId)

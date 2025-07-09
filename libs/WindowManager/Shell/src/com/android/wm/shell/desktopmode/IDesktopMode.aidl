@@ -37,7 +37,8 @@ interface IDesktopMode {
      * If [taskIdToReorderToFront] is a valid id (not [INVALID_TASK_ID]) and is already on the given
      * desk, bring it to the front.
      */
-    oneway void activateDesk(int deskId, in RemoteTransition remoteTransition, int taskIdToReorderToFront);
+    oneway void activateDesk(int deskId, in RemoteTransition remoteTransition,
+            int taskIdToReorderToFront, in DesktopModeTransitionSource transitionSource);
 
     /** Removes the desk with the given `deskId`. */
     oneway void removeDesk(int deskId);

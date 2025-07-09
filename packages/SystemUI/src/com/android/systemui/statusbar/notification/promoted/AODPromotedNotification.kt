@@ -69,6 +69,7 @@ import com.android.internal.widget.CachingIconView
 import com.android.internal.widget.ImageFloatingTextView
 import com.android.internal.widget.NotificationExpandButton
 import com.android.internal.widget.NotificationProgressBar
+import com.android.internal.widget.NotificationProgressDrawable
 import com.android.internal.widget.NotificationProgressModel
 import com.android.systemui.FontStyles
 import com.android.systemui.lifecycle.rememberViewModel
@@ -333,6 +334,15 @@ private class AODPromotedNotificationViewUpdater(root: View) {
             )
         }
 
+    private val progressStyleProgressThickness: Float =
+        root.context.resources.getDimension(
+            systemuiR.dimen.notification_aod_progress_style_progress_thickness
+        )
+    private val progressStyleProgressAheadThickness: Float =
+        root.context.resources.getDimension(
+            systemuiR.dimen.notification_aod_progress_style_ahead_progress_thickness
+        )
+
     private data class SmallIconSavedState(val background: Drawable?, val padding: Rect)
 
     private var smallIconSavedState: SmallIconSavedState? = null
@@ -448,6 +458,11 @@ private class AODPromotedNotificationViewUpdater(root: View) {
 
     private fun updateNewProgressBar(content: PromotedNotificationContentModel) {
         val newProgressBar = newProgressBar ?: return
+
+        (newProgressBar.notificationProgressDrawable.mutate() as? NotificationProgressDrawable)
+            ?.setSegmentHeight(progressStyleProgressThickness)
+        (newProgressBar.notificationProgressDrawable.mutate() as? NotificationProgressDrawable)
+            ?.setFadedSegmentHeight(progressStyleProgressAheadThickness)
 
         if (content.newProgress != null && !content.newProgress.isIndeterminate) {
             newProgressBar.setProgressModel(content.newProgress.toSkeleton().toBundle())

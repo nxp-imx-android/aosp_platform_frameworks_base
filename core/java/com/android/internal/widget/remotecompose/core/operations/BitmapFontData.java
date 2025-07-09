@@ -48,7 +48,7 @@ public class BitmapFontData extends Operation implements Serializable {
      */
     public static class Glyph {
         /** The character(s) this glyph represents. */
-        public @Nullable String mChars;
+        public String mChars;
 
         /** The id of the bitmap for this glyph, or -1 for space. */
         public int mBitmapId;
@@ -71,7 +71,7 @@ public class BitmapFontData extends Operation implements Serializable {
         public Glyph() {}
 
         public Glyph(
-                @NonNull String chars,
+                String chars,
                 int bitmapId,
                 short marginLeft,
                 short marginTop,
@@ -208,7 +208,7 @@ public class BitmapFontData extends Operation implements Serializable {
 
     /** Finds the largest glyph matching the string at the specified offset, or returns null. */
     @Nullable
-    public Glyph lookupGlyph(@NonNull String string, int offset) {
+    public Glyph lookupGlyph(String string, int offset) {
         // Since mFontGlyphs is sorted on decreasing size, it will match the longest items first.
         // It is expected that the mFontGlyphs array will be fairly small.
         for (Glyph glyph : mFontGlyphs) {
@@ -220,7 +220,7 @@ public class BitmapFontData extends Operation implements Serializable {
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer.addType(CLASS_NAME).add("id", mId);
     }
 }

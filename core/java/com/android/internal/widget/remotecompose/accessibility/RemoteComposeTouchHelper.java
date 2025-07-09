@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.internal.widget.remotecompose.player.accessibility.platform;
-
-import com.android.internal.widget.remotecompose.player.accessibility.RemoteComposeAccessibilityRegistrar;
+package com.android.internal.widget.remotecompose.accessibility;
 
 /**
  * This class is the entry point for finding the AccessibilityDelegate for a RemoteCompose document.

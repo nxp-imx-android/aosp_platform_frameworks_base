@@ -59,7 +59,7 @@ public class ClickModifierOperation extends PaintOperation
     float mWidth = 0;
     float mHeight = 0;
 
-    public @NonNull float [] locationInWindow = new float[2];
+    @NonNull public float[] locationInWindow = new float[2];
 
     @NonNull PaintBundle mPaint = new PaintBundle();
 
@@ -75,7 +75,7 @@ public class ClickModifierOperation extends PaintOperation
     }
 
     @Override
-    public @NonNull CoreSemantics.Mode getMode() {
+    public CoreSemantics.Mode getMode() {
         return CoreSemantics.Mode.MERGE;
     }
 
@@ -84,10 +84,9 @@ public class ClickModifierOperation extends PaintOperation
      *
      * @param x starting position x of the ripple
      * @param y starting position y of the ripple
-     * @param timeStampMillis
      */
-    public void animateRipple(float x, float y, long timeStampMillis) {
-        mAnimateRippleStart = timeStampMillis;
+    public void animateRipple(float x, float y) {
+        mAnimateRippleStart = System.currentTimeMillis();
         mAnimateRippleX = x;
         mAnimateRippleY = y;
     }
@@ -95,7 +94,6 @@ public class ClickModifierOperation extends PaintOperation
     @NonNull public ArrayList<Operation> mList = new ArrayList<>();
 
     @NonNull
-    @Override
     public ArrayList<Operation> getList() {
         return mList;
     }
@@ -108,13 +106,7 @@ public class ClickModifierOperation extends PaintOperation
     @NonNull
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("ClickModifier");
-        for (Operation modifierOperation : mList) {
-            sb.append("\n        ");
-            sb.append(modifierOperation.toString());
-        }
-        return sb.toString();
+        return "ClickModifier";
     }
 
     @Override
@@ -144,7 +136,7 @@ public class ClickModifierOperation extends PaintOperation
         }
         context.needsRepaint();
 
-        float progress = (context.getClock().millis() - mAnimateRippleStart);
+        float progress = (System.currentTimeMillis() - mAnimateRippleStart);
         progress /= (float) mAnimateRippleDuration;
         if (progress > 1f) {
             mAnimateRippleStart = 0;
@@ -181,10 +173,7 @@ public class ClickModifierOperation extends PaintOperation
 
     @Override
     public void layout(
-            @NonNull RemoteContext context,
-            @NonNull Component component,
-            float width,
-            float height) {
+            @NonNull RemoteContext context, Component component, float width, float height) {
         mWidth = width;
         mHeight = height;
     }
@@ -212,8 +201,7 @@ public class ClickModifierOperation extends PaintOperation
         locationInWindow[0] = 0f;
         locationInWindow[1] = 0f;
         component.getLocationInWindow(locationInWindow);
-        animateRipple(
-                x - locationInWindow[0], y - locationInWindow[1], context.getClock().millis());
+        animateRipple(x - locationInWindow[0], y - locationInWindow[1]);
         for (Operation o : mList) {
             if (o instanceof ActionOperation) {
                 ((ActionOperation) o).runAction(context, document, component, x, y);
@@ -264,7 +252,7 @@ public class ClickModifierOperation extends PaintOperation
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer.addTags(SerializeTags.MODIFIER).addType("ClickModifierOperation");
     }
 }

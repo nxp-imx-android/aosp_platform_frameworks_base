@@ -253,6 +253,22 @@ class NativeCommandBuffer {
           niceNameAddr(),
           static_cast<unsigned>(mEnd), static_cast<unsigned>(mNext),
           static_cast<int>(mLinesLeft), mFd);
+    if (niceNameAddr()[0] == '\0') {
+      // The above didn't identify the command; dump buffer prefix as well.
+      static constexpr uint32_t DUMP_SIZE = 40;
+      char bufferCopy[DUMP_SIZE + 1];
+      uint32_t i = 0;
+      for (; i < DUMP_SIZE && i < mEnd; ++i) {
+        if (mBuffer[i] < 0x20 || mBuffer[i] >= 0x7f) {
+          // Not easily printable. Includes the expected newlines.
+          bufferCopy[i] = '?';
+        } else {
+          bufferCopy[i] = mBuffer[i];
+        }
+      }
+      bufferCopy[i] = '\0';
+      ALOGD("Buffer content prefix: %s", bufferCopy);
+    }
   }
 
  private:

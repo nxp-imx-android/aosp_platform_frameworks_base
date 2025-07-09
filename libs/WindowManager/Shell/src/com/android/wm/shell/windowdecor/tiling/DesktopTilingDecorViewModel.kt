@@ -20,7 +20,6 @@ import android.app.ActivityManager
 import android.app.ActivityManager.RunningTaskInfo
 import android.content.Context
 import android.graphics.Rect
-import android.util.ArraySet
 import android.util.SparseArray
 import android.window.DisplayAreaInfo
 import android.window.WindowContainerTransaction
@@ -80,7 +79,6 @@ class DesktopTilingDecorViewModel(
     @VisibleForTesting
     var tilingHandlerByUserAndDeskId = SparseArray<SparseArray<DesktopTilingWindowDecoration>>()
     var currentUserId: Int = -1
-    val disconnectedDisplayDesks = ArraySet<Int>()
 
     init {
         // TODO(b/374309287): Move this interface implementation to
@@ -106,27 +104,27 @@ class DesktopTilingDecorViewModel(
                 .getOrElse(deskId) {
                     val userHandlerList = tilingHandlerByUserAndDeskId[currentUserId]
                     DesktopTilingWindowDecoration(
-                            context,
-                            mainDispatcher,
-                            bgScope,
-                            syncQueue,
-                            displayController,
-                            taskResourceLoader,
-                            taskInfo.displayId,
-                            deskId,
-                            rootTdaOrganizer,
-                            transitions,
-                            shellTaskOrganizer,
-                            toggleResizeDesktopTaskTransitionHandler,
-                            returnToDragStartAnimator,
-                            desktopUserRepositories,
-                            desktopModeEventLogger,
-                            focusTransitionObserver,
-                            mainExecutor,
-                            desktopState,
-                            shellController,
-                            interactionJankMonitor,
-                        )
+                        context,
+                        mainDispatcher,
+                        bgScope,
+                        syncQueue,
+                        displayController,
+                        taskResourceLoader,
+                        taskInfo.displayId,
+                        deskId,
+                        rootTdaOrganizer,
+                        transitions,
+                        shellTaskOrganizer,
+                        toggleResizeDesktopTaskTransitionHandler,
+                        returnToDragStartAnimator,
+                        desktopUserRepositories,
+                        desktopModeEventLogger,
+                        focusTransitionObserver,
+                        mainExecutor,
+                        desktopState,
+                        shellController,
+                        interactionJankMonitor,
+                    )
                         .also { userHandlerList[deskId] = it }
                 }
         transitions.registerObserver(handler)
@@ -200,7 +198,6 @@ class DesktopTilingDecorViewModel(
                 if (disconnectedDisplayId == handler.displayId) {
                     handler.resetTilingSession(shouldPersistTilingData = true)
                     desksToRemove.add(desk)
-                    disconnectedDisplayDesks.add(desk)
                 }
             }
             desksToRemove.forEach { desk -> userHandlerList.remove(desk) }
@@ -237,8 +234,8 @@ class DesktopTilingDecorViewModel(
         val snapBounds =
             Rect(
                 stableBounds.left +
-                    stableBounds.width() / 2 +
-                    context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
+                        stableBounds.width() / 2 +
+                        context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
                 stableBounds.top,
                 stableBounds.right,
                 stableBounds.bottom,
@@ -268,7 +265,7 @@ class DesktopTilingDecorViewModel(
                 stableBounds.left,
                 stableBounds.top,
                 stableBounds.left + stableBounds.width() / 2 -
-                    context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
+                        context.resources.getDimensionPixelSize(R.dimen.split_divider_bar_width) / 2,
                 stableBounds.bottom,
             )
         return snapBounds
@@ -279,9 +276,10 @@ class DesktopTilingDecorViewModel(
         tilingHandlerByUserAndDeskId[currentUserId]?.get(deskId)?.hideDividerBar()
     }
 
-    /** Removes [deskId] from the previously deactivated desks to mark it's activation. */
-    fun onDeskActivated(deskId: Int): Boolean =
-        disconnectedDisplayDesks.remove(deskId) || !tilingHandlerByUserAndDeskId.contains(deskId)
+    /** Returns whether [deskId] already exists and active or needs initialization. */
+    fun tilingDeskActive(deskId: Int): Boolean =
+        tilingHandlerByUserAndDeskId[currentUserId]?.contains(deskId) ?: false
+
 
     /** Destroys a tiling session for a removed desk. */
     fun onDeskRemoved(deskId: Int) {

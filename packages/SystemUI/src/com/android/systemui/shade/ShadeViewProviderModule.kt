@@ -28,7 +28,6 @@ import com.android.keyguard.logging.ScrimLogger
 import com.android.systemui.battery.BatteryMeterView
 import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.biometrics.AuthRippleView
-import com.android.systemui.common.ui.data.repository.ConfigurationRepository
 import com.android.systemui.dagger.SysUISingleton
 import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.flags.FeatureFlags
@@ -102,7 +101,6 @@ abstract class ShadeViewProviderModule {
             choreographer: Choreographer?,
             @Main mainDispatcher: CoroutineDispatcher,
             tintedIconManagerFactory: TintedIconManager.Factory,
-            @ShadeDisplayAware configurationRepository: ConfigurationRepository,
         ): WindowRootView {
             return if (SceneContainerFlag.isEnabled) {
                 checkNoSceneDuplicates(scenesProvider.get())
@@ -123,7 +121,6 @@ abstract class ShadeViewProviderModule {
                     scenes = scenesProvider.get(),
                     overlays = overlaysProvider.get(),
                     layoutInsetController = layoutInsetController,
-                    configurationRepository = configurationRepository,
                     sceneDataSourceDelegator = sceneDataSourceDelegator.get(),
                     qsSceneAdapter = qsSceneAdapter,
                     sceneJankMonitorFactory = sceneJankMonitorFactory,

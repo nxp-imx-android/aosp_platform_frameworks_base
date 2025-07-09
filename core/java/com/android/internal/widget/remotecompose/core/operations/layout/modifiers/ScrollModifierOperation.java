@@ -90,7 +90,7 @@ public class ScrollModifierOperation extends ListActionsOperation
      *
      * @param component
      */
-    public void inflate(@NonNull Component component) {
+    public void inflate(Component component) {
         for (Operation op : mList) {
             if (op instanceof TouchExpression) {
                 mTouchExpression = (TouchExpression) op;
@@ -130,7 +130,7 @@ public class ScrollModifierOperation extends ListActionsOperation
     }
 
     @Override
-    public void apply(@NonNull RemoteContext context) {
+    public void apply(RemoteContext context) {
         RootLayoutComponent root = context.getDocument().getRootLayoutComponent();
         if (root != null) {
             root.setHasTouchListeners(true);
@@ -139,7 +139,7 @@ public class ScrollModifierOperation extends ListActionsOperation
     }
 
     @Override
-    public void write(@NonNull WireBuffer buffer) {
+    public void write(WireBuffer buffer) {
         apply(buffer, mDirection, mPositionExpression, mMax, mNotchMax);
     }
 
@@ -149,8 +149,8 @@ public class ScrollModifierOperation extends ListActionsOperation
      * @param indent padding to display
      * @param serializer append the string
      */
-    @Override
-    public void serializeToString(int indent, @NonNull StringSerializer serializer) {
+    // @Override
+    public void serializeToString(int indent, StringSerializer serializer) {
         serializer.append(indent, "SCROLL = [" + mDirection + "]");
     }
 
@@ -161,7 +161,7 @@ public class ScrollModifierOperation extends ListActionsOperation
     }
 
     @Override
-    public void paint(@NonNull PaintContext context) {
+    public void paint(PaintContext context) {
         for (Operation op : mList) {
             op.apply(context.getContext());
         }
@@ -214,7 +214,7 @@ public class ScrollModifierOperation extends ListActionsOperation
      * @param notchMax the maximum notch
      */
     public static void apply(
-            @NonNull WireBuffer buffer, int direction, float position, float max, float notchMax) {
+            WireBuffer buffer, int direction, float position, float max, float notchMax) {
         buffer.start(OP_CODE);
         buffer.writeInt(direction);
         buffer.writeFloat(position);
@@ -228,7 +228,7 @@ public class ScrollModifierOperation extends ListActionsOperation
      * @param buffer the buffer to read
      * @param operations the list of operations that will be added to
      */
-    public static void read(@NonNull WireBuffer buffer, @NonNull List<Operation> operations) {
+    public static void read(WireBuffer buffer, List<Operation> operations) {
         int direction = buffer.readInt();
         float position = buffer.readFloat();
         float max = buffer.readFloat();
@@ -241,13 +241,13 @@ public class ScrollModifierOperation extends ListActionsOperation
      *
      * @param doc to append the description to.
      */
-    public static void documentation(@NonNull DocumentationBuilder doc) {
+    public static void documentation(DocumentationBuilder doc) {
         doc.operation("Modifier Operations", OP_CODE, CLASS_NAME)
                 .description("define a Scroll Modifier")
                 .field(INT, "direction", "");
     }
 
-    private float getMaxScrollPosition(@NonNull Component component, int direction) {
+    private float getMaxScrollPosition(Component component, int direction) {
         if (component instanceof LayoutComponent) {
             LayoutComponent layoutComponent = (LayoutComponent) component;
             int numChildren = layoutComponent.getChildrenComponents().size();
@@ -264,11 +264,7 @@ public class ScrollModifierOperation extends ListActionsOperation
     }
 
     @Override
-    public void layout(
-            @NonNull RemoteContext context,
-            @NonNull Component component,
-            float width,
-            float height) {
+    public void layout(RemoteContext context, Component component, float width, float height) {
         mWidth = width;
         mHeight = height;
         float max = mMaxScrollY;
@@ -287,11 +283,7 @@ public class ScrollModifierOperation extends ListActionsOperation
 
     @Override
     public void onTouchDown(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y) {
+            RemoteContext context, CoreDocument document, Component component, float x, float y) {
         mTouchDownX = x;
         mTouchDownY = y;
         mInitialScrollX = mScrollX;
@@ -305,9 +297,9 @@ public class ScrollModifierOperation extends ListActionsOperation
 
     @Override
     public void onTouchUp(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
+            RemoteContext context,
+            CoreDocument document,
+            Component component,
             float x,
             float y,
             float dx,
@@ -321,11 +313,7 @@ public class ScrollModifierOperation extends ListActionsOperation
 
     @Override
     public void onTouchDrag(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y) {
+            RemoteContext context, CoreDocument document, Component component, float x, float y) {
         if (mTouchExpression != null) {
             mTouchExpression.updateVariables(context);
             mTouchExpression.touchDrag(context, x + mScrollX, y + mScrollY);
@@ -344,11 +332,7 @@ public class ScrollModifierOperation extends ListActionsOperation
 
     @Override
     public void onTouchCancel(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y) {}
+            RemoteContext context, CoreDocument document, Component component, float x, float y) {}
 
     /**
      * Set the horizontal scroll dimension
@@ -410,7 +394,7 @@ public class ScrollModifierOperation extends ListActionsOperation
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
                 .addType("ScrollModifierOperation")
@@ -433,7 +417,7 @@ public class ScrollModifierOperation extends ListActionsOperation
     }
 
     @Override
-    public int scrollByOffset(@NonNull RemoteContext context, int offset) {
+    public int scrollByOffset(RemoteContext context, int offset) {
         // TODO work out how to avoid disabling this
         mTouchExpression = null;
 
@@ -446,8 +430,7 @@ public class ScrollModifierOperation extends ListActionsOperation
     }
 
     @Override
-    public boolean scrollDirection(
-            @NonNull RemoteContext context, @NonNull ScrollDirection direction) {
+    public boolean scrollDirection(RemoteContext context, ScrollDirection direction) {
         float offset = mHostDimension * 0.7f;
 
         if (direction == ScrollDirection.FORWARD
@@ -460,7 +443,7 @@ public class ScrollModifierOperation extends ListActionsOperation
     }
 
     @Override
-    public boolean showOnScreen(@NonNull RemoteContext context, @NonNull Component child) {
+    public boolean showOnScreen(RemoteContext context, Component child) {
         float[] locationInWindow = new float[2];
         child.getLocationInWindow(locationInWindow);
 

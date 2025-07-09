@@ -15,7 +15,6 @@
  */
 package com.android.internal.widget.remotecompose.core.semantics;
 
-import android.annotation.NonNull;
 import android.annotation.Nullable;
 
 import com.android.internal.widget.remotecompose.core.RemoteContext;
@@ -41,36 +40,32 @@ public interface ScrollableComponent extends AccessibilitySemantics {
     /**
      * Scrolls the content by the specified offset.
      *
-     * @param context
      * @param offset The amount to scroll by in pixels. Positive values indicate scrolling down or
      *     to the right, while negative values indicate scrolling up or to the left.
      * @return The offset value that was consumed by this component scrolling.
      */
-    default int scrollByOffset(@NonNull RemoteContext context, int offset) {
+    default int scrollByOffset(RemoteContext context, int offset) {
         return offset;
     }
 
     /**
      * Scrolls the content in the specified direction.
      *
-     * @param context
      * @param direction the direction to scroll
      * @return whether a scroll was possible
      */
-    default boolean scrollDirection(
-            @NonNull RemoteContext context, @NonNull ScrollDirection direction) {
+    default boolean scrollDirection(RemoteContext context, ScrollDirection direction) {
         return false;
     }
 
     /**
      * Show a child with the given ID on the screen, typically scrolling so it's fully on screen.
      *
-     * @param context
      * @param child The child (including nested) to check for visibility.
      * @return {@code true} if the child with the given ID could be shown on screen; {@code false}
      *     otherwise.
      */
-    default boolean showOnScreen(@NonNull RemoteContext context, @NonNull Component child) {
+    default boolean showOnScreen(RemoteContext context, Component child) {
         return false;
     }
 

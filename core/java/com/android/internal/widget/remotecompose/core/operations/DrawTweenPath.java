@@ -174,7 +174,7 @@ public class DrawTweenPath extends PaintOperation implements VariableSupport {
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("path1Id", mPath1Id)

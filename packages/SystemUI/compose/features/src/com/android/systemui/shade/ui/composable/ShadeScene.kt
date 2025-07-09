@@ -92,8 +92,8 @@ import com.android.systemui.media.dagger.MediaModule.QUICK_QS_PANEL
 import com.android.systemui.notifications.ui.composable.NotificationScrollingStack
 import com.android.systemui.notifications.ui.composable.NotificationStackCutoffGuideline
 import com.android.systemui.qs.footer.ui.compose.FooterActionsWithAnimatedVisibility
-import com.android.systemui.qs.ui.composable.BrightnessMirror
 import com.android.systemui.qs.panels.ui.compose.QuickQuickSettings
+import com.android.systemui.qs.ui.composable.BrightnessMirror
 import com.android.systemui.qs.ui.composable.QuickSettings
 import com.android.systemui.qs.ui.composable.QuickSettings.SharedValues.MediaLandscapeTopOffset
 import com.android.systemui.res.R
@@ -250,7 +250,7 @@ private fun ContentScope.SingleShade(
     shadeSession: SaveableSession,
     usingCollapsedLandscapeMedia: Boolean,
 ) {
-    val cutoutLocation = LocalDisplayCutout.current.location
+    val cutoutLocation = LocalDisplayCutout.current().location
     val cutoutInsets = WindowInsets.Companion.displayCutout
     mediaHost.expansion = if (usingCollapsedLandscapeMedia && isLandscape()) COLLAPSED else EXPANDED
 

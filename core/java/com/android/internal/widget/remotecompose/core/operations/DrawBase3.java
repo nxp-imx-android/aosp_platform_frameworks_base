@@ -97,12 +97,12 @@ public abstract class DrawBase3 extends PaintOperation implements VariableSuppor
     /**
      * Read this operation and add it to the list of operations
      *
+     * @param maker the maker of the operation
      * @param buffer the buffer to read
      * @param operations the list of operations to add to
-     * @param maker the maker of the operation
      */
     public static void read(
-            @NonNull WireBuffer buffer, @NonNull List<Operation> operations, @NonNull Maker maker) {
+            @NonNull Maker maker, @NonNull WireBuffer buffer, @NonNull List<Operation> operations) {
         float v1 = buffer.readFloat();
         float v2 = buffer.readFloat();
         float v3 = buffer.readFloat();
@@ -123,11 +123,8 @@ public abstract class DrawBase3 extends PaintOperation implements VariableSuppor
         return null;
     }
 
-    protected @NonNull MapSerializer serialize(
-            @NonNull MapSerializer serializer,
-            @NonNull String v1Name,
-            @NonNull String v2Name,
-            @NonNull String v3Name) {
+    protected MapSerializer serialize(
+            MapSerializer serializer, String v1Name, String v2Name, String v3Name) {
         return serializer
                 .add(v1Name, mValue1, mV1)
                 .add(v2Name, mValue2, mV2)

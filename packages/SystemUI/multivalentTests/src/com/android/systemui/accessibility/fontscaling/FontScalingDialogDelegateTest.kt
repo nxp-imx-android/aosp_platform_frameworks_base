@@ -31,6 +31,7 @@ import com.android.systemui.common.domain.interactor.SysUIStateDisplaysInteracto
 import com.android.systemui.common.ui.view.SeekBarWithIconButtonsView
 import com.android.systemui.res.R
 import com.android.systemui.settings.UserTracker
+import com.android.systemui.shade.domain.interactor.FakeShadeDialogContextInteractor
 import com.android.systemui.statusbar.phone.SystemUIDialog
 import com.android.systemui.statusbar.phone.SystemUIDialog.DEFAULT_DISMISS_ON_DEVICE_LOCK
 import com.android.systemui.statusbar.phone.SystemUIDialogManager
@@ -101,6 +102,7 @@ class FontScalingDialogDelegateTest : SysuiTestCase() {
                     userTracker,
                     mainHandler,
                     backgroundDelayableExecutor,
+                    FakeShadeDialogContextInteractor(mContext),
                 )
             )
 

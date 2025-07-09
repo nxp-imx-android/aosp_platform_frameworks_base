@@ -207,10 +207,6 @@ import com.android.systemui.communal.widgets.SmartspaceAppWidgetHostView
 import com.android.systemui.communal.widgets.WidgetConfigurator
 import com.android.systemui.lifecycle.rememberViewModel
 import com.android.systemui.media.controls.ui.composable.MediaCarousel
-import com.android.systemui.media.remedia.ui.compose.Media
-import com.android.systemui.media.remedia.ui.compose.MediaPresentationStyle
-import com.android.systemui.media.remedia.ui.compose.MediaUiBehavior
-import com.android.systemui.media.remedia.ui.viewmodel.MediaCarouselVisibility
 import com.android.systemui.res.R
 import com.android.systemui.scene.shared.flag.SceneContainerFlag
 import com.android.systemui.statusbar.phone.SystemUIDialogFactory
@@ -1829,23 +1825,6 @@ private fun Umo(
                 isVisible = true,
                 mediaHost = viewModel.mediaHost,
                 carouselController = viewModel.mediaCarouselController,
-            )
-        } else if (Flags.mediaControlsInCompose()) {
-            Media(
-                viewModelFactory = viewModel.mediaViewModelFactory,
-                presentationStyle = MediaPresentationStyle.Large,
-                behavior =
-                    MediaUiBehavior(
-                        isCarouselDismissible = false,
-                        isCarouselScrollingEnabled = false,
-                        carouselVisibility = MediaCarouselVisibility.WhenAnyCardIsActive,
-                    ),
-                modifier =
-                    modifier.background(
-                        MaterialTheme.colorScheme.primary,
-                        RoundedCornerShape(dimensionResource(R.dimen.notification_corner_radius)),
-                    ),
-                onDismissed = { viewModel.mediaCarouselInteractor.onSwipeToDismiss() },
             )
         } else {
             UmoLegacy(viewModel, modifier)

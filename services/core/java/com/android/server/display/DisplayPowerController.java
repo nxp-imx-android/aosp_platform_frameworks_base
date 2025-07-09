@@ -1250,7 +1250,7 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         if (mScreenBrightnessRampAnimator == null) {
             return;
         }
-        if (mFlags.isAdaptiveTone1Enabled() && isIdle) {
+        if (isIdle) {
             mScreenBrightnessRampAnimator.setAnimationTimeLimits(
                     mBrightnessRampIncreaseMaxTimeIdleMillis,
                     mBrightnessRampDecreaseMaxTimeIdleMillis);
@@ -2699,6 +2699,11 @@ final class DisplayPowerController implements AutomaticBrightnessController.Call
         pw.println("  mIsRbcActive=" + mIsRbcActive);
         IndentingPrintWriter ipw = new IndentingPrintWriter(pw, "    ");
         mAutomaticBrightnessStrategy.dump(ipw);
+
+        if (mDisplayOffloadSession != null) {
+            pw.println("  mDisplayOffloadSession.isActive()="
+                    + mDisplayOffloadSession.isActive());
+        }
 
         if (mScreenBrightnessRampAnimator != null) {
             pw.println("  mScreenBrightnessRampAnimator.isAnimating()="

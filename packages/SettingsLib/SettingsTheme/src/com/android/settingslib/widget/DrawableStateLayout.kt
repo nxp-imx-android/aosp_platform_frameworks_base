@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.internal.widget.remotecompose.player.state;
 
-public enum RemoteDomains {
-    USER,
-    SYSTEM
+package com.android.settingslib.widget
+
+interface DrawableStateLayout {
+    var extraDrawableState: IntArray?
 }

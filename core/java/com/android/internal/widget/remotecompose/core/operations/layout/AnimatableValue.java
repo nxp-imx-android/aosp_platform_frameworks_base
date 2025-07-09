@@ -15,8 +15,6 @@
  */
 package com.android.internal.widget.remotecompose.core.operations.layout;
 
-import android.annotation.NonNull;
-
 import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.operations.Utils;
 import com.android.internal.widget.remotecompose.core.operations.utilities.easing.FloatAnimation;
@@ -81,14 +79,13 @@ public class AnimatableValue implements Serializable {
      * @param context the paint context
      * @return the current value
      */
-    public float evaluate(@NonNull PaintContext context) {
+    public float evaluate(PaintContext context) {
         if (!mIsVariable) {
             return mValue;
         }
         float value = context.getContext().mRemoteComposeState.getFloat(mId);
-        long timeMillis = context.getClock().millis();
         if (value != mValue) {
-            long lastUpdate = timeMillis;
+            long lastUpdate = System.currentTimeMillis();
             long interval = lastUpdate - mLastUpdate;
             if (interval > mAnimateDuration && mLastUpdate != 0L) {
                 mAnimateValueChanges = true;
@@ -105,14 +102,14 @@ public class AnimatableValue implements Serializable {
                 mStartRotationX = mValue;
                 mTargetRotationX = value;
                 mAnimate = true;
-                mAnimateTargetTime = timeMillis;
+                mAnimateTargetTime = System.currentTimeMillis();
                 mMotionEasing =
                         new FloatAnimation(
                                 mMotionEasingType, mAnimateDuration / 1000f, null, 0f, Float.NaN);
                 mMotionEasing.setTargetValue(1f);
             }
             if (mAnimate) {
-                float elapsed = timeMillis - mAnimateTargetTime;
+                float elapsed = System.currentTimeMillis() - mAnimateTargetTime;
                 float p = mMotionEasing.get(elapsed / mAnimateDuration);
                 mValue = (1 - p) * mStartRotationX + p * mTargetRotationX;
                 if (p >= 1f) {
@@ -131,7 +128,7 @@ public class AnimatableValue implements Serializable {
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer.addType("AnimatableValue").add("id", mId);
     }
 }

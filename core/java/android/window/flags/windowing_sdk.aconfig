@@ -161,17 +161,6 @@ flag {
 
 flag {
     namespace: "windowing_sdk"
-    name: "fix_set_adjacent_task_fragments_with_params"
-    description: "Fix the params set through setAdjacentTaskFragments"
-    bug: "418159069"
-    is_fixed_read_only: true
-    metadata {
-        purpose: PURPOSE_BUGFIX
-    }
-}
-
-flag {
-    namespace: "windowing_sdk"
     name: "update_task_min_dimensions_with_root_activity"
     description: "Update minWidth/Height when the root activity is changed."
     bug: "416987720"
@@ -194,4 +183,15 @@ flag {
     description: "Launch Gemini on a multi-display environment"
     bug: "400351723"
     is_fixed_read_only: true
+}
+
+flag {
+    namespace: "windowing_sdk"
+    name: "dispose_task_fragment_synchronously"
+    description: "Handle TaskFragment disposal synchronously when handling app died."
+    bug: "429336735"
+    is_fixed_read_only: true
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
 }

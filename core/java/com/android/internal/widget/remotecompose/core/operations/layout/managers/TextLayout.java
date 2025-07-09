@@ -393,7 +393,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
         if (!forceComplex) {
             context.getTextBounds(mTextId, 0, mCachedString.length(), flags, bounds);
         }
-        if (forceComplex || (bounds[2] - bounds[1] > maxWidth && mMaxLines > 1 && maxWidth > 0f)) {
+        if (forceComplex || bounds[2] - bounds[1] > maxWidth && mMaxLines > 1 && maxWidth > 0f) {
             mComputedTextLayout =
                     context.layoutComplexText(
                             mTextId,
@@ -568,7 +568,7 @@ public class TextLayout extends LayoutManager implements VariableSupport, Access
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         super.serialize(serializer);
         serializer.add("textId", mTextId);
         serializer.add("color", Utils.colorInt(mColor));

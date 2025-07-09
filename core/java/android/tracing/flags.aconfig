@@ -40,3 +40,11 @@ flag {
     is_fixed_read_only: true
     bug: "420587648"
 }
+
+flag {
+    name: "native_proto_logging"
+    namespace: "windowing_tools"
+    description: "Add support for native protologging"
+    is_fixed_read_only: true
+    bug: "419809577"
+}

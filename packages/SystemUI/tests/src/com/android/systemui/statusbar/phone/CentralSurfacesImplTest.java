@@ -54,7 +54,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-
 import static java.util.Collections.emptySet;
 
 import android.app.ActivityManager;

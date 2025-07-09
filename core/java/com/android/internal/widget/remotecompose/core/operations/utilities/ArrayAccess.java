@@ -19,7 +19,7 @@ import android.annotation.Nullable;
 
 /**
  * Support a standardized interface to commands that contain arrays All commands that implement
- * array access will be collected in a map in the state TODO: refactor to DataAccess,
+ * array access will be collected in a map in the state TODO refactor to DataAccess,
  * FloatArrayAccess, ListAccess, MapAccess
  */
 public interface ArrayAccess {
@@ -27,7 +27,7 @@ public interface ArrayAccess {
      * Get a value as a float for an index
      *
      * @param index position in the collection
-     * @return float value
+     * @return
      */
     float getFloatValue(int index);
 
@@ -38,15 +38,16 @@ public interface ArrayAccess {
      * @return id or -1 if no id is available
      */
     default int getId(int index) {
-        return -1;
+        return 0;
     }
 
     /**
      * Get the backing array of float if available for float arrays
      *
-     * @return array of floats
+     * @return
      */
-    @Nullable float [] getFloats();
+    @Nullable
+    float[] getFloats();
 
     /**
      * Get the length of the collection

@@ -91,6 +91,11 @@ class DragToBubbleController(
         return lastDragZone != null
     }
 
+    /** Called when drop targets should be hidden. */
+    fun hideDropTargets() {
+        dropTargetManager.hideDropTargets()
+    }
+
     /** Called when the item with the [ShortcutInfo] is dropped over the bubble bar drop target. */
     fun onItemDropped(shortcutInfo: ShortcutInfo) {
         val dropLocation = lastDragZone?.getBubbleBarLocation() ?: return

@@ -45,6 +45,7 @@ import android.util.SparseArray;
 
 import com.android.internal.util.FrameworkStatsLog;
 import com.android.server.LocalServices;
+import com.android.server.SystemServiceManager;
 import com.android.server.pm.pkg.AndroidPackage;
 
 import java.io.File;
@@ -205,6 +206,8 @@ public final class PackageMetrics {
     private final long mInstallStartTimestampMillis;
     private final SparseArray<InstallStep> mInstallSteps = new SparseArray<>();
     private final InstallRequest mInstallRequest;
+
+    private static SystemServiceManager sSystemServiceManager = null;
 
     PackageMetrics(InstallRequest installRequest) {
         // New instance is used for tracking installation metrics only.
@@ -618,6 +621,16 @@ public final class PackageMetrics {
      * Metrics for reporting what kind of reason to call the invalidation.
      */
     public static void reportCacheInvalidationEvent(int cacheType, int invalidationReason) {
+        if (sSystemServiceManager == null) {
+            sSystemServiceManager = LocalServices.getService(SystemServiceManager.class);
+            if (sSystemServiceManager == null) {
+                return;
+            }
+        }
+        if (!sSystemServiceManager.isBootCompleted()) {
+            return;
+        }
+        // TODO(b/430272418): Implement a local counter for periodic metrics reporting.
         FrameworkStatsLog.write(FrameworkStatsLog.PACKAGE_MANAGER_CACHE_INVALIDATION_REPORTED,
                 cacheType, invalidationReason);
     }

@@ -207,7 +207,7 @@ public class DrawBitmapFontText extends PaintOperation implements VariableSuppor
             return;
         }
 
-        float xPos = mOutX;
+        float xPos = mX;
         int pos = 0;
         while (pos < textToPaint.length()) {
             BitmapFontData.Glyph glyph = bitmapFont.lookupGlyph(textToPaint, pos);
@@ -228,15 +228,15 @@ public class DrawBitmapFontText extends PaintOperation implements VariableSuppor
             context.drawBitmap(
                     glyph.mBitmapId,
                     xPos,
-                    mOutY + glyph.mMarginTop,
+                    mY + glyph.mMarginTop,
                     xPos2,
-                    mOutY + glyph.mBitmapHeight + glyph.mMarginTop);
+                    mY + glyph.mBitmapHeight + glyph.mMarginTop);
             xPos = xPos2 + glyph.mMarginRight;
         }
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("textId", mTextID)

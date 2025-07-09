@@ -40,7 +40,7 @@ public class DrawArc extends DrawBase6 {
      */
     public static void read(@NonNull WireBuffer buffer, @NonNull List<Operation> operations) {
         Maker m = DrawArc::new;
-        read(buffer, operations, m);
+        read(m, buffer, operations);
     }
 
     /**
@@ -139,7 +139,7 @@ public class DrawArc extends DrawBase6 {
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serialize(serializer, "left", "top", "right", "bottom", "startAngle", "sweepAngle")
                 .addType(CLASS_NAME);
     }

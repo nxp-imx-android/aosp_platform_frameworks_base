@@ -57,10 +57,8 @@ import com.android.systemui.kosmos.testDispatcher
 import com.android.systemui.kosmos.testScope
 import com.android.systemui.kosmos.useUnconfinedTestDispatcher
 import com.android.systemui.log.logcatLogBuffer
-import com.android.systemui.media.controls.domain.pipeline.interactor.mediaCarouselInteractor
 import com.android.systemui.media.controls.ui.controller.mediaCarouselController
 import com.android.systemui.media.controls.ui.view.MediaHost
-import com.android.systemui.media.remedia.ui.viewmodel.factory.mediaViewModelFactory
 import com.android.systemui.settings.fakeUserTracker
 import com.android.systemui.statusbar.policy.keyguardStateController
 import com.android.systemui.testKosmos
@@ -112,8 +110,6 @@ class CommunalEditModeViewModelTest : SysuiTestCase() {
                 packageManager,
                 WIDGET_PICKER_PACKAGE_NAME,
                 kosmos.mediaCarouselController,
-                kosmos.mediaViewModelFactory,
-                kosmos.mediaCarouselInteractor,
             )
         }
 

@@ -31,6 +31,8 @@ enum class DesktopModeTransitionSource : Parcelable {
     APP_HANDLE_MENU_BUTTON,
     /** Transitions that originated as a result of keyboard shortcuts. */
     KEYBOARD_SHORTCUT,
+    /** Transitions that originated from Recents. */
+    RECENTS,
     /** Transitions with source unknown. */
     UNKNOWN;
 

@@ -55,8 +55,7 @@ public class ParticlesCreate extends PaintOperation implements VariableSupport {
     private static final int MAX_EQU_LENGTH = 32;
     @NonNull AnimatedFloatExpression mExp = new AnimatedFloatExpression();
 
-    public ParticlesCreate(
-            int id, @NonNull int [] varId, @NonNull float [][] values, int particleCount) {
+    public ParticlesCreate(int id, int[] varId, float[][] values, int particleCount) {
         mId = id;
         mVarId = varId;
         mEquations = values;
@@ -149,8 +148,8 @@ public class ParticlesCreate extends PaintOperation implements VariableSupport {
     public static void apply(
             @NonNull WireBuffer buffer,
             int id,
-            @NonNull int [] varId,
-            @NonNull float [][] equations,
+            @NonNull int[] varId,
+            @NonNull float[][] equations,
             int particleCount) {
         buffer.start(OP_CODE);
         buffer.writeInt(id);
@@ -237,18 +236,18 @@ public class ParticlesCreate extends PaintOperation implements VariableSupport {
         }
     }
 
-    public @NonNull float [][] getParticles() {
+    public float[][] getParticles() {
         return mParticles;
     }
 
-    public @NonNull int [] getVariableIds() {
+    public int[] getVariableIds() {
         return mVarId;
     }
 
-    public @NonNull float [][] getEquations() {
+    public float[][] getEquations() {
         return mOutEquations;
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {}
+    public void serialize(MapSerializer serializer) {}
 }

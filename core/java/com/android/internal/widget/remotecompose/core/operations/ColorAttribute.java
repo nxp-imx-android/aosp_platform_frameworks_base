@@ -25,16 +25,14 @@ import com.android.internal.widget.remotecompose.core.Operations;
 import com.android.internal.widget.remotecompose.core.PaintContext;
 import com.android.internal.widget.remotecompose.core.PaintOperation;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
-import com.android.internal.widget.remotecompose.core.VariableSupport;
 import com.android.internal.widget.remotecompose.core.WireBuffer;
 import com.android.internal.widget.remotecompose.core.documentation.DocumentationBuilder;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
-import com.android.internal.widget.remotecompose.core.serialize.Serializable;
 
 import java.util.List;
 
-/** Operation to perform Color related calculation TODO support color update */
-public class ColorAttribute extends PaintOperation implements VariableSupport, Serializable {
+/** Operation to perform Color related calculation */
+public class ColorAttribute extends PaintOperation {
     private static final int OP_CODE = Operations.ATTRIBUTE_COLOR;
     private static final String CLASS_NAME = "ColorAttribute";
     public int mId;
@@ -150,6 +148,8 @@ public class ColorAttribute extends PaintOperation implements VariableSupport, S
         return indent + toString();
     }
 
+    @NonNull float[] mBounds = new float[4];
+
     @Override
     public void paint(@NonNull PaintContext context) {
         int val = mType & 255;
@@ -182,7 +182,7 @@ public class ColorAttribute extends PaintOperation implements VariableSupport, S
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("id", mId)
@@ -211,23 +211,4 @@ public class ColorAttribute extends PaintOperation implements VariableSupport, S
                 return "INVALID_TIME_TYPE";
         }
     }
-
-    /**
-     * Call to allow an operator to register interest in variables. Typically they call
-     * context.listensTo(id, this)
-     *
-     * @param context
-     */
-    @Override
-    public void registerListening(@NonNull RemoteContext context) {
-        context.listensTo(Utils.idFromNan(mColorId), this);
-    }
-
-    /**
-     * Called to be notified that the variables you are interested have changed.
-     *
-     * @param context
-     */
-    @Override
-    public void updateVariables(@NonNull RemoteContext context) {}
 }

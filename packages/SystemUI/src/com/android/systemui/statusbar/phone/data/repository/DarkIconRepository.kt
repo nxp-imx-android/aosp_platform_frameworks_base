@@ -48,8 +48,8 @@ constructor(
             )
             return MutableStateFlow(DarkChange.EMPTY)
         }
-        val perDisplayDakIconDispatcher = displaySubComponent.sysUiDarkIconDispatcher
-        return perDisplayDakIconDispatcher.darkChangeFlow()
+        val perDisplayDarkIconDispatcher = displaySubComponent.sysuiDarkIconDispatcher
+        return perDisplayDarkIconDispatcher.darkChangeFlow()
     }
 
     private companion object {

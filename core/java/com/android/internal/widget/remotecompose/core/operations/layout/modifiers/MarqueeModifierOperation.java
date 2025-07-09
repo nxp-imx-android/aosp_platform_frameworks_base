@@ -95,14 +95,13 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
     }
 
     /** Reset the modifier */
-    @Override
     public void reset() {
         mLastTime = 0;
         mScrollX = 0f;
     }
 
     @Override
-    public void write(@NonNull WireBuffer buffer) {
+    public void write(WireBuffer buffer) {
         apply(
                 buffer,
                 mIterations,
@@ -119,26 +118,15 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
      * @param indent padding to display
      * @param serializer append the string
      */
-    @Override
-    public void serializeToString(int indent, @NonNull StringSerializer serializer) {
-        serializer.append(
-                indent,
-                "MARQUEE = ["
-                        + mIterations
-                        + "] "
-                        + mComponentWidth
-                        + " x "
-                        + mComponentHeight
-                        + " / "
-                        + mContentWidth
-                        + " x "
-                        + mContentHeight);
+    // @Override
+    public void serializeToString(int indent, StringSerializer serializer) {
+        serializer.append(indent, "MARQUEE = [" + mIterations + "]");
     }
 
     @NonNull
     @Override
     public String deepToString(@NonNull String indent) {
-        return indent + toString();
+        return (indent != null ? indent : "") + toString();
     }
 
     private long mLastTime = 0;
@@ -147,8 +135,8 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
     private float mScrollX = 0f;
 
     @Override
-    public void paint(@NonNull PaintContext context) {
-        long currentTime = context.getClock().millis();
+    public void paint(PaintContext context) {
+        long currentTime = System.currentTimeMillis();
         if (mLastTime == 0) {
             mLastTime = currentTime;
             mStartTime = mLastTime + (long) mInitialDelayMillis;
@@ -158,7 +146,7 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
             float density = context.getContext().getDensity(); // in dp
             float delta = mContentWidth - mComponentWidth;
             float duration = delta / (density * mVelocity);
-            float elapsed = ((currentTime - mStartTime) / 1000f);
+            float elapsed = ((System.currentTimeMillis() - mStartTime) / 1000f);
             elapsed = (elapsed % duration) / duration;
             float offset =
                     (1f + (float) Math.sin(elapsed * 2 * Math.PI - Math.PI / 2f)) / 2f * -delta;
@@ -178,7 +166,7 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
      *
      * @return name
      */
-    public static @NonNull String name() {
+    public static String name() {
         return CLASS_NAME;
     }
 
@@ -203,7 +191,7 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
      * @param velocity the velocity of the marquee animation
      */
     public static void apply(
-            @NonNull WireBuffer buffer,
+            WireBuffer buffer,
             int iterations,
             int animationMode,
             float repeatDelayMillis,
@@ -225,7 +213,7 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
      * @param buffer the buffer to read
      * @param operations the list of operations that will be added to
      */
-    public static void read(@NonNull WireBuffer buffer, @NonNull List<Operation> operations) {
+    public static void read(WireBuffer buffer, List<Operation> operations) {
         int iterations = buffer.readInt();
         int animationMode = buffer.readInt();
         float repeatDelayMillis = buffer.readFloat();
@@ -247,18 +235,14 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
      *
      * @param doc to append the description to.
      */
-    public static void documentation(@NonNull DocumentationBuilder doc) {
+    public static void documentation(DocumentationBuilder doc) {
         doc.operation("Modifier Operations", OP_CODE, CLASS_NAME)
                 .description("specify a Marquee Modifier")
                 .field(FLOAT, "value", "");
     }
 
     @Override
-    public void layout(
-            @NonNull RemoteContext context,
-            @NonNull Component component,
-            float width,
-            float height) {
+    public void layout(RemoteContext context, Component component, float width, float height) {
         mComponentWidth = width;
         mComponentHeight = height;
         if (component instanceof LayoutComponent) {
@@ -269,7 +253,7 @@ public class MarqueeModifierOperation extends DecoratorModifierOperation impleme
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
                 .addType("MarqueeModifierOperation")

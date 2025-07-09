@@ -1028,7 +1028,7 @@ public class DesktopModeWindowDecorViewModel implements WindowDecorViewModel,
 
     @Override
     public void onDeskActivated(int deskId, int displayId) {
-        if (!mDesktopTilingDecorViewModel.onDeskActivated(deskId)) {
+        if (mDesktopTilingDecorViewModel.tilingDeskActive(deskId)) {
             return;
         }
         final DesktopRepository repository = mDesktopUserRepositories.getCurrent();

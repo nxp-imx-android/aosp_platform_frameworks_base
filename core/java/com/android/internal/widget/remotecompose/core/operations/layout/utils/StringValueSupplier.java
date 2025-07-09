@@ -24,5 +24,6 @@ public interface StringValueSupplier {
      *
      * @return a string
      */
-    @NonNull String getString();
+    @NonNull
+    String getString();
 }

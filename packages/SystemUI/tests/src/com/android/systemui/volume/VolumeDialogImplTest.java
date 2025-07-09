@@ -50,7 +50,6 @@ import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.AudioSystem;
 import android.os.SystemClock;
-import android.platform.test.annotations.EnableFlags;
 import android.provider.Settings;
 import android.testing.TestableLooper;
 import android.util.Log;
@@ -69,7 +68,6 @@ import androidx.test.filters.SmallTest;
 
 import com.android.internal.jank.InteractionJankMonitor;
 import com.android.internal.logging.testing.UiEventLoggerFake;
-import com.android.settingslib.flags.Flags;
 import com.android.systemui.Prefs;
 import com.android.systemui.SysuiTestCase;
 import com.android.systemui.animation.AnimatorTestRule;
@@ -783,7 +781,6 @@ public class VolumeDialogImplTest extends SysuiTestCase {
     }
 
     @Test
-    @EnableFlags(Flags.FLAG_VOLUME_DIALOG_AUDIO_SHARING_FIX)
     public void testDynamicStreamForBroadcast_createRow() {
         State state = createShellState();
         VolumeDialogController.StreamState ss = new VolumeDialogController.StreamState();

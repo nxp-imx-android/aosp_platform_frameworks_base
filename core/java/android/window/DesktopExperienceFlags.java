@@ -147,6 +147,8 @@ public enum DesktopExperienceFlags {
             Flags.FLAG_ENABLE_EMPTY_DESK_ON_MINIMIZE),
     ENABLE_EMPTY_ROOTS_NEVER_TOP(Flags::emptyRootsNeverTop, false,
             Flags.FLAG_EMPTY_ROOTS_NEVER_TOP),
+    ENABLE_EXCLUSIVE_FLOATING_WINDOW(Flags::enableExclusiveFloatingWindow, false,
+            Flags.FLAG_ENABLE_EXCLUSIVE_FLOATING_WINDOW),
     ENABLE_FREEFORM_BOX_SHADOWS(Flags::enableFreeformBoxShadows, false,
             Flags.FLAG_ENABLE_FREEFORM_BOX_SHADOWS),
     ENABLE_FREEFORM_DISPLAY_LAUNCH_PARAMS(Flags::enableFreeformDisplayLaunchParams, true,

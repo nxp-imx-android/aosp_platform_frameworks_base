@@ -155,17 +155,17 @@ public class PathCombine extends PaintOperation implements VariableSupport, Seri
 
     @NonNull
     @Override
-    public String deepToString(@NonNull String indent) {
+    public String deepToString(String indent) {
         return indent + toString();
     }
 
     @Override
-    public void paint(@NonNull PaintContext context) {
+    public void paint(PaintContext context) {
         context.combinePath(mOutId, mPathId1, mPathId2, mOperation);
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("outId", mOutId)

@@ -34,6 +34,7 @@ import com.android.internal.widget.remotecompose.core.operations.utilities.Anima
 import com.android.internal.widget.remotecompose.core.operations.utilities.NanMap;
 import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,12 +42,13 @@ import java.util.List;
 public class FloatFunctionCall extends PaintOperation implements VariableSupport {
     private static final int OP_CODE = Operations.FUNCTION_CALL;
     private static final String CLASS_NAME = "FunctionCall";
-    private static final int MAX_FLOAT_ARRAY_SIZE = 80;
     private final int mId;
     private final float[] mArgs;
     private final float[] mOutArgs;
 
     FloatFunctionDefine mFunction;
+
+    @NonNull private ArrayList<Operation> mList = new ArrayList<>();
 
     @NonNull AnimatedFloatExpression mExp = new AnimatedFloatExpression();
 
@@ -56,7 +58,7 @@ public class FloatFunctionCall extends PaintOperation implements VariableSupport
      * @param id The function to call
      * @param args the arguments to call it with
      */
-    public FloatFunctionCall(int id, @Nullable float [] args) {
+    public FloatFunctionCall(int id, float[] args) {
         mId = id;
         mArgs = args;
         if (args != null) {
@@ -119,7 +121,7 @@ public class FloatFunctionCall extends PaintOperation implements VariableSupport
      * @param id the id of the function to call
      * @param args the arguments to call the function with
      */
-    public static void apply(@NonNull WireBuffer buffer, int id, @Nullable float [] args) {
+    public static void apply(@NonNull WireBuffer buffer, int id, @Nullable float[] args) {
         buffer.start(OP_CODE);
         buffer.writeInt(id);
         if (args != null) {
@@ -141,9 +143,6 @@ public class FloatFunctionCall extends PaintOperation implements VariableSupport
     public static void read(@NonNull WireBuffer buffer, @NonNull List<Operation> operations) {
         int id = buffer.readInt();
         int argLen = buffer.readInt();
-        if (argLen > MAX_FLOAT_ARRAY_SIZE) {
-            throw new RuntimeException("array too big " + argLen);
-        }
         float[] args = null;
         if (argLen > 0) {
             args = new float[argLen];
@@ -187,7 +186,7 @@ public class FloatFunctionCall extends PaintOperation implements VariableSupport
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer
                 .addType(CLASS_NAME)
                 .add("id", mId)

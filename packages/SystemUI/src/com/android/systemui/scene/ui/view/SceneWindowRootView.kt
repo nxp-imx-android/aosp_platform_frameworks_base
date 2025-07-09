@@ -5,7 +5,8 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowInsets
-import com.android.systemui.common.ui.data.repository.ConfigurationRepository
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import com.android.systemui.qs.ui.adapter.QSSceneAdapter
 import com.android.systemui.scene.shared.model.SceneContainerConfig
 import com.android.systemui.scene.shared.model.SceneDataSourceDelegator
@@ -16,14 +17,13 @@ import com.android.systemui.shade.TouchLogger
 import com.android.systemui.statusbar.notification.stack.ui.view.SharedNotificationContainer
 import com.android.systemui.statusbar.phone.ui.TintedIconManager
 import javax.inject.Provider
-import kotlinx.coroutines.flow.MutableStateFlow
 
 /** A root view of the main SysUI window that supports scenes. */
 class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootView(context, attrs) {
 
     private var motionEventHandler: SceneContainerViewModel.MotionEventHandler? = null
     // TODO(b/298525212): remove once Compose exposes window inset bounds.
-    private val windowInsets: MutableStateFlow<WindowInsets?> = MutableStateFlow(null)
+    private val windowInsets: MutableState<WindowInsets?> = mutableStateOf(null)
 
     fun init(
         viewModelFactory: SceneContainerViewModel.Factory,
@@ -32,7 +32,6 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
         scenes: Set<Scene>,
         overlays: Set<Overlay>,
         layoutInsetController: LayoutInsetsController,
-        configurationRepository: ConfigurationRepository,
         sceneDataSourceDelegator: SceneDataSourceDelegator,
         qsSceneAdapter: Provider<QSSceneAdapter>,
         sceneJankMonitorFactory: SceneJankMonitor.Factory,
@@ -55,7 +54,6 @@ class SceneWindowRootView(context: Context, attrs: AttributeSet?) : WindowRootVi
                 super.setVisibility(if (isVisible) View.VISIBLE else View.INVISIBLE)
             },
             dataSourceDelegator = sceneDataSourceDelegator,
-            configurationRepository = configurationRepository,
             qsSceneAdapter = qsSceneAdapter,
             sceneJankMonitorFactory = sceneJankMonitorFactory,
             tintedIconManagerFactory = tintedIconManagerFactory,

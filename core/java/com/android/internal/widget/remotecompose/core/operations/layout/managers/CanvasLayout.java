@@ -152,7 +152,7 @@ public class CanvasLayout extends BoxLayout {
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         super.serialize(serializer);
         serializer.addType(getSerializedName());
     }

@@ -34,6 +34,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito
+import org.mockito.kotlin.inOrder
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
@@ -50,6 +51,7 @@ class DesktopInOrderTransitionObserverTest : ShellTestCase() {
     private val desksTransitionObserver = mock<DesksTransitionObserver>()
     private val desktopImeHandler = mock<DesktopImeHandler>()
     private val desktopBackNavTransitionObserver = mock<DesktopBackNavTransitionObserver>()
+    private val desktopModeLoggerTransitionObserver = mock<DesktopModeLoggerTransitionObserver>()
     private lateinit var transitionObserver: DesktopInOrderTransitionObserver
 
     @Before
@@ -61,6 +63,7 @@ class DesktopInOrderTransitionObserverTest : ShellTestCase() {
                 Optional.of(desksTransitionObserver),
                 Optional.of(desktopImeHandler),
                 Optional.of(desktopBackNavTransitionObserver),
+                desktopModeLoggerTransitionObserver,
             )
     }
 
@@ -150,5 +153,23 @@ class DesktopInOrderTransitionObserverTest : ShellTestCase() {
         transitionObserver.onTransitionFinished(transition, /* aborted= */ false)
 
         verify(desksTransitionObserver).onTransitionFinished(transition)
+    }
+
+    @Test
+    @EnableFlags(Flags.FLAG_ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP)
+    fun onTransitionReady_forwardsToDesktopModeLoggerTransitionObserver() {
+        val transition = Mockito.mock(IBinder::class.java)
+        val info = TransitionInfoBuilder(TRANSIT_CHANGE, /* flags= */ 0).build()
+        val startT = mock<SurfaceControl.Transaction>()
+        val finishT = mock<SurfaceControl.Transaction>()
+
+        val inorder = inOrder(desktopModeLoggerTransitionObserver, desksTransitionObserver)
+
+        transitionObserver.onTransitionReady(transition, info, startT, finishT)
+
+        inorder.verify(desksTransitionObserver).onTransitionReady(transition, info)
+        inorder
+            .verify(desktopModeLoggerTransitionObserver)
+            .onTransitionReady(transition, info, startT, finishT)
     }
 }

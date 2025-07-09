@@ -15,16 +15,11 @@
  */
 package com.android.internal.widget.remotecompose.core.operations.layout.modifiers;
 
-import android.annotation.NonNull;
-
 /** Known shapes, used for modifiers (clip/background/border) */
 public class ShapeType {
-
     public static final int RECTANGLE = 0;
     public static final int CIRCLE = 1;
     public static final int ROUNDED_RECTANGLE = 2;
-
-    private ShapeType() {}
 
     /**
      * Returns a string representation of the value. Used during serialization.
@@ -32,7 +27,7 @@ public class ShapeType {
      * @param value
      * @return
      */
-    public static @NonNull String getString(int value) {
+    public static String getString(int value) {
         switch (value) {
             case ShapeType.RECTANGLE:
                 return "RECTANGLE";

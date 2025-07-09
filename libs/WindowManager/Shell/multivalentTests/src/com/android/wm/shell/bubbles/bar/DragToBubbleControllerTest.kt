@@ -129,7 +129,7 @@ class DragToBubbleControllerTest {
     @Test
     fun droppedItemWithIntentAtTheLeftDropZone_noBubblesOnTheRight_bubbleCreationRequested() {
         val bubbleBarOriginalLocation = BubbleBarLocation.RIGHT
-        prepareBubbleController(hasBubbles = false, bubbleBarLocation = bubbleBarOriginalLocation)
+        prepareBubbleController(bubbleBarLocation = bubbleBarOriginalLocation)
         val pendingIntent = PendingIntent(mock<IIntentSender>())
         val userHandle = UserHandle(0)
 
@@ -148,7 +148,7 @@ class DragToBubbleControllerTest {
     @Test
     fun droppedItemWithShortcutInfoAtTheLeftDropZone_noBubblesOnTheRight_bubbleCreationRequested() {
         val bubbleBarOriginalLocation = BubbleBarLocation.RIGHT
-        prepareBubbleController(hasBubbles = false, bubbleBarLocation = bubbleBarOriginalLocation)
+        prepareBubbleController(bubbleBarLocation = bubbleBarOriginalLocation)
         val shortcutInfo = ShortcutInfo.Builder(context, "id").setLongLabel("Shortcut").build()
 
         dragToBubbleController.onDragStarted()
@@ -165,7 +165,7 @@ class DragToBubbleControllerTest {
     @Test
     fun droppedItem_afterNewDragStartedOnItemDropCleared() {
         val bubbleBarOriginalLocation = BubbleBarLocation.RIGHT
-        prepareBubbleController(hasBubbles = false, bubbleBarLocation = bubbleBarOriginalLocation)
+        prepareBubbleController(bubbleBarLocation = bubbleBarOriginalLocation)
         val shortcutInfo = ShortcutInfo.Builder(context, "id").setLongLabel("Shortcut").build()
         runOnMainSync {
             dragToBubbleController.onDragStarted()
@@ -191,16 +191,35 @@ class DragToBubbleControllerTest {
             .expandStackAndSelectBubble(any<PendingIntent>(), any(), any())
     }
 
+    @Test
+    fun hideDropTargets_dragEnteredDropZone_dropTargetsHidden() {
+        // Given
+        dragToBubbleController.onDragStarted()
+        runOnMainSync {
+            dragToBubbleController.onDragUpdate(rightDropRect.centerX(), rightDropRect.centerY())
+            animatorTestRule.advanceTimeBy(250)
+        }
+        assertThat(dropTargetContainer.childCount).isEqualTo(1)
+        assertThat(dropTargetView.alpha).isEqualTo(1f)
+
+        // When
+        runOnMainSync {
+            dragToBubbleController.hideDropTargets()
+            animatorTestRule.advanceTimeBy(250)
+        }
+
+        // Then
+        assertThat(dropTargetView.alpha).isEqualTo(0f)
+    }
+
     private fun runOnMainSync(action: () -> Unit) {
         InstrumentationRegistry.getInstrumentation().runOnMainSync { action() }
     }
 
     private fun prepareBubbleController(
-        hasBubbles: Boolean = false,
         bubbleBarLocation: BubbleBarLocation = BubbleBarLocation.RIGHT,
     ) {
         bubbleController.stub {
-            on { hasBubbles() } doReturn hasBubbles
             on { getBubbleBarLocation() } doReturn bubbleBarLocation
         }
     }

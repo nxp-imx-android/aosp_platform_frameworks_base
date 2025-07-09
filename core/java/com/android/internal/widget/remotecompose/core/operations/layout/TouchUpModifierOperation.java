@@ -37,7 +37,7 @@ public class TouchUpModifierOperation extends ListActionsOperation implements To
     }
 
     @Override
-    public void write(@NonNull WireBuffer buffer) {
+    public void write(WireBuffer buffer) {
         apply(buffer);
     }
 
@@ -47,10 +47,7 @@ public class TouchUpModifierOperation extends ListActionsOperation implements To
     }
 
     @Override
-    public void apply(@NonNull RemoteContext context) {
-        if (context.getDocument() == null) {
-            return;
-        }
+    public void apply(RemoteContext context) {
         RootLayoutComponent root = context.getDocument().getRootLayoutComponent();
         if (root != null) {
             root.setHasTouchListeners(true);
@@ -60,19 +57,15 @@ public class TouchUpModifierOperation extends ListActionsOperation implements To
 
     @Override
     public void onTouchDown(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y) {
+            RemoteContext context, CoreDocument document, Component component, float x, float y) {
         // nothing
     }
 
     @Override
     public void onTouchUp(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
+            RemoteContext context,
+            CoreDocument document,
+            Component component,
             float x,
             float y,
             float dx,
@@ -82,21 +75,13 @@ public class TouchUpModifierOperation extends ListActionsOperation implements To
 
     @Override
     public void onTouchCancel(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y) {
+            RemoteContext context, CoreDocument document, Component component, float x, float y) {
         // nothing
     }
 
     @Override
     public void onTouchDrag(
-            @NonNull RemoteContext context,
-            @NonNull CoreDocument document,
-            @NonNull Component component,
-            float x,
-            float y) {
+            RemoteContext context, CoreDocument document, Component component, float x, float y) {
         // nothing
     }
 
@@ -115,7 +100,7 @@ public class TouchUpModifierOperation extends ListActionsOperation implements To
      *
      * @param buffer a WireBuffer
      */
-    public static void apply(@NonNull WireBuffer buffer) {
+    public static void apply(WireBuffer buffer) {
         buffer.start(OP_CODE);
     }
 
@@ -125,7 +110,7 @@ public class TouchUpModifierOperation extends ListActionsOperation implements To
      * @param buffer a WireBuffer
      * @param operations the list of operations we read so far
      */
-    public static void read(@NonNull WireBuffer buffer, @NonNull List<Operation> operations) {
+    public static void read(WireBuffer buffer, List<Operation> operations) {
         operations.add(new TouchUpModifierOperation());
     }
 
@@ -134,7 +119,7 @@ public class TouchUpModifierOperation extends ListActionsOperation implements To
      *
      * @param doc a DocumentationBuilder
      */
-    public static void documentation(@NonNull DocumentationBuilder doc) {
+    public static void documentation(DocumentationBuilder doc) {
         doc.operation("Modifier Operations", OP_CODE, name())
                 .description(
                         "Touch up modifier. This operation contains"
@@ -142,7 +127,7 @@ public class TouchUpModifierOperation extends ListActionsOperation implements To
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         super.serialize(serializer);
         serializer.addType("TouchUpModifierOperation");
     }

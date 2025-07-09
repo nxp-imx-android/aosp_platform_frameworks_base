@@ -50,7 +50,7 @@ public class TextData extends Operation implements SerializableToString, Seriali
      *
      * @param from source to copy from
      */
-    public void update(@NonNull TextData from) {
+    public void update(TextData from) {
         mText = from.mText;
     }
 
@@ -144,7 +144,7 @@ public class TextData extends Operation implements SerializableToString, Seriali
     }
 
     @Override
-    public void serialize(@NonNull MapSerializer serializer) {
+    public void serialize(MapSerializer serializer) {
         serializer.addType(CLASS_NAME).add("textId", mTextId).add("text", mText);
     }
 }

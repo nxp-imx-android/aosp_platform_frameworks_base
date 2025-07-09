@@ -1414,7 +1414,7 @@ public class BackgroundActivityStartController {
             }
             return true;
         }
-        if (android.security.Flags.asmReintroduceGracePeriod() && balVerdict.isBasedOnCaller()
+        if (!android.security.Flags.asmIgnoreGracePeriodExemption() && balVerdict.isBasedOnCaller()
                 && balVerdict.isInGracePeriod() && balVerdict.getCode() == BAL_ALLOW_GRACE_PERIOD) {
             if (DEBUG_ACTIVITY_STARTS) {
                 Slog.d(TAG, "[ASM] allowed based on grace period. verdict: " + balVerdict);
@@ -1488,7 +1488,7 @@ public class BackgroundActivityStartController {
                 ArrayList<Task> visibleTasks = displayArea.getVisibleTasks();
                 for (int i = 0; i < visibleTasks.size(); i++) {
                     Task task = visibleTasks.get(i);
-                    if (android.security.Flags.asmReintroduceGracePeriod()) {
+                    if (!android.security.Flags.asmIgnoreGracePeriodExemption()) {
                         bas = checkTopActivityForAsm(task, callingUid, /*sourceRecord*/null, bas);
                     } else {
                         if (visibleTasks.size() == 1 && task.isActivityTypeHomeOrRecents()) {

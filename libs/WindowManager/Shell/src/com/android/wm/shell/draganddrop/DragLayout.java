@@ -637,9 +637,9 @@ public class DragLayout extends LinearLayout
             }
         });
         if (mIsOverBubblesDropZone) {
-            // bubble bar is still showing drop target, notify bubbles of drag cancel
+            // bubble bar is still showing drop target, notify bubbles to hide drop targets
             mIsOverBubblesDropZone = false;
-            Objects.requireNonNull(mDragToBubbleController).onDragEnded();
+            Objects.requireNonNull(mDragToBubbleController).hideDropTargets();
         }
         // Reset the state if we previously force-ignore the bottom margin
         mDropZoneView1.setForceIgnoreBottomMargin(false);
