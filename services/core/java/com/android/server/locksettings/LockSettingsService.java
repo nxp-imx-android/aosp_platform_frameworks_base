@@ -333,8 +333,6 @@ public class LockSettingsService extends ILockSettings.Stub {
     private final CopyOnWriteArrayList<LockSettingsStateListener> mLockSettingsStateListeners =
             new CopyOnWriteArrayList<>();
 
-    private final Object mGcWorkToken = new Object();
-
     // This class manages life cycle events for encrypted users on File Based Encryption (FBE)
     // devices. The most basic of these is to show/hide notifications about missing features until
     // the user unlocks the account and credential-encrypted storage is available.
@@ -1878,7 +1876,6 @@ public class LockSettingsService extends ILockSettings.Stub {
             synchronized (mSeparateChallengeLock) {
                 if (!setLockCredentialInternal(credential, savedCredential,
                         userId, /* isLockTiedToParent= */ false)) {
-                    scheduleGc();
                     return false;
                 }
                 setSeparateProfileChallengeEnabledLocked(userId, true, /* unused */ null);
@@ -1890,7 +1887,6 @@ public class LockSettingsService extends ILockSettings.Stub {
             }
             notifySeparateProfileChallengeChanged(userId);
             onPostPasswordChanged(credential, userId);
-            scheduleGc();
             return true;
         } finally {
             Binder.restoreCallingIdentity(identity);
@@ -2360,7 +2356,6 @@ public class LockSettingsService extends ILockSettings.Stub {
         } finally {
             Binder.restoreCallingIdentity(identity);
             LockscreenCredential.zeroizeIfFromParcel(credential);
-            scheduleGc();
         }
     }
 
@@ -2380,7 +2375,6 @@ public class LockSettingsService extends ILockSettings.Stub {
         } finally {
             Binder.restoreCallingIdentity(identity);
             LockscreenCredential.zeroizeIfFromParcel(credential);
-            scheduleGc();
         }
     }
 
@@ -2582,8 +2576,6 @@ public class LockSettingsService extends ILockSettings.Stub {
                 | BadPaddingException | CertificateException | IOException e) {
             Slog.e(TAG, "Failed to decrypt child profile key", e);
             throw new IllegalStateException("Unable to get tied profile token");
-        } finally {
-            scheduleGc();
         }
     }
 
@@ -3355,7 +3347,6 @@ public class LockSettingsService extends ILockSettings.Stub {
             if (profilePassword != null) {
                 profilePassword.zeroize();
             }
-            scheduleGc();
         }
     }
 
@@ -3715,30 +3706,6 @@ public class LockSettingsService extends ILockSettings.Stub {
         // Disable escrow token permanently on all other device/user types.
         Slogf.i(TAG, "Permanently disabling support for escrow tokens on user %d", userId);
         mSpManager.destroyEscrowData(userId);
-    }
-
-    /**
-     * Schedules garbage collection to sanitize lockscreen credential remnants in memory.
-     *
-     * One source of leftover lockscreen credentials is the unmarshalled binder method arguments.
-     * Since this method will be called within the binder implementation method, a small delay is
-     * added before the GC operation to allow the enclosing binder proxy code to complete and
-     * release references to the argument.
-     */
-    private void scheduleGc() {
-        // Cancel any existing GC request first, so that GC requests don't pile up if lockscreen
-        // credential operations are happening very quickly, e.g. as sometimes happens during tests.
-        //
-        // This delays the already-requested GC, but that is fine in practice where lockscreen
-        // operations don't happen very quickly.  And the precise time that the sanitization happens
-        // isn't very important; doing it within a minute can be fine, for example.
-        mHandler.removeCallbacksAndMessages(mGcWorkToken);
-
-        mHandler.postDelayed(() -> {
-            System.gc();
-            System.runFinalization();
-            System.gc();
-        }, mGcWorkToken, 2000);
     }
 
     private class DeviceProvisionedObserver extends ContentObserver {
