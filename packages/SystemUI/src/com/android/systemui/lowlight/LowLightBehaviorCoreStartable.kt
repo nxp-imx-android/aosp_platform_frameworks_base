@@ -19,6 +19,7 @@ import android.os.Flags
 import android.os.UserHandle
 import com.android.internal.logging.UiEventLogger
 import com.android.systemui.CoreStartable
+import com.android.systemui.common.domain.interactor.BatteryInteractor
 import com.android.systemui.dagger.qualifiers.Background
 import com.android.systemui.display.domain.interactor.DisplayStateInteractor
 import com.android.systemui.dreams.domain.interactor.DreamSettingsInteractor
@@ -74,10 +75,14 @@ constructor(
     private val uiEventLogger: UiEventLogger,
     private val lowLightBehaviorShellCommand: LowLightBehaviorShellCommand,
     private val lowLightShellCommand: LowLightShellCommand,
+    batteryInteractor: BatteryInteractor,
 ) : CoreStartable {
 
     /** Whether the screen is currently on. */
     private val isScreenOn = not(displayStateInteractor.isDefaultDisplayOff).distinctUntilChanged()
+
+    /** Whether device is plugged in */
+    private val isPluggedIn = batteryInteractor.isDevicePluggedIn.distinctUntilChanged()
 
     /** Whether the device is currently in a low-light environment. */
     private val isLowLightFromSensor =
@@ -152,6 +157,7 @@ constructor(
         return allOf(
                 anyOf(isScreenOn, flowOf(behavior.allowedInScreenState(ScreenState.OFF))),
                 dreamSettingsInteractor.dreamingEnabled,
+                isPluggedIn,
             )
             .flatMapLatestConflated {
                 // The second set of conditions are separated from the above allOf flow combination
