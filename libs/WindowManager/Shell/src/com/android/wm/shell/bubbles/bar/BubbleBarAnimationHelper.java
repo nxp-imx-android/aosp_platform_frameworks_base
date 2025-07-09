@@ -35,7 +35,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.annotation.NonNull;
 import android.content.Context;
 import android.graphics.Rect;
@@ -44,7 +43,6 @@ import android.view.SurfaceControl;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
-import androidx.dynamicanimation.animation.FloatPropertyCompat;
 
 import com.android.app.animation.Interpolators;
 import com.android.internal.protolog.ProtoLog;
@@ -296,13 +294,13 @@ public class BubbleBarAnimationHelper {
         prepareForAnimateIn(toBbev);
         final float endTx = toBbev.getTranslationX();
         final float startTx = getSwitchAnimationInitialTx(endTx);
-        toBbev.setTranslationX(startTx);
         toBbev.getHandleView().setAlpha(0f);
         toBbev.getHandleView().setHandleInitialColor(fromBbev.getHandleView().getHandleColor());
 
         toBbev.animateExpansionWhenTaskViewVisible(() -> {
             AnimatorSet switchAnim = new AnimatorSet();
-            switchAnim.playTogether(switchOutAnimator(fromBbev), switchInAnimator(toBbev, endTx));
+            switchAnim.playTogether(
+                    switchOutAnimator(fromBbev), switchInAnimator(toBbev, startTx, endTx));
             switchAnim.addListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
@@ -354,8 +352,9 @@ public class BubbleBarAnimationHelper {
         return animator;
     }
 
-    private Animator switchInAnimator(BubbleBarExpandedView bbev, float restingTx) {
-        ObjectAnimator positionAnim = ObjectAnimator.ofFloat(bbev, TRANSLATION_X, restingTx);
+    private Animator switchInAnimator(BubbleBarExpandedView bbev, float startTx, float restingTx) {
+        ObjectAnimator positionAnim =
+                ObjectAnimator.ofFloat(bbev, TRANSLATION_X, startTx, restingTx);
         positionAnim.setInterpolator(Interpolators.EMPHASIZED_DECELERATE);
         positionAnim.setStartDelay(SWITCH_IN_ANIM_DELAY);
         positionAnim.setDuration(SWITCH_IN_TX_DURATION);
