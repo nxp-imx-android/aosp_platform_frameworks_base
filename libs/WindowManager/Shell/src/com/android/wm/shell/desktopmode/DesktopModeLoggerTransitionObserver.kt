@@ -68,7 +68,6 @@ import kotlin.jvm.optionals.getOrNull
  */
 class DesktopModeLoggerTransitionObserver(
     shellInit: ShellInit,
-    private val transitions: Transitions,
     private val desktopModeEventLogger: DesktopModeEventLogger,
     private val desktopTasksLimiter: Optional<DesktopTasksLimiter>,
     desktopState: DesktopState,
@@ -100,7 +99,6 @@ class DesktopModeLoggerTransitionObserver(
     @VisibleForTesting var isSessionActive: Boolean = false
 
     fun onInit() {
-        transitions.registerObserver(this)
         SystemProperties.set(
             VISIBLE_TASKS_COUNTER_SYSTEM_PROPERTY,
             VISIBLE_TASKS_COUNTER_SYSTEM_PROPERTY_DEFAULT_VALUE,

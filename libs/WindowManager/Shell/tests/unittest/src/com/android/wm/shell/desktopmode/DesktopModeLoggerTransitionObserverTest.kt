@@ -64,7 +64,6 @@ import com.android.wm.shell.desktopmode.multidesks.DesksOrganizer
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellInit
 import com.android.wm.shell.transition.TransitionInfoBuilder
-import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.transition.Transitions.TRANSIT_MINIMIZE
 import java.util.Optional
 import kotlin.test.assertFalse
@@ -104,7 +103,6 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
 
     private val testExecutor = mock<ShellExecutor>()
     private val mockShellInit = mock<ShellInit>()
-    private val transitions = mock<Transitions>()
     private val desktopTasksLimiter = mock<DesktopTasksLimiter>()
     private val desktopState = FakeDesktopState()
     private val desksOrganizer = mock<DesksOrganizer>()
@@ -122,7 +120,6 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
         transitionObserver =
             DesktopModeLoggerTransitionObserver(
                 mockShellInit,
-                transitions,
                 desktopModeEventLogger,
                 Optional.of(desktopTasksLimiter),
                 desktopState,
@@ -148,11 +145,6 @@ class DesktopModeLoggerTransitionObserverTest : ShellTestCase() {
                 ),
             )
         }
-    }
-
-    @Test
-    fun testRegistersObserverAtInit() {
-        verify(transitions).registerObserver(same(transitionObserver))
     }
 
     @Test
