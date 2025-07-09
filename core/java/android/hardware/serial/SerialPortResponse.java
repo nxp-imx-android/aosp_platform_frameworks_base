@@ -22,7 +22,7 @@ import android.os.ParcelFileDescriptor;
 /**
  * Result of opening a serial port.
  */
-@FlaggedApi(android.hardware.serial.flags.Flags.FLAG_ENABLE_SERIAL_API)
+@FlaggedApi(android.hardware.serial.flags.Flags.FLAG_ENABLE_WIRED_SERIAL_API)
 public final class SerialPortResponse {
     @NonNull
     private final SerialPort mPort;

@@ -21,7 +21,7 @@ import android.annotation.NonNull;
 /**
  * Listener to monitor serial port connections and disconnections.
  */
-@FlaggedApi(android.hardware.serial.flags.Flags.FLAG_ENABLE_SERIAL_API)
+@FlaggedApi(android.hardware.serial.flags.Flags.FLAG_ENABLE_WIRED_SERIAL_API)
 public interface SerialPortListener {
     /**
      * Called when a supported serial port is connected.
