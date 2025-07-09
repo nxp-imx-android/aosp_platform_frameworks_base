@@ -101,6 +101,22 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
     }
 
     @Test
+    fun createViewModelForEmptyNotification() {
+        // Given: a non-conversation notification with no title and no text
+        val notificationType = Empty()
+        val notification = getNotification(notificationType)
+
+        // When: inflate the SingleLineViewModel
+        val singleLineViewModel = notification.makeSingleLineViewModel(notificationType)
+
+        // Then: the view model should show the placeholder title
+        val expectedTitle = context.getString(R.string.empty_notification_single_line_title)
+        assertEquals(expectedTitle, singleLineViewModel.titleText)
+        assertNull(singleLineViewModel.contentText)
+        assertNull(singleLineViewModel.conversationData)
+    }
+
+    @Test
     fun createViewModelForNonGroupConversationNotification() {
         // Given: a non-group conversation notification
         val notificationType = OneToOneConversation()
@@ -299,6 +315,8 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
 
     class NonMessaging(largeIcon: Icon? = null) : NotificationType(largeIcon)
 
+    class Empty(largeIcon: Icon? = null) : NotificationType(largeIcon)
+
     class LegacyMessaging(largeIcon: Icon? = null) : NotificationType(largeIcon)
 
     class LegacyMessagingGroup(largeIcon: Icon? = null) : NotificationType(largeIcon)
@@ -328,6 +346,7 @@ class SingleLineViewInflaterTest : SysuiTestCase() {
                 notificationBuilder
                     .setStyle(Notification.BigTextStyle().bigText("Big Text"))
                     .build()
+            is Empty -> notificationBuilder.setContentTitle(null).setContentText(null).build()
             is LegacyMessaging -> {
                 buildMessagingStyle
                     .addMessage("What's up?", 0, firstSender)

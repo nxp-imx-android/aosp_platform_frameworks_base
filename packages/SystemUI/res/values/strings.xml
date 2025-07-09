@@ -4336,6 +4336,8 @@
     <string name="public_notification_single_line_text">Unlock to view</string>
     <!-- Main text of the one line view of a redacted OTP notification -->
     <string name="redacted_otp_notification_single_line_text">Unlock to view code</string>
+    <!-- Placeholder title for the one line view of a notification with no title or text set -->
+    <string name="empty_notification_single_line_title">Expand to view</string>
 
     <!-- Content description for contextual education dialog [CHAR LIMIT=NONE] -->
     <string name="contextual_education_dialog_title">Contextual education</string>
