@@ -37,6 +37,7 @@ import android.app.admin.DevicePolicyResourcesManager;
 import android.app.admin.DpcAuthority;
 import android.app.admin.EnforcingAdmin;
 import android.app.admin.RoleAuthority;
+import android.app.admin.SystemAuthority;
 import android.app.admin.UnknownAuthority;
 import android.content.ComponentName;
 import android.content.Context;
@@ -81,7 +82,7 @@ public class RestrictedPreferenceHelperTest {
 
     private final String mPackage = "test.pkg";
     private final ComponentName mAdmin = new ComponentName("admin", "adminclass");
-    private final Authority mAdvancedProtectionAuthority = new UnknownAuthority(
+    private final Authority mAdvancedProtectionAuthority = new SystemAuthority(
             ADVANCED_PROTECTION_SYSTEM_ENTITY);
 
     private PreferenceViewHolder mViewHolder;

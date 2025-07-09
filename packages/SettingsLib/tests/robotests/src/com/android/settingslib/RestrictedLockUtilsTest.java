@@ -40,6 +40,7 @@ import android.app.admin.DevicePolicyManager;
 import android.app.admin.DpcAuthority;
 import android.app.admin.EnforcingAdmin;
 import android.app.admin.RoleAuthority;
+import android.app.admin.SystemAuthority;
 import android.app.admin.UnknownAuthority;
 import android.content.ComponentName;
 import android.content.Context;
@@ -260,7 +261,7 @@ public class RestrictedLockUtilsTest {
     @RequiresFlagsEnabled(android.security.Flags.FLAG_AAPM_API)
     @Test
     public void isPolicyEnforcedByAdvancedProtection_enforced_returnsTrue() {
-        final Authority advancedProtectionAuthority = new UnknownAuthority(
+        final Authority advancedProtectionAuthority = new SystemAuthority(
                 ADVANCED_PROTECTION_SYSTEM_ENTITY);
         final EnforcingAdmin advancedProtectionEnforcingAdmin = new EnforcingAdmin(mPackage,
                 advancedProtectionAuthority, UserHandle.of(mUserId), mAdmin1);
