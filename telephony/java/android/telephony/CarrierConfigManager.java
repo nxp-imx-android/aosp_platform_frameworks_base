@@ -547,7 +547,6 @@ public class CarrierConfigManager {
      * @deprecated Legacy CDMA is unsupported.
      */
     @Deprecated
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     public static final String KEY_SHOW_CDMA_CHOICES_BOOL = "show_cdma_choices_bool";
 
     /** CDMA activation goes through HFA */
@@ -559,7 +558,6 @@ public class CarrierConfigManager {
      */
     // TODO: This should be combined with config_use_hfa_for_provisioning and implemented as an enum
     // (NONE, HFA, OTASP).
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     public static final String KEY_USE_OTASP_FOR_PROVISIONING_BOOL =
             "use_otasp_for_provisioning_bool";
@@ -575,7 +573,6 @@ public class CarrierConfigManager {
      * @deprecated Legacy CDMA is unsupported.
      */
     @Deprecated
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     public static final String KEY_SHOW_APN_SETTING_CDMA_BOOL = "show_apn_setting_cdma_bool";
 
     /**
@@ -583,7 +580,6 @@ public class CarrierConfigManager {
      * @deprecated Legacy CDMA is unsupported.
      */
     @Deprecated
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     public static final String KEY_SUPPORT_SWAP_AFTER_MERGE_BOOL = "support_swap_after_merge_bool";
 
     /**
@@ -624,7 +620,6 @@ public class CarrierConfigManager {
      * @deprecated Legacy CDMA is unsupported.
      */
     @Deprecated
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     public static final String KEY_DISABLE_CDMA_ACTIVATION_CODE_BOOL =
             "disable_cdma_activation_code_bool";
 
@@ -704,7 +699,6 @@ public class CarrierConfigManager {
      * Value is string array of SIDs to be considered roaming for 3GPP2 RATs.
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     public static final String
             KEY_CDMA_ROAMING_NETWORKS_STRING_ARRAY = "cdma_roaming_networks_string_array";
@@ -714,7 +708,6 @@ public class CarrierConfigManager {
      * Value is string array of SIDs to be considered not roaming for 3GPP2 RATs.
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     public static final String
             KEY_CDMA_NONROAMING_NETWORKS_STRING_ARRAY = "cdma_nonroaming_networks_string_array";
@@ -1423,7 +1416,6 @@ public class CarrierConfigManager {
      * sends out successive DTMF tones on the network.
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     public static final String KEY_CDMA_DTMF_TONE_DELAY_INT = "cdma_dtmf_tone_delay_int";
 
@@ -2526,7 +2518,6 @@ public class CarrierConfigManager {
      * flash is sent.
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     public static final String KEY_CDMA_3WAYCALL_FLASH_DELAY_INT = "cdma_3waycall_flash_delay_int";
 
@@ -2544,7 +2535,6 @@ public class CarrierConfigManager {
      *
      * @deprecated Legacy CDMA is unsupported.
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     public static final String KEY_CDMA_ROAMING_MODE_INT = "cdma_roaming_mode_int";
 
@@ -2554,7 +2544,6 @@ public class CarrierConfigManager {
      * @deprecated Legacy CDMA is unsupported.
      * @hide
      */
-    @FlaggedApi(Flags.FLAG_DEPRECATE_CDMA)
     @Deprecated
     @SystemApi
     public static final String KEY_SUPPORT_CDMA_1X_VOICE_CALLS_BOOL =
