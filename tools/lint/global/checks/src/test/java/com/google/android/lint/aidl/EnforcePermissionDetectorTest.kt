@@ -54,6 +54,24 @@ class EnforcePermissionDetectorTest : LintDetectorTest() {
         .expectClean()
     }
 
+    fun testDoesNotDetectIssuesCorrectAnnotationOnMethodKotlin() {
+        lint().files(kotlin(
+            """
+            package test.pkg
+            import android.annotation.EnforcePermission
+            public class TestClass2 : IFooMethod.Stub {
+                @EnforcePermission(android.Manifest.permission.READ_PHONE_STATE)
+                override fun testMethod() {
+                    testMethod_enforcePermission()
+                }
+            }
+            """).indented(),
+                *stubs
+        )
+        .run()
+        .expectClean()
+    }
+
     fun testDoesNotDetectIssuesCorrectAnnotationAllOnMethod() {
         lint().files(java(
             """
@@ -487,6 +505,7 @@ class EnforcePermissionDetectorTest : LintDetectorTest() {
         """
         public interface IFooMethod extends android.os.IInterface {
          public static abstract class Stub extends android.os.Binder implements IFooMethod {
+             protected void testMethod_enforcePermission() {}
           }
           @android.annotation.EnforcePermission(android.Manifest.permission.READ_PHONE_STATE)
           public void testMethod();
@@ -532,7 +551,11 @@ class EnforcePermissionDetectorTest : LintDetectorTest() {
     private val enforcePermissionAnnotationStub: TestFile = java(
         """
         package android.annotation;
-        public @interface EnforcePermission {}
+        public @interface EnforcePermission {
+            String value() default "";
+            String[] allOf() default {};
+            String[] anyOf() default {};
+        }
         """
     ).indented()
 

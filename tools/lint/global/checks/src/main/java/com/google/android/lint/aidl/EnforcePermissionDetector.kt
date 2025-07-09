@@ -88,7 +88,9 @@ class EnforcePermissionDetector : Detector(), SourceCodeScanner {
             return false
         }
         for (i in overridingAttributes.indices) {
-            if (overridingAttributes[i].name != overriddenAttributes[i].name) {
+            val overridingAttrName = overridingAttributes[i].name ?: "value"
+            val overriddenAttrName = overriddenAttributes[i].name ?: "value"
+            if (overridingAttrName != overriddenAttrName) {
                 return false
             }
             val value1 = overridingAttributes[i].value ?: return false
@@ -171,7 +173,7 @@ class EnforcePermissionDetector : Detector(), SourceCodeScanner {
             if (getContainingAidlInterface(context, uMethod) == null) {
                 return
             }
-            val overridingMethod = element.sourcePsi as PsiMethod
+            val overridingMethod = element.javaPsi as PsiMethod
             val overriddenMethod = usageInfo.referenced as PsiMethod
             compareMethods(context, element, overridingMethod, overriddenMethod)
         }
