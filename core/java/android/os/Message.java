@@ -19,6 +19,9 @@ package android.os;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.compat.annotation.UnsupportedAppUsage;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodRedirect;
+import android.ravenwood.annotation.RavenwoodRedirectionClass;
 import android.util.TimeUtils;
 import android.util.proto.ProtoOutputStream;
 
@@ -26,7 +29,6 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *
@@ -39,7 +41,8 @@ import java.util.concurrent.atomic.AtomicLong;
  * {@link Handler#obtainMessage Handler.obtainMessage()} methods, which will pull
  * them from a pool of recycled objects.</p>
  */
-@android.ravenwood.annotation.RavenwoodKeepWholeClass
+@RavenwoodKeepWholeClass
+@RavenwoodRedirectionClass("Message_ravenwood")
 public final class Message implements Parcelable {
 
     /**
@@ -406,6 +409,11 @@ public final class Message implements Parcelable {
         target = null;
         callback = null;
         data = null;
+        this.onClear();
+    }
+
+    @RavenwoodRedirect
+    private void onClear() {
     }
 
     // Sentinel values used to clear reference fields with a valid 'null' value, to avoid grabbing a
