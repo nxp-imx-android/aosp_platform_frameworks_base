@@ -97,7 +97,7 @@
                         android:layout_height="wrap_content"
                         android:minHeight="@dimen/status_bar_system_icons_height"
                         android:layout_gravity="center_vertical"
-                        android:textAppearance="@style/TextAppearance.StatusBar.Default.Clock"
+                        android:textAppearance="@style/TextAppearance.StatusBar.Default"
                         android:singleLine="true"
                         android:paddingStart="@dimen/status_bar_left_clock_starting_padding"
                         android:paddingEnd="@dimen/status_bar_left_clock_end_padding"
