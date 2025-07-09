@@ -30,10 +30,7 @@ import android.app.IActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.Person;
-import android.content.ContentProvider;
-import android.content.ContentResolver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManagerInternal;
 import android.content.pm.ShortcutInfo;
@@ -42,7 +39,6 @@ import android.media.AudioAttributes;
 import android.media.AudioSystem;
 import android.metrics.LogMaker;
 import android.net.Uri;
-import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -1388,20 +1384,18 @@ public final class NotificationRecord {
      * {@link #mGrantableUris}. Otherwise, this will either log or throw
      * {@link SecurityException} depending on target SDK of enqueuing app.
      */
-    private void visitGrantableUri(Uri uri, boolean userOverriddenUri, boolean isSound) {
-        if (uri == null || !ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) return;
+    private void visitGrantableUri(Uri uri, boolean userOverriddenUri,
+            boolean isSound) {
+        if (uri == null) {
+            return;
+        }
 
         // We can't grant Uri permissions from system
         final int sourceUid = getSbn().getUid();
         if (sourceUid == android.os.Process.SYSTEM_UID) return;
 
-        final long ident = Binder.clearCallingIdentity();
         try {
-            // This will throw SecurityException if caller can't grant
-            mUgmInternal.checkGrantUriPermission(sourceUid, null,
-                    ContentProvider.getUriWithoutUserId(uri),
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
-                    ContentProvider.getUserIdFromUri(uri, UserHandle.getUserId(sourceUid)));
+            PermissionHelper.grantUriPermission(mUgmInternal, uri, sourceUid);
 
             if (mGrantableUris == null) {
                 mGrantableUris = new ArraySet<>();
@@ -1421,8 +1415,6 @@ public final class NotificationRecord {
                     }
                 }
             }
-        } finally {
-            Binder.restoreCallingIdentity(ident);
         }
     }
 
