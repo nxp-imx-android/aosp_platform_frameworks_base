@@ -45,6 +45,7 @@ import com.android.wm.shell.transition.Transitions
 import com.android.wm.shell.windowdecor.WindowDecorationWrapper
 import com.android.wm.shell.windowdecor.common.WindowDecorTaskResourceLoader
 import com.google.common.truth.Truth.assertThat
+import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainCoroutineDispatcher
 import org.junit.Before
@@ -301,6 +302,23 @@ class DesktopTilingDecorViewModelTest : ShellTestCase() {
         // Each tiling session should be reset.
         verify(desktopTilingDecoration, times(1)).resetTilingSession(true)
         verify(desktopTilingDecoration2, times(1)).resetTilingSession(true)
+    }
+
+    @Test
+    fun onDeskActivated_ReturnsTrueIfDeskExistsFalseOtherwise() {
+        desktopTilingDecorViewModel.onUserChange(1)
+        val decorationByDeskId = SparseArray<DesktopTilingWindowDecoration>()
+        decorationByDeskId.put(1, desktopTilingDecoration)
+        whenever(desktopTilingDecoration.displayId).thenReturn(1)
+        desktopTilingDecorViewModel.tilingHandlerByUserAndDeskId.put(1, decorationByDeskId)
+
+        assertEquals(true, desktopTilingDecorViewModel.tilingDeskActive(1))
+
+        desktopTilingDecorViewModel.onDisplayDisconnected(
+            disconnectedDisplayId = 1,
+        )
+
+        assertEquals(desktopTilingDecorViewModel.tilingDeskActive(1), false)
     }
 
     @Test
