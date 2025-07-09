@@ -25,16 +25,21 @@ import android.os.Bundle;
 import android.os.UserManager;
 import android.platform.test.annotations.Presubmit;
 import android.platform.test.flag.junit.SetFlagsRule;
+import android.util.Pair;
 import android.util.SparseArray;
 
 import androidx.test.filters.SmallTest;
 import androidx.test.runner.AndroidJUnit4;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.truth.Expect;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Tests for {@link com.android.server.pm.UserRestrictionsUtils}.
@@ -47,6 +52,12 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 @SmallTest
 public final class UserRestrictionsUtilsTest {
+
+    // List of restrictions applied to all methods
+    private static final List<Pair<String, Boolean>> BASELINE_RESTRICTIONS = Arrays.asList(
+            Pair.create(UserManager.DISALLOW_RECORD_AUDIO, false),
+            Pair.create(UserManager.DISALLOW_WALLPAPER, false),
+            Pair.create(UserManager.DISALLOW_ADJUST_VOLUME, true));
 
     @Rule
     public final Expect expect = Expect.create();
@@ -80,112 +91,140 @@ public final class UserRestrictionsUtilsTest {
         assertThrows(IllegalArgumentException.class, () -> UserRestrictionsUtils.merge(a, a));
     }
 
+    private static final List<Pair<String, Boolean>> CAN_DO_CHANGE =
+            new ImmutableList.Builder<Pair<String, Boolean>>()
+            .addAll(BASELINE_RESTRICTIONS)
+            .add(Pair.create(UserManager.DISALLOW_ADD_USER, true))
+            .add(Pair.create(UserManager.DISALLOW_USER_SWITCH, true))
+            .build();
+
     @Test
     public void testCanDeviceOwnerChange() {
-        expect.that(UserRestrictionsUtils.canDeviceOwnerChange(UserManager.DISALLOW_RECORD_AUDIO))
-                .isFalse();
-        expect.that(UserRestrictionsUtils.canDeviceOwnerChange(UserManager.DISALLOW_WALLPAPER))
-                .isFalse();
-        expect.that(UserRestrictionsUtils.canDeviceOwnerChange(UserManager.DISALLOW_ADD_USER))
-                .isTrue();
-        expect.that(UserRestrictionsUtils.canDeviceOwnerChange(UserManager.DISALLOW_USER_SWITCH))
-                .isTrue();
+        for (var pair : CAN_DO_CHANGE) {
+            var key = pair.first;
+            var expectedResult = pair.second;
+            var result = UserRestrictionsUtils.canDeviceOwnerChange(key);
+            expect.withMessage("canDeviceOwnerChange(%s)", key)
+                    .that(result)
+                    .isEqualTo(expectedResult);
+        }
     }
+
+    private static final List<Pair<String, Boolean>> CAN_PO_CHANGE__MAIN_USER =
+            new ImmutableList.Builder<Pair<String, Boolean>>()
+            .addAll(BASELINE_RESTRICTIONS)
+            .add(Pair.create(UserManager.DISALLOW_ADD_USER, true))
+            .add(Pair.create(UserManager.DISALLOW_USER_SWITCH, false))
+            .build();
 
     @Test
     public void testCanProfileOwnerChange_mainUser() {
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_RECORD_AUDIO,
-                /* isMainUser= */ true,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_WALLPAPER,
-                /* isMainUser= */ true,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_USER_SWITCH,
-                /* isMainUser= */ true,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_ADD_USER,
-                /* isMainUser= */ true,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isTrue();
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_ADJUST_VOLUME,
-                /* isMainUser= */ true,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isTrue();
+        for (var pair : CAN_PO_CHANGE__MAIN_USER) {
+            var key = pair.first;
+            var expectedResult = pair.second;
+            var result = UserRestrictionsUtils.canProfileOwnerChange(key,
+                    /* isMainUser= */ true,
+                    /* isProfileOwnerOnOrgOwnedDevice= */ false);
+            expect.withMessage("canProfileOwnerChange(%s)", key)
+                    .that(result)
+                    .isEqualTo(expectedResult);
+        }
     }
+
+    private static final List<Pair<String, Boolean>> CAN_PO_CHANGE__NOT_MAIN_USER =
+            new ImmutableList.Builder<Pair<String, Boolean>>()
+            .addAll(BASELINE_RESTRICTIONS)
+            .add(Pair.create(UserManager.DISALLOW_ADD_USER, false))
+            .add(Pair.create(UserManager.DISALLOW_USER_SWITCH, false))
+            .build();
 
     @Test
     public void testCanProfileOwnerChange_notMainUser() {
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_RECORD_AUDIO,
-                /* isMainUser= */ false,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_WALLPAPER,
-                /* isMainUser= */ false,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_ADD_USER,
-                /* isMainUser= */ false,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_USER_SWITCH,
-                /* isMainUser= */ false,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_ADJUST_VOLUME,
-                /* isMainUser= */ false,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isTrue();
+        for (var pair : CAN_PO_CHANGE__NOT_MAIN_USER) {
+            var key = pair.first;
+            var expectedResult = pair.second;
+            var result = UserRestrictionsUtils.canProfileOwnerChange(key,
+                    /* isMainUser= */ false,
+                    /* isProfileOwnerOnOrgOwnedDevice= */ false);
+            expect.withMessage("canProfileOwnerChange(%s)", key)
+                    .that(result)
+                    .isEqualTo(expectedResult);
+        }
     }
+
+    // These restrictions are only allowed when isProfileOwnerOnOrgOwnedDevice is true, regardless
+    // of the other arguments
+    private static final String[] CAN_PO_CHANGE__ALWAYS_REQUIRES_ORG_OWNER = {
+            UserManager.DISALLOW_SIM_GLOBALLY,
+    };
 
     @Test
     public void testCanProfileOwnerChange_restrictionRequiresOrgOwnedDevice_orgOwned() {
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_SIM_GLOBALLY,
-                /* isMainUser= */ false,
-                /* isProfileOwnerOnOrgOwnedDevice= */                 true)).isTrue();
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_SIM_GLOBALLY,
-                /* isMainUser= */ true,
-                /* isProfileOwnerOnOrgOwnedDevice= */ true)).isTrue();
+        for (String key: CAN_PO_CHANGE__ALWAYS_REQUIRES_ORG_OWNER) {
+            expect.withMessage("canProfileOwnerChange(%s, notMainUser, orgOwned)", key)
+                    .that(UserRestrictionsUtils.canProfileOwnerChange(key,
+                            /* isMainUser= */ false,
+                            /* isProfileOwnerOnOrgOwnedDevice= */ true))
+                    .isTrue();
+            expect.withMessage("canProfileOwnerChange(%s, mainUser, orgOwned)", key)
+                    .that(UserRestrictionsUtils.canProfileOwnerChange(key,
+                            /* isMainUser= */ true,
+                            /* isProfileOwnerOnOrgOwnedDevice= */ true))
+                    .isTrue();
+        }
     }
 
     @Test
     public void testCanProfileOwnerChange_restrictionRequiresOrgOwnedDevice_notOrgOwned() {
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_SIM_GLOBALLY,
-                /* isMainUser= */ false,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_SIM_GLOBALLY,
-                /* isMainUser= */ true,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isFalse();
+        for (String key: CAN_PO_CHANGE__ALWAYS_REQUIRES_ORG_OWNER) {
+            expect.withMessage("canProfileOwnerChange(%s, notMainUser, notOrgOwned)", key)
+                    .that(UserRestrictionsUtils.canProfileOwnerChange(key,
+                            /* isMainUser= */ false,
+                            /* isProfileOwnerOnOrgOwnedDevice= */ false))
+                    .isFalse();
+            expect.withMessage("canProfileOwnerChange(%s, mainUser, notOrgOwned)", key)
+                    .that(UserRestrictionsUtils.canProfileOwnerChange(key,
+                            /* isMainUser= */ true,
+                            /* isProfileOwnerOnOrgOwnedDevice= */ false))
+                    .isFalse();
+        }
     }
+
+    // These restrictions are allowed regardless of the arguments
+    private static final String[] CAN_PO_CHANGE__DONT_REQUIRES_ORG_OWNER = {
+            UserManager.DISALLOW_ADJUST_VOLUME,
+    };
 
     @Test
     public void testCanProfileOwnerChange_restrictionNotRequiresOrgOwnedDevice_orgOwned() {
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_ADJUST_VOLUME,
-                /* isMainUser= */ false,
-                /* isProfileOwnerOnOrgOwnedDevice= */ true)).isTrue();
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_ADJUST_VOLUME,
-                /* isMainUser= */ true,
-                /* isProfileOwnerOnOrgOwnedDevice= */ true)).isTrue();
+        for (String key: CAN_PO_CHANGE__DONT_REQUIRES_ORG_OWNER) {
+            expect.withMessage("canProfileOwnerChange(%s, notMainUser, orgOwned)", key)
+                    .that(UserRestrictionsUtils.canProfileOwnerChange(key,
+                            /* isMainUser= */ false,
+                            /* isProfileOwnerOnOrgOwnedDevice= */ true))
+                    .isTrue();
+            expect.withMessage("canProfileOwnerChange(%s, mainUser, orgOwned)", key)
+                    .that(UserRestrictionsUtils.canProfileOwnerChange(key,
+                            /* isMainUser= */ true,
+                            /* isProfileOwnerOnOrgOwnedDevice= */ true))
+                    .isTrue();
+        }
     }
 
     @Test
     public void testCanProfileOwnerChange_restrictionNotRequiresOrgOwnedDevice_notOrgOwned() {
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_ADJUST_VOLUME,
-                /* isMainUser= */ false,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isTrue();
-        expect.that(UserRestrictionsUtils.canProfileOwnerChange(
-                UserManager.DISALLOW_ADJUST_VOLUME,
-                /* isMainUser= */ true,
-                /* isProfileOwnerOnOrgOwnedDevice= */ false)).isTrue();
+        for (String key: CAN_PO_CHANGE__DONT_REQUIRES_ORG_OWNER) {
+            expect.withMessage("canProfileOwnerChange(%s, notMainUser, notOrgOwned)", key)
+                    .that(UserRestrictionsUtils.canProfileOwnerChange(key,
+                            /* isMainUser= */ false,
+                            /* isProfileOwnerOnOrgOwnedDevice= */ false))
+                    .isTrue();
+            expect.withMessage("canProfileOwnerChange(%s, mainUser, notOrgOwned)", key)
+                    .that(UserRestrictionsUtils.canProfileOwnerChange(key,
+                            /* isMainUser= */ true,
+                            /* isProfileOwnerOnOrgOwnedDevice= */ false))
+                    .isTrue();
+        }
     }
 
     @Test
