@@ -548,8 +548,8 @@ class DesktopModeEventLogger {
                 FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__KEYBOARD_SHORTCUT_ENTER
             ),
             SCREEN_ON(FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__SCREEN_ON),
-            APP_FROM_OVERVIEW(
-                FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__APP_FROM_OVERVIEW
+            OVERVIEW_TASK_MENU(
+                FrameworkStatsLog.DESKTOP_MODE_UICHANGED__ENTER_REASON__OVERVIEW_TASK_MENU
             ),
         }
 
