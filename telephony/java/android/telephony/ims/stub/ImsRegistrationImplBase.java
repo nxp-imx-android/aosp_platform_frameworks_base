@@ -645,13 +645,22 @@ public class ImsRegistrationImplBase {
      * @param suggestedAction the expected behavior of radio protocol stack.
      * @param attributes The attributes associated with the IMS registration
      * @param throttlingTimeSec The registration throttling time in seconds.
+     *                          This value must be 0 or greater. A value of 0 indicates that no
+     *                          specific throttling time is being requested.
+     * @throws IllegalArgumentException if throttlingTimeSec is a negative value.
      * @hide This API is not part of the Android public SDK API
      */
     @SystemApi
     @FlaggedApi(Flags.FLAG_SUPPORT_THROTTLE_TIME_FOR_DEREGISTRATION)
     public final void onDeregistered(@Nullable ImsReasonInfo info,
             @RegistrationManager.SuggestedAction int suggestedAction,
-            @NonNull ImsRegistrationAttributes attributes, int throttlingTimeSec) {
+            @NonNull ImsRegistrationAttributes attributes,
+            @IntRange(from = 0) int throttlingTimeSec) {
+        if (throttlingTimeSec < 0) {
+            throw new IllegalArgumentException("throttlingTimeSec cannot be negative: "
+                    + throttlingTimeSec);
+        }
+
         boolean isEmergency = isEmergency(attributes);
         int imsRadioTech = attributes.getRegistrationTechnology();
         if (isEmergency) {

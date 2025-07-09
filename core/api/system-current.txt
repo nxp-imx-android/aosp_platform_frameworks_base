@@ -18660,7 +18660,7 @@ package android.telephony.ims.stub {
     method public final void onDeregistered(android.telephony.ims.ImsReasonInfo);
     method public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, int);
     method @FlaggedApi("com.android.internal.telephony.flags.emergency_registration_state") public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, @NonNull android.telephony.ims.ImsRegistrationAttributes);
-    method @FlaggedApi("com.android.internal.telephony.flags.support_throttle_time_for_deregistration") public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, @NonNull android.telephony.ims.ImsRegistrationAttributes, int);
+    method @FlaggedApi("com.android.internal.telephony.flags.support_throttle_time_for_deregistration") public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, @NonNull android.telephony.ims.ImsRegistrationAttributes, @IntRange(from=0) int);
     method public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, @NonNull android.telephony.ims.SipDetails);
     method public final void onDeregistered(@Nullable android.telephony.ims.ImsReasonInfo, int, int, @NonNull android.telephony.ims.SipDetails);
     method public final void onRegistered(int);
