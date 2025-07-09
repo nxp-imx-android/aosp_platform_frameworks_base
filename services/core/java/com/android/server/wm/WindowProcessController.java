@@ -274,6 +274,8 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
     private volatile boolean mIsActivityConfigOverrideAllowed = true;
     /** Non-zero to pause dispatching process configuration change. */
     private int mPauseConfigurationDispatchCount;
+    /** Listeners to handle the process died event. */
+    private List<WindowProcessController.Listener> mListeners = null;
 
     /**
      * Activities that hosts some UI drawn by the current process. The activities live
@@ -1566,6 +1568,7 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
         }
         clearRecentTasks();
         clearActivities();
+        notifyHandleAppDied();
 
         return hasVisibleActivities;
     }
@@ -2313,5 +2316,41 @@ public class WindowProcessController extends ConfigurationContainer<Configuratio
 
     PackageOptimizationInfo getOptimizationInfo() {
         return mOptimizationInfo;
+    }
+
+    void addListener(@NonNull WindowProcessController.Listener listener) {
+        if (!com.android.window.flags.Flags.disposeTaskFragmentSynchronously()) {
+            return;
+        }
+        if (mListeners == null) {
+            mListeners = new ArrayList<>();
+        }
+        mListeners.add(listener);
+    }
+
+    void removeListener(@NonNull WindowProcessController.Listener listener) {
+        if (mListeners == null) {
+            return;
+        }
+
+        mListeners.remove(listener);
+    }
+
+    private void notifyHandleAppDied() {
+        if (mListeners == null) {
+            return;
+        }
+
+        for (int i = mListeners.size() - 1; i >= 0; --i) {
+            mListeners.get(i).onHandleAppDied();
+        }
+        mListeners = null;
+    }
+
+    interface Listener {
+        /**
+         * Called when the process died.
+         */
+        void onHandleAppDied();
     }
 }

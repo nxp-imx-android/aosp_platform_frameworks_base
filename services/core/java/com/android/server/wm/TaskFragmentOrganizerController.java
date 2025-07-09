@@ -181,6 +181,13 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
         private final ArrayMap<IBinder, Transition.ReadyCondition> mInFlightTransactions =
                 new ArrayMap<>();
 
+        /** Listener for process death event. */
+        private final WindowProcessController.Listener mProcessListener = () -> {
+            synchronized (mGlobalLock) {
+                handleAppDied();
+            }
+        };
+
         TaskFragmentOrganizerState(@NonNull ITaskFragmentOrganizer organizer, int pid, int uid,
                 boolean isSystemOrganizer) {
             mAppThread = getAppThread(pid, uid);
@@ -188,21 +195,22 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
             mOrganizerPid = pid;
             mOrganizerUid = uid;
             mIsSystemOrganizer = isSystemOrganizer;
-            try {
-                mOrganizer.asBinder().linkToDeath(this, 0 /*flags*/);
-            } catch (RemoteException e) {
-                Slog.e(TAG, "TaskFragmentOrganizer failed to register death recipient");
-            }
+
+            registerProcessDiedHandler(pid);
         }
 
         @Override
         public void binderDied() {
             synchronized (mGlobalLock) {
-                // TODO(b/419688177): remove the debug log
-                ProtoLog.d(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN,
-                        "TaskFragmentOrganizer=%s died", mOrganizer);
-                removeOrganizer(mOrganizer, "client died");
+                handleAppDied();
             }
+        }
+
+        private void handleAppDied() {
+            // TODO(b/419688177): remove the debug log
+            ProtoLog.d(WmProtoLogGroups.WM_DEBUG_WINDOW_TRANSITIONS_MIN,
+                    "TaskFragmentOrganizer=%s died", mOrganizer);
+            removeOrganizer(mOrganizer, "client died");
         }
 
         void restore(@NonNull ITaskFragmentOrganizer organizer, int pid) {
@@ -218,10 +226,21 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
                     mOrganizedTaskFragments.remove(taskFragment);
                 }
             }
-            try {
-                mOrganizer.asBinder().linkToDeath(this, 0 /*flags*/);
-            } catch (RemoteException e) {
-                Slog.e(TAG, "TaskFragmentOrganizer failed to register death recipient");
+            registerProcessDiedHandler(pid);
+        }
+
+        private void registerProcessDiedHandler(int pid) {
+            if (com.android.window.flags.Flags.disposeTaskFragmentSynchronously()) {
+                final WindowProcessController wpc = mAtmService.mProcessMap.getProcess(pid);
+                if (wpc != null) {
+                    wpc.addListener(mProcessListener);
+                }
+            } else {
+                try {
+                    mOrganizer.asBinder().linkToDeath(this, 0 /*flags*/);
+                } catch (RemoteException e) {
+                    Slog.e(TAG, "TaskFragmentOrganizer failed to register death recipient");
+                }
             }
         }
 
@@ -312,7 +331,15 @@ public class TaskFragmentOrganizerController extends ITaskFragmentOrganizerContr
                 // Cleanup any in-flight transactions to unblock the transition.
                 mInFlightTransactions.valueAt(i).meetAlternate("disposed(" + reason + ")");
             }
-            mOrganizer.asBinder().unlinkToDeath(this, 0 /* flags */);
+            if (com.android.window.flags.Flags.disposeTaskFragmentSynchronously()) {
+                final WindowProcessController wpc = mAtmService.mProcessMap.getProcess(
+                        mOrganizerPid);
+                if (wpc != null) {
+                    wpc.removeListener(mProcessListener);
+                }
+            } else {
+                mOrganizer.asBinder().unlinkToDeath(this, 0 /* flags */);
+            }
         }
 
         @NonNull
