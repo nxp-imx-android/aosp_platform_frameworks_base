@@ -1088,10 +1088,6 @@ private fun LazyGridItemScope.TileGridCell(
                     }
                 }
                 .thenIf(isSelectable) { selectableModifier }
-                .thenIf(!isSelectable && canRemoveTile && cell.tile.isRemovable && !canLayoutTile) {
-                    // Set the remove click on the entire tile if reordering is disabled
-                    Modifier.clickable(onClick = removeTile)
-                }
                 .tileBackground { backgroundColor }
         ) {
             EditTile(
