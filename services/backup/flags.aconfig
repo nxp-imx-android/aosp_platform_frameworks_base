@@ -86,3 +86,11 @@ flag {
     bug: "403956528"
     is_fixed_read_only: true
 }
+
+flag {
+    name: "enable_delayed_restore_api"
+    namespace: "onboarding"
+    description: "Enables delayed restore API for system components"
+    bug: "399038494"
+    is_fixed_read_only: true
+}
