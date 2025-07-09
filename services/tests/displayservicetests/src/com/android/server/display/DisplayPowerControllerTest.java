@@ -66,8 +66,6 @@ import android.os.PowerManager;
 import android.os.SystemProperties;
 import android.os.UserHandle;
 import android.os.test.TestLooper;
-import android.platform.test.annotations.RequiresFlagsDisabled;
-import android.platform.test.annotations.RequiresFlagsEnabled;
 import android.platform.test.flag.junit.CheckFlagsRule;
 import android.platform.test.flag.junit.DeviceFlagsValueProvider;
 import android.provider.Settings;
@@ -94,7 +92,6 @@ import com.android.server.display.color.ColorDisplayService;
 import com.android.server.display.config.HighBrightnessModeData;
 import com.android.server.display.config.HysteresisLevels;
 import com.android.server.display.feature.DisplayManagerFlags;
-import com.android.server.display.feature.flags.Flags;
 import com.android.server.display.layout.Layout;
 import com.android.server.display.plugin.PluginManager;
 import com.android.server.display.whitebalance.DisplayWhiteBalanceController;
@@ -1372,7 +1369,6 @@ public final class DisplayPowerControllerTest {
 
     @Test
     public void testDwbcCallsHappenOnHandler() {
-        when(mDisplayManagerFlagsMock.isAdaptiveTone1Enabled()).thenReturn(true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID);
 
         // Send a display power request
@@ -1498,35 +1494,7 @@ public final class DisplayPowerControllerTest {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_ADAPTIVE_TONE_IMPROVEMENTS_1)
-    public void testRampMaxTimeInteractiveThenIdle() {
-        // Send a display power request
-        DisplayPowerRequest dpr = new DisplayPowerRequest();
-        dpr.policy = DisplayPowerRequest.POLICY_BRIGHT;
-        dpr.useProximitySensor = true;
-        mHolder.dpc.requestPowerState(dpr, false /* waitForNegativeProximity */);
-
-        // Run updatePowerState
-        advanceTime(1);
-
-        setUpDisplay(DISPLAY_ID, "new_unique_id", mHolder.display, mock(DisplayDevice.class),
-                mHolder.config, /* isEnabled= */ true);
-        verify(mHolder.animator).setAnimationTimeLimits(BRIGHTNESS_RAMP_INCREASE_MAX,
-                BRIGHTNESS_RAMP_DECREASE_MAX);
-
-        // switch to idle mode
-        mHolder.dpc.setAutomaticScreenBrightnessMode(AUTO_BRIGHTNESS_MODE_IDLE);
-        advanceTime(1);
-
-        // A second time, when switching to idle mode.
-        verify(mHolder.animator, times(2)).setAnimationTimeLimits(BRIGHTNESS_RAMP_INCREASE_MAX,
-                BRIGHTNESS_RAMP_DECREASE_MAX);
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_ADAPTIVE_TONE_IMPROVEMENTS_1)
     public void testRampMaxTimeInteractiveThenIdle_DifferentValues() {
-        when(mDisplayManagerFlagsMock.isAdaptiveTone1Enabled()).thenReturn(true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID, /* isEnabled= */ true);
 
         // Send a display power request
@@ -1553,37 +1521,7 @@ public final class DisplayPowerControllerTest {
     }
 
     @Test
-    @RequiresFlagsDisabled(Flags.FLAG_ENABLE_ADAPTIVE_TONE_IMPROVEMENTS_1)
-    public void testRampMaxTimeIdle() {
-        // Send a display power request
-        DisplayPowerRequest dpr = new DisplayPowerRequest();
-        dpr.policy = DisplayPowerRequest.POLICY_BRIGHT;
-        dpr.useProximitySensor = true;
-        mHolder.dpc.requestPowerState(dpr, false /* waitForNegativeProximity */);
-        // Run updatePowerState
-        advanceTime(1);
-        // Once on setup
-        verify(mHolder.animator).setAnimationTimeLimits(BRIGHTNESS_RAMP_INCREASE_MAX,
-                BRIGHTNESS_RAMP_DECREASE_MAX);
-
-        setUpDisplay(DISPLAY_ID, "new_unique_id", mHolder.display, mock(DisplayDevice.class),
-                mHolder.config, /* isEnabled= */ true);
-
-        // switch to idle mode
-        mHolder.dpc.setAutomaticScreenBrightnessMode(AUTO_BRIGHTNESS_MODE_IDLE);
-
-        // Process the MSG_SWITCH_AUTOBRIGHTNESS_MODE event
-        advanceTime(1);
-
-        // A second time when switching to idle mode.
-        verify(mHolder.animator, times(2)).setAnimationTimeLimits(BRIGHTNESS_RAMP_INCREASE_MAX,
-                BRIGHTNESS_RAMP_DECREASE_MAX);
-    }
-
-    @Test
-    @RequiresFlagsEnabled(Flags.FLAG_ENABLE_ADAPTIVE_TONE_IMPROVEMENTS_1)
     public void testRampMaxTimeIdle_DifferentValues() {
-        when(mDisplayManagerFlagsMock.isAdaptiveTone1Enabled()).thenReturn(true);
         mHolder = createDisplayPowerController(DISPLAY_ID, UNIQUE_ID, /* isEnabled= */ true);
 
         // Send a display power request
