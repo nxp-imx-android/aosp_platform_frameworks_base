@@ -23,9 +23,15 @@ import android.platform.test.annotations.DisabledOnRavenwood;
 import android.platform.test.annotations.EnabledOnRavenwood;
 
 import com.android.ravenwood.common.RavenwoodInternalUtils;
+import com.android.ravenwood.common.SneakyThrow;
 
 import org.junit.runner.Description;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -75,6 +81,89 @@ public class RavenwoodEnablementChecker {
     public static volatile Pattern REALLY_DISABLED_PATTERN = Pattern.compile(
             Objects.requireNonNullElse(System.getenv("RAVENWOOD_REALLY_DISABLED"), ""));
 
+    /**
+     * When using RAVENWOOD_TEST_ENABLEMENT_POLICY, you can provide an external policy text file
+     * to change whether each test classes or methods are enabled in Ravenwood without the need
+     * to use {@link DisabledOnRavenwood} or {@link EnabledOnRavenwood} annotations.
+     *
+     * The policy file are lines, each with 2 space delimited fields in the following format:
+     *
+     * [signature: string] [enabled: boolean]
+     *
+     * The "signature" field has 2 subcomponents: a class name and method name, separated with the
+     * '#' symbol (e.g. com.example.TestClass#testMethod). Method name can be omitted if the
+     * policy in question applies to the entire class, not a specific method.
+     *
+     * When the "signature" field is the special value "*", the "enable" field sets the
+     * global default enablement status.
+     */
+    private static final String RAVENWOOD_TEST_ENABLEMENT_POLICY
+            = System.getenv("RAVENWOOD_TEST_ENABLEMENT_POLICY");
+
+    private static final EnablementPolicy sEnablementPolicy = new EnablementPolicy();
+
+    private static class ClassEnablementPolicy {
+        Boolean mEnabled;
+        Map<String, Boolean> mMethods;
+    }
+
+    private static class EnablementPolicy {
+        boolean mEnabled = true;
+        final Map<String, ClassEnablementPolicy> mClasses = new HashMap<>();
+
+        boolean shouldEnableClass(String className) {
+            if (mClasses.isEmpty()) {
+                return mEnabled;
+            }
+            var clazz = mClasses.get(className);
+            if (clazz == null) {
+                return mEnabled;
+            }
+            return clazz.mEnabled != null ? clazz.mEnabled : mEnabled;
+        }
+
+        Boolean shouldEnableMethod(String className, String methodName) {
+            if (mClasses.isEmpty()) {
+                return null;
+            }
+            var clazz = mClasses.get(className);
+            if (clazz == null) {
+                return null;
+            }
+            if (clazz.mMethods == null) {
+                return null;
+            }
+            return clazz.mMethods.get(methodName);
+        }
+
+        void parseLine(String line) {
+            var columns = line.split("\\s", 2);
+            if (columns.length != 2) return;
+            var signature = columns[0];
+            boolean enable = Boolean.parseBoolean(columns[1]);
+            if (signature.equals("*")) {
+                // Setting the global default policy
+                mEnabled = enable;
+            } else {
+                var s = signature.split("\\#");
+                var clazz = s[0];
+                var method = s.length > 1 ? s[1] : null;
+                var policy = mClasses.computeIfAbsent(clazz, k -> new ClassEnablementPolicy());
+                if (method != null) {
+                    if (policy.mMethods == null) policy.mMethods = new HashMap<>();
+                    policy.mMethods.put(method, enable);
+                } else {
+                    policy.mEnabled = enable;
+                }
+            }
+        }
+
+        void clear() {
+            mEnabled = true;
+            mClasses.clear();
+        }
+    }
+
     static {
         if (RUN_DISABLED_TESTS) {
             log(TAG, "$RAVENWOOD_RUN_DISABLED_TESTS enabled: running only disabled tests");
@@ -82,9 +171,28 @@ public class RavenwoodEnablementChecker {
                 log(TAG, "$RAVENWOOD_REALLY_DISABLED=" + REALLY_DISABLED_PATTERN.pattern());
             }
         }
+
+        if (RAVENWOOD_TEST_ENABLEMENT_POLICY != null) {
+            try {
+                var policy = Files.readString(Path.of(RAVENWOOD_TEST_ENABLEMENT_POLICY));
+                setTestEnablementPolicy(policy);
+            } catch (IOException e) {
+                SneakyThrow.sneakyThrow(e);
+            }
+        }
     }
 
     private RavenwoodEnablementChecker() {
+    }
+
+    public static void setTestEnablementPolicy(String policy) {
+        sEnablementPolicy.clear();
+        policy.lines().map(String::strip)
+                // Remove inline comments
+                .map(line -> line.replaceAll("\\s+\\#.*$", "").strip())
+                // Ignore empty lines and full line comments
+                .filter(line -> !line.isEmpty() && !line.startsWith("#"))
+                .forEach(sEnablementPolicy::parseLine);
     }
 
     /**
@@ -105,6 +213,9 @@ public class RavenwoodEnablementChecker {
                 result = true;
             } else if (description.getAnnotation(DisabledOnRavenwood.class) != null) {
                 result = false;
+            } else {
+                result = sEnablementPolicy.shouldEnableMethod(
+                        description.getClassName(), description.getMethodName());
             }
             if (result != null) {
                 if (checkRunDisabledTestsFlag && RUN_DISABLED_TESTS) {
@@ -125,11 +236,13 @@ public class RavenwoodEnablementChecker {
 
     public static boolean shouldRunClassOnRavenwood(@NonNull Class<?> testClass,
             boolean checkRunDisabledTestsFlag) {
-        boolean result = true;
+        boolean result;
         if (testClass.getAnnotation(EnabledOnRavenwood.class) != null) {
             result = true;
         } else if (testClass.getAnnotation(DisabledOnRavenwood.class) != null) {
             result = false;
+        } else {
+            result = sEnablementPolicy.shouldEnableClass(testClass.getName());
         }
         if (checkRunDisabledTestsFlag && RUN_DISABLED_TESTS) {
             // Invert the result + check the really disable pattern
@@ -144,7 +257,7 @@ public class RavenwoodEnablementChecker {
      *
      * This only works on tests, not on classes.
      */
-    static boolean shouldReallyDisableTest(@NonNull Class<?> testClass,
+    private static boolean shouldReallyDisableTest(@NonNull Class<?> testClass,
             @Nullable String methodName) {
         if (REALLY_DISABLED_PATTERN.pattern().isEmpty()) {
             return false;
