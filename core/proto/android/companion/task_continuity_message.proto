@@ -33,8 +33,7 @@ message TaskContinuityMessage {
 }
 
 message ContinuityDeviceConnected {
-    int32 currentForegroundTaskId = 1;
-    repeated RemoteTaskInfo remoteTasks = 2;
+    repeated RemoteTaskInfo remoteTasks = 1;
 }
 
 message RemoteTaskAddedMessage {

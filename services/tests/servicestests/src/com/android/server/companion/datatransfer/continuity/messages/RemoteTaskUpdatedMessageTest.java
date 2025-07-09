@@ -24,7 +24,6 @@ import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-import android.util.proto.ProtoParseException;
 
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
 
@@ -41,31 +40,20 @@ public class RemoteTaskUpdatedMessageTest {
     public void testConstructor_fromObjects() {
         RemoteTaskInfo expected = new RemoteTaskInfo(1, "label", 0, new byte[0]);
 
-        RemoteTaskUpdatedMessage actual
-            = new RemoteTaskUpdatedMessage(expected);
+        RemoteTaskUpdatedMessage actual = new RemoteTaskUpdatedMessage(expected);
 
-        assertThat(actual.getTask()).isEqualTo(expected);
+        assertThat(actual.task()).isEqualTo(expected);
     }
 
     @Test
-    public void testConstructor_fromProto_hasTask() throws IOException {
-        final RemoteTaskInfo expected = new RemoteTaskInfo(1, "label", 0, new byte[0]);
-        final ProtoOutputStream pos = new ProtoOutputStream();
-        final long taskToken = pos.start(android.companion.RemoteTaskUpdatedMessage.TASK);
-        expected.writeToProto(pos);
-        pos.end(taskToken);
-        pos.flush();
-
-        ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        RemoteTaskUpdatedMessage actual
-            = new RemoteTaskUpdatedMessage(pis);
-
-        assertThat(actual.getTask()).isEqualTo(expected);
+    public void testReadFromProto_missingTask_throwsException() throws IOException {
+        final ProtoInputStream pis = new ProtoInputStream(new byte[0]);
+        expectThrows(IOException.class, () -> RemoteTaskUpdatedMessage.readFromProto(pis));
     }
 
     @Test
-    public void testWriteAndRead_roundTrip_works() throws IOException {
-        RemoteTaskUpdatedMessage expected
+    public void testWriteAndReadFromProto_roundTrip_works() throws IOException {
+        final RemoteTaskUpdatedMessage expected
             = new RemoteTaskUpdatedMessage(new RemoteTaskInfo(1, "label", 0, new byte[0]));
 
         final ProtoOutputStream pos = new ProtoOutputStream();
@@ -73,9 +61,9 @@ public class RemoteTaskUpdatedMessageTest {
         pos.flush();
 
         final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        final RemoteTaskUpdatedMessage actual = new RemoteTaskUpdatedMessage(pis);
+        final RemoteTaskUpdatedMessage actual = RemoteTaskUpdatedMessage.readFromProto(pis);
 
-        assertThat(expected.getTask()).isEqualTo(actual.getTask());
+        assertThat(expected.task()).isEqualTo(actual.task());
     }
 
     @Test

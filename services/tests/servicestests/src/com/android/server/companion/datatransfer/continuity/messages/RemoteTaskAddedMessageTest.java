@@ -24,7 +24,6 @@ import android.platform.test.annotations.Presubmit;
 import android.testing.AndroidTestingRunner;
 import android.util.proto.ProtoInputStream;
 import android.util.proto.ProtoOutputStream;
-import android.util.proto.ProtoParseException;
 
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskAddedMessage;
 import com.android.server.companion.datatransfer.continuity.messages.RemoteTaskInfo;
@@ -42,30 +41,13 @@ public class RemoteTaskAddedMessageTest {
     public void testConstructor_fromObjects() {
         RemoteTaskInfo expected = new RemoteTaskInfo(1, "label", 0, new byte[0]);
 
-        RemoteTaskAddedMessage remoteTaskAddedMessage
-            = new RemoteTaskAddedMessage(expected);
+        RemoteTaskAddedMessage remoteTaskAddedMessage = new RemoteTaskAddedMessage(expected);
 
-        assertThat(remoteTaskAddedMessage.getTask()).isEqualTo(expected);
+        assertThat(remoteTaskAddedMessage.task()).isEqualTo(expected);
     }
 
     @Test
-    public void testConstructor_fromProto_hasTask() throws IOException {
-        final RemoteTaskInfo expected = new RemoteTaskInfo(1, "label", 0, new byte[0]);
-        final ProtoOutputStream pos = new ProtoOutputStream();
-        final long taskToken = pos.start(android.companion.RemoteTaskAddedMessage.TASK);
-        expected.writeToProto(pos);
-        pos.end(taskToken);
-        pos.flush();
-
-        ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
-        RemoteTaskAddedMessage remoteTaskAddedMessage
-            = RemoteTaskAddedMessage.readFromProto(pis);
-
-        assertThat(remoteTaskAddedMessage.getTask()).isEqualTo(expected);
-    }
-
-    @Test
-    public void testWriteAndRead_roundTrip_works() throws IOException {
+    public void testWriteAndReadFromProto_roundTrip_works() throws IOException {
         RemoteTaskAddedMessage expected
             = new RemoteTaskAddedMessage(new RemoteTaskInfo(1, "label", 0, new byte[0]));
 
@@ -76,7 +58,7 @@ public class RemoteTaskAddedMessageTest {
         final ProtoInputStream pis = new ProtoInputStream(pos.getBytes());
         final RemoteTaskAddedMessage actual = RemoteTaskAddedMessage.readFromProto(pis);
 
-        assertThat(actual.getTask()).isEqualTo(expected.getTask());
+        assertThat(actual).isEqualTo(expected);
     }
 
     @Test

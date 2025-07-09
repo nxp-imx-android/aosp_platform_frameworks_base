@@ -179,11 +179,6 @@ class TaskBroadcaster
 
         List<ActivityManager.RunningTaskInfo> runningTasks = getRunningTasks();
 
-        int currentForegroundTaskId = -1;
-        if (runningTasks.size() > 0) {
-            currentForegroundTaskId = runningTasks.get(0).taskId;
-        }
-
         List<RemoteTaskInfo> remoteTasks = new ArrayList<>();
         for (ActivityManager.RunningTaskInfo taskInfo : runningTasks) {
             RemoteTaskInfo remoteTaskInfo = createRemoteTaskInfo(taskInfo);
@@ -194,8 +189,8 @@ class TaskBroadcaster
             }
         }
 
-        ContinuityDeviceConnected deviceConnectedMessage =
-            new ContinuityDeviceConnected(currentForegroundTaskId, remoteTasks);
+        ContinuityDeviceConnected deviceConnectedMessage
+            = new ContinuityDeviceConnected(remoteTasks);
 
         sendMessage(associationId, deviceConnectedMessage);
     }
