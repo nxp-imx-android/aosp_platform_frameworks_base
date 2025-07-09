@@ -31,6 +31,22 @@ filegroup {
     ],
 }
 
+// Utility library for the IPsec module
+java_library {
+    name: "vcn-utils-framework-ipsec",
+    sdk_version: "module_current",
+    min_sdk_version: "30",
+    srcs: ["src/android/net/vcn/util/PersistableBundleUtils.java"],
+    libs: [
+        "framework-annotations-lib",
+        "net-utils-framework-vcn", // For HexDump.java
+    ],
+    visibility: [
+        "//packages/modules/IPsec",
+    ],
+    apex_available: ["com.android.ipsec"],
+}
+
 java_defaults {
     name: "framework-connectivity-b-defaults-base",
     sdk_version: "module_current",
