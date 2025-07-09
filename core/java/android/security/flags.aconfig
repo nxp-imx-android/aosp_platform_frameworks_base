@@ -143,3 +143,11 @@ flag {
     description: "Feature flag to enable the toggle for failed authentication lock"
     bug: "414605464"
 }
+
+flag {
+    name: "deprecate_uses_cleartext_traffic"
+    namespace: "network_security"
+    description: "If enabled, the XML application flag usesCleartextTraffic is ignored for targetSdk version C+."
+    bug: "415007211"
+    is_fixed_read_only: true
+}
