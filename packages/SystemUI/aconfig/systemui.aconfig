@@ -1923,6 +1923,13 @@ flag {
 }
 
 flag {
+    name: "large_screen_sharing"
+    namespace: "systemui"
+    description: "Enables the new large screen window sharing experience."
+    bug: "430582532"
+}
+
+flag {
     name: "fix_dialog_launch_animation_jank_logging"
     namespace: "systemui"
     description: "Adjust timing of jank logging for dialog launch animations, and attach it to the dialog window instead of the origin view window."
