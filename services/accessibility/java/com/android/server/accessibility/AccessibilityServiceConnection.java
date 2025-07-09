@@ -105,6 +105,10 @@ class AccessibilityServiceConnection extends AbstractAccessibilityServiceConnect
 
     private final Handler mMainHandler;
     private UsbDeviceReceiver mUsbDeviceReceiverReceiver;
+    // The serial number of the braille display which USB permission was last granted for. Needed to
+    // automatically re-grant USB permission to this same braille display if unplugged and connected
+    // again in the same accessibility service session.
+    private String mConnectedBrailleDisplaySerialNumber = null;
 
     private static final class AccessibilityInputMethodSessionCallback
             extends IAccessibilityInputMethodSessionCallback.Stub {
@@ -225,6 +229,7 @@ class AccessibilityServiceConnection extends AbstractAccessibilityServiceConnect
         resetLocked();
         if (Flags.enableBrailleSuwImmediateConnections() && mUsbDeviceReceiverReceiver != null) {
             mContext.unregisterReceiver(mUsbDeviceReceiverReceiver);
+            mConnectedBrailleDisplaySerialNumber = null;
         }
     }
 
@@ -839,7 +844,8 @@ class AccessibilityServiceConnection extends AbstractAccessibilityServiceConnect
             return;
         }
 
-        if (isInSetupWizard()) {
+        if (isInSetupWizard() || (mConnectedBrailleDisplaySerialNumber != null
+                && mConnectedBrailleDisplaySerialNumber.equals(device.getSerialNumber()))) {
             int clientUid = getClientUid();
             if (clientUid == UID_UNKNOWN) {
                 return;
@@ -847,6 +853,13 @@ class AccessibilityServiceConnection extends AbstractAccessibilityServiceConnect
 
             UsbManager usbManager = mContext.getSystemService(UsbManager.class);
             usbManager.grantPermission(device, /* uid of client's App */ clientUid);
+
+            String usbSerialNumber = device.getSerialNumber();
+            if (!TextUtils.isEmpty(usbSerialNumber)) {
+                // Store the serial number to re-grant USB permission to this braille display if it
+                // is unplugged and reconnected.
+                mConnectedBrailleDisplaySerialNumber = usbSerialNumber;
+            }
         }
     }
 

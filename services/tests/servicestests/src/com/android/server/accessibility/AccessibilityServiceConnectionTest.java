@@ -598,4 +598,48 @@ public class AccessibilityServiceConnectionTest {
         usbDeviceReceiverCaptor.getValue().onReceive(mMockContext, intent);
         verify(usbManager, never()).grantPermission(any(), any());
     }
+
+    @Test
+    @EnableFlags(
+            com.android.server.accessibility.Flags.FLAG_ENABLE_BRAILLE_SUW_IMMEDIATE_CONNECTIONS)
+    public void sendUsbAttachedIntentOutsideSuw_grantPermissionToSavedUsbDevice() {
+        // Set USER_SETUP_COMPLETE = 0 to simulate running in SUW.
+        Settings.Secure.putIntForUser(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 0,
+                mMockUserState.mUserId);
+
+        mConnection.bindLocked();
+
+        ArgumentCaptor<BroadcastReceiver> usbDeviceReceiverCaptor = ArgumentCaptor.forClass(
+                BroadcastReceiver.class);
+        verify(mMockContext).registerReceiver(usbDeviceReceiverCaptor.capture(), any());
+
+        // Create USB device with a serial number for identification.
+        UsbDevice usbDevice = Mockito.mock(UsbDevice.class);
+        when(usbDevice.getSerialNumber()).thenReturn("UsbSerialNo");
+
+        // Setup USB device attach intent.
+        Intent intent = new Intent(UsbManager.ACTION_USB_DEVICE_ATTACHED);
+        intent.putExtra(UsbManager.EXTRA_DEVICE, usbDevice);
+
+        // Send intent to simulate the USB device was unplugged and plugged in again and verify
+        // permission is granted to the device because it was previously connected.
+        UsbManager usbManager = Mockito.mock(UsbManager.class);
+        when(mMockContext.getSystemService(Context.USB_SERVICE)).thenReturn(usbManager);
+        when(mMockContext.getSystemServiceName(UsbManager.class)).thenReturn(Context.USB_SERVICE);
+        usbDeviceReceiverCaptor.getValue().onReceive(mMockContext, intent);
+        verify(usbManager, times(1)).grantPermission(usbDevice, 0);
+
+        // After registering the USB device in the SUW, set USER_SETUP_COMPLETE = 1 to simulate
+        // plugging in the USB device again outside of SUW.
+        Settings.Secure.putIntForUser(mContentResolver, Settings.Secure.USER_SETUP_COMPLETE, 1,
+                mMockUserState.mUserId);
+
+        // Reset the USB manager mock for the next call.
+        Mockito.clearInvocations(usbManager);
+
+        // Send intent to simulate the USB device was unplugged and plugged in again and verify
+        // permission is granted to the device because it was previously connected.
+        usbDeviceReceiverCaptor.getValue().onReceive(mMockContext, intent);
+        verify(usbManager, times(1)).grantPermission(usbDevice, 0);
+    }
 }
