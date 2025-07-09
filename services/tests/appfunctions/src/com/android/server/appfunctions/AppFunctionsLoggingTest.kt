@@ -77,7 +77,8 @@ class AppFunctionsLoggingTest {
             mock<PackageManagerInternal>(),
             mock<AppFunctionAccessServiceInterface>(),
             mock<IUriGrantsManager>(),
-            mock<UriGrantsManagerInternal>()
+            mock<UriGrantsManagerInternal>(),
+            mock<DeviceSettingHelper>(),
         )
 
     private val mRequestInternal =

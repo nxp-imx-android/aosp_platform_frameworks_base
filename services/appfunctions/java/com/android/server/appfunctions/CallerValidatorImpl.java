@@ -40,11 +40,14 @@ class CallerValidatorImpl implements CallerValidator {
     private final Context mContext;
     private final AppFunctionAccessServiceInterface mAppFunctionAccessService;
 
+    private final DeviceSettingHelper mDeviceSettingHelper;
+
     CallerValidatorImpl(
             @NonNull Context context,
             @NonNull AppFunctionAccessServiceInterface appFunctionAccessService) {
         mContext = Objects.requireNonNull(context);
         mAppFunctionAccessService = Objects.requireNonNull(appFunctionAccessService);
+        mDeviceSettingHelper = new DeviceSettingHelperImpl(context);
     }
 
     @Override
@@ -92,7 +95,7 @@ class CallerValidatorImpl implements CallerValidator {
 
         boolean hasExecutionPermission =
                 mContext.checkPermission(
-                        Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
+                                Manifest.permission.EXECUTE_APP_FUNCTIONS, callingPid, callingUid)
                         == PackageManager.PERMISSION_GRANTED;
 
         boolean isSamePackage = callerPackageName.equals(targetPackageName);
@@ -100,7 +103,7 @@ class CallerValidatorImpl implements CallerValidator {
                 mAppFunctionAccessService.getAccessRequestState(
                         callerPackageName,
                         UserHandle.getUserId(callingUid),
-                        targetPackageName,
+                        mDeviceSettingHelper.getPermissionOwnerPackage(targetPackageName),
                         targetUser.getIdentifier());
         boolean hasAccessPermission =
                 requestState == AppFunctionManager.ACCESS_REQUEST_STATE_GRANTED;
@@ -143,6 +146,11 @@ class CallerValidatorImpl implements CallerValidator {
             @NonNull String callerPackageName,
             @NonNull String targetPackageName,
             @NonNull String functionId) {
+        if (callingUid == Process.ROOT_UID) {
+            // Bypass any validation if calling from ROOT_ID since it is not an actual package
+            // to verify.
+            return AndroidFuture.completedFuture(CAN_EXECUTE_APP_FUNCTIONS_ALLOWED_HAS_PERMISSION);
+        }
 
         if (Flags.appFunctionAccessApiEnabled() && Flags.appFunctionAccessServiceEnabled()) {
             return verifyCallerCanExecuteAppFunctionWithAccessService(
