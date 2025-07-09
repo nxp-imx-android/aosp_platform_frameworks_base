@@ -3425,7 +3425,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             (1..MAX_TASK_LIMIT).map { _ ->
                 setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
             }
-        val task = createRecentTaskInfo(1001)
+        val task = createRecentTaskInfo(freeformTasks.maxOf { it.taskId } + 10)
         whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(null)
         whenever(
                 desktopMixedTransitionHandler.startLaunchTransition(
@@ -3457,7 +3457,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             (1..MAX_TASK_LIMIT).map { _ ->
                 setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
             }
-        val task = createRecentTaskInfo(1001)
+        val task = createRecentTaskInfo(freeformTasks.maxOf { it.taskId } + 10)
         whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(null)
         val transition = Binder()
         whenever(
@@ -3490,7 +3490,7 @@ class DesktopTasksControllerTest(flags: FlagsParameterization) : ShellTestCase()
             (1..MAX_TASK_LIMIT).map { _ ->
                 setUpFreeformTask(displayId = DEFAULT_DISPLAY, deskId = deskId)
             }
-        val task = createRecentTaskInfo(freeformTasks.last().taskId + 10)
+        val task = createRecentTaskInfo(freeformTasks.maxOf { it.taskId } + 10)
         whenever(shellTaskOrganizer.getRunningTaskInfo(task.taskId)).thenReturn(null)
         whenever(
                 desktopMixedTransitionHandler.startLaunchTransition(
