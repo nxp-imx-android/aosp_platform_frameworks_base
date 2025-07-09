@@ -23,17 +23,17 @@ import static android.content.pm.UserInfo.FLAG_FULL;
 import static android.content.pm.UserInfo.FLAG_MAIN;
 import static android.content.pm.UserInfo.FLAG_SYSTEM;
 
-import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.ADMIN_USER_CREATED;
-import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.FIRST_ADMIN_USER_PROMOTED_TO_MAIN;
-import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.MAIN_USER_CREATED;
-import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.MAIN_USER_DEMOTED;
-import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.NO_USER_CREATED;
-import static com.android.server.pm.HsumBootUserInitializerTest.ExpectedResult.SECOND_ADMIN_USER_PROMOTED_TO_MAIN;
-import static com.android.server.pm.HsumBootUserInitializerTest.InitialUsers.SYSTEM_AND_MAIN;
-import static com.android.server.pm.HsumBootUserInitializerTest.InitialUsers.SYSTEM_AND_ADMINS;
-import static com.android.server.pm.HsumBootUserInitializerTest.InitialUsers.SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE;
-import static com.android.server.pm.HsumBootUserInitializerTest.InitialUsers.SYSTEM_AND_REGULAR;
-import static com.android.server.pm.HsumBootUserInitializerTest.InitialUsers.SYSTEM_ONLY;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.ExpectedResult.ADMIN_USER_CREATED;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.ExpectedResult.FIRST_ADMIN_USER_PROMOTED_TO_MAIN;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.ExpectedResult.MAIN_USER_CREATED;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.ExpectedResult.MAIN_USER_DEMOTED;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.ExpectedResult.NO_USER_CREATED;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.ExpectedResult.SECOND_ADMIN_USER_PROMOTED_TO_MAIN;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.InitialUsers.SYSTEM_AND_MAIN;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.InitialUsers.SYSTEM_AND_ADMINS;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.InitialUsers.SYSTEM_AND_ADMINS_FIRST_ADMIN_UNPROMOTABLE;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.InitialUsers.SYSTEM_AND_REGULAR;
+import static com.android.server.pm.HsumBootUserInitializerInitMethodTest.InitialUsers.SYSTEM_ONLY;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
@@ -75,11 +75,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-// NOTE: rename to HsumBootUserInitializerInitMethodTest if it needs to test other methods
 @RunWith(Parameterized.class)
-public final class HsumBootUserInitializerTest {
+public final class HsumBootUserInitializerInitMethodTest {
 
-    private static final String TAG = HsumBootUserInitializerTest.class.getSimpleName();
+    private static final String TAG = HsumBootUserInitializerInitMethodTest.class.getSimpleName();
 
     @UserIdInt
     private static final int MAIN_USER_ID = 4;
@@ -162,7 +161,7 @@ public final class HsumBootUserInitializerTest {
         });
     }
 
-    public HsumBootUserInitializerTest(boolean shouldAlwaysHaveMainUser,
+    public HsumBootUserInitializerInitMethodTest(boolean shouldAlwaysHaveMainUser,
             boolean shouldCreateInitialUser, InitialUsers initialUsers,
             ExpectedResult expectedResult) {
         mShouldAlwaysHaveMainUser = shouldAlwaysHaveMainUser;
