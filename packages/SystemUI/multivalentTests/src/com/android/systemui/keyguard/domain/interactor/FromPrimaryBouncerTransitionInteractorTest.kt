@@ -50,6 +50,7 @@ import com.android.systemui.power.domain.interactor.PowerInteractor.Companion.se
 import com.android.systemui.power.domain.interactor.powerInteractor
 import com.android.systemui.testKosmos
 import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import junit.framework.Assert.assertEquals
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
@@ -176,6 +177,7 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
         testScope.runTest {
             underTest.start()
             bouncerRepository.setPrimaryShow(true)
+            runCurrent()
             transitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.PRIMARY_BOUNCER,
@@ -203,6 +205,7 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
                 flowOf(ObservableTransitionState.Idle(CommunalScenes.Communal))
             )
             bouncerRepository.setPrimaryShow(true)
+            runCurrent()
             transitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.PRIMARY_BOUNCER,
@@ -266,6 +269,7 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
         testScope.runTest {
             underTest.start()
             bouncerRepository.setPrimaryShow(true)
+            runCurrent()
             transitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.PRIMARY_BOUNCER,
@@ -295,6 +299,7 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
         kosmos.runTest {
             underTest.start()
             bouncerRepository.setPrimaryShow(true)
+            runCurrent()
             transitionRepository.sendTransitionSteps(
                 from = KeyguardState.LOCKSCREEN,
                 to = KeyguardState.PRIMARY_BOUNCER,
@@ -330,6 +335,7 @@ class FromPrimaryBouncerTransitionInteractorTest(flags: FlagsParameterization) :
 
             // Bouncer is shown on top of the Glanceable Hub.
             bouncerRepository.setPrimaryShow(true)
+            runCurrent()
             transitionRepository.sendTransitionSteps(
                 from = KeyguardState.GLANCEABLE_HUB,
                 to = KeyguardState.PRIMARY_BOUNCER,

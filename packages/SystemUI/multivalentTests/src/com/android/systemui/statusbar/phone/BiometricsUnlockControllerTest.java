@@ -18,6 +18,7 @@ package com.android.systemui.statusbar.phone;
 
 import static android.service.dreams.Flags.FLAG_DREAMS_V2;
 
+import static com.android.systemui.Flags.FLAG_NEW_DOZING_KEYGUARD_STATES;
 import static com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_NONE;
 import static com.android.systemui.statusbar.phone.BiometricUnlockController.MODE_WAKE_AND_UNLOCK;
 
@@ -40,6 +41,7 @@ import android.hardware.fingerprint.FingerprintManager;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.UserHandle;
+import android.platform.test.annotations.DisableFlags;
 import android.platform.test.annotations.EnableFlags;
 import android.testing.TestableLooper.RunWithLooper;
 import android.testing.TestableResources;
@@ -475,6 +477,7 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
     }
 
     @Test
+    @DisableFlags(FLAG_NEW_DOZING_KEYGUARD_STATES)
     public void onBiometricAuthenticated_whenFaceAndPulsing_dontDismissKeyguard() {
         reset(mUpdateMonitor);
         reset(mStatusBarKeyguardViewManager);
@@ -487,6 +490,22 @@ public class BiometricsUnlockControllerTest extends SysuiTestCase {
 
         assertThat(mBiometricUnlockController.getMode())
                 .isEqualTo(BiometricUnlockController.MODE_ONLY_WAKE);
+    }
+
+    @Test
+    @EnableFlags(FLAG_NEW_DOZING_KEYGUARD_STATES)
+    public void onBiometricAuthenticated_whenFaceAndPulsing_alwaysDismissKeyguard() {
+        reset(mUpdateMonitor);
+        reset(mStatusBarKeyguardViewManager);
+        when(mUpdateMonitor.isUnlockingWithBiometricAllowed(anyBoolean())).thenReturn(true);
+        when(mDozeScrimController.isPulsing()).thenReturn(true);
+        // the value of isStrongBiometric doesn't matter here since we only care about the returned
+        // value of isUnlockingWithBiometricAllowed()
+        mBiometricUnlockController.onBiometricAuthenticated(UserHandle.USER_CURRENT,
+                BiometricSourceType.FACE, true /* isStrongBiometric */);
+
+        assertThat(mBiometricUnlockController.getMode())
+                .isEqualTo(BiometricUnlockController.MODE_WAKE_AND_UNLOCK_PULSING);
     }
 
     @Test

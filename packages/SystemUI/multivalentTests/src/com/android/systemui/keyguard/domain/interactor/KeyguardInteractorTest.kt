@@ -19,10 +19,12 @@ package com.android.systemui.keyguard.domain.interactor
 
 import android.app.StatusBarManager
 import android.platform.test.annotations.DisableFlags
+import android.platform.test.annotations.EnableFlags
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.compose.animation.scene.ObservableTransitionState
 import com.android.systemui.Flags.FLAG_KEYGUARD_WM_STATE_REFACTOR
+import com.android.systemui.Flags.FLAG_NEW_DOZING_KEYGUARD_STATES
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.bouncer.data.repository.keyguardBouncerRepository
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
@@ -661,6 +663,32 @@ class KeyguardInteractorTest : SysuiTestCase() {
 
             sendTransitionStep(TransitionStep(DOZING, LOCKSCREEN, 1f, FINISHED))
             assertThat(dozeAmount).isEqualTo(0f)
+        }
+
+    @Test
+    fun primaryBouncerShowing_initialValueFalse() =
+        testScope.runTest {
+            val primaryBouncerShowing by collectLastValue(underTest.primaryBouncerShowing)
+            assertThat(primaryBouncerShowing).isFalse()
+        }
+
+    @Test
+    fun primaryBouncerShowing_bouncerShow() =
+        testScope.runTest {
+            val primaryBouncerShowing by collectLastValue(underTest.primaryBouncerShowing)
+            bouncerRepository.setPrimaryShow(true)
+            runCurrent()
+            assertThat(primaryBouncerShowing).isTrue()
+        }
+
+    @Test
+    @EnableFlags(FLAG_NEW_DOZING_KEYGUARD_STATES)
+    fun primaryBouncerShowing_bouncerShowingSoon() =
+        testScope.runTest {
+            val primaryBouncerShowing by collectLastValue(underTest.primaryBouncerShowing)
+            bouncerRepository.setPrimaryShowingSoon(true)
+            runCurrent()
+            assertThat(primaryBouncerShowing).isTrue()
         }
 
     private suspend fun sendTransitionStep(step: TransitionStep) {
