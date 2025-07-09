@@ -501,18 +501,11 @@ public final class VirtualCameraConfig implements Parcelable {
             if (Flags.virtualCameraMetadata()) {
                 VirtualCameraSessionConfig virtualCameraSessionConfig =
                         new VirtualCameraSessionConfig(sessionParameters);
+
                 mExecutor.execute(() -> mCallback.onConfigureSession(virtualCameraSessionConfig,
-                        (captureResult, timestamp) -> {
-                            try {
-                                captureResultConsumer.sendCaptureResult(timestamp,
-                                        captureResult.getNativeMetadata());
-                            } catch (RemoteException e) {
-                                throw e.rethrowFromSystemServer();
-                            }
-                        }));
+                        convertToFrameworkCaptureResultConsumer(captureResultConsumer)));
             }
         }
-
 
         @Override
         public void onStreamConfigured(int streamId, Surface surface, int width, int height,
@@ -535,6 +528,23 @@ public final class VirtualCameraConfig implements Parcelable {
         @Override
         public void onStreamClosed(int streamId) {
             mExecutor.execute(() -> mCallback.onStreamClosed(streamId));
+        }
+
+        @Nullable
+        private ObjLongConsumer<CaptureResult> convertToFrameworkCaptureResultConsumer(
+                @Nullable ICaptureResultConsumer captureResultConsumer) {
+            if (!mPerFrameCameraMetadataEnabled || captureResultConsumer == null) {
+                return null;
+            }
+
+            return (captureResult, timestamp) -> {
+                try {
+                    captureResultConsumer.acceptCaptureResult(timestamp,
+                            captureResult.getNativeMetadata());
+                } catch (RemoteException e) {
+                    throw e.rethrowFromSystemServer();
+                }
+            };
         }
     }
 
