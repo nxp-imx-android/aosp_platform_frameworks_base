@@ -66,7 +66,8 @@ public class TelephonyFrameworkInitializer {
     /**
      * Sets an instance of {@link TelephonyServiceManager} that allows
      * the telephony mainline module to register/obtain telephony binder services. This is called
-     * by the platform during the system initialization.
+     * by ActivityThread on app startup and sets the app's instance of
+     * TelephonyServiceManager.
      *
      * @param telephonyServiceManager instance of {@link TelephonyServiceManager} that allows
      * the telephony mainline module to register/obtain telephony binder services.
