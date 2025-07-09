@@ -253,6 +253,13 @@ interface IDisplayManager {
     @EnforcePermission("MANAGE_DISPLAYS")
     boolean requestDisplayPower(int displayId, int state);
 
+    // Sets the connection preference for external display.
+    @EnforcePermission("MANAGE_DISPLAYS")
+    void setConnectionPreference(String uniqueId, int preference);
+
+    // Returns the saved connection preference for external display.
+    int getConnectionPreference(String uniqueId);
+
     // Restricts display modes to specified modeIds.
     @EnforcePermission("RESTRICT_DISPLAY_MODES")
     void requestDisplayModes(in IBinder token, int displayId, in @nullable int[] modeIds);

@@ -63,6 +63,7 @@ import static android.provider.Settings.Secure.RESOLUTION_MODE_UNKNOWN;
 import static android.text.TextUtils.formatSimple;
 import static android.view.Display.HdrCapabilities.HDR_TYPE_INVALID;
 
+import static com.android.server.display.PersistentDataStore.DEFAULT_CONNECTION_PREFERENCE;
 import static com.android.server.display.layout.Layout.Display.POSITION_REAR;
 
 import android.Manifest;
@@ -4180,6 +4181,32 @@ public final class DisplayManagerService extends SystemService {
         }
     }
 
+    private void setConnectionPreferenceInternal(String uniqueId, int preference) {
+        synchronized (mSyncRoot) {
+            DisplayDevice displayDevice = mDisplayDeviceRepo.getByUniqueIdLocked(uniqueId);
+            if (displayDevice == null) {
+                Slog.w(TAG, "Attempted to set connection preference for a display "
+                        + "that does not exist: " + uniqueId);
+                return;
+            }
+
+            if (mPersistentDataStore.setConnectionPreference(displayDevice, preference)) {
+                mPersistentDataStore.saveIfNeeded();
+            }
+        }
+    }
+
+    private int getConnectionPreferenceInternal(String uniqueId) {
+        synchronized (mSyncRoot) {
+            DisplayDevice displayDevice = mDisplayDeviceRepo.getByUniqueIdLocked(uniqueId);
+            if (displayDevice == null) {
+                return DEFAULT_CONNECTION_PREFERENCE;
+            }
+
+            return mPersistentDataStore.getConnectionPreference(displayDevice);
+        }
+    }
+
     private final class DisplayManagerHandler extends Handler {
         public DisplayManagerHandler(Looper looper) {
             super(looper, null, true /*async*/);
@@ -5374,6 +5401,37 @@ public final class DisplayManagerService extends SystemService {
             }
         }
 
+        @EnforcePermission(MANAGE_DISPLAYS)
+        @Override // Binder call
+        public void setConnectionPreference(String uniqueId, int preference) {
+            setConnectionPreference_enforcePermission();
+            if (uniqueId == null) {
+                throw new IllegalArgumentException("uniqueId must not be null");
+            }
+
+            // Use clearCallingIdentity to perform the work with system privileges
+            final long token = Binder.clearCallingIdentity();
+            try {
+                setConnectionPreferenceInternal(uniqueId, preference);
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
+        }
+
+        @Override // Binder call
+        public int getConnectionPreference(String uniqueId) {
+            if (uniqueId == null) {
+                throw new IllegalArgumentException("uniqueId must not be null");
+            }
+
+            final long token = Binder.clearCallingIdentity();
+            try {
+                return getConnectionPreferenceInternal(uniqueId);
+            } finally {
+                Binder.restoreCallingIdentity(token);
+            }
+        }
+
         @Override // Binder call
         public void onShellCommand(FileDescriptor in, FileDescriptor out,
                 FileDescriptor err, @NonNull String[] args, ShellCallback callback,
@@ -5996,6 +6054,16 @@ public final class DisplayManagerService extends SystemService {
                 config = device.getDisplayDeviceConfig();
             }
             return config.getRefreshRateLimitations();
+        }
+
+        @Override
+        public void setConnectionPreference(String uniqueId, int preference) {
+            setConnectionPreferenceInternal(uniqueId, preference);
+        }
+
+        @Override
+        public int getConnectionPreference(String uniqueId) {
+            return getConnectionPreferenceInternal(uniqueId);
         }
 
         @Override
