@@ -33,6 +33,7 @@ filegroup {
         ":dynamic_instrumentation_manager_aidl_sources",
         "android/os/*MessageQueue/**/*.java",
         "android/os/DeliQueue/**/*.java",
+        "android/os/IProcessInfoService.aidl",
         "android/ranging/**/*.java",
         "android/os/mock/*.java",
     ],
@@ -194,6 +195,15 @@ aidl_interface {
     name: "dynamic_instrumentation_manager_aidl",
     srcs: [":dynamic_instrumentation_manager_aidl_sources"],
     unstable: true,
+}
+
+aidl_interface {
+    name: "process_info_service_aidl",
+    srcs: [
+        "android/os/IProcessInfoService.aidl",
+    ],
+    unstable: true,
+    host_supported: true,
 }
 
 filegroup {
