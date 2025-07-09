@@ -17,7 +17,6 @@
  */
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:androidprv="http://schemas.android.com/apk/prv/res/android"
     package="com.android.systemui"
     android:sharedUserId="android.uid.systemui"
     xmlns:tools="http://schemas.android.com/tools"
@@ -547,6 +546,14 @@
             android:launchMode="singleInstance"
             android:showForAllUsers="true"
             android:theme="@style/ScreenCapture" />
+
+        <activity
+            android:name=".screencapture.record.smallscreen.ui.SmallScreenPostRecordingActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:finishOnCloseSystemDialogs="true"
+            android:showForAllUsers="true"
+            android:theme="@style/ScreenCapture.PostRecord" />
 
         <service android:name=".screenrecord.service.ScreenRecordingService" />
 

@@ -36,7 +36,6 @@ import com.android.systemui.plugins.activityStarter
 import com.android.systemui.qs.pipeline.domain.interactor.PanelInteractor
 import com.android.systemui.qs.tiles.base.domain.model.QSTileInputTestKtx
 import com.android.systemui.res.R
-import com.android.systemui.screencapture.record.domain.interactor.screenCaptureRecordFeaturesInteractor
 import com.android.systemui.screenrecord.ScreenRecordUxController
 import com.android.systemui.screenrecord.data.model.ScreenRecordModel
 import com.android.systemui.screenrecord.data.repository.ScreenRecordRepositoryImpl
@@ -84,7 +83,6 @@ class ScreenRecordTileUserActionInteractorTest : SysuiTestCase() {
             keyguardDismissUtil,
             dialogTransitionAnimator,
             panelInteractor,
-            kosmos.screenCaptureRecordFeaturesInteractor,
             mock<MediaProjectionMetricsLogger>(),
         )
     }
