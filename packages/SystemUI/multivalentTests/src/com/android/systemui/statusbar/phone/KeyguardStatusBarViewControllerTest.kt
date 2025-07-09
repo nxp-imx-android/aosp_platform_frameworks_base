@@ -52,6 +52,7 @@ import com.android.systemui.keyguard.shared.model.TransitionState.RUNNING
 import com.android.systemui.keyguard.shared.model.TransitionState.STARTED
 import com.android.systemui.keyguard.shared.model.TransitionStep
 import com.android.systemui.keyguard.ui.viewmodel.glanceableHubToLockscreenTransitionViewModel
+import com.android.systemui.keyguard.ui.viewmodel.goneToGlanceableHubTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.lockscreenToGlanceableHubTransitionViewModel
 import com.android.systemui.keyguard.ui.viewmodel.occludedToLockscreenTransitionViewModel
 import com.android.systemui.kosmos.Kosmos
@@ -232,6 +233,7 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
             kosmos.communalSceneInteractor,
             kosmos.glanceableHubToLockscreenTransitionViewModel,
             kosmos.lockscreenToGlanceableHubTransitionViewModel,
+            kosmos.goneToGlanceableHubTransitionViewModel,
             kosmos.occludedToLockscreenTransitionViewModel,
             kosmos.dreamViewModel,
             kosmos.keyguardInteractor,
@@ -902,6 +904,96 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
     @Test
     @DisableSceneContainer
     @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
+    fun statusBar_isHidden_goneToGlanceableHubV2Disabled() =
+        testScope.runTest {
+            try {
+                controller.init()
+                ViewUtils.attachView(keyguardStatusBarView)
+                looper.processAllMessages()
+
+                // Keyguard is showing and start transitioning to communal
+                updateStateToKeyguard()
+                kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
+                runCurrent()
+
+                val transitionSteps =
+                    listOf(
+                        goneToGlanceableHubTransitionStep(0.0f, STARTED),
+                        goneToGlanceableHubTransitionStep(.1f),
+                    )
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    transitionSteps,
+                    testScope,
+                )
+
+                // Verify status bar is not visible
+                assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
+                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    listOf(
+                        goneToGlanceableHubTransitionStep(1f),
+                        goneToGlanceableHubTransitionStep(1f, FINISHED),
+                    ),
+                    testScope,
+                )
+
+                assertThat(keyguardStatusBarView.alpha).isEqualTo(0f)
+                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.INVISIBLE)
+            } finally {
+                ViewUtils.detachView(keyguardStatusBarView)
+            }
+        }
+
+    @Test
+    @DisableSceneContainer
+    @EnableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
+    fun statusBar_fullyVisible_goneToGlanceableHubV2Enabled() =
+        testScope.runTest {
+            try {
+                controller.init()
+                ViewUtils.attachView(keyguardStatusBarView)
+                looper.processAllMessages()
+
+                // Keyguard is showing and start transitioning to communal
+                updateStateToKeyguard()
+                kosmos.fakeCommunalSceneRepository.instantlyTransitionTo(CommunalScenes.Communal)
+                runCurrent()
+
+                // Verify status bar is fully visible
+                assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
+                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    listOf(
+                        goneToGlanceableHubTransitionStep(0.0f, STARTED),
+                        goneToGlanceableHubTransitionStep(.1f),
+                    ),
+                    testScope,
+                )
+
+                // The transition will not affect alpha and visibility
+                assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
+                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+
+                kosmos.fakeKeyguardTransitionRepository.sendTransitionSteps(
+                    listOf(
+                        goneToGlanceableHubTransitionStep(1f),
+                        goneToGlanceableHubTransitionStep(1f, FINISHED),
+                    ),
+                    testScope,
+                )
+
+                assertThat(keyguardStatusBarView.alpha).isEqualTo(1f)
+                assertThat(keyguardStatusBarView.visibility).isEqualTo(View.VISIBLE)
+            } finally {
+                ViewUtils.detachView(keyguardStatusBarView)
+            }
+        }
+
+    @Test
+    @DisableSceneContainer
+    @DisableFlags(Flags.FLAG_GLANCEABLE_HUB_V2)
     fun dragDownShadeOverGlanceableHub_v2Disabled_alphaRemainsZero() =
         testScope.runTest {
             try {
@@ -1219,6 +1311,18 @@ class KeyguardStatusBarViewControllerTest : SysuiTestCase() {
         TransitionStep(
             from = KeyguardState.DREAMING,
             to = KeyguardState.AOD,
+            value = value,
+            transitionState = transitionState,
+            ownerName = "KeyguardStatusBarViewControllerTest",
+        )
+
+    private fun goneToGlanceableHubTransitionStep(
+        value: Float,
+        transitionState: TransitionState = RUNNING,
+    ) =
+        TransitionStep(
+            from = KeyguardState.GONE,
+            to = KeyguardState.GLANCEABLE_HUB,
             value = value,
             transitionState = transitionState,
             ownerName = "KeyguardStatusBarViewControllerTest",
