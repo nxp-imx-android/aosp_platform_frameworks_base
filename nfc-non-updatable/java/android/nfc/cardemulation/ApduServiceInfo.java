@@ -599,7 +599,7 @@ public final class ApduServiceInfo implements Parcelable {
             return false;
         }
         for (Pattern patternMatch : patternMatches) {
-            if (mAutoTransactPatterns.get(patternMatch)) {
+            if (Boolean.TRUE.equals(mAutoTransactPatterns.get(patternMatch))) {
                 return true;
             }
         }
