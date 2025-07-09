@@ -72,6 +72,7 @@ object SingleLineViewInflater {
             return SingleLineViewModel(null, null, null)
         }
         peopleHelper.init(systemUiContext)
+
         var titleText = HybridGroupManager.resolveTitle(notification)
         var contentText =
             if (redactText) {
@@ -148,7 +149,7 @@ object SingleLineViewInflater {
                     SingleIcon(
                         context.getDrawable(
                             com.android.systemui.res.R.drawable
-                                .ic_redacted_notification_single_line_icon
+                                .ic_public_notification_single_line_icon
                         )
                     ),
                     null,
@@ -158,11 +159,9 @@ object SingleLineViewInflater {
             }
         return SingleLineViewModel(
             context.getString(
-                com.android.systemui.res.R.string.redacted_notification_single_line_title
+                com.android.systemui.res.R.string.public_notification_single_line_title
             ),
-            context.getString(
-                com.android.systemui.res.R.string.public_notification_single_line_text
-            ),
+            null,
             conversationData,
         )
     }
