@@ -48,13 +48,11 @@ macro_rules! retry_eintr {
 }
 
 /// A struct used to send tasks to `Handler`.
-#[allow(dead_code)]
 pub struct Sender<T: Send> {
     tx: mpsc::Sender<T>,
     waker_fd: OwnedFd,
 }
 
-#[allow(dead_code)]
 impl<T: Send> Sender<T> {
     /// Send a task to the associated `Handler`.
     pub fn send(&self, task: T) -> Result<()> {
@@ -104,7 +102,6 @@ impl<T: Send, C: HandlerCallback<T>> HandlerInner<T, C> {
 }
 
 /// A struct representing a task handler.
-#[allow(dead_code)]
 pub struct Handler<T: Send, C: HandlerCallback<T>> {
     // This makes Handler !Send.
     looper: *mut ALooper,
@@ -113,7 +110,6 @@ pub struct Handler<T: Send, C: HandlerCallback<T>> {
     inner: Box<HandlerInner<T, C>>,
 }
 
-#[allow(dead_code)]
 impl<T: Send, C: HandlerCallback<T>> Handler<T, C> {
     pub fn new_on_current_thread(callback: C) -> Result<Self> {
         // SAFETY: 0 is a valid argument.
@@ -239,7 +235,6 @@ pub fn run_thread_loop_once() -> Result<()> {
 }
 
 /// Run the server loop on this thread. This function will never return until an error occurs.
-#[allow(dead_code)]
 pub fn run_thread_loop() -> Result<()> {
     loop {
         run_thread_loop_once()?;

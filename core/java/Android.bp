@@ -265,7 +265,12 @@ filegroup {
         "android/util/AndroidException.java",
         "android/view/DisplayAdjustments.java",
         "android/view/ViewDebug.java",
-    ],
+    ] + select(release_flag("RELEASE_NATIVE_FRAMEWORK_PROTOTYPE"), {
+        true: [
+            "android/app/INativeApplicationThread.aidl",
+        ],
+        default: [],
+    }),
     visibility: ["//frameworks/base/test-mock"],
 }
 
@@ -833,6 +838,23 @@ aidl_interface {
         ":activity_manager_iuidobserver_aidl",
         ":activity_manager_runningappprocessinfo_aidl",
     ],
+    backend: {
+        java: {
+            // java code is generated through framework-core-sources.
+            enabled: false,
+        },
+        rust: {
+            enabled: true,
+        },
+    },
+}
+
+aidl_interface {
+    name: "native_application_thread_aidl",
+    srcs: [
+        "android/app/INativeApplicationThread.aidl",
+    ],
+    unstable: true,
     backend: {
         java: {
             // java code is generated through framework-core-sources.

@@ -41,6 +41,20 @@ rust_bindgen {
     ],
 }
 
+rust_bindgen {
+    name: "libnative_service_bindgen",
+    crate_name: "native_service_bindgen",
+    wrapper_src: "src/bindings/native_service.h",
+    source_stem: "native_service_bindings",
+    header_libs: [
+        "libandroid_headers_private",
+    ],
+    shared_libs: [
+        "libandroid",
+        "libbinder_ndk",
+    ],
+}
+
 rust_library {
     name: "libnative_activity_thread",
     crate_name: "native_activity_thread",
@@ -57,5 +71,7 @@ rust_library {
         "liblibc",
         "liblog_rust",
         "liblooper_bindgen",
+        "libnative_service_bindgen",
+        "native_application_thread_aidl-rust",
     ],
 }
