@@ -222,6 +222,10 @@ public final class SystemFonts {
         for (int i = 0; i < fallbackMap.size(); i++) {
             final String name = fallbackMap.keyAt(i);
             final NativeFamilyListSet familyListSet = fallbackMap.valueAt(i);
+            if (familyListSet.customFallback != null) {
+                // Use custom callback. Will append append later
+                continue;
+            }
             int identityHash = System.identityHashCode(xmlFamily);
             if (familyListSet.seenXmlFamilies.get(identityHash, -1) != -1) {
                 continue;
@@ -333,6 +337,7 @@ public final class SystemFonts {
             familyListSet.familyList.add(family);
             familyListSet.seenXmlFamilies.append(System.identityHashCode(xmlFamily), 1);
         }
+        familyListSet.customFallback = namedFamilyList.getFallback();
         fallbackListMap.put(familyName, familyListSet);
     }
 
@@ -420,6 +425,7 @@ public final class SystemFonts {
     private static final class NativeFamilyListSet {
         public List<FontFamily> familyList = new ArrayList<>();
         public SparseIntArray seenXmlFamilies = new SparseIntArray();
+        public @Nullable String customFallback = null;
     }
 
     /** @hide */
@@ -492,8 +498,30 @@ public final class SystemFonts {
         final Map<String, FontFamily[]> fallbackMap = new ArrayMap<>();
         for (int i = 0; i < fallbackListMap.size(); i++) {
             final String fallbackName = fallbackListMap.keyAt(i);
-            final List<FontFamily> familyList = fallbackListMap.valueAt(i).familyList;
-            fallbackMap.put(fallbackName, familyList.toArray(new FontFamily[0]));
+            final NativeFamilyListSet familyListSet = fallbackListMap.valueAt(i);
+            final String customFallback = familyListSet.customFallback;
+            if (customFallback == null) {
+                fallbackMap.put(fallbackName, familyListSet.familyList.toArray(new FontFamily[0]));
+            } else {
+                final NativeFamilyListSet fallbackListSet = fallbackListMap.get(customFallback);
+                if (fallbackListSet == null) {
+                    throw new IllegalStateException("Unknown fallback target: " + customFallback);
+                }
+                if (fallbackListSet.customFallback != null) {
+                    throw new UnsupportedOperationException(
+                            "Nested fallback in system font definition is not supported.");
+                }
+                FontFamily[] combinedFamilies = new FontFamily[
+                        familyListSet.familyList.size() + fallbackListSet.familyList.size()];
+                for (int j = 0; j < familyListSet.familyList.size(); ++j) {
+                    combinedFamilies[j] = familyListSet.familyList.get(j);
+                }
+                for (int j = 0; j < fallbackListSet.familyList.size(); ++j) {
+                    combinedFamilies[j + familyListSet.familyList.size()] =
+                            fallbackListSet.familyList.get(j);
+                }
+                fallbackMap.put(fallbackName, combinedFamilies);
+            }
         }
 
         return fallbackMap;
