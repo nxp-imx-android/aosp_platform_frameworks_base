@@ -598,7 +598,7 @@ private fun BatteryIconLegacy(
     val inverseColor =
         Utils.getColorAttrDefaultColor(themedContext, android.R.attr.textColorPrimaryInverse)
 
-    val cutoutLocation = LocalDisplayCutout.current().location
+    val cutout = LocalDisplayCutout.current
 
     AndroidView(
         factory = { context ->
@@ -618,6 +618,7 @@ private fun BatteryIconLegacy(
             batteryIcon
         },
         update = { batteryIcon ->
+            val cutoutLocation = cutout().location
             batteryIcon.setPercentShowMode(
                 if (useExpandedFormat || cutoutLocation != CutoutLocation.CENTER) {
                     BatteryMeterView.MODE_ESTIMATE

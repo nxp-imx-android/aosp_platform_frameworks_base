@@ -250,7 +250,7 @@ private fun ContentScope.SingleShade(
     shadeSession: SaveableSession,
     usingCollapsedLandscapeMedia: Boolean,
 ) {
-    val cutoutLocation = LocalDisplayCutout.current().location
+    val cutout = LocalDisplayCutout.current
     val cutoutInsets = WindowInsets.Companion.displayCutout
     mediaHost.expansion = if (usingCollapsedLandscapeMedia && isLandscape()) COLLAPSED else EXPANDED
 
@@ -285,7 +285,8 @@ private fun ContentScope.SingleShade(
     val shadeHorizontalPadding =
         dimensionResource(id = R.dimen.notification_panel_margin_horizontal)
     val shadeMeasurePolicy =
-        remember(mediaInRow) {
+        remember(mediaInRow, cutout, cutoutInsets) {
+            val cutoutLocation = cutout().location
             SingleShadeMeasurePolicy(
                 isMediaInRow = mediaInRow,
                 mediaOffset = { mediaOffset.roundToPx() },
