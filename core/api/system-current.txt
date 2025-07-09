@@ -6094,6 +6094,10 @@ package android.hardware.hdmi {
 
 package android.hardware.input {
 
+  public final class InputManager {
+    method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") @NonNull @RequiresPermission(anyOf={android.Manifest.permission.INJECT_KEY_EVENTS, android.Manifest.permission.INJECT_EVENTS}) public android.hardware.input.VirtualKeyboard createVirtualKeyboard(@NonNull android.hardware.input.VirtualKeyboardConfig);
+  }
+
   public class VirtualDpad implements java.io.Closeable {
     method public void close();
     method @FlaggedApi("com.android.hardware.input.create_virtual_keyboard_api") public int getInputDeviceId();
