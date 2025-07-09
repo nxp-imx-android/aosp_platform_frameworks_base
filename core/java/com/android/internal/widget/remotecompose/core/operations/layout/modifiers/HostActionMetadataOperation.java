@@ -136,7 +136,7 @@ public class HostActionMetadataOperation extends Operation
     }
 
     @Override
-    public void serialize(MapSerializer serializer) {
+    public void serialize(@NonNull MapSerializer serializer) {
         serializer
                 .addTags(SerializeTags.MODIFIER)
                 .addType("HostActionOperation")

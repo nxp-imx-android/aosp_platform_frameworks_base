@@ -46,22 +46,15 @@ public class DebugMessage extends Operation implements VariableSupport {
 
     @Override
     public void updateVariables(@NonNull RemoteContext context) {
-        System.out.println("Debug message : updateVariables ");
         mOutFloatValue =
                 Float.isNaN(mFloatValue)
                         ? context.getFloat(Utils.idFromNan(mFloatValue))
                         : mFloatValue;
-        System.out.println(
-                "Debug message : updateVariables "
-                        + Utils.floatToString(mFloatValue, mOutFloatValue));
     }
 
     @Override
     public void registerListening(@NonNull RemoteContext context) {
-        System.out.println("Debug message : registerListening ");
-
         if (Float.isNaN(mFloatValue)) {
-            System.out.println("Debug message : registerListening " + mFloatValue);
             context.listensTo(Utils.idFromNan(mFloatValue), this);
         }
     }

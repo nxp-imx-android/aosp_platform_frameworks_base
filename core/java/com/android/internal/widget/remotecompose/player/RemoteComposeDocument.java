@@ -18,18 +18,30 @@ package com.android.internal.widget.remotecompose.player;
 import com.android.internal.widget.remotecompose.core.CoreDocument;
 import com.android.internal.widget.remotecompose.core.RemoteComposeBuffer;
 import com.android.internal.widget.remotecompose.core.RemoteContext;
+import com.android.internal.widget.remotecompose.core.SystemClock;
 import com.android.internal.widget.remotecompose.core.operations.layout.Component;
+import com.android.internal.widget.remotecompose.core.serialize.MapSerializer;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.time.Clock;
 
 /** Public API to create a new RemoteComposeDocument coming from an input stream */
 public class RemoteComposeDocument {
 
-    CoreDocument mDocument = new CoreDocument();
+    CoreDocument mDocument;
+
+    public RemoteComposeDocument(byte[] inputStream) {
+        this(new ByteArrayInputStream(inputStream), new SystemClock());
+    }
 
     public RemoteComposeDocument(InputStream inputStream) {
-        RemoteComposeBuffer buffer =
-                RemoteComposeBuffer.fromInputStream(inputStream, mDocument.getRemoteComposeState());
+        this(inputStream, new SystemClock());
+    }
+
+    public RemoteComposeDocument(InputStream inputStream, Clock clock) {
+        mDocument = new CoreDocument(clock);
+        RemoteComposeBuffer buffer = RemoteComposeBuffer.fromInputStream(inputStream);
         mDocument.initFromBuffer(buffer);
     }
 
@@ -131,10 +143,15 @@ public class RemoteComposeDocument {
         return mDocument.getComponent(id);
     }
 
+    /** Invalidate the document for layout measures. This will trigger a layout remeasure pass. */
     public void invalidate() {
         mDocument.invalidateMeasure();
     }
 
+    /**
+     * @hide Returns a list of useful statistics for the runtime document
+     * @return array of strings representing some useful statistics
+     */
     public String[] getStats() {
         if (mDocument == null) {
             return new String[0];
@@ -142,12 +159,36 @@ public class RemoteComposeDocument {
         return mDocument.getStats();
     }
 
+    /**
+     * @hide Returns the number of sensor listeners
+     * @param ids
+     * @return
+     */
     public int hasSensorListeners(int[] ids) {
-
         return 0;
     }
 
+    /**
+     * @hide Returns the current clock
+     * @return
+     */
+    public Clock getClock() {
+        return getDocument().getClock();
+    }
+
+    /**
+     * @hide Returns true if the current document is an update-only document
+     * @return
+     */
     public boolean isUpdateDoc() {
         return mDocument.isUpdateDoc();
+    }
+
+    /**
+     * @hide Serialize the document
+     * @param serializer
+     */
+    public void serialize(MapSerializer serializer) {
+        mDocument.serialize(serializer);
     }
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.internal.widget.remotecompose.accessibility;
+package com.android.internal.widget.remotecompose.player.accessibility;
 
 import android.annotation.Nullable;
 import android.graphics.PointF;
@@ -54,8 +54,7 @@ public interface RemoteComposeDocumentAccessibility {
      * @param id The ID to retrieve the string value for.
      * @return The string value associated with the ID, or {@code null} if no such value exists.
      */
-    @Nullable
-    String stringValue(int id);
+    @Nullable String stringValue(int id);
 
     /**
      * Retrieves a list of child view IDs semantically contained within the given component/virtual
@@ -92,9 +91,13 @@ public interface RemoteComposeDocumentAccessibility {
      * @param id the ID of the component to find
      * @return the component with the given ID, or {@code null} if no such component exists
      */
-    @Nullable
-    Component findComponentById(int id);
+    @Nullable Component findComponentById(int id);
 
-    @Nullable
-    Integer getComponentIdAt(PointF point);
+    /**
+     * Finds the id of the component located at point
+     *
+     * @param point where to look up for the component
+     * @return the component id or -1 if not found
+     */
+    @Nullable Integer getComponentIdAt(PointF point);
 }
