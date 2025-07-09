@@ -116,7 +116,7 @@ fun Kosmos.createFakeDisplaySubcomponent(
         override val darkIconDispatcher: DarkIconDispatcher
             get() = darkIconDispatcher
 
-        override val sysUiDarkIconDispatcher: SysuiDarkIconDispatcher
+        override val sysuiDarkIconDispatcher: SysuiDarkIconDispatcher
             get() = sysUiDarkIconDispatcher
 
         override val homeStatusBarViewModelFactory: HomeStatusBarViewModelFactory

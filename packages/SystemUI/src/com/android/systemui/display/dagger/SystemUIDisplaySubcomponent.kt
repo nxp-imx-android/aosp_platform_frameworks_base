@@ -61,7 +61,7 @@ interface SystemUIDisplaySubcomponent {
 
     @get:DisplayAware val darkIconDispatcher: DarkIconDispatcher
 
-    @get:DisplayAware val sysUiDarkIconDispatcher: SysuiDarkIconDispatcher
+    @get:DisplayAware val sysuiDarkIconDispatcher: SysuiDarkIconDispatcher
 
     @get:DisplayAware val systemBarUtilsState: SystemBarUtilsState
 

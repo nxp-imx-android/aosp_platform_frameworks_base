@@ -64,7 +64,7 @@ public abstract class PluginModule {
     static SysuiDarkIconDispatcher provideSysuiDarkIconDispatcher(
             PerDisplayRepository<SystemUIDisplaySubcomponent> displaySubComponentRepository) {
         return displaySubComponentRepository.get(
-                Display.DEFAULT_DISPLAY).getSysUiDarkIconDispatcher();
+                Display.DEFAULT_DISPLAY).getSysuiDarkIconDispatcher();
     }
 
     /** */

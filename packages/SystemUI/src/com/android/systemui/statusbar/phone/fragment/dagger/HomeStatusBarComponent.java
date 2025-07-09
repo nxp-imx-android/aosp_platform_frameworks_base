@@ -17,7 +17,6 @@
 package com.android.systemui.statusbar.phone.fragment.dagger;
 
 import com.android.systemui.battery.BatteryMeterViewController;
-import com.android.systemui.dagger.qualifiers.DisplaySpecific;
 import com.android.systemui.dagger.qualifiers.RootView;
 import com.android.systemui.display.dagger.SystemUIDisplaySubcomponent.DisplayAware;
 import com.android.systemui.plugins.DarkIconDispatcher;
@@ -132,6 +131,6 @@ public interface HomeStatusBarComponent {
     DarkIconDispatcher getDarkIconDispatcher();
 
     /** */
-    @DisplaySpecific
+    @DisplayAware
     int getDisplayId();
 }
