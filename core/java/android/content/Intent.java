@@ -3733,7 +3733,7 @@ public class Intent implements Parcelable, Cloneable {
     @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
     public static final String ACTION_MEDIA_UNMOUNTABLE = "android.intent.action.MEDIA_UNMOUNTABLE";
 
-   /**
+    /**
      * Broadcast Action:  User has expressed the desire to remove the external storage media.
      * Applications should close all files they have open within the mount point when they receive this intent.
      * The path to the mount point for the media to be ejected is contained in the Intent.mData field.
@@ -3748,7 +3748,7 @@ public class Intent implements Parcelable, Cloneable {
     @SdkConstant(SdkConstantType.BROADCAST_INTENT_ACTION)
     public static final String ACTION_MEDIA_SCANNER_STARTED = "android.intent.action.MEDIA_SCANNER_STARTED";
 
-   /**
+    /**
      * Broadcast Action:  The media scanner has finished scanning a directory.
      * The path to the scanned directory is contained in the Intent.mData field.
      */
@@ -3769,7 +3769,7 @@ public class Intent implements Parcelable, Cloneable {
     @Deprecated
     public static final String ACTION_MEDIA_SCANNER_SCAN_FILE = "android.intent.action.MEDIA_SCANNER_SCAN_FILE";
 
-   /**
+    /**
      * Broadcast Action:  The "Media Button" was pressed.  Includes a single
      * extra field, {@link #EXTRA_KEY_EVENT}, containing the key event that
      * caused the broadcast.
