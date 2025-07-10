@@ -10366,6 +10366,22 @@ public class AudioManager {
         }
     }
 
+    /**
+     * @hide
+     * Blocks until all messages on the AudioService handler have been processed.
+     * Only useful in tests.
+     */
+    @TestApi
+    @SuppressWarnings("UnflaggedApi") // @TestApi without associated feature.
+    public void waitForAudioHandlerBarrier() {
+        final IAudioService service = getService();
+        try {
+            service.waitForAudioHandlerBarrier();
+        } catch (RemoteException e) {
+            throw e.rethrowFromSystemServer();
+        }
+    }
+
 
     /**
      * @hide

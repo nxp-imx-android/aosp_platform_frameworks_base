@@ -15918,6 +15918,12 @@ public class AudioService extends IAudioService.Stub
         }
     }
 
+    @Override
+    /** @see AudioManager#waitForAudioHandlerBarrier() */
+    public void waitForAudioHandlerBarrier() {
+        mAudioHandler.runWithScissors(() -> {}, 0);
+    }
+
     List<String> getDeviceIdentityAddresses(AudioDeviceAttributes device) {
         return mDeviceBroker.getDeviceIdentityAddresses(device);
     }
