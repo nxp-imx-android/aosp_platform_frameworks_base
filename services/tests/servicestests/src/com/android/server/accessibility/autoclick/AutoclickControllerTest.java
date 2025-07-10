@@ -1532,7 +1532,7 @@ public class AutoclickControllerTest {
 
     @Test
     @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
-    public void onConfigurationChanged_tellsPanelToUpdateTheme() throws Exception {
+    public void onConfigurationChanged_notifiesIndicatorToUpdateTheme() throws Exception {
         injectFakeMouseActionHoverMoveEvent();
 
         // Create a spy on the real object to verify method calls.
@@ -1545,6 +1545,23 @@ public class AutoclickControllerTest {
 
         // Verify updateConfiguration was called.
         verify(spyIndicatorView).onConfigurationChanged(newConfig);
+    }
+
+    @Test
+    @EnableFlags(com.android.server.accessibility.Flags.FLAG_ENABLE_AUTOCLICK_INDICATOR)
+    public void onConfigurationChanged_notifiesTypePanelToUpdateTheme() throws Exception {
+        injectFakeMouseActionHoverMoveEvent();
+
+        // Create a spy on the real object to verify method calls.
+        AutoclickTypePanel spyTypePanel = spy(mController.mAutoclickTypePanel);
+        mController.mAutoclickTypePanel = spyTypePanel;
+
+        // Simulate a theme change.
+        Configuration newConfig = new Configuration();
+        mController.onConfigurationChanged(newConfig);
+
+        // Verify onThemeChanged was called.
+        verify(spyTypePanel).onConfigurationChanged(newConfig);
     }
 
     @Test
