@@ -2882,7 +2882,7 @@ public class InputManagerService extends IInputManager.Stub
                 }
                 break;
             case KeyGestureEvent.KEY_GESTURE_TYPE_TOGGLE_MOUSE_KEYS:
-                if (complete && InputSettings.isAccessibilityMouseKeysFeatureFlagEnabled()) {
+                if (complete) {
                     final boolean mouseKeysEnabled = InputSettings.isAccessibilityMouseKeysEnabled(
                             mContext);
                     InputSettings.setAccessibilityMouseKeysEnabled(mContext, !mouseKeysEnabled);
