@@ -21,8 +21,8 @@ import android.tools.NavBar
 import android.tools.Rotation
 import android.tools.ScenarioBuilder
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
 import android.tools.traces.component.ComponentNameMatcher
 import androidx.test.filters.RequiresDevice
 import com.android.wm.shell.flicker.splitscreen.benchmark.MultipleShowImeRequestsInSplitScreenBenchmark
@@ -42,7 +42,7 @@ import org.junit.runners.Parameterized
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class MultipleShowImeRequestsInSplitScreenTest(override val flicker: LegacyFlickerTest) :
+class MultipleShowImeRequestsInSplitScreenTest(override val flicker: FlickerTest) :
         MultipleShowImeRequestsInSplitScreenBenchmark(flicker), ICommonAssertions {
     override val transition: FlickerBuilder.() -> Unit
         get() = {
@@ -61,7 +61,7 @@ class MultipleShowImeRequestsInSplitScreenTest(override val flicker: LegacyFlick
     companion object {
         private fun createFlickerTest(
             navBarMode: NavBar
-        ) = LegacyFlickerTest(ScenarioBuilder()
+        ) = FlickerTest(ScenarioBuilder()
             .withStartRotation(Rotation.ROTATION_0)
             .withEndRotation(Rotation.ROTATION_0)
             .withNavBarMode(navBarMode), resultReaderProvider = { scenario ->

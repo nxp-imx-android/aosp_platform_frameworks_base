@@ -18,8 +18,8 @@ package com.android.wm.shell.flicker.bubble
 
 import android.platform.test.annotations.Presubmit
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
 import androidx.test.filters.RequiresDevice
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.Until
@@ -41,7 +41,7 @@ import org.junit.runners.Parameterized
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-class SendBubbleNotificationTest(flicker: LegacyFlickerTest) : BaseBubbleScreen(flicker) {
+class SendBubbleNotificationTest(flicker: FlickerTest) : BaseBubbleScreen(flicker) {
 
     /** {@inheritDoc} */
     override val transition: FlickerBuilder.() -> Unit

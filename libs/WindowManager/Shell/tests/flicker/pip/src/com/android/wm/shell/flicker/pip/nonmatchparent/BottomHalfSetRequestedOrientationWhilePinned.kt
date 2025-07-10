@@ -20,8 +20,8 @@ import android.platform.test.annotations.Presubmit
 import android.platform.test.annotations.RequiresFlagsDisabled
 import android.tools.Rotation
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
 import android.tools.traces.parsers.toFlickerComponent
 import androidx.test.filters.RequiresDevice
 import com.android.server.wm.flicker.helpers.BottomHalfPipAppHelper
@@ -52,7 +52,7 @@ import org.junit.runners.Parameterized
  *     1. Some default assertions (e.g., nav bar, status bar and screen covered)
  *        are inherited [PipTransition]
  *     2. Part of the test setup occurs automatically via
- *        [android.tools.flicker.legacy.runner.TransitionRunner],
+ *        [android.tools.flicker.runner.TransitionRunner],
  *        including configuring navigation mode, initial orientation and ensuring no
  *        apps are running before setup
  * ```
@@ -62,7 +62,7 @@ import org.junit.runners.Parameterized
 @RequiresDevice
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class BottomHalfSetRequestedOrientationWhilePinned(flicker: LegacyFlickerTest) :
+class BottomHalfSetRequestedOrientationWhilePinned(flicker: FlickerTest) :
     SetRequestedOrientationWhilePinned(flicker)
 {
     override val pipApp: PipAppHelper = BottomHalfPipAppHelper(

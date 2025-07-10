@@ -18,11 +18,11 @@ package com.android.wm.shell.flicker.fundamentals
 
 import androidx.test.filters.RequiresDevice
 import android.tools.NavBar
-import android.tools.flicker.assertions.FlickerTest
+import android.tools.flicker.assertions.FlickerChecker
 import android.tools.flicker.junit.FlickerParametersRunnerFactory
-import android.tools.flicker.legacy.FlickerBuilder
-import android.tools.flicker.legacy.LegacyFlickerTest
-import android.tools.flicker.legacy.LegacyFlickerTestFactory
+import android.tools.flicker.FlickerBuilder
+import android.tools.flicker.FlickerTest
+import android.tools.flicker.FlickerTestFactory
 import com.android.wm.shell.Utils
 import com.android.wm.shell.flicker.DesktopModeBaseTest
 import org.junit.Rule
@@ -38,7 +38,7 @@ import com.android.wm.shell.scenarios.OpenAppFromAllApps
 @RequiresDevice
 @RunWith(Parameterized::class)
 @Parameterized.UseParametersRunnerFactory(FlickerParametersRunnerFactory::class)
-class OpenAppFromAllAppsFlickerTest(flicker: LegacyFlickerTest) : DesktopModeBaseTest(flicker) {
+class OpenAppFromAllAppsFlickerTest(flicker: FlickerTest) : DesktopModeBaseTest(flicker) {
     inner class OpenAppFromAllAppsScenario : OpenAppFromAllApps(flicker.scenario.startRotation)
 
     @Rule
@@ -75,8 +75,8 @@ class OpenAppFromAllAppsFlickerTest(flicker: LegacyFlickerTest) : DesktopModeBas
     companion object {
         @Parameterized.Parameters(name = "{0}")
         @JvmStatic
-        fun getParams(): Collection<FlickerTest> {
-            return LegacyFlickerTestFactory.nonRotationTests(
+        fun getParams(): Collection<FlickerChecker> {
+            return FlickerTestFactory.nonRotationTests(
                 supportedNavigationModes = listOf(NavBar.MODE_GESTURAL)
             )
         }

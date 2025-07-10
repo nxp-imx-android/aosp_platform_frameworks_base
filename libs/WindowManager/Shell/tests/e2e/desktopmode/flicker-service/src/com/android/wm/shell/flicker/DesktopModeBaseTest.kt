@@ -18,7 +18,7 @@ package com.android.wm.shell.flicker
 
 import android.platform.test.rule.ScreenRecordRule
 import android.tools.PlatformConsts.DEFAULT_DISPLAY
-import android.tools.flicker.legacy.LegacyFlickerTest
+import android.tools.flicker.FlickerTest
 import android.tools.flicker.rules.ChangeDisplayOrientationRule
 import androidx.test.uiautomator.UiDevice
 
@@ -42,7 +42,7 @@ import org.junit.ClassRule
  * This will ensure that all the appropriate methods are called before running the tests.
  */
 @ScreenRecordRule.ScreenRecord
-abstract class DesktopModeBaseTest(flicker: LegacyFlickerTest) : BaseBenchmarkTest(flicker) {
+abstract class DesktopModeBaseTest(flicker: FlickerTest) : BaseBenchmarkTest(flicker) {
     @get:Rule
     val testName = TestName()
 
