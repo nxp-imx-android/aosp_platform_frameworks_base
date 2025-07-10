@@ -691,8 +691,19 @@ public final class Call {
         @FlaggedApi(Flags.FLAG_VOIP_APP_ACTIONS_SUPPORT)
         public static final int PROPERTY_IS_TRANSACTIONAL = 0x00008000;
 
+        /**
+         * Set by the framework to indicate that a {@link Conference} or {@link Connection} is
+         * hosted on device other than the current one.  Used in scenarios where the conference
+         * originator is the remote device and the current device is a participant of that
+         * conference.
+         * <p>
+         * This property is specific to IMS conference calls originating in Telephony.
+         */
+        @FlaggedApi(Flags.FLAG_REMOTELY_HOSTED_PROPERTY)
+        public static final int PROPERTY_REMOTELY_HOSTED = 0x00010000;
+
         //******************************************************************************************
-        // Next PROPERTY value: 0x00010000
+        // Next PROPERTY value: 0x00020000
         //******************************************************************************************
 
         private final @CallState int mState;
@@ -893,6 +904,9 @@ public final class Call {
             }
             if (hasProperty(properties, PROPERTY_IS_TRANSACTIONAL)) {
                 builder.append(" PROPERTY_IS_TRANSACTIONAL");
+            }
+            if (hasProperty(properties, PROPERTY_REMOTELY_HOSTED)) {
+                builder.append(" PROPERTY_REMOTELY_HOSTED");
             }
             builder.append("]");
             return builder.toString();
