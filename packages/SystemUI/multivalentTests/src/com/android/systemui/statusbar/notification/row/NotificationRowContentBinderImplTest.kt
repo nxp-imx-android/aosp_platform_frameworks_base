@@ -26,6 +26,7 @@ import android.os.Build
 import android.os.CancellationSignal
 import android.platform.test.annotations.DisableFlags
 import android.platform.test.annotations.EnableFlags
+import android.platform.test.flag.junit.FlagsParameterization
 import android.testing.TestableLooper.RunWithLooper
 import android.util.TypedValue
 import android.util.TypedValue.COMPLEX_UNIT_SP
@@ -33,8 +34,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.RemoteViews
 import android.widget.TextView
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.server.notification.Flags
 import com.android.systemui.SysuiTestCase
 import com.android.systemui.res.R
 import com.android.systemui.statusbar.NotificationLockscreenUserManager.REDACTION_TYPE_NONE
@@ -80,12 +81,19 @@ import org.mockito.kotlin.spy
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import platform.test.runner.parameterized.ParameterizedAndroidJunit4
+import platform.test.runner.parameterized.Parameters
 
 @SmallTest
-@RunWith(AndroidJUnit4::class)
+@RunWith(ParameterizedAndroidJunit4::class)
 @RunWithLooper
 @EnableFlags(NotificationRowContentBinderRefactor.FLAG_NAME, LockscreenOtpRedaction.FLAG_NAME)
-class NotificationRowContentBinderImplTest : SysuiTestCase() {
+class NotificationRowContentBinderImplTest(flags: FlagsParameterization) : SysuiTestCase() {
+
+    init {
+        mSetFlagsRule.setFlagsParameterization(flags)
+    }
+
     private lateinit var notificationInflater: NotificationRowContentBinderImpl
     private lateinit var builder: Notification.Builder
     private lateinit var row: ExpandableNotificationRow
@@ -657,6 +665,15 @@ class NotificationRowContentBinderImplTest : SysuiTestCase() {
     }
 
     companion object {
+
+        @JvmStatic
+        @Parameters(name = "{0}")
+        fun getParams(): List<FlagsParameterization> {
+            return FlagsParameterization.allCombinationsOf(
+                Flags.FLAG_NOTIFICATION_CUSTOM_VIEW_URI_RESTRICTION
+            )
+        }
+
         private fun inflateAndWait(
             inflater: NotificationRowContentBinderImpl,
             @InflationFlag contentToInflate: Int,
