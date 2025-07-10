@@ -16,6 +16,7 @@
 
 package com.android.systemui.kairos
 
+import com.android.app.tracing.coroutines.launchTraced
 import com.android.systemui.kairos.internal.BuildScopeImpl
 import com.android.systemui.kairos.internal.EvalScope
 import com.android.systemui.kairos.internal.Network
@@ -31,7 +32,6 @@ import com.android.systemui.kairos.util.toNameData
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
@@ -293,17 +293,19 @@ fun CoroutineScope.launchKairosNetwork(
 ): RootKairosNetwork {
     val scope = childScope(context)
     val network = Network(scope, coalescingPolicy)
-    scope.launch(CoroutineName("launchKairosNetwork scheduler")) { network.runInputScheduler() }
+    scope.launchTraced("launchKairosNetwork scheduler") { network.runInputScheduler() }
     return RootKairosNetwork(network, scope, scope.coroutineContext.job)
 }
 
 /** Constructs a new [RootKairosNetwork] in the given [CoroutineScope] and [CoalescingPolicy]. */
+@ExperimentalKairosApi
 fun KairosNetwork(
     scope: CoroutineScope,
     coalescingPolicy: CoalescingPolicy = CoalescingPolicy.Normal,
 ): RootKairosNetwork = scope.launchKairosNetwork(coalescingPolicy = coalescingPolicy)
 
 /** Configures how multiple input events are processed by the network. */
+@ExperimentalKairosApi
 enum class CoalescingPolicy {
     /**
      * Each input event is processed in its own transaction. This policy has the least overhead but
