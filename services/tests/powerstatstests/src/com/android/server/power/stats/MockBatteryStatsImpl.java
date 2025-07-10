@@ -145,9 +145,7 @@ public class MockBatteryStatsImpl extends BatteryStatsImpl {
     }
 
     public Queue<UidToRemove> getPendingRemovedUids() {
-        synchronized (this) {
-            return mPendingRemovedUids;
-        }
+        return mPendingRemovedUids;
     }
 
     public boolean isOnBattery() {
