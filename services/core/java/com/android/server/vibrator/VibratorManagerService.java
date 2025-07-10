@@ -274,7 +274,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         mVibratorManager = Flags.removeHidlSupport()
                 ? injector.createHalVibratorManager()
                 : injector.createNativeHalVibratorManager();
-        mVibratorManager.init(halListener);
+        mVibratorManager.init(halListener, halListener);
 
         int recentDumpSizeLimit = mContext.getResources().getInteger(
                 com.android.internal.R.integer.config_recentVibrationsDumpSizeLimit);
@@ -300,11 +300,7 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         int[] vibratorIds = mVibratorManager.getVibratorIds();
         SparseArray<HalVibrator> availableVibrators = new SparseArray<>(vibratorIds.length);
         for (int vibratorId : vibratorIds) {
-            HalVibrator vibrator = mVibratorManager.getVibrator(vibratorId);
-            if (vibrator != null) {
-                availableVibrators.put(vibratorId, vibrator);
-                vibrator.init(halListener);
-            }
+            availableVibrators.put(vibratorId, mVibratorManager.getVibrator(vibratorId));
         }
 
         // Load vibrator adapter, that depends on hardware info.
@@ -331,12 +327,6 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         Trace.traceBegin(TRACE_TAG_VIBRATOR, "systemReady");
         try {
             mVibratorManager.onSystemReady();
-            for (int vibratorId : mVibratorManager.getVibratorIds()) {
-                HalVibrator vibrator = mVibratorManager.getVibrator(vibratorId);
-                if (vibrator != null) {
-                    vibrator.onSystemReady();
-                }
-            }
 
             synchronized (mLock) {
                 mVibratorInfos = applyToAllVibratorsLocked(HalVibrator::getInfo);
@@ -2150,8 +2140,8 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
         }
 
         @Override
-        public void init(@NonNull Callbacks callbacks) {
-            mNativeWrapper.init(callbacks);
+        public void init(@NonNull Callbacks cb, @NonNull HalVibrator.Callbacks vibratorCb) {
+            mNativeWrapper.init(cb);
 
             // Load vibrator hardware info. The vibrator ids and manager capabilities are loaded
             // once and assumed unchanged for the lifecycle of this service. Each vibrator can still
@@ -2162,7 +2152,9 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
             if (vibratorIds != null) {
                 mVibratorIds = vibratorIds;
                 for (int id : vibratorIds) {
-                    mVibrators.put(id, mNativeWrapper.createVibrator(id));
+                    HalVibrator vibrator = mNativeWrapper.createVibrator(id);
+                    vibrator.init(vibratorCb);
+                    mVibrators.put(id, vibrator);
                 }
             }
 
@@ -2176,6 +2168,9 @@ public class VibratorManagerService extends IVibratorManagerService.Stub {
 
         @Override
         public void onSystemReady() {
+            for (int i = 0; i < mVibrators.size(); i++) {
+                mVibrators.valueAt(i).onSystemReady();
+            }
         }
 
         @Override

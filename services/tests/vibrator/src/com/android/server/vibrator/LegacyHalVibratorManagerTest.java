@@ -18,6 +18,7 @@ package com.android.server.vibrator;
 
 import static com.google.common.truth.Truth.assertThat;
 
+import android.hardware.vibrator.IVibrator;
 import android.os.test.TestLooper;
 
 import com.android.server.vibrator.VintfHalVibratorManager.LegacyHalVibratorManager;
@@ -33,15 +34,17 @@ public class LegacyHalVibratorManagerTest {
     @Rule public MockitoRule rule = MockitoJUnit.rule();
 
     @Mock HalVibratorManager.Callbacks mHalCallbackMock;
+    @Mock HalVibrator.Callbacks mHalVibratorCallbackMock;
+
     private final TestLooper mTestLooper = new TestLooper();
-    private final HalVibratorHelper mVibratorHelper =
-            new HalVibratorHelper(mTestLooper.getLooper());
+    private final HalVibratorManagerHelper mHelper =
+            new HalVibratorManagerHelper(mTestLooper.getLooper());
 
     @Test
     public void init_returnsAllFalseExceptVibratorIds() {
-        HalVibratorManager manager = new LegacyHalVibratorManager(new int[] { 1, 2 },
-                mVibratorHelper::newVibratorController);
-        manager.init(mHalCallbackMock);
+        mHelper.setVibratorIds(new int[] { 1, 2 });
+        HalVibratorManager manager = mHelper.newLegacyVibratorManager();
+        manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
 
         assertThat(manager.getVibratorIds()).asList().containsExactly(1, 2).inOrder();
         assertThat(manager.getCapabilities()).isEqualTo(0);
@@ -53,9 +56,42 @@ public class LegacyHalVibratorManagerTest {
     }
 
     @Test
+    public void init_initializesVibrators() {
+        mHelper.setVibratorIds(new int[] { 1, 2 });
+        HalVibratorManager manager = mHelper.newLegacyVibratorManager();
+        manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
+
+        assertThat(mHelper.getVibratorHelper(1).isInitialized()).isTrue();
+        assertThat(mHelper.getVibratorHelper(2).isInitialized()).isTrue();
+    }
+
+    @Test
+    public void onSystemReady_triggersAllVibratorsOnSystemReady() {
+        mHelper.setVibratorIds(new int[] {1, 2});
+        mHelper.getVibratorHelper(1).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        mHelper.getVibratorHelper(2).setLoadInfoToFail();
+        HalVibratorManager manager = mHelper.newLegacyVibratorManager();
+        manager.init(mHalCallbackMock, mHalVibratorCallbackMock);
+
+        assertThat(manager.getVibrator(1).getInfo().getCapabilities())
+                .isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
+        assertThat(manager.getVibrator(2).getInfo().getCapabilities())
+                .isEqualTo(0);
+
+        mHelper.getVibratorHelper(2).setCapabilities(IVibrator.CAP_EXTERNAL_CONTROL);
+        manager.onSystemReady();
+
+        // Capabilities from vibrator 2 reloaded after failure.
+        assertThat(manager.getVibrator(1).getInfo().getCapabilities())
+                .isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
+        assertThat(manager.getVibrator(2).getInfo().getCapabilities())
+                .isEqualTo(IVibrator.CAP_EXTERNAL_CONTROL);
+    }
+
+    @Test
     public void getVibrator_returnsVibratorOnlyForValidIds() {
-        HalVibratorManager manager = new LegacyHalVibratorManager(new int[] { 1, 2 },
-                mVibratorHelper::newVibratorController);
+        mHelper.setVibratorIds(new int[] { 1, 2 });
+        HalVibratorManager manager = mHelper.newLegacyVibratorManager();
 
         assertThat(manager.getVibrator(-1)).isNull();
         assertThat(manager.getVibrator(0)).isNull();
