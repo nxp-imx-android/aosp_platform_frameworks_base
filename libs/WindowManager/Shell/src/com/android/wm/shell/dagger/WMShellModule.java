@@ -17,6 +17,7 @@
 package com.android.wm.shell.dagger;
 
 import static android.window.DesktopExperienceFlags.ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS;
+import static android.window.DesktopExperienceFlags.ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_SYSTEM_DIALOGS_TRANSITIONS;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_ENTER_TRANSITIONS_BUGFIX;
 import static android.window.DesktopModeFlags.ENABLE_DESKTOP_WINDOWING_MODALS_POLICY;
@@ -1048,7 +1049,7 @@ public abstract class WMShellModule {
             Optional<DesktopImeHandler> desktopImeHandler,
             Optional<DesktopBackNavTransitionObserver> desktopBackNavTransitionObserver,
             DesktopModeLoggerTransitionObserver desktopModeLoggerTransitionObserver) {
-        if (enableInorderTransitionCallbacksForDesktop()
+        if (ENABLE_INORDER_TRANSITION_CALLBACKS_FOR_DESKTOP.isTrue()
                 && ENABLE_WINDOWING_TRANSITION_HANDLERS_OBSERVERS.isTrue()
                 && desktopState.canEnterDesktopMode()) {
             return Optional.of(new DesktopInOrderTransitionObserver(
