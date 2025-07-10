@@ -26,13 +26,6 @@ flag {
 }
 
 flag {
-    name: "use_parceled_list"
-    namespace: "backstage_power"
-    description: "Flag for parcelable usage event list"
-    bug: "301254110"
-}
-
-flag {
     name: "filter_based_event_query_api"
     is_exported: true
     namespace: "backstage_power"
