@@ -21,77 +21,78 @@ import android.os.UserHandle;
 import android.util.SparseArray;
 import android.util.proto.ProtoOutputStream;
 
-import com.android.internal.annotations.CompositeRWLock;
-import com.android.internal.annotations.GuardedBy;
-
 import java.io.PrintWriter;
 
-/** Class for tracking active uids for running processes. */
-final class ActiveUids {
+/**
+ * Class for tracking active uids for running processes.
+ * Note: This class is not thread-safe, caller should handle the synchronization.
+ *
+ * TODO(b/425766486): Maybe rename it to "UidRecordMap", so we can reuse it for other purposes than
+ *   "active" UIDs.
+ */
+public final class ActiveUids {
+    /**
+     * Interface for observing changes in UID active/inactive states based on state changes of
+     * processes running for that UID.
+     */
+    public interface Observer {
+        /**
+         * Called when a UID becomes active.
+         * @param uid The UID that became active.
+         * @param procState The current process state of the UID.
+         */
+        void onUidActive(int uid, int procState);
 
-    private final ActivityManagerService mService;
-    private final ActivityManagerGlobalLock mProcLock;
+        /**
+         * Called when a UID becomes inactive.
+         * @param uid The UID that became inactive.
+         */
+        void onUidInactive(int uid);
+    }
 
-    private final boolean mPostChangesToAtm;
-
-    @CompositeRWLock({"mService", "mProcLock"})
+    private final Observer mObserver;
     private final SparseArray<UidRecord> mActiveUids = new SparseArray<>();
 
-    ActiveUids(ActivityManagerService service, boolean postChangesToAtm) {
-        mService = service;
-        mProcLock = service != null ? service.mProcLock : null;
-        mPostChangesToAtm = postChangesToAtm;
+    ActiveUids(Observer observer) {
+        mObserver = observer;
     }
 
-    @GuardedBy({"mService", "mProcLock"})
     void put(int uid, UidRecord value) {
         mActiveUids.put(uid, value);
-        if (mPostChangesToAtm) {
-            mService.mAtmInternal.onUidActive(uid, value.getCurProcState());
+        if (mObserver != null) {
+            mObserver.onUidActive(uid, value.getCurProcState());
         }
     }
 
-    @GuardedBy({"mService", "mProcLock"})
     void remove(int uid) {
         mActiveUids.remove(uid);
-        if (mPostChangesToAtm) {
-            mService.mAtmInternal.onUidInactive(uid);
+        if (mObserver != null) {
+            mObserver.onUidInactive(uid);
         }
     }
 
-    @GuardedBy({"mService", "mProcLock"})
     void clear() {
         mActiveUids.clear();
-        // It is only called for a temporal container with mPostChangesToAtm == false or test case.
+        // It is only called for a temporal container with mObserver == null or test case.
         // So there is no need to notify activity task manager.
     }
 
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
     UidRecord get(int uid) {
         return mActiveUids.get(uid);
     }
 
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
     int size() {
         return mActiveUids.size();
     }
 
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
     UidRecord valueAt(int index) {
         return mActiveUids.valueAt(index);
     }
 
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
     int keyAt(int index) {
         return mActiveUids.keyAt(index);
     }
 
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
-    int indexOfKey(int uid) {
-        return mActiveUids.indexOfKey(uid);
-    }
-
-    @GuardedBy(anyOf = {"mService", "mProcLock"})
     boolean dump(final PrintWriter pw, String dumpPackage, int dumpAppId,
             String header, boolean needSep) {
         boolean printed = false;

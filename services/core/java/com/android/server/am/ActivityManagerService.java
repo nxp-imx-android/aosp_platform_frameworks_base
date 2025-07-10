@@ -2415,7 +2415,7 @@ public class ActivityManagerService extends IActivityManager.Stub
         mHandler = new MainHandler(handlerThread.getLooper());
         mHandlerThread = handlerThread;
         mConstants = new ActivityManagerConstants(mContext, this, mHandler);
-        final ActiveUids activeUids = new ActiveUids(this, false /* postChangesToAtm */);
+        final ActiveUids activeUids = new ActiveUids(null);
         mPlatformCompat = null;
         mProcessList = injector.getProcessList(this);
         mProcessList.init(this, activeUids, mPlatformCompat);
@@ -2479,7 +2479,8 @@ public class ActivityManagerService extends IActivityManager.Stub
         mProcStartHandler = new ProcStartHandler(this, mProcStartHandlerThread.getLooper());
 
         mConstants = new ActivityManagerConstants(mContext, this, mHandler);
-        final ActiveUids activeUids = new ActiveUids(this, true /* postChangesToAtm */);
+        mAtmInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
+        final ActiveUids activeUids = new ActiveUids(mAtmInternal);
         mPlatformCompat = (PlatformCompat) ServiceManager.getService(
                 Context.PLATFORM_COMPAT_SERVICE);
         mProcessList = mInjector.getProcessList(this);
@@ -2534,8 +2535,6 @@ public class ActivityManagerService extends IActivityManager.Stub
         mActivityTaskManager = atm;
         mActivityTaskManager.initialize(mIntentFirewall, mPendingIntentController,
                 mProcessStateController, activityTaskLooper);
-        mAtmInternal = LocalServices.getService(ActivityTaskManagerInternal.class);
-
         mHiddenApiBlacklist = new HiddenApiSettings(mHandler, mContext);
 
         Watchdog.getInstance().addMonitor(this);
