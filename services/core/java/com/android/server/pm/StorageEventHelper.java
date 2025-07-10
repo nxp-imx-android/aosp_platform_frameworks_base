@@ -38,7 +38,6 @@ import android.os.FileUtils;
 import android.os.UserHandle;
 import android.os.storage.StorageEventListener;
 import android.os.storage.StorageManager;
-import android.os.storage.StorageManagerInternal;
 import android.os.storage.VolumeInfo;
 import android.text.TextUtils;
 import android.util.ArrayMap;
@@ -50,6 +49,7 @@ import com.android.internal.annotations.GuardedBy;
 import com.android.internal.pm.pkg.parsing.ParsingPackageUtils;
 import com.android.internal.policy.AttributeCache;
 import com.android.internal.util.IndentingPrintWriter;
+import com.android.server.StorageManagerInternal;
 import com.android.server.pm.pkg.AndroidPackage;
 import com.android.server.pm.pkg.PackageStateInternal;
 
