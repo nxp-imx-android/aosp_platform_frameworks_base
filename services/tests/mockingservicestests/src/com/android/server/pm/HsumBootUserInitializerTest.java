@@ -18,8 +18,11 @@ package com.android.server.pm;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.os.UserManager;
 import android.util.Log;
+
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.android.modules.utils.testing.ExtendedMockitoRule;
 import com.android.server.am.ActivityManagerService;
@@ -49,13 +52,16 @@ public final class HsumBootUserInitializerTest {
     @Mock
     private ContentResolver mMockContentResolver;
 
+    // NOTE: not mocking yet, but need a real one because of resources
+    private final Context mRealContext =
+            InstrumentationRegistry.getInstrumentation().getTargetContext();
+
     @Test
     public void testCreateInstance_hsum() {
         mockIsHsum(true);
 
         var instance = HsumBootUserInitializer.createInstance(mMockUms, mMockAms, mMockPms,
-                mMockContentResolver,
-                /* shouldDesignateMainUser= */ false, /* shouldDesignateMainUser= */ false);
+                mMockContentResolver, mRealContext);
 
         expect.withMessage("result of createInstance()").that(instance).isNotNull();
     }
@@ -64,8 +70,7 @@ public final class HsumBootUserInitializerTest {
         mockIsHsum(false);
 
         var instance = HsumBootUserInitializer.createInstance(mMockUms, mMockAms, mMockPms,
-                mMockContentResolver,
-                /* shouldDesignateMainUser= */ false, /* shouldDesignateMainUser= */ false);
+                mMockContentResolver, mRealContext);
 
         expect.withMessage("result of createInstance()").that(instance).isNull();
     }
