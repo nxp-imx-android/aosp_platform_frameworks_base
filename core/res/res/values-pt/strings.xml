@@ -75,9 +75,9 @@
     <string name="page_size_compat_apk_warning" msgid="2982396798449041224">"Este app não é compatível com 16 KB. Falha na verificação de alinhamento do APK. Este app será executado usando o modo compatível com o tamanho da página. Para melhorar a compatibilidade, é preciso recompilar o aplicativo com suporte a 16 KB. Para mais informações, consulte &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_elf_warning" msgid="6753874059564812651">"Este app não é compatível com 16 KB. Falha na verificação de alinhamento ELF. Este app será executado usando o modo compatível com o tamanho da página. Para melhorar a compatibilidade, é preciso recompilar o aplicativo com suporte a 16 KB. Para mais informações, consulte &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
     <string name="page_size_compat_apk_and_elf_warning" msgid="7628675779500605390">"Este app não é compatível com 16 KB. Falha nas verificações de alinhamento do APK e do ELF. Este app será executado usando o modo compatível com o tamanho da página. Para melhorar a compatibilidade, é preciso recompilar o aplicativo com suporte a 16 KB. Para mais informações, consulte &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;"</string>
-    <string name="page_size_compat_apk_warning_4kb" msgid="1284527724160989424">"Este aviso está sendo mostrado porque este é um app depurável que está sendo testado no momento. Se você não for o desenvolvedor, informe o problema ao desenvolvedor e peça um app que não possa ser depurado. &lt;br&gt;&lt;br&gt; Este app não é compatível com 16 KB. Falha na verificação de alinhamento do APK. Siga as etapas em &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; As bibliotecas abaixo não estão alinhadas corretamente: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_elf_warning_4kb" msgid="5197745436304627728">"Este aviso está sendo mostrado porque este é um app depurável que está sendo testado no momento. Se você não for o desenvolvedor, informe o problema ao desenvolvedor e peça um app que não possa ser depurado. &lt;br&gt;&lt;br&gt; Este app não é compatível com 16 KB. Falha na verificação de alinhamento ELF. Siga as etapas em &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; As bibliotecas abaixo não estão alinhadas corretamente: &lt;br&gt;&lt;br&gt;"</string>
-    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="5626544342073325806">"Este aviso está sendo mostrado porque este é um app depurável que está sendo testado no momento. Se você não for o desenvolvedor, informe o problema ao desenvolvedor e peça um app que não possa ser depurado. &lt;br&gt;&lt;br&gt; Este app não é compatível com 16 KB. Falha nas verificações de alinhamento do APK e do ELF. Siga as etapas em &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; As bibliotecas abaixo não estão alinhadas corretamente: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_warning_4kb" msgid="6013674159459424986">"Este aviso está sendo mostrado porque este é um app depurável que está sendo testado no momento. Se você não for o desenvolvedor, informe o problema a ele e peça um app que não possa ser depurado. &lt;br&gt;&lt;br&gt; Este app não é compatível com 16 KB. Falha na verificação de alinhamento do APK. Siga as etapas em &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;. As bibliotecas abaixo não estão alinhadas a 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_elf_warning_4kb" msgid="5189541753040977649">"Este aviso está sendo mostrado porque este é um app depurável que está sendo testado no momento. Se você não for o desenvolvedor, informe o problema a ele e peça um app que não possa ser depurado. &lt;br&gt;&lt;br&gt; Este app não é compatível com 16 KB. Falha na verificação de alinhamento ELF. Siga as etapas em &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt; &lt;br&gt;&lt;br&gt;. As bibliotecas abaixo não estão alinhadas a 16 KB: &lt;br&gt;&lt;br&gt;"</string>
+    <string name="page_size_compat_apk_and_elf_warning_4kb" msgid="7665028394400479058">"Este aviso está sendo mostrado porque este é um app depurável que está sendo testado no momento. Se você não for o desenvolvedor, informe o problema a ele e peça um app que não possa ser depurado. &lt;br&gt;&lt;br&gt; Este app não é compatível com 16 KB. Falha nas verificações de alinhamento do APK e do ELF. Siga as etapas em &lt;a href=\"https://developer.android.com/16kb-page-size\"&gt;https://developer.android.com/16kb-page-size&lt;/a&gt;. &lt;br&gt;&lt;br&gt; As bibliotecas abaixo não estão alinhadas a 16 KB: &lt;br&gt;&lt;br&gt;"</string>
     <string name="page_size_compat_never_show" msgid="3391282612422783097">"Não mostrar de novo"</string>
     <string name="page_size_compat_title" msgid="6497719153872572204">"Compatibilidade de apps Android"</string>
     <string name="page_size_compat_elf_not_aligned" msgid="7940806102874132630">"&amp;#8226; %1$s : o segmento LOAD não está alinhado"</string>
@@ -366,18 +366,12 @@
     <string name="permgroupdesc_sensors" msgid="2610631290633747752">"acesse dados do sensor sobre seus sinais vitais"</string>
     <string name="permgrouplab_notifications" msgid="5472972361980668884">"Notificações"</string>
     <string name="permgroupdesc_notifications" msgid="4608679556801506580">"mostrar notificações"</string>
-    <!-- no translation found for permgrouplab_xr_eye_sensitive (1709596126334620353) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_eye_sensitive (6050967250223079001) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking (766634536453394700) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking (812429788288001595) -->
-    <skip />
-    <!-- no translation found for permgrouplab_xr_tracking_sensitive (4346975608010051186) -->
-    <skip />
-    <!-- no translation found for permgroupdesc_xr_tracking_sensitive (7925014193164562556) -->
-    <skip />
+    <string name="permgrouplab_xr_eye_sensitive" msgid="1709596126334620353">"Dados de acompanhamento ocular"</string>
+    <string name="permgroupdesc_xr_eye_sensitive" msgid="6050967250223079001">"acompanhar com precisão os movimentos dos olhos"</string>
+    <string name="permgrouplab_xr_tracking" msgid="766634536453394700">"Dados de movimento e do ambiente"</string>
+    <string name="permgroupdesc_xr_tracking" msgid="812429788288001595">"acompanhar olhos, rosto, corpo e verificar o ambiente ao redor"</string>
+    <string name="permgrouplab_xr_tracking_sensitive" msgid="4346975608010051186">"Dados precisos do ambiente e de movimentos da cabeça"</string>
+    <string name="permgroupdesc_xr_tracking_sensitive" msgid="7925014193164562556">"acompanhar a cabeça e verificar com precisão o ambiente ao redor"</string>
     <string name="capability_title_canRetrieveWindowContent" msgid="7554282892101587296">"Acessar conteúdo de uma janela"</string>
     <string name="capability_desc_canRetrieveWindowContent" msgid="6195610527625237661">"Inspeciona o conteúdo de uma janela com a qual você está interagindo."</string>
     <string name="capability_title_canRequestTouchExploration" msgid="327598364696316213">"Ativar Explorar por toque"</string>
@@ -675,38 +669,22 @@
     <string name="permdesc_imagesWrite" msgid="5195054463269193317">"Permite que o app modifique sua coleção de fotos."</string>
     <string name="permlab_mediaLocation" msgid="7368098373378598066">"ler locais na sua coleção de mídias"</string>
     <string name="permdesc_mediaLocation" msgid="597912899423578138">"Permite que o app leia os locais na sua coleção de mídias."</string>
-    <!-- no translation found for permlab_eye_tracking_coarse (1266477998416112440) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_coarse (1652112796672085320) -->
-    <skip />
-    <!-- no translation found for permlab_eye_tracking_fine (6208991021186455002) -->
-    <skip />
-    <!-- no translation found for permdesc_eye_tracking_fine (9215360948852654836) -->
-    <skip />
-    <!-- no translation found for permlab_face_tracking (6052126246676474909) -->
-    <skip />
-    <!-- no translation found for permdesc_face_tracking (185815778490412574) -->
-    <skip />
-    <!-- no translation found for permlab_hand_tracking (21944950887649088) -->
-    <skip />
-    <!-- no translation found for permdesc_hand_tracking (8083783248481460669) -->
-    <skip />
-    <!-- no translation found for permlab_head_tracking (4304699038992159853) -->
-    <skip />
-    <!-- no translation found for permdesc_head_tracking (2232184518548944223) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_coarse (8765236119358852920) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_coarse (847344305502345475) -->
-    <skip />
-    <!-- no translation found for permlab_scene_understanding_fine (2899904960307462936) -->
-    <skip />
-    <!-- no translation found for permdesc_scene_understanding_fine (4848943859506977588) -->
-    <skip />
-    <!-- no translation found for permlab_xr_tracking_in_background (8659516810430027774) -->
-    <skip />
-    <!-- no translation found for permdesc_xr_tracking_in_background (3151744132692357005) -->
-    <skip />
+    <string name="permlab_eye_tracking_coarse" msgid="1266477998416112440">"acompanhar movimentos dos olhos"</string>
+    <string name="permdesc_eye_tracking_coarse" msgid="1652112796672085320">"Permite que o app acompanhe a direção aproximada do seu olhar."</string>
+    <string name="permlab_eye_tracking_fine" msgid="6208991021186455002">"acompanhar com precisão os movimentos dos olhos"</string>
+    <string name="permdesc_eye_tracking_fine" msgid="9215360948852654836">"Permite que o app acompanhe a direção do seu olhar."</string>
+    <string name="permlab_face_tracking" msgid="6052126246676474909">"acompanhar movimentos faciais"</string>
+    <string name="permdesc_face_tracking" msgid="185815778490412574">"Permite que o app acompanhe suas expressões e movimentos faciais."</string>
+    <string name="permlab_hand_tracking" msgid="21944950887649088">"acompanhar movimentos das mãos"</string>
+    <string name="permdesc_hand_tracking" msgid="8083783248481460669">"Permite que o app acompanhe os movimentos das suas mãos."</string>
+    <string name="permlab_head_tracking" msgid="4304699038992159853">"acompanhar movimentos da cabeça"</string>
+    <string name="permdesc_head_tracking" msgid="2232184518548944223">"Permite que o app acompanhe os movimentos da sua cabeça."</string>
+    <string name="permlab_scene_understanding_coarse" msgid="8765236119358852920">"verificar o ambiente ao seu redor"</string>
+    <string name="permdesc_scene_understanding_coarse" msgid="847344305502345475">"Permite que o app verifique o ambiente ao seu redor."</string>
+    <string name="permlab_scene_understanding_fine" msgid="2899904960307462936">"verificar com precisão o ambiente ao seu redor"</string>
+    <string name="permdesc_scene_understanding_fine" msgid="4848943859506977588">"Permite que o app verifique com precisão o ambiente ao seu redor."</string>
+    <string name="permlab_xr_tracking_in_background" msgid="8659516810430027774">"acompanhar dados de XR em segundo plano"</string>
+    <string name="permdesc_xr_tracking_in_background" msgid="3151744132692357005">"Permite que o app acesse dados de XR em segundo plano."</string>
     <string name="permlab_capture_keyboard" msgid="4076894823382693032">"capturar teclas"</string>
     <string name="permdesc_capture_keyboard" msgid="4192269470684407219">"Permite que o app capture teclas antes que o sistema possa processar atalhos e ações do sistema."</string>
     <string name="biometric_app_setting_name" msgid="3339209978734534457">"Usar biometria"</string>
@@ -887,8 +865,8 @@
     <string name="permdesc_bindCarrierMessagingService" msgid="6316457028173478345">"Permite que o proprietário use a interface de nível superior de um serviço de mensagens de operadora. Não deve ser necessária para apps comuns."</string>
     <string name="permlab_bindCarrierServices" msgid="2395596978626237474">"vincular a serviços da operadora"</string>
     <string name="permdesc_bindCarrierServices" msgid="9185614481967262900">"Permite que o proprietário use serviços da operadora. Não deve ser necessário para apps comuns."</string>
-    <string name="permlab_access_notification_policy" msgid="5524112842876975537">"acessar \"Não perturbe\""</string>
-    <string name="permdesc_access_notification_policy" msgid="8538374112403845013">"Permitir que o app leia e grave a configuração \"Não perturbe\"."</string>
+    <string name="permlab_access_notification_policy" msgid="5524112842876975537">"acessar não perturbe"</string>
+    <string name="permdesc_access_notification_policy" msgid="8538374112403845013">"Permitir que o app leia e grave a configuração não perturbe."</string>
     <string name="permlab_startViewPermissionUsage" msgid="1504564328641112341">"começar a usar a permissão para ver"</string>
     <string name="permdesc_startViewPermissionUsage" msgid="2820325605959586538">"Permite que o sistema inicie o uso de permissão para um app. Não deve ser necessário para apps comuns."</string>
     <string name="permlab_startReviewPermissionDecisions" msgid="8690578688476599284">"decisões de permissão da visualização inicial"</string>
@@ -937,6 +915,8 @@
     <string name="policydesc_disableCamera" msgid="3204405908799676104">"Impede o uso de todas as câmeras do dispositivo."</string>
     <string name="policylab_disableKeyguardFeatures" msgid="5071855750149949741">"Desativar recursos do bloq. de tela"</string>
     <string name="policydesc_disableKeyguardFeatures" msgid="6641673177041195957">"Impede o uso de alguns recursos do bloqueio de tela."</string>
+    <!-- no translation found for exit_toast_on_long_press_escape (873907401529125943) -->
+    <skip />
   <string-array name="phoneTypes">
     <item msgid="8996339953292723951">"Casa"</item>
     <item msgid="7740243458912727194">"Celular"</item>
@@ -2020,7 +2000,7 @@
     <string name="zen_mode_until" msgid="2250286190237669079">"Até <xliff:g id="FORMATTEDTIME">%1$s</xliff:g>"</string>
     <string name="zen_mode_alarm" msgid="7046911727540499275">"Até <xliff:g id="FORMATTEDTIME">%1$s</xliff:g> (próximo alarme)"</string>
     <string name="zen_mode_forever" msgid="740585666364912448">"Até você desativar"</string>
-    <string name="zen_mode_forever_dnd" msgid="3423201955704180067">"Até que você desative \"Não perturbe\""</string>
+    <string name="zen_mode_forever_dnd" msgid="3423201955704180067">"Até que você desative não perturbe"</string>
     <string name="zen_mode_rule_name_combination" msgid="7174598364351313725">"<xliff:g id="FIRST">%1$s</xliff:g> / <xliff:g id="REST">%2$s</xliff:g>"</string>
     <string name="toolbar_collapse_description" msgid="8009920446193610996">"Recolher"</string>
     <string name="zen_mode_feature_name" msgid="3785547207263754500">"Não perturbe"</string>
@@ -2245,7 +2225,7 @@
     <string name="nas_upgrade_notification_enable_action" msgid="3046406808378726874">"OK"</string>
     <string name="nas_upgrade_notification_disable_action" msgid="3794833210043497982">"Desativar"</string>
     <string name="nas_upgrade_notification_learn_more_action" msgid="7011130656195423947">"Saiba mais"</string>
-    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"No Android 12, as notificações avançadas substituíram as notificações adaptativas. Esse recurso mostra ações e respostas sugeridas, além de organizar suas notificações.\n\nAs notificações avançadas podem acessar o conteúdo das notificações, incluindo informações pessoais como nomes de contatos e mensagens. Elas também podem dispensar ou responder às notificações, como atender ligações telefônicas e controlar o Não perturbe."</string>
+    <string name="nas_upgrade_notification_learn_more_content" msgid="3735480566983530650">"No Android 12, as notificações avançadas substituíram as notificações adaptativas. Esse recurso mostra ações e respostas sugeridas, além de organizar suas notificações.\n\nAs notificações avançadas podem acessar o conteúdo das notificações, incluindo informações pessoais como nomes de contatos e mensagens. Elas também podem dispensar ou responder às notificações, como atender ligações telefônicas e controlar o não perturbe."</string>
     <string name="dynamic_mode_notification_channel_name" msgid="2986926422100223328">"Notificação de informação do modo rotina"</string>
     <string name="dynamic_mode_notification_title" msgid="1388718452788985481">"Economia de bateria ativada"</string>
     <string name="dynamic_mode_notification_summary" msgid="1639031262484979689">"Reduzindo o uso da bateria para prolongar a duração dela"</string>
@@ -2589,6 +2569,7 @@
     <string name="keyboard_shortcut_group_applications_calendar" msgid="3571770335653387606">"Agenda"</string>
     <string name="keyboard_shortcut_group_applications_calculator" msgid="6753209559716091507">"Calculadora"</string>
     <string name="keyboard_shortcut_group_applications_maps" msgid="7950000659522589471">"Mapas"</string>
+    <string name="keyboard_shortcut_group_applications_files" msgid="863938400765838051">"Arquivos"</string>
     <string name="keyboard_shortcut_group_applications" msgid="3010389163951364798">"Apps"</string>
     <string name="fingerprint_loe_notification_msg" msgid="3927447270148854546">"As impressões digitais não são mais reconhecidas. Configure o desbloqueio por impressão digital de novo."</string>
     <string name="usb_apm_usb_plugged_in_when_locked_notification_app_title" msgid="285421860627714333">"Segurança e privacidade"</string>
