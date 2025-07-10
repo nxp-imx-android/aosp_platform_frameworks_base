@@ -29,6 +29,7 @@ import static org.junit.Assert.assertThrows;
 import android.annotation.Nullable;
 import android.app.ActivityManager;
 import android.app.AppCompatCallbacks;
+import android.app.RavenwoodAppDriver;
 import android.app.UiAutomation_ravenwood;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;

@@ -21,6 +21,7 @@ import android.annotation.NonNull;
 import android.annotation.Nullable;
 import android.app.ActivityThread;
 import android.app.LoadedApk;
+import android.app.RavenwoodAppDriver;
 import android.app.ResourcesManager;
 import android.content.res.Resources;
 import android.os.HandlerThread;

@@ -15,38 +15,14 @@
  */
 package android.app;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.PARAMETER;
-
-import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.FileUtils;
 import android.platform.test.ravenwood.RavenwoodPackageManager;
 
 import java.io.File;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 
 public class ContextImpl_ravenwood {
     private static final String TAG = "ContextImpl_ravenwood";
-
-    /** Indicates a {@link Context} is really a {@link ContextImpl}. */
-    @Target({FIELD, METHOD, PARAMETER})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ReallyContextImpl {
-    }
-
-    /** Backdoor to a package-private method. */
-    public static ContextImpl createSystemContext(ActivityThread at) {
-        return ContextImpl.createSystemContext(at);
-    }
-
-    /** Backdoor to a package-private method. */
-    public static ContextImpl createAppContext(ActivityThread at, LoadedApk la) {
-        return ContextImpl.createAppContext(at, la);
-    }
 
     static PackageManager getPackageManagerInner(ContextImpl contextImpl) {
         return new RavenwoodPackageManager(contextImpl);

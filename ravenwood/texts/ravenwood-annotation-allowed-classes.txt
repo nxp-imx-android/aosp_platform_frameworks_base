@@ -12,12 +12,15 @@ android.accounts.Account
 
 android.app.ActivityManager
 android.app.ActivityOptions
+android.app.ActivityThread
 android.app.AppCompatCallbacks
 android.app.AppComponentFactory
 android.app.Application
 android.app.ApplicationPackageManager
 android.app.BroadcastOptions
+android.app.ClientTransactionHandler
 android.app.ComponentOptions
+android.app.ConfigurationChangedListenerController
 android.app.ContextImpl
 android.app.Instrumentation
 android.app.LoadedApk
