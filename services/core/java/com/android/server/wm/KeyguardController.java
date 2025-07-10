@@ -76,7 +76,7 @@ import java.io.PrintWriter;
 class KeyguardController {
 
     private static final boolean ENABLE_NEW_KEYGUARD_SHELL_TRANSITIONS =
-            Flags.ensureKeyguardDoesTransitionStarting();
+            Flags.ensureKeyguardDoesTransitionStartingBugFix();
 
     private static final String TAG = TAG_WITH_CLASS_NAME ? "KeyguardController" : TAG_ATM;
 
