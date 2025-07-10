@@ -37198,6 +37198,7 @@ package android.provider {
     field public static final long USER_MISSED_NO_ANSWER = 65536L; // 0x10000L
     field public static final long USER_MISSED_NO_VIBRATE = 1048576L; // 0x100000L
     field public static final long USER_MISSED_SHORT_RING = 131072L; // 0x20000L
+    field @FlaggedApi("com.android.server.telecom.flags.integrated_call_logs") public static final String UUID = "uuid";
     field public static final String VIA_NUMBER = "via_number";
     field public static final int VOICEMAIL_TYPE = 4; // 0x4
     field public static final String VOICEMAIL_URI = "voicemail_uri";
