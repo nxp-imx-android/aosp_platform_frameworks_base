@@ -244,13 +244,18 @@ TEST_F(FlaggedResourcesTest, ReadWriteFlagChunk) {
   std::string output;
   DumpChunksToString(loaded_apk.get(), &output);
 
-  std::string expected =
+  std::string expected1 =
+      R"OUT_END(  [RES_TABLE_FLAG_LIST] chunkSize: 12 headerSize: 8 count: 1
+    [0] flag name: 1 'test.package.rwFlag')OUT_END";
+  ASSERT_TRUE(output.contains(expected1));
+
+  std::string expected2 =
       R"OUT_END(    [RES_TABLE_FLAGGED] chunkSize: 120 headerSize: 16 name: test.package.rwFlag negated: false
       [ResTable_type] chunkSize: 104 headerSize: 84 id: 0x01 name: string flags: 0x00 (DENSE) entryCount: 1 entryStart: 88 config: 
         [ResTable_entry] id: 0x0000 name: text1 keyIndex: 0 size: 8 flags: 0x0000
           [Res_value] size: 8 dataType: 0x03 data: 0x00000000 ("foobar"))OUT_END";
 
-  ASSERT_TRUE(output.contains(expected));
+  ASSERT_TRUE(output.contains(expected2));
 }
 
 }  // namespace aapt
