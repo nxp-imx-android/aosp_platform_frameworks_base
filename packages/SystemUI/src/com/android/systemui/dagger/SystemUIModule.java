@@ -85,6 +85,7 @@ import com.android.systemui.keyguard.ui.composable.LockscreenContent;
 import com.android.systemui.log.dagger.LogModule;
 import com.android.systemui.log.dagger.MonitorLog;
 import com.android.systemui.log.table.TableLogBuffer;
+import com.android.systemui.log.table.impl.TableLogBufferModule;
 import com.android.systemui.lowlight.dagger.LowLightModule;
 import com.android.systemui.lowlightclock.dagger.LowLightClockModule;
 import com.android.systemui.mediaprojection.MediaProjectionModule;
@@ -294,6 +295,7 @@ import javax.inject.Named;
         SysUIConcurrencyModule.class,
         SysUICoroutinesModule.class,
         CommonSystemUIUnfoldModule.class,
+        TableLogBufferModule.class,
         TelephonyRepositoryModule.class,
         TemporaryDisplayModule.class,
         ShadeDisplayAwareModule.class,

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.systemui.log.table
+package com.android.systemui.log.table.impl
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
@@ -29,11 +29,11 @@ import org.mockito.kotlin.mock
 
 @SmallTest
 @RunWith(AndroidJUnit4::class)
-class TableLogBufferFactoryTest : SysuiTestCase() {
+class TableLogBufferFactoryImplTest : SysuiTestCase() {
     private val dumpManager: DumpManager = mock()
     private val systemClock = FakeSystemClock()
     private val underTest =
-        TableLogBufferFactory(dumpManager, systemClock, LogcatEchoTrackerAlways())
+        TableLogBufferFactoryImpl(dumpManager, systemClock, LogcatEchoTrackerAlways())
 
     @Test
     fun create_alwaysCreatesNewInstance() {
