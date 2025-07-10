@@ -13,6 +13,7 @@ flag {
   name: "add_fallback"
   namespace: "biometrics_framework"
   description: "Feature flag for adding auth fallbacks to biometric prompt"
+  is_exported: true
   bug: "391666818"
 }
 
