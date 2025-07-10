@@ -17,6 +17,7 @@
 package com.android.wm.shell.scenarios
 
 import android.app.Instrumentation
+import android.tools.Rotation
 import android.tools.traces.parsers.WindowManagerStateHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import com.android.server.wm.flicker.helpers.DesktopModeAppHelper
@@ -26,12 +27,12 @@ import org.junit.Ignore
 import org.junit.Test
 
 @Ignore("Test Base Class")
-abstract class EnterDesktopFromKeyboardShortcut : TestScenarioBase() {
+abstract class EnterDesktopFromKeyboardShortcut(val rotation: Rotation = Rotation.ROTATION_0) : TestScenarioBase(rotation) {
 
     private val instrumentation: Instrumentation = InstrumentationRegistry.getInstrumentation()
     private val wmHelper = WindowManagerStateHelper(instrumentation)
     private val simpleAppHelper = SimpleAppHelper(instrumentation)
-    private val testApp = DesktopModeAppHelper(simpleAppHelper)
+    val testApp = DesktopModeAppHelper(simpleAppHelper)
 
     @Test
     open fun enterDesktopFromKeyboardShortcut() {

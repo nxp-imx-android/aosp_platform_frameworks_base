@@ -46,6 +46,7 @@ test_module_config {
     exclude_filters: [
         "com.android.wm.shell.flicker.fundamentals.CloseAllAppsViaAppHeaderExitTest",
         "com.android.wm.shell.flicker.fundamentals.CloseAllAppsWithBackNavigationTest",
+        "com.android.wm.shell.flicker.fundamentals.EnterDesktopFromKeyboardShortcutFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.EnterDesktopFromSplitScreenWithAppHandleMenuFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.EnterDesktopWithAppHandleMenuFlickerTest",
         "com.android.wm.shell.flicker.fundamentals.EnterDesktopWithDragFlickerTest",
@@ -95,6 +96,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.fundamentals.CloseAllAppsWithBackNavigationTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-fundamentals-EnterDesktopFromKeyboardShortcutFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.EnterDesktopFromKeyboardShortcutFlickerTest"],
 }
 
 test_module_config {

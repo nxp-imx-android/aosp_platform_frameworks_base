@@ -114,6 +114,7 @@ test_module_config {
         "com.android.wm.shell.functional.UnminimizeAppFromTaskbarTest",
         "com.android.wm.shell.functional.fundamentals.CloseAllAppsViaAppHeaderExitTest",
         "com.android.wm.shell.functional.fundamentals.CloseAllAppsWithBackNavigationTest",
+        "com.android.wm.shell.functional.fundamentals.EnterDesktopFromKeyboardShortcutTest",
         "com.android.wm.shell.functional.fundamentals.EnterDesktopFromSplitScreenWithAppHandleMenuTest",
         "com.android.wm.shell.functional.fundamentals.EnterDesktopWithAppHandleMenuTest",
         "com.android.wm.shell.functional.fundamentals.EnterDesktopWithDragTest",
@@ -352,6 +353,13 @@ test_module_config {
     base: "FunctionalTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.functional.fundamentals.CloseAllAppsWithBackNavigationTest"],
+}
+
+test_module_config {
+    name: "FunctionalTestsDesktopMode-fundamentals-EnterDesktopFromKeyboardShortcutTest",
+    base: "FunctionalTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.functional.fundamentals.EnterDesktopFromKeyboardShortcutTest"],
 }
 
 test_module_config {

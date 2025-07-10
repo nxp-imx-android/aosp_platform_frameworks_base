@@ -7,6 +7,9 @@
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-CloseAllAppsWithBackNavigationTest"
     },
     {
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-EnterDesktopFromKeyboardShortcutFlickerTest"
+    },
+    {
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-EnterDesktopFromSplitScreenWithAppHandleMenuFlickerTest"
     },
     {
