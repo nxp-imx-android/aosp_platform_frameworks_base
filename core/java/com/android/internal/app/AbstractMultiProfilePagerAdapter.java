@@ -535,7 +535,7 @@ public abstract class AbstractMultiProfilePagerAdapter extends PagerAdapter {
         ContentResolver contentResolver = mContext.getContentResolver();
         for (Intent intent : intents) {
             if (IntentForwarderActivity.canForward(intent, source, target, packageManager,
-                    contentResolver) != null) {
+                    intent.resolveTypeIfNeeded(contentResolver)) != null) {
                 return true;
             }
         }
