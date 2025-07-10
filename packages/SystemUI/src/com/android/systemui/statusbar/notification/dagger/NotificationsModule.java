@@ -95,6 +95,8 @@ import com.android.systemui.statusbar.notification.stack.MagneticNotificationRow
 import com.android.systemui.statusbar.notification.stack.NotificationListContainer;
 import com.android.systemui.statusbar.notification.stack.NotificationSectionsManager;
 import com.android.systemui.statusbar.notification.stack.NotificationStackScrollLayoutController;
+import com.android.systemui.statusbar.notification.stack.NotificationTargetsHelper;
+import com.android.systemui.statusbar.notification.stack.NotificationTargetsHelperImpl;
 import com.android.systemui.statusbar.notification.stack.OnboardingAffordanceCommands;
 import com.android.systemui.statusbar.notification.stack.StackScrollAlgorithm;
 import com.android.systemui.statusbar.phone.KeyguardBypassController;
@@ -358,5 +360,10 @@ public interface NotificationsModule {
     /** Provides an instance of {@link EntryAdapterFactory} */
     @Binds
     EntryAdapterFactory provideEntryAdapterFactory(EntryAdapterFactoryImpl impl);
+
+    /** Provides the instance of {@link NotificationTargetsHelper} */
+    @Binds
+    @SysUISingleton
+    NotificationTargetsHelper provideNotificationTargetsHelper(NotificationTargetsHelperImpl impl);
 
 }

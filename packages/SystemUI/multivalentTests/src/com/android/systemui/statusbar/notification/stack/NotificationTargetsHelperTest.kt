@@ -29,7 +29,7 @@ class NotificationTargetsHelperTest : SysuiTestCase() {
         allowTestableLooperAsMainThread()
     }
 
-    private fun notificationTargetsHelper() = NotificationTargetsHelper()
+    private fun notificationTargetsHelper() = NotificationTargetsHelperImpl()
 
     @Test
     fun targetsForFirstNotificationInGroup() {
