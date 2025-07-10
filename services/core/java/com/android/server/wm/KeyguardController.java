@@ -590,7 +590,7 @@ class KeyguardController {
     private void updateKeyguardSleepToken(DisplayContent display) {
         if (isKeyguardUnoccludedOrAodShowing(display.mDisplayId)) {
             display.addSleepToken(KEYGUARD_SLEEP_TOKEN_TAG);
-        } else {
+        } else if (display.hasSleepToken(KEYGUARD_SLEEP_TOKEN_TAG)) {
             display.removeSleepToken(KEYGUARD_SLEEP_TOKEN_TAG);
         }
     }
@@ -710,7 +710,9 @@ class KeyguardController {
             mTopOccludesActivity = null;
             mDismissingKeyguardActivity = null;
             mTopTurnScreenOnActivity = null;
-            dc.removeSleepToken(KEYGUARD_SLEEP_TOKEN_TAG);
+            if (dc.hasSleepToken(KEYGUARD_SLEEP_TOKEN_TAG)) {
+                dc.removeSleepToken(KEYGUARD_SLEEP_TOKEN_TAG);
+            }
         }
 
         void writeEventLog(String reason) {
