@@ -1480,6 +1480,9 @@ public class WindowStateTests extends WindowTestsBase {
         mDisplayContent.setImeLayeringTarget(appWin2);
         assertEquals("appWin2 is the IME control target",
                 appWin2, mDisplayContent.getImeControlTarget());
+        if (android.view.inputmethod.Flags.setServerVisibilityOnprelayout()) {
+            controller.getImeSourceProvider().onPreLayout();
+        }
         controller.getImeSourceProvider().onPostLayout();
 
         // Expect all windows behind IME can receive IME insets visible.
@@ -1523,6 +1526,9 @@ public class WindowStateTests extends WindowTestsBase {
         appWin2.setRequestedVisibleTypes(ime(), ime());
         mDisplayContent.setImeInputTarget(appWin2);
         mDisplayContent.setImeLayeringTarget(appWin2);
+        if (android.view.inputmethod.Flags.setServerVisibilityOnprelayout()) {
+            controller.getImeSourceProvider().onPreLayout();
+        }
         controller.getImeSourceProvider().onPostLayout();
 
         assertFalse("appWin1 does not have IME insets visible, as it is in background",

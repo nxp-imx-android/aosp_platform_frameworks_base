@@ -219,3 +219,9 @@ flag {
   bug: "139872425"
 }
 
+flag {
+  name: "set_server_visibility_onprelayout"
+  namespace: "input_method"
+  description: "Set server visibility before performLayout to avoid additional window layout traversal."
+  bug: "427863960"
+}
