@@ -390,7 +390,6 @@
     <string name="quick_settings_done" msgid="2163641301648855793">"Concluído"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Fechar"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Ligado"</string>
-    <string name="quick_settings_connected_battery_level" msgid="1322075669498906959">"Ligado, bateria: <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"A ligar..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Zona Wi-Fi"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"A ativar..."</string>
@@ -400,6 +399,7 @@
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"Câmara em utilização"</string>
     <string name="flashlight_dialog_title" msgid="4232742718579701241">"Intensidade da lanterna"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <string name="flashlight_dialog_turn_off" msgid="5934897539563253348">"Desligar"</string>
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Dados móveis"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Utilização de dados"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"Dados restantes"</string>
@@ -843,8 +843,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Ativar"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Ativada – Com base no rosto"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Silenciar e agrupar"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"Use o organizador de notificações"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Para a app <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Vendas, novas funcionalidades e muito mais"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Notícias principais, editoriais e muito mais"</string>
@@ -1095,16 +1094,11 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Editar ordem das Definições rápidas."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu ligar/desligar"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Página <xliff:g id="ID_1">%1$d</xliff:g> de <xliff:g id="ID_2">%2$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Ativar a <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"A ação "<annotation id="action_key_icon">"ícone"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> é o atalho de teclado para usar a <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Esta opção permite-lhe aumentar o zoom rapidamente no ecrã para ampliar o tamanho do conteúdo."</string>
+    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"O <xliff:g id="ID_1">%1$s</xliff:g> é um leitor de ecrã que lhe permite ouvir os itens em voz alta. Pode ser útil para pessoas que têm dificuldade em ver o ecrã."</string>
+    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Ativar"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Ecrã de bloqueio"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"A encerrar…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Veja os passos de manutenção"</string>
@@ -1676,8 +1670,10 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Deslize rapidamente a partir da parte superior esquerda para abrir as notificações"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Deslize rapidamente a partir da parte superior direita para abrir as Definições rápidas"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Anterior"</string>
-    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Anterior"</string>
+    <string name="pager_dots_next_content_description" msgid="613943992626163120">"Seguinte"</string>
+    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
     <skip />
-    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
     <skip />
 </resources>

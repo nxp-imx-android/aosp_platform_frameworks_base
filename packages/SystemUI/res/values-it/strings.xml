@@ -390,7 +390,6 @@
     <string name="quick_settings_done" msgid="2163641301648855793">"Fine"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Chiudi"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Connesso"</string>
-    <string name="quick_settings_connected_battery_level" msgid="1322075669498906959">"Connesso, batteria al <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"Connessione in corso..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Hotspot"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"Attivazione…"</string>
@@ -400,6 +399,8 @@
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"Fotocamera in uso"</string>
     <string name="flashlight_dialog_title" msgid="4232742718579701241">"Intensità torcia"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <!-- no translation found for flashlight_dialog_turn_off (5934897539563253348) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Dati mobili"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Utilizzo dati"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"Dati rimanenti"</string>
@@ -843,8 +844,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Attiva"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"On - Rotazione basata sul viso"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Silenzia e raggruppa"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"Usa l\'organizzatore delle notifiche"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Per <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Vendite, nuove funzionalità e altro"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Notizie principali, contenuti editoriali e altro"</string>
@@ -1095,16 +1095,11 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Modifica l\'ordine delle Impostazioni rapide."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menu del tasto di accensione"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Pagina <xliff:g id="ID_1">%1$d</xliff:g> di <xliff:g id="ID_2">%2$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Attivare <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"L\'azione "<annotation id="action_key_icon">"icona"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> è la scorciatoia da tastiera per utilizzare <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"In questo modo, puoi aumentare rapidamente lo zoom sullo schermo per ingrandire i contenuti."</string>
+    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> è uno screen reader che ti consente di ascoltare gli elementi letti ad alta voce. Questa funzionalità può essere utile a chi ha difficoltà a vedere lo schermo."</string>
+    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Attiva"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Schermata di blocco"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Arresto in corso…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Leggi le misure da adottare"</string>
@@ -1676,8 +1671,10 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Scorri dall\'angolo in alto a sinistra per aprire le notifiche"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Scorri dall\'angolo in alto a destra per aprire le Impostazioni rapide"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Indietro"</string>
-    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Indietro"</string>
+    <string name="pager_dots_next_content_description" msgid="613943992626163120">"Avanti"</string>
+    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
     <skip />
-    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
     <skip />
 </resources>

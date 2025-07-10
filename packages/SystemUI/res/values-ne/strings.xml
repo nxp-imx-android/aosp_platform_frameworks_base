@@ -390,7 +390,6 @@
     <string name="quick_settings_done" msgid="2163641301648855793">"भयो"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"बन्द गर्नुहोस्"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"जोडिएको"</string>
-    <string name="quick_settings_connected_battery_level" msgid="1322075669498906959">"यन्त्र जडान भयो, ब्याट्रीको चार्ज स्तर <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"कनेक्ट गरिँदै छ..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"हटस्पट"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"सक्रिय गर्दै…"</string>
@@ -400,6 +399,8 @@
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"क्यामेरा प्रयोग भइरहेको छ"</string>
     <string name="flashlight_dialog_title" msgid="4232742718579701241">"फ्ल्यासलाइटको तीव्रता"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <!-- no translation found for flashlight_dialog_turn_off (5934897539563253348) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"मोबाइल डेटा"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"डेटाको प्रयोग"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"बाँकी डेटा"</string>
@@ -843,8 +844,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"सक्रिय पार्नुहोस्"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"अन छ - अनुहारमा आधारित"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"साइलेन्ट पार्नुहोस् र बन्डल बनाउनुहोस्"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"नोटिफिकेसन व्यवस्थित गर्ने सुविधा प्रयोग गर्नुहोस्"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"<xliff:g id="APP_NAME">%1$s</xliff:g> को"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"बिक्री, नयाँ सुविधा र अन्य कुरा"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"लोकप्रिय समाचार, सम्पादकीय र अन्य सामग्री"</string>
@@ -1095,16 +1095,11 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"द्रुत सेटिङमा भएका विकल्पहरूको क्रम बदल्नुहोस्।"</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"पावर मेनु"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"<xliff:g id="ID_2">%2$d</xliff:g> मध्ये पृष्ठ <xliff:g id="ID_1">%1$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"<xliff:g id="ID_1">%1$s</xliff:g> अन गर्ने हो?"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"एक्सन "<annotation id="action_key_icon">"आइकन"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> भनेको <xliff:g id="ID_3">^3</xliff:g> प्रयोग गर्नका लागि किबोर्डको सर्टकट हो। <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"तपाईं यसका सहायताले स्क्रिनमा तुरुन्तै जुम इन गरेर त्यसमा भएको कन्टेन्ट अझ ठुलो बनाउन सक्नुहुन्छ।"</string>
+    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> भनेको विभिन्न वस्तुहरू ठुलो आवाजमा पढेर सुनाउने स्क्रिन रिडर हो। स्क्रिनमा भएको कुरा देख्न गाह्रो हुने मान्छेहरूका लागि यो सुविधा उपयोगी हुन सक्छ।"</string>
+    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"अन गर्नुहोस्"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"लक स्क्रिन"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"सट डाउन गरिँदै छ..."</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"डिभाइसको हेरचाह गर्ने तरिका हेर्नुहोस्"</string>
@@ -1676,8 +1671,10 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"नोटिफिकेसनहरू खोल्न सिरानको बायाँतिरबाट तलतिर स्वाइप गर्नुहोस्"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"द्रुत सेटिङ खोल्न सिरानको दायाँतिरबाट तलतिर स्वाइप गर्नुहोस्"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"पछाडि"</string>
-    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <string name="pager_dots_previous_content_description" msgid="26963508904918908">"अघिल्लो"</string>
+    <string name="pager_dots_next_content_description" msgid="613943992626163120">"अर्को"</string>
+    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
     <skip />
-    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
     <skip />
 </resources>

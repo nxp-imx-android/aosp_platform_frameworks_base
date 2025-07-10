@@ -390,7 +390,6 @@
     <string name="quick_settings_done" msgid="2163641301648855793">"Nimemaliza"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Funga"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Imeunganishwa"</string>
-    <string name="quick_settings_connected_battery_level" msgid="1322075669498906959">"Imeunganishwa, kiwango cha betri ni <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"Inaunganisha..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Mtandaopepe"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"Inawasha..."</string>
@@ -400,6 +399,8 @@
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"Kamera inatumika"</string>
     <string name="flashlight_dialog_title" msgid="4232742718579701241">"Kiwango cha Mwangaza wa Tochi"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <!-- no translation found for flashlight_dialog_turn_off (5934897539563253348) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Data ya simu"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Matumizi ya data"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"Data iliyosalia"</string>
@@ -843,8 +844,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Washa"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Imewashwa - Inayolenga nyuso"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Zima sauti kisha uweke katika vifurushi"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"Kutumia kipanga arifa"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Mahususi kwa <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Mauzo, vipengele vipya na mengineyo"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Habari kuu, makala ya uhariri na mengineyo"</string>
@@ -1095,16 +1095,11 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Badilisha mpangilio wa Mipangilio ya Haraka."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Menyu ya kuzima/kuwasha"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Ukurasa wa <xliff:g id="ID_1">%1$d</xliff:g> kati ya <xliff:g id="ID_2">%2$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Ungependa kuwasha <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"Aikoni ya "<annotation id="action_key_icon">"kitendo"</annotation>" + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> ndio mikato ya kibodi unayopaswa kutumia <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Hali hii hukuruhusu uvute karibu kwa haraka kwenye skrini ili ufanye maudhui yawe makubwa zaidi."</string>
+    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> ni kisoma skrini kinachokuruhusu usikie vipengee vikitamkwa kwa sauti. Kinaweza kuwasaidia watu walio na matatizo ya kuona skrini."</string>
+    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Washa"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Skrini iliyofungwa"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Inazima…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Angalia hatua za utunzaji"</string>
@@ -1475,7 +1470,7 @@
     <string name="bt_le_audio_broadcast_dialog_switch_app" msgid="6098768269397105733">"Tangaza kwenye <xliff:g id="SWITCHAPP">%1$s</xliff:g>"</string>
     <string name="bt_le_audio_broadcast_dialog_different_output" msgid="7885102097302562674">"Badilisha maudhui"</string>
     <string name="bt_le_audio_broadcast_dialog_unknown_name" msgid="3791472237793443044">"Haijulikani"</string>
-    <string name="dream_time_complication_12_hr_time_format" msgid="4691197486690291529">"saa:dk"</string>
+    <string name="dream_time_complication_12_hr_time_format" msgid="4691197486690291529">"h:mm"</string>
     <string name="dream_time_complication_24_hr_time_format" msgid="6248280719733640813">"kk:mm"</string>
     <string name="log_access_confirmation_title" msgid="4843557604739943395">"Ungependa kuruhusu <xliff:g id="LOG_ACCESS_APP_NAME">%s</xliff:g> ifikie kumbukumbu zote za kifaa?"</string>
     <string name="log_access_confirmation_allow" msgid="752147861593202968">"Ruhusu ufikiaji wa mara moja"</string>
@@ -1676,8 +1671,10 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Telezesha kidole kutoka sehemu ya juu kushoto ili ufungue arifa"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Telezesha kidole kutoka sehemu ya juu kulia ili ufungue Mipangilio ya Haraka"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Nyuma"</string>
-    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Uliotangulia"</string>
+    <string name="pager_dots_next_content_description" msgid="613943992626163120">"Unaofuata"</string>
+    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
     <skip />
-    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
     <skip />
 </resources>
