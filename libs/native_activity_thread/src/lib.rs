@@ -17,6 +17,7 @@
 
 use log::{info, LevelFilter};
 
+mod library_loader;
 mod task;
 
 /// Start NativeActivityThread to manage the process.

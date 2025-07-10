@@ -19,6 +19,16 @@ package {
 }
 
 rust_bindgen {
+    name: "libdlext_bindgen",
+    crate_name: "dlext_bindgen",
+    wrapper_src: "src/bindings/dlext.h",
+    source_stem: "dlext_bindings",
+    shared_libs: [
+        "libdl_android",
+    ],
+}
+
+rust_bindgen {
     name: "liblooper_bindgen",
     crate_name: "looper_bindgen",
     wrapper_src: "src/bindings/looper.h",
@@ -42,6 +52,7 @@ rust_library {
         "activitymanager_structured_aidl-rust",
         "libanyhow",
         "libbinder_rs",
+        "libdlext_bindgen",
         "liblogger",
         "liblibc",
         "liblog_rust",
