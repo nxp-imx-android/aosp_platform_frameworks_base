@@ -95,6 +95,16 @@ flag {
 }
 
 flag {
+    name: "enable_app_to_web_education_animation"
+    namespace: "lse_desktop_experience"
+    description: "Show the App-to-web education animation."
+    bug: "359226240"
+    metadata {
+        purpose: PURPOSE_BUGFIX
+    }
+}
+
+flag {
     name: "enable_block_non_desktop_display_window_drag_bugfix"
     namespace: "lse_desktop_experience"
     description: "Block window drag to a non-desktop-mode display."
