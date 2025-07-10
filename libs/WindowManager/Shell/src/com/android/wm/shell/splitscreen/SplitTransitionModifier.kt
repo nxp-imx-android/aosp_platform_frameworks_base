@@ -47,7 +47,9 @@ class SplitTransitionModifier {
             Slog.w(TAG, "addDimLayerToTransition but leash was released or not created")
         } else {
             val change =
-                TransitionInfo.Change(null,  /* token */dimLayer)
+                TransitionInfo.Change(null /* container */,
+                    SurfaceControl(dimLayer, "addDimLayerToTransition")
+                )
             change.parent = parentToken
             change.setStartAbsBounds(bounds)
             change.setEndAbsBounds(bounds)

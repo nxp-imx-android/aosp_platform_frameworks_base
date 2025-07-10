@@ -4432,7 +4432,9 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
             return;
         }
 
-        final TransitionInfo.Change barChange = new TransitionInfo.Change(null /* token */, leash);
+        final TransitionInfo.Change barChange = new TransitionInfo.Change(null /* token */,
+                // Make a copy because the transition leash may be released on finish.
+                new SurfaceControl(leash, "addDividerBarToTransition"));
         mSplitLayout.getRefDividerBounds(mTempRect1);
         int displayId = SplitMultiDisplayHelper.getTransitionDisplayId(info);
         barChange.setParent(mSplitMultiDisplayHelper.getDisplayRootTaskInfo(displayId).token);
