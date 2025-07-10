@@ -2,13 +2,6 @@ package: "com.android.printspooler.flags"
 container: "system"
 
 flag {
-  name: "log_print_jobs"
-  namespace: "printing"
-  description: "Log print job creation and state transitions."
-  bug: "385340868"
-}
-
-flag {
   name: "printing_telemetry"
   namespace: "printing"
   description: "Metrics tracking final print job status, printer discovery, printer capabilities, and major UI actions."

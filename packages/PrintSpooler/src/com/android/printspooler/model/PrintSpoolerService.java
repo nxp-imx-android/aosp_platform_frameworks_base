@@ -503,9 +503,7 @@ public final class PrintSpoolerService extends Service {
             keepAwakeLocked();
         }
 
-        if (Flags.logPrintJobs() || DEBUG_PRINT_JOB_LIFECYCLE) {
-            Slog.i(LOG_TAG, "[ADD] " + printJob);
-        }
+        Slog.i(LOG_TAG, "[ADD] " + printJob);
     }
 
     private void removeObsoletePrintJobs() {
@@ -516,9 +514,7 @@ public final class PrintSpoolerService extends Service {
                 PrintJobInfo printJob = mPrintJobs.get(i);
                 if (isObsoleteState(printJob.getState())) {
                     mPrintJobs.remove(i);
-                    if (Flags.logPrintJobs() || DEBUG_PRINT_JOB_LIFECYCLE) {
-                        Slog.i(LOG_TAG, "[REMOVE] " + printJob.getId().flattenToString());
-                    }
+                    Slog.i(LOG_TAG, "[REMOVE] " + printJob.getId().flattenToString());
                     removePrintJobFileLocked(printJob.getId());
                     persistState = true;
                 }
@@ -630,9 +626,7 @@ public final class PrintSpoolerService extends Service {
                     checkIfStillKeepAwakeLocked();
                 }
 
-                if (Flags.logPrintJobs() || DEBUG_PRINT_JOB_LIFECYCLE) {
-                    Slog.i(LOG_TAG, "[STATE CHANGED] " + printJob);
-                }
+                Slog.i(LOG_TAG, "[STATE CHANGED] " + printJob);
 
                 MetricsLogger.histogram(this, PRINT_JOB_STATE_HISTO, state);
                 switch (state) {
