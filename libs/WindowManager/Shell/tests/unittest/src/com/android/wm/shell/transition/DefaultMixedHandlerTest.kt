@@ -17,12 +17,16 @@
 package com.android.wm.shell.transition
 
 import android.app.ActivityManager.RunningTaskInfo
+import android.app.WindowConfiguration.ACTIVITY_TYPE_STANDARD
 import android.os.Binder
 import android.platform.test.annotations.EnableFlags
+import android.view.SurfaceControl
 import android.view.WindowManager.TRANSIT_OPEN
 import android.window.IRemoteTransition
 import android.window.RemoteTransition
+import android.window.TransitionInfo
 import android.window.TransitionRequestInfo
+import android.window.WindowContainerToken
 import androidx.test.filters.SmallTest
 import com.android.wm.shell.Flags.FLAG_ENABLE_CREATE_ANY_BUBBLE
 import com.android.wm.shell.ShellTestCase
@@ -45,6 +49,7 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.stub
 import org.mockito.kotlin.verify
 
@@ -218,6 +223,44 @@ class DefaultMixedHandlerTest : ShellTestCase() {
         verify(remoteTransition).onTransitionConsumed(any(), eq(false))
     }
 
+    @Test
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    fun test_startAnimation_NoBubbleEnterFromAppBubble() {
+        val info = TransitionInfo(TRANSIT_OPEN, 0)
+
+        bubbleTransitions.stub {
+            on { isShowingAsBubbleBar } doReturn true
+            on { shouldBeAppBubble(any()) } doReturn true
+        }
+
+        mixedHandler.startAnimation(Binder(), info, mock<SurfaceControl.Transaction>(),
+            mock<SurfaceControl.Transaction>(), mock<Transitions.TransitionFinishCallback>())
+
+        verify(bubbleTransitions, never()).startBubbleToBubbleLaunchOrExistingBubbleConvert(
+            any(), any(), any());
+    }
+
+    @Test
+    @EnableFlags(FLAG_ENABLE_CREATE_ANY_BUBBLE)
+    fun test_startAnimation_bubbleEnterFromAppBubble() {
+        val change = TransitionInfo.Change(mock<WindowContainerToken>(), mock<SurfaceControl>())
+        change.mode = TRANSIT_OPEN
+        change.taskInfo = createRunningTask()
+        val info = TransitionInfo(TRANSIT_OPEN, 0)
+        info.addChange(change)
+
+        bubbleTransitions.stub {
+            on { isShowingAsBubbleBar } doReturn true
+            on { shouldBeAppBubble(any()) } doReturn true
+        }
+
+        mixedHandler.startAnimation(Binder(), info, mock<SurfaceControl.Transaction>(),
+            mock<SurfaceControl.Transaction>(), mock<Transitions.TransitionFinishCallback>())
+
+        verify(bubbleTransitions).startBubbleToBubbleLaunchOrExistingBubbleConvert(
+            any(), any(), any());
+    }
+
     private fun createTransitionRequestInfo(
         runningTask: RunningTaskInfo? = null,
         remote: RemoteTransition? = null,
@@ -228,6 +271,7 @@ class DefaultMixedHandlerTest : ShellTestCase() {
     private fun createRunningTask(taskId: Int = 0): RunningTaskInfo {
         return RunningTaskInfo().apply {
             this.taskId = taskId
+            this.configuration.windowConfiguration.activityType = ACTIVITY_TYPE_STANDARD
         }
     }
 }

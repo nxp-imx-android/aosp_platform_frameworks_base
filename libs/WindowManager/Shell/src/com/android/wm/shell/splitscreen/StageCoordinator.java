@@ -3370,16 +3370,15 @@ public class StageCoordinator implements SplitLayout.SplitLayoutHandler,
         }
     }
 
-    /** @return whether the transition-request implies entering bubbles from split. */
-    public boolean requestImpliesSplitToBubble(TransitionRequestInfo request) {
-        final TaskInfo triggerTask = request.getTriggerTask();
+    /** @return whether the opening task implies entering bubbles from split. */
+    public boolean requestImpliesSplitToBubble(TaskInfo openingTask) {
         if (!isSplitActive()
-                || triggerTask == null
-                || triggerTask.displayId != mDisplayId) {
+                || openingTask == null
+                || openingTask.displayId != mDisplayId) {
             return false;
         }
 
-        int stageForTask = getStageOfTask(triggerTask.taskId);
+        int stageForTask = getStageOfTask(openingTask.taskId);
         if (stageForTask == STAGE_TYPE_UNDEFINED) {
             return false;
         }
