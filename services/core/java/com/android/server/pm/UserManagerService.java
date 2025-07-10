@@ -5209,6 +5209,39 @@ public class UserManagerService extends IUserManager.Stub {
             userVersion = 11;
         }
 
+        // 2025Q4 userVersion pathway.
+        // TODO(b/419105275): Because trunk stable flags need to be reversible, and because the
+        //  upgrades here actually are reversible, we temporarily "cheat" by triggering the upgrade
+        //  path on every reboot.
+        //  Once the flags have fully progressed, we can do this properly:
+        //  check for userVersion < 11, set userVersion = 12, and set USER_VERSION = 12.
+        // if (userVersion < 12) {
+        Slog.i(LOG_TAG, "Forcing an upgrade due to flagged changes");
+        final boolean forceWrite = true; // treat as an upgrade no matter what to handle flagging
+        if (android.multiuser.Flags.hsuNotAdmin()) {
+            // The HSU should never have been an Admin.
+            synchronized (mUsersLock) {
+                final UserData sysData = mUsers.get(UserHandle.USER_SYSTEM);
+                if ((sysData.info.flags & UserInfo.FLAG_FULL) == 0
+                        && (sysData.info.flags & UserInfo.FLAG_ADMIN) != 0) {
+                    sysData.info.flags &= ~UserInfo.FLAG_ADMIN;
+                    userIdsToWrite.add(sysData.info.id);
+                }
+            }
+        } else {
+            // Flag turned off. Undo HSU Admin change.
+            synchronized (mUsersLock) {
+                final UserData sysData = mUsers.get(UserHandle.USER_SYSTEM);
+                if ((sysData.info.flags & UserInfo.FLAG_FULL) == 0
+                        && (sysData.info.flags & UserInfo.FLAG_ADMIN) == 0) {
+                    sysData.info.flags ^= UserInfo.FLAG_ADMIN;
+                    userIdsToWrite.add(sysData.info.id);
+                }
+            }
+        }
+        //     userVersion = 12;  // Also set USER_VERSION = 12!
+        // }
+
         // Reminder: If you add another upgrade, make sure to increment USER_VERSION too.
 
         // Done with userVersion changes, moving on to deal with userTypeVersion upgrades
@@ -5233,7 +5266,8 @@ public class UserManagerService extends IUserManager.Stub {
             mUserVersion = userVersion;
             mUserTypeVersion = newUserTypeVersion;
 
-            if (originalVersion < mUserVersion || originalUserTypeVersion < mUserTypeVersion) {
+            if (originalVersion < mUserVersion || originalUserTypeVersion < mUserTypeVersion
+                    || forceWrite) {
                 for (int userId : userIdsToWrite) {
                     UserData userData = getUserDataNoChecks(userId);
                     if (userData != null) {

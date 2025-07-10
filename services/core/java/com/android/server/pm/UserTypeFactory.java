@@ -450,7 +450,8 @@ public final class UserTypeFactory {
         return new UserTypeDetails.Builder()
                 .setName(USER_TYPE_SYSTEM_HEADLESS)
                 .setBaseType(FLAG_SYSTEM)
-                .setDefaultUserInfoPropertyFlags(FLAG_PRIMARY | FLAG_ADMIN)
+                .setDefaultUserInfoPropertyFlags(FLAG_PRIMARY
+                        | (android.multiuser.Flags.hsuNotAdmin() ? 0 : FLAG_ADMIN))
                 .setMaxAllowed(1);
     }
 
