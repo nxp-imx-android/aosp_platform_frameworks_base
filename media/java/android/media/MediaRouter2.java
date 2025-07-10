@@ -916,6 +916,8 @@ public final class MediaRouter2 {
      *
      * @return {@code true} if the output switcher dialog is being shown, or {@code false} if the
      * call is ignored because the app is in the background.
+     *
+     * @throws IllegalArgumentException if the provided {@code sessionToken} is invalid.
      */
     @FlaggedApi(FLAG_ENABLE_ROUTE_VISIBILITY_CONTROL_API)
     public boolean showSystemOutputSwitcher(@NonNull MediaSession.Token sessionToken) {
