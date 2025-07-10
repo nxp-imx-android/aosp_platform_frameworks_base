@@ -42,6 +42,8 @@ import com.android.systemui.scene.domain.startable.sceneContainerStartable
 import com.android.systemui.scene.shared.model.Overlays
 import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.enableDualShade
+import com.android.systemui.shade.domain.interactor.enableSingleShade
+import com.android.systemui.shade.domain.interactor.enableSplitShade
 import com.android.systemui.shade.domain.interactor.shadeInteractor
 import com.android.systemui.shade.ui.viewmodel.notificationsShadeOverlayContentViewModel
 import com.android.systemui.statusbar.disableflags.data.repository.fakeDisableFlagsRepository
@@ -184,6 +186,38 @@ class NotificationsShadeOverlayContentViewModelTest : SysuiTestCase() {
             runCurrent()
 
             assertThat(underTest.isTransparencyEnabled).isFalse()
+        }
+
+    @Test
+    fun shadeModeChanged_single_switchesToShadeScene() =
+        testScope.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            kosmos.enableDualShade()
+            kosmos.shadeInteractor.expandNotificationsShade("test")
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
+
+            kosmos.enableSingleShade()
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
+        }
+
+    @Test
+    fun shadeModeChanged_split_switchesToShadeScene() =
+        testScope.runTest {
+            val currentScene by collectLastValue(sceneInteractor.currentScene)
+            val currentOverlays by collectLastValue(sceneInteractor.currentOverlays)
+
+            kosmos.enableDualShade()
+            kosmos.shadeInteractor.expandNotificationsShade("test")
+            assertThat(currentScene).isEqualTo(Scenes.Lockscreen)
+            assertThat(currentOverlays).contains(Overlays.NotificationsShade)
+
+            kosmos.enableSplitShade()
+            assertThat(currentScene).isEqualTo(Scenes.Shade)
+            assertThat(currentOverlays).doesNotContain(Overlays.NotificationsShade)
         }
 
     private fun TestScope.lockDevice() {

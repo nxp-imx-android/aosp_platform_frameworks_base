@@ -207,33 +207,33 @@ private fun ContentScope.ShadeScene(
     shadeSession: SaveableSession,
     usingCollapsedLandscapeMedia: Boolean,
 ) {
-    when (viewModel.shadeMode) {
-        is ShadeMode.Single ->
-            SingleShade(
-                notificationStackScrollView = notificationStackScrollView,
-                viewModel = viewModel,
-                headerViewModel = headerViewModel,
-                notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
-                mediaCarouselController = mediaCarouselController,
-                mediaHost = qqsMediaHost,
-                modifier = modifier,
-                shadeSession = shadeSession,
-                usingCollapsedLandscapeMedia = usingCollapsedLandscapeMedia,
-                jankMonitor = jankMonitor,
-            )
-        is ShadeMode.Split ->
-            SplitShade(
-                notificationStackScrollView = notificationStackScrollView,
-                viewModel = viewModel,
-                headerViewModel = headerViewModel,
-                notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
-                mediaCarouselController = mediaCarouselController,
-                mediaHost = qsMediaHost,
-                modifier = modifier,
-                shadeSession = shadeSession,
-                jankMonitor = jankMonitor,
-            )
-        is ShadeMode.Dual -> error("Dual shade is implemented separately as an overlay.")
+    if (viewModel.shadeMode is ShadeMode.Split) {
+        SplitShade(
+            notificationStackScrollView = notificationStackScrollView,
+            viewModel = viewModel,
+            headerViewModel = headerViewModel,
+            notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
+            mediaCarouselController = mediaCarouselController,
+            mediaHost = qsMediaHost,
+            modifier = modifier,
+            shadeSession = shadeSession,
+            jankMonitor = jankMonitor,
+        )
+    } else {
+        // Compose SingleShade even if we're in Dual shade mode; the view-model will take care of
+        // switching scenes.
+        SingleShade(
+            notificationStackScrollView = notificationStackScrollView,
+            viewModel = viewModel,
+            headerViewModel = headerViewModel,
+            notificationsPlaceholderViewModel = notificationsPlaceholderViewModel,
+            mediaCarouselController = mediaCarouselController,
+            mediaHost = qqsMediaHost,
+            modifier = modifier,
+            shadeSession = shadeSession,
+            usingCollapsedLandscapeMedia = usingCollapsedLandscapeMedia,
+            jankMonitor = jankMonitor,
+        )
     }
 }
 

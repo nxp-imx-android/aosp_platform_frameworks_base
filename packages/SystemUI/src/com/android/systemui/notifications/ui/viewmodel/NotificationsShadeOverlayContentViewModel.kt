@@ -19,11 +19,15 @@ package com.android.systemui.notifications.ui.viewmodel
 import androidx.compose.runtime.getValue
 import com.android.app.tracing.coroutines.launchTraced as launch
 import com.android.systemui.Flags
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.lifecycle.ExclusiveActivatable
 import com.android.systemui.lifecycle.Hydrator
 import com.android.systemui.media.controls.domain.pipeline.interactor.MediaCarouselInteractor
 import com.android.systemui.scene.domain.interactor.SceneInteractor
+import com.android.systemui.scene.shared.model.Scenes
 import com.android.systemui.shade.domain.interactor.ShadeInteractor
+import com.android.systemui.shade.domain.interactor.ShadeModeInteractor
+import com.android.systemui.shade.shared.model.ShadeMode
 import com.android.systemui.shade.ui.viewmodel.ShadeHeaderViewModel
 import com.android.systemui.statusbar.disableflags.domain.interactor.DisableFlagsInteractor
 import com.android.systemui.statusbar.notification.stack.ui.viewmodel.NotificationsPlaceholderViewModel
@@ -31,11 +35,13 @@ import com.android.systemui.utils.coroutines.flow.flatMapLatestConflated
 import com.android.systemui.window.domain.interactor.WindowRootViewBlurInteractor
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.withContext
 
 /**
  * Models UI state used to render the content of the notifications shade overlay.
@@ -46,10 +52,12 @@ import kotlinx.coroutines.flow.flowOf
 class NotificationsShadeOverlayContentViewModel
 @AssistedInject
 constructor(
+    @Main private val mainDispatcher: CoroutineDispatcher,
     val shadeHeaderViewModelFactory: ShadeHeaderViewModel.Factory,
     val notificationsPlaceholderViewModelFactory: NotificationsPlaceholderViewModel.Factory,
     val sceneInteractor: SceneInteractor,
     private val shadeInteractor: ShadeInteractor,
+    private val shadeModeInteractor: ShadeModeInteractor,
     disableFlagsInteractor: DisableFlagsInteractor,
     mediaCarouselInteractor: MediaCarouselInteractor,
     windowRootViewBlurInteractor: WindowRootViewBlurInteractor,
@@ -100,9 +108,24 @@ constructor(
                     .distinctUntilChanged()
                     .filter { !it }
                     .collect {
-                        shadeInteractor.collapseNotificationsShade(
-                            loggingReason = "device became non-interactive"
-                        )
+                        withContext(mainDispatcher) {
+                            shadeInteractor.collapseNotificationsShade(
+                                loggingReason = "device became non-interactive"
+                            )
+                        }
+                    }
+            }
+
+            launch {
+                shadeModeInteractor.shadeMode
+                    .filter { it !is ShadeMode.Dual }
+                    .collect {
+                        withContext(mainDispatcher) {
+                            sceneInteractor.snapToScene(
+                                Scenes.Shade,
+                                loggingReason = "Fold or rotate while on notifications shade",
+                            )
+                        }
                     }
             }
         }
