@@ -264,6 +264,9 @@ static const char* kLockProfThresholdRuntimeOption = "-Xlockprofthreshold:0";
 
 static AndroidRuntime* gCurRuntime = NULL;
 
+//The kernel's TASK_COMM_LEN minus one for the terminating NUL == 15.
+static constexpr int THREAD_NAME_TRUNCATION_LEN = 15;
+
 /*
  * Code written in the Java Programming Language calls here from main().
  */
@@ -342,13 +345,12 @@ AndroidRuntime::~AndroidRuntime()
 
 void AndroidRuntime::setArgv0(const char* argv0, bool setProcName) {
     // Set the kernel's task name, for as much of the name as we can fit.
-    // The kernel's TASK_COMM_LEN minus one for the terminating NUL == 15.
     if (setProcName) {
         int len = strlen(argv0);
-        if (len < 15) {
+        if (len < THREAD_NAME_TRUNCATION_LEN) {
             pthread_setname_np(pthread_self(), argv0);
         } else {
-            pthread_setname_np(pthread_self(), argv0 + len - 15);
+            pthread_setname_np(pthread_self(), argv0 + len - THREAD_NAME_TRUNCATION_LEN);
         }
     }
 
