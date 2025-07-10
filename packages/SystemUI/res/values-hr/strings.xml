@@ -390,7 +390,6 @@
     <string name="quick_settings_done" msgid="2163641301648855793">"Gotovo"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"Zatvori"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"Povezano"</string>
-    <string name="quick_settings_connected_battery_level" msgid="1322075669498906959">"Povezano, baterija <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"Povezivanje..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"Žarišna točka"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"Uključivanje…"</string>
@@ -400,6 +399,8 @@
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"Upotrebljava se kamera"</string>
     <string name="flashlight_dialog_title" msgid="4232742718579701241">"Jačina svjetiljke"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"<xliff:g id="PERCENTAGE">%1$d</xliff:g>%%"</string>
+    <!-- no translation found for flashlight_dialog_turn_off (5934897539563253348) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"Mobilni podaci"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"Potrošnja podataka"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"Preostali podaci"</string>
@@ -843,8 +844,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"Uključi"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"Uključeno – na temelju lica"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"Utišavanje i grupiranje"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"Upotrijebite organizator obavijesti"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"Za aplikaciju <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"Sniženja, nove značajke i drugo"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"Najčitanije vijesti, urednički sadržaj i drugo"</string>
@@ -1095,16 +1095,11 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"Uredite redoslijed brzih postavki."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"Izbornik tipke za uključivanje/isključivanje"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"Stranica <xliff:g id="ID_1">%1$d</xliff:g> od <xliff:g id="ID_2">%2$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"Želite li uključiti značajku <xliff:g id="ID_1">%1$s</xliff:g>?"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794"><annotation id="action_key_icon">"Ikona"</annotation>" radnje + <xliff:g id="ID_1">^1</xliff:g> + <xliff:g id="ID_2">^2</xliff:g> tipkovni je prečac za upotrebu značajke <xliff:g id="ID_3">^3</xliff:g>. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"Omogućuje vam da brzo povećate prikaz na zaslonu kako biste bolje vidjeli sadržaj."</string>
+    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"<xliff:g id="ID_1">%1$s</xliff:g> je čitač zaslona koji vam omogućuje da čujete stavke izgovorene naglas. To može biti korisno za osobe koje imaju poteškoća s vidom."</string>
+    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"Uključi"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"Zaključani zaslon"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"Isključivanje…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"Pročitajte upute za održavanje"</string>
@@ -1676,8 +1671,10 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"Prijeđite prstom od gornjeg lijevog ruba prema dolje da biste otvorili obavijesti"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"Prijeđite prstom od gornjeg desnog ruba prema dolje da biste otvorili Brze postavke"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"Natrag"</string>
-    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <string name="pager_dots_previous_content_description" msgid="26963508904918908">"Prethodno"</string>
+    <string name="pager_dots_next_content_description" msgid="613943992626163120">"Dalje"</string>
+    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
     <skip />
-    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
     <skip />
 </resources>

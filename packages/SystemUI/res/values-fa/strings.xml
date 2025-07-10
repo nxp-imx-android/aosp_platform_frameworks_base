@@ -390,7 +390,6 @@
     <string name="quick_settings_done" msgid="2163641301648855793">"تمام"</string>
     <string name="quick_settings_close_user_panel" msgid="5599724542275896849">"بستن"</string>
     <string name="quick_settings_connected" msgid="3873605509184830379">"متصل"</string>
-    <string name="quick_settings_connected_battery_level" msgid="1322075669498906959">"متصل، باتری <xliff:g id="BATTERY_LEVEL_AS_PERCENTAGE">%1$s</xliff:g>"</string>
     <string name="quick_settings_connecting" msgid="2381969772953268809">"در حال اتصال..."</string>
     <string name="quick_settings_hotspot_label" msgid="1199196300038363424">"نقطه اتصال"</string>
     <string name="quick_settings_hotspot_secondary_label_transient" msgid="7585604088079160564">"روشن کردن…"</string>
@@ -400,6 +399,8 @@
     <string name="quick_settings_flashlight_camera_in_use" msgid="4820591564526512571">"دوربین درحال استفاده"</string>
     <string name="flashlight_dialog_title" msgid="4232742718579701241">"شدت نور چراغ‌قوه"</string>
     <string name="quick_settings_flashlight_tile_level_percentage" msgid="2071942013174794819">"‪‎٪<xliff:g id="PERCENTAGE">%1$d</xliff:g>"</string>
+    <!-- no translation found for flashlight_dialog_turn_off (5934897539563253348) -->
+    <skip />
     <string name="quick_settings_cellular_detail_title" msgid="792977203299358893">"داده تلفن همراه"</string>
     <string name="quick_settings_cellular_detail_data_usage" msgid="6105969068871138427">"مصرف داده"</string>
     <string name="quick_settings_cellular_detail_remaining_data" msgid="1136599216568805644">"داده‌های باقی‌مانده"</string>
@@ -843,8 +844,7 @@
     <string name="enable_bluetooth_confirmation_ok" msgid="2866408183324184876">"روشن کردن"</string>
     <string name="rotation_lock_camera_rotation_on" msgid="789434807790534274">"روشن - براساس چهره"</string>
     <string name="notification_guts_bundle_title" msgid="5252530007273079591">"بی‌صدا و بسته‌ای"</string>
-    <!-- no translation found for notification_guts_single_bundle_notif_title (5397951402211886396) -->
-    <skip />
+    <string name="notification_guts_single_bundle_notif_title" msgid="5397951402211886396">"استفاده کردن از سازمان‌دهنده اعلان"</string>
     <string name="notification_guts_bundle_summary" msgid="3971530802237393600">"برای <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
     <string name="notification_guts_promotions_summary" msgid="1565750619813325885">"حراج‌ها، ویژگی‌های جدید، و…"</string>
     <string name="notification_guts_news_summary" msgid="638697931043407835">"برترین داستان‌ها، سرمقاله‌ها، و…"</string>
@@ -1095,16 +1095,11 @@
     <string name="accessibility_quick_settings_edit" msgid="6544873823850165">"ویرایش ترتیب «تنظیمات فوری»."</string>
     <string name="accessibility_quick_settings_power_menu" msgid="6820426108301758412">"منوی روشن/خاموش"</string>
     <string name="accessibility_quick_settings_page" msgid="7506322631645550961">"صفحه <xliff:g id="ID_1">%1$d</xliff:g> از <xliff:g id="ID_2">%2$d</xliff:g>"</string>
-    <!-- no translation found for accessibility_key_gesture_dialog_title (7614965716626605518) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_content (4519838108423437794) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_magnifier_intro (627023269951856071) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_talkback_intro (1617808784388544741) -->
-    <skip />
-    <!-- no translation found for accessibility_key_gesture_dialog_positive_button_text (3670746017523589293) -->
-    <skip />
+    <string name="accessibility_key_gesture_dialog_title" msgid="7614965716626605518">"‫<xliff:g id="ID_1">%1$s</xliff:g> روشن شود؟"</string>
+    <string name="accessibility_key_gesture_dialog_content" msgid="4519838108423437794">"‏کنش "<annotation id="action_key_icon">"icon"</annotation>" و <xliff:g id="ID_1">^1</xliff:g> و <xliff:g id="ID_2">^2</xliff:g> میان‌بر صفحه‌کلید برای استفاده از <xliff:g id="ID_3">^3</xliff:g> است. <xliff:g id="ID_4">^4</xliff:g>"</string>
+    <string name="accessibility_key_gesture_dialog_magnifier_intro" msgid="627023269951856071">"به شما امکان می‌دهد صفحه‌نمایش را به‌سرعت زوم‌پیش کنید تا محتوا درشت‌تر نمایش داده شود."</string>
+    <string name="accessibility_key_gesture_dialog_talkback_intro" msgid="1617808784388544741">"‫<xliff:g id="ID_1">%1$s</xliff:g> صفحه‌خوانی است که به شما امکان می‌دهد موارد روی صفحه را با صدای بلند بشنوید. این ویژگی برای افرادی که دیدن صفحه‌نمایش برایشان دشوار است می‌تواند مفید باشد."</string>
+    <string name="accessibility_key_gesture_dialog_positive_button_text" msgid="3670746017523589293">"روشن کردن"</string>
     <string name="tuner_lock_screen" msgid="2267383813241144544">"صفحه قفل"</string>
     <string name="shutdown_progress" msgid="5464239146561542178">"درحال خاموش شدن…"</string>
     <string name="thermal_shutdown_dialog_help_text" msgid="6413474593462902901">"دیدن اقدامات محافظتی"</string>
@@ -1666,7 +1661,7 @@
     <string name="qs_edit_mode_reset_dialog_title" msgid="5344853290033761627">"همه کاشی‌ها بازنشانی شوند؟"</string>
     <string name="qs_edit_mode_reset_dialog_content" msgid="7474773130622653653">"همه کاشی‌های «تنظیمات فوری» به تنظیمات اصلی دستگاه بازنشانی خواهند شد"</string>
     <string name="ambientcue_first_time_edu_title" msgid="4786708463521594957">"دریافت کردن پیشنهادهای مفید"</string>
-    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"از هوش مصنوعی استفاده می‌کنیم تا به‌طور پیش‌نگرانه اطلاعات و کنش‌هایی مربوط به کاری که در صفحه‌نمایش انجام می‌دهید پیشنهاد دهیم"</string>
+    <string name="ambientcue_first_time_edu_text" msgid="7541905631076606020">"ما از هوش مصنوعی استفاده می‌کنیم تا به‌طور پیش‌نگرانه اطلاعات و کنش‌هایی مربوط به کاری که در صفحه‌نمایش انجام می‌دهید پیشنهاد دهیم"</string>
     <string name="ambientcue_first_time_edu_icon_description" msgid="1776865320146246305">"نماد"</string>
     <string name="ambientcue_long_press_edu_text" msgid="8424250358721947938">"لمس کنید و نگه دارید تا نحوه تولید پیشنهادها را ببینید"</string>
     <string name="demote_explain_text" msgid="3942301497888762295">"‫<xliff:g id="APPLICATION">%1$s</xliff:g> دیگر «به‌روزرسانی‌های زنده» را نشان نخواهد داد. هروقت خواستید می‌توانید آن را در «تنظیمات» تغییر دهید."</string>
@@ -1676,8 +1671,10 @@
     <string name="dual_shade_educational_tooltip_notifs" msgid="7666159428113013319">"برای باز کردن «اعلان‌ها»، از بالا سمت چپ تند بکشید"</string>
     <string name="dual_shade_educational_tooltip_qs" msgid="3842355853737057332">"برای باز کردن «تنظیمات فوری»، از بالا سمت راست تند بکشید"</string>
     <string name="back_button_on_bouncer" msgid="809134628434396761">"برگشتن"</string>
-    <!-- no translation found for pager_dots_previous_content_description (26963508904918908) -->
+    <string name="pager_dots_previous_content_description" msgid="26963508904918908">"قبلی"</string>
+    <string name="pager_dots_next_content_description" msgid="613943992626163120">"بعدی"</string>
+    <!-- no translation found for ambient_cue_autofill_action (9213025887835308128) -->
     <skip />
-    <!-- no translation found for pager_dots_next_content_description (613943992626163120) -->
+    <!-- no translation found for ambient_cue_expand_action (6803711089932959312) -->
     <skip />
 </resources>
