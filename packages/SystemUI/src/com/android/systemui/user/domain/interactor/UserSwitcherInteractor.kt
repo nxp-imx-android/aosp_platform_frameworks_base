@@ -548,7 +548,7 @@ constructor(
      * If [context] is provided, the dialog will be created from that context. If not provided, the
      * shade context will be used.
      */
-    fun showUserSwitcher(expandable: Expandable, context: Context? = null) {
+    fun showUserSwitcher(expandable: Expandable?, context: Context? = null) {
         if (featureFlags.isEnabled(Flags.FULL_SCREEN_USER_SWITCHER)) {
             showDialog(ShowDialogRequestModel.ShowUserSwitcherFullscreenDialog(expandable, context))
         } else {
