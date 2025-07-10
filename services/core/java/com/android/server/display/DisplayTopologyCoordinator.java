@@ -18,6 +18,7 @@ package com.android.server.display;
 
 import android.hardware.display.DisplayTopology;
 import android.hardware.display.DisplayTopologyGraph;
+import android.os.Trace;
 import android.util.IndentingPrintWriter;
 import android.util.Pair;
 import android.util.Slog;
@@ -224,10 +225,15 @@ class DisplayTopologyCoordinator {
     void setTopology(DisplayTopology topology) {
         final boolean isTopologySaved;
         synchronized (mSyncRoot) {
-            topology.normalize();
-            mTopology = topology;
-            sendTopologyUpdateLocked();
-            isTopologySaved = mTopologyStore.saveTopology(topology);
+            Trace.traceBegin(Trace.TRACE_TAG_POWER, "setTopology");
+            try {
+                topology.normalize();
+                mTopology = topology;
+                sendTopologyUpdateLocked();
+                isTopologySaved = mTopologyStore.saveTopology(topology);
+            } finally {
+                Trace.traceEnd(Trace.TRACE_TAG_POWER);
+            }
         }
 
         if (isTopologySaved) {
@@ -318,8 +324,14 @@ class DisplayTopologyCoordinator {
     @GuardedBy("mSyncRoot")
     private void sendTopologyUpdateLocked() {
         DisplayTopology copy = mTopology.copy();
-        mTopologyChangeExecutor.execute(() -> mOnTopologyChangedCallback.accept(
-                new Pair<>(copy, copy.getGraph())));
+        mTopologyChangeExecutor.execute(() -> {
+            Trace.traceBegin(Trace.TRACE_TAG_POWER, "sendTopologyUpdateLocked");
+            try {
+                mOnTopologyChangedCallback.accept(new Pair<>(copy, copy.getGraph()));
+            } finally {
+                Trace.traceEnd(Trace.TRACE_TAG_POWER);
+            }
+        });
     }
 
     @VisibleForTesting
