@@ -800,8 +800,7 @@ public class Transitions implements RemoteCallable<Transitions>,
         if (info.getRootCount() == 0 && !KeyguardTransitionHandler.handles(info)) {
             // No root-leashes implies that the transition is empty/no-op, so just do
             // housekeeping and return.
-            ProtoLog.v(WM_SHELL_TRANSITIONS, "No transition roots in %s so"
-                    + " abort", active);
+            ProtoLog.v(WM_SHELL_TRANSITIONS, "No transition roots in %s so abort", active);
             onAbort(active);
             return true;
         }

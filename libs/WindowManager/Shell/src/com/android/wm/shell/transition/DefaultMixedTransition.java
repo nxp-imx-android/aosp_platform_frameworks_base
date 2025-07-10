@@ -643,6 +643,8 @@ class DefaultMixedTransition extends DefaultMixedHandler.MixedTransition {
                 final Transitions.TransitionHandler handler =
                         mBubbleTransitions.getRunningEnterTransition(transition);
                 if (handler != null) {
+                    ProtoLog.v(ShellProtoLogGroup.WM_SHELL_TRANSITIONS,
+                            "Bubble transition consumed: aborted=%b", aborted);
                     handler.onTransitionConsumed(transition, aborted, finishT);
                 }
                 break;

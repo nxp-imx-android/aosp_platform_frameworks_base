@@ -28,6 +28,7 @@ import static android.view.Display.DEFAULT_DISPLAY;
 import static com.android.wm.shell.compatui.impl.CompatUIEventsKt.SIZE_COMPAT_RESTART_BUTTON_APPEARED;
 import static com.android.wm.shell.compatui.impl.CompatUIEventsKt.SIZE_COMPAT_RESTART_BUTTON_CLICKED;
 import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TASK_ORG;
+import static com.android.wm.shell.protolog.ShellProtoLogGroup.WM_SHELL_TASK_ORG_NOISY;
 
 import android.annotation.IntDef;
 import android.annotation.NonNull;
@@ -332,7 +333,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
             final List<TaskAppearedInfo> taskInfos = super.registerOrganizer();
             for (int i = 0; i < taskInfos.size(); i++) {
                 final TaskAppearedInfo info = taskInfos.get(i);
-                ProtoLog.v(WM_SHELL_TASK_ORG, "Existing task: id=%d component=%s",
+                ProtoLog.v(WM_SHELL_TASK_ORG_NOISY, "Existing task: id=%d component=%s",
                         info.getTaskInfo().taskId, info.getTaskInfo().baseIntent);
                 onTaskAppeared(info);
             }
@@ -351,7 +352,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     @Override
     public void applyTransaction(@NonNull WindowContainerTransaction t) {
         if (!t.isEmpty()) {
-            ProtoLog.v(WM_SHELL_TASK_ORG, "applyTransaction(): wct=%s caller=%s",
+            ProtoLog.v(WM_SHELL_TASK_ORG_NOISY, "applyTransaction(): wct=%s caller=%s",
                     t, Debug.getCallers(4));
         }
         super.applyTransaction(t);
@@ -361,7 +362,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     public int applySyncTransaction(@NonNull WindowContainerTransaction t,
             @NonNull WindowContainerTransactionCallback callback) {
         if (!t.isEmpty()) {
-            ProtoLog.v(WM_SHELL_TASK_ORG, "applySyncTransaction(): wct=%s caller=%s",
+            ProtoLog.v(WM_SHELL_TASK_ORG_NOISY, "applySyncTransaction(): wct=%s caller=%s",
                     t, Debug.getCallers(4));
         }
         return super.applySyncTransaction(t, callback);
@@ -755,7 +756,7 @@ public class ShellTaskOrganizer extends TaskOrganizer {
     @Override
     public void onTaskInfoChanged(RunningTaskInfo taskInfo) {
         synchronized (mLock) {
-            ProtoLog.v(WM_SHELL_TASK_ORG, "Task info changed taskId=%d", taskInfo.taskId);
+            ProtoLog.v(WM_SHELL_TASK_ORG_NOISY, "Task info changed taskId=%d", taskInfo.taskId);
 
             if (mUnfoldAnimationController != null) {
                 mUnfoldAnimationController.onTaskInfoChanged(taskInfo);
