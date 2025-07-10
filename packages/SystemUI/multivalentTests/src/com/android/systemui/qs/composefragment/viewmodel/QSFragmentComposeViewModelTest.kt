@@ -24,6 +24,7 @@ import android.platform.test.annotations.EnableFlags
 import android.testing.TestableLooper.RunWithLooper
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.android.systemui.Flags
 import com.android.systemui.Flags.FLAG_QS_COMPOSE_FRAGMENT_EARLY_EXPANSION
 import com.android.systemui.common.ui.data.repository.fakeConfigurationRepository
 import com.android.systemui.coroutines.collectLastValue
@@ -66,6 +67,40 @@ class QSFragmentComposeViewModelTest : AbstractQSFragmentComposeViewModelTest() 
     fun qsExpansionValueChanges_correctExpansionState() =
         with(kosmos) {
             testScope.testWithinLifecycle {
+                underTest.setQsExpansionValue(0f)
+                assertThat(underTest.expansionState.progress).isEqualTo(0f)
+
+                underTest.setQsExpansionValue(0.3f)
+                assertThat(underTest.expansionState.progress).isEqualTo(0.3f)
+
+                underTest.setQsExpansionValue(1f)
+                assertThat(underTest.expansionState.progress).isEqualTo(1f)
+            }
+        }
+
+    @Test
+    @EnableFlags(Flags.FLAG_NO_EXPANSION_ON_OVERSCROLL)
+    fun qsExpansionValueChanges_whenOverScrolling_zeroExpansionState() =
+        with(kosmos) {
+            testScope.testWithinLifecycle {
+                underTest.isStackScrollerOverscrolling = true
+                underTest.setQsExpansionValue(0f)
+                assertThat(underTest.expansionState.progress).isEqualTo(0f)
+
+                underTest.setQsExpansionValue(0.3f)
+                assertThat(underTest.expansionState.progress).isEqualTo(0f)
+
+                underTest.setQsExpansionValue(1f)
+                assertThat(underTest.expansionState.progress).isEqualTo(0f)
+            }
+        }
+
+    @Test
+    @DisableFlags(Flags.FLAG_NO_EXPANSION_ON_OVERSCROLL)
+    fun qsExpansionValueChanges_whenOverScrolling_nonZeroExpansionState_withFlagOff() =
+        with(kosmos) {
+            testScope.testWithinLifecycle {
+                underTest.isStackScrollerOverscrolling = true
                 underTest.setQsExpansionValue(0f)
                 assertThat(underTest.expansionState.progress).isEqualTo(0f)
 

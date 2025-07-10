@@ -266,6 +266,18 @@ flag {
 }
 
 flag {
+   name: "no_expansion_on_overscroll"
+   namespace: "systemui"
+   description: "Enable the fix where QS Expansion is set to zero on overscroll. This should"
+        "prevent unnecessary work and remove jank when overscrolling."
+   bug: "414346597"
+  metadata {
+      purpose: PURPOSE_BUGFIX
+  }
+}
+
+
+flag {
    name: "flashlight_strength"
    namespace: "systemui"
    description: "Enable the flashlight strength feature in systemui, allowing QS flashlight tile to"
