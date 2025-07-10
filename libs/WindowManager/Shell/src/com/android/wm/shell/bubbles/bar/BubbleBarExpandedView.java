@@ -149,6 +149,14 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     private Runnable mAnimateExpansion = null;
 
     /**
+     * A runnable to be executed if the expansion animation is canceled before the task view is made
+     * visible. If the animation is run, the end runnable is executed with the animation, so only
+     * need to run the end runnable if the animation is dropped before it is ever started.
+     */
+    @Nullable
+    private Runnable mAnimateExpansionEndRunnable = null;
+
+    /**
      * Whether we want the {@code TaskView}'s content to be visible (alpha = 1f). If
      * {@link #mIsAnimating} is true, this may not reflect the {@code TaskView}'s actual alpha
      * value until the animation ends.
@@ -410,11 +418,37 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         mListener.onBackPressed();
     }
 
-    void animateExpansionWhenTaskViewVisible(Runnable animateExpansion) {
+    /**
+     * Returns {@code true} if the animation is scheduled instead of being run immediately.
+     *
+     * @param animateExpansion the {@link Runnable} to be run when the TaskView is visible.
+     * @param endRunnable the {@link Runnable} to be run only when the animation is canceled by
+     *                    {@link #cancelPendingAnimation()}.
+     */
+    boolean animateExpansionWhenTaskViewVisible(
+            @NonNull Runnable animateExpansion, @Nullable Runnable endRunnable) {
         if ((mBubbleTaskView != null && mBubbleTaskView.isVisible()) || mIsOverflow) {
             animateExpansion.run();
+            return false;
         } else {
             mAnimateExpansion = animateExpansion;
+            mAnimateExpansionEndRunnable = endRunnable;
+            return true;
+        }
+    }
+
+    /**
+     * Cancels the pending animation that is waiting on TaskView becoming visible. This also
+     * executes the end {@code Runnable}.
+     */
+    void cancelPendingAnimation() {
+        if (mAnimateExpansion != null) {
+            mAnimateExpansion = null;
+            // The end runnable must be executed here, because it is not invoked for non-running
+            // animators.
+            if (mAnimateExpansionEndRunnable != null) {
+                mAnimateExpansionEndRunnable.run();
+            }
         }
     }
 
@@ -423,6 +457,9 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
         if (mAnimateExpansion != null) {
             mAnimateExpansion.run();
             mAnimateExpansion = null;
+            // No need to execute the end runnable if the animation is played. It will be run in the
+            // animation end callback.
+            mAnimateExpansionEndRunnable = null;
         }
     }
 
@@ -554,6 +591,12 @@ public class BubbleBarExpandedView extends FrameLayout implements BubbleTaskView
     @VisibleForTesting
     boolean isSurfaceZOrderedOnTop() {
         return mTaskView != null && mTaskView.isZOrderedOnTop();
+    }
+
+    @VisibleForTesting
+    @Nullable
+    BubbleTaskView getBubbleTaskView() {
+        return mBubbleTaskView;
     }
 
     /**
