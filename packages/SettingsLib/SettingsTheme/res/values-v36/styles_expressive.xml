@@ -434,13 +434,6 @@
         <item name="android:clipToPadding">false</item>
     </style>
 
-    <style name="Widget.SettingsLib.ButtonBar.Vertical" parent="@style/Widget.AppCompat.ButtonBar.AlertDialog">
-        <item name="android:paddingBottom">@dimen/settingslib_expressive_space_small3</item>
-        <item name="android:minHeight">@dimen/settingslib_expressive_space_large2</item>
-        <item name="android:layout_gravity">center</item>
-        <item name="android:clipToPadding">false</item>
-    </style>
-
     <style name="Widget.SettingsLib.DialogButton" parent="@android:style/Widget.DeviceDefault.Button">
         <item name="android:layout_marginTop">@dimen/settingslib_expressive_space_extrasmall4</item>
         <item name="android:layout_height">wrap_content</item>
@@ -465,16 +458,5 @@
         <item name="android:layout_marginEnd">@dimen/settingslib_expressive_space_extrasmall4</item>
         <item name="android:background">@drawable/settingslib_expressive_button_background_outline</item>
         <item name="android:textColor">@color/settingslib_materialColorPrimary</item>
-    </style>
-
-    <style name="Widget.SettingsLib.DialogButton.Filled.Vertical">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:minWidth">310dp</item>
-        <item name="android:minHeight">@dimen/settingslib_expressive_space_medium3</item>
-    </style>
-
-    <style name="Widget.SettingsLib.DialogButton.Filled.Vertical.Negative">
-        <item name="android:layout_marginTop">@dimen/settingslib_expressive_space_small1</item>
     </style>
 </resources>
