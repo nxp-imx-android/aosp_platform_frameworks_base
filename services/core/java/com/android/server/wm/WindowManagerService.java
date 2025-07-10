@@ -2812,9 +2812,9 @@ public class WindowManagerService extends IWindowManager.Stub
                 win.mActivityRecord.updateReportedVisibilityLocked();
             }
 
-            if (outFrames != null && outMergedConfiguration != null) {
-                final boolean shouldReportActivityWindowInfo = outRelayoutResult != null
-                            && win.mLastReportedActivityWindowInfo != null;
+            if (outRelayoutResult != null) {
+                final boolean shouldReportActivityWindowInfo =
+                        win.mLastReportedActivityWindowInfo != null;
                 final ActivityWindowInfo outActivityWindowInfo = shouldReportActivityWindowInfo
                         ? new ActivityWindowInfo()
                         : null;
