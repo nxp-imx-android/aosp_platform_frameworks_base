@@ -38,6 +38,8 @@ import static android.view.MotionEvent.CLASSIFICATION_MULTI_FINGER_SWIPE;
 import static android.view.WindowInsets.Type.mandatorySystemGestures;
 import static android.view.WindowManager.LayoutParams.FIRST_APPLICATION_WINDOW;
 import static android.view.WindowManager.LayoutParams.LAST_APPLICATION_WINDOW;
+import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
+import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG;
 
 import static com.android.internal.protolog.WmProtoLogGroups.WM_DEBUG_TASKS;
 import static com.android.server.wm.ActivityRecord.State.RESUMED;
@@ -78,6 +80,7 @@ import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.InsetsState;
 import android.view.MotionEvent;
+import android.view.WindowManager;
 import android.view.WindowManagerPolicyConstants.PointerEventListener;
 
 import com.android.internal.annotations.VisibleForTesting;
@@ -248,15 +251,13 @@ class RecentTasks {
                         return;
                     }
 
-                    // Unfreeze the task list once we touch down in a task
-                    final boolean isAppWindowTouch = FIRST_APPLICATION_WINDOW <= win.mAttrs.type
-                            && win.mAttrs.type <= LAST_APPLICATION_WINDOW;
-                    if (isAppWindowTouch) {
+                    // Unfreeze the task list if the user is interacting with a valid window
+                    if (shouldUnfreezeOnInteractionInWindow(win.mAttrs.type)) {
                         final Task stack = mService.getTopDisplayFocusedRootTask();
                         final Task topTask = stack != null ? stack.getTopMostTask() : null;
                         ProtoLog.i(WM_DEBUG_TASKS, "Resetting frozen recents task list"
-                                + " reason=app touch win=%s x=%d y=%d insetFrame=%s", win, x, y,
-                                mTmpRect);
+                                + " win=%s type=%d x=%d y=%d insetFrame=%s",
+                                win, win.mAttrs.type, x, y, mTmpRect);
                         resetFreezeTaskListReordering(topTask);
                     }
                 }
@@ -1901,6 +1902,20 @@ class RecentTasks {
 
         // Whoops, couldn't do it.
         return false;
+    }
+
+    /**
+     * Returns whether user interaction in a window of the given type should unfreeze the recents
+     * list.
+     */
+    @VisibleForTesting
+    static boolean shouldUnfreezeOnInteractionInWindow(
+            @WindowManager.LayoutParams.WindowType int type) {
+        final boolean isAppWindowTouch = FIRST_APPLICATION_WINDOW <= type
+                && type <= LAST_APPLICATION_WINDOW;
+        final boolean isImeWindowTouch = type == TYPE_INPUT_METHOD
+                || type == TYPE_INPUT_METHOD_DIALOG;
+        return isAppWindowTouch || isImeWindowTouch;
     }
 
     void dump(PrintWriter pw, boolean dumpAll, String dumpPackage) {

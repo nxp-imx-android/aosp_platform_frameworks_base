@@ -30,6 +30,11 @@ import static android.content.Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
 import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 import static android.os.Process.NOBODY_UID;
+import static android.view.WindowManager.LayoutParams.FIRST_APPLICATION_WINDOW;
+import static android.view.WindowManager.LayoutParams.FIRST_SYSTEM_WINDOW;
+import static android.view.WindowManager.LayoutParams.LAST_APPLICATION_WINDOW;
+import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD;
+import static android.view.WindowManager.LayoutParams.TYPE_INPUT_METHOD_DIALOG;
 
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doNothing;
 import static com.android.dx.mockito.inline.extended.ExtendedMockito.doReturn;
@@ -1082,6 +1087,17 @@ public class RecentTasksTest extends WindowTestsBase {
                 mTasks.get(3),
                 mTasks.get(1),
                 mTasks.get(0));
+    }
+
+    @Test
+    public void testUnfreezeTaskListOrder_windowTypes() {
+        for (int i = FIRST_APPLICATION_WINDOW; i <= LAST_APPLICATION_WINDOW; i++) {
+            assertThat(RecentTasks.shouldUnfreezeOnInteractionInWindow(i)).isTrue();
+        }
+        assertThat(RecentTasks.shouldUnfreezeOnInteractionInWindow(TYPE_INPUT_METHOD)).isTrue();
+        assertThat(RecentTasks.shouldUnfreezeOnInteractionInWindow(TYPE_INPUT_METHOD_DIALOG))
+                .isTrue();
+        assertThat(RecentTasks.shouldUnfreezeOnInteractionInWindow(FIRST_SYSTEM_WINDOW)).isFalse();
     }
 
     @Test
