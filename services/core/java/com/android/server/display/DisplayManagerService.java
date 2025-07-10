@@ -1021,8 +1021,14 @@ public final class DisplayManagerService extends SystemService {
         synchronized (mSyncRoot) {
             final LogicalDisplay display = mLogicalDisplayMapper.getDisplayLocked(displayId);
             if (display != null) {
-                if (display.setDisplayInfoOverrideFromWindowManagerLocked(info)) {
-                    handleLogicalDisplayChangedLocked(display);
+                Trace.traceBegin(Trace.TRACE_TAG_POWER,
+                        "setDisplayInfoOverrideFromWindowManagerInternal");
+                try {
+                    if (display.setDisplayInfoOverrideFromWindowManagerLocked(info)) {
+                        handleLogicalDisplayChangedLocked(display);
+                    }
+                } finally {
+                    Trace.traceEnd(Trace.TRACE_TAG_POWER);
                 }
             }
         }
@@ -2613,13 +2619,18 @@ public final class DisplayManagerService extends SystemService {
     }
 
     private void handleLogicalDisplaySwappedLocked(@NonNull LogicalDisplay display) {
-        handleLogicalDisplayChangedLocked(display);
+        Trace.traceBegin(Trace.TRACE_TAG_POWER, "handleLogicalDisplaySwappedLocked");
+        try {
+            handleLogicalDisplayChangedLocked(display);
 
-        final int displayId = display.getDisplayIdLocked();
-        if (displayId == Display.DEFAULT_DISPLAY) {
-            notifyDefaultDisplayDeviceUpdated(display);
+            final int displayId = display.getDisplayIdLocked();
+            if (displayId == Display.DEFAULT_DISPLAY) {
+                notifyDefaultDisplayDeviceUpdated(display);
+            }
+            mHandler.sendEmptyMessage(MSG_LOAD_BRIGHTNESS_CONFIGURATIONS);
+        } finally {
+            Trace.traceEnd(Trace.TRACE_TAG_POWER);
         }
-        mHandler.sendEmptyMessage(MSG_LOAD_BRIGHTNESS_CONFIGURATIONS);
     }
 
     private void handleLogicalDisplayHdrSdrRatioChangedLocked(@NonNull LogicalDisplay display) {
