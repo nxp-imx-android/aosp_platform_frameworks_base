@@ -58,6 +58,7 @@ test_module_config {
         "com.android.wm.shell.flicker.fundamentals.QuickSwitchBetweenDesktopAndFullscreenTest",
         "com.android.wm.shell.flicker.fundamentals.SwitchFocusBetweenAppsTest",
         "com.android.wm.shell.flicker.fundamentals.SwitchToHomeFromDesktopTest",
+        "com.android.wm.shell.flicker.fundamentals.SwitchToOverviewFromDesktopFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppDoubleTapAppHeaderFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppFlickerTest",
         "com.android.wm.shell.flicker.maximize.MaximizeAppNonResizableFlickerTest",
@@ -178,6 +179,13 @@ test_module_config {
     base: "WMShellFlickerTestsDesktopMode",
     test_suites: ["device-tests"],
     include_filters: ["com.android.wm.shell.flicker.fundamentals.SwitchToHomeFromDesktopTest"],
+}
+
+test_module_config {
+    name: "WMShellFlickerTestsDesktopMode-fundamentals-SwitchToOverviewFromDesktopFlickerTest",
+    base: "WMShellFlickerTestsDesktopMode",
+    test_suites: ["device-tests"],
+    include_filters: ["com.android.wm.shell.flicker.fundamentals.SwitchToOverviewFromDesktopFlickerTest"],
 }
 
 test_module_config {

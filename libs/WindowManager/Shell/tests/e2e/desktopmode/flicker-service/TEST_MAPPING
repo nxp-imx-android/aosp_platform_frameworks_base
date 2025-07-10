@@ -43,6 +43,9 @@
       "name": "WMShellFlickerTestsDesktopMode-fundamentals-SwitchToHomeFromDesktopTest"
     },
     {
+      "name": "WMShellFlickerTestsDesktopMode-fundamentals-SwitchToOverviewFromDesktopFlickerTest"
+    },
+    {
       "name": "WMShellFlickerTestsDesktopMode-maximize-MaximizeAppDoubleTapAppHeaderFlickerTest"
     },
     {
