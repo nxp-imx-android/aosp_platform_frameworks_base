@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.desktopmode.persistence
+package com.android.wm.shell.desktopmode.data
 
 import android.os.UserManager
 import android.platform.test.annotations.EnableFlags
@@ -27,7 +27,12 @@ import com.android.window.flags.Flags.FLAG_ENABLE_MULTIPLE_DESKTOPS_BACKEND
 import com.android.wm.shell.ShellTestCase
 import com.android.wm.shell.common.ShellExecutor
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
-import com.android.wm.shell.desktopmode.persistence.DesktopRepositoryInitializer.DeskRecreationFactory
+import com.android.wm.shell.desktopmode.data.persistence.Desktop
+import com.android.wm.shell.desktopmode.data.persistence.DesktopPersistentRepository
+import com.android.wm.shell.desktopmode.data.persistence.DesktopRepositoryState
+import com.android.wm.shell.desktopmode.data.persistence.DesktopTask
+import com.android.wm.shell.desktopmode.data.persistence.DesktopTaskState
+import com.android.wm.shell.desktopmode.data.persistence.DesktopTaskTilingState
 import com.android.wm.shell.shared.desktopmode.FakeDesktopConfig
 import com.android.wm.shell.shared.desktopmode.FakeDesktopState
 import com.android.wm.shell.sysui.ShellController
@@ -282,7 +287,10 @@ class DesktopRepositoryInitializerTest : ShellTestCase() {
 
             // Make [DESKTOP_ID_2] re-creation fail.
             repositoryInitializer.deskRecreationFactory =
-                DeskRecreationFactory { userId, destinationDisplayId, deskId ->
+                DesktopRepositoryInitializer.DeskRecreationFactory {
+                    userId,
+                    destinationDisplayId,
+                    deskId ->
                     if (deskId == DESKTOP_ID_2) {
                         null
                     } else {

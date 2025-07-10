@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.desktopmode.persistence
+package com.android.wm.shell.desktopmode.data.persistence
 
 import android.content.Context
 import android.util.ArraySet
@@ -74,8 +74,9 @@ class DesktopPersistentRepository(private val dataStore: DataStore<DesktopPersis
         }
 
     /**
-     * Reads and returns the [DesktopRepositoryState] proto object from the DataStore for a user. If
-     * the DataStore is empty or there's an error reading, it returns the default value of Proto.
+     * Reads and returns the [com.android.wm.shell.desktopmode.data.DesktopRepositoryState] proto
+     * object from the DataStore for a user. If the DataStore is empty or there's an error reading,
+     * it returns the default value of Proto.
      */
     suspend fun getDesktopRepositoryState(userId: Int): DesktopRepositoryState? =
         try {

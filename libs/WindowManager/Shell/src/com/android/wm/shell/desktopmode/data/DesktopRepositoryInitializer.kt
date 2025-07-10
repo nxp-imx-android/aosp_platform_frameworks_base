@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.wm.shell.desktopmode.persistence
+package com.android.wm.shell.desktopmode.data
 
 import com.android.wm.shell.desktopmode.DesktopUserRepositories
 import kotlinx.coroutines.flow.StateFlow
