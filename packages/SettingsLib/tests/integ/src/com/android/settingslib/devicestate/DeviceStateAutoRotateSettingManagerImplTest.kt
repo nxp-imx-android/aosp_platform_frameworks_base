@@ -27,10 +27,10 @@ import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_FOLDED
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_HALF_FOLDED
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_UNFOLDED
+import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_KEY_UNKNOWN
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_IGNORED
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_LOCKED
 import android.provider.Settings.Secure.DEVICE_STATE_ROTATION_LOCK_UNLOCKED
-import android.util.SparseIntArray
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.android.internal.R
@@ -174,14 +174,20 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     }
 
     @Test
-    fun getAutoRotateSetting_forInvalidPostureWithNoFallback_returnsNull() {
-        val autoRotateSetting = settingManager.getRotationLockSetting(DEVICE_STATE_INVALID)
+    fun getAutoRotateSetting_forInvalidPostureWithNoFallback_throwsException() {
+        persistSetting(FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING_UNRESOLVED)
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            settingManager.getRotationLockSetting(DEVICE_STATE_INVALID)
+        }
 
-        assertThat(autoRotateSetting).isNull()
+        assertThat(exception.message).contains(
+            "Trying to get auto rotate value of invalid device posture: "
+                    + "$DEVICE_STATE_ROTATION_KEY_UNKNOWN"
+        )
     }
 
     @Test
-    fun getAutoRotateSetting_forInvalidPosture_returnsSettingForFallbackPosture() {
+    fun getAutoRotateSetting_forIgnoredPosture_returnsSettingForFallbackPosture() {
         persistSetting(FOLDED_LOCKED_OPEN_UNLOCKED_SETTING_UNRESOLVED)
 
         val autoRotateSetting = settingManager.getRotationLockSetting(DEVICE_STATE_HALF_FOLDED)
@@ -209,13 +215,13 @@ class DeviceStateAutoRotateSettingManagerImplTest {
 
     @Test
     fun getAutoRotateSetting_multipleSettings_returnsCorrectSetting() {
-        persistSetting(FOLDED_LOCKED_OPEN_UNLOCKED_SETTING_UNRESOLVED)
+        persistSetting(FOLDED_UNLOCKED_OPEN_LOCKED_SETTING_UNRESOLVED)
 
         val foldedSetting = settingManager.getRotationLockSetting(DEVICE_STATE_FOLDED)
         val unfoldedSetting = settingManager.getRotationLockSetting(DEVICE_STATE_UNFOLDED)
 
-        assertThat(foldedSetting).isEqualTo(DEVICE_STATE_ROTATION_LOCK_LOCKED)
-        assertThat(unfoldedSetting).isEqualTo(DEVICE_STATE_ROTATION_LOCK_UNLOCKED)
+        assertThat(foldedSetting).isEqualTo(DEVICE_STATE_ROTATION_LOCK_UNLOCKED)
+        assertThat(unfoldedSetting).isEqualTo(DEVICE_STATE_ROTATION_LOCK_LOCKED)
     }
 
     @Test
@@ -291,33 +297,28 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     @Test
     fun getRotationLockSettingMap_multipleSettings_returnsCorrectMap() {
         persistSetting(FOLDED_UNLOCKED_OPEN_LOCKED_SETTING_UNRESOLVED)
-        val expectedPairs = getDefaultResolvedMap()
-        expectedPairs[DEVICE_STATE_ROTATION_KEY_UNFOLDED] =
-            DEVICE_STATE_ROTATION_LOCK_LOCKED
-        expectedPairs[DEVICE_STATE_ROTATION_KEY_FOLDED] =
-            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
-        expectedPairs[DEVICE_STATE_ROTATION_KEY_HALF_FOLDED] =
-            DEVICE_STATE_ROTATION_LOCK_LOCKED
-        expectedPairs[DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY] =
-            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
+        val expectedPairs = getDefaultSettingResolvedMap()
+        expectedPairs[DEVICE_STATE_ROTATION_KEY_UNFOLDED] = false
+        expectedPairs[DEVICE_STATE_ROTATION_KEY_FOLDED] = true
+        expectedPairs[DEVICE_STATE_ROTATION_KEY_HALF_FOLDED] = false
+        expectedPairs[DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY] = true
 
-        val deviceStateAutoRotateSetting = settingManager.getRotationLockSetting()
+        val deviceStateAutoRotateSetting = settingManager.rotationLockSetting
 
         assertThat(deviceStateAutoRotateSetting).isNotNull()
         // Check if all expected pairs are present
         expectedPairs.forEach { (key, value) ->
-            assertThat(deviceStateAutoRotateSetting?.indexOfKey(key)).isGreaterThan(-1)
-            assertThat(value).isEqualTo(deviceStateAutoRotateSetting?.get(key))
+            assertThat(value).isEqualTo(
+                deviceStateAutoRotateSetting?.get(key)
+            )
         }
-        // Check if no unexpected pairs are present
-        assertThat(expectedPairs.size).isEqualTo(deviceStateAutoRotateSetting?.size())
     }
 
     @Test
     fun getAutoRotateSettingMap_missingDefaultPostureInPersistedSetting_returnsNull() {
         persistSetting(MISSING_FOLDED_KEY_AND_VALUE_SETTING)
 
-        val deviceStateAutoRotateSetting = settingManager.getRotationLockSetting()
+        val deviceStateAutoRotateSetting = settingManager.rotationLockSetting
 
         assertThat(deviceStateAutoRotateSetting).isNull()
     }
@@ -326,7 +327,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     fun getAutoRotateSettingMap_ignoredPostureHasNonZeroValue_returnsNull() {
         persistSetting(FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING_RESOLVED)
 
-        val deviceStateAutoRotateSetting = settingManager.getRotationLockSetting()
+        val deviceStateAutoRotateSetting = settingManager.rotationLockSetting
 
         assertThat(deviceStateAutoRotateSetting).isNull()
     }
@@ -335,7 +336,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     fun getAutoRotateSettingMap_invalidNumberOfElementsInPersistedSetting_returnsNull() {
         persistSetting(MISSING_VALUE_FOR_FOLDED_SETTING)
 
-        val deviceStateAutoRotateSetting = settingManager.getRotationLockSetting()
+        val deviceStateAutoRotateSetting = settingManager.rotationLockSetting
 
         assertThat(deviceStateAutoRotateSetting).isNull()
     }
@@ -344,7 +345,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     fun getAutoRotateSettingMap_nonIntegerCharacterInPersistedSetting_returnsNull() {
         persistSetting(NON_INTEGER_CHARACTER_IN_AUTO_ROTATE_VALUE_SETTING)
 
-        val deviceStateAutoRotateSetting = settingManager.getRotationLockSetting()
+        val deviceStateAutoRotateSetting = settingManager.rotationLockSetting
 
         assertThat(deviceStateAutoRotateSetting).isNull()
     }
@@ -353,7 +354,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     fun getAutoRotateSettingMap_emptyPersistedSetting_returnsNull() {
         persistSetting("")
 
-        val deviceStateAutoRotateSetting = settingManager.getRotationLockSetting()
+        val deviceStateAutoRotateSetting = settingManager.rotationLockSetting
 
         assertThat(deviceStateAutoRotateSetting).isNull()
     }
@@ -362,37 +363,137 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     fun getAutoRotateSettingMap_missingFoldedKeyValueInPersistedSetting_sizeOfPersistedSettingMatchDefault_returnsNull() {
         persistSetting(OPEN_UNLOCKED_INVALID_LOCKED_SETTING)
 
-        val deviceStateAutoRotateSetting = settingManager.getRotationLockSetting()
+        val deviceStateAutoRotateSetting = settingManager.rotationLockSetting
 
         assertThat(deviceStateAutoRotateSetting).isNull()
     }
 
     @Test
-    fun getDefaultRotationLockSetting_returnsResolvedDefaultsFromConfig() {
-        val expectedPairs = getDefaultResolvedMap()
+    fun getAutoRotateSettingMapTwice_editOneOfThem_noChangesToOtherObject() {
+        persistSetting(FOLDED_UNLOCKED_OPEN_LOCKED_SETTING_UNRESOLVED)
+        val deviceStateAutoRotateSetting1 = settingManager.rotationLockSetting
+        val deviceStateAutoRotateSetting2 = settingManager.rotationLockSetting
+        assertThat(deviceStateAutoRotateSetting1).isNotNull()
+        assertThat(deviceStateAutoRotateSetting2).isNotNull()
 
-        val defaultDeviceStateAutoRotateSetting = settingManager.getDefaultRotationLockSetting()
+        deviceStateAutoRotateSetting1?.set(
+            DEVICE_STATE_ROTATION_KEY_FOLDED,
+            DEVICE_STATE_ROTATION_LOCK_LOCKED
+        )
+        val autoRotateValue = deviceStateAutoRotateSetting2?.get(DEVICE_STATE_ROTATION_KEY_FOLDED)
 
-        // Check if all expected pairs are present
-        expectedPairs.forEach { (key, value) ->
-            assertThat(defaultDeviceStateAutoRotateSetting.indexOfKey(key)).isGreaterThan(-1)
-            assertThat(value).isEqualTo(defaultDeviceStateAutoRotateSetting.get(key))
-        }
-        // Check if no unexpected pairs are present
-        assertThat(expectedPairs.size).isEqualTo(defaultDeviceStateAutoRotateSetting.size())
+        assertThat(autoRotateValue).isTrue()
     }
 
     @Test
-    fun updateSettingMap_sendsMapsWithOneUpdatedSetting_setsValueFromMap() {
-        val currentSettingMap = getDefaultResolvedMap()
-        val proposedSettingMap = getDefaultResolvedMap()
-        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_FOLDED] =
-            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
+    fun getDefaultRotationLockSetting_returnsResolvedDefaultsFromConfig() {
+        val expectedPairs = getDefaultSettingResolvedMap()
 
-        settingManager.updateSetting(
-            convertMapToSparseIntArray(proposedSettingMap),
-            convertMapToSparseIntArray(currentSettingMap)
+        val defaultDeviceStateAutoRotateSetting = settingManager.defaultRotationLockSetting
+
+        // Check if all expected pairs are present
+        expectedPairs.forEach { (key, value) ->
+            assertThat(value).isEqualTo(
+                defaultDeviceStateAutoRotateSetting.get(key)
+            )
+        }
+    }
+
+    @Test
+    fun settingSetGet_setValidDevicePosture_getsCorrespondingSettingValue() {
+        val deviceStateAutoRotateSetting = settingManager.defaultRotationLockSetting
+        deviceStateAutoRotateSetting.set(
+            DEVICE_STATE_ROTATION_KEY_FOLDED,
+            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
         )
+
+        val autoRotate = deviceStateAutoRotateSetting.get(DEVICE_STATE_ROTATION_KEY_FOLDED)
+
+        assertThat(autoRotate).isTrue()
+    }
+
+    @Test
+    fun settingSetGet_setValidDevicePosture_getResolvedValueForIgnoredDevicePosture() {
+        val deviceStateAutoRotateSetting = settingManager.defaultRotationLockSetting
+        deviceStateAutoRotateSetting.set(
+            DEVICE_STATE_ROTATION_KEY_UNFOLDED,
+            DEVICE_STATE_ROTATION_LOCK_LOCKED
+        )
+
+        val autoRotate = deviceStateAutoRotateSetting.get(DEVICE_STATE_ROTATION_KEY_HALF_FOLDED)
+
+        assertThat(autoRotate).isFalse()
+    }
+
+    @Test
+    fun settingSetGet_setValidDevicePostureTwice_getsLatestSettingValue() {
+        val deviceStateAutoRotateSetting = settingManager.defaultRotationLockSetting
+        deviceStateAutoRotateSetting.set(
+            DEVICE_STATE_ROTATION_KEY_UNFOLDED,
+            DEVICE_STATE_ROTATION_LOCK_LOCKED
+        )
+        deviceStateAutoRotateSetting.set(
+            DEVICE_STATE_ROTATION_KEY_UNFOLDED,
+            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
+        )
+
+        val autoRotate = deviceStateAutoRotateSetting.get(DEVICE_STATE_ROTATION_KEY_UNFOLDED)
+
+        assertThat(autoRotate).isTrue()
+    }
+
+    @Test
+    fun settingGet_getInvalidDevicePosture_throwsException() {
+        val deviceStateAutoRotateSetting = settingManager.defaultRotationLockSetting
+
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            deviceStateAutoRotateSetting.get(DEVICE_STATE_ROTATION_KEY_UNKNOWN)
+        }
+
+        assertThat(exception.message).isEqualTo(
+            "Trying to get auto rotate value of " +
+                    "invalid device posture: $DEVICE_STATE_ROTATION_KEY_UNKNOWN"
+        )
+    }
+
+    @Test
+    fun settingSet_setInvalidDevicePosture_throwsException() {
+        val deviceStateAutoRotateSetting = settingManager.defaultRotationLockSetting
+
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            deviceStateAutoRotateSetting.set(
+                DEVICE_STATE_ROTATION_KEY_UNKNOWN,
+                DEVICE_STATE_ROTATION_LOCK_LOCKED
+            )
+        }
+
+        assertThat(exception.message).isEqualTo(
+            "Trying to set auto rotate value of " +
+                    "invalid device posture: $DEVICE_STATE_ROTATION_KEY_UNKNOWN"
+        )
+    }
+
+    @Test
+    fun settingSet_setInvalidAutoRotateSettingValue_throwsException() {
+        val deviceStateAutoRotateSetting = settingManager.defaultRotationLockSetting
+
+        val exception = assertThrows(IllegalArgumentException::class.java) {
+            deviceStateAutoRotateSetting.set(DEVICE_STATE_ROTATION_KEY_FOLDED, /* autoRotate = */4)
+        }
+
+        assertThat(exception.message).isEqualTo("Trying to set invalid auto rotate value: 4")
+    }
+
+    @Test
+    fun settingWrite_withOneUpdatedSetting_setsValueFromMap() {
+        persistSetting(FOLDED_LOCKED_OPEN_UNLOCKED_SETTING_UNRESOLVED)
+        val deviceStateAutoRotateSetting = settingManager.defaultRotationLockSetting
+        deviceStateAutoRotateSetting.set(
+            DEVICE_STATE_ROTATION_KEY_FOLDED,
+            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
+        )
+
+        deviceStateAutoRotateSetting.write()
 
         val expectedPairs = FOLDED_UNLOCKED_OPEN_UNLOCKED_SETTING_UNRESOLVED
         val persistedSetting = getPersistedDeviceStateAutoRotateSetting()
@@ -400,18 +501,19 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     }
 
     @Test
-    fun updateSettingMap_sendsMapsWithTwoUpdatedSettings_setsValueFromMap() {
-        val currentSettingMap = getDefaultResolvedMap()
-        val proposedSettingMap = getDefaultResolvedMap()
-        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_FOLDED] =
+    fun settingWrite_withTwoUpdatedSettings_setsValueFromMap() {
+        persistSetting(FOLDED_LOCKED_OPEN_UNLOCKED_SETTING_UNRESOLVED)
+        val deviceStateAutoRotateSetting = settingManager.defaultRotationLockSetting
+        deviceStateAutoRotateSetting.set(
+            DEVICE_STATE_ROTATION_KEY_FOLDED,
             DEVICE_STATE_ROTATION_LOCK_UNLOCKED
-        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_UNFOLDED] =
-            DEVICE_STATE_ROTATION_LOCK_LOCKED
-
-        settingManager.updateSetting(
-            convertMapToSparseIntArray(proposedSettingMap),
-            convertMapToSparseIntArray(currentSettingMap)
         )
+        deviceStateAutoRotateSetting.set(
+            DEVICE_STATE_ROTATION_KEY_UNFOLDED,
+            DEVICE_STATE_ROTATION_LOCK_LOCKED
+        )
+
+        deviceStateAutoRotateSetting.write()
 
         val expectedPairs = FOLDED_UNLOCKED_OPEN_LOCKED_SETTING_UNRESOLVED
         val persistedSetting = getPersistedDeviceStateAutoRotateSetting()
@@ -419,107 +521,19 @@ class DeviceStateAutoRotateSettingManagerImplTest {
     }
 
     @Test
-    fun updateSettingMap_settingValueForIgnoredChanged_setUpdatedValueToAssociatedFallback() {
-        val currentSettingMap = getDefaultResolvedMap()
-        val proposedSettingMap = getDefaultResolvedMap()
-        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_HALF_FOLDED] =
-            DEVICE_STATE_ROTATION_LOCK_LOCKED
-
-        settingManager.updateSetting(
-            convertMapToSparseIntArray(proposedSettingMap),
-            convertMapToSparseIntArray(currentSettingMap)
-        )
-
-        val expectedPairs = FOLDED_LOCKED_OPEN_LOCKED_SETTING_UNRESOLVED
-        val persistedSetting = getPersistedDeviceStateAutoRotateSetting()
-        assertThat(persistedSetting).isEqualTo(expectedPairs)
-    }
-
-    @Test
-    fun updateSettingMap_sendsMapsWithOneUpdatedSetting_returnsResolvedMap() {
-        val currentSettingMap = getDefaultResolvedMap()
-        val proposedSettingMap = getDefaultResolvedMap()
-        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_FOLDED] =
-            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
-        val expectedSettingIntArray = convertMapToSparseIntArray(proposedSettingMap)
-        expectedSettingIntArray.put(
-            DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY,
-            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
-        )
-
-        val actualProposedSettingIntArray = settingManager.updateSetting(
-            convertMapToSparseIntArray(proposedSettingMap),
-            convertMapToSparseIntArray(currentSettingMap)
-        )
-
-        assertIntArrayEqual(expectedSettingIntArray, actualProposedSettingIntArray)
-    }
-
-    @Test
-    fun updateSettingMap_sendsMapsWithTwoUpdatedSettings_returnsResolvedMap() {
-        val currentSettingMap = getDefaultResolvedMap()
-        val proposedSettingMap = getDefaultResolvedMap()
-        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_FOLDED] =
-            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
-        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_UNFOLDED] =
-            DEVICE_STATE_ROTATION_LOCK_LOCKED
-        val expectedSettingIntArray = convertMapToSparseIntArray(proposedSettingMap)
-        expectedSettingIntArray.put(
-            DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY,
-            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
-        )
-        expectedSettingIntArray.put(
+    fun settingWrite_settingValueForIgnoredChanged_setUpdatedValueToAssociatedFallback() {
+        persistSetting(FOLDED_LOCKED_OPEN_UNLOCKED_SETTING_UNRESOLVED)
+        val deviceStateAutoRotateSetting = settingManager.defaultRotationLockSetting
+        deviceStateAutoRotateSetting.set(
             DEVICE_STATE_ROTATION_KEY_HALF_FOLDED,
             DEVICE_STATE_ROTATION_LOCK_LOCKED
         )
 
-        val actualProposedSettingIntArray = settingManager.updateSetting(
-            convertMapToSparseIntArray(proposedSettingMap),
-            convertMapToSparseIntArray(currentSettingMap)
-        )
+        deviceStateAutoRotateSetting.write()
 
-        assertIntArrayEqual(expectedSettingIntArray, actualProposedSettingIntArray)
-    }
-
-    @Test
-    fun updateSettingMap_settingValueForIgnoredChanged_returnsResolvedMap() {
-        val currentSettingMap = getDefaultResolvedMap()
-        val proposedSettingMap = getDefaultResolvedMap()
-        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_HALF_FOLDED] =
-            DEVICE_STATE_ROTATION_LOCK_LOCKED
-        val expectedSettingIntArray = convertMapToSparseIntArray(proposedSettingMap)
-        expectedSettingIntArray.put(
-            DEVICE_STATE_ROTATION_KEY_UNFOLDED,
-            DEVICE_STATE_ROTATION_LOCK_LOCKED
-        )
-
-        val actualProposedSettingIntArray = settingManager.updateSetting(
-            convertMapToSparseIntArray(proposedSettingMap),
-            convertMapToSparseIntArray(currentSettingMap)
-        )
-
-        assertIntArrayEqual(expectedSettingIntArray, actualProposedSettingIntArray)
-    }
-
-    @Test
-    fun updateSettingMap_currentSettingMissingValueForFallbackPosture_throwsIllegalStateException() {
-        val currentSettingMap = getDefaultResolvedMap()
-        val proposedSettingMap = getDefaultResolvedMap()
-        currentSettingMap.remove(DEVICE_STATE_ROTATION_KEY_UNFOLDED)
-        proposedSettingMap[DEVICE_STATE_ROTATION_KEY_HALF_FOLDED] =
-            DEVICE_STATE_ROTATION_LOCK_LOCKED
-
-        val exception = assertThrows(IllegalStateException::class.java) {
-            settingManager.updateSetting(
-                convertMapToSparseIntArray(proposedSettingMap),
-                convertMapToSparseIntArray(currentSettingMap)
-            )
-        }
-        assertThat(exception.message).isEqualTo(
-            "Key " +
-                    "$DEVICE_STATE_ROTATION_KEY_UNFOLDED not found in " +
-                    "SparseIntArray=${convertMapToSparseIntArray(currentSettingMap)}"
-        )
+        val expectedPairs = FOLDED_LOCKED_OPEN_LOCKED_SETTING_UNRESOLVED
+        val persistedSetting = getPersistedDeviceStateAutoRotateSetting()
+        assertThat(persistedSetting).isEqualTo(expectedPairs)
     }
 
     @Test
@@ -596,8 +610,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
                 )
         }
         assertThat(exception.message).contains(
-            "Invalid number of values in entry: "
-                    + "$DEVICE_STATE_ROTATION_KEY_HALF_FOLDED"
+            "Invalid number of values in entry: $DEVICE_STATE_ROTATION_KEY_HALF_FOLDED"
         )
     }
 
@@ -627,39 +640,117 @@ class DeviceStateAutoRotateSettingManagerImplTest {
         )
     }
 
+    @Test
+    fun loadAutoRotateDeviceStates_invalidDevicePosture_throwsException() {
+        whenever(mockResources.getStringArray(R.array.config_perDeviceStateRotationLockDefaults))
+            .thenReturn(
+                arrayOf(
+                    "$DEVICE_STATE_ROTATION_KEY_UNKNOWN:" +
+                            "$DEVICE_STATE_ROTATION_LOCK_IGNORED:" +
+                            "$DEVICE_STATE_ROTATION_KEY_UNFOLDED",
+                    "$DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY:" +
+                            "$DEVICE_STATE_ROTATION_LOCK_IGNORED:" +
+                            "$DEVICE_STATE_ROTATION_KEY_FOLDED",
+                    "$DEVICE_STATE_ROTATION_KEY_UNFOLDED:$DEVICE_STATE_ROTATION_LOCK_UNLOCKED",
+                    "$DEVICE_STATE_ROTATION_KEY_FOLDED:$DEVICE_STATE_ROTATION_LOCK_LOCKED",
+                )
+            )
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            settingManager =
+                DeviceStateAutoRotateSettingManagerImpl(
+                    mockContext,
+                    executor,
+                    fakeSecureSettings,
+                    mockHandler,
+                    mMockPostureDeviceStateConverter,
+                )
+        }
+        assertThat(exception.message).contains(
+            "Corrupted auto-rotate config. One or more values among " + "devicePosture="
+                    + DEVICE_STATE_ROTATION_KEY_UNKNOWN + " autoRotateValue=" + DEVICE_STATE_ROTATION_LOCK_IGNORED + " are invalid"
+        )
+    }
+
+    @Test
+    fun loadAutoRotateDeviceStates_invalidAutoRotateValue_throwsException() {
+        whenever(mockResources.getStringArray(R.array.config_perDeviceStateRotationLockDefaults))
+            .thenReturn(
+                arrayOf(
+                    "$DEVICE_STATE_ROTATION_KEY_HALF_FOLDED:" +
+                            "3:" +
+                            "$DEVICE_STATE_ROTATION_KEY_UNFOLDED",
+                    "$DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY:" +
+                            "$DEVICE_STATE_ROTATION_LOCK_IGNORED:" +
+                            "$DEVICE_STATE_ROTATION_KEY_FOLDED",
+                    "$DEVICE_STATE_ROTATION_KEY_UNFOLDED:$DEVICE_STATE_ROTATION_LOCK_UNLOCKED",
+                    "$DEVICE_STATE_ROTATION_KEY_FOLDED:$DEVICE_STATE_ROTATION_LOCK_LOCKED",
+                )
+            )
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            settingManager =
+                DeviceStateAutoRotateSettingManagerImpl(
+                    mockContext,
+                    executor,
+                    fakeSecureSettings,
+                    mockHandler,
+                    mMockPostureDeviceStateConverter,
+                )
+        }
+        assertThat(exception.message).contains(
+            "Corrupted auto-rotate config. One or more values among " + "devicePosture="
+                    + DEVICE_STATE_ROTATION_KEY_HALF_FOLDED + " autoRotateValue=3 are invalid"
+        )
+    }
+
+    @Test
+    fun loadAutoRotateDeviceStates_invalidFallbackPosture_throwsException() {
+        whenever(mockResources.getStringArray(R.array.config_perDeviceStateRotationLockDefaults))
+            .thenReturn(
+                arrayOf(
+                    "$DEVICE_STATE_ROTATION_KEY_HALF_FOLDED:" +
+                            "$DEVICE_STATE_ROTATION_LOCK_IGNORED:" +
+                            "$DEVICE_STATE_ROTATION_KEY_UNKNOWN",
+                    "$DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY:" +
+                            "$DEVICE_STATE_ROTATION_LOCK_IGNORED:" +
+                            "$DEVICE_STATE_ROTATION_KEY_FOLDED",
+                    "$DEVICE_STATE_ROTATION_KEY_UNFOLDED:$DEVICE_STATE_ROTATION_LOCK_UNLOCKED",
+                    "$DEVICE_STATE_ROTATION_KEY_FOLDED:$DEVICE_STATE_ROTATION_LOCK_LOCKED",
+                )
+            )
+
+        val exception = assertThrows(IllegalStateException::class.java) {
+            settingManager =
+                DeviceStateAutoRotateSettingManagerImpl(
+                    mockContext,
+                    executor,
+                    fakeSecureSettings,
+                    mockHandler,
+                    mMockPostureDeviceStateConverter,
+                )
+        }
+        assertThat(exception.message).contains(
+            "Corrupted auto-rotate config. Invalid" + " fallbackPosture="
+                    + DEVICE_STATE_ROTATION_KEY_UNKNOWN + "for devicePosture="
+                    + DEVICE_STATE_ROTATION_KEY_HALF_FOLDED
+        )
+    }
+
     private fun persistSetting(value: String) = fakeSecureSettings.putStringForUser(
         Settings.Secure.DEVICE_STATE_ROTATION_LOCK, value, UserHandle.USER_CURRENT
     )
 
-    private fun getDefaultSettingMap() = mutableMapOf(
-        DEVICE_STATE_ROTATION_KEY_HALF_FOLDED to DEVICE_STATE_ROTATION_LOCK_IGNORED,
-        DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY to DEVICE_STATE_ROTATION_LOCK_IGNORED,
-        DEVICE_STATE_ROTATION_KEY_UNFOLDED to DEVICE_STATE_ROTATION_LOCK_UNLOCKED,
-        DEVICE_STATE_ROTATION_KEY_FOLDED to DEVICE_STATE_ROTATION_LOCK_LOCKED,
+    private fun getDefaultSettingResolvedMap() = mutableMapOf(
+        DEVICE_STATE_ROTATION_KEY_HALF_FOLDED to true,
+        DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY to false,
+        DEVICE_STATE_ROTATION_KEY_UNFOLDED to true,
+        DEVICE_STATE_ROTATION_KEY_FOLDED to false,
     )
-
-    private fun getDefaultResolvedMap(): MutableMap<Int, Int> {
-        val defaultSettingMap = getDefaultSettingMap()
-        defaultSettingMap[DEVICE_STATE_ROTATION_KEY_HALF_FOLDED] =
-            DEVICE_STATE_ROTATION_LOCK_UNLOCKED
-        defaultSettingMap[DEVICE_STATE_ROTATION_KEY_REAR_DISPLAY] =
-            DEVICE_STATE_ROTATION_LOCK_LOCKED
-
-        return defaultSettingMap
-    }
 
     private fun getPersistedDeviceStateAutoRotateSetting() = fakeSecureSettings.getStringForUser(
         Settings.Secure.DEVICE_STATE_ROTATION_LOCK, UserHandle.USER_CURRENT
     )
-
-    private fun convertMapToSparseIntArray(map: Map<Int, Int>): SparseIntArray {
-        val sparseIntArray = SparseIntArray(map.size)
-
-        for ((key, value) in map) {
-            sparseIntArray.put(key, value)
-        }
-        return sparseIntArray
-    }
 
     private fun setUpMockPostureHelper() {
         whenever(mMockPostureDeviceStateConverter.deviceStateToPosture(eq(DEVICE_STATE_UNFOLDED)))
@@ -673,7 +764,7 @@ class DeviceStateAutoRotateSettingManagerImplTest {
         whenever(
             mMockPostureDeviceStateConverter
                 .deviceStateToPosture(eq(DEVICE_STATE_INVALID))
-        ).thenReturn(DEVICE_STATE_ROTATION_LOCK_IGNORED)
+        ).thenReturn(DEVICE_STATE_ROTATION_KEY_UNKNOWN)
         whenever(
             mMockPostureDeviceStateConverter
                 .deviceStateToPosture(eq(DEVICE_STATE_REAR_DISPLAY))
@@ -707,19 +798,6 @@ class DeviceStateAutoRotateSettingManagerImplTest {
                 )
             )
         ).thenReturn(DEVICE_STATE_REAR_DISPLAY)
-    }
-
-    private fun assertIntArrayEqual(
-        expectedIntArray: SparseIntArray,
-        actualIntArray: SparseIntArray
-    ) {
-        assertThat(expectedIntArray.size()).isEqualTo(actualIntArray.size())
-        for (i in 0 until expectedIntArray.size()) {
-            val expectedKey = expectedIntArray.keyAt(i)
-            val expectedValue = expectedIntArray.valueAt(i)
-            assertThat(actualIntArray.indexOfKey(expectedKey)).isGreaterThan(-1)
-            assertThat(actualIntArray[expectedKey]).isEqualTo(expectedValue)
-        }
     }
 
     private companion object {

@@ -42,7 +42,6 @@ import android.provider.Settings;
 import android.provider.Settings.Secure.DeviceStateRotationLockKey;
 import android.util.Log;
 import android.util.Slog;
-import android.util.SparseIntArray;
 
 import com.android.internal.annotations.VisibleForTesting;
 import com.android.server.policy.WindowManagerPolicy;
@@ -52,6 +51,7 @@ import com.android.server.wm.DeviceStateAutoRotateSettingController.Event.Update
 import com.android.server.wm.DeviceStateAutoRotateSettingController.Event.UpdateDeviceStateAutoRotateSetting;
 import com.android.server.wm.DeviceStateController.DeviceStateEnum;
 import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager;
+import com.android.settingslib.devicestate.DeviceStateAutoRotateSettingManager.DeviceStateAutoRotateSetting;
 import com.android.settingslib.devicestate.PostureDeviceStateConverter;
 
 import java.util.ArrayList;
@@ -94,13 +94,13 @@ public class DeviceStateAutoRotateSettingController {
     @DeviceStateRotationLockKey
     private int mDevicePosture = DEVICE_STATE_ROTATION_KEY_UNKNOWN;
     private boolean mAccelerometerSetting;
-    private SparseIntArray mDeviceStateAutoRotateSetting;
+    private DeviceStateAutoRotateSetting mDeviceStateAutoRotateSetting;
 
     public DeviceStateAutoRotateSettingController(
-            DeviceStateController deviceStateController,
-            DeviceStateAutoRotateSettingManager deviceStateAutoRotateSettingManager,
-            WindowManagerService wmService,
-            PostureDeviceStateConverter postureDeviceStateConverter) {
+            @NonNull DeviceStateController deviceStateController,
+            @NonNull DeviceStateAutoRotateSettingManager deviceStateAutoRotateSettingManager,
+            @NonNull WindowManagerService wmService,
+            @NonNull PostureDeviceStateConverter postureDeviceStateConverter) {
         mDeviceStateAutoRotateSettingManager = deviceStateAutoRotateSettingManager;
         mWm = wmService;
         mContext = mWm.mContext;
@@ -147,7 +147,7 @@ public class DeviceStateAutoRotateSettingController {
 
     private void handleEvent(@NonNull Event event) {
         final boolean persistedAccelerometerRotationSetting = getAccelerometerRotationSetting();
-        final SparseIntArray persistedDeviceStateAutoRotateSetting =
+        final DeviceStateAutoRotateSetting persistedDeviceStateAutoRotateSetting =
                 getDeviceStateAutoRotateSetting();
 
         updateInMemoryState(event, persistedAccelerometerRotationSetting,
@@ -164,8 +164,7 @@ public class DeviceStateAutoRotateSettingController {
         if (devicePosture == DEVICE_STATE_ROTATION_KEY_UNKNOWN) {
             Log.e(TAG,
                     "Device state auto rotate setting change requested for invalid device state. "
-                            + "No matching posture found for device state: "
-                            + deviceState);
+                            + "No matching posture found for device state: " + deviceState);
             return;
         }
 
@@ -220,26 +219,28 @@ public class DeviceStateAutoRotateSettingController {
     }
 
     private void updateInMemoryState(Event event, boolean persistedAccelerometerRotationSetting,
-            SparseIntArray persistedDeviceStateAutoRotateSetting) {
+            DeviceStateAutoRotateSetting persistedDeviceStateAutoRotateSetting) {
         // Compare persisted setting value with in-memory state before making any changes to
         // in-memory state. This is to detect if persisted setting was changed directly, which is
         // not expected.
-        // Map would be null if string value of DEVICE_STATE_ROTATION_LOCK is corrupted.
+        // Object would be null if string value of DEVICE_STATE_ROTATION_LOCK is corrupted.
         final boolean isDeviceStateAutoRotateSettingCorrupted =
                 persistedDeviceStateAutoRotateSetting == null;
         if (isDeviceStateAutoRotateSettingCorrupted) {
             // If string value of DEVICE_STATE_ROTATION_LOCK is corrupted, rewrite it with default
             // value while also respecting current ACCELEROMETER_ROTATION setting value.
             persistedDeviceStateAutoRotateSetting = getDefaultDeviceStateAutoRotateSetting();
-            persistedDeviceStateAutoRotateSetting.put(mDevicePosture,
-                    mAccelerometerSetting ? DEVICE_STATE_ROTATION_LOCK_UNLOCKED
-                            : DEVICE_STATE_ROTATION_LOCK_LOCKED);
+            if (mDevicePosture != DEVICE_STATE_ROTATION_KEY_UNKNOWN) {
+                persistedDeviceStateAutoRotateSetting.set(mDevicePosture,
+                        mAccelerometerSetting ? DEVICE_STATE_ROTATION_LOCK_UNLOCKED
+                                : DEVICE_STATE_ROTATION_LOCK_LOCKED);
+            }
         }
 
         final boolean wasAccelerometerRotationSettingChanged =
                 (persistedAccelerometerRotationSetting != mAccelerometerSetting);
-        final boolean wasDevicesStateAutoRotateSettingChanged = !equals(
-                mDeviceStateAutoRotateSetting, persistedDeviceStateAutoRotateSetting);
+        final boolean wasDevicesStateAutoRotateSettingChanged =
+                !mDeviceStateAutoRotateSetting.equals(persistedDeviceStateAutoRotateSetting);
 
         if (wasAccelerometerRotationSettingChanged || wasDevicesStateAutoRotateSettingChanged) {
             // System apps should only request changes via DeviceStateAutoRotateSettingManager's
@@ -278,12 +279,11 @@ public class DeviceStateAutoRotateSettingController {
             // Clone the persistedDeviceStateAutoRotateSetting to avoid modifying it when updating
             // mDeviceStateAutoRotateSetting in future
             mDeviceStateAutoRotateSetting = persistedDeviceStateAutoRotateSetting.clone();
-            mAccelerometerSetting = mDeviceStateAutoRotateSetting.get(mDevicePosture)
-                    == DEVICE_STATE_ROTATION_LOCK_UNLOCKED;
+            mAccelerometerSetting = mDeviceStateAutoRotateSetting.get(mDevicePosture);
         }
         if (wasAccelerometerRotationSettingChanged) {
             mAccelerometerSetting = persistedAccelerometerRotationSetting;
-            mDeviceStateAutoRotateSetting.put(mDevicePosture,
+            mDeviceStateAutoRotateSetting.set(mDevicePosture,
                     mAccelerometerSetting ? DEVICE_STATE_ROTATION_LOCK_UNLOCKED
                             : DEVICE_STATE_ROTATION_LOCK_LOCKED);
         }
@@ -293,23 +293,20 @@ public class DeviceStateAutoRotateSettingController {
         switch (event) {
             case UpdateAccelerometerRotationSetting updateAccelerometerRotationSetting -> {
                 mAccelerometerSetting = updateAccelerometerRotationSetting.mAutoRotate;
-                mDeviceStateAutoRotateSetting.put(mDevicePosture,
+                mDeviceStateAutoRotateSetting.set(mDevicePosture,
                         mAccelerometerSetting ? DEVICE_STATE_ROTATION_LOCK_UNLOCKED
                                 : DEVICE_STATE_ROTATION_LOCK_LOCKED);
             }
             case UpdateDeviceStateAutoRotateSetting updateDeviceStateAutoRotateSetting -> {
-                mDeviceStateAutoRotateSetting.put(
-                        updateDeviceStateAutoRotateSetting.mDevicePosture,
+                mDeviceStateAutoRotateSetting.set(updateDeviceStateAutoRotateSetting.mDevicePosture,
                         updateDeviceStateAutoRotateSetting.mAutoRotate
                                 ? DEVICE_STATE_ROTATION_LOCK_UNLOCKED
                                 : DEVICE_STATE_ROTATION_LOCK_LOCKED);
-                mAccelerometerSetting = mDeviceStateAutoRotateSetting.get(mDevicePosture)
-                        == DEVICE_STATE_ROTATION_LOCK_UNLOCKED;
+                mAccelerometerSetting = mDeviceStateAutoRotateSetting.get(mDevicePosture);
             }
             case UpdateDevicePosture updateDevicePosture -> {
                 mDevicePosture = updateDevicePosture.mDevicePosture;
-                mAccelerometerSetting = mDeviceStateAutoRotateSetting.get(mDevicePosture)
-                        == DEVICE_STATE_ROTATION_LOCK_UNLOCKED;
+                mAccelerometerSetting = mDeviceStateAutoRotateSetting.get(mDevicePosture);
             }
             default -> {
             }
@@ -318,7 +315,7 @@ public class DeviceStateAutoRotateSettingController {
 
     private void writeInMemoryStateIntoPersistedSetting(
             boolean persistedAccelerometerRotationSetting,
-            SparseIntArray persistedDeviceStateAutoRotateSetting) {
+            DeviceStateAutoRotateSetting persistedDeviceStateAutoRotateSetting) {
         if (mAccelerometerSetting != persistedAccelerometerRotationSetting) {
             Settings.System.putIntForUser(mContentResolver, ACCELEROMETER_ROTATION,
                     mAccelerometerSetting ? ACCELEROMETER_ROTATION_ON : ACCELEROMETER_ROTATION_OFF,
@@ -330,12 +327,8 @@ public class DeviceStateAutoRotateSettingController {
             }
         }
 
-        if (!equals(mDeviceStateAutoRotateSetting, persistedDeviceStateAutoRotateSetting)) {
-            mDeviceStateAutoRotateSetting = mDeviceStateAutoRotateSettingManager.updateSetting(
-                    mDeviceStateAutoRotateSetting.clone(),
-                    persistedDeviceStateAutoRotateSetting == null
-                            ? getDefaultDeviceStateAutoRotateSetting()
-                            : persistedDeviceStateAutoRotateSetting.clone());
+        if (!mDeviceStateAutoRotateSetting.equals(persistedDeviceStateAutoRotateSetting)) {
+            mDeviceStateAutoRotateSetting.write();
 
             if (DEBUG) {
                 Slog.d(TAG, "Wrote into persisted setting:\n" + "DEVICE_STATE_ROTATION_LOCK="
@@ -381,30 +374,18 @@ public class DeviceStateAutoRotateSettingController {
     }
 
     @Nullable
-    private SparseIntArray getDeviceStateAutoRotateSetting() {
+    private DeviceStateAutoRotateSetting getDeviceStateAutoRotateSetting() {
         return mDeviceStateAutoRotateSettingManager.getRotationLockSetting();
     }
 
     @NonNull
-    private SparseIntArray getDefaultDeviceStateAutoRotateSetting() {
+    private DeviceStateAutoRotateSetting getDefaultDeviceStateAutoRotateSetting() {
         return mDeviceStateAutoRotateSettingManager.getDefaultRotationLockSetting();
     }
 
     @VisibleForTesting
     Handler getHandler() {
         return mWm.mH;
-    }
-
-    private static boolean equals(SparseIntArray a, SparseIntArray b) {
-        if (a == b) return true;
-        if (a == null || b == null || a.size() != b.size()) return false;
-
-        for (int i = 0; i < a.size(); i++) {
-            if (b.keyAt(i) != a.keyAt(i) || b.valueAt(i) != a.valueAt(i)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     static sealed class Event {
